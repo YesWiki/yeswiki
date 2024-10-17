@@ -72,7 +72,7 @@ class ComposerScriptsHelper
             foreach ($data['assets'] as $asset) {
                 if (!empty($asset['name']) && is_string($asset['name'])
                     && !empty($asset['browser_download_url']) && is_string($asset['browser_download_url'])
-                    && preg_match("/^pdfjs-(\d+)\.(\d+)\.(\d+)-dist\.zip$/i", $asset['name'], $match)) {
+                    && preg_match("/^pdfjs-(\d+)\.(\d+)\.(\d+)-legacy-dist\.zip$/i", $asset['name'], $match)) {
                     return [
                         'fileName' => $asset['name'],
                         'url' => $asset['browser_download_url'],
@@ -142,7 +142,7 @@ class ComposerScriptsHelper
                                         echo "!! Zip not downloaded : $zipContent\n";
                                     }
                                 } else {
-                                    echo "erro while putting zip into $tmpFileName\n";
+                                    echo "erro while putting zip into $tmpFilename\n";
                                 }
                             } else {
                                 echo "Not possible to create a tempfile !\n";

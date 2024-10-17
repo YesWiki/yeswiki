@@ -20,8 +20,3608 @@
  * JavaScript code in this page
  */
 
-/******/ // The require scope
-/******/ var __webpack_require__ = {};
+/******/ var __webpack_modules__ = ({
+
+/***/ 9306:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var isCallable = __webpack_require__(4901);
+var tryToString = __webpack_require__(6823);
+
+var $TypeError = TypeError;
+
+// `Assert: IsCallable(argument) is true`
+module.exports = function (argument) {
+  if (isCallable(argument)) return argument;
+  throw new $TypeError(tryToString(argument) + ' is not a function');
+};
+
+
+/***/ }),
+
+/***/ 7080:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var has = (__webpack_require__(4402).has);
+
+// Perform ? RequireInternalSlot(M, [[SetData]])
+module.exports = function (it) {
+  has(it);
+  return it;
+};
+
+
+/***/ }),
+
+/***/ 679:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var isPrototypeOf = __webpack_require__(1625);
+
+var $TypeError = TypeError;
+
+module.exports = function (it, Prototype) {
+  if (isPrototypeOf(Prototype, it)) return it;
+  throw new $TypeError('Incorrect invocation');
+};
+
+
+/***/ }),
+
+/***/ 8551:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var isObject = __webpack_require__(34);
+
+var $String = String;
+var $TypeError = TypeError;
+
+// `Assert: Type(argument) is Object`
+module.exports = function (argument) {
+  if (isObject(argument)) return argument;
+  throw new $TypeError($String(argument) + ' is not an object');
+};
+
+
+/***/ }),
+
+/***/ 9617:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var toIndexedObject = __webpack_require__(5397);
+var toAbsoluteIndex = __webpack_require__(5610);
+var lengthOfArrayLike = __webpack_require__(6198);
+
+// `Array.prototype.{ indexOf, includes }` methods implementation
+var createMethod = function (IS_INCLUDES) {
+  return function ($this, el, fromIndex) {
+    var O = toIndexedObject($this);
+    var length = lengthOfArrayLike(O);
+    if (length === 0) return !IS_INCLUDES && -1;
+    var index = toAbsoluteIndex(fromIndex, length);
+    var value;
+    // Array#includes uses SameValueZero equality algorithm
+    // eslint-disable-next-line no-self-compare -- NaN check
+    if (IS_INCLUDES && el !== el) while (length > index) {
+      value = O[index++];
+      // eslint-disable-next-line no-self-compare -- NaN check
+      if (value !== value) return true;
+    // Array#indexOf ignores holes, Array#includes - not
+    } else for (;length > index; index++) {
+      if ((IS_INCLUDES || index in O) && O[index] === el) return IS_INCLUDES || index || 0;
+    } return !IS_INCLUDES && -1;
+  };
+};
+
+module.exports = {
+  // `Array.prototype.includes` method
+  // https://tc39.es/ecma262/#sec-array.prototype.includes
+  includes: createMethod(true),
+  // `Array.prototype.indexOf` method
+  // https://tc39.es/ecma262/#sec-array.prototype.indexof
+  indexOf: createMethod(false)
+};
+
+
+/***/ }),
+
+/***/ 4527:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var isArray = __webpack_require__(4376);
+
+var $TypeError = TypeError;
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+// Safari < 13 does not throw an error in this case
+var SILENT_ON_NON_WRITABLE_LENGTH_SET = DESCRIPTORS && !function () {
+  // makes no sense without proper strict mode support
+  if (this !== undefined) return true;
+  try {
+    // eslint-disable-next-line es/no-object-defineproperty -- safe
+    Object.defineProperty([], 'length', { writable: false }).length = 1;
+  } catch (error) {
+    return error instanceof TypeError;
+  }
+}();
+
+module.exports = SILENT_ON_NON_WRITABLE_LENGTH_SET ? function (O, length) {
+  if (isArray(O) && !getOwnPropertyDescriptor(O, 'length').writable) {
+    throw new $TypeError('Cannot set read only .length');
+  } return O.length = length;
+} : function (O, length) {
+  return O.length = length;
+};
+
+
+/***/ }),
+
+/***/ 6319:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var anObject = __webpack_require__(8551);
+var iteratorClose = __webpack_require__(9539);
+
+// call something on iterator step with safe closing on error
+module.exports = function (iterator, fn, value, ENTRIES) {
+  try {
+    return ENTRIES ? fn(anObject(value)[0], value[1]) : fn(value);
+  } catch (error) {
+    iteratorClose(iterator, 'throw', error);
+  }
+};
+
+
+/***/ }),
+
+/***/ 2195:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+
+var toString = uncurryThis({}.toString);
+var stringSlice = uncurryThis(''.slice);
+
+module.exports = function (it) {
+  return stringSlice(toString(it), 8, -1);
+};
+
+
+/***/ }),
+
+/***/ 6955:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var TO_STRING_TAG_SUPPORT = __webpack_require__(2140);
+var isCallable = __webpack_require__(4901);
+var classofRaw = __webpack_require__(2195);
+var wellKnownSymbol = __webpack_require__(8227);
+
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+var $Object = Object;
+
+// ES3 wrong here
+var CORRECT_ARGUMENTS = classofRaw(function () { return arguments; }()) === 'Arguments';
+
+// fallback for IE11 Script Access Denied error
+var tryGet = function (it, key) {
+  try {
+    return it[key];
+  } catch (error) { /* empty */ }
+};
+
+// getting tag from ES6+ `Object.prototype.toString`
+module.exports = TO_STRING_TAG_SUPPORT ? classofRaw : function (it) {
+  var O, tag, result;
+  return it === undefined ? 'Undefined' : it === null ? 'Null'
+    // @@toStringTag case
+    : typeof (tag = tryGet(O = $Object(it), TO_STRING_TAG)) == 'string' ? tag
+    // builtinTag case
+    : CORRECT_ARGUMENTS ? classofRaw(O)
+    // ES3 arguments fallback
+    : (result = classofRaw(O)) === 'Object' && isCallable(O.callee) ? 'Arguments' : result;
+};
+
+
+/***/ }),
+
+/***/ 7740:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var hasOwn = __webpack_require__(9297);
+var ownKeys = __webpack_require__(5031);
+var getOwnPropertyDescriptorModule = __webpack_require__(7347);
+var definePropertyModule = __webpack_require__(4913);
+
+module.exports = function (target, source, exceptions) {
+  var keys = ownKeys(source);
+  var defineProperty = definePropertyModule.f;
+  var getOwnPropertyDescriptor = getOwnPropertyDescriptorModule.f;
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    if (!hasOwn(target, key) && !(exceptions && hasOwn(exceptions, key))) {
+      defineProperty(target, key, getOwnPropertyDescriptor(source, key));
+    }
+  }
+};
+
+
+/***/ }),
+
+/***/ 2211:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var fails = __webpack_require__(9039);
+
+module.exports = !fails(function () {
+  function F() { /* empty */ }
+  F.prototype.constructor = null;
+  // eslint-disable-next-line es/no-object-getprototypeof -- required for testing
+  return Object.getPrototypeOf(new F()) !== F.prototype;
+});
+
+
+/***/ }),
+
+/***/ 2529:
+/***/ ((module) => {
+
+
+// `CreateIterResultObject` abstract operation
+// https://tc39.es/ecma262/#sec-createiterresultobject
+module.exports = function (value, done) {
+  return { value: value, done: done };
+};
+
+
+/***/ }),
+
+/***/ 6699:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var definePropertyModule = __webpack_require__(4913);
+var createPropertyDescriptor = __webpack_require__(6980);
+
+module.exports = DESCRIPTORS ? function (object, key, value) {
+  return definePropertyModule.f(object, key, createPropertyDescriptor(1, value));
+} : function (object, key, value) {
+  object[key] = value;
+  return object;
+};
+
+
+/***/ }),
+
+/***/ 6980:
+/***/ ((module) => {
+
+
+module.exports = function (bitmap, value) {
+  return {
+    enumerable: !(bitmap & 1),
+    configurable: !(bitmap & 2),
+    writable: !(bitmap & 4),
+    value: value
+  };
+};
+
+
+/***/ }),
+
+/***/ 4659:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var definePropertyModule = __webpack_require__(4913);
+var createPropertyDescriptor = __webpack_require__(6980);
+
+module.exports = function (object, key, value) {
+  if (DESCRIPTORS) definePropertyModule.f(object, key, createPropertyDescriptor(0, value));
+  else object[key] = value;
+};
+
+
+/***/ }),
+
+/***/ 2106:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var makeBuiltIn = __webpack_require__(283);
+var defineProperty = __webpack_require__(4913);
+
+module.exports = function (target, name, descriptor) {
+  if (descriptor.get) makeBuiltIn(descriptor.get, name, { getter: true });
+  if (descriptor.set) makeBuiltIn(descriptor.set, name, { setter: true });
+  return defineProperty.f(target, name, descriptor);
+};
+
+
+/***/ }),
+
+/***/ 6840:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var isCallable = __webpack_require__(4901);
+var definePropertyModule = __webpack_require__(4913);
+var makeBuiltIn = __webpack_require__(283);
+var defineGlobalProperty = __webpack_require__(9433);
+
+module.exports = function (O, key, value, options) {
+  if (!options) options = {};
+  var simple = options.enumerable;
+  var name = options.name !== undefined ? options.name : key;
+  if (isCallable(value)) makeBuiltIn(value, name, options);
+  if (options.global) {
+    if (simple) O[key] = value;
+    else defineGlobalProperty(key, value);
+  } else {
+    try {
+      if (!options.unsafe) delete O[key];
+      else if (O[key]) simple = true;
+    } catch (error) { /* empty */ }
+    if (simple) O[key] = value;
+    else definePropertyModule.f(O, key, {
+      value: value,
+      enumerable: false,
+      configurable: !options.nonConfigurable,
+      writable: !options.nonWritable
+    });
+  } return O;
+};
+
+
+/***/ }),
+
+/***/ 6279:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var defineBuiltIn = __webpack_require__(6840);
+
+module.exports = function (target, src, options) {
+  for (var key in src) defineBuiltIn(target, key, src[key], options);
+  return target;
+};
+
+
+/***/ }),
+
+/***/ 9433:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+
+// eslint-disable-next-line es/no-object-defineproperty -- safe
+var defineProperty = Object.defineProperty;
+
+module.exports = function (key, value) {
+  try {
+    defineProperty(globalThis, key, { value: value, configurable: true, writable: true });
+  } catch (error) {
+    globalThis[key] = value;
+  } return value;
+};
+
+
+/***/ }),
+
+/***/ 3724:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var fails = __webpack_require__(9039);
+
+// Detect IE8's incomplete defineProperty implementation
+module.exports = !fails(function () {
+  // eslint-disable-next-line es/no-object-defineproperty -- required for testing
+  return Object.defineProperty({}, 1, { get: function () { return 7; } })[1] !== 7;
+});
+
+
+/***/ }),
+
+/***/ 4055:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+var isObject = __webpack_require__(34);
+
+var document = globalThis.document;
+// typeof document.createElement is 'object' in old IE
+var EXISTS = isObject(document) && isObject(document.createElement);
+
+module.exports = function (it) {
+  return EXISTS ? document.createElement(it) : {};
+};
+
+
+/***/ }),
+
+/***/ 6837:
+/***/ ((module) => {
+
+
+var $TypeError = TypeError;
+var MAX_SAFE_INTEGER = 0x1FFFFFFFFFFFFF; // 2 ** 53 - 1 == 9007199254740991
+
+module.exports = function (it) {
+  if (it > MAX_SAFE_INTEGER) throw $TypeError('Maximum allowed index exceeded');
+  return it;
+};
+
+
+/***/ }),
+
+/***/ 8727:
+/***/ ((module) => {
+
+
+// IE8- don't enum bug keys
+module.exports = [
+  'constructor',
+  'hasOwnProperty',
+  'isPrototypeOf',
+  'propertyIsEnumerable',
+  'toLocaleString',
+  'toString',
+  'valueOf'
+];
+
+
+/***/ }),
+
+/***/ 2839:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+
+var navigator = globalThis.navigator;
+var userAgent = navigator && navigator.userAgent;
+
+module.exports = userAgent ? String(userAgent) : '';
+
+
+/***/ }),
+
+/***/ 9519:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+var userAgent = __webpack_require__(2839);
+
+var process = globalThis.process;
+var Deno = globalThis.Deno;
+var versions = process && process.versions || Deno && Deno.version;
+var v8 = versions && versions.v8;
+var match, version;
+
+if (v8) {
+  match = v8.split('.');
+  // in old Chrome, versions of V8 isn't V8 = Chrome / 10
+  // but their correct versions are not interesting for us
+  version = match[0] > 0 && match[0] < 4 ? 1 : +(match[0] + match[1]);
+}
+
+// BrowserFS NodeJS `process` polyfill incorrectly set `.v8` to `0.0`
+// so check `userAgent` even if `.v8` exists, but 0
+if (!version && userAgent) {
+  match = userAgent.match(/Edge\/(\d+)/);
+  if (!match || match[1] >= 74) {
+    match = userAgent.match(/Chrome\/(\d+)/);
+    if (match) version = +match[1];
+  }
+}
+
+module.exports = version;
+
+
+/***/ }),
+
+/***/ 6518:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+var getOwnPropertyDescriptor = (__webpack_require__(7347).f);
+var createNonEnumerableProperty = __webpack_require__(6699);
+var defineBuiltIn = __webpack_require__(6840);
+var defineGlobalProperty = __webpack_require__(9433);
+var copyConstructorProperties = __webpack_require__(7740);
+var isForced = __webpack_require__(2796);
+
+/*
+  options.target         - name of the target object
+  options.global         - target is the global object
+  options.stat           - export as static methods of target
+  options.proto          - export as prototype methods of target
+  options.real           - real prototype method for the `pure` version
+  options.forced         - export even if the native feature is available
+  options.bind           - bind methods to the target, required for the `pure` version
+  options.wrap           - wrap constructors to preventing global pollution, required for the `pure` version
+  options.unsafe         - use the simple assignment of property instead of delete + defineProperty
+  options.sham           - add a flag to not completely full polyfills
+  options.enumerable     - export as enumerable property
+  options.dontCallGetSet - prevent calling a getter on target
+  options.name           - the .name of the function if it does not match the key
+*/
+module.exports = function (options, source) {
+  var TARGET = options.target;
+  var GLOBAL = options.global;
+  var STATIC = options.stat;
+  var FORCED, target, key, targetProperty, sourceProperty, descriptor;
+  if (GLOBAL) {
+    target = globalThis;
+  } else if (STATIC) {
+    target = globalThis[TARGET] || defineGlobalProperty(TARGET, {});
+  } else {
+    target = globalThis[TARGET] && globalThis[TARGET].prototype;
+  }
+  if (target) for (key in source) {
+    sourceProperty = source[key];
+    if (options.dontCallGetSet) {
+      descriptor = getOwnPropertyDescriptor(target, key);
+      targetProperty = descriptor && descriptor.value;
+    } else targetProperty = target[key];
+    FORCED = isForced(GLOBAL ? key : TARGET + (STATIC ? '.' : '#') + key, options.forced);
+    // contained in target
+    if (!FORCED && targetProperty !== undefined) {
+      if (typeof sourceProperty == typeof targetProperty) continue;
+      copyConstructorProperties(sourceProperty, targetProperty);
+    }
+    // add a flag to not completely full polyfills
+    if (options.sham || (targetProperty && targetProperty.sham)) {
+      createNonEnumerableProperty(sourceProperty, 'sham', true);
+    }
+    defineBuiltIn(target, key, sourceProperty, options);
+  }
+};
+
+
+/***/ }),
+
+/***/ 9039:
+/***/ ((module) => {
+
+
+module.exports = function (exec) {
+  try {
+    return !!exec();
+  } catch (error) {
+    return true;
+  }
+};
+
+
+/***/ }),
+
+/***/ 6080:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(7476);
+var aCallable = __webpack_require__(9306);
+var NATIVE_BIND = __webpack_require__(616);
+
+var bind = uncurryThis(uncurryThis.bind);
+
+// optional / simple context binding
+module.exports = function (fn, that) {
+  aCallable(fn);
+  return that === undefined ? fn : NATIVE_BIND ? bind(fn, that) : function (/* ...args */) {
+    return fn.apply(that, arguments);
+  };
+};
+
+
+/***/ }),
+
+/***/ 616:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var fails = __webpack_require__(9039);
+
+module.exports = !fails(function () {
+  // eslint-disable-next-line es/no-function-prototype-bind -- safe
+  var test = (function () { /* empty */ }).bind();
+  // eslint-disable-next-line no-prototype-builtins -- safe
+  return typeof test != 'function' || test.hasOwnProperty('prototype');
+});
+
+
+/***/ }),
+
+/***/ 9565:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var NATIVE_BIND = __webpack_require__(616);
+
+var call = Function.prototype.call;
+
+module.exports = NATIVE_BIND ? call.bind(call) : function () {
+  return call.apply(call, arguments);
+};
+
+
+/***/ }),
+
+/***/ 350:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var hasOwn = __webpack_require__(9297);
+
+var FunctionPrototype = Function.prototype;
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var getDescriptor = DESCRIPTORS && Object.getOwnPropertyDescriptor;
+
+var EXISTS = hasOwn(FunctionPrototype, 'name');
+// additional protection from minified / mangled / dropped function names
+var PROPER = EXISTS && (function something() { /* empty */ }).name === 'something';
+var CONFIGURABLE = EXISTS && (!DESCRIPTORS || (DESCRIPTORS && getDescriptor(FunctionPrototype, 'name').configurable));
+
+module.exports = {
+  EXISTS: EXISTS,
+  PROPER: PROPER,
+  CONFIGURABLE: CONFIGURABLE
+};
+
+
+/***/ }),
+
+/***/ 6706:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+var aCallable = __webpack_require__(9306);
+
+module.exports = function (object, key, method) {
+  try {
+    // eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+    return uncurryThis(aCallable(Object.getOwnPropertyDescriptor(object, key)[method]));
+  } catch (error) { /* empty */ }
+};
+
+
+/***/ }),
+
+/***/ 7476:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var classofRaw = __webpack_require__(2195);
+var uncurryThis = __webpack_require__(9504);
+
+module.exports = function (fn) {
+  // Nashorn bug:
+  //   https://github.com/zloirock/core-js/issues/1128
+  //   https://github.com/zloirock/core-js/issues/1130
+  if (classofRaw(fn) === 'Function') return uncurryThis(fn);
+};
+
+
+/***/ }),
+
+/***/ 9504:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var NATIVE_BIND = __webpack_require__(616);
+
+var FunctionPrototype = Function.prototype;
+var call = FunctionPrototype.call;
+var uncurryThisWithBind = NATIVE_BIND && FunctionPrototype.bind.bind(call, call);
+
+module.exports = NATIVE_BIND ? uncurryThisWithBind : function (fn) {
+  return function () {
+    return call.apply(fn, arguments);
+  };
+};
+
+
+/***/ }),
+
+/***/ 7751:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+var isCallable = __webpack_require__(4901);
+
+var aFunction = function (argument) {
+  return isCallable(argument) ? argument : undefined;
+};
+
+module.exports = function (namespace, method) {
+  return arguments.length < 2 ? aFunction(globalThis[namespace]) : globalThis[namespace] && globalThis[namespace][method];
+};
+
+
+/***/ }),
+
+/***/ 1767:
+/***/ ((module) => {
+
+
+// `GetIteratorDirect(obj)` abstract operation
+// https://tc39.es/proposal-iterator-helpers/#sec-getiteratordirect
+module.exports = function (obj) {
+  return {
+    iterator: obj,
+    next: obj.next,
+    done: false
+  };
+};
+
+
+/***/ }),
+
+/***/ 851:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var classof = __webpack_require__(6955);
+var getMethod = __webpack_require__(5966);
+var isNullOrUndefined = __webpack_require__(4117);
+var Iterators = __webpack_require__(6269);
+var wellKnownSymbol = __webpack_require__(8227);
+
+var ITERATOR = wellKnownSymbol('iterator');
+
+module.exports = function (it) {
+  if (!isNullOrUndefined(it)) return getMethod(it, ITERATOR)
+    || getMethod(it, '@@iterator')
+    || Iterators[classof(it)];
+};
+
+
+/***/ }),
+
+/***/ 81:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var call = __webpack_require__(9565);
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var tryToString = __webpack_require__(6823);
+var getIteratorMethod = __webpack_require__(851);
+
+var $TypeError = TypeError;
+
+module.exports = function (argument, usingIterator) {
+  var iteratorMethod = arguments.length < 2 ? getIteratorMethod(argument) : usingIterator;
+  if (aCallable(iteratorMethod)) return anObject(call(iteratorMethod, argument));
+  throw new $TypeError(tryToString(argument) + ' is not iterable');
+};
+
+
+/***/ }),
+
+/***/ 5966:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aCallable = __webpack_require__(9306);
+var isNullOrUndefined = __webpack_require__(4117);
+
+// `GetMethod` abstract operation
+// https://tc39.es/ecma262/#sec-getmethod
+module.exports = function (V, P) {
+  var func = V[P];
+  return isNullOrUndefined(func) ? undefined : aCallable(func);
+};
+
+
+/***/ }),
+
+/***/ 3789:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var call = __webpack_require__(9565);
+var toIntegerOrInfinity = __webpack_require__(1291);
+var getIteratorDirect = __webpack_require__(1767);
+
+var INVALID_SIZE = 'Invalid size';
+var $RangeError = RangeError;
+var $TypeError = TypeError;
+var max = Math.max;
+
+var SetRecord = function (set, intSize) {
+  this.set = set;
+  this.size = max(intSize, 0);
+  this.has = aCallable(set.has);
+  this.keys = aCallable(set.keys);
+};
+
+SetRecord.prototype = {
+  getIterator: function () {
+    return getIteratorDirect(anObject(call(this.keys, this.set)));
+  },
+  includes: function (it) {
+    return call(this.has, this.set, it);
+  }
+};
+
+// `GetSetRecord` abstract operation
+// https://tc39.es/proposal-set-methods/#sec-getsetrecord
+module.exports = function (obj) {
+  anObject(obj);
+  var numSize = +obj.size;
+  // NOTE: If size is undefined, then numSize will be NaN
+  // eslint-disable-next-line no-self-compare -- NaN check
+  if (numSize !== numSize) throw new $TypeError(INVALID_SIZE);
+  var intSize = toIntegerOrInfinity(numSize);
+  if (intSize < 0) throw new $RangeError(INVALID_SIZE);
+  return new SetRecord(obj, intSize);
+};
+
+
+/***/ }),
+
+/***/ 4576:
+/***/ (function(module) {
+
+
+var check = function (it) {
+  return it && it.Math === Math && it;
+};
+
+// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
+module.exports =
+  // eslint-disable-next-line es/no-global-this -- safe
+  check(typeof globalThis == 'object' && globalThis) ||
+  check(typeof window == 'object' && window) ||
+  // eslint-disable-next-line no-restricted-globals -- safe
+  check(typeof self == 'object' && self) ||
+  check(typeof global == 'object' && global) ||
+  check(typeof this == 'object' && this) ||
+  // eslint-disable-next-line no-new-func -- fallback
+  (function () { return this; })() || Function('return this')();
+
+
+/***/ }),
+
+/***/ 9297:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+var toObject = __webpack_require__(8981);
+
+var hasOwnProperty = uncurryThis({}.hasOwnProperty);
+
+// `HasOwnProperty` abstract operation
+// https://tc39.es/ecma262/#sec-hasownproperty
+// eslint-disable-next-line es/no-object-hasown -- safe
+module.exports = Object.hasOwn || function hasOwn(it, key) {
+  return hasOwnProperty(toObject(it), key);
+};
+
+
+/***/ }),
+
+/***/ 421:
+/***/ ((module) => {
+
+
+module.exports = {};
+
+
+/***/ }),
+
+/***/ 397:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var getBuiltIn = __webpack_require__(7751);
+
+module.exports = getBuiltIn('document', 'documentElement');
+
+
+/***/ }),
+
+/***/ 5917:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var fails = __webpack_require__(9039);
+var createElement = __webpack_require__(4055);
+
+// Thanks to IE8 for its funny defineProperty
+module.exports = !DESCRIPTORS && !fails(function () {
+  // eslint-disable-next-line es/no-object-defineproperty -- required for testing
+  return Object.defineProperty(createElement('div'), 'a', {
+    get: function () { return 7; }
+  }).a !== 7;
+});
+
+
+/***/ }),
+
+/***/ 7055:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+var fails = __webpack_require__(9039);
+var classof = __webpack_require__(2195);
+
+var $Object = Object;
+var split = uncurryThis(''.split);
+
+// fallback for non-array-like ES3 and non-enumerable old V8 strings
+module.exports = fails(function () {
+  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
+  // eslint-disable-next-line no-prototype-builtins -- safe
+  return !$Object('z').propertyIsEnumerable(0);
+}) ? function (it) {
+  return classof(it) === 'String' ? split(it, '') : $Object(it);
+} : $Object;
+
+
+/***/ }),
+
+/***/ 3706:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+var isCallable = __webpack_require__(4901);
+var store = __webpack_require__(7629);
+
+var functionToString = uncurryThis(Function.toString);
+
+// this helper broken in `core-js@3.4.1-3.4.4`, so we can't use `shared` helper
+if (!isCallable(store.inspectSource)) {
+  store.inspectSource = function (it) {
+    return functionToString(it);
+  };
+}
+
+module.exports = store.inspectSource;
+
+
+/***/ }),
+
+/***/ 1181:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var NATIVE_WEAK_MAP = __webpack_require__(8622);
+var globalThis = __webpack_require__(4576);
+var isObject = __webpack_require__(34);
+var createNonEnumerableProperty = __webpack_require__(6699);
+var hasOwn = __webpack_require__(9297);
+var shared = __webpack_require__(7629);
+var sharedKey = __webpack_require__(6119);
+var hiddenKeys = __webpack_require__(421);
+
+var OBJECT_ALREADY_INITIALIZED = 'Object already initialized';
+var TypeError = globalThis.TypeError;
+var WeakMap = globalThis.WeakMap;
+var set, get, has;
+
+var enforce = function (it) {
+  return has(it) ? get(it) : set(it, {});
+};
+
+var getterFor = function (TYPE) {
+  return function (it) {
+    var state;
+    if (!isObject(it) || (state = get(it)).type !== TYPE) {
+      throw new TypeError('Incompatible receiver, ' + TYPE + ' required');
+    } return state;
+  };
+};
+
+if (NATIVE_WEAK_MAP || shared.state) {
+  var store = shared.state || (shared.state = new WeakMap());
+  /* eslint-disable no-self-assign -- prototype methods protection */
+  store.get = store.get;
+  store.has = store.has;
+  store.set = store.set;
+  /* eslint-enable no-self-assign -- prototype methods protection */
+  set = function (it, metadata) {
+    if (store.has(it)) throw new TypeError(OBJECT_ALREADY_INITIALIZED);
+    metadata.facade = it;
+    store.set(it, metadata);
+    return metadata;
+  };
+  get = function (it) {
+    return store.get(it) || {};
+  };
+  has = function (it) {
+    return store.has(it);
+  };
+} else {
+  var STATE = sharedKey('state');
+  hiddenKeys[STATE] = true;
+  set = function (it, metadata) {
+    if (hasOwn(it, STATE)) throw new TypeError(OBJECT_ALREADY_INITIALIZED);
+    metadata.facade = it;
+    createNonEnumerableProperty(it, STATE, metadata);
+    return metadata;
+  };
+  get = function (it) {
+    return hasOwn(it, STATE) ? it[STATE] : {};
+  };
+  has = function (it) {
+    return hasOwn(it, STATE);
+  };
+}
+
+module.exports = {
+  set: set,
+  get: get,
+  has: has,
+  enforce: enforce,
+  getterFor: getterFor
+};
+
+
+/***/ }),
+
+/***/ 4209:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var wellKnownSymbol = __webpack_require__(8227);
+var Iterators = __webpack_require__(6269);
+
+var ITERATOR = wellKnownSymbol('iterator');
+var ArrayPrototype = Array.prototype;
+
+// check on default Array iterator
+module.exports = function (it) {
+  return it !== undefined && (Iterators.Array === it || ArrayPrototype[ITERATOR] === it);
+};
+
+
+/***/ }),
+
+/***/ 4376:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var classof = __webpack_require__(2195);
+
+// `IsArray` abstract operation
+// https://tc39.es/ecma262/#sec-isarray
+// eslint-disable-next-line es/no-array-isarray -- safe
+module.exports = Array.isArray || function isArray(argument) {
+  return classof(argument) === 'Array';
+};
+
+
+/***/ }),
+
+/***/ 4901:
+/***/ ((module) => {
+
+
+// https://tc39.es/ecma262/#sec-IsHTMLDDA-internal-slot
+var documentAll = typeof document == 'object' && document.all;
+
+// `IsCallable` abstract operation
+// https://tc39.es/ecma262/#sec-iscallable
+// eslint-disable-next-line unicorn/no-typeof-undefined -- required for testing
+module.exports = typeof documentAll == 'undefined' && documentAll !== undefined ? function (argument) {
+  return typeof argument == 'function' || argument === documentAll;
+} : function (argument) {
+  return typeof argument == 'function';
+};
+
+
+/***/ }),
+
+/***/ 2796:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var fails = __webpack_require__(9039);
+var isCallable = __webpack_require__(4901);
+
+var replacement = /#|\.prototype\./;
+
+var isForced = function (feature, detection) {
+  var value = data[normalize(feature)];
+  return value === POLYFILL ? true
+    : value === NATIVE ? false
+    : isCallable(detection) ? fails(detection)
+    : !!detection;
+};
+
+var normalize = isForced.normalize = function (string) {
+  return String(string).replace(replacement, '.').toLowerCase();
+};
+
+var data = isForced.data = {};
+var NATIVE = isForced.NATIVE = 'N';
+var POLYFILL = isForced.POLYFILL = 'P';
+
+module.exports = isForced;
+
+
+/***/ }),
+
+/***/ 4117:
+/***/ ((module) => {
+
+
+// we can't use just `it == null` since of `document.all` special case
+// https://tc39.es/ecma262/#sec-IsHTMLDDA-internal-slot-aec
+module.exports = function (it) {
+  return it === null || it === undefined;
+};
+
+
+/***/ }),
+
+/***/ 34:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var isCallable = __webpack_require__(4901);
+
+module.exports = function (it) {
+  return typeof it == 'object' ? it !== null : isCallable(it);
+};
+
+
+/***/ }),
+
+/***/ 6395:
+/***/ ((module) => {
+
+
+module.exports = false;
+
+
+/***/ }),
+
+/***/ 757:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var getBuiltIn = __webpack_require__(7751);
+var isCallable = __webpack_require__(4901);
+var isPrototypeOf = __webpack_require__(1625);
+var USE_SYMBOL_AS_UID = __webpack_require__(7040);
+
+var $Object = Object;
+
+module.exports = USE_SYMBOL_AS_UID ? function (it) {
+  return typeof it == 'symbol';
+} : function (it) {
+  var $Symbol = getBuiltIn('Symbol');
+  return isCallable($Symbol) && isPrototypeOf($Symbol.prototype, $Object(it));
+};
+
+
+/***/ }),
+
+/***/ 507:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var call = __webpack_require__(9565);
+
+module.exports = function (record, fn, ITERATOR_INSTEAD_OF_RECORD) {
+  var iterator = ITERATOR_INSTEAD_OF_RECORD ? record : record.iterator;
+  var next = record.next;
+  var step, result;
+  while (!(step = call(next, iterator)).done) {
+    result = fn(step.value);
+    if (result !== undefined) return result;
+  }
+};
+
+
+/***/ }),
+
+/***/ 2652:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var bind = __webpack_require__(6080);
+var call = __webpack_require__(9565);
+var anObject = __webpack_require__(8551);
+var tryToString = __webpack_require__(6823);
+var isArrayIteratorMethod = __webpack_require__(4209);
+var lengthOfArrayLike = __webpack_require__(6198);
+var isPrototypeOf = __webpack_require__(1625);
+var getIterator = __webpack_require__(81);
+var getIteratorMethod = __webpack_require__(851);
+var iteratorClose = __webpack_require__(9539);
+
+var $TypeError = TypeError;
+
+var Result = function (stopped, result) {
+  this.stopped = stopped;
+  this.result = result;
+};
+
+var ResultPrototype = Result.prototype;
+
+module.exports = function (iterable, unboundFunction, options) {
+  var that = options && options.that;
+  var AS_ENTRIES = !!(options && options.AS_ENTRIES);
+  var IS_RECORD = !!(options && options.IS_RECORD);
+  var IS_ITERATOR = !!(options && options.IS_ITERATOR);
+  var INTERRUPTED = !!(options && options.INTERRUPTED);
+  var fn = bind(unboundFunction, that);
+  var iterator, iterFn, index, length, result, next, step;
+
+  var stop = function (condition) {
+    if (iterator) iteratorClose(iterator, 'normal', condition);
+    return new Result(true, condition);
+  };
+
+  var callFn = function (value) {
+    if (AS_ENTRIES) {
+      anObject(value);
+      return INTERRUPTED ? fn(value[0], value[1], stop) : fn(value[0], value[1]);
+    } return INTERRUPTED ? fn(value, stop) : fn(value);
+  };
+
+  if (IS_RECORD) {
+    iterator = iterable.iterator;
+  } else if (IS_ITERATOR) {
+    iterator = iterable;
+  } else {
+    iterFn = getIteratorMethod(iterable);
+    if (!iterFn) throw new $TypeError(tryToString(iterable) + ' is not iterable');
+    // optimisation for array iterators
+    if (isArrayIteratorMethod(iterFn)) {
+      for (index = 0, length = lengthOfArrayLike(iterable); length > index; index++) {
+        result = callFn(iterable[index]);
+        if (result && isPrototypeOf(ResultPrototype, result)) return result;
+      } return new Result(false);
+    }
+    iterator = getIterator(iterable, iterFn);
+  }
+
+  next = IS_RECORD ? iterable.next : iterator.next;
+  while (!(step = call(next, iterator)).done) {
+    try {
+      result = callFn(step.value);
+    } catch (error) {
+      iteratorClose(iterator, 'throw', error);
+    }
+    if (typeof result == 'object' && result && isPrototypeOf(ResultPrototype, result)) return result;
+  } return new Result(false);
+};
+
+
+/***/ }),
+
+/***/ 9539:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var call = __webpack_require__(9565);
+var anObject = __webpack_require__(8551);
+var getMethod = __webpack_require__(5966);
+
+module.exports = function (iterator, kind, value) {
+  var innerResult, innerError;
+  anObject(iterator);
+  try {
+    innerResult = getMethod(iterator, 'return');
+    if (!innerResult) {
+      if (kind === 'throw') throw value;
+      return value;
+    }
+    innerResult = call(innerResult, iterator);
+  } catch (error) {
+    innerError = true;
+    innerResult = error;
+  }
+  if (kind === 'throw') throw value;
+  if (innerError) throw innerResult;
+  anObject(innerResult);
+  return value;
+};
+
+
+/***/ }),
+
+/***/ 9462:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var call = __webpack_require__(9565);
+var create = __webpack_require__(2360);
+var createNonEnumerableProperty = __webpack_require__(6699);
+var defineBuiltIns = __webpack_require__(6279);
+var wellKnownSymbol = __webpack_require__(8227);
+var InternalStateModule = __webpack_require__(1181);
+var getMethod = __webpack_require__(5966);
+var IteratorPrototype = (__webpack_require__(7657).IteratorPrototype);
+var createIterResultObject = __webpack_require__(2529);
+var iteratorClose = __webpack_require__(9539);
+
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+var ITERATOR_HELPER = 'IteratorHelper';
+var WRAP_FOR_VALID_ITERATOR = 'WrapForValidIterator';
+var setInternalState = InternalStateModule.set;
+
+var createIteratorProxyPrototype = function (IS_ITERATOR) {
+  var getInternalState = InternalStateModule.getterFor(IS_ITERATOR ? WRAP_FOR_VALID_ITERATOR : ITERATOR_HELPER);
+
+  return defineBuiltIns(create(IteratorPrototype), {
+    next: function next() {
+      var state = getInternalState(this);
+      // for simplification:
+      //   for `%WrapForValidIteratorPrototype%.next` our `nextHandler` returns `IterResultObject`
+      //   for `%IteratorHelperPrototype%.next` - just a value
+      if (IS_ITERATOR) return state.nextHandler();
+      try {
+        var result = state.done ? undefined : state.nextHandler();
+        return createIterResultObject(result, state.done);
+      } catch (error) {
+        state.done = true;
+        throw error;
+      }
+    },
+    'return': function () {
+      var state = getInternalState(this);
+      var iterator = state.iterator;
+      state.done = true;
+      if (IS_ITERATOR) {
+        var returnMethod = getMethod(iterator, 'return');
+        return returnMethod ? call(returnMethod, iterator) : createIterResultObject(undefined, true);
+      }
+      if (state.inner) try {
+        iteratorClose(state.inner.iterator, 'normal');
+      } catch (error) {
+        return iteratorClose(iterator, 'throw', error);
+      }
+      iteratorClose(iterator, 'normal');
+      return createIterResultObject(undefined, true);
+    }
+  });
+};
+
+var WrapForValidIteratorPrototype = createIteratorProxyPrototype(true);
+var IteratorHelperPrototype = createIteratorProxyPrototype(false);
+
+createNonEnumerableProperty(IteratorHelperPrototype, TO_STRING_TAG, 'Iterator Helper');
+
+module.exports = function (nextHandler, IS_ITERATOR) {
+  var IteratorProxy = function Iterator(record, state) {
+    if (state) {
+      state.iterator = record.iterator;
+      state.next = record.next;
+    } else state = record;
+    state.type = IS_ITERATOR ? WRAP_FOR_VALID_ITERATOR : ITERATOR_HELPER;
+    state.nextHandler = nextHandler;
+    state.counter = 0;
+    state.done = false;
+    setInternalState(this, state);
+  };
+
+  IteratorProxy.prototype = IS_ITERATOR ? WrapForValidIteratorPrototype : IteratorHelperPrototype;
+
+  return IteratorProxy;
+};
+
+
+/***/ }),
+
+/***/ 713:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var call = __webpack_require__(9565);
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var getIteratorDirect = __webpack_require__(1767);
+var createIteratorProxy = __webpack_require__(9462);
+var callWithSafeIterationClosing = __webpack_require__(6319);
+
+var IteratorProxy = createIteratorProxy(function () {
+  var iterator = this.iterator;
+  var result = anObject(call(this.next, iterator));
+  var done = this.done = !!result.done;
+  if (!done) return callWithSafeIterationClosing(iterator, this.mapper, [result.value, this.counter++], true);
+});
+
+// `Iterator.prototype.map` method
+// https://github.com/tc39/proposal-iterator-helpers
+module.exports = function map(mapper) {
+  anObject(this);
+  aCallable(mapper);
+  return new IteratorProxy(getIteratorDirect(this), {
+    mapper: mapper
+  });
+};
+
+
+/***/ }),
+
+/***/ 7657:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var fails = __webpack_require__(9039);
+var isCallable = __webpack_require__(4901);
+var isObject = __webpack_require__(34);
+var create = __webpack_require__(2360);
+var getPrototypeOf = __webpack_require__(2787);
+var defineBuiltIn = __webpack_require__(6840);
+var wellKnownSymbol = __webpack_require__(8227);
+var IS_PURE = __webpack_require__(6395);
+
+var ITERATOR = wellKnownSymbol('iterator');
+var BUGGY_SAFARI_ITERATORS = false;
+
+// `%IteratorPrototype%` object
+// https://tc39.es/ecma262/#sec-%iteratorprototype%-object
+var IteratorPrototype, PrototypeOfArrayIteratorPrototype, arrayIterator;
+
+/* eslint-disable es/no-array-prototype-keys -- safe */
+if ([].keys) {
+  arrayIterator = [].keys();
+  // Safari 8 has buggy iterators w/o `next`
+  if (!('next' in arrayIterator)) BUGGY_SAFARI_ITERATORS = true;
+  else {
+    PrototypeOfArrayIteratorPrototype = getPrototypeOf(getPrototypeOf(arrayIterator));
+    if (PrototypeOfArrayIteratorPrototype !== Object.prototype) IteratorPrototype = PrototypeOfArrayIteratorPrototype;
+  }
+}
+
+var NEW_ITERATOR_PROTOTYPE = !isObject(IteratorPrototype) || fails(function () {
+  var test = {};
+  // FF44- legacy iterators case
+  return IteratorPrototype[ITERATOR].call(test) !== test;
+});
+
+if (NEW_ITERATOR_PROTOTYPE) IteratorPrototype = {};
+else if (IS_PURE) IteratorPrototype = create(IteratorPrototype);
+
+// `%IteratorPrototype%[@@iterator]()` method
+// https://tc39.es/ecma262/#sec-%iteratorprototype%-@@iterator
+if (!isCallable(IteratorPrototype[ITERATOR])) {
+  defineBuiltIn(IteratorPrototype, ITERATOR, function () {
+    return this;
+  });
+}
+
+module.exports = {
+  IteratorPrototype: IteratorPrototype,
+  BUGGY_SAFARI_ITERATORS: BUGGY_SAFARI_ITERATORS
+};
+
+
+/***/ }),
+
+/***/ 6269:
+/***/ ((module) => {
+
+
+module.exports = {};
+
+
+/***/ }),
+
+/***/ 6198:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var toLength = __webpack_require__(8014);
+
+// `LengthOfArrayLike` abstract operation
+// https://tc39.es/ecma262/#sec-lengthofarraylike
+module.exports = function (obj) {
+  return toLength(obj.length);
+};
+
+
+/***/ }),
+
+/***/ 283:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+var fails = __webpack_require__(9039);
+var isCallable = __webpack_require__(4901);
+var hasOwn = __webpack_require__(9297);
+var DESCRIPTORS = __webpack_require__(3724);
+var CONFIGURABLE_FUNCTION_NAME = (__webpack_require__(350).CONFIGURABLE);
+var inspectSource = __webpack_require__(3706);
+var InternalStateModule = __webpack_require__(1181);
+
+var enforceInternalState = InternalStateModule.enforce;
+var getInternalState = InternalStateModule.get;
+var $String = String;
+// eslint-disable-next-line es/no-object-defineproperty -- safe
+var defineProperty = Object.defineProperty;
+var stringSlice = uncurryThis(''.slice);
+var replace = uncurryThis(''.replace);
+var join = uncurryThis([].join);
+
+var CONFIGURABLE_LENGTH = DESCRIPTORS && !fails(function () {
+  return defineProperty(function () { /* empty */ }, 'length', { value: 8 }).length !== 8;
+});
+
+var TEMPLATE = String(String).split('String');
+
+var makeBuiltIn = module.exports = function (value, name, options) {
+  if (stringSlice($String(name), 0, 7) === 'Symbol(') {
+    name = '[' + replace($String(name), /^Symbol\(([^)]*)\).*$/, '$1') + ']';
+  }
+  if (options && options.getter) name = 'get ' + name;
+  if (options && options.setter) name = 'set ' + name;
+  if (!hasOwn(value, 'name') || (CONFIGURABLE_FUNCTION_NAME && value.name !== name)) {
+    if (DESCRIPTORS) defineProperty(value, 'name', { value: name, configurable: true });
+    else value.name = name;
+  }
+  if (CONFIGURABLE_LENGTH && options && hasOwn(options, 'arity') && value.length !== options.arity) {
+    defineProperty(value, 'length', { value: options.arity });
+  }
+  try {
+    if (options && hasOwn(options, 'constructor') && options.constructor) {
+      if (DESCRIPTORS) defineProperty(value, 'prototype', { writable: false });
+    // in V8 ~ Chrome 53, prototypes of some methods, like `Array.prototype.values`, are non-writable
+    } else if (value.prototype) value.prototype = undefined;
+  } catch (error) { /* empty */ }
+  var state = enforceInternalState(value);
+  if (!hasOwn(state, 'source')) {
+    state.source = join(TEMPLATE, typeof name == 'string' ? name : '');
+  } return value;
+};
+
+// add fake Function#toString for correct work wrapped methods / constructors with methods like LoDash isNative
+// eslint-disable-next-line no-extend-native -- required
+Function.prototype.toString = makeBuiltIn(function toString() {
+  return isCallable(this) && getInternalState(this).source || inspectSource(this);
+}, 'toString');
+
+
+/***/ }),
+
+/***/ 741:
+/***/ ((module) => {
+
+
+var ceil = Math.ceil;
+var floor = Math.floor;
+
+// `Math.trunc` method
+// https://tc39.es/ecma262/#sec-math.trunc
+// eslint-disable-next-line es/no-math-trunc -- safe
+module.exports = Math.trunc || function trunc(x) {
+  var n = +x;
+  return (n > 0 ? floor : ceil)(n);
+};
+
+
+/***/ }),
+
+/***/ 6043:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aCallable = __webpack_require__(9306);
+
+var $TypeError = TypeError;
+
+var PromiseCapability = function (C) {
+  var resolve, reject;
+  this.promise = new C(function ($$resolve, $$reject) {
+    if (resolve !== undefined || reject !== undefined) throw new $TypeError('Bad Promise constructor');
+    resolve = $$resolve;
+    reject = $$reject;
+  });
+  this.resolve = aCallable(resolve);
+  this.reject = aCallable(reject);
+};
+
+// `NewPromiseCapability` abstract operation
+// https://tc39.es/ecma262/#sec-newpromisecapability
+module.exports.f = function (C) {
+  return new PromiseCapability(C);
+};
+
+
+/***/ }),
+
+/***/ 2360:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+/* global ActiveXObject -- old IE, WSH */
+var anObject = __webpack_require__(8551);
+var definePropertiesModule = __webpack_require__(6801);
+var enumBugKeys = __webpack_require__(8727);
+var hiddenKeys = __webpack_require__(421);
+var html = __webpack_require__(397);
+var documentCreateElement = __webpack_require__(4055);
+var sharedKey = __webpack_require__(6119);
+
+var GT = '>';
+var LT = '<';
+var PROTOTYPE = 'prototype';
+var SCRIPT = 'script';
+var IE_PROTO = sharedKey('IE_PROTO');
+
+var EmptyConstructor = function () { /* empty */ };
+
+var scriptTag = function (content) {
+  return LT + SCRIPT + GT + content + LT + '/' + SCRIPT + GT;
+};
+
+// Create object with fake `null` prototype: use ActiveX Object with cleared prototype
+var NullProtoObjectViaActiveX = function (activeXDocument) {
+  activeXDocument.write(scriptTag(''));
+  activeXDocument.close();
+  var temp = activeXDocument.parentWindow.Object;
+  // eslint-disable-next-line no-useless-assignment -- avoid memory leak
+  activeXDocument = null;
+  return temp;
+};
+
+// Create object with fake `null` prototype: use iframe Object with cleared prototype
+var NullProtoObjectViaIFrame = function () {
+  // Thrash, waste and sodomy: IE GC bug
+  var iframe = documentCreateElement('iframe');
+  var JS = 'java' + SCRIPT + ':';
+  var iframeDocument;
+  iframe.style.display = 'none';
+  html.appendChild(iframe);
+  // https://github.com/zloirock/core-js/issues/475
+  iframe.src = String(JS);
+  iframeDocument = iframe.contentWindow.document;
+  iframeDocument.open();
+  iframeDocument.write(scriptTag('document.F=Object'));
+  iframeDocument.close();
+  return iframeDocument.F;
+};
+
+// Check for document.domain and active x support
+// No need to use active x approach when document.domain is not set
+// see https://github.com/es-shims/es5-shim/issues/150
+// variation of https://github.com/kitcambridge/es5-shim/commit/4f738ac066346
+// avoid IE GC bug
+var activeXDocument;
+var NullProtoObject = function () {
+  try {
+    activeXDocument = new ActiveXObject('htmlfile');
+  } catch (error) { /* ignore */ }
+  NullProtoObject = typeof document != 'undefined'
+    ? document.domain && activeXDocument
+      ? NullProtoObjectViaActiveX(activeXDocument) // old IE
+      : NullProtoObjectViaIFrame()
+    : NullProtoObjectViaActiveX(activeXDocument); // WSH
+  var length = enumBugKeys.length;
+  while (length--) delete NullProtoObject[PROTOTYPE][enumBugKeys[length]];
+  return NullProtoObject();
+};
+
+hiddenKeys[IE_PROTO] = true;
+
+// `Object.create` method
+// https://tc39.es/ecma262/#sec-object.create
+// eslint-disable-next-line es/no-object-create -- safe
+module.exports = Object.create || function create(O, Properties) {
+  var result;
+  if (O !== null) {
+    EmptyConstructor[PROTOTYPE] = anObject(O);
+    result = new EmptyConstructor();
+    EmptyConstructor[PROTOTYPE] = null;
+    // add "__proto__" for Object.getPrototypeOf polyfill
+    result[IE_PROTO] = O;
+  } else result = NullProtoObject();
+  return Properties === undefined ? result : definePropertiesModule.f(result, Properties);
+};
+
+
+/***/ }),
+
+/***/ 6801:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var V8_PROTOTYPE_DEFINE_BUG = __webpack_require__(8686);
+var definePropertyModule = __webpack_require__(4913);
+var anObject = __webpack_require__(8551);
+var toIndexedObject = __webpack_require__(5397);
+var objectKeys = __webpack_require__(1072);
+
+// `Object.defineProperties` method
+// https://tc39.es/ecma262/#sec-object.defineproperties
+// eslint-disable-next-line es/no-object-defineproperties -- safe
+exports.f = DESCRIPTORS && !V8_PROTOTYPE_DEFINE_BUG ? Object.defineProperties : function defineProperties(O, Properties) {
+  anObject(O);
+  var props = toIndexedObject(Properties);
+  var keys = objectKeys(Properties);
+  var length = keys.length;
+  var index = 0;
+  var key;
+  while (length > index) definePropertyModule.f(O, key = keys[index++], props[key]);
+  return O;
+};
+
+
+/***/ }),
+
+/***/ 4913:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var IE8_DOM_DEFINE = __webpack_require__(5917);
+var V8_PROTOTYPE_DEFINE_BUG = __webpack_require__(8686);
+var anObject = __webpack_require__(8551);
+var toPropertyKey = __webpack_require__(6969);
+
+var $TypeError = TypeError;
+// eslint-disable-next-line es/no-object-defineproperty -- safe
+var $defineProperty = Object.defineProperty;
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+var ENUMERABLE = 'enumerable';
+var CONFIGURABLE = 'configurable';
+var WRITABLE = 'writable';
+
+// `Object.defineProperty` method
+// https://tc39.es/ecma262/#sec-object.defineproperty
+exports.f = DESCRIPTORS ? V8_PROTOTYPE_DEFINE_BUG ? function defineProperty(O, P, Attributes) {
+  anObject(O);
+  P = toPropertyKey(P);
+  anObject(Attributes);
+  if (typeof O === 'function' && P === 'prototype' && 'value' in Attributes && WRITABLE in Attributes && !Attributes[WRITABLE]) {
+    var current = $getOwnPropertyDescriptor(O, P);
+    if (current && current[WRITABLE]) {
+      O[P] = Attributes.value;
+      Attributes = {
+        configurable: CONFIGURABLE in Attributes ? Attributes[CONFIGURABLE] : current[CONFIGURABLE],
+        enumerable: ENUMERABLE in Attributes ? Attributes[ENUMERABLE] : current[ENUMERABLE],
+        writable: false
+      };
+    }
+  } return $defineProperty(O, P, Attributes);
+} : $defineProperty : function defineProperty(O, P, Attributes) {
+  anObject(O);
+  P = toPropertyKey(P);
+  anObject(Attributes);
+  if (IE8_DOM_DEFINE) try {
+    return $defineProperty(O, P, Attributes);
+  } catch (error) { /* empty */ }
+  if ('get' in Attributes || 'set' in Attributes) throw new $TypeError('Accessors not supported');
+  if ('value' in Attributes) O[P] = Attributes.value;
+  return O;
+};
+
+
+/***/ }),
+
+/***/ 7347:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var call = __webpack_require__(9565);
+var propertyIsEnumerableModule = __webpack_require__(8773);
+var createPropertyDescriptor = __webpack_require__(6980);
+var toIndexedObject = __webpack_require__(5397);
+var toPropertyKey = __webpack_require__(6969);
+var hasOwn = __webpack_require__(9297);
+var IE8_DOM_DEFINE = __webpack_require__(5917);
+
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var $getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+// `Object.getOwnPropertyDescriptor` method
+// https://tc39.es/ecma262/#sec-object.getownpropertydescriptor
+exports.f = DESCRIPTORS ? $getOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
+  O = toIndexedObject(O);
+  P = toPropertyKey(P);
+  if (IE8_DOM_DEFINE) try {
+    return $getOwnPropertyDescriptor(O, P);
+  } catch (error) { /* empty */ }
+  if (hasOwn(O, P)) return createPropertyDescriptor(!call(propertyIsEnumerableModule.f, O, P), O[P]);
+};
+
+
+/***/ }),
+
+/***/ 8480:
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+
+var internalObjectKeys = __webpack_require__(1828);
+var enumBugKeys = __webpack_require__(8727);
+
+var hiddenKeys = enumBugKeys.concat('length', 'prototype');
+
+// `Object.getOwnPropertyNames` method
+// https://tc39.es/ecma262/#sec-object.getownpropertynames
+// eslint-disable-next-line es/no-object-getownpropertynames -- safe
+exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
+  return internalObjectKeys(O, hiddenKeys);
+};
+
+
+/***/ }),
+
+/***/ 3717:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+// eslint-disable-next-line es/no-object-getownpropertysymbols -- safe
+exports.f = Object.getOwnPropertySymbols;
+
+
+/***/ }),
+
+/***/ 2787:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var hasOwn = __webpack_require__(9297);
+var isCallable = __webpack_require__(4901);
+var toObject = __webpack_require__(8981);
+var sharedKey = __webpack_require__(6119);
+var CORRECT_PROTOTYPE_GETTER = __webpack_require__(2211);
+
+var IE_PROTO = sharedKey('IE_PROTO');
+var $Object = Object;
+var ObjectPrototype = $Object.prototype;
+
+// `Object.getPrototypeOf` method
+// https://tc39.es/ecma262/#sec-object.getprototypeof
+// eslint-disable-next-line es/no-object-getprototypeof -- safe
+module.exports = CORRECT_PROTOTYPE_GETTER ? $Object.getPrototypeOf : function (O) {
+  var object = toObject(O);
+  if (hasOwn(object, IE_PROTO)) return object[IE_PROTO];
+  var constructor = object.constructor;
+  if (isCallable(constructor) && object instanceof constructor) {
+    return constructor.prototype;
+  } return object instanceof $Object ? ObjectPrototype : null;
+};
+
+
+/***/ }),
+
+/***/ 1625:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+
+module.exports = uncurryThis({}.isPrototypeOf);
+
+
+/***/ }),
+
+/***/ 1828:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+var hasOwn = __webpack_require__(9297);
+var toIndexedObject = __webpack_require__(5397);
+var indexOf = (__webpack_require__(9617).indexOf);
+var hiddenKeys = __webpack_require__(421);
+
+var push = uncurryThis([].push);
+
+module.exports = function (object, names) {
+  var O = toIndexedObject(object);
+  var i = 0;
+  var result = [];
+  var key;
+  for (key in O) !hasOwn(hiddenKeys, key) && hasOwn(O, key) && push(result, key);
+  // Don't enum bug & hidden keys
+  while (names.length > i) if (hasOwn(O, key = names[i++])) {
+    ~indexOf(result, key) || push(result, key);
+  }
+  return result;
+};
+
+
+/***/ }),
+
+/***/ 1072:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var internalObjectKeys = __webpack_require__(1828);
+var enumBugKeys = __webpack_require__(8727);
+
+// `Object.keys` method
+// https://tc39.es/ecma262/#sec-object.keys
+// eslint-disable-next-line es/no-object-keys -- safe
+module.exports = Object.keys || function keys(O) {
+  return internalObjectKeys(O, enumBugKeys);
+};
+
+
+/***/ }),
+
+/***/ 8773:
+/***/ ((__unused_webpack_module, exports) => {
+
+
+var $propertyIsEnumerable = {}.propertyIsEnumerable;
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+
+// Nashorn ~ JDK8 bug
+var NASHORN_BUG = getOwnPropertyDescriptor && !$propertyIsEnumerable.call({ 1: 2 }, 1);
+
+// `Object.prototype.propertyIsEnumerable` method implementation
+// https://tc39.es/ecma262/#sec-object.prototype.propertyisenumerable
+exports.f = NASHORN_BUG ? function propertyIsEnumerable(V) {
+  var descriptor = getOwnPropertyDescriptor(this, V);
+  return !!descriptor && descriptor.enumerable;
+} : $propertyIsEnumerable;
+
+
+/***/ }),
+
+/***/ 4270:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var call = __webpack_require__(9565);
+var isCallable = __webpack_require__(4901);
+var isObject = __webpack_require__(34);
+
+var $TypeError = TypeError;
+
+// `OrdinaryToPrimitive` abstract operation
+// https://tc39.es/ecma262/#sec-ordinarytoprimitive
+module.exports = function (input, pref) {
+  var fn, val;
+  if (pref === 'string' && isCallable(fn = input.toString) && !isObject(val = call(fn, input))) return val;
+  if (isCallable(fn = input.valueOf) && !isObject(val = call(fn, input))) return val;
+  if (pref !== 'string' && isCallable(fn = input.toString) && !isObject(val = call(fn, input))) return val;
+  throw new $TypeError("Can't convert object to primitive value");
+};
+
+
+/***/ }),
+
+/***/ 5031:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var getBuiltIn = __webpack_require__(7751);
+var uncurryThis = __webpack_require__(9504);
+var getOwnPropertyNamesModule = __webpack_require__(8480);
+var getOwnPropertySymbolsModule = __webpack_require__(3717);
+var anObject = __webpack_require__(8551);
+
+var concat = uncurryThis([].concat);
+
+// all object keys, includes non-enumerable and symbols
+module.exports = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
+  var keys = getOwnPropertyNamesModule.f(anObject(it));
+  var getOwnPropertySymbols = getOwnPropertySymbolsModule.f;
+  return getOwnPropertySymbols ? concat(keys, getOwnPropertySymbols(it)) : keys;
+};
+
+
+/***/ }),
+
+/***/ 8235:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+var hasOwn = __webpack_require__(9297);
+
+var $SyntaxError = SyntaxError;
+var $parseInt = parseInt;
+var fromCharCode = String.fromCharCode;
+var at = uncurryThis(''.charAt);
+var slice = uncurryThis(''.slice);
+var exec = uncurryThis(/./.exec);
+
+var codePoints = {
+  '\\"': '"',
+  '\\\\': '\\',
+  '\\/': '/',
+  '\\b': '\b',
+  '\\f': '\f',
+  '\\n': '\n',
+  '\\r': '\r',
+  '\\t': '\t'
+};
+
+var IS_4_HEX_DIGITS = /^[\da-f]{4}$/i;
+// eslint-disable-next-line regexp/no-control-character -- safe
+var IS_C0_CONTROL_CODE = /^[\u0000-\u001F]$/;
+
+module.exports = function (source, i) {
+  var unterminated = true;
+  var value = '';
+  while (i < source.length) {
+    var chr = at(source, i);
+    if (chr === '\\') {
+      var twoChars = slice(source, i, i + 2);
+      if (hasOwn(codePoints, twoChars)) {
+        value += codePoints[twoChars];
+        i += 2;
+      } else if (twoChars === '\\u') {
+        i += 2;
+        var fourHexDigits = slice(source, i, i + 4);
+        if (!exec(IS_4_HEX_DIGITS, fourHexDigits)) throw new $SyntaxError('Bad Unicode escape at: ' + i);
+        value += fromCharCode($parseInt(fourHexDigits, 16));
+        i += 4;
+      } else throw new $SyntaxError('Unknown escape sequence: "' + twoChars + '"');
+    } else if (chr === '"') {
+      unterminated = false;
+      i++;
+      break;
+    } else {
+      if (exec(IS_C0_CONTROL_CODE, chr)) throw new $SyntaxError('Bad control character in string literal at: ' + i);
+      value += chr;
+      i++;
+    }
+  }
+  if (unterminated) throw new $SyntaxError('Unterminated string at: ' + i);
+  return { value: value, end: i };
+};
+
+
+/***/ }),
+
+/***/ 7750:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var isNullOrUndefined = __webpack_require__(4117);
+
+var $TypeError = TypeError;
+
+// `RequireObjectCoercible` abstract operation
+// https://tc39.es/ecma262/#sec-requireobjectcoercible
+module.exports = function (it) {
+  if (isNullOrUndefined(it)) throw new $TypeError("Can't call method on " + it);
+  return it;
+};
+
+
+/***/ }),
+
+/***/ 9286:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var SetHelpers = __webpack_require__(4402);
+var iterate = __webpack_require__(8469);
+
+var Set = SetHelpers.Set;
+var add = SetHelpers.add;
+
+module.exports = function (set) {
+  var result = new Set();
+  iterate(set, function (it) {
+    add(result, it);
+  });
+  return result;
+};
+
+
+/***/ }),
+
+/***/ 3440:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aSet = __webpack_require__(7080);
+var SetHelpers = __webpack_require__(4402);
+var clone = __webpack_require__(9286);
+var size = __webpack_require__(5170);
+var getSetRecord = __webpack_require__(3789);
+var iterateSet = __webpack_require__(8469);
+var iterateSimple = __webpack_require__(507);
+
+var has = SetHelpers.has;
+var remove = SetHelpers.remove;
+
+// `Set.prototype.difference` method
+// https://github.com/tc39/proposal-set-methods
+module.exports = function difference(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  var result = clone(O);
+  if (size(O) <= otherRec.size) iterateSet(O, function (e) {
+    if (otherRec.includes(e)) remove(result, e);
+  });
+  else iterateSimple(otherRec.getIterator(), function (e) {
+    if (has(O, e)) remove(result, e);
+  });
+  return result;
+};
+
+
+/***/ }),
+
+/***/ 4402:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+
+// eslint-disable-next-line es/no-set -- safe
+var SetPrototype = Set.prototype;
+
+module.exports = {
+  // eslint-disable-next-line es/no-set -- safe
+  Set: Set,
+  add: uncurryThis(SetPrototype.add),
+  has: uncurryThis(SetPrototype.has),
+  remove: uncurryThis(SetPrototype['delete']),
+  proto: SetPrototype
+};
+
+
+/***/ }),
+
+/***/ 8750:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aSet = __webpack_require__(7080);
+var SetHelpers = __webpack_require__(4402);
+var size = __webpack_require__(5170);
+var getSetRecord = __webpack_require__(3789);
+var iterateSet = __webpack_require__(8469);
+var iterateSimple = __webpack_require__(507);
+
+var Set = SetHelpers.Set;
+var add = SetHelpers.add;
+var has = SetHelpers.has;
+
+// `Set.prototype.intersection` method
+// https://github.com/tc39/proposal-set-methods
+module.exports = function intersection(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  var result = new Set();
+
+  if (size(O) > otherRec.size) {
+    iterateSimple(otherRec.getIterator(), function (e) {
+      if (has(O, e)) add(result, e);
+    });
+  } else {
+    iterateSet(O, function (e) {
+      if (otherRec.includes(e)) add(result, e);
+    });
+  }
+
+  return result;
+};
+
+
+/***/ }),
+
+/***/ 4449:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aSet = __webpack_require__(7080);
+var has = (__webpack_require__(4402).has);
+var size = __webpack_require__(5170);
+var getSetRecord = __webpack_require__(3789);
+var iterateSet = __webpack_require__(8469);
+var iterateSimple = __webpack_require__(507);
+var iteratorClose = __webpack_require__(9539);
+
+// `Set.prototype.isDisjointFrom` method
+// https://tc39.github.io/proposal-set-methods/#Set.prototype.isDisjointFrom
+module.exports = function isDisjointFrom(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  if (size(O) <= otherRec.size) return iterateSet(O, function (e) {
+    if (otherRec.includes(e)) return false;
+  }, true) !== false;
+  var iterator = otherRec.getIterator();
+  return iterateSimple(iterator, function (e) {
+    if (has(O, e)) return iteratorClose(iterator, 'normal', false);
+  }) !== false;
+};
+
+
+/***/ }),
+
+/***/ 3838:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aSet = __webpack_require__(7080);
+var size = __webpack_require__(5170);
+var iterate = __webpack_require__(8469);
+var getSetRecord = __webpack_require__(3789);
+
+// `Set.prototype.isSubsetOf` method
+// https://tc39.github.io/proposal-set-methods/#Set.prototype.isSubsetOf
+module.exports = function isSubsetOf(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  if (size(O) > otherRec.size) return false;
+  return iterate(O, function (e) {
+    if (!otherRec.includes(e)) return false;
+  }, true) !== false;
+};
+
+
+/***/ }),
+
+/***/ 8527:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aSet = __webpack_require__(7080);
+var has = (__webpack_require__(4402).has);
+var size = __webpack_require__(5170);
+var getSetRecord = __webpack_require__(3789);
+var iterateSimple = __webpack_require__(507);
+var iteratorClose = __webpack_require__(9539);
+
+// `Set.prototype.isSupersetOf` method
+// https://tc39.github.io/proposal-set-methods/#Set.prototype.isSupersetOf
+module.exports = function isSupersetOf(other) {
+  var O = aSet(this);
+  var otherRec = getSetRecord(other);
+  if (size(O) < otherRec.size) return false;
+  var iterator = otherRec.getIterator();
+  return iterateSimple(iterator, function (e) {
+    if (!has(O, e)) return iteratorClose(iterator, 'normal', false);
+  }) !== false;
+};
+
+
+/***/ }),
+
+/***/ 8469:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+var iterateSimple = __webpack_require__(507);
+var SetHelpers = __webpack_require__(4402);
+
+var Set = SetHelpers.Set;
+var SetPrototype = SetHelpers.proto;
+var forEach = uncurryThis(SetPrototype.forEach);
+var keys = uncurryThis(SetPrototype.keys);
+var next = keys(new Set()).next;
+
+module.exports = function (set, fn, interruptible) {
+  return interruptible ? iterateSimple({ iterator: keys(set), next: next }, fn) : forEach(set, fn);
+};
+
+
+/***/ }),
+
+/***/ 4916:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var getBuiltIn = __webpack_require__(7751);
+
+var createSetLike = function (size) {
+  return {
+    size: size,
+    has: function () {
+      return false;
+    },
+    keys: function () {
+      return {
+        next: function () {
+          return { done: true };
+        }
+      };
+    }
+  };
+};
+
+module.exports = function (name) {
+  var Set = getBuiltIn('Set');
+  try {
+    new Set()[name](createSetLike(0));
+    try {
+      // late spec change, early WebKit ~ Safari 17.0 beta implementation does not pass it
+      // https://github.com/tc39/proposal-set-methods/pull/88
+      new Set()[name](createSetLike(-1));
+      return false;
+    } catch (error2) {
+      return true;
+    }
+  } catch (error) {
+    return false;
+  }
+};
+
+
+/***/ }),
+
+/***/ 5170:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThisAccessor = __webpack_require__(6706);
+var SetHelpers = __webpack_require__(4402);
+
+module.exports = uncurryThisAccessor(SetHelpers.proto, 'size', 'get') || function (set) {
+  return set.size;
+};
+
+
+/***/ }),
+
+/***/ 3650:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aSet = __webpack_require__(7080);
+var SetHelpers = __webpack_require__(4402);
+var clone = __webpack_require__(9286);
+var getSetRecord = __webpack_require__(3789);
+var iterateSimple = __webpack_require__(507);
+
+var add = SetHelpers.add;
+var has = SetHelpers.has;
+var remove = SetHelpers.remove;
+
+// `Set.prototype.symmetricDifference` method
+// https://github.com/tc39/proposal-set-methods
+module.exports = function symmetricDifference(other) {
+  var O = aSet(this);
+  var keysIter = getSetRecord(other).getIterator();
+  var result = clone(O);
+  iterateSimple(keysIter, function (e) {
+    if (has(O, e)) remove(result, e);
+    else add(result, e);
+  });
+  return result;
+};
+
+
+/***/ }),
+
+/***/ 4204:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var aSet = __webpack_require__(7080);
+var add = (__webpack_require__(4402).add);
+var clone = __webpack_require__(9286);
+var getSetRecord = __webpack_require__(3789);
+var iterateSimple = __webpack_require__(507);
+
+// `Set.prototype.union` method
+// https://github.com/tc39/proposal-set-methods
+module.exports = function union(other) {
+  var O = aSet(this);
+  var keysIter = getSetRecord(other).getIterator();
+  var result = clone(O);
+  iterateSimple(keysIter, function (it) {
+    add(result, it);
+  });
+  return result;
+};
+
+
+/***/ }),
+
+/***/ 6119:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var shared = __webpack_require__(5745);
+var uid = __webpack_require__(3392);
+
+var keys = shared('keys');
+
+module.exports = function (key) {
+  return keys[key] || (keys[key] = uid(key));
+};
+
+
+/***/ }),
+
+/***/ 7629:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var IS_PURE = __webpack_require__(6395);
+var globalThis = __webpack_require__(4576);
+var defineGlobalProperty = __webpack_require__(9433);
+
+var SHARED = '__core-js_shared__';
+var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
+
+(store.versions || (store.versions = [])).push({
+  version: '3.38.1',
+  mode: IS_PURE ? 'pure' : 'global',
+  copyright: '© 2014-2024 Denis Pushkarev (zloirock.ru)',
+  license: 'https://github.com/zloirock/core-js/blob/v3.38.1/LICENSE',
+  source: 'https://github.com/zloirock/core-js'
+});
+
+
+/***/ }),
+
+/***/ 5745:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var store = __webpack_require__(7629);
+
+module.exports = function (key, value) {
+  return store[key] || (store[key] = value || {});
+};
+
+
+/***/ }),
+
+/***/ 4495:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+/* eslint-disable es/no-symbol -- required for testing */
+var V8_VERSION = __webpack_require__(9519);
+var fails = __webpack_require__(9039);
+var globalThis = __webpack_require__(4576);
+
+var $String = globalThis.String;
+
+// eslint-disable-next-line es/no-object-getownpropertysymbols -- required for testing
+module.exports = !!Object.getOwnPropertySymbols && !fails(function () {
+  var symbol = Symbol('symbol detection');
+  // Chrome 38 Symbol has incorrect toString conversion
+  // `get-own-property-symbols` polyfill symbols converted to object are not Symbol instances
+  // nb: Do not call `String` directly to avoid this being optimized out to `symbol+''` which will,
+  // of course, fail.
+  return !$String(symbol) || !(Object(symbol) instanceof Symbol) ||
+    // Chrome 38-40 symbols are not inherited from DOM collections prototypes to instances
+    !Symbol.sham && V8_VERSION && V8_VERSION < 41;
+});
+
+
+/***/ }),
+
+/***/ 5610:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var toIntegerOrInfinity = __webpack_require__(1291);
+
+var max = Math.max;
+var min = Math.min;
+
+// Helper for a popular repeating case of the spec:
+// Let integer be ? ToInteger(index).
+// If integer < 0, let result be max((length + integer), 0); else let result be min(integer, length).
+module.exports = function (index, length) {
+  var integer = toIntegerOrInfinity(index);
+  return integer < 0 ? max(integer + length, 0) : min(integer, length);
+};
+
+
+/***/ }),
+
+/***/ 5397:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+// toObject with fallback for non-array-like ES3 strings
+var IndexedObject = __webpack_require__(7055);
+var requireObjectCoercible = __webpack_require__(7750);
+
+module.exports = function (it) {
+  return IndexedObject(requireObjectCoercible(it));
+};
+
+
+/***/ }),
+
+/***/ 1291:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var trunc = __webpack_require__(741);
+
+// `ToIntegerOrInfinity` abstract operation
+// https://tc39.es/ecma262/#sec-tointegerorinfinity
+module.exports = function (argument) {
+  var number = +argument;
+  // eslint-disable-next-line no-self-compare -- NaN check
+  return number !== number || number === 0 ? 0 : trunc(number);
+};
+
+
+/***/ }),
+
+/***/ 8014:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var toIntegerOrInfinity = __webpack_require__(1291);
+
+var min = Math.min;
+
+// `ToLength` abstract operation
+// https://tc39.es/ecma262/#sec-tolength
+module.exports = function (argument) {
+  var len = toIntegerOrInfinity(argument);
+  return len > 0 ? min(len, 0x1FFFFFFFFFFFFF) : 0; // 2 ** 53 - 1 == 9007199254740991
+};
+
+
+/***/ }),
+
+/***/ 8981:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var requireObjectCoercible = __webpack_require__(7750);
+
+var $Object = Object;
+
+// `ToObject` abstract operation
+// https://tc39.es/ecma262/#sec-toobject
+module.exports = function (argument) {
+  return $Object(requireObjectCoercible(argument));
+};
+
+
+/***/ }),
+
+/***/ 2777:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var call = __webpack_require__(9565);
+var isObject = __webpack_require__(34);
+var isSymbol = __webpack_require__(757);
+var getMethod = __webpack_require__(5966);
+var ordinaryToPrimitive = __webpack_require__(4270);
+var wellKnownSymbol = __webpack_require__(8227);
+
+var $TypeError = TypeError;
+var TO_PRIMITIVE = wellKnownSymbol('toPrimitive');
+
+// `ToPrimitive` abstract operation
+// https://tc39.es/ecma262/#sec-toprimitive
+module.exports = function (input, pref) {
+  if (!isObject(input) || isSymbol(input)) return input;
+  var exoticToPrim = getMethod(input, TO_PRIMITIVE);
+  var result;
+  if (exoticToPrim) {
+    if (pref === undefined) pref = 'default';
+    result = call(exoticToPrim, input, pref);
+    if (!isObject(result) || isSymbol(result)) return result;
+    throw new $TypeError("Can't convert object to primitive value");
+  }
+  if (pref === undefined) pref = 'number';
+  return ordinaryToPrimitive(input, pref);
+};
+
+
+/***/ }),
+
+/***/ 6969:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var toPrimitive = __webpack_require__(2777);
+var isSymbol = __webpack_require__(757);
+
+// `ToPropertyKey` abstract operation
+// https://tc39.es/ecma262/#sec-topropertykey
+module.exports = function (argument) {
+  var key = toPrimitive(argument, 'string');
+  return isSymbol(key) ? key : key + '';
+};
+
+
+/***/ }),
+
+/***/ 2140:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var wellKnownSymbol = __webpack_require__(8227);
+
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+var test = {};
+
+test[TO_STRING_TAG] = 'z';
+
+module.exports = String(test) === '[object z]';
+
+
+/***/ }),
+
+/***/ 655:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var classof = __webpack_require__(6955);
+
+var $String = String;
+
+module.exports = function (argument) {
+  if (classof(argument) === 'Symbol') throw new TypeError('Cannot convert a Symbol value to a string');
+  return $String(argument);
+};
+
+
+/***/ }),
+
+/***/ 6823:
+/***/ ((module) => {
+
+
+var $String = String;
+
+module.exports = function (argument) {
+  try {
+    return $String(argument);
+  } catch (error) {
+    return 'Object';
+  }
+};
+
+
+/***/ }),
+
+/***/ 3392:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var uncurryThis = __webpack_require__(9504);
+
+var id = 0;
+var postfix = Math.random();
+var toString = uncurryThis(1.0.toString);
+
+module.exports = function (key) {
+  return 'Symbol(' + (key === undefined ? '' : key) + ')_' + toString(++id + postfix, 36);
+};
+
+
+/***/ }),
+
+/***/ 7040:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+/* eslint-disable es/no-symbol -- required for testing */
+var NATIVE_SYMBOL = __webpack_require__(4495);
+
+module.exports = NATIVE_SYMBOL
+  && !Symbol.sham
+  && typeof Symbol.iterator == 'symbol';
+
+
+/***/ }),
+
+/***/ 8686:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var fails = __webpack_require__(9039);
+
+// V8 ~ Chrome 36-
+// https://bugs.chromium.org/p/v8/issues/detail?id=3334
+module.exports = DESCRIPTORS && fails(function () {
+  // eslint-disable-next-line es/no-object-defineproperty -- required for testing
+  return Object.defineProperty(function () { /* empty */ }, 'prototype', {
+    value: 42,
+    writable: false
+  }).prototype !== 42;
+});
+
+
+/***/ }),
+
+/***/ 2812:
+/***/ ((module) => {
+
+
+var $TypeError = TypeError;
+
+module.exports = function (passed, required) {
+  if (passed < required) throw new $TypeError('Not enough arguments');
+  return passed;
+};
+
+
+/***/ }),
+
+/***/ 8622:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+var isCallable = __webpack_require__(4901);
+
+var WeakMap = globalThis.WeakMap;
+
+module.exports = isCallable(WeakMap) && /native code/.test(String(WeakMap));
+
+
+/***/ }),
+
+/***/ 8227:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+var shared = __webpack_require__(5745);
+var hasOwn = __webpack_require__(9297);
+var uid = __webpack_require__(3392);
+var NATIVE_SYMBOL = __webpack_require__(4495);
+var USE_SYMBOL_AS_UID = __webpack_require__(7040);
+
+var Symbol = globalThis.Symbol;
+var WellKnownSymbolsStore = shared('wks');
+var createWellKnownSymbol = USE_SYMBOL_AS_UID ? Symbol['for'] || Symbol : Symbol && Symbol.withoutSetter || uid;
+
+module.exports = function (name) {
+  if (!hasOwn(WellKnownSymbolsStore, name)) {
+    WellKnownSymbolsStore[name] = NATIVE_SYMBOL && hasOwn(Symbol, name)
+      ? Symbol[name]
+      : createWellKnownSymbol('Symbol.' + name);
+  } return WellKnownSymbolsStore[name];
+};
+
+
+/***/ }),
+
+/***/ 4114:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var toObject = __webpack_require__(8981);
+var lengthOfArrayLike = __webpack_require__(6198);
+var setArrayLength = __webpack_require__(4527);
+var doesNotExceedSafeInteger = __webpack_require__(6837);
+var fails = __webpack_require__(9039);
+
+var INCORRECT_TO_LENGTH = fails(function () {
+  return [].push.call({ length: 0x100000000 }, 1) !== 4294967297;
+});
+
+// V8 <= 121 and Safari <= 15.4; FF < 23 throws InternalError
+// https://bugs.chromium.org/p/v8/issues/detail?id=12681
+var properErrorOnNonWritableLength = function () {
+  try {
+    // eslint-disable-next-line es/no-object-defineproperty -- safe
+    Object.defineProperty([], 'length', { writable: false }).push();
+  } catch (error) {
+    return error instanceof TypeError;
+  }
+};
+
+var FORCED = INCORRECT_TO_LENGTH || !properErrorOnNonWritableLength();
+
+// `Array.prototype.push` method
+// https://tc39.es/ecma262/#sec-array.prototype.push
+$({ target: 'Array', proto: true, arity: 1, forced: FORCED }, {
+  // eslint-disable-next-line no-unused-vars -- required for `.length`
+  push: function push(item) {
+    var O = toObject(this);
+    var len = lengthOfArrayLike(O);
+    var argCount = arguments.length;
+    doesNotExceedSafeInteger(len + argCount);
+    for (var i = 0; i < argCount; i++) {
+      O[len] = arguments[i];
+      len++;
+    }
+    setArrayLength(O, len);
+    return len;
+  }
+});
+
+
+/***/ }),
+
+/***/ 4628:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var newPromiseCapabilityModule = __webpack_require__(6043);
+
+// `Promise.withResolvers` method
+// https://github.com/tc39/proposal-promise-with-resolvers
+$({ target: 'Promise', stat: true }, {
+  withResolvers: function withResolvers() {
+    var promiseCapability = newPromiseCapabilityModule.f(this);
+    return {
+      promise: promiseCapability.promise,
+      resolve: promiseCapability.resolve,
+      reject: promiseCapability.reject
+    };
+  }
+});
+
+
+/***/ }),
+
+/***/ 7642:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var difference = __webpack_require__(3440);
+var setMethodAcceptSetLike = __webpack_require__(4916);
+
+// `Set.prototype.difference` method
+// https://github.com/tc39/proposal-set-methods
+$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('difference') }, {
+  difference: difference
+});
+
+
+/***/ }),
+
+/***/ 8004:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var fails = __webpack_require__(9039);
+var intersection = __webpack_require__(8750);
+var setMethodAcceptSetLike = __webpack_require__(4916);
+
+var INCORRECT = !setMethodAcceptSetLike('intersection') || fails(function () {
+  // eslint-disable-next-line es/no-array-from, es/no-set -- testing
+  return String(Array.from(new Set([1, 2, 3]).intersection(new Set([3, 2])))) !== '3,2';
+});
+
+// `Set.prototype.intersection` method
+// https://github.com/tc39/proposal-set-methods
+$({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
+  intersection: intersection
+});
+
+
+/***/ }),
+
+/***/ 3853:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var isDisjointFrom = __webpack_require__(4449);
+var setMethodAcceptSetLike = __webpack_require__(4916);
+
+// `Set.prototype.isDisjointFrom` method
+// https://github.com/tc39/proposal-set-methods
+$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('isDisjointFrom') }, {
+  isDisjointFrom: isDisjointFrom
+});
+
+
+/***/ }),
+
+/***/ 5876:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var isSubsetOf = __webpack_require__(3838);
+var setMethodAcceptSetLike = __webpack_require__(4916);
+
+// `Set.prototype.isSubsetOf` method
+// https://github.com/tc39/proposal-set-methods
+$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('isSubsetOf') }, {
+  isSubsetOf: isSubsetOf
+});
+
+
+/***/ }),
+
+/***/ 2475:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var isSupersetOf = __webpack_require__(8527);
+var setMethodAcceptSetLike = __webpack_require__(4916);
+
+// `Set.prototype.isSupersetOf` method
+// https://github.com/tc39/proposal-set-methods
+$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('isSupersetOf') }, {
+  isSupersetOf: isSupersetOf
+});
+
+
+/***/ }),
+
+/***/ 5024:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var symmetricDifference = __webpack_require__(3650);
+var setMethodAcceptSetLike = __webpack_require__(4916);
+
+// `Set.prototype.symmetricDifference` method
+// https://github.com/tc39/proposal-set-methods
+$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('symmetricDifference') }, {
+  symmetricDifference: symmetricDifference
+});
+
+
+/***/ }),
+
+/***/ 1698:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var union = __webpack_require__(4204);
+var setMethodAcceptSetLike = __webpack_require__(4916);
+
+// `Set.prototype.union` method
+// https://github.com/tc39/proposal-set-methods
+$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('union') }, {
+  union: union
+});
+
+
+/***/ }),
+
+/***/ 8992:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var globalThis = __webpack_require__(4576);
+var anInstance = __webpack_require__(679);
+var anObject = __webpack_require__(8551);
+var isCallable = __webpack_require__(4901);
+var getPrototypeOf = __webpack_require__(2787);
+var defineBuiltInAccessor = __webpack_require__(2106);
+var createProperty = __webpack_require__(4659);
+var fails = __webpack_require__(9039);
+var hasOwn = __webpack_require__(9297);
+var wellKnownSymbol = __webpack_require__(8227);
+var IteratorPrototype = (__webpack_require__(7657).IteratorPrototype);
+var DESCRIPTORS = __webpack_require__(3724);
+var IS_PURE = __webpack_require__(6395);
+
+var CONSTRUCTOR = 'constructor';
+var ITERATOR = 'Iterator';
+var TO_STRING_TAG = wellKnownSymbol('toStringTag');
+
+var $TypeError = TypeError;
+var NativeIterator = globalThis[ITERATOR];
+
+// FF56- have non-standard global helper `Iterator`
+var FORCED = IS_PURE
+  || !isCallable(NativeIterator)
+  || NativeIterator.prototype !== IteratorPrototype
+  // FF44- non-standard `Iterator` passes previous tests
+  || !fails(function () { NativeIterator({}); });
+
+var IteratorConstructor = function Iterator() {
+  anInstance(this, IteratorPrototype);
+  if (getPrototypeOf(this) === IteratorPrototype) throw new $TypeError('Abstract class Iterator not directly constructable');
+};
+
+var defineIteratorPrototypeAccessor = function (key, value) {
+  if (DESCRIPTORS) {
+    defineBuiltInAccessor(IteratorPrototype, key, {
+      configurable: true,
+      get: function () {
+        return value;
+      },
+      set: function (replacement) {
+        anObject(this);
+        if (this === IteratorPrototype) throw new $TypeError("You can't redefine this property");
+        if (hasOwn(this, key)) this[key] = replacement;
+        else createProperty(this, key, replacement);
+      }
+    });
+  } else IteratorPrototype[key] = value;
+};
+
+if (!hasOwn(IteratorPrototype, TO_STRING_TAG)) defineIteratorPrototypeAccessor(TO_STRING_TAG, ITERATOR);
+
+if (FORCED || !hasOwn(IteratorPrototype, CONSTRUCTOR) || IteratorPrototype[CONSTRUCTOR] === Object) {
+  defineIteratorPrototypeAccessor(CONSTRUCTOR, IteratorConstructor);
+}
+
+IteratorConstructor.prototype = IteratorPrototype;
+
+// `Iterator` constructor
+// https://github.com/tc39/proposal-iterator-helpers
+$({ global: true, constructor: true, forced: FORCED }, {
+  Iterator: IteratorConstructor
+});
+
+
+/***/ }),
+
+/***/ 3215:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var iterate = __webpack_require__(2652);
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var getIteratorDirect = __webpack_require__(1767);
+
+// `Iterator.prototype.every` method
+// https://github.com/tc39/proposal-iterator-helpers
+$({ target: 'Iterator', proto: true, real: true }, {
+  every: function every(predicate) {
+    anObject(this);
+    aCallable(predicate);
+    var record = getIteratorDirect(this);
+    var counter = 0;
+    return !iterate(record, function (value, stop) {
+      if (!predicate(value, counter++)) return stop();
+    }, { IS_RECORD: true, INTERRUPTED: true }).stopped;
+  }
+});
+
+
+/***/ }),
+
+/***/ 4520:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var call = __webpack_require__(9565);
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var getIteratorDirect = __webpack_require__(1767);
+var createIteratorProxy = __webpack_require__(9462);
+var callWithSafeIterationClosing = __webpack_require__(6319);
+var IS_PURE = __webpack_require__(6395);
+
+var IteratorProxy = createIteratorProxy(function () {
+  var iterator = this.iterator;
+  var predicate = this.predicate;
+  var next = this.next;
+  var result, done, value;
+  while (true) {
+    result = anObject(call(next, iterator));
+    done = this.done = !!result.done;
+    if (done) return;
+    value = result.value;
+    if (callWithSafeIterationClosing(iterator, predicate, [value, this.counter++], true)) return value;
+  }
+});
+
+// `Iterator.prototype.filter` method
+// https://github.com/tc39/proposal-iterator-helpers
+$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE }, {
+  filter: function filter(predicate) {
+    anObject(this);
+    aCallable(predicate);
+    return new IteratorProxy(getIteratorDirect(this), {
+      predicate: predicate
+    });
+  }
+});
+
+
+/***/ }),
+
+/***/ 3949:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var iterate = __webpack_require__(2652);
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var getIteratorDirect = __webpack_require__(1767);
+
+// `Iterator.prototype.forEach` method
+// https://github.com/tc39/proposal-iterator-helpers
+$({ target: 'Iterator', proto: true, real: true }, {
+  forEach: function forEach(fn) {
+    anObject(this);
+    aCallable(fn);
+    var record = getIteratorDirect(this);
+    var counter = 0;
+    iterate(record, function (value) {
+      fn(value, counter++);
+    }, { IS_RECORD: true });
+  }
+});
+
+
+/***/ }),
+
+/***/ 1454:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var map = __webpack_require__(713);
+var IS_PURE = __webpack_require__(6395);
+
+// `Iterator.prototype.map` method
+// https://github.com/tc39/proposal-iterator-helpers
+$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE }, {
+  map: map
+});
+
+
+/***/ }),
+
+/***/ 7550:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var iterate = __webpack_require__(2652);
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var getIteratorDirect = __webpack_require__(1767);
+
+// `Iterator.prototype.some` method
+// https://github.com/tc39/proposal-iterator-helpers
+$({ target: 'Iterator', proto: true, real: true }, {
+  some: function some(predicate) {
+    anObject(this);
+    aCallable(predicate);
+    var record = getIteratorDirect(this);
+    var counter = 0;
+    return iterate(record, function (value, stop) {
+      if (predicate(value, counter++)) return stop();
+    }, { IS_RECORD: true, INTERRUPTED: true }).stopped;
+  }
+});
+
+
+/***/ }),
+
+/***/ 8335:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var DESCRIPTORS = __webpack_require__(3724);
+var globalThis = __webpack_require__(4576);
+var getBuiltIn = __webpack_require__(7751);
+var uncurryThis = __webpack_require__(9504);
+var call = __webpack_require__(9565);
+var isCallable = __webpack_require__(4901);
+var isObject = __webpack_require__(34);
+var isArray = __webpack_require__(4376);
+var hasOwn = __webpack_require__(9297);
+var toString = __webpack_require__(655);
+var lengthOfArrayLike = __webpack_require__(6198);
+var createProperty = __webpack_require__(4659);
+var fails = __webpack_require__(9039);
+var parseJSONString = __webpack_require__(8235);
+var NATIVE_SYMBOL = __webpack_require__(4495);
+
+var JSON = globalThis.JSON;
+var Number = globalThis.Number;
+var SyntaxError = globalThis.SyntaxError;
+var nativeParse = JSON && JSON.parse;
+var enumerableOwnProperties = getBuiltIn('Object', 'keys');
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+var at = uncurryThis(''.charAt);
+var slice = uncurryThis(''.slice);
+var exec = uncurryThis(/./.exec);
+var push = uncurryThis([].push);
+
+var IS_DIGIT = /^\d$/;
+var IS_NON_ZERO_DIGIT = /^[1-9]$/;
+var IS_NUMBER_START = /^[\d-]$/;
+var IS_WHITESPACE = /^[\t\n\r ]$/;
+
+var PRIMITIVE = 0;
+var OBJECT = 1;
+
+var $parse = function (source, reviver) {
+  source = toString(source);
+  var context = new Context(source, 0, '');
+  var root = context.parse();
+  var value = root.value;
+  var endIndex = context.skip(IS_WHITESPACE, root.end);
+  if (endIndex < source.length) {
+    throw new SyntaxError('Unexpected extra character: "' + at(source, endIndex) + '" after the parsed data at: ' + endIndex);
+  }
+  return isCallable(reviver) ? internalize({ '': value }, '', reviver, root) : value;
+};
+
+var internalize = function (holder, name, reviver, node) {
+  var val = holder[name];
+  var unmodified = node && val === node.value;
+  var context = unmodified && typeof node.source == 'string' ? { source: node.source } : {};
+  var elementRecordsLen, keys, len, i, P;
+  if (isObject(val)) {
+    var nodeIsArray = isArray(val);
+    var nodes = unmodified ? node.nodes : nodeIsArray ? [] : {};
+    if (nodeIsArray) {
+      elementRecordsLen = nodes.length;
+      len = lengthOfArrayLike(val);
+      for (i = 0; i < len; i++) {
+        internalizeProperty(val, i, internalize(val, '' + i, reviver, i < elementRecordsLen ? nodes[i] : undefined));
+      }
+    } else {
+      keys = enumerableOwnProperties(val);
+      len = lengthOfArrayLike(keys);
+      for (i = 0; i < len; i++) {
+        P = keys[i];
+        internalizeProperty(val, P, internalize(val, P, reviver, hasOwn(nodes, P) ? nodes[P] : undefined));
+      }
+    }
+  }
+  return call(reviver, holder, name, val, context);
+};
+
+var internalizeProperty = function (object, key, value) {
+  if (DESCRIPTORS) {
+    var descriptor = getOwnPropertyDescriptor(object, key);
+    if (descriptor && !descriptor.configurable) return;
+  }
+  if (value === undefined) delete object[key];
+  else createProperty(object, key, value);
+};
+
+var Node = function (value, end, source, nodes) {
+  this.value = value;
+  this.end = end;
+  this.source = source;
+  this.nodes = nodes;
+};
+
+var Context = function (source, index) {
+  this.source = source;
+  this.index = index;
+};
+
+// https://www.json.org/json-en.html
+Context.prototype = {
+  fork: function (nextIndex) {
+    return new Context(this.source, nextIndex);
+  },
+  parse: function () {
+    var source = this.source;
+    var i = this.skip(IS_WHITESPACE, this.index);
+    var fork = this.fork(i);
+    var chr = at(source, i);
+    if (exec(IS_NUMBER_START, chr)) return fork.number();
+    switch (chr) {
+      case '{':
+        return fork.object();
+      case '[':
+        return fork.array();
+      case '"':
+        return fork.string();
+      case 't':
+        return fork.keyword(true);
+      case 'f':
+        return fork.keyword(false);
+      case 'n':
+        return fork.keyword(null);
+    } throw new SyntaxError('Unexpected character: "' + chr + '" at: ' + i);
+  },
+  node: function (type, value, start, end, nodes) {
+    return new Node(value, end, type ? null : slice(this.source, start, end), nodes);
+  },
+  object: function () {
+    var source = this.source;
+    var i = this.index + 1;
+    var expectKeypair = false;
+    var object = {};
+    var nodes = {};
+    while (i < source.length) {
+      i = this.until(['"', '}'], i);
+      if (at(source, i) === '}' && !expectKeypair) {
+        i++;
+        break;
+      }
+      // Parsing the key
+      var result = this.fork(i).string();
+      var key = result.value;
+      i = result.end;
+      i = this.until([':'], i) + 1;
+      // Parsing value
+      i = this.skip(IS_WHITESPACE, i);
+      result = this.fork(i).parse();
+      createProperty(nodes, key, result);
+      createProperty(object, key, result.value);
+      i = this.until([',', '}'], result.end);
+      var chr = at(source, i);
+      if (chr === ',') {
+        expectKeypair = true;
+        i++;
+      } else if (chr === '}') {
+        i++;
+        break;
+      }
+    }
+    return this.node(OBJECT, object, this.index, i, nodes);
+  },
+  array: function () {
+    var source = this.source;
+    var i = this.index + 1;
+    var expectElement = false;
+    var array = [];
+    var nodes = [];
+    while (i < source.length) {
+      i = this.skip(IS_WHITESPACE, i);
+      if (at(source, i) === ']' && !expectElement) {
+        i++;
+        break;
+      }
+      var result = this.fork(i).parse();
+      push(nodes, result);
+      push(array, result.value);
+      i = this.until([',', ']'], result.end);
+      if (at(source, i) === ',') {
+        expectElement = true;
+        i++;
+      } else if (at(source, i) === ']') {
+        i++;
+        break;
+      }
+    }
+    return this.node(OBJECT, array, this.index, i, nodes);
+  },
+  string: function () {
+    var index = this.index;
+    var parsed = parseJSONString(this.source, this.index + 1);
+    return this.node(PRIMITIVE, parsed.value, index, parsed.end);
+  },
+  number: function () {
+    var source = this.source;
+    var startIndex = this.index;
+    var i = startIndex;
+    if (at(source, i) === '-') i++;
+    if (at(source, i) === '0') i++;
+    else if (exec(IS_NON_ZERO_DIGIT, at(source, i))) i = this.skip(IS_DIGIT, i + 1);
+    else throw new SyntaxError('Failed to parse number at: ' + i);
+    if (at(source, i) === '.') i = this.skip(IS_DIGIT, i + 1);
+    if (at(source, i) === 'e' || at(source, i) === 'E') {
+      i++;
+      if (at(source, i) === '+' || at(source, i) === '-') i++;
+      var exponentStartIndex = i;
+      i = this.skip(IS_DIGIT, i);
+      if (exponentStartIndex === i) throw new SyntaxError("Failed to parse number's exponent value at: " + i);
+    }
+    return this.node(PRIMITIVE, Number(slice(source, startIndex, i)), startIndex, i);
+  },
+  keyword: function (value) {
+    var keyword = '' + value;
+    var index = this.index;
+    var endIndex = index + keyword.length;
+    if (slice(this.source, index, endIndex) !== keyword) throw new SyntaxError('Failed to parse value at: ' + index);
+    return this.node(PRIMITIVE, value, index, endIndex);
+  },
+  skip: function (regex, i) {
+    var source = this.source;
+    for (; i < source.length; i++) if (!exec(regex, at(source, i))) break;
+    return i;
+  },
+  until: function (array, i) {
+    i = this.skip(IS_WHITESPACE, i);
+    var chr = at(this.source, i);
+    for (var j = 0; j < array.length; j++) if (array[j] === chr) return i;
+    throw new SyntaxError('Unexpected character: "' + chr + '" at: ' + i);
+  }
+};
+
+var NO_SOURCE_SUPPORT = fails(function () {
+  var unsafeInt = '9007199254740993';
+  var source;
+  nativeParse(unsafeInt, function (key, value, context) {
+    source = context.source;
+  });
+  return source !== unsafeInt;
+});
+
+var PROPER_BASE_PARSE = NATIVE_SYMBOL && !fails(function () {
+  // Safari 9 bug
+  return 1 / nativeParse('-0 \t') !== -Infinity;
+});
+
+// `JSON.parse` method
+// https://tc39.es/ecma262/#sec-json.parse
+// https://github.com/tc39/proposal-json-parse-with-source
+$({ target: 'JSON', stat: true, forced: NO_SOURCE_SUPPORT }, {
+  parse: function parse(text, reviver) {
+    return PROPER_BASE_PARSE && !isCallable(reviver) ? nativeParse(text) : $parse(text, reviver);
+  }
+});
+
+
+/***/ }),
+
+/***/ 4603:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var defineBuiltIn = __webpack_require__(6840);
+var uncurryThis = __webpack_require__(9504);
+var toString = __webpack_require__(655);
+var validateArgumentsLength = __webpack_require__(2812);
+
+var $URLSearchParams = URLSearchParams;
+var URLSearchParamsPrototype = $URLSearchParams.prototype;
+var append = uncurryThis(URLSearchParamsPrototype.append);
+var $delete = uncurryThis(URLSearchParamsPrototype['delete']);
+var forEach = uncurryThis(URLSearchParamsPrototype.forEach);
+var push = uncurryThis([].push);
+var params = new $URLSearchParams('a=1&a=2&b=3');
+
+params['delete']('a', 1);
+// `undefined` case is a Chromium 117 bug
+// https://bugs.chromium.org/p/v8/issues/detail?id=14222
+params['delete']('b', undefined);
+
+if (params + '' !== 'a=2') {
+  defineBuiltIn(URLSearchParamsPrototype, 'delete', function (name /* , value */) {
+    var length = arguments.length;
+    var $value = length < 2 ? undefined : arguments[1];
+    if (length && $value === undefined) return $delete(this, name);
+    var entries = [];
+    forEach(this, function (v, k) { // also validates `this`
+      push(entries, { key: k, value: v });
+    });
+    validateArgumentsLength(length, 1);
+    var key = toString(name);
+    var value = toString($value);
+    var index = 0;
+    var dindex = 0;
+    var found = false;
+    var entriesLength = entries.length;
+    var entry;
+    while (index < entriesLength) {
+      entry = entries[index++];
+      if (found || entry.key === key) {
+        found = true;
+        $delete(this, entry.key);
+      } else dindex++;
+    }
+    while (dindex < entriesLength) {
+      entry = entries[dindex++];
+      if (!(entry.key === key && entry.value === value)) append(this, entry.key, entry.value);
+    }
+  }, { enumerable: true, unsafe: true });
+}
+
+
+/***/ }),
+
+/***/ 7566:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var defineBuiltIn = __webpack_require__(6840);
+var uncurryThis = __webpack_require__(9504);
+var toString = __webpack_require__(655);
+var validateArgumentsLength = __webpack_require__(2812);
+
+var $URLSearchParams = URLSearchParams;
+var URLSearchParamsPrototype = $URLSearchParams.prototype;
+var getAll = uncurryThis(URLSearchParamsPrototype.getAll);
+var $has = uncurryThis(URLSearchParamsPrototype.has);
+var params = new $URLSearchParams('a=1');
+
+// `undefined` case is a Chromium 117 bug
+// https://bugs.chromium.org/p/v8/issues/detail?id=14222
+if (params.has('a', 2) || !params.has('a', undefined)) {
+  defineBuiltIn(URLSearchParamsPrototype, 'has', function has(name /* , value */) {
+    var length = arguments.length;
+    var $value = length < 2 ? undefined : arguments[1];
+    if (length && $value === undefined) return $has(this, name);
+    var values = getAll(this, name); // also validates `this`
+    validateArgumentsLength(length, 1);
+    var value = toString($value);
+    var index = 0;
+    while (index < values.length) {
+      if (values[index++] === value) return true;
+    } return false;
+  }, { enumerable: true, unsafe: true });
+}
+
+
+/***/ }),
+
+/***/ 8721:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var DESCRIPTORS = __webpack_require__(3724);
+var uncurryThis = __webpack_require__(9504);
+var defineBuiltInAccessor = __webpack_require__(2106);
+
+var URLSearchParamsPrototype = URLSearchParams.prototype;
+var forEach = uncurryThis(URLSearchParamsPrototype.forEach);
+
+// `URLSearchParams.prototype.size` getter
+// https://github.com/whatwg/url/pull/734
+if (DESCRIPTORS && !('size' in URLSearchParamsPrototype)) {
+  defineBuiltInAccessor(URLSearchParamsPrototype, 'size', {
+    get: function size() {
+      var count = 0;
+      forEach(this, function () { count++; });
+      return count;
+    },
+    configurable: true,
+    enumerable: true
+  });
+}
+
+
+/***/ })
+
+/******/ });
+/************************************************************************/
+/******/ // The module cache
+/******/ var __webpack_module_cache__ = {};
+/******/ 
+/******/ // The require function
+/******/ function __webpack_require__(moduleId) {
+/******/ 	// Check if module is in cache
+/******/ 	var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 	if (cachedModule !== undefined) {
+/******/ 		return cachedModule.exports;
+/******/ 	}
+/******/ 	// Create a new module (and put it into the cache)
+/******/ 	var module = __webpack_module_cache__[moduleId] = {
+/******/ 		// no module.id needed
+/******/ 		// no module.loaded needed
+/******/ 		exports: {}
+/******/ 	};
+/******/ 
+/******/ 	// Execute the module function
+/******/ 	__webpack_modules__[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/ 
+/******/ 	// Return the exports of the module
+/******/ 	return module.exports;
+/******/ }
 /******/ 
 /************************************************************************/
 /******/ /* webpack/runtime/define property getters */
@@ -51,7 +3651,40 @@ __webpack_require__.d(__webpack_exports__, {
   PDFViewerApplicationOptions: () => (/* reexport */ AppOptions)
 });
 
-;// CONCATENATED MODULE: ./web/ui_utils.js
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.push.js
+var es_array_push = __webpack_require__(4114);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.set.difference.v2.js
+var es_set_difference_v2 = __webpack_require__(7642);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.set.intersection.v2.js
+var es_set_intersection_v2 = __webpack_require__(8004);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.set.is-disjoint-from.v2.js
+var es_set_is_disjoint_from_v2 = __webpack_require__(3853);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.set.is-subset-of.v2.js
+var es_set_is_subset_of_v2 = __webpack_require__(5876);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.set.is-superset-of.v2.js
+var es_set_is_superset_of_v2 = __webpack_require__(2475);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.set.symmetric-difference.v2.js
+var es_set_symmetric_difference_v2 = __webpack_require__(5024);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.set.union.v2.js
+var es_set_union_v2 = __webpack_require__(1698);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/web.url-search-params.delete.js
+var web_url_search_params_delete = __webpack_require__(4603);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/web.url-search-params.has.js
+var web_url_search_params_has = __webpack_require__(7566);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/web.url-search-params.size.js
+var web_url_search_params_size = __webpack_require__(8721);
+;// ./web/ui_utils.js
+
+
+
+
+
+
+
+
+
+
+
 const DEFAULT_SCALE_VALUE = "auto";
 const DEFAULT_SCALE = 1.0;
 const DEFAULT_SCALE_DELTA = 1.1;
@@ -105,16 +3738,6 @@ const CursorTool = {
   ZOOM: 2
 };
 const AutoPrintRegExp = /\bprint\s*\(/;
-class OutputScale {
-  constructor() {
-    const pixelRatio = window.devicePixelRatio || 1;
-    this.sx = pixelRatio;
-    this.sy = pixelRatio;
-  }
-  get scaled() {
-    return this.sx !== 1 || this.sy !== 1;
-  }
-}
 function scrollIntoView(element, spot, scrollMatches = false) {
   let parent = element.offsetParent;
   if (!parent) {
@@ -532,8 +4155,13 @@ function toggleExpandedBtn(button, toggle, view = null) {
   button.setAttribute("aria-expanded", toggle);
   view?.classList.toggle("hidden", !toggle);
 }
+const calcRound = function () {
+  const e = document.createElement("div");
+  e.style.width = "round(down, calc(1.6666666666666665 * 792px), 1px)";
+  return e.style.width === "calc(1320px)" ? Math.fround : x => x;
+}();
 
-;// CONCATENATED MODULE: ./web/app_options.js
+;// ./web/app_options.js
 {
   var compatParams = new Map();
   const userAgent = navigator.userAgent || "";
@@ -658,16 +4286,20 @@ const defaultOptions = {
     value: false,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
+  enableAltTextModelDownload: {
+    value: true,
+    kind: OptionKind.VIEWER + OptionKind.PREFERENCE + OptionKind.EVENT_DISPATCH
+  },
   enableGuessAltText: {
     value: true,
-    kind: OptionKind.VIEWER + OptionKind.PREFERENCE
-  },
-  enableHighlightEditor: {
-    value: false,
-    kind: OptionKind.VIEWER + OptionKind.PREFERENCE
+    kind: OptionKind.VIEWER + OptionKind.PREFERENCE + OptionKind.EVENT_DISPATCH
   },
   enableHighlightFloatingButton: {
     value: false,
+    kind: OptionKind.VIEWER + OptionKind.PREFERENCE
+  },
+  enableNewAltTextWhenAddingImage: {
+    value: true,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   enablePermissions: {
@@ -845,6 +4477,10 @@ const defaultOptions = {
     value: 0,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   };
+  defaultOptions.enableFakeMLManager = {
+    value: true,
+    kind: OptionKind.VIEWER
+  };
 }
 {
   defaultOptions.disablePreferences = {
@@ -852,19 +4488,29 @@ const defaultOptions = {
     kind: OptionKind.VIEWER
   };
 }
-const userOptions = new Map();
-{
-  for (const [name, value] of compatParams) {
-    userOptions.set(name, value);
-  }
-}
 class AppOptions {
   static eventBus;
-  constructor() {
-    throw new Error("Cannot initialize AppOptions.");
+  static #opts = new Map();
+  static {
+    for (const name in defaultOptions) {
+      this.#opts.set(name, defaultOptions[name].value);
+    }
+    for (const [name, value] of compatParams) {
+      this.#opts.set(name, value);
+    }
+    this._hasInvokedSet = false;
+    this._checkDisablePreferences = () => {
+      if (this.get("disablePreferences")) {
+        return true;
+      }
+      if (this._hasInvokedSet) {
+        console.warn("The Preferences may override manually set AppOptions; " + 'please use the "disablePreferences"-option to prevent that.');
+      }
+      return false;
+    };
   }
   static get(name) {
-    return userOptions.has(name) ? userOptions.get(name) : defaultOptions[name]?.value;
+    return this.#opts.get(name);
   }
   static getAll(kind = null, defaultOnly = false) {
     const options = Object.create(null);
@@ -873,7 +4519,7 @@ class AppOptions {
       if (kind && !(kind & defaultOpt.kind)) {
         continue;
       }
-      options[name] = !defaultOnly && userOptions.has(name) ? userOptions.get(name) : defaultOpt.value;
+      options[name] = !defaultOnly ? this.#opts.get(name) : defaultOpt.value;
     }
     return options;
   }
@@ -883,6 +4529,7 @@ class AppOptions {
     });
   }
   static setAll(options, prefs = false) {
+    this._hasInvokedSet ||= true;
     let events;
     for (const name in options) {
       const defaultOpt = defaultOptions[name],
@@ -899,7 +4546,7 @@ class AppOptions {
       if (this.eventBus && kind & OptionKind.EVENT_DISPATCH) {
         (events ||= new Map()).set(name, userOpt);
       }
-      userOptions.set(name, userOpt);
+      this.#opts.set(name, userOpt);
     }
     if (events) {
       for (const [name, value] of events) {
@@ -911,23 +4558,12 @@ class AppOptions {
     }
   }
 }
-{
-  AppOptions._checkDisablePreferences = () => {
-    if (AppOptions.get("disablePreferences")) {
-      return true;
-    }
-    for (const [name] of userOptions) {
-      if (compatParams.has(name)) {
-        continue;
-      }
-      console.warn("The Preferences may override manually set AppOptions; " + 'please use the "disablePreferences"-option to prevent that.');
-      break;
-    }
-    return false;
-  };
-}
 
-;// CONCATENATED MODULE: ./web/pdf_link_service.js
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.json.parse.js
+var esnext_json_parse = __webpack_require__(8335);
+;// ./web/pdf_link_service.js
+
+
 
 const DEFAULT_LINK_REL = "noopener noreferrer nofollow";
 const LinkTarget = {
@@ -1273,7 +4909,13 @@ class SimpleLinkService extends PDFLinkService {
   setDocument(pdfDocument, baseUrl = null) {}
 }
 
-;// CONCATENATED MODULE: ./web/pdfjs.js
+// EXTERNAL MODULE: ./node_modules/core-js/modules/es.promise.with-resolvers.js
+var es_promise_with_resolvers = __webpack_require__(4628);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.iterator.constructor.js
+var esnext_iterator_constructor = __webpack_require__(8992);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.iterator.some.js
+var esnext_iterator_some = __webpack_require__(7550);
+;// ./web/pdfjs.js
 const {
   AbortException,
   AnnotationEditorLayer,
@@ -1303,6 +4945,7 @@ const {
   noContextMenu,
   normalizeUnicode,
   OPS,
+  OutputScale,
   PasswordResponses,
   PDFDataRangeTransport,
   PDFDateString,
@@ -1320,7 +4963,9 @@ const {
   XfaLayer
 } = globalThis.pdfjsLib;
 
-;// CONCATENATED MODULE: ./web/event_utils.js
+;// ./web/event_utils.js
+
+
 const WaitOnType = {
   EVENT: "event",
   TIMEOUT: "timeout"
@@ -1441,13 +5086,8 @@ class FirefoxEventBus extends EventBus {
   }
 }
 
-;// CONCATENATED MODULE: ./web/external_services.js
+;// ./web/external_services.js
 class BaseExternalServices {
-  constructor() {
-    if (this.constructor === BaseExternalServices) {
-      throw new Error("Cannot initialize BaseExternalServices.");
-    }
-  }
   updateFindControlState(data) {}
   updateFindMatchesCount(data) {}
   initPassiveLoading() {}
@@ -1464,7 +5104,7 @@ class BaseExternalServices {
   dispatchGlobalEvent(_event) {}
 }
 
-;// CONCATENATED MODULE: ./web/preferences.js
+;// ./web/preferences.js
 
 class BasePreferences {
   #defaults = Object.freeze({
@@ -1476,9 +5116,10 @@ class BasePreferences {
     defaultZoomValue: "",
     disablePageLabels: false,
     enableAltText: false,
+    enableAltTextModelDownload: true,
     enableGuessAltText: true,
-    enableHighlightEditor: false,
     enableHighlightFloatingButton: false,
+    enableNewAltTextWhenAddingImage: true,
     enablePermissions: false,
     enablePrintAutoRotate: true,
     enableScripting: true,
@@ -1506,9 +5147,6 @@ class BasePreferences {
   });
   #initializedPromise = null;
   constructor() {
-    if (this.constructor === BasePreferences) {
-      throw new Error("Cannot initialize BasePreferences.");
-    }
     this.#initializedPromise = this._readFromStorage(this.#defaults).then(({
       browserPrefs,
       prefs
@@ -1549,7 +5187,7 @@ class BasePreferences {
   }
 }
 
-;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/types.js
+;// ./node_modules/@fluent/bundle/esm/types.js
 class FluentType {
   constructor(value) {
     this.value = value;
@@ -1596,7 +5234,8 @@ class FluentDateTime extends FluentType {
     }
   }
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/resolver.js
+;// ./node_modules/@fluent/bundle/esm/resolver.js
+
 
 const MAX_PLACEABLES = 100;
 const FSI = "\u2068";
@@ -1816,7 +5455,8 @@ function resolvePattern(scope, value) {
   }
   return resolveComplexPattern(scope, value);
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/scope.js
+;// ./node_modules/@fluent/bundle/esm/scope.js
+
 class Scope {
   constructor(bundle, errors, args) {
     this.dirty = new WeakSet();
@@ -1845,7 +5485,7 @@ class Scope {
     return cache[id];
   }
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/builtins.js
+;// ./node_modules/@fluent/bundle/esm/builtins.js
 
 function values(opts, allowed) {
   const unwrapped = Object.create(null);
@@ -1894,7 +5534,7 @@ function DATETIME(args, opts) {
   }
   throw new TypeError("Invalid argument to DATETIME");
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/memoizer.js
+;// ./node_modules/@fluent/bundle/esm/memoizer.js
 const cache = new Map();
 function getMemoizerForLocale(locales) {
   const stringLocale = Array.isArray(locales) ? locales.join(" ") : locales;
@@ -1905,7 +5545,8 @@ function getMemoizerForLocale(locales) {
   }
   return memoizer;
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/bundle.js
+;// ./node_modules/@fluent/bundle/esm/bundle.js
+
 
 
 
@@ -1974,7 +5615,8 @@ class FluentBundle {
     }
   }
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/resource.js
+;// ./node_modules/@fluent/bundle/esm/resource.js
+
 const RE_MESSAGE_START = /^(-?[a-zA-Z][\w-]*) *= */gm;
 const RE_ATTRIBUTE_START = /\.([a-zA-Z][\w-]*) *= */y;
 const RE_VARIANT_START = /\*?\[/y;
@@ -2353,11 +5995,14 @@ class Indent {
     this.length = length;
   }
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/bundle/esm/index.js
+;// ./node_modules/@fluent/bundle/esm/index.js
 
 
 
-;// CONCATENATED MODULE: ./node_modules/@fluent/dom/esm/overlay.js
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.iterator.map.js
+var esnext_iterator_map = __webpack_require__(1454);
+;// ./node_modules/@fluent/dom/esm/overlay.js
+
 const reOverlay = /<|&#?\w+;/;
 const TEXT_LEVEL_ELEMENTS = {
   "http://www.w3.org/1999/xhtml": ["em", "strong", "small", "s", "cite", "q", "dfn", "abbr", "data", "time", "code", "var", "samp", "kbd", "sub", "sup", "i", "b", "u", "mark", "bdi", "bdo", "span", "br", "wbr"]
@@ -2508,7 +6153,11 @@ function shallowPopulateUsing(fromElement, toElement) {
   overlayAttributes(fromElement, toElement);
   return toElement;
 }
-;// CONCATENATED MODULE: ./node_modules/cached-iterable/src/cached_iterable.mjs
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.iterator.filter.js
+var esnext_iterator_filter = __webpack_require__(4520);
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.iterator.for-each.js
+var esnext_iterator_for_each = __webpack_require__(3949);
+;// ./node_modules/cached-iterable/src/cached_iterable.mjs
 class CachedIterable extends Array {
   static from(iterable) {
     if (iterable instanceof this) {
@@ -2517,7 +6166,8 @@ class CachedIterable extends Array {
     return new this(iterable);
   }
 }
-;// CONCATENATED MODULE: ./node_modules/cached-iterable/src/cached_sync_iterable.mjs
+;// ./node_modules/cached-iterable/src/cached_sync_iterable.mjs
+
 
 class CachedSyncIterable extends CachedIterable {
   constructor(iterable) {
@@ -2552,7 +6202,8 @@ class CachedSyncIterable extends CachedIterable {
     return this[this.length - 1];
   }
 }
-;// CONCATENATED MODULE: ./node_modules/cached-iterable/src/cached_async_iterable.mjs
+;// ./node_modules/cached-iterable/src/cached_async_iterable.mjs
+
 
 class CachedAsyncIterable extends CachedIterable {
   constructor(iterable) {
@@ -2589,10 +6240,21 @@ class CachedAsyncIterable extends CachedIterable {
     return this[this.length - 1];
   }
 }
-;// CONCATENATED MODULE: ./node_modules/cached-iterable/src/index.mjs
+;// ./node_modules/cached-iterable/src/index.mjs
 
 
-;// CONCATENATED MODULE: ./node_modules/@fluent/dom/esm/localization.js
+;// ./node_modules/@fluent/dom/esm/localization.js
+
+
+
+
+
+
+
+
+
+
+
 
 class Localization {
   constructor(resourceIds = [], generateBundles) {
@@ -2707,7 +6369,17 @@ function keysFromBundle(method, bundle, keys, translations) {
   });
   return missingIds;
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/dom/esm/dom_localization.js
+;// ./node_modules/@fluent/dom/esm/dom_localization.js
+
+
+
+
+
+
+
+
+
+
 
 
 const L10NID_ATTR_NAME = "data-l10n-id";
@@ -2870,10 +6542,18 @@ class DOMLocalization extends Localization {
     };
   }
 }
-;// CONCATENATED MODULE: ./node_modules/@fluent/dom/esm/index.js
+;// ./node_modules/@fluent/dom/esm/index.js
 
 
-;// CONCATENATED MODULE: ./web/l10n.js
+;// ./web/l10n.js
+
+
+
+
+
+
+
+
 class L10n {
   #dir;
   #elements = new Set();
@@ -2908,7 +6588,7 @@ class L10n {
       id: ids,
       args
     }]);
-    return messages?.[0].value || fallback;
+    return messages[0]?.value || fallback;
   }
   async translate(element) {
     this.#elements.add(element);
@@ -2916,6 +6596,13 @@ class L10n {
       this.#l10n.connectRoot(element);
       await this.#l10n.translateRoots();
     } catch {}
+  }
+  async translateOnce(element) {
+    try {
+      await this.#l10n.translateElements([element]);
+    } catch (ex) {
+      console.error(`translateOnce: "${ex}".`);
+    }
   }
   async destroy() {
     for (const element of this.#elements) {
@@ -2957,7 +6644,11 @@ class L10n {
 }
 const GenericL10n = null;
 
-;// CONCATENATED MODULE: ./web/genericl10n.js
+;// ./web/genericl10n.js
+
+
+
+
 
 
 
@@ -3030,12 +6721,12 @@ class genericl10n_GenericL10n extends L10n {
     yield this.#createBundleFallback(lang);
   }
   static async #createBundleFallback(lang) {
-    const text = "pdfjs-previous-button =\n    .title = Previous Page\npdfjs-previous-button-label = Previous\npdfjs-next-button =\n    .title = Next Page\npdfjs-next-button-label = Next\npdfjs-page-input =\n    .title = Page\npdfjs-of-pages = of { $pagesCount }\npdfjs-page-of-pages = ({ $pageNumber } of { $pagesCount })\npdfjs-zoom-out-button =\n    .title = Zoom Out\npdfjs-zoom-out-button-label = Zoom Out\npdfjs-zoom-in-button =\n    .title = Zoom In\npdfjs-zoom-in-button-label = Zoom In\npdfjs-zoom-select =\n    .title = Zoom\npdfjs-presentation-mode-button =\n    .title = Switch to Presentation Mode\npdfjs-presentation-mode-button-label = Presentation Mode\npdfjs-open-file-button =\n    .title = Open File\npdfjs-open-file-button-label = Open\npdfjs-print-button =\n    .title = Print\npdfjs-print-button-label = Print\npdfjs-save-button =\n    .title = Save\npdfjs-save-button-label = Save\npdfjs-download-button =\n    .title = Download\npdfjs-download-button-label = Download\npdfjs-bookmark-button =\n    .title = Current Page (View URL from Current Page)\npdfjs-bookmark-button-label = Current Page\npdfjs-tools-button =\n    .title = Tools\npdfjs-tools-button-label = Tools\npdfjs-first-page-button =\n    .title = Go to First Page\npdfjs-first-page-button-label = Go to First Page\npdfjs-last-page-button =\n    .title = Go to Last Page\npdfjs-last-page-button-label = Go to Last Page\npdfjs-page-rotate-cw-button =\n    .title = Rotate Clockwise\npdfjs-page-rotate-cw-button-label = Rotate Clockwise\npdfjs-page-rotate-ccw-button =\n    .title = Rotate Counterclockwise\npdfjs-page-rotate-ccw-button-label = Rotate Counterclockwise\npdfjs-cursor-text-select-tool-button =\n    .title = Enable Text Selection Tool\npdfjs-cursor-text-select-tool-button-label = Text Selection Tool\npdfjs-cursor-hand-tool-button =\n    .title = Enable Hand Tool\npdfjs-cursor-hand-tool-button-label = Hand Tool\npdfjs-scroll-page-button =\n    .title = Use Page Scrolling\npdfjs-scroll-page-button-label = Page Scrolling\npdfjs-scroll-vertical-button =\n    .title = Use Vertical Scrolling\npdfjs-scroll-vertical-button-label = Vertical Scrolling\npdfjs-scroll-horizontal-button =\n    .title = Use Horizontal Scrolling\npdfjs-scroll-horizontal-button-label = Horizontal Scrolling\npdfjs-scroll-wrapped-button =\n    .title = Use Wrapped Scrolling\npdfjs-scroll-wrapped-button-label = Wrapped Scrolling\npdfjs-spread-none-button =\n    .title = Do not join page spreads\npdfjs-spread-none-button-label = No Spreads\npdfjs-spread-odd-button =\n    .title = Join page spreads starting with odd-numbered pages\npdfjs-spread-odd-button-label = Odd Spreads\npdfjs-spread-even-button =\n    .title = Join page spreads starting with even-numbered pages\npdfjs-spread-even-button-label = Even Spreads\npdfjs-document-properties-button =\n    .title = Document Properties\u2026\npdfjs-document-properties-button-label = Document Properties\u2026\npdfjs-document-properties-file-name = File name:\npdfjs-document-properties-file-size = File size:\npdfjs-document-properties-kb = { $size_kb } KB ({ $size_b } bytes)\npdfjs-document-properties-mb = { $size_mb } MB ({ $size_b } bytes)\npdfjs-document-properties-title = Title:\npdfjs-document-properties-author = Author:\npdfjs-document-properties-subject = Subject:\npdfjs-document-properties-keywords = Keywords:\npdfjs-document-properties-creation-date = Creation Date:\npdfjs-document-properties-modification-date = Modification Date:\npdfjs-document-properties-date-string = { $date }, { $time }\npdfjs-document-properties-creator = Creator:\npdfjs-document-properties-producer = PDF Producer:\npdfjs-document-properties-version = PDF Version:\npdfjs-document-properties-page-count = Page Count:\npdfjs-document-properties-page-size = Page Size:\npdfjs-document-properties-page-size-unit-inches = in\npdfjs-document-properties-page-size-unit-millimeters = mm\npdfjs-document-properties-page-size-orientation-portrait = portrait\npdfjs-document-properties-page-size-orientation-landscape = landscape\npdfjs-document-properties-page-size-name-a-three = A3\npdfjs-document-properties-page-size-name-a-four = A4\npdfjs-document-properties-page-size-name-letter = Letter\npdfjs-document-properties-page-size-name-legal = Legal\npdfjs-document-properties-page-size-dimension-string = { $width } \xD7 { $height } { $unit } ({ $orientation })\npdfjs-document-properties-page-size-dimension-name-string = { $width } \xD7 { $height } { $unit } ({ $name }, { $orientation })\npdfjs-document-properties-linearized = Fast Web View:\npdfjs-document-properties-linearized-yes = Yes\npdfjs-document-properties-linearized-no = No\npdfjs-document-properties-close-button = Close\npdfjs-print-progress-message = Preparing document for printing\u2026\npdfjs-print-progress-percent = { $progress }%\npdfjs-print-progress-close-button = Cancel\npdfjs-printing-not-supported = Warning: Printing is not fully supported by this browser.\npdfjs-printing-not-ready = Warning: The PDF is not fully loaded for printing.\npdfjs-toggle-sidebar-button =\n    .title = Toggle Sidebar\npdfjs-toggle-sidebar-notification-button =\n    .title = Toggle Sidebar (document contains outline/attachments/layers)\npdfjs-toggle-sidebar-button-label = Toggle Sidebar\npdfjs-document-outline-button =\n    .title = Show Document Outline (double-click to expand/collapse all items)\npdfjs-document-outline-button-label = Document Outline\npdfjs-attachments-button =\n    .title = Show Attachments\npdfjs-attachments-button-label = Attachments\npdfjs-layers-button =\n    .title = Show Layers (double-click to reset all layers to the default state)\npdfjs-layers-button-label = Layers\npdfjs-thumbs-button =\n    .title = Show Thumbnails\npdfjs-thumbs-button-label = Thumbnails\npdfjs-current-outline-item-button =\n    .title = Find Current Outline Item\npdfjs-current-outline-item-button-label = Current Outline Item\npdfjs-findbar-button =\n    .title = Find in Document\npdfjs-findbar-button-label = Find\npdfjs-additional-layers = Additional Layers\npdfjs-thumb-page-title =\n    .title = Page { $page }\npdfjs-thumb-page-canvas =\n    .aria-label = Thumbnail of Page { $page }\npdfjs-find-input =\n    .title = Find\n    .placeholder = Find in document\u2026\npdfjs-find-previous-button =\n    .title = Find the previous occurrence of the phrase\npdfjs-find-previous-button-label = Previous\npdfjs-find-next-button =\n    .title = Find the next occurrence of the phrase\npdfjs-find-next-button-label = Next\npdfjs-find-highlight-checkbox = Highlight All\npdfjs-find-match-case-checkbox-label = Match Case\npdfjs-find-match-diacritics-checkbox-label = Match Diacritics\npdfjs-find-entire-word-checkbox-label = Whole Words\npdfjs-find-reached-top = Reached top of document, continued from bottom\npdfjs-find-reached-bottom = Reached end of document, continued from top\npdfjs-find-match-count =\n    { $total ->\n        [one] { $current } of { $total } match\n       *[other] { $current } of { $total } matches\n    }\npdfjs-find-match-count-limit =\n    { $limit ->\n        [one] More than { $limit } match\n       *[other] More than { $limit } matches\n    }\npdfjs-find-not-found = Phrase not found\npdfjs-page-scale-width = Page Width\npdfjs-page-scale-fit = Page Fit\npdfjs-page-scale-auto = Automatic Zoom\npdfjs-page-scale-actual = Actual Size\npdfjs-page-scale-percent = { $scale }%\npdfjs-page-landmark =\n    .aria-label = Page { $page }\npdfjs-loading-error = An error occurred while loading the PDF.\npdfjs-invalid-file-error = Invalid or corrupted PDF file.\npdfjs-missing-file-error = Missing PDF file.\npdfjs-unexpected-response-error = Unexpected server response.\npdfjs-rendering-error = An error occurred while rendering the page.\npdfjs-annotation-date-string = { $date }, { $time }\npdfjs-text-annotation-type =\n    .alt = [{ $type } Annotation]\npdfjs-password-label = Enter the password to open this PDF file.\npdfjs-password-invalid = Invalid password. Please try again.\npdfjs-password-ok-button = OK\npdfjs-password-cancel-button = Cancel\npdfjs-web-fonts-disabled = Web fonts are disabled: unable to use embedded PDF fonts.\npdfjs-editor-free-text-button =\n    .title = Text\npdfjs-editor-free-text-button-label = Text\npdfjs-editor-ink-button =\n    .title = Draw\npdfjs-editor-ink-button-label = Draw\npdfjs-editor-stamp-button =\n    .title = Add or edit images\npdfjs-editor-stamp-button-label = Add or edit images\npdfjs-editor-highlight-button =\n    .title = Highlight\npdfjs-editor-highlight-button-label = Highlight\npdfjs-highlight-floating-button1 =\n    .title = Highlight\n    .aria-label = Highlight\npdfjs-highlight-floating-button-label = Highlight\npdfjs-editor-remove-ink-button =\n    .title = Remove drawing\npdfjs-editor-remove-freetext-button =\n    .title = Remove text\npdfjs-editor-remove-stamp-button =\n    .title = Remove image\npdfjs-editor-remove-highlight-button =\n    .title = Remove highlight\npdfjs-editor-free-text-color-input = Color\npdfjs-editor-free-text-size-input = Size\npdfjs-editor-ink-color-input = Color\npdfjs-editor-ink-thickness-input = Thickness\npdfjs-editor-ink-opacity-input = Opacity\npdfjs-editor-stamp-add-image-button =\n    .title = Add image\npdfjs-editor-stamp-add-image-button-label = Add image\npdfjs-editor-free-highlight-thickness-input = Thickness\npdfjs-editor-free-highlight-thickness-title =\n    .title = Change thickness when highlighting items other than text\npdfjs-free-text =\n    .aria-label = Text Editor\npdfjs-free-text-default-content = Start typing\u2026\npdfjs-ink =\n    .aria-label = Draw Editor\npdfjs-ink-canvas =\n    .aria-label = User-created image\npdfjs-editor-alt-text-button-label = Alt text\npdfjs-editor-alt-text-edit-button-label = Edit alt text\npdfjs-editor-alt-text-dialog-label = Choose an option\npdfjs-editor-alt-text-dialog-description = Alt text (alternative text) helps when people can\u2019t see the image or when it doesn\u2019t load.\npdfjs-editor-alt-text-add-description-label = Add a description\npdfjs-editor-alt-text-add-description-description = Aim for 1-2 sentences that describe the subject, setting, or actions.\npdfjs-editor-alt-text-mark-decorative-label = Mark as decorative\npdfjs-editor-alt-text-mark-decorative-description = This is used for ornamental images, like borders or watermarks.\npdfjs-editor-alt-text-cancel-button = Cancel\npdfjs-editor-alt-text-save-button = Save\npdfjs-editor-alt-text-decorative-tooltip = Marked as decorative\npdfjs-editor-alt-text-textarea =\n    .placeholder = For example, \u201CA young man sits down at a table to eat a meal\u201D\npdfjs-editor-resizer-label-top-left = Top left corner \u2014 resize\npdfjs-editor-resizer-label-top-middle = Top middle \u2014 resize\npdfjs-editor-resizer-label-top-right = Top right corner \u2014 resize\npdfjs-editor-resizer-label-middle-right = Middle right \u2014 resize\npdfjs-editor-resizer-label-bottom-right = Bottom right corner \u2014 resize\npdfjs-editor-resizer-label-bottom-middle = Bottom middle \u2014 resize\npdfjs-editor-resizer-label-bottom-left = Bottom left corner \u2014 resize\npdfjs-editor-resizer-label-middle-left = Middle left \u2014 resize\npdfjs-editor-highlight-colorpicker-label = Highlight color\npdfjs-editor-colorpicker-button =\n    .title = Change color\npdfjs-editor-colorpicker-dropdown =\n    .aria-label = Color choices\npdfjs-editor-colorpicker-yellow =\n    .title = Yellow\npdfjs-editor-colorpicker-green =\n    .title = Green\npdfjs-editor-colorpicker-blue =\n    .title = Blue\npdfjs-editor-colorpicker-pink =\n    .title = Pink\npdfjs-editor-colorpicker-red =\n    .title = Red\npdfjs-editor-highlight-show-all-button-label = Show all\npdfjs-editor-highlight-show-all-button =\n    .title = Show all";
+    const text = "pdfjs-previous-button =\n    .title = Previous Page\npdfjs-previous-button-label = Previous\npdfjs-next-button =\n    .title = Next Page\npdfjs-next-button-label = Next\npdfjs-page-input =\n    .title = Page\npdfjs-of-pages = of { $pagesCount }\npdfjs-page-of-pages = ({ $pageNumber } of { $pagesCount })\npdfjs-zoom-out-button =\n    .title = Zoom Out\npdfjs-zoom-out-button-label = Zoom Out\npdfjs-zoom-in-button =\n    .title = Zoom In\npdfjs-zoom-in-button-label = Zoom In\npdfjs-zoom-select =\n    .title = Zoom\npdfjs-presentation-mode-button =\n    .title = Switch to Presentation Mode\npdfjs-presentation-mode-button-label = Presentation Mode\npdfjs-open-file-button =\n    .title = Open File\npdfjs-open-file-button-label = Open\npdfjs-print-button =\n    .title = Print\npdfjs-print-button-label = Print\npdfjs-save-button =\n    .title = Save\npdfjs-save-button-label = Save\npdfjs-download-button =\n    .title = Download\npdfjs-download-button-label = Download\npdfjs-bookmark-button =\n    .title = Current Page (View URL from Current Page)\npdfjs-bookmark-button-label = Current Page\npdfjs-tools-button =\n    .title = Tools\npdfjs-tools-button-label = Tools\npdfjs-first-page-button =\n    .title = Go to First Page\npdfjs-first-page-button-label = Go to First Page\npdfjs-last-page-button =\n    .title = Go to Last Page\npdfjs-last-page-button-label = Go to Last Page\npdfjs-page-rotate-cw-button =\n    .title = Rotate Clockwise\npdfjs-page-rotate-cw-button-label = Rotate Clockwise\npdfjs-page-rotate-ccw-button =\n    .title = Rotate Counterclockwise\npdfjs-page-rotate-ccw-button-label = Rotate Counterclockwise\npdfjs-cursor-text-select-tool-button =\n    .title = Enable Text Selection Tool\npdfjs-cursor-text-select-tool-button-label = Text Selection Tool\npdfjs-cursor-hand-tool-button =\n    .title = Enable Hand Tool\npdfjs-cursor-hand-tool-button-label = Hand Tool\npdfjs-scroll-page-button =\n    .title = Use Page Scrolling\npdfjs-scroll-page-button-label = Page Scrolling\npdfjs-scroll-vertical-button =\n    .title = Use Vertical Scrolling\npdfjs-scroll-vertical-button-label = Vertical Scrolling\npdfjs-scroll-horizontal-button =\n    .title = Use Horizontal Scrolling\npdfjs-scroll-horizontal-button-label = Horizontal Scrolling\npdfjs-scroll-wrapped-button =\n    .title = Use Wrapped Scrolling\npdfjs-scroll-wrapped-button-label = Wrapped Scrolling\npdfjs-spread-none-button =\n    .title = Do not join page spreads\npdfjs-spread-none-button-label = No Spreads\npdfjs-spread-odd-button =\n    .title = Join page spreads starting with odd-numbered pages\npdfjs-spread-odd-button-label = Odd Spreads\npdfjs-spread-even-button =\n    .title = Join page spreads starting with even-numbered pages\npdfjs-spread-even-button-label = Even Spreads\npdfjs-document-properties-button =\n    .title = Document Properties\u2026\npdfjs-document-properties-button-label = Document Properties\u2026\npdfjs-document-properties-file-name = File name:\npdfjs-document-properties-file-size = File size:\npdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) } KB ({ $b } bytes)\npdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } MB ({ $b } bytes)\npdfjs-document-properties-title = Title:\npdfjs-document-properties-author = Author:\npdfjs-document-properties-subject = Subject:\npdfjs-document-properties-keywords = Keywords:\npdfjs-document-properties-creation-date = Creation Date:\npdfjs-document-properties-modification-date = Modification Date:\npdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: \"short\", timeStyle: \"medium\") }\npdfjs-document-properties-creator = Creator:\npdfjs-document-properties-producer = PDF Producer:\npdfjs-document-properties-version = PDF Version:\npdfjs-document-properties-page-count = Page Count:\npdfjs-document-properties-page-size = Page Size:\npdfjs-document-properties-page-size-unit-inches = in\npdfjs-document-properties-page-size-unit-millimeters = mm\npdfjs-document-properties-page-size-orientation-portrait = portrait\npdfjs-document-properties-page-size-orientation-landscape = landscape\npdfjs-document-properties-page-size-name-a-three = A3\npdfjs-document-properties-page-size-name-a-four = A4\npdfjs-document-properties-page-size-name-letter = Letter\npdfjs-document-properties-page-size-name-legal = Legal\npdfjs-document-properties-page-size-dimension-string = { $width } \xD7 { $height } { $unit } ({ $orientation })\npdfjs-document-properties-page-size-dimension-name-string = { $width } \xD7 { $height } { $unit } ({ $name }, { $orientation })\npdfjs-document-properties-linearized = Fast Web View:\npdfjs-document-properties-linearized-yes = Yes\npdfjs-document-properties-linearized-no = No\npdfjs-document-properties-close-button = Close\npdfjs-print-progress-message = Preparing document for printing\u2026\npdfjs-print-progress-percent = { $progress }%\npdfjs-print-progress-close-button = Cancel\npdfjs-printing-not-supported = Warning: Printing is not fully supported by this browser.\npdfjs-printing-not-ready = Warning: The PDF is not fully loaded for printing.\npdfjs-toggle-sidebar-button =\n    .title = Toggle Sidebar\npdfjs-toggle-sidebar-notification-button =\n    .title = Toggle Sidebar (document contains outline/attachments/layers)\npdfjs-toggle-sidebar-button-label = Toggle Sidebar\npdfjs-document-outline-button =\n    .title = Show Document Outline (double-click to expand/collapse all items)\npdfjs-document-outline-button-label = Document Outline\npdfjs-attachments-button =\n    .title = Show Attachments\npdfjs-attachments-button-label = Attachments\npdfjs-layers-button =\n    .title = Show Layers (double-click to reset all layers to the default state)\npdfjs-layers-button-label = Layers\npdfjs-thumbs-button =\n    .title = Show Thumbnails\npdfjs-thumbs-button-label = Thumbnails\npdfjs-current-outline-item-button =\n    .title = Find Current Outline Item\npdfjs-current-outline-item-button-label = Current Outline Item\npdfjs-findbar-button =\n    .title = Find in Document\npdfjs-findbar-button-label = Find\npdfjs-additional-layers = Additional Layers\npdfjs-thumb-page-title =\n    .title = Page { $page }\npdfjs-thumb-page-canvas =\n    .aria-label = Thumbnail of Page { $page }\npdfjs-find-input =\n    .title = Find\n    .placeholder = Find in document\u2026\npdfjs-find-previous-button =\n    .title = Find the previous occurrence of the phrase\npdfjs-find-previous-button-label = Previous\npdfjs-find-next-button =\n    .title = Find the next occurrence of the phrase\npdfjs-find-next-button-label = Next\npdfjs-find-highlight-checkbox = Highlight All\npdfjs-find-match-case-checkbox-label = Match Case\npdfjs-find-match-diacritics-checkbox-label = Match Diacritics\npdfjs-find-entire-word-checkbox-label = Whole Words\npdfjs-find-reached-top = Reached top of document, continued from bottom\npdfjs-find-reached-bottom = Reached end of document, continued from top\npdfjs-find-match-count =\n    { $total ->\n        [one] { $current } of { $total } match\n       *[other] { $current } of { $total } matches\n    }\npdfjs-find-match-count-limit =\n    { $limit ->\n        [one] More than { $limit } match\n       *[other] More than { $limit } matches\n    }\npdfjs-find-not-found = Phrase not found\npdfjs-page-scale-width = Page Width\npdfjs-page-scale-fit = Page Fit\npdfjs-page-scale-auto = Automatic Zoom\npdfjs-page-scale-actual = Actual Size\npdfjs-page-scale-percent = { $scale }%\npdfjs-page-landmark =\n    .aria-label = Page { $page }\npdfjs-loading-error = An error occurred while loading the PDF.\npdfjs-invalid-file-error = Invalid or corrupted PDF file.\npdfjs-missing-file-error = Missing PDF file.\npdfjs-unexpected-response-error = Unexpected server response.\npdfjs-rendering-error = An error occurred while rendering the page.\npdfjs-annotation-date-time-string = { DATETIME($dateObj, dateStyle: \"short\", timeStyle: \"medium\") }\npdfjs-text-annotation-type =\n    .alt = [{ $type } Annotation]\npdfjs-password-label = Enter the password to open this PDF file.\npdfjs-password-invalid = Invalid password. Please try again.\npdfjs-password-ok-button = OK\npdfjs-password-cancel-button = Cancel\npdfjs-web-fonts-disabled = Web fonts are disabled: unable to use embedded PDF fonts.\npdfjs-editor-free-text-button =\n    .title = Text\npdfjs-editor-free-text-button-label = Text\npdfjs-editor-ink-button =\n    .title = Draw\npdfjs-editor-ink-button-label = Draw\npdfjs-editor-stamp-button =\n    .title = Add or edit images\npdfjs-editor-stamp-button-label = Add or edit images\npdfjs-editor-highlight-button =\n    .title = Highlight\npdfjs-editor-highlight-button-label = Highlight\npdfjs-highlight-floating-button1 =\n    .title = Highlight\n    .aria-label = Highlight\npdfjs-highlight-floating-button-label = Highlight\npdfjs-editor-remove-ink-button =\n    .title = Remove drawing\npdfjs-editor-remove-freetext-button =\n    .title = Remove text\npdfjs-editor-remove-stamp-button =\n    .title = Remove image\npdfjs-editor-remove-highlight-button =\n    .title = Remove highlight\npdfjs-editor-free-text-color-input = Color\npdfjs-editor-free-text-size-input = Size\npdfjs-editor-ink-color-input = Color\npdfjs-editor-ink-thickness-input = Thickness\npdfjs-editor-ink-opacity-input = Opacity\npdfjs-editor-stamp-add-image-button =\n    .title = Add image\npdfjs-editor-stamp-add-image-button-label = Add image\npdfjs-editor-free-highlight-thickness-input = Thickness\npdfjs-editor-free-highlight-thickness-title =\n    .title = Change thickness when highlighting items other than text\npdfjs-free-text =\n    .aria-label = Text Editor\npdfjs-free-text-default-content = Start typing\u2026\npdfjs-ink =\n    .aria-label = Draw Editor\npdfjs-ink-canvas =\n    .aria-label = User-created image\npdfjs-editor-alt-text-button-label = Alt text\npdfjs-editor-alt-text-edit-button-label = Edit alt text\npdfjs-editor-alt-text-dialog-label = Choose an option\npdfjs-editor-alt-text-dialog-description = Alt text (alternative text) helps when people can\u2019t see the image or when it doesn\u2019t load.\npdfjs-editor-alt-text-add-description-label = Add a description\npdfjs-editor-alt-text-add-description-description = Aim for 1-2 sentences that describe the subject, setting, or actions.\npdfjs-editor-alt-text-mark-decorative-label = Mark as decorative\npdfjs-editor-alt-text-mark-decorative-description = This is used for ornamental images, like borders or watermarks.\npdfjs-editor-alt-text-cancel-button = Cancel\npdfjs-editor-alt-text-save-button = Save\npdfjs-editor-alt-text-decorative-tooltip = Marked as decorative\npdfjs-editor-alt-text-textarea =\n    .placeholder = For example, \u201CA young man sits down at a table to eat a meal\u201D\npdfjs-editor-resizer-top-left =\n    .aria-label = Top left corner \u2014 resize\npdfjs-editor-resizer-top-middle =\n    .aria-label = Top middle \u2014 resize\npdfjs-editor-resizer-top-right =\n    .aria-label = Top right corner \u2014 resize\npdfjs-editor-resizer-middle-right =\n    .aria-label = Middle right \u2014 resize\npdfjs-editor-resizer-bottom-right =\n    .aria-label = Bottom right corner \u2014 resize\npdfjs-editor-resizer-bottom-middle =\n    .aria-label = Bottom middle \u2014 resize\npdfjs-editor-resizer-bottom-left =\n    .aria-label = Bottom left corner \u2014 resize\npdfjs-editor-resizer-middle-left =\n    .aria-label = Middle left \u2014 resize\npdfjs-editor-highlight-colorpicker-label = Highlight color\npdfjs-editor-colorpicker-button =\n    .title = Change color\npdfjs-editor-colorpicker-dropdown =\n    .aria-label = Color choices\npdfjs-editor-colorpicker-yellow =\n    .title = Yellow\npdfjs-editor-colorpicker-green =\n    .title = Green\npdfjs-editor-colorpicker-blue =\n    .title = Blue\npdfjs-editor-colorpicker-pink =\n    .title = Pink\npdfjs-editor-colorpicker-red =\n    .title = Red\npdfjs-editor-highlight-show-all-button-label = Show all\npdfjs-editor-highlight-show-all-button =\n    .title = Show all\npdfjs-editor-new-alt-text-dialog-edit-label = Edit alt text (image description)\npdfjs-editor-new-alt-text-dialog-add-label = Add alt text (image description)\npdfjs-editor-new-alt-text-textarea =\n    .placeholder = Write your description here\u2026\npdfjs-editor-new-alt-text-description = Short description for people who can\u2019t see the image or when the image doesn\u2019t load.\npdfjs-editor-new-alt-text-disclaimer1 = This alt text was created automatically and may be inaccurate.\npdfjs-editor-new-alt-text-disclaimer-learn-more-url = Learn more\npdfjs-editor-new-alt-text-create-automatically-button-label = Create alt text automatically\npdfjs-editor-new-alt-text-not-now-button = Not now\npdfjs-editor-new-alt-text-error-title = Couldn\u2019t create alt text automatically\npdfjs-editor-new-alt-text-error-description = Please write your own alt text or try again later.\npdfjs-editor-new-alt-text-error-close-button = Close\npdfjs-editor-new-alt-text-ai-model-downloading-progress = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)\n    .aria-valuetext = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)\npdfjs-editor-new-alt-text-added-button-label = Alt text added\npdfjs-editor-new-alt-text-missing-button-label = Missing alt text\npdfjs-editor-new-alt-text-to-review-button-label = Review alt text\npdfjs-editor-new-alt-text-generated-alt-text-with-disclaimer = Created automatically: { $generatedAltText }\npdfjs-image-alt-text-settings-button =\n    .title = Image alt text settings\npdfjs-image-alt-text-settings-button-label = Image alt text settings\npdfjs-editor-alt-text-settings-dialog-label = Image alt text settings\npdfjs-editor-alt-text-settings-automatic-title = Automatic alt text\npdfjs-editor-alt-text-settings-create-model-button-label = Create alt text automatically\npdfjs-editor-alt-text-settings-create-model-description = Suggests descriptions to help people who can\u2019t see the image or when the image doesn\u2019t load.\npdfjs-editor-alt-text-settings-download-model-label = Alt text AI model ({ $totalSize } MB)\npdfjs-editor-alt-text-settings-ai-model-description = Runs locally on your device so your data stays private. Required for automatic alt text.\npdfjs-editor-alt-text-settings-delete-model-button = Delete\npdfjs-editor-alt-text-settings-download-model-button = Download\npdfjs-editor-alt-text-settings-downloading-model-button = Downloading\u2026\npdfjs-editor-alt-text-settings-editor-title = Alt text editor\npdfjs-editor-alt-text-settings-show-dialog-button-label = Show alt text editor right away when adding an image\npdfjs-editor-alt-text-settings-show-dialog-description = Helps you make sure all your images have alt text.\npdfjs-editor-alt-text-settings-close-button = Close";
     return createBundle(lang, text);
   }
 }
 
-;// CONCATENATED MODULE: ./web/generic_scripting.js
+;// ./web/generic_scripting.js
 
 async function docProperties(pdfDocument) {
   const url = "",
@@ -3066,7 +6757,7 @@ async function docProperties(pdfDocument) {
 class GenericScripting {
   constructor(sandboxBundleSrc) {
     this._ready = new Promise((resolve, reject) => {
-      const sandbox = import( /*webpackIgnore: true*/sandboxBundleSrc);
+      const sandbox = import(/*webpackIgnore: true*/sandboxBundleSrc);
       sandbox.then(pdfjsSandbox => {
         resolve(pdfjsSandbox.QuickJSSandbox());
       }).catch(reject);
@@ -3086,7 +6777,9 @@ class GenericScripting {
   }
 }
 
-;// CONCATENATED MODULE: ./web/genericcom.js
+;// ./web/genericcom.js
+
+
 
 
 
@@ -3118,12 +6811,642 @@ class MLManager {
   async deleteModel(_service) {
     return null;
   }
-  async guess() {
+  isReady(_name) {
+    return false;
+  }
+  guess(_data) {}
+  toggleService(_name, _enabled) {}
+  static getFakeMLManager(options) {
+    return new FakeMLManager(options);
+  }
+}
+class FakeMLManager {
+  eventBus = null;
+  hasProgress = false;
+  constructor({
+    enableGuessAltText,
+    enableAltTextModelDownload
+  }) {
+    this.enableGuessAltText = enableGuessAltText;
+    this.enableAltTextModelDownload = enableAltTextModelDownload;
+  }
+  setEventBus(eventBus, abortSignal) {
+    this.eventBus = eventBus;
+  }
+  async isEnabledFor(_name) {
+    return this.enableGuessAltText;
+  }
+  async deleteModel(_name) {
+    this.enableAltTextModelDownload = false;
     return null;
+  }
+  async loadModel(_name) {}
+  async downloadModel(_name) {
+    this.hasProgress = true;
+    const {
+      promise,
+      resolve
+    } = Promise.withResolvers();
+    const total = 1e8;
+    const end = 1.5 * total;
+    const increment = 5e6;
+    let loaded = 0;
+    const id = setInterval(() => {
+      loaded += increment;
+      if (loaded <= end) {
+        this.eventBus.dispatch("loadaiengineprogress", {
+          source: this,
+          detail: {
+            total,
+            totalLoaded: loaded,
+            finished: loaded + increment >= end
+          }
+        });
+        return;
+      }
+      clearInterval(id);
+      this.hasProgress = false;
+      this.enableAltTextModelDownload = true;
+      resolve(true);
+    }, 900);
+    return promise;
+  }
+  isReady(_name) {
+    return this.enableAltTextModelDownload;
+  }
+  guess({
+    request: {
+      data
+    }
+  }) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(data ? {
+          output: "Fake alt text"
+        } : {
+          error: true
+        });
+      }, 3000);
+    });
+  }
+  toggleService(_name, enabled) {
+    this.enableGuessAltText = enabled;
   }
 }
 
-;// CONCATENATED MODULE: ./web/alt_text_manager.js
+;// ./web/new_alt_text_manager.js
+
+
+
+
+
+
+
+
+class NewAltTextManager {
+  #boundCancel = this.#cancel.bind(this);
+  #createAutomaticallyButton;
+  #currentEditor = null;
+  #cancelButton;
+  #descriptionContainer;
+  #dialog;
+  #disclaimer;
+  #downloadModel;
+  #downloadModelDescription;
+  #eventBus;
+  #firstTime = false;
+  #guessedAltText;
+  #hasAI = null;
+  #isEditing = null;
+  #imagePreview;
+  #imageData;
+  #isAILoading = false;
+  #wasAILoading = false;
+  #learnMore;
+  #notNowButton;
+  #overlayManager;
+  #textarea;
+  #title;
+  #uiManager;
+  #previousAltText = null;
+  constructor({
+    descriptionContainer,
+    dialog,
+    imagePreview,
+    cancelButton,
+    disclaimer,
+    notNowButton,
+    saveButton,
+    textarea,
+    learnMore,
+    errorCloseButton,
+    createAutomaticallyButton,
+    downloadModel,
+    downloadModelDescription,
+    title
+  }, overlayManager, eventBus) {
+    this.#cancelButton = cancelButton;
+    this.#createAutomaticallyButton = createAutomaticallyButton;
+    this.#descriptionContainer = descriptionContainer;
+    this.#dialog = dialog;
+    this.#disclaimer = disclaimer;
+    this.#notNowButton = notNowButton;
+    this.#imagePreview = imagePreview;
+    this.#textarea = textarea;
+    this.#learnMore = learnMore;
+    this.#title = title;
+    this.#downloadModel = downloadModel;
+    this.#downloadModelDescription = downloadModelDescription;
+    this.#overlayManager = overlayManager;
+    this.#eventBus = eventBus;
+    dialog.addEventListener("close", this.#close.bind(this));
+    dialog.addEventListener("contextmenu", event => {
+      if (event.target !== this.#textarea) {
+        event.preventDefault();
+      }
+    });
+    cancelButton.addEventListener("click", this.#boundCancel);
+    notNowButton.addEventListener("click", this.#boundCancel);
+    saveButton.addEventListener("click", this.#save.bind(this));
+    errorCloseButton.addEventListener("click", () => {
+      this.#toggleError(false);
+    });
+    createAutomaticallyButton.addEventListener("click", async () => {
+      const checked = createAutomaticallyButton.getAttribute("aria-pressed") !== "true";
+      this.#currentEditor._reportTelemetry({
+        action: "pdfjs.image.alt_text.ai_generation_check",
+        data: {
+          status: checked
+        }
+      });
+      if (this.#uiManager) {
+        this.#uiManager.setPreference("enableGuessAltText", checked);
+        await this.#uiManager.mlManager.toggleService("altText", checked);
+      }
+      this.#toggleGuessAltText(checked, false);
+    });
+    textarea.addEventListener("focus", () => {
+      this.#wasAILoading = this.#isAILoading;
+      this.#toggleLoading(false);
+      this.#toggleTitleAndDisclaimer();
+    });
+    textarea.addEventListener("blur", () => {
+      if (!textarea.value) {
+        this.#toggleLoading(this.#wasAILoading);
+      }
+      this.#toggleTitleAndDisclaimer();
+    });
+    textarea.addEventListener("input", () => {
+      this.#toggleTitleAndDisclaimer();
+    });
+    eventBus._on("enableguessalttext", ({
+      value
+    }) => {
+      this.#toggleGuessAltText(value, false);
+    });
+    this.#overlayManager.register(dialog);
+    this.#learnMore.addEventListener("click", () => {
+      this.#currentEditor._reportTelemetry({
+        action: "pdfjs.image.alt_text.info",
+        data: {
+          topic: "alt_text"
+        }
+      });
+    });
+  }
+  #toggleLoading(value) {
+    if (!this.#uiManager || this.#isAILoading === value) {
+      return;
+    }
+    this.#isAILoading = value;
+    this.#descriptionContainer.classList.toggle("loading", value);
+  }
+  #toggleError(value) {
+    if (!this.#uiManager) {
+      return;
+    }
+    this.#dialog.classList.toggle("error", value);
+  }
+  async #toggleGuessAltText(value, isInitial = false) {
+    if (!this.#uiManager) {
+      return;
+    }
+    this.#dialog.classList.toggle("aiDisabled", !value);
+    this.#createAutomaticallyButton.setAttribute("aria-pressed", value);
+    if (value) {
+      const {
+        altTextLearnMoreUrl
+      } = this.#uiManager.mlManager;
+      if (altTextLearnMoreUrl) {
+        this.#learnMore.href = altTextLearnMoreUrl;
+      }
+      this.#mlGuessAltText(isInitial);
+    } else {
+      this.#toggleLoading(false);
+      this.#isAILoading = false;
+      this.#toggleTitleAndDisclaimer();
+    }
+  }
+  #toggleNotNow() {
+    this.#notNowButton.classList.toggle("hidden", !this.#firstTime);
+    this.#cancelButton.classList.toggle("hidden", this.#firstTime);
+  }
+  #toggleAI(value) {
+    if (!this.#uiManager || this.#hasAI === value) {
+      return;
+    }
+    this.#hasAI = value;
+    this.#dialog.classList.toggle("noAi", !value);
+    this.#toggleTitleAndDisclaimer();
+  }
+  #toggleTitleAndDisclaimer() {
+    const visible = this.#isAILoading || this.#guessedAltText && this.#guessedAltText === this.#textarea.value;
+    this.#disclaimer.hidden = !visible;
+    const isEditing = this.#isAILoading || !!this.#textarea.value;
+    if (this.#isEditing === isEditing) {
+      return;
+    }
+    this.#isEditing = isEditing;
+    this.#title.setAttribute("data-l10n-id", isEditing ? "pdfjs-editor-new-alt-text-dialog-edit-label" : "pdfjs-editor-new-alt-text-dialog-add-label");
+  }
+  async #mlGuessAltText(isInitial) {
+    if (this.#isAILoading) {
+      return;
+    }
+    if (this.#textarea.value) {
+      return;
+    }
+    if (isInitial && this.#previousAltText !== null) {
+      return;
+    }
+    this.#guessedAltText = this.#currentEditor.guessedAltText;
+    if (this.#previousAltText === null && this.#guessedAltText) {
+      this.#addAltText(this.#guessedAltText);
+      return;
+    }
+    this.#toggleLoading(true);
+    this.#toggleTitleAndDisclaimer();
+    let hasError = false;
+    try {
+      const altText = await this.#currentEditor.mlGuessAltText(this.#imageData, false);
+      if (altText) {
+        this.#guessedAltText = altText;
+        this.#wasAILoading = this.#isAILoading;
+        if (this.#isAILoading) {
+          this.#addAltText(altText);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      hasError = true;
+    }
+    this.#toggleLoading(false);
+    this.#toggleTitleAndDisclaimer();
+    if (hasError && this.#uiManager) {
+      this.#toggleError(true);
+    }
+  }
+  #addAltText(altText) {
+    if (!this.#uiManager || this.#textarea.value) {
+      return;
+    }
+    this.#textarea.value = altText;
+    this.#toggleTitleAndDisclaimer();
+  }
+  #setProgress() {
+    this.#downloadModel.classList.toggle("hidden", false);
+    const callback = async ({
+      detail: {
+        finished,
+        total,
+        totalLoaded
+      }
+    }) => {
+      const ONE_MEGA_BYTES = 1e6;
+      totalLoaded = Math.min(0.99 * total, totalLoaded);
+      const totalSize = this.#downloadModelDescription.ariaValueMax = Math.round(total / ONE_MEGA_BYTES);
+      const downloadedSize = this.#downloadModelDescription.ariaValueNow = Math.round(totalLoaded / ONE_MEGA_BYTES);
+      this.#downloadModelDescription.setAttribute("data-l10n-args", JSON.stringify({
+        totalSize,
+        downloadedSize
+      }));
+      if (!finished) {
+        return;
+      }
+      this.#eventBus._off("loadaiengineprogress", callback);
+      this.#downloadModel.classList.toggle("hidden", true);
+      this.#toggleAI(true);
+      if (!this.#uiManager) {
+        return;
+      }
+      const {
+        mlManager
+      } = this.#uiManager;
+      mlManager.toggleService("altText", true);
+      this.#toggleGuessAltText(await mlManager.isEnabledFor("altText"), true);
+    };
+    this.#eventBus._on("loadaiengineprogress", callback);
+  }
+  async editAltText(uiManager, editor, firstTime) {
+    if (this.#currentEditor || !editor) {
+      return;
+    }
+    if (firstTime && editor.hasAltTextData()) {
+      editor.altTextFinish();
+      return;
+    }
+    this.#firstTime = firstTime;
+    let {
+      mlManager
+    } = uiManager;
+    let hasAI = !!mlManager;
+    this.#toggleTitleAndDisclaimer();
+    if (mlManager && !mlManager.isReady("altText")) {
+      hasAI = false;
+      if (mlManager.hasProgress) {
+        this.#setProgress();
+      } else {
+        mlManager = null;
+      }
+    } else {
+      this.#downloadModel.classList.toggle("hidden", true);
+    }
+    const isAltTextEnabledPromise = mlManager?.isEnabledFor("altText");
+    this.#currentEditor = editor;
+    this.#uiManager = uiManager;
+    this.#uiManager.removeEditListeners();
+    ({
+      altText: this.#previousAltText
+    } = editor.altTextData);
+    this.#textarea.value = this.#previousAltText ?? "";
+    const AI_MAX_IMAGE_DIMENSION = 224;
+    const MAX_PREVIEW_DIMENSION = 180;
+    let canvas, width, height;
+    if (mlManager) {
+      ({
+        canvas,
+        width,
+        height,
+        imageData: this.#imageData
+      } = editor.copyCanvas(AI_MAX_IMAGE_DIMENSION, MAX_PREVIEW_DIMENSION, true));
+      if (hasAI) {
+        this.#toggleGuessAltText(await isAltTextEnabledPromise, true);
+      }
+    } else {
+      ({
+        canvas,
+        width,
+        height
+      } = editor.copyCanvas(AI_MAX_IMAGE_DIMENSION, MAX_PREVIEW_DIMENSION, false));
+    }
+    canvas.setAttribute("role", "presentation");
+    const {
+      style
+    } = canvas;
+    style.width = `${width}px`;
+    style.height = `${height}px`;
+    this.#imagePreview.append(canvas);
+    this.#toggleNotNow();
+    this.#toggleAI(hasAI);
+    this.#toggleError(false);
+    try {
+      await this.#overlayManager.open(this.#dialog);
+    } catch (ex) {
+      this.#close();
+      throw ex;
+    }
+  }
+  #cancel() {
+    this.#currentEditor.altTextData = {
+      cancel: true
+    };
+    const altText = this.#textarea.value.trim();
+    this.#currentEditor._reportTelemetry({
+      action: "pdfjs.image.alt_text.dismiss",
+      data: {
+        alt_text_type: altText ? "present" : "empty",
+        flow: this.#firstTime ? "image_add" : "alt_text_edit"
+      }
+    });
+    this.#currentEditor._reportTelemetry({
+      action: "pdfjs.image.image_added",
+      data: {
+        alt_text_modal: true,
+        alt_text_type: "skipped"
+      }
+    });
+    this.#finish();
+  }
+  #finish() {
+    if (this.#overlayManager.active === this.#dialog) {
+      this.#overlayManager.close(this.#dialog);
+    }
+  }
+  #close() {
+    const canvas = this.#imagePreview.firstChild;
+    canvas.remove();
+    canvas.width = canvas.height = 0;
+    this.#imageData = null;
+    this.#toggleLoading(false);
+    this.#uiManager?.addEditListeners();
+    this.#currentEditor.altTextFinish();
+    this.#uiManager?.setSelected(this.#currentEditor);
+    this.#currentEditor = null;
+    this.#uiManager = null;
+  }
+  #save() {
+    const altText = this.#textarea.value.trim();
+    this.#currentEditor.altTextData = {
+      altText,
+      decorative: false
+    };
+    this.#currentEditor.altTextData.guessedAltText = this.#guessedAltText;
+    if (this.#guessedAltText && this.#guessedAltText !== altText) {
+      const guessedWords = new Set(this.#guessedAltText.split(/\s+/));
+      const words = new Set(altText.split(/\s+/));
+      this.#currentEditor._reportTelemetry({
+        action: "pdfjs.image.alt_text.user_edit",
+        data: {
+          total_words: guessedWords.size,
+          words_removed: guessedWords.difference(words).size,
+          words_added: words.difference(guessedWords).size
+        }
+      });
+    }
+    this.#currentEditor._reportTelemetry({
+      action: "pdfjs.image.image_added",
+      data: {
+        alt_text_modal: true,
+        alt_text_type: altText ? "present" : "empty"
+      }
+    });
+    this.#currentEditor._reportTelemetry({
+      action: "pdfjs.image.alt_text.save",
+      data: {
+        alt_text_type: altText ? "present" : "empty",
+        flow: this.#firstTime ? "image_add" : "alt_text_edit"
+      }
+    });
+    this.#finish();
+  }
+  destroy() {
+    this.#uiManager = null;
+    this.#finish();
+  }
+}
+class ImageAltTextSettings {
+  #aiModelSettings;
+  #createModelButton;
+  #downloadModelButton;
+  #dialog;
+  #eventBus;
+  #mlManager;
+  #overlayManager;
+  #showAltTextDialogButton;
+  constructor({
+    dialog,
+    createModelButton,
+    aiModelSettings,
+    learnMore,
+    closeButton,
+    deleteModelButton,
+    downloadModelButton,
+    showAltTextDialogButton
+  }, overlayManager, eventBus, mlManager) {
+    this.#dialog = dialog;
+    this.#aiModelSettings = aiModelSettings;
+    this.#createModelButton = createModelButton;
+    this.#downloadModelButton = downloadModelButton;
+    this.#showAltTextDialogButton = showAltTextDialogButton;
+    this.#overlayManager = overlayManager;
+    this.#eventBus = eventBus;
+    this.#mlManager = mlManager;
+    const {
+      altTextLearnMoreUrl
+    } = mlManager;
+    if (altTextLearnMoreUrl) {
+      learnMore.href = altTextLearnMoreUrl;
+    }
+    dialog.addEventListener("contextmenu", noContextMenu);
+    createModelButton.addEventListener("click", async e => {
+      const checked = this.#togglePref("enableGuessAltText", e);
+      await mlManager.toggleService("altText", checked);
+      this.#reportTelemetry({
+        type: "stamp",
+        action: "pdfjs.image.alt_text.settings_ai_generation_check",
+        data: {
+          status: checked
+        }
+      });
+    });
+    showAltTextDialogButton.addEventListener("click", e => {
+      const checked = this.#togglePref("enableNewAltTextWhenAddingImage", e);
+      this.#reportTelemetry({
+        type: "stamp",
+        action: "pdfjs.image.alt_text.settings_edit_alt_text_check",
+        data: {
+          status: checked
+        }
+      });
+    });
+    deleteModelButton.addEventListener("click", this.#delete.bind(this, true));
+    downloadModelButton.addEventListener("click", this.#download.bind(this, true));
+    closeButton.addEventListener("click", this.#finish.bind(this));
+    learnMore.addEventListener("click", () => {
+      this.#reportTelemetry({
+        type: "stamp",
+        action: "pdfjs.image.alt_text.info",
+        data: {
+          topic: "ai_generation"
+        }
+      });
+    });
+    eventBus._on("enablealttextmodeldownload", ({
+      value
+    }) => {
+      if (value) {
+        this.#download(false);
+      } else {
+        this.#delete(false);
+      }
+    });
+    this.#overlayManager.register(dialog);
+  }
+  #reportTelemetry(data) {
+    this.#eventBus.dispatch("reporttelemetry", {
+      source: this,
+      details: {
+        type: "editing",
+        data
+      }
+    });
+  }
+  async #download(isFromUI = false) {
+    if (isFromUI) {
+      this.#downloadModelButton.disabled = true;
+      const span = this.#downloadModelButton.firstChild;
+      span.setAttribute("data-l10n-id", "pdfjs-editor-alt-text-settings-downloading-model-button");
+      await this.#mlManager.downloadModel("altText");
+      span.setAttribute("data-l10n-id", "pdfjs-editor-alt-text-settings-download-model-button");
+      this.#createModelButton.disabled = false;
+      this.#setPref("enableGuessAltText", true);
+      this.#mlManager.toggleService("altText", true);
+      this.#setPref("enableAltTextModelDownload", true);
+      this.#downloadModelButton.disabled = false;
+    }
+    this.#aiModelSettings.classList.toggle("download", false);
+    this.#createModelButton.setAttribute("aria-pressed", true);
+  }
+  async #delete(isFromUI = false) {
+    if (isFromUI) {
+      await this.#mlManager.deleteModel("altText");
+      this.#setPref("enableGuessAltText", false);
+      this.#setPref("enableAltTextModelDownload", false);
+    }
+    this.#aiModelSettings.classList.toggle("download", true);
+    this.#createModelButton.disabled = true;
+    this.#createModelButton.setAttribute("aria-pressed", false);
+  }
+  async open({
+    enableGuessAltText,
+    enableNewAltTextWhenAddingImage
+  }) {
+    const {
+      enableAltTextModelDownload
+    } = this.#mlManager;
+    this.#createModelButton.disabled = !enableAltTextModelDownload;
+    this.#createModelButton.setAttribute("aria-pressed", enableAltTextModelDownload && enableGuessAltText);
+    this.#showAltTextDialogButton.setAttribute("aria-pressed", enableNewAltTextWhenAddingImage);
+    this.#aiModelSettings.classList.toggle("download", !enableAltTextModelDownload);
+    await this.#overlayManager.open(this.#dialog);
+    this.#reportTelemetry({
+      type: "stamp",
+      action: "pdfjs.image.alt_text.settings_displayed"
+    });
+  }
+  #togglePref(name, {
+    target
+  }) {
+    const checked = target.getAttribute("aria-pressed") !== "true";
+    this.#setPref(name, checked);
+    target.setAttribute("aria-pressed", checked);
+    return checked;
+  }
+  #setPref(name, value) {
+    this.#eventBus.dispatch("setpreference", {
+      source: this,
+      name,
+      value
+    });
+  }
+  #finish() {
+    if (this.#overlayManager.active === this.#dialog) {
+      this.#overlayManager.close(this.#dialog);
+    }
+  }
+}
+
+;// ./web/alt_text_manager.js
 
 class AltTextManager {
   #boundUpdateUIState = this.#updateUIState.bind(this);
@@ -3370,7 +7693,7 @@ class AltTextManager {
   }
 }
 
-;// CONCATENATED MODULE: ./web/annotation_editor_params.js
+;// ./web/annotation_editor_params.js
 
 class AnnotationEditorParams {
   constructor(options, eventBus) {
@@ -3410,6 +7733,15 @@ class AnnotationEditorParams {
       dispatchEvent("INK_OPACITY", this.valueAsNumber);
     });
     editorStampAddImage.addEventListener("click", () => {
+      this.eventBus.dispatch("reporttelemetry", {
+        source: this,
+        details: {
+          type: "editing",
+          data: {
+            action: "pdfjs.image.add_image_click"
+          }
+        }
+      });
       dispatchEvent("CREATE");
     });
     editorFreeHighlightThickness.addEventListener("input", function () {
@@ -3453,16 +7785,32 @@ class AnnotationEditorParams {
   }
 }
 
-;// CONCATENATED MODULE: ./web/caret_browsing.js
+;// ./web/caret_browsing.js
+
 const PRECISION = 1e-1;
 class CaretBrowsingMode {
   #mainContainer;
-  #toolBarHeight;
+  #toolBarHeight = 0;
   #viewerContainer;
-  constructor(mainContainer, viewerContainer, toolbarContainer) {
+  constructor(abortSignal, mainContainer, viewerContainer, toolbarContainer) {
     this.#mainContainer = mainContainer;
     this.#viewerContainer = viewerContainer;
-    this.#toolBarHeight = toolbarContainer?.getBoundingClientRect().height ?? 0;
+    if (!toolbarContainer) {
+      return;
+    }
+    this.#toolBarHeight = toolbarContainer.getBoundingClientRect().height;
+    const toolbarObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        if (entry.target === toolbarContainer) {
+          this.#toolBarHeight = Math.floor(entry.borderBoxSize[0].blockSize);
+          break;
+        }
+      }
+    });
+    toolbarObserver.observe(toolbarContainer);
+    abortSignal.addEventListener("abort", () => toolbarObserver.disconnect(), {
+      once: true
+    });
   }
   #isOnSameLine(rect1, rect2) {
     const top1 = rect1.y;
@@ -3654,7 +8002,10 @@ class CaretBrowsingMode {
   }
 }
 
-;// CONCATENATED MODULE: ./web/download_manager.js
+;// ./web/download_manager.js
+
+
+
 
 function download(blobUrl, filename) {
   const a = document.createElement("a");
@@ -3706,7 +8057,7 @@ class DownloadManager {
     this.downloadData(data, filename, contentType);
     return false;
   }
-  download(data, url, filename, _options) {
+  download(data, url, filename) {
     let blobUrl;
     if (data) {
       blobUrl = URL.createObjectURL(new Blob([data], {
@@ -3723,7 +8074,7 @@ class DownloadManager {
   }
 }
 
-;// CONCATENATED MODULE: ./web/overlay_manager.js
+;// ./web/overlay_manager.js
 class OverlayManager {
   #overlays = new WeakMap();
   #active = null;
@@ -3771,7 +8122,8 @@ class OverlayManager {
   }
 }
 
-;// CONCATENATED MODULE: ./web/password_prompt.js
+;// ./web/password_prompt.js
+
 
 class PasswordPrompt {
   #activeCapability = null;
@@ -3808,7 +8160,7 @@ class PasswordPrompt {
     if (!this._isViewerEmbedded || passwordIncorrect) {
       this.input.focus();
     }
-    this.label.setAttribute("data-l10n-id", `pdfjs-password-${passwordIncorrect ? "invalid" : "label"}`);
+    this.label.setAttribute("data-l10n-id", passwordIncorrect ? "pdfjs-password-invalid" : "pdfjs-password-label");
   }
   async close() {
     if (this.overlayManager.active === this.dialog) {
@@ -3843,15 +8195,12 @@ class PasswordPrompt {
   }
 }
 
-;// CONCATENATED MODULE: ./web/base_tree_viewer.js
+;// ./web/base_tree_viewer.js
 
 const TREEITEM_OFFSET_TOP = -100;
 const TREEITEM_SELECTED_CLASS = "selected";
 class BaseTreeViewer {
   constructor(options) {
-    if (this.constructor === BaseTreeViewer) {
-      throw new Error("Cannot initialize BaseTreeViewer.");
-    }
     this.container = options.container;
     this.eventBus = options.eventBus;
     this._l10n = options.l10n;
@@ -3942,7 +8291,8 @@ class BaseTreeViewer {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_attachment_viewer.js
+;// ./web/pdf_attachment_viewer.js
+
 
 
 class PDFAttachmentViewer extends BaseTreeViewer {
@@ -4039,7 +8389,7 @@ class PDFAttachmentViewer extends BaseTreeViewer {
   }
 }
 
-;// CONCATENATED MODULE: ./web/grab_to_pan.js
+;// ./web/grab_to_pan.js
 const CSS_CLASS_GRAB = "grab-to-pan-grab";
 class GrabToPan {
   constructor({
@@ -4131,7 +8481,7 @@ class GrabToPan {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_cursor_tools.js
+;// ./web/pdf_cursor_tools.js
 
 
 
@@ -4157,7 +8507,17 @@ class PDFCursorTools {
     if (this.#prevActive !== null) {
       return;
     }
+    this.#switchTool(tool);
+  }
+  #switchTool(tool, disabled = false) {
     if (tool === this.#active) {
+      if (this.#prevActive !== null) {
+        this.eventBus.dispatch("cursortoolchanged", {
+          source: this,
+          tool,
+          disabled
+        });
+      }
       return;
     }
     const disableActiveTool = () => {
@@ -4186,7 +8546,8 @@ class PDFCursorTools {
     this.#active = tool;
     this.eventBus.dispatch("cursortoolchanged", {
       source: this,
-      tool
+      tool,
+      disabled
     });
   }
   #addEventListeners() {
@@ -4202,15 +8563,13 @@ class PDFCursorTools {
     let annotationEditorMode = AnnotationEditorType.NONE,
       presentationModeState = PresentationModeState.NORMAL;
     const disableActive = () => {
-      const prevActive = this.#active;
-      this.switchTool(CursorTool.SELECT);
-      this.#prevActive ??= prevActive;
+      this.#prevActive ??= this.#active;
+      this.#switchTool(CursorTool.SELECT, true);
     };
     const enableActive = () => {
-      const prevActive = this.#prevActive;
-      if (prevActive !== null && annotationEditorMode === AnnotationEditorType.NONE && presentationModeState === PresentationModeState.NORMAL) {
+      if (this.#prevActive !== null && annotationEditorMode === AnnotationEditorType.NONE && presentationModeState === PresentationModeState.NORMAL) {
+        this.#switchTool(this.#prevActive);
         this.#prevActive = null;
-        this.switchTool(prevActive);
       }
     };
     this.eventBus._on("annotationeditormodechanged", ({
@@ -4241,18 +8600,18 @@ class PDFCursorTools {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_document_properties.js
+;// ./web/pdf_document_properties.js
 
 
-const DEFAULT_FIELD_CONTENT = "-";
+
 const NON_METRIC_LOCALES = ["en-us", "en-lr", "my"];
 const US_PAGE_NAMES = {
-  "8.5x11": "letter",
-  "8.5x14": "legal"
+  "8.5x11": "pdfjs-document-properties-page-size-name-letter",
+  "8.5x14": "pdfjs-document-properties-page-size-name-legal"
 };
 const METRIC_PAGE_NAMES = {
-  "297x420": "a-three",
-  "210x297": "a-four"
+  "297x420": "pdfjs-document-properties-page-size-name-a-three",
+  "210x297": "pdfjs-document-properties-page-size-name-a-four"
 };
 function getPageName(size, isPortrait, pageNames) {
   const width = isPortrait ? size.width : size.height;
@@ -4280,7 +8639,6 @@ class PDFDocumentProperties {
     eventBus._on("rotationchanging", evt => {
       this._pagesRotation = evt.pagesRotation;
     });
-    this._isNonMetricLocale = NON_METRIC_LOCALES.includes(l10n.getLanguage());
   }
   async open() {
     await Promise.all([this.overlayManager.open(this.dialog), this._dataAvailableCapability.promise]);
@@ -4333,7 +8691,7 @@ class PDFDocumentProperties {
   setDocument(pdfDocument) {
     if (this.pdfDocument) {
       this.#reset();
-      this.#updateUI(true);
+      this.#updateUI();
     }
     if (!pdfDocument) {
       return;
@@ -4348,32 +8706,23 @@ class PDFDocumentProperties {
     this._currentPageNumber = 1;
     this._pagesRotation = 0;
   }
-  #updateUI(reset = false) {
-    if (reset || !this.#fieldData) {
-      for (const id in this.fields) {
-        this.fields[id].textContent = DEFAULT_FIELD_CONTENT;
-      }
-      return;
-    }
-    if (this.overlayManager.active !== this.dialog) {
+  #updateUI() {
+    if (this.#fieldData && this.overlayManager.active !== this.dialog) {
       return;
     }
     for (const id in this.fields) {
-      const content = this.#fieldData[id];
-      this.fields[id].textContent = content || content === 0 ? content : DEFAULT_FIELD_CONTENT;
+      const content = this.#fieldData?.[id];
+      this.fields[id].textContent = content || content === 0 ? content : "-";
     }
   }
-  async #parseFileSize(fileSize = 0) {
-    const kb = fileSize / 1024,
+  async #parseFileSize(b = 0) {
+    const kb = b / 1024,
       mb = kb / 1024;
-    if (!kb) {
-      return undefined;
-    }
-    return this.l10n.get(`pdfjs-document-properties-${mb >= 1 ? "mb" : "kb"}`, {
-      size_mb: mb >= 1 && (+mb.toPrecision(3)).toLocaleString(),
-      size_kb: mb < 1 && (+kb.toPrecision(3)).toLocaleString(),
-      size_b: fileSize.toLocaleString()
-    });
+    return kb ? this.l10n.get(mb >= 1 ? "pdfjs-document-properties-size-mb" : "pdfjs-document-properties-size-kb", {
+      mb,
+      kb,
+      b
+    }) : undefined;
   }
   async #parsePageSize(pageSizeInches, pagesRotation) {
     if (!pageSizeInches) {
@@ -4385,7 +8734,8 @@ class PDFDocumentProperties {
         height: pageSizeInches.width
       };
     }
-    const isPortrait = isPortraitOrientation(pageSizeInches);
+    const isPortrait = isPortraitOrientation(pageSizeInches),
+      nonMetric = NON_METRIC_LOCALES.includes(this.l10n.getLanguage());
     let sizeInches = {
       width: Math.round(pageSizeInches.width * 100) / 100,
       height: Math.round(pageSizeInches.height * 100) / 100
@@ -4394,8 +8744,8 @@ class PDFDocumentProperties {
       width: Math.round(pageSizeInches.width * 25.4 * 10) / 10,
       height: Math.round(pageSizeInches.height * 25.4 * 10) / 10
     };
-    let rawName = getPageName(sizeInches, isPortrait, US_PAGE_NAMES) || getPageName(sizeMillimeters, isPortrait, METRIC_PAGE_NAMES);
-    if (!rawName && !(Number.isInteger(sizeMillimeters.width) && Number.isInteger(sizeMillimeters.height))) {
+    let nameId = getPageName(sizeInches, isPortrait, US_PAGE_NAMES) || getPageName(sizeMillimeters, isPortrait, METRIC_PAGE_NAMES);
+    if (!nameId && !(Number.isInteger(sizeMillimeters.width) && Number.isInteger(sizeMillimeters.height))) {
       const exactMillimeters = {
         width: pageSizeInches.width * 25.4,
         height: pageSizeInches.height * 25.4
@@ -4405,8 +8755,8 @@ class PDFDocumentProperties {
         height: Math.round(sizeMillimeters.height)
       };
       if (Math.abs(exactMillimeters.width - intMillimeters.width) < 0.1 && Math.abs(exactMillimeters.height - intMillimeters.height) < 0.1) {
-        rawName = getPageName(intMillimeters, isPortrait, METRIC_PAGE_NAMES);
-        if (rawName) {
+        nameId = getPageName(intMillimeters, isPortrait, METRIC_PAGE_NAMES);
+        if (nameId) {
           sizeInches = {
             width: Math.round(intMillimeters.width / 25.4 * 100) / 100,
             height: Math.round(intMillimeters.height / 25.4 * 100) / 100
@@ -4418,31 +8768,28 @@ class PDFDocumentProperties {
     const [{
       width,
       height
-    }, unit, name, orientation] = await Promise.all([this._isNonMetricLocale ? sizeInches : sizeMillimeters, this.l10n.get(`pdfjs-document-properties-page-size-unit-${this._isNonMetricLocale ? "inches" : "millimeters"}`), rawName && this.l10n.get(`pdfjs-document-properties-page-size-name-${rawName}`), this.l10n.get(`pdfjs-document-properties-page-size-orientation-${isPortrait ? "portrait" : "landscape"}`)]);
-    return this.l10n.get(`pdfjs-document-properties-page-size-dimension-${name ? "name-" : ""}string`, {
-      width: width.toLocaleString(),
-      height: height.toLocaleString(),
+    }, unit, name, orientation] = await Promise.all([nonMetric ? sizeInches : sizeMillimeters, this.l10n.get(nonMetric ? "pdfjs-document-properties-page-size-unit-inches" : "pdfjs-document-properties-page-size-unit-millimeters"), nameId && this.l10n.get(nameId), this.l10n.get(isPortrait ? "pdfjs-document-properties-page-size-orientation-portrait" : "pdfjs-document-properties-page-size-orientation-landscape")]);
+    return this.l10n.get(name ? "pdfjs-document-properties-page-size-dimension-name-string" : "pdfjs-document-properties-page-size-dimension-string", {
+      width,
+      height,
       unit,
       name,
       orientation
     });
   }
   async #parseDate(inputDate) {
-    const dateObject = PDFDateString.toDateObject(inputDate);
-    if (!dateObject) {
-      return undefined;
-    }
-    return this.l10n.get("pdfjs-document-properties-date-string", {
-      date: dateObject.toLocaleDateString(),
-      time: dateObject.toLocaleTimeString()
-    });
+    const dateObj = PDFDateString.toDateObject(inputDate);
+    return dateObj ? this.l10n.get("pdfjs-document-properties-date-time-string", {
+      dateObj: dateObj.valueOf()
+    }) : undefined;
   }
   #parseLinearization(isLinearized) {
-    return this.l10n.get(`pdfjs-document-properties-linearized-${isLinearized ? "yes" : "no"}`);
+    return this.l10n.get(isLinearized ? "pdfjs-document-properties-linearized-yes" : "pdfjs-document-properties-linearized-no");
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_find_utils.js
+;// ./web/pdf_find_utils.js
+
 const CharacterType = {
   SPACE: 0,
   ALPHA_LETTER: 1,
@@ -4516,7 +8863,19 @@ function getNormalizeWithNFKC() {
   return NormalizeWithNFKC;
 }
 
-;// CONCATENATED MODULE: ./web/pdf_find_controller.js
+;// ./web/pdf_find_controller.js
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const FindState = {
@@ -4580,7 +8939,8 @@ function normalize(text) {
     const toNormalizeWithNFKC = getNormalizeWithNFKC();
     const CJK = "(?:\\p{Ideographic}|[\u3040-\u30FF])";
     const HKDiacritics = "(?:\u3099|\u309A)";
-    const regexp = `([${replace}])|([${toNormalizeWithNFKC}])|(${HKDiacritics}\\n)|(\\p{M}+(?:-\\n)?)|(\\S-\\n)|(${CJK}\\n)|(\\n)`;
+    const CompoundWord = "\\p{Ll}-\\n\\p{Lu}";
+    const regexp = `([${replace}])|([${toNormalizeWithNFKC}])|(${HKDiacritics}\\n)|(\\p{M}+(?:-\\n)?)|(${CompoundWord})|(\\S-\\n)|(${CJK}\\n)|(\\n)`;
     if (syllablePositions.length === 0) {
       normalizationRegex = noSyllablesRegExp = new RegExp(regexp + "|(\\u0000)", "gum");
     } else {
@@ -4599,7 +8959,7 @@ function normalize(text) {
   let shiftOrigin = 0;
   let eol = 0;
   let hasDiacritics = false;
-  normalized = normalized.replace(normalizationRegex, (match, p1, p2, p3, p4, p5, p6, p7, p8, i) => {
+  normalized = normalized.replace(normalizationRegex, (match, p1, p2, p3, p4, p5, p6, p7, p8, p9, i) => {
     i -= shiftOrigin;
     if (p1) {
       const replacement = CHARACTERS_TO_NORMALIZE[p1];
@@ -4662,21 +9022,28 @@ function normalize(text) {
       return p4;
     }
     if (p5) {
-      const len = p5.length - 2;
+      positions.push([i - shift + 3, 1 + shift]);
+      shift += 1;
+      shiftOrigin += 1;
+      eol += 1;
+      return p5.replace("\n", "");
+    }
+    if (p6) {
+      const len = p6.length - 2;
       positions.push([i - shift + len, 1 + shift]);
       shift += 1;
       shiftOrigin += 1;
       eol += 1;
-      return p5.slice(0, -2);
+      return p6.slice(0, -2);
     }
-    if (p6) {
-      const len = p6.length - 1;
+    if (p7) {
+      const len = p7.length - 1;
       positions.push([i - shift + len, shift]);
       shiftOrigin += 1;
       eol += 1;
-      return p6.slice(0, -1);
+      return p7.slice(0, -1);
     }
-    if (p7) {
+    if (p8) {
       positions.push([i - shift + 1, shift - 1]);
       shift -= 1;
       shiftOrigin += 1;
@@ -4692,7 +9059,7 @@ function normalize(text) {
       shift -= newCharLen;
       shiftOrigin += newCharLen;
     }
-    return p8;
+    return p9;
   });
   positions.push([normalized.length, shift]);
   return [normalized, positions, hasDiacritics];
@@ -4915,25 +9282,6 @@ class PDFFindController {
     }
     return true;
   }
-  #calculateRegExpMatch(query, entireWord, pageIndex, pageContent) {
-    const matches = this._pageMatches[pageIndex] = [];
-    const matchesLength = this._pageMatchesLength[pageIndex] = [];
-    if (!query) {
-      return;
-    }
-    const diffs = this._pageDiffs[pageIndex];
-    let match;
-    while ((match = query.exec(pageContent)) !== null) {
-      if (entireWord && !this.#isEntireWord(pageContent, match.index, match[0].length)) {
-        continue;
-      }
-      const [matchPos, matchLen] = getOriginalIndex(diffs, match.index, match[0].length);
-      if (matchLen) {
-        matches.push(matchPos);
-        matchesLength.push(matchLen);
-      }
-    }
-  }
   #convertToRegExpString(query, hasDiacritics) {
     const {
       matchDiacritics
@@ -4975,15 +9323,43 @@ class PDFFindController {
     return [isUnicode, query];
   }
   #calculateMatch(pageIndex) {
-    let query = this.#query;
+    const query = this.#query;
     if (query.length === 0) {
       return;
     }
-    const {
-      caseSensitive,
-      entireWord
-    } = this.#state;
     const pageContent = this._pageContents[pageIndex];
+    const matcherResult = this.match(query, pageContent, pageIndex);
+    const matches = this._pageMatches[pageIndex] = [];
+    const matchesLength = this._pageMatchesLength[pageIndex] = [];
+    const diffs = this._pageDiffs[pageIndex];
+    matcherResult?.forEach(({
+      index,
+      length
+    }) => {
+      const [matchPos, matchLen] = getOriginalIndex(diffs, index, length);
+      if (matchLen) {
+        matches.push(matchPos);
+        matchesLength.push(matchLen);
+      }
+    });
+    if (this.#state.highlightAll) {
+      this.#updatePage(pageIndex);
+    }
+    if (this._resumePageIdx === pageIndex) {
+      this._resumePageIdx = null;
+      this.#nextPageMatch();
+    }
+    const pageMatchesCount = matches.length;
+    this._matchesCountTotal += pageMatchesCount;
+    if (this.#updateMatchesCountOnProgress) {
+      if (pageMatchesCount > 0) {
+        this.#updateUIResultsCount();
+      }
+    } else if (++this.#visitedPagesCount === this._linkService.pagesCount) {
+      this.#updateUIResultsCount();
+    }
+  }
+  match(query, pageContent, pageIndex) {
     const hasDiacritics = this._hasDiacritics[pageIndex];
     let isUnicode = false;
     if (typeof query === "string") {
@@ -4995,25 +9371,27 @@ class PDFFindController {
         return `(${queryPart})`;
       }).join("|");
     }
+    if (!query) {
+      return undefined;
+    }
+    const {
+      caseSensitive,
+      entireWord
+    } = this.#state;
     const flags = `g${isUnicode ? "u" : ""}${caseSensitive ? "" : "i"}`;
-    query = query ? new RegExp(query, flags) : null;
-    this.#calculateRegExpMatch(query, entireWord, pageIndex, pageContent);
-    if (this.#state.highlightAll) {
-      this.#updatePage(pageIndex);
-    }
-    if (this._resumePageIdx === pageIndex) {
-      this._resumePageIdx = null;
-      this.#nextPageMatch();
-    }
-    const pageMatchesCount = this._pageMatches[pageIndex].length;
-    this._matchesCountTotal += pageMatchesCount;
-    if (this.#updateMatchesCountOnProgress) {
-      if (pageMatchesCount > 0) {
-        this.#updateUIResultsCount();
+    query = new RegExp(query, flags);
+    const matches = [];
+    let match;
+    while ((match = query.exec(pageContent)) !== null) {
+      if (entireWord && !this.#isEntireWord(pageContent, match.index, match[0].length)) {
+        continue;
       }
-    } else if (++this.#visitedPagesCount === this._linkService.pagesCount) {
-      this.#updateUIResultsCount();
+      matches.push({
+        index: match.index,
+        length: match[0].length
+      });
     }
+    return matches;
   }
   #extractText() {
     if (this._extractTextPromises.length > 0) {
@@ -5238,13 +9616,14 @@ class PDFFindController {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_find_bar.js
+;// ./web/pdf_find_bar.js
 
 
 const MATCHES_COUNT_LIMIT = 1000;
 class PDFFindBar {
+  #mainContainer;
   #resizeObserver = new ResizeObserver(this.#resizeObserverCallback.bind(this));
-  constructor(options, eventBus) {
+  constructor(options, mainContainer, eventBus) {
     this.opened = false;
     this.bar = options.bar;
     this.toggleButton = options.toggleButton;
@@ -5258,6 +9637,7 @@ class PDFFindBar {
     this.findPreviousButton = options.findPreviousButton;
     this.findNextButton = options.findNextButton;
     this.eventBus = eventBus;
+    this.#mainContainer = mainContainer;
     this.toggleButton.addEventListener("click", () => {
       this.toggle();
     });
@@ -5328,7 +9708,7 @@ class PDFFindBar {
         status = "notFound";
         break;
       case FindState.WRAPPED:
-        findMsgId = `pdfjs-find-reached-${previous ? "top" : "bottom"}`;
+        findMsgId = previous ? "pdfjs-find-reached-top" : "pdfjs-find-reached-bottom";
         break;
     }
     findField.setAttribute("data-status", status);
@@ -5351,7 +9731,7 @@ class PDFFindBar {
     } = this;
     if (total > 0) {
       const limit = MATCHES_COUNT_LIMIT;
-      findResultsCount.setAttribute("data-l10n-id", `pdfjs-find-match-count${total > limit ? "-limit" : ""}`);
+      findResultsCount.setAttribute("data-l10n-id", total > limit ? "pdfjs-find-match-count-limit" : "pdfjs-find-match-count");
       findResultsCount.setAttribute("data-l10n-args", JSON.stringify({
         limit,
         current,
@@ -5364,7 +9744,7 @@ class PDFFindBar {
   }
   open() {
     if (!this.opened) {
-      this.#resizeObserver.observe(this.bar.parentNode);
+      this.#resizeObserver.observe(this.#mainContainer);
       this.#resizeObserver.observe(this.bar);
       this.opened = true;
       toggleExpandedBtn(this.toggleButton, true, this.bar);
@@ -5390,7 +9770,7 @@ class PDFFindBar {
       this.open();
     }
   }
-  #resizeObserverCallback(entries) {
+  #resizeObserverCallback() {
     const {
       bar
     } = this;
@@ -5403,7 +9783,7 @@ class PDFFindBar {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_history.js
+;// ./web/pdf_history.js
 
 
 const HASH_CHANGE_TIMEOUT = 1000;
@@ -5870,7 +10250,8 @@ function isDestArraysEqual(firstDest, secondDest) {
   return true;
 }
 
-;// CONCATENATED MODULE: ./web/pdf_layer_viewer.js
+;// ./web/pdf_layer_viewer.js
+
 
 class PDFLayerViewer extends BaseTreeViewer {
   constructor(options) {
@@ -5886,7 +10267,8 @@ class PDFLayerViewer extends BaseTreeViewer {
   reset() {
     super.reset();
     this._optionalContentConfig = null;
-    this._optionalContentHash = null;
+    this._optionalContentVisibility?.clear();
+    this._optionalContentVisibility = null;
   }
   _dispatchEvent(layersCount) {
     this.eventBus.dispatch("layersloaded", {
@@ -5899,8 +10281,12 @@ class PDFLayerViewer extends BaseTreeViewer {
     input
   }) {
     const setVisibility = () => {
-      this._optionalContentConfig.setVisibility(groupId, input.checked);
-      this._optionalContentHash = this._optionalContentConfig.getHash();
+      const visible = input.checked;
+      this._optionalContentConfig.setVisibility(groupId, visible);
+      const cached = this._optionalContentVisibility.get(groupId);
+      if (cached) {
+        cached.visible = visible;
+      }
       this.eventBus.dispatch("optionalcontentconfig", {
         source: this,
         promise: Promise.resolve(this._optionalContentConfig)
@@ -5918,15 +10304,16 @@ class PDFLayerViewer extends BaseTreeViewer {
       return false;
     };
   }
-  async _setNestedName(element, {
+  _setNestedName(element, {
     name = null
   }) {
     if (typeof name === "string") {
       element.textContent = this._normalizeTextContent(name);
       return;
     }
-    element.textContent = await this._l10n.get("pdfjs-additional-layers");
+    element.setAttribute("data-l10n-id", "pdfjs-additional-layers");
     element.style.fontStyle = "italic";
+    this._l10n.translateOnce(element);
   }
   _addToggleButton(div, {
     name = null
@@ -5953,7 +10340,7 @@ class PDFLayerViewer extends BaseTreeViewer {
       this._dispatchEvent(0);
       return;
     }
-    this._optionalContentHash = optionalContentConfig.getHash();
+    this._optionalContentVisibility = new Map();
     const fragment = document.createDocumentFragment(),
       queue = [{
         parent: fragment,
@@ -5988,6 +10375,10 @@ class PDFLayerViewer extends BaseTreeViewer {
           });
           input.type = "checkbox";
           input.checked = group.visible;
+          this._optionalContentVisibility.set(groupId, {
+            input,
+            visible: input.checked
+          });
           const label = document.createElement("label");
           label.textContent = this._normalizeTextContent(group.name);
           label.append(input);
@@ -6011,15 +10402,18 @@ class PDFLayerViewer extends BaseTreeViewer {
       return;
     }
     if (promise) {
-      if (optionalContentConfig.getHash() === this._optionalContentHash) {
-        return;
+      for (const [groupId, cached] of this._optionalContentVisibility) {
+        const group = optionalContentConfig.getGroup(groupId);
+        if (group && cached.visible !== group.visible) {
+          cached.input.checked = cached.visible = !cached.visible;
+        }
       }
-    } else {
-      this.eventBus.dispatch("optionalcontentconfig", {
-        source: this,
-        promise: Promise.resolve(optionalContentConfig)
-      });
+      return;
     }
+    this.eventBus.dispatch("optionalcontentconfig", {
+      source: this,
+      promise: Promise.resolve(optionalContentConfig)
+    });
     this.render({
       optionalContentConfig,
       pdfDocument: this._pdfDocument
@@ -6027,7 +10421,9 @@ class PDFLayerViewer extends BaseTreeViewer {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_outline_viewer.js
+;// ./web/pdf_outline_viewer.js
+
+
 
 
 class PDFOutlineViewer extends BaseTreeViewer {
@@ -6289,7 +10685,7 @@ class PDFOutlineViewer extends BaseTreeViewer {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_presentation_mode.js
+;// ./web/pdf_presentation_mode.js
 
 
 const DELAY_BEFORE_HIDING_CONTROLS = 3000;
@@ -6582,7 +10978,9 @@ class PDFPresentationMode {
   }
 }
 
-;// CONCATENATED MODULE: ./web/xfa_layer_builder.js
+// EXTERNAL MODULE: ./node_modules/core-js/modules/esnext.iterator.every.js
+var esnext_iterator_every = __webpack_require__(3215);
+;// ./web/xfa_layer_builder.js
 
 class XfaLayerBuilder {
   constructor({
@@ -6648,7 +11046,7 @@ class XfaLayerBuilder {
   }
 }
 
-;// CONCATENATED MODULE: ./web/print_utils.js
+;// ./web/print_utils.js
 
 
 
@@ -6674,7 +11072,13 @@ function getXfaHtmlForPrinting(printContainer, pdfDocument) {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_print_service.js
+;// ./web/pdf_print_service.js
+
+
+
+
+
+
 
 
 let activeService = null;
@@ -6794,22 +11198,24 @@ class PDFPrintService {
   useRenderedPage() {
     this.throwIfInactive();
     const img = document.createElement("img");
-    const scratchCanvas = this.scratchCanvas;
-    if ("toBlob" in scratchCanvas) {
-      scratchCanvas.toBlob(function (blob) {
-        img.src = URL.createObjectURL(blob);
-      });
-    } else {
-      img.src = scratchCanvas.toDataURL();
-    }
+    this.scratchCanvas.toBlob(blob => {
+      img.src = URL.createObjectURL(blob);
+    });
     const wrapper = document.createElement("div");
     wrapper.className = "printedPage";
     wrapper.append(img);
     this.printContainer.append(wrapper);
-    return new Promise(function (resolve, reject) {
-      img.onload = resolve;
-      img.onerror = reject;
+    const {
+      promise,
+      resolve,
+      reject
+    } = Promise.withResolvers();
+    img.onload = resolve;
+    img.onerror = reject;
+    promise.catch(() => {}).then(() => {
+      URL.revokeObjectURL(img.src);
     });
+    return promise;
   }
   performPrint() {
     this.throwIfInactive();
@@ -6935,7 +11341,7 @@ class PDFPrintServiceFactory {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_rendering_queue.js
+;// ./web/pdf_rendering_queue.js
 
 
 const CLEANUP_TIMEOUT = 30000;
@@ -7050,7 +11456,15 @@ class PDFRenderingQueue {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_scripting_manager.js
+;// ./web/pdf_scripting_manager.js
+
+
+
+
+
+
+
+
 
 
 class PDFScriptingManager {
@@ -7415,7 +11829,7 @@ class PDFScriptingManager {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_sidebar.js
+;// ./web/pdf_sidebar.js
 
 const SIDEBAR_WIDTH_VAR = "--sidebar-width";
 const SIDEBAR_MIN_WIDTH = 200;
@@ -7423,8 +11837,7 @@ const SIDEBAR_RESIZING_CLASS = "sidebarResizing";
 const UI_NOTIFICATION_CLASS = "pdfSidebarNotification";
 class PDFSidebar {
   #isRTL = false;
-  #mouseMoveBound = this.#mouseMove.bind(this);
-  #mouseUpBound = this.#mouseUp.bind(this);
+  #mouseAC = null;
   #outerContainerWidth = null;
   #width = null;
   constructor({
@@ -7591,10 +12004,14 @@ class PDFSidebar {
     }
   }
   #addEventListeners() {
+    const {
+      eventBus,
+      outerContainer
+    } = this;
     this.sidebarContainer.addEventListener("transitionend", evt => {
       if (evt.target === this.sidebarContainer) {
-        this.outerContainer.classList.remove("sidebarMoving");
-        this.eventBus.dispatch("resize", {
+        outerContainer.classList.remove("sidebarMoving");
+        eventBus.dispatch("resize", {
           source: this
         });
       }
@@ -7609,7 +12026,7 @@ class PDFSidebar {
       this.switchView(SidebarView.OUTLINE);
     });
     this.outlineButton.addEventListener("dblclick", () => {
-      this.eventBus.dispatch("toggleoutlinetree", {
+      eventBus.dispatch("toggleoutlinetree", {
         source: this
       });
     });
@@ -7620,12 +12037,12 @@ class PDFSidebar {
       this.switchView(SidebarView.LAYERS);
     });
     this.layersButton.addEventListener("dblclick", () => {
-      this.eventBus.dispatch("resetlayers", {
+      eventBus.dispatch("resetlayers", {
         source: this
       });
     });
     this._currentOutlineItemButton.addEventListener("click", () => {
-      this.eventBus.dispatch("currentoutlineitem", {
+      eventBus.dispatch("currentoutlineitem", {
         source: this
       });
     });
@@ -7637,7 +12054,7 @@ class PDFSidebar {
         this.switchView(SidebarView.THUMBS);
       }
     };
-    this.eventBus._on("outlineloaded", evt => {
+    eventBus._on("outlineloaded", evt => {
       onTreeLoaded(evt.outlineCount, this.outlineButton, SidebarView.OUTLINE);
       evt.currentOutlineItemPromise.then(enabled => {
         if (!this.isInitialViewSet) {
@@ -7646,13 +12063,13 @@ class PDFSidebar {
         this._currentOutlineItemButton.disabled = !enabled;
       });
     });
-    this.eventBus._on("attachmentsloaded", evt => {
+    eventBus._on("attachmentsloaded", evt => {
       onTreeLoaded(evt.attachmentsCount, this.attachmentsButton, SidebarView.ATTACHMENTS);
     });
-    this.eventBus._on("layersloaded", evt => {
+    eventBus._on("layersloaded", evt => {
       onTreeLoaded(evt.layersCount, this.layersButton, SidebarView.LAYERS);
     });
-    this.eventBus._on("presentationmodechanged", evt => {
+    eventBus._on("presentationmodechanged", evt => {
       if (evt.state === PresentationModeState.NORMAL && this.visibleView === SidebarView.THUMBS) {
         this.onUpdateThumbnails();
       }
@@ -7661,11 +12078,16 @@ class PDFSidebar {
       if (evt.button !== 0) {
         return;
       }
-      this.outerContainer.classList.add(SIDEBAR_RESIZING_CLASS);
-      window.addEventListener("mousemove", this.#mouseMoveBound);
-      window.addEventListener("mouseup", this.#mouseUpBound);
+      outerContainer.classList.add(SIDEBAR_RESIZING_CLASS);
+      this.#mouseAC = new AbortController();
+      const opts = {
+        signal: this.#mouseAC.signal
+      };
+      window.addEventListener("mousemove", this.#mouseMove.bind(this), opts);
+      window.addEventListener("mouseup", this.#mouseUp.bind(this), opts);
+      window.addEventListener("blur", this.#mouseUp.bind(this), opts);
     });
-    this.eventBus._on("resize", evt => {
+    eventBus._on("resize", evt => {
       if (evt.source !== window) {
         return;
       }
@@ -7677,12 +12099,12 @@ class PDFSidebar {
         this.#updateWidth(this.#width);
         return;
       }
-      this.outerContainer.classList.add(SIDEBAR_RESIZING_CLASS);
+      outerContainer.classList.add(SIDEBAR_RESIZING_CLASS);
       const updated = this.#updateWidth(this.#width);
       Promise.resolve().then(() => {
-        this.outerContainer.classList.remove(SIDEBAR_RESIZING_CLASS);
+        outerContainer.classList.remove(SIDEBAR_RESIZING_CLASS);
         if (updated) {
-          this.eventBus.dispatch("resize", {
+          eventBus.dispatch("resize", {
             source: this
           });
         }
@@ -7719,12 +12141,12 @@ class PDFSidebar {
     this.eventBus.dispatch("resize", {
       source: this
     });
-    window.removeEventListener("mousemove", this.#mouseMoveBound);
-    window.removeEventListener("mouseup", this.#mouseUpBound);
+    this.#mouseAC?.abort();
+    this.#mouseAC = null;
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_thumbnail_view.js
+;// ./web/pdf_thumbnail_view.js
 
 
 const DRAW_UPSCALE_FACTOR = 2;
@@ -8018,7 +12440,8 @@ class PDFThumbnailView {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_thumbnail_viewer.js
+;// ./web/pdf_thumbnail_viewer.js
+
 
 
 const THUMBNAIL_SCROLL_MARGIN = -19;
@@ -8230,13 +12653,14 @@ class PDFThumbnailViewer {
   }
 }
 
-;// CONCATENATED MODULE: ./web/annotation_editor_layer_builder.js
+;// ./web/annotation_editor_layer_builder.js
 
 
 class AnnotationEditorLayerBuilder {
   #annotationLayer = null;
   #drawLayer = null;
   #onAppend = null;
+  #structTreeLayer = null;
   #textLayer = null;
   #uiManager;
   constructor(options) {
@@ -8252,6 +12676,7 @@ class AnnotationEditorLayerBuilder {
     this.#textLayer = options.textLayer || null;
     this.#drawLayer = options.drawLayer || null;
     this.#onAppend = options.onAppend || null;
+    this.#structTreeLayer = options.structTreeLayer || null;
   }
   async render(viewport, intent = "display") {
     if (intent !== "display") {
@@ -8278,6 +12703,7 @@ class AnnotationEditorLayerBuilder {
     this.annotationEditorLayer = new AnnotationEditorLayer({
       uiManager: this.#uiManager,
       div,
+      structTreeLayer: this.#structTreeLayer,
       accessibilityManager: this.accessibilityManager,
       pageIndex: this.pdfPage.pageNumber - 1,
       l10n: this.l10n,
@@ -8316,7 +12742,7 @@ class AnnotationEditorLayerBuilder {
   }
 }
 
-;// CONCATENATED MODULE: ./web/annotation_layer_builder.js
+;// ./web/annotation_layer_builder.js
 
 
 class AnnotationLayerBuilder {
@@ -8355,7 +12781,7 @@ class AnnotationLayerBuilder {
     this._cancelled = false;
     this._eventBus = linkService.eventBus;
   }
-  async render(viewport, intent = "display") {
+  async render(viewport, options, intent = "display") {
     if (this.div) {
       if (this._cancelled || !this.annotationLayer) {
         return;
@@ -8388,7 +12814,8 @@ class AnnotationLayerBuilder {
       page: this.pdfPage,
       viewport: viewport.clone({
         dontFlip: true
-      })
+      }),
+      structTreeLayer: options?.structTreeLayer || null
     });
     await this.annotationLayer.render({
       annotations,
@@ -8450,7 +12877,7 @@ class AnnotationLayerBuilder {
   }
 }
 
-;// CONCATENATED MODULE: ./web/draw_layer_builder.js
+;// ./web/draw_layer_builder.js
 
 class DrawLayerBuilder {
   #drawLayer = null;
@@ -8481,7 +12908,8 @@ class DrawLayerBuilder {
   }
 }
 
-;// CONCATENATED MODULE: ./web/struct_tree_layer_builder.js
+;// ./web/struct_tree_layer_builder.js
+
 
 const PDF_ROLE_TO_HTML_ROLE = {
   Document: null,
@@ -8527,17 +12955,39 @@ const PDF_ROLE_TO_HTML_ROLE = {
 };
 const HEADING_PATTERN = /^H(\d+)$/;
 class StructTreeLayerBuilder {
-  #treeDom = undefined;
-  get renderingDone() {
-    return this.#treeDom !== undefined;
+  #promise;
+  #treeDom = null;
+  #treePromise;
+  #elementAttributes = new Map();
+  #rawDims;
+  #elementsToAddToTextLayer = null;
+  constructor(pdfPage, rawDims) {
+    this.#promise = pdfPage.getStructTree();
+    this.#rawDims = rawDims;
   }
-  render(structTree) {
-    if (this.#treeDom !== undefined) {
-      return this.#treeDom;
+  async render() {
+    if (this.#treePromise) {
+      return this.#treePromise;
     }
-    const treeDom = this.#walk(structTree);
-    treeDom?.classList.add("structTree");
-    return this.#treeDom = treeDom;
+    const {
+      promise,
+      resolve,
+      reject
+    } = Promise.withResolvers();
+    this.#treePromise = promise;
+    try {
+      this.#treeDom = this.#walk(await this.#promise);
+    } catch (ex) {
+      reject(ex);
+    }
+    this.#promise = null;
+    this.#treeDom?.classList.add("structTree");
+    resolve(this.#treeDom);
+    return promise;
+  }
+  async getAriaAttributes(annotationId) {
+    await this.render();
+    return this.#elementAttributes.get(annotationId);
   }
   hide() {
     if (this.#treeDom && !this.#treeDom.hidden) {
@@ -8556,7 +13006,22 @@ class StructTreeLayerBuilder {
       lang
     } = structElement;
     if (alt !== undefined) {
-      htmlElement.setAttribute("aria-label", removeNullCharacters(alt));
+      let added = false;
+      const label = removeNullCharacters(alt);
+      for (const child of structElement.children) {
+        if (child.type === "annotation") {
+          let attrs = this.#elementAttributes.get(child.id);
+          if (!attrs) {
+            attrs = new Map();
+            this.#elementAttributes.set(child.id, attrs);
+          }
+          attrs.set("aria-label", label);
+          added = true;
+        }
+      }
+      if (!added) {
+        htmlElement.setAttribute("aria-label", label);
+      }
     }
     if (id !== undefined) {
       htmlElement.setAttribute("aria-owns", id);
@@ -8564,6 +13029,52 @@ class StructTreeLayerBuilder {
     if (lang !== undefined) {
       htmlElement.setAttribute("lang", removeNullCharacters(lang, true));
     }
+  }
+  #addImageInTextLayer(node, element) {
+    const {
+      alt,
+      bbox,
+      children
+    } = node;
+    const child = children?.[0];
+    if (!this.#rawDims || !alt || !bbox || child?.type !== "content") {
+      return false;
+    }
+    const {
+      id
+    } = child;
+    if (!id) {
+      return false;
+    }
+    element.setAttribute("aria-owns", id);
+    const img = document.createElement("span");
+    (this.#elementsToAddToTextLayer ||= new Map()).set(id, img);
+    img.setAttribute("role", "img");
+    img.setAttribute("aria-label", removeNullCharacters(alt));
+    const {
+      pageHeight,
+      pageX,
+      pageY
+    } = this.#rawDims;
+    const calc = "calc(var(--scale-factor)*";
+    const {
+      style
+    } = img;
+    style.width = `${calc}${bbox[2] - bbox[0]}px)`;
+    style.height = `${calc}${bbox[3] - bbox[1]}px)`;
+    style.left = `${calc}${bbox[0] - pageX}px)`;
+    style.top = `${calc}${pageHeight - bbox[3] + pageY}px)`;
+    return true;
+  }
+  addElementsToTextLayer() {
+    if (!this.#elementsToAddToTextLayer) {
+      return;
+    }
+    for (const [id, img] of this.#elementsToAddToTextLayer) {
+      document.getElementById(id)?.append(img);
+    }
+    this.#elementsToAddToTextLayer.clear();
+    this.#elementsToAddToTextLayer = null;
   }
   #walk(node) {
     if (!node) {
@@ -8581,6 +13092,9 @@ class StructTreeLayerBuilder {
       } else if (PDF_ROLE_TO_HTML_ROLE[role]) {
         element.setAttribute("role", PDF_ROLE_TO_HTML_ROLE[role]);
       }
+      if (role === "Figure" && this.#addImageInTextLayer(node, element)) {
+        return element;
+      }
     }
     this.#setAttributes(node, element);
     if (node.children) {
@@ -8596,7 +13110,9 @@ class StructTreeLayerBuilder {
   }
 }
 
-;// CONCATENATED MODULE: ./web/text_accessibility.js
+;// ./web/text_accessibility.js
+
+
 
 class TextAccessibilityManager {
   #enabled = false;
@@ -8748,7 +13264,8 @@ class TextAccessibilityManager {
   }
 }
 
-;// CONCATENATED MODULE: ./web/text_highlighter.js
+;// ./web/text_highlighter.js
+
 class TextHighlighter {
   #eventAbortController = null;
   constructor({
@@ -8968,7 +13485,16 @@ class TextHighlighter {
   }
 }
 
-;// CONCATENATED MODULE: ./web/text_layer_builder.js
+;// ./web/text_layer_builder.js
+
+
+
+
+
+
+
+
+
 
 
 class TextLayerBuilder {
@@ -9051,8 +13577,8 @@ class TextLayerBuilder {
     const {
       div
     } = this;
-    div.addEventListener("mousedown", evt => {
-      end.classList.add("active");
+    div.addEventListener("mousedown", () => {
+      div.classList.add("selecting");
     });
     div.addEventListener("copy", event => {
       if (!this.#enablePermissions) {
@@ -9084,10 +13610,30 @@ class TextLayerBuilder {
       textLayer.append(end);
       end.style.width = "";
       end.style.height = "";
-      end.classList.remove("active");
+      textLayer.classList.remove("selecting");
     };
+    let isPointerDown = false;
+    document.addEventListener("pointerdown", () => {
+      isPointerDown = true;
+    }, {
+      signal
+    });
     document.addEventListener("pointerup", () => {
+      isPointerDown = false;
       this.#textLayers.forEach(reset);
+    }, {
+      signal
+    });
+    window.addEventListener("blur", () => {
+      isPointerDown = false;
+      this.#textLayers.forEach(reset);
+    }, {
+      signal
+    });
+    document.addEventListener("keyup", () => {
+      if (!isPointerDown) {
+        this.#textLayers.forEach(reset);
+      }
     }, {
       signal
     });
@@ -9109,7 +13655,7 @@ class TextLayerBuilder {
       }
       for (const [textLayerDiv, endDiv] of this.#textLayers) {
         if (activeTextLayers.has(textLayerDiv)) {
-          endDiv.classList.add("active");
+          textLayerDiv.classList.add("selecting");
         } else {
           reset(endDiv, textLayerDiv);
         }
@@ -9138,7 +13684,8 @@ class TextLayerBuilder {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_page_view.js
+;// ./web/pdf_page_view.js
+
 
 
 
@@ -9162,6 +13709,8 @@ class PDFPageView {
   #layerProperties = null;
   #loadingId = null;
   #previousRotation = null;
+  #scaleRoundX = 1;
+  #scaleRoundY = 1;
   #renderError = null;
   #renderingState = RenderingStates.INITIAL;
   #textLayerMode = TextLayerMode.ENABLE;
@@ -9220,6 +13769,9 @@ class PDFPageView {
     container?.append(div);
     if (this._isStandalone) {
       container?.style.setProperty("--scale-factor", this.scale * PixelsPerInch.PDF_TO_CSS_UNITS);
+      if (this.pageColors?.background) {
+        container?.style.setProperty("--page-bg-color", this.pageColors.background);
+      }
       const {
         optionalContentConfigPromise
       } = options;
@@ -9333,7 +13885,9 @@ class PDFPageView {
   async #renderAnnotationLayer() {
     let error = null;
     try {
-      await this.annotationLayer.render(this.viewport, "display");
+      await this.annotationLayer.render(this.viewport, {
+        structTreeLayer: this.structTreeLayer
+      }, "display");
     } catch (ex) {
       console.error(`#renderAnnotationLayer: "${ex}".`);
       error = ex;
@@ -9399,12 +13953,13 @@ class PDFPageView {
     if (!this.textLayer) {
       return;
     }
-    this.structTreeLayer ||= new StructTreeLayerBuilder();
-    const tree = await (!this.structTreeLayer.renderingDone ? this.pdfPage.getStructTree() : null);
-    const treeDom = this.structTreeLayer?.render(tree);
+    const treeDom = await this.structTreeLayer?.render();
     if (treeDom) {
       this.l10n.pause();
-      this.canvas?.append(treeDom);
+      this.structTreeLayer?.addElementsToTextLayer();
+      if (this.canvas && treeDom.parentNode !== this.canvas) {
+        this.canvas.append(treeDom);
+      }
       this.l10n.resume();
     }
     this.structTreeLayer?.show();
@@ -9619,13 +14174,13 @@ class PDFPageView {
       this.textLayer.cancel();
       this.textLayer = null;
     }
-    if (this.structTreeLayer && !this.textLayer) {
-      this.structTreeLayer = null;
-    }
     if (this.annotationLayer && (!keepAnnotationLayer || !this.annotationLayer.div)) {
       this.annotationLayer.cancel();
       this.annotationLayer = null;
       this._annotationCanvasMap = null;
+    }
+    if (this.structTreeLayer && !this.textLayer) {
+      this.structTreeLayer = null;
     }
     if (this.annotationEditorLayer && (!keepAnnotationEditorLayer || !this.annotationEditorLayer.div)) {
       if (this.drawLayer) {
@@ -9839,13 +14394,20 @@ class PDFPageView {
     }
     const sfx = approximateFraction(outputScale.sx);
     const sfy = approximateFraction(outputScale.sy);
-    canvas.width = floorToDivide(width * outputScale.sx, sfx[0]);
-    canvas.height = floorToDivide(height * outputScale.sy, sfy[0]);
-    const {
-      style
-    } = canvas;
-    style.width = floorToDivide(width, sfx[1]) + "px";
-    style.height = floorToDivide(height, sfy[1]) + "px";
+    const canvasWidth = canvas.width = floorToDivide(calcRound(width * outputScale.sx), sfx[0]);
+    const canvasHeight = canvas.height = floorToDivide(calcRound(height * outputScale.sy), sfy[0]);
+    const pageWidth = floorToDivide(calcRound(width), sfx[1]);
+    const pageHeight = floorToDivide(calcRound(height), sfy[1]);
+    outputScale.sx = canvasWidth / pageWidth;
+    outputScale.sy = canvasHeight / pageHeight;
+    if (this.#scaleRoundX !== sfx[1]) {
+      div.style.setProperty("--scale-round-x", `${sfx[1]}px`);
+      this.#scaleRoundX = sfx[1];
+    }
+    if (this.#scaleRoundY !== sfy[1]) {
+      div.style.setProperty("--scale-round-y", `${sfy[1]}px`);
+      this.#scaleRoundY = sfy[1];
+    }
     this.#viewportMap.set(canvas, viewport);
     const transform = outputScale.scaled ? [outputScale.sx, 0, 0, outputScale.sy, 0, 0] : null;
     const renderContext = {
@@ -9863,6 +14425,7 @@ class PDFPageView {
     const resultPromise = renderTask.promise.then(async () => {
       showCanvas?.(true);
       await this.#finishRenderTask(renderTask);
+      this.structTreeLayer ||= new StructTreeLayerBuilder(pdfPage, viewport.rawDims);
       this.#renderTextLayer();
       if (this.annotationLayer) {
         await this.#renderAnnotationLayer();
@@ -9878,20 +14441,19 @@ class PDFPageView {
       });
       await this.#renderDrawLayer();
       this.drawLayer.setParent(canvasWrapper);
-      if (!this.annotationEditorLayer) {
-        this.annotationEditorLayer = new AnnotationEditorLayerBuilder({
-          uiManager: annotationEditorUIManager,
-          pdfPage,
-          l10n,
-          accessibilityManager: this._accessibilityManager,
-          annotationLayer: this.annotationLayer?.annotationLayer,
-          textLayer: this.textLayer,
-          drawLayer: this.drawLayer.getDrawLayer(),
-          onAppend: annotationEditorLayerDiv => {
-            this.#addLayer(annotationEditorLayerDiv, "annotationEditorLayer");
-          }
-        });
-      }
+      this.annotationEditorLayer ||= new AnnotationEditorLayerBuilder({
+        uiManager: annotationEditorUIManager,
+        pdfPage,
+        l10n,
+        structTreeLayer: this.structTreeLayer,
+        accessibilityManager: this._accessibilityManager,
+        annotationLayer: this.annotationLayer?.annotationLayer,
+        textLayer: this.textLayer,
+        drawLayer: this.drawLayer.getDrawLayer(),
+        onAppend: annotationEditorLayerDiv => {
+          this.#addLayer(annotationEditorLayerDiv, "annotationEditorLayer");
+        }
+      });
       this.#renderAnnotationEditorLayer();
     }, error => {
       if (!(error instanceof RenderingCancelledException)) {
@@ -9941,7 +14503,19 @@ class PDFPageView {
   }
 }
 
-;// CONCATENATED MODULE: ./web/pdf_viewer.js
+;// ./web/pdf_viewer.js
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -10017,9 +14591,10 @@ class PDFViewer {
   #enableHighlightFloatingButton = false;
   #enablePermissions = false;
   #enableUpdatedAddImage = false;
+  #enableNewAltTextWhenAddingImage = false;
   #eventAbortController = null;
   #mlManager = null;
-  #onPageRenderedCallback = null;
+  #switchAnnotationEditorModeAC = null;
   #switchAnnotationEditorModeTimeoutId = null;
   #getAllTextInProgress = false;
   #hiddenCopyElement = null;
@@ -10030,7 +14605,7 @@ class PDFViewer {
   #scaleTimeoutId = null;
   #textLayerMode = TextLayerMode.ENABLE;
   constructor(options) {
-    const viewerVersion = "4.5.136";
+    const viewerVersion = "4.7.76";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
@@ -10058,6 +14633,7 @@ class PDFViewer {
     this.#annotationEditorHighlightColors = options.annotationEditorHighlightColors || null;
     this.#enableHighlightFloatingButton = options.enableHighlightFloatingButton === true;
     this.#enableUpdatedAddImage = options.enableUpdatedAddImage === true;
+    this.#enableNewAltTextWhenAddingImage = options.enableNewAltTextWhenAddingImage === true;
     this.imageResourcesPath = options.imageResourcesPath || "";
     this.enablePrintAutoRotate = options.enablePrintAutoRotate || false;
     this.removePageBorders = options.removePageBorders || false;
@@ -10382,10 +14958,8 @@ class PDFViewer {
       this._resetView();
       this.findController?.setDocument(null);
       this._scriptingManager?.setDocument(null);
-      if (this.#annotationEditorUIManager) {
-        this.#annotationEditorUIManager.destroy();
-        this.#annotationEditorUIManager = null;
-      }
+      this.#annotationEditorUIManager?.destroy();
+      this.#annotationEditorUIManager = null;
     }
     this.pdfDocument = pdfDocument;
     if (!pdfDocument) {
@@ -10458,17 +15032,20 @@ class PDFViewer {
         element.id = "hiddenCopyElement";
         viewer.before(element);
       }
-      if (annotationEditorMode !== AnnotationEditorType.DISABLE) {
+      if (typeof AbortSignal.any === "function" && annotationEditorMode !== AnnotationEditorType.DISABLE) {
         const mode = annotationEditorMode;
         if (pdfDocument.isPureXfa) {
           console.warn("Warning: XFA-editing is not implemented.");
         } else if (isValidAnnotationEditorMode(mode)) {
-          this.#annotationEditorUIManager = new AnnotationEditorUIManager(this.container, viewer, this.#altTextManager, eventBus, pdfDocument, pageColors, this.#annotationEditorHighlightColors, this.#enableHighlightFloatingButton, this.#enableUpdatedAddImage, this.#mlManager);
+          this.#annotationEditorUIManager = new AnnotationEditorUIManager(this.container, viewer, this.#altTextManager, eventBus, pdfDocument, pageColors, this.#annotationEditorHighlightColors, this.#enableHighlightFloatingButton, this.#enableUpdatedAddImage, this.#enableNewAltTextWhenAddingImage, this.#mlManager);
           eventBus.dispatch("annotationeditoruimanager", {
             source: this,
             uiManager: this.#annotationEditorUIManager
           });
           if (mode !== AnnotationEditorType.NONE) {
+            if (mode === AnnotationEditorType.STAMP) {
+              this.#mlManager?.loadModel("altText");
+            }
             this.#annotationEditorUIManager.updateMode(mode);
           }
         } else {
@@ -10481,6 +15058,9 @@ class PDFViewer {
         scale: scale * PixelsPerInch.PDF_TO_CSS_UNITS
       });
       viewer.style.setProperty("--scale-factor", viewport.scale);
+      if (pageColors?.background) {
+        viewer.style.setProperty("--page-bg-color", pageColors.background);
+      }
       if (pageColors?.foreground === "CanvasText" || pageColors?.background === "Canvas") {
         viewer.style.setProperty("--hcm-highlight-filter", pdfDocument.filterFactory.addHighlightHCMFilter("highlight", "CanvasText", "Canvas", "HighlightText", "Highlight"));
         viewer.style.setProperty("--hcm-highlight-selected-filter", pdfDocument.filterFactory.addHighlightHCMFilter("highlight_selected", "CanvasText", "Canvas", "HighlightText", "ButtonText"));
@@ -11456,10 +16036,8 @@ class PDFViewer {
     return this.#containerTopLeft ||= [this.container.offsetTop, this.container.offsetLeft];
   }
   #cleanupSwitchAnnotationEditorMode() {
-    if (this.#onPageRenderedCallback) {
-      this.eventBus._off("pagerendered", this.#onPageRenderedCallback);
-      this.#onPageRenderedCallback = null;
-    }
+    this.#switchAnnotationEditorModeAC?.abort();
+    this.#switchAnnotationEditorModeAC = null;
     if (this.#switchAnnotationEditorModeTimeoutId !== null) {
       clearTimeout(this.#switchAnnotationEditorModeTimeoutId);
       this.#switchAnnotationEditorModeTimeoutId = null;
@@ -11485,6 +16063,9 @@ class PDFViewer {
     if (!this.pdfDocument) {
       return;
     }
+    if (mode === AnnotationEditorType.STAMP) {
+      this.#mlManager?.loadModel("altText");
+    }
     const {
       eventBus
     } = this;
@@ -11508,33 +16089,22 @@ class PDFViewer {
       const idsToRefresh = this.#switchToEditAnnotationMode();
       if (isEditing && idsToRefresh) {
         this.#cleanupSwitchAnnotationEditorMode();
-        this.#onPageRenderedCallback = ({
+        this.#switchAnnotationEditorModeAC = new AbortController();
+        const signal = AbortSignal.any([this.#eventAbortController.signal, this.#switchAnnotationEditorModeAC.signal]);
+        eventBus._on("pagerendered", ({
           pageNumber
         }) => {
           idsToRefresh.delete(pageNumber);
           if (idsToRefresh.size === 0) {
             this.#switchAnnotationEditorModeTimeoutId = setTimeout(updater, 0);
           }
-        };
-        const {
-          signal
-        } = this.#eventAbortController;
-        eventBus._on("pagerendered", this.#onPageRenderedCallback, {
+        }, {
           signal
         });
         return;
       }
     }
     updater();
-  }
-  set annotationEditorParams({
-    type,
-    value
-  }) {
-    if (!this.#annotationEditorUIManager) {
-      throw new Error(`The AnnotationEditor is not enabled.`);
-    }
-    this.#annotationEditorUIManager.updateParams(type, value);
   }
   refresh(noUpdate = false, updateArgs = Object.create(null)) {
     if (!this.pdfDocument) {
@@ -11553,7 +16123,8 @@ class PDFViewer {
   }
 }
 
-;// CONCATENATED MODULE: ./web/secondary_toolbar.js
+;// ./web/secondary_toolbar.js
+
 
 
 class SecondaryToolbar {
@@ -11656,6 +16227,10 @@ class SecondaryToolbar {
       },
       close: true
     }, {
+      element: options.imageAltTextSettingsButton,
+      eventName: "imagealttextsettings",
+      close: true
+    }, {
       element: options.documentPropertiesButton,
       eventName: "documentproperties",
       close: true
@@ -11748,7 +16323,8 @@ class SecondaryToolbar {
     eventBus._on("spreadmodechanged", this.#spreadModeChanged.bind(this));
   }
   #cursorToolChanged({
-    tool
+    tool,
+    disabled
   }) {
     const {
       cursorSelectToolButton,
@@ -11756,6 +16332,8 @@ class SecondaryToolbar {
     } = this.#opts;
     toggleCheckedBtn(cursorSelectToolButton, tool === CursorTool.SELECT);
     toggleCheckedBtn(cursorHandToolButton, tool === CursorTool.HAND);
+    cursorSelectToolButton.disabled = disabled;
+    cursorHandToolButton.disabled = disabled;
   }
   #scrollModeChanged({
     mode
@@ -11826,7 +16404,7 @@ class SecondaryToolbar {
   }
 }
 
-;// CONCATENATED MODULE: ./web/toolbar.js
+;// ./web/toolbar.js
 
 
 class Toolbar {
@@ -11895,34 +16473,34 @@ class Toolbar {
           } = options.editorStampButton;
           return classList.contains("toggled") ? AnnotationEditorType.NONE : AnnotationEditorType.STAMP;
         }
+      },
+      telemetry: {
+        type: "editing",
+        data: {
+          action: "pdfjs.image.icon_click"
+        }
       }
     }];
     this.#bindListeners(buttons);
-    if (options.editorHighlightColorPicker) {
-      eventBus._on("annotationeditoruimanager", ({
-        uiManager
-      }) => {
-        this.#setAnnotationEditorUIManager(uiManager, options.editorHighlightColorPicker);
-      }, {
-        once: true
-      });
-    }
-    eventBus._on("showannotationeditorui", ({
-      mode
-    }) => {
-      switch (mode) {
-        case AnnotationEditorType.HIGHLIGHT:
-          options.editorHighlightButton.click();
-          break;
-      }
-    });
-    eventBus._on("toolbardensity", this.#updateToolbarDensity.bind(this));
     this.#updateToolbarDensity({
       value: toolbarDensity
     });
     this.reset();
   }
-  #updateToolbarDensity() {}
+  #updateToolbarDensity({
+    value
+  }) {
+    let name = "normal";
+    switch (value) {
+      case 1:
+        name = "compact";
+        break;
+      case 2:
+        name = "touch";
+        break;
+    }
+    document.documentElement.setAttribute("data-toolbar-density", name);
+  }
   #setAnnotationEditorUIManager(uiManager, parentContainer) {
     const colorPicker = new ColorPicker({
       uiManager
@@ -11963,6 +16541,8 @@ class Toolbar {
       eventBus
     } = this;
     const {
+      editorHighlightColorPicker,
+      editorHighlightButton,
       pageNumber,
       scaleSelect
     } = this.#opts;
@@ -11970,7 +16550,8 @@ class Toolbar {
     for (const {
       element,
       eventName,
-      eventDetails
+      eventDetails,
+      telemetry
     } of buttons) {
       element.addEventListener("click", evt => {
         if (eventName !== null) {
@@ -11978,6 +16559,12 @@ class Toolbar {
             source: this,
             ...eventDetails,
             isFromKeyboard: evt.detail === 0
+          });
+        }
+        if (telemetry) {
+          eventBus.dispatch("reporttelemetry", {
+            source: this,
+            details: telemetry
           });
         }
       });
@@ -12009,6 +16596,25 @@ class Toolbar {
     });
     scaleSelect.oncontextmenu = noContextMenu;
     eventBus._on("annotationeditormodechanged", this.#editorModeChanged.bind(this));
+    eventBus._on("showannotationeditorui", ({
+      mode
+    }) => {
+      switch (mode) {
+        case AnnotationEditorType.HIGHLIGHT:
+          editorHighlightButton.click();
+          break;
+      }
+    });
+    eventBus._on("toolbardensity", this.#updateToolbarDensity.bind(this));
+    if (editorHighlightColorPicker) {
+      eventBus._on("annotationeditoruimanager", ({
+        uiManager
+      }) => {
+        this.#setAnnotationEditorUIManager(uiManager, editorHighlightColorPicker);
+      }, {
+        once: true
+      });
+    }
   }
   #editorModeChanged({
     mode
@@ -12023,10 +16629,10 @@ class Toolbar {
       editorStampButton,
       editorStampParamsToolbar
     } = this.#opts;
-    toggleCheckedBtn(editorFreeTextButton, mode === AnnotationEditorType.FREETEXT, editorFreeTextParamsToolbar);
-    toggleCheckedBtn(editorHighlightButton, mode === AnnotationEditorType.HIGHLIGHT, editorHighlightParamsToolbar);
-    toggleCheckedBtn(editorInkButton, mode === AnnotationEditorType.INK, editorInkParamsToolbar);
-    toggleCheckedBtn(editorStampButton, mode === AnnotationEditorType.STAMP, editorStampParamsToolbar);
+    toggleExpandedBtn(editorFreeTextButton, mode === AnnotationEditorType.FREETEXT, editorFreeTextParamsToolbar);
+    toggleExpandedBtn(editorHighlightButton, mode === AnnotationEditorType.HIGHLIGHT, editorHighlightParamsToolbar);
+    toggleExpandedBtn(editorInkButton, mode === AnnotationEditorType.INK, editorInkParamsToolbar);
+    toggleExpandedBtn(editorStampButton, mode === AnnotationEditorType.STAMP, editorStampParamsToolbar);
     const isDisable = mode === AnnotationEditorType.DISABLE;
     editorFreeTextButton.disabled = isDisable;
     editorHighlightButton.disabled = isDisable;
@@ -12091,7 +16697,9 @@ class Toolbar {
   }
 }
 
-;// CONCATENATED MODULE: ./web/view_history.js
+;// ./web/view_history.js
+
+
 const DEFAULT_VIEW_HISTORY_CACHE_SIZE = 20;
 class ViewHistory {
   constructor(fingerprint, cacheSize = DEFAULT_VIEW_HISTORY_CACHE_SIZE) {
@@ -12158,7 +16766,16 @@ class ViewHistory {
   }
 }
 
-;// CONCATENATED MODULE: ./web/app.js
+;// ./web/app.js
+
+
+
+
+
+
+
+
+
 
 
 
@@ -12228,6 +16845,7 @@ const PDFViewerApplication = {
   eventBus: null,
   l10n: null,
   annotationEditorParams: null,
+  imageAltTextSettings: null,
   isInitialViewSet: false,
   isViewerEmbedded: window.parent !== window,
   url: "",
@@ -12304,34 +16922,16 @@ const PDFViewerApplication = {
       }
       const {
         PDFBug
-      } = await import( /*webpackIgnore: true*/AppOptions.get("debuggerSrc"));
+      } = await import(/*webpackIgnore: true*/AppOptions.get("debuggerSrc"));
       this._PDFBug = PDFBug;
     };
     if (params.get("disableworker") === "true") {
       try {
         GlobalWorkerOptions.workerSrc ||= AppOptions.get("workerSrc");
-        await import( /*webpackIgnore: true*/PDFWorker.workerSrc);
+        await import(/*webpackIgnore: true*/PDFWorker.workerSrc);
       } catch (ex) {
         console.error(`_parseHashParams: "${ex.message}".`);
       }
-    }
-    if (params.has("disablerange")) {
-      AppOptions.set("disableRange", params.get("disablerange") === "true");
-    }
-    if (params.has("disablestream")) {
-      AppOptions.set("disableStream", params.get("disablestream") === "true");
-    }
-    if (params.has("disableautofetch")) {
-      AppOptions.set("disableAutoFetch", params.get("disableautofetch") === "true");
-    }
-    if (params.has("disablefontface")) {
-      AppOptions.set("disableFontFace", params.get("disablefontface") === "true");
-    }
-    if (params.has("disablehistory")) {
-      AppOptions.set("disableHistory", params.get("disablehistory") === "true");
-    }
-    if (params.has("verbosity")) {
-      AppOptions.set("verbosity", params.get("verbosity") | 0);
     }
     if (params.has("textlayer")) {
       switch (params.get("textlayer")) {
@@ -12369,6 +16969,21 @@ const PDFViewerApplication = {
         lang: params.get("locale")
       });
     }
+    const opts = {
+      disableAutoFetch: x => x === "true",
+      disableFontFace: x => x === "true",
+      disableHistory: x => x === "true",
+      disableRange: x => x === "true",
+      disableStream: x => x === "true",
+      verbosity: x => x | 0
+    };
+    for (const name in opts) {
+      const check = opts[name],
+        key = name.toLowerCase();
+      if (params.has(key)) {
+        AppOptions.set(name, check(params.get(key)));
+      }
+    }
   },
   async _initializeViewerComponents() {
     const {
@@ -12376,9 +16991,9 @@ const PDFViewerApplication = {
       externalServices,
       l10n
     } = this;
-    let eventBus;
-    eventBus = new EventBus();
-    this.eventBus = eventBus;
+    const eventBus = new EventBus();
+    this.eventBus = AppOptions.eventBus = eventBus;
+    this.mlManager?.setEventBus(eventBus, this._globalAbortController.signal);
     this.overlayManager = new OverlayManager();
     const pdfRenderingQueue = new PDFRenderingQueue();
     pdfRenderingQueue.onIdle = this._cleanup.bind(this);
@@ -12410,7 +17025,12 @@ const PDFViewerApplication = {
       background: AppOptions.get("pageColorsBackground"),
       foreground: AppOptions.get("pageColorsForeground")
     } : null;
-    const altTextManager = appConfig.altTextDialog ? new AltTextManager(appConfig.altTextDialog, container, this.overlayManager, eventBus) : null;
+    let altTextManager;
+    if (AppOptions.get("enableUpdatedAddImage")) {
+      altTextManager = appConfig.newAltTextDialog ? new NewAltTextManager(appConfig.newAltTextDialog, this.overlayManager, eventBus) : null;
+    } else {
+      altTextManager = appConfig.altTextDialog ? new AltTextManager(appConfig.altTextDialog, container, this.overlayManager, eventBus) : null;
+    }
     const enableHWA = AppOptions.get("enableHWA");
     const pdfViewer = new PDFViewer({
       container,
@@ -12429,6 +17049,7 @@ const PDFViewerApplication = {
       annotationEditorHighlightColors: AppOptions.get("highlightEditorColors"),
       enableHighlightFloatingButton: AppOptions.get("enableHighlightFloatingButton"),
       enableUpdatedAddImage: AppOptions.get("enableUpdatedAddImage"),
+      enableNewAltTextWhenAddingImage: AppOptions.get("enableNewAltTextWhenAddingImage"),
       imageResourcesPath: AppOptions.get("imageResourcesPath"),
       enablePrintAutoRotate: AppOptions.get("enablePrintAutoRotate"),
       maxCanvasPixels: AppOptions.get("maxCanvasPixels"),
@@ -12462,20 +17083,19 @@ const PDFViewerApplication = {
       pdfLinkService.setHistory(this.pdfHistory);
     }
     if (!this.supportsIntegratedFind && appConfig.findBar) {
-      this.findBar = new PDFFindBar(appConfig.findBar, eventBus);
+      this.findBar = new PDFFindBar(appConfig.findBar, appConfig.principalContainer, eventBus);
     }
     if (appConfig.annotationEditorParams) {
-      if (annotationEditorMode !== AnnotationEditorType.DISABLE) {
-        const editorHighlightButton = appConfig.toolbar?.editorHighlightButton;
-        if (editorHighlightButton && AppOptions.get("enableHighlightEditor")) {
-          editorHighlightButton.hidden = false;
-        }
+      if (typeof AbortSignal.any === "function" && annotationEditorMode !== AnnotationEditorType.DISABLE) {
         this.annotationEditorParams = new AnnotationEditorParams(appConfig.annotationEditorParams, eventBus);
       } else {
         for (const id of ["editorModeButtons", "editorModeSeparator"]) {
           document.getElementById(id)?.classList.add("hidden");
         }
       }
+    }
+    if (this.mlManager && appConfig.secondaryToolbar?.imageAltTextSettingsButton) {
+      this.imageAltTextSettings = new ImageAltTextSettings(appConfig.altTextSettingsDialog, this.overlayManager, eventBus, this.mlManager);
     }
     if (appConfig.documentProperties) {
       this.pdfDocumentProperties = new PDFDocumentProperties(appConfig.documentProperties, this.overlayManager, eventBus, l10n, () => this._docFilename);
@@ -12491,6 +17111,10 @@ const PDFViewerApplication = {
       this.toolbar = new Toolbar(appConfig.toolbar, eventBus, AppOptions.get("toolbarDensity"));
     }
     if (appConfig.secondaryToolbar) {
+      if (AppOptions.get("enableAltText")) {
+        appConfig.secondaryToolbar.imageAltTextSettingsButton?.classList.remove("hidden");
+        appConfig.secondaryToolbar.imageAltTextSettingsSeparator?.classList.remove("hidden");
+      }
       this.secondaryToolbar = new SecondaryToolbar(appConfig.secondaryToolbar, eventBus);
     }
     if (this.supportsFullscreen && appConfig.secondaryToolbar?.presentationModeButton) {
@@ -12608,7 +17232,7 @@ const PDFViewerApplication = {
       appConfig.secondaryToolbar?.presentationModeButton.classList.add("hidden");
     }
     if (this.supportsIntegratedFind) {
-      appConfig.toolbar?.viewFind?.classList.add("hidden");
+      appConfig.findBar?.toggleButton?.classList.add("hidden");
     }
     if (file) {
       this.open({
@@ -12686,7 +17310,7 @@ const PDFViewerApplication = {
     return AppOptions.get("supportsCaretBrowsingMode");
   },
   moveCaret(isUp, select) {
-    this._caretBrowsing ||= new CaretBrowsingMode(this.appConfig.mainContainer, this.appConfig.viewerContainer, this.appConfig.toolbar?.container);
+    this._caretBrowsing ||= new CaretBrowsingMode(this._globalAbortController.signal, this.appConfig.mainContainer, this.appConfig.viewerContainer, this.appConfig.toolbar?.container);
     this._caretBrowsing.moveCaret(isUp, select);
   },
   setTitleUsingUrl(url = "", downloadUrl = null) {
@@ -12822,14 +17446,14 @@ const PDFViewerApplication = {
       });
     });
   },
-  async download(options = {}) {
+  async download() {
     let data;
     try {
       data = await this.pdfDocument.getData();
     } catch {}
-    this.downloadManager.download(data, this._downloadUrl, this._docFilename, options);
+    this.downloadManager.download(data, this._downloadUrl, this._docFilename);
   },
-  async save(options = {}) {
+  async save() {
     if (this._saveInProgress) {
       return;
     }
@@ -12837,10 +17461,10 @@ const PDFViewerApplication = {
     await this.pdfScriptingManager.dispatchWillSave();
     try {
       const data = await this.pdfDocument.saveDocument();
-      this.downloadManager.download(data, this._downloadUrl, this._docFilename, options);
+      this.downloadManager.download(data, this._downloadUrl, this._docFilename);
     } catch (reason) {
       console.error(`Error when saving the document: ${reason.message}`);
-      await this.download(options);
+      await this.download();
     } finally {
       await this.pdfScriptingManager.dispatchDidSave();
       this._saveInProgress = false;
@@ -12855,12 +17479,12 @@ const PDFViewerApplication = {
       });
     }
   },
-  async downloadOrSave(options = {}) {
+  async downloadOrSave() {
     const {
       classList
     } = this.appConfig.appContainer;
     classList.add("wait");
-    await (this.pdfDocument?.annotationStorage.size > 0 ? this.save(options) : this.download(options));
+    await (this.pdfDocument?.annotationStorage.size > 0 ? this.save() : this.download());
     classList.remove("wait");
   },
   async _documentError(key, moreInfo = null) {
@@ -13343,10 +17967,9 @@ const PDFViewerApplication = {
     this.pdfPresentationMode?.request();
   },
   triggerPrinting() {
-    if (!this.supportsPrinting) {
-      return;
+    if (this.supportsPrinting) {
+      window.print();
     }
-    window.print();
   },
   bindEvents() {
     if (this._eventBusAbortController) {
@@ -13355,14 +17978,18 @@ const PDFViewerApplication = {
     this._eventBusAbortController = new AbortController();
     const {
       eventBus,
+      externalServices,
+      pdfDocumentProperties,
+      pdfViewer,
+      preferences,
       _eventBusAbortController: {
         signal
       }
     } = this;
-    eventBus._on("resize", webViewerResize, {
+    eventBus._on("resize", onResize.bind(this), {
       signal
     });
-    eventBus._on("hashchange", webViewerHashchange, {
+    eventBus._on("hashchange", onHashchange.bind(this), {
       signal
     });
     eventBus._on("beforeprint", this.beforePrint.bind(this), {
@@ -13371,115 +17998,115 @@ const PDFViewerApplication = {
     eventBus._on("afterprint", this.afterPrint.bind(this), {
       signal
     });
-    eventBus._on("pagerender", webViewerPageRender, {
+    eventBus._on("pagerender", onPageRender.bind(this), {
       signal
     });
-    eventBus._on("pagerendered", webViewerPageRendered, {
+    eventBus._on("pagerendered", onPageRendered.bind(this), {
       signal
     });
-    eventBus._on("updateviewarea", webViewerUpdateViewarea, {
+    eventBus._on("updateviewarea", onUpdateViewarea.bind(this), {
       signal
     });
-    eventBus._on("pagechanging", webViewerPageChanging, {
+    eventBus._on("pagechanging", onPageChanging.bind(this), {
       signal
     });
-    eventBus._on("scalechanging", webViewerScaleChanging, {
+    eventBus._on("scalechanging", onScaleChanging.bind(this), {
       signal
     });
-    eventBus._on("rotationchanging", webViewerRotationChanging, {
+    eventBus._on("rotationchanging", onRotationChanging.bind(this), {
       signal
     });
-    eventBus._on("sidebarviewchanged", webViewerSidebarViewChanged, {
+    eventBus._on("sidebarviewchanged", onSidebarViewChanged.bind(this), {
       signal
     });
-    eventBus._on("pagemode", webViewerPageMode, {
+    eventBus._on("pagemode", onPageMode.bind(this), {
       signal
     });
-    eventBus._on("namedaction", webViewerNamedAction, {
+    eventBus._on("namedaction", onNamedAction.bind(this), {
       signal
     });
-    eventBus._on("presentationmodechanged", webViewerPresentationModeChanged, {
+    eventBus._on("presentationmodechanged", evt => pdfViewer.presentationModeState = evt.state, {
       signal
     });
-    eventBus._on("presentationmode", webViewerPresentationMode, {
+    eventBus._on("presentationmode", this.requestPresentationMode.bind(this), {
       signal
     });
-    eventBus._on("switchannotationeditormode", webViewerSwitchAnnotationEditorMode, {
+    eventBus._on("switchannotationeditormode", evt => pdfViewer.annotationEditorMode = evt, {
       signal
     });
-    eventBus._on("switchannotationeditorparams", webViewerSwitchAnnotationEditorParams, {
+    eventBus._on("print", this.triggerPrinting.bind(this), {
       signal
     });
-    eventBus._on("print", webViewerPrint, {
+    eventBus._on("download", this.downloadOrSave.bind(this), {
       signal
     });
-    eventBus._on("download", webViewerDownload, {
+    eventBus._on("firstpage", () => this.page = 1, {
       signal
     });
-    eventBus._on("firstpage", webViewerFirstPage, {
+    eventBus._on("lastpage", () => this.page = this.pagesCount, {
       signal
     });
-    eventBus._on("lastpage", webViewerLastPage, {
+    eventBus._on("nextpage", () => pdfViewer.nextPage(), {
       signal
     });
-    eventBus._on("nextpage", webViewerNextPage, {
+    eventBus._on("previouspage", () => pdfViewer.previousPage(), {
       signal
     });
-    eventBus._on("previouspage", webViewerPreviousPage, {
+    eventBus._on("zoomin", this.zoomIn.bind(this), {
       signal
     });
-    eventBus._on("zoomin", webViewerZoomIn, {
+    eventBus._on("zoomout", this.zoomOut.bind(this), {
       signal
     });
-    eventBus._on("zoomout", webViewerZoomOut, {
+    eventBus._on("zoomreset", this.zoomReset.bind(this), {
       signal
     });
-    eventBus._on("zoomreset", webViewerZoomReset, {
+    eventBus._on("pagenumberchanged", onPageNumberChanged.bind(this), {
       signal
     });
-    eventBus._on("pagenumberchanged", webViewerPageNumberChanged, {
+    eventBus._on("scalechanged", evt => pdfViewer.currentScaleValue = evt.value, {
       signal
     });
-    eventBus._on("scalechanged", webViewerScaleChanged, {
+    eventBus._on("rotatecw", this.rotatePages.bind(this, 90), {
       signal
     });
-    eventBus._on("rotatecw", webViewerRotateCw, {
+    eventBus._on("rotateccw", this.rotatePages.bind(this, -90), {
       signal
     });
-    eventBus._on("rotateccw", webViewerRotateCcw, {
+    eventBus._on("optionalcontentconfig", evt => pdfViewer.optionalContentConfigPromise = evt.promise, {
       signal
     });
-    eventBus._on("optionalcontentconfig", webViewerOptionalContentConfig, {
+    eventBus._on("switchscrollmode", evt => pdfViewer.scrollMode = evt.mode, {
       signal
     });
-    eventBus._on("switchscrollmode", webViewerSwitchScrollMode, {
+    eventBus._on("scrollmodechanged", onViewerModesChanged.bind(this, "scrollMode"), {
       signal
     });
-    eventBus._on("scrollmodechanged", webViewerScrollModeChanged, {
+    eventBus._on("switchspreadmode", evt => pdfViewer.spreadMode = evt.mode, {
       signal
     });
-    eventBus._on("switchspreadmode", webViewerSwitchSpreadMode, {
+    eventBus._on("spreadmodechanged", onViewerModesChanged.bind(this, "spreadMode"), {
       signal
     });
-    eventBus._on("spreadmodechanged", webViewerSpreadModeChanged, {
+    eventBus._on("imagealttextsettings", onImageAltTextSettings.bind(this), {
       signal
     });
-    eventBus._on("documentproperties", webViewerDocumentProperties, {
+    eventBus._on("documentproperties", () => pdfDocumentProperties?.open(), {
       signal
     });
-    eventBus._on("findfromurlhash", webViewerFindFromUrlHash, {
+    eventBus._on("findfromurlhash", onFindFromUrlHash.bind(this), {
       signal
     });
-    eventBus._on("updatefindmatchescount", webViewerUpdateFindMatchesCount, {
+    eventBus._on("updatefindmatchescount", onUpdateFindMatchesCount.bind(this), {
       signal
     });
-    eventBus._on("updatefindcontrolstate", webViewerUpdateFindControlState, {
+    eventBus._on("updatefindcontrolstate", onUpdateFindControlState.bind(this), {
       signal
     });
-    eventBus._on("fileinputchange", webViewerFileInputChange, {
+    eventBus._on("fileinputchange", onFileInputChange.bind(this), {
       signal
     });
-    eventBus._on("openfile", webViewerOpenFile, {
+    eventBus._on("openfile", onOpenFile.bind(this), {
       signal
     });
   },
@@ -13493,13 +18120,14 @@ const PDFViewerApplication = {
       appConfig: {
         mainContainer
       },
+      pdfViewer,
       _windowAbortController: {
         signal
       }
     } = this;
     function addWindowResolutionChange(evt = null) {
       if (evt) {
-        webViewerResolutionChange(evt);
+        pdfViewer.refresh();
       }
       const mediaQueryList = window.matchMedia(`(resolution: ${window.devicePixelRatio || 1}dppx)`);
       mediaQueryList.addEventListener("change", addWindowResolutionChange, {
@@ -13508,36 +18136,34 @@ const PDFViewerApplication = {
       });
     }
     addWindowResolutionChange();
-    window.addEventListener("wheel", webViewerWheel, {
+    window.addEventListener("wheel", onWheel.bind(this), {
       passive: false,
       signal
     });
-    window.addEventListener("touchstart", webViewerTouchStart, {
+    window.addEventListener("touchstart", onTouchStart.bind(this), {
       passive: false,
       signal
     });
-    window.addEventListener("touchmove", webViewerTouchMove, {
+    window.addEventListener("touchmove", onTouchMove.bind(this), {
       passive: false,
       signal
     });
-    window.addEventListener("touchend", webViewerTouchEnd, {
+    window.addEventListener("touchend", onTouchEnd.bind(this), {
       passive: false,
       signal
     });
-    window.addEventListener("click", webViewerClick, {
+    window.addEventListener("click", onClick.bind(this), {
       signal
     });
-    window.addEventListener("keydown", webViewerKeyDown, {
+    window.addEventListener("keydown", onKeyDown.bind(this), {
       signal
     });
-    window.addEventListener("keyup", webViewerKeyUp, {
+    window.addEventListener("keyup", onKeyUp.bind(this), {
       signal
     });
-    window.addEventListener("resize", () => {
-      eventBus.dispatch("resize", {
-        source: window
-      });
-    }, {
+    window.addEventListener("resize", () => eventBus.dispatch("resize", {
+      source: window
+    }), {
       signal
     });
     window.addEventListener("hashchange", () => {
@@ -13548,24 +18174,20 @@ const PDFViewerApplication = {
     }, {
       signal
     });
-    window.addEventListener("beforeprint", () => {
-      eventBus.dispatch("beforeprint", {
-        source: window
-      });
-    }, {
+    window.addEventListener("beforeprint", () => eventBus.dispatch("beforeprint", {
+      source: window
+    }), {
       signal
     });
-    window.addEventListener("afterprint", () => {
-      eventBus.dispatch("afterprint", {
-        source: window
-      });
-    }, {
+    window.addEventListener("afterprint", () => eventBus.dispatch("afterprint", {
+      source: window
+    }), {
       signal
     });
-    window.addEventListener("updatefromsandbox", event => {
+    window.addEventListener("updatefromsandbox", evt => {
       eventBus.dispatch("updatefromsandbox", {
         source: window,
-        detail: event.detail
+        detail: evt.detail
       });
     }, {
       signal
@@ -13683,33 +18305,46 @@ initCom(PDFViewerApplication);
       throw ex;
     }
   };
+  var onFileInputChange = function (evt) {
+    if (this.pdfViewer?.isInPresentationMode) {
+      return;
+    }
+    const file = evt.fileInput.files[0];
+    this.open({
+      url: URL.createObjectURL(file),
+      originalUrl: file.name
+    });
+  };
+  var onOpenFile = function (evt) {
+    this._openFileInput?.click();
+  };
 }
-function webViewerPageRender({
+function onPageRender({
   pageNumber
 }) {
-  if (pageNumber === PDFViewerApplication.page) {
-    PDFViewerApplication.toolbar?.updateLoadingIndicatorState(true);
+  if (pageNumber === this.page) {
+    this.toolbar?.updateLoadingIndicatorState(true);
   }
 }
-function webViewerPageRendered({
+function onPageRendered({
   pageNumber,
   error
 }) {
-  if (pageNumber === PDFViewerApplication.page) {
-    PDFViewerApplication.toolbar?.updateLoadingIndicatorState(false);
+  if (pageNumber === this.page) {
+    this.toolbar?.updateLoadingIndicatorState(false);
   }
-  if (PDFViewerApplication.pdfSidebar?.visibleView === SidebarView.THUMBS) {
-    const pageView = PDFViewerApplication.pdfViewer.getPageView(pageNumber - 1);
-    const thumbnailView = PDFViewerApplication.pdfThumbnailViewer?.getThumbnail(pageNumber - 1);
+  if (this.pdfSidebar?.visibleView === SidebarView.THUMBS) {
+    const pageView = this.pdfViewer.getPageView(pageNumber - 1);
+    const thumbnailView = this.pdfThumbnailViewer?.getThumbnail(pageNumber - 1);
     if (pageView) {
       thumbnailView?.setImage(pageView);
     }
   }
   if (error) {
-    PDFViewerApplication._otherError("pdfjs-rendering-error", error);
+    this._otherError("pdfjs-rendering-error", error);
   }
 }
-function webViewerPageMode({
+function onPageMode({
   mode
 }) {
   let view;
@@ -13734,42 +18369,39 @@ function webViewerPageMode({
       console.error('Invalid "pagemode" hash parameter: ' + mode);
       return;
   }
-  PDFViewerApplication.pdfSidebar?.switchView(view, true);
+  this.pdfSidebar?.switchView(view, true);
 }
-function webViewerNamedAction(evt) {
+function onNamedAction(evt) {
   switch (evt.action) {
     case "GoToPage":
-      PDFViewerApplication.appConfig.toolbar?.pageNumber.select();
+      this.appConfig.toolbar?.pageNumber.select();
       break;
     case "Find":
-      if (!PDFViewerApplication.supportsIntegratedFind) {
-        PDFViewerApplication.findBar?.toggle();
+      if (!this.supportsIntegratedFind) {
+        this.findBar?.toggle();
       }
       break;
     case "Print":
-      PDFViewerApplication.triggerPrinting();
+      this.triggerPrinting();
       break;
     case "SaveAs":
-      PDFViewerApplication.downloadOrSave();
+      this.downloadOrSave();
       break;
   }
 }
-function webViewerPresentationModeChanged(evt) {
-  PDFViewerApplication.pdfViewer.presentationModeState = evt.state;
-}
-function webViewerSidebarViewChanged({
+function onSidebarViewChanged({
   view
 }) {
-  PDFViewerApplication.pdfRenderingQueue.isThumbnailViewEnabled = view === SidebarView.THUMBS;
-  if (PDFViewerApplication.isInitialViewSet) {
-    PDFViewerApplication.store?.set("sidebarView", view).catch(() => {});
+  this.pdfRenderingQueue.isThumbnailViewEnabled = view === SidebarView.THUMBS;
+  if (this.isInitialViewSet) {
+    this.store?.set("sidebarView", view).catch(() => {});
   }
 }
-function webViewerUpdateViewarea({
+function onUpdateViewarea({
   location
 }) {
-  if (PDFViewerApplication.isInitialViewSet) {
-    PDFViewerApplication.store?.setMultiple({
+  if (this.isInitialViewSet) {
+    this.store?.setMultiple({
       page: location.pageNumber,
       zoom: location.scale,
       scrollLeft: location.left,
@@ -13777,27 +18409,21 @@ function webViewerUpdateViewarea({
       rotation: location.rotation
     }).catch(() => {});
   }
-  if (PDFViewerApplication.appConfig.secondaryToolbar) {
-    const href = PDFViewerApplication.pdfLinkService.getAnchorUrl(location.pdfOpenParams);
-    PDFViewerApplication.appConfig.secondaryToolbar.viewBookmarkButton.href = href;
+  if (this.appConfig.secondaryToolbar) {
+    this.appConfig.secondaryToolbar.viewBookmarkButton.href = this.pdfLinkService.getAnchorUrl(location.pdfOpenParams);
   }
 }
-function webViewerScrollModeChanged(evt) {
-  if (PDFViewerApplication.isInitialViewSet && !PDFViewerApplication.pdfViewer.isInPresentationMode) {
-    PDFViewerApplication.store?.set("scrollMode", evt.mode).catch(() => {});
+function onViewerModesChanged(name, evt) {
+  if (this.isInitialViewSet && !this.pdfViewer.isInPresentationMode) {
+    this.store?.set(name, evt.mode).catch(() => {});
   }
 }
-function webViewerSpreadModeChanged(evt) {
-  if (PDFViewerApplication.isInitialViewSet && !PDFViewerApplication.pdfViewer.isInPresentationMode) {
-    PDFViewerApplication.store?.set("spreadMode", evt.mode).catch(() => {});
-  }
-}
-function webViewerResize() {
+function onResize() {
   const {
     pdfDocument,
     pdfViewer,
     pdfRenderingQueue
-  } = PDFViewerApplication;
+  } = this;
   if (pdfRenderingQueue.printing && window.matchMedia("print").matches) {
     return;
   }
@@ -13810,100 +18436,36 @@ function webViewerResize() {
   }
   pdfViewer.update();
 }
-function webViewerHashchange(evt) {
+function onHashchange(evt) {
   const hash = evt.hash;
   if (!hash) {
     return;
   }
-  if (!PDFViewerApplication.isInitialViewSet) {
-    PDFViewerApplication.initialBookmark = hash;
-  } else if (!PDFViewerApplication.pdfHistory?.popStateInProgress) {
-    PDFViewerApplication.pdfLinkService.setHash(hash);
+  if (!this.isInitialViewSet) {
+    this.initialBookmark = hash;
+  } else if (!this.pdfHistory?.popStateInProgress) {
+    this.pdfLinkService.setHash(hash);
   }
 }
-{
-  var webViewerFileInputChange = function (evt) {
-    if (PDFViewerApplication.pdfViewer?.isInPresentationMode) {
-      return;
-    }
-    const file = evt.fileInput.files[0];
-    PDFViewerApplication.open({
-      url: URL.createObjectURL(file),
-      originalUrl: file.name
-    });
-  };
-  var webViewerOpenFile = function (evt) {
-    PDFViewerApplication._openFileInput?.click();
-  };
-}
-function webViewerPresentationMode() {
-  PDFViewerApplication.requestPresentationMode();
-}
-function webViewerSwitchAnnotationEditorMode(evt) {
-  PDFViewerApplication.pdfViewer.annotationEditorMode = evt;
-}
-function webViewerSwitchAnnotationEditorParams(evt) {
-  PDFViewerApplication.pdfViewer.annotationEditorParams = evt;
-}
-function webViewerPrint() {
-  PDFViewerApplication.triggerPrinting();
-}
-function webViewerDownload() {
-  PDFViewerApplication.downloadOrSave();
-}
-function webViewerFirstPage() {
-  PDFViewerApplication.page = 1;
-}
-function webViewerLastPage() {
-  PDFViewerApplication.page = PDFViewerApplication.pagesCount;
-}
-function webViewerNextPage() {
-  PDFViewerApplication.pdfViewer.nextPage();
-}
-function webViewerPreviousPage() {
-  PDFViewerApplication.pdfViewer.previousPage();
-}
-function webViewerZoomIn() {
-  PDFViewerApplication.zoomIn();
-}
-function webViewerZoomOut() {
-  PDFViewerApplication.zoomOut();
-}
-function webViewerZoomReset() {
-  PDFViewerApplication.zoomReset();
-}
-function webViewerPageNumberChanged(evt) {
-  const pdfViewer = PDFViewerApplication.pdfViewer;
+function onPageNumberChanged(evt) {
+  const {
+    pdfViewer
+  } = this;
   if (evt.value !== "") {
-    PDFViewerApplication.pdfLinkService.goToPage(evt.value);
+    this.pdfLinkService.goToPage(evt.value);
   }
   if (evt.value !== pdfViewer.currentPageNumber.toString() && evt.value !== pdfViewer.currentPageLabel) {
-    PDFViewerApplication.toolbar?.setPageNumber(pdfViewer.currentPageNumber, pdfViewer.currentPageLabel);
+    this.toolbar?.setPageNumber(pdfViewer.currentPageNumber, pdfViewer.currentPageLabel);
   }
 }
-function webViewerScaleChanged(evt) {
-  PDFViewerApplication.pdfViewer.currentScaleValue = evt.value;
+function onImageAltTextSettings() {
+  this.imageAltTextSettings?.open({
+    enableGuessAltText: AppOptions.get("enableGuessAltText"),
+    enableNewAltTextWhenAddingImage: AppOptions.get("enableNewAltTextWhenAddingImage")
+  });
 }
-function webViewerRotateCw() {
-  PDFViewerApplication.rotatePages(90);
-}
-function webViewerRotateCcw() {
-  PDFViewerApplication.rotatePages(-90);
-}
-function webViewerOptionalContentConfig(evt) {
-  PDFViewerApplication.pdfViewer.optionalContentConfigPromise = evt.promise;
-}
-function webViewerSwitchScrollMode(evt) {
-  PDFViewerApplication.pdfViewer.scrollMode = evt.mode;
-}
-function webViewerSwitchSpreadMode(evt) {
-  PDFViewerApplication.pdfViewer.spreadMode = evt.mode;
-}
-function webViewerDocumentProperties() {
-  PDFViewerApplication.pdfDocumentProperties?.open();
-}
-function webViewerFindFromUrlHash(evt) {
-  PDFViewerApplication.eventBus.dispatch("find", {
+function onFindFromUrlHash(evt) {
+  this.eventBus.dispatch("find", {
     source: evt.source,
     type: "",
     query: evt.query,
@@ -13914,24 +18476,24 @@ function webViewerFindFromUrlHash(evt) {
     matchDiacritics: true
   });
 }
-function webViewerUpdateFindMatchesCount({
+function onUpdateFindMatchesCount({
   matchesCount
 }) {
-  if (PDFViewerApplication.supportsIntegratedFind) {
-    PDFViewerApplication.externalServices.updateFindMatchesCount(matchesCount);
+  if (this.supportsIntegratedFind) {
+    this.externalServices.updateFindMatchesCount(matchesCount);
   } else {
-    PDFViewerApplication.findBar?.updateResultsCount(matchesCount);
+    this.findBar?.updateResultsCount(matchesCount);
   }
 }
-function webViewerUpdateFindControlState({
+function onUpdateFindControlState({
   state,
   previous,
   entireWord,
   matchesCount,
   rawQuery
 }) {
-  if (PDFViewerApplication.supportsIntegratedFind) {
-    PDFViewerApplication.externalServices.updateFindControlState({
+  if (this.supportsIntegratedFind) {
+    this.externalServices.updateFindControlState({
       result: state,
       findPrevious: previous,
       entireWord,
@@ -13939,104 +18501,97 @@ function webViewerUpdateFindControlState({
       rawQuery
     });
   } else {
-    PDFViewerApplication.findBar?.updateUIState(state, previous, matchesCount);
+    this.findBar?.updateUIState(state, previous, matchesCount);
   }
 }
-function webViewerScaleChanging(evt) {
-  PDFViewerApplication.toolbar?.setPageScale(evt.presetValue, evt.scale);
-  PDFViewerApplication.pdfViewer.update();
+function onScaleChanging(evt) {
+  this.toolbar?.setPageScale(evt.presetValue, evt.scale);
+  this.pdfViewer.update();
 }
-function webViewerRotationChanging(evt) {
-  if (PDFViewerApplication.pdfThumbnailViewer) {
-    PDFViewerApplication.pdfThumbnailViewer.pagesRotation = evt.pagesRotation;
+function onRotationChanging(evt) {
+  if (this.pdfThumbnailViewer) {
+    this.pdfThumbnailViewer.pagesRotation = evt.pagesRotation;
   }
-  PDFViewerApplication.forceRendering();
-  PDFViewerApplication.pdfViewer.currentPageNumber = evt.pageNumber;
+  this.forceRendering();
+  this.pdfViewer.currentPageNumber = evt.pageNumber;
 }
-function webViewerPageChanging({
+function onPageChanging({
   pageNumber,
   pageLabel
 }) {
-  PDFViewerApplication.toolbar?.setPageNumber(pageNumber, pageLabel);
-  PDFViewerApplication.secondaryToolbar?.setPageNumber(pageNumber);
-  if (PDFViewerApplication.pdfSidebar?.visibleView === SidebarView.THUMBS) {
-    PDFViewerApplication.pdfThumbnailViewer?.scrollThumbnailIntoView(pageNumber);
+  this.toolbar?.setPageNumber(pageNumber, pageLabel);
+  this.secondaryToolbar?.setPageNumber(pageNumber);
+  if (this.pdfSidebar?.visibleView === SidebarView.THUMBS) {
+    this.pdfThumbnailViewer?.scrollThumbnailIntoView(pageNumber);
   }
-  const currentPage = PDFViewerApplication.pdfViewer.getPageView(pageNumber - 1);
-  PDFViewerApplication.toolbar?.updateLoadingIndicatorState(currentPage?.renderingState === RenderingStates.RUNNING);
+  const currentPage = this.pdfViewer.getPageView(pageNumber - 1);
+  this.toolbar?.updateLoadingIndicatorState(currentPage?.renderingState === RenderingStates.RUNNING);
 }
-function webViewerResolutionChange(evt) {
-  PDFViewerApplication.pdfViewer.refresh();
-}
-function webViewerWheel(evt) {
+function onWheel(evt) {
   const {
     pdfViewer,
     supportsMouseWheelZoomCtrlKey,
     supportsMouseWheelZoomMetaKey,
     supportsPinchToZoom
-  } = PDFViewerApplication;
+  } = this;
   if (pdfViewer.isInPresentationMode) {
     return;
   }
   const deltaMode = evt.deltaMode;
   let scaleFactor = Math.exp(-evt.deltaY / 100);
   const isBuiltInMac = false;
-  const isPinchToZoom = evt.ctrlKey && !PDFViewerApplication._isCtrlKeyDown && deltaMode === WheelEvent.DOM_DELTA_PIXEL && evt.deltaX === 0 && (Math.abs(scaleFactor - 1) < 0.05 || isBuiltInMac) && evt.deltaZ === 0;
+  const isPinchToZoom = evt.ctrlKey && !this._isCtrlKeyDown && deltaMode === WheelEvent.DOM_DELTA_PIXEL && evt.deltaX === 0 && (Math.abs(scaleFactor - 1) < 0.05 || isBuiltInMac) && evt.deltaZ === 0;
   const origin = [evt.clientX, evt.clientY];
   if (isPinchToZoom || evt.ctrlKey && supportsMouseWheelZoomCtrlKey || evt.metaKey && supportsMouseWheelZoomMetaKey) {
     evt.preventDefault();
-    if (PDFViewerApplication._isScrolling || document.visibilityState === "hidden" || PDFViewerApplication.overlayManager.active) {
+    if (this._isScrolling || document.visibilityState === "hidden" || this.overlayManager.active) {
       return;
     }
     if (isPinchToZoom && supportsPinchToZoom) {
-      scaleFactor = PDFViewerApplication._accumulateFactor(pdfViewer.currentScale, scaleFactor, "_wheelUnusedFactor");
-      PDFViewerApplication.updateZoom(null, scaleFactor, origin);
+      scaleFactor = this._accumulateFactor(pdfViewer.currentScale, scaleFactor, "_wheelUnusedFactor");
+      this.updateZoom(null, scaleFactor, origin);
     } else {
       const delta = normalizeWheelEventDirection(evt);
       let ticks = 0;
       if (deltaMode === WheelEvent.DOM_DELTA_LINE || deltaMode === WheelEvent.DOM_DELTA_PAGE) {
-        if (Math.abs(delta) >= 1) {
-          ticks = Math.sign(delta);
-        } else {
-          ticks = PDFViewerApplication._accumulateTicks(delta, "_wheelUnusedTicks");
-        }
+        ticks = Math.abs(delta) >= 1 ? Math.sign(delta) : this._accumulateTicks(delta, "_wheelUnusedTicks");
       } else {
         const PIXELS_PER_LINE_SCALE = 30;
-        ticks = PDFViewerApplication._accumulateTicks(delta / PIXELS_PER_LINE_SCALE, "_wheelUnusedTicks");
+        ticks = this._accumulateTicks(delta / PIXELS_PER_LINE_SCALE, "_wheelUnusedTicks");
       }
-      PDFViewerApplication.updateZoom(ticks, null, origin);
+      this.updateZoom(ticks, null, origin);
     }
   }
 }
-function webViewerTouchStart(evt) {
-  if (PDFViewerApplication.pdfViewer.isInPresentationMode || evt.touches.length < 2) {
+function onTouchStart(evt) {
+  if (this.pdfViewer.isInPresentationMode || evt.touches.length < 2) {
     return;
   }
   evt.preventDefault();
-  if (evt.touches.length !== 2 || PDFViewerApplication.overlayManager.active) {
-    PDFViewerApplication._touchInfo = null;
+  if (evt.touches.length !== 2 || this.overlayManager.active) {
+    this._touchInfo = null;
     return;
   }
   let [touch0, touch1] = evt.touches;
   if (touch0.identifier > touch1.identifier) {
     [touch0, touch1] = [touch1, touch0];
   }
-  PDFViewerApplication._touchInfo = {
+  this._touchInfo = {
     touch0X: touch0.pageX,
     touch0Y: touch0.pageY,
     touch1X: touch1.pageX,
     touch1Y: touch1.pageY
   };
 }
-function webViewerTouchMove(evt) {
-  if (!PDFViewerApplication._touchInfo || evt.touches.length !== 2) {
+function onTouchMove(evt) {
+  if (!this._touchInfo || evt.touches.length !== 2) {
     return;
   }
   const {
     pdfViewer,
     _touchInfo,
     supportsPinchToZoom
-  } = PDFViewerApplication;
+  } = this;
   let [touch0, touch1] = evt.touches;
   if (touch0.identifier > touch1.identifier) {
     [touch0, touch1] = [touch1, touch0];
@@ -14095,46 +18650,46 @@ function webViewerTouchMove(evt) {
   const distance = Math.hypot(page0X - page1X, page0Y - page1Y) || 1;
   const pDistance = Math.hypot(pTouch0X - pTouch1X, pTouch0Y - pTouch1Y) || 1;
   if (supportsPinchToZoom) {
-    const newScaleFactor = PDFViewerApplication._accumulateFactor(pdfViewer.currentScale, distance / pDistance, "_touchUnusedFactor");
-    PDFViewerApplication.updateZoom(null, newScaleFactor, origin);
+    const newScaleFactor = this._accumulateFactor(pdfViewer.currentScale, distance / pDistance, "_touchUnusedFactor");
+    this.updateZoom(null, newScaleFactor, origin);
   } else {
     const PIXELS_PER_LINE_SCALE = 30;
-    const ticks = PDFViewerApplication._accumulateTicks((distance - pDistance) / PIXELS_PER_LINE_SCALE, "_touchUnusedTicks");
-    PDFViewerApplication.updateZoom(ticks, null, origin);
+    const ticks = this._accumulateTicks((distance - pDistance) / PIXELS_PER_LINE_SCALE, "_touchUnusedTicks");
+    this.updateZoom(ticks, null, origin);
   }
 }
-function webViewerTouchEnd(evt) {
-  if (!PDFViewerApplication._touchInfo) {
+function onTouchEnd(evt) {
+  if (!this._touchInfo) {
     return;
   }
   evt.preventDefault();
-  PDFViewerApplication._touchInfo = null;
-  PDFViewerApplication._touchUnusedTicks = 0;
-  PDFViewerApplication._touchUnusedFactor = 1;
+  this._touchInfo = null;
+  this._touchUnusedTicks = 0;
+  this._touchUnusedFactor = 1;
 }
-function webViewerClick(evt) {
-  if (!PDFViewerApplication.secondaryToolbar?.isOpen) {
+function onClick(evt) {
+  if (!this.secondaryToolbar?.isOpen) {
     return;
   }
-  const appConfig = PDFViewerApplication.appConfig;
-  if (PDFViewerApplication.pdfViewer.containsElement(evt.target) || appConfig.toolbar?.container.contains(evt.target) && evt.target !== appConfig.secondaryToolbar?.toggleButton) {
-    PDFViewerApplication.secondaryToolbar.close();
+  const appConfig = this.appConfig;
+  if (this.pdfViewer.containsElement(evt.target) || appConfig.toolbar?.container.contains(evt.target) && !appConfig.secondaryToolbar?.toggleButton.contains(evt.target)) {
+    this.secondaryToolbar.close();
   }
 }
-function webViewerKeyUp(evt) {
+function onKeyUp(evt) {
   if (evt.key === "Control") {
-    PDFViewerApplication._isCtrlKeyDown = false;
+    this._isCtrlKeyDown = false;
   }
 }
-function webViewerKeyDown(evt) {
-  PDFViewerApplication._isCtrlKeyDown = evt.key === "Control";
-  if (PDFViewerApplication.overlayManager.active) {
+function onKeyDown(evt) {
+  this._isCtrlKeyDown = evt.key === "Control";
+  if (this.overlayManager.active) {
     return;
   }
   const {
     eventBus,
     pdfViewer
-  } = PDFViewerApplication;
+  } = this;
   const isViewerInPresentationMode = pdfViewer.isInPresentationMode;
   let handled = false,
     ensureViewerFocused = false;
@@ -14142,16 +18697,16 @@ function webViewerKeyDown(evt) {
   if (cmd === 1 || cmd === 8 || cmd === 5 || cmd === 12) {
     switch (evt.keyCode) {
       case 70:
-        if (!PDFViewerApplication.supportsIntegratedFind && !evt.shiftKey) {
-          PDFViewerApplication.findBar?.open();
+        if (!this.supportsIntegratedFind && !evt.shiftKey) {
+          this.findBar?.open();
           handled = true;
         }
         break;
       case 71:
-        if (!PDFViewerApplication.supportsIntegratedFind) {
+        if (!this.supportsIntegratedFind) {
           const {
             state
-          } = PDFViewerApplication.findController;
+          } = this.findController;
           if (state) {
             const newState = {
               source: window,
@@ -14170,34 +18725,34 @@ function webViewerKeyDown(evt) {
       case 107:
       case 187:
       case 171:
-        PDFViewerApplication.zoomIn();
+        this.zoomIn();
         handled = true;
         break;
       case 173:
       case 109:
       case 189:
-        PDFViewerApplication.zoomOut();
+        this.zoomOut();
         handled = true;
         break;
       case 48:
       case 96:
         if (!isViewerInPresentationMode) {
-          setTimeout(function () {
-            PDFViewerApplication.zoomReset();
+          setTimeout(() => {
+            this.zoomReset();
           });
           handled = false;
         }
         break;
       case 38:
-        if (isViewerInPresentationMode || PDFViewerApplication.page > 1) {
-          PDFViewerApplication.page = 1;
+        if (isViewerInPresentationMode || this.page > 1) {
+          this.page = 1;
           handled = true;
           ensureViewerFocused = true;
         }
         break;
       case 40:
-        if (isViewerInPresentationMode || PDFViewerApplication.page < PDFViewerApplication.pagesCount) {
-          PDFViewerApplication.page = PDFViewerApplication.pagesCount;
+        if (isViewerInPresentationMode || this.page < this.pagesCount) {
+          this.page = this.pagesCount;
           handled = true;
           ensureViewerFocused = true;
         }
@@ -14225,9 +18780,9 @@ function webViewerKeyDown(evt) {
   if (cmd === 3 || cmd === 10) {
     switch (evt.keyCode) {
       case 80:
-        PDFViewerApplication.requestPresentationMode();
+        this.requestPresentationMode();
         handled = true;
-        PDFViewerApplication.externalServices.reportTelemetry({
+        this.externalServices.reportTelemetry({
           type: "buttons",
           data: {
             id: "presentationModeKeyboard"
@@ -14235,8 +18790,8 @@ function webViewerKeyDown(evt) {
         });
         break;
       case 71:
-        if (PDFViewerApplication.appConfig.toolbar) {
-          PDFViewerApplication.appConfig.toolbar.pageNumber.select();
+        if (this.appConfig.toolbar) {
+          this.appConfig.toolbar.pageNumber.select();
           handled = true;
         }
         break;
@@ -14261,8 +18816,8 @@ function webViewerKeyDown(evt) {
       turnOnlyIfPageFit = false;
     switch (evt.keyCode) {
       case 38:
-        if (PDFViewerApplication.supportsCaretBrowsingMode) {
-          PDFViewerApplication.moveCaret(true, false);
+        if (this.supportsCaretBrowsingMode) {
+          this.moveCaret(true, false);
           handled = true;
           break;
         }
@@ -14279,7 +18834,7 @@ function webViewerKeyDown(evt) {
         turnPage = -1;
         break;
       case 37:
-        if (PDFViewerApplication.supportsCaretBrowsingMode) {
+        if (this.supportsCaretBrowsingMode) {
           return;
         }
         if (pdfViewer.isHorizontalScrollbarEnabled) {
@@ -14290,18 +18845,18 @@ function webViewerKeyDown(evt) {
         turnPage = -1;
         break;
       case 27:
-        if (PDFViewerApplication.secondaryToolbar?.isOpen) {
-          PDFViewerApplication.secondaryToolbar.close();
+        if (this.secondaryToolbar?.isOpen) {
+          this.secondaryToolbar.close();
           handled = true;
         }
-        if (!PDFViewerApplication.supportsIntegratedFind && PDFViewerApplication.findBar?.opened) {
-          PDFViewerApplication.findBar.close();
+        if (!this.supportsIntegratedFind && this.findBar?.opened) {
+          this.findBar.close();
           handled = true;
         }
         break;
       case 40:
-        if (PDFViewerApplication.supportsCaretBrowsingMode) {
-          PDFViewerApplication.moveCaret(false, false);
+        if (this.supportsCaretBrowsingMode) {
+          this.moveCaret(false, false);
           handled = true;
           break;
         }
@@ -14319,7 +18874,7 @@ function webViewerKeyDown(evt) {
         turnPage = 1;
         break;
       case 39:
-        if (PDFViewerApplication.supportsCaretBrowsingMode) {
+        if (this.supportsCaretBrowsingMode) {
           return;
         }
         if (pdfViewer.isHorizontalScrollbarEnabled) {
@@ -14330,30 +18885,30 @@ function webViewerKeyDown(evt) {
         turnPage = 1;
         break;
       case 36:
-        if (isViewerInPresentationMode || PDFViewerApplication.page > 1) {
-          PDFViewerApplication.page = 1;
+        if (isViewerInPresentationMode || this.page > 1) {
+          this.page = 1;
           handled = true;
           ensureViewerFocused = true;
         }
         break;
       case 35:
-        if (isViewerInPresentationMode || PDFViewerApplication.page < PDFViewerApplication.pagesCount) {
-          PDFViewerApplication.page = PDFViewerApplication.pagesCount;
+        if (isViewerInPresentationMode || this.page < this.pagesCount) {
+          this.page = this.pagesCount;
           handled = true;
           ensureViewerFocused = true;
         }
         break;
       case 83:
-        PDFViewerApplication.pdfCursorTools?.switchTool(CursorTool.SELECT);
+        this.pdfCursorTools?.switchTool(CursorTool.SELECT);
         break;
       case 72:
-        PDFViewerApplication.pdfCursorTools?.switchTool(CursorTool.HAND);
+        this.pdfCursorTools?.switchTool(CursorTool.HAND);
         break;
       case 82:
-        PDFViewerApplication.rotatePages(90);
+        this.rotatePages(90);
         break;
       case 115:
-        PDFViewerApplication.pdfSidebar?.toggle();
+        this.pdfSidebar?.toggle();
         break;
     }
     if (turnPage !== 0 && (!turnOnlyIfPageFit || pdfViewer.currentScaleValue === "page-fit")) {
@@ -14376,15 +18931,15 @@ function webViewerKeyDown(evt) {
         handled = true;
         break;
       case 38:
-        PDFViewerApplication.moveCaret(true, true);
+        this.moveCaret(true, true);
         handled = true;
         break;
       case 40:
-        PDFViewerApplication.moveCaret(false, true);
+        this.moveCaret(false, true);
         handled = true;
         break;
       case 82:
-        PDFViewerApplication.rotatePages(-90);
+        this.rotatePages(-90);
         break;
     }
   }
@@ -14405,28 +18960,14 @@ function beforeUnload(evt) {
   evt.returnValue = "";
   return false;
 }
-function webViewerAnnotationEditorStatesChanged(data) {
-  PDFViewerApplication.externalServices.updateEditorStates(data);
-}
-function webViewerReportTelemetry({
-  details
-}) {
-  PDFViewerApplication.externalServices.reportTelemetry(details);
-}
-function webViewerSetPreference({
-  name,
-  value
-}) {
-  PDFViewerApplication.preferences.set(name, value);
-}
 
-;// CONCATENATED MODULE: ./web/viewer.js
+;// ./web/viewer.js
 
 
 
 
-const pdfjsVersion = "4.5.136";
-const pdfjsBuild = "3a21f03b0";
+const pdfjsVersion = "4.7.76";
+const pdfjsBuild = "8b73b828b";
 const AppConstants = {
   LinkTarget: LinkTarget,
   RenderingStates: RenderingStates,
@@ -14439,34 +18980,34 @@ window.PDFViewerApplicationOptions = AppOptions;
 function getViewerConfiguration() {
   return {
     appContainer: document.body,
+    principalContainer: document.getElementById("mainContainer"),
     mainContainer: document.getElementById("viewerContainer"),
     viewerContainer: document.getElementById("viewer"),
     toolbar: {
-      container: document.getElementById("toolbarViewer"),
+      container: document.getElementById("toolbarContainer"),
       numPages: document.getElementById("numPages"),
       pageNumber: document.getElementById("pageNumber"),
       scaleSelect: document.getElementById("scaleSelect"),
       customScaleOption: document.getElementById("customScaleOption"),
       previous: document.getElementById("previous"),
       next: document.getElementById("next"),
-      zoomIn: document.getElementById("zoomIn"),
-      zoomOut: document.getElementById("zoomOut"),
-      viewFind: document.getElementById("viewFind"),
-      print: document.getElementById("print"),
-      editorFreeTextButton: document.getElementById("editorFreeText"),
+      zoomIn: document.getElementById("zoomInButton"),
+      zoomOut: document.getElementById("zoomOutButton"),
+      print: document.getElementById("printButton"),
+      editorFreeTextButton: document.getElementById("editorFreeTextButton"),
       editorFreeTextParamsToolbar: document.getElementById("editorFreeTextParamsToolbar"),
-      editorHighlightButton: document.getElementById("editorHighlight"),
+      editorHighlightButton: document.getElementById("editorHighlightButton"),
       editorHighlightParamsToolbar: document.getElementById("editorHighlightParamsToolbar"),
       editorHighlightColorPicker: document.getElementById("editorHighlightColorPicker"),
-      editorInkButton: document.getElementById("editorInk"),
+      editorInkButton: document.getElementById("editorInkButton"),
       editorInkParamsToolbar: document.getElementById("editorInkParamsToolbar"),
-      editorStampButton: document.getElementById("editorStamp"),
+      editorStampButton: document.getElementById("editorStampButton"),
       editorStampParamsToolbar: document.getElementById("editorStampParamsToolbar"),
-      download: document.getElementById("download")
+      download: document.getElementById("downloadButton")
     },
     secondaryToolbar: {
       toolbar: document.getElementById("secondaryToolbar"),
-      toggleButton: document.getElementById("secondaryToolbarToggle"),
+      toggleButton: document.getElementById("secondaryToolbarToggleButton"),
       presentationModeButton: document.getElementById("presentationMode"),
       openFileButton: document.getElementById("secondaryOpenFile"),
       printButton: document.getElementById("secondaryPrint"),
@@ -14485,12 +19026,14 @@ function getViewerConfiguration() {
       spreadNoneButton: document.getElementById("spreadNone"),
       spreadOddButton: document.getElementById("spreadOdd"),
       spreadEvenButton: document.getElementById("spreadEven"),
+      imageAltTextSettingsButton: document.getElementById("imageAltTextSettings"),
+      imageAltTextSettingsSeparator: document.getElementById("imageAltTextSettingsSeparator"),
       documentPropertiesButton: document.getElementById("documentProperties")
     },
     sidebar: {
       outerContainer: document.getElementById("outerContainer"),
       sidebarContainer: document.getElementById("sidebarContainer"),
-      toggleButton: document.getElementById("sidebarToggle"),
+      toggleButton: document.getElementById("sidebarToggleButton"),
       resizer: document.getElementById("sidebarResizer"),
       thumbnailButton: document.getElementById("viewThumbnail"),
       outlineButton: document.getElementById("viewOutline"),
@@ -14504,7 +19047,7 @@ function getViewerConfiguration() {
     },
     findBar: {
       bar: document.getElementById("findbar"),
-      toggleButton: document.getElementById("viewFind"),
+      toggleButton: document.getElementById("viewFindButton"),
       findField: document.getElementById("findInput"),
       highlightAllCheckbox: document.getElementById("findHighlightAll"),
       caseSensitiveCheckbox: document.getElementById("findMatchCase"),
@@ -14512,8 +19055,8 @@ function getViewerConfiguration() {
       entireWordCheckbox: document.getElementById("findEntireWord"),
       findMsg: document.getElementById("findMsg"),
       findResultsCount: document.getElementById("findResultsCount"),
-      findPreviousButton: document.getElementById("findPrevious"),
-      findNextButton: document.getElementById("findNext")
+      findPreviousButton: document.getElementById("findPreviousButton"),
+      findNextButton: document.getElementById("findNextButton")
     },
     passwordOverlay: {
       dialog: document.getElementById("passwordDialog"),
@@ -14549,6 +19092,35 @@ function getViewerConfiguration() {
       textarea: document.getElementById("descriptionTextarea"),
       cancelButton: document.getElementById("altTextCancel"),
       saveButton: document.getElementById("altTextSave")
+    },
+    newAltTextDialog: {
+      dialog: document.getElementById("newAltTextDialog"),
+      title: document.getElementById("newAltTextTitle"),
+      descriptionContainer: document.getElementById("newAltTextDescriptionContainer"),
+      textarea: document.getElementById("newAltTextDescriptionTextarea"),
+      disclaimer: document.getElementById("newAltTextDisclaimer"),
+      learnMore: document.getElementById("newAltTextLearnMore"),
+      imagePreview: document.getElementById("newAltTextImagePreview"),
+      createAutomatically: document.getElementById("newAltTextCreateAutomatically"),
+      createAutomaticallyButton: document.getElementById("newAltTextCreateAutomaticallyButton"),
+      downloadModel: document.getElementById("newAltTextDownloadModel"),
+      downloadModelDescription: document.getElementById("newAltTextDownloadModelDescription"),
+      error: document.getElementById("newAltTextError"),
+      errorCloseButton: document.getElementById("newAltTextCloseButton"),
+      cancelButton: document.getElementById("newAltTextCancel"),
+      notNowButton: document.getElementById("newAltTextNotNow"),
+      saveButton: document.getElementById("newAltTextSave")
+    },
+    altTextSettingsDialog: {
+      dialog: document.getElementById("altTextSettingsDialog"),
+      createModelButton: document.getElementById("createModelButton"),
+      aiModelSettings: document.getElementById("aiModelSettings"),
+      learnMore: document.getElementById("altTextSettingsLearnMore"),
+      deleteModelButton: document.getElementById("deleteModelButton"),
+      downloadModelButton: document.getElementById("downloadModelButton"),
+      showAltTextDialogButton: document.getElementById("showAltTextDialogButton"),
+      altTextSettingsCloseButton: document.getElementById("altTextSettingsCloseButton"),
+      closeButton: document.getElementById("altTextSettingsCloseButton")
     },
     annotationEditorParams: {
       editorFreeTextFontSize: document.getElementById("editorFreeTextFontSize"),
