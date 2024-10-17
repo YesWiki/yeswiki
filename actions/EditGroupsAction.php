@@ -65,9 +65,6 @@ class EditGroupsAction extends YesWikiAction
                 } catch (Throwable $th) {
                     $type = 'danger';
                     $message = _t('ERROR_WHILE_EDITING_GROUP') . ':<br/>' . $th->getMessage();
-                    if ($wakkaConfig == 'yes') {
-                        $message = $message . '\<br>' . $th->getTraceAsString();
-                    }
                 }
             }
         }
@@ -80,12 +77,13 @@ class EditGroupsAction extends YesWikiAction
             $error_message = ['type' => $type, 'message' => $message];
         }
 
-        // retrieves an array of group names from table 'triples' (content of 'resource' starts with 'ThisWikiGroup' and content of 'property' equals  'http://www.wikini.net/_vocabulary/acls')
         $list = $groupController->getAll();
         sort($list);
         $users = array_map(function ($user) { return $user['name']; }, $userManager->getAll());
         sort($users);
         $merged_list = array_merge(array_map(function ($el) { return '@' . $el; }, $list), $users);
+        unset($merged_list[array_search('@' . $selectedGroupName, $merged_list)]);
+        error_log('selected_group_name ' . $selectedGroupName);
 
         $field = ['name' => '', 'propertyName' => '', 'required' => false, 'label' => $selectedGroupName];
         error_log('render');
