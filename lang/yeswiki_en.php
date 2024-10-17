@@ -677,5 +677,9 @@ return [
     'STYLE_SHEET' => 'Stylesheet',
     'TABLE_PREFIX_ALREADY_USED' => 'This table prefix is already in use. Choose another one.',
     'DENY_DELETE' => 'You are not allowed to delete this page',
+    'GROUP_NAME_ALREADY_USED' => 'group name already used',
+    'USER_NAME_DOES_NOT_EXIST' => 'user does not exist',
+    'GROUP_NAME_DOES_NOT_EXIST' => 'group does not exist',
+    'INVALID_GROUP_NAME' => 'group name is invalid',
     'USER_GOTOADMIN' => 'User management',
 ];

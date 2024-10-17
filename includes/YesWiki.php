@@ -25,7 +25,11 @@ use Symfony\Component\Routing\RequestContext;
 use Throwable;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Exception\ExitException;
+use YesWiki\Core\Exception\GroupNameDoesNotExistException;
+use YesWiki\Core\Exception\InvalidGroupNameException;
+use YesWiki\Core\Exception\InvalidInputException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\AssetsManager;
@@ -71,7 +75,7 @@ class Wiki
      */
     public function __construct($config = [])
     {
-        $init = new \YesWiki\Init($config);
+        $init = new Init($config);
         $this->config = $init->config;
         $this->CookiePath = $init->initCookies();
         $this->tag = $init->page;
@@ -329,7 +333,7 @@ class Wiki
                     // ... and send it !
                     $dbService->query($sql);
                 }
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
             }
         }
 
@@ -443,7 +447,7 @@ class Wiki
                     }
                 }
                 if (count($paramsArray) > 0) {
-                    $params = implode(($htmlspchars ? '&amp;' : '&'), $paramsArray);
+                    $params = implode($htmlspchars ? '&amp;' : '&', $paramsArray);
                 } else {
                     $params = '';
                 }
@@ -587,11 +591,11 @@ class Wiki
 
             // General URL
             $link = $this->Href($method, $tag, $params, false);
-        } elseif ((!isset($options['data-iframe']) ||
-                strval($options['data-iframe']) != '0') &&
-            !empty($options['class']) &&
-            is_string($options['class']) &&
-            preg_match('/(^|\s)modalbox($|\s)/', $options['class'])
+        } elseif ((!isset($options['data-iframe'])
+                || strval($options['data-iframe']) != '0')
+            && !empty($options['class'])
+            && is_string($options['class'])
+            && preg_match('/(^|\s)modalbox($|\s)/', $options['class'])
         ) {
             // use iframe for external links in modalbox except if `data-iframe=0`
             $options['data-iframe'] = '1';
@@ -653,7 +657,7 @@ class Wiki
         // Metadata from current page
         $currentPageTag = $this->GetPageTag();
         $pageMetadatas = empty($currentPageTag) ? [] : $this->GetMetaDatas($currentPageTag);
-        foreach (\YesWiki\Core\Service\ThemeManager::SPECIAL_METADATA as $metadata) {
+        foreach (ThemeManager::SPECIAL_METADATA as $metadata) {
             if (!empty($pageMetadatas[$metadata])) {
                 $result[$metadata] = $pageMetadatas[$metadata];
             }
@@ -727,7 +731,7 @@ class Wiki
                 return;
             }
 
-            $this->Query('insert into ' . $this->config['table_prefix'] . 'referrers set ' . "page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', " . "referrer = '" . mysqli_real_escape_string($this->dblink, $referrer) . "', " . 'time = now()');
+            $this->Query('insert into ' . $this->config['table_prefix'] . 'referrers set ' . "page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', referrer = '" . mysqli_real_escape_string($this->dblink, $referrer) . "', " . 'time = now()');
         }
     }
 
@@ -831,7 +835,7 @@ class Wiki
         ob_start();
         try {
             include $___file;
-        } catch (Throwable $throwableToThrow) {
+        } catch (\Throwable $throwableToThrow) {
             // $throwableToThrow is thrown at the of the method because ob_end_clean() and get_defined_vars()
             // could change the way to catch Throwable at higher levels
             // for pre actions
@@ -897,7 +901,7 @@ class Wiki
         }
 
         // Query
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages ' . 'where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim);
+        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim);
     }
 
     public function LoadRecentlyCommented($limit = 50)
@@ -932,6 +936,7 @@ class Wiki
                 }
             }
         }
+
         // load tags of pages
         // return $this->LoadAll("select comment_on as tag, max(time) as time, tag as comment_tag, user from ".$this->config['table_prefix']."pages where comment_on != '' group by comment_on order by time desc");
         return $pages;
@@ -971,61 +976,19 @@ class Wiki
      * @return string the ACL associated with the group $gname
      *
      * @see UserIsInGroup to check if a user belongs to some group
+     *  @deprecated Use GroupController::getMembers instead
      */
     public function GetGroupACL($group)
     {
         if (array_key_exists($group, $this->_groupsCache)) {
             return $this->_groupsCache[$group];
         }
-
-        return $this->_groupsCache[$group] = $this->GetTripleValue($group, WIKINI_VOC_ACLS, GROUP_PREFIX);
-    }
-
-    /**
-     * Checks if a new group acl is not defined recursively
-     * (this method expects that groups that are already defined are not themselves defined recursively...).
-     *
-     * @param string $gname
-     *                      The name of the group
-     * @param string $acl
-     *                      The new acl for that group
-     *
-     * @return bool True if the new acl defines the group recursively
-     */
-    public function MakesGroupRecursive($gname, $acl, $origin = null, $checked = [])
-    {
-        $gname = strtolower(trim($gname));
-        if ($origin === null) {
-            $origin = $gname;
-        } elseif ($gname === $origin) {
-            return true;
+        $groupController = $this->services->get(GroupController::class);
+        try {
+            return $this->_groupsCache[$group] = implode("\n", $groupController->getMembers($group));
+        } catch (GroupNameDoesNotExistException $th) {
+            return [];
         }
-        $acl = str_replace(["\r\n", "\r"], "\n", $acl);
-        foreach (explode("\n", $acl) as $line) {
-            $line = trim($line);
-            if (!$line) {
-                continue;
-            }
-
-            if ($line[0] == '!') {
-                $line = substr($line, 1);
-            }
-            if (!$line) {
-                continue;
-            }
-
-            if ($line[0] == '@') {
-                $line = substr($line, 1);
-                if (!in_array($line, $checked)) {
-                    if ($this->MakesGroupRecursive($line, $this->GetGroupACL($line) ?? '', $origin, $checked)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        $checked[] = $gname;
-
-        return false;
     }
 
     /**
@@ -1041,51 +1004,39 @@ class Wiki
      *             1001 if $gname is not named with alphanumeric chars
      *
      * @see GetGroupACL
+     * @deprecated Use GroupController::update and GroupController::create instead
      */
     public function SetGroupACL($gname, $acl)
     {
-        if (preg_match('/[^A-Za-z0-9]/', $gname)) {
-            return 1001;
-        }
-        $old = $this->GetGroupACL($gname);
-        // we get rid of lost spaces before saving to db
+        $groupController = $this->services->get(GroupController::class);
         $acl = str_replace(["\r\n", "\r"], "\n", $acl);
-        $acls = explode("\n", $acl);
-        $acls = array_map('trim', $acls);
-        $acl = implode("\n", $acls);
-        if ($this->MakesGroupRecursive($gname, $acl)) {
+        $members = explode("\n", $acl);
+        $members = array_map('trim', $members);
+        try {
+            if ($groupController->groupExists($gname)) {
+                $groupController->update($gname, $members);
+            } else {
+                $groupController->create($gname, $members);
+            }
+        } catch (InvalidGroupNameException $th) {
+            return 1001;
+        } catch (InvalidInputException $th) {
             return 1000;
         }
-        $this->_groupsCache[$gname] = $acl;
-        if ($old === null) {
-            return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
-        } elseif ($old === $acl) {
-            return 0; // nothing has changed
-        } elseif (strcasecmp($old, $acl) === 0 && strcmp($old, $acl) !== 0) {
-            // possible error when directly updating triple
-            if ($this->DeleteTriple($gname, WIKINI_VOC_ACLS, $old, GROUP_PREFIX)) {
-                return $this->InsertTriple($gname, WIKINI_VOC_ACLS, $acl, GROUP_PREFIX);
-            } else {
-                return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
-            }
-        } else {
-            return $this->UpdateTriple($gname, WIKINI_VOC_ACLS, $old, $acl, GROUP_PREFIX);
-        }
+
+        return 0;
     }
 
     /**
      * @return array The list of all group names
+     *
+     *  @deprecated Use GroupController::getAll instead
      */
     public function GetGroupsList()
     {
-        $res = $this->GetMatchingTriples(GROUP_PREFIX . '%', WIKINI_VOC_ACLS_URI);
-        $prefix_len = strlen(GROUP_PREFIX);
-        $list = [];
-        foreach ($res as $line) {
-            $list[] = substr($line['resource'], $prefix_len);
-        }
+        $groupController = $this->services->get(GroupController::class);
 
-        return $list;
+        return $groupController->getAll();
     }
 
     /**
@@ -1231,7 +1182,7 @@ class Wiki
         if (in_array($tag, ['api', 'doc'])) {
             $this->RunSpecialPages();
         } else {
-            $this->SetPage($this->LoadPage($tag, (isset($_REQUEST['time']) ? $_REQUEST['time'] : '')));
+            $this->SetPage($this->LoadPage($tag, isset($_REQUEST['time']) ? $_REQUEST['time'] : ''));
             $this->LogReferrer();
 
             try {
@@ -1260,7 +1211,7 @@ class Wiki
         // We must manually parse the body data for the PUT or PATCH methods
         // See https://www.php.net/manual/fr/features.file-upload.put-method.php
         // TODO properly use the Symfony HttpFoundation component to avoid this
-        if (($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH')) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' || $_SERVER['REQUEST_METHOD'] == 'PUT' || $_SERVER['REQUEST_METHOD'] == 'PATCH') {
             if (empty($_POST)) {
                 $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
             }
@@ -1318,7 +1269,7 @@ class Wiki
             $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
         } catch (MethodNotAllowedException $exception) {
             $response = new Response('', Response::HTTP_METHOD_NOT_ALLOWED);
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             if (isset($response) && $response instanceof JsonResponse) {
                 $previousContent = json_decode($response->getContent(), true);
                 $newContent = ['exceptionMessage' => $th->__toString()] + $previousContent;
@@ -1447,7 +1398,7 @@ class Wiki
         $pluginsRoot = 'tools/';
 
         include_once 'includes/YesWikiPlugins.php';
-        $objPlugins = new \YesWiki\Plugins($pluginsRoot);
+        $objPlugins = new Plugins($pluginsRoot);
         $objPlugins->getPlugins(true);
         $this->extensions = $objPlugins->getPluginsList();
 

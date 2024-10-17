@@ -22,8 +22,9 @@
 	<div class="clearfix"></div>
 	  <div style="max-height:{{ height ?? 300 }}px;overflow:auto;">
 		<ul class="list-entries-to-export list-group group-{{ field.propertyName }}" data-group="{{ field.propertyName }}">
+		{% block list_options %}
 			{% for item_id, item in options %}
-				{% if item_id not in selectedOptionsId %}
+				{% if item not in selectedOptionsId %}
 					{% set selected = false %}
 					{% block li_item %}
 					<li class="list-group-item">						
@@ -49,6 +50,7 @@
 					{% endblock %}
 				{% endif %}{# if not item_id in selectedOptionsId #}
 			{% endfor %}{# for item_id, item in options #}
+		{% endblock %}
 			<li class="list-group-item empty-list" style="display:none;">{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST') }}</li>
 		</ul>
 		<input type="hidden" value="{{ oldValue ?? '\'\''}}" name="{{ field.propertyName  ~ field.fromFormId }}">
@@ -64,11 +66,13 @@
 		<div class="well" style="max-height:{{ height ? height + 110 : 410}}px;overflow:auto;">
 			<ul class="checkbox-selection-container list-group group-{{ field.propertyName }}" data-group="{{ field.propertyName }}">
 			{% if not (attribute(selectedOptionsId,0) is empty) %}
+			{% block list_selected %}
 			  {% for item_id in selectedOptionsId %}
 				{% set item = attribute(options,item_id) %}
 				{% set selected = true %}
 				{{ block('li_item') }}
 			  {% endfor %}{# for item_id in selectedOptionsId #}
+			{% endblock %}
 			{% endif %}{# if not (attribute(selectedOptionsId,0) is empty) #}
 			<li class="list-group-item empty-list" {% if not (attribute(selectedOptionsId,0) is empty) %}style="display:none;"{% endif %}>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST') }}</li>
 			</ul>

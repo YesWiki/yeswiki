@@ -1,4 +1,5 @@
 {# group edition or deletion #}
+
 {% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
     {% block formcontent %}
         <label>{{ _t('EDIT_EXISTING_GROUP')}}</label>
@@ -16,6 +17,60 @@
         </p>
     {% endblock formcontent %}
 {% endembed %}
+{% if error_message is not empty %}
+{% include '@templates/alert-message.twig' with { 'type' : error_message.type, 'message' : error_message.message} %}
+{% endif %}
+{% if selectedGroupName is not empty %}
+    {% embed '@core/form.twig' with {formMethod: 'post', class:'form-horizontal'} %}
+        {% block formcontent %}
+            
+            {% embed '@bazar/inputs/checkbox_drag_and_drop.twig' %}
+            {% block list_options %}
+			{% for item_id, item in options %}
+				{% if item not in selectedOptionsId %}
+					{% set selected = false %}
+					{% block li_item %}
+					<li class="list-group-item">						
+						<span class="pull-left {{ not selected ? 'hide ' }}movable btn btn-default btn-xs"><i class="fas fa-arrows-alt-v"></i></span>
+						<div class="checkbox-icons-up-down{{ not selected ? ' hide ' }}">
+							<div class="checkbox-icons-up btn btn-default btn-xs"><i class="fas fa-chevron-up"></i></div>
+							<div class="checkbox-icons-down btn btn-default btn-xs"><i class="fas fa-chevron-down"></i></div>
+						</div>
+						<div class="checkbox-icon-column-left">
+							<span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><i class="fas fa-arrows-alt-h"></i></span>
+							{%~ block link_for_entry ~%}
+							{%~ endblock ~%}
+						</div>
+						<input type="checkbox" id="{{ field.propertyName }}_{{ item }}" value="1" name="{{ item }}" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
+						<span class="list-item-text">{{ item|striptags }}</span>
+						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
+							<i class="fas fa-plus"></i>
+						</a>
+						<a class="btn btn-xs btn-danger remove-page-item{{ not selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
+							<i class="fas fa-minus"></i>
+						</a>
+					</li>
+					{% endblock %}
+				{% endif %}{# if not item_id in selectedOptionsId #}
+			{% endfor %}{# for item_id, item in options #}
+		{% endblock %}
+		{% block list_selected %}
+			  {% for item in selectedOptionsId %}
+				{% set selected = true %}
+				{{ block('li_item') }}
+			  {% endfor %}{# for item_id in selectedOptionsId #}
+		{% endblock %}
+        {% block submit %}
+        <input type="hidden" name="groupname" value="{{ selectedGroupName }}"/> 
+        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+        <div style='display:flex;flex-direction:column;margin-top: 1em;margin-bottom: 1em;'>
+        <input class="btn btn-primary btn-edit-group" name="action-update" type="submit" value="{{ _t('SAVE') }}" />
+            </div>
+            {% endblock %}
+            {% endembed %}
+        {% endblock formcontent %}
+{% endembed %}
+{% endif %}
 
 {# group creation #}
 {% embed '@core/form.twig' with {formMethod: 'post', class:'form-inline'} %}
@@ -23,27 +78,12 @@
         <label>{{ _t('CREATE_NEW_GROUP')}}</label>
         <p>
             <input type="text" name="groupname" placeholder="{{ _t('GROUP_NAME') }}" class="form-control" />
-            <input class="btn btn-primary btn-create-group" type="submit" value="{{ _t('DEFINE') }}" />
+        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+            <input class="btn btn-primary btn-create-group" name='action-create' type="submit" value="{{ _t('DEFINE') }}" />
         </p>
     {% endblock formcontent %}
 {% endembed %}
 
 {% if message is not empty %}
     {{ include('@templates/alert-message.twig',{message:message,type:type ?? 'info'}) }}
-{% endif %}
-
-{% if selectedGroupName is not empty %}
-  {% embed '@core/form.twig' with {formMethod: 'post'} %}
-    {% block formcontent %}
-        <hr>
-        <label class="edit-group">
-            {{- _t('LIST_GROUP_MEMBERS')|replace({"{groupName}":'<b>' ~ selectedGroupName ~ '</b>'})|raw -}}
-        </label> ({{ _t('ONE_NAME_BY_LINE') }})
-        <input type="hidden" name="groupname" value="{{ selectedGroupName }}" />
-        <input type="hidden" name="confirmToken" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
-        <input type="hidden" name="action" value="save" />
-        <textarea name="acl" rows="3" class="form-control">{{ currentGroupAcl }}</textarea><br />
-        <input type="submit" value="{{ _t('SAVE') }}" name="action-save" class="btn btn-primary" accesskey="s" />
-    {% endblock formcontent %}
-  {% endembed %}
 {% endif %}

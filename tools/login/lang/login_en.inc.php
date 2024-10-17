@@ -50,6 +50,7 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'The \'{parameters}\' parameters cannot be empty!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'The identifier "{currentName}" already exists!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'The email "{email}" is already used by another account!',
+    'USERSETTINGS_NAME_NOT_FOUND' => 'The identifier "{currentName}" does not exist!',
     'LOGIN_NOT_AUTORIZED' => 'you are not authorized to read this page',
     'LINK_TO_CHANGE_PASSWORD' => 'Link to change password',
     'LOGIN_NOT_AUTORIZED_EDIT' => 'you are not authorized to edit this page',

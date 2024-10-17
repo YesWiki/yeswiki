@@ -91,16 +91,8 @@ class UsersTableAction extends YesWikiAction
 
     private function addGroups(array $users): array
     {
-        $groups = $this->wiki->GetGroupsList();
-
-        return array_map(function ($user) use ($groups) {
-            $userGroups = [];
-            foreach ($groups as $group) {
-                if (!empty($user['name']) && $this->userManager->isInGroup($group, $user['name'], false)) { // false to not display admins in other groups
-                    $userGroups[] = $group;
-                }
-            }
-
+        return array_map(function ($user) {
+            $userGroups = $this->userManager->groupsWhereIsMember($user);
             return array_merge($user->getArrayCopy(), ['groups' => $userGroups]);
         }, $users);
     }

@@ -10,16 +10,20 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Throwable;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
+use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
+use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\PasswordHasherFactory;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
-if (! function_exists('send_mail')) {
+if (!function_exists('send_mail')) {
     require_once 'includes/email.inc.php';
 }
 
@@ -30,7 +34,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $passwordHasherFactory;
     protected $securityController;
     protected $params;
+    protected $tripleStore;
     protected $userlink;
+
     private $getOneByNameCacheResults;
 
     private const PW_SALT = 'FBcA';
@@ -41,15 +47,17 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         DbService $dbService,
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
-        SecurityController $securityController
+        SecurityController $securityController,
+        TripleStore $tripleStore
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->passwordHasherFactory = $passwordHasherFactory;
         $this->securityController = $securityController;
         $this->params = $params;
+        $this->tripleStore = $tripleStore;
         $this->getOneByNameCacheResults = [];
-        $this->userlink = "";
+        $this->userlink = '';
     }
 
     private function arrayToUser(?array $userAsArray = null, bool $fillEmpty = false): ?User
@@ -64,8 +72,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 }
             }
         }
+
         // be carefull the User::__construct is really strict about list of properties that should set
         return new User($userAsArray);
+    }
+
+    public function userExist($name): bool
+    {
+        return !empty($this->getOneByName($name));
     }
 
     public function getOneByName($name, $password = null): ?User
@@ -111,13 +125,13 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param string email (optionnal if parameters by array)
      * @param string plainPassword (optionnal if parameters by array)
      *
-     * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|Exception
+     * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|\Exception
      */
     public function create($wikiNameOrUser, string $email = '', string $plainPassword = '')
     {
         $this->userlink = '';
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         if (is_array($wikiNameOrUser)) {
@@ -148,23 +162,23 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'signuptime' => '',
             ];
         } else {
-            throw new Exception('First parameter of UserManager->create should be string or array!');
+            throw new \Exception('First parameter of UserManager->create should be string or array!');
         }
 
         if (empty($wikiName)) {
-            throw new Exception("'Name' parameter of UserManager->create should not be empty!");
+            throw new \Exception("'Name' parameter of UserManager->create should not be empty!");
         }
         if (!empty($this->getOneByName($wikiName))) {
             throw new UserNameAlreadyUsedException();
         }
         if (empty($email)) {
-            throw new Exception("'email' parameter of UserManager->create should not be empty!");
+            throw new \Exception("'email' parameter of UserManager->create should not be empty!");
         }
         if (!empty($this->getOneByEmail($email))) {
             throw new UserEmailAlreadyUsedException();
         }
         if (empty($plainPassword)) {
-            throw new Exception("'password' parameter of UserManager->create should not be empty!");
+            throw new \Exception("'password' parameter of UserManager->create should not be empty!");
         }
 
         unset($this->getOneByNameCacheResults[$wikiName]);
@@ -209,7 +223,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->userlink = $this->wiki->Href('', 'MotDePassePerdu', [
             'a' => 'recover',
             'email' => $key,
-            'u' => base64_encode($user['name'])
+            'u' => base64_encode($user['name']),
         ], false);
     }
 
@@ -237,14 +251,13 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $message .= _t('LOGIN_THE_TEAM') . ' ' . $domain . "\n";
 
         $subject = $title . ' ' . $domain;
+
         // Send the email
         return send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $user['email'], $subject, $message);
     }
 
     /**
-     * Assessor for userlink field
-     * 
-     * @return string
+     * Assessor for userlink field.
      */
     public function getUserLink(): string
     {
@@ -252,9 +265,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     }
 
     /**
-     * Assessor for userlink field
-     *
-     * @return string
+     * Assessor for userlink field.
      */
     public function getLastUserLink(User $user): string
     {
@@ -264,11 +275,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $this->userlink = $this->wiki->Href('', 'MotDePassePerdu', [
                 'a' => 'recover',
                 'email' => $key,
-                'u' => base64_encode($user['name'])
+                'u' => base64_encode($user['name']),
             ], false);
         } else {
             $this->generateUserLink($user);
         }
+
         return $this->userlink;
     }
 
@@ -278,13 +290,13 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @param array $newValues (associative array)
      *
-     * @throws Exception
+     * @throws \Exception
      * @throws UserEmailAlreadyUsedException
      */
     public function update(User $user, array $newValues): bool
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $newKeys = array_keys($newValues);
         $authorizedKeys = array_filter($newKeys, function ($key) {
@@ -293,7 +305,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'doubleclickedit',
                 'email',
                 'motto',
-                //'name', // name not currently updateable
+                // 'name', // name not currently updateable
                 // 'password', // password not updateable by this method
                 'revisioncount',
                 'show_comments',
@@ -301,7 +313,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         });
         if (isset($newValues['email'])) {
             if (empty($newValues['email'])) {
-                throw new Exception("\$newValues['email'] parameter of UserManager->update should not be empty!");
+                throw new \Exception("\$newValues['email'] parameter of UserManager->update should not be empty!");
             } elseif ($user['email'] == $newValues['email']) {
                 $authorizedKeys = array_filter($authorizedKeys, function ($item) {
                     return $item != 'email';
@@ -342,7 +354,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function delete(User $user)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         unset($this->getOneByNameCacheResults[$user['name']]);
         $query = "DELETE FROM {$this->dbService->prefixTable('users')} " .
@@ -351,7 +363,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             if (!$this->dbService->query($query)) {
                 throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
             }
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
         }
     }
@@ -362,12 +374,13 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function groupsWhereIsMember(User $user, bool $adminCheck = true)
     {
-        $groups = $this->wiki->GetGroupsList();
-        $groups = array_filter($groups, function ($group) use ($user, $adminCheck) {
-            return !empty($user['name']) && $this->isInGroup($group, $user['name'], $adminCheck);
-        });
-
-        return $groups;
+        $group_list = $this->tripleStore->getMatching(GROUP_PREFIX . '%', null, '%'.$user['name'].'%', 'LIKE', '=', 'LIKE');
+        $prefix_len = strlen(GROUP_PREFIX);
+        $list = array();
+        foreach($group_list as $group) {
+            $list[] = substr($group['resource'], $prefix_len);
+        }
+        return $list;
     }
 
     /** Tells if a user is member of the specified group.
@@ -381,7 +394,13 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function isInGroup(string $groupName, ?string $username = null, bool $admincheck = true, array $formerGroups = [])
     {
         // aclService could  not be loaded in __construct because AclService already loads UserManager
-        return $this->wiki->services->get(AclService::class)->check($this->wiki->GetGroupACL($groupName), $username, $admincheck, '', '', $formerGroups);
+        try {
+            $members = $this->wiki->services->get(GroupController::class)->getMembers($groupName);
+        } catch (GroupNameDoesNotExistException $th) {
+            $members = [];
+        }
+
+        return $this->wiki->services->get(AclService::class)->check(implode("\n", $members), $username, $admincheck, '', '', $formerGroups);
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */
@@ -395,12 +414,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param PasswordAuthenticatedUserInterface|UserInterface $user
      *
      * @throws UnsupportedUserException if the user is not supported
-     * @throws Exception                if wiki is in hibernation
+     * @throws \Exception               if wiki is in hibernation
      */
     public function upgradePassword($user, string $newHashedPassword)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->supportsClass(get_class($user))) {
             throw new UnsupportedUserException();
@@ -415,7 +434,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'AND email= "' . $this->dbService->escape($user['email']) . '" ' .
                 'AND password= "' . $this->dbService->escape($previousPassword) . '";';
             $this->dbService->query($query);
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             // only throw error in debug mode
             if ($this->wiki->GetConfigValue('debug') == 'yes') {
                 throw $th;
@@ -443,6 +462,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (!$this->supportsClass(get_class($user))) {
             throw new UnsupportedUserException();
         }
+
         // currently force refresh
         return $this->getOneByName($user->getName());
     }

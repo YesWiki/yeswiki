@@ -116,6 +116,8 @@ return [
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_THE_GROUP' => 'Nouvelle ACL enrégistrée avec succès pour le groupe',
     'EDIT_GROUP' => 'éditer le groupe',
     'EDIT_EXISTING_GROUP' => 'Éditer un groupe existant',
+    'USERS_GROUPS_LIST' => 'Liste des groupes et utilisateurices',
+    'GROUP_SELECTION' => 'sélection',
     'DELETE_EXISTING_GROUP' => 'Supprimer un groupe existant',
     'GROUP_NAME' => 'Nom du groupe',
     'SEE_EDIT' => 'Voir / Éditer',
@@ -124,6 +126,9 @@ return [
     'ONE_NAME_BY_LINE' => 'un nom d\'utilisateur par ligne',
     'ONLY_EMPTY_GROUP_FOR_DELETION' => 'Seul un groupe vide peut être supprimé',
     'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'Seuls les groupes non rattaché à une page peuvent être supprimé. Pages associées :',
+    'NO_VAR_GROUP' => 'aucun group spécifié',
+    'GROUP_NOT_STRING' => 'la variable n\'est pas une chaine de caractère',
+
     // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'Droits du handler',
     'ERROR_WHILE_SAVING_HANDLER_ACL' => 'Une erreur s\'est produite pendant l\'enregistrement de l\'ACL pour le handler',
@@ -629,4 +634,13 @@ return [
     'REACTION_TITLE_PARAM_NEEDED' => 'Le paramètre \'titre\' est obligatoire',
     'REACTION_BAD_IMAGE_FORMAT' => 'Mauvais format d\'image : doit être un fichier, un icône utf8 ou une classe Fontawesome',
     'REACTION_NO_IMAGE' => 'Image manquante',
+    'GROUP_NAME_ALREADY_USED' => 'le groupe existe déjà',
+    'USER_NAME_DOES_NOT_EXIST' => 'l\'utlisateur n\'existe pas',
+    'GROUP_NAME_DOES_NOT_EXIST' => 'le groupe n\'existe pas',
+    'INVALID_GROUP_NAME' => 'le nom du groupe n\'est pas valide',
+    'GROUP_SAVED' => 'groupe {group} mis à jour avec succès',
+    'GROUP_CREATED' => 'groupe {group} créé avec succès',
+    'GROUP_DELETED' => 'groupe {group} supprimé avec succès',
+    'ERROR_WHILE_EDITING_GROUP' => 'error durant l\'action sur le groupe.',
+
 ];
