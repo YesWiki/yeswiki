@@ -5,7 +5,9 @@ const ConditionsChecking = {
   boolList: ['false', 'true'],
   operationsList: ['!(', 'not(', 'not (', '(', ')'],
   operationsListIncludInSpaceParenthesis: ['and', 'or'],
-  conditionsList: ['==', '!=', ' in', '|length ==', '|length !=', '|length <', '|length <=', '|length >=', '|length >', ' is empty', ' is not empty'],
+  /* BEGIN AJOUT DE L'OPERATEUR MATCH */
+  conditionsList: ['match', '==', '!=', ' in', '|length ==', '|length !=', '|length <', '|length <=', '|length >=', '|length >', ' is empty', ' is not empty'],
+  /* END AJOUT DE L'OPERATEUR MATCH */
   pregQuote(input) {
     return (`${input}`).replace(new RegExp('[.\\[\\]\\^(){}!=\\\\+*?$<>|:]', 'g'), '\\$&')
   },
@@ -100,6 +102,24 @@ const ConditionsChecking = {
     }
     return result
   },
+/* BEGIN AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */  
+  getTextValues(field) {
+    const result = []
+    const value = $(field).val()
+    if (value.trim() != '') {
+      result.push(value.trim())
+    }
+    return result
+  },
+  getTextareaValues(field) {
+    const result = []
+    const value = $(field).val()
+    if (value.trim() != '') {
+      result.push(value.trim())
+    }
+    return result
+  },
+/* END AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
   getFieldNameValues(fieldName) {
     if (typeof this.fieldNamesCache[fieldName] === 'undefined') {
       return []
@@ -114,6 +134,12 @@ const ConditionsChecking = {
         return this.getRadioValues(fieldData.node)
       case 'select':
         return this.getSelectValues(fieldData.node)
+/* BEGIN AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
+      case 'text':
+        return this.getTextValues(fieldData.node)
+      case 'textarea':
+ 		return this.getTextareaValues(fieldData.node)
+/* END AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */ 		
       default:
         break
     }
@@ -158,6 +184,34 @@ const ConditionsChecking = {
     const number = Number(values)
     return eval(`${length} ${operation} ${number}`)
   },
+  /* BEGIN AJOUT DE LA METHODE MATCH */
+  match (fieldName, values)
+  {
+	const extract = {
+      uniqueValues: [],
+      uniqueFieldValues: []
+    }
+    
+    this.commonForOperations(fieldName, values, extract)
+    if (extract.uniqueValues.length != extract.uniqueFieldValues.length) {
+      return false
+    }
+    
+    var uniqueValuesRE = extract.uniqueValues.map(str => {
+    const match = str.match(/^\/(.*)\/([a-z]*)$/i);
+    return match ? new RegExp(match[1], match[2]) : null;
+	})
+    
+    let result = true
+    for (let index = 0; index < extract.uniqueFieldValues.length; index++) {
+      if (!uniqueValuesRE.some (regex => regex.test(extract.uniqueFieldValues[index])))
+      {
+        result = false
+      }
+    }
+    return result
+  },
+  /* END AJOUT DE LA METHODE MATCH */
   isEqual(fieldName, values) {
     const extract = {
       uniqueValues: [],
@@ -229,8 +283,12 @@ const ConditionsChecking = {
 
     return ''
   },
-  renderConditionSecured(fieldName, condition, values) {
+  renderConditionSecured(fieldName, condition, values) {  
     switch (condition) {
+    /* BEGIN AJOUT DE L'OPERATEUR MATCH */
+	  case 'match':
+        return ` this.match("${fieldName}","${values}")`
+    /* END AJOUT DE L'OPERATEUR MATCH */        
       case '==':
         return ` this.isEqual("${fieldName}","${values}")`
       case '!=':
@@ -516,6 +574,7 @@ const ConditionsChecking = {
     const inputId = $(input).attr('id')
     if (typeof this.triggersCache[inputId] === 'undefined') {
       this.triggersCache[inputId] = [fieldName]
+			     		
       $(input).on('change', () => {
         ConditionsChecking.resolveTrigger(inputId)
       })
@@ -587,6 +646,66 @@ const ConditionsChecking = {
     }
     return result
   },
+  /* BEGIN Ajout du support des inputs de type text et des textareas */
+  findText(fieldName, result) {
+    if (result.type != '') {
+      return result
+    }
+    const inputs = $(`input[name$=${fieldName}][type=text]`)
+    if (inputs.length > 0) {
+      result.type = 'text'
+      result.node = inputs
+      // register triggers
+      $(inputs).each(function() {
+        ConditionsChecking.registerTrigger(this, fieldName)
+      })
+    }
+    return result
+  },
+  findTextarea(fieldName, result) {
+    if (result.type != '') {
+      return result
+    }
+    const inputs = $(`textarea[name$=${fieldName}]`)
+    if (inputs.length > 0) {
+      result.type = 'textarea'
+      result.node = inputs
+      // register triggers
+      $(inputs).each(function() {      
+              
+        /* BEGIN Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg */
+        
+        var vTextArea = $(this);
+        
+        if (vTextArea.hasClass ("aceditor-textarea") || vTextArea.hasClass ("summernote")) 
+        {	        
+		    var launchUpdateHandler = function ()
+		    {
+			 	var vLastValue = vTextArea.val();
+
+				setInterval(() =>
+				{
+					var vValue = vTextArea.val();
+					
+					if (vValue !== vLastValue)
+					{
+					    vLastValue = vValue;
+						vTextArea.trigger ("change");
+					}
+				}, 500); 
+			}
+			
+		  	launchUpdateHandler ();
+		}
+      	
+      	/* END Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg */
+      	
+        ConditionsChecking.registerTrigger(this, fieldName)
+      })
+    }
+    return result
+  },
+  /* END Ajout du support des inputs de type text et des textareas */
   extractFieldNode(fieldName) {
     let result = {
       type: '',
@@ -597,6 +716,8 @@ const ConditionsChecking = {
     result = this.findCheckboxTag(fieldName, result)
     result = this.findRadio(fieldName, result)
     result = this.findList(fieldName, result)
+    result = this.findText(fieldName, result)
+    result = this.findTextarea(fieldName, result)
 
     return result
   },
