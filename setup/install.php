@@ -32,6 +32,15 @@ if (!$version = trim($wakkaConfig['wikini_version'])) {
 if ($version) {
     test(_t('VERIFY_MYSQL_PASSWORD') . ' ...', isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD') . ' !');
 }
+
+// As of PHP 8.1.0, the default setting is MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT.
+// Previously, it was MYSQLI_REPORT_OFF. 
+// https://www.php.net/manual/en/mysqli-driver.report-mode.php
+//
+// So mysqli_connect() will return an exception instead of 'false'.
+// To let tests in this script work, come back to MYSQLI_REPORT_OFF
+mysqli_report(MYSQLI_REPORT_OFF);
+
 test(_t('TEST_MYSQL_CONNECTION') . ' ...', $dblink = @mysqli_connect($config['mysql_host'], $config['mysql_user'], $config['mysql_password']));
 
 $testdb = test(
