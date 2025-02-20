@@ -309,6 +309,7 @@ return [
     'TRYING_TO_CREATE_DATABASE' => 'Tentative de création de la base de données',
     'DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY' => 'Création de la base impossible. Vous devez créer cette base manuellement avant d\'installer YesWiki',
     'DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT' => 'La base de données que vous avez choisie n\'existe pas, vous devez la créer avant d\'installer YesWiki',
+    'CHECKING_THE_ADMIN_NAME' => 'Vérification du nom de l\'administrateur',
     'CHECKING_THE_ADMIN_PASSWORD' => 'Vérification du mot de passe Administrateur',
     'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'Vérification de la concordance des deux mots de passes administrateurs',
     'CHECKING_ROOT_PAGE_NAME' => 'Vérification du nom de la page d\'accueil',
