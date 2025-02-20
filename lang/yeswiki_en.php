@@ -268,6 +268,7 @@ return [
     'TRYING_TO_CREATE_DATABASE' => 'Trying to create database',
     'DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY' => 'Database creation impossible. You must create the database manually before installing YesWiki',
     'DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT' => 'The chosen database doesn\'t exist, you must create the database manually before installing YesWiki',
+    'CHECKING_THE_ADMIN_NAME' => 'Checking the administrator \'s name',
     'CHECKING_THE_ADMIN_PASSWORD' => 'Checking the administrator\'s password',
     'CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION' => 'Checking the administrator\'s password confirmation',
     'ADMIN_PASSWORD_ARE_DIFFERENT' => 'The administrator\'s passwords are different',

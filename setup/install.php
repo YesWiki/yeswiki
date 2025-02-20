@@ -93,6 +93,14 @@ if (!$version || empty($_POST['admin_login'])) {
     unset($admin_password);
 }
 
+// Check the admin name based on the function sanitizeName() in UserController
+test(
+    _t('CHECKING_THE_ADMIN_NAME') . ' ...',
+    !empty($admin_name) && is_string($admin_name) && strlen($admin_name) <= 80 && !preg_match('/(?:^[!#@<>\\\\\/].*$|[<>\\\\\/]|^.{0,2}$)/', $admin_name),
+    _t('USER_THIS_IS_NOT_A_VALID_NAME'),
+    1
+);
+
 $config['root_page'] = trim($config['root_page']);
 test(
     _t('CHECKING_ROOT_PAGE_NAME') . ' ...',
