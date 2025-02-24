@@ -1,7 +1,7 @@
 <?php
 return [
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{abonnement ...}}',
-    'CONTACT_MAIL_REQUIRED' => 'the email, required, is missing',
+    'CONTACT_MAIL_REQUIRED' => 'the email, required, is missing.',
     'CONTACT_ACTION_CONTACT' => 'Action {{contact ...}}',
     'CONTACT_ACTION_DESABONNEMENT' => 'Action {{desabonnement ...}}',
     'CONTACT_ACTION_LISTSUBSCRIPTION' => 'Action {{listsubscription ...}}',
