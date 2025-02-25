@@ -313,7 +313,7 @@ return [
     'AB_bazarcarto_spider_hint' => 'Breaks a group of points when clicked',
     'AB_bazarcarto_navigation_label' => 'Zoom control buttons',
     'AB_bazarliste_description' => 'The cards will be in the form of accordions',
-    'AB_bazarliste_displayfields_title' => 'Selection of fields to include',
+    'AB_bazarliste_displayfields_title' => 'Choice of fields to include',
     'AB_bazarliste_displayfields_floating_label' => 'Floating area',
     'AB_bazarliste_displayfields_visual_label' => 'Visual area',
     'AB_bazarcard_style_label' => 'Type of rendering',
