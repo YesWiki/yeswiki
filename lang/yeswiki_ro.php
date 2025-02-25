@@ -426,7 +426,7 @@ return [
     'ERROR_WHILE_SAVING_HANDLER_ACL' => 'A apărut o eroare în timpul înregistrării ACL pentru handler',
     'DELETE' => 'Șterge',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activați curățarea HTML înainte de salvare. Aveți grijă, schimbați conținutul cu excepția! (true sau false)',
-    'EDIT_CONFIG_GROUP_EMAIL' => 'E-mail',
+    'EDIT_CONFIG_GROUP_EMAIL' => 'Email-uri',
     'URL_REDIRECTION' => 'Redirecționarea adreselor URL',
     'ACLS_HELPER' => 'Separați fiecare intrare de virgule, de exemplu</br>
     <b>*</b> (toți utilizatorii)</BR>
@@ -589,4 +589,5 @@ return [
     'VERIFY_PAGE_AVAILABILITY' => 'Verifica disponibilitatea paginii',
     'DISTANT_LOGIN' => 'Conectați-vă la telecomanda YesWiki',
     'USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN' => 'Puteți să vă îndepărtați din grupul de administrare',
+    'CHECKING_THE_ADMIN_NAME' => 'Verificarea numelui administratorului',
 ];
