@@ -9,11 +9,9 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Controller\SecurityController;
@@ -138,7 +136,7 @@ class EntryManager
     {
         $data = [];
         if (!empty($page['body'])) {
-            $data = $this->decode($page['body']);
+            $data = json_decode($page['body'], true);
 
             if ($debug) {
                 if (empty($data['id_fiche'])) {
@@ -154,6 +152,16 @@ class EntryManager
             if (!isset($data['id_fiche'])) {
                 $data['id_fiche'] = $page['tag'];
             }
+
+            // multilingual treats
+            if (isset($data['__extra_langs'][$GLOBALS['prefered_language']])) {
+                $curLangData = $data['__extra_langs'][$GLOBALS['prefered_language']];
+                if (!empty($curLangData)) {
+                    $data = array_merge($data, $curLangData);
+                    unset($data['__extra_langs']);
+                }
+            }
+
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic, $correspondance, $page);
         } elseif ($debug) {
@@ -336,7 +344,7 @@ class EntryManager
                                 $nom = substr($nom, 0, -1);
                             }
 
-                            if (($params["regexp"] ?? "0") == "1") {
+                            if (($params['regexp'] ?? '0') == '1') {
                                 $requeteSQL .= 'JSON_VALID(body) AND JSON_EXTRACT(body, "$.' . $nom . '") REGEXP "' . $val . '"';
                             } else {
                                 $requeteSQL .= '(body REGEXP \'"' . $nom . '":("' . $rawCriteron .
@@ -773,21 +781,6 @@ class EntryManager
         unset($this->cachedEntriestags[$tag]);
     }
 
-    /*
-     * Convert body to JSON object
-     */
-    public function decode($body)
-    {
-        $data = json_decode($body, true);
-        if (is_iterable($data)) {
-            foreach ($data as $key => $value) {
-                $data[$key] = _convert($value, 'UTF-8');
-            }
-        }
-
-        return $data;
-    }
-
     /**
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
@@ -803,7 +796,7 @@ class EntryManager
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
         if (empty($form)) {
-            throw new Exception('No form with id: '.$data['id_typeannonce']);
+            throw new Exception('No form with id: ' . $data['id_typeannonce']);
         }
 
         // If there is a title field, compute the entry's title
@@ -830,7 +823,7 @@ class EntryManager
         $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
 
         // Get creation date if it exists, initialize it otherwise
-        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM '.$this->dbService->prefixTable('pages')."WHERE tag='".$data['id_fiche']."'");
+        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $data['id_fiche'] . "'");
         $data['date_creation_fiche'] = $data['date_creation_fiche'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
         // Entry status
@@ -1150,7 +1143,7 @@ class EntryManager
 
         $entriesIds = [];
         foreach ($pages as $page) {
-            $entry = $this->decode($page['body']);
+            $entry = json_decode($page['body'], true);
 
             foreach ($attributesNames as $attributeName) {
                 if ($mode === 'rename') {
