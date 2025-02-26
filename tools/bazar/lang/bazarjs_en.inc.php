@@ -252,4 +252,24 @@ return [
     'BAZ_BOOKMARKLET_HINT' => 'This field requires two other fields to function  :{br}
   - a url field ( by defaut "bf_url"){br}
   - a long text field ( by defaut "bf_description")',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT' => 'The condition must be in the following format (without the `):{br}
+ - and ` : gives AND{br}
+ - or ` : equals OR{br}
+ - `==` : equals {br}
+ - `!=` : gives IS DIFFERENT FROM {br}
+ - in [value1,value2]` : IS PART OF a comma-separated list of elements enclosed in square brackets{br}
+ - `|length > 6` : checks if the number of checked items is greater than 6 (works with ‘>=’,‘<’,‘<=’){br}
+ - ` == [value1,value2]` : IS EXACTLY the list of elements separated by commas and surrounded by square brackets (only for checkbox){br}
+ - `( )` allows conditions to be grouped, otherwise priority from left to right{br}
+ - `!( )` or `not ( )` negation of the condition{br}
+ - indicate to the left of a `==` or `!=` the label of the field ex:`bf_thematique`{br}
+ - is empty ` : allows you to check if the value is empty{br}
+ - is not empty ` : allows you to check if the value is not empty{br}
+ - extra spaces are removed automatically{br} ` is not empty
+ - operations are case insensitive',
+    'BAZ_FORM_CALC_HINT' => 'CALCULATION{br}
+The formula must be a mathematical formula.
+It is possible to refer to the value of a field by typing its name (e.g. `+ sin(bf_number)*2` ),{br}
+or test the value of an enumerated field (list, checkbox,...) (ex: `test(bf_type,first_cle)`{br}
+which returns 1 if bf_type == first_loop otherwise 0).',
 ];

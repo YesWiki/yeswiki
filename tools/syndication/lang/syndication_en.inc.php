@@ -12,6 +12,6 @@ return [
     'SYNDICATION_CREATE_CACHE_FOLDER' => 'create a ‘cache’ directory in the main directory',
     'SYNDICATION_TEMPLATE_NOT_FOUND' => 'file does not exist, we use the default template file.',
     'SYNDICATION_READ_MORE' => 'read more',
-    'SYNDICATION_SOURCE' => 'Access to all content',
+    'SYNDICATION_SOURCE' => 'source',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Access to all content',
 ];

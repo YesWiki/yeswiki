@@ -8,5 +8,5 @@ return [
     'RSS_TO' => 'to',
     'RSS_ADDS' => 'Addings',
     'RSS_DELETIONS' => 'Deletions',
-    'RSS_NO_DIFF' => 'No difference',
+    'RSS_NO_DIFF' => 'No differences',
 ];
