@@ -97,7 +97,7 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_SMTP_PORT' => '',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_USER' => '',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_PASS' => '',
-    'EDIT_CONFIG_HINT_CONTACT_FROM' => '',
+    'EDIT_CONFIG_HINT_CONTACT_FROM' => 'Posta-igorle gisa adierazitako erabiltzailea (spama saihesteko, smtp erabiltzaileak bezalakoa izan behar du)',
     'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => '',
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => '',
     'EDIT_CONFIG_GROUP_CONTACT' => '',
