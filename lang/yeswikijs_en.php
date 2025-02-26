@@ -104,4 +104,17 @@ return [
     'DATATABLES_ZERORECORD' => 'No element to display',
     'REACTION_CONFIRM_DELETE' => 'Are you sure to want to delete this reaction ?',
     'SAVE' => 'Save',
+    'FORM_ID_IS_COMPATIBLE' => 'A form with the same id ({id}) exists at the given url and appears to have at least similar required fields. It will be used for duplication.',
+    'NOT_VALID_URL' => 'Invalid url: {url}',
+    'PAGE_NOT_AVAILABLE' => 'Page {tag} is not available on the destination YesWiki',
+    'CONNECTED_AS_ADMIN' => 'The user {user} is successfully logged in to the destination YesWiki, with administration rights.',
+    'ADMIN_BACKUPS_CONFIRMATION_TO_DELETE' => "The following files will be deleted by the backup.
+Please confirm their deletion by checking the box below.
+<pre>{files}</pre>",
+    'CONNECTED_BUT_NOT_ADMIN' => 'The user {user} is successfully logged in to the destination YesWiki, but does not have administrative rights. Please log in with an admin account.',
+    'PAGE_AVAILABLE' => 'The {tag} page is available on the destination YesWiki',
+    'NOT_CONNECTED' => 'You must log in to the destination YesWiki with an account that has administrative rights.',
+    'NOT_WIKI_OR_OLD_WIKI' => 'The site indicated does not appear to be a YesWiki, or its version is prior to 4.5.0',
+    'FORM_ID_AVAILABLE' => 'The form with the identifier {id} does not yet exist on the indicated url, it will be created.',
+    'FORM_ID_NOT_AVAILABLE' => 'The form with the identifier {id} is no longer available on the indicated url, you must change the identifier.',
 ];
