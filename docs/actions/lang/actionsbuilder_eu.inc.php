@@ -1,6 +1,6 @@
 <?php
 return [
-    'AB_LEFT' => '',
+    'AB_LEFT' => 'Ezker',
     'AB_RIGHT' => '',
     'AB_advanced' => '',
     'AB_bazar_label' => "",

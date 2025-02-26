@@ -1,6 +1,6 @@
 <?php
 return [
-    'HELLOWORLD_MY_MESSAGE' => '',
+    'HELLOWORLD_MY_MESSAGE' => 'Nere mezuak',
     'HELLOWORD_NO_MSG_PARAM' => '',
     'HELLOWORD_CALLBACK_MSG' => '',
     'HELLOWORLD_CONFIG' => '',

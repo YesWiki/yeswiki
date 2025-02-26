@@ -1,6 +1,6 @@
 <?php
 return [
-    'ACTION_BUILDER_COPY' => '',
+    'ACTION_BUILDER_COPY' => 'Kopiatu',
     'ACTION_BUILDER_PREVIEW' => '',
     'ACTION_BUILDER_ONLINEDOC' => '',
     'ACTION_BUILDER_UPDATE_CODE' => '',
