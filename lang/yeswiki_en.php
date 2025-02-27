@@ -169,7 +169,7 @@ return [
     'CHANGE_THE_PASSWORD' => 'Change the password',
     'YOUR_OLD_PASSWORD' => 'Your former password',
     'CHANGE' => 'Change',
-    'USERNAME_MUST_BE_WIKINAME' => 'Your username must not start with !,@,\,/,# and must have 3 characters minimum.',
+    'USERNAME_MUST_BE_WIKINAME' => 'Your username must not start with "!", "@", "#". It must not contains "\" ,"/", "<" and ">". It must have 3 characters minimum.',
     'YOU_MUST_ACCEPT_COOKIES_TO_GET_CONNECTED' => 'You must accept cookies to get connected',
     'IF_YOU_ARE_REGISTERED_LOGGIN_HERE' => 'If you are already registered, login here',
     'PASSWORD_5_CHARS_MINIMUM' => 'Password (5 characters minimum)',

@@ -20,6 +20,21 @@ class UserController extends YesWikiController
 
     public const DEFAULT_NAME_MAX_LENGTH = 80;
     public const DEFAULT_EMAIL_MAX_LENGTH = 254;
+    
+    /**
+     * Rules for user name :
+     * - do not start by "!", "#" and "@" ;
+     * - do not contains "<", ">", "\", "/" anywhere ;
+     * - strictly more than 2 chars.
+     * 
+     * Be careful to update the regex in `setup/install.php` if there is changes here.
+     * Be careful to update the regex in `tools/login/templates/user-signup-form.twig` if there is changes here.
+     * 
+     * Be careful, the pattern need to be escaped for PHP ("\"). Real pattern is : "^[^!#@<>\\\/][^<>\\\/]{2,}$".
+     * 
+     * @var string
+     */
+    public const PATTERN_USER_NAME = '/^[^!#@<>\\\\\/][^<>\\\\\/]{2,}$/';
 
     private $limitations;
 
@@ -370,7 +385,8 @@ class UserController extends YesWikiController
         $value = strval($value);
         if (strlen($value) > $this->limitations['nameMaxLength']) {
             throw new \Exception(_t('USER_NAME_S_MAXIMUM_LENGTH_IS') . " {$this->limitations['nameMaxLength']}.");
-        } elseif (preg_match('/(?:^[!#@<>\\\\\/].*$|[<>\\\\\/]|^.{0,2}$)/', $value)) {
+        }
+        if (!preg_match(self::PATTERN_USER_NAME, $value)) {
             throw new \Exception(_t('USER_THIS_IS_NOT_A_VALID_NAME') . '.');
         }
 
