@@ -176,10 +176,12 @@ class LoginAction extends YesWikiAction
         }
         try {
             if (!empty($_POST['name'])) {
-                $name = $this->securityController->filterInput(INPUT_POST, 'name', FILTER_DEFAULT, true);
-                if (empty($name)) {
-                    throw new LoginException(_t('LOGIN_WRONG_USER'));
-                }
+                
+                // No need to filter the name, it will be escaped in the request to the database.
+                // It can be possible to filter the name with the regex PATTERN_USER_NAME in UserManager, but if this regex changes,
+                // existing users will be unable to login. So just let the database check if the user is here.
+                $name = $_POST['name'];
+                
                 if (filter_var($name, FILTER_VALIDATE_EMAIL)) {
                     $user = $this->userManager->getOneByEmail($name);
                 } else {
