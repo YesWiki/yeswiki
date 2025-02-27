@@ -1,6 +1,6 @@
 <?php
 return [
-    'BAZ_FORM_EDIT_CALC_LABEL' => '',
+    'BAZ_FORM_EDIT_CALC_LABEL' => 'Kalkuluak',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => '',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => '',
     'BAZ_FORM_EDIT_FORMULA_LABEL' => '',

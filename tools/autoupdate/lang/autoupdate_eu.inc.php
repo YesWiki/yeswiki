@@ -1,6 +1,6 @@
 <?php
 return [
-    'AU_ACL' => '',
+    'AU_ACL' => 'Fitxategien gaineko eskubideak egiaztatzea',
     'AU_REPO_ERROR' => '',
     'AU_VERSION_WIKI' => '',
     'AU_VERSION_REPO' => '',

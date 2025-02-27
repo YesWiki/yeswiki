@@ -1,6 +1,6 @@
 <?php
 return [
-    'TEMPLATE_ACTION' => '',
+    'TEMPLATE_ACTION' => 'Ekintza',
     'TEMPLATE_FILE_NOT_FOUND' => '',
     'TEMPLATE_ACTION_BUTTON' => '',
     'TEMPLATE_LINK_PARAMETER_REQUIRED' => '',
