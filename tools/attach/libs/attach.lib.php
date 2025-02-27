@@ -7,7 +7,6 @@ use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Security\Controller\SecurityController;
 
-
 if (!class_exists('attach')) {
     class attach
     {
@@ -184,7 +183,7 @@ if (!class_exists('attach')) {
 
             // decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
-                list(,, $file['page'], $file['name'], $file['ext']) = $match;
+                list(, , $file['page'], $file['name'], $file['ext']) = $match;
                 if (!$this->isPicture() && !$this->isAudio() && !$this->isVideo() && !$this->isFreeMindMindMap() && !$this->isWma() && !$this->isFlashvideo()) {
                     $file['ext'] .= '_';
                 }
@@ -434,9 +433,6 @@ if (!class_exists('attach')) {
             if (empty($this->file)) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_FILE_NOT_FOUND') . '.</div>' . "\n";
             }
-            if ($this->isPicture() && empty($this->desc)) {
-                $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_DESC_REQUIRED') . '.</div>' . "\n";
-            }
             if (!empty($this->width) && !ctype_digit(strval($this->width))) {
                 $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_WIDTH_NOT_NUMERIC') . '.</div>' . "\n";
             }
@@ -596,7 +592,9 @@ if (!class_exists('attach')) {
         }
 
         // Affiche le fichier liee comme un fichier mind map  freemind
-        public function showAsWma($fullFilename) {}
+        public function showAsWma($fullFilename)
+        {
+        }
 
         // End Paste
 
@@ -948,11 +946,11 @@ if (!class_exists('attach')) {
             echo $this->wiki->render($isAction
                 ? '@attach/attach-filemanager.twig'
                 : '@attach/attach-filemanager-handler.twig', [
-                'tag' => $this->wiki->tag,
-                'method' => ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : ''),
-                'trash' => $trash,
-                'files' => $files,
-            ]);
+                    'tag' => $this->wiki->tag,
+                    'method' => ($this->wiki->GetMethod() != 'show' ? $this->wiki->GetMethod() : ''),
+                    'trash' => $trash,
+                    'files' => $files,
+                ]);
         }
 
         /**
@@ -1182,7 +1180,7 @@ if (!class_exists('attach')) {
             if (!$result) {
                 // in case of error, show error code
                 return $imgTrans->error;
-                // if there were no errors
+            // if there were no errors
             } else {
                 return $imgTrans->target_path;
             }
