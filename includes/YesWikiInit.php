@@ -391,6 +391,9 @@ class Init
             $cookiesParam['path'] = $CookiePath;
             $cookiesParam['httponly'] = true;
             $cookiesParam['samesite'] = 'Lax';
+            if (preg_match('`^https://`', $this->config['base_url'], $matches)) {
+                $cookiesParam['secure'] = true;
+            }
             session_set_cookie_params($cookiesParam);
             session_name($sessionName);
             session_start();
