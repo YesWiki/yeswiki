@@ -238,7 +238,8 @@ const load = (domElement) => {
             if (val) this.currentSort = val
           } else if (hashKey && hashValue && filter) {
             filter.flattenNodes.forEach((node) => {
-              if (hashValue.includes(node.value)) node.checked = true
+              var filterValues = hashValue.split (",");
+			        if (filterValues.includes(node.value)) node.checked = true        
             })
           }
         })
