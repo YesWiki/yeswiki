@@ -1,6 +1,6 @@
 <?php
 return [
-    'AUGUST' => '',
+    'AUGUST' => 'Agorrila',
     'CANCEL' => '',
     'COPY' => '',
     'DECEMBER' => '',
@@ -80,8 +80,8 @@ return [
     'LINK_TO_CHANGE_PASSWORD' => '',
     'USERSTABLE_USER_CREATED' => "",
     'USERSTABLE_USER_NOT_CREATED' => "",
-    'USERSTABLE_USER_DELETED' => '',
-    'USERSTABLE_USER_NOT_DELETED' => '',
+    'USERSTABLE_USER_DELETED' => '"{username}" erabiltzailea ezabatu da.',
+    'USERSTABLE_USER_NOT_DELETED' => 'Ez da ezabatu "{username}" erabiltzailea.',
     'DATATABLES_PROCESSING' => '',
     'DATATABLES_SEARCH' => '',
     'DATATABLES_LENGTHMENU' => '',
