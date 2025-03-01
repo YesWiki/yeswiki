@@ -305,7 +305,7 @@ return [
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_CHECK_DELETION]' => 'Tiempo (s) entre dos refrescos de caché para comprobar las suposiciones en las solicitudes JSON',
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_REFRESH_FORMS]' => 'Tiempo (s) entre dos refrescos de caché para los formularios requeridos para las solicitudes JSON',
     'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => 'El correo electrónico proporcionado ya está asociado con una cuenta YesWiki! Ingrese otra dirección de correo electrónico o ingrese a esta cuenta.',
-    'USER_PASSWORDS_NOT_IDENTICAL' => 'La contraseña introducida para la verificación no es idéntica a la primera!',
+    'USER_PASSWORDS_NOT_IDENTICAL' => 'La contraseña introducida para la verificación no es la misma que la primera!',
     'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => 'Para cambiar la dirección e-mail asociado a esta cuenta, pegad una diferente de "{email}".',
     'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => 'Como administrador, forzar la creación del archivo para el correo electrónico dado (y crear una cuenta sólo si no existe ya)',
     'BAZ_USER_FIELD_LABEL' => 'Usuario',
