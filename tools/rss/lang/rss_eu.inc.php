@@ -1,12 +1,12 @@
 <?php
 return [
-    'RSS_CHANGE_OF' => '',
-    'RSS_HISTORY' => '',
-    'RSS_HIDDEN_CONTENT' => '',
-    'RSS_ON_DATE' => '',
-    'RSS_COMPARISON_OF' => '',
-    'RSS_TO' => '',
-    'RSS_ADDS' => '',
-    'RSS_DELETIONS' => '',
-    'RSS_NO_DIFF' => '',
+    'RSS_CHANGE_OF' => 'Honen aldaketa',
+    'RSS_HISTORY' => 'historikoa',
+    'RSS_HIDDEN_CONTENT' => 'Ezkutuko edukia',
+    'RSS_ON_DATE' => 'le',
+    'RSS_COMPARISON_OF' => 'Konparazioa',
+    'RSS_TO' => 'à',
+    'RSS_ADDS' => 'Eransketak',
+    'RSS_DELETIONS' => 'Ezabapenak',
+    'RSS_NO_DIFF' => 'Desberdintasunik ez',
 ];
