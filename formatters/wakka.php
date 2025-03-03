@@ -416,8 +416,8 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     // markdown images compatibility
                     elseif (preg_match('/^\!\[([^\]]*)\]\(([^\) ]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
                         $src = $matches[2];
-                        $alt = htmlspecialchars($matches[1]);
-                        $title = htmlspecialchars($matches[3]);
+                        $alt = htmlspecialchars($matches[1] ?? '');
+                        $title = htmlspecialchars($matches[3] ?? '');
 
                         return '<img loading="lazy" class="img-responsive" src="' . $src . '" alt="' . $alt . '" ' . (empty($title) ? '' : 'title="' . $title . '"') . ' />';
                     }
