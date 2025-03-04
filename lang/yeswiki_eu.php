@@ -589,4 +589,5 @@ return [
     'REACTION_PLEASE_LOGIN' => 'identifikatu',
     'DUPLICATE_AND_OPEN' => 'Bikoiztu',
     'DISTANT_LOGIN' => 'Identifikatu urruneko YesWikian',
+    'CHECKING_THE_ADMIN_NAME' => 'Administratzailearen izena egiaztatzen',
 ];

@@ -35,7 +35,7 @@ return [
     'LOGIN_PASSWORD_WAS_RESET' => 'Pasahitza behar bezala aldatu da',
     'LOGIN_DEAR' => 'Jaun/Andre hori',
     'LOGIN_CLICK_FOLLOWING_LINK' => 'Egin klik esteka honetan zure pasahitza berrabiarazteko',
-    'LOGIN_THE_TEAM' => 'Honen taldea',
+    'LOGIN_THE_TEAM' => 'Honen taldea:',
     'LOGIN_PASSWORD_FOR' => 'Honen pasahitza:',
     'LOGIN_PASSWORD_LOST_FOR' => 'Honen pasahitza galdu da:',
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Epe horretarako ez dago izena ematerik.',

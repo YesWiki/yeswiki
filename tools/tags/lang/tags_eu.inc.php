@@ -104,6 +104,6 @@ return [
     'AB_tags_listpagestag_rss_label' => '',
     'AB_tags_listpagestag_nbclasses_label' => '',
     'AB_tags_nuagetag_tri_shuffle' => '',
-    'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => '',
-    'EDIT_CONFIG_GROUP_TAGS' => '',
+    'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'Ezkutatu gako- hitzak orri- oinean (true edo false)',
+    'EDIT_CONFIG_GROUP_TAGS' => 'Gako-hitzak (etiketak)',
 ];
