@@ -50,7 +50,7 @@ return [
     'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ONLY_GEOLOC' => 'only with geolocalization',
     'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_NO_GEOLOC' => 'only without geolocalization',
     'AB_bazar_action_label' => 'Display a form to create an entry',
-    'AB_bazar_action_description' => 'Help to display a form to create an entry',
+    'AB_bazar_action_description' => 'Help to display a form to create an entry.',
     'AB_bazar_action_redirecturl_label' => 'Wiki page name or Full url to display after creation of an entry',
     'AB_attach_class_displaylink_label' => 'If link, open it in',
     'AB_attach_class_displaylink_default' => 'current tab',

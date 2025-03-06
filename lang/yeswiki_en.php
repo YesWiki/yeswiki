@@ -207,7 +207,7 @@ return [
     'DEFAULT_LANGUAGE_INFOS' => 'Language used by default for YesWiki\'s interface, you still can change language for each page created',
     'GENERAL_CONFIGURATION' => 'General configuration',
     'DATABASE_CONFIGURATION' => 'Database configuration',
-    'MORE_INFOS' => 'More info',
+    'MORE_INFOS' => 'Help',
     'MYSQL_SERVER' => 'MySQL server host',
     'MYSQL_SERVER_INFOS' => 'IP address or network name of the computer containing your MySQL server',
     'MYSQL_DATABASE' => 'MySQL database name',

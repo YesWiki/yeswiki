@@ -178,7 +178,7 @@ return [
     'BAZ_REACTIONS_FIELD_IMAGES_LABEL' => 'Icons',
     'LIST_ADD_NODE' => 'Add a value',
     'BAZ_FORM_EDIT_FILLING_MODE_TAGS' => 'Tags',
-    'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_FIELDID' => 'Form field providing the email address to be entered',
+    'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_FIELDID' => 'Field of the form providing the email to be entered',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST' => 'Type of broadcasting service',
     'BAZ_FORM_EDIT_EDIT_CONTENT_LABEL' => 'Content when filling in',
     'BAZ_FORM_EDIT_VIEW_CONTENT_LABEL' => 'Content when displaying an entry',
