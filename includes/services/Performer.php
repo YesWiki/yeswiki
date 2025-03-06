@@ -128,7 +128,6 @@ class Performer
                 $className = $classNameWithNamespace;
             }
         }
-
         if (class_exists($className)) {
             $instance = new $className();
             $instance->setWiki($this->wiki);
