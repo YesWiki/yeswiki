@@ -316,5 +316,17 @@ function load_translations($returnedArray, bool $jsmode = false)
     }
 }
 
+function merge_lang($data)
+{
+    if (isset($data['__extra_langs'][$GLOBALS['prefered_language']])) {
+        $curLangData = $data['__extra_langs'][$GLOBALS['prefered_language']];
+        if (!empty($curLangData)) {
+            $data = array_merge($data, $curLangData);
+            unset($data['__extra_langs']);
+        }
+    }
+    return $data;
+}
+
 // default init
 initI18n();
