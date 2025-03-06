@@ -1,5 +1,4 @@
 <?php
-
 return [
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculele',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Afișează textul',
@@ -251,4 +250,35 @@ return [
     'LIST_ADD_CHILD_NODE' => 'Adăugați o subvaloare',
     'LIST_ERROR_MISSING_IDS' => "Unele valori nu au o cheie asociată",
     'LIST_ERROR_DUPLICATES_IDS' => 'Fiecare cheie trebuie să fie unică. Aceste chei sunt folosite de mai multe ori: ',
+    'BAZ_FORM_CALC_HINT' => 'CALCULAŢIE{br}
+Formula trebuie să fie o formulă matematică. {br}
+Este posibil să se facă referire la valoarea unui câmp prin tastarea numelui său (ex: `+ sin(bf_number)*2` ),{br}
+sau pentru a testa valoarea unui câmp enumerat (listă, checkbox,..) (ex: `test(bf_type,premiere_cle)`{br}
+care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT' => 'Condiția trebuie să respecte următorul format (fără ele`):{br}
+ - ` and ` dă TA{BR}
+ - ÎN: OR{BR}
+ - `==` : dă ESTE EGAL CU{BR}
+ - `!=` : DĂ ESTE DIFERIT DE {BR}
+ - în [value1,value2]: PARTE din lista de articole separate prin virgulă și întreţinute de cârlige{br}
+ - `|length > 6` : verifică dacă numărul de elemente verificate este mai mare de 6 (funcționează cu ">=","<","<="){br}
+ - ` == [value1,value2]` : EXACT lista de elemente separate prin virgulă înconjurată de paranteze pătrate (numai pentru checkbox){br}
+ - `(  )` permite condiții de grupare altfel de la stânga la dreapta prioritate{br}
+ - `!(  )` sau `not (  )` negarea condiției{br}
+ - indicați stânga unui `==` sau `!=` eticheta de câmp ex:`bf_thematique`{br}
+ - ` is empty ` : verificați dacă valoarea este goală{br}
+ - ` is not empty ` : verificați dacă valoarea nu este goală{br}
+ - Spațiile suplimentare sunt eliminate automat{br}
+ - operaţiunile sunt insensibile|length > 6` : verifică dacă numărul de elemente verificate este mai mare de 6 (funcționează cu ">=","<","<="){br}
+ - ` == [value1,value2]` : EXACT lista de elemente separate prin virgulă înconjurată de paranteze pătrate (numai pentru checkbox){br}
+ - `(  )` permite condiții de grupare altfel de la stânga la dreapta prioritate{br}
+ - `!(  )` sau `not (  )` negarea condiției{br}
+ - indicați stânga unui `==` sau `!=` eticheta de câmp ex:`bf_thematique`{br}
+ - ` is empty ` : verificați dacă valoarea este goală{br}
+ - ` is not empty ` : verificați dacă valoarea nu este goală{br}
+ - Spațiile suplimentare sunt eliminate automat{br}
+ - operaţiunile sunt insensibile',
+    'BAZ_BOOKMARKLET_HINT' => 'Acest câmp necesită alte două câmpuri pentru a funcționa:{br}
+  - un câmp url (în mod implicit "bf_url"){br}
+  - un câmp text lung (în mod implicit "bf_description")',
 ];

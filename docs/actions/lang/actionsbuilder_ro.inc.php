@@ -283,7 +283,7 @@ return [
     'AB_advanced_action_listpages_user_label' => "Afișați numai cardurile în care a participat utilizatorul",
     'AB_advanced_action_listpages_user_hint' => 'Nu poate fi combinat cu tree',
     'AB_advanced_action_listpages_exclude_label' => 'Excludeți paginile și descendenții lor',
-    'AB_advanced_action_listpages_exclude_hint' => "",
+    'AB_advanced_action_listpages_exclude_hint' => "Separați fiecare etichetă după ';' ',' '|' altfel '/'|' altfel '/'",
     'AB_advanced_action_bazarrecordsindex_label' => 'Listează doar cărțile junk',
     'AB_advanced_action_interwikilist_label' => 'Vizualizați lista interwiki',
     'AB_advanced_action_listusers_label' => 'Lista utilizatori',

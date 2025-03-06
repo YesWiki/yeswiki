@@ -278,7 +278,8 @@ return [
     'EDIT_CONFIG_GROUP_BAZAR' => 'Baza de date',
     'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => 'E-mailul furnizat este deja asociat cu un cont YesWiki! Vă rugăm să introduceți o altă adresă de e-mail sau să vă conectați la acest cont.',
     'USER_PASSWORDS_NOT_IDENTICAL' => 'Parola introdusă pentru verificare nu este identică cu prima!',
-    'BAZ_USER_FIELD_ALREADY_CONNECTED' => "Sunteți deja conectat cu identificatorul \"{wikiname}\" și e-mailul \"{email}\". Cardul creat va fi conectat automat la contul dvs. Vă rugăm să vă deconectați pentru a crea un cont nou!",
+    'BAZ_USER_FIELD_ALREADY_CONNECTED' => "Sunteți deja conectat cu identificatorul \"{wikiname}\" și e-mailul \"{email}\". 
+Cardul creat va fi conectat automat la contul dvs. Vă rugăm să vă deconectați pentru a crea un cont nou!",
     'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => 'Pentru a modifica adresa de e-mail asociată cu acest cont, tastați altul decât "{email}".',
     'BAZ_MEMBERS' => 'membrii',
     'BAZ_MORE_INFOS' => 'Mai multe informații',
@@ -327,7 +328,8 @@ return [
     'BAZ_WIDGET_INSTRUCTION' => 'Încorporați codul pentru a copia pasta în site-ul dvs',
     'BAZ_WIDGET_INSTRUCTION2' => 'Cod acțiune wiki pentru a copia lipire într-o pagină a acestui site',
     'BAZ_CORRESPONDANCE_ERROR' => 'acțiunea Bazarliste: corespondența parametrului nu este completată corect: trebuie să fie de forma corespondentă="identifiant_1=identifiant_2" sau corespondent="identifiant_1=identifiant_2, identifiant_3=identifiant_4',
-    'BAZ_CORRESPONDANCE_ERROR2' => "acțiunea Bazarlist: parametrul de potrivire este umplut incorect. Trebuie să fie de forma corespondentă=\"identifiant_1=identifiant_2\" sau corespondent=\"identifiant_1=identifiant_2, identifiant_3=identifiant_4\"",
+    'BAZ_CORRESPONDANCE_ERROR2' => "acțiunea Bazarlist: parametrul de potrivire este umplut incorect. 
+Trebuie să fie de forma corespondentă=\"identifiant_1=identifiant_2\" sau corespondent=\"identifiant_1=identifiant_2, identifiant_3=identifiant_4\"",
     'BAZ_CSV' => 'CSV',
     'BAZ_FORMULAIRE' => 'Formularele',
     'BAZ_INTRO_MODIFIER_FORMULAIRE' => 'Pentru a edita un formular, faceți clic pe numele său sau pe pictograma creion. Pentru a șterge un formular, faceți clic pe pictograma coș de gunoi. <br /> Pentru a crea un formular nou, faceți clic pe linkul de sub această listă.',
@@ -373,7 +375,8 @@ return [
     'BAZ_EXISTINGMESSAGE' => 'Această listă există deja, o va suprascrie pe cea existentă dacă o selectați.',
     'BAZ_EXISTINGMESSAGEREPLACEFORM' => 'Atenție, acest identificator și titlul acestui formular există deja, dacă îl selectați, acesta va fi suprascris.',
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_REFRESH_FORMS]' => 'Timp (e) între două reîmprospătări ale memoriei cache pentru formularele necesare pentru interogările JSON',
-    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "Identificatorul \"{currentName}\" există deja! Bifați caseta pentru a confirma înlocuirea acesteia cu \"{proposedName}\" sau schimbați numele de utilizator în formularul de mai jos.",
+    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "Identificatorul \"{currentName}\" există deja! 
+Bifați caseta pentru a confirma înlocuirea acesteia cu \"{proposedName}\" sau schimbați numele de utilizator în formularul de mai jos.",
     'BAZ_SEM_USE_TEMPLATE_DESC' => 'Utilizați un template semantic dacă este disponibil pentru acest tip de obiect',
     'BAZ_PAS_D_ID_DE_FICHE_INDIQUEE' => 'ID-ul de înregistrare nu este specificat.',
     'BAZ_BAD_IMAGE_FILE_EXTENSION' => 'Extensie greșită pentru imagine (trebuie să fie .jpg sau .png sau .gif)',
