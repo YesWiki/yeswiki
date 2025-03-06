@@ -178,11 +178,12 @@ class UserSettingsAction extends YesWikiAction
             // TODO remove the .tpl.html for ectoplasme and use directly .twig
             return $this->render('@login/user-signup-form.tpl.html', [
                 'link' => $this->wiki->href(), // notice 'link' is not used in .twig TODO remove this line for ectoplasme
-                'namesToExport' => ['error', 'name', 'email', 'captcha'], // TOTO remove this line when removing .tpl.html
+                'namesToExport' => ['error', 'name', 'email', 'captcha', 'regexUserName'], // TOTO remove this line when removing .tpl.html
                 'error' => $this->error,
                 'name' => $this->wantedUserName,
                 'email' => $this->wantedEmail,
                 'captcha' => $captcha,
+                'regexUserName' => UserController::PATTERN_USER_NAME
             ]);
         }
     }

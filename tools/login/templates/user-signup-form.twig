@@ -19,7 +19,7 @@
   </label>
   <div class="controls col-sm-9">
     <input class="form-control" name="name" size="40" value="{{ name }}" 
-      pattern="^[^!#@<>\\\/][^<>\\\/]{2,}$"/>{# pattern for valid user name #}
+      pattern="{{ regexUserName | raw}}"/>{# pattern for valid user name #}
   </div>
 </div>
 <div class="control-group form-group">
