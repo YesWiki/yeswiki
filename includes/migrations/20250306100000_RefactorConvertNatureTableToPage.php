@@ -16,7 +16,7 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
         foreach ($forms as $form) {
             $form_array = [];
             foreach ($form['prepared'] as $i => $fields) {
-                $form_array[$i] = (array) $fields;
+                $form_array[$i] = json_decode(json_encode($fields), true);
                 unset($form_array[$i]['propertyname']);
             }
             $id = genere_nom_wiki($form['bn_label_nature']);
