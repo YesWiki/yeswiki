@@ -232,7 +232,7 @@ return [
     'USER_MAX_NUMBER_OF_VERSIONS' => 'Numărul maxim de versiuni',
     'REACTION_DELETE_ALL' => 'Șterge toate',
     'PASSWORD_5_CHARS_MINIMUM' => 'Parolă (minim 5 caractere)',
-    'USERNAME_MUST_BE_WIKINAME' => 'Numele tău de utilizator nu trebuie să înceapă cu! @, / sau # cu minim 3 caractere.',
+    'USERNAME_MUST_BE_WIKINAME' => 'Numele de utilizator nu trebuie să înceapă cu "!", "@", "#". Nu trebuie să conțină "<", ">", "\", "/". Trebuie să aibă cel puțin 3 caractere.',
     'ADMIN_BACKUPS_MESSAGE_CLI_NOT_WORKING' => 'apeluri de linie de comandă imposibile.',
     'YOUR_OLD_PASSWORD' => 'Parola ta veche',
     'ADMIN_BACKUPS_MESSAGE_HIBERNATION' => 'wiki este în hibernare.',
