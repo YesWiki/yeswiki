@@ -291,7 +291,7 @@ return [
     'BAZ_COMMENTS_INFO_UNKNOWN' => 'Los comentarios no son gestionados porque el tipo de réglage de los comentarios es desconocidos',
     'BAZ_FILE_ALREADY_EXISTING' => 'archivo existente',
     'BAZ_NOT_AUTHORIZED_FILE' => 'archivo no permitido',
-    'BAZ_FILEFIELD_FILE' => 'Archivo: {Nombre de archivo}',
+    'BAZ_FILEFIELD_FILE' => 'Archivo : {filename}',
     'BAZ_NOT_AUTHORIZED_EXTENSION' => 'Extensión no autorizado.',
     'BAZ_SHARE_YOUR_COMMENT' => 'Y no dude en comentar para profundizar la reflexión!',
     'BAZ_SHARE_YOUR_REACTION' => 'Comparte tu reacción sobre este contenido',
