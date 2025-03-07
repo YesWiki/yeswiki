@@ -1,5 +1,5 @@
 <?php
 return [
-    'CONTACT_REQUIRED_FIELD' => '',
-    'CONTACT_EMAIL_NOT_VALID' => '',
+    'CONTACT_REQUIRED_FIELD' => 'Este campo es obligatorio.',
+    'CONTACT_EMAIL_NOT_VALID' => 'El correo electrónico introducido no es válido.',
 ];
