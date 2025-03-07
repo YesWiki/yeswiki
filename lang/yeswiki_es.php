@@ -130,7 +130,7 @@ return [
     'CHANGE_THE_PASSWORD' => 'Cambio de contraseña',
     'YOUR_OLD_PASSWORD' => 'Tu antigua contraseña',
     'CHANGE' => 'Cambiar',
-    'USERNAME_MUST_BE_WIKINAME' => 'Tu nombre de usuario no debe comenzar con !,@,\,/,# y debe tener un mínimo de 3 caracteres.',
+    'USERNAME_MUST_BE_WIKINAME' => 'Tu nombre de usuario no debe comenzar con "!", "@", "#" . No debe contener: "<", ">", "\", "/" y debe tener un mínimo de 3 caracteres.',
     'YOU_MUST_SPECIFY_AN_EMAIL' => 'Debes especificar una dirección de correo electrónico',
     'THIS_IS_NOT_A_VALID_EMAIL' => 'Esto no parece una dirección de correo electrónico',
     'PASSWORDS_NOT_IDENTICAL' => 'Las contraseñas no eran idénticas',
