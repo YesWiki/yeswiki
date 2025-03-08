@@ -71,7 +71,7 @@ class HtmlPurifierService
             return $dirtyContent;
         }
         if (is_null($this->antixss)) {
-            $this->antiXss = new AntiXSS();
+            $this->antixss = new AntiXSS();
         }
 
         return $this->antiXss->xss_clean($dirtyContent);
