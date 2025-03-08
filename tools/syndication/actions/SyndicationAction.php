@@ -74,6 +74,12 @@ class SyndicationAction extends YesWikiAction
                                     && $enclosure->get_medium() == 'image'
                                 ) {
                                     $feedItem['image'] = $enclosure->get_link();
+                                } elseif (preg_match(
+                                    '/avif|gif|jpeg|png|jpg|svg|webp$/',
+                                    strtolower($link = $enclosure->get_link() ?? ''),
+                                    $matches
+                                )) {
+                                    $feedItem['image'] = $link;
                                 }
                             }
                             if (!empty($this->arguments['nbchar'])) {
