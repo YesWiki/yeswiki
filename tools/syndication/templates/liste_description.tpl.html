@@ -1,14 +1,18 @@
 <!-- SYNDICATION - DEBUT -->
-<?php if (!empty($aso_page['titre_site'])) {
-    echo '<h2>'.$aso_page['titre_site'].'</h2>';
+<?php if (!empty($title)) {
+    echo '<h2>'.$title.'</h2>';
 } ?>
 <?php foreach ($syndication['pages'] as $page) : ?>
 	<div class="feed-item">
+  <?php if ($showImage && !empty($page['image'])) : ?>
+  <img class="feed-img pull-left" style="max-width:200px;margin:0 1em 1em 0" src="<?php echo $page['image']; ?>" alt="" />
+  <?php endif; ?>
 		<h3><?php if ($page['date']!='') : ?>
       <span class="date_rss"><?php echo $page['date'];?></span>
-      <span class="separateur_date_rss"> - </span>
     <?php endif; ?>
-		  <a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo ($page['ext'])? 'target="_blank"':'';?>><?php echo $page['titre'];?></a>
+		  <a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo $ext ? 'target="_blank"':'';?>>
+        <?php echo $page['titre'];?>
+      </a>
       <?php
       if (!empty($page['source'])) {
           echo ' <small>' . _t('SYNDICATION_SOURCE') . ' : '.$page['source'].'</small>';
@@ -16,6 +20,7 @@
       ?>
     </h3>
   	<p class="description_rss"><?php echo $page['description'];?></p>
+  <div class="clearfix"></div>
   </div>
   <hr>
 <?php endforeach; ?>

@@ -1,12 +1,12 @@
 <!-- SYNDICATION - DEBUT -->
-<?php if (!empty($aso_page['titre_site'])) {
-    echo '<h2>'.$aso_page['titre_site'].'</h2>';
+<?php if (!empty($title)) {
+    echo '<h2>'.$title.'</h2>';
 } ?>
 <ul class="liste_rss <?php echo $class; ?>">
   <?php foreach ($syndication['pages'] as $page) : ?>
     <li class="titre_rss">
       <?php if ($page['date']!='') : ?><span class="date_rss"><?php echo $page['date'];?></span><?php endif; ?>
-      <a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo ($page[ 'ext']) ? 'target="_blank"': '';?>>
+      <a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo ($ext) ? 'target="_blank"': '';?>>
         <?php echo $page['titre'];?>
       </a>
       <?php

@@ -1,8 +1,8 @@
 <!-- SYNDICATION - DEBUT -->
 <?php $nb = 0;
 $id = md5($GLOBALS['wiki']->GetParameter("url")); ?>
-<?php if (!empty($aso_page['titre_site'])) {
-    echo '<h2>'.$aso_page['titre_site'].'</h2>';
+<?php if (!empty($title)) {
+    echo '<h2>'.$title.'</h2>';
 } ?>
 <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $id; ?>">
 <?php foreach ($syndication['pages'] as $page) : $nb = $nb + 1; ?>
@@ -24,7 +24,7 @@ $id = md5($GLOBALS['wiki']->GetParameter("url")); ?>
             <div class="panel-body">
               <?php echo $page['description'];?>
               <br>
-              <a class="btn btn-default" href="<?php echo $page['url'];?>" <?php echo ($page['ext'])? 'target="_blank"' : '';?>>
+              <a class="btn btn-default" href="<?php echo $page['url'];?>" <?php echo ($ext)? 'target="_blank"' : '';?>>
                 <?php echo _t('SYNDICATION_SEE_ALL_CONTENT'); ?>
               </a>
             </div>
