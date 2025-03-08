@@ -1,0 +1,25 @@
+<!-- SYNDICATION liste-description -->
+{% if title is not empty %}
+<h2>{{ title }}</h2>
+{% endif %}
+{% for page in syndication.pages %}
+<div class="feed-item with-desc">
+  {% if showImage is not empty and page.image is not empty %}
+  <img class="feed-img pull-left" src="{{ page.image }}" alt="" />
+  {% endif %}
+  <h3>
+  {% if page.date is not empty %}
+      <small class="date_rss">{{ page.date }}</small>
+      {% endif %}
+      <a class="lien_rss" href="{{ page.url }}" {% if ext == true %}target="_blank"{% endif %}>
+        {{ page.title }}
+      </a>
+      {% if page.source is not empty %}
+          <small>{{ _t('SYNDICATION_SOURCE') ~ ' : ' ~ page.source }}</small>
+      {% endif %}
+  </h3>
+  <div class="description_rss">{{ page.description|raw }}</div>
+  <div class="clearfix"></div>
+</div>
+{% endfor %}
+<!-- SYNDICATION liste-description end -->

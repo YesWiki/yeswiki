@@ -1,35 +1,8 @@
-<!-- SYNDICATION - DEBUT -->
-<?php $nb = 0;
-$id = md5($GLOBALS['wiki']->GetParameter("url")); ?>
-<?php if (!empty($title)) {
-    echo '<h2>'.$title.'</h2>';
-} ?>
-<div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $id; ?>">
-<?php foreach ($syndication['pages'] as $page) : $nb = $nb + 1; ?>
-        <div class="panel panel-default">
-          <button class="panel-heading collapsed"
-            data-target="#collapse<?php echo $id; ?>_<?php echo $nb; ?>"
-            data-toggle="collapse">
-            <h4 class="panel-title">
-              <?php echo $page['date'];?><?php if ($page['date']!='') : ?> - <?php endif; ?>
-          		<?php echo $page['titre'];?>
-              <?php
-              if (!empty($page['source'])) {
-                  echo ' <small>' . _t('SYNDICATION_SOURCE') . ' : '.$page['source'].'</small>';
-              }
-              ?>
-            </h4>
-          </button>
-          <div id="collapse<?php echo $id; ?>_<?php echo $nb; ?>" class="panel-collapse collapse">
-            <div class="panel-body">
-              <?php echo $page['description'];?>
-              <br>
-              <a class="btn btn-default" href="<?php echo $page['url'];?>" <?php echo ($ext)? 'target="_blank"' : '';?>>
-                <?php echo _t('SYNDICATION_SEE_ALL_CONTENT'); ?>
-              </a>
-            </div>
-          </div>
-        </div>
-<?php endforeach; ?>
-</div>
-<!-- SYNDICATION - FIN -->
+<?php
+
+// backward compatibility TODO delete this file for ectoplasme
+
+$defs = array_keys(get_defined_vars());
+echo $this->render( "@syndication/accordeon.twig", compact( array_filter([
+'syndication', 'title', 'urlSite', 'urlHash', 'showImage', 'ext', ],
+function($i)use($defs){ return in_array($i,$defs); }) ) );

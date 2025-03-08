@@ -53,11 +53,7 @@ class SyndicationAction extends YesWikiAction
                     }
 
                     if ($feed) {
-                        if ($this->arguments['nb'] == 0) {
-                            $feedItems = $feed->get_items();
-                        } else {
-                            $feedItems = $feed->get_items(0, $this->arguments['nb']);
-                        }
+                        $feedItems = $feed->get_items(0, $this->arguments['nb']);
                         $nbItems = count($feedItems);
                         foreach ($feedItems as $item) {
                             $feedItem = [];
@@ -68,11 +64,17 @@ class SyndicationAction extends YesWikiAction
                             }
 
                             $feedItem['url'] = $item->get_permalink();
-                            $feedItem['titre'] = $item->get_title();
+                            $feedItem['title'] = $item->get_title();
                             $feedItem['description'] = $item->get_content();
                             $feedItem['image'] = null;
                             if ($enclosure = $item->get_enclosure()) {
                                 $feedItem['image'] = $enclosure->get_thumbnail();
+                                if (
+                                    empty($feedItem['image'])
+                                    && $enclosure->get_medium() == 'image'
+                                ) {
+                                    $feedItem['image'] = $enclosure->get_link();
+                                }
                             }
                             if (!empty($this->arguments['nbchar'])) {
                                 $feedItem['description'] = preg_replace("/\s+/u", ' ', strip_tags($feedItem['description']));
@@ -107,7 +109,8 @@ class SyndicationAction extends YesWikiAction
                                 default:
                                     $feedItem['date'] = '';
                             }
-                            $syndication['pages'][$feedItem['datestamp']] = $feedItem;
+                            // the key is beginning with the datestamp to order by date desc, and we concat the title for unicity
+                            $syndication['pages'][$feedItem['datestamp'].urlencode($feedItem['title'])] = $feedItem;
                         }
                     }
                 }
@@ -115,13 +118,12 @@ class SyndicationAction extends YesWikiAction
             }
             // sort all feeds per date
             krsort($syndication['pages']);
-
-            if (empty($this->arguments['titre'])) {
+            if (empty($this->arguments['title'])) {
                 $title = '';
-            } elseif ($this->arguments['titre'] == 'rss') {
+            } elseif ($this->arguments['title'] == 'rss') {
                 $title = $feed->get_title();
             } else {
-                $title = $this->arguments['titre'];
+                $title = $this->arguments['title'];
             }
 
             return '<div class="feed_syndication'.($this->arguments['class'] ? ' '.$this->arguments['class'] : '').'">'."\n".
@@ -129,6 +131,7 @@ class SyndicationAction extends YesWikiAction
                     'syndication' => $syndication,
                     'title' => $title,
                     'urlSite' => $feed->get_link(),
+                    'urlHash' => md5($this->arguments['url']),
                     'showImage' => $this->arguments['showimage'],
                     'ext' => $this->arguments['nouvellefenetre'],
                 ])."\n".

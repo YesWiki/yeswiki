@@ -1,0 +1,40 @@
+<!-- SYNDICATION accordeon start -->
+{{ include_css('tools/syndication/presentation/styles/syndication.css')}}
+{% if title is not empty %}
+<h2>{{ title }}</h2>
+{% endif %}
+<div class="bazar-list panel-group accordion-group no-dblclick {{ class }}" id="accordion{{ urlHash }}">
+{% set i = 0 %}
+{% for page in syndication.pages %}
+  {% set i = i + 1 %}
+  <div class="bazar-entry panel panel-default collapsed">
+    <button class="panel-heading collapsed"
+       data-target="#collapse{{ urlHash }}_{{ i }}"
+       data-toggle="collapse">
+      <h4 class="panel-title">
+        {% if page.date is not empty %}
+        <small class="date_rss">{{ page.date }}</small>
+        {% endif %}
+        {% if showImage is not empty and page.image is not empty %}
+        <img class="feed-img" src="{{ page.image }}" alt="" />
+        {% endif %}
+        {{ page.title }}
+        {% if page.source is not empty %}
+        <small>{{ _t('SYNDICATION_SOURCE') ~ ' : ' ~ page.source }}</small>
+        {% endif %}
+      </h4>
+    </button>
+    <div id="collapse{{ urlHash }}_{{ i }}" class="panel-collapse collapse">
+      <div class="panel-body">
+        <div class="feed-description">
+          {{ page.description|raw }}
+        </div>
+        <a class="btn btn-default" href="{{ page.url }}" {% if ext == true %}target="_blank"{% endif %}>
+          {{ _t('SYNDICATION_SEE_ALL_CONTENT') }}
+        </a>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+<!-- SYNDICATION accordeon end -->
