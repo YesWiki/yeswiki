@@ -104,7 +104,7 @@ class ListManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $id = $id ?? genere_nom_wiki('List' . $title);
+        $id = $id ?? genere_nom_wiki('List ' . $title);
         $this->pageManager->save($id, json_encode([
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes ?? []),
