@@ -102,8 +102,16 @@ class TripleStore
         if (count($where) > 0) {
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
+        
+        // Add a local in function cache
+        static $cache = array();
+        
+        if(!array_key_exists($sql, $cache))
+        {            
+            $cache[$sql] = $this->dbService->loadAll($sql) ;
+        }
 
-        return $this->dbService->loadAll($sql);
+        return $cache[$sql];
     }
 
     /**
