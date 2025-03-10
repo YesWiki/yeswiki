@@ -65,7 +65,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function getOneByName($name, $password = null): ?User
     {
         // use !is_string($password) instead of !$password to allow $password == ""
-        if (!is_string($password) && isset($this->getOneByNameCacheResults[$name])) {
+        
+        // Don't check the cache with isset(), because the value of the cache can be null
+        if (!is_string($password) && array_key_exists($name, $this->getOneByNameCacheResults)) {
             $result = $this->getOneByNameCacheResults[$name];
         } else {
             $result = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . (!is_string($password) ? '' : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
