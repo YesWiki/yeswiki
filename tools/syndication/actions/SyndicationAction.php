@@ -1,9 +1,10 @@
 <?php
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Bazar\Service\EntryManager;
 
 include_once 'tools/syndication/libs/syndication.lib.php';
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 class SyndicationAction extends YesWikiAction
 {
@@ -31,17 +32,45 @@ class SyndicationAction extends YesWikiAction
                 explode(',', $arg['source'])
             );
         }
+        if (!empty($arg['url'])) {
+            $arg['url'] = array_map('trim', explode(',', $arg['url']));
+        }
+        if (!empty($arg['mapping'])) {
+            $params = array_map('trim', explode(',', $arg['mapping']));
+            $mapping = [];
+            foreach ($params as $param) {
+                $values = array_map('trim', explode('=', $param));
+                $mapping[$values[0]] = $values[1];
+            }
+            $arg['mapping'] = [
+                'id' => $mapping['id'] ?? '',
+                'title' => $mapping['title'] ?? 'bf_titre',
+                'url' => $mapping['url'] ?? 'bf_url',
+                'description' => $mapping['description'] ?? 'bf_description',
+                'image' => $mapping['image'] ?? 'imagebf_image',
+                'categories' => $mapping['categories'] ?? 'bf_tags',
+            ];
+        }
 
         return $arg;
     }
 
     public function run(): ?string
     {
+        $mappingToBazar = !empty($this->arguments['mapping']);
+        if ($mappingToBazar) {
+            if (empty($this->arguments['mapping']['id'])) {
+                return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
+            } else {
+                // we load all entries to check if entry were already created from feed
+                $entryManager = $this->getService(EntryManager::class);
+                $entries = $entryManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
+            }
+        }
         if (!empty($this->arguments['url'])) {
-            $tab_url = array_map('trim', explode(',', $this->arguments['url']));
             $nburl = 0;
             $syndication = ['pages' => []];
-            foreach ($tab_url as $cle => $url) {
+            foreach ($this->arguments['url'] as $cle => $url) {
                 if ($url != '') {
                     $feed = new SimplePie\SimplePie();
                     $feed->set_feed_url($url);
@@ -49,7 +78,7 @@ class SyndicationAction extends YesWikiAction
                     $feed->init();
                     $feed->handle_content_type();
                     if ($feed->error()) {
-                        return '<p class="alert alert-danger">'._t('ERROR').' '.$feed->error().'</p>'."\n";
+                        return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . $feed->error() . '</div>' . "\n";
                     }
 
                     if ($feed) {
@@ -66,6 +95,7 @@ class SyndicationAction extends YesWikiAction
                             $feedItem['url'] = $item->get_permalink();
                             $feedItem['title'] = $item->get_title();
                             $feedItem['description'] = $item->get_content();
+                            $feedItem['categories'] = array_column($item->get_categories() ?? [], 'term');
                             $feedItem['image'] = null;
                             if ($enclosure = $item->get_enclosure()) {
                                 $feedItem['image'] = $enclosure->get_thumbnail();
@@ -83,7 +113,7 @@ class SyndicationAction extends YesWikiAction
                                 }
                             }
                             if (!empty($this->arguments['nbchar'])) {
-                                $feedItem['description'] = preg_replace("/\s+/u", ' ', strip_tags($feedItem['description']));
+                                $feedItem['description'] = preg_replace("/\s+/u", ' ', strip_tags($feedItem['description'] ?? ''));
                                 $descLen = strlen($feedItem['description']);
                                 // check if text longer than max chars specified
                                 if ($descLen > 0
@@ -91,9 +121,9 @@ class SyndicationAction extends YesWikiAction
                                     $feedItem['description'] = truncate(
                                         $feedItem['description'],
                                         $this->arguments['nbchar'],
-                                        '... <a class="lien_lire_suite" href="'.$feedItem['url']
-                                    .'" '.($this->arguments['nouvellefenetre'] ? 'target="_blank" ' : '')
-                                            .'title="'._t('SYNDICATION_READ_MORE').'">'._t('SYNDICATION_READ_MORE').'</a>',
+                                        '... <a class="lien_lire_suite" href="' . $feedItem['url']
+                                    . '" ' . ($this->arguments['nouvellefenetre'] ? 'target="_blank" ' : '')
+                                            . 'title="' . _t('SYNDICATION_READ_MORE') . '">' . _t('SYNDICATION_READ_MORE') . '</a>',
                                     );
                                 }
                             }
@@ -115,8 +145,21 @@ class SyndicationAction extends YesWikiAction
                                 default:
                                     $feedItem['date'] = '';
                             }
+                            if ($mappingToBazar) {
+                                $feedItem['mappingId'] = $this->arguments['mapping']['id'];
+                                $entry = [];
+                                foreach ($this->arguments['mapping'] as $key => $val) {
+                                    if ($key == 'id') {
+                                        $entry['id_typeannonce'] = $val;
+                                    } else {
+                                        $entry[$val] = $feedItem[$key];
+                                    }
+                                }
+                                $entry['date_creation_fiche'] = $item->get_date('Y-m-d H:i:s');
+                                $feedItem['mappingInput'] = json_encode($entry);
+                            }
                             // the key is beginning with the datestamp to order by date desc, and we concat the title for unicity
-                            $syndication['pages'][$feedItem['datestamp'].urlencode($feedItem['title'])] = $feedItem;
+                            $syndication['pages'][$feedItem['datestamp'] . urlencode($feedItem['title'])] = $feedItem;
                         }
                     }
                 }
@@ -132,19 +175,19 @@ class SyndicationAction extends YesWikiAction
                 $title = $this->arguments['title'];
             }
 
-            return '<div class="feed_syndication'.($this->arguments['class'] ? ' '.$this->arguments['class'] : '').'">'."\n".
-                $this->render('@syndication/'.$this->arguments['template'], [
+            return '<div class="feed_syndication' . ($this->arguments['class'] ? ' ' . $this->arguments['class'] : '') . '">' . "\n" .
+                $this->render('@syndication/' . $this->arguments['template'], [
                     'syndication' => $syndication,
                     'title' => $title,
                     'urlSite' => $feed->get_link(),
-                    'urlHash' => md5($this->arguments['url']),
+                    'urlHash' => md5(implode(',', $this->arguments['url'])),
                     'showImage' => $this->arguments['showimage'],
                     'ext' => $this->arguments['nouvellefenetre'],
-                ])."\n".
-            '</div>'."\n";
+                ]) . "\n" .
+            '</div>' . "\n";
         } else {
-            return '<div class="alert alert-danger"><strong>'._t('SYNDICATION_ACTION_SYNDICATION').'</strong> : '
-        ._t('SYNDICATION_PARAM_URL_REQUIRED').'.</div>'."\n";
+            return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
+        . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
         }
     }
 }

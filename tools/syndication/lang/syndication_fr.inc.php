@@ -15,4 +15,6 @@ return [
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'n\'existe pas, on utilise le template par défaut',
     'SYNDICATION_SOURCE' => 'source',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Accéder à l\'intégralité du contenu',
+    'SYNDICATION_MAPPING_ID_REQUIRED' => 'syndication, paramètre mapping : id obligatoire',
+    'SYNDICATION_COPY_IN_WIKI' => 'Ajouter comme fiche dans mon YesWiki',
 ];

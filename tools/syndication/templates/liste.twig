@@ -18,6 +18,9 @@
       {% if page.source is not empty %}
           <small>{{ _t('SYNDICATION_SOURCE') ~ ' : ' ~ page.source }}</small>
       {% endif %}
+      {% if page.mappingInput is not empty %}
+          <a href="{{ url({ params: { mapping: page.mappingInput|e('url') }}) }}" title="{{ _t('SYNDICATION_COPY_IN_WIKI') }}"><i class="fa fa-plus"></i></a>
+      {% endif %}
     </li>
   {% endfor %}
 </ul>
