@@ -43,3 +43,8 @@
   object-fit: cover;
   vertical-align: middle;
 }
+.bazar-actions {
+  font-size: 0.7em;
+  display: inline-block;
+  padding: 0.25em;
+}

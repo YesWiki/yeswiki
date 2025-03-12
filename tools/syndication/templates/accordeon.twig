@@ -22,6 +22,14 @@
         {% if page.source is not empty %}
         <small>{{ _t('SYNDICATION_SOURCE') ~ ' : ' ~ page.source }}</small>
         {% endif %}
+        {% if page.linkToEntry is not empty %}
+          <a class="bazar-actions" onclick="event.stopPropagation();" href="{{ page.linkToEntry }}" title="{{ _t('BAZ_SEE_ENTRY') }}"><i class="fa fa-eye"></i></a>
+          <a class="bazar-actions" onclick="event.stopPropagation();" href="{{ page.linkToEntry ~ '/edit' }}" title="{{ _t('BAZ_MODIFIER_LA_FICHE') }}"><i class="fas fa-edit"></i></a>
+          <a class="bazar-actions text-danger" onclick="event.stopPropagation();" href="{{ page.linkToEntry ~ '/deletepage' }}" title="{{ _t('BAZ_SUPPRIMER_LA_FICHE') }}"><i class="fa fa-trash"></i></a>
+        {% endif %}
+        {% if page.mappingInput is not empty %}
+          <a class="bazar-actions" onclick="event.stopPropagation();" href="{{ url({ params: { mapping: page.mappingInput|e('url') }}) }}" title="{{ _t('SYNDICATION_COPY_IN_WIKI') }}"><i class="fa fa-plus"></i></a>
+        {% endif %}
       </h4>
     </button>
     <div id="collapse{{ urlHash }}_{{ i }}" class="panel-collapse collapse">
