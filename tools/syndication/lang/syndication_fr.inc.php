@@ -17,4 +17,5 @@ return [
     'SYNDICATION_SEE_ALL_CONTENT' => 'Accéder à l\'intégralité du contenu',
     'SYNDICATION_MAPPING_ID_REQUIRED' => 'syndication, paramètre mapping : id obligatoire',
     'SYNDICATION_COPY_IN_WIKI' => 'Ajouter comme fiche dans mon YesWiki',
+    'SYNDICATION_ENTRY_SAVED' => 'L\'article "%{title}" du flux RSS a bien été enregistré.',
 ];

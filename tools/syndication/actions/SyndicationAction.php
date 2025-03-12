@@ -1,7 +1,9 @@
 <?php
 
-use YesWiki\Core\YesWikiAction;
+use League\HTMLToMarkdown\HtmlConverter;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\YesWikiAction;
 
 include_once 'tools/syndication/libs/syndication.lib.php';
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -46,6 +48,7 @@ class SyndicationAction extends YesWikiAction
                 'id' => $mapping['id'] ?? '',
                 'title' => $mapping['title'] ?? 'bf_titre',
                 'url' => $mapping['url'] ?? 'bf_url',
+                'summary' => $mapping['summary'] ?? 'bf_chapeau',
                 'description' => $mapping['description'] ?? 'bf_description',
                 'image' => $mapping['image'] ?? 'imagebf_image',
                 'categories' => $mapping['categories'] ?? 'bf_tags',
@@ -57,8 +60,9 @@ class SyndicationAction extends YesWikiAction
 
     public function run(): ?string
     {
-        $mappingToBazar = !empty($this->arguments['mapping']);
+        $mappingToBazar = !empty($this->arguments['mapping']) && $this->wiki->userIsAdmin();
         if ($mappingToBazar) {
+            $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
             } else {
@@ -95,6 +99,14 @@ class SyndicationAction extends YesWikiAction
                             $feedItem['url'] = $item->get_permalink();
                             $feedItem['title'] = $item->get_title();
                             $feedItem['description'] = $item->get_content();
+                            $desc = $item->get_description();
+                            if (empty($desc)) {
+                                $desc = $feedItem['description'];
+                            }
+                            $feedItem['summary'] = truncate(
+                                strip_tags($desc ?? ''),
+                                500
+                            );
                             $feedItem['categories'] = array_column($item->get_categories() ?? [], 'term');
                             $feedItem['image'] = null;
                             if ($enclosure = $item->get_enclosure()) {
@@ -146,17 +158,39 @@ class SyndicationAction extends YesWikiAction
                                     $feedItem['date'] = '';
                             }
                             if ($mappingToBazar) {
-                                $feedItem['mappingId'] = $this->arguments['mapping']['id'];
-                                $entry = [];
-                                foreach ($this->arguments['mapping'] as $key => $val) {
-                                    if ($key == 'id') {
-                                        $entry['id_typeannonce'] = $val;
-                                    } else {
-                                        $entry[$val] = $feedItem[$key];
+                                $feedItem['linkToEntry'] = $feedItem['mappingInput'] = '';
+                                $entryExists = multiArraySearch($entries, $this->arguments['mapping']['url'], $feedItem['url']);
+                                if (!empty($entryExists)) {
+                                    $feedItem['linkToEntry'] = $this->wiki->href('', $entryExists[0]['id_fiche']);
+                                } else {
+                                    $entry = [];
+                                    $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
+                                    foreach ($this->arguments['mapping'] as $key => $val) {
+                                        switch ($key) {
+                                        case 'id':
+                                            $entry['id_typeannonce'] = $val;
+                                            break;
+
+                                        case 'categories':
+                                            $entry[$val] = implode(',', $feedItem[$key]);
+                                            break;
+
+                                        case 'description':
+                                            $entry[$val] = $converter->convert($feedItem[$key] ?? '');
+                                            break;
+
+                                        case 'image':
+                                            $entry[$val] = $this->downloadFile($feedItem[$key] ?? '');
+                                            break;
+
+                                        default:
+                                            $entry[$val] = $feedItem[$key];
+                                            break;
                                     }
+                                    }
+                                    $entry['date_creation_fiche'] = $item->get_date('Y-m-d H:i:s');
+                                    $feedItem['mappingInput'] = json_encode($entry);
                                 }
-                                $entry['date_creation_fiche'] = $item->get_date('Y-m-d H:i:s');
-                                $feedItem['mappingInput'] = json_encode($entry);
                             }
                             // the key is beginning with the datestamp to order by date desc, and we concat the title for unicity
                             $syndication['pages'][$feedItem['datestamp'] . urlencode($feedItem['title'])] = $feedItem;
@@ -188,6 +222,54 @@ class SyndicationAction extends YesWikiAction
         } else {
             return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
         . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
+        }
+    }
+
+    protected function downloadFile($sourceUrl, $noSSLCheck = false, $timeoutInSec = 10, $replaceExisting = false)
+    {
+        if (empty($sourceUrl)) {
+            return '';
+        }
+        $t = explode('/', $sourceUrl);
+        $fileName = array_pop($t);
+        $destFile = sha1($sourceUrl) . '_' . $fileName;
+        $destPath = 'files/' . $destFile;
+        if (!file_exists($destPath) || (file_exists($destPath) && $replaceExisting)) {
+            $fp = fopen($destPath, 'wb');
+            $ch = curl_init($sourceUrl);
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
+            curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            if ($noSSLCheck) {
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            }
+            curl_exec($ch);
+            $errors = curl_error($ch);
+            if (!empty($errors)) {
+                var_dump($errors);
+
+                return '';
+            }
+            curl_close($ch);
+            fclose($fp);
+        }
+
+        return $destFile;
+    }
+
+    protected function addToBazar(): void
+    {
+        if (!empty($_GET['mapping'])) {
+            $data = json_decode(urldecode($_GET['mapping']), true);
+            if (!empty($data)) {
+                $data['antispam'] = 1;
+                $entryManager = $this->getService(EntryManager::class);
+                $entryManager->create($data['id_typeannonce'], $data, false, $data['bf_url']);
+                Flash::success(_t('SYNDICATION_ENTRY_SAVED', ['title' => $data['bf_titre']]));
+                $this->wiki->redirect($this->wiki->href());
+            }
         }
     }
 }

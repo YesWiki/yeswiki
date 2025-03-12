@@ -11,12 +11,20 @@ class ComposerStaticInit6fbe6863e51645503eccfbe34a424373
         array (
             'SimplePie\\' => 10,
         ),
+        'L' => 
+        array (
+            'League\\HTMLToMarkdown\\' => 22,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
         'SimplePie\\' => 
         array (
             0 => __DIR__ . '/..' . '/simplepie/simplepie/src',
+        ),
+        'League\\HTMLToMarkdown\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/league/html-to-markdown/src',
         ),
     );
 
