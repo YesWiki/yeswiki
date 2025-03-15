@@ -138,39 +138,37 @@
         },
         {
             "name": "composer/installers",
-            "version": "v1.12.0",
+            "version": "v2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/installers.git",
-                "reference": "d20a64ed3c94748397ff5973488761b22f6d3f19"
+                "reference": "12fb2dfe5e16183de69e784a7b84046c43d97e8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/installers/zipball/d20a64ed3c94748397ff5973488761b22f6d3f19",
-                "reference": "d20a64ed3c94748397ff5973488761b22f6d3f19",
+                "url": "https://api.github.com/repos/composer/installers/zipball/12fb2dfe5e16183de69e784a7b84046c43d97e8e",
+                "reference": "12fb2dfe5e16183de69e784a7b84046c43d97e8e",
                 "shasum": ""
             },
             "require": {
-                "composer-plugin-api": "^1.0 || ^2.0"
-            },
-            "replace": {
-                "roundcube/plugin-installer": "*",
-                "shama/baton": "*"
+                "composer-plugin-api": "^1.0 || ^2.0",
+                "php": "^7.2 || ^8.0"
             },
             "require-dev": {
-                "composer/composer": "1.6.* || ^2.0",
-                "composer/semver": "^1 || ^3",
-                "phpstan/phpstan": "^0.12.55",
-                "phpstan/phpstan-phpunit": "^0.12.16",
-                "symfony/phpunit-bridge": "^4.2 || ^5",
-                "symfony/process": "^2.3"
+                "composer/composer": "^1.10.27 || ^2.7",
+                "composer/semver": "^1.7.2 || ^3.4.0",
+                "phpstan/phpstan": "^1.11",
+                "phpstan/phpstan-phpunit": "^1",
+                "symfony/phpunit-bridge": "^7.1.1",
+                "symfony/process": "^5 || ^6 || ^7"
             },
             "type": "composer-plugin",
             "extra": {
                 "class": "Composer\\Installers\\Plugin",
                 "branch-alias": {
-                    "dev-main": "1.x-dev"
-                }
+                    "dev-main": "2.x-dev"
+                },
+                "plugin-modifies-install-path": true
             },
             "autoload": {
                 "psr-4": {
@@ -191,7 +189,6 @@
             "description": "A multi-framework Composer library installer",
             "homepage": "https://composer.github.io/installers/",
             "keywords": [
-                "Craft",
                 "Dolibarr",
                 "Eliasis",
                 "Hurad",
@@ -212,7 +209,6 @@
                 "Whmcs",
                 "WolfCMS",
                 "agl",
-                "aimeos",
                 "annotatecms",
                 "attogram",
                 "bitrix",
@@ -221,6 +217,7 @@
                 "cockpit",
                 "codeigniter",
                 "concrete5",
+                "concreteCMS",
                 "croogo",
                 "dokuwiki",
                 "drupal",
@@ -231,7 +228,6 @@
                 "grav",
                 "installer",
                 "itop",
-                "joomla",
                 "known",
                 "kohana",
                 "laravel",
@@ -240,6 +236,7 @@
                 "magento",
                 "majima",
                 "mako",
+                "matomo",
                 "mediawiki",
                 "miaoxing",
                 "modulework",
@@ -259,9 +256,7 @@
                 "silverstripe",
                 "sydes",
                 "sylius",
-                "symfony",
                 "tastyigniter",
-                "typo3",
                 "wordpress",
                 "yawik",
                 "zend",
@@ -269,7 +264,7 @@
             ],
             "support": {
                 "issues": "https://github.com/composer/installers/issues",
-                "source": "https://github.com/composer/installers/tree/v1.12.0"
+                "source": "https://github.com/composer/installers/tree/v2.3.0"
             },
             "funding": [
                 {
@@ -285,7 +280,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-09-13T08:19:44+00:00"
+            "time": "2024-06-24T20:46:46+00:00"
         },
         {
             "name": "doctrine/annotations",
@@ -765,16 +760,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "2.72.6",
+            "version": "2.73.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CarbonPHP/carbon.git",
-                "reference": "1e9d50601e7035a4c61441a208cb5bed73e108c5"
+                "reference": "9228ce90e1035ff2f0db84b40ec2e023ed802075"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/1e9d50601e7035a4c61441a208cb5bed73e108c5",
-                "reference": "1e9d50601e7035a4c61441a208cb5bed73e108c5",
+                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/9228ce90e1035ff2f0db84b40ec2e023ed802075",
+                "reference": "9228ce90e1035ff2f0db84b40ec2e023ed802075",
                 "shasum": ""
             },
             "require": {
@@ -868,7 +863,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-12-27T09:28:11+00:00"
+            "time": "2025-01-08T20:10:23+00:00"
         },
         {
             "name": "oomphinc/composer-installers-extender",
@@ -4188,20 +4183,20 @@
         },
         {
             "name": "yeswiki/theme-margot",
-            "version": "v1.1.5",
+            "version": "v1.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/YesWiki/yeswiki-theme-margot.git",
-                "reference": "6e2aa6497dfb08462bf3bafd3a7a8db61122a55e"
+                "reference": "56ffc6700785070f8d13cbca84e516037bed3b32"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/YesWiki/yeswiki-theme-margot/zipball/6e2aa6497dfb08462bf3bafd3a7a8db61122a55e",
-                "reference": "6e2aa6497dfb08462bf3bafd3a7a8db61122a55e",
+                "url": "https://api.github.com/repos/YesWiki/yeswiki-theme-margot/zipball/56ffc6700785070f8d13cbca84e516037bed3b32",
+                "reference": "56ffc6700785070f8d13cbca84e516037bed3b32",
                 "shasum": ""
             },
             "require": {
-                "composer/installers": "~1.0"
+                "composer/installers": "~2.3"
             },
             "type": "yeswiki-theme",
             "extra": {
@@ -4213,9 +4208,9 @@
             ],
             "support": {
                 "issues": "https://github.com/YesWiki/yeswiki-theme-margot/issues",
-                "source": "https://github.com/YesWiki/yeswiki-theme-margot/tree/v1.1.5"
+                "source": "https://github.com/YesWiki/yeswiki-theme-margot/tree/v1.1.6"
             },
-            "time": "2025-01-27T08:54:12+00:00"
+            "time": "2025-03-15T10:06:55+00:00"
         }
     ],
     "packages-dev": [
@@ -4598,16 +4593,16 @@
         },
         {
             "name": "myclabs/deep-copy",
-            "version": "1.12.1",
+            "version": "1.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "123267b2c49fbf30d78a7b2d333f6be754b94845"
+                "reference": "024473a478be9df5fdaca2c793f2232fe788e414"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/123267b2c49fbf30d78a7b2d333f6be754b94845",
-                "reference": "123267b2c49fbf30d78a7b2d333f6be754b94845",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/024473a478be9df5fdaca2c793f2232fe788e414",
+                "reference": "024473a478be9df5fdaca2c793f2232fe788e414",
                 "shasum": ""
             },
             "require": {
@@ -4646,7 +4641,7 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.12.1"
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.13.0"
             },
             "funding": [
                 {
@@ -4654,7 +4649,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-11-08T17:47:46+00:00"
+            "time": "2025-02-12T12:17:51+00:00"
         },
         {
             "name": "nikic/php-parser",
