@@ -61,12 +61,17 @@ class ListManager
         }
 
         $page = $this->pageManager->getOne($id);
-        $json = json_decode($page['body'], true);
-        $json = $this->convertDataStructure($json);
-        $json['id'] = $id;
-        $this->cachedLists[$id] = $json;
+        $data = $this->loadJson($page['body'], $id);
+        $this->cachedLists[$id] = $data;
 
-        return $json;
+        return $data;
+    }
+
+    private function loadJson(string $json, $id): array
+    {
+        $data = $this->convertDataStructure(json_decode($json, true));
+        $data['id'] = $id;
+        return $data;
     }
 
     // The structure of List object has been changed in 2024
@@ -105,12 +110,17 @@ class ListManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $id = $id ?? genere_nom_wiki('List ' . $title);
-        $this->pageManager->save($id, json_encode([
+        $json = json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? []),
-        ]));
+            'nodes' => $this->sanitizeHMTL($nodes ?? [])
+        ]);
+        $this->pageManager->save($id, $json);
+
+        $data = $this->loadJson($json, $id);
+        $this->cachedLists[$id] = $data;
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
+
 
         return $id;
     }
@@ -121,10 +131,14 @@ class ListManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $this->pageManager->save($id, json_encode([
+        $json = json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? []),
-        ]));
+            'nodes' => $this->sanitizeHMTL($nodes ?? [])
+        ]);
+        $this->pageManager->save($id, $json);
+
+        $data = $this->loadJson($json, $id);
+        $this->cachedLists[$id] = $data;
     }
 
     public function delete($id)
@@ -142,6 +156,7 @@ class ListManager
 
         $this->pageManager->deleteOrphaned($id);
 
+        unset($this->cachedLists[$id]);
         $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
     }
 
