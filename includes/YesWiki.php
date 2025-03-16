@@ -1050,14 +1050,13 @@ class Wiki
      */
     public function UserIsAdmin($user = null)
     {
-        static $cache = array() ;
-        
-        if(!array_key_exists($user, $cache))
-        {
+        static $cache = [];
+
+        if (!array_key_exists($user, $cache)) {
             $cache[$user] = $this->services->get(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
         }
-        
-        return $cache[$user] ;
+
+        return $cache[$user];
     }
 
     /**
