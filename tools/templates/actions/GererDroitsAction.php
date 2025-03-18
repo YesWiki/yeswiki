@@ -19,7 +19,7 @@ class GererDroitsAction extends YesWikiAction
 
     public function run()
     {
-        //action réservée aux admins
+        // action réservée aux admins
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
@@ -37,18 +37,27 @@ class GererDroitsAction extends YesWikiAction
         // récupération de tous les formulaires
         $forms = $this->getService(FormManager::class)->getAll();
 
-        //Récupération de la liste des pages
+        // récupération de la liste des pages
         $pagesTableName = trim($this->dbService->prefixTable('pages'));
+        $aclsTableName = trim($this->dbService->prefixTable('acls'));
         $liste_pages = $this->wiki->Query(<<<SQL
-      SELECT * FROM $pagesTableName
+    SELECT tag, 
+    (SELECT list
+     FROM $aclsTableName
+     WHERE privilege ="read" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_read,
+    (SELECT list
+     FROM $aclsTableName
+     WHERE privilege ="write" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_write,
+    (SELECT list
+     FROM $aclsTableName
+     WHERE privilege ="comment" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_comment
+    FROM $pagesTableName
         WHERE latest='Y' $search
-        ORDER BY $pagesTableName.tag ASC
+            ORDER BY $pagesTableName.tag ASC
     SQL);
-        $num_page = 0;
         $pageEtDroits = [];
-        while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
-            $pageEtDroits[$num_page] = $this->utils->recupDroits($tab_liste_pages['tag']);
-            $num_page++;
+        while ($pages = mysqli_fetch_array($liste_pages)) {
+            $pageEtDroits[] = $this->utils->recupDroits($pages);
         }
 
         return $this->render(
@@ -74,18 +83,18 @@ class GererDroitsAction extends YesWikiAction
         $success = '';
         $error = '';
 
-        //Modification de droits
+        // Modification de droits
         if (isset($post['geredroits_modifier'])) {
             if (!isset($post['selectpage'])) {
                 $error = _t('ACLS_NO_SELECTED_PAGE');
             } elseif (
-                $post['typemaj'] !== 'default' &&
-                empty($post['newlire']) &&
-                empty($post['newecrire']) &&
-                empty($post['newcomment']) &&
-                empty($post['newlire_advanced']) &&
-                empty($post['newecrire_advanced']) &&
-                empty($post['newcomment_advanced'])
+                $post['typemaj'] !== 'default'
+                && empty($post['newlire'])
+                && empty($post['newecrire'])
+                && empty($post['newcomment'])
+                && empty($post['newlire_advanced'])
+                && empty($post['newecrire_advanced'])
+                && empty($post['newcomment_advanced'])
             ) {
                 $error = _t('ACLS_NO_SELECTED_RIGHTS');
             } elseif (is_array($post['selectpage'])) {
