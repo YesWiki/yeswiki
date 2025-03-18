@@ -53,3 +53,8 @@ actions:
           jma: _t(AB_syndication_action_formatdate_option_jma)
           jmh: _t(AB_syndication_action_formatdate_option_jmh)
           jmah: _t(AB_syndication_action_formatdate_option_jmah)
+      mapping:
+        advanced: true
+        label: _t(AB_syndication_action_mapping_bazar)
+        hint: _t(AB_syndication_action_mapping_hint)
+        type: text

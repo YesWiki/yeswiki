@@ -420,6 +420,8 @@ return [
     'AB_syndication_action_formatdate_option_jmh' => 'Jour mois heure',
     'AB_syndication_action_formatdate_option_jmah' => 'Jour mois année heure',
     'AB_syndication_action_show_image' => 'Afficher les images descriptives du flux RSS',
+    'AB_syndication_action_mapping_bazar' => 'Mapping vers une fiche bazar',
+    'AB_syndication_action_mapping_hint' => 'Seul l\'id est obligatoire, mais voici le mapping par défaut : "id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags"',
     'AB_bazartableau_label' => 'Tableau',
     'AB_bazartableau_description' => 'Afficher sous forme de tableau',
     'AB_bazartableau_columnfieldsids_label' => 'Champs à afficher',
