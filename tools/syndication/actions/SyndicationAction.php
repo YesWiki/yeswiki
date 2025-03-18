@@ -122,6 +122,8 @@ class SyndicationAction extends YesWikiAction
                                     $matches
                                 )) {
                                     $feedItem['image'] = $link;
+                                } elseif (!empty($item->data['child']['http://www.itunes.com/dtds/podcast-1.0.dtd']['image'][0]['attribs']['']['href'])) {
+                                    $feedItem['image'] = $item->data['child']['http://www.itunes.com/dtds/podcast-1.0.dtd']['image'][0]['attribs']['']['href'];
                                 }
                             }
                             if (!empty($this->arguments['nbchar'])) {
