@@ -1,4 +1,5 @@
 <?php
+
 return [
     'AB_advanced' => 'Advanced',
     'AB_bazar_label' => "Display form's data",
@@ -241,6 +242,7 @@ return [
     'AB_buttons_action_button_color_danger' => 'Hazard',
     'AB_buttons_action_button_size_label' => 'Size',
     'AB_syndication_action_title_label' => 'Title',
+    'AB_syndication_action_show_image' => 'Show pictures from RSS feed entry',
     'AB_bazar_commons2_ordre_label' => 'Order',
     'AB_bazarcarto_provider_label' => 'Map Layout',
     'AB_bazarcarto_barregestion_label' => 'Entry management bar',
@@ -427,7 +429,7 @@ return [
     'AB_buttons_action_button_size_big' => 'Big',
     'AB_buttons_action_button_modal_hint' => 'Works to a page of this wiki',
     'AB_syndication_action_source_hint' => 'Flow Title1, Flow Title2... indicates in case of multiple sources the Flow Title',
-    'AB_syndication_action_nb_label' => "Number of information to display",
+    'AB_syndication_action_nb_label' => 'Number of information to display',
     'AB_syndication_action_template_label' => 'Visualization Template',
     'AB_syndication_action_template_acordion' => 'Flux in the form of accordions',
     'AB_syndication_action_nouvellefenetre_label' => 'The links open in a new tab',
@@ -435,7 +437,7 @@ return [
     'AB_syndication_action_formatdate_option_jm' => 'Day month',
     'AB_syndication_action_formatdate_option_jmh' => 'Day month hour',
     'AB_syndication_action_formatdate_option_jmah' => 'Day Month day',
-    'AB_bazar_sort_dynamique' => "Dynamic sorting",
+    'AB_bazar_sort_dynamique' => 'Dynamic sorting',
     'AB_bazar_sort' => 'Sort data',
     'AB_bazar_sort_add_field' => 'Add dynamic sort',
 ];

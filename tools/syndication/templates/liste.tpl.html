@@ -1,20 +1,8 @@
-<!-- SYNDICATION - DEBUT -->
-<?php if (!empty($aso_page['titre_site'])) {
-    echo '<h2>'.$aso_page['titre_site'].'</h2>';
-} ?>
-<ul class="liste_rss <?php echo $class; ?>">
-  <?php foreach ($syndication['pages'] as $page) : ?>
-    <li class="titre_rss">
-      <?php if ($page['date']!='') : ?><span class="date_rss"><?php echo $page['date'];?></span><?php endif; ?>
-      <a class="lien_rss" href="<?php echo $page['url'];?>" <?php echo ($page[ 'ext']) ? 'target="_blank"': '';?>>
-        <?php echo $page['titre'];?>
-      </a>
-      <?php
-      if (!empty($page['source'])) {
-          echo ' <small>' . _t('SYNDICATION_SOURCE') . ' : '.$page['source'].'</small>';
-      }
-      ?>
-    </li>
-  <?php endforeach; ?>
-</ul>
-<!-- SYNDICATION - FIN -->
+<?php
+
+// backward compatibility TODO delete this file for ectoplasme
+
+$defs = array_keys(get_defined_vars());
+echo $this->render( "@syndication/liste.twig", compact( array_filter([
+'syndication', 'title', 'urlSite', 'urlHash', 'showImage', 'ext', ],
+function($i)use($defs){ return in_array($i,$defs); }) ) );

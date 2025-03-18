@@ -1,4 +1,5 @@
 <?php
+
 return [
     'SYNDICATION_ACTION_SYNDICATION' => 'Action {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'the parameter "url" is required for RSS feed',
@@ -14,4 +15,6 @@ return [
     'SYNDICATION_READ_MORE' => 'read more',
     'SYNDICATION_SOURCE' => 'source',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Access to all content',
+    'SYNDICATION_MAPPING_ID_REQUIRED' => 'syndication, parameter mapping : id is required',
+    'SYNDICATION_COPY_IN_WIKI' => 'Add as entry in my YesWiki',
 ];

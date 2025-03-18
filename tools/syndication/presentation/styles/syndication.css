@@ -1,95 +1,50 @@
-/* menu syndication paginee */
-.boite_syndication {
-  float: left;
-  margin: 0 20px 20px 0;
-  padding: 0;
-  position: relative;
-  width: 100%;
+.liste_rss {
+  padding-left: 1em;
 }
-
-/* classes de positionnement des boites */
-.alaligne {
-  clear: both;
+.liste_rss .feed-img {
+  width: calc(1em * 4 / 3);
+  height: 1em;
+  object-fit: cover;
+  margin: 0 0.1em 0 0;
+  vertical-align: baseline;
 }
-.agauche {
-  float: left;
-  margin: 0 20px 20px 0;
+.feed-description {
+  margin-bottom: 1em;
 }
-.adroite {
-  float: right;
-  margin: 0 0 20px 20px;
+.feed-description img,
+.feed-description svg {
+  max-width: 100% !important;
+  height: auto;
 }
-
-/* classes de taille des boites */
-.tiers {
-  width: 30%;
-  margin-left: 1%;
-  margin-right: 1%;
+.feed-item.with-desc {
+  margin-bottom: 2em;
 }
-.quart {
-  width: 22%;
-  margin-left: 1%;
-  margin-right: 1%;
+.feed-item.with-desc .feed-img {
+  width: 200px;
+  height: calc(200px * 3 / 4);
+  object-fit: cover;
+  margin: 0 1em 0.25em 0;
 }
-.demi {
-  width: 47%;
-  margin-left: 1%;
-  margin-right: 1%;
+.feed-item h3 {
+  margin-bottom: 0.25em;
 }
-
-.rss_site_titre {
-  text-align: center;
-  clear: both;
+.feed_syndication .bazar-entry:first-child .panel-heading.collapsed {
+  padding-top: 0em;
 }
-
-.boite_syndication a {
-  color: #a10a01;
+.feed_syndication
+  .bazar-entry:first-child
+  .panel-heading.collapsed[data-toggle='collapse']::after {
+  top: 0.6rem;
 }
-
-ul.liste_rss_paginee {
-  background: none repeat scroll 0 0 transparent;
-  overflow: hidden;
-  padding: 5px;
-  position: relative;
+.panel-heading .feed-img {
+  margin: 0 0.1em 0 0;
+  width: calc(1.5em * 4 / 3);
+  height: 1.5em;
+  object-fit: cover;
+  vertical-align: middle;
 }
-
-ul.liste_rss_paginee li.titre_rss {
-  background-color: #f4f4f4;
-  list-style: none outside none;
-  margin: 0 10px 10px 12px;
-  padding: 20px;
-  box-shadow: 0 0 6px #111;
-  display: block;
-  text-align: left;
-}
-
-ul.liste_rss_paginee,
-ul.liste_rss_paginee li.titre_rss {
-  border-radius: 8px;
-}
-
-.swControls {
-  position: relative;
-  margin: 0;
-  display: block;
-  text-align: center;
-  clear: both;
-}
-
-a.swShowPage {
-  background-color: #444;
+.bazar-actions {
+  font-size: 0.7em;
   display: inline-block;
-  height: 17px;
-  margin: 4px 3px;
-  text-align: center;
-  width: 18px;
-  border-radius: 7px;
-}
-
-a.swShowPage:hover,
-a.swShowPage.active {
-  background-color: #2993dd;
-
-  /* -webkit-box-shadow:0 0 7px #1e435d inset; */
-  box-shadow: 0 0 7px #1e435d inset;
+  padding: 0.25em;
 }

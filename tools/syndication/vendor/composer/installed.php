@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-rss',
-        'version' => 'dev-rss',
-        'reference' => 'eaa8698aa3f4866a05440301c2c04b087f8f009a',
+        'pretty_version' => 'dev-refacto/syndication',
+        'version' => 'dev-refacto/syndication',
+        'reference' => '35c1d5beaef5e272faf933b2251baea7c2f149b2',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,11 +11,20 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-rss',
-            'version' => 'dev-rss',
-            'reference' => 'eaa8698aa3f4866a05440301c2c04b087f8f009a',
+            'pretty_version' => 'dev-refacto/syndication',
+            'version' => 'dev-refacto/syndication',
+            'reference' => '35c1d5beaef5e272faf933b2251baea7c2f149b2',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'league/html-to-markdown' => array(
+            'pretty_version' => '5.1.1',
+            'version' => '5.1.1.0',
+            'reference' => '0b4066eede55c48f38bcee4fb8f0aa85654390fd',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../league/html-to-markdown',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
