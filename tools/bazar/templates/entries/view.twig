@@ -63,6 +63,7 @@
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>
           {% endif %}
+      {% if isAdmin %}
           <span class="dropup">
             <a
               title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ entryId }}"
@@ -93,6 +94,7 @@
                 </a>
               </li>
             </ul>
+          {% endif %}
           {% if canDelete %}
             <a class="btn btn-entry-action btn-sm btn-danger modalbox"
               href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: incomingUrl|url_encode }}) }}"

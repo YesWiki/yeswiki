@@ -18,6 +18,7 @@
     </a>
   {% endif %}
   {#<span class="dropup">#}
+  {% if userIsAdmin %}
     <a
       title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}"
       class="link-duplicate {#dropdown-toggle#}"
@@ -30,6 +31,7 @@
       <i class="fas fa-copy"></i><span>{{ _t('TEMPLATE_DUPLICATE') }}</span>
       {#<span class="caret"></span>#}
     </a>
+  {% endif %}
     {#<ul class="dropdown-menu" aria-labelledby="duplicate-dropup">
       <li>
         <a
