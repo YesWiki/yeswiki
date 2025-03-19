@@ -12,7 +12,7 @@
 
 - Vous avez téléchargé la dernière version de YesWiki sur le site [yeswiki.net](https://yeswiki.net/?PageCreer)
 - Vous disposez d'un espace d'hébergement :
-  - avec une version de `PHP` supérieure à 7.3 (8.2 recommandée)
+  - avec une version de `PHP` supérieure à 7.4 (8.2 recommandée)
   - une base de données SQL `MariaDB` > 10 ou `MYSQL` >= 5.6 (⚠️ la version 5.5 ne supporte pas la recherche fulltext)
   - des droits d'accès à l'hébergement (codes FTP et MYSQL)
   - un logiciel sur votre ordinateur pour faire du FTP (le client FTP libre [FileZilla](https://filezilla-project.org/) par exemple)
@@ -188,6 +188,12 @@ et tester si tout fonctionne dans votre navigateur (attention les majuscules et 
 
 Pour tous les détails sur les droits d'accès : [https://yeswiki.net/?DocumentationDroitsDAcces](https://yeswiki.net/?DocumentationDroitsDAcces)
 
+##### Re-écriture d'url
+
+On peut enlever le `?` des urls à condition de faire les bonnes règles de re-écriture dans votre serveur web (configuration d'Apache, Caddy, Nginx ou autre).
+Ensuite, dans le fichier `wakka.config.php`, on peut enlever le `?` dans le paramètre `base_url`, et passer `rewrite_mode`à `1`.
+Attention : mettre le paramètre `rewrite_mode` à `1` sans faire de re-écriture d'url, ni enlever le `?` de `base_url`, pourrait entrainer un dysfonctionnement de YesWiki, il suffit de remettre `rewrite_mode` à `0` pour corriger le problème.
+
 ##### Envoyer un mail aux @admins à chaque nouvel ajout de fiche
 
     'BAZ_ENVOI_MAIL_ADMIN' => true
@@ -206,7 +212,7 @@ Pour tous les détails sur les droits d'accès : [https://yeswiki.net/?Documenta
 
 ##### Changer l'affichage par défaut des cartes
 
-Par défaut les cartes sont centrées sur le centre de la France et affiche l'intégralité de la France. On peut forcer le centre ailleurs en configurant dans wakaconfig :
+Par défaut les cartes sont centrées sur le centre de la France et affiche l'intégralité de la France. On peut forcer le centre ailleurs en configurant dans `wakka.config.php` :
 
       'baz_map_center_lat' => '50.725777', //permet de caler les cartes utilisées dans le wiki sur cette latitude
       'baz_map_center_lon' => '4.867795', //permet de caler les cartes utilisées dans le wiki sur cette longitude
