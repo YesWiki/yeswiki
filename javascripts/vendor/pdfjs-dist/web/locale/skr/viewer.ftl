@@ -496,3 +496,27 @@ pdfjs-editor-undo-bar-undo-button-label = کیتا اݨ کیتا
 pdfjs-editor-undo-bar-close-button =
     .title = بند کرو
 pdfjs-editor-undo-bar-close-button-label = بند کرو
+
+## Add a signature dialog
+
+
+## Tab names
+
+
+## Tab panels
+
+
+## Controls
+
+
+## Dialog buttons
+
+
+## Main menu for adding/removing signatures
+
+
+## Editor toolbar
+
+
+## Edit signature description dialog
+

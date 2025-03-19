@@ -316,6 +316,9 @@ pdfjs-highlight-floating-button1 =
     .title = Resaltar
     .aria-label = Resaltar
 pdfjs-highlight-floating-button-label = Resaltar
+pdfjs-editor-signature-button =
+    .title = Agregar firma
+pdfjs-editor-signature-button-label = Agregar firma
 
 ## Remove button for the various kind of editor.
 
@@ -327,6 +330,8 @@ pdfjs-editor-remove-stamp-button =
     .title = Eliminar imagen
 pdfjs-editor-remove-highlight-button =
     .title = Eliminar resaltado
+pdfjs-editor-remove-signature-button =
+    .title = Eliminar firma
 
 ##
 
@@ -343,6 +348,9 @@ pdfjs-editor-stamp-add-image-button-label = Agregar una imagen
 pdfjs-editor-free-highlight-thickness-input = Grosor
 pdfjs-editor-free-highlight-thickness-title =
     .title = Cambiar el grosor al resaltar elementos que no sean texto
+pdfjs-editor-signature-add-signature-button =
+    .title = Agregar nueva firma
+pdfjs-editor-signature-add-signature-button-label = Agregar nueva firma
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Editor de texto
@@ -500,6 +508,7 @@ pdfjs-editor-undo-bar-message-highlight = Resaltado eliminado
 pdfjs-editor-undo-bar-message-freetext = Texto eliminado
 pdfjs-editor-undo-bar-message-ink = Dibujo eliminado
 pdfjs-editor-undo-bar-message-stamp = Imagen eliminado
+pdfjs-editor-undo-bar-message-signature = Firma eliminada
 # Variables:
 #   $count (Number) - the number of removed annotations.
 pdfjs-editor-undo-bar-message-multiple =
@@ -513,3 +522,72 @@ pdfjs-editor-undo-bar-undo-button-label = Deshacer
 pdfjs-editor-undo-bar-close-button =
     .title = Cerrar
 pdfjs-editor-undo-bar-close-button-label = Cerrar
+
+## Add a signature dialog
+
+pdfjs-editor-add-signature-dialog-label = Este modal permite al usuario crear una firma para agregar a un documento PDF. El usuario puede editar el nombre (que también sirve como texto alternativo) y opcionalmente guardar la firma para un uso repetido.
+pdfjs-editor-add-signature-dialog-title = Agregar una firma
+
+## Tab names
+
+# Type is a verb (you can type your name as signature)
+pdfjs-editor-add-signature-type-button = Tipear
+    .title = Tipear
+# Draw is a verb (you can draw your signature)
+pdfjs-editor-add-signature-draw-button = Dibujar
+    .title = Dibujar
+pdfjs-editor-add-signature-image-button = Imagen
+    .title = Imagen
+
+## Tab panels
+
+pdfjs-editor-add-signature-type-input =
+    .aria-label = Escribir la firma
+    .placeholder = Escribir la firma
+pdfjs-editor-add-signature-draw-placeholder = Dibujar la firma
+pdfjs-editor-add-signature-draw-thickness-range-label = Grosor
+# Variables:
+#   $thickness (Number) - the thickness (in pixels) of the line used to draw a signature.
+pdfjs-editor-add-signature-draw-thickness-range =
+    .title = Grosor del dibujo: { $thickness }
+pdfjs-editor-add-signature-image-placeholder = Arrastrar un archivo acá para subirlo
+pdfjs-editor-add-signature-image-browse-link =
+    { PLATFORM() ->
+        [macos] O seleccionar archivos de imágenes
+       *[other] O seleccionar archivos de imágenes
+    }
+
+## Controls
+
+pdfjs-editor-add-signature-description-label = Descripción (texto alternativo)
+pdfjs-editor-add-signature-description-input =
+    .title = Descripción (texto alternativo)
+pdfjs-editor-add-signature-description-default-when-drawing = Firma
+pdfjs-editor-add-signature-clear-button-label = Borrar firma
+pdfjs-editor-add-signature-clear-button =
+    .title = Borrar firma
+pdfjs-editor-add-signature-save-checkbox = Guardar firma
+pdfjs-editor-add-signature-save-warning-message = Se alcanzó el límite de 5 firmas guardadas. Elimine una para guardar más.
+pdfjs-editor-add-signature-image-upload-error-title = No se pudo subir la imagen
+pdfjs-editor-add-signature-image-upload-error-description = Verifique la conexión de red o pruebe con otra imagen.
+pdfjs-editor-add-signature-error-close-button = Cerrar
+
+## Dialog buttons
+
+pdfjs-editor-add-signature-cancel-button = Cancelar
+pdfjs-editor-add-signature-add-button = Agregar
+pdfjs-editor-edit-signature-update-button = Actualizar
+
+## Main menu for adding/removing signatures
+
+pdfjs-editor-delete-signature-button =
+    .title = Eliminar firma
+pdfjs-editor-delete-signature-button-label = Eliminar firma
+
+## Editor toolbar
+
+pdfjs-editor-add-signature-edit-button-label = Editar descripción
+
+## Edit signature description dialog
+
+pdfjs-editor-edit-signature-dialog-title = Editar descripción

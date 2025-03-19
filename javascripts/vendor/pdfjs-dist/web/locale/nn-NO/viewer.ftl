@@ -496,3 +496,42 @@ pdfjs-editor-alt-text-settings-close-button = Lat att
 
 ## "Annotations removed" bar
 
+pdfjs-editor-undo-bar-message-freetext = Tekst fjerna
+pdfjs-editor-undo-bar-message-ink = Teikning fjerna
+pdfjs-editor-undo-bar-message-stamp = Bilde fjerna
+pdfjs-editor-undo-bar-undo-button =
+    .title = Angre
+pdfjs-editor-undo-bar-undo-button-label = Angre
+pdfjs-editor-undo-bar-close-button =
+    .title = Lat att
+pdfjs-editor-undo-bar-close-button-label = Lat att
+
+## Add a signature dialog
+
+
+## Tab names
+
+
+## Tab panels
+
+pdfjs-editor-add-signature-draw-thickness-range-label = Tjukn
+
+## Controls
+
+pdfjs-editor-add-signature-image-upload-error-title = Klarte ikkje å oppdatere bilde
+pdfjs-editor-add-signature-error-close-button = Lat att
+
+## Dialog buttons
+
+pdfjs-editor-add-signature-cancel-button = Avbryt
+pdfjs-editor-add-signature-add-button = Legg til
+pdfjs-editor-edit-signature-update-button = Oppdater
+
+## Main menu for adding/removing signatures
+
+
+## Editor toolbar
+
+
+## Edit signature description dialog
+
