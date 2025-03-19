@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'Formulieren',
     'BAZ_LISTES' => 'Lijsten',
@@ -366,7 +367,7 @@ return [
     'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM' => 'Filter _amp; pass; I amfasizeeacute',
     'BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM' => 'Zie de Ateacute, ik verwaarloos',
     'EDIT_CONFIG_HINT_BAZ_MAP_ZOOM' => 'Default zoom niveau van kaarten (1:world = ontwaak 15:commune)',
-    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "De identificeer \"heilige Naame\" bestaat al! Controleer de doos om zijn vervanging te bevestigen door \"of anders verander je identificatie in de vorm beneden.",
+    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => 'De identificeer "heilige Naame" bestaat al! Controleer de doos om zijn vervanging te bevestigen door "of anders verander je identificatie in de vorm beneden.',
     'BAZ_IMPORT_FORMS_FROM_URL' => 'Import formulieren van een andere jawiki',
     'BAZ_DATA_FORMAT' => 'Data formats',
     'BAZ_FICHES_CORRESPONDANTES_FILTRES' => 'gevonden lakens',

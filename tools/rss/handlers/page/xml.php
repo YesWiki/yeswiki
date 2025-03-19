@@ -5,8 +5,6 @@
  *
  * Permet d'obtenir le contenu d'une page au format xml.
  */
-
-
 header('Content-type: text/xml; charset=' . YW_CHARSET);
 
 if ($HasAccessRead = $this->HasAccess('read')) {

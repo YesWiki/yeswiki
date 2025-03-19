@@ -1,4 +1,5 @@
 <?php
+
 return [
     'SYNDICATION_ACTION_SYNDICATION' => 'Ação {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'você deve necessariamente introduzir o parâmetro "url" para distribuir um feed RSS',

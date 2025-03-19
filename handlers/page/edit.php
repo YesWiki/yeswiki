@@ -4,7 +4,6 @@ use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Security\Controller\SecurityController;
 
-
 // on initialise la sortie:
 $output = '';
 

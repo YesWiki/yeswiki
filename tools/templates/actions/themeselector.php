@@ -1,6 +1,5 @@
 <?php
 
-
 $class = $this->getParameter('class');
 if (
     $this->UserIsAdmin()

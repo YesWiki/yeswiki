@@ -1,6 +1,5 @@
 <?php
 
-
 use YesWiki\Core\Service\AclService;
 
 $tag = $this->getPageTag();

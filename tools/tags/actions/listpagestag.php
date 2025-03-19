@@ -2,7 +2,6 @@
 
 use YesWiki\Tags\Service\TagsManager;
 
-
 $tagsManager = $this->services->get(TagsManager::class);
 
 include_once 'tools/tags/libs/tags.functions.php';

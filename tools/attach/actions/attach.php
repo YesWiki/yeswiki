@@ -83,7 +83,7 @@ Exemple :
  *******************************************************************************/
 
 if (!class_exists('attach')) {
-  include 'tools/attach/libs/attach.lib.php';
+    include 'tools/attach/libs/attach.lib.php';
 }
 
 $att = new attach($this);

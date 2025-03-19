@@ -1,6 +1,5 @@
 <?php
 
-
 // on efface des événements javascript issus de wikini
 $plugin_output_new = str_replace('ondblclick="doubleClickEdit(event);"', '', $plugin_output_new);
 

@@ -1,6 +1,5 @@
 <?php
 
-
 // Affichage uniquement du contenu correspondant à la langue en cours
 $translation_found = false;
 if (!empty($this->page['body'])) {

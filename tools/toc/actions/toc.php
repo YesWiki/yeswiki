@@ -1,6 +1,5 @@
 <?php
 
-
 $GLOBALS['tocaction'] = 0;
 
 $tag = $this->GetPageTag();

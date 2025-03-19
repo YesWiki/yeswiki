@@ -1,4 +1,5 @@
 <?php
+
 return [
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{abonnement ...}}',
     'CONTACT_MAIL_REQUIRED' => 'the email, required, is missing.',

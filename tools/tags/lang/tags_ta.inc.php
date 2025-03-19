@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TAGS_TAGS' => 'மோட்ச் க்ளெச்',
     'TAGS_ACTION_ADMINTAGS' => 'செயல் {{admintags ...}}',

@@ -139,7 +139,7 @@ export function formatJsonDataIntoWikiText(formData) {
         if (['required', 'access'].indexOf(property) > -1) value = value ? '1' : '0'
         if (property == 'label') {
           wikiProps[key] = removeBR(value).replace(/\n$/gm, '')
-        } else if (['content_saisie', 'content_display'].includes(property) && typeof(value) === 'string') {
+        } else if (['content_saisie', 'content_display'].includes(property) && typeof (value) === 'string') {
           // Remove line breaks otherwise it breaks the old wiki code syntax
           wikiProps[key] = value.replace(/\n/g, '<br/>')
         } else {

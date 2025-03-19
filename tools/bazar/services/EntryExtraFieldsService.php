@@ -32,6 +32,7 @@ class EntryExtraFieldsService
         if (method_exists($this, $methodName)) {
             return $this->$methodName();
         }
+
         return null;
     }
 
@@ -53,17 +54,18 @@ class EntryExtraFieldsService
         $result = [];
         foreach ($reactions as $field => $data) {
             $fieldResult = [];
-            foreach ($data["parameters"]["labels"] as $reactionId => $label) {
-                $fieldResult[$reactionId] = ["label" => $label, "image" => null, "count" => 0];
+            foreach ($data['parameters']['labels'] as $reactionId => $label) {
+                $fieldResult[$reactionId] = ['label' => $label, 'image' => null, 'count' => 0];
             }
-            foreach ($data["parameters"]["images"] as $reactionId => $image) {
-                $fieldResult[$reactionId]["image"] = $image;
+            foreach ($data['parameters']['images'] as $reactionId => $image) {
+                $fieldResult[$reactionId]['image'] = $image;
             }
-            foreach ($data["nb_reactions"] as $reactionId => $count) {
-                $fieldResult[$reactionId]["count"] = $count;
+            foreach ($data['nb_reactions'] as $reactionId => $count) {
+                $fieldResult[$reactionId]['count'] = $count;
             }
             $result[$field] = $fieldResult;
         }
+
         return $result;
     }
 

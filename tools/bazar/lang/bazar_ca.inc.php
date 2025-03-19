@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'Formularis',
     'BAZ_LISTES' => 'Llistes',

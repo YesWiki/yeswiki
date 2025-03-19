@@ -20,17 +20,17 @@ class UserController extends YesWikiController
 
     public const DEFAULT_NAME_MAX_LENGTH = 80;
     public const DEFAULT_EMAIL_MAX_LENGTH = 254;
-    
+
     /**
      * Rules for user name :
      * - do not start by "!", "#" and "@" ;
      * - do not contains "<", ">", "\", "/" anywhere ;
      * - strictly more than 2 chars.
-     * 
+     *
      * Be careful to update the regex in `setup/install.php` if there is changes here.
-     * 
+     *
      * Be careful, the pattern need to be escaped for PHP ("\"). Real pattern is : "^[^!#@<>\\\/][^<>\\\/]{2,}$".
-     * 
+     *
      * @var string
      */
     public const PATTERN_USER_NAME = '^[^!#@<>\\\\\/][^<>\\\\\/]{2,}$';

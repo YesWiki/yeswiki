@@ -1,6 +1,5 @@
 <?php
 
-
 $content = $this->getParameter('content');
 switch ($content) {
         // todo finish the cases

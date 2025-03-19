@@ -1,6 +1,5 @@
 <?php
 
-
 $tag = $this->GetPageTag();
 $class = $this->GetParameter('class');
 $offset = $this->GetParameter('offset');

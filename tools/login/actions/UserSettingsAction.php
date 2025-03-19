@@ -27,7 +27,7 @@ class UserSettingsAction extends YesWikiAction
         'changepass',
         'signup',
         'checklogged',
-        'resetpass'
+        'resetpass',
     ];
 
     private $authController;
@@ -183,7 +183,7 @@ class UserSettingsAction extends YesWikiAction
                 'name' => $this->wantedUserName,
                 'email' => $this->wantedEmail,
                 'captcha' => $captcha,
-                'regexUserName' => UserController::PATTERN_USER_NAME
+                'regexUserName' => UserController::PATTERN_USER_NAME,
             ]);
         }
     }
@@ -283,7 +283,7 @@ class UserSettingsAction extends YesWikiAction
                     $this->wiki->Redirect($this->wiki->href());
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
-                } catch (BadFormatPasswordException | Throwable $ex) {
+                } catch (BadFormatPasswordException|Throwable $ex) {
                     // Something when wrong when updating the user in DB
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $ex->getMessage();
                 }
@@ -295,7 +295,7 @@ class UserSettingsAction extends YesWikiAction
     {
         $link = $this->userManager->sendPasswordRecoveryEmail($user);
         if (!boolval($this->wiki->config['contact_disable_email_for_password'])) {
-            flash(str_replace("{email}", $user['email'], _t('RECOVERY_MESSAGE_SENT')), 'success');
+            flash(str_replace('{email}', $user['email'], _t('RECOVERY_MESSAGE_SENT')), 'success');
         }
         $resetText = _t('RECOVERY_LINK');
         flash("<a href='$link' target='_blank'>$resetText</a>", 'success');

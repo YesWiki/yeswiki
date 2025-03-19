@@ -1,6 +1,5 @@
 <?php
 
-
 // texte genere a l'interieur du bouton
 $text = $this->GetParameter('text');
 

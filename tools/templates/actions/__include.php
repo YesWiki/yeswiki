@@ -1,6 +1,5 @@
 <?php
 
-
 $dblclic = $this->GetParameter('doubleclic');
 $actif = $this->GetParameter('actif');
 $pageincluded = $this->GetParameter('page');

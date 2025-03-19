@@ -2,7 +2,6 @@
 
 use YesWiki\Templates\Controller\TabsController;
 
-
 // classe css supplémentaire
 $elem = $this->GetParameter('elem');
 if (empty($elem)) {

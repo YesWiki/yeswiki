@@ -1,4 +1,5 @@
 <?php
+
 return [
     'SYNDICATION_ACTION_SYNDICATION' => '{{syndication ..}}} ekintza',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'nahitaez sartu behar da "url" parametroa RSS jario bat sindikatzeko',

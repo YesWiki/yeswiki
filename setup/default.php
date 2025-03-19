@@ -44,7 +44,7 @@
           <select required autocomplete="off" class="form-control" name="config[default_language]" onchange="$(this).parents('.form-yeswiki-install').attr('action', '<?php echo myLocation(); ?>?installAction=default&lang='+$(this).val()).submit();">
             <?php
             foreach ($GLOBALS['available_languages'] as $value) {
-              echo '<option value="' . $value . '"' . (($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '') . '>' . ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8')) . "</option>\n";
+                echo '<option value="' . $value . '"' . (($value == $GLOBALS['prefered_language'] && (!isset($_GET['lang']) || $_GET['lang'] !== 'auto')) ? ' selected="selected"' : '') . '>' . ucfirst(htmlentities($GLOBALS['languages_list'][$value]['nativeName'], ENT_COMPAT | ENT_HTML401, 'UTF-8')) . "</option>\n";
             }
             echo '<option value="auto"' . ((isset($_GET['lang']) && $_GET['lang'] === 'auto') ? ' selected="selected"' : '') . '>' . _t('NAVIGATOR_LANGUAGE') . "</option>\n";
             ?>
@@ -179,14 +179,14 @@
 
       <?php
       if ($wiki && $users = $wiki->LoadUsers()) {
-      ?>
+          ?>
         <div class="col-sm-9">
           <p><?php echo _t('USE_AN_EXISTING_ACCOUNT'); ?> :</p><br>
           <select name="admin_login">
             <option selected="selected"><?php echo _t('NO'); ?></option>
             <?php
             foreach ($users as $user) {
-              echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), '">', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), "</option>\n";
+                echo '<option value="', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), '">', htmlspecialchars($user['name'], ENT_COMPAT, YW_CHARSET), "</option>\n";
             } ?>
           </select>
           <p><?php echo _t('OR_CREATE_NEW_ACCOUNT'); ?> :</p>

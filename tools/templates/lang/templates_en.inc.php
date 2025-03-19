@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Action',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template not found',
@@ -113,9 +114,9 @@ return [
     'AB_template_actions_warning' => 'Warning',
     'AB_template_actions_danger' => 'Danger',
     'AB_template_action_accordion_label' => 'Display panels in accordion',
-    'AB_template_action_accordion_example' => "{{panel title=\"Panel title\" }}
+    'AB_template_action_accordion_example' => '{{panel title="Panel title" }}
 Panel content
-{{end elem=\"panel\"}}",
+{{end elem="panel"}}',
     'AB_template_action_col_label' => 'Column',
     'AB_template_col_size_label' => 'Column width',
     'AB_template_action_grid_label' => 'Display several columns',
@@ -123,7 +124,7 @@ Panel content
     'AB_templates_nav_description' => 'Generate a menu',
     'AB_templates_nav_link' => 'Page',
     'AB_templates_nav_add_tag' => 'Add tab',
-    'AB_templates_nav_title' => "Tab label",
+    'AB_templates_nav_title' => 'Tab label',
     'AB_templates_panel_label' => 'Panel',
     'AB_templates_panel_title_label' => 'Title',
     'AB_templates_section_label' => 'Section',
@@ -153,9 +154,9 @@ Panel content
     'AB_templates_tabs_btncolor_secondary_1' => 'Secondary 1',
     'AB_templates_tabs_btncolor_secondary_2' => 'Secondary 2',
     'AB_templates_tabs_selectedtab_label' => 'Selected tab',
-    'AB_templates_tabs_wrappedcontentexample' => "{{tab}}
-Tab \"{tabName}\" content
-{{end elem=\"tab\"}}",
+    'AB_templates_tabs_wrappedcontentexample' => '{{tab}}
+Tab "{tabName}" content
+{{end elem="tab"}}',
     'ACLS_SELECT_PAGES_FILTER' => 'Filter :',
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'only pages',
     'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'special pages only',
@@ -280,9 +281,9 @@ Tab \"{tabName}\" content
     'TEMPLATE_ELEM_SECTION_NOT_CLOSED' => 'action {{section …}} must be closed by an action {{end elem="section"}}',
     'TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI' => 'In an other Yeswiki',
     'TEMPLATE_DUPLICATE_LOCALLY' => 'In this Yeswiki',
-    'AB_template_action_grid_example' => "{{col size=\"{size}\"}}
+    'AB_template_action_grid_example' => '{{col size="{size}"}}
 Text of the column to be changed later
-{{end elem=\"col\"}}",
+{{end elem="col"}}',
     'AB_template_action_grid_nb_hint' => "You can adjust the size of each column via the 'size' attribute. The total of the 'size' must be equal to 12. Example: {{col size=3}} + {{col size=9}}",
     'TEMPLATE_SEE_ATTACHED_FILES' => 'See the entries attached to the page',
     'TEMPLATE_DUPLICATE' => 'Duplicate',
@@ -290,5 +291,5 @@ Text of the column to be changed later
     'TEMPLATE_DUPLICATE_LIST' => 'Duplicate list',
     'TEMPLATE_DUPLICATE_ENTRY' => 'Duplicate entry',
     'AB_templates_nav_class_label' => 'Display',
-    'AB_template_action_grid_nb' => "Number of columns",
+    'AB_template_action_grid_nb' => 'Number of columns',
 ];

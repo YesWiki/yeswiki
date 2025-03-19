@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ACTION_BUILDER_COPY' => 'Kopiatu',
     'ACTION_BUILDER_PREVIEW' => 'Aurrebista (ezin da klikatu)',

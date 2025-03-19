@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Acțiune',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template nu a fost găsit',
@@ -133,7 +134,7 @@ return [
     'TEMPLATE_FILE_NOT_ADDED' => ' Nu a fost adăugat!',
     'TEMPLATE_FILE_NOT_DELETED' => ' nu este șters!',
     'TEMPLATE_FILE_ALREADY_EXISTING' => 'Dosarul există deja! Schimbați numele presetat sau conectați-vă ca admin!',
-    'TEMPLATE_PRESET_ERROR' => "Imposibil de aplicat această presetare, există o eroare!",
+    'TEMPLATE_PRESET_ERROR' => 'Imposibil de aplicat această presetare, există o eroare!',
     'TEMPLATE_PRESETS' => 'Configurații grafice',
     'TEMPLATE_CREATE_PRESET' => 'Creați o nouă configurație grafică',
     'TEMPLATE_CUSTOMIZE_PRESET' => 'Configurație grafică',
@@ -151,26 +152,26 @@ return [
     'AB_template_actions_warning' => 'Atenție',
     'AB_template_actions_danger' => 'Pericol',
     'AB_template_action_accordion_label' => 'Afișează cutii de acordeon',
-    'AB_template_action_accordion_example' => "{{panel title=\"Titlul cutiei mele\" }}
+    'AB_template_action_accordion_example' => '{{panel title="Titlul cutiei mele" }}
 Textul cutiei tale
-{{end elem=\"panel\"}}",
-    'AB_template_action_ariane_label' => "Breadcrumb",
+{{end elem="panel"}}',
+    'AB_template_action_ariane_label' => 'Breadcrumb',
     'AB_template_action_col_label' => 'Coloană',
     'AB_template_action_col_size_total' => 'Ai 12 coloane virtuale pentru a distribui',
     'AB_template_col_size_label' => 'Lățimea coloanei',
     'AB_template_action_grid_label' => 'Afișați mai multe coloane',
     'AB_template_action_col_example' => 'Textul coloanei pentru a modifica mai târziu',
-    'AB_template_action_grid_example' => "{{col size=\"{size}\"}}
+    'AB_template_action_grid_example' => '{{col size="{size}"}}
 Textul coloanei care urmează să fie modificat mai târziu
-{{end elem=\"col\"}}",
-    'AB_template_action_grid_nb' => "Numărul de coloane",
+{{end elem="col"}}',
+    'AB_template_action_grid_nb' => 'Numărul de coloane',
     'AB_template_action_grid_nb_hint' => "Puteți ajusta dimensiunea fiecărei coloane prin atributul 'size'. Totalul 'size' trebuie să fie egal cu 12. Exemplu: {{col size=3}} +{{col size{9=}}",
     'AB_templates_nav_label' => 'File cu pagini diferite',
     'AB_templates_nav_description' => 'Generează un meniu',
     'AB_templates_nav_hint' => 'Nu uitați să lipiți codul obținut în fiecare dintre paginile filelor.',
     'AB_templates_nav_link' => 'Pagină',
     'AB_templates_nav_add_tag' => 'Adăugați o filă',
-    'AB_templates_nav_title' => "Titlul filei",
+    'AB_templates_nav_title' => 'Titlul filei',
     'AB_templates_nav_class_label' => 'Afișare',
     'AB_templates_nav_class_tabs' => 'Orizontal subliniat',
     'AB_templates_nav_class_pills' => 'Orizontal sobru',
@@ -271,9 +272,9 @@ Textul coloanei care urmează să fie modificat mai târziu
     'AB_templates_tabs_btncolor_secondary_1' => 'Secundar 1',
     'AB_templates_tabs_btncolor_secondary_2' => 'Secundar 2',
     'AB_templates_tabs_selectedtab_label' => 'Tab selectat',
-    'AB_templates_tabs_wrappedcontentexample' => "{{tab}}
-Conținutul filei \"{tabName}\"
-{{end elem=\"tab\"}}",
+    'AB_templates_tabs_wrappedcontentexample' => '{{tab}}
+Conținutul filei "{tabName}"
+{{end elem="tab"}}',
     'ACLS_SELECT_PAGES_FILTER' => 'Filtru:',
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'numai paginile',
     'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'Numai pagini speciale',

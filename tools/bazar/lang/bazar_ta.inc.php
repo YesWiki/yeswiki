@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'சூத்திரங்கள்',
     'BAZ_LISTES' => 'பட்டியல்கள்',

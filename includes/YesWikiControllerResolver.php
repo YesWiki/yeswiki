@@ -13,7 +13,7 @@ class YesWikiControllerResolver extends ControllerResolver
 {
     protected $wiki;
 
-    public function __construct(Wiki $wiki, LoggerInterface $logger = null)
+    public function __construct(Wiki $wiki, ?LoggerInterface $logger = null)
     {
         parent::__construct($logger);
 

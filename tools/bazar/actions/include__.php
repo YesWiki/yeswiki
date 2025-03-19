@@ -2,7 +2,6 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 
-
 $entryManager = $this->services->get(EntryManager::class);
 
 // Si la page est une fiche bazar, alors on affiche la fiche plutôt que de formater en wiki

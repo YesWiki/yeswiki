@@ -684,8 +684,7 @@ class EntryController extends YesWikiController
         switch ($mode) {
             case '<':
                 // start before date and whatever finish
-                return
-                    $date->diff($entryStartDate)->invert == 1;
+                return $date->diff($entryStartDate)->invert == 1;
                 break;
             case '>':
                 // start after date or (before date but and end should be after date, end is needed)

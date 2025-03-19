@@ -2,7 +2,6 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
-
 // V?rification de s?curit?
 
 use YesWiki\Core\Service\CommentService;

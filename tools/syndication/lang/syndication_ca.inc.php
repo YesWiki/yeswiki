@@ -1,4 +1,5 @@
 <?php
+
 return [
     'SYNDICATION_ACTION_SYNDICATION' => 'Acció {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'El paràmetre "url" és obligatori per sindicar un flux RSS',

@@ -1,6 +1,5 @@
 <?php
 
-
 $oldpage = $this->GetPageTag();
 if (!empty($this->page['tag'])) {
     $this->CachePage($this->page);

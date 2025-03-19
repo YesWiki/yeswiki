@@ -3,7 +3,6 @@
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Tags\Service\TagsManager;
 
-
 $params = $this->services->get(ParameterBagInterface::class);
 if (!$params->get('hide_keywords') && $this->HasAccess('write') && $this->HasAccess('read')) {
     // on recupere les tags de la page courante

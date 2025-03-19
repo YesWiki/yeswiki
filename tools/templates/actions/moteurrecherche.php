@@ -1,6 +1,5 @@
 <?php
 
-
 // on choisit le template utilisé
 $template = $this->GetParameter('template');
 if (empty($template)) {

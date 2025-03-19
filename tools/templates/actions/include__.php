@@ -1,6 +1,5 @@
 <?php
 
-
 // si la page inclue n'existe pas, on propose de la créer
 if (!$incPage = $this->LoadPage($incPageName)) {
     $plugin_output_new = $this->LinkTo($incPageName);

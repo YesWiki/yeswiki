@@ -2,7 +2,6 @@
 
 use YesWiki\Security\Controller\SecurityController;
 
-
 $isAdmin = $this->UserIsAdmin();
 
 if ($isAdmin && isset($_GET['delete_tag'])) {

@@ -245,10 +245,10 @@ return [
     'BAZAR_URL_DISPLAY_VIDEO' => 'Afficher le lecter si le lien est une vidéo?',
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'அசூட்டர் à வோட்ரே காலென்ட்ரியர்',
     'LIST_TEXT' => 'உரை',
-    'LIST_DRAGDROP' => "உறுப்பை நகர்த்தவும்",
+    'LIST_DRAGDROP' => 'உறுப்பை நகர்த்தவும்',
     'LIST_KEY' => 'விசை',
     'LIST_ADD_NODE' => 'மதிப்பு',
     'LIST_ADD_CHILD_NODE' => 'மதிப்பின் கீழ் ஒன்றைச் சேர்க்கவும்',
-    'LIST_ERROR_MISSING_IDS' => "சில மதிப்புகளில் தொடர்புடைய விசை இல்லை",
+    'LIST_ERROR_MISSING_IDS' => 'சில மதிப்புகளில் தொடர்புடைய விசை இல்லை',
     'LIST_ERROR_DUPLICATES_IDS' => 'ஒவ்வொரு விசையும் தனித்துவமாக இருக்க வேண்டும். இந்த விசைகள் பல முறை பயன்படுத்தப்படுகின்றன: ',
 ];

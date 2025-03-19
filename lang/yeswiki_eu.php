@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ARCHIVES' => 'Segurtasun-kopiak',
     'ANSWER' => 'Erantzun',

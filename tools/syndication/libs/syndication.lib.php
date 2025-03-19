@@ -7,9 +7,9 @@
  * Cuts a string to the length of $length and replaces the last characters
  * with the ending if the text is longer than length.
  *
- * @param string $text         string to truncate
- * @param int    $length       length of returned string, including ellipsis
- * @param string $ending       ending to be appended to the trimmed string
+ * @param string $text   string to truncate
+ * @param int    $length length of returned string, including ellipsis
+ * @param string $ending ending to be appended to the trimmed string
  *
  * @return string trimmed string
  */

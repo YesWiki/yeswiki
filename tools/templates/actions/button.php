@@ -2,7 +2,6 @@
 
 use YesWiki\Core\Service\LinkTracker;
 
-
 // adresse vers quoi le bouton pointe
 $link = $this->GetParameter('link');
 

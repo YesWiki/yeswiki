@@ -1,6 +1,5 @@
 <?php
 
-
 if (!function_exists('wakkaProgressBar')) {
     function wakkaProgressBar($things)
     {

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ARCHIVES' => 'Archives',
     'ANSWER' => 'Answer',

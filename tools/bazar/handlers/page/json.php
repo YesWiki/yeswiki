@@ -3,7 +3,6 @@
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Service\FormManager;
 
-
 if (isset($_REQUEST['demand'])) {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
         $_POST = json_decode(file_get_contents('php://input'), true) ?? [];

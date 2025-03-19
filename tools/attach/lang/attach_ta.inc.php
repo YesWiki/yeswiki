@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'பட கோப்பு இல்லை',
     'ATTACH_ACTION_ATTACH' => 'செயல் {{attach ...}}',

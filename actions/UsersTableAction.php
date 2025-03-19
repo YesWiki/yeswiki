@@ -93,6 +93,7 @@ class UsersTableAction extends YesWikiAction
     {
         return array_map(function ($user) {
             $userGroups = $this->userManager->groupsWhereIsMember($user);
+
             return array_merge($user->getArrayCopy(), ['groups' => $userGroups]);
         }, $users);
     }

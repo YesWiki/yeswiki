@@ -1,4 +1,5 @@
 <?php
+
 return [
     'HELLOWORLD_MY_MESSAGE' => 'Mesajul meu',
     'HELLOWORD_NO_MSG_PARAM' => 'Nu există parametru \'mesaj\' definit în acțiunea {{greeting ..}}',

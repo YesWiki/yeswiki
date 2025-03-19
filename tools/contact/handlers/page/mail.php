@@ -5,7 +5,6 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ThemeManager;
 
-
 // inclusion de la bibliotheque de fonctions pour l'envoi des mails
 include_once 'includes/email.inc.php';
 include_once 'tools/contact/libs/contact.functions.php';

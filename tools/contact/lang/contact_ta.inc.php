@@ -1,4 +1,5 @@
 <?php
+
 return [
     'CONTACT_ACTION_ABONNEMENT' => 'செயல் {{abonnement ...}}',
     'CONTACT_MAIL_REQUIRED' => 'லு பரம் & எக்ரேவ்; ட்ரே மெயில், டம்பிகடோயர், எச்ட் மேன்குவண்ட்.',

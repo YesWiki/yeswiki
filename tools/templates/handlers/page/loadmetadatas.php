@@ -3,7 +3,6 @@
 /**
  * Handler AJAX pour récupérer les meta-données.
  */
-
 header('Content-type: application/json; charset=UTF-8');
 
 // on teste si on a le droit d'accés aux meta-données

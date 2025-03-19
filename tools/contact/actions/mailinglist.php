@@ -5,7 +5,6 @@
  *
  * Description : action permettant d'inscrire ou d?sinscrire massivement des mails a une newsletter
  */
-
 include_once 'includes/email.inc.php';
 
 //recuperation des parametres

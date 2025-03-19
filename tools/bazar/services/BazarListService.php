@@ -48,9 +48,10 @@ class BazarListService
         $attach = new attach($this->wiki);
         $basePath = $attach->GetUploadPath();
         $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
+        $formIds = array_keys($forms) ?? [];
 
-        foreach ($options['idtypeannonce'] as $idtypeannonce) {
-            $template = $forms[(int)$idtypeannonce]['template'] ?? [];
+        foreach ($formIds as $id) {
+            $template = $forms[(int)$id]['template'] ?? [];
             $image_names = array_map(
                 function ($item) {
                     return $item[1];
@@ -63,7 +64,7 @@ class BazarListService
                 )
             );
             foreach ($image_names as $image_name) {
-                $default_image_filename = "defaultimage{$idtypeannonce}_{$image_name}.jpg";
+                $default_image_filename = "defaultimage{$id}_{$image_name}.jpg";
                 if (file_exists($basePath . $default_image_filename)) {
                     $image_key = 'image' . $image_name;
                     foreach ($entries as $key => $entry) {
@@ -97,7 +98,7 @@ class BazarListService
         } else {
             $entries = $this->entryManager->search(
                 [
-                    "regexp" => $options["regexp"] ?? "0",
+                    'regexp' => $options['regexp'] ?? '0',
                     'queries' => $options['query'] ?? '',
                     'formsIds' => $options['idtypeannonce'] ?? [],
                     'keywords' => $_REQUEST['q'] ?? '',

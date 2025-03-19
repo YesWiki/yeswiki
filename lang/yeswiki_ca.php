@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BY' => 'per',
     'TRIPLES' => 'Triples',

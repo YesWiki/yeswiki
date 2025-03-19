@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Not existing image file',
     'ATTACH_ACTION_ATTACH' => 'Action {{attach ...}}',

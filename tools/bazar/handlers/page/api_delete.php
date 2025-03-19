@@ -3,7 +3,6 @@
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\ApiService;
 
-
 $entryManager = $this->services->get(EntryManager::class);
 $apiService = $this->services->get(ApiService::class);
 

@@ -1,6 +1,5 @@
 <?php
 
-
 $liste = '';
 $resultat = baz_valeurs_formulaire();
 

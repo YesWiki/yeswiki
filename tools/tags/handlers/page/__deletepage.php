@@ -2,7 +2,6 @@
 
 use YesWiki\Core\Controller\CsrfTokenController;
 
-
 if (($this->UserIsOwner() || $this->UserIsAdmin())
     && isset($_GET['eraselink'])
     && $_GET['eraselink'] === 'oui'

@@ -134,7 +134,7 @@ class GroupController extends YesWikiController
      * Check if member is valid for group. Perform following check :
      *  - if $member is a user, check if the user exists
      *  - if $member is a group, check if the group exists
-     *  - if $member is a group, check if the group doesn't define itself recursively
+     *  - if $member is a group, check if the group doesn't define itself recursively.
      *
      * @param string $groupName (without !/@)
      * @param string $member    (with !/@ if present)

@@ -1,6 +1,5 @@
 <?php
 
-
 // Titre du pannel
 $title = $this->GetParameter('title');
 if (empty($title)) {

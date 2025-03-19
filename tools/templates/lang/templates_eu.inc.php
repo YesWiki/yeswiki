@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Ekintza',
     'TEMPLATE_FILE_NOT_FOUND' => 'Txantiloia ez da aurkitu',
@@ -133,7 +134,7 @@ return [
     'TEMPLATE_FILE_NOT_ADDED' => ' gehitu gabe!',
     'TEMPLATE_FILE_NOT_DELETED' => ' ezabatu gabe!',
     'TEMPLATE_FILE_ALREADY_EXISTING' => 'Fitxategia dagoeneko existitzen da! Aldatu preset-aren izena edo konektatu admin-era!',
-    'TEMPLATE_PRESET_ERROR' => "Ezin da preset hau aplikatu, errore bat dago!",
+    'TEMPLATE_PRESET_ERROR' => 'Ezin da preset hau aplikatu, errore bat dago!',
     'TEMPLATE_PRESETS' => 'Konfigurazio grafikoak',
     'TEMPLATE_CREATE_PRESET' => 'Sortu konfigurazio grafiko berria',
     'TEMPLATE_CUSTOMIZE_PRESET' => 'Konfigurazio grafikoa',
@@ -151,26 +152,26 @@ return [
     'AB_template_actions_warning' => 'Kasu',
     'AB_template_actions_danger' => 'Arriskua',
     'AB_template_action_accordion_label' => 'Erakutsi akordeoi-koadroak',
-    'AB_template_action_accordion_example' => "{{panel title=\"Nire koadernoaren izenburua\" }} 
+    'AB_template_action_accordion_example' => '{{panel title="Nire koadernoaren izenburua" }} 
 Zure koadernoko testua 
-{{end elem=\"panel\"}}",
-    'AB_template_action_ariane_label' => "Ariana-haria",
+{{end elem="panel"}}',
+    'AB_template_action_ariane_label' => 'Ariana-haria',
     'AB_template_action_col_label' => 'Zutabea',
     'AB_template_action_col_size_total' => '12 zutabe birtual dituzu banatzeko',
     'AB_template_col_size_label' => 'Zutabearen zabalera',
     'AB_template_action_grid_label' => 'Erakutsi hainbat zutabe',
     'AB_template_action_col_example' => 'Aldatu beharreko zutabearen testua aurrerantzean',
-    'AB_template_action_grid_example' => "{{col size=\"{size}}} 
+    'AB_template_action_grid_example' => '{{col size="{size}}} 
 Aldatu beharreko zutabearen testua geroago 
-{{end elem=\"col\"}}",
-    'AB_template_action_grid_nb' => "Zutabe kopurua",
+{{end elem="col"}}',
+    'AB_template_action_grid_nb' => 'Zutabe kopurua',
     'AB_template_action_grid_nb_hint' => "Zutabe bakoitzaren tamaina 'size' atributuaren bidez doi dezakezu. Guztizko 'size'-ek 12 izan behar dute. Adibidez: {{col size=3}} + {{col size=9}",
     'AB_templates_nav_label' => 'Orri desberdineko fitxak',
     'AB_templates_nav_description' => 'Sortu menua',
     'AB_templates_nav_hint' => 'Itsatsi lortutako kodea fitxetako orrialde bakoitzean.',
     'AB_templates_nav_link' => 'Orrialdea',
     'AB_templates_nav_add_tag' => 'Gehitu fitxa',
-    'AB_templates_nav_title' => "Fitxaren izena",
+    'AB_templates_nav_title' => 'Fitxaren izena',
     'AB_templates_nav_class_label' => 'Afixatzea',
     'AB_templates_nav_class_tabs' => 'Horizontal azpimarratua',
     'AB_templates_nav_class_pills' => 'Horizontal soila',
@@ -271,9 +272,9 @@ Aldatu beharreko zutabearen testua geroago
     'AB_templates_tabs_btncolor_secondary_1' => '1. Bigarren mailako',
     'AB_templates_tabs_btncolor_secondary_2' => '2. Bigarren mailako',
     'AB_templates_tabs_selectedtab_label' => 'Hautatutako fitxa',
-    'AB_templates_tabs_wrappedcontentexample' => "{{tab}} 
-\"{tabName}\" fitxaren edukia 
-{{end elem=\"tab\"}}",
+    'AB_templates_tabs_wrappedcontentexample' => '{{tab}} 
+"{tabName}" fitxaren edukia 
+{{end elem="tab"}}',
     'ACLS_SELECT_PAGES_FILTER' => 'Iragazi:',
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'orrialdeak soilik',
     'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'orri bereziak soilik',

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'AUGUST' => 'August',
     'CANCEL' => 'Cancel',
@@ -108,9 +109,9 @@ return [
     'NOT_VALID_URL' => 'Invalid url: {url}',
     'PAGE_NOT_AVAILABLE' => 'Page {tag} is not available on the destination YesWiki',
     'CONNECTED_AS_ADMIN' => 'The user {user} is successfully logged in to the destination YesWiki, with administration rights.',
-    'ADMIN_BACKUPS_CONFIRMATION_TO_DELETE' => "The following files will be deleted by the backup.
+    'ADMIN_BACKUPS_CONFIRMATION_TO_DELETE' => 'The following files will be deleted by the backup.
 Please confirm their deletion by checking the box below.
-<pre>{files}</pre>",
+<pre>{files}</pre>',
     'CONNECTED_BUT_NOT_ADMIN' => 'The user {user} is successfully logged in to the destination YesWiki, but does not have administrative rights. Please log in with an admin account.',
     'PAGE_AVAILABLE' => 'The {tag} page is available on the destination YesWiki',
     'NOT_CONNECTED' => 'You must log in to the destination YesWiki with an account that has administrative rights.',

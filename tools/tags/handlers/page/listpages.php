@@ -2,7 +2,6 @@
 
 use YesWiki\Tags\Service\TagsManager;
 
-
 // fonctions a inclure
 include_once 'tools/tags/libs/tags.functions.php';
 

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'AB_LEFT' => 'Sinistra',
     'AB_RIGHT' => 'Destra',

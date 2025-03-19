@@ -2,7 +2,6 @@
 
 use YesWiki\Core\Service\ThemeManager;
 
-
 $themeManager = $this->services->get(ThemeManager::class);
 
 $param = $this->GetParameter('param');

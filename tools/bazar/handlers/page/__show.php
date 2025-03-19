@@ -2,7 +2,6 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 
-
 $entryManager = $this->services->get(EntryManager::class);
 
 if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess('read')) {

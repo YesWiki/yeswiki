@@ -2,7 +2,6 @@
 
 use YesWiki\Core\Service\AclService;
 
-
 include_once 'tools/tags/libs/tags.functions.php';
 $nbcartrunc = 200;
 

@@ -1,6 +1,5 @@
 <?php
 
-
 if (!function_exists('wakka2callbacktoc')) {
     function wakka2callbacktoc($things)
     {

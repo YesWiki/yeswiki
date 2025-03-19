@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Kalkuluak',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Bistaratze-testua',
@@ -267,11 +268,11 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'BAZAR_VIDEO_POSITION_RIGHT' => 'Eskuinean lerrokatuta',
     'BAZAR_URL_DISPLAY_VIDEO' => 'Bistaratu erreproduzitzailea esteka bideo bat bada?',
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'Gehitu egutegira',
-    'LIST_DRAGDROP' => "Mugitu elementua",
+    'LIST_DRAGDROP' => 'Mugitu elementua',
     'LIST_KEY' => 'Gakoa',
     'LIST_TEXT' => 'Testua',
     'LIST_ADD_NODE' => 'Gehitu balioa',
     'LIST_ADD_CHILD_NODE' => 'Gehitu 2. mailako balioa',
-    'LIST_ERROR_MISSING_IDS' => "Balio batzuek ez dute gakorik lotuta",
+    'LIST_ERROR_MISSING_IDS' => 'Balio batzuek ez dute gakorik lotuta',
     'LIST_ERROR_DUPLICATES_IDS' => 'Gako bakoitzak bakarra izan behar du. Gako hauek behin baino gehiagotan erabiltzen dira: ',
 ];

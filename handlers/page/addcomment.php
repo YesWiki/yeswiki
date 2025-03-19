@@ -1,6 +1,5 @@
 <?php
 
-
 use YesWiki\Core\Service\CommentService;
 
 $commentService = $this->services->get(CommentService::class);

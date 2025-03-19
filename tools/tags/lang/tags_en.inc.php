@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TAGS_TAGS' => 'Keywords',
     'TAGS_ACTION_ADMINTAGS' => 'Action {{admintags ...}}',

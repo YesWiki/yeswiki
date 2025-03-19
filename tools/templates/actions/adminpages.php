@@ -1,6 +1,5 @@
 <?php
 
-
 if ($this->UserIsAdmin()) {
     $sql = 'SELECT tag,time,owner FROM ' . $this->GetConfigValue('table_prefix') . 'pages ' .
         'WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%"' .

@@ -1,6 +1,5 @@
 <?php
 
-
 if (empty($_POST['config'])) {
     header('Location: ' . myLocation());
     exit(_t('PROBLEM_WHILE_INSTALLING'));
@@ -34,7 +33,7 @@ if ($version) {
 }
 
 // As of PHP 8.1.0, the default setting is MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT.
-// Previously, it was MYSQLI_REPORT_OFF. 
+// Previously, it was MYSQLI_REPORT_OFF.
 // https://www.php.net/manual/en/mysqli-driver.report-mode.php
 //
 // So mysqli_connect() will return an exception instead of 'false'.

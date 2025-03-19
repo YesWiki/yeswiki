@@ -2,7 +2,6 @@
 
 use YesWiki\Core\Service\ThemeManager;
 
-
 $themeManager = $this->services->get(ThemeManager::class);
 $favoriteStyle = $themeManager->getFavoriteStyle();
 // si pas le mot bootstrap. ou bs. dans les css, on charge les styles bootstrap par defaut

@@ -8,7 +8,6 @@
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\TemplateEngine;
 
-
 $entryManager = $this->services->get(EntryManager::class);
 
 $this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');

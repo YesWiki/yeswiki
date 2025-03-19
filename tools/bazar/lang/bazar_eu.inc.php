@@ -1,4 +1,5 @@
 <?php
+
 return [
     'USER_PASSWORDS_NOT_IDENTICAL' => 'Egiaztatzeko sartutako pasahitza ez da lehenengoaren berdina!',
     'BAZ_FORMULAIRE' => 'Inprimakiak',
@@ -327,8 +328,8 @@ return [
     'BAZ_CORRESPONDANCE_ERROR' => 'ekintza bazarlista: parametroa ez da ondo bete: honelakoa izan behar du: parekidetasuna="identifikatzaile_1=identifikatzaile_2" edo egokidetasuna="identifikatzaile_1=identifikatzaile_2, identifikatzaile_3=identifikatzaile_4"',
     'EVENT_THIRD_Y_OF_MONTH' => 'Hileko hirugarren Y-a',
     'BAZ_YEAR' => 'Urtea',
-    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => "\"{currentName}\" identifikatzailea dagoeneko existitzen da! 
-Hautatu kontrol-laukia \"{proposedName}\"(r)ekin ordezkatzeko, edo, bestela, aldatu zure identifikatzailea inprimaki honetan.",
+    'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => '"{currentName}" identifikatzailea dagoeneko existitzen da! 
+Hautatu kontrol-laukia "{proposedName}"(r)ekin ordezkatzeko, edo, bestela, aldatu zure identifikatzailea inprimaki honetan.',
     'SUM' => 'Batu',
     'EVENT_UP_TO_DATE' => 'Noiz arte:',
     'EVENT_REPETITION_FOR_YEARS' => '%{x} urte guztietan, %{monthRepetition}',
@@ -340,7 +341,7 @@ Hautatu kontrol-laukia \"{proposedName}\"(r)ekin ordezkatzeko, edo, bestela, ald
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_REFRESH_FORMS]' => 'Cacheko bi freskagarriren arteko denbora (s) JSON eskaeretarako behar diren formularioetarako',
     'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Utzi fitxak sortzen nahiz eta wikia idazketan itxita egon (true edo false)',
     'EDIT_CONFIG_GROUP_BAZAR' => 'Datu-basea',
-    'BAZ_USER_FIELD_ALREADY_CONNECTED' => "Dagoeneko konektatuta zaude \"{wikiname}\" identifikatzailearekin eta \"{email}\" helbide elektronikoarekin.",
+    'BAZ_USER_FIELD_ALREADY_CONNECTED' => 'Dagoeneko konektatuta zaude "{wikiname}" identifikatzailearekin eta "{email}" helbide elektronikoarekin.',
     'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => 'Admin gisa, emandako helbide elektronikorako fitxa sortzera behartu (eta lehendik ez badago bakarrik sortu kontu bat)',
     'BAZ_USER_FIELD_LABEL' => 'Erabiltzailea',
     'BAZ_MEMBERS' => 'kideak',
@@ -380,5 +381,5 @@ Hautatu kontrol-laukia \"{proposedName}\"(r)ekin ordezkatzeko, edo, bestela, ald
     'BAZ_PREVIEW_DETAILS' => 'zati hau ez da klikagarria, paramest-ak aldatu egiten dira ezkerreko zutabean',
     'BAZ_WIDGET_INSTRUCTION' => 'Zure webgunean txertatzeko embed kodigoa',
     'BAZ_WIDGET_INSTRUCTION2' => 'Kopiatu beharreko wiki ekintzaren kodea webgune honetako orri batean',
-    'BAZ_CORRESPONDANCE_ERROR2' => "ekintza bazarlista: korrespondentzia parametroa gaizki betetzen da.",
+    'BAZ_CORRESPONDANCE_ERROR2' => 'ekintza bazarlista: korrespondentzia parametroa gaizki betetzen da.',
 ];

@@ -71,6 +71,7 @@ class ListManager
     {
         $data = $this->convertDataStructure(json_decode($json, true));
         $data['id'] = $id;
+
         return $data;
     }
 
@@ -112,7 +113,7 @@ class ListManager
         $id = $id ?? genere_nom_wiki('List ' . $title);
         $json = json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? [])
+            'nodes' => $this->sanitizeHMTL($nodes ?? []),
         ]);
         $this->pageManager->save($id, $json);
 
@@ -120,7 +121,6 @@ class ListManager
         $this->cachedLists[$id] = $data;
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
-
 
         return $id;
     }
@@ -133,7 +133,7 @@ class ListManager
 
         $json = json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? [])
+            'nodes' => $this->sanitizeHMTL($nodes ?? []),
         ]);
         $this->pageManager->save($id, $json);
 

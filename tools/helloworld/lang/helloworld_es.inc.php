@@ -1,4 +1,5 @@
 <?php
+
 return [
     'HELLOWORLD_MY_MESSAGE' => 'Mi mensaje',
     'HELLOWORD_NO_MSG_PARAM' => 'No hay parámetro \'mensaje\' definido en la acción {{greeting ...}}',

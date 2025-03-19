@@ -1,4 +1,5 @@
 <?php
+
 return [
     'SYNDICATION_ACTION_SYNDICATION' => 'Actie {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'de parameter "URL" moet verplicht worden ingegeven voor de syndicatie van een RSS-feed',

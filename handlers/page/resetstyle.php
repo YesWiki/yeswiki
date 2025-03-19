@@ -13,6 +13,5 @@
 // -- détecter le fichier par défaut via une variable de configuration
 //
 
-
 $this->SetPersistentCookie('sitestyle', 'wakka', 1);
 header('Location: ' . $this->href());

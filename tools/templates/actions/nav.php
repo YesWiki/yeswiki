@@ -2,7 +2,6 @@
 
 use YesWiki\Core\Service\LinkTracker;
 
-
 // classe css supplémentaire
 $class = $this->GetParameter('class');
 $class = ((!empty($class)) ? $class : 'nav nav-tabs');

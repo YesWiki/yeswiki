@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TAGS_ACTION_ADMINTAGS' => 'Acción {{admintags ...}}',
     'TAGS_ACTION_ADMINTAGS_ONLY_FOR_ADMINS' => 'la acción está reservada al grupo de administradores',

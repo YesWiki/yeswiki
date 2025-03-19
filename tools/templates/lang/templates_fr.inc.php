@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'Action',
     'TEMPLATE_FILE_NOT_FOUND' => 'Template non trouvé',
@@ -151,19 +152,19 @@ return [
     'AB_template_actions_warning' => 'Attention',
     'AB_template_actions_danger' => 'Danger',
     'AB_template_action_accordion_label' => 'Afficher des encadrés en accordéon',
-    'AB_template_action_accordion_example' => "{{panel title=\"Titre de mon encadré\" }}
+    'AB_template_action_accordion_example' => '{{panel title="Titre de mon encadré" }}
 Texte de votre encadré
-{{end elem=\"panel\"}}",
+{{end elem="panel"}}',
     'AB_template_action_ariane_label' => "Fil d'ariane",
     'AB_template_action_col_label' => 'Colonne',
     'AB_template_action_col_size_total' => 'Vous avez 12 colonnes virtuelles à répartir',
     'AB_template_col_size_label' => 'Largeur de la colonne',
     'AB_template_action_grid_label' => 'Afficher plusieurs colonnes',
     'AB_template_action_col_example' => 'Texte de votre colonne à changer par la suite',
-    'AB_template_action_grid_example' => "{{col size=\"{size}\"}}
+    'AB_template_action_grid_example' => '{{col size="{size}"}}
 Texte de la colonne à changer par la suite
-{{end elem=\"col\"}}",
-    'AB_template_action_grid_nb' => "Nombre de colonnes",
+{{end elem="col"}}',
+    'AB_template_action_grid_nb' => 'Nombre de colonnes',
     'AB_template_action_grid_nb_hint' => "Vous pouvez ajuster la taille de chaque colonne via l'attribut 'size'. Le total des 'size' doit être égal à 12. Exemple : {{col size=3}} + {{col size=9}}",
     'AB_templates_nav_label' => 'Onglets avec des pages différentes',
     'AB_templates_nav_description' => 'Générer un menu',

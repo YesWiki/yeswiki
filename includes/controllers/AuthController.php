@@ -173,23 +173,21 @@ class AuthController extends YesWikiController
     {
         // If the user isn't logged
         if (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) {
-            return '' ;
+            return '';
         }
-        
+
         // Else, if user is logged, store the user in a cache
-        static $cache = null ;
-        
-        if($cache == null ) {
+        static $cache = null;
+
+        if ($cache == null) {
             $user = $this->userManager->getOneByName($_SESSION['user']['name']);
             if (!empty($user)) {
                 $cache = $user->getArrayCopy();
-            }
-            else
-            {
-                $cache = '' ;
+            } else {
+                $cache = '';
             }
         }
-        
+
         return $cache;
     }
 

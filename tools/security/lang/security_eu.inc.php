@@ -1,4 +1,5 @@
 <?php
+
 return [
     'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong><strong>Orria ezin da gorde.</strong><br />Agian, \'Gorde\' botoian klik bikoitza </strong> <br /> egin duzu, elkarren segidako 2 segurtasun-kopia gertuegi entrenatuz, edo editatze-moduan orria denbora luzeegian irekita utziz.<br />Aldaketak gordetzeko, kopiatu edukia, rafraichir página eta itsatsi <br /> aldatutako orria berriro.',
     'HASHCASH_ANTISPAM_ACTIVATED' => 'Spamaren aurkako babesa aktibatuta',

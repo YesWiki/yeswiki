@@ -1,4 +1,5 @@
 <?php
+
 return [
     'HELLOWORLD_MY_MESSAGE' => 'Nere mezuak',
     'HELLOWORD_NO_MSG_PARAM' => 'Ez da zehaztu {{greeting ...} ekintzan',

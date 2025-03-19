@@ -1,4 +1,5 @@
 <?php
+
 $GLOBALS['translations'] = array_merge($GLOBALS['translations'], [
     'ACTION_BUILDER_CHOOSE_FORM' => 'Pick a form',
     'ACTION_BUILDER_CHOOSE_TEMPLATE' => 'How do you want to display the data',

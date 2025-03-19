@@ -1,6 +1,7 @@
 <?php
+
 return [
-    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "Fișierul de imagine nu există",
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Fișierul de imagine nu există',
     'ATTACH_ACTION_ATTACH' => 'Acțiune {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'parametrul "desc" necesar pentru imagine',
     'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => 'parametrul "height",, în pixeli, trebuie să fie compus numai din numere întregi',
@@ -15,7 +16,7 @@ return [
     'ERROR_PARTIAL_UPLOAD' => 'Fișierul a fost descărcat doar parțial.',
     'ERROR_NO_FILE_UPLOADED' => 'Nu au fost descărcate fişiere.',
     'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Fișierul nu are o extensie autorizată, iată cele pe care configurația le permite: ',
-    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Permiteți să faceți clic pe imagine pentru a afișa în mare",
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => 'Permiteți să faceți clic pe imagine pentru a afișa în mare',
     'ATTACH_FILE_MANAGEMENT' => 'Gestionarea fișierelor',
     'ATTACH_TRASH' => 'Coș',
     'ATTACH_NO_ATTACHED_FILES' => 'Nu există fișiere atașate la pagina {tag} în acest moment.',

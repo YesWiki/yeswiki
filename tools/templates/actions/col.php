@@ -1,6 +1,5 @@
 <?php
 
-
 // taille de la colonne
 $size = $this->GetParameter('size');
 if (empty($size)) {

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Cálculos',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Texto para mostrar',
@@ -245,11 +246,11 @@ return [
     'BAZAR_VIDEO_POSITION_RIGHT' => '',
     'BAZAR_URL_DISPLAY_VIDEO' => '',
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => '',
-    'LIST_DRAGDROP' => "",
+    'LIST_DRAGDROP' => '',
     'LIST_KEY' => '',
     'LIST_TEXT' => '',
     'LIST_ADD_NODE' => '',
     'LIST_ADD_CHILD_NODE' => '',
-    'LIST_ERROR_MISSING_IDS' => "",
+    'LIST_ERROR_MISSING_IDS' => '',
     'LIST_ERROR_DUPLICATES_IDS' => '',
 ];

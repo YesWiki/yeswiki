@@ -3,7 +3,6 @@
 use YesWiki\Core\Controller\PageController;
 use YesWiki\Tags\Service\TagsManager;
 
-
 $tagsManager = $this->services->get(TagsManager::class);
 
 // on ne fait quelque chose uniquement dans le cas d'une requete jsonp

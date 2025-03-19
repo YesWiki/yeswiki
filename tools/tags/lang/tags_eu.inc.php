@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TAGS_TAGS' => 'Gako-hitzak',
     'TAGS_ACTION_ADMINTAGS' => '{{admintags ...}} ekintza',

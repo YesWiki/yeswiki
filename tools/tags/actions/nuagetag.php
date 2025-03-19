@@ -1,6 +1,5 @@
 <?php
 
-
 $this->AddJavascriptFile('tools/tags/libs/tag.js');
 
 $class = $this->GetParameter('class');

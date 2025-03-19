@@ -1,6 +1,7 @@
 <?php
+
 return [
-    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => "Ez dago irudi- fitxategirik",
+    'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'Ez dago irudi- fitxategirik',
     'ATTACH_ACTION_ATTACH' => '{{attach ...}} ekintza',
     'ATTACH_PARAM_DESC_REQUIRED' => '"desc" parametroa nahitaezkoa da irudi batentzat',
     'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => '"height" parametroak, pixeletan, zenbaki osoak bakarrik izan behar ditu',
@@ -15,7 +16,7 @@ return [
     'ERROR_PARTIAL_UPLOAD' => 'Fitxategia partzialki baino ez da deskargatu.',
     'ERROR_NO_FILE_UPLOADED' => 'Ez da fitxategirik igo.',
     'ERROR_NOT_AUTHORIZED_EXTENSION' => 'Fitxategiak ez du luzapen baimendurik. Hona hemen konfigurazioak onartzen dituenak: ',
-    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => "Utzi irudia sakatzen, handian bistaratzeko",
+    'ATTACH_ACTION_FULLIMAGELINK_TEXT' => 'Utzi irudia sakatzen, handian bistaratzeko',
     'ATTACH_FILE_MANAGEMENT' => 'Fitxategien kudeaketa',
     'ATTACH_TRASH' => 'Zakarrontzia',
     'ATTACH_NO_ATTACHED_FILES' => 'Ez dago fitxategirik {tag} orrialdean oraingoz.',

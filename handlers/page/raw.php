@@ -1,6 +1,5 @@
 <?php
 
-
 if ($this->HasAccess('read')) {
     if (!$this->page) {
         return;

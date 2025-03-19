@@ -377,7 +377,7 @@ class PageManager
             // use forcedDate is present
             $time = 'now()';
             if (!empty($forcedDate)) {
-                $time = '"'.$forcedDate.'"';
+                $time = '"' . $forcedDate . '"';
             }
 
             // add new revision

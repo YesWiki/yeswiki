@@ -1,6 +1,5 @@
 <?php
 
-
 // valeur de la progressbar
 $val = $this->GetParameter('val');
 if (empty($val)) {

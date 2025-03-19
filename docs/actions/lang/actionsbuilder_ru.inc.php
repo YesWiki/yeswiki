@@ -1,4 +1,5 @@
 <?php
+
 return [
     'AB_LEFT' => 'Левый',
     'AB_RIGHT' => 'Прямо сейчас',

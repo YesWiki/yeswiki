@@ -175,40 +175,37 @@ class LoginAction extends YesWikiAction
             $incomingurl = $this->arguments['incomingurl'];
         }
         try {
-            
             // First, try to find a user by name
             if (!empty($_POST['name'])) {
-                
                 // No need to filter the name, it will be escaped in the request to the database.
                 // It can be possible to filter the name with the regex PATTERN_USER_NAME in UserManager, but if this regex changes,
                 // existing users will be unable to login. So just let the database check if the user is here.
                 $name = $_POST['name'];
-                
+
                 $user = $this->userManager->getOneByName($name);
-                
+
                 // TODO Strange, but the code allow an email to be pass in $_POST['name'] instead of $_POST['email']
                 // So if we don't find the user by name, it can be because it is an email instead of a username
-                if(empty($user) && empty($_POST['email'])) {
-                    $_POST['email'] = $_POST['name'] ;
+                if (empty($user) && empty($_POST['email'])) {
+                    $_POST['email'] = $_POST['name'];
                 }
             }
-            
+
             // Then, try to find a user by email
             if (empty($user) && !empty($_POST['email'])) {
-                
                 // No need to filter the email, it will be escaped in the request to the database.
-                $email = $_POST['email'] ;
-                
+                $email = $_POST['email'];
+
                 if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $user = $this->userManager->getOneByEmail($email);                    
+                    $user = $this->userManager->getOneByEmail($email);
                 }
             }
-            
+
             // Stop here if we don't have a user
             if (empty($user)) {
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
-            
+
             $password = $this->securityController->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string');
             if (!$this->authController->checkPassword($password, $user)) {
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));

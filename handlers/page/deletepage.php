@@ -5,7 +5,6 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\PageController;
 
-
 // get services
 $csrfTokenManager = $this->services->get(CsrfTokenManager::class);
 $csrfTokenController = $this->services->get(CsrfTokenController::class);

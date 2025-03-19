@@ -10,7 +10,6 @@
  *
  * @see     https://yeswiki.net
  */
-
 header('Content-Type: text/css');
 if ($this->HasAccess('read') && $this->page && isset($this->page['body'])) {
     echo $this->page['body'];

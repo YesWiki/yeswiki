@@ -200,7 +200,7 @@ class ApiController extends YesWikiController
         }
 
         $_POST['antispam'] = 1;
-        $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL']?? null);
+        $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL'] ?? null);
 
         if (!$entry) {
             throw new BadRequestHttpException();
@@ -345,7 +345,6 @@ class ApiController extends YesWikiController
 
             return $result;
         }, $entries);
-
 
         return new ApiResponse(
             [

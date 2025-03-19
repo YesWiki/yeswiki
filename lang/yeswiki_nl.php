@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BY' => 'door',
     'TRIPLES' => 'Triples',

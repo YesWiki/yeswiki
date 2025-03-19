@@ -295,7 +295,7 @@ class BazarListeAction extends YesWikiAction
                 foreach ($entries as $i => $entry) {
                     $entryFieldsService->setEntryId($entry['id_fiche']);
                     foreach (EntryExtraFieldsService::EXTRA_FIELDS as $field) {
-                        $entries[$i][$field] =  $entryFieldsService->get($field);
+                        $entries[$i][$field] = $entryFieldsService->get($field);
                     }
                 }
             }

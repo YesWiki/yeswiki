@@ -1,6 +1,5 @@
 <?php
 
-
 //parametres wikini
 $pagetag = trim($this->GetParameter('page'));
 if (empty($pagetag)) {

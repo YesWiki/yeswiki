@@ -172,7 +172,7 @@ class LostPasswordAction extends YesWikiAction
         return $user ?? null;
     }
 
-    /** 
+    /**
      * In order to update h·er·is password, the user provides a key (sent using sendPasswordRecoveryEmail())
      * The new password is accepted only if the key matches with the value in triples table.
      * The corresponding row is the removed from triples table.

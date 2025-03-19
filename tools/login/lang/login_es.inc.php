@@ -1,4 +1,5 @@
 <?php
+
 return [
     'LOGIN_SIGNUP' => 'Inscribirse',
     'LOGIN_LOGIN' => 'Conectarse',
@@ -52,5 +53,5 @@ return [
     'LINK_TO_CHANGE_PASSWORD' => 'Enlace para cambiar la contraseña',
     'RECOVERY_LINK' => 'Enlace para restablecer la contraseña',
     'RECOVERY_MESSAGE_SENT' => 'Se ha enviado un mensaje a {email} con instrucciones para restablecer la contraseña',
-    'USERSETTINGS_NAME_NOT_FOUND' => "El identificador \"{currentName}\" no existe!",
+    'USERSETTINGS_NAME_NOT_FOUND' => 'El identificador "{currentName}" no existe!',
 ];

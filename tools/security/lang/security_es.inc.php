@@ -1,4 +1,5 @@
 <?php
+
 return [
     'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>La página no se puede registrar.</strong><br />Quizas has hecho clic dos veces al botón "Guardar" en un intervalo demasiado corto, o has dejado la página abierta en modo edición demasiado tiempo.<br />Para guardar tus modificaciones, copia su contenido, actualiza la página en tu navigador y pega tu página modificada de nuevo.',
     'HASHCASH_ANTISPAM_ACTIVATED' => 'Protección anti-spam activada',

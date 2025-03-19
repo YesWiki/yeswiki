@@ -1,4 +1,5 @@
 <?php
+
 return [
     'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>Pagina nu poate fi salvată. </strong><br />S-ar putea să fi făcut dublu clic pe butonul "Salvați", cauzând 2 salvări consecutive prea aproape, sau a lăsat pagina deschisă în modul de editare prea mult timp. <br />Pentru a salva modificările, vă rugăm să copiați conținutul, să reîmprospătați pagina și să lipiți din nou pagina modificată.',
     'HASHCASH_ANTISPAM_ACTIVATED' => 'Protecție activă împotriva spamului',

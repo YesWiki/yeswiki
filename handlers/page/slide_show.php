@@ -16,7 +16,6 @@ Le fichier "slideshow.css" sera reconnu automatiquement.
 
 */
 
-
 // On teste si l'utilisateur peut lire la page
 if (!$this->HasAccess('read')) {
     return;

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'LOGIN_SIGNUP' => 'Izena eman',
     'LOGIN_LOGIN' => 'Saioa hasi',
@@ -52,5 +53,5 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => '\'{parameters}\' parametroak ezin dira hutsik egon!',
     'USERSETTINGS_NAME_ALREADY_USED' => '"{currentName}" identifikatzailea dagoeneko existitzen da!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => '"{email}" helbide elektronikoa beste kontu batek erabiltzen du!',
-    'USERSETTINGS_NAME_NOT_FOUND' => "\"{currentName}\" identifikatzailea ez da existitzen!",
+    'USERSETTINGS_NAME_NOT_FOUND' => '"{currentName}" identifikatzailea ez da existitzen!',
 ];

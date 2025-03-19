@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ACTION_BUILDER_COPY' => 'Còpia',
     'ACTION_BUILDER_PREVIEW' => 'Vista prèvia (no es pot fer clic)',

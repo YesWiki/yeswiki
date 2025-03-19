@@ -1,4 +1,5 @@
 <?php
+
 return [
     'SYNDICATION_ACTION_SYNDICATION' => 'Acțiune {{syndication ...}}',
     'SYNDICATION_PARAM_URL_REQUIRED' => 'Trebuie să introduceți parametrul "url" pentru a sindicaliza un flux RSS',

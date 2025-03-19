@@ -1,4 +1,5 @@
 <?php
+
 return [
     'LOGIN_SIGNUP' => 'Se înscrie',
     'LOGIN_LOGIN' => 'Se conecteze',
@@ -50,7 +51,7 @@ return [
     'USERSETTINGS_SIGNUP_MISSING_INPUT' => 'Parametrii \'{parameters}\' nu pot fi goi!',
     'USERSETTINGS_NAME_ALREADY_USED' => 'Identificatorul "{currentName}" există deja!',
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'E-mailul "{email}" este deja folosit de un alt cont!',
-    'USERSETTINGS_NAME_NOT_FOUND' => "Identificatorul \"{currentName}\" nu există!",
+    'USERSETTINGS_NAME_NOT_FOUND' => 'Identificatorul "{currentName}" nu există!',
     'RECOVERY_MESSAGE_SENT' => 'Un mesaj a fost trimis la {email} cu instrucțiuni pentru resetarea parolei',
     'RECOVERY_LINK' => 'Link pentru resetarea parolei',
 ];

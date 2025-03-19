@@ -108,6 +108,7 @@ class ReactionManager
     public function getReactionsCount($tag)
     {
         $type = self::TYPE_URI;
+
         return $this->dbService->count("
             SELECT * FROM {$this->dbService->prefixTable('triples')} 
             WHERE resource = '{$this->dbService->escape($tag)}' AND property = '{$type}'

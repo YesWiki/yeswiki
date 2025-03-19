@@ -1,6 +1,5 @@
 <?php
 
-
 $url = $this->GetParameter('url');
 $type = $this->getParameter('type');
 

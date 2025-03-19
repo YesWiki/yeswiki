@@ -1,6 +1,5 @@
 <?php
 
-
 $width = $_GET['width'] ?? '100%';
 $height = $_GET['height'] ?? 700;
 

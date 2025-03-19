@@ -1,4 +1,5 @@
 <?php
+
 return [
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculele',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Afișează textul',
@@ -243,12 +244,12 @@ return [
     'BAZAR_VIDEO_POSITION_RIGHT' => 'Aliniaţi la dreapta',
     'BAZAR_URL_DISPLAY_VIDEO' => 'Afișați jucătorul dacă link-ul este video?',
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'Adaugă în calendar',
-    'LIST_DRAGDROP' => "Mutați elementul",
+    'LIST_DRAGDROP' => 'Mutați elementul',
     'LIST_KEY' => 'Cheie',
     'LIST_TEXT' => 'Text',
     'LIST_ADD_NODE' => 'Adăuga o valoare',
     'LIST_ADD_CHILD_NODE' => 'Adăugați o subvaloare',
-    'LIST_ERROR_MISSING_IDS' => "Unele valori nu au o cheie asociată",
+    'LIST_ERROR_MISSING_IDS' => 'Unele valori nu au o cheie asociată',
     'LIST_ERROR_DUPLICATES_IDS' => 'Fiecare cheie trebuie să fie unică. Aceste chei sunt folosite de mai multe ori: ',
     'BAZ_FORM_CALC_HINT' => 'CALCULAŢIE{br}
 Formula trebuie să fie o formulă matematică. {br}

@@ -2,7 +2,6 @@
 
 use YesWiki\Tags\Service\TagsManager;
 
-
 $tagsManager = $this->services->get(TagsManager::class);
 
 $response = [];

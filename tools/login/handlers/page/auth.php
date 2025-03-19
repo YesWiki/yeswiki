@@ -3,7 +3,6 @@
 use YesWIki\Core\Controller\AuthController;
 use YesWIki\Core\Service\UserManager;
 
-
 header('Content-type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
 

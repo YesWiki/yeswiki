@@ -1,4 +1,5 @@
 <?php
+
 return [
     'AB_bazar_label' => 'Exibir os dados de um formulário',
     'AB_bazar_commons_minical' => 'Exibir o conteúdo na forma de uma mini agenda',
@@ -316,7 +317,7 @@ return [
     'AB_advanced_action_login_template_modal' => 'Modal',
     'AB_advanced_action_login_loggedinurl_hint' => "Wiki ou url página (use 'incomingurl' se vazio ou em caso de erro)",
     'AB_advanced_action_login_loggedouturl_label' => 'Redirecionar url após a desconexão',
-    'AB_advanced_action_login_loggedouturl_hint' => "Efeito sombra Scope",
+    'AB_advanced_action_login_loggedouturl_hint' => 'Efeito sombra Scope',
     'AB_buttons_label' => 'Botões',
     'AB_buttons_action_button_label' => 'Botão',
     'AB_buttons_action_button_color_label' => 'Cor',

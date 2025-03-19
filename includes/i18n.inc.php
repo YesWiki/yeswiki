@@ -72,7 +72,7 @@ function _convert($text, $fromencoding, $database = false)
                     YW_CHARSET,
                     mb_detect_encoding($text, 'UTF-8, ISO-8859-1, ISO-8859-15', true)
                 );
-                // return \ForceUTF8\Encoding::toLatin1($text);
+            // return \ForceUTF8\Encoding::toLatin1($text);
             } else {
                 return $text;
             }

@@ -1,6 +1,5 @@
 <?php
 
-
 // classe css supplémentaire
 $class = $this->GetParameter('class');
 $class = ((!empty($class)) ? ' ' . $class : '');
