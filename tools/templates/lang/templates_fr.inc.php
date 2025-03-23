@@ -67,6 +67,8 @@ return [
     'TEMPLATE_SHARE_MUST_READ' => 'A lire : ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Partager sur Facebook',
     'TEMPLATE_SHARE_TWITTER' => 'Partager sur Twitter',
+    'TEMPLATE_SHARE_LINKEDIN' => 'Partager sur Linkedin',
+    'TEMPLATE_SHARE_MASTODON' => 'Partager sur Mastodon',
     'TEMPLATE_SHARE_NETVIBES' => 'Partager sur Netvibes',
     'TEMPLATE_SHARE_DELICIOUS' => 'Partager sur Delicious',
     'TEMPLATE_SHARE_GOOGLEREADER' => 'Partager sur Google Reader',

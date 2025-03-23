@@ -66,7 +66,9 @@ return [
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'HTML orri batean edukia integratzeko kodea',
     'TEMPLATE_SHARE_MUST_READ' => 'Hau esan behar du: ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Facebooken partekatu',
-    'TEMPLATE_SHARE_TWITTER' => 'Partekatu Twitterren',
+    'TEMPLATE_SHARE_TWITTER' => 'X Partekatu',
+    'TEMPLATE_SHARE_LINKEDIN' => 'Linkedin Partekatu',
+    'TEMPLATE_SHARE_MASTODON' => 'Mastodon Partekatu',
     'TEMPLATE_SHARE_NETVIBES' => 'Netvibesen partekatu',
     'TEMPLATE_SHARE_DELICIOUS' => 'Delicious-en partekatu',
     'TEMPLATE_SHARE_GOOGLEREADER' => 'Google Readerren partekatu',
@@ -152,8 +154,8 @@ return [
     'AB_template_actions_warning' => 'Kasu',
     'AB_template_actions_danger' => 'Arriskua',
     'AB_template_action_accordion_label' => 'Erakutsi akordeoi-koadroak',
-    'AB_template_action_accordion_example' => '{{panel title="Nire koadernoaren izenburua" }} 
-Zure koadernoko testua 
+    'AB_template_action_accordion_example' => '{{panel title="Nire koadernoaren izenburua" }}
+Zure koadernoko testua
 {{end elem="panel"}}',
     'AB_template_action_ariane_label' => 'Ariana-haria',
     'AB_template_action_col_label' => 'Zutabea',
@@ -161,8 +163,8 @@ Zure koadernoko testua
     'AB_template_col_size_label' => 'Zutabearen zabalera',
     'AB_template_action_grid_label' => 'Erakutsi hainbat zutabe',
     'AB_template_action_col_example' => 'Aldatu beharreko zutabearen testua aurrerantzean',
-    'AB_template_action_grid_example' => '{{col size="{size}}} 
-Aldatu beharreko zutabearen testua geroago 
+    'AB_template_action_grid_example' => '{{col size="{size}}}
+Aldatu beharreko zutabearen testua geroago
 {{end elem="col"}}',
     'AB_template_action_grid_nb' => 'Zutabe kopurua',
     'AB_template_action_grid_nb_hint' => "Zutabe bakoitzaren tamaina 'size' atributuaren bidez doi dezakezu. Guztizko 'size'-ek 12 izan behar dute. Adibidez: {{col size=3}} + {{col size=9}",
@@ -272,8 +274,8 @@ Aldatu beharreko zutabearen testua geroago
     'AB_templates_tabs_btncolor_secondary_1' => '1. Bigarren mailako',
     'AB_templates_tabs_btncolor_secondary_2' => '2. Bigarren mailako',
     'AB_templates_tabs_selectedtab_label' => 'Hautatutako fitxa',
-    'AB_templates_tabs_wrappedcontentexample' => '{{tab}} 
-"{tabName}" fitxaren edukia 
+    'AB_templates_tabs_wrappedcontentexample' => '{{tab}}
+"{tabName}" fitxaren edukia
 {{end elem="tab"}}',
     'ACLS_SELECT_PAGES_FILTER' => 'Iragazi:',
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'orrialdeak soilik',

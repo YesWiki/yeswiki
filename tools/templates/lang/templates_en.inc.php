@@ -53,6 +53,8 @@ return [
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'Content embed code in HTML page',
     'TEMPLATE_SHARE_MUST_READ' => 'To read : ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Share on Facebook',
+    'TEMPLATE_SHARE_LINKEDIN' => 'Share on Linkedin',
+    'TEMPLATE_SHARE_MASTODON' => 'Share on Mastodon',
     'TEMPLATE_SHARE_TWITTER' => 'Share on Twitter',
     'TEMPLATE_SHARE_NETVIBES' => 'Share on Netvibes',
     'TEMPLATE_SHARE_DELICIOUS' => 'Share on Delicious',
