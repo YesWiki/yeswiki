@@ -49,6 +49,44 @@ class ListManager
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
     }
 
+    private function convertToArray($list) {
+        $nodes = [];
+        foreach ($list['nodes'] as $key => $node) {
+            $children = [];
+            foreach($node['children'] as $child_key => $child_node) {
+                $child_node['id'] = $child_key;
+                $children[] = $child_node;
+            }
+            $node['children'] = $children;
+            $node['id'] = $key;
+            $nodes[] = $node;
+        };
+        $list['nodes'] = $nodes;
+        return $list;
+    }
+
+    private function convertNodeFromArray($list)
+    {
+        $nodes = [];
+        foreach($list as $node) {
+            $children = [];
+            foreach($node['children'] as $child) {
+                $children[$child['id']] = [
+                    'label' => $child['label'],
+                    'children' => []
+                    ];
+            }
+            $id = $node['id'];
+            $nodes[$id] = [
+                'label' => $node['label'],
+                'children' => $children
+            ];
+        }
+        return $nodes;
+    }
+
+
+
     public function getOne($id): ?array
     {
         if (isset($this->cachedLists[$id])) {
@@ -63,6 +101,7 @@ class ListManager
         $page = $this->pageManager->getOne($id);
         $json = json_decode($page['body'], true);
         $json = $this->convertDataStructure($json);
+        $json = $this->convertToArray($json);
         $json['id'] = $id;
         $this->cachedLists[$id] = $json;
 
@@ -107,7 +146,7 @@ class ListManager
         $id = $id ?? genere_nom_wiki('List' . $title);
         $this->pageManager->save($id, json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? []),
+            'nodes' => $this->convertNodeFromArray($this->sanitizeHMTL($nodes ?? [])),
         ]));
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
@@ -123,7 +162,7 @@ class ListManager
 
         $this->pageManager->save($id, json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? []),
+            'nodes' =>  $this->convertNodeFromArray($this->sanitizeHMTL($nodes ?? [])),
         ]));
     }
 
