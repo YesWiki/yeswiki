@@ -74,7 +74,7 @@ class Init
         $uri = preg_replace('~^/\??~', '', $uri);
         $uri = explode('&', $uri);
         $uri = explode('?', $uri[0]);
-        $args = explode('/', $uri[0]);
+        $args = explode('/', rawurldecode($uri[0]));
         if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
             // if old school wiki url
             if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
@@ -90,7 +90,7 @@ class Init
                 // for api split into api/end of route, checking wiki name & method name (XSS proof)
                 $this->page = 'api';
                 array_shift($args); // remove api from the args
-                $this->method = implode('/', $args);
+                $this->method = rtrim(implode('/', $args), '=');
             } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
                 // split into page/method, checking wiki name & method name (XSS proof)
                 list(, $this->page, $this->method) = $matches;
