@@ -92,7 +92,7 @@ class DuplicateHandler extends YesWikiHandler
                 }
             } elseif ($isList) {
                 $title = _t('TEMPLATE_DUPLICATE_LIST') . ' ' . $this->wiki->GetPageTag();
-                $originalContent = $this->getService(ListManager::class)->getOne($this->wiki->GetPageTag());
+                $originalContent = $this->getService(ListManager::class)->getOne($this->wiki->GetPageTag(), 0, true);
                 if ($toExternalWiki) {
                     $pageTitle = $originalContent['titre_liste'];
                     $proposedTag = $this->wiki->GetPageTag();

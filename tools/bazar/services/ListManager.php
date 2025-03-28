@@ -56,7 +56,7 @@ class ListManager
             $children_array[] = [
                 'id' => $id,
                 'label' => $node['label'],
-                'children' => $this->childrenToArray($node['children'])
+                'children' => $this->childrenToArray($node['children'] ?? [])
             ];
         }
         return $children_array;
@@ -68,18 +68,23 @@ class ListManager
         {
             $children_object[$child['id']] = [
                 'label' => $child['label'],
-                'children' => $this->nodeFromArray($child['children']),
+                'children' => $this->nodeFromArray($child['children'] ?? []),
             ];
         }
         return $children_object;
     }
 
-
-
-    public function getOne($id, $lang = 0): ?array
+    public function getOne($id, $lang = 0, $all_language = false,): ?array
     {
-        if (isset($this->cachedLists[$id])) {
-            return $this->cachedLists[$id];
+        if ($lang == 0 and isset($_GET['lang'])) {
+            $lang = $_GET['lang'];
+        }
+        $lang_id = $id;
+        if ($lang != 0) {
+            $lang_id .= '_'.$lang;
+        }
+        if (isset($this->cachedLists[$lang_id])) {
+            return $this->cachedLists[$lang_id];
         }
 
         // Ensure a list exist with this ID
@@ -87,12 +92,21 @@ class ListManager
             return null;
         }
 
-        $page = $this->pageManager->getOne($id);
+        if (!$all_language and $lang != 0) {
+            $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.__extra_lang.$lang\"), body)) as body";
+        } else {
+            $select_options = '*';
+        }
+
+        $page = $this->pageManager->getOne($id, null, true, false, null, $select_options);
         $json = json_decode($page['body'], true);
         $json = $this->convertDataStructure($json);
+        if (!$all_language) {
+            unset($json['__extra_lang']);
+        }
         $json['nodes'] = $this->childrenToArray($json['nodes']);
         $json['id'] = $id;
-        $this->cachedLists[$id] = $json;
+        $this->cachedLists[$lang_id] = $json;
 
         return $json;
     }
@@ -114,13 +128,13 @@ class ListManager
         return $json;
     }
 
-    public function getAll(): array
+    public function getAll($lang = 0): array
     {
         $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
         $result = [];
         foreach ($lists as $list) {
-            $result[$list['resource']] = $this->getOne($list['resource']);
+            $result[$list['resource']] = $this->getOne($list['resource'], $lang);
         }
 
         return $result;

@@ -22,7 +22,7 @@ new Vue({
     const list = JSON.parse(this.$el.dataset.list);
     this.title = list.title;
     const nodes = list.nodes || [];
-    const extra_langs = list.extra_lang || [];
+    const extra_langs = list.__extra_lang || [];
     this.extra_langs_list = ['eu', 'de', 'en'];
     // vueRef is used to give a unique and fixed ID to each node
     for (let lang in extra_langs) {
@@ -57,14 +57,20 @@ new Vue({
     },
     jsonExtraLangs() {
       const extraLang = {};
+      let hasData = false;
       for (const lang of this.extra_langs_list) {
         extraLang[lang] = {};
         if (this.extra_langs_titles[lang]) {
           extraLang[lang].title = this.extra_langs_titles[lang];
+          hasData = true;
         }
         const nodes = this.getExtraLang(this.rootNode, lang);
         if (nodes) {
           extraLang[lang].nodes = nodes.children;
+          hasData = true;
+        }
+        if (!hasData) {
+          delete extraLang[lang];
         }
       }
 

@@ -60,7 +60,7 @@ class PageManager
      * @param bool        $bypassAcls             : do not check acl
      * @param string|null $userNameForCheckingACL userName used to check ACL, if empty uses the connected user
      */
-    public function getOne($tag, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
+    public function getOne($tag, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null, $select_option = '*'): ?array
     {
         // retrieve from cache
         if (!$bypassAcls && !$time && $cache && empty($userNameForCheckingACL) && (($cachedPage = $this->getCached($tag)) !== false)) {
@@ -74,7 +74,7 @@ class PageManager
             // load page
             $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
             $page = $this->dbService->loadSingle("
-                SELECT * FROM {$this->dbService->prefixTable('pages')} 
+                SELECT $select_option FROM {$this->dbService->prefixTable('pages')}
                 WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery}
                 LIMIT 1
             ");
@@ -101,6 +101,7 @@ class PageManager
 
         return $page;
     }
+
 
     /**
      * Retrieves the cached version of a page.
@@ -160,8 +161,8 @@ class PageManager
     public function getRevisions($pageTag, $limit = 10000)
     {
         return $this->checkEntriesACL($this->dbService->loadAll("
-            SELECT id, time, user FROM {$this->dbService->prefixTable('pages')} 
-            WHERE tag = '{$this->dbService->escape($pageTag)}' 
+            SELECT id, time, user FROM {$this->dbService->prefixTable('pages')}
+            WHERE tag = '{$this->dbService->escape($pageTag)}'
             ORDER BY time DESC
             LIMIT {$limit}
         "), $pageTag);
@@ -170,7 +171,7 @@ class PageManager
     public function getPreviousRevision($page)
     {
         return $this->checkEntriesACL([$this->dbService->loadSingle("
-            SELECT * FROM {$this->dbService->prefixTable('pages')} 
+            SELECT * FROM {$this->dbService->prefixTable('pages')}
             WHERE tag = '{$this->dbService->escape($page['tag'])}' AND time < '{$page['time']}'
             ORDER BY time DESC
             LIMIT 1
@@ -180,7 +181,7 @@ class PageManager
     public function countRevisions($page)
     {
         return $this->dbService->count("
-            SELECT * FROM {$this->dbService->prefixTable('pages')} 
+            SELECT * FROM {$this->dbService->prefixTable('pages')}
             WHERE tag = '{$this->dbService->escape($page)}'
         ");
     }

@@ -32,7 +32,7 @@ class ListController extends YesWikiController
         $this->fieldFactory = $fieldFactory;
     }
 
-    public function displayAll()
+    public function displayAll($lang = 0)
     {
         if (isset($_POST['imported-list'])) {
             foreach ($_POST['imported-list'] as $listRaw) {
@@ -43,7 +43,7 @@ class ListController extends YesWikiController
             echo '<div class="alert alert-success">' . _t('BAZ_LIST_IMPORT_SUCCESSFULL') . '.</div>';
         }
 
-        $lists = $this->listManager->getAll();
+        $lists = $this->listManager->getAll($lang);
 
         foreach ($lists as $key => $list) {
             $lists[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
@@ -88,7 +88,8 @@ class ListController extends YesWikiController
 
     public function update($id)
     {
-        $list = $this->listManager->getOne($id);
+        $list = $this->listManager->getOne($id, 0, true);
+        dump($list);
 
         if (isset($_POST['submit'])) {
             if ($this->aclService->hasAccess('write', $id)) {
