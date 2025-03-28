@@ -49,40 +49,29 @@ class ListManager
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
     }
 
-    private function convertToArray($list) {
-        $nodes = [];
-        foreach ($list['nodes'] as $key => $node) {
-            $children = [];
-            foreach($node['children'] as $child_key => $child_node) {
-                $child_node['id'] = $child_key;
-                $children[] = $child_node;
-            }
-            $node['children'] = $children;
-            $node['id'] = $key;
-            $nodes[] = $node;
-        };
-        $list['nodes'] = $nodes;
-        return $list;
-    }
-
-    private function convertNodeFromArray($list)
+    private function childrenToArray($children)
     {
-        $nodes = [];
-        foreach($list as $node) {
-            $children = [];
-            foreach($node['children'] as $child) {
-                $children[$child['id']] = [
-                    'label' => $child['label'],
-                    'children' => []
-                    ];
-            }
-            $id = $node['id'];
-            $nodes[$id] = [
+        $children_array = [];
+        foreach ($children as $id => $node) {
+            $children_array[] = [
+                'id' => $id,
                 'label' => $node['label'],
-                'children' => $children
+                'children' => $this->childrenToArray($node['children'])
             ];
         }
-        return $nodes;
+        return $children_array;
+    }
+
+    private function nodeFromArray($children) {
+        $children_object = [];
+        foreach ($children as $child)
+        {
+            $children_object[$child['id']] = [
+                'label' => $child['label'],
+                'children' => $this->nodeFromArray($child['children']),
+            ];
+        }
+        return $children_object;
     }
 
 
@@ -101,7 +90,7 @@ class ListManager
         $page = $this->pageManager->getOne($id);
         $json = json_decode($page['body'], true);
         $json = $this->convertDataStructure($json);
-        $json = $this->convertToArray($json);
+        $json['nodes'] = $this->childrenToArray($json['nodes']);
         $json['id'] = $id;
         $this->cachedLists[$id] = $json;
 
@@ -119,7 +108,6 @@ class ListManager
             foreach ($json['label'] as $id => $label) {
                 $newJson['nodes'][] = ['id' => $id, 'label' => $label];
             }
-
             return $newJson;
         }
 
@@ -138,15 +126,19 @@ class ListManager
         return $result;
     }
 
-    public function create($title, $nodes, $id = null)
+    public function create($title, $nodes, $extra_lang, $id = null)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $id = $id ?? genere_nom_wiki('List' . $title);
+
+        $nodes = $this->nodeFromArray($this->sanitizeHMTL($nodes ?? []));
+
         $this->pageManager->save($id, json_encode([
             'title' => $title,
-            'nodes' => $this->convertNodeFromArray($this->sanitizeHMTL($nodes ?? [])),
+            'nodes' => $nodes,
+            'extra_lang' => $extra_lang,
         ]));
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
@@ -154,15 +146,17 @@ class ListManager
         return $id;
     }
 
-    public function update($id, $title, $nodes)
+    public function update($id, $title, $nodes, $extra_lang)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+        $nodes = $this->nodeFromArray($this->sanitizeHMTL($nodes ?? []));
 
         $this->pageManager->save($id, json_encode([
             'title' => $title,
-            'nodes' =>  $this->convertNodeFromArray($this->sanitizeHMTL($nodes ?? [])),
+            'nodes' => $nodes,
+            'extra_lang' => $extra_lang
         ]));
     }
 

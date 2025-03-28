@@ -56,31 +56,35 @@ new Vue({
       return JSON.stringify(data);
     },
     jsonExtraLangs() {
-      let extra_lang = {};
-      for (let lang of this.extra_langs_list) {
-        extra_lang[lang] = {};
+      const extraLang = {};
+      for (const lang of this.extra_langs_list) {
+        extraLang[lang] = {};
         if (this.extra_langs_titles[lang]) {
-          extra_lang[lang].title = this.extra_langs_titles[lang];
+          extraLang[lang].title = this.extra_langs_titles[lang];
         }
-        extra_lang[lang].nodes = this.getExtraLang(this.rootNode, lang);
+        const nodes = this.getExtraLang(this.rootNode, lang);
+        if (nodes) {
+          extraLang[lang].nodes = nodes.children;
+        }
       }
 
-      return JSON.stringify(extra_lang);
+      return JSON.stringify(extraLang);
     },
   },
   methods: {
     getExtraLang(child, lang) {
-      let node = {};
+      const node = {};
       let empty = true;
       if (child[lang]) {
         empty = false;
         node.label = child[lang];
       }
       if (child.children && child.children.length > 0) {
-        for (let c of child.children) {
-          let subnode = this.getExtraLang(c, lang);
+        node.children = {};
+        for (const c of child.children) {
+          const subnode = this.getExtraLang(c, lang);
           if (subnode != null) {
-            node[c.id] = subnode;
+            node.children[c.id] = subnode;
             empty = false;
           }
         }

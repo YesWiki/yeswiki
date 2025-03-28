@@ -63,7 +63,7 @@ class ListController extends YesWikiController
     public function create()
     {
         if (isset($_POST['submit'])) {
-            $listeId = $this->listManager->create($_POST['title'], json_decode($_POST['nodes'], true));
+            $listeId = $this->listManager->create($_POST['title'], json_decode($_POST['nodes'], true), json_decode($_POST['extra_lang'], true));
 
             if ($this->shouldPostMessageOnSubmit()) {
                 return $this->render('@core/iframe_result.twig', [
@@ -92,7 +92,7 @@ class ListController extends YesWikiController
 
         if (isset($_POST['submit'])) {
             if ($this->aclService->hasAccess('write', $id)) {
-                $this->listManager->update($id, $_POST['title'], json_decode($_POST['nodes'], true));
+                $this->listManager->update($id, $_POST['title'], json_decode($_POST['nodes'], true), json_decode($_POST['extra_lang'], true));
 
                 if ($this->shouldPostMessageOnSubmit()) {
                     return $this->render('@core/iframe_result.twig', [

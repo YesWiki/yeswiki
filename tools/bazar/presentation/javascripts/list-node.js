@@ -69,7 +69,7 @@ export default {
                      :node="childNode" @delete="deleteChildNode" :depth="depth + 1"
                      :index="index"></list-node>
         </draggable>
-        <div class="list-new-node input-group input-prepend">
+        <div class="list-new-node input-group input-prepend" v-if="selected_language == 0">
           <button type="button" @click="addChildNode"
                   class="btn btn-neutral btn-icon input-group-addon btn-add-child" :disabled="selected_language != 0">
             <i class="fa fa-plus"></i>
