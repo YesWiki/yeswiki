@@ -76,7 +76,7 @@ class ListManager
 
 
 
-    public function getOne($id): ?array
+    public function getOne($id, $lang = 0): ?array
     {
         if (isset($this->cachedLists[$id])) {
             return $this->cachedLists[$id];
@@ -133,12 +133,10 @@ class ListManager
         }
         $id = $id ?? genere_nom_wiki('List' . $title);
 
-        $nodes = $this->nodeFromArray($this->sanitizeHMTL($nodes ?? []));
-
         $this->pageManager->save($id, json_encode([
             'title' => $title,
-            'nodes' => $nodes,
-            'extra_lang' => $extra_lang,
+            'nodes' => $this->nodeFromArray($this->sanitizeHMTL($nodes ?? [])),
+            '__extra_lang' => $extra_lang = array_map($this->sanitizeHMTL, $extra_lang),
         ]));
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
@@ -152,11 +150,12 @@ class ListManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $nodes = $this->nodeFromArray($this->sanitizeHMTL($nodes ?? []));
+        $extra_lang = array_map($this->sanitizeHMTL, $extra_lang);
 
         $this->pageManager->save($id, json_encode([
             'title' => $title,
-            'nodes' => $nodes,
-            'extra_lang' => $extra_lang
+            'nodes' => $this->nodeFromArray($this->sanitizeHMTL($nodes ?? [])),
+            '__extra_lang' => $extra_lang = array_map($this->sanitizeHMTL, $extra_lang),
         ]));
     }
 
