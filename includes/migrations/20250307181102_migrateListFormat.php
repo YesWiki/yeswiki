@@ -55,7 +55,12 @@ class migrateListFormat extends YesWikiMigration
         $insert_query = 'insert into lists (id, body) values ';
 
         foreach ($new_lists as $key => $value) {
-            $insert_query .= '( '.$key.",'".json_encode($value)."'),";
+            dump($key);
+            dump($value);
+            $json = json_encode($value);
+            $json = str_replace('\\', '\\\\', $json);
+            $json = str_replace("'", "\'", $json);
+            $insert_query .= '( '.$key.",'".$json."'),";
         }
         $insert_query = rtrim($insert_query, ',');
 
