@@ -89,7 +89,6 @@ class ListController extends YesWikiController
     public function update($id)
     {
         $list = $this->listManager->getOne($id, 0, true);
-        dump($list);
 
         if (isset($_POST['submit'])) {
             if ($this->aclService->hasAccess('write', $id)) {
@@ -111,6 +110,8 @@ class ListController extends YesWikiController
 
         return $this->render('@bazar/lists/list_form.twig', [
             'list' => $list,
+            'default_language' => $GLOBALS['default_language'] ?? 'fr',
+            'extra_lang' => $GLOBALS['wiki']->config['extra_lang'] ?? [],
         ]);
     }
 

@@ -249,6 +249,7 @@ return [
     'BAZ_FORM_EMPTY_GEOLOC' => 'You need to geolocate the address',
     'BAZ_FORM_EDIT_SELECT_LIST_FORM_ID' => 'List / form selection',
     'BAZ_FORM_EDIT_EMAIL_SEND_CONTENT' => 'Send entry content to this email address',
+    'BAZ_TRANSLATION' => 'Translation',
     'BAZ_BOOKMARKLET_HINT' => 'This field requires two other fields to function  :{br}
   - a url field ( by defaut "bf_url"){br}
   - a long text field ( by defaut "bf_description")',

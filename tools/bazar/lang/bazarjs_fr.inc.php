@@ -276,4 +276,5 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'LIST_ADD_CHILD_NODE' => 'Ajouter une sous valeur',
     'LIST_ERROR_MISSING_IDS' => "Certaines valeurs n'ont pas de clé associée",
     'LIST_ERROR_DUPLICATES_IDS' => 'Chaque clé doit être unique. Ces clés sont utilisées plusieurs fois : ',
+    'BAZ_TRANSLATION' => 'Traduction',
 ];

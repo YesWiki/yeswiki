@@ -374,6 +374,8 @@ return [
     'EVENT_UP_TO_DATE' => 'Until:',
     'EVENTS_WHEN_IN_MONTH' => 'When was the month?',
     'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'There\'s no record for this period.',
+    'BAZ_MAIN_LANGUAGE' => 'Langue principale',
+    'BAZ_TRANSLATE_IN' => 'Translate to',
     'EDIT_CONFIG_HINT_BAZ_ENVOI_MAIL_ADMIN' => 'Send an email to admininstrators at each file change (true or false)',
     'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'Allow the creation of files even if the wiki is closed in writing (true or false)',
     'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => 'The email provided is already associated with a YesWiki account! Please enter another e-mail address or sign in to this account.',
