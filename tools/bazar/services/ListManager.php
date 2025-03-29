@@ -163,13 +163,11 @@ class ListManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $nodes = $this->nodeFromArray($this->sanitizeHMTL($nodes ?? []));
-        $extra_lang = array_map($this->sanitizeHMTL, $extra_lang);
 
         $this->pageManager->save($id, json_encode([
             'title' => $title,
             'nodes' => $this->nodeFromArray($this->sanitizeHMTL($nodes ?? [])),
-            '__extra_lang' => $extra_lang = array_map($this->sanitizeHMTL, $extra_lang),
+            '__extra_lang' => array_map($this->sanitizeHMTL, $extra_lang),
         ]));
     }
 
