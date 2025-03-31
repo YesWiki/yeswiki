@@ -61,6 +61,10 @@ class ListManager
         }
 
         $page = $this->pageManager->getOne($id);
+        if (empty($page)) {
+            echo '<div class="alert alert-danger">List id not found: '.$id.'</div>';
+            return null;
+        }
         $data = $this->loadJson($page['body'], $id);
         $this->cachedLists[$id] = $data;
 
