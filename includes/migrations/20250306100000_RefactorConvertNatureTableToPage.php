@@ -1,4 +1,4 @@
-<?php
+,<?php
 
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\PageManager;
@@ -7,7 +7,7 @@ use YesWiki\Core\YesWikiMigration;
 
 class RefactorConvertNatureTableToPage extends YesWikiMigration
 {
-    public function run()
+   public function run()
     {
         $formManager = $this->getService(FormManager::class);
         $pageManager = $this->getService(PageManager::class);
@@ -15,8 +15,21 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
         $forms = $formManager->getAll();
         foreach ($forms as $form) {
             $form_array = [];
+            $counter = 0;
             foreach ($form['prepared'] as $i => $fields) {
-                $form_array[$i] = json_decode(json_encode($fields), true);
+                $fields = json_decode(json_encode($fields), true);
+                dump($fields);
+                if (isset($fields['id'])) {
+                    $field_id = $fields['id'];
+                    unset($fields['id']);
+                } else {
+                    $field_id = $fields['type'].'__'.$counter;
+                    $counter++;
+                }
+            if (isset($fields['options'])) {
+                unset($fields['options']);
+            }
+                $form_array[$field_id] = $fields;
                 unset($form_array[$i]['propertyname']);
             }
             $id = genere_nom_wiki($form['bn_label_nature']);
@@ -34,8 +47,7 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
                 'only_one_entry_message' => $form['bn_only_one_entry_message'],
                 'fields' => $form_array,
             ];
-
-            $saved = $pageManager->save($id, json_encode($newform));
+            $saved = $pageManager->save($id, json_encode($newform), '', true);
             if ($saved == 0) {
                 $tripleStore->create(
                     $id,
