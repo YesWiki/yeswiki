@@ -59,4 +59,5 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
             }
         }
     }
+
 }
