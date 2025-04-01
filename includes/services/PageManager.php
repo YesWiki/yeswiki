@@ -53,6 +53,11 @@ class PageManager
         $this->pageCache = [];
     }
 
+    public function getPageType($tag): string
+    {
+        return $this->tripleStore->getOne($tag, 'http://outils-reseaux.org/_vocabulary/type', '', '') ?? 'page';
+    }
+
     /**
      * @param string      $tag                    name of the page
      * @param string|null $time                   choose only the page's revision corresponding to time, null = latest revision
@@ -101,7 +106,6 @@ class PageManager
 
         return $page;
     }
-
 
     /**
      * Retrieves the cached version of a page.
@@ -378,7 +382,7 @@ class PageManager
             // use forcedDate is present
             $time = 'now()';
             if (!empty($forcedDate)) {
-                $time = '"'.$forcedDate.'"';
+                $time = '"' . $forcedDate . '"';
             }
 
             // add new revision
