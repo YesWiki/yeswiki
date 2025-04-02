@@ -45,7 +45,7 @@ export default {
         </button>
         <!-- Label -->
         <input type="text" v-model="node.label" placeholder="${_t('LIST_TEXT')}"
-              class="form-control main_lang_input" @keydown.enter.prevent :disabled="selected_language != 0"/>
+              class="form-control main_lang_input" @keydown.enter.prevent :disabled="selected_language != 'default'"/>
         <!-- translation label -->
 
               <input v-for="lang in extra_langs_list" v-model="node[lang]" type="text" class="form-control extra_lang_input" placeholder="${_t('BAZ_TRANSLATION')}" v-if="selected_language === lang"/>
@@ -55,28 +55,28 @@ export default {
         </div>
         <input type="text" v-model="node.id" placeholder="${_t('LIST_KEY')}"
               class="form-control input-id" :class="{ error: !node.id }"
-              @keydown.enter.prevent :disabled="selected_language != 0" />
+              @keydown.enter.prevent :disabled="selected_language != 'default'" />
         <!-- Delete Icon -->
-        <button type="button" @click="$emit('delete', node)" :disabled="selected_language != 0"
+        <button type="button" @click="$emit('delete', node)" :disabled="selected_language != 'default'"
                 class="btn btn-danger btn-icon input-group-addon">
           <i class="fa fa-trash icon-trash"></i>
         </button>
       </div>
       <div v-show="depth == 0 || expanded" class="list-node-children"
            :class="{root: depth == 0, first: depth == 0 && node.children.length == 0}">
-        <draggable v-model="node.children" group="nodes" :disabled="selected_language != 0">
+        <draggable v-model="node.children" group="nodes" :disabled="selected_language != 'default'">
           <list-node v-for="(childNode, index) in node.children" :extra_langs_list="extra_langs_list" :selected_language="selected_language" :key="childNode.vueRef"
                      :node="childNode" @delete="deleteChildNode" :depth="depth + 1"
                      :index="index"></list-node>
         </draggable>
-        <div class="list-new-node input-group input-prepend" v-if="selected_language == 0">
+        <div class="list-new-node input-group input-prepend" v-if="selected_language == 'default'">
           <button type="button" @click="addChildNode"
-                  class="btn btn-neutral btn-icon input-group-addon btn-add-child" :disabled="selected_language != 0">
+                  class="btn btn-neutral btn-icon input-group-addon btn-add-child" :disabled="selected_language != 'default'">
             <i class="fa fa-plus"></i>
           </button>
           <input type="text" v-model="newNodeLabel"
                  :placeholder="depth > 0 ? '${_t('LIST_ADD_CHILD_NODE')}' : '${_t('LIST_ADD_NODE')}'"
-                 class="form-control" @keydown.enter.prevent="addChildNode" :disabled="selected_language != 0"/>
+                 class="form-control" @keydown.enter.prevent="addChildNode" :disabled="selected_language != 'default'"/>
 
         </div>
 

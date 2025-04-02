@@ -32,7 +32,7 @@ class ListController extends YesWikiController
         $this->fieldFactory = $fieldFactory;
     }
 
-    public function displayAll($lang = 0)
+    public function displayAll($lang = "default")
     {
         if (isset($_POST['imported-list'])) {
             foreach ($_POST['imported-list'] as $listRaw) {
@@ -63,7 +63,7 @@ class ListController extends YesWikiController
     public function create()
     {
         if (isset($_POST['submit'])) {
-            $listeId = $this->listManager->create($_POST['title'], json_decode($_POST['nodes'], true), json_decode($_POST['extra_lang'], true));
+            $listeId = $this->listManager->create($_POST['title'], json_decode($_POST['nodes'], true), null, json_decode($_POST['extra_lang'], true));
 
             if ($this->shouldPostMessageOnSubmit()) {
                 return $this->render('@core/iframe_result.twig', [
@@ -88,7 +88,7 @@ class ListController extends YesWikiController
 
     public function update($id)
     {
-        $list = $this->listManager->getOne($id, 0, true);
+        $list = $this->listManager->getOne($id, 'all');
 
         if (isset($_POST['submit'])) {
             if ($this->aclService->hasAccess('write', $id)) {

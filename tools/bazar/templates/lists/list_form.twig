@@ -11,7 +11,7 @@
 			{{ _t('BAZ_TRANSLATE_IN') }}
 		</label>
           <select v-model="selected_language" @change="onLangChange" class="form-control input-sm" id="lang">
-            <option selected value="0">{{ _t('BAZ_MAIN_LANGUAGE') }}({{ default_language }})</option>
+            <option selected value="default">{{ _t('BAZ_MAIN_LANGUAGE') }} ({{ default_language }})</option>
             {{ extra_lang}}
             {% for lang in extra_lang %}
             <option value="{{ lang }}"> {{ lang }} </option>
@@ -25,8 +25,8 @@
 			{{ _t('BAZ_LIST_NAME') }}
 		</label>
 		<div class="controls input-group col-sm-9">
-			<input type="text" v-model="title" name="title"
-			       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="form-control" required/>
+			<input id="listTitle" type="text" v-model="title" name="title"
+			       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="form-control" :disabled="selected_language != 'default'" required/>
 			<input v-for="lang in extra_langs_list" v-model="extra_langs_titles[lang]" type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selected_language === lang"/>
 
 		</div>

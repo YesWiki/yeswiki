@@ -56,7 +56,7 @@ class ListManager
             $children_array[] = [
                 'id' => $id,
                 'label' => $node['label'],
-                'children' => $this->childrenToArray($node['children'] ?? [])
+                'children' => $this->childrenToArray($node['children'] ?? [],)
             ];
         }
         return $children_array;
@@ -74,13 +74,22 @@ class ListManager
         return $children_object;
     }
 
-    public function getOne($id, $lang = 0, $all_language = false,): ?array
+
+    /**
+     * Retrieve list from database.
+     * @param $id : id of the list to retriev
+     * @param $lang : extra param pour get translated list. Can be :
+     *   - Code of lang to retrieve
+     *   - "default" : get list with only default wiki language
+     *  - "all" : same as default but keep all translation. Useful for edition page to translate the list.
+     */
+    public function getOne($id, $lang = 'default'): ?array
     {
-        if ($lang == 0 and isset($_GET['lang'])) {
+        if ($lang === 'default' and isset($_GET['lang'])) {
             $lang = $_GET['lang'];
         }
         $lang_id = $id;
-        if ($lang != 0) {
+        if ($lang != 'default') {
             $lang_id .= '_'.$lang;
         }
         if (isset($this->cachedLists[$lang_id])) {
@@ -92,16 +101,15 @@ class ListManager
             return null;
         }
 
-        if (!$all_language and $lang != 0) {
-            $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.__extra_lang.$lang\"), body)) as body";
-        } else {
+        if ($lang === 'all' || $lang === 'default') {
             $select_options = '*';
+        } else {
+            $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.__extra_lang.$lang\"), body)) as body";
         }
-
         $page = $this->pageManager->getOne($id, null, true, false, null, $select_options);
         $json = json_decode($page['body'], true);
         $json = $this->convertDataStructure($json);
-        if (!$all_language) {
+        if ($lang != 'all') {
             unset($json['__extra_lang']);
         }
         $json['nodes'] = $this->childrenToArray($json['nodes']);
@@ -128,7 +136,7 @@ class ListManager
         return $json;
     }
 
-    public function getAll($lang = 0): array
+    public function getAll($lang = "default"): array
     {
         $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
@@ -140,18 +148,14 @@ class ListManager
         return $result;
     }
 
-    public function create($title, $nodes, $extra_lang, $id = null)
+    public function create($title, $nodes, $id = null, $extra_lang = [],)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $id = $id ?? genere_nom_wiki('List' . $title);
 
-        $this->pageManager->save($id, json_encode([
-            'title' => $title,
-            'nodes' => $this->nodeFromArray($this->sanitizeHMTL($nodes ?? [])),
-            '__extra_lang' => $extra_lang = array_map($this->sanitizeHMTL, $extra_lang),
-        ]));
+        $this->pageManager->save($id, json_encode($this->sanitizeList($title, $nodes, $extra_lang)));
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
@@ -164,11 +168,7 @@ class ListManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $this->pageManager->save($id, json_encode([
-            'title' => $title,
-            'nodes' => $this->nodeFromArray($this->sanitizeHMTL($nodes ?? [])),
-            '__extra_lang' => array_map($this->sanitizeHMTL, $extra_lang),
-        ]));
+        $this->pageManager->save($id, json_encode($this->sanitizeList($title, $nodes, $extra_lang)));
     }
 
     public function delete($id)
@@ -189,11 +189,32 @@ class ListManager
         $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
     }
 
-    private function sanitizeHMTL(array $nodes)
+    private function sanitizeList($title, $nodes, $extra_lang) {
+        $list = [];
+        $list['title'] = $title;
+        $list['nodes'] = $this->nodeFromArray($this->sanitizeHTML($nodes ?? []));
+        $list['__extra_lang'] = [];
+        foreach($extra_lang as $lang => $value) {
+            $list['__extra_lang'][$lang] = [];
+            if (isset($value['title']))
+            {
+                $list['__extra_lang'][$lang]['title'] = $value['title'];
+            }
+            if (isset($value['nodes']))
+            {
+                $list['__extra_lang'][$lang]['nodes'] = $this->sanitizeHTML($value['nodes']);
+            }
+        }
+        return $list;
+    }
+
+    private function sanitizeHTML(array $nodes)
     {
         return array_map(function ($node) {
-            $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
-            $node['children'] = $this->sanitizeHMTL($node['children'] ?? []);
+            if (isset($node['label'])) {
+                $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
+            }
+            $node['children'] = $this->sanitizeHTML($node['children'] ?? []);
 
             return $node;
         }, $nodes);

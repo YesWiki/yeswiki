@@ -12,7 +12,7 @@ new Vue({
     },
     allIds: [],
     nodeCreated: 0,
-    selected_language: '0',
+    selected_language: 'default',
     extra_langs: {},
     current_title: '',
     extra_langs_list: [],
@@ -25,24 +25,25 @@ new Vue({
     const extra_langs = list.__extra_lang || [];
     this.extra_langs_list = JSON.parse(this.$el.dataset.extra_lang);
     // vueRef is used to give a unique and fixed ID to each node
-    for (let lang in extra_langs) {
+    for (const lang in extra_langs) {
       this.extra_langs_titles[lang] = extra_langs[lang].title ?? '';
-      extra_langs[lang]['children'] = extra_langs[lang]['nodes'];
-      delete extra_langs[lang]['nodes'];
+      extra_langs[lang].children = extra_langs[lang].nodes;
+      delete extra_langs[lang].nodes;
     }
     this.extra_langs = extra_langs;
     nodes.forEach((node) => this.addVueRefProp(node));
     nodes.forEach((node) => {
-      for (let lang in this.extra_langs) {
+      for (const lang in this.extra_langs) {
         if (
           this.extra_langs[lang].children &&
           this.extra_langs[lang].children[node.id]
-        )
+        ) {
           this.MergeTranslations(
             node,
             lang,
             this.extra_langs[lang].children[node.id],
           );
+        }
       }
     });
     this.rootNode.children = nodes;
@@ -97,11 +98,11 @@ new Vue({
       }
       if (!empty) {
         return node;
-      } else {
-        return null;
       }
+      return null;
     },
     onSubmit(event) {
+      document.getElementById('listTitle').disabled = false;
       // check for id presence and uniquness
       this.allIds = [];
       this.collectIds(this.rootNode);
@@ -149,7 +150,7 @@ new Vue({
       if (translations.label) {
         node[lang] = translations.label;
       }
-      for (let child of node.children) {
+      for (const child of node.children) {
         if (translations.children && translations.children[child.id]) {
           this.MergeTranslations(child, lang, translations.children[child.id]);
         }
