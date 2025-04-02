@@ -1,4 +1,4 @@
-import ListNode from './list-node.js';
+import ListNode from './list-node.js'
 
 new Vue({
   el: '.list-form',
@@ -8,7 +8,7 @@ new Vue({
     rootNode: {
       id: '@root@',
       vueRef: '@root@',
-      children: [],
+      children: []
     },
     allIds: [],
     nodeCreated: 0,
@@ -16,145 +16,143 @@ new Vue({
     extra_langs: {},
     current_title: '',
     extra_langs_list: [],
-    extra_langs_titles: {},
+    extra_langs_titles: {}
   },
   mounted() {
-    const list = JSON.parse(this.$el.dataset.list);
-    this.title = list.title;
-    const nodes = list.nodes || [];
-    const extra_langs = list.__extra_lang || [];
-    this.extra_langs_list = JSON.parse(this.$el.dataset.extra_lang);
+    const list = JSON.parse(this.$el.dataset.list)
+    this.title = list.title
+    const nodes = list.nodes || []
+    const extraLangs = list.__extra_lang || []
+    this.extra_langs_list = JSON.parse(this.$el.dataset.extra_lang)
     // vueRef is used to give a unique and fixed ID to each node
-    for (const lang in extra_langs) {
-      this.extra_langs_titles[lang] = extra_langs[lang].title ?? '';
-      extra_langs[lang].children = extra_langs[lang].nodes;
-      delete extra_langs[lang].nodes;
+    for (const lang in extraLangs) {
+      this.extra_langs_titles[lang] = extraLangs[lang].title ?? ''
+      extraLangs[lang].children = extraLangs[lang].nodes
+      delete extraLangs[lang].nodes
     }
-    this.extra_langs = extra_langs;
-    nodes.forEach((node) => this.addVueRefProp(node));
+    this.extra_langs = extraLangs
+    nodes.forEach((node) => this.addVueRefProp(node))
     nodes.forEach((node) => {
       for (const lang in this.extra_langs) {
         if (
-          this.extra_langs[lang].children &&
-          this.extra_langs[lang].children[node.id]
+          this.extra_langs[lang].children
+          && this.extra_langs[lang].children[node.id]
         ) {
           this.MergeTranslations(
             node,
             lang,
-            this.extra_langs[lang].children[node.id],
-          );
+            this.extra_langs[lang].children[node.id]
+          )
         }
       }
-    });
-    this.rootNode.children = nodes;
+    })
+    this.rootNode.children = nodes
   },
   computed: {
     jsonNodes() {
-      const data = this.rootNode.children.map((child) =>
-        this.removeVueRefProps({ ...child }),
-      );
+      const data = this.rootNode.children.map((child) => this.removeVueRefProps({ ...child }))
 
-      return JSON.stringify(data);
+      return JSON.stringify(data)
     },
     jsonExtraLangs() {
-      const extraLang = {};
-      let hasData = false;
+      const extraLang = {}
+      let hasData = false
       for (const lang of this.extra_langs_list) {
-        extraLang[lang] = {};
+        extraLang[lang] = {}
         if (this.extra_langs_titles[lang]) {
-          extraLang[lang].title = this.extra_langs_titles[lang];
-          hasData = true;
+          extraLang[lang].title = this.extra_langs_titles[lang]
+          hasData = true
         }
-        const nodes = this.getExtraLang(this.rootNode, lang);
+        const nodes = this.getExtraLang(this.rootNode, lang)
         if (nodes) {
-          extraLang[lang].nodes = nodes.children;
-          hasData = true;
+          extraLang[lang].nodes = nodes.children
+          hasData = true
         }
         if (!hasData) {
-          delete extraLang[lang];
+          delete extraLang[lang]
         }
       }
 
-      return JSON.stringify(extraLang);
-    },
+      return JSON.stringify(extraLang)
+    }
   },
   methods: {
     getExtraLang(child, lang) {
-      const node = {};
-      let empty = true;
+      const node = {}
+      let empty = true
       if (child[lang]) {
-        empty = false;
-        node.label = child[lang];
+        empty = false
+        node.label = child[lang]
       }
       if (child.children && child.children.length > 0) {
-        node.children = {};
+        node.children = {}
         for (const c of child.children) {
-          const subnode = this.getExtraLang(c, lang);
+          const subnode = this.getExtraLang(c, lang)
           if (subnode != null) {
-            node.children[c.id] = subnode;
-            empty = false;
+            node.children[c.id] = subnode
+            empty = false
           }
         }
       }
       if (!empty) {
-        return node;
+        return node
       }
-      return null;
+      return null
     },
     onSubmit(event) {
-      document.getElementById('listTitle').disabled = false;
+      document.getElementById('listTitle').disabled = false
       // check for id presence and uniquness
-      this.allIds = [];
-      this.collectIds(this.rootNode);
+      this.allIds = []
+      this.collectIds(this.rootNode)
       if (this.allIds.some((id) => !id)) {
-        toastMessage(_t('LIST_ERROR_MISSING_IDS'), 4000, 'alert alert-danger');
-        event.preventDefault();
+        toastMessage(_t('LIST_ERROR_MISSING_IDS'), 4000, 'alert alert-danger')
+        event.preventDefault()
       }
       const duplicatesIds = this.allIds.filter(
-        (item, index) => this.allIds.indexOf(item) !== index,
-      );
+        (item, index) => this.allIds.indexOf(item) !== index
+      )
       if (duplicatesIds.length > 0) {
         toastMessage(
           _t('LIST_ERROR_DUPLICATES_IDS') + duplicatesIds.join(', '),
           8000,
-          'alert alert-danger',
-        );
-        event.preventDefault();
+          'alert alert-danger'
+        )
+        event.preventDefault()
       }
     },
     collectIds(node) {
-      this.allIds.push(node.id);
-      node.children.forEach((childNode) => this.collectIds(childNode));
+      this.allIds.push(node.id)
+      node.children.forEach((childNode) => this.collectIds(childNode))
     },
-    onLangChange(event) {
-      if (this.selected_language != '0') {
+    onLangChange() {
+      if (this.selected_language !== 'default') {
         if (!this.extra_langs[this.selected_language]) {
-          this.extra_langs[this.selected_language] = {};
+          this.extra_langs[this.selected_language] = {}
         }
-        this.current_title = this.extra_langs_titles[this.selected_language];
+        this.current_title = this.extra_langs_titles[this.selected_language]
       }
     },
     addVueRefProp(node) {
-      node.vueRef = node.id;
-      node.children ||= [];
-      node.children.forEach((childNode) => this.addVueRefProp(childNode));
+      node.vueRef = node.id
+      node.children ||= []
+      node.children.forEach((childNode) => this.addVueRefProp(childNode))
     },
     removeVueRefProps(node) {
-      delete node.vueRef;
+      delete node.vueRef
       node.children = node.children.map((child) =>
-        this.removeVueRefProps({ ...child }),
-      );
-      return node;
+        this.removeVueRefProps({ ...child })
+      )
+      return node
     },
     MergeTranslations(node, lang, translations) {
       if (translations.label) {
-        node[lang] = translations.label;
+        node[lang] = translations.label
       }
       for (const child of node.children) {
         if (translations.children && translations.children[child.id]) {
-          this.MergeTranslations(child, lang, translations.children[child.id]);
+          this.MergeTranslations(child, lang, translations.children[child.id])
         }
       }
-    },
-  },
-});
+    }
+  }
+})
