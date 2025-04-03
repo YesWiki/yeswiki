@@ -417,6 +417,7 @@ class FormManager
                     $prepared[$i] = $classField;
                 }
             }
+            //$prepared[$i]['field_type'] = get_class($classField);
             $i++;
         }
 

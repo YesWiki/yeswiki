@@ -39,6 +39,15 @@ class TextField extends BazarField
         }
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_PATTERN] = $fieldProps['pattern'];
+        $new[self::FIELD_SUB_TYPE] = $fieldProps['subType'];
+        ksort($new);
+        return $new;
+    }
+
     protected function renderInput($entry)
     {
         // Handling all subtypes (url, number) in the text.twig

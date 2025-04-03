@@ -65,6 +65,25 @@ abstract class BazarField implements \JsonSerializable
         $this->propertyName = $values[self::FIELD_NAME];
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = [
+            self::FIELD_TYPE => $fieldProps['type'],
+            self::FIELD_NAME => $fieldProps['name'],
+            self::FIELD_LABEL => $fieldProps['label'],
+            self::FIELD_SIZE => $fieldProps['size'],
+            self::FIELD_MAX_CHARS => $fieldProps['maxChars'],
+            self::FIELD_DEFAULT => $fieldProps['default'],
+            self::FIELD_REQUIRED => $fieldProps['required'],
+            self::FIELD_SEARCHABLE => $fieldProps['searchable'],
+            self::FIELD_HINT => $fieldProps['helper'],
+            self::FIELD_READ_ACCESS => $fieldProps['read_acl'],
+            self::FIELD_WRITE_ACCESS => $fieldProps['write_acl'],
+            self::FIELD_SEMANTIC_PREDICATE => $fieldProps['sem_type'],
+        ];
+        return $new;
+    }
+
     /**
      * Render the edit view of the field. Check ACLS first.
      *

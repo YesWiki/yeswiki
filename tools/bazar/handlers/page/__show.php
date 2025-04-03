@@ -2,9 +2,12 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Bazar\Service\FieldFactory;
+use YesWiki\Bazar\Field\TextField;
 
 $entryManager = $this->services->get(EntryManager::class);
 $pageManager = $this->services->get(PageManager::class);
+$fieldFactory = $this->services->get(FieldFactory::class);
 
 if ($pageManager->getPageType($this->GetPageTag()) === 'fiche_bazar' && $this->HasAccess('read')) {
     if (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
@@ -24,6 +27,9 @@ if ($pageManager->getPageType($this->GetPageTag()) === 'fiche_bazar' && $this->H
 if ($pageManager->getPageType($this->GetPageTag()) === 'form' && $this->HasAccess('read')) {
     $tab = json_decode($this->page['body'], true);
     foreach ($tab['fields'] as $key => $field) {
-        dump($key, $field);
+        ksort($field);
+        $newfield = json_decode(json_encode($fieldFactory->create(YesWiki\Bazar\Field\TextField::mapToFieldArray($field))), true);
+        ksort($newfield);
+        dump($field, $newfield);
     }
 }

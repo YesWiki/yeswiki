@@ -7,7 +7,7 @@ use YesWiki\Core\YesWikiMigration;
 
 class RefactorConvertNatureTableToPage extends YesWikiMigration
 {
-   public function run()
+    public function run()
     {
         $formManager = $this->getService(FormManager::class);
         $pageManager = $this->getService(PageManager::class);
@@ -17,18 +17,21 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
             $form_array = [];
             $counter = 0;
             foreach ($form['prepared'] as $i => $fields) {
+                $classType = get_class($fields);
                 $fields = json_decode(json_encode($fields), true);
                 dump($fields);
                 if (isset($fields['id'])) {
                     $field_id = $fields['id'];
                     unset($fields['id']);
                 } else {
-                    $field_id = $fields['type'].'__'.$counter;
+                    $field_id = $fields['type'] . '__' . $counter;
                     $counter++;
                 }
-            if (isset($fields['options'])) {
-                unset($fields['options']);
-            }
+                if (isset($fields['options'])) {
+                    unset($fields['options']);
+                }
+                $fieldExploded = explode('\\', $classType);
+                $fields['field_type'] = array_pop($fieldExploded);
                 $form_array[$field_id] = $fields;
                 unset($form_array[$i]['propertyname']);
             }
@@ -59,5 +62,4 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
             }
         }
     }
-
 }
