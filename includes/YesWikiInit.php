@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ArchiveService;
+use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\YesWikiEventCompilerPass;
 
 // TODO put elsewhere
@@ -36,7 +37,7 @@ class Init
     public $page = '';
     public $method = '';
     public $config = [];
-    public $configFile = 'wakka.config.php';
+    public $configFile;
 
     /**
      * Create a new Init instance.
@@ -47,6 +48,8 @@ class Init
      */
     public function __construct($config = [])
     {
+        $this->configFile = ConfigurationFileProvider::getWakkaConfigFileFromEnvironement();
+
         $this->getRoute();
         $this->config = $this->getConfig($config);
         $this->setIframeHeaders();
