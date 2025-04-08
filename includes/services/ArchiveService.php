@@ -638,7 +638,7 @@ class ArchiveService
         string $inputFile = '',
         string $outputFile = ''
     ) {
-        if (!file_exists('index.php') || !file_exists('wakka.config.php') || !file_exists('composer.json') || !file_exists('composer.lock')) {
+        if (!file_exists('index.php') || !file_exists(ConfigurationFileProvider::getWakkaConfigFileFromEnvironement()) || !file_exists('composer.json') || !file_exists('composer.lock')) {
             throw new Exception('Can only be started from main directory');
         }
         $pathToArchive = getcwd();
@@ -674,7 +674,7 @@ class ArchiveService
                         if ($file != '.' && $file != '..') {
                             $localName = $dir . DIRECTORY_SEPARATOR . $file;
                             $relativeName = (empty($baseDirName) ? '' : "$baseDirName/") . $file;
-                            if (empty($baseDirName) && $file == 'wakka.config.php') {
+                            if (empty($baseDirName) && $file == ConfigurationFileProvider::getWakkaConfigFileFromEnvironement()) {
                                 $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($whitelistedRootFolders, $blacklistedRootFolders, $hideConfigValuesParams));
                             } elseif (is_file($localName)) {
                                 $zip->addFile($localName, $relativeName);
@@ -900,7 +900,7 @@ class ArchiveService
     private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
         // get wakka.config.php content
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getWakkaConfigFileFromEnvironement());
         $config->load();
         if (
             !isset($config[self::PARAMS_KEY_IN_WAKKA]) ||
@@ -949,7 +949,7 @@ class ArchiveService
 
     protected function setWikiStatus()
     {
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getWakkaConfigFileFromEnvironement());
         $config->load();
         $config['wiki_status'] = 'archiving';
         $this->configurationService->write($config);
@@ -957,7 +957,7 @@ class ArchiveService
 
     protected function unsetWikiStatus()
     {
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getWakkaConfigFileFromEnvironement());
         $config->load();
         unset($config['wiki_status']);
         $this->configurationService->write($config);
