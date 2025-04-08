@@ -34,6 +34,7 @@ robots.txt
 # YesWiki stuff
 .env
 wakka.config.php
+wakka.config.test.php
 info.php
 cache/*
 !cache/README.md
