@@ -27,6 +27,10 @@ class ApiController extends YesWikiController
      */
     public function addCustomCSSPreset($presetFilename)
     {
+        $fileParts = pathinfo($presetFilename);
+        if (strtolower($fileParts['extension']) !== 'css') {
+            return new ApiResponse(['code' => 400, 'message' => 'Wrong filename extension, should be .css'], 400);
+        }
         $result = $this->getService(ThemeManager::class)->addCustomCSSPreset($presetFilename, $_POST);
         $code = ($result['status'])
             ? 200 // 'OK'
