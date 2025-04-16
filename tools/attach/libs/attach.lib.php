@@ -405,9 +405,9 @@ if (!class_exists('attach')) {
         public function CheckParams()
         {
             // recuperation des parametres necessaire
-            $this->file = $this->wiki->GetParameter('attachfile');
+            $this->file = htmlspecialchars($this->wiki->GetParameter('attachfile'));
             if (empty($this->file)) {
-                $this->file = $this->wiki->GetParameter('file');
+                $this->file = htmlspecialchars($this->wiki->GetParameter('file'));
             }
 
             $this->desc = $this->wiki->GetParameter('attachdesc');
@@ -723,15 +723,19 @@ if (!class_exists('attach')) {
          */
         public function showUploadForm()
         {
-            $this->file = $_GET['file'];
-            echo '<h3>' . _t('ATTACH_UPLOAD_FORM_FOR_FILE') . ' ' . $this->file . "</h3>\n";
-            echo '<form enctype="multipart/form-data" name="frmUpload" method="POST" action="' . $this->wiki->href('upload', $this->wiki->GetPageTag()) . "\">\n"
+            $this->file = realpath(filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+            if (!empty($this->file)) {
+                echo '<h3>' . _t('ATTACH_UPLOAD_FORM_FOR_FILE') . ' ' . $this->file . "</h3>\n";
+                echo '<form enctype="multipart/form-data" name="frmUpload" method="POST" action="' . $this->wiki->href('upload', $this->wiki->GetPageTag()) . "\">\n"
                 . '	<input type="hidden" name="wiki" value="' . $this->wiki->GetPageTag() . "/upload\" />\n"
                 . '	<input type="hidden" name="MAX_FILE_SIZE" value="' . $this->attachConfig['max_file_size'] . "\" />\n"
                 . "	<input type=\"hidden\" name=\"file\" value=\"$this->file\" />\n"
                 . "	<input type=\"file\" name=\"upFile\" size=\"50\" /><br />\n"
                 . '	<input class="btn btn-primary" type="submit" value="' . _t('ATTACH_SAVE') . "\" />\n"
                 . "</form>\n";
+            } else {
+                echo '<div class="alert alert-danger">No valid filename</div>';
+            }
         }
 
         /**
@@ -741,7 +745,7 @@ if (!class_exists('attach')) {
         {
             $this->file = $_POST['file'];
             $pathinfo = pathinfo($this->file);
-            $ext = strtolower($pathinfo['extension']);
+            $ext = strtolower($pathinfo['extension'] ?? '');
             if ($this->wiki->config['authorized-extensions'] && !in_array($ext, array_keys($this->wiki->config['authorized-extensions']))) {
                 $_FILES['upFile']['error'] = 5;
             }
