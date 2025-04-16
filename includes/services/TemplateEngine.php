@@ -109,6 +109,9 @@ class TemplateEngine
 
             return '';
         });
+        $this->addTwigHelper('int', function ($content) {
+            return (int)$content;
+        });
         $this->addTwigHelper('_t', function ($key, $params = []) {
             return html_entity_decode(_t($key, $params));
         });
