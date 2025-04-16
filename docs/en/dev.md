@@ -575,7 +575,7 @@ to
 
 ```php
 /**
- * @Route("/api/myroute",options={"acl":{"public","@mygroup"}})
+ * @Route("/api/myroute",options={"acl":{"@mygroup"}})
  */
 ```
 
