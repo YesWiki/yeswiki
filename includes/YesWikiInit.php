@@ -339,7 +339,6 @@ class Init
                 new AnnotationReader()
             )
         );
-
         // Core controllers
         $routes->addCollection($loader->load('includes/controllers'));
 

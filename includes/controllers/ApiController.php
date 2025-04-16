@@ -133,7 +133,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users/{userId}/delete",methods={"POST"}, options={"acl":{"public","@admins"}})
+     * @Route("/api/users/{userId}/delete",methods={"POST"}, options={"acl":{"@admins"}})
      */
     public function deleteUser($userId)
     {
@@ -183,7 +183,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users",methods={"POST"}, options={"acl":{"public","@admins"}})
+     * @Route("/api/users",methods={"POST"}, options={"acl":{"@admins"}})
      */
     public function createUser()
     {
@@ -276,7 +276,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("api/groups/{group_name}/delete",methods={"POST"},options={"acl":{"public","@admins"}})
+     * @Route("api/groups/{group_name}/delete",methods={"POST"},options={"acl":{"@admins"}})
      */
     public function deleteGroup(string $group_name)
     {
@@ -451,7 +451,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments",methods={"POST"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments",methods={"POST"}, options={"acl":{"+"}})
      */
     public function postComment()
     {
@@ -462,7 +462,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments/{tag}",methods={"POST"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}",methods={"POST"}, options={"acl":{"+"}})
      */
     public function editComment($tag)
     {
@@ -473,7 +473,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments/{tag}",methods={"DELETE"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}",methods={"DELETE"}, options={"acl":{"+"}})
      */
     public function deleteComment($tag)
     {
@@ -488,7 +488,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments/{tag}/delete",methods={"POST"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}/delete",methods={"POST"}, options={"acl":{"+"}})
      */
     public function deleteCommentViaPostMethod($tag)
     {
@@ -563,7 +563,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}/duplicate",methods={"POST"},options={"acl":{"public","@admins"}})
+     * @Route("/api/pages/{tag}/duplicate",methods={"POST"},options={"acl":{"@admins"}})
      */
     public function duplicatePage(Request $request, $tag)
     {
@@ -579,7 +579,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}",methods={"DELETE"},options={"acl":{"public","+"}})
+     * @Route("/api/pages/{tag}",methods={"DELETE"},options={"acl":{"+"}})
      */
     public function deletePage($tag)
     {
@@ -635,7 +635,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}/delete",methods={"POST"},options={"acl":{"public","+"}})
+     * @Route("/api/pages/{tag}/delete",methods={"POST"},options={"acl":{"+"}})
      */
     public function deletePageByGetMethod($tag)
     {
@@ -700,7 +700,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}", methods={"DELETE"}, options={"acl":{"public", "+"}})
+     * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}", methods={"DELETE"}, options={"acl":{"+"}})
      */
     public function deleteReaction($idreaction, $id, $page, $username)
     {
@@ -738,7 +738,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}/delete",methods={"GET"},options={"acl":{"public","+"}})
+     * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}/delete",methods={"GET"},options={"acl":{"+"}})
      */
     public function deleteReactionByGetMethod($idreaction, $id, $page, $username)
     {
@@ -746,7 +746,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/reactions", methods={"POST"}, options={"acl":{"public", "+"}})
+     * @Route("/api/reactions", methods={"POST"}, options={"acl":{"+"}})
      */
     public function addReactionFromUser()
     {
@@ -823,7 +823,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/triples", methods={"GET"}, options={"acl":{"public", "+"}})
+     * @Route("/api/triples", methods={"GET"}, options={"acl":{"+"}})
      */
     public function ByResource()
     {
@@ -848,7 +848,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/triples/{resource}", methods={"GET"}, options={"acl":{"public", "+"}})
+     * @Route("/api/triples/{resource}", methods={"GET"}, options={"acl":{"+"}})
      */
     public function getTriplesByResource($resource)
     {
@@ -873,7 +873,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/triples/{resource}", methods={"POST"}, options={"acl":{"public", "+"}})
+     * @Route("/api/triples/{resource}", methods={"POST"}, options={"acl":{"+"}})
      */
     public function setTriple($resource)
     {
@@ -920,7 +920,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/triples/{resource}/delete", methods={"POST"}, options={"acl":{"public", "+"}})
+     * @Route("/api/triples/{resource}/delete", methods={"POST"}, options={"acl":{"+"}})
      */
     public function deleteTriples($resource)
     {
@@ -1045,7 +1045,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/{id}", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/{id}", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchive($id)
     {
@@ -1053,7 +1053,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/uidstatus/{uid}", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/uidstatus/{uid}", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchiveStatus($uid)
     {
@@ -1064,7 +1064,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/archivingStatus/", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/archivingStatus/", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchivingStatus()
     {
@@ -1075,7 +1075,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/forcedUpdateToken/", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/forcedUpdateToken/", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getForcedUpdateToken()
     {
@@ -1088,8 +1088,8 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/", methods={"GET"}, options={"acl":{"public", "@admins"}})
-     * @Route("/api/archives", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/", methods={"GET"}, options={"acl":{"@admins"}})
+     * @Route("/api/archives", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchives()
     {
@@ -1102,7 +1102,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/{id}", methods={"POST"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/{id}", methods={"POST"}, options={"acl":{"@admins"}})
      */
     public function archiveAction($id)
     {
@@ -1110,7 +1110,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives", methods={"POST"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives", methods={"POST"}, options={"acl":{"@admins"}})
      */
     public function archivesAction()
     {
