@@ -124,7 +124,8 @@ class ThemeManager implements EventSubscriberInterface
             foreach ($keysToVerify as $val) {
                 $requested[$val] = null;
                 if (!empty($_REQUEST[$val])) {
-                    if (preg_match('/\//', $_REQUEST[$val], $matches)) {
+                    $path = str_replace('custom/', '', $_REQUEST[$val]); // exception for preset paths that may contain custom/<presetname>.css
+                    if (preg_match('/\//', $path, $matches)) {
                         exit('ERROR: Suspicious path traversal attempt.');
                     }
                     switch ($val) {
