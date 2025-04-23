@@ -2,7 +2,7 @@
 
 set -e
 
-rm -f  /var/www/html/wakka.config.test.php
+rm -f  /var/www/html/test.config.php
 echo "DROP DATABASE IF EXISTS yeswiki_test; CREATE DATABASE yeswiki_test;" |  mysql -h yeswiki-db -u root -proot
 curl --silent --fail --show-error \
           -F "config[default_language]=fr" \
