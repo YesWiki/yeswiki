@@ -61,7 +61,7 @@ class EditConfigAction extends YesWikiAction
                 'message' => get_class($this) . ' : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),
             ]);
         }
-        if (!is_writable(ConfigurationFileProvider::getWakkaConfigFileFromEnvironement())) {
+        if (!is_writable(ConfigurationFileProvider::getConfigFileFromEnv())) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ERROR_NO_ACCESS') . ' ' . _t('FILE_WRITE_PROTECTED'),
@@ -208,7 +208,7 @@ class EditConfigAction extends YesWikiAction
      */
     private function save(): bool
     {
-        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getWakkaConfigFileFromEnvironement());
+        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
 
         $keysAsArray = $this->convertKeysAsArray($this->getAuthorizedKeys()[0]);
@@ -315,7 +315,7 @@ class EditConfigAction extends YesWikiAction
      */
     private function getDataFromConfigFile(): array
     {
-        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getWakkaConfigFileFromEnvironement());
+        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         $data = [];
         $placeholders = [];

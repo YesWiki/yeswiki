@@ -48,7 +48,7 @@ class Init
      */
     public function __construct($config = [])
     {
-        $this->configFile = ConfigurationFileProvider::getWakkaConfigFileFromEnvironement();
+        $this->configFile = ConfigurationFileProvider::getConfigFileFromEnv();
 
         $this->getRoute();
         $this->config = $this->getConfig($config);

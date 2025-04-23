@@ -93,7 +93,7 @@ if (isset($this)) {
         $output .= '<h3>Complete ALL</h3>';
 
         // ajout du charset utf8mb4 dans wakka.config.php
-        $config = $this->services->get(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getWakkaConfigFileFromEnvironement());
+        $config = $this->services->get(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         $config->db_charset = 'utf8mb4';
         $config->write();
@@ -116,7 +116,7 @@ if (php_sapi_name() === 'cli') {
     $cwd = dirname(exec('pwd'), 2);
     $cwd = str_replace(DIRECTORY_SEPARATOR . 'git', '', $cwd);
     set_include_path($cwd);
-    include_once ConfigurationFileProvider::getWakkaConfigFileFromEnvironement();
+    include_once ConfigurationFileProvider::getConfigFileFromEnv();
     include_once 'includes/Encoding.php';
 
     $GLOBALS['dblink'] = @mysqli_connect(

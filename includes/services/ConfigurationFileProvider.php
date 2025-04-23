@@ -7,7 +7,7 @@ namespace YesWiki\Core\Service;
  */
 class ConfigurationFileProvider
 {
-    public static function getWakkaConfigFileFromEnvironement(): string
+    public static function getConfigFileFromEnv(): string
     {
         $wakkaConfigFile = getenv('WAKKA_CONFIG_FILE');
         if ($wakkaConfigFile === false) {
