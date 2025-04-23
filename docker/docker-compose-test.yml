@@ -4,4 +4,4 @@ services:
       - "8083:8083"
     command: /var/www/html/docker/entrypoint_test.sh
     environment:
-      - WAKKA_CONFIG_FILE=wakka.config.test.php
+      - WAKKA_CONFIG_FILE=test.config.php

@@ -33,8 +33,7 @@ robots.txt
 
 # YesWiki stuff
 .env
-wakka.config.php
-wakka.config.test.php
+*.config.php
 info.php
 cache/*
 !cache/README.md
