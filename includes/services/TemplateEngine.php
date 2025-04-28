@@ -7,6 +7,7 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -204,6 +205,9 @@ class TemplateEngine
             }
 
             return;
+        });
+        $this->addTwigHelper('listValues', function ($listId, $level = null) {
+            return $this->wiki->services->get(ListManager::class)->getOne($listId, $level);
         });
     }
 
