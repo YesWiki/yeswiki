@@ -71,4 +71,5 @@ YesWiki grew out of a French language version of [WakkaWiki](https://en.wikipedi
 
 ### YesWiki authors
 
-See <https://github.com/YesWiki/yeswiki/graphs/contributors>
+ <https://github.com>,
+ <https://YesWiki/yeswiki/graphs/contributors.net
