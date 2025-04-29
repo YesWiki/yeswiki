@@ -206,8 +206,8 @@ class TemplateEngine
 
             return;
         });
-        $this->addTwigHelper('listValues', function ($listId, $level = null) {
-            return $this->wiki->services->get(ListManager::class)->getOne($listId, $level);
+        $this->addTwigHelper('listValues', function ($listId, $parent = null) {
+            return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);
         });
     }
 

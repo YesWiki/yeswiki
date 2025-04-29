@@ -51,7 +51,7 @@ class ListManager
 
     public function getOne($id, $parent = null): ?array
     {
-        if (isset($this->cachedLists[$id]) && $parent != null) { // we cache all information, not just a level
+        if (isset($this->cachedLists[$id]) && $parent === null) { // we cache all information, not just a level
             return $this->cachedLists[$id];
         }
 
@@ -70,6 +70,7 @@ class ListManager
         if ($parent != null) {
             $this->cachedLists[$id] = $data;
         }
+
         if ($parent === 'root') {
             $data['nodes'] = array_map(function ($a) {
                 unset($a['children']);
