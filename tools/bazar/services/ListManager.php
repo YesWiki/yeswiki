@@ -49,9 +49,9 @@ class ListManager
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
     }
 
-    public function getOne($id, $level = null): ?array
+    public function getOne($id, $parent = null): ?array
     {
-        if (isset($this->cachedLists[$id]) && $level != null) { // we cache all information, not just a level
+        if (isset($this->cachedLists[$id]) && $parent != null) { // we cache all information, not just a level
             return $this->cachedLists[$id];
         }
 
@@ -63,17 +63,23 @@ class ListManager
         $page = $this->pageManager->getOne($id);
         if (empty($page)) {
             echo '<div class="alert alert-danger">List id not found: '.$id.'</div>';
+
             return null;
         }
         $data = $this->loadJson($page['body'], $id);
-        if ($level != null) {
+        if ($parent != null) {
             $this->cachedLists[$id] = $data;
         }
-        if ($level === 1) {
+        if ($parent === 'root') {
             $data['nodes'] = array_map(function ($a) {
                 unset($a['children']);
+
                 return $a;
             }, $data['nodes']);
+            $data['parentId'] = $parent;
+        } elseif (!empty($parent)) {
+            $data['nodes'] = multiArraySearch($data['nodes'], 'id', $parent)[0]['children'] ?? null;
+            $data['parentId'] = $parent;
         }
 
         return $data;
@@ -105,13 +111,13 @@ class ListManager
         return $json;
     }
 
-    public function getAll($level = null): array
+    public function getAll($parent = null): array
     {
         $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
         $result = [];
         foreach ($lists as $list) {
-            $result[$list['resource']] = $this->getOne($list['resource'], $level);
+            $result[$list['resource']] = $this->getOne($list['resource'], $parent);
         }
 
         return $result;
