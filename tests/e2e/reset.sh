@@ -16,9 +16,9 @@ curl --silent --fail --show-error \
           -F "config[table_prefix]=yeswiki_" \
           -F "config[allow_raw_html]=1" \
           -F "config[archive][privatePath]=./private/archives" \
-          -F "admin_name=ActionTest" \
-          -F "admin_password=ActionTestPassword" \
-          -F "admin_password_conf=ActionTestPassword" \
+          -F "admin_name=WikiAdmin" \
+          -F "admin_password=WikiAdminPassword" \
+          -F "admin_password_conf=WikiAdminPassword" \
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
           "http://yeswiki-web/?PagePrincipale&installAction=install"
