@@ -5,7 +5,7 @@ import {Page} from "@playwright/test";
  * The callback function does not have access to the page context.
  * So only use the value passed as argument and the browser api.
  */
-export const replaceEditorText = async (page: Page, callback: Function, additionalProperties: object = null) => {
+export const replaceEditorTextCallback = async (page: Page, callback: Function, additionalProperties: object = null) => {
     await page.waitForLoadState();
 
     await page.evaluate(({callbackStr, additionalPropertiesStr}) => {
@@ -16,4 +16,9 @@ export const replaceEditorText = async (page: Page, callback: Function, addition
         const newValue = callback(value, additionalProperties);
         editor.setValue(newValue);
     }, {callbackStr: callback.toString(), additionalPropertiesStr: JSON.stringify(additionalProperties)});
+}
+
+
+export const replaceEditorTextNewContent = async (page: Page, newContent: string) => {
+    await replaceEditorTextCallback(page, (value, additionalProperties) => additionalProperties.content, {content: newContent});
 }
