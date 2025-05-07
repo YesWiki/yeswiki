@@ -22,3 +22,4 @@ curl --silent --fail --show-error \
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
           "http://yeswiki-web/?PagePrincipale&installAction=install"
+/var/www/html/yeswicli migrate
