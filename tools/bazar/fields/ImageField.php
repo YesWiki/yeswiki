@@ -25,6 +25,7 @@ class ImageField extends FileField
     protected const FIELD_IMAGE_WIDTH = 6;
     protected const FIELD_IMAGE_CLASS = 7;
     public const FIELD_IMAGE_DEFAULT = 13;
+    private const FIELD_CLASS_TYPE = 'ImageField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -237,6 +238,19 @@ class ImageField extends FileField
         return false;
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_THUMBNAIL_HEIGHT] = $fieldProps['thumbnailHeight'];
+        $new[self::FIELD_THUMBNAIL_WIDTH] = $fieldProps['thumbnailWidth'];
+        $new[self::FIELD_IMAGE_HEIGHT] = $fieldProps['imageHeight'];
+        $new[self::FIELD_IMAGE_WIDTH] = $fieldProps['imageWidth'];
+        $new[self::FIELD_IMAGE_CLASS] = $fieldProps['imageClass'];
+        $new[self::FIELD_IMAGE_DEFAULT] = $fieldProps['imageDefault'];
+        ksort($new);
+        return $new;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -253,6 +267,7 @@ class ImageField extends FileField
                 'imageHeight' => $this->imageHeight,
                 'imageWidth' => $this->imageWidth,
                 'imageClass' => $this->imageClass,
+                'imageDefault' => $this->imageDefault,
             ]
         );
     }

@@ -26,7 +26,7 @@
     </div>
   </div>
   <input name="antispam" value="0" type="hidden">
-  <input name="id_typeannonce" value="{{ form.bn_id_nature }}" type="hidden">
+  <input name="id_typeannonce" value="{{ form.body.id }}" type="hidden">
   {% if entryId %}
     <input name="id_fiche" value="{{ entryId }}" type="hidden">
   {% endif %}

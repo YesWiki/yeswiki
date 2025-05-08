@@ -9,6 +9,9 @@ use Psr\Container\ContainerInterface;
  */
 class RadioListField extends RadioField
 {
+
+    private const FIELD_CLASS_TYPE = 'RadioListField';
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);

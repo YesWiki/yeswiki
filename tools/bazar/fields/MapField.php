@@ -23,6 +23,7 @@ class MapField extends BazarField
     protected const FIELD_AUTOCOMPLETE_TOWN = 5;
     protected const FIELD_AUTOCOMPLETE_OTHERS = 6;
     protected const FIELD_SHOW_MAP_IN_ENTRY_VIEW = 7;
+    private const FIELD_CLASS_TYPE = 'MapField';
 
     public const DEFAULT_FIELDNAME_POSTALCODE = 'bf_code_postal';
     public const DEFAULT_FIELDNAME_STREET = 'bf_adresse';
@@ -277,6 +278,20 @@ class MapField extends BazarField
         return $this->autocompleteFieldnames;
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $autocomplete_array = $fieldProps['autocomplete'] ? explode(',', $fieldProps['autocomplete']) : [null, null];
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_LATITUDE_FIELD] = $fieldProps['latitudeField'];
+        $new[self::FIELD_LONGITUDE_FIELD] = $fieldProps['longitudeField'];
+        $new[self::FIELD_AUTOCOMPLETE_POSTALCODE] = $autocomplete_array[0] ?? null;
+        $new[self::FIELD_AUTOCOMPLETE_TOWN] = $autocomplete_array[1] ?? null;
+        $new[self::FIELD_AUTOCOMPLETE_OTHERS] = $fieldProps['autocomplete'];
+        $new[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] = $fieldProps['showMapInEntryView'];
+        ksort($new);
+        return $new;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -284,11 +299,13 @@ class MapField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'latitudeField' => $this->getLatitudeField(),
                 'longitudeField' => $this->getLongitudeField(),
                 'autocomplete' => $this->getAutocomplete(),
                 'geolocate' => $this->getGeolocate(),
                 'autocompleteFieldnames' => $this->getAutocompleteFieldnames(),
+                'showMapInEntryView' => $this->showMapInEntryView,
             ]
         );
     }

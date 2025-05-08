@@ -87,6 +87,10 @@ class FieldFactory
         }
     }
 
+    public function createFromJson(array $values) {
+        $cname = "YesWiki\\Bazar\\Field\\".$value['classType'];
+    }
+
     public function create(array $values)
     {
         if (!empty($this->availableFields[$values[0]])) {

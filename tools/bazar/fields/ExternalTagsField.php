@@ -12,6 +12,8 @@ class ExternalTagsField extends TagsField
 {
     protected $JSONFormAddress;
 
+    private const FIELD_CLASS_TYPE = 'ExternalTagsField';
+
     public function __construct(array $values, ContainerInterface $services)
     {
         $values[self::FIELD_TYPE] = $values[ExternalBazarService::FIELD_ORIGINAL_TYPE];

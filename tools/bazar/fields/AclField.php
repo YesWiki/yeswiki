@@ -32,6 +32,7 @@ class AclField extends BazarField
     protected const FIELD_LABEL = 4;
     protected const FIELD_NAME = 6;
     protected const FIELD_ASK_IF_ACTIVATE_COMMENTS = 7;
+    private const FIELD_CLASS_TYPE = 'AclField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -200,6 +201,24 @@ class AclField extends BazarField
         }
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = [
+            self::FIELD_TYPE => $fieldProps['type'],
+            self::FIELD_ENTRY_READ_RIGHT => $fieldProps['entryReadRight'],
+            self::FIELD_ENTRY_WRITE_RIGHT => $fieldProps['entryWriteRight'],
+            self::FIELD_ENTRY_COMMENT_RIGHT => $fieldProps['entryCommentRight'],
+            self::FIELD_NAME => $fieldProps['name'],
+            self::FIELD_LABEL => $fieldProps['label'],
+            self::FIELD_HINT => $fieldProps['hint'],
+            self::FIELD_DEFAULT => $fieldProps['default'],
+            self::FIELD_ASK_IF_ACTIVATE_COMMENTS => $fieldProps['askIfActivateComments'],
+        ];
+        return $new;
+    }
+
+
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -216,6 +235,7 @@ class AclField extends BazarField
             'hint' => $this->getHint(),
             'default' => $this->getDefault(),
             'askIfActivateComments' => $this->getAskIfActivateComments(),
+            'field_type' => self::FIELD_CLASS_TYPE,
         ];
     }
 }

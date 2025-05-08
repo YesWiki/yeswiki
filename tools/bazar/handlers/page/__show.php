@@ -28,7 +28,9 @@ if ($pageManager->getPageType($this->GetPageTag()) === 'form' && $this->HasAcces
     $tab = json_decode($this->page['body'], true);
     foreach ($tab['fields'] as $key => $field) {
         ksort($field);
-        $newfield = json_decode(json_encode($fieldFactory->create(YesWiki\Bazar\Field\TextField::mapToFieldArray($field))), true);
+        $cname = "YesWiki\\Bazar\\Field\\".$field['field_type'];
+        $wikifield = $cname::mapToFieldArray($field);
+        $newfield = json_decode(json_encode($fieldFactory->create($wikifield)), true);
         ksort($newfield);
         dump($field, $newfield);
     }

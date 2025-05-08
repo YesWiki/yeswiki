@@ -10,6 +10,8 @@ use YesWiki\Core\Service\DateService as CoreDateService;
  */
 class DateField extends BazarField
 {
+    private const FIELD_CLASS_TYPE = 'DateField';
+
     protected function renderInput($entry)
     {
         $day = '';

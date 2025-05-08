@@ -9,6 +9,8 @@ use Psr\Container\ContainerInterface;
  */
 class CheckboxListField extends CheckboxField
 {
+    private const FIELD_CLASS_TYPE = 'CheckboxListField';
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);

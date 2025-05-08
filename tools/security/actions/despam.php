@@ -158,7 +158,7 @@ if ($this->UserIsAdmin()) {
         // Fait de la derniere version de cette revision
         // une version archivee
         $requeteUpdate =
-          'update ' . $this->config['table_prefix'] . 'pages ' .
+          'update ' . $this->config['table_prefix'] . ' pages ' .
           "set latest = 'N' " .
           "where latest = 'Y' " .
           "and tag = '" . $revision['tag'] . "' " .

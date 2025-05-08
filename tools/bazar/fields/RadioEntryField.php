@@ -12,6 +12,7 @@ class RadioEntryField extends RadioField
 {
     public $isDistantJson;
     protected $baseUrl;
+    private const FIELD_CLASS_TYPE = 'RadioEntryField';
 
     public function __construct(array $values, ContainerInterface $services)
     {

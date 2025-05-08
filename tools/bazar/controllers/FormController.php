@@ -8,6 +8,7 @@ use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -16,11 +17,13 @@ class FormController extends YesWikiController
     protected $csrfTokenController;
     protected $formManager;
     protected $securityController;
+    protected $pageManager;
 
-    public function __construct(FormManager $formManager, SecurityController $securityController, CsrfTokenController $csrfTokenController)
+    public function __construct(FormManager $formManager, PageManager $pageManager, SecurityController $securityController, CsrfTokenController $csrfTokenController)
     {
         $this->csrfTokenController = $csrfTokenController;
         $this->formManager = $formManager;
+        $this->pageManager = $pageManager;
         $this->securityController = $securityController;
     }
 
@@ -50,15 +53,16 @@ class FormController extends YesWikiController
         $values = [];
         if (is_array($forms)) {
             foreach ($forms as $form) {
-                $values[$form['bn_id_nature']]['title'] = $form['bn_label_nature'];
-                $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
-                $values[$form['bn_id_nature']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
-                $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== '';
-                $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
+                $body = $form['body'];
+                $values[$body['id']]['title'] = $body['title'];
+                $values[$body['id']]['description'] = $body['description'];
+                $values[$body['id']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+                $values[$body['id']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
+                $values[$body['id']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== '';
+                $values[$body['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return $field instanceof MapField;
                 }));
-                $values[$form['bn_id_nature']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
+                $values[$body['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
             }
         }
 
@@ -99,11 +103,12 @@ class FormController extends YesWikiController
     {
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             $form = $this->formManager->getOne($id);
+            $tag = $form['tag'];
 
             if (isset($_POST['valider'])) {
                 $form = $this->formManager->getFromRawData($_POST);
                 if ($this->formIsValid($form)) {
-                    $this->formManager->update($_POST);
+                    $this->formManager->update($_POST, $tag);
 
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
                 }

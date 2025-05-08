@@ -40,9 +40,13 @@ abstract class BazarField implements \JsonSerializable
     protected const FIELD_READ_ACCESS = 11;
     protected const FIELD_WRITE_ACCESS = 12;
     protected const FIELD_SEMANTIC_PREDICATE = 14;
+    private const FIELD_CLASS_TYPE = 'BazarField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
+
+
+
         $this->services = $services;
 
         $this->type = $values[self::FIELD_TYPE];
@@ -67,22 +71,28 @@ abstract class BazarField implements \JsonSerializable
 
     public static function mapToFieldArray($fieldProps): array
     {
-        $new = [
-            self::FIELD_TYPE => $fieldProps['type'],
-            self::FIELD_NAME => $fieldProps['name'],
-            self::FIELD_LABEL => $fieldProps['label'],
-            self::FIELD_SIZE => $fieldProps['size'],
-            self::FIELD_MAX_CHARS => $fieldProps['maxChars'],
-            self::FIELD_DEFAULT => $fieldProps['default'],
-            self::FIELD_REQUIRED => $fieldProps['required'],
-            self::FIELD_SEARCHABLE => $fieldProps['searchable'],
-            self::FIELD_HINT => $fieldProps['helper'],
-            self::FIELD_READ_ACCESS => $fieldProps['read_acl'],
-            self::FIELD_WRITE_ACCESS => $fieldProps['write_acl'],
-            self::FIELD_SEMANTIC_PREDICATE => $fieldProps['sem_type'],
-        ];
+        $new = [];
+        $new[self::FIELD_TYPE] = $fieldProps['type'] ?? '';
+        $new[self::FIELD_NAME] = $fieldProps['name'] ?? '';
+        $new[self::FIELD_LABEL] = $fieldProps['label'] ?? '';
+        $new[self::FIELD_SIZE] = $fieldProps['size'] ?? '';
+        $new[self::FIELD_MAX_CHARS] = $fieldProps['maxChars'] ?? '';
+        $new[self::FIELD_DEFAULT] = $fieldProps['default'] ?? '';
+        $new[6] = '';
+        $new[7] = '';
+        $new[self::FIELD_REQUIRED] = $fieldProps['required'] ?? '';
+        $new[self::FIELD_SEARCHABLE] = $fieldProps['searchable'] ?? '';
+        $new[self::FIELD_HINT] = $fieldProps['helper'] ?? '';
+        $new[self::FIELD_READ_ACCESS] = $fieldProps['read_acl'] ?? '';
+        $new[self::FIELD_WRITE_ACCESS] = $fieldProps['write_acl'] ?? '';
+        $new[13] = '';
+        $new[self::FIELD_SEMANTIC_PREDICATE] = $fieldProps['sem_type'] ?? '';
+        $new[15] = '';
+        $new[16] = '';
         return $new;
     }
+
+
 
     /**
      * Render the edit view of the field. Check ACLS first.
@@ -276,6 +286,7 @@ abstract class BazarField implements \JsonSerializable
             'read_acl' => $this->getReadAccess(),
             'write_acl' => $this->getWriteAccess(),
             'sem_type' => $this->getSemanticPredicate(),
+            'field_type' => self::FIELD_CLASS_TYPE,
         ];
     }
 

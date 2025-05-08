@@ -66,10 +66,12 @@ class TripleStore
      *                         The operator of comparison between the effective property and $property (default: '=')
      * @param string $val_op
      *                         The operator of comparison between the effective value and $valueq (default: '=')
+     * @@param bool $resource_only
+     *                          get only ressource column
      *
      * @return array The list of all the triples that match the asked criteria
      */
-    public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=', $val_op = '='): array
+    public function getMatching($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=', $val_op = '=', $resource_only = false): array
     {
         static $operators = [
             '=',
@@ -88,7 +90,9 @@ class TripleStore
             $val_op = '=';
         }
 
-        $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('triples');
+        $column = $resource_only ? 'resource': '*';
+
+        $sql = 'SELECT '.$column.' FROM ' . $this->dbService->prefixTable('triples');
         $where = [];
         if ($resource !== null) {
             $where[] = ' resource ' . $res_op . ' "' . $this->dbService->escape($resource) . '"';
@@ -313,9 +317,9 @@ class TripleStore
                 return false;
             }
             $sql = <<<SQL
-            SELECT `id` FROM {$this->dbService->prefixTable('triples')} 
-              WHERE `resource` = "{$this->dbService->escape($re_prefix . $resource)}" 
-                AND `property` = "{$this->dbService->escape($prop_prefix . $property)}" 
+            SELECT `id` FROM {$this->dbService->prefixTable('triples')}
+              WHERE `resource` = "{$this->dbService->escape($re_prefix . $resource)}"
+                AND `property` = "{$this->dbService->escape($prop_prefix . $property)}"
                 $valueQuery
                 $extraSQLQuery
                 ;

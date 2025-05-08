@@ -30,11 +30,7 @@ function baz_forms_and_lists_ids()
     $lists = array_map(function ($list) {
         return $list['title'];
     }, $lists);
-    $requete = 'SELECT bn_id_nature, bn_label_nature FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature';
-    $result = $GLOBALS['wiki']->LoadAll($requete);
-    foreach ($result as $form) {
-        $forms[$form['bn_id_nature']] = $form['bn_label_nature'];
-    }
+    $forms = $GLOBALS['wiki']->services->get(FormManager::class)->getAllIds();
 
     return ['lists' => $lists, 'forms' => $forms];
 }

@@ -144,7 +144,8 @@ class BazarListService
             'groupsexpanded' => false,
         ], $options);
 
-        $formIdsUsed = array_unique(array_column($entries, 'id_typeannonce'));
+
+        $formIdsUsed = array_unique(array_column($entries, 'id'));
         $formsUsed = array_map(function ($formId) use ($forms) {
             return $forms[$formId];
         }, $formIdsUsed);

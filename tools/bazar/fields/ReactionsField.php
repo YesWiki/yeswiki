@@ -188,6 +188,17 @@ class ReactionsField extends BazarField
         ]);
     }
 
+    // LANG_FIXME not sure about this function
+    public static function mapToFieldArray($fieldProps): array
+    {
+       $new = parent::mapToFieldArray($fieldProps);
+       $new[self::FIELD_IDS] = $fieldProps['ids'];
+       $new[self::FIELD_LABELS] = $fieldProps['labels'];
+       $new[self::FIELD_IMAGES] = $fieldProps['images'];
+       ksort($new);
+       return $new;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -195,6 +206,7 @@ class ReactionsField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'ids' => $this->getIds(),
                 'labels' => $this->getLabels(),
                 'images' => array_map('basename', $this->getImagesPath()),

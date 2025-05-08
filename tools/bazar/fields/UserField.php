@@ -28,6 +28,7 @@ class UserField extends BazarField
     protected const FIELD_MAILING_LIST = 5;
     protected const FIELD_AUTO_ADD_TO_GROUP = 6;
     protected const FIELD_AUTO_UPDATE_MAIL = 9;
+    private const FIELD_CLASS_TYPE = 'UserField';
 
     private const CONFIRM_NAME_SUFFIX = '_confirmNewName';
     private const FORCE_LABEL = '_force_label';
@@ -252,6 +253,7 @@ class UserField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'nameField' => $this->getNameField(),
                 'emailField' => $this->getEmailField(),
                 'mailingList' => $this->getMailingList(),
@@ -387,4 +389,17 @@ class UserField extends BazarField
         // it could be an error
         throw new UserFieldException('Impossible to find a new user name !');
     }
+
+    public static function mapToFieldArray($fieldProps): array
+        {
+           $new = parent::mapToFieldArray($fieldProps);
+           $new[self::FIELD_NAME_FIELD] = $fieldProps['nameField'];
+           $new[self::FIELD_EMAIL_FIELD] = $fieldProps['emailField'];
+           $new[self::FIELD_MAILING_LIST] = $fieldProps['mailingList'];
+           $new[self::FIELD_AUTO_ADD_TO_GROUP] = $fieldProps['autoAddToGroup'];
+           $new[self::FIELD_AUTO_UPDATE_MAIL] = $fieldProps['autoUpdateMail'];
+           ksort($new);
+           return $new;
+        }
+
 }

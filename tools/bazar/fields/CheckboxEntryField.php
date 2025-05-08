@@ -13,6 +13,7 @@ class CheckboxEntryField extends CheckboxField
 {
     public $isDistantJson;
     protected $baseUrl;
+    private const FIELD_CLASS_TYPE = 'CheckboxEntryField';
 
     public function __construct(array $values, ContainerInterface $services)
     {

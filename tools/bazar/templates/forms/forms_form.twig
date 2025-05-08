@@ -20,7 +20,7 @@
         class="form-control input-xxlarge"
         name="bn_label_nature"
         type="text"
-        value="{{ form.bn_label_nature }}"
+        value="{{ form.title }}"
         required
       />
     </div>
@@ -36,7 +36,7 @@
         rows="3"
         name="bn_description"
       >
-        {{- form.bn_description -}}
+        {{- form.description -}}
       </textarea>
     </div>
   </div>
@@ -74,7 +74,7 @@
             name="bn_template"
             required
           >
-            {{- form.bn_template ?? ('texte***bf_titre***' ~ _t('BAZ_TITREANNONCE') ~ '*** *** *** *** ***text***1***') -}}
+            {{- form.template ?? ('texte***bf_titre***' ~ _t('BAZ_TITREANNONCE') ~ '*** *** *** *** ***text***1***') -}}
           </textarea>
         </div>
       </div>
@@ -201,8 +201,8 @@
   {% if form %}
   <input
     type="hidden"
-    name="bn_id_nature"
-    value="{{ form.bn_id_nature }}"
+    name="id"
+    value="{{ form.body.id }}"
   />
   {% endif %}
 </form>
