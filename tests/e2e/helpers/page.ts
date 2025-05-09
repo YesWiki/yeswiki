@@ -13,7 +13,7 @@ export const createPageWithContent = async (page: Page, tag: string, content: st
 
 export const removePage = async (page: Page, tag: string) => {
     await page.goto(`/?${tag}`);
-    await page.getByRole('link', { name: 'Supprimer' }).click();
+    await page.locator('.footer').getByRole('link', { name: 'Supprimer' }).click();
     await page.locator('#YesWikiModal.modal.in').getByRole('button', { name: 'Supprimer' }).click();
     await errorShouldBe(page, `La page ${tag} a définitivement été supprimée`)
 }
