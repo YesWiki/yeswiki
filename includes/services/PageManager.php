@@ -225,7 +225,7 @@ class PageManager
 
 
     /**
-    * Get all pages with selected id (usefull in conjunction with triple store)
+    * Get all pages with selected triple id
     *
     * @param type one type of the triple table;
     * @param column column to display
@@ -233,9 +233,11 @@ class PageManager
     public function getManyFromTriple($type, $column = '*'): array
     {
         $columns = is_array($column) ? implode(',', $column) : $column;
-        $request = 'select '.$columns.' from '.$this->pageTableName.' where latest = \'Y\' and tag in
-            (SELECT resource from '.$this->dbService->prefixTable('triples').'
-            WHERE property = "http://outils-reseaux.org/_vocabulary/type" AND value = "'.$type.'")';
+        $request = <<<SQL
+        SELECT {$columns} FROM {$this->pageTableName} WHERE latest = 'Y' AND tag IN
+            (SELECT resource from {$this->dbService->prefixTable('triples')}
+            WHERE property = "http://outils-reseaux.org/_vocabulary/type" AND value = "{$type}")
+        SQL;
         $pages = $this->dbService->loadAll($request);
         $pages = $this->checkEntriesACL($pages);
         return $pages;

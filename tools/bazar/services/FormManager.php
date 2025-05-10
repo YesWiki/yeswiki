@@ -395,8 +395,12 @@ class FormManager
 
         // reset cache
         $this->cacheValidatedForAll = false;
-
-        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
+        if (is_numeric($id)) {
+            $request = 'SELECT tag FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id.'; ';
+            $id = $this->dbService->loadSingle($request)['tag'];
+        }
+        $this->pageManager->deleteOrphaned($id);
+        return $this->tripleStore->delete($id,'http://outils-reseaux.org/_vocabulary/type');
     }
 
     public function clear($id)
@@ -404,21 +408,30 @@ class FormManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('acls') .
-                'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-                'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );'
-        );
+        // delete acls for fiches of form
+        $this->dbService->query(<<<SQL
+                DELETE FROM {$this->dbService->prefixTable('acls')}
+                WHERE page_tag IN (SELECT tag from {$this->dbService->prefixTable('pages')}
+                WHERE tag in (SELECT resource FROM {$this->dbService->prefixTable('triples')}
+                WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")
+                AND JSON_VALUE(body, "$.id_typeannonce") = {$this->dbService->escape($id)})
+        SQL);
+
+        dump("acls cleaned");
+
 
         // TODO use PageManager
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('pages') .
-                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-                'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';'
-        );
+        // delete form_entries
+        $this->dbService->query(<<<SQL
+            DELETE FROM {$this->dbService->prefixTable('pages')}
+                WHERE tag IN (SELECT resource FROM {$this->dbService->prefixTable('triples')}
+                WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")
+                AND JSON_VALUE(body, "$.id_typeannonce") = {$this->dbService->escape($id)}
+        SQL);
+        dump("pages cleaned");
 
         // TODO use TripleStore
+        // delete triple entries
         $this->dbService->query(
             'DELETE FROM' . $this->dbService->prefixTable('triples') .
                 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
