@@ -71,6 +71,7 @@ class FormController extends YesWikiController
             'forms' => $values,
             'userIsAdmin' => $this->wiki->UserIsAdmin(),
             'isWikiHibernated' => $this->securityController->isWikiHibernated(),
+            'isMultilang' => isset($GLOBALS['wiki']->config['extra_lang']) ? True: False,
         ]);
     }
 
@@ -120,6 +121,51 @@ class FormController extends YesWikiController
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
             ]);
+        } else {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
+        }
+    }
+
+
+    public function translate($tag)
+    {
+        if (is_numeric($tag)) {
+            $tag = $this->formManager->getPageTagFromId($tag);
+        }
+        if (isset($_POST['submit'])) {
+            if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+                $this->formManager->cacheValidatedForAll = false;
+
+                $form = json_decode($_POST['form'], true);
+                $form['__extra_lang'] = json_decode($_POST['extra_lang'], true);
+
+                $saved = $this->pageManager->save($tag, json_encode($form), '', true);
+
+
+
+                if (isset($_GET['onsubmit']) && $_GET['onsubmit'] === 'postmessage') {
+                    return $this->render('@core/iframe_result.twig', [
+                        'data' => ['msg' => 'form_updated', 'id' => $id, 'title' => $_POST['form']['title']],
+                    ]);
+                }
+
+                $this->wiki->Redirect(
+                    $this->wiki->Href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_FORMULAIRE], false)
+                );
+            } else {
+                throw new \Exception('Not allowed');
+            }
+        }
+
+        if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+            $form = $this->formManager->getOne($tag, 'all');
+
+            return $this->render('@bazar/forms/form_translate.twig', [
+                'form' => $form['body'],
+                'default_language' => $GLOBALS['default_language'] ?? 'fr',
+                'extra_lang' => $GLOBALS['wiki']->config['extra_lang'] ?? ['en'],
+                'translatable_fields' => ['label', 'default', 'helper'],
+             ]);
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS'], false));
         }

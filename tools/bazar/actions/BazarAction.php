@@ -29,6 +29,7 @@ class BazarAction extends YesWikiAction
     // Forms
     public const ACTION_FORM_CREATE = 'new';
     public const ACTION_FORM_EDIT = 'modif';
+    public const ACTION_FORM_TRANSLATE = 'translate';
     public const ACTION_FORM_DELETE = 'delete';
     public const ACTION_FORM_CONFIRM_DELETE = 'confirm_delete';
     public const ACTION_FORM_EMPTY = 'empty';
@@ -156,6 +157,12 @@ class BazarAction extends YesWikiAction
                         }
 
                         return $formController->update($_GET['idformulaire']);
+                    case self::ACTION_FORM_TRANSLATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
+
+                        return $formController->translate($_GET['idformulaire']);
                     case self::ACTION_FORM_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();

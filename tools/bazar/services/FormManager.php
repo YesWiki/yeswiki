@@ -22,7 +22,7 @@ class FormManager
     protected $fieldFactory;
     protected $params;
     protected $cachedForms;
-    protected $cacheValidatedForAll;
+    public $cacheValidatedForAll;
     protected $isAvailableOnlyOneEntryOption;
     protected $isAvailableOnlyOneEntryMessage;
     protected $attach;
@@ -177,18 +177,34 @@ class FormManager
     }
 
 
-    public function getOne($formId): ?array
+    public function getOne($formId,  $lang = 'default'): ?array
     {
-        if (isset($this->cachedForms[$formId])) {
-            return $this->cachedForms[$formId];
+        if ($lang === 'default' and isset($_GET['lang'])) {
+            $lang = $_GET['lang'];
+        }
+        $lang_id = $formId;
+        if ($lang != 'default') {
+            $lang_id .= '_'.$lang;
+        }
+        if (isset($this->cachedForms[$lang_id])) {
+            return $this->cachedForms[$lang_id];
         }
 
-        if (is_numeric($formId)) {
-            $request = 'SELECT * FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$formId.'; ';
-            $form = $this->dbService->loadSingle($request);
+        if ($lang === 'all' || $lang === 'default') {
+            $select_options = '*';
         } else {
-            $form = $this->pageManager->getOne($formId);
+            $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.__extra_lang.$lang\"), body)) as body";
         }
+
+
+        if (is_numeric($formId)) {
+            $formId = $this->getPageTagFromId($formId);
+            if ($formId == null) {
+                return null;
+            }
+        }
+
+        $form = $this->pageManager->getOne($formId, null, true, false, null, $select_options);
 
         if (!$form) {
             return null;
@@ -201,9 +217,20 @@ class FormManager
         }
         $form['template'] = implode("\n", $template);
 
-        $this->cachedForms[$formId] = $form;
+        if ($lang != 'all' and isset($form['body']['__extra_lang'])) {
+              unset($form['body']['__extra_lang']);
+        }
+
+        $this->cachedForms[$lang_id] = $form;
 
         return $form;
+    }
+
+
+    public function getPageTagFromId($id) {
+        $request = 'SELECT tag FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id.'; ';
+        $tag = $this->dbService->loadSingle($request);
+        return $tag['tag'] ?? null ;
     }
 
     public function getFromRawData($form)
@@ -396,8 +423,7 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
         if (is_numeric($id)) {
-            $request = 'SELECT tag FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id.'; ';
-            $id = $this->dbService->loadSingle($request)['tag'];
+            $id = $this->getPageTagFromId($id);
         }
         $this->pageManager->deleteOrphaned($id);
         return $this->tripleStore->delete($id,'http://outils-reseaux.org/_vocabulary/type');
@@ -417,9 +443,6 @@ class FormManager
                 AND JSON_VALUE(body, "$.id_typeannonce") = {$this->dbService->escape($id)})
         SQL);
 
-        dump("acls cleaned");
-
-
         // TODO use PageManager
         // delete form_entries
         $this->dbService->query(<<<SQL
@@ -428,7 +451,6 @@ class FormManager
                 WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")
                 AND JSON_VALUE(body, "$.id_typeannonce") = {$this->dbService->escape($id)}
         SQL);
-        dump("pages cleaned");
 
         // TODO use TripleStore
         // delete triple entries
