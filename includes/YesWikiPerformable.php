@@ -86,7 +86,13 @@ abstract class YesWikiPerformable
         return $this->render($templatePath, $data, 'renderInSquelette');
     }
 
-    //  Shortcut to access services
+    /**
+     * Shortcut to access services
+     *
+     * @template T
+     * @param class-string<T> $className
+     * @return T|null
+     */
     protected function getService($className)
     {
         return $this->wiki->services->get($className);
