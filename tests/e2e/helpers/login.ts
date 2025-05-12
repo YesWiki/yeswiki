@@ -13,3 +13,7 @@ export const login = async (page: Page, username: string, password: string) => {
     // Ensure that the login was successful
     await expect(page.locator('#yw-topnav .yw-topnav-fast-access').getByRole('button', { name: 'Mes options' })).toContainText(username);
 }
+
+export const logout = async (page: Page) => {
+    await page.context().clearCookies(); // Force logout
+}
