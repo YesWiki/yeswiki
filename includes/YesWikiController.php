@@ -47,7 +47,9 @@ abstract class YesWikiController
 
     /**
      * @template T
+     *
      * @param class-string<T> $className
+     *
      * @return T|null
      */
     protected function getService($className)

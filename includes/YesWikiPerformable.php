@@ -87,10 +87,12 @@ abstract class YesWikiPerformable
     }
 
     /**
-     * Shortcut to access services
+     * Shortcut to access services.
      *
      * @template T
+     *
      * @param class-string<T> $className
+     *
      * @return T|null
      */
     protected function getService($className)
