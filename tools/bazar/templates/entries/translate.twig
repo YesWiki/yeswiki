@@ -1,0 +1,48 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+
+{{ include_javascript('tools/bazar/presentation/javascripts/entry-translate.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/list-form.css') }}
+
+<form method="post" class="translate-entry form-horizontal" data-ignore_fields="{{ ignore_fields| json_encode }}" data-extra_lang="{{ extra_lang| json_encode }}" data-entry="{{ entry|json_encode }}">
+    <div class="control-group form-group" v-if="extra_langs_list.length > 0">
+        <label class="control-label col-sm-3">
+			{{ _t('BAZ_TRANSLATE_IN') }}
+		</label>
+          <select v-model="selected_language" class="form-control input-sm" id="lang">
+            <option selected value="default">{{ _t('BAZ_MAIN_LANGUAGE') }} ({{ default_language }})</option>
+            {% for lang in extra_lang %}
+            <option value="{{ lang }}"> {{ lang }} </option>
+            {% endfor %}
+          </select>
+    </div>
+
+	{# entries #}
+	<div class="nodes-container">
+	   <div class="form-entry" v-for="(value, key) in display_fields" v-if="value">
+
+				<label class="control-label"> {{ "{{ key }}"  }} </label>
+				<div class="control-group form-group">
+				    <div class="controls input-group col-sm-9">
+    				    <input type="text" v-model="entry[key]"
+    	       		       placeholder="{{ _t('BAZ_ENTRY_NAME') }}" class="form-control" disabled required/>
+    					<input v-for="lang in extra_langs_list" v-model="extra_lang_values[lang][key]" type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selected_language === lang"/>
+					</div>
+				</div>
+	   </div>
+	</div>
+
+	<input type="hidden" name="entry" :value="jsonEntry" />
+	<input type="hidden" name="extra_lang" :value="JsonExtraLang" />
+
+	{# Form Actions #}
+	<div class="form-actions form-group">
+		<div class="col-sm-9 col-sm-offset-3">
+			<button class="btn btn-primary" type="submit" name="submit">
+				{{ _t('BAZ_SAVE') }}
+			</button>
+			<a class="btn btn-default" href="{{ url( [])|raw }}">
+				{{ _t('BAZ_ANNULER') }}
+			</a>
+		</div>
+	</div>
+</div>
