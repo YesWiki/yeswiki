@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
@@ -328,19 +329,20 @@ class ApiController extends YesWikiController
         // Reduce the size of the data sent by transforming entries object into array
         // we use the $fieldMapping to transform back the data when receiving data in the front end
         $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
-        $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
+        $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService, $forms) {
             $entryFieldsService->setEntryId($entry['id_fiche']);
             $result = [];
-            foreach ($fieldList as $field) {
-                // Format subtitle (why?)
-                if (!empty($entry[$field]) && !empty($_GET['displayfields']['subtitle']) && $_GET['displayfields']['subtitle'] == $field) {
-                    $entry[$field] = $this->wiki->Format($entry[$field]);
+            foreach ($fieldList as $fieldName) {
+                // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
+                $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName,$entry['id_typeannonce']);
+                if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI){
+                    $entry[$fieldName] = $this->wiki->Format($entry[$fieldName]);
                 }
                 // handle specific fields like comments, reactions
-                if (empty($entry[$field])) {
-                    $entry[$field] = $entryFieldsService->get($field);
+                if (empty($entry[$fieldName])) {
+                    $entry[$fieldName] = $entryFieldsService->get($fieldName);
                 }
-                $result[] = $entry[$field] ?? null;
+                $result[] = $entry[$fieldName] ?? null;
             }
 
             return $result;
