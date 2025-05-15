@@ -49,34 +49,9 @@ class ListManager
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
     }
 
-    private function childrenToArray($children)
-    {
-        $children_array = [];
-        foreach ($children as $id => $node) {
-            $children_array[] = [
-                'id' => $id,
-                'label' => $node['label'],
-                'children' => $this->childrenToArray($node['children'] ?? [],)
-            ];
-        }
-        return $children_array;
-    }
-
-    private function nodeFromArray($children) {
-        $children_object = [];
-        foreach ($children as $child)
-        {
-            $children_object[$child['id']] = [
-                'label' => $child['label'],
-                'children' => $this->nodeFromArray($child['children'] ?? []),
-            ];
-        }
-        return $children_object;
-    }
-
-
     /**
      * Retrieve list from database.
+     *
      * @param $id : id of the list to retriev
      * @param $lang : extra param pour get translated list. Can be :
      *   - Code of lang to retrieve
@@ -90,7 +65,7 @@ class ListManager
         }
         $lang_id = $id;
         if ($lang != 'default') {
-            $lang_id .= '_'.$lang;
+            $lang_id .= '_' . $lang;
         }
         if (isset($this->cachedLists[$lang_id])) {
             return $this->cachedLists[$lang_id];
@@ -112,7 +87,8 @@ class ListManager
         if ($lang != 'all') {
             unset($json['__extra_lang']);
         }
-        $json['nodes'] = $this->childrenToArray($json['nodes']);
+        $json['nodes'] = array_values($json['nodes']);
+        dump('array values', $json);
         $json['id'] = $id;
         $this->cachedLists[$lang_id] = $json;
 
@@ -130,13 +106,14 @@ class ListManager
             foreach ($json['label'] as $id => $label) {
                 $newJson['nodes'][] = ['id' => $id, 'label' => $label];
             }
+
             return $newJson;
         }
 
         return $json;
     }
 
-    public function getAll($lang = "default"): array
+    public function getAll($lang = 'default'): array
     {
         $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
@@ -148,14 +125,14 @@ class ListManager
         return $result;
     }
 
-    public function create($title, $nodes, $id = null, $extra_lang = [],)
+    public function create($title, $nodes, $id = null, $extra_lang = [], )
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $id = $id ?? genere_nom_wiki('List' . $title);
 
-        $this->pageManager->save($id, json_encode($this->sanitizeList($title, $nodes, $extra_lang)));
+        $this->pageManager->save($id, json_encode($this->sanitizeList($title, $nodes, $extra_lang), JSON_FORCE_OBJECT));
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
@@ -168,7 +145,7 @@ class ListManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $this->pageManager->save($id, json_encode($this->sanitizeList($title, $nodes, $extra_lang)));
+        $this->pageManager->save($id, json_encode($this->sanitizeList($title, $nodes, $extra_lang), JSON_FORCE_OBJECT));
     }
 
     public function delete($id)
@@ -189,22 +166,22 @@ class ListManager
         $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
     }
 
-    private function sanitizeList($title, $nodes, $extra_lang) {
+    private function sanitizeList($title, $nodes, $extra_lang)
+    {
         $list = [];
         $list['title'] = $title;
-        $list['nodes'] = $this->nodeFromArray($this->sanitizeHTML($nodes ?? []));
+        $list['nodes'] = $this->sanitizeHTML($nodes ?? []);
         $list['__extra_lang'] = [];
-        foreach($extra_lang as $lang => $value) {
+        foreach ($extra_lang as $lang => $value) {
             $list['__extra_lang'][$lang] = [];
-            if (isset($value['title']))
-            {
+            if (isset($value['title'])) {
                 $list['__extra_lang'][$lang]['title'] = $value['title'];
             }
-            if (isset($value['nodes']))
-            {
+            if (isset($value['nodes'])) {
                 $list['__extra_lang'][$lang]['nodes'] = $this->sanitizeHTML($value['nodes']);
             }
         }
+
         return $list;
     }
 

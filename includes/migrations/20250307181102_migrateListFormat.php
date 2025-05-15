@@ -29,17 +29,19 @@ class migrateListFormat extends YesWikiMigration
                 $list = $listManager->convertDataStructure($list);
             }
             dump($list);
-            foreach($list['nodes'] as $node) {
+            foreach ($list['nodes'] as $index => $node) {
                 $children = [];
                 if (isset($node['children'])) {
-                    foreach($node['children'] as $child) {
-                        $children[$child['id']] = [
+                    foreach ($node['children'] as $i => $child) {
+                        $children[$i] = [
+                            'id' => $child['id'],
                             'label' => $child['label'],
                             'children' => [],
                         ];
                     }
                 }
-                $nodes[$node['id']] = [
+                $nodes[$index] = [
+                    'id' => $node['id'],
                     'label' => $node['label'],
                     'children' => $children,
                 ];
@@ -55,7 +57,7 @@ class migrateListFormat extends YesWikiMigration
         $insert_query = 'insert into lists (id, body) values ';
 
         foreach ($new_lists as $key => $value) {
-            $json = json_encode($value);
+            $json = json_encode($value, JSON_FORCE_OBJECT);
             $json = str_replace('\\', '\\\\', $json);
             $json = str_replace("'", "\'", $json);
             $insert_query .= '( '.$key.",'".$json."'),";

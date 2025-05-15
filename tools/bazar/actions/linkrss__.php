@@ -8,8 +8,8 @@ if ($this->CheckModuleACL('rss', 'handler')) {
     if (is_array($resultat) && count($resultat) > 0) {
         foreach ($resultat as $form) {
             $liste .= '  <link rel="alternate" type="application/rss+xml" '
-                . 'title="' . htmlspecialchars($form['bn_label_nature']) . '" '
-                . 'href="' . $this->href('rss', $this->getPageTag(), 'id=' . $form['bn_id_nature']) . '">' . "\n";
+                . 'title="' . htmlspecialchars($form['body']['title']) . '" '
+                . 'href="' . $this->href('rss', $this->getPageTag(), 'id=' . $form['body']['id']) . '">' . "\n";
         }
     }
 

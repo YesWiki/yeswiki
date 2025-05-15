@@ -24,7 +24,6 @@ new Vue({
     const nodes = list.nodes || []
     const extraLangs = list.__extra_lang || []
     this.extra_langs_list = JSON.parse(this.$el.dataset.extra_lang)
-    // vueRef is used to give a unique and fixed ID to each node
     for (const lang in extraLangs) {
       this.extra_langs_titles[lang] = extraLangs[lang].title ?? ''
       extraLangs[lang].children = extraLangs[lang].nodes
@@ -32,20 +31,18 @@ new Vue({
     }
     this.extra_langs = extraLangs
     nodes.forEach((node) => this.addVueRefProp(node))
-    nodes.forEach((node) => {
+    for (const index in nodes) {
       for (const lang in this.extra_langs) {
-        if (
-          this.extra_langs[lang].children
-          && this.extra_langs[lang].children[node.id]
-        ) {
+        if (this.extra_langs[lang].children
+          && this.extra_langs[lang].children[index]) {
           this.MergeTranslations(
-            node,
+            nodes[index],
             lang,
-            this.extra_langs[lang].children[node.id]
+            this.extra_langs[lang].children[index]
           )
         }
       }
-    })
+    }
     this.rootNode.children = nodes
   },
   computed: {
