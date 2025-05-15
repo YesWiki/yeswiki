@@ -9,6 +9,7 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Entity\ConfigurationFile;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
@@ -42,23 +43,17 @@ class CiController extends YesWikiController
         $config = $configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
 
-        $this->updateConfigRecursive($config, $this->wiki->request->toArray());
+        $this->updateConfigFieldByField($config, $this->wiki->request->toArray());
+
         $configurationService->write($config);
 
         return new ApiResponse();
     }
 
-    private function updateConfigRecursive(\ArrayAccess &$currentConfig, array $newConfig)
+    private function updateConfigFieldByField(ConfigurationFile $configurationFile, array $newConfig)
     {
         foreach ($newConfig as $key => $value) {
-            if (is_array($value)) {
-                if (!isset($currentConfig[$key]) || !is_array($currentConfig[$key])) {
-                    $currentConfig[$key] = [];
-                }
-                $this->updateConfigRecursive($currentConfig[$key], $value);
-            } else {
-                $currentConfig[$key] = $value;
-            }
+            $configurationFile[$key] = $value;
         }
     }
 }
