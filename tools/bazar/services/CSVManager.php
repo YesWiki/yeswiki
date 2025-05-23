@@ -409,13 +409,13 @@ class CSVManager
                     $ext = substr($filename, strrpos($filename, '.') + 1);
                     if ($ext == 'csv') {
                         if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
-                            if (($firstLine = fgetcsv($handle, 0, ',')) !== false) {
+                            if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
                                 if ($columnIndexesForPropertyNames =
                                     $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
                                 ) {
                                     // next lines
                                     $extracted = [];
-                                    while (($data = fgetcsv($handle, 0, ',')) !== false) { // init errors
+                                    while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
                                         $this->errormsg = [];
                                         $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $formId);
                                         $extracted[] = [
@@ -756,7 +756,7 @@ class CSVManager
         }
 
         // extract CSV
-        $values = str_getcsv($value, ',');
+        $values = str_getcsv($value, ',', '"', '\\');
 
         // convert values to index
         $indexes = array_map(function ($option) use ($options, $flippedOptions) {
