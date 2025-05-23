@@ -116,7 +116,7 @@ class CSVManager
 
             foreach ($data as $line) {
                 // output the column headings
-                fputcsv($csvResource, $line);
+                fputcsv($csvResource, $line, ',', '"', '\\');
             }
             rewind($csvResource);
 
