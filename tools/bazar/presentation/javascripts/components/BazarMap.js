@@ -78,9 +78,9 @@ Vue.component('BazarMap', {
                 })
                 return {
                   ...{
-                    fillColor: wiki.cssVar('--primary-color'),
-                    fillOpacity: 0.1,
-                    color: wiki.cssVar('--primary-color'),
+                    fillColor: props._umap_options.color ?? wiki.cssVar('--primary-color'),
+                    fillOpacity: props._umap_options.opacity ?? 0.3,
+                    color: props._umap_options.color ?? wiki.cssVar('--primary-color'),
                     opacity: 1,
                     weight: 3
                   },
