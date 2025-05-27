@@ -746,20 +746,28 @@ class CSVManager
     private function extractValueFromEnumFieldData(string $value, EnumField $field): string
     {
         // get Options
-        $options = $field->getOptions();
+        $options = array_map('trim', $field->getOptions());
         $flippedOptions = [];
-        // not usinf array_flip because it takes the last duplicated index, we prefer the first one
+        // not using array_flip because it takes the last duplicated index, we prefer the first one
         foreach ($options as $key => $val) {
+            $key = trim($key);
+            $val = trim($val);
+
             if (!isset($flippedOptions[$val])) {
                 $flippedOptions[$val] = $key;
             }
         }
 
-        // extract CSV
-        $values = str_getcsv($value, ',', '"', '\\');
+        // extract CSV and check if multiple values are present : they should be quoted
+        if (preg_match('/"[^"]+"/', $value)) {
+            $values = str_getcsv($value, ',', '"', '\\');
+        } else {
+            $values = [$value];
+        }
 
         // convert values to index
         $indexes = array_map(function ($option) use ($options, $flippedOptions) {
+            $option = trim($option);
             if (isset($flippedOptions[$option])) {
                 // search if $option is a correct value then take assoiacted index
                 return $flippedOptions[$option];

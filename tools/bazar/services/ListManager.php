@@ -130,9 +130,11 @@ class ListManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $id = $id ?? genere_nom_wiki('List ' . $title);
+        $nodes = $nodes ?? [];
+        $this->trimRecursiveInPlace($nodes);
         $json = json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? []),
+            'nodes' => $this->sanitizeHMTL($nodes),
         ]);
         $this->pageManager->save($id, $json);
 
@@ -149,10 +151,11 @@ class ListManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-
+        $nodes = $nodes ?? [];
+        $this->trimRecursiveInPlace($nodes);
         $json = json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? []),
+            'nodes' => $this->sanitizeHMTL($nodes),
         ]);
         $this->pageManager->save($id, $json);
 
@@ -187,5 +190,21 @@ class ListManager
 
             return $node;
         }, $nodes);
+    }
+
+    /**
+     * Recursively trims string values in a multidimensional array (in-place).
+     * Non-string values are left untouched.
+     *
+     * @param array  $array    The input array (will be modified by reference)
+     * @param string $charlist Optional. The characters to trim. Defaults to whitespace.
+     */
+    private function trimRecursiveInPlace(array &$array, string $charlist = " \t\n\r\0\x0B"): void
+    {
+        array_walk_recursive($array, function (&$value) use ($charlist) {
+            if (is_string($value)) {
+                $value = trim($value, $charlist);
+            }
+        });
     }
 }
