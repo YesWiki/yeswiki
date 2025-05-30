@@ -162,3 +162,10 @@
   font-size: 0.7em;
   opacity: 0.9;
 }
+
+.filter-box button.panel-heading {
+  width: 100%;
+}
+label input.filter-checkbox:focus ~ span {
+  outline: 5px auto;
+}

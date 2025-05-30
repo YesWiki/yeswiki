@@ -13,6 +13,9 @@
           <template v-if="entriesToDisplay.length > 1">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</template>
           <template v-else>{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</template>
         </span>
+        {% if not params.isInIframe and params.showexportbuttons %}
+          {{ include("@bazar/entries/index/_export_buttons.twig") }}
+        {% endif %}
       </template>
 
       {# Reset filters #}
