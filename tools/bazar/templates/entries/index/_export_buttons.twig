@@ -20,9 +20,4 @@
     href="{{ url({tag:'api',handler: ( params.idtypeannonce ? 'forms/' ~ params.idtypeannonce|first ~'/': '') ~ 'entries'}) }}">
     JSON
   </a>
-  <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_WIDGET')|raw('html') }}"
-    href="{{ url({handler:'widget',params:'id=' ~ (params.idtypeannonce ? params.idtypeannonce|join(',') : forms|map(form => form.bn_id_nature)|join(','))}) }}">
-    {{ _t('BAZ_WIDGET') }}
-  </a>
 </div>
