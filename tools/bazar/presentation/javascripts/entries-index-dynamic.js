@@ -210,6 +210,7 @@ const load = (domElement) => {
         })
         this.search = ''
         if (this.sortOptions.length > 0) this.currentSort = this.sortOptions[0]
+        this.saveFiltersIntoHash()
       },
       saveFiltersIntoHash() {
         if (!this.ready) return
@@ -223,6 +224,69 @@ const load = (domElement) => {
           hashParams.set('sort', `${this.currentSort.field}:${this.currentSort.asc}`)
         }
         history.pushState({}, '', `#${hashParams.toString()}`)
+        this.updateExportLinks(hashParams)
+      },
+      updateExportLinks(hashParams) {
+        document.querySelectorAll('.export-links > a').forEach((link) => {
+          link.href = this.addOrUpdateQueryParameter(
+            link.getAttribute('href'),
+            'query',
+            `${hashParams.toString()}`
+          )
+        })
+      },
+      addOrUpdateQueryParameter(url, parameterName, parameterValue) {
+        if (typeof url !== 'string' || url.trim() === '') {
+          console.error('Invalid URL provided.')
+          return url
+        }
+
+        try {
+          const urlObject = new URL(url)
+          const { searchParams } = urlObject
+          const existingParams = []
+          const seenParamNames = new Set()
+
+          const originalSearch = urlObject.search.substring(1) // Remove leading '?'
+          if (originalSearch) {
+            originalSearch.split('&').forEach((pair) => {
+              const parts = pair.split('=')
+              const name = decodeURIComponent(parts[0])
+              const value = parts.length > 1 ? decodeURIComponent(parts[1]) : ''
+
+              // Check if this is the parameter we are going to modify/add
+              if (name === parameterName) {
+                // We'll handle adding/updating this parameter later
+              } else {
+                existingParams.push({ name, value, hasValue: parts.length > 1 })
+                seenParamNames.add(name)
+              }
+            })
+          }
+
+          if (!seenParamNames.has(parameterName)) {
+            existingParams.push({ name: parameterName, value: parameterValue.replace('&', '|'), hasValue: parameterValue !== '' })
+          }
+
+          // Reconstruct the query string
+          let newSearch = ''
+          existingParams.forEach((param, index) => {
+            if (index > 0) {
+              newSearch += '&'
+            }
+            newSearch += encodeURIComponent(param.name)
+            if (param.hasValue) {
+              newSearch += `=${encodeURIComponent(param.value)}`
+            }
+          })
+
+          urlObject.search = newSearch ? `?${newSearch}` : ''
+
+          return urlObject.toString()
+        } catch (error) {
+          console.error('Error processing URL:', error)
+          return url
+        }
       },
       initFiltersFromHash(filters, hash) {
         hash = hash.substring(1) // remove #
@@ -445,6 +509,7 @@ const load = (domElement) => {
 
           this.calculateBaseEntries()
           this.ready = true
+          this.saveFiltersIntoHash()
           const event = new Event('bazar-list-dynamic-ready')
           document.dispatchEvent(event)
         }, 0)

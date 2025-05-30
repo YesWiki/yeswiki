@@ -143,7 +143,8 @@ class CSVManager
         ?string $formId,
         ?string $keywords = null,
         bool $fakeMode = false,
-        bool $keysInsteadOfValues = false
+        bool $keysInsteadOfValues = false,
+        ?string $query = null
     ): ?array {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {
@@ -163,10 +164,18 @@ class CSVManager
                 ));
 
                 if (!$fakeMode) {
+                    $queries = [];
+                    $tab = explode('|', $query);
+                    foreach ($tab as $req) {
+                        $tabdecoup = explode('=', $req, 2);
+                        $queries[$tabdecoup[0]] = trim($tabdecoup[1]);
+                    }
+
                     // get lines for each entry
                     $entries = $this->entryManager->search([
                         'formsIds' => [$formId],
                         'keywords' => $keywords,
+                        'queries' => $queries,
                     ]);
                     foreach ($entries as $entry) {
                         $csv_line = $this->getCSVLineFromEntry($entry, $headers, $keysInsteadOfValues);
