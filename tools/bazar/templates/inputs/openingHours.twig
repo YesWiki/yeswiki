@@ -1,0 +1,30 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js', true) }}
+
+{{ include_javascript('tools/bazar/presentation/javascripts/inputs/opening_hours.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/opening_hours.css') }}
+
+<div class="opening-hours-create" data-openingHours="{{ opening_hours }}">
+    <div class="opening-hours-interval" v-for="interval in opening_days">
+        <select v-model="interval.days" multiple>
+            <option value="Mo">Monday</option>
+            <option value="Tu">Tuesday</option>
+            <option value="We">Wednesday</option>
+            <option value="Th">Thursday</option>
+            <option value="Fr">Friday</option>
+            <option value="Sa">Saturday</option>
+            <option value="Su">Sunday</option>
+        </select>
+        <div class="opening-hours-hours">
+            <div v-for="hour in interval.hours">
+                <input type="time" v-model="hour.start" placeholder="{{ _t('BAZ_OPENING_HOURS_OPEN') }}" />
+                <input type="time" v-model="hour.end" placeholder="{{ _t('BAZ_OPENING_HOURS_CLOSE') }}" />
+                <button class="btn btn-primary" title="supprimer les horaires" @click="deleteHour(hour, interval)" type="button"><i style="margin: 0px" class="fa fa-trash"></i></button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary" title="ajouter des horaires" @click="addTime(interval)"> {{ _t('BAZ_OPENING_HOURS_ADD_TIME') }} </button>
+        <button class="btn btn-primary" @click="deleteDay(interval)" title="supprimer les jour selectionné" type="button"><i style="margin: 0px" class="fa fa-trash"></i></button>
+    </div>
+
+    <button type="button" class="btn btn-primary" title="ajouter des jours" @click="addDay()"> {{ _t('BAZ_OPENING_HOURS_ADD_DAY') }} </button>
+    <input type="hidden" name="{{ field.name }}"  :value="openingHours">
+</div>

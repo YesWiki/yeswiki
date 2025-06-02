@@ -1,0 +1,28 @@
+.opening-hours-interval {
+  display: flex;
+  gap: 1em;
+  padding: 1em;
+  align-content: center;
+  align-items: center;
+}
+
+.opening-hours-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.opening-hours-create select,
+input {
+  border-color: var(--primary-color);
+  border-radius: 5px;
+  padding: 0.5em;
+}
+
+.opening-hours-create {
+  margin-bottom: 2em;
+}
+
+.opening-hours-create option {
+  border-radius: 5px;
+}

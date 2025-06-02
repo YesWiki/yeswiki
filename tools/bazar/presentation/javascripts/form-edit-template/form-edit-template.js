@@ -24,6 +24,7 @@ import listefichesliees from './fields/listefichesliees.js'
 import custom from './fields/custom.js'
 import tabs from './fields/tabs.js'
 import tabchange from './fields/tabchange.js'
+import openingHours from './fields/openingHours.js'
 
 import { parseWikiTextIntoJsonData, formatJsonDataIntoWikiText } from './yeswiki-syntax-converter.js'
 import {
@@ -51,6 +52,7 @@ window.formBuilderFields = {
   file,
   champs_mail,
   select,
+  openingHours,
   'checkbox-group': checkbox_group,
   'radio-group': radio_group,
   map,
