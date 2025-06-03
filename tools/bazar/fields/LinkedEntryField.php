@@ -17,6 +17,7 @@ class LinkedEntryField extends BazarField
     protected $limit;
     protected $template;
     protected $linkType;
+    protected $addEntryBtnLabel;
 
     protected const FIELD_QUERY = 2;
     protected const FIELD_OTHER_PARAMS = 3;
@@ -24,6 +25,7 @@ class LinkedEntryField extends BazarField
     protected const FIELD_TEMPLATE = 5;
     protected const FIELD_LINK_TYPE = 6;
     protected const FIELD_LABEL = 7;
+    protected const FIELD_ADD_ENTRY_BTN_LABEL = 10;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -37,17 +39,17 @@ class LinkedEntryField extends BazarField
         $this->linkType = (!empty($values[self::FIELD_LINK_TYPE]) && $values[self::FIELD_LINK_TYPE] === 'checkbox')
             ? 'checkboxfiche' : ($values[self::FIELD_LINK_TYPE] ?? '');
         $this->propertyName = null; // to prevent bad saved field when updating entry and !canEdit or at export/import
+        $this->addEntryBtnLabel = $values[self::FIELD_ADD_ENTRY_BTN_LABEL] ?? '';
     }
 
     protected function renderInput($entry)
     {
         // Display the linked entries only on update
         if (isset($entry['id_fiche'])) {
-            $output = $this->renderSecuredBazarList($entry);
-
-            return $this->isEmptyOutput($output)
-                ? $output
-                : $this->render('@bazar/inputs/linked-entry.twig', compact(['output']));
+            return $this->render(
+                '@bazar/inputs/linked-entry.twig',
+                $this->getTwigOptions($entry)
+            );
         }
     }
 
@@ -55,14 +57,23 @@ class LinkedEntryField extends BazarField
     {
         // Display the linked entries only if id_fiche and id_typeannonce
         if (!empty($entry['id_fiche']) && !empty($entry['id_typeannonce'])) {
-            $output = $this->renderSecuredBazarList($entry);
-
-            return $this->isEmptyOutput($output)
-                ? $output
-                : $this->render('@bazar/fields/linked-entry.twig', compact(['output']));
+            return $this->render(
+                '@bazar/fields/linked-entry.twig',
+                $this->getTwigOptions($entry)
+            );
         } else {
             return '';
         }
+    }
+
+    protected function getTwigOptions($entry)
+    {
+        $output = $this->renderSecuredBazarList($entry);
+        $addEntryBtnLabel = $this->addEntryBtnLabel;
+        $addEntryLink = $this->getWiki()->href('iframe', 'BazaR', 'voirmenu=0&vue=saisir&id='.$this->name, false);
+        $emptyList = $this->isEmptyOutput($output);
+
+        return compact(['output', 'addEntryLink', 'addEntryBtnLabel', 'emptyList']);
     }
 
     protected function renderSecuredBazarList($entry): string
@@ -80,7 +91,7 @@ class LinkedEntryField extends BazarField
         return empty($output) || preg_match('/<div id="[^"]+" class="bazar-list[^"]*"[^>]*>\\s*<div class="list">\\s*<\\/div>\\s*<\\/div>/', $output);
     }
 
-    private function getBazarListAction($entry)
+    private function getBazarListAction($entry): string
     {
         $query = $this->getQueryForLinkedLabels($entry);
         if (!empty($query)) {
