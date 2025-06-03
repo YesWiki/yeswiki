@@ -106,24 +106,30 @@
   margin: 0.3em 1em;
   color: var(--neutral-soft-color);
 }
+.filter-box .filter-node > span:before {
+  margin-top: 4px;
+}
 .filter-box .filter-node > span {
   display: flex;
   width: 100%;
+  height: unset;
+  min-height: 1.5rem;
 }
-.filter-box .filter-node > span > span {
+.filter-box .filter-node-label-wrapper {
   display: flex;
+  justify-content: space-between;
+  gap: 0.5em;
   align-items: center;
   width: 100%;
 }
 /* Label */
 .filter-box .filter-node .filter-node-label {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
+  display: inline;
   font-weight: normal;
+  white-space: nowrap;
 }
 .filter-box .filter-node .filter-node-label span {
-  white-space: nowrap;
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -131,7 +137,7 @@
 .filter-box .filter-node.some-descendant-checked .filter-node-label {
   font-weight: bold;
 }
-.filter-box .filter-node > span > span:hover .filter-node-label {
+.filter-box .filter-node-label-wrapper:hover .filter-node-label {
   color: var(--primary-color);
 }
 /* Chevron icon */
@@ -145,8 +151,6 @@
 }
 /* Count */
 .filter-box .filter-node .count {
-  position: absolute;
-  right: -1em;
   padding: 0 0.8rem 0 0.5em;
   background-color: var(--main-container-bg-color);
 }
