@@ -20,6 +20,10 @@
  * JavaScript code in this page
  */
 
+/**
+ * pdfjsVersion = 5.3.31
+ * pdfjsBuild = 47ad820d9
+ */
 /******/ var __webpack_modules__ = ({
 
 /***/ 34:
@@ -230,37 +234,6 @@ module.exports = function (it, Prototype) {
 
 /***/ }),
 
-/***/ 713:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var call = __webpack_require__(9565);
-var aCallable = __webpack_require__(9306);
-var anObject = __webpack_require__(8551);
-var getIteratorDirect = __webpack_require__(1767);
-var createIteratorProxy = __webpack_require__(9462);
-var callWithSafeIterationClosing = __webpack_require__(6319);
-
-var IteratorProxy = createIteratorProxy(function () {
-  var iterator = this.iterator;
-  var result = anObject(call(this.next, iterator));
-  var done = this.done = !!result.done;
-  if (!done) return callWithSafeIterationClosing(iterator, this.mapper, [result.value, this.counter++], true);
-});
-
-// `Iterator.prototype.map` method
-// https://github.com/tc39/proposal-iterator-helpers
-module.exports = function map(mapper) {
-  anObject(this);
-  aCallable(mapper);
-  return new IteratorProxy(getIteratorDirect(this), {
-    mapper: mapper
-  });
-};
-
-
-/***/ }),
-
 /***/ 741:
 /***/ ((module) => {
 
@@ -338,36 +311,34 @@ module.exports = Object.keys || function keys(O) {
 
 /***/ }),
 
-/***/ 1108:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var classof = __webpack_require__(6955);
-
-module.exports = function (it) {
-  var klass = classof(it);
-  return klass === 'BigInt64Array' || klass === 'BigUint64Array';
-};
-
-
-/***/ }),
-
 /***/ 1148:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 
 var $ = __webpack_require__(6518);
+var call = __webpack_require__(9565);
 var iterate = __webpack_require__(2652);
 var aCallable = __webpack_require__(9306);
 var anObject = __webpack_require__(8551);
 var getIteratorDirect = __webpack_require__(1767);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var everyWithoutClosingOnEarlyError = iteratorHelperWithoutClosingOnEarlyError('every', TypeError);
 
 // `Iterator.prototype.every` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.every
-$({ target: 'Iterator', proto: true, real: true }, {
+$({ target: 'Iterator', proto: true, real: true, forced: everyWithoutClosingOnEarlyError }, {
   every: function every(predicate) {
     anObject(this);
-    aCallable(predicate);
+    try {
+      aCallable(predicate);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (everyWithoutClosingOnEarlyError) return call(everyWithoutClosingOnEarlyError, this, predicate);
+
     var record = getIteratorDirect(this);
     var counter = 0;
     return !iterate(record, function (value, stop) {
@@ -530,13 +501,42 @@ $({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('uni
 
 
 var $ = __webpack_require__(6518);
-var map = __webpack_require__(713);
+var call = __webpack_require__(9565);
+var aCallable = __webpack_require__(9306);
+var anObject = __webpack_require__(8551);
+var getIteratorDirect = __webpack_require__(1767);
+var createIteratorProxy = __webpack_require__(9462);
+var callWithSafeIterationClosing = __webpack_require__(6319);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
 var IS_PURE = __webpack_require__(6395);
+
+var mapWithoutClosingOnEarlyError = !IS_PURE && iteratorHelperWithoutClosingOnEarlyError('map', TypeError);
+
+var IteratorProxy = createIteratorProxy(function () {
+  var iterator = this.iterator;
+  var result = anObject(call(this.next, iterator));
+  var done = this.done = !!result.done;
+  if (!done) return callWithSafeIterationClosing(iterator, this.mapper, [result.value, this.counter++], true);
+});
 
 // `Iterator.prototype.map` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.map
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE }, {
-  map: map
+$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE || mapWithoutClosingOnEarlyError }, {
+  map: function map(mapper) {
+    anObject(this);
+    try {
+      aCallable(mapper);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (mapWithoutClosingOnEarlyError) return call(mapWithoutClosingOnEarlyError, this, mapper);
+
+    return new IteratorProxy(getIteratorDirect(this), {
+      mapper: mapper
+    });
+  }
 });
 
 
@@ -819,6 +819,10 @@ var getIteratorDirect = __webpack_require__(1767);
 var createIteratorProxy = __webpack_require__(9462);
 var callWithSafeIterationClosing = __webpack_require__(6319);
 var IS_PURE = __webpack_require__(6395);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var filterWithoutClosingOnEarlyError = !IS_PURE && iteratorHelperWithoutClosingOnEarlyError('filter', TypeError);
 
 var IteratorProxy = createIteratorProxy(function () {
   var iterator = this.iterator;
@@ -836,10 +840,17 @@ var IteratorProxy = createIteratorProxy(function () {
 
 // `Iterator.prototype.filter` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.filter
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE }, {
+$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE || filterWithoutClosingOnEarlyError }, {
   filter: function filter(predicate) {
     anObject(this);
-    aCallable(predicate);
+    try {
+      aCallable(predicate);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (filterWithoutClosingOnEarlyError) return call(filterWithoutClosingOnEarlyError, this, predicate);
+
     return new IteratorProxy(getIteratorDirect(this), {
       predicate: predicate
     });
@@ -1058,42 +1069,6 @@ module.exports = userAgent ? String(userAgent) : '';
 
 /***/ }),
 
-/***/ 2967:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-/* eslint-disable no-proto -- safe */
-var uncurryThisAccessor = __webpack_require__(6706);
-var isObject = __webpack_require__(34);
-var requireObjectCoercible = __webpack_require__(7750);
-var aPossiblePrototype = __webpack_require__(3506);
-
-// `Object.setPrototypeOf` method
-// https://tc39.es/ecma262/#sec-object.setprototypeof
-// Works with __proto__ only. Old v8 can't work with null proto objects.
-// eslint-disable-next-line es/no-object-setprototypeof -- safe
-module.exports = Object.setPrototypeOf || ('__proto__' in {} ? function () {
-  var CORRECT_SETTER = false;
-  var test = {};
-  var setter;
-  try {
-    setter = uncurryThisAccessor(Object.prototype, '__proto__', 'set');
-    setter(test, []);
-    CORRECT_SETTER = test instanceof Array;
-  } catch (error) { /* empty */ }
-  return function setPrototypeOf(O, proto) {
-    requireObjectCoercible(O);
-    aPossiblePrototype(proto);
-    if (!isObject(O)) return O;
-    if (CORRECT_SETTER) setter(O, proto);
-    else O.__proto__ = proto;
-    return O;
-  };
-}() : undefined);
-
-
-/***/ }),
-
 /***/ 3238:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -1168,39 +1143,34 @@ module.exports = function difference(other) {
 
 /***/ }),
 
-/***/ 3506:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var isPossiblePrototype = __webpack_require__(3925);
-
-var $String = String;
-var $TypeError = TypeError;
-
-module.exports = function (argument) {
-  if (isPossiblePrototype(argument)) return argument;
-  throw new $TypeError("Can't set " + $String(argument) + ' as a prototype');
-};
-
-
-/***/ }),
-
 /***/ 3579:
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 
 var $ = __webpack_require__(6518);
+var call = __webpack_require__(9565);
 var iterate = __webpack_require__(2652);
 var aCallable = __webpack_require__(9306);
 var anObject = __webpack_require__(8551);
 var getIteratorDirect = __webpack_require__(1767);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var someWithoutClosingOnEarlyError = iteratorHelperWithoutClosingOnEarlyError('some', TypeError);
 
 // `Iterator.prototype.some` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.some
-$({ target: 'Iterator', proto: true, real: true }, {
+$({ target: 'Iterator', proto: true, real: true, forced: someWithoutClosingOnEarlyError }, {
   some: function some(predicate) {
     anObject(this);
-    aCallable(predicate);
+    try {
+      aCallable(predicate);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (someWithoutClosingOnEarlyError) return call(someWithoutClosingOnEarlyError, this, predicate);
+
     var record = getIteratorDirect(this);
     var counter = 0;
     return iterate(record, function (value, stop) {
@@ -1376,19 +1346,6 @@ var INCORRECT = !setMethodAcceptSetLike('isDisjointFrom', function (result) {
 $({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
   isDisjointFrom: isDisjointFrom
 });
-
-
-/***/ }),
-
-/***/ 3925:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var isObject = __webpack_require__(34);
-
-module.exports = function (argument) {
-  return isObject(argument) || argument === null;
-};
 
 
 /***/ }),
@@ -1737,6 +1694,36 @@ module.exports = SILENT_ON_NON_WRITABLE_LENGTH_SET ? function (O, length) {
 
 /***/ }),
 
+/***/ 4549:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var globalThis = __webpack_require__(4576);
+
+// https://github.com/tc39/ecma262/pull/3467
+module.exports = function (METHOD_NAME, ExpectedError) {
+  var Iterator = globalThis.Iterator;
+  var IteratorPrototype = Iterator && Iterator.prototype;
+  var method = IteratorPrototype && IteratorPrototype[METHOD_NAME];
+
+  var CLOSED = false;
+
+  if (method) try {
+    method.call({
+      next: function () { return { done: true }; },
+      'return': function () { CLOSED = true; }
+    }, -1);
+  } catch (error) {
+    // https://bugs.webkit.org/show_bug.cgi?id=291195
+    if (!(error instanceof ExpectedError)) CLOSED = false;
+  }
+
+  if (!CLOSED) return method;
+};
+
+
+/***/ }),
+
 /***/ 4576:
 /***/ (function(module) {
 
@@ -1839,206 +1826,6 @@ $({ target: 'Promise', stat: true }, {
 
 /***/ }),
 
-/***/ 4644:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var NATIVE_ARRAY_BUFFER = __webpack_require__(7811);
-var DESCRIPTORS = __webpack_require__(3724);
-var globalThis = __webpack_require__(4576);
-var isCallable = __webpack_require__(4901);
-var isObject = __webpack_require__(34);
-var hasOwn = __webpack_require__(9297);
-var classof = __webpack_require__(6955);
-var tryToString = __webpack_require__(6823);
-var createNonEnumerableProperty = __webpack_require__(6699);
-var defineBuiltIn = __webpack_require__(6840);
-var defineBuiltInAccessor = __webpack_require__(2106);
-var isPrototypeOf = __webpack_require__(1625);
-var getPrototypeOf = __webpack_require__(2787);
-var setPrototypeOf = __webpack_require__(2967);
-var wellKnownSymbol = __webpack_require__(8227);
-var uid = __webpack_require__(3392);
-var InternalStateModule = __webpack_require__(1181);
-
-var enforceInternalState = InternalStateModule.enforce;
-var getInternalState = InternalStateModule.get;
-var Int8Array = globalThis.Int8Array;
-var Int8ArrayPrototype = Int8Array && Int8Array.prototype;
-var Uint8ClampedArray = globalThis.Uint8ClampedArray;
-var Uint8ClampedArrayPrototype = Uint8ClampedArray && Uint8ClampedArray.prototype;
-var TypedArray = Int8Array && getPrototypeOf(Int8Array);
-var TypedArrayPrototype = Int8ArrayPrototype && getPrototypeOf(Int8ArrayPrototype);
-var ObjectPrototype = Object.prototype;
-var TypeError = globalThis.TypeError;
-
-var TO_STRING_TAG = wellKnownSymbol('toStringTag');
-var TYPED_ARRAY_TAG = uid('TYPED_ARRAY_TAG');
-var TYPED_ARRAY_CONSTRUCTOR = 'TypedArrayConstructor';
-// Fixing native typed arrays in Opera Presto crashes the browser, see #595
-var NATIVE_ARRAY_BUFFER_VIEWS = NATIVE_ARRAY_BUFFER && !!setPrototypeOf && classof(globalThis.opera) !== 'Opera';
-var TYPED_ARRAY_TAG_REQUIRED = false;
-var NAME, Constructor, Prototype;
-
-var TypedArrayConstructorsList = {
-  Int8Array: 1,
-  Uint8Array: 1,
-  Uint8ClampedArray: 1,
-  Int16Array: 2,
-  Uint16Array: 2,
-  Int32Array: 4,
-  Uint32Array: 4,
-  Float32Array: 4,
-  Float64Array: 8
-};
-
-var BigIntArrayConstructorsList = {
-  BigInt64Array: 8,
-  BigUint64Array: 8
-};
-
-var isView = function isView(it) {
-  if (!isObject(it)) return false;
-  var klass = classof(it);
-  return klass === 'DataView'
-    || hasOwn(TypedArrayConstructorsList, klass)
-    || hasOwn(BigIntArrayConstructorsList, klass);
-};
-
-var getTypedArrayConstructor = function (it) {
-  var proto = getPrototypeOf(it);
-  if (!isObject(proto)) return;
-  var state = getInternalState(proto);
-  return (state && hasOwn(state, TYPED_ARRAY_CONSTRUCTOR)) ? state[TYPED_ARRAY_CONSTRUCTOR] : getTypedArrayConstructor(proto);
-};
-
-var isTypedArray = function (it) {
-  if (!isObject(it)) return false;
-  var klass = classof(it);
-  return hasOwn(TypedArrayConstructorsList, klass)
-    || hasOwn(BigIntArrayConstructorsList, klass);
-};
-
-var aTypedArray = function (it) {
-  if (isTypedArray(it)) return it;
-  throw new TypeError('Target is not a typed array');
-};
-
-var aTypedArrayConstructor = function (C) {
-  if (isCallable(C) && (!setPrototypeOf || isPrototypeOf(TypedArray, C))) return C;
-  throw new TypeError(tryToString(C) + ' is not a typed array constructor');
-};
-
-var exportTypedArrayMethod = function (KEY, property, forced, options) {
-  if (!DESCRIPTORS) return;
-  if (forced) for (var ARRAY in TypedArrayConstructorsList) {
-    var TypedArrayConstructor = globalThis[ARRAY];
-    if (TypedArrayConstructor && hasOwn(TypedArrayConstructor.prototype, KEY)) try {
-      delete TypedArrayConstructor.prototype[KEY];
-    } catch (error) {
-      // old WebKit bug - some methods are non-configurable
-      try {
-        TypedArrayConstructor.prototype[KEY] = property;
-      } catch (error2) { /* empty */ }
-    }
-  }
-  if (!TypedArrayPrototype[KEY] || forced) {
-    defineBuiltIn(TypedArrayPrototype, KEY, forced ? property
-      : NATIVE_ARRAY_BUFFER_VIEWS && Int8ArrayPrototype[KEY] || property, options);
-  }
-};
-
-var exportTypedArrayStaticMethod = function (KEY, property, forced) {
-  var ARRAY, TypedArrayConstructor;
-  if (!DESCRIPTORS) return;
-  if (setPrototypeOf) {
-    if (forced) for (ARRAY in TypedArrayConstructorsList) {
-      TypedArrayConstructor = globalThis[ARRAY];
-      if (TypedArrayConstructor && hasOwn(TypedArrayConstructor, KEY)) try {
-        delete TypedArrayConstructor[KEY];
-      } catch (error) { /* empty */ }
-    }
-    if (!TypedArray[KEY] || forced) {
-      // V8 ~ Chrome 49-50 `%TypedArray%` methods are non-writable non-configurable
-      try {
-        return defineBuiltIn(TypedArray, KEY, forced ? property : NATIVE_ARRAY_BUFFER_VIEWS && TypedArray[KEY] || property);
-      } catch (error) { /* empty */ }
-    } else return;
-  }
-  for (ARRAY in TypedArrayConstructorsList) {
-    TypedArrayConstructor = globalThis[ARRAY];
-    if (TypedArrayConstructor && (!TypedArrayConstructor[KEY] || forced)) {
-      defineBuiltIn(TypedArrayConstructor, KEY, property);
-    }
-  }
-};
-
-for (NAME in TypedArrayConstructorsList) {
-  Constructor = globalThis[NAME];
-  Prototype = Constructor && Constructor.prototype;
-  if (Prototype) enforceInternalState(Prototype)[TYPED_ARRAY_CONSTRUCTOR] = Constructor;
-  else NATIVE_ARRAY_BUFFER_VIEWS = false;
-}
-
-for (NAME in BigIntArrayConstructorsList) {
-  Constructor = globalThis[NAME];
-  Prototype = Constructor && Constructor.prototype;
-  if (Prototype) enforceInternalState(Prototype)[TYPED_ARRAY_CONSTRUCTOR] = Constructor;
-}
-
-// WebKit bug - typed arrays constructors prototype is Object.prototype
-if (!NATIVE_ARRAY_BUFFER_VIEWS || !isCallable(TypedArray) || TypedArray === Function.prototype) {
-  // eslint-disable-next-line no-shadow -- safe
-  TypedArray = function TypedArray() {
-    throw new TypeError('Incorrect invocation');
-  };
-  if (NATIVE_ARRAY_BUFFER_VIEWS) for (NAME in TypedArrayConstructorsList) {
-    if (globalThis[NAME]) setPrototypeOf(globalThis[NAME], TypedArray);
-  }
-}
-
-if (!NATIVE_ARRAY_BUFFER_VIEWS || !TypedArrayPrototype || TypedArrayPrototype === ObjectPrototype) {
-  TypedArrayPrototype = TypedArray.prototype;
-  if (NATIVE_ARRAY_BUFFER_VIEWS) for (NAME in TypedArrayConstructorsList) {
-    if (globalThis[NAME]) setPrototypeOf(globalThis[NAME].prototype, TypedArrayPrototype);
-  }
-}
-
-// WebKit bug - one more object in Uint8ClampedArray prototype chain
-if (NATIVE_ARRAY_BUFFER_VIEWS && getPrototypeOf(Uint8ClampedArrayPrototype) !== TypedArrayPrototype) {
-  setPrototypeOf(Uint8ClampedArrayPrototype, TypedArrayPrototype);
-}
-
-if (DESCRIPTORS && !hasOwn(TypedArrayPrototype, TO_STRING_TAG)) {
-  TYPED_ARRAY_TAG_REQUIRED = true;
-  defineBuiltInAccessor(TypedArrayPrototype, TO_STRING_TAG, {
-    configurable: true,
-    get: function () {
-      return isObject(this) ? this[TYPED_ARRAY_TAG] : undefined;
-    }
-  });
-  for (NAME in TypedArrayConstructorsList) if (globalThis[NAME]) {
-    createNonEnumerableProperty(globalThis[NAME], TYPED_ARRAY_TAG, NAME);
-  }
-}
-
-module.exports = {
-  NATIVE_ARRAY_BUFFER_VIEWS: NATIVE_ARRAY_BUFFER_VIEWS,
-  TYPED_ARRAY_TAG: TYPED_ARRAY_TAG_REQUIRED && TYPED_ARRAY_TAG,
-  aTypedArray: aTypedArray,
-  aTypedArrayConstructor: aTypedArrayConstructor,
-  exportTypedArrayMethod: exportTypedArrayMethod,
-  exportTypedArrayStaticMethod: exportTypedArrayStaticMethod,
-  getTypedArrayConstructor: getTypedArrayConstructor,
-  isView: isView,
-  isTypedArray: isTypedArray,
-  TypedArray: TypedArray,
-  TypedArrayPrototype: TypedArrayPrototype
-};
-
-
-/***/ }),
-
 /***/ 4659:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -2051,32 +1838,6 @@ module.exports = function (object, key, value) {
   if (DESCRIPTORS) definePropertyModule.f(object, key, createPropertyDescriptor(0, value));
   else object[key] = value;
 };
-
-
-/***/ }),
-
-/***/ 4732:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var ArrayBufferViewCore = __webpack_require__(4644);
-var uncurryThis = __webpack_require__(9504);
-var aCallable = __webpack_require__(9306);
-var arrayFromConstructorAndList = __webpack_require__(5370);
-
-var aTypedArray = ArrayBufferViewCore.aTypedArray;
-var getTypedArrayConstructor = ArrayBufferViewCore.getTypedArrayConstructor;
-var exportTypedArrayMethod = ArrayBufferViewCore.exportTypedArrayMethod;
-var sort = uncurryThis(ArrayBufferViewCore.TypedArrayPrototype.sort);
-
-// `%TypedArray%.prototype.toSorted` method
-// https://tc39.es/ecma262/#sec-%typedarray%.prototype.tosorted
-exportTypedArrayMethod('toSorted', function toSorted(compareFn) {
-  if (compareFn !== undefined) aCallable(compareFn);
-  var O = aTypedArray(this);
-  var A = arrayFromConstructorAndList(getTypedArrayConstructor(O), O);
-  return sort(A, compareFn);
-});
 
 
 /***/ }),
@@ -2190,8 +1951,10 @@ module.exports = function (name, callback) {
   try {
     new Set()[name](createSetLike(0));
     try {
-      // late spec change, early WebKit ~ Safari 17.0 beta implementation does not pass it
+      // late spec change, early WebKit ~ Safari 17 implementation does not pass it
       // https://github.com/tc39/proposal-set-methods/pull/88
+      // also covered engines with
+      // https://bugs.webkit.org/show_bug.cgi?id=272679
       new Set()[name](createSetLike(-1));
       return false;
     } catch (error2) {
@@ -2280,23 +2043,6 @@ var SetHelpers = __webpack_require__(4402);
 
 module.exports = uncurryThisAccessor(SetHelpers.proto, 'size', 'get') || function (set) {
   return set.size;
-};
-
-
-/***/ }),
-
-/***/ 5370:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var lengthOfArrayLike = __webpack_require__(6198);
-
-module.exports = function (Constructor, list, $length) {
-  var index = 0;
-  var length = arguments.length > 2 ? $length : lengthOfArrayLike(list);
-  var result = new Constructor(length);
-  while (length > index) result[index] = list[index++];
-  return result;
 };
 
 
@@ -2428,26 +2174,6 @@ $({ target: 'URL', stat: true, forced: !USE_NATIVE_URL }, {
     }
   }
 });
-
-
-/***/ }),
-
-/***/ 5854:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var toPrimitive = __webpack_require__(2777);
-
-var $TypeError = TypeError;
-
-// `ToBigInt` abstract operation
-// https://tc39.es/ecma262/#sec-tobigint
-module.exports = function (argument) {
-  var prim = toPrimitive(argument, 'number');
-  if (typeof prim == 'number') throw new $TypeError("Can't convert number to bigint");
-  // eslint-disable-next-line es/no-bigint -- safe
-  return BigInt(prim);
-};
 
 
 /***/ }),
@@ -3090,26 +2816,6 @@ module.exports = !fails(function () {
 
 /***/ }),
 
-/***/ 7467:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var arrayToReversed = __webpack_require__(7628);
-var ArrayBufferViewCore = __webpack_require__(4644);
-
-var aTypedArray = ArrayBufferViewCore.aTypedArray;
-var exportTypedArrayMethod = ArrayBufferViewCore.exportTypedArrayMethod;
-var getTypedArrayConstructor = ArrayBufferViewCore.getTypedArrayConstructor;
-
-// `%TypedArray%.prototype.toReversed` method
-// https://tc39.es/ecma262/#sec-%typedarray%.prototype.toreversed
-exportTypedArrayMethod('toReversed', function toReversed() {
-  return arrayToReversed(aTypedArray(this), getTypedArrayConstructor(this));
-});
-
-
-/***/ }),
-
 /***/ 7476:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -3167,17 +2873,29 @@ if (params.has('a', 2) || !params.has('a', undefined)) {
 
 
 var $ = __webpack_require__(6518);
+var call = __webpack_require__(9565);
 var iterate = __webpack_require__(2652);
 var aCallable = __webpack_require__(9306);
 var anObject = __webpack_require__(8551);
 var getIteratorDirect = __webpack_require__(1767);
+var iteratorClose = __webpack_require__(9539);
+var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
+
+var forEachWithoutClosingOnEarlyError = iteratorHelperWithoutClosingOnEarlyError('forEach', TypeError);
 
 // `Iterator.prototype.forEach` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.foreach
-$({ target: 'Iterator', proto: true, real: true }, {
+$({ target: 'Iterator', proto: true, real: true, forced: forEachWithoutClosingOnEarlyError }, {
   forEach: function forEach(fn) {
     anObject(this);
-    aCallable(fn);
+    try {
+      aCallable(fn);
+    } catch (error) {
+      iteratorClose(this, 'throw', error);
+    }
+
+    if (forEachWithoutClosingOnEarlyError) return call(forEachWithoutClosingOnEarlyError, this, fn);
+
     var record = getIteratorDirect(this);
     var counter = 0;
     iterate(record, function (value) {
@@ -3185,25 +2903,6 @@ $({ target: 'Iterator', proto: true, real: true }, {
     }, { IS_RECORD: true });
   }
 });
-
-
-/***/ }),
-
-/***/ 7628:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var lengthOfArrayLike = __webpack_require__(6198);
-
-// https://tc39.es/proposal-change-array-by-copy/#sec-array.prototype.toReversed
-// https://tc39.es/proposal-change-array-by-copy/#sec-%typedarray%.prototype.toReversed
-module.exports = function (O, C) {
-  var len = lengthOfArrayLike(O);
-  var A = new C(len);
-  var k = 0;
-  for (; k < len; k++) A[k] = O[len - k - 1];
-  return A;
-};
 
 
 /***/ }),
@@ -3220,10 +2919,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.40.0',
+  version: '3.42.0',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.40.0/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.42.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -4438,43 +4137,6 @@ module.exports = NATIVE_BIND ? call.bind(call) : function () {
 
 /***/ }),
 
-/***/ 9577:
-/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var arrayWith = __webpack_require__(9928);
-var ArrayBufferViewCore = __webpack_require__(4644);
-var isBigIntArray = __webpack_require__(1108);
-var toIntegerOrInfinity = __webpack_require__(1291);
-var toBigInt = __webpack_require__(5854);
-
-var aTypedArray = ArrayBufferViewCore.aTypedArray;
-var getTypedArrayConstructor = ArrayBufferViewCore.getTypedArrayConstructor;
-var exportTypedArrayMethod = ArrayBufferViewCore.exportTypedArrayMethod;
-
-var PROPER_ORDER = !!function () {
-  try {
-    // eslint-disable-next-line no-throw-literal, es/no-typed-arrays, es/no-array-prototype-with -- required for testing
-    new Int8Array(1)['with'](2, { valueOf: function () { throw 8; } });
-  } catch (error) {
-    // some early implementations, like WebKit, does not follow the final semantic
-    // https://github.com/tc39/proposal-change-array-by-copy/pull/86
-    return error === 8;
-  }
-}();
-
-// `%TypedArray%.prototype.with` method
-// https://tc39.es/ecma262/#sec-%typedarray%.prototype.with
-exportTypedArrayMethod('with', { 'with': function (index, value) {
-  var O = aTypedArray(this);
-  var relativeIndex = toIntegerOrInfinity(index);
-  var actualValue = isBigIntArray(O) ? toBigInt(value) : +value;
-  return arrayWith(O, getTypedArrayConstructor(O), relativeIndex, actualValue);
-} }['with'], !PROPER_ORDER);
-
-
-/***/ }),
-
 /***/ 9617:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -4514,31 +4176,6 @@ module.exports = {
 };
 
 
-/***/ }),
-
-/***/ 9928:
-/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
-
-
-var lengthOfArrayLike = __webpack_require__(6198);
-var toIntegerOrInfinity = __webpack_require__(1291);
-
-var $RangeError = RangeError;
-
-// https://tc39.es/proposal-change-array-by-copy/#sec-array.prototype.with
-// https://tc39.es/proposal-change-array-by-copy/#sec-%typedarray%.prototype.with
-module.exports = function (O, C, index, value) {
-  var len = lengthOfArrayLike(O);
-  var relativeIndex = toIntegerOrInfinity(index);
-  var actualIndex = relativeIndex < 0 ? len + relativeIndex : relativeIndex;
-  if (actualIndex >= len || actualIndex < 0) throw new $RangeError('Incorrect index');
-  var A = new C(len);
-  var k = 0;
-  for (; k < len; k++) A[k] = k === actualIndex ? value : O[k];
-  return A;
-};
-
-
 /***/ })
 
 /******/ });
@@ -4568,32 +4205,7 @@ module.exports = function (O, C, index, value) {
 /******/ }
 /******/ 
 /************************************************************************/
-/******/ /* webpack/runtime/define property getters */
-/******/ (() => {
-/******/ 	// define getter functions for harmony exports
-/******/ 	__webpack_require__.d = (exports, definition) => {
-/******/ 		for(var key in definition) {
-/******/ 			if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
-/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
-/******/ 			}
-/******/ 		}
-/******/ 	};
-/******/ })();
-/******/ 
-/******/ /* webpack/runtime/hasOwnProperty shorthand */
-/******/ (() => {
-/******/ 	__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
-/******/ })();
-/******/ 
-/************************************************************************/
 var __webpack_exports__ = {};
-
-// EXPORTS
-__webpack_require__.d(__webpack_exports__, {
-  PDFViewerApplication: () => (/* reexport */ PDFViewerApplication),
-  PDFViewerApplicationConstants: () => (/* binding */ AppConstants),
-  PDFViewerApplicationOptions: () => (/* reexport */ AppOptions)
-});
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array.push.js
 var es_array_push = __webpack_require__(4114);
@@ -4665,6 +4277,7 @@ const {
   SupportedImageMimeTypes,
   TextLayer,
   TouchManager,
+  updateUrlHash,
   Util,
   VerbosityLevel,
   version,
@@ -5168,9 +4781,11 @@ const calcRound = function () {
 ;// ./web/app_options.js
 {
   var compatParams = new Map();
-  const userAgent = navigator.userAgent || "";
-  const platform = navigator.platform || "";
-  const maxTouchPoints = navigator.maxTouchPoints || 1;
+  const {
+    maxTouchPoints,
+    platform,
+    userAgent
+  } = navigator;
   const isAndroid = /Android/.test(userAgent);
   const isIOS = /\b(iPad|iPhone|iPod)(?=;)/.test(userAgent) || platform === "MacIntel" && maxTouchPoints > 1;
   (function () {
@@ -5250,6 +4865,10 @@ const defaultOptions = {
     value: true,
     kind: OptionKind.BROWSER
   },
+  supportsPrinting: {
+    value: true,
+    kind: OptionKind.BROWSER
+  },
   toolbarDensity: {
     value: 0,
     kind: OptionKind.BROWSER + OptionKind.EVENT_DISPATCH
@@ -5264,6 +4883,10 @@ const defaultOptions = {
   },
   annotationMode: {
     value: 2,
+    kind: OptionKind.VIEWER + OptionKind.PREFERENCE
+  },
+  capCanvasAreaFactor: {
+    value: 200,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   cursorToolOnLoad: {
@@ -5299,7 +4922,7 @@ const defaultOptions = {
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE + OptionKind.EVENT_DISPATCH
   },
   enableAutoLinking: {
-    value: false,
+    value: true,
     kind: OptionKind.VIEWER + OptionKind.PREFERENCE
   },
   enableDetailCanvas: {
@@ -5364,6 +4987,10 @@ const defaultOptions = {
   },
   maxCanvasPixels: {
     value: 2 ** 25,
+    kind: OptionKind.VIEWER
+  },
+  minDurationToUpdateCanvas: {
+    value: 500,
     kind: OptionKind.VIEWER
   },
   forcePageColors: {
@@ -6051,13 +5678,14 @@ class BasePreferences {
     altTextLearnMoreUrl: "",
     annotationEditorMode: 0,
     annotationMode: 2,
+    capCanvasAreaFactor: 200,
     cursorToolOnLoad: 0,
     defaultZoomDelay: 400,
     defaultZoomValue: "",
     disablePageLabels: false,
     enableAltText: false,
     enableAltTextModelDownload: true,
-    enableAutoLinking: false,
+    enableAutoLinking: true,
     enableGuessAltText: true,
     enableHighlightFloatingButton: false,
     enableNewAltTextWhenAddingImage: true,
@@ -6154,28 +5782,77 @@ class FluentNumber extends FluentType {
     this.opts = opts;
   }
   toString(scope) {
-    try {
-      const nf = scope.memoizeIntlObject(Intl.NumberFormat, this.opts);
-      return nf.format(this.value);
-    } catch (err) {
-      scope.reportError(err);
-      return this.value.toString(10);
+    if (scope) {
+      try {
+        const nf = scope.memoizeIntlObject(Intl.NumberFormat, this.opts);
+        return nf.format(this.value);
+      } catch (err) {
+        scope.reportError(err);
+      }
     }
+    return this.value.toString(10);
   }
 }
 class FluentDateTime extends FluentType {
+  static supportsValue(value) {
+    if (typeof value === "number") return true;
+    if (value instanceof Date) return true;
+    if (value instanceof FluentType) return FluentDateTime.supportsValue(value.valueOf());
+    if ("Temporal" in globalThis) {
+      const _Temporal = globalThis.Temporal;
+      if (value instanceof _Temporal.Instant || value instanceof _Temporal.PlainDateTime || value instanceof _Temporal.PlainDate || value instanceof _Temporal.PlainMonthDay || value instanceof _Temporal.PlainTime || value instanceof _Temporal.PlainYearMonth) {
+        return true;
+      }
+    }
+    return false;
+  }
   constructor(value, opts = {}) {
+    if (value instanceof FluentDateTime) {
+      opts = {
+        ...value.opts,
+        ...opts
+      };
+      value = value.value;
+    } else if (value instanceof FluentType) {
+      value = value.valueOf();
+    }
+    if (typeof value === "object" && "calendarId" in value && opts.calendar === undefined) {
+      opts = {
+        ...opts,
+        calendar: value.calendarId
+      };
+    }
     super(value);
     this.opts = opts;
   }
+  [Symbol.toPrimitive](hint) {
+    return hint === "string" ? this.toString() : this.toNumber();
+  }
+  toNumber() {
+    const value = this.value;
+    if (typeof value === "number") return value;
+    if (value instanceof Date) return value.getTime();
+    if ("epochMilliseconds" in value) {
+      return value.epochMilliseconds;
+    }
+    if ("toZonedDateTime" in value) {
+      return value.toZonedDateTime("UTC").epochMilliseconds;
+    }
+    throw new TypeError("Unwrapping a non-number value as a number");
+  }
   toString(scope) {
-    try {
-      const dtf = scope.memoizeIntlObject(Intl.DateTimeFormat, this.opts);
-      return dtf.format(this.value);
-    } catch (err) {
-      scope.reportError(err);
+    if (scope) {
+      try {
+        const dtf = scope.memoizeIntlObject(Intl.DateTimeFormat, this.opts);
+        return dtf.format(this.value);
+      } catch (err) {
+        scope.reportError(err);
+      }
+    }
+    if (typeof this.value === "number" || this.value instanceof Date) {
       return new Date(this.value).toISOString();
     }
+    return this.value.toString();
   }
 }
 ;// ./node_modules/@fluent/bundle/esm/resolver.js
@@ -6268,8 +5945,8 @@ function resolveVariableReference(scope, {
     case "number":
       return new FluentNumber(arg);
     case "object":
-      if (arg instanceof Date) {
-        return new FluentDateTime(arg.getTime());
+      if (FluentDateTime.supportsValue(arg)) {
+        return new FluentDateTime(arg);
       }
     default:
       scope.reportError(new TypeError(`Variable type not supported: $${name}, ${typeof arg}`));
@@ -6453,7 +6130,7 @@ function NUMBER(args, opts) {
     });
   }
   if (arg instanceof FluentDateTime) {
-    return new FluentNumber(arg.valueOf(), {
+    return new FluentNumber(arg.toNumber(), {
       ...values(opts, NUMBER_ALLOWED)
     });
   }
@@ -6465,16 +6142,8 @@ function DATETIME(args, opts) {
   if (arg instanceof FluentNone) {
     return new FluentNone(`DATETIME(${arg.valueOf()})`);
   }
-  if (arg instanceof FluentDateTime) {
-    return new FluentDateTime(arg.valueOf(), {
-      ...arg.opts,
-      ...values(opts, DATETIME_ALLOWED)
-    });
-  }
-  if (arg instanceof FluentNumber) {
-    return new FluentDateTime(arg.valueOf(), {
-      ...values(opts, DATETIME_ALLOWED)
-    });
+  if (arg instanceof FluentDateTime || arg instanceof FluentNumber) {
+    return new FluentDateTime(arg, values(opts, DATETIME_ALLOWED));
   }
   throw new TypeError("Invalid argument to DATETIME");
 }
@@ -6952,7 +6621,7 @@ const TEXT_LEVEL_ELEMENTS = {
 };
 const LOCALIZABLE_ATTRIBUTES = {
   "http://www.w3.org/1999/xhtml": {
-    global: ["title", "aria-label", "aria-valuetext"],
+    global: ["title", "aria-description", "aria-label", "aria-valuetext"],
     a: ["download"],
     area: ["download", "alt"],
     input: ["alt", "placeholder"],
@@ -7697,7 +7366,7 @@ class genericl10n_GenericL10n extends L10n {
     yield this.#createBundleFallback(lang);
   }
   static async #createBundleFallback(lang) {
-    const text = "pdfjs-previous-button =\n    .title = Previous Page\npdfjs-previous-button-label = Previous\npdfjs-next-button =\n    .title = Next Page\npdfjs-next-button-label = Next\npdfjs-page-input =\n    .title = Page\npdfjs-of-pages = of { $pagesCount }\npdfjs-page-of-pages = ({ $pageNumber } of { $pagesCount })\npdfjs-zoom-out-button =\n    .title = Zoom Out\npdfjs-zoom-out-button-label = Zoom Out\npdfjs-zoom-in-button =\n    .title = Zoom In\npdfjs-zoom-in-button-label = Zoom In\npdfjs-zoom-select =\n    .title = Zoom\npdfjs-presentation-mode-button =\n    .title = Switch to Presentation Mode\npdfjs-presentation-mode-button-label = Presentation Mode\npdfjs-open-file-button =\n    .title = Open File\npdfjs-open-file-button-label = Open\npdfjs-print-button =\n    .title = Print\npdfjs-print-button-label = Print\npdfjs-save-button =\n    .title = Save\npdfjs-save-button-label = Save\npdfjs-download-button =\n    .title = Download\npdfjs-download-button-label = Download\npdfjs-bookmark-button =\n    .title = Current Page (View URL from Current Page)\npdfjs-bookmark-button-label = Current Page\npdfjs-tools-button =\n    .title = Tools\npdfjs-tools-button-label = Tools\npdfjs-first-page-button =\n    .title = Go to First Page\npdfjs-first-page-button-label = Go to First Page\npdfjs-last-page-button =\n    .title = Go to Last Page\npdfjs-last-page-button-label = Go to Last Page\npdfjs-page-rotate-cw-button =\n    .title = Rotate Clockwise\npdfjs-page-rotate-cw-button-label = Rotate Clockwise\npdfjs-page-rotate-ccw-button =\n    .title = Rotate Counterclockwise\npdfjs-page-rotate-ccw-button-label = Rotate Counterclockwise\npdfjs-cursor-text-select-tool-button =\n    .title = Enable Text Selection Tool\npdfjs-cursor-text-select-tool-button-label = Text Selection Tool\npdfjs-cursor-hand-tool-button =\n    .title = Enable Hand Tool\npdfjs-cursor-hand-tool-button-label = Hand Tool\npdfjs-scroll-page-button =\n    .title = Use Page Scrolling\npdfjs-scroll-page-button-label = Page Scrolling\npdfjs-scroll-vertical-button =\n    .title = Use Vertical Scrolling\npdfjs-scroll-vertical-button-label = Vertical Scrolling\npdfjs-scroll-horizontal-button =\n    .title = Use Horizontal Scrolling\npdfjs-scroll-horizontal-button-label = Horizontal Scrolling\npdfjs-scroll-wrapped-button =\n    .title = Use Wrapped Scrolling\npdfjs-scroll-wrapped-button-label = Wrapped Scrolling\npdfjs-spread-none-button =\n    .title = Do not join page spreads\npdfjs-spread-none-button-label = No Spreads\npdfjs-spread-odd-button =\n    .title = Join page spreads starting with odd-numbered pages\npdfjs-spread-odd-button-label = Odd Spreads\npdfjs-spread-even-button =\n    .title = Join page spreads starting with even-numbered pages\npdfjs-spread-even-button-label = Even Spreads\npdfjs-document-properties-button =\n    .title = Document Properties\u2026\npdfjs-document-properties-button-label = Document Properties\u2026\npdfjs-document-properties-file-name = File name:\npdfjs-document-properties-file-size = File size:\npdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) } KB ({ $b } bytes)\npdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } MB ({ $b } bytes)\npdfjs-document-properties-title = Title:\npdfjs-document-properties-author = Author:\npdfjs-document-properties-subject = Subject:\npdfjs-document-properties-keywords = Keywords:\npdfjs-document-properties-creation-date = Creation Date:\npdfjs-document-properties-modification-date = Modification Date:\npdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: \"short\", timeStyle: \"medium\") }\npdfjs-document-properties-creator = Creator:\npdfjs-document-properties-producer = PDF Producer:\npdfjs-document-properties-version = PDF Version:\npdfjs-document-properties-page-count = Page Count:\npdfjs-document-properties-page-size = Page Size:\npdfjs-document-properties-page-size-unit-inches = in\npdfjs-document-properties-page-size-unit-millimeters = mm\npdfjs-document-properties-page-size-orientation-portrait = portrait\npdfjs-document-properties-page-size-orientation-landscape = landscape\npdfjs-document-properties-page-size-name-a-three = A3\npdfjs-document-properties-page-size-name-a-four = A4\npdfjs-document-properties-page-size-name-letter = Letter\npdfjs-document-properties-page-size-name-legal = Legal\npdfjs-document-properties-page-size-dimension-string = { $width } \xD7 { $height } { $unit } ({ $orientation })\npdfjs-document-properties-page-size-dimension-name-string = { $width } \xD7 { $height } { $unit } ({ $name }, { $orientation })\npdfjs-document-properties-linearized = Fast Web View:\npdfjs-document-properties-linearized-yes = Yes\npdfjs-document-properties-linearized-no = No\npdfjs-document-properties-close-button = Close\npdfjs-print-progress-message = Preparing document for printing\u2026\npdfjs-print-progress-percent = { $progress }%\npdfjs-print-progress-close-button = Cancel\npdfjs-printing-not-supported = Warning: Printing is not fully supported by this browser.\npdfjs-printing-not-ready = Warning: The PDF is not fully loaded for printing.\npdfjs-toggle-sidebar-button =\n    .title = Toggle Sidebar\npdfjs-toggle-sidebar-notification-button =\n    .title = Toggle Sidebar (document contains outline/attachments/layers)\npdfjs-toggle-sidebar-button-label = Toggle Sidebar\npdfjs-document-outline-button =\n    .title = Show Document Outline (double-click to expand/collapse all items)\npdfjs-document-outline-button-label = Document Outline\npdfjs-attachments-button =\n    .title = Show Attachments\npdfjs-attachments-button-label = Attachments\npdfjs-layers-button =\n    .title = Show Layers (double-click to reset all layers to the default state)\npdfjs-layers-button-label = Layers\npdfjs-thumbs-button =\n    .title = Show Thumbnails\npdfjs-thumbs-button-label = Thumbnails\npdfjs-current-outline-item-button =\n    .title = Find Current Outline Item\npdfjs-current-outline-item-button-label = Current Outline Item\npdfjs-findbar-button =\n    .title = Find in Document\npdfjs-findbar-button-label = Find\npdfjs-additional-layers = Additional Layers\npdfjs-thumb-page-title =\n    .title = Page { $page }\npdfjs-thumb-page-canvas =\n    .aria-label = Thumbnail of Page { $page }\npdfjs-find-input =\n    .title = Find\n    .placeholder = Find in document\u2026\npdfjs-find-previous-button =\n    .title = Find the previous occurrence of the phrase\npdfjs-find-previous-button-label = Previous\npdfjs-find-next-button =\n    .title = Find the next occurrence of the phrase\npdfjs-find-next-button-label = Next\npdfjs-find-highlight-checkbox = Highlight All\npdfjs-find-match-case-checkbox-label = Match Case\npdfjs-find-match-diacritics-checkbox-label = Match Diacritics\npdfjs-find-entire-word-checkbox-label = Whole Words\npdfjs-find-reached-top = Reached top of document, continued from bottom\npdfjs-find-reached-bottom = Reached end of document, continued from top\npdfjs-find-match-count =\n    { $total ->\n        [one] { $current } of { $total } match\n       *[other] { $current } of { $total } matches\n    }\npdfjs-find-match-count-limit =\n    { $limit ->\n        [one] More than { $limit } match\n       *[other] More than { $limit } matches\n    }\npdfjs-find-not-found = Phrase not found\npdfjs-page-scale-width = Page Width\npdfjs-page-scale-fit = Page Fit\npdfjs-page-scale-auto = Automatic Zoom\npdfjs-page-scale-actual = Actual Size\npdfjs-page-scale-percent = { $scale }%\npdfjs-page-landmark =\n    .aria-label = Page { $page }\npdfjs-loading-error = An error occurred while loading the PDF.\npdfjs-invalid-file-error = Invalid or corrupted PDF file.\npdfjs-missing-file-error = Missing PDF file.\npdfjs-unexpected-response-error = Unexpected server response.\npdfjs-rendering-error = An error occurred while rendering the page.\npdfjs-annotation-date-time-string = { DATETIME($dateObj, dateStyle: \"short\", timeStyle: \"medium\") }\npdfjs-text-annotation-type =\n    .alt = [{ $type } Annotation]\npdfjs-password-label = Enter the password to open this PDF file.\npdfjs-password-invalid = Invalid password. Please try again.\npdfjs-password-ok-button = OK\npdfjs-password-cancel-button = Cancel\npdfjs-web-fonts-disabled = Web fonts are disabled: unable to use embedded PDF fonts.\npdfjs-editor-free-text-button =\n    .title = Text\npdfjs-editor-free-text-button-label = Text\npdfjs-editor-ink-button =\n    .title = Draw\npdfjs-editor-ink-button-label = Draw\npdfjs-editor-stamp-button =\n    .title = Add or edit images\npdfjs-editor-stamp-button-label = Add or edit images\npdfjs-editor-highlight-button =\n    .title = Highlight\npdfjs-editor-highlight-button-label = Highlight\npdfjs-highlight-floating-button1 =\n    .title = Highlight\n    .aria-label = Highlight\npdfjs-highlight-floating-button-label = Highlight\npdfjs-editor-signature-button =\n    .title = Add signature\npdfjs-editor-signature-button-label = Add signature\npdfjs-editor-highlight-editor =\n    .aria-label = Highlight editor\npdfjs-editor-ink-editor =\n    .aria-label = Drawing editor\npdfjs-editor-signature-editor =\n    .aria-label = Signature editor\npdfjs-editor-stamp-editor =\n    .aria-label = Image editor\npdfjs-editor-remove-ink-button =\n    .title = Remove drawing\npdfjs-editor-remove-freetext-button =\n    .title = Remove text\npdfjs-editor-remove-stamp-button =\n    .title = Remove image\npdfjs-editor-remove-highlight-button =\n    .title = Remove highlight\npdfjs-editor-remove-signature-button =\n    .title = Remove signature\npdfjs-editor-free-text-color-input = Color\npdfjs-editor-free-text-size-input = Size\npdfjs-editor-ink-color-input = Color\npdfjs-editor-ink-thickness-input = Thickness\npdfjs-editor-ink-opacity-input = Opacity\npdfjs-editor-stamp-add-image-button =\n    .title = Add image\npdfjs-editor-stamp-add-image-button-label = Add image\npdfjs-editor-free-highlight-thickness-input = Thickness\npdfjs-editor-free-highlight-thickness-title =\n    .title = Change thickness when highlighting items other than text\npdfjs-editor-add-signature-container =\n    .aria-label = Signature controls and saved signatures\npdfjs-editor-signature-add-signature-button =\n    .title = Add new signature\npdfjs-editor-signature-add-signature-button-label = Add new signature\npdfjs-editor-add-saved-signature-button =\n    .title = Saved signature: { $description }\npdfjs-free-text2 =\n    .aria-label = Text Editor\n    .default-content = Start typing\u2026\npdfjs-editor-alt-text-button =\n    .aria-label = Alt text\npdfjs-editor-alt-text-button-label = Alt text\npdfjs-editor-alt-text-edit-button =\n    .aria-label = Edit alt text\npdfjs-editor-alt-text-dialog-label = Choose an option\npdfjs-editor-alt-text-dialog-description = Alt text (alternative text) helps when people can\u2019t see the image or when it doesn\u2019t load.\npdfjs-editor-alt-text-add-description-label = Add a description\npdfjs-editor-alt-text-add-description-description = Aim for 1-2 sentences that describe the subject, setting, or actions.\npdfjs-editor-alt-text-mark-decorative-label = Mark as decorative\npdfjs-editor-alt-text-mark-decorative-description = This is used for ornamental images, like borders or watermarks.\npdfjs-editor-alt-text-cancel-button = Cancel\npdfjs-editor-alt-text-save-button = Save\npdfjs-editor-alt-text-decorative-tooltip = Marked as decorative\npdfjs-editor-alt-text-textarea =\n    .placeholder = For example, \u201CA young man sits down at a table to eat a meal\u201D\npdfjs-editor-resizer-top-left =\n    .aria-label = Top left corner \u2014 resize\npdfjs-editor-resizer-top-middle =\n    .aria-label = Top middle \u2014 resize\npdfjs-editor-resizer-top-right =\n    .aria-label = Top right corner \u2014 resize\npdfjs-editor-resizer-middle-right =\n    .aria-label = Middle right \u2014 resize\npdfjs-editor-resizer-bottom-right =\n    .aria-label = Bottom right corner \u2014 resize\npdfjs-editor-resizer-bottom-middle =\n    .aria-label = Bottom middle \u2014 resize\npdfjs-editor-resizer-bottom-left =\n    .aria-label = Bottom left corner \u2014 resize\npdfjs-editor-resizer-middle-left =\n    .aria-label = Middle left \u2014 resize\npdfjs-editor-highlight-colorpicker-label = Highlight color\npdfjs-editor-colorpicker-button =\n    .title = Change color\npdfjs-editor-colorpicker-dropdown =\n    .aria-label = Color choices\npdfjs-editor-colorpicker-yellow =\n    .title = Yellow\npdfjs-editor-colorpicker-green =\n    .title = Green\npdfjs-editor-colorpicker-blue =\n    .title = Blue\npdfjs-editor-colorpicker-pink =\n    .title = Pink\npdfjs-editor-colorpicker-red =\n    .title = Red\npdfjs-editor-highlight-show-all-button-label = Show all\npdfjs-editor-highlight-show-all-button =\n    .title = Show all\npdfjs-editor-new-alt-text-dialog-edit-label = Edit alt text (image description)\npdfjs-editor-new-alt-text-dialog-add-label = Add alt text (image description)\npdfjs-editor-new-alt-text-textarea =\n    .placeholder = Write your description here\u2026\npdfjs-editor-new-alt-text-description = Short description for people who can\u2019t see the image or when the image doesn\u2019t load.\npdfjs-editor-new-alt-text-disclaimer1 = This alt text was created automatically and may be inaccurate.\npdfjs-editor-new-alt-text-disclaimer-learn-more-url = Learn more\npdfjs-editor-new-alt-text-create-automatically-button-label = Create alt text automatically\npdfjs-editor-new-alt-text-not-now-button = Not now\npdfjs-editor-new-alt-text-error-title = Couldn\u2019t create alt text automatically\npdfjs-editor-new-alt-text-error-description = Please write your own alt text or try again later.\npdfjs-editor-new-alt-text-error-close-button = Close\npdfjs-editor-new-alt-text-ai-model-downloading-progress = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)\n    .aria-valuetext = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)\npdfjs-editor-new-alt-text-added-button =\n    .aria-label = Alt text added\npdfjs-editor-new-alt-text-added-button-label = Alt text added\npdfjs-editor-new-alt-text-missing-button =\n    .aria-label = Missing alt text\npdfjs-editor-new-alt-text-missing-button-label = Missing alt text\npdfjs-editor-new-alt-text-to-review-button =\n    .aria-label = Review alt text\npdfjs-editor-new-alt-text-to-review-button-label = Review alt text\npdfjs-editor-new-alt-text-generated-alt-text-with-disclaimer = Created automatically: { $generatedAltText }\npdfjs-image-alt-text-settings-button =\n    .title = Image alt text settings\npdfjs-image-alt-text-settings-button-label = Image alt text settings\npdfjs-editor-alt-text-settings-dialog-label = Image alt text settings\npdfjs-editor-alt-text-settings-automatic-title = Automatic alt text\npdfjs-editor-alt-text-settings-create-model-button-label = Create alt text automatically\npdfjs-editor-alt-text-settings-create-model-description = Suggests descriptions to help people who can\u2019t see the image or when the image doesn\u2019t load.\npdfjs-editor-alt-text-settings-download-model-label = Alt text AI model ({ $totalSize } MB)\npdfjs-editor-alt-text-settings-ai-model-description = Runs locally on your device so your data stays private. Required for automatic alt text.\npdfjs-editor-alt-text-settings-delete-model-button = Delete\npdfjs-editor-alt-text-settings-download-model-button = Download\npdfjs-editor-alt-text-settings-downloading-model-button = Downloading\u2026\npdfjs-editor-alt-text-settings-editor-title = Alt text editor\npdfjs-editor-alt-text-settings-show-dialog-button-label = Show alt text editor right away when adding an image\npdfjs-editor-alt-text-settings-show-dialog-description = Helps you make sure all your images have alt text.\npdfjs-editor-alt-text-settings-close-button = Close\npdfjs-editor-undo-bar-message-highlight = Highlight removed\npdfjs-editor-undo-bar-message-freetext = Text removed\npdfjs-editor-undo-bar-message-ink = Drawing removed\npdfjs-editor-undo-bar-message-stamp = Image removed\npdfjs-editor-undo-bar-message-signature = Signature removed\npdfjs-editor-undo-bar-message-multiple =\n    { $count ->\n        [one] { $count } annotation removed\n       *[other] { $count } annotations removed\n    }\npdfjs-editor-undo-bar-undo-button =\n    .title = Undo\npdfjs-editor-undo-bar-undo-button-label = Undo\npdfjs-editor-undo-bar-close-button =\n    .title = Close\npdfjs-editor-undo-bar-close-button-label = Close\npdfjs-editor-add-signature-dialog-label = This modal allows the user to create a signature to add to a PDF document. The user can edit the name (which also serves as the alt text), and optionally save the signature for repeated use.\npdfjs-editor-add-signature-dialog-title = Add a signature\npdfjs-editor-add-signature-type-button = Type\n    .title = Type\npdfjs-editor-add-signature-draw-button = Draw\n    .title = Draw\npdfjs-editor-add-signature-image-button = Image\n    .title = Image\npdfjs-editor-add-signature-type-input =\n    .aria-label = Type your signature\n    .placeholder = Type your signature\npdfjs-editor-add-signature-draw-placeholder = Draw your signature\npdfjs-editor-add-signature-draw-thickness-range-label = Thickness\npdfjs-editor-add-signature-draw-thickness-range =\n    .title = Drawing thickness: { $thickness }\npdfjs-editor-add-signature-image-placeholder = Drag a file here to upload\npdfjs-editor-add-signature-image-browse-link =\n    { PLATFORM() ->\n        [macos] Or choose image files\n       *[other] Or browse image files\n    }\npdfjs-editor-add-signature-description-label = Description (alt text)\npdfjs-editor-add-signature-description-input =\n    .title = Description (alt text)\npdfjs-editor-add-signature-description-default-when-drawing = Signature\npdfjs-editor-add-signature-clear-button-label = Clear signature\npdfjs-editor-add-signature-clear-button =\n    .title = Clear signature\npdfjs-editor-add-signature-save-checkbox = Save signature\npdfjs-editor-add-signature-save-warning-message = You\u2019ve reached the limit of 5 saved signatures. Remove one to save more.\npdfjs-editor-add-signature-image-upload-error-title = Couldn\u2019t upload image\npdfjs-editor-add-signature-image-upload-error-description = Check your network connection or try another image.\npdfjs-editor-add-signature-error-close-button = Close\npdfjs-editor-add-signature-cancel-button = Cancel\npdfjs-editor-add-signature-add-button = Add\npdfjs-editor-delete-signature-button1 =\n    .title = Remove saved signature\npdfjs-editor-delete-signature-button-label1 = Remove saved signature\npdfjs-editor-add-signature-edit-button-label = Edit description\npdfjs-editor-edit-signature-dialog-title = Edit description\npdfjs-editor-edit-signature-update-button = Update";
+    const text = "pdfjs-previous-button =\n    .title = Previous Page\npdfjs-previous-button-label = Previous\npdfjs-next-button =\n    .title = Next Page\npdfjs-next-button-label = Next\npdfjs-page-input =\n    .title = Page\npdfjs-of-pages = of { $pagesCount }\npdfjs-page-of-pages = ({ $pageNumber } of { $pagesCount })\npdfjs-zoom-out-button =\n    .title = Zoom Out\npdfjs-zoom-out-button-label = Zoom Out\npdfjs-zoom-in-button =\n    .title = Zoom In\npdfjs-zoom-in-button-label = Zoom In\npdfjs-zoom-select =\n    .title = Zoom\npdfjs-presentation-mode-button =\n    .title = Switch to Presentation Mode\npdfjs-presentation-mode-button-label = Presentation Mode\npdfjs-open-file-button =\n    .title = Open File\npdfjs-open-file-button-label = Open\npdfjs-print-button =\n    .title = Print\npdfjs-print-button-label = Print\npdfjs-save-button =\n    .title = Save\npdfjs-save-button-label = Save\npdfjs-download-button =\n    .title = Download\npdfjs-download-button-label = Download\npdfjs-bookmark-button =\n    .title = Current Page (View URL from Current Page)\npdfjs-bookmark-button-label = Current Page\npdfjs-tools-button =\n    .title = Tools\npdfjs-tools-button-label = Tools\npdfjs-first-page-button =\n    .title = Go to First Page\npdfjs-first-page-button-label = Go to First Page\npdfjs-last-page-button =\n    .title = Go to Last Page\npdfjs-last-page-button-label = Go to Last Page\npdfjs-page-rotate-cw-button =\n    .title = Rotate Clockwise\npdfjs-page-rotate-cw-button-label = Rotate Clockwise\npdfjs-page-rotate-ccw-button =\n    .title = Rotate Counterclockwise\npdfjs-page-rotate-ccw-button-label = Rotate Counterclockwise\npdfjs-cursor-text-select-tool-button =\n    .title = Enable Text Selection Tool\npdfjs-cursor-text-select-tool-button-label = Text Selection Tool\npdfjs-cursor-hand-tool-button =\n    .title = Enable Hand Tool\npdfjs-cursor-hand-tool-button-label = Hand Tool\npdfjs-scroll-page-button =\n    .title = Use Page Scrolling\npdfjs-scroll-page-button-label = Page Scrolling\npdfjs-scroll-vertical-button =\n    .title = Use Vertical Scrolling\npdfjs-scroll-vertical-button-label = Vertical Scrolling\npdfjs-scroll-horizontal-button =\n    .title = Use Horizontal Scrolling\npdfjs-scroll-horizontal-button-label = Horizontal Scrolling\npdfjs-scroll-wrapped-button =\n    .title = Use Wrapped Scrolling\npdfjs-scroll-wrapped-button-label = Wrapped Scrolling\npdfjs-spread-none-button =\n    .title = Do not join page spreads\npdfjs-spread-none-button-label = No Spreads\npdfjs-spread-odd-button =\n    .title = Join page spreads starting with odd-numbered pages\npdfjs-spread-odd-button-label = Odd Spreads\npdfjs-spread-even-button =\n    .title = Join page spreads starting with even-numbered pages\npdfjs-spread-even-button-label = Even Spreads\npdfjs-document-properties-button =\n    .title = Document Properties\u2026\npdfjs-document-properties-button-label = Document Properties\u2026\npdfjs-document-properties-file-name = File name:\npdfjs-document-properties-file-size = File size:\npdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) } KB ({ $b } bytes)\npdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } MB ({ $b } bytes)\npdfjs-document-properties-title = Title:\npdfjs-document-properties-author = Author:\npdfjs-document-properties-subject = Subject:\npdfjs-document-properties-keywords = Keywords:\npdfjs-document-properties-creation-date = Creation Date:\npdfjs-document-properties-modification-date = Modification Date:\npdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: \"short\", timeStyle: \"medium\") }\npdfjs-document-properties-creator = Creator:\npdfjs-document-properties-producer = PDF Producer:\npdfjs-document-properties-version = PDF Version:\npdfjs-document-properties-page-count = Page Count:\npdfjs-document-properties-page-size = Page Size:\npdfjs-document-properties-page-size-unit-inches = in\npdfjs-document-properties-page-size-unit-millimeters = mm\npdfjs-document-properties-page-size-orientation-portrait = portrait\npdfjs-document-properties-page-size-orientation-landscape = landscape\npdfjs-document-properties-page-size-name-a-three = A3\npdfjs-document-properties-page-size-name-a-four = A4\npdfjs-document-properties-page-size-name-letter = Letter\npdfjs-document-properties-page-size-name-legal = Legal\npdfjs-document-properties-page-size-dimension-string = { $width } \xD7 { $height } { $unit } ({ $orientation })\npdfjs-document-properties-page-size-dimension-name-string = { $width } \xD7 { $height } { $unit } ({ $name }, { $orientation })\npdfjs-document-properties-linearized = Fast Web View:\npdfjs-document-properties-linearized-yes = Yes\npdfjs-document-properties-linearized-no = No\npdfjs-document-properties-close-button = Close\npdfjs-print-progress-message = Preparing document for printing\u2026\npdfjs-print-progress-percent = { $progress }%\npdfjs-print-progress-close-button = Cancel\npdfjs-printing-not-supported = Warning: Printing is not fully supported by this browser.\npdfjs-printing-not-ready = Warning: The PDF is not fully loaded for printing.\npdfjs-toggle-sidebar-button =\n    .title = Toggle Sidebar\npdfjs-toggle-sidebar-notification-button =\n    .title = Toggle Sidebar (document contains outline/attachments/layers)\npdfjs-toggle-sidebar-button-label = Toggle Sidebar\npdfjs-document-outline-button =\n    .title = Show Document Outline (double-click to expand/collapse all items)\npdfjs-document-outline-button-label = Document Outline\npdfjs-attachments-button =\n    .title = Show Attachments\npdfjs-attachments-button-label = Attachments\npdfjs-layers-button =\n    .title = Show Layers (double-click to reset all layers to the default state)\npdfjs-layers-button-label = Layers\npdfjs-thumbs-button =\n    .title = Show Thumbnails\npdfjs-thumbs-button-label = Thumbnails\npdfjs-current-outline-item-button =\n    .title = Find Current Outline Item\npdfjs-current-outline-item-button-label = Current Outline Item\npdfjs-findbar-button =\n    .title = Find in Document\npdfjs-findbar-button-label = Find\npdfjs-additional-layers = Additional Layers\npdfjs-thumb-page-title =\n    .title = Page { $page }\npdfjs-thumb-page-canvas =\n    .aria-label = Thumbnail of Page { $page }\npdfjs-find-input =\n    .title = Find\n    .placeholder = Find in document\u2026\npdfjs-find-previous-button =\n    .title = Find the previous occurrence of the phrase\npdfjs-find-previous-button-label = Previous\npdfjs-find-next-button =\n    .title = Find the next occurrence of the phrase\npdfjs-find-next-button-label = Next\npdfjs-find-highlight-checkbox = Highlight All\npdfjs-find-match-case-checkbox-label = Match Case\npdfjs-find-match-diacritics-checkbox-label = Match Diacritics\npdfjs-find-entire-word-checkbox-label = Whole Words\npdfjs-find-reached-top = Reached top of document, continued from bottom\npdfjs-find-reached-bottom = Reached end of document, continued from top\npdfjs-find-match-count =\n    { $total ->\n        [one] { $current } of { $total } match\n       *[other] { $current } of { $total } matches\n    }\npdfjs-find-match-count-limit =\n    { $limit ->\n        [one] More than { $limit } match\n       *[other] More than { $limit } matches\n    }\npdfjs-find-not-found = Phrase not found\npdfjs-page-scale-width = Page Width\npdfjs-page-scale-fit = Page Fit\npdfjs-page-scale-auto = Automatic Zoom\npdfjs-page-scale-actual = Actual Size\npdfjs-page-scale-percent = { $scale }%\npdfjs-page-landmark =\n    .aria-label = Page { $page }\npdfjs-loading-error = An error occurred while loading the PDF.\npdfjs-invalid-file-error = Invalid or corrupted PDF file.\npdfjs-missing-file-error = Missing PDF file.\npdfjs-unexpected-response-error = Unexpected server response.\npdfjs-rendering-error = An error occurred while rendering the page.\npdfjs-annotation-date-time-string = { DATETIME($dateObj, dateStyle: \"short\", timeStyle: \"medium\") }\npdfjs-text-annotation-type =\n    .alt = [{ $type } Annotation]\npdfjs-password-label = Enter the password to open this PDF file.\npdfjs-password-invalid = Invalid password. Please try again.\npdfjs-password-ok-button = OK\npdfjs-password-cancel-button = Cancel\npdfjs-web-fonts-disabled = Web fonts are disabled: unable to use embedded PDF fonts.\npdfjs-editor-free-text-button =\n    .title = Text\npdfjs-editor-free-text-button-label = Text\npdfjs-editor-ink-button =\n    .title = Draw\npdfjs-editor-ink-button-label = Draw\npdfjs-editor-stamp-button =\n    .title = Add or edit images\npdfjs-editor-stamp-button-label = Add or edit images\npdfjs-editor-highlight-button =\n    .title = Highlight\npdfjs-editor-highlight-button-label = Highlight\npdfjs-highlight-floating-button1 =\n    .title = Highlight\n    .aria-label = Highlight\npdfjs-highlight-floating-button-label = Highlight\npdfjs-editor-signature-button =\n    .title = Add signature\npdfjs-editor-signature-button-label = Add signature\npdfjs-editor-highlight-editor =\n    .aria-label = Highlight editor\npdfjs-editor-ink-editor =\n    .aria-label = Drawing editor\npdfjs-editor-signature-editor1 =\n    .aria-description = Signature editor: { $description }\npdfjs-editor-stamp-editor =\n    .aria-label = Image editor\npdfjs-editor-remove-ink-button =\n    .title = Remove drawing\npdfjs-editor-remove-freetext-button =\n    .title = Remove text\npdfjs-editor-remove-stamp-button =\n    .title = Remove image\npdfjs-editor-remove-highlight-button =\n    .title = Remove highlight\npdfjs-editor-remove-signature-button =\n    .title = Remove signature\npdfjs-editor-free-text-color-input = Color\npdfjs-editor-free-text-size-input = Size\npdfjs-editor-ink-color-input = Color\npdfjs-editor-ink-thickness-input = Thickness\npdfjs-editor-ink-opacity-input = Opacity\npdfjs-editor-stamp-add-image-button =\n    .title = Add image\npdfjs-editor-stamp-add-image-button-label = Add image\npdfjs-editor-free-highlight-thickness-input = Thickness\npdfjs-editor-free-highlight-thickness-title =\n    .title = Change thickness when highlighting items other than text\npdfjs-editor-add-signature-container =\n    .aria-label = Signature controls and saved signatures\npdfjs-editor-signature-add-signature-button =\n    .title = Add new signature\npdfjs-editor-signature-add-signature-button-label = Add new signature\npdfjs-editor-add-saved-signature-button =\n    .title = Saved signature: { $description }\npdfjs-free-text2 =\n    .aria-label = Text Editor\n    .default-content = Start typing\u2026\npdfjs-editor-alt-text-button =\n    .aria-label = Alt text\npdfjs-editor-alt-text-button-label = Alt text\npdfjs-editor-alt-text-edit-button =\n    .aria-label = Edit alt text\npdfjs-editor-alt-text-dialog-label = Choose an option\npdfjs-editor-alt-text-dialog-description = Alt text (alternative text) helps when people can\u2019t see the image or when it doesn\u2019t load.\npdfjs-editor-alt-text-add-description-label = Add a description\npdfjs-editor-alt-text-add-description-description = Aim for 1-2 sentences that describe the subject, setting, or actions.\npdfjs-editor-alt-text-mark-decorative-label = Mark as decorative\npdfjs-editor-alt-text-mark-decorative-description = This is used for ornamental images, like borders or watermarks.\npdfjs-editor-alt-text-cancel-button = Cancel\npdfjs-editor-alt-text-save-button = Save\npdfjs-editor-alt-text-decorative-tooltip = Marked as decorative\npdfjs-editor-alt-text-textarea =\n    .placeholder = For example, \u201CA young man sits down at a table to eat a meal\u201D\npdfjs-editor-resizer-top-left =\n    .aria-label = Top left corner \u2014 resize\npdfjs-editor-resizer-top-middle =\n    .aria-label = Top middle \u2014 resize\npdfjs-editor-resizer-top-right =\n    .aria-label = Top right corner \u2014 resize\npdfjs-editor-resizer-middle-right =\n    .aria-label = Middle right \u2014 resize\npdfjs-editor-resizer-bottom-right =\n    .aria-label = Bottom right corner \u2014 resize\npdfjs-editor-resizer-bottom-middle =\n    .aria-label = Bottom middle \u2014 resize\npdfjs-editor-resizer-bottom-left =\n    .aria-label = Bottom left corner \u2014 resize\npdfjs-editor-resizer-middle-left =\n    .aria-label = Middle left \u2014 resize\npdfjs-editor-highlight-colorpicker-label = Highlight color\npdfjs-editor-colorpicker-button =\n    .title = Change color\npdfjs-editor-colorpicker-dropdown =\n    .aria-label = Color choices\npdfjs-editor-colorpicker-yellow =\n    .title = Yellow\npdfjs-editor-colorpicker-green =\n    .title = Green\npdfjs-editor-colorpicker-blue =\n    .title = Blue\npdfjs-editor-colorpicker-pink =\n    .title = Pink\npdfjs-editor-colorpicker-red =\n    .title = Red\npdfjs-editor-highlight-show-all-button-label = Show all\npdfjs-editor-highlight-show-all-button =\n    .title = Show all\npdfjs-editor-new-alt-text-dialog-edit-label = Edit alt text (image description)\npdfjs-editor-new-alt-text-dialog-add-label = Add alt text (image description)\npdfjs-editor-new-alt-text-textarea =\n    .placeholder = Write your description here\u2026\npdfjs-editor-new-alt-text-description = Short description for people who can\u2019t see the image or when the image doesn\u2019t load.\npdfjs-editor-new-alt-text-disclaimer1 = This alt text was created automatically and may be inaccurate.\npdfjs-editor-new-alt-text-disclaimer-learn-more-url = Learn more\npdfjs-editor-new-alt-text-create-automatically-button-label = Create alt text automatically\npdfjs-editor-new-alt-text-not-now-button = Not now\npdfjs-editor-new-alt-text-error-title = Couldn\u2019t create alt text automatically\npdfjs-editor-new-alt-text-error-description = Please write your own alt text or try again later.\npdfjs-editor-new-alt-text-error-close-button = Close\npdfjs-editor-new-alt-text-ai-model-downloading-progress = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)\n    .aria-valuetext = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)\npdfjs-editor-new-alt-text-added-button =\n    .aria-label = Alt text added\npdfjs-editor-new-alt-text-added-button-label = Alt text added\npdfjs-editor-new-alt-text-missing-button =\n    .aria-label = Missing alt text\npdfjs-editor-new-alt-text-missing-button-label = Missing alt text\npdfjs-editor-new-alt-text-to-review-button =\n    .aria-label = Review alt text\npdfjs-editor-new-alt-text-to-review-button-label = Review alt text\npdfjs-editor-new-alt-text-generated-alt-text-with-disclaimer = Created automatically: { $generatedAltText }\npdfjs-image-alt-text-settings-button =\n    .title = Image alt text settings\npdfjs-image-alt-text-settings-button-label = Image alt text settings\npdfjs-editor-alt-text-settings-dialog-label = Image alt text settings\npdfjs-editor-alt-text-settings-automatic-title = Automatic alt text\npdfjs-editor-alt-text-settings-create-model-button-label = Create alt text automatically\npdfjs-editor-alt-text-settings-create-model-description = Suggests descriptions to help people who can\u2019t see the image or when the image doesn\u2019t load.\npdfjs-editor-alt-text-settings-download-model-label = Alt text AI model ({ $totalSize } MB)\npdfjs-editor-alt-text-settings-ai-model-description = Runs locally on your device so your data stays private. Required for automatic alt text.\npdfjs-editor-alt-text-settings-delete-model-button = Delete\npdfjs-editor-alt-text-settings-download-model-button = Download\npdfjs-editor-alt-text-settings-downloading-model-button = Downloading\u2026\npdfjs-editor-alt-text-settings-editor-title = Alt text editor\npdfjs-editor-alt-text-settings-show-dialog-button-label = Show alt text editor right away when adding an image\npdfjs-editor-alt-text-settings-show-dialog-description = Helps you make sure all your images have alt text.\npdfjs-editor-alt-text-settings-close-button = Close\npdfjs-editor-undo-bar-message-highlight = Highlight removed\npdfjs-editor-undo-bar-message-freetext = Text removed\npdfjs-editor-undo-bar-message-ink = Drawing removed\npdfjs-editor-undo-bar-message-stamp = Image removed\npdfjs-editor-undo-bar-message-signature = Signature removed\npdfjs-editor-undo-bar-message-multiple =\n    { $count ->\n        [one] { $count } annotation removed\n       *[other] { $count } annotations removed\n    }\npdfjs-editor-undo-bar-undo-button =\n    .title = Undo\npdfjs-editor-undo-bar-undo-button-label = Undo\npdfjs-editor-undo-bar-close-button =\n    .title = Close\npdfjs-editor-undo-bar-close-button-label = Close\npdfjs-editor-add-signature-dialog-label = This modal allows the user to create a signature to add to a PDF document. The user can edit the name (which also serves as the alt text), and optionally save the signature for repeated use.\npdfjs-editor-add-signature-dialog-title = Add a signature\npdfjs-editor-add-signature-type-button = Type\n    .title = Type\npdfjs-editor-add-signature-draw-button = Draw\n    .title = Draw\npdfjs-editor-add-signature-image-button = Image\n    .title = Image\npdfjs-editor-add-signature-type-input =\n    .aria-label = Type your signature\n    .placeholder = Type your signature\npdfjs-editor-add-signature-draw-placeholder = Draw your signature\npdfjs-editor-add-signature-draw-thickness-range-label = Thickness\npdfjs-editor-add-signature-draw-thickness-range =\n    .title = Drawing thickness: { $thickness }\npdfjs-editor-add-signature-image-placeholder = Drag a file here to upload\npdfjs-editor-add-signature-image-browse-link =\n    { PLATFORM() ->\n        [macos] Or choose image files\n       *[other] Or browse image files\n    }\npdfjs-editor-add-signature-description-label = Description (alt text)\npdfjs-editor-add-signature-description-input =\n    .title = Description (alt text)\npdfjs-editor-add-signature-description-default-when-drawing = Signature\npdfjs-editor-add-signature-clear-button-label = Clear signature\npdfjs-editor-add-signature-clear-button =\n    .title = Clear signature\npdfjs-editor-add-signature-save-checkbox = Save signature\npdfjs-editor-add-signature-save-warning-message = You\u2019ve reached the limit of 5 saved signatures. Remove one to save more.\npdfjs-editor-add-signature-image-upload-error-title = Couldn\u2019t upload image\npdfjs-editor-add-signature-image-upload-error-description = Check your network connection or try another image.\npdfjs-editor-add-signature-error-close-button = Close\npdfjs-editor-add-signature-cancel-button = Cancel\npdfjs-editor-add-signature-add-button = Add\npdfjs-editor-delete-signature-button1 =\n    .title = Remove saved signature\npdfjs-editor-delete-signature-button-label1 = Remove saved signature\npdfjs-editor-add-signature-edit-button-label = Edit description\npdfjs-editor-edit-signature-dialog-title = Edit description\npdfjs-editor-edit-signature-update-button = Update";
     return createBundle(lang, text);
   }
 }
@@ -7706,7 +7375,7 @@ class genericl10n_GenericL10n extends L10n {
 
 async function docProperties(pdfDocument) {
   const url = "",
-    baseUrl = url.split("#", 1)[0];
+    baseUrl = "";
   const {
     info,
     metadata,
@@ -7727,7 +7396,10 @@ async function docProperties(pdfDocument) {
 class GenericScripting {
   constructor(sandboxBundleSrc) {
     this._ready = new Promise((resolve, reject) => {
-      const sandbox = import(/*webpackIgnore: true*/sandboxBundleSrc);
+      const sandbox = import(
+      /*webpackIgnore: true*/
+      /*@vite-ignore*/
+      sandboxBundleSrc);
       sandbox.then(pdfjsSandbox => {
         resolve(pdfjsSandbox.QuickJSSandbox());
       }).catch(reject);
@@ -7760,7 +7432,7 @@ class SignatureStorage {
     this.#signal = signal;
   }
   #save() {
-    localStorage.setItem(KEY_STORAGE, JSON.stringify(Object.fromEntries(this.#signatures.entries())));
+    localStorage.setItem(KEY_STORAGE, JSON.stringify(Object.fromEntries(this.#signatures)));
   }
   async getAll() {
     if (this.#signal) {
@@ -9713,12 +9385,13 @@ class PDFDocumentProperties {
     dialog,
     fields,
     closeButton
-  }, overlayManager, eventBus, l10n, fileNameLookup) {
+  }, overlayManager, eventBus, l10n, fileNameLookup, titleLookup) {
     this.dialog = dialog;
     this.fields = fields;
     this.overlayManager = overlayManager;
     this.l10n = l10n;
     this._fileNameLookup = fileNameLookup;
+    this._titleLookup = titleLookup;
     this.#reset();
     closeButton.addEventListener("click", this.close.bind(this));
     this.overlayManager.register(this.dialog);
@@ -9739,20 +9412,21 @@ class PDFDocumentProperties {
     }
     const [{
       info,
+      metadata,
       contentLength
     }, pdfPage] = await Promise.all([this.pdfDocument.getMetadata(), this.pdfDocument.getPage(currentPageNumber)]);
-    const [fileName, fileSize, creationDate, modificationDate, pageSize, isLinearized] = await Promise.all([this._fileNameLookup(), this.#parseFileSize(contentLength), this.#parseDate(info.CreationDate), this.#parseDate(info.ModDate), this.#parsePageSize(getPageSizeInches(pdfPage), pagesRotation), this.#parseLinearization(info.IsLinearized)]);
+    const [fileName, fileSize, title, creationDate, modificationDate, pageSize, isLinearized] = await Promise.all([this._fileNameLookup(), this.#parseFileSize(contentLength), this._titleLookup(), this.#parseDate(metadata?.get("xmp:createdate"), info.CreationDate), this.#parseDate(metadata?.get("xmp:modifydate"), info.ModDate), this.#parsePageSize(getPageSizeInches(pdfPage), pagesRotation), this.#parseLinearization(info.IsLinearized)]);
     this.#fieldData = Object.freeze({
       fileName,
       fileSize,
-      title: info.Title,
-      author: info.Author,
-      subject: info.Subject,
-      keywords: info.Keywords,
+      title,
+      author: metadata?.get("dc:creator")?.join("\n") || info.Author,
+      subject: metadata?.get("dc:subject")?.join("\n") || info.Subject,
+      keywords: metadata?.get("pdf:keywords") || info.Keywords,
       creationDate,
       modificationDate,
-      creator: info.Creator,
-      producer: info.Producer,
+      creator: metadata?.get("xmp:creatortool") || info.Creator,
+      producer: metadata?.get("pdf:producer") || info.Producer,
       version: info.PDFFormatVersion,
       pageCount: this.pdfDocument.numPages,
       pageSize,
@@ -9864,8 +9538,8 @@ class PDFDocumentProperties {
       orientation
     });
   }
-  async #parseDate(inputDate) {
-    const dateObj = PDFDateString.toDateObject(inputDate);
+  async #parseDate(metadataDate, infoDate) {
+    const dateObj = Date.parse(metadataDate) || PDFDateString.toDateObject(infoDate);
     return dateObj ? this.l10n.get("pdfjs-document-properties-date-time-string", {
       dateObj: dateObj.valueOf()
     }) : undefined;
@@ -9881,12 +9555,6 @@ var es_array_buffer_detached = __webpack_require__(6573);
 var es_array_buffer_transfer = __webpack_require__(8100);
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.array-buffer.transfer-to-fixed-length.js
 var es_array_buffer_transfer_to_fixed_length = __webpack_require__(7936);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.typed-array.to-reversed.js
-var es_typed_array_to_reversed = __webpack_require__(7467);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.typed-array.to-sorted.js
-var es_typed_array_to_sorted = __webpack_require__(4732);
-// EXTERNAL MODULE: ./node_modules/core-js/modules/es.typed-array.with.js
-var es_typed_array_with = __webpack_require__(9577);
 ;// ./web/pdf_find_utils.js
 
 const CharacterType = {
@@ -9963,9 +9631,6 @@ function getNormalizeWithNFKC() {
 }
 
 ;// ./web/pdf_find_controller.js
-
-
-
 
 
 
@@ -10436,6 +10101,9 @@ class PDFFindController {
     return [isUnicode, query];
   }
   #calculateMatch(pageIndex) {
+    if (!this.#state) {
+      return;
+    }
     const query = this.#query;
     if (query.length === 0) {
       return;
@@ -10514,29 +10182,36 @@ class PDFFindController {
     const textOptions = {
       disableNormalization: true
     };
+    const pdfDoc = this._pdfDocument;
     for (let i = 0, ii = this._linkService.pagesCount; i < ii; i++) {
       const {
         promise,
         resolve
       } = Promise.withResolvers();
       this._extractTextPromises[i] = promise;
-      deferred = deferred.then(() => this._pdfDocument.getPage(i + 1).then(pdfPage => pdfPage.getTextContent(textOptions)).then(textContent => {
-        const strBuf = [];
-        for (const textItem of textContent.items) {
-          strBuf.push(textItem.str);
-          if (textItem.hasEOL) {
-            strBuf.push("\n");
-          }
+      deferred = deferred.then(async () => {
+        if (pdfDoc !== this._pdfDocument) {
+          resolve();
+          return;
         }
-        [this._pageContents[i], this._pageDiffs[i], this._hasDiacritics[i]] = normalize(strBuf.join(""));
-        resolve();
-      }, reason => {
-        console.error(`Unable to get text content for page ${i + 1}`, reason);
-        this._pageContents[i] = "";
-        this._pageDiffs[i] = null;
-        this._hasDiacritics[i] = false;
-        resolve();
-      }));
+        await pdfDoc.getPage(i + 1).then(pdfPage => pdfPage.getTextContent(textOptions)).then(textContent => {
+          const strBuf = [];
+          for (const textItem of textContent.items) {
+            strBuf.push(textItem.str);
+            if (textItem.hasEOL) {
+              strBuf.push("\n");
+            }
+          }
+          [this._pageContents[i], this._pageDiffs[i], this._hasDiacritics[i]] = normalize(strBuf.join(""));
+          resolve();
+        }, reason => {
+          console.error(`Unable to get text content for page ${i + 1}`, reason);
+          this._pageContents[i] = "";
+          this._pageDiffs[i] = null;
+          this._hasDiacritics[i] = false;
+          resolve();
+        });
+      });
     }
   }
   #updatePage(index) {
@@ -10898,6 +10573,7 @@ class PDFFindBar {
 ;// ./web/pdf_history.js
 
 
+
 const HASH_CHANGE_TIMEOUT = 1000;
 const POSITION_UPDATED_THRESHOLD = 50;
 const UPDATE_VIEWAREA_TIMEOUT = 1000;
@@ -11110,9 +10786,12 @@ class PDFHistory {
     this.#updateInternalState(destination, newState.uid);
     let newUrl;
     if (this._updateUrl && destination?.hash) {
-      const baseUrl = document.location.href.split("#", 1)[0];
-      if (!baseUrl.startsWith("file://")) {
-        newUrl = `${baseUrl}#${destination.hash}`;
+      const {
+        href,
+        protocol
+      } = document.location;
+      if (protocol !== "file:") {
+        newUrl = updateUrlHash(href, destination.hash);
       }
     }
     if (shouldReplace) {
@@ -12182,7 +11861,10 @@ function getXfaHtmlForPrinting(printContainer, pdfDocument) {
     const viewport = getXfaPageViewport(xfaPage, {
       scale
     });
-    builder.render(viewport, "print");
+    builder.render({
+      viewport,
+      intent: "print"
+    });
     page.append(builder.div);
   }
 }
@@ -14162,10 +13844,7 @@ function calculateLinkPosition(range, pdfPageView) {
     quadPoints[i + 1] = quadPoints[i + 3] = normalized[3];
     quadPoints[i + 2] = quadPoints[i + 6] = normalized[2];
     quadPoints[i + 5] = quadPoints[i + 7] = normalized[1];
-    rect[0] = Math.min(rect[0], normalized[0]);
-    rect[1] = Math.min(rect[1], normalized[1]);
-    rect[2] = Math.max(rect[2], normalized[2]);
-    rect[3] = Math.max(rect[3], normalized[3]);
+    Util.rectBoundingBox(...normalized, rect);
     i += 8;
   }
   return {
@@ -14261,9 +13940,12 @@ class Autolinker {
 class BasePDFPageView {
   #enableHWA = false;
   #loadingId = null;
+  #minDurationToUpdateCanvas = 0;
   #renderError = null;
   #renderingState = RenderingStates.INITIAL;
   #showCanvas = null;
+  #startTime = 0;
+  #tempCanvas = null;
   canvas = null;
   div = null;
   eventBus = null;
@@ -14278,6 +13960,7 @@ class BasePDFPageView {
     this.id = options.id;
     this.pageColors = options.pageColors || null;
     this.renderingQueue = options.renderingQueue;
+    this.#minDurationToUpdateCanvas = options.minDurationToUpdateCanvas ?? 500;
   }
   get renderingState() {
     return this.#renderingState;
@@ -14294,6 +13977,8 @@ class BasePDFPageView {
     switch (state) {
       case RenderingStates.PAUSED:
         this.div.classList.remove("loading");
+        this.#startTime = 0;
+        this.#showCanvas?.(false);
         break;
       case RenderingStates.RUNNING:
         this.div.classList.add("loadingIcon");
@@ -14301,10 +13986,12 @@ class BasePDFPageView {
           this.div.classList.add("loading");
           this.#loadingId = null;
         }, 0);
+        this.#startTime = Date.now();
         break;
       case RenderingStates.INITIAL:
       case RenderingStates.FINISHED:
         this.div.classList.remove("loadingIcon", "loading");
+        this.#startTime = 0;
         break;
     }
   }
@@ -14315,9 +14002,32 @@ class BasePDFPageView {
     const hasHCM = !!(pageColors?.background && pageColors?.foreground);
     const prevCanvas = this.canvas;
     const updateOnFirstShow = !prevCanvas && !hasHCM && !hideUntilComplete;
-    const canvas = this.canvas = document.createElement("canvas");
+    let canvas = this.canvas = document.createElement("canvas");
     this.#showCanvas = isLastShow => {
       if (updateOnFirstShow) {
+        let tempCanvas = this.#tempCanvas;
+        if (!isLastShow && this.#minDurationToUpdateCanvas > 0) {
+          if (Date.now() - this.#startTime < this.#minDurationToUpdateCanvas) {
+            return;
+          }
+          if (!tempCanvas) {
+            tempCanvas = this.#tempCanvas = canvas;
+            canvas = this.canvas = canvas.cloneNode(false);
+            onShow(canvas);
+          }
+        }
+        if (tempCanvas) {
+          const ctx = canvas.getContext("2d", {
+            alpha: false
+          });
+          ctx.drawImage(tempCanvas, 0, 0);
+          if (isLastShow) {
+            this.#resetTempCanvas();
+          } else {
+            this.#startTime = Date.now();
+          }
+          return;
+        }
         onShow(canvas);
         this.#showCanvas = null;
         return;
@@ -14364,6 +14074,13 @@ class BasePDFPageView {
     canvas.remove();
     canvas.width = canvas.height = 0;
     this.canvas = null;
+    this.#resetTempCanvas();
+  }
+  #resetTempCanvas() {
+    if (this.#tempCanvas) {
+      this.#tempCanvas.width = this.#tempCanvas.height = 0;
+      this.#tempCanvas = null;
+    }
   }
   async _drawCanvas(options, onCancel, onFinish) {
     const renderTask = this.renderTask = this.pdfPage.render(options);
@@ -14539,12 +14256,13 @@ class PDFPageDetailView extends BasePDFPageView {
     }
     const {
       viewport,
-      maxCanvasPixels
+      maxCanvasPixels,
+      capCanvasAreaFactor
     } = this.pageView;
     const visibleWidth = visibleArea.maxX - visibleArea.minX;
     const visibleHeight = visibleArea.maxY - visibleArea.minY;
     const visiblePixels = visibleWidth * visibleHeight * OutputScale.pixelRatio ** 2;
-    const maxDetailToVisibleLinearRatio = Math.sqrt(maxCanvasPixels / visiblePixels);
+    const maxDetailToVisibleLinearRatio = Math.sqrt(OutputScale.capPixels(maxCanvasPixels, capCanvasAreaFactor) / visiblePixels);
     const maxOverflowScale = (maxDetailToVisibleLinearRatio - 1) / 2;
     let overflowScale = Math.min(1, maxOverflowScale);
     if (overflowScale < 0) {
@@ -15405,6 +15123,14 @@ class TextLayerBuilder {
       if (anchor.nodeType === Node.TEXT_NODE) {
         anchor = anchor.parentNode;
       }
+      if (!modifyStart && range.endOffset === 0) {
+        do {
+          while (!anchor.previousSibling) {
+            anchor = anchor.parentNode;
+          }
+          anchor = anchor.previousSibling;
+        } while (!anchor.childNodes.length);
+      }
       const parentTextLayer = anchor.parentElement?.closest(".textLayer");
       const endDiv = this.#textLayers.get(parentTextLayer);
       if (endDiv) {
@@ -15442,7 +15168,7 @@ const LAYERS_ORDER = new Map([["canvasWrapper", 0], ["textLayer", 1], ["annotati
 class PDFPageView extends BasePDFPageView {
   #annotationMode = AnnotationMode.ENABLE_FORMS;
   #canvasWrapper = null;
-  #enableAutoLinking = false;
+  #enableAutoLinking = true;
   #hasRestrictedScaling = false;
   #isEditing = false;
   #layerProperties = null;
@@ -15478,7 +15204,8 @@ class PDFPageView extends BasePDFPageView {
     this.enableDetailCanvas = options.enableDetailCanvas ?? true;
     this.maxCanvasPixels = options.maxCanvasPixels ?? AppOptions.get("maxCanvasPixels");
     this.maxCanvasDim = options.maxCanvasDim || AppOptions.get("maxCanvasDim");
-    this.#enableAutoLinking = options.enableAutoLinking || false;
+    this.capCanvasAreaFactor = options.capCanvasAreaFactor ?? AppOptions.get("capCanvasAreaFactor");
+    this.#enableAutoLinking = options.enableAutoLinking !== false;
     this.l10n = options.l10n;
     this.l10n ||= new genericl10n_GenericL10n();
     this._isStandalone = !this.renderingQueue?.hasViewer();
@@ -15900,7 +15627,7 @@ class PDFPageView extends BasePDFPageView {
       outputScale.sy *= invScale;
       this.#needsRestrictedScaling = true;
     } else {
-      this.#needsRestrictedScaling = outputScale.limitCanvas(width, height, this.maxCanvasPixels, this.maxCanvasDim);
+      this.#needsRestrictedScaling = outputScale.limitCanvas(width, height, this.maxCanvasPixels, this.maxCanvasDim, this.capCanvasAreaFactor);
     }
   }
   cancelRendering({
@@ -16286,8 +16013,9 @@ class PDFViewer {
   #enablePermissions = false;
   #enableUpdatedAddImage = false;
   #enableNewAltTextWhenAddingImage = false;
-  #enableAutoLinking = false;
+  #enableAutoLinking = true;
   #eventAbortController = null;
+  #minDurationToUpdateCanvas = 0;
   #mlManager = null;
   #scrollTimeoutId = null;
   #switchAnnotationEditorModeAC = null;
@@ -16303,7 +16031,7 @@ class PDFViewer {
   #supportsPinchToZoom = true;
   #textLayerMode = TextLayerMode.ENABLE;
   constructor(options) {
-    const viewerVersion = "5.0.375";
+    const viewerVersion = "5.3.31";
     if (version !== viewerVersion) {
       throw new Error(`The API version "${version}" does not match the Viewer version "${viewerVersion}".`);
     }
@@ -16339,6 +16067,7 @@ class PDFViewer {
     this.removePageBorders = options.removePageBorders || false;
     this.maxCanvasPixels = options.maxCanvasPixels;
     this.maxCanvasDim = options.maxCanvasDim;
+    this.capCanvasAreaFactor = options.capCanvasAreaFactor;
     this.enableDetailCanvas = options.enableDetailCanvas ?? true;
     this.l10n = options.l10n;
     this.l10n ||= new genericl10n_GenericL10n();
@@ -16347,7 +16076,8 @@ class PDFViewer {
     this.#mlManager = options.mlManager || null;
     this.#enableHWA = options.enableHWA || false;
     this.#supportsPinchToZoom = options.supportsPinchToZoom !== false;
-    this.#enableAutoLinking = options.enableAutoLinking || false;
+    this.#enableAutoLinking = options.enableAutoLinking !== false;
+    this.#minDurationToUpdateCanvas = options.minDurationToUpdateCanvas ?? 500;
     this.defaultRenderingQueue = !options.renderingQueue;
     if (this.defaultRenderingQueue) {
       this.renderingQueue = new PDFRenderingQueue();
@@ -16587,7 +16317,7 @@ class PDFViewer {
         hiddenCapability.resolve();
       }
     }, {
-      signal: typeof AbortSignal.any === "function" ? AbortSignal.any([signal, ac.signal]) : signal
+      signal: AbortSignal.any([signal, ac.signal])
     });
     await Promise.race([this._onePageRenderedCapability.promise, hiddenCapability.promise]);
     ac.abort();
@@ -16734,7 +16464,7 @@ class PDFViewer {
         element.id = "hiddenCopyElement";
         viewer.before(element);
       }
-      if (typeof AbortSignal.any === "function" && annotationEditorMode !== AnnotationEditorType.DISABLE) {
+      if (annotationEditorMode !== AnnotationEditorType.DISABLE) {
         const mode = annotationEditorMode;
         if (pdfDocument.isPureXfa) {
           console.warn("Warning: XFA-editing is not implemented.");
@@ -16779,12 +16509,14 @@ class PDFViewer {
           imageResourcesPath: this.imageResourcesPath,
           maxCanvasPixels: this.maxCanvasPixels,
           maxCanvasDim: this.maxCanvasDim,
+          capCanvasAreaFactor: this.capCanvasAreaFactor,
           enableDetailCanvas: this.enableDetailCanvas,
           pageColors,
           l10n: this.l10n,
           layerProperties: this._layerProperties,
           enableHWA: this.#enableHWA,
-          enableAutoLinking: this.#enableAutoLinking
+          enableAutoLinking: this.#enableAutoLinking,
+          minDurationToUpdateCanvas: this.#minDurationToUpdateCanvas
         });
         this._pages.push(pageView);
       }
@@ -17721,7 +17453,7 @@ class PDFViewer {
         newScale = round((newScale * delta).toFixed(2) * 10) / 10;
       } while (--steps > 0);
     }
-    newScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+    newScale = MathClamp(newScale, MIN_SCALE, MAX_SCALE);
     this.#setScale(newScale, {
       noScroll: false,
       drawingDelay,
@@ -18264,8 +17996,8 @@ class SignatureManager {
     }, {
       passive: true
     });
-    description.addEventListener("input", () => {
-      this.#clearDescription.disabled = description.value === "";
+    this.#description.addEventListener("input", () => {
+      this.#clearDescription.disabled = this.#description.value === "";
     }, {
       passive: true
     });
@@ -18379,7 +18111,7 @@ class SignatureManager {
     }
   }
   #disableButtons(value) {
-    this.#saveCheckbox.disabled = this.#clearButton.disabled = this.#addButton.disabled = !value;
+    this.#saveCheckbox.disabled = this.#clearButton.disabled = this.#addButton.disabled = this.#description.disabled = !value;
   }
   #initTypeTab(reset) {
     if (reset) {
@@ -19527,14 +19259,14 @@ const PDFViewerApplication = {
     let mode;
     switch (AppOptions.get("viewerCssTheme")) {
       case 1:
-        mode = "is-light";
+        mode = "light";
         break;
       case 2:
-        mode = "is-dark";
+        mode = "dark";
         break;
     }
     if (mode) {
-      document.documentElement.classList.add(mode);
+      docStyle.setProperty("color-scheme", mode);
     }
     this.l10n = await this.externalServices.createL10n();
     document.getElementsByTagName("html")[0].dir = this.l10n.getDirection();
@@ -19564,13 +19296,20 @@ const PDFViewerApplication = {
       }
       const {
         PDFBug
-      } = await import(/*webpackIgnore: true*/AppOptions.get("debuggerSrc"));
+      } = await import(
+      /*webpackIgnore: true*/
+      /*@vite-ignore*/
+      AppOptions.get("debuggerSrc"));
       this._PDFBug = PDFBug;
     };
     if (params.get("disableworker") === "true") {
       try {
         GlobalWorkerOptions.workerSrc ||= AppOptions.get("workerSrc");
-        await import(/*webpackIgnore: true*/PDFWorker.workerSrc);
+        await import(
+        /*webpackIgnore: true*/
+        /*@vite-ignore*/
+        PDFWorker.workerSrc);
+        AppOptions.set("workerPort", null);
       } catch (ex) {
         console.error("_parseHashParams:", ex);
       }
@@ -19594,10 +19333,6 @@ const PDFViewerApplication = {
       }
     }
     if (params.has("pdfbug")) {
-      AppOptions.setAll({
-        pdfBug: true,
-        fontExtraProperties: true
-      });
       const enabled = params.get("pdfbug").split(",");
       try {
         await loadPDFBug();
@@ -19605,6 +19340,14 @@ const PDFViewerApplication = {
       } catch (ex) {
         console.error("_parseHashParams:", ex);
       }
+      const debugOpts = {
+        pdfBug: true,
+        fontExtraProperties: true
+      };
+      if (globalThis.StepperManager?.enabled) {
+        debugOpts.minDurationToUpdateCanvas = 0;
+      }
+      AppOptions.setAll(debugOpts);
     }
     if (params.has("locale")) {
       AppOptions.set("localeProperties", {
@@ -19638,30 +19381,26 @@ const PDFViewerApplication = {
     const eventBus = new EventBus();
     this.eventBus = AppOptions.eventBus = eventBus;
     mlManager?.setEventBus(eventBus, abortSignal);
-    this.overlayManager = new OverlayManager();
-    const pdfRenderingQueue = new PDFRenderingQueue();
-    pdfRenderingQueue.onIdle = this._cleanup.bind(this);
-    this.pdfRenderingQueue = pdfRenderingQueue;
-    const pdfLinkService = new PDFLinkService({
+    const overlayManager = this.overlayManager = new OverlayManager();
+    const renderingQueue = this.pdfRenderingQueue = new PDFRenderingQueue();
+    renderingQueue.onIdle = this._cleanup.bind(this);
+    const linkService = this.pdfLinkService = new PDFLinkService({
       eventBus,
       externalLinkTarget: AppOptions.get("externalLinkTarget"),
       externalLinkRel: AppOptions.get("externalLinkRel"),
       ignoreDestinationZoom: AppOptions.get("ignoreDestinationZoom")
     });
-    this.pdfLinkService = pdfLinkService;
     const downloadManager = this.downloadManager = new DownloadManager();
-    const findController = new PDFFindController({
-      linkService: pdfLinkService,
+    const findController = this.findController = new PDFFindController({
+      linkService,
       eventBus,
       updateMatchesCountOnProgress: true
     });
-    this.findController = findController;
-    const pdfScriptingManager = new PDFScriptingManager({
+    const pdfScriptingManager = this.pdfScriptingManager = new PDFScriptingManager({
       eventBus,
       externalServices,
       docProperties: this._scriptingDocProperties.bind(this)
     });
-    this.pdfScriptingManager = pdfScriptingManager;
     const container = appConfig.mainContainer,
       viewer = appConfig.viewerContainer;
     const annotationEditorMode = AppOptions.get("annotationEditorMode");
@@ -19671,23 +19410,24 @@ const PDFViewerApplication = {
     } : null;
     let altTextManager;
     if (AppOptions.get("enableUpdatedAddImage")) {
-      altTextManager = appConfig.newAltTextDialog ? new NewAltTextManager(appConfig.newAltTextDialog, this.overlayManager, eventBus) : null;
+      altTextManager = appConfig.newAltTextDialog ? new NewAltTextManager(appConfig.newAltTextDialog, overlayManager, eventBus) : null;
     } else {
-      altTextManager = appConfig.altTextDialog ? new AltTextManager(appConfig.altTextDialog, container, this.overlayManager, eventBus) : null;
+      altTextManager = appConfig.altTextDialog ? new AltTextManager(appConfig.altTextDialog, container, overlayManager, eventBus) : null;
     }
     if (appConfig.editorUndoBar) {
       this.editorUndoBar = new EditorUndoBar(appConfig.editorUndoBar, eventBus);
     }
-    const signatureManager = AppOptions.get("enableSignatureEditor") && appConfig.addSignatureDialog ? new SignatureManager(appConfig.addSignatureDialog, appConfig.editSignatureDialog, appConfig.annotationEditorParams?.editorSignatureAddSignature || null, this.overlayManager, l10n, externalServices.createSignatureStorage(eventBus, abortSignal), eventBus) : null;
+    const signatureManager = AppOptions.get("enableSignatureEditor") && appConfig.addSignatureDialog ? new SignatureManager(appConfig.addSignatureDialog, appConfig.editSignatureDialog, appConfig.annotationEditorParams?.editorSignatureAddSignature || null, overlayManager, l10n, externalServices.createSignatureStorage(eventBus, abortSignal), eventBus) : null;
     const enableHWA = AppOptions.get("enableHWA"),
       maxCanvasPixels = AppOptions.get("maxCanvasPixels"),
-      maxCanvasDim = AppOptions.get("maxCanvasDim");
-    const pdfViewer = new PDFViewer({
+      maxCanvasDim = AppOptions.get("maxCanvasDim"),
+      capCanvasAreaFactor = AppOptions.get("capCanvasAreaFactor");
+    const pdfViewer = this.pdfViewer = new PDFViewer({
       container,
       viewer,
       eventBus,
-      renderingQueue: pdfRenderingQueue,
-      linkService: pdfLinkService,
+      renderingQueue,
+      linkService,
       downloadManager,
       altTextManager,
       signatureManager,
@@ -19706,6 +19446,7 @@ const PDFViewerApplication = {
       enablePrintAutoRotate: AppOptions.get("enablePrintAutoRotate"),
       maxCanvasPixels,
       maxCanvasDim,
+      capCanvasAreaFactor,
       enableDetailCanvas: AppOptions.get("enableDetailCanvas"),
       enablePermissions: AppOptions.get("enablePermissions"),
       pageColors,
@@ -19713,38 +19454,38 @@ const PDFViewerApplication = {
       abortSignal,
       enableHWA,
       supportsPinchToZoom: this.supportsPinchToZoom,
-      enableAutoLinking: AppOptions.get("enableAutoLinking")
+      enableAutoLinking: AppOptions.get("enableAutoLinking"),
+      minDurationToUpdateCanvas: AppOptions.get("minDurationToUpdateCanvas")
     });
-    this.pdfViewer = pdfViewer;
-    pdfRenderingQueue.setViewer(pdfViewer);
-    pdfLinkService.setViewer(pdfViewer);
+    renderingQueue.setViewer(pdfViewer);
+    linkService.setViewer(pdfViewer);
     pdfScriptingManager.setViewer(pdfViewer);
     if (appConfig.sidebar?.thumbnailView) {
       this.pdfThumbnailViewer = new PDFThumbnailViewer({
         container: appConfig.sidebar.thumbnailView,
         eventBus,
-        renderingQueue: pdfRenderingQueue,
-        linkService: pdfLinkService,
+        renderingQueue,
+        linkService,
         maxCanvasPixels,
         maxCanvasDim,
         pageColors,
         abortSignal,
         enableHWA
       });
-      pdfRenderingQueue.setThumbnailViewer(this.pdfThumbnailViewer);
+      renderingQueue.setThumbnailViewer(this.pdfThumbnailViewer);
     }
     if (!this.isViewerEmbedded && !AppOptions.get("disableHistory")) {
       this.pdfHistory = new PDFHistory({
-        linkService: pdfLinkService,
+        linkService,
         eventBus
       });
-      pdfLinkService.setHistory(this.pdfHistory);
+      linkService.setHistory(this.pdfHistory);
     }
     if (!this.supportsIntegratedFind && appConfig.findBar) {
       this.findBar = new PDFFindBar(appConfig.findBar, appConfig.principalContainer, eventBus);
     }
     if (appConfig.annotationEditorParams) {
-      if (typeof AbortSignal.any === "function" && annotationEditorMode !== AnnotationEditorType.DISABLE) {
+      if (annotationEditorMode !== AnnotationEditorType.DISABLE) {
         const editorSignatureButton = appConfig.toolbar?.editorSignatureButton;
         if (editorSignatureButton && AppOptions.get("enableSignatureEditor")) {
           editorSignatureButton.parentElement.hidden = false;
@@ -19757,10 +19498,10 @@ const PDFViewerApplication = {
       }
     }
     if (mlManager && appConfig.secondaryToolbar?.imageAltTextSettingsButton) {
-      this.imageAltTextSettings = new ImageAltTextSettings(appConfig.altTextSettingsDialog, this.overlayManager, eventBus, mlManager);
+      this.imageAltTextSettings = new ImageAltTextSettings(appConfig.altTextSettingsDialog, overlayManager, eventBus, mlManager);
     }
     if (appConfig.documentProperties) {
-      this.pdfDocumentProperties = new PDFDocumentProperties(appConfig.documentProperties, this.overlayManager, eventBus, l10n, () => this._docFilename);
+      this.pdfDocumentProperties = new PDFDocumentProperties(appConfig.documentProperties, overlayManager, eventBus, l10n, () => this._docFilename, () => this._docTitle);
     }
     if (appConfig.secondaryToolbar?.cursorHandToolButton) {
       this.pdfCursorTools = new PDFCursorTools({
@@ -19787,14 +19528,14 @@ const PDFViewerApplication = {
       });
     }
     if (appConfig.passwordOverlay) {
-      this.passwordPrompt = new PasswordPrompt(appConfig.passwordOverlay, this.overlayManager, this.isViewerEmbedded);
+      this.passwordPrompt = new PasswordPrompt(appConfig.passwordOverlay, overlayManager, this.isViewerEmbedded);
     }
     if (appConfig.sidebar?.outlineView) {
       this.pdfOutlineViewer = new PDFOutlineViewer({
         container: appConfig.sidebar.outlineView,
         eventBus,
         l10n,
-        linkService: pdfLinkService,
+        linkService,
         downloadManager
       });
     }
@@ -19958,7 +19699,7 @@ const PDFViewerApplication = {
     this.pdfViewer.currentPageNumber = val;
   },
   get supportsPrinting() {
-    return PDFPrintServiceFactory.supportsPrinting;
+    return shadow(this, "supportsPrinting", AppOptions.get("supportsPrinting") && PDFPrintServiceFactory.supportsPrinting);
   },
   get supportsFullscreen() {
     return shadow(this, "supportsFullscreen", document.fullscreenEnabled);
@@ -19989,9 +19730,9 @@ const PDFViewerApplication = {
   },
   setTitleUsingUrl(url = "", downloadUrl = null) {
     this.url = url;
-    this.baseUrl = url.split("#", 1)[0];
+    this.baseUrl = updateUrlHash(url, "", true);
     if (downloadUrl) {
-      this._downloadUrl = downloadUrl === url ? this.baseUrl : downloadUrl.split("#", 1)[0];
+      this._downloadUrl = downloadUrl === url ? this.baseUrl : updateUrlHash(downloadUrl, "", true);
     }
     if (isDataScheme(url)) {
       this._hideViewBookmark();
@@ -20014,6 +19755,19 @@ const PDFViewerApplication = {
   },
   get _docFilename() {
     return this._contentDispositionFilename || pdfjs_getPdfFilenameFromUrl(this.url);
+  },
+  get _docTitle() {
+    const {
+      documentInfo,
+      metadata
+    } = this;
+    const title = metadata?.get("dc:title");
+    if (title) {
+      if (title !== "Untitled" && !/[\uFFF0-\uFFFF]/g.test(title)) {
+        return title;
+      }
+    }
+    return documentInfo.Title;
   },
   _hideViewBookmark() {
     const {
@@ -20121,7 +19875,7 @@ const PDFViewerApplication = {
   async download() {
     let data;
     try {
-      data = await this.pdfDocument.getData();
+      data = await (this.pdfDocument ? this.pdfDocument.getData() : this.pdfLoadingTask.getData());
     } catch {}
     this.downloadManager.download(data, this._downloadUrl, this._docFilename);
   },
@@ -20424,14 +20178,8 @@ const PDFViewerApplication = {
     this.metadata = metadata;
     this._contentDispositionFilename ??= contentDispositionFilename;
     this._contentLength ??= contentLength;
-    console.log(`PDF ${pdfDocument.fingerprints[0]} [${info.PDFFormatVersion} ` + `${(info.Producer || "-").trim()} / ${(info.Creator || "-").trim()}] ` + `(PDF.js: ${version || "?"} [${build || "?"}])`);
-    let pdfTitle = info.Title;
-    const metadataTitle = metadata?.get("dc:title");
-    if (metadataTitle) {
-      if (metadataTitle !== "Untitled" && !/[\uFFF0-\uFFFF]/g.test(metadataTitle)) {
-        pdfTitle = metadataTitle;
-      }
-    }
+    console.log(`PDF ${pdfDocument.fingerprints[0]} [${info.PDFFormatVersion} ` + `${(metadata?.get("pdf:producer") || info.Producer || "-").trim()} / ` + `${(metadata?.get("xmp:creatortool") || info.Creator || "-").trim()}` + `] (PDF.js: ${version || "?"} [${build || "?"}])`);
+    const pdfTitle = this._docTitle;
     if (pdfTitle) {
       this.setTitle(`${pdfTitle} - ${this._contentDispositionFilename || this._title}`);
     } else if (this._contentDispositionFilename) {
@@ -20715,16 +20463,14 @@ const PDFViewerApplication = {
         signal
       }
     } = this;
-    if (typeof AbortSignal.any === "function") {
-      this._touchManager = new TouchManager({
-        container: window,
-        isPinchingDisabled: () => pdfViewer.isInPresentationMode,
-        isPinchingStopped: () => this.overlayManager?.active,
-        onPinching: this.touchPinchCallback.bind(this),
-        onPinchEnd: this.touchPinchEndCallback.bind(this),
-        signal
-      });
-    }
+    this._touchManager = new TouchManager({
+      container: window,
+      isPinchingDisabled: () => pdfViewer.isInPresentationMode,
+      isPinchingStopped: () => this.overlayManager?.active,
+      onPinching: this.touchPinchCallback.bind(this),
+      onPinchEnd: this.touchPinchEndCallback.bind(this),
+      signal
+    });
     function addWindowResolutionChange(evt = null) {
       if (evt) {
         pdfViewer.refresh();
@@ -21468,8 +21214,6 @@ function beforeUnload(evt) {
 
 
 
-const pdfjsVersion = "5.0.375";
-const pdfjsBuild = "23972e194";
 const AppConstants = {
   LinkTarget: LinkTarget,
   RenderingStates: RenderingStates,
@@ -21700,9 +21444,6 @@ if (document.readyState === "interactive" || document.readyState === "complete")
   document.addEventListener("DOMContentLoaded", webViewerLoad, true);
 }
 
-var __webpack_exports__PDFViewerApplication = __webpack_exports__.PDFViewerApplication;
-var __webpack_exports__PDFViewerApplicationConstants = __webpack_exports__.PDFViewerApplicationConstants;
-var __webpack_exports__PDFViewerApplicationOptions = __webpack_exports__.PDFViewerApplicationOptions;
-export { __webpack_exports__PDFViewerApplication as PDFViewerApplication, __webpack_exports__PDFViewerApplicationConstants as PDFViewerApplicationConstants, __webpack_exports__PDFViewerApplicationOptions as PDFViewerApplicationOptions };
+export { PDFViewerApplication, AppConstants as PDFViewerApplicationConstants, AppOptions as PDFViewerApplicationOptions };
 
 //# sourceMappingURL=viewer.mjs.map

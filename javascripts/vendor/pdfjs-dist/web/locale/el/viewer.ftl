@@ -270,7 +270,7 @@ pdfjs-page-landmark =
 pdfjs-loading-error = Προέκυψε σφάλμα κατά τη φόρτωση του PDF.
 pdfjs-invalid-file-error = Μη έγκυρο ή κατεστραμμένο αρχείο PDF.
 pdfjs-missing-file-error = Λείπει αρχείο PDF.
-pdfjs-unexpected-response-error = Μη αναμενόμενη απόκριση από το διακομιστή.
+pdfjs-unexpected-response-error = Απρόσμενη απάντηση διακομιστή.
 pdfjs-rendering-error = Προέκυψε σφάλμα κατά την εμφάνιση της σελίδας.
 
 ## Annotations
@@ -293,7 +293,7 @@ pdfjs-annotation-date-time-string = { DATETIME($dateObj, dateStyle: "short", tim
 ## Password
 
 pdfjs-password-label = Εισαγάγετε τον κωδικό πρόσβασης για να ανοίξετε αυτό το αρχείο PDF.
-pdfjs-password-invalid = Μη έγκυρος κωδικός πρόσβασης. Παρακαλώ δοκιμάστε ξανά.
+pdfjs-password-invalid = Μη έγκυρος κωδικός πρόσβασης. Δοκιμάστε ξανά.
 pdfjs-password-ok-button = OK
 pdfjs-password-cancel-button = Ακύρωση
 pdfjs-web-fonts-disabled = Οι γραμματοσειρές ιστού είναι ανενεργές: δεν είναι δυνατή η χρήση των ενσωματωμένων γραμματοσειρών PDF.
@@ -319,6 +319,22 @@ pdfjs-highlight-floating-button-label = Επισήμανση
 pdfjs-editor-signature-button =
     .title = Προσθήκη υπογραφής
 pdfjs-editor-signature-button-label = Προσθήκη υπογραφής
+
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Επεξεργασία επισήμανσης
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Επεξεργασία σχεδίου
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Επεξεργασία υπογραφής: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Επεξεργασία εικόνας
 
 ## Remove button for the various kind of editor.
 
@@ -348,9 +364,16 @@ pdfjs-editor-stamp-add-image-button-label = Προσθήκη εικόνας
 pdfjs-editor-free-highlight-thickness-input = Πάχος
 pdfjs-editor-free-highlight-thickness-title =
     .title = Αλλαγή πάχους κατά την επισήμανση στοιχείων εκτός κειμένου
+pdfjs-editor-add-signature-container =
+    .aria-label = Στοιχεία ελέγχου υπογραφής και αποθηκευμένες υπογραφές
 pdfjs-editor-signature-add-signature-button =
     .title = Προσθήκη νέας υπογραφής
 pdfjs-editor-signature-add-signature-button-label = Προσθήκη νέας υπογραφής
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Αποθηκευμένη υπογραφή: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Επεξεργασία κειμένου
@@ -461,7 +484,6 @@ pdfjs-editor-new-alt-text-error-close-button = Κλείσιμο
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Λήψη μοντέλου ΤΝ εναλλακτικού κειμένου ({ $downloadedSize } από { $totalSize } MB)
     .aria-valuetext = Λήψη μοντέλου ΤΝ εναλλακτικού κειμένου ({ $downloadedSize } από { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -580,9 +602,9 @@ pdfjs-editor-edit-signature-update-button = Ενημέρωση
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Αφαίρεση υπογραφής
-pdfjs-editor-delete-signature-button-label = Αφαίρεση υπογραφής
+pdfjs-editor-delete-signature-button1 =
+    .title = Αφαίρεση αποθηκευμένης υπογραφής
+pdfjs-editor-delete-signature-button-label1 = Αφαίρεση αποθηκευμένης υπογραφής
 
 ## Editor toolbar
 

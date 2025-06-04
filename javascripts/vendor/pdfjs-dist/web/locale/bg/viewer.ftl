@@ -310,6 +310,9 @@ pdfjs-editor-stamp-button =
     .title = Добавяне или променяне на изображения
 pdfjs-editor-stamp-button-label = Добавяне или променяне на изображения
 
+## Default editor aria labels
+
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -332,6 +335,10 @@ pdfjs-editor-ink-opacity-input = Прозрачност
 pdfjs-editor-stamp-add-image-button =
     .title = Добавяне на изображение
 pdfjs-editor-stamp-add-image-button-label = Добавяне на изображение
+# .default-content is used as a placeholder in an empty text editor.
+pdfjs-free-text2 =
+    .aria-label = Текстов редактор
+    .default-content = Започнете да пишете…
 pdfjs-free-text =
     .aria-label = Текстов редактор
 pdfjs-free-text-default-content = Започнете да пишете…

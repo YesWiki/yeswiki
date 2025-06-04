@@ -320,6 +320,22 @@ pdfjs-editor-signature-button =
     .title = Zonte firme
 pdfjs-editor-signature-button-label = Zonte firme
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Modifiche evidenziazions
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Modifiche dissens
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Editôr firmis: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Modifiche imagjins
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -348,9 +364,16 @@ pdfjs-editor-stamp-add-image-button-label = Zonte imagjin
 pdfjs-editor-free-highlight-thickness-input = Spessôr
 pdfjs-editor-free-highlight-thickness-title =
     .title = Modifiche il spessôr de selezion pai elements che no son testuâi
+pdfjs-editor-add-signature-container =
+    .aria-label = Controi firme e firmis salvadis
 pdfjs-editor-signature-add-signature-button =
     .title = Zonte gnove firme
 pdfjs-editor-signature-add-signature-button-label = Zonte gnove firme
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Firme salvade: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Editôr di test
@@ -461,7 +484,6 @@ pdfjs-editor-new-alt-text-error-close-button = Siere
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Daûr a discjariâil model IA pal test alternatîf ({ $downloadedSize } di { $totalSize } MB)
     .aria-valuetext = Daûr a discjariâ il model IA pal test alternatîf ({ $downloadedSize } di { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -580,9 +602,9 @@ pdfjs-editor-edit-signature-update-button = Inzorne
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Gjave firme
-pdfjs-editor-delete-signature-button-label = Gjave firme
+pdfjs-editor-delete-signature-button1 =
+    .title = Gjave firme salvade
+pdfjs-editor-delete-signature-button-label1 = Gjave firme salvade
 
 ## Editor toolbar
 

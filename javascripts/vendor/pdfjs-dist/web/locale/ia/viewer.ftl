@@ -320,6 +320,22 @@ pdfjs-editor-signature-button =
     .title = Adder signatura
 pdfjs-editor-signature-button-label = Adder signatura
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Editor de evidentiation
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Editor de designos
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Editor de signatura: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Editor de imagines
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -348,9 +364,16 @@ pdfjs-editor-stamp-add-image-button-label = Adder imagine
 pdfjs-editor-free-highlight-thickness-input = Spissor
 pdfjs-editor-free-highlight-thickness-title =
     .title = Cambiar spissor evidentiante elementos differente de texto
+pdfjs-editor-add-signature-container =
+    .aria-label = Controlos de signatura e signaturas salvate
 pdfjs-editor-signature-add-signature-button =
     .title = Adder nove signatura
 pdfjs-editor-signature-add-signature-button-label = Adder nove signatura
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Signatura salvate: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Editor de texto
@@ -461,7 +484,6 @@ pdfjs-editor-new-alt-text-error-close-button = Clauder
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Discargante modello de intelligentia artificial  del texto alternative ({ $downloadedSize } de { $totalSize } MB)
     .aria-valuetext = Discargante modello de intelligentia artificial  del texto alternative ({ $downloadedSize } de { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -580,9 +602,9 @@ pdfjs-editor-edit-signature-update-button = Actualisar
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Remover signatura
-pdfjs-editor-delete-signature-button-label = Remover signatura
+pdfjs-editor-delete-signature-button1 =
+    .title = Remover signatura salvate
+pdfjs-editor-delete-signature-button-label1 = Remover signatura salvate
 
 ## Editor toolbar
 

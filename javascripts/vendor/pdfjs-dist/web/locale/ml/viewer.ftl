@@ -102,7 +102,7 @@ pdfjs-document-properties-mb = { $size_mb } എംബി ({ $size_b } ബൈറ�
 pdfjs-document-properties-title = തലക്കെട്ട്‌
 pdfjs-document-properties-author = രചയിതാവ്:
 pdfjs-document-properties-subject = വിഷയം:
-pdfjs-document-properties-keywords = മുഖ്യപദങ്ങൾ
+pdfjs-document-properties-keywords = പെരുമുരികൾ:
 pdfjs-document-properties-creation-date = പൂര്‍ത്തിയാകുന്ന തീയതി:
 pdfjs-document-properties-modification-date = മാറ്റം വരുത്തിയ തീയതി:
 # Variables:
@@ -138,13 +138,16 @@ pdfjs-document-properties-page-size-dimension-name-string = { $width } × { $hei
 
 ##
 
+# The linearization status of the document; usually called "Fast Web View" in
+# English locales of Adobe software.
+pdfjs-document-properties-linearized = വിരവോള ഗോളാന്തരക്കാഴ്ച :
 pdfjs-document-properties-linearized-yes = അതെ
 pdfjs-document-properties-linearized-no = ഇല്ല
 pdfjs-document-properties-close-button = അടയ്ക്കുക
 
 ## Print
 
-pdfjs-print-progress-message = അച്ചടിപ്പിനു് പ്രമാണം തയ്യാറാക്കുന്നു...
+pdfjs-print-progress-message = അച്ചടിപ്പിനു് പ്രമാണം ഒരുക്കുന്നു...
 # Variables:
 #   $progress (Number) - percent value
 pdfjs-print-progress-percent = { $progress }%
@@ -170,6 +173,7 @@ pdfjs-thumbs-button-label = തംബ്നെയിലുകള്‍
 pdfjs-findbar-button =
     .title = രേഖയില്‍ കണ്ടുപിടിയ്ക്കുക
 pdfjs-findbar-button-label = കണ്ടെത്തുക
+pdfjs-additional-layers = കൂടാത്ത പാളികൾ
 
 ## Thumbnails panel item (tooltip and alt text for images)
 
@@ -283,6 +287,12 @@ pdfjs-highlight-floating-button1 =
     .title = അടയാളപ്പെടുക
     .aria-label = അടയാളപ്പെടുക
 pdfjs-highlight-floating-button-label = അടയാളപ്പെടുക
+pdfjs-editor-signature-button =
+    .title = പുതിയ ഒപ്പു് ചേൎക്കുക
+pdfjs-editor-signature-button-label = പുതിയ ഒപ്പു് ചേൎക്കുക
+
+## Default editor aria labels
+
 
 ## Remove button for the various kind of editor.
 
@@ -310,6 +320,14 @@ pdfjs-editor-stamp-add-image-button =
 pdfjs-editor-stamp-add-image-button-label = ചിത്രം ചേർക്കുക
 # This refers to the thickness of the line used for free highlighting (not bound to text)
 pdfjs-editor-free-highlight-thickness-input = കനം
+pdfjs-editor-signature-add-signature-button =
+    .title = പുതിയ ഒപ്പു് ചേൎക്കുക
+pdfjs-editor-signature-add-signature-button-label = പുതിയ ഒപ്പു് ചേൎക്കുക
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = കരുതിവച്ച ഒപ്പു് : { $description }
 pdfjs-free-text-default-content = എഴുതാൻ തുടങ്ങുക…
 pdfjs-ink-canvas =
     .aria-label = ഉപയോക്താവ് ഉണ്ടാക്കിയ ചിത്രം
@@ -324,6 +342,9 @@ pdfjs-editor-alt-text-dialog-label = സാധ്യത തിരഞ്ഞെട
 pdfjs-editor-alt-text-add-description-label = ഒരു വിവരണം ചേർക്കുക
 pdfjs-editor-alt-text-cancel-button = റദ്ദാക്കുക
 pdfjs-editor-alt-text-save-button = കരുതിവയ്ക്കുക
+# .placeholder: This is a placeholder for the alt text input area
+pdfjs-editor-alt-text-textarea =
+    .placeholder = ഉദാഹരണം, “ഒരു ചെറുപ്പക്കാരൻ ഭക്ഷണം കഴിക്കാൻ മേശയിലിരുന്നു”
 # Alternative text (alt text) helps when people can't see the image.
 pdfjs-editor-alt-text-button =
     .aria-label = മറുയെഴുത്തു്
@@ -331,9 +352,18 @@ pdfjs-editor-alt-text-button =
 ## Editor resizers
 ## This is used in an aria label to help to understand the role of the resizer.
 
+pdfjs-editor-resizer-label-top-left = ഇടതു മീത്ത മുക്ക് — വലുപ്പം മാറ്റുക
+pdfjs-editor-resizer-label-top-middle = നടുവിൽ മീത്ത മുക്ക് - വലുപ്പം മാറ്റുക
+pdfjs-editor-resizer-label-top-right = വലതു മീത്ത മുക്ക് — വലുപ്പം മാറ്റുക
+pdfjs-editor-resizer-label-middle-right = വലതു നടുവിലുള്ള മുക്ക് — വലുപ്പം മാറ്റുക
+pdfjs-editor-resizer-label-bottom-right = വലതു കീഴിലുള്ള മുക്ക് — വലുപ്പം മാറ്റുക
+pdfjs-editor-resizer-label-bottom-middle = നടുവെ കീഴിലുള്ള മുക്ക് — വലുപ്പം മാറ്റുക
+pdfjs-editor-resizer-label-bottom-left = ഇടതു കീഴിലുള്ള മുക്ക് — വലുപ്പം മാറ്റുക
 
 ## Color picker
 
+# This means "Color used to highlight text"
+pdfjs-editor-highlight-colorpicker-label = അടയാളന്നിറം
 pdfjs-editor-colorpicker-button =
     .title = നിറം മാറ്റുക
 pdfjs-editor-colorpicker-dropdown =
@@ -345,7 +375,7 @@ pdfjs-editor-colorpicker-green =
 pdfjs-editor-colorpicker-blue =
     .title = നീല
 pdfjs-editor-colorpicker-pink =
-    .title = പാടലവർണ്ണം
+    .title = പാടല
 pdfjs-editor-colorpicker-red =
     .title = ചുമന്ന
 
@@ -359,25 +389,65 @@ pdfjs-editor-highlight-show-all-button =
 ## New alt-text dialog
 ## Group note for entire feature: Alternative text (alt text) helps when people can't see the image. This feature includes a tool to create alt text automatically using an AI model that works locally on the user's device to preserve privacy.
 
+# Modal header positioned above a text box where users can edit the alt text.
+pdfjs-editor-new-alt-text-dialog-edit-label = മറുയെഴുത്തു് തിരുത്തുക (ചിത്ര വിവരണം)
+# Modal header positioned above a text box where users can add the alt text.
+pdfjs-editor-new-alt-text-dialog-add-label = മറുയെഴുത്തു് ചേൎക്കുക (ചിത്ര വിവരണം)
+pdfjs-editor-new-alt-text-textarea =
+    .placeholder = താങ്ങളുടെ വിവരണം ഇവിടെ എഴുതുക...
+# This is a required legal disclaimer that refers to the automatically created text inside the alt text box above this text. It disappears if the text is edited by a human.
+pdfjs-editor-new-alt-text-disclaimer1 = ഈ മറുയെഴുത്തു് തന്നെതാനെയുണ്ടാക്കിയതുകൊണ്ടു് തെറ്റായതാവാം.
 pdfjs-editor-new-alt-text-disclaimer-learn-more-url = കൂടുതല്‍ അറിയുക
 pdfjs-editor-new-alt-text-create-automatically-button-label = തന്നെതാനെ മറുയെഴുത്തു് ഉണ്ടാക്കുക
 pdfjs-editor-new-alt-text-not-now-button = ഇപ്പോഴല്ല
 pdfjs-editor-new-alt-text-error-title = തന്നെതാനെ മറുയെഴുത്തു് ഉണ്ടാക്കാൻ പറ്റിയില്ല
+pdfjs-editor-new-alt-text-error-description = തനതായ മറുയെഴുത്തു് ഇടുക അല്ലെങ്കിൽ പിന്നീടു് ശ്രമിയ്ക്കുക.
 pdfjs-editor-new-alt-text-error-close-button = അടയ്ക്കുക
+# This is a button that users can click to edit the alt text they have already added.
+pdfjs-editor-new-alt-text-added-button =
+    .aria-label = മറുയെഴുത്തു് ചേൎത്തു
+pdfjs-editor-new-alt-text-added-button-label = മറുയെഴുത്തു് ചേൎത്തു
+# This is a button that users can click to open the alt text editor and add alt text when it is not present.
+pdfjs-editor-new-alt-text-missing-button =
+    .aria-label = മറുയെഴുത്തു് കാണാന്നില്ല
+pdfjs-editor-new-alt-text-missing-button-label = മറുയെഴുത്തു് കാണാന്നില്ല
+# This is a button that opens up the alt text modal where users should review the alt text that was automatically generated.
+pdfjs-editor-new-alt-text-to-review-button =
+    .aria-label = മറുയെഴുത്തു് അവലോകിക്കുക
+pdfjs-editor-new-alt-text-to-review-button-label = മറുയെഴുത്തു് അവലോകിക്കുക
+# "Created automatically" is a prefix that will be added to the beginning of any alt text that has been automatically generated. After the colon, the user will see/hear the actual alt text description. If the alt text has been edited by a human, this prefix will not appear.
+# Variables:
+#   $generatedAltText (String) - the generated alt-text.
+pdfjs-editor-new-alt-text-generated-alt-text-with-disclaimer = തന്നെതാനെ ഉണ്ടാക്കി : { $generatedAltText }
 
 ## Image alt-text settings
 
+pdfjs-image-alt-text-settings-button =
+    .title = ചിത്ര മറുയെഴുത്തു് ക്രമീകരണങ്ങൾ
+pdfjs-image-alt-text-settings-button-label = ചിത്ര മറുയെഴുത്തു് ക്രമീകരണങ്ങൾ
+pdfjs-editor-alt-text-settings-dialog-label = ചിത്ര മറുയെഴുത്തു് ക്രമീകരണങ്ങൾ
+pdfjs-editor-alt-text-settings-automatic-title = യാന്ത്രിക മറുയെഴുത്തു്
+pdfjs-editor-alt-text-settings-create-model-button-label = തന്നെതാനെ മറുയെഴുത്തു് ഉണ്ടാക്കുക
 pdfjs-editor-alt-text-settings-delete-model-button = മായ്ക്കുക
 pdfjs-editor-alt-text-settings-download-model-button = ഇറക്കിവയ്ക്കുക
 pdfjs-editor-alt-text-settings-downloading-model-button = ഇറക്കിവയ്ക്കുന്നു
+pdfjs-editor-alt-text-settings-show-dialog-description = താങ്ങളുടെ എല്ലാ പടങ്ങളിലും മറുയെഴുത്തുണ്ടെന്നു് തീൎച്ചപ്പെടുത്താൻ തുണയ്ക്കുന്നു.
 pdfjs-editor-alt-text-settings-close-button = അടയ്ക്കുക
 
 ## "Annotations removed" bar
 
+pdfjs-editor-undo-bar-message-highlight = അടയാളം മാറ്റി
 pdfjs-editor-undo-bar-message-freetext = എഴുത്തു് മാറ്റി
 pdfjs-editor-undo-bar-message-ink = ആലേഖ്യം മാറ്റി
 pdfjs-editor-undo-bar-message-stamp = ചിത്രം മാറ്റി
 pdfjs-editor-undo-bar-message-signature = ഒപ്പു് മാറ്റി
+# Variables:
+#   $count (Number) - the number of removed annotations.
+pdfjs-editor-undo-bar-message-multiple =
+    { $count ->
+        [one] { $count } കുറിപ്പെഴുതലുകൾ മാറ്റി
+       *[other] { $count } കുറിപ്പെഴുതലുകൾ മാറ്റി
+    }
 pdfjs-editor-undo-bar-undo-button =
     .title = പഴയപോലെയാക്കുക
 pdfjs-editor-undo-bar-undo-button-label = പഴയപോലെയാക്കുക
@@ -437,12 +507,18 @@ pdfjs-editor-add-signature-error-close-button = അടയ്ക്കുക
 
 pdfjs-editor-add-signature-cancel-button = റദ്ദാക്കുക
 pdfjs-editor-add-signature-add-button = ചേൎക്കുക
+pdfjs-editor-edit-signature-update-button = പുതുക്കുക
 
 ## Main menu for adding/removing signatures
 
+pdfjs-editor-delete-signature-button1 =
+    .title = കരുതിവച്ച ഒപ്പു് മാറ്റുക
+pdfjs-editor-delete-signature-button-label1 = കരുതിവച്ച ഒപ്പു് മാറ്റുക
 
 ## Editor toolbar
 
+pdfjs-editor-add-signature-edit-button-label = വിവരണം തിരുത്തുക
 
 ## Edit signature description dialog
 
+pdfjs-editor-edit-signature-dialog-title = വിവരണം തിരുത്തുക

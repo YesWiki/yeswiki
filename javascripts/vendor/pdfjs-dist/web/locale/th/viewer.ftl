@@ -312,6 +312,9 @@ pdfjs-editor-signature-button =
     .title = เพิ่มลายเซ็น
 pdfjs-editor-signature-button-label = เพิ่มลายเซ็น
 
+## Default editor aria labels
+
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -453,7 +456,6 @@ pdfjs-editor-new-alt-text-error-close-button = ปิด
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = กำลังดาวน์โหลดโมเดล AI สำหรับข้อความทดแทน ({ $downloadedSize } จาก { $totalSize } MB)
     .aria-valuetext = กำลังดาวน์โหลดโมเดล AI สำหรับข้อความทดแทน ({ $downloadedSize } จาก { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -568,9 +570,6 @@ pdfjs-editor-edit-signature-update-button = อัปเดต
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = เอาลายเซ็นออก
-pdfjs-editor-delete-signature-button-label = เอาลายเซ็นออก
 
 ## Editor toolbar
 

@@ -320,6 +320,22 @@ pdfjs-editor-signature-button =
     .title = Embojuaju teraguapy
 pdfjs-editor-signature-button-label = Embojuaju teraguapy
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Jehechaukarã mbosako’iha
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Ta’ãnga’apo moheñoiha
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Teraguapy mbosako’iha: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Ta’ãnga mbosako’iha
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -348,9 +364,16 @@ pdfjs-editor-stamp-add-image-button-label = Embojuaju ta’ãnga
 pdfjs-editor-free-highlight-thickness-input = Anambusu
 pdfjs-editor-free-highlight-thickness-title =
     .title = Emoambue anambusukue embosa’ývo mba’eporu ha’e’ỹva moñe’ẽrã
+pdfjs-editor-add-signature-container =
+    .aria-label = Teraguapy ñemaña ha teraguapy ñongatupyre
 pdfjs-editor-signature-add-signature-button =
     .title = Embojuaju teraguapy pyahu
 pdfjs-editor-signature-add-signature-button-label = Embojuaju teraguapy pyahu
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Teraguapy ñongatupyre: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Moñe’ẽrã moheñoiha
@@ -461,7 +484,6 @@ pdfjs-editor-new-alt-text-error-close-button = Mboty
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Emboguejyhína IA moñe’ẽrã mokõiháva ({ $downloadedSize } { $totalSize } MB) mba’e
     .aria-valuetext = Emboguejyhína IA moñe’ẽrã mokõiháva ({ $downloadedSize } { $totalSize } MB) mba’e
 # This is a button that users can click to edit the alt text they have already added.
@@ -579,9 +601,9 @@ pdfjs-editor-edit-signature-update-button = Mbohekopyahu
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Embogue teraguapy
-pdfjs-editor-delete-signature-button-label = Embogue teraguapy
+pdfjs-editor-delete-signature-button1 =
+    .title = Embogue teraguapy ñongatupyre
+pdfjs-editor-delete-signature-button-label1 = Embogue teraguapy ñongatupyre
 
 ## Editor toolbar
 

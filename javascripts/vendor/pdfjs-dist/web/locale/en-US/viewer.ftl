@@ -332,8 +332,13 @@ pdfjs-editor-highlight-editor =
 # “Drawing” is a noun, the string is used on the editor for drawings.
 pdfjs-editor-ink-editor =
     .aria-label = Drawing editor
-pdfjs-editor-signature-editor =
-    .aria-label = Signature editor
+
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Signature editor: { $description }
+
 pdfjs-editor-stamp-editor =
     .aria-label = Image editor
 
@@ -480,7 +485,6 @@ pdfjs-editor-new-alt-text-error-close-button = Close
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)
     .aria-valuetext = Downloading alt text AI model ({ $downloadedSize } of { $totalSize } MB)
 

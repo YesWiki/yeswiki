@@ -324,6 +324,22 @@ pdfjs-editor-signature-button =
     .title = Signaturu pśidaś
 pdfjs-editor-signature-button-label = Signaturu pśidaś
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Editor wuzwignjenja
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Kresleński editor
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Signaturowy editor: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Wobrazowy editor
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -352,9 +368,16 @@ pdfjs-editor-stamp-add-image-button-label = Wobraz pśidaś
 pdfjs-editor-free-highlight-thickness-input = Tłustosć
 pdfjs-editor-free-highlight-thickness-title =
     .title = Tłustosć změniś, gaž se zapiski wuzwiguju, kótarež tekst njejsu
+pdfjs-editor-add-signature-container =
+    .aria-label = Wóźeńske elementy signaturow a skłaźone signatury
 pdfjs-editor-signature-add-signature-button =
     .title = Nowu signaturu pśidaś
 pdfjs-editor-signature-add-signature-button-label = Nowu signaturu pśidaś
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Skłaźona signatura: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Tekstowy editor
@@ -465,7 +488,6 @@ pdfjs-editor-new-alt-text-error-close-button = Zacyniś
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Model KI za alternatiwny tekst se ześěgujo ({ $downloadedSize } z { $totalSize } MB)
     .aria-valuetext = Model KI za alternatiwny tekst se ześěgujo ({ $downloadedSize } z { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -586,9 +608,9 @@ pdfjs-editor-edit-signature-update-button = Aktualizěrowaś
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Signaturu wótwónoźeś
-pdfjs-editor-delete-signature-button-label = Signaturu wótwónoźeś
+pdfjs-editor-delete-signature-button1 =
+    .title = Skłaźonu signaturu wótwónoźeś
+pdfjs-editor-delete-signature-button-label1 = Skłaźonu signaturu wótwónoźeś
 
 ## Editor toolbar
 

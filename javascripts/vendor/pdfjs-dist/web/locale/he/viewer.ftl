@@ -320,6 +320,22 @@ pdfjs-editor-signature-button =
     .title = הוספת חתימה
 pdfjs-editor-signature-button-label = הוספת חתימה
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = עורך סימונים
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = עורך ציורים
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = עורך החתימות: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = עורך תמונות
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -348,9 +364,16 @@ pdfjs-editor-stamp-add-image-button-label = הוספת תמונה
 pdfjs-editor-free-highlight-thickness-input = עובי
 pdfjs-editor-free-highlight-thickness-title =
     .title = שינוי עובי בעת סימון פריטים שאינם טקסט
+pdfjs-editor-add-signature-container =
+    .aria-label = פקדי חתימה וחתימות שמורות
 pdfjs-editor-signature-add-signature-button =
     .title = הוספת חתימה חדשה
 pdfjs-editor-signature-add-signature-button-label = הוספת חתימה חדשה
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = חתימה שמורה: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = עורך טקסט
@@ -461,7 +484,6 @@ pdfjs-editor-new-alt-text-error-close-button = סגירה
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = בתהליך הורדת מודל AI של טקסט חלופי ({ $downloadedSize } מתוך { $totalSize } מ״ב)
     .aria-valuetext = בתהליך הורדת מודל AI של טקסט חלופי ({ $downloadedSize } מתוך { $totalSize } מ״ב)
 # This is a button that users can click to edit the alt text they have already added.
@@ -580,9 +602,9 @@ pdfjs-editor-edit-signature-update-button = עדכון
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = הסרת חתימה
-pdfjs-editor-delete-signature-button-label = הסרת חתימה
+pdfjs-editor-delete-signature-button1 =
+    .title = הסרת חתימה שמורה
+pdfjs-editor-delete-signature-button-label1 = הסרת חתימה שמורה
 
 ## Editor toolbar
 

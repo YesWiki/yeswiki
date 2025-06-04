@@ -320,6 +320,9 @@ pdfjs-editor-signature-button =
     .title = Legg til signatur
 pdfjs-editor-signature-button-label = Legg til signatur
 
+## Default editor aria labels
+
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -461,7 +464,6 @@ pdfjs-editor-new-alt-text-error-close-button = Lukk
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Laster ned alternativ tekst AI-modell ({ $downloadedSize } av { $totalSize } MB)
     .aria-valuetext = Laster ned alternativ tekst AI-modell ({ $downloadedSize } av { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -470,7 +472,7 @@ pdfjs-editor-new-alt-text-added-button =
 pdfjs-editor-new-alt-text-added-button-label = Alternativ tekst lagt til
 # This is a button that users can click to open the alt text editor and add alt text when it is not present.
 pdfjs-editor-new-alt-text-missing-button =
-    .aria-label = Mangler alt-tekst
+    .aria-label = Mangler alternativ tekst
 pdfjs-editor-new-alt-text-missing-button-label = Mangler alternativ tekst
 # This is a button that opens up the alt text modal where users should review the alt text that was automatically generated.
 pdfjs-editor-new-alt-text-to-review-button =
@@ -573,9 +575,6 @@ pdfjs-editor-edit-signature-update-button = Oppdater
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Fjern signatur
-pdfjs-editor-delete-signature-button-label = Fjern signatur
 
 ## Editor toolbar
 

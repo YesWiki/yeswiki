@@ -320,6 +320,22 @@ pdfjs-editor-signature-button =
     .title = ხელმოწერის დამატება
 pdfjs-editor-signature-button-label = ხელმოწერის დამატება
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = მონიშვნის ჩასწორება
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = ნახაზის ჩასწორება
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = ხელმოწერის ჩასწორება: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = სურათის ჩასწორება
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -348,9 +364,16 @@ pdfjs-editor-stamp-add-image-button-label = სურათის დამა�
 pdfjs-editor-free-highlight-thickness-input = სისქე
 pdfjs-editor-free-highlight-thickness-title =
     .title = სისქის შეცვლა წარწერის გარდა სხვა ნაწილების მონიშვნისას
+pdfjs-editor-add-signature-container =
+    .aria-label = ხელმოწერის მართვა და შენახული ხელმოწერები
 pdfjs-editor-signature-add-signature-button =
     .title = ახალი ხელმოწერის დამატება
 pdfjs-editor-signature-add-signature-button-label = ახალი ხელმოწერის დამატება
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = შენახული ხელმოწერა: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = ნაწერის ჩასწორება
@@ -461,7 +484,6 @@ pdfjs-editor-new-alt-text-error-close-button = დახურვა
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = ჩამოიტვირთება დართული წარწერის შესადეგი AI-მოდელი ({ $downloadedSize } ზომით { $totalSize } მბაიტი)
     .aria-valuetext = ჩამოიტვირთება დართული წარწერის შესადეგი AI-მოდელი ({ $downloadedSize } ზომით { $totalSize } მბაიტი)
 # This is a button that users can click to edit the alt text they have already added.
@@ -580,9 +602,9 @@ pdfjs-editor-edit-signature-update-button = განახლება
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = ხელმოწერის მოცილება
-pdfjs-editor-delete-signature-button-label = ხელმოწერის მოცილება
+pdfjs-editor-delete-signature-button1 =
+    .title = შენახული ხელმოწერის მოცილება
+pdfjs-editor-delete-signature-button-label1 = შენახული ხელმოწერის მოცილება
 
 ## Editor toolbar
 
