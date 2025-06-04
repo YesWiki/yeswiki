@@ -4,6 +4,7 @@ namespace YesWiki\Login;
 
 use Exception;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use Tamtamchik\SimpleFlash\Flash;
 use Throwable;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
@@ -295,10 +296,10 @@ class UserSettingsAction extends YesWikiAction
     {
         $link = $this->userManager->sendPasswordRecoveryEmail($user);
         if (!boolval($this->wiki->config['contact_disable_email_for_password'])) {
-            flash(str_replace('{email}', $user['email'], _t('RECOVERY_MESSAGE_SENT')), 'success');
+            Flash::success(str_replace('{email}', $user['email'], _t('RECOVERY_MESSAGE_SENT')));
         }
         $resetText = _t('RECOVERY_LINK');
-        flash("<a href='$link' target='_blank'>$resetText</a>", 'success');
+        Flash::success("<a href='$link' target='_blank'>$resetText</a>");
     }
 
     private function retrieveUsernameAndEmailFromPost(array $post)

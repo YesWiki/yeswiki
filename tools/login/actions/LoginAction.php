@@ -15,6 +15,7 @@
 
 namespace YesWiki\Login;
 
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
@@ -225,7 +226,7 @@ class LoginAction extends YesWikiAction
             $this->wiki->Redirect($incomingurl);
         } catch (Exception $ex) {
             // error error
-            flash($ex->getMessage(), 'error');
+            Flash::error($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
         }
     }

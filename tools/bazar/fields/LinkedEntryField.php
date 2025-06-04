@@ -97,10 +97,10 @@ class LinkedEntryField extends BazarField
         if (!empty($query)) {
             $query = ((!empty($this->query)) ? $this->query . '|' : '') . $query;
 
-            return '{{bazarliste id="' . $this->name . '" query="' . $query . '"'
+            dump('{{bazarliste id="' . $this->name . '" query="' . $query . '"'
                 . ((!empty($this->limit)) ? ' nb="' . $this->limit . '"' : '')
                 . ((!empty(trim($this->template))) ? ' template="' . trim($this->template) . '" ' : '')
-                . $this->otherParams . '}}';
+                . $this->otherParams . '}}');
         } else {
             return '';
         }
