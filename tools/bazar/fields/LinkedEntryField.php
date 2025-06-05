@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Templates\Service\TabsService;
 
@@ -16,7 +15,7 @@ class LinkedEntryField extends BazarField
     protected $otherParams;
     protected $limit;
     protected $template;
-    protected $linkType;
+    protected $linkedId;
     protected $addEntryBtnLabel;
 
     protected const FIELD_QUERY = 2;
@@ -36,8 +35,7 @@ class LinkedEntryField extends BazarField
         $this->otherParams = $values[self::FIELD_OTHER_PARAMS] ?? '';
         $this->limit = $values[self::FIELD_LIMIT] ?? '';
         $this->template = $values[self::FIELD_TEMPLATE] ?? '';
-        $this->linkType = (!empty($values[self::FIELD_LINK_TYPE]) && $values[self::FIELD_LINK_TYPE] === 'checkbox')
-            ? 'checkboxfiche' : ($values[self::FIELD_LINK_TYPE] ?? '');
+        $this->linkedId = $values[self::FIELD_LINK_TYPE] ?? '';
         $this->propertyName = null; // to prevent bad saved field when updating entry and !canEdit or at export/import
         $this->addEntryBtnLabel = $values[self::FIELD_ADD_ENTRY_BTN_LABEL] ?? '';
     }
@@ -70,7 +68,12 @@ class LinkedEntryField extends BazarField
     {
         $output = $this->renderSecuredBazarList($entry);
         $addEntryBtnLabel = $this->addEntryBtnLabel;
-        $addEntryLink = $this->getWiki()->href('iframe', 'BazaR', 'voirmenu=0&vue=saisir&id='.$this->name, false);
+        $addEntryLink = $this->getWiki()->href(
+            'iframe',
+            'BazaR',
+            'context=addentry&voirmenu=0&vue=saisir&'.$this->linkedId.'='.$entry['id_fiche'].'&id='.$this->name,
+            false
+        );
         $emptyList = $this->isEmptyOutput($output);
 
         return compact(['output', 'addEntryLink', 'addEntryBtnLabel', 'emptyList']);
@@ -80,7 +83,11 @@ class LinkedEntryField extends BazarField
     {
         $tabsService = $this->getService(TabsService::class);
         $index = $tabsService->saveState();
-        $output = $this->getService(Performer::class)->run('wakka', 'formatter', ['text' => $this->getBazarListAction($entry)]);
+        $output = $this->getService(Performer::class)->run(
+            'wakka',
+            'formatter',
+            ['text' => $this->getBazarListAction($entry)]
+        );
         $tabsService->resetState($index);
 
         return $output;
@@ -95,12 +102,13 @@ class LinkedEntryField extends BazarField
     {
         $query = $this->getQueryForLinkedLabels($entry);
         if (!empty($query)) {
-            $query = ((!empty($this->query)) ? $this->query . '|' : '') . $query;
+            $query = ((!empty($this->query)) ? $this->query.'|' : '').$query;
+            $action = '{{bazarliste id="'.$this->name.'" query="'.$query.'" '
+                .((!empty($this->limit)) ? 'nb="'.$this->limit.'" ' : '')
+                .'template="'.(empty(trim($this->template)) ? 'liste_liens.tpl.html' : $this->template).'" '
+                .$this->otherParams.'}}';
 
-            dump('{{bazarliste id="' . $this->name . '" query="' . $query . '"'
-                . ((!empty($this->limit)) ? ' nb="' . $this->limit . '"' : '')
-                . ((!empty(trim($this->template))) ? ' template="' . trim($this->template) . '" ' : '')
-                . $this->otherParams . '}}');
+            return $action;
         } else {
             return '';
         }
@@ -114,9 +122,10 @@ class LinkedEntryField extends BazarField
             $apiUrl = $formId[0] . '/?api/forms/' . $formId[1];
             $externalForm = true;
             $form = json_decode(file_get_contents($apiUrl), true);
-        } else {
-            // get FormManager here and not in construct to prevent loop
-            $form = $this->services->get(FormManager::class)->getOne($this->name);
+        }
+        if (!$externalForm) {
+            // we just query on the field
+            return isset($entry['id_fiche']) ? $this->linkedId.'='.$entry['id_fiche'] : '';
         }
         if (!is_array($form) || !is_array($form['prepared'])
                 || empty($entry['id_typeannonce'])
@@ -126,22 +135,7 @@ class LinkedEntryField extends BazarField
         $query = '';
         // find EnumEntryField with right name
         foreach ($form['prepared'] as $field) {
-            if (
-                (
-                    !$externalForm
-        && $field instanceof EnumField
-                        && $field->isEnumEntryField()
-        && ($field->getLinkedObjectName() == $entry['id_typeannonce']
-                            && (
-                                empty($this->linkType)
-                                || strpos($field->getType(), $this->linkType) === 0 // checkboxfiche or listefiche
-                                || $field->getPropertyName() == $this->linkType // label
-                                || substr($field->getPropertyName(), strlen($field->getType() . trim($entry['id_typeannonce']))) == $this->linkType // label
-                            ))
-                ) || (
-                    $externalForm
-        && strstr($field['propertyname'], '-api-forms-' . $entry['id_typeannonce'] ?? 'none')
-                )) {
+            if (strstr($field['propertyname'], '-api-forms-' . $entry['id_typeannonce'] ?? 'none')) {
                 $query .= (empty($query)) ? '' : '|';
                 $query .= ($externalForm ? $field['propertyname'] : $field->getPropertyName()) . '=' . $entry['id_fiche'];
             }
@@ -159,7 +153,7 @@ class LinkedEntryField extends BazarField
             [
                 'query' => $this->query,
                 'limit' => $this->limit,
-                'linkType' => $this->linkType,
+                'linkedId' => $this->linkedId,
                 'template' => $this->template,
                 'otherParams' => $this->otherParams,
             ]
