@@ -6,12 +6,30 @@
   align-items: center;
 }
 
+.opening-hours-block-hours {
+  display: flex;
+  margin: 0.5em;
+  align-self: flex-start;
+  gap: 0.5em;
+}
+
 .opening-hours-hours {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
+  align-self: flex-start;
 }
 
+.opening-hours {
+  border: 2px solid var(--primary-color);
+  border-radius: 3px;
+  padding: 1em;
+}
+
+.opening-hours > .control-label {
+  background-color: white;
+  margin-bottom: 0.3em;
+}
 .opening-hours-create select,
 input {
   border-color: var(--primary-color);
@@ -21,6 +39,8 @@ input {
 
 .opening-hours-create {
   margin-bottom: 2em;
+  display: flex;
+  flex-direction: column;
 }
 
 .opening-hours-create option {

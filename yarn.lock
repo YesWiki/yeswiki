@@ -1551,6 +1551,15 @@ object.values@^1.2.0:
     define-properties "^1.2.1"
     es-object-atoms "^1.0.0"
 
+opening_hours@^3.9.0:
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/opening_hours/-/opening_hours-3.9.0.tgz#afbd3281d084ab1819162aeebc87466796e4de35"
+  integrity sha512-ns8FNny8a3pzOznl9w3AdtleEeIKqCIWhVDfiprNRWuAa1biKkkluP3wRuBMFwroDC6jIjWlVLE+zIa/ONWd0w==
+  dependencies:
+    i18next "^24.2.3"
+    i18next-browser-languagedetector "^8.0.4"
+    suncalc "^1.9.0"
+
 optionator@^0.9.3:
   version "0.9.4"
   resolved "https://registry.yarnpkg.com/optionator/-/optionator-0.9.4.tgz#7ea1c1a5d91d764fb282139c88fe11e182a3a734"
