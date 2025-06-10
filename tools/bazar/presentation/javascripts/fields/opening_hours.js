@@ -5,7 +5,6 @@ Vue.component('opening-hours', {
       today: [],
       locale: new URLSearchParams(document.URL).get('lang') || navigator.language,
       todayName: new Date().toLocaleDateString(this.locale, { weekday: 'long' }),
-      isOpen: '',
       title: ''
     }
   },
@@ -16,9 +15,9 @@ Vue.component('opening-hours', {
     const endWeek = new Date(currentDay)
     endWeek.setDate(currentDay.getDate() + 7)
     const oh = new opening_hours(this.$el.dataset.openinghours, {}, { locale: this.locale })
-    this.isOpen = oh.getState() ? 'Ouvert' : 'Fermé'
     this.intervals = this.groupBy(oh.getOpenIntervals(currentDay, endWeek))
     this.todayName = new Date().toLocaleDateString(this.locale, { weekday: 'long' })
+    this.today = this.intervals[now.getDay()] || []
   },
   methods: {
 
@@ -46,25 +45,30 @@ Vue.component('opening-hours', {
   },
   template: `
   <div>
-  <h4> {{ title }} </h4>
-  <details>
-      <summary style="display: flex;align-items: center;">
-      <span>{{ todayName }}</span>
-      <ul style="list-style: none; margin-bottom: 0px;">
-          <li> {{ isOpen }}</li>
-      </ul>
-      <i class="fas fa-angle-down" style="margin-left: 1em;font-size: 2em;"></i></summary>
-      <table>
-          <tr v-for="day in intervals" v-if="day !== undefined">
-              <td> {{ day[0].day }} </td>
-              <td>
-                  <ul>
-                      <li v-for="interval in day"> {{ interval.start }} - {{ interval.end }} </li>
-                  </ul>
-              </td>
-          </tr>
-      </table>
-  </details>`
+    <h4> {{ title }} </h4>
+    <details>
+        <summary style="display: flex;align-items: center;">
+        <span>{{ todayName }}</span>
+        <ul style="list-style: none; margin-bottom: 0px;">
+        <li v-for="interval in today"> {{ interval.start }} - {{ interval.end }} </li>
+        </ul>
+        <i class="fas fa-angle-down" style="margin-left: 1em;font-size: 2em;"></i>
+        </summary>
+        <div style="background: white;padding: 1em;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        z-index: 1;position: absolute;">
+          <table>
+              <tr v-for="day in intervals" v-if="day !== undefined">
+                  <td> {{ day[0].day }} </td>
+                  <td>
+                      <ul>
+                          <li v-for="interval in day"> {{ interval.start }} - {{ interval.end }} </li>
+                      </ul>
+                  </td>
+              </tr>
+          </table>
+        </div>
+    </details>
+  </div>`
 })
 
 const elements = document.getElementsByTagName('opening-hours')

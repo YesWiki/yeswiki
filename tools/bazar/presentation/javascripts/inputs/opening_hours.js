@@ -77,7 +77,7 @@ Vue.component('opening-hours-create', {
     <div>
         <div class="opening-hours-interval" v-for="interval in opening_days">
             <select v-model="interval.days" multiple>
-                <option v-for="d in dayNames" value="d.key">{{ d.val }}</option>
+                <option v-for="d in dayNames" :value="d.key">{{ d.val }}</option>
             </select>
             <div class="opening-hours-block-hours">
                 <div class="opening-hours-hours">
