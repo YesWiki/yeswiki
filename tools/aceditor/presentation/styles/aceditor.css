@@ -99,6 +99,17 @@ textarea.aceditor-textarea {
   background-color: white;
 }
 
+.scroll-container-toolbar {
+  transition: all ease-in 0.2s;
+  position: sticky;
+  top: 66px;
+  z-index: 6;
+}
+
+.nav-up .scroll-container-toolbar {
+  top: 0;
+}
+
 #ACEditor .ace-container .ace-body {
   min-height: 500px;
 }
