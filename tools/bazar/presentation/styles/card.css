@@ -205,7 +205,7 @@ a.bazar-card {
 
   .style-horizontal .bazar-card {
     flex-wrap: wrap;
-    min-height: 11rem;
+    height: 11rem;
   }
 
   .style-horizontal .bazar-card .visual-area {
