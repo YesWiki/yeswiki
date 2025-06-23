@@ -45,7 +45,7 @@ Vue.component('opening-hours', {
   },
   template: `
   <div>
-    <h4> {{ title }} </h4>
+    <span class="BAZ_label"> {{ title }} </span>
     <details>
         <summary style="display: flex;align-items: center;">
         <span>{{ todayName }} </span>
