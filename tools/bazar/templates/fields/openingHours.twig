@@ -1,7 +1,5 @@
-{{ include_javascript('javascripts/vendor/vue/vue.js', true) }}
-{{ include_javascript('javascripts/vendor/opening_hours/opening_hours.js', true) }}
-
-{{ include_javascript('tools/bazar/presentation/javascripts/fields/opening_hours.js', false, true) }}
-{{ include_javascript('tools/bazar/presentation/javascripts/vueapp.js', false, true)}}
-<opening-hours class="opening-hours-display" data-openingHours="{{ opening_hours }}" data-title="{{ title }}">
-</opening-hours>
+{% extends "@bazar/layouts/field.twig" %}
+{% block value %}
+    <opening-hours class="opening-hours-display" data-openingHours="{{ opening_hours }}">
+    </opening-hours>
+{% endblock %}

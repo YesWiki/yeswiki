@@ -24,6 +24,12 @@ class OpeningHoursField extends BazarField
             return '';
         }
 
+        $GLOBALS['wiki']->addJavascriptFile('javascripts/vendor/vue/vue.js');
+        $GLOBALS['wiki']->addJavascriptFile('javascripts/vendor/opening_hours/opening_hours.js');
+        $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/fields/opening_hours.js');
+        $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/vueapp.js');
+
+
 
         return $this->render('@bazar/fields/openingHours.twig', [
             'opening_hours' => $value,

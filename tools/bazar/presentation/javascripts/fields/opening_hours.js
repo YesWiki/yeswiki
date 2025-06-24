@@ -4,12 +4,10 @@ Vue.component('opening-hours', {
       intervals: [],
       today: [],
       locale: new URLSearchParams(document.URL).get('lang') || navigator.language,
-      todayName: new Date().toLocaleDateString(this.locale, { weekday: 'long' }),
-      title: ''
+      todayName: new Date().toLocaleDateString(this.locale, { weekday: 'long' })
     }
   },
   mounted() {
-    this.title = this.$el.dataset.title
     const now = new Date()
     const currentDay = new Date(now.toDateString())
     const endWeek = new Date(currentDay)
@@ -45,7 +43,6 @@ Vue.component('opening-hours', {
   },
   template: `
   <div>
-    <span class="BAZ_label"> {{ title }} </span>
     <details>
         <summary style="display: flex;align-items: center;">
         <span>{{ todayName }} </span>
