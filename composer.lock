@@ -4187,16 +4187,16 @@
         },
         {
             "name": "yeswiki/theme-margot",
-            "version": "v1.1.6",
+            "version": "v1.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/YesWiki/yeswiki-theme-margot.git",
-                "reference": "56ffc6700785070f8d13cbca84e516037bed3b32"
+                "reference": "786cf024b72b34f45c52b8501a3974637cce70d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/YesWiki/yeswiki-theme-margot/zipball/56ffc6700785070f8d13cbca84e516037bed3b32",
-                "reference": "56ffc6700785070f8d13cbca84e516037bed3b32",
+                "url": "https://api.github.com/repos/YesWiki/yeswiki-theme-margot/zipball/786cf024b72b34f45c52b8501a3974637cce70d5",
+                "reference": "786cf024b72b34f45c52b8501a3974637cce70d5",
                 "shasum": ""
             },
             "require": {
@@ -4212,9 +4212,9 @@
             ],
             "support": {
                 "issues": "https://github.com/YesWiki/yeswiki-theme-margot/issues",
-                "source": "https://github.com/YesWiki/yeswiki-theme-margot/tree/v1.1.6"
+                "source": "https://github.com/YesWiki/yeswiki-theme-margot/tree/v1.1.7"
             },
-            "time": "2025-03-15T10:06:55+00:00"
+            "time": "2025-06-15T18:54:05+00:00"
         }
     ],
     "packages-dev": [
