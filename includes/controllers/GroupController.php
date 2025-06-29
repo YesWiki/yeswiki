@@ -82,11 +82,11 @@ class GroupController extends YesWikiController
                         throw new InvalidInputException(_t('ERROR_RECURSIVE_GROUP'));
                 }
             }
-            $this->groupManager->create($name, $members);
+            $group_created = $this->groupManager->create($name, $members);
         } else {
             throw new InvalidGroupNameException(_t('INVALID_GROUP_NAME'));
         }
-        if ($this->groupManager->groupExists($name)) {
+        if ($group_created != 1) {
             $entry = $this->groupManager->getMembers($name);
 
             return ['name' => $name, 'members' => $entry];

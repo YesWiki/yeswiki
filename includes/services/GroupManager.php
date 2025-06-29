@@ -26,10 +26,10 @@ class GroupManager
     /**
      * create group with members.
      */
-    public function create(string $group_name, array $members): void
+    public function create(string $group_name, array $members): int
     {
         $member_str = implode("\n", $members);
-        $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $member_str, GROUP_PREFIX);
+        return $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $member_str, GROUP_PREFIX);
     }
 
     public function delete(string $group_name): void
