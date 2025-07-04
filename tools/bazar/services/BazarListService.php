@@ -210,7 +210,12 @@ class BazarListService
                 $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
                 // We collect all values
                 $uniqValues = array_unique(array_column($entries, $propName));
-                sort($uniqValues);
+
+                usort($uniqValues, function($a, $b)
+				{
+				    return strcmp(strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $a)), strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $b)));
+				});
+                
                 foreach ($uniqValues as $value) {
                     $filter['nodes'][] = $this->createFilterNode($value, $value);
                 }
