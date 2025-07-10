@@ -40,43 +40,32 @@ class MapField extends BazarField
         $this->latitudeField = $values[self::FIELD_LATITUDE_FIELD] ?? 'bf_latitude';
         $this->longitudeField = $values[self::FIELD_LONGITUDE_FIELD] ?? 'bf_longitude';
         $this->showMapInEntryView = $values[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] ?? '0';
-        $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
-            trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) . ',' . trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
+        $this->autocomplete =
+            (trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) ?? self::DEFAULT_FIELDNAME_POSTALCODE)
+            . ','
+            . (trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) ?? self::DEFAULT_FIELDNAME_TOWN);
         $this->propertyName = 'geolocation';
         $this->label = $this->propertyName;
 
-        $autocomplete = empty($this->autocomplete) ? '' : (
-            is_string($this->autocomplete)
-            ? $this->autocomplete
-            : (
-                is_array($this->autocomplete)
-                ? implode(',', $this->autocomplete)
-                : ''
-            )
-        );
-        $data = array_map('trim', explode(',', $autocomplete));
-        $postalCode = empty($data[0]) ? self::DEFAULT_FIELDNAME_POSTALCODE : $data[0];
-        $town = empty($data[1]) ? self::DEFAULT_FIELDNAME_TOWN : $data[1];
+        $data = array_map('trim', explode(',', $this->autocomplete));
+        $postalCode = $data[0];
+        $town = $data[1];
 
-        $autocompleteFieldnames = empty($values[self::FIELD_AUTOCOMPLETE_OTHERS])
-            ? ''
-            : (
-                is_string($values[self::FIELD_AUTOCOMPLETE_OTHERS])
-                ? $values[self::FIELD_AUTOCOMPLETE_OTHERS]
-                : (
-                    is_array($values[self::FIELD_AUTOCOMPLETE_OTHERS])
-                    ? implode('|', $values[self::FIELD_AUTOCOMPLETE_OTHERS])
-                    : ''
-                )
-            );
+        $autocompleteFieldnames = $values[self::FIELD_AUTOCOMPLETE_OTHERS] ?? '';
+
+        if (!empty($values[self::FIELD_AUTOCOMPLETE_OTHERS]) &&
+            is_array($values[self::FIELD_AUTOCOMPLETE_OTHERS])) {
+            $autocompleteFieldnames = implode('|', $values[self::FIELD_AUTOCOMPLETE_OTHERS]);
+        } else {
+            $autocompleteFieldnames = $values[self::FIELD_AUTOCOMPLETE_OTHERS] ?? '';
+        }
         $data = array_map('trim', explode('|', $autocompleteFieldnames));
-
         $this->geolocate = (empty($data[0]) || $data[0] != 1) ? 0 : 1;
-        $street = empty($data[1]) ? self::DEFAULT_FIELDNAME_STREET : $data[1];
-        $street1 = empty($data[2]) ? self::DEFAULT_FIELDNAME_STREET1 : $data[2];
-        $street2 = empty($data[3]) ? self::DEFAULT_FIELDNAME_STREET2 : $data[3];
-        $county = empty($data[4]) ? self::DEFAULT_FIELDNAME_COUNTY : $data[4];
-        $state = empty($data[5]) ? self::DEFAULT_FIELDNAME_STATE : $data[5];
+        $street = $data[1] ?? self::DEFAULT_FIELDNAME_STREET;
+        $street1 = $data[2] ?? self::DEFAULT_FIELDNAME_STREET1;
+        $street2 = $data[3] ?? self::DEFAULT_FIELDNAME_STREET2;
+        $county = $data[4] ?? self::DEFAULT_FIELDNAME_COUNTY;
+        $state = $data[5] ?? self::DEFAULT_FIELDNAME_STATE;
 
         $this->autocompleteFieldnames = compact(['postalCode', 'town', 'street', 'street1', 'street2', 'county', 'state']);
     }
@@ -280,15 +269,15 @@ class MapField extends BazarField
 
     public static function mapToFieldArray($fieldProps): array
     {
-        $autocomplete_array = $fieldProps['autocomplete'] ? explode(',', $fieldProps['autocomplete']) : [null, null];
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_LATITUDE_FIELD] = $fieldProps['latitudeField'];
         $new[self::FIELD_LONGITUDE_FIELD] = $fieldProps['longitudeField'];
-        $new[self::FIELD_AUTOCOMPLETE_POSTALCODE] = $autocomplete_array[0] ?? null;
-        $new[self::FIELD_AUTOCOMPLETE_TOWN] = $autocomplete_array[1] ?? null;
-        $new[self::FIELD_AUTOCOMPLETE_OTHERS] = $fieldProps['autocomplete'];
+        $new[self::FIELD_AUTOCOMPLETE_POSTALCODE] = $fieldProps['autocompleteFieldnames']['postalCode'] ?? '';
+        $new[self::FIELD_AUTOCOMPLETE_TOWN] = $fieldProps['autocompleteFieldnames']['town'] ?? '';
+        $new[self::FIELD_AUTOCOMPLETE_OTHERS] = implode('|', $fieldProps['autocompleteFieldnames']);
         $new[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] = $fieldProps['showMapInEntryView'];
         ksort($new);
+
         return $new;
     }
 
