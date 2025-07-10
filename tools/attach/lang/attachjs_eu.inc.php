@@ -1,4 +1,5 @@
 <?php
+
 return [
-    'ATTACH_FAILED' => '',
+    'ATTACH_FAILED' => 'Huts egin du',
 ];
