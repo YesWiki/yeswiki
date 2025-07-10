@@ -62,21 +62,19 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
             foreach ($form['prepared'] as $i => $fields) {
                 $classType = get_class($fields);
                 $fields = json_decode(json_encode($fields), true);
-                dump($fields);
-                if (isset($fields['id'])) {
-                    $field_id = $fields['id'];
-                    unset($fields['id']);
-                } else {
-                    $field_id = $fields['type'] . '__' . $counter;
-                    $counter++;
+
+                if ((!isset($field['name']) || $field['name'] == '') && isset($field['linkedObjectName'])) {
+                    $field['name'] = $field['type'] . $field['linkedObjectName'];
                 }
+                $fields['name'] = $fields['name'] ?? $fields['type'] . '__' . $counter;
+                $counter++;
                 if (isset($fields['options'])) {
                     unset($fields['options']);
                 }
                 $fieldExploded = explode('\\', $classType);
                 $fields['field_type'] = array_pop($fieldExploded);
-                $form_array[$field_id] = $fields;
-                unset($form_array[$i]['propertyname']);
+                $form_array[] = $fields;
+                $counter++;
             }
             $id = genere_nom_wiki($form['bn_label_nature']);
             $newform = [
@@ -93,7 +91,7 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
                 'only_one_entry_message' => $form['bn_only_one_entry_message'],
                 'fields' => $form_array,
             ];
-            $saved = $pageManager->save($id, json_encode($newform), '', true);
+            $saved = $pageManager->save($id, json_encode($newform, JSON_FORCE_OBJECT), '', true);
             if ($saved == 0) {
                 $tripleStore->create(
                     $id,

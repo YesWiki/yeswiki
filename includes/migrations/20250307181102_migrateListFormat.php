@@ -19,7 +19,6 @@ class migrateListFormat extends YesWikiMigration
      //   $lists = $dbService->loadAll('Select * from '.$this->dbService->prefixTable('pages').' where id = 203');
 
         $new_lists = [];
-        dump($lists);
 
         foreach($lists as $list) {
             $id = $list['id'];
@@ -28,7 +27,6 @@ class migrateListFormat extends YesWikiMigration
             if (!isset($list['nodes'])) {
                 $list = $listManager->convertDataStructure($list);
             }
-            dump($list);
             foreach ($list['nodes'] as $index => $node) {
                 $children = [];
                 if (isset($node['children'])) {
@@ -51,7 +49,6 @@ class migrateListFormat extends YesWikiMigration
                 'nodes' => $nodes,
             ];
         }
-        dump($new_lists);
 
         $temp_table_query = 'create temporary table lists (id int, body longtext)';
         $insert_query = 'insert into lists (id, body) values ';
@@ -70,7 +67,6 @@ class migrateListFormat extends YesWikiMigration
             $table_page_name.'.body=lists.body where lists.id='.$table_page_name.'.id';
 
         $query = $temp_table_query.';'.$insert_query.';'.$update_query;
-        dump($query);
         $link = $dbService->getLink();
         mysqli_multi_query($link, $query);
         do {
