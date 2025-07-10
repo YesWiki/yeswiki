@@ -78,7 +78,7 @@ class EntryController extends YesWikiController
         } else {
             $forms = $this->formManager->getMany($formsIds);
         }
-
+        $forms = array_map(function ($form) {return $form['body'];}, $forms);
         return $this->render('@bazar/entries/select_form.twig', ['forms' => $forms]);
     }
 

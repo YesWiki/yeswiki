@@ -203,6 +203,8 @@ class AclField extends BazarField
 
     public static function mapToFieldArray($fieldProps): array
     {
+
+        $new = parent::mapToFieldArray($fieldProps);
         $new = [
             self::FIELD_TYPE => $fieldProps['type'],
             self::FIELD_ENTRY_READ_RIGHT => $fieldProps['entryReadRight'],
@@ -214,6 +216,8 @@ class AclField extends BazarField
             self::FIELD_DEFAULT => $fieldProps['default'],
             self::FIELD_ASK_IF_ACTIVATE_COMMENTS => $fieldProps['askIfActivateComments'],
         ];
+        $new = array_merge(parent::mapToFieldArray($fieldProps), $new);
+        ksort($new);
         return $new;
     }
 

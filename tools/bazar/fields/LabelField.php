@@ -55,8 +55,8 @@ class LabelField extends BazarField
     public static function mapToFieldArray($fieldProps): array
     {
         $new = parent::mapToFieldArray($fieldProps);
-        $new[self::FIELD_VIEW_TEXT] = $fieldProps['viewtext'];
-        $new[self::FIELD_FORM_TEXT] = $fieldProps['formtext'];
+        $new[self::FIELD_VIEW_TEXT] = $fieldProps['viewText'] ?? '';
+        $new[self::FIELD_FORM_TEXT] = $fieldProps['formText'] ?? '';
         ksort($new);
         return $new;
     }
@@ -69,8 +69,8 @@ class LabelField extends BazarField
         return [
             'field_type' => self::FIELD_CLASS_TYPE,
             'type' => $this->getType(),
-            'viewtext' => $this->viewText,
-            'formtext' => $this->formText,
+            'viewText' => $this->viewText,
+            'formText' => $this->formText,
         ];
     }
 }
