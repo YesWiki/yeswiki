@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Bazar\Handlers;
+namespace YesWiki\Bazar;
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
@@ -9,6 +9,28 @@ use YesWiki\Core\YesWikiHandler;
 
 class TranslateHandler extends YesWikiHandler
 {
+
+    private const IGNORE_FIELDS_TYPES = [
+        'checkboxfiche',
+        'listefiches',
+        'liste',
+        'radio',
+        'checkbox',
+        'listedatedeb',
+        'listefiche',
+        'map',
+    ];
+    private const IGNORE_SPECIFIC_TYPES = [
+        'id_typeannonce',
+        'id_fiche',
+        'date_creation_fiche',
+        'statut_fiche',
+        'date_maj_fiche',
+        'bf_longitude',
+        'bf_latitude',
+        'geolocation',
+    ];
+
     public function run()
     {
         if (!$this->wiki->HasAccess('write') || !$this->wiki->page) {
@@ -42,10 +64,15 @@ class TranslateHandler extends YesWikiHandler
         $page = json_decode($page['body'], true);
         $isEntry = $entryManager->isEntry($tag);
         $field_names = [];
+        $ignorefields = [];
         if ($isEntry) {
             $form = $formManager->getOne($page['id_typeannonce']);
             Foreach ($form['prepared'] as $field) {
-                $field_names[$field->getName()] = $field->getLabel();
+                if (!in_array($field->getType(), self::IGNORE_FIELDS_TYPES)) {
+                    $field_names[$field->getName()] = $field->getLabel();
+                } else {
+                    $ignorefields[] = $field->getName();
+                }
             }
         }
 
@@ -54,7 +81,7 @@ class TranslateHandler extends YesWikiHandler
             'isEntry' => $entryManager->isEntry($tag),
             'entry' => $page,
             'default_language' => $GLOBALS['default_language'] ?? 'fr',
-            'ignore_fields' => ['id_typeannonce', 'id_fiche', 'date_creation_fiche', 'statut_fiche', 'date_maj_fiche'],
+            'ignore_fields' => array_merge($ignorefields, self::IGNORE_SPECIFIC_TYPES),
             'extra_lang' => $GLOBALS['wiki']->config['extra_lang'],
             'fields_names' => $field_names,
         ]);
