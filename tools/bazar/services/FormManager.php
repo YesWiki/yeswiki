@@ -132,7 +132,7 @@ class FormManager
             if ($template_list[$temp_index][0] == 'image') {
                 $modify = true;
                 $image_comp = $template_list[$temp_index];
-                $default_image_filename = $basePath . "defaultimage{$form['id']}_{$image_comp[1]}.jpg";
+                $default_image_filename = $basePath . "defaultimage{$id}_{$image_comp[1]}.jpg";
                 if (file_exists($default_image_filename)) {
                     $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $image_comp[ImageField::FIELD_IMAGE_DEFAULT] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
                 } else {
@@ -339,26 +339,19 @@ class FormManager
     }
 
     private function __createOrUpdate($form, $tag) {
-        dump($form);
         $counter = 0;
         $form_array = [];
         foreach ($form['prepared'] as $i => $fields) {
             $classType = get_class($fields);
             $fields = json_decode(json_encode($fields), true);
-            if (isset($fields['id'])) {
-                $field_id = $fields['id'];
-                unset($fields['id']);
-            } else {
-                $field_id = $fields['type'] . '__' . $counter;
-                $counter++;
-            }
+            $fields['name'] = $fields['name'] ?? $fields['type'] . '__' . $counter;
+            $counter++;
             if (isset($fields['options'])) {
                 unset($fields['options']);
             }
             $fieldExploded = explode('\\', $classType);
             $fields['field_type'] = array_pop($fieldExploded);
-            $form_array[$field_id] = $fields;
-            unset($form_array[$i]['propertyname']);
+            $form_array[] = $fields;
         }
         $newform = [
             'id' => $form['id'] ?? $form['bn_id_nature'],
@@ -374,7 +367,7 @@ class FormManager
             'only_one_entry_message' => $form['bn_only_one_entry_message'],
             'fields' => $form_array,
         ];
-        $saved = $this->pageManager->save($tag, json_encode($newform), '', true);
+        $saved = $this->pageManager->save($tag, json_encode($newform, JSON_FORCE_OBJECT), '', true);
         return $saved;
         }
 
