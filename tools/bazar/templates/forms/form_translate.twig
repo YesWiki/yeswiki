@@ -31,7 +31,7 @@
 	<div class="nodes-container">
 	   <div class="form-entry" v-for="(entry, key) in form.fields">
 
-				<label class="control-label"> {{ "{{ key }}"  }} </label>
+				<label class="control-label"> {{ "{{ entry.id }}"  }} </label>
 				{% for field in translatable_fields %}
 				<div class="control-group form-group" v-if="entry.{{ field }}">
 				    <label class="control-label col-sm-3">
@@ -49,7 +49,6 @@
 
 	<input type="hidden" name="form" :value="jsonForm" />
 	<input type="hidden" name="extra_lang" :value="JsonExtraLang" />
-
 	{# Form Actions #}
 	<div class="form-actions form-group">
 		<div class="col-sm-9 col-sm-offset-3">

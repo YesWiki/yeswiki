@@ -113,16 +113,27 @@ class EntryManager
      *
      * @throws Exception
      */
-    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
+    public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null, $lang = 'default'): ?array
     {
+
         if (!$this->isEntry($tag)) {
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
+        if ($lang === 'default' and isset($_GET['lang'])) {
+            $lang = $_GET['lang'];
+        }
+
+        if ($lang === 'all' || $lang === 'default') {
+            $select_options = '*';
+        } else {
+            $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.__extra_lang.$lang\"), body)) as body";
+        }
+
+
+        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL, $select_options);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         $data = $this->getDataFromPage($page, $semantic, $debug);
-
         return $data;
     }
 
@@ -433,7 +444,6 @@ class EntryManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $requete . '</code><hr>';
         }
-
         return $requete;
     }
 
@@ -548,7 +558,7 @@ class EntryManager
         // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
         $saved = $this->pageManager->save(
             $data['id_fiche'],
-            json_encode($data),
+            json_encode($data, JSON_FORCE_OBJECT),
             '',
             $ignoreAcls, // Ignore les ACLs
             $data['date_maj_fiche']
@@ -647,7 +657,7 @@ class EntryManager
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-        $this->pageManager->save($data['id_fiche'], json_encode($data), '');
+        $this->pageManager->save($data['id_fiche'], json_encode($data, JSON_FORCE_OBJECT), '');
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data, false, $previousData);
@@ -1174,7 +1184,7 @@ class EntryManager
                     return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
                 }, $entry);
             }
-            $body = json_encode($entry);
+            $body = json_encode($entry, JSON_FORCE_OBJECT);
             if ($applyOnAllRevisions) {
                 $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET body = '" . $this->dbService->escape(chop($body)) . "'" .
                     " WHERE id = '" . $this->dbService->escape($page['id']) . "';");

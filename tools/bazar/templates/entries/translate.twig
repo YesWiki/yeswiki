@@ -3,7 +3,8 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/entry-translate.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/list-form.css') }}
 
-<form method="post" class="translate-entry form-horizontal" data-ignore_fields="{{ ignore_fields| json_encode }}" data-extra_lang="{{ extra_lang| json_encode }}" data-entry="{{ entry|json_encode }}">
+<form method="post" class="translate-entry form-horizontal" data-ignore_fields="{{ ignore_fields| json_encode }}"
+    data-extra_lang="{{ extra_lang| json_encode }}" data-entry="{{ entry|json_encode }}" data-fields_names="{{ fields_names|json_encode }}">
     <div class="control-group form-group" v-if="extra_langs_list.length > 0">
         <label class="control-label col-sm-3">
 			{{ _t('BAZ_TRANSLATE_IN') }}
@@ -20,7 +21,11 @@
 	<div class="nodes-container">
 	   <div class="form-entry" v-for="(value, key) in display_fields" v-if="value">
 
+				{% if isEntry %}
+				<label class="control-label"> {{ "{{ fields_names[key] }}"  }} </label>
+				{% else %}
 				<label class="control-label"> {{ "{{ key }}"  }} </label>
+				{% endif %}
 				<div class="control-group form-group">
 				    <div class="controls input-group col-sm-9">
     				    <input type="text" v-model="entry[key]"
@@ -33,6 +38,7 @@
 
 	<input type="hidden" name="entry" :value="jsonEntry" />
 	<input type="hidden" name="extra_lang" :value="JsonExtraLang" />
+	<input name="antispam" value="1" type="hidden">
 
 	{# Form Actions #}
 	<div class="form-actions form-group">

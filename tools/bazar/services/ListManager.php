@@ -44,6 +44,23 @@ class ListManager
         $this->cachedLists = [];
     }
 
+    private function childrenToArray($children)
+    {
+        $children_array = [];
+        foreach ($children as $id => $node) {
+            $child = [
+                'id' => $node['id'],
+                'label' => $node['label'],
+                'children' => $this->childrenToArray($node['children'])
+            ];
+            if (empty($child['children'])) {
+                unset($child['children']);
+            }
+            $children_array[] = $child;
+        }
+        return $children_array;
+    }
+
     public function isList($id): bool
     {
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
@@ -87,11 +104,9 @@ class ListManager
         if ($lang != 'all') {
             unset($json['__extra_lang']);
         }
-        $json['nodes'] = array_values($json['nodes']);
-        dump('array values', $json);
+        $json['nodes'] = $this->childrenToArray($json['nodes']);
         $json['id'] = $id;
         $this->cachedLists[$lang_id] = $json;
-
         return $json;
     }
 

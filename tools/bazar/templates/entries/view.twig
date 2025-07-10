@@ -42,7 +42,7 @@
           {{ include_javascript('javascripts/favorites.js') }}
           <a href="#"
             title="{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}"
-            data-resource="{{ entryId }}" 
+            data-resource="{{ entryId }}"
             data-user="{{ currentuser }}"
             data-toggle="tooltip"
             data-placement="right"
@@ -59,8 +59,12 @@
         {% if not entry['external-data'] %}
           {% if canEdit %}
             <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
-              <i class="fa fa-pencil-alt icon-pencil"></i>
+              <i class="fa fa-globe"></i>
               <span>{{ _t('BAZ_MODIFIER') }}</span>
+            </a>
+            <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'translate' }) }}">
+                <i class="fa fa-pencil-alt icon-pencil"></i>
+                <span>{{ _t('BAZ_TRANSLATE') }}</span>
             </a>
           {% endif %}
           <span class="dropup">
@@ -103,7 +107,7 @@
           {% endif %}
         {% endif %}
       </div>
-      
+
     </div>
   {% endif %}
 </div>
