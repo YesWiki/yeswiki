@@ -83,10 +83,10 @@ new Vue({
       }
       if (child.children && child.children.length > 0) {
         node.children = {}
-        for (const c of child.children) {
-          const subnode = this.getExtraLang(c, lang)
+        for (const index in child.children) {
+          const subnode = this.getExtraLang(child.children[index], lang)
           if (subnode != null) {
-            node.children[c.id] = subnode
+            node.children[index] = subnode
             empty = false
           }
         }
@@ -136,6 +136,10 @@ new Vue({
     },
     removeVueRefProps(node) {
       delete node.vueRef
+      //remove extra_lang values
+      for (const lang of this.extra_langs_list) {
+        delete node[lang]
+      }
       node.children = node.children.map((child) =>
         this.removeVueRefProps({ ...child })
       )
@@ -145,9 +149,9 @@ new Vue({
       if (translations.label) {
         node[lang] = translations.label
       }
-      for (const child of node.children) {
-        if (translations.children && translations.children[child.id]) {
-          this.MergeTranslations(child, lang, translations.children[child.id])
+      for (const index in node.children) {
+        if (translations.children[index] && translations.children[index]) {
+          this.MergeTranslations(node.children[index], lang, translations.children[index])
         }
       }
     }
