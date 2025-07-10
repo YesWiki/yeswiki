@@ -2,7 +2,7 @@
 
 {% block value_container %}
 	<span class="BAZ_texte">
-		<a href="{{ entryUrl|e ~ '/iframe' }}"
+		<a href="{{ entryUrl ~ '/iframe' ~ '&' ~ parameters }}"
 			{{ not isInIframe ? 'class="modalbox" data-size="modal-lg"' : '' }}
 			{{ field.isDistantJson and not isInIframe ? 'data-iframe="1"' }}
 			data-header="false" data-iframe="1"

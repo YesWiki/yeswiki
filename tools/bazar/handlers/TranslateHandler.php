@@ -33,6 +33,7 @@ class TranslateHandler extends YesWikiHandler
                     'action' => 'voir_fiche',
                     'id_fiche' => $entry['id_fiche'],
                     'message' => 'modif_ok',
+                    'lang' => $_POST['lang'] ?? '',
                 ], false));
             }
         }
