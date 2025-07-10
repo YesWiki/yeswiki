@@ -128,7 +128,7 @@ Vue.component('BazarMap', {
         entry.marker = L.marker([entry.bf_latitude, entry.bf_longitude], { riseOnHover: true })
         const isLink = (this.isModalDisplay() || this.isDirectLinkDisplay() || this.isNewTabDisplay())
         const tagName = isLink ? 'a' : 'div'
-        const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
+        const url = reorderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : ''))
         const modalData = this.isModalDisplay() ? 'data-size="modal-lg" data-iframe="1" data-header="false"' : ''
         entry.marker.setIcon(
           L.divIcon({
@@ -151,7 +151,7 @@ Vue.component('BazarMap', {
         if (this.isDirectLinkDisplay()) {
           entry.marker.on('click', () => {
             event.preventDefault()
-            window.location = entry.url + (this.$root.isInIframe() ? '/iframe' : '')
+            window.location = reorderUrl(entry.url + (this.$root.isInIframe() ? '/iframe' : ''))
           })
         } else if (this.isNewTabDisplay()) {
           entry.marker.on('click', function() {

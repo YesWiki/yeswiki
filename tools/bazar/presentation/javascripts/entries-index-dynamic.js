@@ -351,7 +351,14 @@ const load = (domElement) => {
       this.mounted = true
       // Retrieve data asynchronoulsy
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
-        // process the filters
+        // add language information
+        const lang = document.URL.split('&').find((x) => x.includes('lang')) || ''
+        data.entries.forEach((entry) => {
+          if (lang) {
+            entry[2] += '&' + lang;
+          }
+        })
+        // process the filter
         const filters = data.filters || []
         // Calculate the parents
         filters.forEach((filter) => {

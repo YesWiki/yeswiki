@@ -244,11 +244,13 @@ class FormManager
             $form['title'] = $form['body']['title'];
             $form['bn_condition'] = $form['body']['condition'];
             $form['bn_sem_context'] = $form['body']['semantic']['context'] ?? '';
-            $form['bn_sem_type'] = $form['body']['semantic']['type'] ?? '' ;
+            $form['bn_sem_type'] = $form['body']['semantic']['type'] ?? '';
             $form['bn_sem_use_template'] = $form['body']['semantic']['use_template'] ?? '' ;
             $form['bn_condition'] = $form['body']['condition'] ?? '';
             $form['bn_only_one_entry'] = $form['body']['only_one_entry'] ?? '';
             $form['bn_only_one_entry_message'] = $form['body']['one_entry_message'] ?? '';
+            $form['bn_id_nature'] = $form['body']['id'];
+
             list($template_list, $modify) = $this->prepare_with_special_parameters($form);
         } else {
             list($template_list, $modify) = $this->prepare_with_special_parameter_old_form_format($form);

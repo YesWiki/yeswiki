@@ -109,7 +109,7 @@ Vue.component('BazarCalendar', {
         window.open(info.event.url)
       } else if (this.isDirectLinkDisplay()) {
         info.jsEvent.preventDefault()
-        window.location = info.event.url + (this.$root.isInIframe() ? '/iframe' : '')
+        window.location = reorderUrl(info.event.url + (this.$root.isInIframe() ? '/iframe' : ''))
       } else if (['listWeek', 'listMonth', 'listYear'].indexOf(info.view.type) > -1) {
         info.jsEvent.preventDefault() // don't let the browser navigate
       }
@@ -143,7 +143,7 @@ Vue.component('BazarCalendar', {
           title: entry.bf_titre,
           start: this.retrieveTimeZone(entry.bf_date_debut_evenement),
           end: this.formatEndDate(entry),
-          url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),
+          url: reorderUrl(entry.url + (this.isModalDisplay() ? '/iframe' : '')),
           allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
           className: `bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}`,
           backgroundColor,
@@ -320,7 +320,7 @@ Vue.component('BazarCalendar', {
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
         <div v-html="selectedEntry.html_render"></div>
       </div>
-      <ButtonIcs v-if="this.params.showicalbutton" :bazarcalendar="this"/> 
+      <ButtonIcs v-if="this.params.showicalbutton" :bazarcalendar="this"/>
     </div>
   `
 })
