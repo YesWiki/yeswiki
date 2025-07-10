@@ -44,6 +44,18 @@ class CheckboxEntryField extends CheckboxField
         }
     }
 
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize()
+        {
+            return array_merge(
+                parent::jsonSerialize(),
+                [
+                    'field_type' => self::FIELD_CLASS_TYPE,
+                ]
+            );
+        }
+
     protected function renderStatic($entry)
     {
         $keys = $this->getValues($entry);

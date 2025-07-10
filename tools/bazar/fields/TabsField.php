@@ -97,8 +97,8 @@ class TabsField extends LabelField
     public static function mapToFieldArray($fieldProps): array
     {
        $new = parent::mapToFieldArray($fieldProps);
-       $new[self::FIELD_FORM_TITLES] = $fieldProps['formTitles'];
-       $new[self::FIELD_VIEW_TITLES] = $fieldProps['viewTitles'];
+       $new[self::FIELD_FORM_TITLES] = implode(',', $fieldProps['formTitles']);
+       $new[self::FIELD_VIEW_TITLES] = implode(',', $fieldProps['viewTitles']);
        $new[self::FIELD_BTN_COLOR] = $fieldProps['btnClass'];
        $new[self::FIELD_BTN_SIZE] =  $fieldProps['btnClass'];
        $new[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] = $fieldProps['moveSubmitButtonToLastTab'];

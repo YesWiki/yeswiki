@@ -32,6 +32,5 @@ if ($pageManager->getPageType($this->GetPageTag()) === 'form' && $this->HasAcces
         $wikifield = $cname::mapToFieldArray($field);
         $newfield = json_decode(json_encode($fieldFactory->create($wikifield)), true);
         ksort($newfield);
-        dump($field, $newfield);
     }
 }

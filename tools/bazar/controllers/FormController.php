@@ -139,7 +139,7 @@ class FormController extends YesWikiController
                 $form = json_decode($_POST['form'], true);
                 $form['__extra_lang'] = json_decode($_POST['extra_lang'], true);
 
-                $saved = $this->pageManager->save($tag, json_encode($form), '', true);
+                $saved = $this->pageManager->save($tag, json_encode($form, JSON_FORCE_OBJECT), '', true);
 
 
 

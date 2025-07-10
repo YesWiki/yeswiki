@@ -26,6 +26,18 @@ class CheckboxListField extends CheckboxField
         $this->dragAndDropDisplayMode = '@bazar/inputs/checkbox_drag_and_drop.twig';
     }
 
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize()
+        {
+            return array_merge(
+                parent::jsonSerialize(),
+                [
+                    'field_type' => self::FIELD_CLASS_TYPE,
+                ]
+            );
+        }
+
     protected function renderStatic($entry)
     {
         $keys = $this->getValues($entry);
@@ -62,14 +74,18 @@ class CheckboxListField extends CheckboxField
         foreach ($tree as $node) {
             if (in_array($node['id'], $checkedValues)) {
                 $filteredNode = $node;
-                $filteredNode['children'] = $this->filterTree($node['children'], $checkedValues);
+                if( isset($node['children'])) {
+                    $filteredNode['children'] = $this->filterTree($node['children'], $checkedValues);
+                }
                 $filteredTree[] = $filteredNode;
             } else {
-                $filteredChildren = $this->filterTree($node['children'], $checkedValues);
-                if (!empty($filteredChildren)) {
-                    $filteredNode = $node;
-                    $filteredNode['children'] = $filteredChildren;
-                    $filteredTree[] = $filteredNode;
+                if ( isset($node['children'])) {
+                    $filteredChildren = $this->filterTree($node['children'], $checkedValues);
+                    if (!empty($filteredChildren)) {
+                        $filteredNode = $node;
+                        $filteredNode['children'] = $filteredChildren;
+                        $filteredTree[] = $filteredNode;
+                    }
                 }
             }
         }
