@@ -11,26 +11,45 @@ class RssHandler extends YesWikiHandler
 {
     public function run()
     {
-        if (!$this->wiki->HasAccess('read') || !$this->wiki->page) {
+    try 
+    {
+        if (!$this->wiki->HasAccess('read') || !$this->wiki->page) {  	return "tote";
             return null;
         }
 
-        $urlrss = $this->wiki->href('rss');
+        // urlrss is never used : $urlrss = $this->wiki->href('rss');
+
         $securityController = $this->getService(SecurityController::class);
+
         if (isset($_GET['id'])) {
-            $id = $securityController->filterInput(INPUT_GET, 'id', FILTER_DEFAULT, true);
+            $id = $securityController->filterInput(INPUT_GET, 'id', FILTER_DEFAULT, true, "string", [ "flags" => FILTER_FORCE_ARRAY ]);
         } elseif (isset($_GET['id_typeannonce'])) {
-            $id = $securityController->filterInput(INPUT_GET, 'id_typeannonce', FILTER_DEFAULT, true);
-        }
-        if (!empty($id) && strval($id) == strval(intval($id))) {
-            $urlrss .= '&amp;id=' . $id;
-        } else {
-            $id = '';
+            $id = $securityController->filterInput(INPUT_GET, 'id_typeannonce', FILTER_DEFAULT, true, "string", [ "flags" => FILTER_FORCE_ARRAY ]);
         }
 
+		if ($id == null)
+		{
+			$id = '';
+		}
+		else
+		{
+			foreach ($id as $vID)
+			{
+				if (strval($vID) == strval(intval($vID)))
+				{
+		            // urlrss is never used : $urlrss .= '&amp;id=' . $vID;
+		        }
+		        else
+		        {
+		            $id = '';
+		            break;
+		        }	
+			}
+		}
+        
         if (isset($_GET['nbitem'])) {
             $nbitem = $_GET['nbitem'];
-            $urlrss .= '&amp;nbitem=' . $nbitem;
+            // urlrss is never used : $urlrss .= '&amp;nbitem=' . $nbitem;
         } else {
             $nbitem = $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'];
         }
@@ -46,12 +65,12 @@ class RssHandler extends YesWikiHandler
         $q = '';
         if (isset($_GET['q']) and !empty($_GET['q'])) {
             $q = $_GET['q'];
-            $urlrss .= '&amp;q=' . $q;
+            //$urlrss .= '&amp;q=' . $q;
         }
 
         if (isset($_GET['query'])) {
             $query = $_GET['query'];
-            $urlrss .= '&amp;query=' . $query;
+            // urlrss is never used : $urlrss .= '&amp;query=' . $query;
             $tabquery = [];
             $tableau = [];
             $tab = explode('|', $query); //découpe la requete autour des |
@@ -64,6 +83,24 @@ class RssHandler extends YesWikiHandler
             $query = '';
         }
 
+		// ordre
+        $ordre = '';
+        if (isset($_GET['ordre']) and !empty($_GET['ordre'])) {
+            $ordre = $_GET['ordre'];
+            //$urlrss .= '&amp;q=' . $ordre;
+        }
+        else $ordre = "desc";
+        
+        
+        // champ
+        $champ = '';
+        if (isset($_GET['champ']) and !empty($_GET['champ'])) {
+            $champ = $_GET['champ'];
+            //$urlrss .= '&amp;q=' . $champ;
+        }
+        else
+	        $champ = 'date_creation_fiche';
+
         $tableau_flux_rss = $this->getService(EntryManager::class)->search(
             [
                 'queries' => $query,
@@ -75,8 +112,8 @@ class RssHandler extends YesWikiHandler
             true  // use Guard
         );
 
-        $GLOBALS['ordre'] = 'desc';
-        $GLOBALS['champ'] = 'date_creation_fiche';
+        $GLOBALS['ordre'] = $ordre;
+        $GLOBALS['champ'] = $champ;
         usort($tableau_flux_rss, 'champCompare');
 
         // Limite le nombre de résultat au nombre de fiches demandées
@@ -183,6 +220,12 @@ class RssHandler extends YesWikiHandler
             . '" rel="self" type="application/rss+xml" />',
             $this->sanitize($xml, ENT_QUOTES, 'UTF-8')
         );
+        
+      }
+      catch (Exception $e) {
+   			return  'Caught exception: ' .  $e->getMessage() . "\n";
+		} 	
+       
     }
 
     private function sanitize($string)
