@@ -50,7 +50,7 @@ class ApiController extends YesWikiController
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
         $entries = $this->getService(EntryManager::class)->search([
-            'formsIds' => $formId,
+            'formsIds' => (is_array ($formId)?$formId:array_map ('trim', explode (",", $formId))), // allows route like /api/forms/1, 2/entries/...
             'queries' => $this->getService(EntryController::class)
                 ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
             'minDate' => $_GET['dateMin'] ?? '',
