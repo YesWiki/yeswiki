@@ -22,9 +22,23 @@
 			{{ _t('BAZ_FORM_NAME') }}
 		</label>
 		<div class="controls input-group col-sm-9">
-			<input id="listTitle" type="text" name="title" v-model="form.title"
-			       placeholder="{{ _t('BAZ_FORM_NAME') }}" class="form-control" disabled required/>
+			<input id="formTitle" type="text" name="title" v-model="form.title"
+			       placeholder="{{ _t('BAZ_FORM_NAME') }}" class="form-control" disabled/>
 			<input v-for="lang in extra_langs_list" v-model="extra_lang_values[lang]['title']"  type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selected_language === lang"/>
+		</div>
+    </div>
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3">
+			<span class="required_symbol">*&nbsp;</span>
+			{{ _t('BAZ_FORM_DESC') }}
+		</label>
+		<div class="controls input-group col-sm-9">
+			<textarea id="formDesc" type="text" name="Description" v-model="form.description"
+			       placeholder="{{ _t('BAZ_FORM_DESC') }}" class="form-control" disabled>
+
+										</textarea>
+			<textarea v-for="lang in extra_langs_list" v-model="extra_lang_values[lang]['description']"  type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selected_language === lang">
+			</textarea>
 		</div>
 	</div>
 	{# List Nodes #}
