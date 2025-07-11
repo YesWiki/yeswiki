@@ -264,10 +264,21 @@ class FormManager
         return $form;
     }
 
-    public function getAll(): array
+    public function getAll($lang = 'default'): array
     {
-        if (!$this->cacheValidatedForAll) {
-            $forms = $this->pageManager->getManyFromTriple('form');
+        if ($lang === 'default' and isset($_GET['lang'])) {
+            $lang = $_GET['lang'];
+        }
+
+        if ($this->cacheValidatedForAll != $lang) {
+
+            if ($lang === 'all' || $lang === 'default') {
+                $select_options = '*';
+            } else {
+                $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.__extra_lang.$lang\"), body)) as body";
+            }
+
+            $forms = $this->pageManager->getManyFromTriple('form', $select_options);
             foreach ($forms as $form) {
                 if (!empty($form['id'])) {
                     // save only not empty formId
@@ -275,7 +286,7 @@ class FormManager
                     $this->cachedForms[$form_prepared['body']['id']] = $form_prepared;
                 }
             }
-            $this->cacheValidatedForAll = true;
+            $this->cacheValidatedForAll = $lang;
         }
 
         return $this->cachedForms;
