@@ -379,6 +379,8 @@ return [
     'BAZ_MAIN_LANGUAGE' => 'Langue principale',
     'BAZ_TRANSLATE_IN' => 'Traduire en',
     'BAZ_TRANSLATION' => 'Traduction',
+    'BAZ_TRANSLATE_FORM' => 'Traduire le formulaire',
+    'BAZ_TRANSLATE' => 'Traduire',
     'BAZ_PREVIEW_DETAILS' => 'cette partie est non cliquable, les paramêtres se changent dans la colonne de gauche',
     'BAZ_WIDGET_INSTRUCTION' => 'Code embed a copier coller dans votre site',
     'BAZ_WIDGET_INSTRUCTION2' => 'Code action wiki a copier coller dans une page de ce site',

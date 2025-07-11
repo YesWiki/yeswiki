@@ -59,11 +59,11 @@
         {% if not entry['external-data'] %}
           {% if canEdit %}
             <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
-              <i class="fa fa-globe"></i>
+              <i class="fa fa-pencil-alt icon-pencil"></i>
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>
             <a class="btn btn-entry-action btn-sm btn-default" href="{{ url({ tag: entryId, handler: 'translate' }) }}">
-                <i class="fa fa-pencil-alt icon-pencil"></i>
+                <i class="fa fa-globe"></i>
                 <span>{{ _t('BAZ_TRANSLATE') }}</span>
             </a>
           {% endif %}

@@ -19,6 +19,8 @@ class TranslateHandler extends YesWikiHandler
         'listedatedeb',
         'listefiche',
         'map',
+        'tabs',
+        'labelhtml',
     ];
     private const IGNORE_SPECIFIC_TYPES = [
         'id_typeannonce',
@@ -50,12 +52,13 @@ class TranslateHandler extends YesWikiHandler
                 $entry['__extra_lang'] = json_decode($_POST['extra_lang'], true);
                 $entry['antispam'] = $_POST['antispam'];
                 $entryManager->update($entry['id_fiche'], $entry);
+
                 return $this->wiki->redirect($this->wiki->Href(testUrlInIframe(), '', [
                     'vue' => 'consulter',
                     'action' => 'voir_fiche',
                     'id_fiche' => $entry['id_fiche'],
                     'message' => 'modif_ok',
-                    'lang' => $_POST['lang'] ?? '',
+                    'lang' => $_POST['lang'] ?? 'default',
                 ], false));
             }
         }
@@ -67,11 +70,16 @@ class TranslateHandler extends YesWikiHandler
         $ignorefields = [];
         if ($isEntry) {
             $form = $formManager->getOne($page['id_typeannonce']);
-            Foreach ($form['prepared'] as $field) {
+            $langs = $GLOBALS['wiki']->config['extra_lang'];
+            foreach ($form['prepared'] as $field) {
                 if (!in_array($field->getType(), self::IGNORE_FIELDS_TYPES)) {
-                    $field_names[$field->getName()] = $field->getLabel();
-                } else {
-                    $ignorefields[] = $field->getName();
+                    $field_names[] = [
+                        'name' => ($field->getType() == 'image' ? 'image' : '') . $field->getName(),
+                        'label' => $field->getLabel(),
+                    ];
+                    foreach($langs as $lang) {
+                        $page['__extra_lang'][$lang][$field->getName()] ??= '';
+                    }
                 }
             }
         }
@@ -81,7 +89,6 @@ class TranslateHandler extends YesWikiHandler
             'isEntry' => $entryManager->isEntry($tag),
             'entry' => $page,
             'default_language' => $GLOBALS['default_language'] ?? 'fr',
-            'ignore_fields' => array_merge($ignorefields, self::IGNORE_SPECIFIC_TYPES),
             'extra_lang' => $GLOBALS['wiki']->config['extra_lang'],
             'fields_names' => $field_names,
         ]);

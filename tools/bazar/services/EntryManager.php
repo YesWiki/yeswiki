@@ -124,6 +124,7 @@ class EntryManager
             $lang = $_GET['lang'];
         }
 
+
         if ($lang === 'all' || $lang === 'default') {
             $select_options = '*';
         } else {

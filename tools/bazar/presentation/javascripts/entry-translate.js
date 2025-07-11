@@ -2,35 +2,19 @@ new Vue({
   el: '.translate-entry',
   data: {
     selected_language: 'default',
-    extra_langs_list: ['en'],
+    extra_langs_list: [],
     entry: {},
     jsonEntry: '',
     JsonExtraLang: '',
     extra_lang_values: {},
-    ignore_fields: [],
-    display_fields: {},
     fields_names: {}
   },
   mounted() {
     this.entry = JSON.parse(this.$el.dataset.entry)
     this.extra_langs_list = JSON.parse(this.$el.dataset.extra_lang)
-    this.ignore_fields = JSON.parse(this.$el.dataset.ignore_fields)
     this.fields_names = JSON.parse(this.$el.dataset.fields_names)
-    for (const el in this.entry) {
-      if (!this.ignore_fields.includes(el)) {
-        this.display_fields[el] = this.entry[el]
-      }
-    }
 
-    const langsValues = this.entry.__extra_lang ?? {}
-
-    for (const lang of this.extra_langs_list) {
-      langsValues[lang] ??= {}
-      for (const el in this.entry) {
-        langsValues[lang][el] ??= ''
-      }
-    }
-    this.extra_lang_values = langsValues
+    this.extra_lang_values = this.entry.__extra_lang
     this.jsonEntry = JSON.stringify(this.entry)
   },
   watch: {
