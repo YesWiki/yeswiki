@@ -6,6 +6,56 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Security\Controller\CaptchaController;
+
+if (!function_exists('security_sanitize'))
+{
+	function security_sanitize ($pRawInputFiltered, $pSanitizedFormat)
+	{         	
+
+		/**
+		 * @var mixed $result
+		 */
+			
+		$result = null;
+		switch ($pSanitizedFormat) {
+		    case 'string':
+		        $result = (
+		            in_array($pRawInputFiltered, [false, null], true)
+		            || !is_scalar($pRawInputFiltered)
+		        )
+		            ? ''
+		            : (
+		                $emulateFilterSanitizeString
+		                ? htmlspecialchars(strip_tags(strval($pRawInputFiltered)))
+		                : strval($pRawInputFiltered)
+		            );
+		        break;
+		    case 'int':
+		        $result = (
+		            in_array($pRawInputFiltered, [false, null], true)
+		            || !is_scalar($pRawInputFiltered)
+		        )
+		            ? 0
+		            : intval($pRawInputFiltered);
+		        break;
+		    case 'bool':
+		        $result = in_array($pRawInputFiltered, [false, null, 0, 'false', '0'], true)
+		            ? false
+		            : (
+		                in_array($pRawInputFiltered, [true, 'true', 1], true)
+		                ? true
+		                : boolval($pRawInputFiltered)
+		            );
+		        break;
+		    default:
+		        $result = $pRawInputFiltered;
+		        break;
+		}
+
+		return $result;
+	}
+}
 
 class SecurityController extends YesWikiController
 {
@@ -215,52 +265,6 @@ class SecurityController extends YesWikiController
 		*/
 		$rawInputFiltered = filter_input($type, $varName, $filter, $options);
  
-		function sanitize ($pRawInputFiltered, $pSanitizedFormat)
-		{         	
-		
-			/**
-		     * @var mixed $result
-		     */
-				
-		    $result = null;
-		    switch ($pSanitizedFormat) {
-		        case 'string':
-		            $result = (
-		                in_array($pRawInputFiltered, [false, null], true)
-		                || !is_scalar($pRawInputFiltered)
-		            )
-		                ? ''
-		                : (
-		                    $emulateFilterSanitizeString
-		                    ? htmlspecialchars(strip_tags(strval($pRawInputFiltered)))
-		                    : strval($pRawInputFiltered)
-		                );
-		            break;
-		        case 'int':
-		            $result = (
-		                in_array($pRawInputFiltered, [false, null], true)
-		                || !is_scalar($pRawInputFiltered)
-		            )
-		                ? 0
-		                : intval($pRawInputFiltered);
-		            break;
-		        case 'bool':
-		            $result = in_array($pRawInputFiltered, [false, null, 0, 'false', '0'], true)
-		                ? false
-		                : (
-		                    in_array($pRawInputFiltered, [true, 'true', 1], true)
-		                    ? true
-		                    : boolval($pRawInputFiltered)
-		                );
-		            break;
-		        default:
-		            $result = $pRawInputFiltered;
-		            break;
-		    }
-
-		    return $result;
-		}
-		
         if ($options["flags"] & FILTER_REQUIRE_ARRAY || $options["flags"] & FILTER_FORCE_ARRAY)
 		{			
 			$vSanitizedArray = [];
@@ -272,14 +276,14 @@ class SecurityController extends YesWikiController
  	
 			foreach ($rawInputFiltered as $vKey => $vValue)
 			{
-				$vSanitizedArray [$vKey] = sanitize ($vValue, $sanitizedFormat);
+				$vSanitizedArray [$vKey] = security_sanitize ($vValue, $sanitizedFormat);
 			}
 			
 			return $vSanitizedArray;
 		}
 		else
 		{			
-			return sanitize ($rawInputFiltered, $sanitizedFormat);
+			return security_sanitize ($rawInputFiltered, $sanitizedFormat);
 		}		
     }
 }
