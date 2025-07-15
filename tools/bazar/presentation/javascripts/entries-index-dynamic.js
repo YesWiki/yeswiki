@@ -265,7 +265,7 @@ const load = (domElement) => {
               ? { showmapinlistview: this.params.showmapinlistview }
               : {})
           })
-          this.setEntryFromUrl(entry, url).then((html) => {
+          this.setEntryFromUrl(entry, reorderUrl(url)).then((html) => {
             this.loadBazarListDynamicIfNeeded(html)
             initEntryMaps(this.$refs.entriesContainer)
           })
@@ -325,7 +325,7 @@ const load = (domElement) => {
         return window != window.parent
       },
       getExternalEntry(entry) {
-        const url = `${entry.url}/iframe`
+        const url = reorderUrl(`${entry.url}/iframe`)
         Vue.set(
           entry,
           'html_render',
