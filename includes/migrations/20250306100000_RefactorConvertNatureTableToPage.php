@@ -63,8 +63,8 @@ class RefactorConvertNatureTableToPage extends YesWikiMigration
                 $classType = get_class($fields);
                 $fields = json_decode(json_encode($fields), true);
 
-                if ((!isset($field['name']) || $field['name'] == '') && isset($field['linkedObjectName'])) {
-                    $field['name'] = $field['type'] . $field['linkedObjectName'];
+                if ((!isset($fields['name']) || $fields['name'] == '') && isset($fields['linkedObjectName'])) {
+                    $fields['name'] = $fields['type'] . $fields['linkedObjectName'];
                 }
                 $fields['name'] = $fields['name'] ?? $fields['type'] . '__' . $counter;
                 $counter++;
