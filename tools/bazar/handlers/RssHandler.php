@@ -17,8 +17,6 @@ class RssHandler extends YesWikiHandler
             return null;
         }
 
-        // urlrss is never used : $urlrss = $this->wiki->href('rss');
-
         $securityController = $this->getService(SecurityController::class);
 
         if (isset($_GET['id'])) {
@@ -35,12 +33,8 @@ class RssHandler extends YesWikiHandler
 		{
 			foreach ($id as $vID)
 			{
-				if (strval($vID) == strval(intval($vID)))
-				{
-		            // urlrss is never used : $urlrss .= '&amp;id=' . $vID;
-		        }
-		        else
-		        {
+				if (strval($vID) != strval(intval($vID)))
+				{		            
 		            $id = '';
 		            break;
 		        }	
@@ -48,15 +42,13 @@ class RssHandler extends YesWikiHandler
 		}
         
         if (isset($_GET['nbitem'])) {
-            $nbitem = $_GET['nbitem'];
-            // urlrss is never used : $urlrss .= '&amp;nbitem=' . $nbitem;
+            $nbitem = $_GET['nbitem'];            
         } else {
             $nbitem = $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'];
         }
 
         if (isset($_GET['utilisateur'])) {
-            $utilisateur = $_GET['utilisateur'];
-            $urlrss .= '&amp;utilisateur=' . $utilisateur;
+            $utilisateur = $_GET['utilisateur'];            
         } else {
             $utilisateur = '';
         }
@@ -64,13 +56,11 @@ class RssHandler extends YesWikiHandler
         // chaine de recherche
         $q = '';
         if (isset($_GET['q']) and !empty($_GET['q'])) {
-            $q = $_GET['q'];
-            //$urlrss .= '&amp;q=' . $q;
+            $q = $_GET['q'];            
         }
 
         if (isset($_GET['query'])) {
-            $query = $_GET['query'];
-            // urlrss is never used : $urlrss .= '&amp;query=' . $query;
+            $query = $_GET['query'];            
             $tabquery = [];
             $tableau = [];
             $tab = explode('|', $query); //découpe la requete autour des |
@@ -84,22 +74,10 @@ class RssHandler extends YesWikiHandler
         }
 
 		// ordre
-        $ordre = '';
-        if (isset($_GET['ordre']) and !empty($_GET['ordre'])) {
-            $ordre = $_GET['ordre'];
-            //$urlrss .= '&amp;q=' . $ordre;
-        }
-        else $ordre = "desc";
-        
-        
+        $ordre = "desc";
+    
         // champ
-        $champ = '';
-        if (isset($_GET['champ']) and !empty($_GET['champ'])) {
-            $champ = $_GET['champ'];
-            //$urlrss .= '&amp;q=' . $champ;
-        }
-        else
-	        $champ = 'date_creation_fiche';
+        $champ = 'date_creation_fiche';
 
         $tableau_flux_rss = $this->getService(EntryManager::class)->search(
             [
