@@ -1,4 +1,5 @@
 const ConditionsChecking = {
+  checkDelay : 500, // delay between 2 wysiwig editor content condition checking
   conditionsCache: [],
   fieldNamesCache: {},
   triggersCache: {},
@@ -681,19 +682,19 @@ const ConditionsChecking = {
         {	        
 		    var launchUpdateHandler = function ()
 		    {
-			 	var vLastValue = vTextArea.val();
-
-				setInterval(() =>
-				{
-					var vValue = vTextArea.val();
-					
-					if (vValue !== vLastValue)
-					{
-					    vLastValue = vValue;
-						vTextArea.trigger ("change");
-					}
-				}, 500); 
-			}
+  			 	var vLastValue = vTextArea.val();
+  
+  				setInterval(() =>
+    				{
+  					var vValue = vTextArea.val();
+  					
+  					if (vValue !== vLastValue)
+  					{
+  					    vLastValue = vValue;
+  						vTextArea.trigger ("change");
+  					}
+  				}, ConditionsChecking.checkDelay); 
+			  }
 			
 		  	launchUpdateHandler ();
 		}
