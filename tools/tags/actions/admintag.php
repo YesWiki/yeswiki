@@ -2,10 +2,6 @@
 
 use YesWiki\Security\Controller\SecurityController;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $isAdmin = $this->UserIsAdmin();
 
 if ($isAdmin && isset($_GET['delete_tag'])) {

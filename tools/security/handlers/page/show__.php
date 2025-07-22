@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 if ($this->config['use_nospam']) {
     if ($this->HasAccess('comment') && !$this->page['comment_on']) {
         $time = time();
@@ -15,8 +11,8 @@ if ($this->config['use_nospam']) {
         ];
 
         $str_to_replace = '<textarea name="body" required="required"'
-                . 'class="textarea-comment" rows="3" placeholder="Ecrire '
-                . 'votre commentaire ici..."></textarea>';
+            . 'class="textarea-comment" rows="3" placeholder="Ecrire '
+            . 'votre commentaire ici..."></textarea>';
 
         $text_form = "<textarea name=\"body\" required=\"required\" class=\"textarea-comment\" rows=\"3\" placeholder=\"Ecrire votre commentaire ici...\"></textarea>\n";
         $text_form .= "\t<p style=\"display:none;\">\n";
@@ -35,10 +31,10 @@ if ($this->config['use_nospam']) {
 
         // Ajoute l'ID ACEditor au formulaire de commentaire.
         $plugin_output_new =
-          str_replace(
-              $str_to_replace,
-              $text_form,
-              $plugin_output_new
-          );
+            str_replace(
+                $str_to_replace,
+                $text_form,
+                $plugin_output_new
+            );
     }
 }

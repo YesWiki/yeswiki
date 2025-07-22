@@ -1,15 +1,12 @@
 <?php
+
 /**
-* bazarlistecategorie : programme affichant les fiches du bazar catégorisées par les champs liste
-* sous forme de liste accordeon (ou autre template).
-*/
+ * bazarlistecategorie : programme affichant les fiches du bazar catégorisées par les champs liste
+ * sous forme de liste accordeon (ou autre template).
+ */
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\TemplateEngine;
-
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 
 $entryManager = $this->services->get(EntryManager::class);
 

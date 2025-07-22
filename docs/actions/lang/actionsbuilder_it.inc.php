@@ -1,11 +1,9 @@
 <?php
+
 return [
-    // AB stands for ActionsBuilder
-    // Commons
     'AB_LEFT' => 'Sinistra',
     'AB_RIGHT' => 'Destra',
     'AB_advanced' => 'Avanzato',
-    // BAZAR
     'AB_bazar_label' => 'Visualizza i dati di un form',
     'AB_bazar_commons_colorfield_label' => 'Campo per il colore',
     'AB_bazar_commons_colormapping_color_label' => 'Colore',
@@ -56,7 +54,6 @@ return [
     'AB_bazar_facettes_title_label' => 'Titolo',
     'AB_bazar_bf_date_debut_evenement_label' => 'Campo per la data di inizio',
     'AB_bazar_bf_date_fin_evenement_label' => 'Campo per la data di fine',
-    // Bazarcarto
     'AB_bazarcarto_label' => 'Cartografia',
     'AB_bazarcarto_description' => 'Le schede saranno visualizzate come marcatori.',
     'AB_bazarcarto_hint' => 'Il campo geolocalizzazione deve essere presente nel form',
@@ -86,12 +83,10 @@ return [
     'AB_bazarcarto_barregestion_label' => 'Barra di gestione dei file',
     'AB_bazarcarto_navigation_label' => 'Pulsanti di controllo dello zoom',
     'AB_bazarcarto_zoommolette_label' => 'Puoi ingrandire con la rotella del mouse',
-    // BazarAgenda
     'AB_bazaragenda_label' => 'Agenda',
     'AB_bazaragenda_description' => "I file saranno mostrati come evento in un'agenda.",
     'AB_bazaragenda_nbcol_label' => 'Numero di colonne',
     'AB_bazaragenda_modal_label' => 'Visualizzazione di una finestra modale cliccando',
-    // BazarCalendar
     'AB_bazarcalendar' => 'Calendario',
     'AB_bazarcalendar_description' => 'I file saranno mostrati come eventi in un calendario.',
     'AB_bazarcalendar_showlist_label' => "Visualizza il pulsante 'planning'",
@@ -104,7 +99,6 @@ return [
     'AB_bazarcalendar_initialview_day' => 'Giorno',
     'AB_bazarcalendar_initialview_list' => 'Planning',
     'AB_bazarcarto_showicalbutton_label' => 'Mostra il pulsante di esportazione ical',
-    // BazarListe
     'AB_bazarliste_label' => 'Elenco',
     'AB_bazarliste_description' => 'I file saranno mostrati come accordion',
     'AB_bazarliste_displayfields_title' => 'Selezione dei campi da includere',
@@ -113,7 +107,6 @@ return [
     'AB_bazarliste_displayfields_text_label' => 'Area di testo',
     'AB_bazarliste_displayfields_floating_label' => 'Area flottante',
     'AB_bazarliste_displayfields_visual_label' => 'Area visuale',
-    // BazarCard
     'AB_bazarcard_label' => 'Blocco (agenda, news, trombinoscopio, scacchiera...)',
     'AB_bazarcard_description' => 'I file saranno mostrati come una mappa',
     'AB_bazarliste_displayfields_footer_label' => 'Area footer',
@@ -121,17 +114,14 @@ return [
     'AB_bazarcard_style_vertical' => 'Verticale',
     'AB_bazarcard_style_square' => 'Quadrato',
     'AB_bazarcard_style_horizontal' => 'Orizzontale',
-    // BazarTable
     'AB_BAZAR_MAP_AND_TABLE_LABEL' => 'Mappa e tabella',
     'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_LABEL' => 'Tabella con tutti i file',
     'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ALL' => 'con o senza geolocalizzazione',
     'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_ONLY_GEOLOC' => 'solo con geolocalizzazione',
     'AB_BAZAR_MAP_AND_TABLE_TABLEWITH_NO_GEOLOC' => 'solo senza geolocalizzazione',
-    // BazarTrombi
     'AB_bazartrombi_label' => 'Trombinoscopio',
     'AB_bazartrombi_description' => 'I file saranno mostrati come Trombinoscopio.',
     'AB_bazartrombi_hint' => 'È necessario un campo di tipo bf_image.',
-    // BazarMaterialCard
     'AB_bazarmaterialcard_label' => 'Scheda materiale',
     'AB_bazarmaterialcard_description' => 'I file saranno mostrati come scatola modale.',
     'AB_bazarmaterialcard_hint' => 'È necessario un campo di tipo bf_image',
@@ -139,10 +129,8 @@ return [
     'AB_bazarmaterialcard_type_label' => 'Visualizzazione senza effetto',
     'AB_bazarmaterialcard_modal_label' => 'Visualizzazione di una finestra modale cliccando',
     'AB_bazarmaterialcard_bf_baseline_label' => 'Campo per il sottotitolo',
-    // BazarAnnuaire
     'AB_bazarannuaire_label' => 'Directory',
     'AB_bazarannuaire_description' => 'Visualizza i fogli come directory alfabetica',
-    // BazarDamier
     'AB_bazardamier_label' => 'Damier',
     'AB_bazardamier_description' => 'Visualizza i fogli sotto forma di un damier parametizzabile',
     'AB_bazardamier_hint' => 'A bf_debut, bf_fin, bf_lieu, bf_image, bf_lien, bf_fichier, bf_bouton vengono utilizzati',
@@ -150,11 +138,9 @@ return [
     'AB_bazardamier_couleur_label' => 'Colore del damier',
     'AB_bazardamier_correpondance_hint' => 'Questo modello è altamente personalizzabile',
     'AB_bazardamier_bf_description_label' => 'Campo per descrizione',
-    // BazarTimeLine
     'AB_bazartimeline_label' => 'Linea di tempo',
     'AB_bazartimeline_description' => 'Visualizza i fogli in una linea temporale.',
     'AB_bazartimeline_hint' => 'È necessario un campo di tipo bf_image.',
-    // BazarCarousel
     'AB_bazarcarousel_label' => 'Carousel',
     'AB_bazarcarousel_description' => 'Visualizza le immagini delle carte sotto forma di giostra',
     'AB_bazarcarousel_hint' => 'È necessario un campo di tipo bf_image.',
@@ -163,29 +149,22 @@ return [
     'AB_bazarcarousel_avecpage_hint' => 'Pagina sarà chiamata PageDessusSlider',
     'AB_bazarcarousel_showlinkinsteadofurl_label' => 'Mostra il link bf_link invece del link alla pagina',
     'AB_bazarcarousel_bf_titre_label' => 'Campo per testo visualizzato',
-    // bazargaleriephoto
     'AB_bazargaleriephoto_label' => 'Galleria immagine',
     'AB_bazargaleriephoto_description' => 'Visualizza le immagini dei fogli come galleria fotografica.',
     'AB_bazargaleriephoto_hint' => 'È necessario un campo di tipo bf_image.',
-    // bazarlistegalerie
     'AB_bazarlistegalerie_label' => 'Galleria fotografica',
     'AB_bazarlistegalerie_description' => 'Visualizza le immagini dei fogli come galleria fotografica.',
     'AB_bazarlistegalerie_hint' => 'È necessario un campo di tipo bf_image.',
-    // bazarlistephotobox
     'AB_bazarlistephotobox_label' => 'Fotografia',
     'AB_bazarlistephotobox_description' => 'Visualizza le immagini dei fogli come galleria fotografica.',
     'AB_bazarlistephotobox_hint' => 'È necessario un campo di tipo bf_image.',
-    // bazarlisteliens
     'AB_bazarlisteliens_label' => 'Elenco dei link',
     'AB_bazarlisteliens_description' => 'Visualizza i link alle carte come un elenco di chip.',
-    // bazarlisteliensdates
     'AB_bazarlisteliensdates_label' => 'Elenco dei collegamenti con le date',
     'AB_bazarlisteliensdates_description' => 'Visualizza i link ai fogli sotto forma di elenco con le date di creazione.',
-    // bazarmail
     'AB_bazarmail_label' => 'Scrivi a tutti',
     'AB_bazarmail_description' => 'Visualizza solo l\'elenco delle mail trovate nel modulo',
     'AB_bazarmail_hint' => 'È richiesto un campo bf_mail.',
-    // bazarblog
     'AB_bazarblog_label' => 'Blog',
     'AB_bazarblog_description' => 'Le lenzuola saranno sotto forma di un blog.',
     'AB_bazarblog_hint' => 'Un campo bf_image è possibile',
@@ -193,16 +172,13 @@ return [
     'AB_bazarblog_show_author_label' => 'Visualizza l\'autore, l\'autore',
     'AB_bazarblog_show_date_label' => 'Data di creazione dell\'esposizione',
     'AB_bazarblog_date_creation_fiche_label' => 'Periodo di pubblicazione',
-    // bazargogocarto
     'AB_bazargogocarto_label' => 'Cartografia 2 - GoGocarto',
     'AB_bazargogocarto_description' => 'Le schede saranno visualizzate come marcatori.',
     'AB_bazargogocarto_height_label' => 'Altezza della mappa',
     'AB_bazargogocarto_width_label' => 'Larghezza della mappa',
-    // BazarAction
     'AB_bazar_action_label' => 'Mostra un modulo per creare un file',
     'AB_bazar_action_description' => 'Consente di visualizzare il modulo per creare un file.',
     'AB_bazar_action_redirecturl_label' => 'Nome della pagina di questo wiki o URL completo da visualizzare dopo aver creato un foglio',
-    // attach
     'AB_attach_commons_title' => 'Per immagini',
     'AB_attach_link_label' => 'Link web associato a clic',
     'AB_attach_caption_label' => 'Testo pubblicato sulla mosca',
@@ -244,7 +220,6 @@ return [
     'AB_attach_file_hint' => 'Per visualizzare il file in un\'altra pagina, digitare "Name/NameDeFichier.ext"',
     'AB_attach_desc_label' => 'Designazione',
     'AB_attach_displaypdf_label' => 'Visualizza il file PDF',
-    //video
     'AB_attach_video_label' => 'Video integrato',
     'AB_attach_video_description' => 'Integrazione di un video youtube, vimeo o peertube.',
     'AB_attach_video_hint' => 'L\'ID video corrisponde ai numeri o alle lettere alla fine dell\'URL',
@@ -255,7 +230,6 @@ return [
     'AB_attach_video_position_label' => 'Posizione del video',
     'AB_attach_video_largeur_max_label' => 'Larghezza massima',
     'AB_attach_video_hauteur_max_label' => 'Altezza massima',
-    //pdf
     'AB_attach_pdf_label' => 'File PDF integrato',
     'AB_attach_pdf_description' => 'Integrazione di un file pdf di questo sito.',
     'AB_attach_pdf_hint' => 'Per visualizzare il tuo PDF, caricalo prima in una pagina di questo wiki e copia il link qui.',
@@ -267,7 +241,6 @@ return [
     'AB_attach_pdf_position_label' => 'Posizione del pdf',
     'AB_attach_pdf_largeur_max_label' => 'Larghezza massima',
     'AB_attach_pdf_hauteur_max_label' => 'Altezza massima',
-    // management
     'AB_management_label' => 'Gestione YesWiki',
     'AB_management_editactionsacls_label' => 'Modifica dei diritti di accesso alle azioni',
     'AB_management_edithandlersacls_label' => 'Modificare i diritti di accesso dei gestori',
@@ -285,7 +258,6 @@ return [
     'AB_management_adminbackups_label' => 'Gestione del backup',
     'AB_management_commentstable_label' => 'Tabella dei commenti',
     'AB_management_usercomments_label' => 'I miei commenti',
-    // advanced actions
     'AB_advanced_actions_label' => 'Azioni avanzate',
     'AB_advanced_action_backlinks_label' => 'Mostra pagine che hanno un link alla pagina corrente',
     'AB_advanced_action_backlinks_page_label' => 'Pagina di base',
@@ -361,9 +333,7 @@ return [
     'AB_advanced_action_login_loggedinurl_hint' => 'Wiki o url page (usare \'incomingurl\' se vuoto o in caso di errore)',
     'AB_advanced_action_login_loggedouturl_label' => 'Redirect url dopo la disconnessione',
     'AB_advanced_action_login_loggedouturl_hint' => 'Wiki o url page (usare \'incomingurl\' se vuoto)',
-    // col
     'AB_template_col_size_hint' => 'Attenzione, la somma delle larghezze di tutte le colonne non supererà 12!',
-    // button
     'AB_buttons_label' => 'Pulsanti',
     'AB_buttons_action_button_label' => 'Pulsante',
     'AB_buttons_action_button_description' => 'Creare un pulsante cliccabile',
@@ -400,7 +370,6 @@ return [
     'AB_buttons_action_button_new_window_yes' => 'sì',
     'AB_buttons_action_button_hideifnoaccess_label' => 'Nascondi se l\'utente non ha accesso alla pagina collegata',
     'AB_buttons_action_button_nobtn_label' => 'Mostra come un link',
-    // reactions
     'AB_REACTION_GROUP_LABEL' => 'Reazioni / Voti',
     'AB_REACTION_TITLE_LABEL' => 'Titolo della votazione',
     'AB_REACTION_LABEL' => 'Reazioni e voti',
@@ -419,7 +388,6 @@ return [
     'AB_MYFAVORITES_TEMPLATE_LINKS_WITH_TITLES' => 'Link con titoli',
     'AB_MYFAVORITES_TEMPLATE_TILES' => 'Vignettes',
     'AB_MYFAVORITES_TEMPLATE_TABLE' => 'Gestione dei file',
-    // syndication
     'AB_syndication_main_label' => 'Unionion / RSS feed',
     'AB_syndication_action_label' => 'Unione',
     'AB_syndication_action_description' => 'Sync il feed RSS di un sito di terze parti',
@@ -439,7 +407,6 @@ return [
     'AB_syndication_action_formatdate_option_jma' => 'Anno del mese di giorno',
     'AB_syndication_action_formatdate_option_jmh' => 'Giorno dell\'ora',
     'AB_syndication_action_formatdate_option_jmah' => 'Giorno del mese',
-    // tableau
     'AB_bazartableau_label' => 'Tabella',
     'AB_bazartableau_description' => 'Mostra come un tavolo',
     'AB_bazartableau_columnfieldsids_label' => 'Campi da visualizzare',

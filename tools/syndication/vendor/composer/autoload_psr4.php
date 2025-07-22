@@ -7,4 +7,5 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'SimplePie\\' => array($vendorDir . '/simplepie/simplepie/src'),
+    'League\\HTMLToMarkdown\\' => array($vendorDir . '/league/html-to-markdown/src'),
 );

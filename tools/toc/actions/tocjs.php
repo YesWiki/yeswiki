@@ -1,10 +1,5 @@
 <?php
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $tag = $this->GetPageTag();
 $class = $this->GetParameter('class');
 $offset = $this->GetParameter('offset');

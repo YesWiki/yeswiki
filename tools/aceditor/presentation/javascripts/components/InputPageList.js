@@ -27,6 +27,11 @@ export default {
       return []
     }
   },
+  watch: {
+    value(newVal) {
+      this.$emit('input', newVal.replace(/\s+/g, '-'))
+    }
+  },
   template: `
     <div class="form-group input-group" :class="config.type" :title="config.hint" >
       <addon-icon :config="config" v-if="config.icon"></addon-icon>

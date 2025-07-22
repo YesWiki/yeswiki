@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // Hack Hack Hack!!
 // We just check if class attributes for js library exists to load the corresponding library and initialise it
 

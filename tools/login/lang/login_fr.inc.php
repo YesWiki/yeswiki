@@ -9,17 +9,17 @@ return [
     'LOGIN_MODIFY' => 'Modifier',
     'LOGIN_MODIFY_USER' => 'Modifier mes paramètres utilisateur',
     'LOGIN_REMEMBER_ME' => 'Se souvenir de moi',
-    'LOGIN_LOGOUT' => 'D&eacute;connexion',
+    'LOGIN_LOGOUT' => 'Déconnexion',
     'LOGIN_NEW_MEMBER' => 'Nouveau membre',
-    'LOGIN_NOT_AUTORIZED' => 'Vous n\'&ecirc;tes pas autoris&eacute; &agrave; lire cette page',
-    'LOGIN_NOT_AUTORIZED_EDIT' => 'Vous n\'&ecirc;tes pas autoris&eacute; &agrave; éditer cette page',
+    'LOGIN_NOT_AUTORIZED' => 'Vous n\'êtes pas autorisé à lire cette page',
+    'LOGIN_NOT_AUTORIZED_EDIT' => 'Vous n\'êtes pas autorisé à éditer cette page',
     'LOGIN_WRONG_PASSWORD' => 'Identification impossible : mauvais mot de passe.',
     'LOGIN_WRONG_USER' => 'Identification impossible : Identifiant non reconnu.',
     'LOGIN_NO_CONNECTED_USER' => 'Pas d\'utilisateur connecté.',
     'LOGIN_ALREADY_MEMBER' => 'Déjà membre',
     'LOGIN_PLEASE_REGISTER' => 'veuillez vous identifier',
-    'LOGIN_CONNECTED_AS' => 'Connect&eacute; en tant que',
-    'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'Vous &ecirc;tes maintenant d&eacute;connect&eacute; !',
+    'LOGIN_CONNECTED_AS' => 'Connecté en tant que',
+    'LOGIN_YOU_ARE_NOW_DISCONNECTED' => 'Vous êtes maintenant déconnecté !',
     'LOGIN_LOST_PASSWORD' => 'Mot de passe perdu ?',
     'LOGIN_CHANGE_PASSWORD' => 'Réinitialiser le mot de passe',
     'LOGIN_UNKNOWN_USER' => 'Email inconnu, pas d\'utilisateur avec cet email enregistré',
@@ -43,11 +43,9 @@ return [
     'LOGIN_MY_OPTIONS' => 'Mes options',
     'LOGIN_MY_CONTENTS' => 'Mes contenus',
     'LINK_TO_CHANGE_PASSWORD' => 'Lien pour changer le mot de passe',
-
-    // actions/login.php
     'LOGIN_COOKIES_ERROR' => 'Vous devez accepter les cookies pour pouvoir vous connecter.',
-
-    // actions/usersettings.php
+    'RECOVERY_MESSAGE_SENT' => 'Un message a été envoyé à {email} avec les instructions pour ré-initialiser le mot de passe',
+    'RECOVERY_LINK' => 'Lien pour réinitialiser le mot de passe',
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'E-mail non modifié.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'Mot de passe non modifié.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Utilisateur non supprimé.',
@@ -57,7 +55,6 @@ return [
     'USERSETTINGS_EMAIL_ALREADY_USED' => 'L\'email "{email}" est déjà utilisé par un autre compte !',
     'USERSETTINGS_CHANGE_PWD_IN_IFRAME' => "Vous vous apprêtez à changer votre mot de passe dans une fenêtre de type iframe.\n" .
         "Pour éviter les attaques par enregistrement de vos touches, assurez-vous que l'url du site commence bien par {baseUrl}.\n" .
-        "Au moindre doute, ouvrez ce formulaire dans une page dédiée en cliquant sur ce lien {link}.",
+        'Au moindre doute, ouvrez ce formulaire dans une page dédiée en cliquant sur ce lien {link}.',
     'USERSETTINGS_NAME_NOT_FOUND' => 'L\'identifiant "{currentName}" n\'existe pas !',
-
 ];

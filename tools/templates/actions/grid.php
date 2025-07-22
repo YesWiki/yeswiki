@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // classe css supplémentaire
 $class = $this->GetParameter('class');
 $class = 'row-fluid row' . ((!empty($class)) ? ' ' . $class : '');

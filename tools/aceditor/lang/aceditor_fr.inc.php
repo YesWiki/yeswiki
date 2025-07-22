@@ -7,13 +7,10 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], [
     'ACTION_BUILDER_WIKI_CODE_TITLE' => 'Code à inclure dans la page',
     'ACTION_BUILDER_PARAMETERS' => 'Paramètres',
     'ACTION_BUILDER_TEMPLATE_CUSTOM' => 'Template custom',
-    'ACTION_BUILDER_SEVERAL_FORMS_HINT' => 'Nb. : Il est possible d\'afficher plusieurs bases de donn&eacute;es d\'un coup en entrant leur id s&eacute;par&eacute; par une virgule [<a href="https://yeswiki.net/?ActionBazarliste">acc&eacute;der &agrave; la documentation</a>].',
+    'ACTION_BUILDER_SEVERAL_FORMS_HINT' => 'Nb. : Il est possible d\'afficher plusieurs bases de données d\'un coup en entrant leur id séparé par une virgule [<a href="https://yeswiki.net/?ActionBazarliste">accéder à la documentation</a>].',
     'ACTION_BUILDER_ADVANCED_PARAMETERS' => 'Paramètres Avancés',
-
-    // for edit config
     'EDIT_CONFIG_HINT_ACTIONBUILDER_TEXTAREA_NAME' => 'Nom du champ bazar texte long pour lequel les composants doivent être visibles',
     'EDIT_CONFIG_GROUP_ACEDITOR' => 'Barre d\'édition pour les pages et les champs texte',
-
     'ACEDITOR_SAVE' => 'Sauver',
     'ACEDITOR_FORMAT' => 'Format',
     'ACEDITOR_TITLE1' => 'Titre 1',
@@ -28,9 +25,9 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], [
     'ACEDITOR_INLINE_CODE' => 'Code source en mode ligne',
     'ACEDITOR_BOLD' => 'Gras  ( Ctrl-b )',
     'ACEDITOR_ITALIC' => 'Italique ( Ctrl-i )',
-    'ACEDITOR_UNDERLINE' => 'Soulign&eacute; ( Ctrl-u )',
-    'ACEDITOR_STRIKE' => 'Barr&eacute; ( Ctrl-y )',
-    'ACEDITOR_LINE' => 'Ins&egrave;re une ligne horizontale',
+    'ACEDITOR_UNDERLINE' => 'Souligné ( Ctrl-u )',
+    'ACEDITOR_STRIKE' => 'Barré ( Ctrl-y )',
+    'ACEDITOR_LINE' => 'Insère une ligne horizontale',
     'ACEDITOR_LINK' => 'Lien',
     'ACEDITOR_LINK_PROMPT' => 'Entrez l\'adresse URL',
     'ACEDITOR_LIST' => 'Liste à puce',
@@ -52,6 +49,6 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], [
     'ACEDITOR_LINK_INSERT' => 'Insérer',
     'ACEDITOR_HELP' => 'Aide mémoire',
     'ACEDITOR_ACTIONS' => 'Composants',
-    'ACEDITOR_ACTIONS_EDIT_CURRENT' => 'Éditer le composant sélectionn&eacute;',
-    'ACEDITOR_COMMENT' => 'Commentaire, visible uniquement en mode &eacute;dition',
+    'ACEDITOR_ACTIONS_EDIT_CURRENT' => 'Éditer le composant sélectionné',
+    'ACEDITOR_COMMENT' => 'Commentaire, visible uniquement en mode édition',
 ]);

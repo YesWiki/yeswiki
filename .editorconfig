@@ -1,11 +1,11 @@
 [*]
 end_of_line = lf
-insert_final_newline = false
 charset = utf-8
 
 [*.php]
 indent_style = space
 indent_size = 4
+insert_final_newline = true
 
 [Makefile]
 indent_style = tab

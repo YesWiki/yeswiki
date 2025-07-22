@@ -26,14 +26,6 @@
       <input class="form-control" name="revisioncount" value="{{ user.revisioncount|e('html_attr') }}" size="40" />
     </div>
   </div> #}
-{% if userlink is not empty %}
-  <div class="control-group form-group">
-  	<div class="controls col-sm-9">
-  		<label>{{ _t('LINK_TO_CHANGE_PASSWORD') }}</label><br/>
-  		<a href='{{ userlink }}' target='_blank'>{{ userlink }}</a>
-  	</div>
-  </div>
-{% endif %}  
   <div class="control-group form-group">
 		<div class="controls col-sm-9 col-sm-offset-3">
       <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id:'main',refresh:false}) }}">
@@ -51,6 +43,11 @@
 
 {# FORM DELETE #}
 {% if adminIsActing %}
+  <form action="{{ url({params:{user:user.name,from:referrer}}) }}" method="post" class="form-horizontal">
+    <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+    <input type="hidden" name="usersettings_action" value="resetpass" />
+    <input class="btn btn-neutral" type="submit" value="{{ _t('RESETTING_THE_PASSWORD') }}" />
+  </form>
   <form action="{{ url({params:{user:user.name,from:referrer}}) }}" method="post" class="form-horizontal">
     <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
     <input type="hidden" name="usersettings_action" value="deleteByAdmin" />

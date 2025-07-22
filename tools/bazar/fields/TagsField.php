@@ -14,7 +14,7 @@ class TagsField extends EnumField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-
+        $this->name = $this->linkedObjectName; // hack because tags are Enums but id is not on same position than enums
         $this->maxChars = $this->maxChars ?? 255;
         $this->propertyName = $this->name;
     }

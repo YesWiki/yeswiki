@@ -1,7 +1,7 @@
 /* CUSTOM FORM */
 .form-group,
 #actions-builder-app .form-group:first-child {
-  margin-top: 1.2rem !important;
+  margin: 0 0 1.2rem 0 !important;
 }
 
 .form-group.range {
@@ -154,6 +154,8 @@ input[type='range'] {
 
 #actions-builder-modal h3 {
   text-align: center;
+}
+#actions-builder-modal .config-panel h3:first-child {
   margin-bottom: 30px;
 }
 
@@ -178,21 +180,19 @@ input[type='range'] {
   margin-left: 2.5rem !important;
 }
 
-/* ADVANCED PROPERTIES */
 .multi-input-container .btn-add-element {
   margin-bottom: 1.5rem;
+  width: 100%;
+  text-align: center;
 }
 
-.multi-input-container.facettes {
-  text-align: center;
+.multi-input-container h3 {
+  margin-bottom: 1rem !important;
+  margin-top: 2rem;
 }
 
 .btn-remove-group {
   margin-top: 5px;
-}
-
-.inline-form + .btn-add-element {
-  margin-top: 1rem;
 }
 
 .btn-add-element + .form-group {
@@ -229,7 +229,7 @@ input[type='range'] {
   margin-bottom: 10px;
 }
 
-iframe {
+.iframe-preview {
   max-height: 350px;
   overflow: hidden;
 }

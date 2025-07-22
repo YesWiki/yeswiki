@@ -488,7 +488,7 @@ ace.define('ace/mode/yeswiki', ['require', 'exports', 'module', 'ace/lib/oop', '
     this.getNextLineIndent = function(state, line, tab) {
       const match = /^(\s*)(?:([-+*])|(\d+)\.)(\s+)/.exec(line)
       // For lists, add the - on next line, or increment the number for ordered list 1. 2.
-      if (match) {
+      if (match && match.length > 4) {
         let marker = match[2]
         if (!marker) marker = `${parseInt(match[3], 10) + 1}.`
         return match[1] + marker + match[4]

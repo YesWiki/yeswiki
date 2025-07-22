@@ -83,6 +83,7 @@ class Wiki
 
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
+
         $this->routes = $init->initRoutes($this);
     }
 
@@ -1049,7 +1050,13 @@ class Wiki
      */
     public function UserIsAdmin($user = null)
     {
-        return $this->services->get(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
+        static $cache = [];
+
+        if (!array_key_exists($user, $cache)) {
+            $cache[$user] = $this->services->get(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
+        }
+
+        return $cache[$user];
     }
 
     /**
@@ -1194,7 +1201,7 @@ class Wiki
                         unset($_SESSION['redirects']);
                     }
                     // do nothing except and script with message
-                    exit($th->getMessage);
+                    exit($th->getMessage());
                 }
             }
 
@@ -1216,7 +1223,6 @@ class Wiki
                 $_POST = json_decode(file_get_contents('php://input'), true) ?? [];
             }
         }
-
         $context = new RequestContext();
         $context->fromRequest($this->request);
 
@@ -1247,7 +1253,6 @@ class Wiki
 
         $controllerResolver = new YesWikiControllerResolver($this);
         $argumentResolver = new ArgumentResolver();
-
         // start buffer to prevent bad formatting response
         ob_start();
         try {
@@ -1261,7 +1266,7 @@ class Wiki
 
                 $response = call_user_func_array($controller, $arguments);
             } else {
-                $response = new Response('', Response::HTTP_UNAUTHORIZED);
+                $response = new Response('Not enough access rights', Response::HTTP_UNAUTHORIZED);
             }
         } catch (ResourceNotFoundException $exception) {
             $response = new Response('', Response::HTTP_NOT_FOUND);
@@ -1368,9 +1373,9 @@ class Wiki
         $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
         if ($unit) {
             // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
-            return intval(round($size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
+            return intval((int)round($size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
         } else {
-            return intval(round($size));
+            return intval((int)round($size));
         }
     }
 

@@ -1,10 +1,10 @@
 <?php
+
 return [
     'NAME' => 'நோம்',
     'ADMIN_BACKUPS_ARCHIVE_SIZE' => 'அளவு',
     'USER_DELETE' => 'பயனரை நீக்கு',
     'CONTINUE' => 'தொடரவும்',
-    // Commons
     'ARCHIVES' => 'காப்புப்பிரதி',
     'ANSWER' => 'பதில்',
     'BY' => 'இதற்க்கான',
@@ -16,7 +16,6 @@ return [
     'DELETE_ALL_SELECTED_ITEMS' => 'தேர்ந்தெடுக்கப்பட்ட அனைத்து கூறுகளையும் நீக்கு',
     'DELETE_SELECTION' => 'தேர்வை நீக்கு',
     'DEL' => 'அழி.',
-    // fives chars max.
     'EMAIL' => 'மின்னஞ்சல்',
     'INVERT' => 'தலைகீழ்',
     'MODIFY' => 'மாற்றியமைப்பாளர்',
@@ -26,7 +25,6 @@ return [
     'TRIPLES' => 'மும்மடங்கு',
     'UNKNOWN' => 'தெரியவில்லை',
     'WARNING' => 'எச்சரிக்கை',
-    // wakka.php
     'INVALID_ACTION' => 'செயல் தவறானது',
     'ERROR_NO_ACCESS' => 'அணுகல் தடைசெய்யப்பட்டுள்ளது',
     'NOT_FOUND' => 'இல்லை',
@@ -34,25 +32,21 @@ return [
     'SITE_BEING_UPDATED' => 'இந்த தளம் புதுப்பிக்கப்படுகிறது. தயவுசெய்து முயற்சிக்கவும்.',
     'DB_CONNECT_FAIL' => 'எங்கள் விருப்பத்திலிருந்து சுயாதீனமான காரணங்களுக்காக, இந்த யெச்விகியின் உள்ளடக்கம் தற்காலிகமாக அணுக முடியாதது. <br><br> தயவுசெய்து மீண்டும் முயற்சிக்கவும், உங்கள் புரிதலுக்கு நன்றி.',
     'LOG_DB_CONNECT_FAIL' => 'Yeswiki: la connexion bdd a echouee',
-    // sans accents car commande systeme
     'INCORRECT_PAGENAME' => 'பக்கத்தின் பெயர் தவறானது.',
     'PERFORMABLE_ERROR' => 'எதிர் பாராத பிழை ஏற்பட்டு விட்டது. தயவுசெய்து தள நிர்வாகியைத் தொடர்புகொண்டு பின்வரும் பிழையை அவருடன் தொடர்பு கொள்ளுங்கள்:',
     'HOMEPAGE_WIKINAME' => 'Pageprincipale',
     'MY_YESWIKI_SITE' => 'மோன் தளம் யெச்விகி',
     'FILE_WRITE_PROTECTED' => 'உள்ளமைவு கோப்பு எழுத்துப்பூர்வமாக பாதுகாக்கப்படுகிறது',
     'ADMIN_BACKUPS_CREATE' => 'காப்புப்பிரதி',
-    // ACLs
     'DENY_READ' => 'இந்தப் பக்கத்தைப் படிக்க உங்களுக்கு இசைவு இல்லை',
     'DENY_WRITE' => 'இந்த பக்கத்தில் எழுத உங்களுக்கு இசைவு இல்லை',
     'DENY_COMMENT' => 'இந்த பக்கத்தில் கருத்து தெரிவிக்க உங்களுக்கு இசைவு இல்லை',
     'DENY_DELETE' => 'இந்த பக்கத்தை நீக்க உங்களுக்கு இசைவு இல்லை',
-    // tools.php
     'YESWIKI_TOOLS_CONFIG' => 'உள்ளமைவு நீட்டிப்பு (கள்) டி யெச்விகி',
     'DISCONNECT' => 'துண்டிப்பு',
     'RETURN_TO_EXTENSION_LIST' => 'செயலில் நீட்டிப்புகளின் பட்டியலுக்குத் திரும்பு',
     'NO_TOOL_AVAILABLE' => 'எந்த கருவியும் கிடைக்கவில்லை அல்லது செயலில் இல்லை',
     'LIST_OF_ACTIVE_TOOLS' => 'செயலில் நீட்டிப்புகளின் பட்டியல்',
-    // actions/AdminBackupsAction.php
     'ADMIN_BACKUPS_TITLE' => 'காப்பு மேலாண்மை',
     'ADMIN_BACKUPS_ARCHIVES_LIST' => 'காப்பு பட்டியல்',
     'ADMIN_BACKUPS_ARCHIVE_FILENAME' => 'கோப்பு பெயர்',
@@ -74,14 +68,11 @@ return [
     'ADMIN_BACKUPS_MESSAGE_DB_NOT_ARCHIVABLE' => 'தரவுத்தளம் காப்புப்பிரதி அல்ல.',
     'ADMIN_BACKUPS_MESSAGE_ARCHIVE_CANNOT_BE_DONE' => 'காப்பகமானது சாத்தியமற்றது',
     'ADMIN_BACKUPS_MESSAGE_SEE_DOC' => 'காப்பு ஆவணங்களைக் காண்க',
-    // actions/backlinks.php
     'PAGES_WITH_LINK' => 'ஒரு இணைப்புடன் பக்கங்கள்',
     'PAGES_WITH_LINK_TO_CURRENT_PAGE' => 'தற்போதைய பக்கத்திற்கான இணைப்பைக் கொண்ட பக்கங்கள்',
     'NO_PAGES_WITH_LINK_TO' => 'எந்த பக்கத்திற்கும் இணைப்பு இல்லை',
-    // actions/changestyle.php
     'STYLE_SHEET' => 'பாணி இலை',
     'CHANGESTYLE_ERROR' => '\'{name}\' என்ற பெயர் சேஞ்ச்ச்டைல் நடவடிக்கையால் விதிக்கப்பட்ட பெயரிடும் விதிக்கு இணங்காது. மேலும் விவரங்களுக்கு இந்த செயலின் ஆவணங்களைப் பார்க்கவும்',
-    // handlers/page/acls.php
     'YW_ACLS_LIST' => 'பக்க அணுகல் உரிமைகளின் பட்டியல்',
     'YW_ACLS_UPDATED' => 'அணுகல் உரிமைகள் புதுப்பிக்கப்பட்டன',
     'YW_NEW_OWNER' => ' மற்றும் உரிமையாளரின் மாற்றம். புதிய உரிமையாளர்: ',
@@ -92,9 +83,7 @@ return [
     'YW_CHANGE_OWNER' => 'உரிமையாளரை மாற்றவும்',
     'YW_CHANGE_NOTHING' => 'எதுவும் செய்ய வேண்டாம்',
     'YW_CANNOT_CHANGE_ACLS' => 'இந்த பக்கத்தில் அனுமதிகளை நீங்கள் நிர்வகிக்க முடியாது',
-    // handlers/page/claim.php
     'YW_YOU_ARE_NOW_OWNER_OF_PAGE' => 'நீங்கள் இப்போது இந்த பக்கத்தின் உரிமையாளர்',
-    // actions/editactionsacls.class.php
     'ACTION_RIGHTS' => 'நடவடிக்கை உரிமைகள்',
     'SEE' => 'பார்க்க',
     'ERROR_WHILE_SAVING_ACL' => 'செயலுக்காக ACL இன் பதிவின் போது பிழை ஏற்பட்டது',
@@ -107,7 +96,6 @@ return [
     'YW_COMMENTS_ARE_NOW_CLOSED' => 'கருத்துகள் இந்த பக்கத்தில் மூடப்பட்டன',
     'ONLY_ADMINS_CAN_CHANGE_MEMBERS' => 'நீங்கள் இயக்குநர் இல்லாததால் இயக்குநர்கள் குழுவின் உறுப்பினர்களை மாற்ற முடியாது',
     'YW_PROBLEM_WITH_ACLS_LIST' => 'கருத்துகளைத் திறக்க செல்லுபடியாகும் குழு இல்லை',
-    // actions/editgroups.class.php
     'DEFINITION_OF_THE_GROUP' => 'குழு வரையறை',
     'DEFINE' => 'வரையறு',
     'CREATE_NEW_GROUP' => 'அல்லது புதிய குழுவை உருவாக்கவும்',
@@ -126,20 +114,15 @@ return [
     'ONE_NAME_BY_LINE' => 'வரி மூலம் ஒரு பயனர்பெயர்',
     'ONLY_EMPTY_GROUP_FOR_DELETION' => 'ஒரு வெற்று குழுவை மட்டுமே நீக்க முடியும்',
     'ONLY_NO_PAGES_GROUP_FOR_DELETION' => 'ஒரு பக்கத்துடன் இணைக்கப்படாத குழுக்களை மட்டுமே நீக்க முடியும். தொடர்புடைய பக்கங்கள்:',
-    // actions/edithandlersacls.class.php
     'HANDLER_RIGHTS' => 'கையாளுபவர் உரிமைகள்',
     'ERROR_WHILE_SAVING_HANDLER_ACL' => 'அதைக் கையாள ACL இன் பதிவின் போது பிழை ஏற்பட்டது',
     'NEW_ACL_FOR_HANDLER' => 'அதைக் கையாள புதிய ஏ.சி.எல்',
     'NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER' => 'புதிய ஏ.சி.எல் அதைக் கையாள வெற்றிகரமாக பதிவு செய்யப்பட்டது',
     'EDIT_RIGHTS_FOR_HANDLER' => 'ஏண்ட்லரின் உரிமைகளைத் திருத்தவும்',
-    // actions/erasespamedcomments.class.php
     'ERASED_COMMENTS' => 'கருத்து (கள்) அழிக்கப்பட்டது (கள்)',
     'FORM_RETURN' => 'படிவத்திற்குத் திரும்பு',
     'NO_RECENT_COMMENTS' => 'அண்மைக் கால கருத்துக்கள் இல்லை',
     'NO_SELECTED_COMMENTS_TO_ERASE' => 'அழிக்க எந்தக் கருத்தும் தேர்ந்தெடுக்கப்படவில்லை',
-    // actions/footer.php ignoree, car le tools templates court circuite
-    // actions/header.php ignoree, car le tools templates court circuite
-    // actions/include.php
     'ERROR' => 'பிழை',
     'ACTION' => 'செயல்',
     'MISSING_PAGE_PARAMETER' => '"பக்கம்" அமைப்பு இல்லை',
@@ -151,7 +134,6 @@ return [
     'NOT_ALLOWED' => 'அங்கீகரிக்கப்படாதது',
     'INCLUDED_PAGE' => 'பக்கம் சேர்க்கப்பட்டுள்ளது',
     'DOESNT_EXIST' => 'இருப்பதாகத் தெரியவில்லை',
-    // actions/listpages.php
     'THE_PAGE' => 'அந்தப் பக்கம்',
     'BELONGING_TO' => 'சேர்ந்த',
     'LAST_CHANGE_BY' => 'மூலம் கடைசி மாற்றம்',
@@ -165,9 +147,7 @@ return [
     'IN_THIS_WIKI' => 'இந்த விக்கியில்',
     'LIST_PAGES_BELONGING_TO' => 'சொந்தமான பக்கங்களின் பட்டியல்',
     'THIS_USER_HAS_NO_PAGE' => 'இந்த பயனருக்கு எந்தப் பக்கமும் இல்லை',
-    // actions/UserCommentsAction.php
     'COMMENT_RESERVED_TO_CONNECTED' => '"{{usercomments}}" என்ற செயலைப் பயன்படுத்த தயவுசெய்து இணைக்கவும்!',
-    // actions/mychanges.php
     'YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE' => 'நீங்கள் மாற்றிய பக்கங்களின் பட்டியல், மாற்றியமைக்கும் தேதியால் வரிசைப்படுத்தப்படுகிறது',
     'YOUR_MODIFIED_PAGES_ORDERED_BY_NAME' => 'நீங்கள் மாற்றியமைத்த பக்கங்களின் பட்டியல், அகர வரிசைப்படி வரிசைப்படுத்தப்பட்டுள்ளது',
     'YOU_DIDNT_MODIFY_ANY_PAGE' => 'நீங்கள் ஒரு பக்கத்தை மாற்றவில்லை',
@@ -175,46 +155,34 @@ return [
     'IMPOSSIBLE_TO_SHOW_YOUR_MODIFIED_PAGES' => 'நீங்கள் மாற்றிய பக்கங்களின் பட்டியலைக் காட்ட முடியவில்லை',
     'LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER' => 'நீங்கள் உரிமையாளர் பக்கங்களின் பட்டியல்',
     'YOU_DONT_OWN_ANY_PAGE' => 'நீங்கள் எந்த பக்கத்தின் உரிமையாளரும் இல்லை',
-    // actions/nextextsearch.php
     'NEWTEXTSEARCH_HINT' => 'அறியப்படாத கதாபாத்திரத்தை "" மூலம் மாற்ற முடியுமா? " "பல பை" * "',
     'NO_SEARCH_RESULT' => 'மன்னிக்கவும், உங்கள் தேடலுக்கு எந்த முடிவும் இல்லை',
-    // actions/recentcommentsrss.php
     'TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS' => 'அண்மைக் கால கருத்துகளின் ஆர்எச்எச் கம்பிக்கு, பின்வரும் முகவரியைப் பயன்படுத்தவும்',
     'SEARCH_RESULTS' => 'தேடல் முடிவுகள்',
-    // actions/orphanedpages.php
     'NO_ORPHAN_PAGES' => 'அனாதை பக்கங்கள் இல்லை',
-    // actions/recentchanges.php
     'HISTORY' => 'வரலாற்று',
-    // actions/recentchangesrss.php
     'TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS' => 'அண்மைக் கால மாற்றங்களின் RSS கம்பிக்கு, பின்வரும் முகவரியைப் பயன்படுத்தவும்',
     'LATEST_CHANGES_ON' => 'அண்மைக் கால மாற்றங்கள்',
     'LATEST_COMMENTS_ON' => 'அண்மைக் கால கருத்துகள்',
-    // actions/recentlycommented.php
     'LAST COMMENT' => 'கடைசி இடுகை',
     'NO_RECENT_COMMENTS_ON_PAGES' => 'எந்த பக்கமும் அண்மைக் காலத்தில் கருத்து தெரிவிக்கப்படவில்லை',
-    // actions/redirect.php
     'ERROR_ACTION_REDIRECT' => 'செயல் பிழை {{redirect ...}}',
     'CIRCULAR_REDIRECTION_FROM_PAGE' => 'பக்கத்திலிருந்து வட்ட திசை திருப்புதல்',
     'CLICK_HERE_TO_EDIT' => 'அதைத் திருத்த இங்கே சொடுக்கு செய்க',
     'PRESENCE_OF_REDIRECTION_TO' => 'நோக்கி ஒரு திசைதிருப்பல்',
-    // actions/resetpassword.php
     'ACTION_RESETPASSWORD' => 'செயல் {{resetpassword ...}}',
     'PASSWORD_UPDATED' => 'கடவுச்சொல்லை மீட்டமைக்க',
     'RESETTING_THE_PASSWORD' => 'கடவுச்சொல்லை மீட்டமைக்க',
     'WIKINAME' => 'நோம்வ்கி',
     'RESET_PASSWORD' => 'கடவுச்சொல்லை மீட்டமைக்க',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'இந்த செயலைச் செய்ய தேவையான அனுமதிகள் உங்களிடம் இல்லை',
-    // actions/textsearch.php
     'WHAT_YOU_SEARCH' => 'நீங்கள் என்ன பார்க்க விரும்புகிறீர்கள்',
     'SEARCH' => 'தேடுங்கள்',
     'SEARCH_RESULT_OF' => 'தேடலின் முடிவு (கள்)',
     'NO_RESULT_FOR' => 'எந்த முடிவுகளும் இல்லை',
-    // actions/testtriples.php
     'END_OF_EXEC' => 'சாவுஒறுப்பு முடிவு',
-    // actions/trail.php
     'ERROR_ACTION_TRAIL' => 'செயல் பிழை {{trail ...}}',
     'INDICATE_THE_PARAMETER_TOC' => 'சுருக்கமான பக்கத்தின் பெயரைக் குறிக்கவும், "TOC" அளவுரு',
-    // actions/usersettings.php
     'USER_SETTINGS' => 'பயனர் அமைப்புகள்',
     'USER_SIGN_UP' => 'பதிவு',
     'YOU_ARE_NOW_DISCONNECTED' => 'நீங்கள் இப்போது வெளியேறிவிட்டீர்கள்',
@@ -247,32 +215,24 @@ return [
     'PASSWORD_CONFIRMATION' => 'கடவுச்சொல் உறுதிப்படுத்தல்',
     'NEW_ACCOUNT' => 'புதிய கணக்கு',
     'LOGGED_USERS_ONLY_ACTION' => 'இந்த செயலைச் செய்ய நீங்கள் இணைக்கப்பட வேண்டும்',
-    // actions/wantedpages.php
     'NO_PAGE_TO_CREATE' => 'உருவாக்க பக்கம் இல்லை',
-    // includes/controllers/CsrfController.php
     'NO_CSRF_TOKEN_ERROR' => 'தள வடிவமைப்பு பிழை: சமர்ப்பிக்கும் படிவத்தில் உள் பாதுகாப்பு வழிமுறைகளுக்குத் தேவையான தனித்துவமான அடையாள கிள்ளாக்கு இல்லை.',
     'CSRF_TOKEN_FAIL_ERROR' => 'இந்த பக்கம் இரண்டாவது முறையாக திறக்கப்பட்டிருக்கலாம். தயவுசெய்து இந்த சாளரத்திலிருந்து கோரிக்கையை புதுப்பிக்கவும் (உள் பாதுகாப்பு கிள்ளாக்கு நன்றாக இல்லை).',
-    // javascripts/favorites.js
     'FAVORITES_ADD' => 'பிடித்தவையில் சேர்',
     'FAVORITES_REMOVE' => 'பிடித்தவைகளைத் திரும்பப் பெறுங்கள்',
-    // templates/actions/my-favorites.twig
     'FAVORITES_DELETE_ALL' => 'எனக்கு பிடித்த அனைத்தையும் நீக்கு',
     'FAVORITES_MY_FAVORITES' => 'எனக்கு பிடித்தவை',
     'FAVORITES_NO_FAVORITE' => 'பிடித்த எதுவும் பதிவு செய்யப்படவில்லை',
     'FAVORITES_NOT_ACTIVATED' => 'பிடித்தவைகளின் பயன்பாடு இந்த தளத்தில் செயல்படுத்தப்படவில்லை.',
     'FAVORITES_NOT_CONNECTED' => 'இணைக்கப்பட்ட நபர்களுக்கு மட்டுமே பிடித்தவைகளின் பயன்பாடு சாத்தியமாகும்.',
-    // templates/actions/my-favorites-table.twig
     'FAVORITES_TITLE' => 'டைட்ரே',
     'FAVORITES_LINK' => 'உரிமை',
-    // templates/preupdate-backups.twig
     'ADMIN_BACKUPS_CREATING' => 'காப்புப்பிரதியை உருவாக்குதல்',
     'ADMIN_BACKUPS_FORCE_UPDATE' => 'காப்புப்பிரதி இல்லாமல் புதுப்பிப்பை கட்டாயப்படுத்துகிறது',
     'ADMIN_BACKUPS_BY_PASS' => 'புதுப்பிப்பு',
-    // setup/header.php
     'OK' => 'சரி',
     'FAIL' => 'தோல்வி',
     'END_OF_INSTALLATION_BECAUSE_OF_ERRORS' => 'உள்ளமைவில் பிழைகளைத் தொடர்ந்து நிறுவலின் முடிவு',
-    // setup/default.php
     'INSTALLATION_OF_YESWIKI' => 'யெச்விகியின் நிறுவல்',
     'YOUR_SYSTEM' => 'உங்கள் கணினி',
     'EXISTENT_SYSTEM_RECOGNISED_AS_VERSION' => 'தற்போதுள்ள பதிப்பாக அங்கீகரிக்கப்பட்டுள்ளது',
@@ -332,7 +292,6 @@ return [
     'OBLIGE_TO_PREVIEW_BEFORE_SAVING_PAGE' => 'நீங்கள் ஒரு பக்கத்தை சேமிப்பதற்கு முன் ஒரு கண்ணோட்டத்தை உருவாக்க வழங்குங்கள்',
     'AUTHORIZE_HTML_INSERTION' => 'மூல உஉகுமொ இன் செருகலை அங்கீகரிக்கவும்',
     'AUTHORIZE_INDEX_BY_ROBOTS' => 'தேடுபொறிகளால் குறியீட்டை அங்கீகரிக்கவும்',
-    // setup/install.php
     'PROBLEM_WHILE_INSTALLING' => 'நிறுவல் நடைமுறையில் சிக்கல்',
     'VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION' => 'தரவுத்தளத்தின் உள்ளமைவு மற்றும் நிறுவல்',
     'VERIFY_MYSQL_PASSWORD' => 'MySQL கடவுச்சொல்லை சரிபார்க்கிறது',
@@ -365,7 +324,6 @@ return [
     'VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE' => 'இந்த கோப்பில் எழுத வலை சேவையகத்திற்கு உரிமை உள்ளதா என்பதை உறுதிப்படுத்திக் கொள்ளுங்கள், இல்லையெனில் நீங்கள் அதை கைமுறையாக மாற்ற வேண்டும்',
     'CHECK_EXISTING_TABLE_PREFIX' => 'அட்டவணை முன்னொட்டின் இருப்பின் சரிபார்ப்பு',
     'TABLE_PREFIX_ALREADY_USED' => 'அட்டவணை முன்னொட்டு ஏற்கனவே பயன்படுத்தப்படுகிறது. புதிய ஒன்றைத் தேர்வுசெய்க.',
-    // setup/writeconfig.php
     'WRITING_CONFIGURATION_FILE' => 'உள்ளமைவு கோப்பை எழுதுதல்',
     'CREATED' => 'உருவாக்கப்பட்டது',
     'DONT_CHANGE_YESWIKI_VERSION_MANUALLY' => 'Yeswiki_version ஐ கைமுறையாக மாற்ற வேண்டாம்',
@@ -379,10 +337,8 @@ return [
     'TRY_AGAIN' => 'மீண்டும் முயற்சி வெற்றி',
     'TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT' => 'இந்த கோப்பிற்கான அணுகல் உரிமைகளை உங்கள் சேவையகத்தில் உறுதிப்படுத்தவும். எந்தவொரு காரணத்திற்காகவும் நீங்கள் இதைச் செய்ய முடியாவிட்டால், நீங்கள் பின்வரும் தகவல்களை ஒரு கோப்பில் நகலெடுத்து கோப்பு பரிமாற்ற மென்பொருள் (FTP) மூலம் ஒரு கோப்பில் உள்ள சேவையகத்திற்கு மாற்ற வேண்டும் ',
     'DIRECTLY_IN_THE_YESWIKI_FOLDER' => 'நேரடியாக யோவிகி கோப்பகத்தில். நீங்கள் இதைச் செய்தவுடன், உங்கள் யெச்விகி தளம் சரியாக செயல்பட வேண்டும்',
-    // API
     'USERS' => 'பயனர்கள்',
     'GROUPS' => 'குழுக்கள்',
-    // YesWiki\User class
     'USER_CONFIRM_DELETE' => 'பயனரை நீக்க விரும்புகிறீர்களா?',
     'USER_DELETE_LONE_MEMBER_OF_GROUP' => 'குறைந்தது ஒரு குழுவில் தனியாக இருக்கும் ஒரு பயனரை நீங்கள் நீக்க முடியாது',
     'USER_DELETE_QUERY_FAILED' => 'தரவுத்தளத்தில் பயனர் நீக்குதல் கோரிக்கை தோல்வியடைந்தது',
@@ -440,11 +396,9 @@ return [
     'USER_YOU_MUST_SPECIFY_A_POSITIVE_INTEGER_FOR' => '%{name} க்கு நேர்மறையான முழு மதிப்பையும் இது எடுக்கும்.',
     'USER_YOU_MUST_SPECIFY_YES_OR_NO' => '%{name} க்கு உங்களின் \'Y\' அல்லது \'N\' மதிப்புத் தேவை.',
     'USER_YOU_MUST_SPECIFY_A_STRING' => '%{name} க்கு உங்களுக்கு ஒரு எழுத்து சரம் தேவை.',
-    // YesWiki\Database class
     'DATABASE_QUERY_FAILED' => 'கோரிக்கை தோல்வியுற்றது {\ yeswiki \ தரவுத்தளம்}',
     'DATABASE_YOU_MUST_FIRST_SET_ARGUMENT' => 'வகுப்பின் ஒரு பொருளுக்கு வாதங்கள் இல்லை \ yewiki \ தரவுத்தளங்கள்',
     'DATABASE_MISSING_ARGUMENT' => ' காணவில்லை)',
-    // gererdroits
     'ACLS_RESERVED_FOR_ADMINS' => 'இந்த நடவடிக்கை நிர்வாகிகளுக்கு ஒதுக்கப்பட்டுள்ளது',
     'ACLS_NO_SELECTED_PAGE' => 'எந்தப் பக்கமும் தேர்ந்தெடுக்கப்படவில்லை.',
     'ACLS_NO_SELECTED_RIGHTS' => 'மாற்றுவதற்கான எந்த உரிமையும் நீங்கள் தேர்வு செய்யவில்லை.',
@@ -454,13 +408,6 @@ return [
     'ACLS_FOR_SELECTED_PAGES' => 'மேலே சரிபார்க்கப்பட்ட பக்கங்களுக்கான செயல்கள்',
     'ACLS_RESET_SELECTED_PAGES' => 'மீட்டமைக்கவும் (இயல்புநிலை மதிப்புகள் வரையறுக்கப்பட்டுள்ளன',
     'ACLS_REPLACE_SELECTED_PAGES' => 'மாற்றவும் (தற்போதைய உரிமைகள் நீக்கப்படும்)',
-    'ACLS_HELPER' => 'கமாவிலிருந்து ஒவ்வொரு நுழைவையும் பிரிக்கவும், எடுத்துக்காட்டாக </br
- <b>*</b> (அனைத்து பயனர்களும்) </br
- <b>+</b> (பதிவுசெய்யப்பட்ட பயனர்கள்) </br
- <b>%</b> (கோப்பு/பக்கத்தை உருவாக்கியவர்) </br
- <b> @nom_du_group </b> (பயனர் குழு, எ.கா: @admins) </br
- <b> சேம்ச்பாண்ட் </b> (பயனரின் யெச்விகி பெயர்) </br
- <b> சூப்பர் கேட் </b> (மறுப்பு, சூப்பர் கேட் அங்கீகரிக்கப்படவில்லை) </br>',
     'ACLS_MODE_SIMPLE' => 'பயன்முறை எளிமையானது',
     'ACLS_MODE_ADVANCED' => 'மேம்பட்ட ஃபேசன்',
     'ACLS_NO_CHANGE' => 'எதுவும் செய்ய வேண்டாம்',
@@ -473,7 +420,6 @@ return [
     'ACLS_COMMENTS_CLOSED' => 'மூடிய கருத்துகள்',
     'ACLS_READ' => 'வாசிப்பு உரிமைகள்',
     'ACLS_WRITE' => 'எழுதும் உரிமைகள்',
-    // include/services/ThemeManager.php
     'THEME_MANAGER_THEME_FOLDER' => 'கருப்பொருள் கோப்பு ',
     'THEME_MANAGER_SQUELETTE_FILE' => 'எலும்புக்கூடு கோப்பு ',
     'THEME_MANAGER_NOT_FOUND' => ' காணப்படவில்லை.',
@@ -481,7 +427,6 @@ return [
     'THEME_MANAGER_CLICK_TO_INSTALL' => 'கருப்பொருள் நிறுவ சொடுக்கு செய்க ',
     'THEME_MANAGER_AND_REPAIR' => ' மற்றும் தளத்தை சரிசெய்யவும்',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'புதுப்பிக்க நிர்வாகியாக இணைக்கவும்.',
-    // actions/EditConfigAction.php
     'EDIT_CONFIG_TITLE' => 'உள்ளமைவு கோப்பின் மாற்றம்',
     'EDIT_CONFIG_CURRENT_VALUE' => 'தற்போதைய மதிப்பு ',
     'EDIT_CONFIG_SAVE' => 'சேமித்த உள்ளமைவு',
@@ -510,14 +455,12 @@ return [
     'EDIT_CONFIG_GROUP_CORE' => 'முக்கிய அளவுருக்கள்',
     'EDIT_CONFIG_GROUP_ACCESS' => 'அணுக இசைவு',
     'EDIT_CONFIG_GROUP_EMAIL' => 'மின்னஞ்சல்கள்',
-    // actions/userstable.php
     'USERSTABLE_USER_DELETED' => 'பயனர் "{username}" நீக்கப்பட்டது.',
     'USERSTABLE_USER_NOT_DELETED' => 'பயனர் "{username}" நீக்கப்படவில்லை.',
     'USERSTABLE_NOT_EXISTING_USER' => 'பயனர் "{username}" இல்லை!',
     'GROUP_S' => 'குழுக்கள்)',
     'USERSTABLE_CREATE_USER' => 'ஒரு பயனரை உருவாக்கவும்',
     'USERSTABLE_CREATE_USER_HINT' => 'தோராயமாக உருவாக்கப்பட்ட கடவுச்சொல்',
-    // handlers/deletepage
     'DELETEPAGE_CANCEL' => 'ரத்துசெய்',
     'DELETEPAGE_CONFIRM' => '{tag} & nbsp;? பக்கத்தை நீக்க விரும்புகிறீர்களா?',
     'EDIT_NO_WRITE_ACCESS' => 'இந்த பக்கத்திற்கு உங்களுக்கு அணுகல் இல்லை!',
@@ -529,16 +472,13 @@ return [
     'DELETEPAGE_NOT_OWNER' => 'நீங்கள் இந்த பக்கத்தின் உரிமையாளர் அல்ல.',
     'DELETEPAGE_PAGES_WITH_LINKS_TO' => '{tag}க்கு இணைப்புடன் பக்கங்கள்:',
     'DELETEPAGE_NOT_DELETED' => 'பக்கம் நீக்கப்படவில்லை.',
-    // handlers/edit
     'EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER' => 'இந்தப் பக்கத்தை நகலெடுக்கவும், இந்தப் பக்கத்தை மீண்டும் வெளியிடவும்.\n இந்தப் பக்கம் வேறொருவரால் மாற்றியமைக்கப்பட்டது.',
     'EDIT_PREVIEW' => 'முன்னோட்ட',
-    // handlers/update
     'UPDATE_ADMIN_PAGES' => 'மேலாண்மை பக்கங்களைப் புதுப்பிக்கவும்',
     'UPDATE_ADMIN_PAGES_CONFIRM' => 'பக்கங்களின் புதுப்பிப்பை உறுதிப்படுத்தவும்: ',
     'UPDATE_ADMIN_PAGES_HINT' => 'அண்மைக் கால அம்சங்களுடன் மேலாண்மை பக்கங்களைப் புதுப்பிக்கவும். இது மீளக்கூடியது.',
     'UPDATE_ADMIN_PAGES_ERROR' => 'அனைத்து மேலாண்மை பக்கங்களையும் புதுப்பிக்க முடியவில்லை!',
     'UPDATE_PAGE_NOT_FOUND_IN_DEFAULT_SQL' => '"{{page}}" பக்கம் இயல்புநிலை- content.sql இல் காணப்படவில்லை',
-    // handlers/referrers_sites.php
     'LINK_TO_REFERRERS_DOMAINS' => 'இந்த விக்கியைக் குறிக்கும் களங்கள் ({starglink the வெளிப்புற பக்கங்களின் பட்டியலைக் காண்க {beginLink}):',
     'LINK_TO_REFERRERS_SITES' => 'இந்த விக்கியைக் குறிக்கும் தளங்கள் ({startlink the களங்களின் பட்டியலைக் காண்க {beginLink}):',
     'LINK_TO_REFERRERS_SITES_ONLY_TAG' => '{tag} மட்டுமே குறிப்பிடும் பகுதிகளைக் காண்க',
@@ -550,7 +490,6 @@ return [
     'REFERRERS_SITES_SINCE' => 'காலத்திலிருந்து}',
     'REFERRERS_SITES_24_HOURS' => '24 மணி நேரம்',
     'REFERRERS_SITES_X_DAYS' => '{nb} நாட்கள்',
-    // handlers/revisions
     'SUCCESS_RESTORE_REVISION' => 'பதிப்பு மீட்டமைக்கப்பட்டுள்ளது',
     'TITLE_PAGE_HISTORY' => 'பக்க வரலாறு',
     'TITLE_ENTRY_HISTORY' => 'கோப்பின் வரலாறு',
@@ -560,19 +499,15 @@ return [
     'CURRENT_VERSION' => 'நடப்பு வடிவம்',
     'RESTORE_REVISION' => 'இந்த பதிப்பை மீட்டெடுக்கவும்',
     'DISPLAY_WIKI_CODE' => 'விக்கி குறியீட்டைக் காட்டு',
-    // handlers/page/show + handlers/page/iframe
     'NOT_FOUND_PAGE' => 'இந்த பக்கம் இன்னும் இல்லை, நீங்கள் {beginLink} உருவாக்கு {endLink} வேண்டுமா?',
     'NOT_AUTORIZED_TO_READ_PAGE' => 'இந்தப் பக்கத்தைப் படிக்க உங்களுக்கு இசைவு இல்லை',
-    // handlers/show
     'COMMENT_INFO' => 'இது {tag} வெளியிட்ட {user} முதல் {time}',
     'EDIT_ARCHIVED_REVISION' => 'இந்த காப்பகப்படுத்தப்பட்ட பதிப்பை மீண்டும் வெளியிடுங்கள்',
     'REVISION_IS_ARCHIVE_OF_TAG_ON_TIME' => 'இது {link} முதல் {நேரம் of இன் காப்பகப்படுத்தப்பட்ட பதிப்பாகும்',
     'REDIRECTED_FROM' => '{Linkfrom இருந்து இலிருந்து திருப்பி விடப்பட்டது',
     'YW_ADD_COMMENT' => 'உங்கள் கருத்தைச் சேர்க்கவும்',
     'YW_WRITE_COMMENT_HERE' => 'உங்கள் கருத்தை இங்கே எழுதுங்கள் ...',
-    // templates/multidelete-macro.twig
     'NUMBER_OF_ELEMENTS' => 'தேர்ந்தெடுக்கப்பட்ட கூறுகளின் எண்ணிக்கை',
-    // Comments
     'COMMENT_EMPTY_NOT_SAVED' => 'வெற்று கருத்து, காப்புப்பிரதி இல்லை.',
     'COMMENT_LOGIN' => 'கருத்துடன் இணைக்கவும்',
     'COMMENT_NOT_ENOUGH_RIGHTS' => 'கருத்து தெரிவிக்க உங்களுக்கு போதுமான உரிமை இல்லை.',
@@ -590,7 +525,6 @@ return [
     'COMMENT_ON_PAGE' => 'பெற்றோர் பக்கம்',
     'COMMENT_CONFIRM_DELETE' => 'கருத்தை நீக்க விரும்புகிறீர்களா? (இறுதி நடவடிக்கை)',
     'COMMENT_MODIFIED_BY' => '%{பயனர் by ஆல் மாற்றப்பட்டது',
-    // templates/comments/notify-email-*.twig
     'COMMENT_NEW_COMMENT' => '%{tag} பக்கத்தில் புதிய கருத்து',
     'COMMENT_NEW_COMMENT_ANSWER' => '%{tag} பக்கத்தில் உங்கள் கருத்துக்கு புதிய பதில்',
     'COMMENT_NEW_COMMENT_MESSAGE' => 'தளத்தின் [ %{user}] %{tag} பக்கத்தில் %{site} ஆல் ஒரு புதிய கருத்து எழுதப்பட்டது.',
@@ -599,7 +533,6 @@ return [
     'COMMENT_NEW_COMMENT_ANSWER_TAG' => '%{tag} பக்கத்தின் கருத்துக்கு நீங்கள் மேற்கோள் காட்டப்பட்டீர்கள்',
     'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'தளத்தின் [ %{user}] %{tag} பக்கத்தில் %{site} எழுதிய புதிய கருத்தில் நீங்கள் மேற்கோள் காட்டப்பட்டுள்ளீர்கள்.',
     'COMMENT_NEW_COMMENT_ANSWER_MESSAGE_TAG' => 'தளத்தின் [ %{user}] %{tag} பக்கத்தின் கருத்துக்கு %{site} ஆல் எழுதப்பட்ட பதிலில் நீங்கள் மேற்கோள் காட்டப்பட்டுள்ளீர்கள்.',
-    // reactions
     'REACTION_EMPTY_ID' => '"ஐடி" அளவுருவுக்கு தெரிவிக்கப்பட வேண்டும்',
     'REACTION_LIKE' => 'நான் ஒப்புக்கொள்கிறேன்',
     'REACTION_ANGRY' => 'ஃபாச்சே · மற்றும்',

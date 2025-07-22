@@ -1,11 +1,8 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $class = $this->getParameter('class');
-if ($this->UserIsAdmin()
+if (
+    $this->UserIsAdmin()
     && isset($_POST['action']) && ($_POST['action'] === 'setTemplate')
 ) {
     $this->Action('setwikidefaulttheme');

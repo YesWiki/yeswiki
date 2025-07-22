@@ -23,7 +23,7 @@ class UserCommentsAction extends YesWikiAction
         }
 
         $this->commentsService = $this->getService(CommentService::class);
-        $coms = $this->commentsService->loadComments('', $user['name']); // get all comments
+        $coms = $this->commentsService->loadComments('', false, $user['name']); // get all comments
 
         return $this->render('@core/comment-table.twig', [
             'comments' => $coms,

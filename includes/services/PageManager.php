@@ -298,6 +298,7 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='http://outils-reseaux.org/_vocabulary/metadata'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
@@ -319,10 +320,12 @@ class PageManager
      *                            Indication si c'est un commentaire
      * @param bool   $bypass_acls
      *                            Indication si on bypasse les droits d'ecriture
+     * @param bool   $forcedDate
+     *                            if null use current date for page creation time, otherwise use this value
      *
      * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
      */
-    public function save($tag, $body, $comment_on = '', $bypass_acls = false)
+    public function save($tag, $body, $comment_on = '', $bypass_acls = false, $forcedDate = null): int
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -371,8 +374,14 @@ class PageManager
             // set all other revisions to old
             $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
+            // use forcedDate is present
+            $time = 'now()';
+            if (!empty($forcedDate)) {
+                $time = '"' . $forcedDate . '"';
+            }
+
             // add new revision
-            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : '') . 'time = now(), ' . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
+            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : '') . 'time = ' . $time . ', ' . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
 
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;
@@ -407,8 +416,8 @@ class PageManager
                 $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
                 $page = $this->dbService->loadSingle(
                     "SELECT `owner` FROM {$this->dbService->prefixTable('pages')} " .
-                    "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
-                    'LIMIT 1'
+                        "WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery} " .
+                        'LIMIT 1'
                 );
                 $this->ownersCache[$tag] = $page['owner'] ?? null;
             }
@@ -499,11 +508,19 @@ class PageManager
         }
         $pages = array_map(function ($page) use ($guard, $allEntriesTags, $userNameForCheckingACL) {
             return (isset($page['tag']) &&
-                    in_array($page['tag'], $allEntriesTags)
+                in_array($page['tag'], $allEntriesTags)
             ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
-                    : $page;
+                : $page;
         }, $pages);
 
         return $pages;
+    }
+
+    private function duplicate($sourceTag, $destinationTag): bool
+    {
+        $result = false;
+        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');
+
+        return $result;
     }
 }

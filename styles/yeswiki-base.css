@@ -1004,40 +1004,6 @@ html[lang='pt'] [lang]:not([lang='pt']) {
   margin-right: 0 !important;
 }
 
-/* timeline */
-.timeline {
-  position: relative;
-  margin: 2em 0;
-  padding: 0 3em;
-}
-
-.timeline::before {
-  content: '';
-  position: absolute;
-  height: calc(100% + 2em);
-  width: 1px;
-  border-left: 3px solid var(--primary-color);
-  left: 1.15em;
-  top: -1em;
-  bottom: 0;
-  z-index: 0;
-}
-
-.timeline li {
-  list-style: none;
-  margin-top: 2em;
-}
-
-.timeline li::before {
-  position: absolute;
-  content: '·';
-  font-size: 8em;
-  left: 4px;
-  vertical-align: middle;
-  line-height: 8px;
-  color: var(--primary-color);
-}
-
 /* users-table.twig */
 @media (width <= 1200px) {
   #users-table-action {
@@ -1064,6 +1030,9 @@ td.users-table-break-word {
 }
 
 .panel button.panel-heading {
-	width: 100%;
-	text-align: left;
+  width: 100%;
+  text-align: left;
+  border: none;
+  width: 100%;
+  text-align: left;
 }

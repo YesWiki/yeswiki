@@ -1,15 +1,11 @@
 <?php
+
 return [
-    // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'செயல் {{abonnement ...}}',
     'CONTACT_MAIL_REQUIRED' => 'லு பரம் & எக்ரேவ்; ட்ரே மெயில், டம்பிகடோயர், எச்ட் மேன்குவண்ட்.',
-    // actions/contact.php
     'CONTACT_ACTION_CONTACT' => 'செயல் {{contact ...}}',
-    // actions/desabonnement.php
     'CONTACT_ACTION_DESABONNEMENT' => 'செயல் {{desabonnement ...}}',
-    // actions/listsubscription.php
     'CONTACT_ACTION_LISTSUBSCRIPTION' => 'செயல் {{listsubscription ...}}',
-    // actions/mailinglist.php
     'CONTACT_ACTION_MAILINGLIST' => 'செயல் {{mailinglist ...}}',
     'CONTACT_PARAMETER_LIST_REQUIRED' => 'PARAM & EGRAVE; TRE "LIST" DOFFIGATOIRE (il s\'agit de l\'adresse mail de la liste de diffusion)',
     'CONTACT_MAILS_TO_ADD_OR_REMOVE' => 'அஞ்சல்கள் & அக்ரேவ்; அசூட்டர் ஓ & அக்ராவ்; Supprimer de la liste',
@@ -63,33 +59,21 @@ return [
     'CONTACT_FROM_WEBSITE' => 'டு தளம்',
     'CONTACT_REPLY' => 'Vous pouvez lui écrire un செய்தி à',
     'CONTACT_REPLY2' => 'என் répondant à ce mail',
-    // handlers/page/mail.php
     'CONTACT_TO_PLACEHOLDER' => 'அட்ரெச் மெயில் டு டெச்டினாடேர்',
-    // handlers/page/sendmail.php
     'CONTACT_SENDMAIL_INFO' => 'என்வோய் லெச் மெயில்களில் லா பெரியோடை ஊற்றவும்',
     'CONTACT_SENDMAIL_ERROR' => 'La période n\'a pas été renensignée o ou n\'a pas de valure தரநிலை (மாதம், வார நாள்).',
-    // libs/contact.functions.js
     'CONTACT_DAILY_REPORT' => 'ரைட்போர்ட் சர்னியர் டு',
     'CONTACT_WEEKLY_REPORT' => 'நல்ல எப்டோமாடேர் டு',
     'CONTACT_MONTHLY_REPORT' => 'நல்ல மென்சுவல் டு',
-    // templates/notify-admins-email-subject.twig (no special chars)
     'CONTACT_ENTRY_ADDED' => 'புதிய சேர்க்கப்பட்ட தாள்',
     'CONTACT_ENTRY_CHANGED' => 'மாற்றியமைக்கப்பட்ட தாள்',
     'CONTACT_IN_FORM' => 'டான்ச் லு ஃபார்முலேர்',
-    // templates/notify-admins-list-deleted-email-subject.twig (no special chars)
     'CONTACT_DELETED_LIST' => 'SUPPRIMEE ஐ பட்டியலிடுங்கள்',
-    // templates/notify-admins-list-deleted-email-text.twig (no special chars)
     'CONTACT_USED_IP' => 'ஐபி பயன்பாடு',
-    // templates/notify-email-html.twig and templates/notify-email-text.twig (no special chars)
     'CONTACT_WELCOME_ON' => 'பியென்வென் சுர்',
-    // templates/notify-email-subject.twig (no special chars)
     'CONTACT_YOUR_ENTRY' => 'வோட்ரே ஃபிச்',
-    // templates/notify-email-text.twig (no special chars)
     'CONTACT_HELP_IN_NOTIFICATION' => 'அலெச் சுர் லே தளத்தை ஊற்ற வேண்டும்',
-    // templates/notify-newuser-email-subject.twig (no special chars)
     'CONTACT_NEW_USER_SUBJECT' => 'VOS Nouveaux அடையாளங்காட்டிகள் சுர் லே தளம்',
-    // templates/notify-newuser-email-text.twig (no special chars)
-    // action-builder Contact
     'AB_contact_group_label' => "செயல்கள் d'envoi d'ary-mail/listes",
     'AB_abonnement_action_mail_label' => 'மின்னஞ்சல் டி லா லிச்டே டி கலந்துரையாடல்',
     'AB_abonnement_action_label' => "S'abonner à une liste de கலந்துரையாடல்",
@@ -109,7 +93,6 @@ return [
     'AB_mailperiod_action_hint' => 'கியூ செட் ஆக்சன் ஃபோன்க்சன் வூச் டிவெச் வெரிஃபையர் சான்றிதழ்கள் பரம எட்ரச் சுர் வோட்ரே சர்வர். Voir LA ஆவணங்கள் சுர் https://yeswiki.net/?mailperiod',
     'AB_mailinglist_action_label' => 'Inscrire massivement des mails à une செய்திமடல்',
     'AB_mailinglist_action_description' => 'செயல்',
-    // for edit config
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "அசூட்டர் 'விக்கி =' ஆக்ச் லீன்ச் வெர்சச் சி.இ விக்கி டான்ச் லெச் மின்னஞ்சல்கள்",
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des மின்னஞ்சல்கள்',
     'EDIT_CONFIG_HINT_CONTACT_FROM' => 'மின்னஞ்சல் வழங்குநராக சுட்டிக்காட்டப்பட்ட பயனர் (ச்பேமைத் தவிர்ப்பது SMTP பயனரைப் போலவே இருக்க வேண்டும்)',

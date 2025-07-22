@@ -1,14 +1,12 @@
 <?php
+
 /**
-* valeur : permet d'extraire le contenu d'une valeur de fiche bazar à partir d'une url.
-*/
+ * valeur : permet d'extraire le contenu d'une valeur de fiche bazar à partir d'une url.
+ */
 // +------------------------------------------------------------------------------------------------------+
 // |                                            ENTETE du PROGRAMME                                           |
 // +------------------------------------------------------------------------------------------------------+
 // test de sécurité pour vérifier si on passe par wiki
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 
 // url de la fiche bazar
 $url = $this->GetParameter('url');

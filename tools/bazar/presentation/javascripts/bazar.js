@@ -131,31 +131,58 @@ $(document).ready(() => {
     }
   })
 
-  //= ===========longueur maximale d'un champs textarea
-  const $textareas = $('textarea[maxlength].form-control')
+  //= ===========longueur maximale d'un champ textarea
+  const $textareas = $('textarea[maxlength!=\'\']')
 
   // si les textarea contiennent déja quelque chose, on calcule les caractères restants
   $textareas.each(function() {
     const $this = $(this)
     const max = $this.attr('maxlength')
-    const { length } = $this.val()
+    if ($this.hasClass('aceditor-textarea')) {
+      const { length } = window[`aceditor-${$this.attr('id')}`].editor.getValue()
+      $this.parents('.control-group').find('.charsRemaining').text(max - length)
+    } else if (!$this.hasClass('ace_text-input')) {
+      const { length } = $this.val()
+      $this.parents('.control-group').find('.charsRemaining').text(max - length)
+    }
     if (length > max) {
-      $this.val($this.val().substr(0, max))
+      if ($this.hasClass('aceditor-textarea')) {
+        const aceId = `aceditor-${$this.attr('id')}`
+        window[aceId].editor.setValue(
+          window[aceId].editor.getValue().substr(0, max)
+        )
+      } else if (!$this.hasClass('ace_text-input')) {
+        $this.val($this.val().substr(0, max))
+      }
     }
 
-    $this.parents('.control-group').find('.charsRemaining').html((max - length))
-  })
+    // when a char is typed, we check the max length limit
+    if ($this.hasClass('aceditor-textarea')) {
+      const aceId = `aceditor-${$this.attr('id')}`
+      window[aceId].editor.on('input', () => {
+        const $ed = $(this)
+        const max = $ed.attr('maxlength')
+        const { length } = $ed.val()
+        if (length > max) {
+          window[aceId].editor.setValue(
+            window[aceId].editor.getValue().substr(0, max)
+          )
+        }
+        $this.parents('.control-group').find('.charsRemaining').text(max - length)
+      })
+    } else if (!$this.hasClass('ace_text-input')) {
+      // on empeche d'aller au dela de la limite du nombre de caracteres
+      $this.on('keyup', function() {
+        const $ed = $(this)
+        const max = $ed.attr('maxlength')
+        const { length } = $ed.val()
+        if (length > max) {
+          $ed.val($ed.val().substr(0, max))
+        }
 
-  // on empeche d'aller au dela de la limite du nombre de caracteres
-  $textareas.on('keyup', function() {
-    const $this = $(this)
-    const max = $this.attr('maxlength')
-    const { length } = $this.val()
-    if (length > max) {
-      $this.val($this.val().substr(0, max))
+        $this.parents('.control-group').find('.charsRemaining').text(max - length)
+      })
     }
-
-    $this.parents('.control-group').find('.charsRemaining').html((max - length))
   })
 
   // éviter la validation du formulaire en pressant la touche Entrée
@@ -744,10 +771,10 @@ $(document).ready(() => {
     changeURLParameter('facette', newquery)
 
     // on ajuste les liens vers les formulaires d'export
-    $('.export-links a').each(
+    $('.export-links > a').each(
       function() {
         const link = $(this).attr('href')
-        const queryexists = new RegExp('&query=' + '([^&;]+?)(&|#|;|$)').exec(link) || null
+        const queryexists = new RegExp('&query=?' + '([^&;]+?)(&|#|;|$)').exec(link) || null
         if (queryexists == null) {
           $(this).attr('href', link + ((newquery !== '') ? `&query=${newquery}` : ''))
         } else {
@@ -755,7 +782,7 @@ $(document).ready(() => {
           if (queryinit) { newquery = `${queryinit}|${newquery}` }
           $(this).attr(
             'href',
-            link.replace(new RegExp('&query=' + '([^&;]+?)(&|#|;|$)'), ((newquery !== '') ? `&query=${newquery}` : ''))
+            link.replace(new RegExp('&query=?' + '([^&;]+?)(&|#|;|$)'), ((newquery !== '') ? `&query=${newquery}` : ''))
           )
         }
       }

@@ -1,3 +1,3 @@
 <?php
 
-$GLOBALS['translations']['TOC_TABLE_OF_CONTENTS'] = 'Table des mati&egrave;res';
+$GLOBALS['translations']['TOC_TABLE_OF_CONTENTS'] = 'Table des matières';

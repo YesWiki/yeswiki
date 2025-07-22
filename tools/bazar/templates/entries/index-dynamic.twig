@@ -11,27 +11,25 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/entries-index-dynamic.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/entries/index-dynamic.css') }}
 
-{# Extra Fields to retrieve from API call. By default we retrieve the one specified in the displayfields config #}
-{% if necessary_fields is defined %}
-  {% set necessary_fields = necessary_fields|merge(['url']) %}
-{% else %}
-  {% set necessary_fields = ['url'] %}
-{% endif %}
-{% set params = params|merge({necessary_fields: necessary_fields}) %}
+{# Extra Fields to retrieve from API call. customizable inside templates #}
+{# Adds them to params to it's available in vueJs #}
+{% set params = params|merge({necessary_fields: necessary_fields|default([])}) %}
 
 <div class="bazar-list-dynamic-container no-dblclick {{ params.class ? params.class : ''}}" data-params="{{ params|json_encode }}"
      style="opacity: 0" :class="{mounted: mounted}">
 
-  {% if params.search and not params.groups %}
+  {% set showFiltersSidebar = params.groups or params.sortfields %}
+  {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
+  {% set resultsColSize = showFiltersSidebar ? resultsColSize : 12 %}
+
+  {% if params.search and not showFiltersSidebar %}
     {{ include("@bazar/entries/index-dynamic/_search_input.twig") }}
   {% endif %}
 
-  {% set resultsColSize = params.filtercolsize|number_format == 12 ? 12 : 12 - params.filtercolsize|number_format %}
-  {% set resultsColSize = params.groups ? resultsColSize : 12 %}
+  <div class="facette-container dynamic row {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}" 
+       data-filter-align="{{ showFiltersSidebar ? params.filterposition : '' }}">
 
-  <div class="facette-container dynamic row {{ resultsColSize == 12 ? 'facette-container-fullwidth' : ''}}" data-filter-align="{{ params.groups ? params.filterposition : '' }}">
-
-    {% if params.groups %}
+    {% if showFiltersSidebar %}
       {{ include("@bazar/entries/index-dynamic/_filters.twig") }}
     {% endif %}
 
@@ -44,10 +42,6 @@
     </div>
 
   </div>
-
-  {% if not params.isInIframe and params.showexportbuttons %}
-    {{ include("@bazar/entries/index/_export_buttons.twig") }}
-  {% endif %}
 
   <modal-entry ref="modal"></modal-entry>
 </div>

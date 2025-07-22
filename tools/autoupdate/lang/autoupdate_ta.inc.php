@@ -1,11 +1,6 @@
 <?php
+
 return [
-    /*
- * Fichier de traduction en francais de l'extension AutoUpdate
- *
- *@package       autoupdate
- *@author        Florestan Bredow <florestan.bredow@supagro.fr>
- */
     'AU_ACL' => 'கோப்புகளில் உரிமைகளின் சரிபார்ப்பு',
     'AU_REPO_ERROR' => 'அணுக முடியாத டிப்போக்கள்.',
     'AU_VERSION_WIKI' => 'பதிப்பு டு விக்கி',

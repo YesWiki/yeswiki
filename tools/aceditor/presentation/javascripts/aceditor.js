@@ -53,7 +53,6 @@ class Aceditor {
     setupAceditorKeyBindings(this.$aceContainer, this.$toolbar)
     this.initToolbar()
     this.initEditionHelpers()
-    console.log(this)
     this.editor.ace.setOptions({ placeholder: this.$textarea.attr('placeholder') })
     this.editor.on('blur', () => {
       this.flyingButton.hide()
@@ -117,11 +116,8 @@ class Aceditor {
       switch (cursor.groupType) {
         case 'yw-action': {
           const actionName = cursor.groupData['action-name']
-          if (
-            this.actionsBuilder.allAvailableActionsWithBackward.includes(
-              actionName
-            )
-          ) {
+          if (this.actionsBuilder.allAvailableActionsWithBackward.includes(actionName)) {
+            if (this.actionsBuilder.getActionConfiguration(actionName).onlyAdd) return
             this.$toolbar.find('.component-action-list').addClass('only-edit')
             this.flyingButton.show().onClick(() => {
               this.actionsBuilder.open(this.editor, { action: cursor.groupTextWithoutMarkup })

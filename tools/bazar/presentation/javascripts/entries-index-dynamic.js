@@ -3,24 +3,32 @@ import EntryField from './components/EntryField.js'
 import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
-import BazarSearch from './components/BazarSearch.js'
 import FilterNode from './components/FilterNode.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
-import { recursivelyCalculateRelations } from './utils.js'
+import { recursivelyCalculateRelations, deepGet } from './utils.js'
+import ImageMixin from './entries-index-dynamic/image-mixin.js'
+import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
 Vue.component('FilterNode', FilterNode)
 
 const load = (domElement) => {
   new Vue({
     el: domElement,
-    components: { Panel, ModalEntry, SpinnerLoader, EntryField, PopupEntryField },
-    mixins: [BazarSearch],
+    mixins: [BazarSearch, ImageMixin],
+    components: {
+      Panel,
+      ModalEntry,
+      SpinnerLoader,
+      EntryField,
+      PopupEntryField
+    },
     data: {
       mounted: false, // when vue get initialized
       ready: false, // when ajax data have been retrieved
       params: {},
 
       filters: [],
+      sortOptions: [],
       entries: [],
       formFields: {},
       searchedEntries: [],
@@ -30,10 +38,10 @@ const load = (domElement) => {
 
       currentPage: 0,
       pagination: 10,
-      tokenForImages: null,
-      imagesToProcess: [],
-      processingImage: false,
+
       search: '',
+      currentSort: { field: '', asc: null, label: '' },
+
       // wether to search for a particular form ID (only used when no
       // form id is defined for the bazar list action)
       searchFormId: null,
@@ -55,13 +63,17 @@ const load = (domElement) => {
       },
       pages() {
         if (this.pagination <= 0) return []
-        const pagesCount = Math.ceil(this.filteredEntries.length / parseInt(this.pagination, 10))
-        const start = 0; const
-          end = pagesCount - 1
+        const pagesCount = Math.ceil(
+          this.filteredEntries.length / parseInt(this.pagination, 10)
+        )
+        const start = 0
+        const end = pagesCount - 1
         let pages = [
-          this.currentPage - 2, this.currentPage - 1,
+          this.currentPage - 2,
+          this.currentPage - 1,
           this.currentPage,
-          this.currentPage + 1, this.currentPage + 2
+          this.currentPage + 1,
+          this.currentPage + 2
         ]
         pages = pages.filter((page) => page >= start && page <= end)
         if (!pages.includes(start)) {
@@ -76,26 +88,40 @@ const load = (domElement) => {
       }
     },
     watch: {
-      filteredEntriesCount() { this.currentPage = 0 },
+      filteredEntriesCount() {
+        this.currentPage = 0
+      },
       search() {
         clearTimeout(this.searchTimer)
         this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
         this.saveFiltersIntoHash()
       },
-      searchFormId() { this.calculateBaseEntries() },
+      searchFormId() {
+        this.calculateBaseEntries()
+      },
       computedFilters() {
         this.filterEntries()
         this.saveFiltersIntoHash()
       },
-      currentPage() { this.paginateEntries() },
-      searchedEntries() { this.calculateFiltersCount() }
+      currentPage() {
+        this.paginateEntries()
+      },
+      searchedEntries() {
+        this.calculateFiltersCount()
+      },
+      currentSort() {
+        this.sortEntries()
+        this.saveFiltersIntoHash()
+      }
     },
     methods: {
       calculateBaseEntries() {
         let result = this.entries
         if (this.searchFormId) {
           // filter based on formId, when no form id is specified
-          result = result.filter((entry) => entry.id_typeannonce == this.searchFormId)
+          result = result.filter(
+            (entry) => entry.id_typeannonce == this.searchFormId
+          )
         }
         if (this.search && this.search.length > 2) {
           result = this.searchEntries(result, this.search)
@@ -107,15 +133,37 @@ const load = (domElement) => {
         this.filterEntries()
       },
       filterEntries() {
-        // Handles filters
         let result = this.searchedEntries
         Object.entries(this.computedFilters).forEach(([propName, filter]) => {
           result = result.filter((entry) => {
             if (!entry[propName] || typeof entry[propName] != 'string') return false
-            return entry[propName].split(',').some((value) => filter.includes(value))
+            return entry[propName]
+              .split(',')
+              .some((value) => filter.includes(value))
           })
         })
         this.filteredEntries = result
+        this.paginateEntries()
+      },
+      sortEntries() {
+        if (!this.currentSort.field) return
+
+        const { field, asc } = this.currentSort
+        const collator = new Intl.Collator()
+
+        this.filteredEntries.sort((a, b) => {
+          const valueA = deepGet(a, field)
+          const valueB = deepGet(b, field)
+
+          if (typeof valueA === 'number' && typeof valueB === 'number') {
+            return asc ? valueA - valueB : valueB - valueA
+          }
+
+          return asc
+            ? collator.compare(String(valueA).toLowerCase(), String(valueB).toLowerCase())
+            : collator.compare(String(valueB).toLowerCase(), String(valueA).toLowerCase())
+        })
+
         this.paginateEntries()
       },
       paginateEntries() {
@@ -129,8 +177,16 @@ const load = (domElement) => {
       },
       formatEntries() {
         this.paginatedEntries.forEach((entry) => {
-          entry.color = this.colorIconValueFor(entry, this.params.colorfield, this.params.color)
-          entry.icon = this.colorIconValueFor(entry, this.params.iconfield, this.params.icon)
+          entry.color = this.colorIconValueFor(
+            entry,
+            this.params.colorfield,
+            this.params.color
+          )
+          entry.icon = this.colorIconValueFor(
+            entry,
+            this.params.iconfield,
+            this.params.icon
+          )
         })
         this.entriesToDisplay = this.paginatedEntries
       },
@@ -141,52 +197,129 @@ const load = (domElement) => {
               let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some((value) => value == node.value)
+              return entryValues.some(function (value)
+              {
+              	if (typeof (value) == "string")
+              	{
+              		return (value
+            	  	.replace(/&/g, '&amp;')
+				          .replace(/</g, '&lt;')
+				          .replace(/>/g, '&gt;')
+				          .replace(/"/g, '&quot;')
+				          .replace(/'/g, '&#039;') == node.value);
+              	}
+              	else              	
+	               return (value == node.value);
+              });
             }).length
           })
         })
       },
       resetFilters() {
         this.filters.forEach((filter) => {
-          filter.flattenNodes.forEach((node) => { node.checked = false })
+          filter.flattenNodes.forEach((node) => {
+            node.checked = false
+          })
         })
         this.search = ''
+        if (this.sortOptions.length > 0) this.currentSort = this.sortOptions[0]
+        this.saveFiltersIntoHash()
       },
       saveFiltersIntoHash() {
         if (!this.ready) return
-        const hashes = []
+
+        const hashParams = new URLSearchParams()
         for (const filterId in this.computedFilters) {
-          hashes.push(`${filterId}=${this.computedFilters[filterId].join(',')}`)
+          hashParams.set(filterId, this.computedFilters[filterId].join(','))
         }
-        if (this.search) hashes.push(`q=${this.search}`)
-        document.location.hash = hashes.length > 0 ? hashes.join('&') : null
+        if (this.search) hashParams.set('q', this.search)
+        if (this.currentSort.field) {
+          hashParams.set('sort', `${this.currentSort.field}:${this.currentSort.asc}`)
+        }
+        history.pushState({}, '', `#${hashParams.toString()}`)
+        this.updateExportLinks(hashParams)
+      },
+      updateExportLinks(hashParams) {
+        document.querySelectorAll('.export-links > a').forEach((link) => {
+          link.href = this.addOrUpdateQueryParameter(
+            link.getAttribute('href'),
+            'query',
+            `${hashParams.toString()}`
+          )
+        })
+      },
+      addOrUpdateQueryParameter(url, parameterName, parameterValue) {
+        if (typeof url !== 'string' || url.trim() === '') {
+          console.error('Invalid URL provided.')
+          return url
+        }
+
+        try {
+          const urlObject = new URL(url)
+          const { searchParams } = urlObject
+          const existingParams = []
+          const seenParamNames = new Set()
+
+          const originalSearch = urlObject.search.substring(1) // Remove leading '?'
+          if (originalSearch) {
+            originalSearch.split('&').forEach((pair) => {
+              const parts = pair.split('=')
+              const name = decodeURIComponent(parts[0])
+              const value = parts.length > 1 ? decodeURIComponent(parts[1]) : ''
+
+              // Check if this is the parameter we are going to modify/add
+              if (name === parameterName) {
+                // We'll handle adding/updating this parameter later
+              } else {
+                existingParams.push({ name, value, hasValue: parts.length > 1 })
+                seenParamNames.add(name)
+              }
+            })
+          }
+
+          if (!seenParamNames.has(parameterName)) {
+            existingParams.push({ name: parameterName, value: parameterValue.replace('&', '|'), hasValue: parameterValue !== '' })
+          }
+
+          // Reconstruct the query string
+          let newSearch = ''
+          existingParams.forEach((param, index) => {
+            if (index > 0) {
+              newSearch += '&'
+            }
+            newSearch += encodeURIComponent(param.name)
+            if (param.hasValue) {
+              newSearch += `=${encodeURIComponent(param.value)}`
+            }
+          })
+
+          urlObject.search = newSearch ? `?${newSearch}` : ''
+
+          return urlObject.toString()
+        } catch (error) {
+          console.error('Error processing URL:', error)
+          return url
+        }
       },
       initFiltersFromHash(filters, hash) {
         hash = hash.substring(1) // remove #
         hash.split('&').forEach((combinaison) => {
-          const filterId = combinaison.split('=')[0]
-          const filterValues = combinaison.split('=')[1]
-          const filter = this.filters.find((f) => f.propName == fieldId)
-          if (filterId == 'q') {
-            this.search = filterValues
-          } else if (filterId && filterValues && filter) {
+          const hashKey = combinaison.split('=')[0]
+          const hashValue = decodeURIComponent(combinaison.split('=')[1])
+          const filter = filters.find((f) => f.propName == hashKey)
+          if (hashKey == 'q') {
+            this.search = hashValue
+          } else if (hashKey == 'sort') {
+            const [field, order] = hashValue.split(':')
+            const val = this.sortOptions.find((s) => s.field == field && s.asc == (order == 'true'))
+            if (val) this.currentSort = val
+          } else if (hashKey && hashValue && filter) {
             filter.flattenNodes.forEach((node) => {
-              if (filterValues.includes(node.value)) node.checked = true
+              const filterValues = hashValue.split(',')
+			        if (filterValues.includes(node.value)) node.checked = true
             })
           }
         })
-        // init q from GET q also
-        if (this.search.length == 0) {
-          let params = document.location.search
-          params = params.substring(1) // remove ?
-          params.split('&').forEach((combinaison) => {
-            const filterId = combinaison.split('=')[0]
-            const filterValues = combinaison.split('=')[1]
-            if (filterId == 'q') {
-              this.search = decodeURIComponent(filterValues)
-            }
-          })
-        }
         return filters
       },
       getEntryRender(entry) {
@@ -203,14 +336,17 @@ const load = (domElement) => {
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
             ...{ fields: 'html_output' },
-            ...(fieldsToExclude.length > 0 ? { excludeFields: fieldsToExclude } : {}),
-            ...(this.params.showmapinlistview ? { showmapinlistview: this.params.showmapinlistview } : {})
+            ...(fieldsToExclude.length > 0
+              ? { excludeFields: fieldsToExclude }
+              : {}),
+            ...(this.params.showmapinlistview
+              ? { showmapinlistview: this.params.showmapinlistview }
+              : {})
           })
-          this.setEntryFromUrl(entry, url)
-            .then((html) => {
-              this.loadBazarListDynamicIfNeeded(html)
-              initEntryMaps(this.$refs.entriesContainer)
-            })
+          this.setEntryFromUrl(entry, url).then((html) => {
+            this.loadBazarListDynamicIfNeeded(html)
+            initEntryMaps(this.$refs.entriesContainer)
+          })
         }
       },
       async setEntryFromUrl(entry, url) {
@@ -219,7 +355,8 @@ const load = (domElement) => {
             const html = data?.[entry.id_fiche]?.html_output ?? 'error'
             Vue.set(entry, 'html_render', html)
             return html
-          }).catch(() => 'error')// in case of error do nothing
+          })
+          .catch(() => 'error') // in case of error do nothing
       },
       async getJSON(url, options = {}) {
         return fetch(url, options)
@@ -238,7 +375,9 @@ const load = (domElement) => {
       },
       loadBazarListDynamicIfNeeded(html) {
         if (html.match(/<div class="bazar-list-dynamic-container/)) {
-          const unmounted = document.querySelectorAll('.bazar-list-dynamic-container:not(.mounted)')
+          const unmounted = document.querySelectorAll(
+            '.bazar-list-dynamic-container:not(.mounted)'
+          )
           unmounted.forEach((element) => {
             if (!('__vue__' in element)) load(element)
           })
@@ -261,7 +400,7 @@ const load = (domElement) => {
         return entry.url !== wiki.url(entry.id_fiche)
       },
       isInIframe() {
-        return (window != window.parent)
+        return window != window.parent
       },
       getExternalEntry(entry) {
         const url = `${entry.url}/iframe`
@@ -280,110 +419,10 @@ const load = (domElement) => {
           values = values.filter((val) => this.computedFilters[field].includes(val))
         }
         return mapping[values[0]]
-      },
-      urlImageResizedOnError(entry, fieldName, width, height, mode, token) {
-        const node = event.target
-        $(node).removeAttr('onerror')
-        if (entry[fieldName]) {
-          const fileName = entry[fieldName]
-          if (!this.isExternalUrl(entry)) {
-          // currently not supporting api for external images (anti-csrf token not generated)
-            if (this.tokenForImages === null) {
-              this.tokenForImages = token
-            }
-            this.imagesToProcess.push({
-              fileName,
-              width,
-              height,
-              mode,
-              node
-            })
-            this.processNextImage()
-          } else {
-            const baseUrl = entry.url.slice(0, -entry.id_fiche.length).replace(/\?$/, '').replace(/\/$/, '')
-            const previousUrl = $(node).prop('src')
-            const newUrl = `${baseUrl}/files/${fileName}`
-            if (newUrl != previousUrl) {
-              $(`img[src="${previousUrl}"]`).each(function() {
-                $(this).prop('src', newUrl)
-              })
-            }
-          }
-        }
-      },
-      urlImage(entry, fieldName, width, height, mode) {
-        if (!entry[fieldName]) {
-          return null
-        }
-        let baseUrl = (this.isExternalUrl(entry))
-          ? entry.url.slice(0, -entry.id_fiche.length)
-          : wiki.baseUrl
-        baseUrl = baseUrl.replace(/\?$/, '').replace(/\/$/, '')
-        const fileName = entry[fieldName]
-        const field = this.fieldInfo(fieldName)
-        let regExp = new RegExp(`^(${entry.id_fiche}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`)
-
-        if (regExp.test(fileName)) {
-          return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
-        }
-        regExp = new RegExp(`^(${entry.id_fiche}_${field.propertyname}_.*)\\.([^.]+)$`)
-        if (regExp.test(fileName)) {
-          return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
-        }
-        // maybe from other entry
-        regExp = new RegExp(`^([A-Za-z0-9-_]+_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`)
-        if (regExp.test(fileName)) {
-          return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
-        }
-        // last possible format
-        regExp = new RegExp('^(.*)\\.([^.]+)$')
-        if (regExp.test(fileName)) {
-          return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`
-        }
-        return `${baseUrl}/files/${fileName}`
-      },
-      processNextImage() {
-        if (!this.processingImage && this.imagesToProcess.length > 0) {
-          this.processingImage = true
-          const newImageParams = this.imagesToProcess[0]
-          this.imagesToProcess = this.imagesToProcess.slice(1)
-          const bazarListDynamicRoot = this
-          $.ajax({
-            url: wiki.url(`?api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`),
-            method: 'post',
-            data: { csrftoken: this.tokenForImages },
-            cache: false,
-            success(data) {
-              const previousUrl = $(newImageParams.node).prop('src')
-              const srcFileName = wiki.baseUrl.replace(/(\?)?$/, '') + data.cachefilename
-              $(`img[src="${previousUrl}"]`).each(function() {
-                $(this).prop('src', srcFileName)
-                const next = $(this).next('div.area.visual-area[style]')
-                if (next.length > 0) {
-                  const backgoundImage = $(next).css('background-image')
-                  if (backgoundImage != undefined && typeof backgoundImage == 'string' && backgoundImage.length > 0) {
-                    $(next).css('background-image', '') // reset to force update
-                    $(next).css('background-image', `url("${srcFileName}")`)
-                  }
-                }
-              })
-            },
-            complete(e) {
-              if (e.responseJSON != undefined && e.responseJSON.newToken != undefined) {
-                bazarListDynamicRoot.tokenForImages = e.responseJSON.newToken
-              }
-              bazarListDynamicRoot.processingImage = false
-              bazarListDynamicRoot.processNextImage()
-            }
-          })
-        }
       }
     },
     mounted() {
-      $(this.$el).on(
-        'dblclick',
-        (e) => false
-      )
+      $(this.$el).on('dblclick', (e) => false)
       const savedHash = document.location.hash // don't know how, but the hash get cleared after
       this.params = JSON.parse(this.$el.dataset.params)
       this.pagination = parseInt(this.params.pagination, 10)
@@ -404,6 +443,24 @@ const load = (domElement) => {
             node.checked = false
           })
         })
+
+        this.params.sortfields.forEach((field, index) => {
+          const label = this.params.sortfieldstitles[index]
+          this.sortOptions.push({ field, label, asc: true })
+          this.sortOptions.push({ field, label, asc: false })
+        })
+        if (this.sortOptions.length > 0) {
+          // params "champ" is used to choose default sort (backend sort). If present
+          // we do not overwride this backend sort by the front end dynamic sort
+          if (this.params.champ) {
+            const sort = this.sortOptions
+              .find((o) => o.field === this.params.champ && o.asc === (this.params.ordre === 'asc'))
+            if (sort) this.currentSort = sort
+          } else {
+            this.currentSort = this.sortOptions[0]
+          }
+        }
+
         // First display filters cause entries can be a bit long to load
         this.filters = this.initFiltersFromHash(filters, savedHash)
 
@@ -418,9 +475,11 @@ const load = (domElement) => {
           Object.values(data.forms).forEach((formFields) => {
             Object.values(formFields).forEach((field) => {
               this.formFields[field.id] = field
-              Object.entries(this.params.displayfields).forEach(([fieldId, mappedField]) => {
-                if (mappedField == field.id) this.formFields[fieldId] = this.formFields[mappedField]
-              })
+              Object.entries(this.params.displayfields).forEach(
+                ([fieldId, mappedField]) => {
+                  if (mappedField == field.id) this.formFields[fieldId] = this.formFields[mappedField]
+                }
+              )
             })
           })
 
@@ -430,9 +489,11 @@ const load = (domElement) => {
             Object.entries(data.fieldMapping).forEach(([key, mapping]) => {
               entry[mapping] = entryAsArray[key]
             })
-            Object.entries(this.params.displayfields).forEach(([field, mappedField]) => {
-              if (mappedField) entry[field] = entry[mappedField]
-            })
+            Object.entries(this.params.displayfields).forEach(
+              ([field, mappedField]) => {
+                if (mappedField) entry[field] = entry[mappedField]
+              }
+            )
 
             // In case of Tree, if an entry have only one value down the tree then add all the parent :
             // filters for checkboxes: [{ value: "website", children: [ { value: "yeswiki" }] }]
@@ -443,7 +504,9 @@ const load = (domElement) => {
               if (entry[propName] && typeof entry[propName] == 'string') {
                 const entryValues = entry[propName].split(',')
                 entryValues.forEach((value) => {
-                  const correspondingNode = filter.flattenNodes.find((node) => node.value == value)
+                  const correspondingNode = filter.flattenNodes.find(
+                    (node) => node.value == value
+                  )
                   if (correspondingNode) {
                     correspondingNode.parents.forEach((parent) => {
                       if (!entryValues.includes(parent.value)) entryValues.push(parent.value)
@@ -459,6 +522,7 @@ const load = (domElement) => {
 
           this.calculateBaseEntries()
           this.ready = true
+          this.saveFiltersIntoHash()
           const event = new Event('bazar-list-dynamic-ready')
           document.dispatchEvent(event)
         }, 0)

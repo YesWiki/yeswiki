@@ -1,10 +1,5 @@
 <?php
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $GLOBALS['tocaction'] = 0;
 
 $tag = $this->GetPageTag();
@@ -20,7 +15,7 @@ if (empty($title)) {
 echo '<div id="toc' . $tag . '" class="toc well' . (!empty($class) ? ' ' . $class : '') . "\">\n";
 
 echo '<div class="toc-title accordion-trigger" data-toggle="collapse" data-target="#toc-menu' . $tag . '">' .
-'<span class="arrow">' . ($closed == 1 ? '&#9658;' : '&#9660;') . '</span>&nbsp;<strong>' . $title . "</strong>
+    '<span class="arrow">' . ($closed == 1 ? '&#9658;' : '&#9660;') . '</span>&nbsp;<strong>' . $title . "</strong>
 </div><!-- /.toc-title -->\n
 <div class=\"toc-menu\">
 <div id=\"toc-menu" . $tag . '" class="collapse' . ($closed == 1 ? '' : ' in') . "\">\n";
@@ -139,12 +134,11 @@ $this->AddJavascript($script);
 // on vérifie qu'il y est au moins un titre pour faire la liste
 if (preg_match("/(={2,6})(.*)|^(?!\\\\)\#{1,5} [^\\n\#]*\\n/ms", $toc_body, $matches)) {
     echo "<ul class=\"unstyled\">\n" .
-                translate2toc(preg_replace('/"".*?""/ms', '', $toc_body)) .
-            "</ul>\n";
+        translate2toc(preg_replace('/"".*?""/ms', '', $toc_body)) .
+        "</ul>\n";
 }
 
 // on ferme les divs ouvertes par l'action toc
 echo "</div><!-- /.toc-menu -->\n
     </div><!-- /#toc-menu" . $tag . " -->\n
     </div><!-- /#toc" . $tag . " -->\n";
-?> 

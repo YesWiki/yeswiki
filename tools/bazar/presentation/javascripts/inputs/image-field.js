@@ -60,7 +60,12 @@ function handleFileSelect(evt) {
           css = ''
           // Render thumbnail.
           const span = document.createElement('span')
-          span.innerHTML = `<img class="img-responsive" style="${css}" src="${e.target.result}" alt="${escape(theFile.name)}" title="${escape(theFile.name)}"/>`
+          span.innerHTML = `<img 
+            class="img-responsive"
+            style="${css}"
+            src="${e.target.result}"
+            title="${escape(theFile.name)}"
+          />`
           document.getElementById(`img-${id}`).innerHTML = span.innerHTML
         })
       }
@@ -72,6 +77,6 @@ function handleFileSelect(evt) {
 }
 
 const imageinputs = document.getElementsByClassName('yw-image-upload')
-for (let i = 0; i < imageinputs.length; i++) {
+for (let i = 0; i < imageinputs.length; i += 1) {
   imageinputs.item(i).addEventListener('change', handleFileSelect, false)
 }

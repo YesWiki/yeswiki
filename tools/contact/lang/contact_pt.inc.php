@@ -1,15 +1,11 @@
 <?php
+
 return [
-    // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Ação {{abonnement ...}}',
     'CONTACT_MAIL_REQUIRED' => 'o parâmetro mail, obrigatório está faltando.',
-    // actions/contact.php
     'CONTACT_ACTION_CONTACT' => 'Ação {{contact ...}}',
-    // actions/desabonnement.php
     'CONTACT_ACTION_DESABONNEMENT' => 'Ação {{desabonnement ...}}',
-    // actions/listsubscription.php
     'CONTACT_ACTION_LISTSUBSCRIPTION' => 'Ação {{listsubscription ...}}',
-    // actions/mailinglist.php
     'CONTACT_ACTION_MAILINGLIST' => 'Ação {{mailinglist ...}}',
     'CONTACT_PARAMETER_LIST_REQUIRED' => 'parâmetro "list" obrigatório (este é o endereço de e-mail da lista de discussão)',
     'CONTACT_MAILS_TO_ADD_OR_REMOVE' => 'Mails para adicionar ou remover da lista',
@@ -44,8 +40,6 @@ return [
     'CONTACT_MESSAGE_NOT_SENT' => 'A mensagem não pôde ser enviada... Problema do lado do servidor de configuração?',
     'CONTACT_SUBSCRIBE_ORDER_SENT' => 'O seu pedido de assinatura foi tido em conta. Obrigado!',
     'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'O seu pedido de cancelamento de inscrição foi tido em conta. Obrigado!',
-    'CONTACT_HANDLER_MAIL_FOR_ADMINS' => 'O handler mail é reservado para o grupo de administradores.',
-    'CONTACT_LOGIN_IF_ADMIN' => 'Se você está entre esse grupo, identifique-se.',
     'CONTACT_SUBSCRIBE' => 'Assinar',
     'CONTACT_UNSUBSCRIBE' => 'Cancelar inscrição',
     'CONTACT_FROM' => 'de',
@@ -72,7 +66,7 @@ return [
     'CONTACT_YOUR_ENTRY' => 'O seu cartão',
     'AB_abonnement_class_label' => 'classe',
     'AB_abonnement_mailinglist_label' => 'Lista de discussão',
-    'AB_deabonnement_action_label' => "Inscrição de uma lista de discussão",
+    'AB_deabonnement_action_label' => 'Inscrição de uma lista de discussão',
     'AB_contact_action_mail_label' => 'Endereço de email',
     'AB_contact_action_entete_default' => 'Enviado do site...',
     'AB_mailinglist_action_label' => 'Escreva em massa e-mails para uma newsletter',
@@ -95,18 +89,18 @@ return [
     'CONTACT_DELETED_LIST' => 'lista excluída',
     'CONTACT_HELP_IN_NOTIFICATION' => 'ir para o site para gerenciar seu registro',
     'CONTACT_NEW_USER_SUBJECT' => 'Seus novos identificadores no site',
-    'AB_contact_group_label' => "Enviar e-mail/listas",
+    'AB_contact_group_label' => 'Enviar e-mail/listas',
     'AB_abonnement_action_mail_label' => 'E-mail da lista de discussão',
-    'AB_abonnement_action_label' => "Assine uma lista de discussão",
+    'AB_abonnement_action_label' => 'Assine uma lista de discussão',
     'AB_contact_action_label' => 'Mostrar formulário de contato',
-    'AB_contact_action_entete_label' => "Prefixo automático do objeto de correio",
+    'AB_contact_action_entete_label' => 'Prefixo automático do objeto de correio',
     'AB_contact_action_template_label' => 'Modelo personalizado',
     'AB_contact_action_template_hint' => 'Ex.: full-contact-form.tpl.html',
     'AB_contact_action_class_label' => 'cs',
     'AB_listsubscription_action_label' => 'listsubscription',
-    'AB_mailperiod_action_label' => "Assinar para receber o conteúdo de uma página periodicamente por e-mail",
+    'AB_mailperiod_action_label' => 'Assinar para receber o conteúdo de uma página periodicamente por e-mail',
     'AB_mailperiod_action_hint' => 'Para esta ação para trabalhar você precisa verificar certos parâmetros no seu servidor. Ver documentos em https://yeswiki.net/?MailPeriod',
-    'AB_mailinglist_action_description' => "Ação para registrar ou cancelar a assinatura de emails massivos para uma newsletter",
+    'AB_mailinglist_action_description' => 'Ação para registrar ou cancelar a assinatura de emails massivos para uma newsletter',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Adicione 'wiki=' aos links para esta wiki em e-mails",
     'EDIT_CONFIG_GROUP_CONTACT' => 'Enviar e-mails',
 ];

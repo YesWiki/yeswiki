@@ -2,10 +2,6 @@
 
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $themeManager = $this->services->get(ThemeManager::class);
 $favoriteStyle = $themeManager->getFavoriteStyle();
 // si pas le mot bootstrap. ou bs. dans les css, on charge les styles bootstrap par defaut
@@ -47,8 +43,9 @@ if ($favoriteStyle != 'none') {
 
 // on ajoute le preset css selectionne du theme
 if (($favoriteStyle != 'none')
-        && $presetsActivated
-        && substr($favoritePreset, -4, 4) == '.css') {
+    && $presetsActivated
+    && substr($favoritePreset, -4, 4) == '.css'
+) {
     echo $this->LinkCSSFile($presetFile);
 }
 

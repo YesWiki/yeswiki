@@ -1,4 +1,5 @@
 <?php
+
 return [
     'LOGIN_SIGNUP' => 'S\'inscrire',
     'LOGIN_LOGIN' => 'SE இணைப்பு',
@@ -40,9 +41,7 @@ return [
     'LOGIN_NO_SIGNUP_IN_THIS_PERIOD' => 'Il n\'y a pas d\'கல்வெட்டு ஊற்றவும் CETE Période.',
     'LOGIN_MY_OPTIONS' => 'MES விருப்பங்கள்',
     'LOGIN_MY_CONTENTS' => 'Mes contenus',
-    // actions/login.php
     'LOGIN_COOKIES_ERROR' => 'வூச் டெவெச் அசெப்டர் லெச் குக்கீகள் ப ou வோயர் வூச் இணைப்பியை ஊற்றுகின்றன.',
-    // actions/usersettings.php
     'USERSETTINGS_EMAIL_NOT_CHANGED' => 'மின்னஞ்சல் அல்லாத மாற்றியமில்லை.',
     'USERSETTINGS_PASSWORD_NOT_CHANGED' => 'மோட் டி பாச் அல்லாத மோடிஃபை.',
     'USERSETTINGS_USER_NOT_DELETED' => 'Utilisateur அல்லாத SUPPRIMé.',

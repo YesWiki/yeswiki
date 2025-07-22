@@ -3,10 +3,6 @@
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $themeManager = $this->services->get(ThemeManager::class);
 $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 

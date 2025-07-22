@@ -1,6 +1,6 @@
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
-{% set necessary_fields = (params.necessary_fields is defined ? params.necessary_fields|split(',') : [])|merge(['bf_latitude', 'bf_longitude']) %}
+{% set necessary_fields = ['bf_latitude', 'bf_longitude'] %}
 
 {% block assets %}
   {{ include_css('styles/vendor/leaflet/leaflet.css') }}

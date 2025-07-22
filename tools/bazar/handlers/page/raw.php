@@ -1,10 +1,5 @@
 <?php
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 if ($this->HasAccess('read')) {
     if (!$this->page) {
         return;

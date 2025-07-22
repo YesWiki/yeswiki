@@ -60,6 +60,8 @@ actions:
     description: Une description courte
     hint: Le champ XX doit être présent... # Information importante à savoir si on utilise cette action
     isWrapper: true # rajouter cette ligne pour les actions qui doivent se fermer avec un {{end elem="action"}}
+    onlyAdd: true # rajouter cette ligne pour les actions qui n'ont pas vocation à être éditées avec l'action-builder
+    onlyEdit: true # rajouter cette ligne pour les actions qui n'ont pas vocation à être ajouter via l'action-builder
     wrappedContentExample: 'Teeest' # si l'action est un wrapper, le texte à inclure dans l'action à titre d'exemple
     properties:
       # La liste des paramètres de l'action.
@@ -77,6 +79,7 @@ advanced: true # sera masqué tant que l'utilisateur ne coche pas la case "param
 hint: Mon Texte # Indications
 icon: leaf # nom d'une icone fantwesome
 doclink: https://... # Lien vers une documentation en ligne
+mapped: false # Utilisé uniquement pour générer d'autres options, ne pas reporter ce param dans le code généré
 showif: colorfield # Ce paramètre sera visible uniquement lorsque le paramètre colorfield n'est pas vide
 showif:
   format: portrait # Uniquement visible quand le paramètre "format" est égal à "portait"

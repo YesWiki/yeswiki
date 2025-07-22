@@ -42,8 +42,7 @@
           <th>{{ _t('EMAIL') }}</th>
         {% endif %}
         <th>{{ _t('SUBSCRIPTION') }}</th>
-        <th>{{ _t('MODIFY') }}</th>
-        <th>{{ _t('DELETE') }}</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -66,27 +65,25 @@
           <td>
             {% if userIsTheOneConnected %} 
               <a href="{{ url({tag:'ParametresUtilisateur'}) }}"
-                class="btn btn-sm btn-primary" role="button">
-                {{ _t('MODIFY') }}
+                class="btn btn-sm btn-icon btn-primary" role="button" title="{{ _t('MODIFY') }}">
+                <i class="fa fa-pencil-alt"></i>
               </a>
             {% elseif isAdmin %}
               {# not the current user, then can be modified #} 
               <a href="{{ url({tag:'ParametresUtilisateur',params:{user:user.name,from:tag}}) }}"
-                class="btn btn-sm btn-warning" role="button">
-                {{ _t('MODIFY') }}
+                class="btn btn-sm btn-icon btn-warning" role="button" title="{{ _t('MODIFY') }}">
+                <i class="fa fa-pencil-alt"></i>
               </a>
             {% endif %}
-          </td>
-          <td>
             {% if isAdmin and not userIsTheOneConnected %}
               <a 
                 data-toggle="modal"
                 role="button"
                 href="#userTableDeleteModal"
-                class="btn btn-sm btn-danger" 
+                class="btn btn-sm btn-icon btn-danger" 
                 data-name="{{ user.name }}"
                 title="{{ _t('USER_DELETE') }}">
-                {{ _t('DELETE') }}
+                <i class="fa fa-trash"></i>
               </a>
             {% endif %}
           </td>
@@ -100,7 +97,6 @@
             {% if isAdmin %}
               <th></th>
             {% endif %}
-            <th></th>
             <th></th>
             <th></th>
           </tr>

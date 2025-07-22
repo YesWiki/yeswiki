@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ArchiveService;
+use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\YesWikiEventCompilerPass;
 
 // TODO put elsewhere
@@ -36,7 +37,7 @@ class Init
     public $page = '';
     public $method = '';
     public $config = [];
-    public $configFile = 'wakka.config.php';
+    public $configFile;
 
     /**
      * Create a new Init instance.
@@ -47,6 +48,8 @@ class Init
      */
     public function __construct($config = [])
     {
+        $this->configFile = ConfigurationFileProvider::getConfigFileFromEnv();
+
         $this->getRoute();
         $this->config = $this->getConfig($config);
         $this->setIframeHeaders();
@@ -74,8 +77,7 @@ class Init
         $uri = preg_replace('~^/\??~', '', $uri);
         $uri = explode('&', $uri);
         $uri = explode('?', $uri[0]);
-        $args = explode('/', $uri[0]);
-
+        $args = explode('/', rawurldecode($uri[0]));
         if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
             // if old school wiki url
             if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
@@ -87,6 +89,11 @@ class Init
             }
             if (empty($wiki)) {
                 // this will be redirected to install or to homepage later
+            } elseif (preg_match('`^api`', $wiki)) {
+                // for api split into api/end of route, checking wiki name & method name (XSS proof)
+                $this->page = 'api';
+                array_shift($args); // remove api from the args
+                $this->method = rtrim(implode('/', $args), '=');
             } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
                 // split into page/method, checking wiki name & method name (XSS proof)
                 list(, $this->page, $this->method) = $matches;
@@ -99,10 +106,6 @@ class Init
                         $this->method = $args[1];
                     }
                 }
-            } elseif (preg_match('`^api/(' . WN_CHAR2 . '+(?:' . WN_CHAR2 . '|/| )*)$`u', $wiki, $matches)) {
-                // for api split into api/end of route, checking wiki name & method name (XSS proof)
-                $this->page = 'api';
-                list(, $this->method) = $matches;
             } else {
                 // invalid WikiPageName
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
@@ -339,7 +342,6 @@ class Init
                 new AnnotationReader()
             )
         );
-
         // Core controllers
         $routes->addCollection($loader->load('includes/controllers'));
 
@@ -391,6 +393,9 @@ class Init
             $cookiesParam['path'] = $CookiePath;
             $cookiesParam['httponly'] = true;
             $cookiesParam['samesite'] = 'Lax';
+            if (preg_match('`^https://`', $this->config['base_url'], $matches)) {
+                $cookiesParam['secure'] = true;
+            }
             session_set_cookie_params($cookiesParam);
             session_name($sessionName);
             session_start();

@@ -6,6 +6,7 @@
  */
 
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Security\Controller\SecurityController;
@@ -16,10 +17,11 @@ class GererDroitsAction extends YesWikiAction
     protected $dbService;
     protected $securityController;
     protected $utils;
+    protected $groupController;
 
     public function run()
     {
-        //action réservée aux admins
+        // action réservée aux admins
         if (!$this->wiki->UserIsAdmin()) {
             return $this->render('@templates/alert-message.twig', [
                 'type' => 'danger',
@@ -30,6 +32,7 @@ class GererDroitsAction extends YesWikiAction
         $this->dbService = $this->getService(DbService::class);
         $this->securityController = $this->getService(SecurityController::class);
         $this->utils = $this->getService(Utils::class);
+        $this->groupController = $this->getService(GroupController::class);
 
         list('success' => $success, 'error' => $error) = $this->manageChangeRights($_POST ?? []);
         list('filter' => $filter, 'search' => $search) = $this->getFilterAndSearch($_GET ?? [], $_POST ?? []);
@@ -37,19 +40,30 @@ class GererDroitsAction extends YesWikiAction
         // récupération de tous les formulaires
         $forms = $this->getService(FormManager::class)->getAll();
 
-        //Récupération de la liste des pages
+        // récupération de la liste des pages
         $pagesTableName = trim($this->dbService->prefixTable('pages'));
+        $aclsTableName = trim($this->dbService->prefixTable('acls'));
         $liste_pages = $this->wiki->Query(<<<SQL
-      SELECT * FROM $pagesTableName
+    SELECT tag, 
+    (SELECT list
+     FROM $aclsTableName
+     WHERE privilege ="read" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_read,
+    (SELECT list
+     FROM $aclsTableName
+     WHERE privilege ="write" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_write,
+    (SELECT list
+     FROM $aclsTableName
+     WHERE privilege ="comment" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_comment
+    FROM $pagesTableName
         WHERE latest='Y' $search
-        ORDER BY $pagesTableName.tag ASC
+            ORDER BY $pagesTableName.tag ASC
     SQL);
-        $num_page = 0;
         $pageEtDroits = [];
-        while ($tab_liste_pages = mysqli_fetch_array($liste_pages)) {
-            $pageEtDroits[$num_page] = $this->utils->recupDroits($tab_liste_pages['tag']);
-            $num_page++;
+        while ($pages = mysqli_fetch_array($liste_pages)) {
+            $pageEtDroits[] = $this->utils->recupDroits($pages);
         }
+
+        $groups = $this->groupController->getAll();
 
         return $this->render(
             '@templates/gerer-droits-action.twig',
@@ -59,6 +73,7 @@ class GererDroitsAction extends YesWikiAction
                 'success' => $success,
                 'forms' => $forms,
                 'pageEtDroits' => $pageEtDroits,
+                'groups' => $groups,
                 'isHibernated' => $this->securityController->isWikiHibernated(),
             ]
         );
@@ -74,18 +89,18 @@ class GererDroitsAction extends YesWikiAction
         $success = '';
         $error = '';
 
-        //Modification de droits
+        // Modification de droits
         if (isset($post['geredroits_modifier'])) {
             if (!isset($post['selectpage'])) {
                 $error = _t('ACLS_NO_SELECTED_PAGE');
             } elseif (
-                $post['typemaj'] !== 'default' &&
-                empty($post['newlire']) &&
-                empty($post['newecrire']) &&
-                empty($post['newcomment']) &&
-                empty($post['newlire_advanced']) &&
-                empty($post['newecrire_advanced']) &&
-                empty($post['newcomment_advanced'])
+                $post['typemaj'] !== 'default'
+                && empty($post['newlire'])
+                && empty($post['newecrire'])
+                && empty($post['newcomment'])
+                && empty($post['newlire_advanced'])
+                && empty($post['newecrire_advanced'])
+                && empty($post['newcomment_advanced'])
             ) {
                 $error = _t('ACLS_NO_SELECTED_RIGHTS');
             } elseif (is_array($post['selectpage'])) {

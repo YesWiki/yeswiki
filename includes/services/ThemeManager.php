@@ -4,6 +4,7 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Templates\Service\Utils;
@@ -119,35 +120,78 @@ class ThemeManager implements EventSubscriberInterface
             $this->setFavorite('preset', $this->getConfigAsStringOrDefault('favorite_preset', ''));
         } else {
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
-            if (isset($_REQUEST['theme']) && (is_dir('custom/themes/' . $_REQUEST['theme']) || is_dir('themes/' . $_REQUEST['theme'])) &&
-                isset($_REQUEST['style']) && (is_file('custom/themes/' . $_REQUEST['theme'] . '/styles/' . $_REQUEST['style']) || is_file('themes/' . $_REQUEST['theme'] . '/styles/' . $_REQUEST['style'])) &&
-                isset($_REQUEST['squelette']) && (is_file('custom/themes/' . $_REQUEST['theme'] . '/squelettes/' . $_REQUEST['squelette']) || is_file('themes/' . $_REQUEST['theme'] . '/squelettes/' . $_REQUEST['squelette']))
+            $requested = [];
+            $keysToVerify = ['theme', 'squelette', 'style', 'preset'];
+            foreach ($keysToVerify as $val) {
+                $requested[$val] = null;
+                if (!empty($_REQUEST[$val])) {
+                    $path = str_replace('custom/', '', $_REQUEST[$val]); // exception for preset paths that may contain custom/<presetname>.css
+                    if (preg_match('/\//', $path, $matches)) {
+                        exit('ERROR: Suspicious path traversal attempt.');
+                    }
+                    switch ($val) {
+                        case 'theme':
+                            $customThemePath = basename(realpath(getcwd() . '/custom/themes/' . $_REQUEST[$val]));
+                            $classicThemePath = basename(realpath(getcwd() . '/themes/' . $_REQUEST[$val]));
+                            $requested[$val] = !empty($customThemePath) ? $customThemePath : $classicThemePath;
+                            break;
+
+                        case 'squelette':
+                            $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $_REQUEST[$val]));
+                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . 'squelettes/' . $_REQUEST[$val]));
+                            $requested[$val] = null;
+                            if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $customPath)) {
+                                $requested[$val] = $customPath;
+                            } elseif (file_exists(getcwd() . '/themes/' . $requested['theme'] . '/squelettes/' . $classicPath)) {
+                                $requested[$val] = $classicPath;
+                            }
+                            if (!preg_match('/\.tpl\.html$/i', $requested[$val] ?? '', $matches)) {
+                                $requested[$val] = null;
+                            }
+
+                            break;
+
+                        default:
+                            // ugly append of "s" to get the path of styleS, presetS and squeletteS
+                            $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $_REQUEST[$val]));
+                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $_REQUEST[$val]));
+                            $requested[$val] = null;
+                            if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/' . $val . 's/' . $customPath)) {
+                                $requested[$val] = $customPath;
+                            } elseif (file_exists(getcwd() . '/themes/' . $requested['theme'] . '/' . $val . 's/' . $classicPath)) {
+                                $requested[$val] = $classicPath;
+                            }
+
+                            break;
+                    }
+                }
+            }
+            if (!empty($requested['theme']) && !empty($requested['style']) && !empty($requested['squelette']) && preg_match('/\.tpl\.html$/i', $requested['squelette'], $matches)
             ) {
-                $this->setFavorite('theme', $_REQUEST['theme']);
-                $this->setFavorite('style', $_REQUEST['style']);
-                $this->setFavorite('squelette', $_REQUEST['squelette']);
+                $this->setFavorite('theme', $requested['theme']);
+                $this->setFavorite('style', $requested['style']);
+                $this->setFavorite('squelette', $requested['squelette']);
 
                 // presets
-                if (isset($_REQUEST['preset']) &&
-                        (
+                if (!empty($requested['preset'])
+                        && (
                             (
-                                ($isCustom = (substr($_REQUEST['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX))
-                                && is_file(self::CUSTOM_CSS_PRESETS_PATH . '/' . substr($_REQUEST['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
+                                ($isCustom = (substr($requested['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX))
+                                && is_file(self::CUSTOM_CSS_PRESETS_PATH . '/' . substr($requested['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
                             )
-                            ||
-                            (
-                                !$isCustom &&
-                                (
-                                    is_file('custom/themes/' . $_REQUEST['theme'] . '/presets/' . $_REQUEST['preset'])
-                                    || is_file('themes/' . $_REQUEST['theme'] . '/presets/' . $_REQUEST['preset'])
+                            || (
+                                !$isCustom
+                                && (
+                                    is_file('custom/themes/' . $requested['theme'] . '/presets/' . $requested['preset'])
+                                    || is_file('themes/' . $requested['theme'] . '/presets/' . $requested['preset'])
                                 )
                             )
                         )
                 ) {
-                    $this->setFavorite('preset', $_REQUEST['preset']);
+                    $this->setFavorite('preset', $requested['preset']);
                 }
 
-                if (isset($_REQUEST['bgimg']) && (is_file('files/backgrounds/' . $_REQUEST['bgimg']))) {
+                if (isset($_REQUEST['bgimg']) && is_file('files/backgrounds/' . $_REQUEST['bgimg'])) {
                     $this->setFavorite('background_image', $_REQUEST['bgimg']);
                 } else {
                     $this->setFavorite('background_image', BACKGROUND_IMAGE_PAR_DEFAUT);
@@ -194,10 +238,10 @@ class ThemeManager implements EventSubscriberInterface
                 && !file_exists('themes/' . $this->favorites['theme'] . '/styles/' . $this->favorites['style']))
         ) {
             if (
-                $this->favorites['theme'] != THEME_PAR_DEFAUT ||
-                (
-                    $this->favorites['theme'] == THEME_PAR_DEFAUT && (!file_exists('themes/' . THEME_PAR_DEFAUT . '/squelettes/' . $this->favorites['squelette']) or
-                        !file_exists('themes/' . THEME_PAR_DEFAUT . '/styles/' . $this->favorites['style']))
+                $this->favorites['theme'] != THEME_PAR_DEFAUT
+                || (
+                    $this->favorites['theme'] == THEME_PAR_DEFAUT && (!file_exists('themes/' . THEME_PAR_DEFAUT . '/squelettes/' . $this->favorites['squelette'])
+                        or !file_exists('themes/' . THEME_PAR_DEFAUT . '/styles/' . $this->favorites['style']))
                 )
             ) {
                 if (
@@ -220,14 +264,11 @@ class ThemeManager implements EventSubscriberInterface
         }
         // test l'existence du preset
         if (!empty($this->favorites['preset'])
-            &&
-            (
-                (
+                && (
                     ($isCutom = substr($this->favorites['preset'], 0, strlen(self::CUSTOM_CSS_PRESETS_PREFIX)) == self::CUSTOM_CSS_PRESETS_PREFIX)
                     && !file_exists(self::CUSTOM_CSS_PRESETS_PATH . DIRECTORY_SEPARATOR
                         . substr($this->favorites['preset'], strlen(self::CUSTOM_CSS_PRESETS_PREFIX)))
                 )
-            )
         ) {
             unset($this->favorites['preset']);
         }
@@ -258,9 +299,9 @@ class ThemeManager implements EventSubscriberInterface
         $squelette = empty($squelette) ? SQUELETTE_PAR_DEFAUT : $squelette;
 
         // do not load the file if already loaded
-        $fileAlreadyLoaded = $this->fileLoaded &&
-            ($this->theme == $theme) &&
-            ($this->squelette == $squelette);
+        $fileAlreadyLoaded = $this->fileLoaded
+            && ($this->theme == $theme)
+            && ($this->squelette == $squelette);
         if ($fileAlreadyLoaded) {
             return true;
         }
@@ -306,7 +347,7 @@ class ThemeManager implements EventSubscriberInterface
         $templateCut = explode('{WIKINI_PAGE}', $fileContent);
         $this->templateHeader = $templateCut[0] ?? '';
         // ADD flash message just before page content
-        $this->templateHeader .= flash()->display();
+        $this->templateHeader .= \Tamtamchik\SimpleFlash\Flash::display();
         $this->templateFooter = (count($templateCut) > 0) ? $templateCut[1] : '';
 
         return true;
@@ -357,7 +398,7 @@ class ThemeManager implements EventSubscriberInterface
 
     public function getFavoritePreset(): string
     {
-        return $this->favorites['preset'];
+        return $this->favorites['preset'] ?? '';
     }
 
     public function getFavoriteBackgroundImage(): string
@@ -387,7 +428,7 @@ class ThemeManager implements EventSubscriberInterface
 
     private function renderActions(string $text): ?string
     {
-        if ($act = preg_match_all('/' . '(\\{\\{)' . '(.*?)' . '(\\}\\})' . '/is', $text, $matches)) {
+        if ($act = preg_match_all('/(\\{\\{)(.*?)(\\}\\})/is', $text, $matches)) {
             $i = 0;
             $j = 0;
             foreach ($matches as $valeur) {
@@ -549,7 +590,7 @@ class ThemeManager implements EventSubscriberInterface
      */
     public function getPresetsData(): ?array
     {
-        $themePresets = ($this->getTemplates())[$this->getFavoriteTheme()]['presets'] ?? [];
+        $themePresets = $this->getTemplates()[$this->getFavoriteTheme()]['presets'] ?? [];
         $dataHtmlForPresets = array_map(function ($value) {
             return $this->extractDataFromPreset($value);
         }, $themePresets);
@@ -782,8 +823,8 @@ class ThemeManager implements EventSubscriberInterface
                                 'url' => [],
                             ];
                         }
-                        if (isset($raw['unicode-range']) &&
-                            !isset($formattedData[$key]['charsets'][$charset]['unicode-range'])) {
+                        if (isset($raw['unicode-range'])
+                            && !isset($formattedData[$key]['charsets'][$charset]['unicode-range'])) {
                             $formattedData[$key]['charsets'][$charset]['unicode-range'] = $raw['unicode-range'];
                         }
                         if (!isset($formattedData[$key]['charsets'][$charset]['url'][$format])) {
@@ -893,8 +934,8 @@ class ThemeManager implements EventSubscriberInterface
         $errorNb = curl_errno($ch);
         curl_close($ch);
         if (!$errorNb && !empty($result)) {
-            if (file_put_contents(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName", $result) &&
-                file_exists(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName")) {
+            if (file_put_contents(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName", $result)
+                && file_exists(self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName")) {
                 return '../../' . self::CUSTOM_FONT_PATH . "/$folderSystemName/$fileName";
             }
         }

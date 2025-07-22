@@ -25,7 +25,7 @@ class EditGroupsAction extends YesWikiAction
         $selectedGroupName = '';
         $action = '';
         $error_message = '';
-        error_log(implode("\n", $_POST));
+        error_log('$_POST content: ' . print_r($_POST ?? null, true));
 
         if (empty($_POST)) {
             error_log('$_POST empty');
@@ -47,12 +47,7 @@ class EditGroupsAction extends YesWikiAction
                         $type = 'success';
                         $message = str_replace('{group}', $selectedGroupName, _t('GROUP_CREATED'));
                     } elseif (!empty($_POST['action-update'])) {
-                        $members = [];
-                        foreach ($_POST as $key => $value) {
-                            if ($value == '1') {
-                                $members[] = $key;
-                            }
-                        }
+                        $members = array_map('trim', $_POST['members']);
                         $groupController->update($selectedGroupName, $members);
                         $message = str_replace('{group}', $selectedGroupName, _t('GROUP_SAVED'));
                         $type = 'success';
@@ -64,7 +59,7 @@ class EditGroupsAction extends YesWikiAction
                     }
                 } catch (Throwable $th) {
                     $type = 'danger';
-                    $message = _t('ERROR_WHILE_EDITING_GROUP') . ':<br/>' . $th->getMessage();
+                    $message = _t('ERROR_WHILE_EDITING_GROUP') . '"' . $selectedGroupName . '" :<br/>' . $th->getMessage();
                 }
             }
         }

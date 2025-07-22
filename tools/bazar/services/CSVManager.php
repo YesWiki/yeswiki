@@ -116,7 +116,7 @@ class CSVManager
 
             foreach ($data as $line) {
                 // output the column headings
-                fputcsv($csvResource, $line);
+                fputcsv($csvResource, $line, ',', '"', '\\');
             }
             rewind($csvResource);
 
@@ -143,7 +143,8 @@ class CSVManager
         ?string $formId,
         ?string $keywords = null,
         bool $fakeMode = false,
-        bool $keysInsteadOfValues = false
+        bool $keysInsteadOfValues = false,
+        ?string $query = null
     ): ?array {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {
@@ -163,10 +164,18 @@ class CSVManager
                 ));
 
                 if (!$fakeMode) {
+                    $queries = [];
+                    $tab = explode('|', $query);
+                    foreach ($tab as $req) {
+                        $tabdecoup = explode('=', $req, 2);
+                        $queries[$tabdecoup[0]] = trim($tabdecoup[1]);
+                    }
+
                     // get lines for each entry
                     $entries = $this->entryManager->search([
                         'formsIds' => [$formId],
                         'keywords' => $keywords,
+                        'queries' => $queries,
                     ]);
                     foreach ($entries as $entry) {
                         $csv_line = $this->getCSVLineFromEntry($entry, $headers, $keysInsteadOfValues);
@@ -325,11 +334,15 @@ class CSVManager
             if ($header['field'] instanceof CheckboxField || $header['field'] instanceof CheckboxEntryField) {
                 $options = $header['field']->getOptions();
                 $nb = min(3, count($options));
-                $line[] = trim($this->arrayToCSV([ // emulate CSV
-                    array_map(function ($index) use ($options) {
-                        return $options[array_keys($options)[$index]];
-                    }, range(0, $nb - 1)),
-                ]));
+                if (!empty($options)) {
+                    $line[] = trim($this->arrayToCSV([ // emulate CSV
+                        array_map(function ($index) use ($options) {
+                            return $options[array_keys($options)[$index]];
+                        }, range(0, $nb - 1)),
+                    ]));
+                } else {
+                    $line[] = 'ligne ' . $lineNumber . ' - champ ' . $columnNumber;
+                }
             } elseif ($header['field'] instanceof TagsField) {
                 $line[] = '"' . implode(',', array_map(function ($index) use ($lineNumber, $columnNumber) {
                     return 'ligne ' . $lineNumber . ' - champ ' . $columnNumber . ' - tag ' . $index;
@@ -405,13 +418,13 @@ class CSVManager
                     $ext = substr($filename, strrpos($filename, '.') + 1);
                     if ($ext == 'csv') {
                         if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
-                            if (($firstLine = fgetcsv($handle, 0, ',')) !== false) {
+                            if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
                                 if ($columnIndexesForPropertyNames =
                                     $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
                                 ) {
                                     // next lines
                                     $extracted = [];
-                                    while (($data = fgetcsv($handle, 0, ',')) !== false) { // init errors
+                                    while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
                                         $this->errormsg = [];
                                         $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $formId);
                                         $extracted[] = [
@@ -463,16 +476,8 @@ class CSVManager
             $data = $this->detectHeadersOnPropertyName($data);
             $data = $this->detectHeadersModifiedAfterOneDetected($data);
             $columnIndexes = $data['columnIndexes'];
-            $columnIndexes = $this->removeDateTimeColumns($columnIndexes);
         } else {
             $index = 0;
-            // remove date columns if existing
-            if ($firstLine[$index] == 'datetime_create') {
-                $index++;
-            }
-            if ($firstLine[$index] == 'datetime_latest') {
-                $index++;
-            }
             // sweep on headers
             $columnIndexes = [];
             foreach ($headers as $propertyName => $header) {
@@ -638,15 +643,20 @@ class CSVManager
     private function getEntryFromCSVLine(array $data, array $headers, array $columnIndexesForPropertyNames, string $formId): ?array
     {
         $entry = [];
+        $skipFields = ['datetime_create', 'datetime_latest'];
         foreach ($columnIndexesForPropertyNames as $propertyName => $index) {
-            $field = $headers[$propertyName]['field'];
+            if (!in_array($propertyName, $skipFields)) {
+                $field = $headers[$propertyName]['field'];
+            } else {
+                $field = ''; // fake entry for skipped fields
+            }
             if (intval($index) == $index) {
                 // standard case
                 $value = $this->getValueFromData($data, $index);
                 if (!empty($value)) {
                     if (
                         $field instanceof EnumField
-                        && !($field instanceof TagsField)
+                            && !($field instanceof TagsField)
                     ) {
                         // for tags not needed to get keys because these are the same
                         // and do not filter on existing tags but allow alls tags
@@ -657,18 +667,24 @@ class CSVManager
                     } elseif ($field instanceof FileField) {
                         // traitement des images (doivent être présentes dans le dossier files du wiki)
                         $value = $this->extractValueFromFileFieldData($value, $field);
+                    } elseif (in_array($propertyName, ['datetime_latest', 'datetime_create'])) {
+                        $datetime = \DateTime::createFromFormat(
+                            'd/m/Y H:i:s',
+                            $value,
+                            new \DateTimeZone($this->wiki->config['timezone'])
+                        );
+                        $value = $datetime->getTimestamp();
                     }
                     $entry[$propertyName] = $value;
                 }
             }
         }
-
         // append entry's data
         if (!empty($entry['bf_titre'])) {
             $entry['id_fiche'] = genere_nom_wiki($entry['bf_titre']);
             $entry['id_typeannonce'] = $formId;
-            $entry['date_creation_fiche'] = date('Y-m-d H:i:s', time());
-            $entry['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+            $entry['date_creation_fiche'] = date('Y-m-d H:i:s', $entry['datetime_create'] ?? time());
+            $entry['date_maj_fiche'] = date('Y-m-d H:i:s', $entry['datetime_latest'] ?? time());
             if ($this->wiki->UserIsAdmin()) {
                 $entry['statut_fiche'] = 1;
             } else {
@@ -678,6 +694,11 @@ class CSVManager
             $this->errormsg[] = 'Empty $entry[\'bf_titre\'] in ' . get_class($this) . ', line ' . __LINE__;
 
             return null;
+        }
+        foreach ($skipFields as $field) {
+            if (isset($entry[$field])) {
+                unset($entry[$field]);
+            }
         }
 
         return !empty($entry) ? $entry : null;
@@ -734,20 +755,28 @@ class CSVManager
     private function extractValueFromEnumFieldData(string $value, EnumField $field): string
     {
         // get Options
-        $options = $field->getOptions();
+        $options = array_map('trim', $field->getOptions());
         $flippedOptions = [];
-        // not usinf array_flip because it takes the last duplicated index, we prefer the first one
+        // not using array_flip because it takes the last duplicated index, we prefer the first one
         foreach ($options as $key => $val) {
+            $key = trim($key);
+            $val = trim($val);
+
             if (!isset($flippedOptions[$val])) {
                 $flippedOptions[$val] = $key;
             }
         }
 
-        // extract CSV
-        $values = str_getcsv($value, ',');
+        // extract CSV and check if multiple values are present : they should be quoted
+        if (preg_match('/"[^"]+"/', $value)) {
+            $values = str_getcsv($value, ',', '"', '\\');
+        } else {
+            $values = [$value];
+        }
 
         // convert values to index
         $indexes = array_map(function ($option) use ($options, $flippedOptions) {
+            $option = trim($option);
             if (isset($flippedOptions[$option])) {
                 // search if $option is a correct value then take assoiacted index
                 return $flippedOptions[$option];

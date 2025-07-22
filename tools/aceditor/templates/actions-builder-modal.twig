@@ -41,6 +41,7 @@
               <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS') }}'"></h3>
               <div class="config-panel-content">
                 <template v-for="(config, propName) in panel.params.properties">
+                  <div v-html="config.intro" v-show="checkVisibility(config)"></div>
                   <component :is="componentIdFrom(config)" :key="propName" :ref="refFrom(config)"
                              :value="values[propName]" v-on:input="updateValue(propName, $event)"
                              v-show="checkVisibility(config)"

@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // on choisit le template utilisé
 $template = $this->GetParameter('template');
 if (empty($template)) {

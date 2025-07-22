@@ -6,6 +6,7 @@ use DateInterval;
 use DateTime;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use Throwable;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
@@ -364,7 +365,7 @@ class EntryController extends YesWikiController
                 if (!$this->entryManager->isEntry($entryId)) {
                     $this->triggerDeletedEvent($entryId, $entry);
                     if ($redirectAfter) {
-                        flash(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)", 'success');
+                        Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
                         $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                     }
 
@@ -372,7 +373,7 @@ class EntryController extends YesWikiController
                 }
             } catch (Throwable $th) {
                 if ($redirectAfter) {
-                    flash(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}", 'error');
+                    Flash::error(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}");
                     $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                 }
                 throw new Exception($th->getMessage(), $th->getCode(), $th);
@@ -494,6 +495,15 @@ class EntryController extends YesWikiController
         $values['html'] = $html;
         $values['fiche'] = $entry;
         $values['form'] = $form;
+
+        // Transform some data so it's easier to use
+        // Rename some varaibel (we keep old one for backward compatibility)
+        $values['entry'] = $entry;
+        $values['renderedFields'] = $html;
+        $values['formFields'] = [];
+        foreach ($values['form']['prepared'] as $config) {
+            $values['formFields'][$config->getName()] = $config;
+        }
 
         return $values;
     }
@@ -675,24 +685,20 @@ class EntryController extends YesWikiController
         switch ($mode) {
             case '<':
                 // start before date and whatever finish
-                return
-                    $date->diff($entryStartDate)->invert == 1
-                ;
+                return $date->diff($entryStartDate)->invert == 1;
                 break;
             case '>':
                 // start after date or (before date but and end should be after date, end is needed)
                 return
                     $date->diff($entryStartDate)->invert == 0
-                    || !$this->dateIsStrictlyBefore($entryEndDate, $date)
-                ;
+                    || !$this->dateIsStrictlyBefore($entryEndDate, $date);
                 break;
             case '=':
             default:
                 // start before next day midnight and should end after date midnigth
                 return
                     $nextDay->diff($entryStartDate)->invert == 1
-                    && !$this->dateIsStrictlyBefore($entryEndDate, $date)
-                ;
+                    && !$this->dateIsStrictlyBefore($entryEndDate, $date);
         }
     }
 

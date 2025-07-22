@@ -2,10 +2,6 @@
 
 use YesWiki\Core\Service\AclService;
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 $oldpagetag = $this->GetPageTag();
 $oldpage = $this->LoadPage($oldpagetag);
 $tags = trim((isset($_GET['tags'])) ? $_GET['tags'] : '');
@@ -28,7 +24,7 @@ if (!empty($tags)) {
             $link = $this->config['root_page'];
         }
         $output .= '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"' .
-                  " xmlns:atom=\"http://www.w3.org/2005/Atom\">\n";
+            " xmlns:atom=\"http://www.w3.org/2005/Atom\">\n";
         $output .= "<channel>\n<title>";
         if (empty($titrerss)) {
             $output .= $textetitre;
@@ -61,7 +57,7 @@ if (!empty($tags)) {
 
             $items .= $texteformat . "]]></description>\r\n";
             $items .= '<dc:creator>by ' . htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET) .
-                     "</dc:creator>\r\n";
+                "</dc:creator>\r\n";
             $items .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time'])) . "</pubDate>\r\n";
             $itemurl = $this->href(false, $page['tag']);
             $items .= '<guid>' . $itemurl . "</guid>\n";

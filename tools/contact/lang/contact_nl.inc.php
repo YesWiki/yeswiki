@@ -1,15 +1,11 @@
 <?php
+
 return [
-    // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Actie {{inschrijven...}}',
     'CONTACT_MAIL_REQUIRED' => 'de verplichte parameter e-mail ontbreekt.',
-    // actions/contact.php
     'CONTACT_ACTION_CONTACT' => 'Actie {{contact ...}}',
-    // actions/desabonnement.php
     'CONTACT_ACTION_DESABONNEMENT' => 'Actie {{uitschrijven...}}',
-    // actions/listsubscription.php
     'CONTACT_ACTION_LISTSUBSCRIPTION' => 'Actie {{listsubscription ...}}',
-    // actions/mailinglist.php
     'CONTACT_ACTION_MAILINGLIST' => 'Actie {{mailinglist ...}}',
     'CONTACT_PARAMETER_LIST_REQUIRED' => 'parameter "list" is verplicht (dit is het e-mailadres van de mailinglist)',
     'CONTACT_MAILS_TO_ADD_OR_REMOVE' => 'Mails toevoegen aan of wissen van de lijst',
@@ -44,8 +40,6 @@ return [
     'CONTACT_MESSAGE_NOT_SENT' => 'Het bericht kon niet worden verzonden... Probleem met de serverconfiguratie?',
     'CONTACT_SUBSCRIBE_ORDER_SENT' => 'We hebben uw vraag tot inschrijving goed ontvangen. Bedankt!',
     'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'We hebben uw vraag tot uitschrijving goed ontvangen. Bedankt!',
-    'CONTACT_HANDLER_MAIL_FOR_ADMINS' => 'De mail handler is voorbehouden aan de beheerdersgroep.',
-    'CONTACT_LOGIN_IF_ADMIN' => 'Meld u aan als u deel uitmaakt van deze groep.',
     'CONTACT_SUBSCRIBE' => 'Inschrijven',
     'CONTACT_UNSUBSCRIBE' => 'Uitschrijven',
     'CONTACT_FROM' => 'van',
@@ -72,10 +66,10 @@ return [
     'CONTACT_HELP_IN_NOTIFICATION' => 'ga naar de site om je registratie te controleren',
     'AB_abonnement_class_label' => 'klasse',
     'AB_abonnement_mailinglist_label' => 'Lijst van discussie',
-    'AB_deabonnement_action_label' => "Onbeschrijving",
+    'AB_deabonnement_action_label' => 'Onbeschrijving',
     'AB_contact_action_label' => 'Toon contact',
     'AB_contact_action_mail_label' => 'E-mailadres',
-    'AB_contact_action_entete_label' => "Automatisch voorbeeld van het post object",
+    'AB_contact_action_entete_label' => 'Automatisch voorbeeld van het post object',
     'AB_contact_action_entete_default' => 'Verzonden van de site...',
     'AB_contact_action_template_label' => 'Vertaling:',
     'AB_contact_action_class_label' => 'c',
@@ -102,11 +96,11 @@ return [
     'CONTACT_IN_FORM' => '♪',
     'CONTACT_WELCOME_ON' => 'Welkom',
     'CONTACT_NEW_USER_SUBJECT' => 'Je nieuwe identificers op de site',
-    'AB_contact_group_label' => "Verzenden van e-mail/list",
+    'AB_contact_group_label' => 'Verzenden van e-mail/list',
     'AB_abonnement_action_mail_label' => 'E-mail van de discussielijst',
-    'AB_abonnement_action_label' => "Vertaling:",
+    'AB_abonnement_action_label' => 'Vertaling:',
     'AB_contact_action_template_hint' => 'Vertaling:',
     'AB_listsubscription_action_label' => 'vertaling:',
-    'AB_mailperiod_action_label' => "Vertaling:",
-    'AB_mailinglist_action_description' => "Actie om te registreren of ongebruikelijk e-mails naar een nieuwsletter",
+    'AB_mailperiod_action_label' => 'Vertaling:',
+    'AB_mailinglist_action_description' => 'Actie om te registreren of ongebruikelijk e-mails naar een nieuwsletter',
 ];

@@ -7,8 +7,4 @@
 
 *******************************************************************************/
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 return;

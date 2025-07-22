@@ -30,7 +30,7 @@ class TagsManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        //on recupere les anciens tags de la page courante
+        // on recupere les anciens tags de la page courante
         $tabtagsexistants = $this->tripleStore->getAll($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         if (is_array($tabtagsexistants)) {
             foreach ($tabtagsexistants as $tab) {
@@ -49,7 +49,7 @@ class TagsManager
         // TODO check if we need to escape here, or if we can do that in the tripleStore methods
         $tags = explode(',', $this->dbService->escape(_convert($liste_tags, YW_CHARSET, true)));
 
-        //on recupere les anciens tags de la page courante
+        // on recupere les anciens tags de la page courante
         $tabtagsexistants = $this->tripleStore->getAll($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         if (is_array($tabtagsexistants)) {
             foreach ($tabtagsexistants as $tab) {
@@ -57,21 +57,21 @@ class TagsManager
             }
         }
 
-        //on ajoute le tag s il n existe pas déjà
+        // on ajoute le tag s il n existe pas déjà
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
-                if (!$this->tripleStore->exist($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '')) {
-                    $this->tripleStore->create($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
+                if (!$this->tripleStore->exist($page, 'http://outils-reseaux.org/_vocabulary/tag', htmlspecialchars($tag), '', '')) {
+                    $this->tripleStore->create($page, 'http://outils-reseaux.org/_vocabulary/tag', htmlspecialchars($tag), '', '');
                 }
-                //on supprime ce tag du tableau des tags restants a effacer
+                // on supprime ce tag du tableau des tags restants a effacer
                 if (isset($tags_restants_a_effacer)) {
                     unset($tags_restants_a_effacer[array_search($tag, $tags_restants_a_effacer)]);
                 }
             }
         }
 
-        //on supprime les tags restants a effacer
+        // on supprime les tags restants a effacer
         if (isset($tags_restants_a_effacer)) {
             foreach ($tags_restants_a_effacer as $tag) {
                 $this->tripleStore->delete($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
@@ -107,7 +107,7 @@ class TagsManager
             $req .= ' GROUP BY resource ';
             $req .= ' HAVING COUNT(resource)=' . $nbdetags . ') ';
 
-            //gestion du tri de l'affichage
+            // gestion du tri de l'affichage
             if ($tri == 'alpha') {
                 $req .= ' ORDER BY tag ASC ';
             } elseif ($tri == 'date') {

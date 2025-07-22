@@ -1,11 +1,8 @@
 <?php
-/**
-* Handler AJAX pour sauver les meta-données.
-*/
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 
+/**
+ * Handler AJAX pour sauver les meta-données.
+ */
 header('Content-type: application/json; charset=UTF-8');
 
 // on teste si on a le droit d'accés aux meta-données

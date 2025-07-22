@@ -40,7 +40,7 @@ class ReactionManager
         $this->tripleStore = $tripleStore;
     }
 
-    public function getReactions($pageTag = '', $ids = [], $user = '')
+    public function getReactions($pageTag = '', $ids = [], $user = '', $singleEntry = false)
     {
         $res = [];
         // get reactions in db
@@ -80,18 +80,39 @@ class ReactionManager
                     'idReaction' => $idReaction,
                 ], $v['value']);
             } else {
+                $key = $singleEntry ? $v['value']['idReaction'] : $v['value']['idReaction'] . '|' . $v['value']['pageTag'];
                 // get title and reaction labels for choosen reaction id in choosen page page
-                if (!isset($res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters'])) {
+                if (!isset($res[$key]['parameters'])) {
                     $params = $this->getActionParameters($v['value']['pageTag'], $v['value']['idReaction']);
-                    $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters'] = $params[$v['value']['idReaction']] ?? [];
-                    $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['parameters']['pageTag'] = $v['value']['pageTag'];
+                    $res[$key]['parameters'] = $params[$v['value']['idReaction']] ?? [];
+                    $res[$key]['parameters']['pageTag'] = $v['value']['pageTag'];
                 }
-                $res[$v['value']['idReaction'] . '|' . $v['value']['pageTag']]['reactions'][] = $v['value'];
+                // count reactions
+                if (!isset($res[$key]['nb_reactions'])) {
+                    $res[$key]['nb_reactions'] = [];
+                }
+                if (!isset($res[$key]['nb_reactions'][$v['value']['id']])) {
+                    $res[$key]['nb_reactions'][$v['value']['id']] = 1;
+                } else {
+                    $res[$key]['nb_reactions'][$v['value']['id']]++;
+                }
+
+                $res[$key]['reactions'][] = $v['value'];
             }
         }
         ksort($res);
 
         return $res;
+    }
+
+    public function getReactionsCount($tag)
+    {
+        $type = self::TYPE_URI;
+
+        return $this->dbService->count("
+            SELECT * FROM {$this->dbService->prefixTable('triples')} 
+            WHERE resource = '{$this->dbService->escape($tag)}' AND property = '{$type}'
+        ");
     }
 
     public function getActionParameters($page, $idReaction = null)
@@ -324,12 +345,12 @@ class ReactionManager
                 '',
                 '',
                 "(`value` LIKE '%\"user\":\"{$this->dbService->escape($user)}\"%')" .
-                'AND' .
-                "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')" .
-                'AND' .
-                "(`value` NOT LIKE '%\"idReaction\":\"%')" .
-                'AND' .
-                "(`value` NOT LIKE '%\"date\":\"%')"
+                    'AND' .
+                    "(`value` LIKE '%\"id\":\"{$this->dbService->escape($id)}\"%')" .
+                    'AND' .
+                    "(`value` NOT LIKE '%\"idReaction\":\"%')" .
+                    'AND' .
+                    "(`value` NOT LIKE '%\"date\":\"%')"
             );
         } else {
             return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $user . '","idReaction":"' . $reactionId . '","id":"' . $id . '"%\'');

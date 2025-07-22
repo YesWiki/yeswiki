@@ -17,6 +17,7 @@ class TextareaField extends BazarField
     protected $syntax;
 
     protected const FIELD_NUM_ROWS = 4;
+    protected const FIELD_MAX_CHARS = 6;
     protected const FIELD_SYNTAX = 7;
 
     protected const ACCEPTED_TAGS = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption><iframe>';
@@ -33,7 +34,7 @@ class TextareaField extends BazarField
         $this->syntax = $values[self::FIELD_SYNTAX] ?? self::SYNTAX_WIKI;
 
         // For this field, max chars are defined in the 6th column, instead of the already-used 4th
-        $this->maxChars = $values[6];
+        $this->maxChars = $values[self::FIELD_MAX_CHARS];
 
         // Retro-compatibility
         if ($this->syntax === 'wiki') {

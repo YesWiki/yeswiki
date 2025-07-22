@@ -1,16 +1,13 @@
 <?php
+
 return [
-    // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'Calculations',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'Display text',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Add if necessary a unit after {value}, (ex: `{value} €`)',
     'BAZ_FORM_EDIT_FORMULA_LABEL' => 'Formula',
-    // fields/FileField.php
     'BAZ_FILEFIELD_FILE' => 'File : {filename}',
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'Read label',
-    // fields/ImageField.php
     'IMAGEFIELD_TOO_LARGE_IMAGE' => 'To large image, maximum {imageMaxSize} bytes',
-    // fields/MapField.php
     'BAZ_FORM_EDIT_GEOLOCATE' => 'Geolocate my position',
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY' => 'Area/county field',
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY_PLACEHOLDER' => 'bf_region',
@@ -39,16 +36,6 @@ return [
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'Fields to use for geolocalization',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Provide at least one field',
     'GEOLOCATER_NOT_FOUND' => 'Not foundable "{addr}" address',
-    // presentation/javascripts/bazar.js
-    // 'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez saisir tous les champs obligatoires (avec une asterisque rouge)',
-    // 'BAZ_FORM_INVALID_EMAIL' => 'L\'email saisi n\'est pas valide',
-    // 'BAZ_FORM_INVALID_TEXT' => 'Le texte n\'est pas valide',
-    // 'BAZ_FORM_INVALID_URL' => 'L\'url saisie n\'est pas valide, elle doit commencer par http:// '.
-    //     'et ne pas contenir d\'espaces ou caracteres speciaux',
-    // 'BAZ_FORM_EMPTY_RADIO' => 'Il faut choisir une valeur de bouton radio',
-    // 'BAZ_FORM_EMPTY_CHECKBOX' => 'Il faut cocher au moins une case a cocher',
-    // 'BAZ_FORM_EMPTY_AUTOCOMPLETE' => 'Il faut saisir au moins une entrée pour le champs en autocomplétion',
-    // 'BAZ_FORM_EMPTY_GEOLOC' => 'Vous devez géolocaliser l\'adresse',
     'BAZ_DATESHORT_MONDAY' => 'Mon',
     'BAZ_DATESHORT_TUESDAY' => 'Tue',
     'BAZ_DATESHORT_WEDNESDAY' => 'Wed',
@@ -76,10 +63,8 @@ return [
     'BAZ_DATESHORT_NOVEMBER' => 'Nov',
     'BAZ_DATESHORT_DECEMBER' => 'Dec',
     'BAZ_SAVING' => 'Saving',
-    // presentation/javascripts/components/BazarMap.js
     'BAZ_FULLSCREEN' => 'Fullscreen',
     'BAZ_BACK_TO_NORMAL_VIEW' => 'Back to normal view',
-    // form-edit-template.js
     'MEMBER_OF_GROUP' => 'Member of group {groupName}',
     'BAZ_FORM_EDIT_HELP' => 'Help text',
     'BAZ_FORM_EDIT_HIDE' => 'Edit/Hide',
@@ -92,12 +77,10 @@ return [
     'BAZ_FORM_EDIT_CAN_BE_READ_BY' => 'Can be read by',
     'BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY' => 'Can be written by',
     'BAZ_FORM_EDIT_QUERIES_LABEL' => 'Filter criteron',
-    // 'BAZ_FORM_EDIT_SEARCH_LABEL' => 'Présence dans le moteur de recherche',
     'BAZ_FORM_EDIT_SEMANTIC_LABEL' => 'Semantic type of the field',
     'BAZ_FORM_EDIT_SELECT_SUBTYPE2_LABEL' => 'Origin of data',
     'BAZ_FORM_EDIT_SELECT_SUBTYPE2_LIST' => 'A list',
     'BAZ_FORM_EDIT_SELECT_SUBTYPE2_FORM' => 'A Bazar form',
-    // 'BAZ_FORM_EDIT_SELECT_LIST_FORM_ID' => 'Choix de la liste/du formulaire',
     'BAZ_FORM_EDIT_SELECT_DEFAULT' => 'Default value',
     'BAZ_FORM_EDIT_TEXT_LABEL' => 'Short text',
     'BAZ_FORM_EDIT_TEXTAREA_LABEL' => 'Text area',
@@ -124,12 +107,6 @@ return [
     'BAZ_FORM_EDIT_ACL_COMMENT_LABEL' => 'Default rights for open comments',
     'BAZ_FORM_EDIT_DATE_TODAY_BUTTON' => 'Init to today',
     'BAZ_FORM_EDIT_EMAIL_BUTTON' => 'Replace email by a contact button',
-    // 'BAZ_FORM_EDIT_EMAIL_SEND_CONTENT' => 'Envoyer le contenu de la fiche à cet email',
-    // 'BAZ_FORM_EDIT_IMAGE_ALIGN_LABEL' => 'Alignement',
-    // 'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Hauteur Vignette',
-    // 'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Largeur Vignette',
-    // 'BAZ_FORM_EDIT_IMAGE_WIDTH_RESIZE' => 'Largeur redimension',
-    // 'BAZ_FORM_EDIT_IMAGE_HEIGHT_RESIZE' => 'Hauteur redimension',
     'BAZ_FORM_EDIT_IMAGE_DEFAULT' => 'Default image',
     'BAZ_FORM_EDIT_METADATA_THEME_LABEL' => 'Theme name',
     'BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL' => 'Squeleton',
@@ -137,18 +114,6 @@ return [
     'BAZ_FORM_EDIT_METADATA_PRESET_LABEL' => 'Preset',
     'BAZ_FORM_EDIT_METADATA_PRESET_PLACEHOLDER' => 'only margot theme',
     'BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL' => 'Background image',
-    // 'BAZ_FORM_EDIT_TEXT_MAX_LENGTH' => 'Longueur max',
-    // 'BAZ_FORM_EDIT_TEXT_SIZE' => 'Nb caractères visibles',
-    // 'BAZ_FORM_EDIT_TEXT_PATTERN' => 'Motif',
-    // 'BAZ_FORM_EDIT_TEXT_TYPE_LABEL' => 'Type',
-    // 'BAZ_FORM_EDIT_TEXT_TYPE_TEXT' => 'Texte',
-    // 'BAZ_FORM_EDIT_TEXT_TYPE_NUMBER' => 'Nombre',
-    // 'BAZ_FORM_EDIT_TEXT_TYPE_RANGE' => 'Slider',
-    // 'BAZ_FORM_EDIT_TEXT_TYPE_URL' => 'Adresse url',
-    // 'BAZ_FORM_EDIT_TEXT_TYPE_PASSWORD' => 'Mot de passe',
-    // 'BAZ_FORM_EDIT_TEXT_TYPE_COLOR' => 'Couleur',
-    // 'BAZ_FORM_EDIT_TITLE_LABEL' => 'Titre Automatique',
-    // 'BAZ_FORM_EDIT_CUSTOM_LABEL' => 'Custom',
     'BAZ_FORM_EDIT_MAP_FIELD' => 'Geo-localization from address fields, town,…',
     'BAZ_FORM_EDIT_COLLABORATIVE_DOC_FIELD' => 'Collaborative document',
     'BAZ_FORM_EDIT_TABS' => 'Tabs nav',
@@ -171,33 +136,6 @@ return [
     'BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL' => 'Groups where to add the user',
     'BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION' => 'Groups where to add the user, separated by \',\'',
     'BAZ_FORM_EDIT_ADD_TO_GROUP_HELP' => 'Groups where to add the user, separated by \',\', can be a filed name. Ex: @groupName,bf_name,@groupName2',
-    // 'BAZ_FORM_EDIT_ADVANCED_MODE' => 'Mode avancé.',
-    // 'BAZ_FORM_EDIT_FILLING_MODE_LABEL' => 'Mode de saisie',
-    // 'BAZ_FORM_EDIT_FILLING_MODE_NORMAL' => 'Normal',
-    // 'BAZ_FORM_EDIT_FILLING_MODE_TAGS' => 'En Tags',
-    // 'BAZ_FORM_EDIT_FILLING_MODE_DRAG_AND_DROP' => 'Drag & drop',
-    // 'BAZ_FORM_EDIT_TEXTAREA_SYNTAX_LABEL' => 'Format d\'écriture',
-    // 'BAZ_FORM_EDIT_TEXTAREA_SYNTAX_HTML' => 'Editeur Wysiwyg',
-    // 'BAZ_FORM_EDIT_TEXTAREA_SYNTAX_NOHTML' => 'Texte non interprété',
-    // 'BAZ_FORM_EDIT_TEXTAREA_SIZE_LABEL' => 'Largeur champ de saisie',
-    // 'BAZ_FORM_EDIT_TEXTAREA_ROWS_LABEL' => 'Nombre de lignes',
-    // 'BAZ_FORM_EDIT_TEXTAREA_ROWS_PLACEHOLDER' => 'Défaut vide = 3 lignes',
-    // 'BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL' => 'Taille max',
-    // 'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_LABEL' => 'Email pour s\'inscrire',
-    // 'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_FIELDID' => 'Champ du formulaire fournissant l\'email à inscire',
-    // 'BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST' => 'Type de service de diffusion',
-    // 'BAZ_FORM_EDIT_CUSTOM_HTML_LABEL' => 'Custom HTML',
-    // 'BAZ_FORM_EDIT_EDIT_CONTENT_LABEL' => 'Contenu lors de la saisie',
-    // 'BAZ_FORM_EDIT_VIEW_CONTENT_LABEL' => 'Contenu lors de l\'affichage d\'une fiche',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_FORMID_LABEL' => 'id du formulaire lié',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_QUERY_LABEL' => 'Query',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_QUERY_PLACEHOLDER' => 'Voir doc sur {url}',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_PARAMS_LABEL' => 'Params de l\'action',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_NUMBER_LABEL' => 'Nombre de fiches à afficher',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_LABEL' => 'Template de restitution',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_PLACEHOLDER' => 'Exple: template="liste_liens.tpl.html (par défault = accordéon)"',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_LABEL' => 'Type de fiche liée (ou label du champ)',
-    // 'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'mettre \'checkbox\' ici si vos fiches liées le sont via un checkbox',
     'BAZ_FORM_EDIT_ADDRESS' => 'Address',
     'BAZ_FORM_EDIT_UNIQUE_ID' => 'Unique ID',
     'BAZ_FORM_EDIT_NAME' => 'Label',
@@ -208,41 +146,16 @@ return [
     'BAZ_FORM_EDIT_BOOKMARKLET_HINT_DEFAULT_VALUE' => "Click and move the button to your navigator's bar",
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL' => 'Displayed text',
     'BAZ_FORM_EDIT_BOOKMARKLET_TEXT_VALUE' => "Click and move the button to your favorites's bar",
-    // 'BAZ_ACTIVATE_COMMENTS' => 'Activer les commentaires sur cette fiche ?',
-    // 'BAZ_ACTIVATE_COMMENTS_HINT' => 'Droits mis à jour lors de l\'enregistrement de la fiche',
-    // 'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Choix par défaut pour l\'activation des commentaires',
-    // 'BAZ_FORM_EDIT_COMMENTS_FIELD' => 'Commentaires',
-    // 'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
-    // 'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
-    // 'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'Demander d\'activer les commentaires ?',
-    // condition checking field
-    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => 'Conditionnal display',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_MAIN_LABEL' => 'Conditionnal display',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => 'Condition',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => 'End of condition',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => 'Clean when hiding',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => 'Erase',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => 'Do not clean',
-    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => 'To clean or not the content of what is being hidden',
-    // jsvascripts/form-edit-templates/fields/file.js
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_HINT' => 'To clean or not the content of what is being hidden',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'Pre-selected extensions (with the point, separated by commas)',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'ex: .pdf,.png',
-    // reactions
-    // 'BAZ_ACTIVATE_REACTIONS' => 'Activer les réactions sur cette fiche ?',
-    // 'BAZ_REACTIONS_FIELD' => 'Réactions',
-    // 'BAZ_REACTIONS_FIELD_ACTIVATE_HINT' => 'Laisser vide pour utiliser le texte par défaut',
-    // 'BAZ_REACTIONS_FIELD_ACTIVATE_LABEL' => 'Texte pour édition',
-    // 'BAZ_REACTIONS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Activation par défaut',
-    // 'BAZ_REACTIONS_FIELD_IDS_HINT' => 'Laisser vide, sauf usages avancées (pas d\'espace, que des minuscules, chiffres ou tiret)',
-    // 'BAZ_REACTIONS_FIELD_IDS_LABEL' => 'Identifiants des réactions',
-    // 'BAZ_REACTIONS_FIELD_IMAGES_HINT' => 'Laisser vide ou séparés par des virgules (icône, nom de fichier ou classe FontAwesome)',
-    // 'BAZ_REACTIONS_FIELD_IMAGES_LABEL' => 'Icônes',
-    // 'BAZ_REACTIONS_FIELD_IMAGES_PLACEHOLDER' => 'mikone-top-gratitude.svg,j-aime,j-ai-appris,pas-compris,pas-d-accord,idee-noire',
-    // 'BAZ_REACTIONS_FIELD_LABELS_HINT' => 'Laisser vide ou séparés par des virgules',
-    // 'BAZ_REACTIONS_FIELD_LABELS_LABEL' => 'Noms des réactions',
-    // 'BAZ_REACTIONS_FIELD_LABELS_PLACEHOLDER' => 'Gratitude,J\'aime,J\'ai appris quelque chose,J\'ai pas compris,Je ne suis pas d\'accord,Ca me perturbe',
-    // presentation/javascripts/map-field-leaflet.js
     'BAZ_ADJUST_MARKER_POSITION' => 'Move me if needed',
-    // presentation/javascripts/form-edit-template/fields/url.js
     'BAZAR_VIDEO_MAXHEIGHT_LABEL' => 'Maximum video\'s height',
     'BAZAR_VIDEO_MAXWIDTH_LABEL' => 'Maximum video\'s width',
     'BAZAR_VIDEO_MAX_HINT' => 'Only positive integer of pixel without unity ; ex: 200',
@@ -251,12 +164,9 @@ return [
     'BAZAR_VIDEO_POSITION_LEFT' => 'Left align',
     'BAZAR_VIDEO_POSITION_RIGHT' => 'Right align',
     'BAZAR_URL_DISPLAY_VIDEO' => 'Display player if url is a video?',
-    // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'Add to your agenda',
-    // reactions
     'BAZ_ACTIVATE_REACTIONS' => 'Activate reactions on this entry?',
     'FILEFIELD_TOO_LARGE_FILE' => 'The file is too large, maximum {fileMaxSize} bytes',
-    // list-node.js
     'LIST_DRAGDROP' => 'Move this element',
     'LIST_KEY' => 'Key',
     'LIST_TEXT' => 'Text',
@@ -269,7 +179,7 @@ return [
     'BAZ_REACTIONS_FIELD_IMAGES_LABEL' => 'Icons',
     'LIST_ADD_NODE' => 'Add a value',
     'BAZ_FORM_EDIT_FILLING_MODE_TAGS' => 'Tags',
-    'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_FIELDID' => 'Field of form providing email to inscire',
+    'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_FIELDID' => 'Field of the form providing the email to be entered',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST' => 'Type of broadcasting service',
     'BAZ_FORM_EDIT_EDIT_CONTENT_LABEL' => 'Content when filling in',
     'BAZ_FORM_EDIT_VIEW_CONTENT_LABEL' => 'Content when displaying an entry',
@@ -277,7 +187,7 @@ return [
     'BAZ_FORM_EDIT_LISTEFICHES_NUMBER_LABEL' => 'Number of entry to display',
     'BAZ_ACTIVATE_COMMENTS' => 'Activate comments on this entry ?',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'Updated rights when registering the entry',
-    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Default choice for comment activation',
+    'BAZ_FORM_EDIT_COMMENTS_FIELD_DEFAULT_ACTIVATION_LABEL' => 'Default choice for comments activation',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'Text for editing',
     'BAZ_FORM_EDIT_SHOW_MAP_IN_ENTRY_VIEW' => 'Display the map in the data sheet when viewed',
     'BAZ_FORM_REQUIRED_FIELD' => 'Please enter all required fields (red asterisk)',
@@ -297,7 +207,7 @@ return [
     'BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL' => 'Max size (ex: 2097152, 2048k, 2m)',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_LABEL' => 'Email to register',
     'BAZ_FORM_EDIT_LISTEFICHES_FORMID_LABEL' => 'id of the linked form',
-    'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_LABEL' => 'Return temperature',
+    'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_LABEL' => 'Return template',
     'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_LABEL' => 'Type of linked entry (or field label)',
     'BAZ_FORM_EDIT_CHECKBOX_LABEL' => 'Checkbox',
     'BAZ_REACTIONS_FIELD_LABELS_LABEL' => 'Reaction names',
@@ -316,9 +226,9 @@ return [
     'BAZ_REACTIONS_FIELD_IDS_LABEL' => 'Reaction identifiers',
     'BAZ_REACTIONS_FIELD_IMAGES_HINT' => 'Leave empty or separated by commas (Icon, File Name or FontAwesome Class)',
     'BAZ_REACTIONS_FIELD_LABELS_HINT' => 'Leave empty or separated by commas',
-    'BAZ_REACTIONS_FIELD_IMAGES_PLACEHOLDER' => 'mikone-top-gratitude.svg,j-aime,j-ai-appris,pas-compris,pas-d-accord,idee-noire',
+    'BAZ_REACTIONS_FIELD_IMAGES_PLACEHOLDER' => 'mikone-top-gratitude.svg,i-like,i-learned,not-understood,not-agree,black-idea',
     'LIST_ADD_CHILD_NODE' => 'Add a sub-value',
-    'LIST_ERROR_MISSING_IDS' => "Some values have no associated key",
+    'LIST_ERROR_MISSING_IDS' => 'Some values have no associated key',
     'LIST_ERROR_DUPLICATES_IDS' => 'Each key must be unique. These keys are used several times: ',
     'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_PLACEHOLDER' => 'Ex : template="liste_liens.tpl.html (by default = accordon)"',
     'BAZ_FORM_EDIT_IMAGE_WIDTH' => 'Thumbnail width',
@@ -340,4 +250,27 @@ return [
     'BAZ_FORM_EMPTY_GEOLOC' => 'You need to geolocate the address',
     'BAZ_FORM_EDIT_SELECT_LIST_FORM_ID' => 'List / form selection',
     'BAZ_FORM_EDIT_EMAIL_SEND_CONTENT' => 'Send entry content to this email address',
+    'BAZ_BOOKMARKLET_HINT' => 'This field requires two other fields to function  :{br}
+  - a url field ( by defaut "bf_url"){br}
+  - a long text field ( by defaut "bf_description")',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT' => 'The condition must be in the following format (without the `):{br}
+ - and ` : gives AND{br}
+ - or ` : equals OR{br}
+ - `==` : equals {br}
+ - `!=` : gives IS DIFFERENT FROM {br}
+ - in [value1,value2]` : IS PART OF a comma-separated list of elements enclosed in square brackets{br}
+ - `|length > 6` : checks if the number of checked items is greater than 6 (works with ‘>=’,‘<’,‘<=’){br}
+ - ` == [value1,value2]` : IS EXACTLY the list of elements separated by commas and surrounded by square brackets (only for checkbox){br}
+ - `( )` allows conditions to be grouped, otherwise priority from left to right{br}
+ - `!( )` or `not ( )` negation of the condition{br}
+ - indicate to the left of a `==` or `!=` the label of the field ex:`bf_thematique`{br}
+ - is empty ` : allows you to check if the value is empty{br}
+ - is not empty ` : allows you to check if the value is not empty{br}
+ - extra spaces are removed automatically{br} ` is not empty
+ - operations are case insensitive',
+    'BAZ_FORM_CALC_HINT' => 'CALCULATION{br}
+The formula must be a mathematical formula.
+It is possible to refer to the value of a field by typing its name (e.g. `+ sin(bf_number)*2` ),{br}
+or test the value of an enumerated field (list, checkbox,...) (ex: `test(bf_type,first_cle)`{br}
+which returns 1 if bf_type == first_loop otherwise 0).',
 ];

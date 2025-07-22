@@ -13,7 +13,6 @@ use YesWiki\Security\Controller\SecurityController;
 
 class LostPasswordAction extends YesWikiAction
 {
-
     protected $authController;
     protected $errorType;
     protected $typeOfRendering;
@@ -69,19 +68,16 @@ class LostPasswordAction extends YesWikiAction
                     'type' => 'danger',
                     'message' => _t('LOGIN_UNKNOWN_USER'),
                 ]);
-                break;
             case 'successPage':
                 return $renderedTitle . $this->render('@templates/alert-message.twig', [
                     'type' => 'success',
                     'message' => _t('LOGIN_MESSAGE_SENT'),
                 ]);
-                break;
             case 'recoverSuccess':
                 return $renderedTitle . $this->render('@templates/alert-message.twig', [
                     'type' => 'success',
                     'message' => _t('LOGIN_PASSWORD_WAS_RESET'),
                 ]);
-                break;
             case 'recoverForm':
                 if (isset($hash)) {
                     $key = $hash;
@@ -96,13 +92,11 @@ class LostPasswordAction extends YesWikiAction
                     'key' => $hash ?? $key,
                     'inIframe' => (testUrlInIframe() == 'iframe'),
                 ]);
-                break;
             case 'directDangerMessage':
                 return $renderedTitle . $this->render('@templates/alert-message.twig', [
                     'type' => 'danger',
                     'message' => $message,
                 ]);
-                break;
             case 'emailForm':
             default:
                 return $this->render('@login/lost-password-email-form.twig', [
@@ -131,7 +125,7 @@ class LostPasswordAction extends YesWikiAction
                     $user = $this->userManager->getOneByEmail($email);
                     if (!empty($user)) {
                         $this->typeOfRendering = 'successPage';
-                        $this->userManager->sendPasswordRecoveryEmail($user, _t('LOGIN_PASSWORD_LOST_FOR'));
+                        $this->userManager->sendPasswordRecoveryEmail($user);
                     } else {
                         $this->errorType = 'userNotFound';
                         $this->typeOfRendering = 'userNotFound';
@@ -178,12 +172,10 @@ class LostPasswordAction extends YesWikiAction
         return $user ?? null;
     }
 
-    /** Part of the Password recovery process: sets the password to a new value if given the the proper recovery key (sent in a recovery email).
-     *
+    /**
      * In order to update h·er·is password, the user provides a key (sent using sendPasswordRecoveryEmail())
      * The new password is accepted only if the key matches with the value in triples table.
      * The corresponding row is the removed from triples table.
-     * See Password recovery process above
      *
      * @param string $userName The user login
      * @param string $key      The password recovery key (sent by email)
@@ -202,10 +194,9 @@ class LostPasswordAction extends YesWikiAction
 
         $user = $this->userManager->getOneByName($userName);
         if (empty($user)) {
-            $this->error = false;
             $this->typeOfRendering = 'userNotFound';
 
-            return null;
+            return false;
         }
         $this->authController->setPassword($user, $password);
         // Was able to update password => Remove the key from triples table
@@ -231,5 +222,4 @@ class LostPasswordAction extends YesWikiAction
         // Pas de detournement possible car utilisation de _vocabulary/key ....
         return !is_null($this->tripleStore->exist($user, UserManager::KEY_VOCABULARY, $hash, '', ''));
     }
-    /* End of Password recovery process (AKA reset password)   */
 }

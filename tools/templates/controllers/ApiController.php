@@ -10,7 +10,7 @@ use YesWiki\Core\YesWikiController;
 class ApiController extends YesWikiController
 {
     /**
-     * @Route("/api/templates/custom-presets/{presetFilename}", methods={"DELETE"},options={"acl":{"public","@admins"}})
+     * @Route("/api/templates/custom-presets/{presetFilename}", methods={"DELETE"},options={"acl":{"@admins"}})
      */
     public function deleteCustomCSSPreset($presetFilename)
     {
@@ -23,10 +23,14 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/templates/custom-presets/{presetFilename}", methods={"POST"},options={"acl":{"public","+"}})
+     * @Route("/api/templates/custom-presets/{presetFilename}", methods={"POST"},options={"acl":{"+"}})
      */
     public function addCustomCSSPreset($presetFilename)
     {
+        $fileParts = pathinfo($presetFilename);
+        if (strtolower($fileParts['extension']) !== 'css') {
+            return new ApiResponse(['code' => 400, 'message' => 'Wrong filename extension, should be .css'], 400);
+        }
         $result = $this->getService(ThemeManager::class)->addCustomCSSPreset($presetFilename, $_POST);
         $code = ($result['status'])
             ? 200 // 'OK'

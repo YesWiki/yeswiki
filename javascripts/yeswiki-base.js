@@ -85,6 +85,17 @@ function toastMessage(
     .parent()
     .addClass('active-list')
 
+  function addIframeHandlerTo(url) {
+    const regexHasHandler = new RegExp(/\??.*\/(edit)?iframe(\&.*)?/g)
+    const regexOnDomain = new RegExp(`^${wiki.baseUrl}`)
+    if (regexHasHandler.test(url)) {
+      return url
+    } if (regexOnDomain.test(url)) {
+      return `${url}/iframe`
+    }
+    return url
+  }
+
   // fenetres modales
   function openModal(e) {
     e.stopPropagation()
@@ -137,11 +148,12 @@ function toastMessage(
           modalTitle[0].innerHTML = `<a href="${link}">${modalTitle[0].innerText}</a>`
         }
       }
+      link = addIframeHandlerTo(link)
       $modal
         .find('.modal-body')
         .html(
           '<span id="yw-modal-loading" class="throbber"></span>'
-          + `<iframe id="yw-modal-iframe" src="${link}" referrerpolicy="no-referrer"></iframe>`
+            + `<iframe id="yw-modal-iframe" src="${link}" referrerpolicy="no-referrer"></iframe>`
         )
       $('#yw-modal-iframe').on('load', () => {
         $('#yw-modal-loading').hide()
@@ -298,16 +310,16 @@ function toastMessage(
             stateObject,
             document.title,
             window.location.pathname
-            + window.location.search
-            + $(this).attr('href')
+              + window.location.search
+              + $(this).attr('href')
           )
         } else {
           window.history.replaceState(
             stateObject,
             document.title,
             window.location.pathname
-            + window.location.search
-            + $(this).attr('href')
+              + window.location.search
+              + $(this).attr('href')
           )
         }
       })
@@ -326,17 +338,17 @@ function toastMessage(
     e.stopPropagation()
     $('body').append(
       '<div class="modal fade" id="YesWikiModal">'
-      + '<div class="modal-dialog">'
-      + '<div class="modal-content">'
-      + '<div class="modal-header">'
-      + '<button type="button" class="close" data-dismiss="modal">&times;</button>'
-      + `<h3>${_t('NAVBAR_EDIT_MESSAGE')}</h3>`
-      + '</div>'
-      + '<div class="modal-body">'
-      + '</div>'
-      + '</div>'
-      + '</div>'
-      + '</div>'
+        + '<div class="modal-dialog">'
+        + '<div class="modal-content">'
+        + '<div class="modal-header">'
+        + '<button type="button" class="close" data-dismiss="modal">&times;</button>'
+        + `<h3>${_t('NAVBAR_EDIT_MESSAGE')}</h3>`
+        + '</div>'
+        + '<div class="modal-body">'
+        + '</div>'
+        + '</div>'
+        + '</div>'
+        + '</div>'
     )
 
     const $editmodal = $('#YesWikiModal')
@@ -354,9 +366,9 @@ function toastMessage(
           .find('.modal-body')
           .append(
             `<a href="${href}" class="btn btn-default btn-block">`
-            + `<i class="fa fa-pencil-alt"></i> ${_t(
-              'YESWIKIMODAL_EDIT_MSG'
-            )} ${pagewiki}</a>`
+              + `<i class="fa fa-pencil-alt"></i> ${_t(
+                'YESWIKIMODAL_EDIT_MSG'
+              )} ${pagewiki}</a>`
           )
       })
 
@@ -445,8 +457,12 @@ function toastMessage(
 
   function resetCommentForm(form) {
     form
-      .attr('id', 'post-comment').attr('class', '')
-      .attr('action', form.attr('action').replace(/api\/comments(\/.*)/gm, 'api/comments'))
+      .attr('id', 'post-comment')
+      .attr('class', '')
+      .attr(
+        'action',
+        form.attr('action').replace(/api\/comments(\/.*)/gm, 'api/comments')
+      )
       .appendTo($('.yeswiki-page-comments').parent())
       .find('label')
       .removeClass('hide')
@@ -494,8 +510,14 @@ function toastMessage(
   $comments.on('click', '.btn-answer-comment', function(e) {
     e.preventDefault()
     const com = $(this).parent().parent()
-    $('.temporary-form').parents('.yw-comment').find('.comment-html:first').removeClass('hide')
-    $('.temporary-form').parents('.yw-comment').find('.comment-links:first').removeClass('hide')
+    $('.temporary-form')
+      .parents('.yw-comment')
+      .find('.comment-html:first')
+      .removeClass('hide')
+    $('.temporary-form')
+      .parents('.yw-comment')
+      .find('.comment-links:first')
+      .removeClass('hide')
     // a comment-form is already opened
     if ($('.temporary-form').length > 0) {
       resetCommentForm($('.temporary-form'))
@@ -530,8 +552,14 @@ function toastMessage(
     com.find('.comment-html:first').addClass('hide')
     com.find('.comment-links:first').addClass('hide')
 
-    $('.temporary-form').parents('.yw-comment').find('.comment-html:first').removeClass('hide')
-    $('.temporary-form').parents('.yw-comment').find('.comment-links:first').removeClass('hide')
+    $('.temporary-form')
+      .parents('.yw-comment')
+      .find('.comment-html:first')
+      .removeClass('hide')
+    $('.temporary-form')
+      .parents('.yw-comment')
+      .find('.comment-links:first')
+      .removeClass('hide')
     // a comment-form is already opened
     if ($('.temporary-form').length > 0) {
       resetCommentForm($('.temporary-form'))
@@ -857,7 +885,8 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function(event) {
         error(e) {
           multiDeleteService.addErrorMessage(
             $(modal),
-            `${_t('COMMENT_NOT_DELETED', { comment: name })} : ${e.responseJSON && e.responseJSON.error ? e.responseJSON.error : ''
+            `${_t('COMMENT_NOT_DELETED', { comment: name })} : ${
+              e.responseJSON && e.responseJSON.error ? e.responseJSON.error : ''
             }`
           )
         },

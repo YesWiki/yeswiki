@@ -9,11 +9,8 @@ $GLOBALS['translations'] = array_merge($GLOBALS['translations'], [
     'ACTION_BUILDER_TEMPLATE_CUSTOM' => 'Custom template',
     'ACTION_BUILDER_SEVERAL_FORMS_HINT' => 'Nb. : It is possible to display several databases once by giving their id separated by a coma [<a href="https://yeswiki.net/?ActionBazarliste">open the documentation</a>].',
     'ACTION_BUILDER_ADVANCED_PARAMETERS' => 'Advanced parameters',
-
-    // for edit config
     'EDIT_CONFIG_HINT_ACTIONBUILDER_TEXTAREA_NAME' => 'Textarea field\'s name for which components should be activated',
     'EDIT_CONFIG_GROUP_ACEDITOR' => 'Edit bar for pages and text fields',
-
     'ACEDITOR_SAVE' => 'Save',
     'ACEDITOR_FORMAT' => 'Format',
     'ACEDITOR_TITLE1' => 'Huge title',

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Handler 'css' to render a page with a CSS header.
  *
@@ -9,10 +10,6 @@
  *
  * @see     https://yeswiki.net
  */
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 header('Content-Type: text/css');
 if ($this->HasAccess('read') && $this->page && isset($this->page['body'])) {
     echo $this->page['body'];

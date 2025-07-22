@@ -1,11 +1,5 @@
 <?php
 
-/**
- * Fichier de traduction en francais de l'extension AutoUpdate.
- *
- *@author        Florestan Bredow <florestan.bredow@supagro.fr>
- */
-
 return [
     'AU_ACL' => 'Vérification des droits sur les fichiers',
     'AU_REPO_ERROR' => 'Dépots inaccessibles.',
@@ -43,11 +37,9 @@ return [
     'AU_YESWIKI_SECOND_TIME_UPDATE' => 'Seconde mise à jour du cœur YesWiki',
     'AU_FILE_NOT_POSSIBLE_TO_UPDATE' => "Il n'a pas été possible de mettre à jour le fichier '{{file}}' ! Ceci pourrait entraîner des disfonctionnements mineurs.",
     'AU_SECOND_UPDATE_NOT_POSSIBLE' => "Une seconde mise à jour du cœur YesWiki est nécessaire mais elle n'est pas possible tant que la première mise à jour ne se déroule pas correctement !",
-
     'AU_NAME' => 'Nom',
     'AU_INSTALLED_REVISION' => 'Version installée',
     'AU_AVAILABLE_REVISION' => 'Version disponible',
-
     'AU_PACKAGE_NOT_DOWNLOADED' => 'Le paquet n\'a pas été téléchargé.',
     'AU_UNKWON_PACKAGE_TYPE' => 'Type de paquet inconnu',
     'AU_PACKAGE_NOT_UNZIPPED' => 'Le paquet n\'a pas été décompressé.',

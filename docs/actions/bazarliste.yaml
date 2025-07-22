@@ -1,5 +1,5 @@
 label: _t(AB_bazar_label)
-position: 1997
+position: 1998
 needFormField: true
 previewHeight: 450px
 actions:
@@ -55,7 +55,11 @@ actions:
           - bazarcarousel
           - bazarcalendar
           - bazartableau
-
+      nb:
+        label: _t(AB_bazar_commons2_nb_label)
+        hint: _t(AB_bazar_commons2_nb_hint)
+        type: number
+        advanced: true
       colorfield:
         label: _t(AB_bazar_commons_colorfield_label)
         type: form-field
@@ -68,6 +72,9 @@ actions:
           - bazarliste
           - bazarcalendar
           - bazartableau
+          - bazarcard
+          - bazartimeline
+        advanced: true
       colormapping:
         type: color-mapping
         showif: colorfield
@@ -77,7 +84,10 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartimeline
           - bazartableau
+          - bazarcard
+        advanced: true
         subproperties:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
@@ -90,6 +100,7 @@ actions:
       iconfield:
         label: _t(AB_bazar_commons_iconfield_label)
         type: form-field
+        advanced: true
         extraFields: id_typeannonce
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
@@ -98,9 +109,12 @@ actions:
           - bazargogocarto
           - bazarliste
           - bazarcalendar
+          - bazartimeline
           - bazartableau
+          - bazarcard
       iconmapping:
         type: icon-mapping
+        advanced: true
         showif: iconfield
         showOnlyFor:
           - bazarcarto
@@ -109,6 +123,8 @@ actions:
           - bazarliste
           - bazarcalendar
           - bazartableau
+          - bazartimeline
+          - bazarcard
         subproperties:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
@@ -204,47 +220,6 @@ actions:
         type: checkbox
         advanced: true
         default: 'false'
-      champ:
-        label: _t(AB_bazar_commons2_champ_label)
-        hint: _t(AB_bazar_commons2_champ_hint)
-        doclink: https://yeswiki.net/?DocQuery
-        type: form-field
-        extraFields:
-          - id_typeannonce
-          - date_creation_fiche
-          - date_maj_fiche
-        default:
-        advanced: true
-        showExceptFor:
-          - bazarcarto
-          - bazargogocarto
-          - bazartimeline
-          - bazarannuaire
-          - bazarcalendar
-          - bazarcarousel
-      ordre:
-        label: _t(AB_bazar_commons2_ordre_label)
-        type: list
-        default: asc
-        advanced: true
-        options:
-          asc: _t(AB_bazar_commons2_ordre_option_asc)
-          desc: _t(AB_bazar_commons2_ordre_option_desc)
-        showExceptFor:
-          - bazarcarto
-          - bazargogocarto
-          - bazartimeline
-          - bazarannuaire
-          - bazarcalendar
-      nb:
-        label: _t(AB_bazar_commons2_nb_label)
-        hint: _t(AB_bazar_commons2_nb_hint)
-        type: number
-        advanced: true
-      #      query:
-      #        advanced: true
-      #        label: _t(AB_bazar_commons2_query_label)
-      #        type: text
       datefilter:
         label: _t(AB_bazar_commons2_filter_on_date)
         type: list
@@ -275,6 +250,57 @@ actions:
         showif: facettes
         showExceptFor:
           - bazargogocarto
+      champ:
+        intro: <h3>_t(AB_bazar_sort)</h3>
+        label: _t(AB_bazar_facettes_field_label)
+        type: form-field
+        extraFields:
+          - id_typeannonce
+          - date_creation_fiche
+          - date_maj_fiche
+        default:
+        advanced: true
+        showExceptFor:
+          - bazarcarto
+          - bazargogocarto
+          - bazarannuaire
+          - bazarcalendar
+          - bazarcarousel
+      ordre:
+        label: _t(AB_bazar_commons2_ordre_label)
+        type: list
+        default: asc
+        advanced: true
+        options:
+          asc: _t(AB_bazar_commons2_ordre_option_asc)
+          desc: _t(AB_bazar_commons2_ordre_option_desc)
+        showExceptFor:
+          - bazarcarto
+          - bazargogocarto
+          - bazarannuaire
+          - bazarcalendar
+      sortfields:
+        advanced: true
+        showif: dynamic
+        intro: <center><h4>_t(AB_bazar_sort_dynamique)</h4></center>
+        type: sort-fields
+        btn-label-add: _t(AB_bazar_sort_add_field)
+        subproperties:
+          field:
+            label: _t(AB_bazar_facettes_field_label)
+            type: form-field
+            extraFields:
+              - date_creation_fiche
+              - date_maj_fiche
+          title:
+            label: _t(AB_bazar_facettes_title_label)
+            type: text
+        showExceptFor:
+          - bazarcarto
+          - bazargogocarto
+          - bazarannuaire
+          - bazarcalendar
+          - bazarcarousel
 
   # -----------------
   # Liste des Actions
@@ -321,7 +347,7 @@ actions:
   bazarcard:
     label: _t(AB_bazarcard_label)
     description: _t(AB_bazarcard_description)
-    properties:
+    properties: &bazarcard
       template:
         value: 'card'
       nbcol:
@@ -464,7 +490,7 @@ actions:
         advanced: true
         label: _t(AB_bazarcarto_height_label)
         type: text
-        default: 300px
+        default: 700px
       entrydisplay:
         label: _t(AB_bazarcarto_entrydisplay_label)
         type: list
@@ -535,22 +561,6 @@ actions:
         default: '0'
         checkedvalue: '1'
         uncheckedvalue: '0'
-      # spider:
-      #   advanced: true
-      #   label: _t(AB_bazarcarto_spider_label)
-      #   hint: _t(AB_bazarcarto_spider_hint)
-      #   type: checkbox
-      #   default: "false"
-      # barregestion:
-      #   advanced: true
-      #   label: _t(AB_bazarcarto_barregestion_label)
-      #   type: checkbox
-      #   default: "false"
-      # navigation:
-      #   advanced: true
-      #   label: _t(AB_bazarcarto_navigation_label)
-      #   type: checkbox
-      #   default: "true"
       zoommolette:
         advanced: true
         label: _t(AB_bazarcarto_zoommolette_label)
@@ -655,6 +665,11 @@ actions:
     description: _t(AB_bazartimeline_description)
     hint: _t(AB_bazartimeline_hint)
     properties:
+      <<: *bazarcard
+      nbcol:
+        showif: false
+      style:
+        showif: false
       template:
         value: timeline
       correspondance:
@@ -705,22 +720,6 @@ actions:
             label: _t(AB_bazarcarousel_bf_titre_label)
             default: ''
 
-  # bazargaleriephoto:
-  #   label: _t(AB_bazargaleriephoto_label)
-  #   description: _t(AB_bazargaleriephoto_description)
-  #   hint: _t(AB_bazargaleriephoto_hint)
-  #   properties:
-  #     template:
-  #       value: galerie_photos
-
-  # bazarlistegalerie:
-  #   label: _t(AB_bazarlistegalerie_label)
-  #   description: _t(AB_bazarlistegalerie_description)
-  #   hint: _t(AB_bazarlistegalerie_hint)
-  #   properties:
-  #     template:
-  #       value: liste_galerie
-
   bazarlistephotobox:
     label: _t(AB_bazarlistephotobox_label)
     description: _t(AB_bazarlistephotobox_description)
@@ -735,21 +734,6 @@ actions:
     properties:
       template:
         value: liste_liens
-
-  #  bazarlisteliensdates:
-  #    label: _t(AB_bazarlisteliensdates_label)
-  #    description: _t(AB_bazarlisteliensdates_description)
-  #    properties:
-  #      template:
-  #        value: liste_liens_date
-
-  # bazarmail:
-  #   label: _t(AB_bazarmail_label)
-  #   description: _t(AB_bazarmail_description)
-  #   hint: _t(AB_bazarmail_hint)
-  #   properties:
-  #     template:
-  #       value: liste_mails_seuls
 
   bazarblog:
     label: _t(AB_bazarblog_label)
@@ -1068,22 +1052,6 @@ actions:
         default: '0'
         checkedvalue: '1'
         uncheckedvalue: '0'
-      # spider:
-      #   advanced: true
-      #   label: _t(AB_bazarcarto_spider_label)
-      #   hint: _t(AB_bazarcarto_spider_hint)
-      #   type: checkbox
-      #   default: "false"
-      # barregestion:
-      #   advanced: true
-      #   label: _t(AB_bazarcarto_barregestion_label)
-      #   type: checkbox
-      #   default: "false"
-      # navigation:
-      #   advanced: true
-      #   label: _t(AB_bazarcarto_navigation_label)
-      #   type: checkbox
-      #   default: "true"
       zoommolette:
         advanced: true
         label: _t(AB_bazarcarto_zoommolette_label)

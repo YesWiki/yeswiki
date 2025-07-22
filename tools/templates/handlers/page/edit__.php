@@ -2,9 +2,6 @@
 
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 // on enleve l'action template
 $plugin_output_new = preg_replace(
     '/' . '(\\{\\{template)' . '(.*?)' . '(\\}\\})' . '/is',
@@ -16,27 +13,28 @@ $themeManager = $this->services->get(ThemeManager::class);
 
 // personnalisation graphique que dans le cas ou on est autorise
 if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide_action_template']) && !$this->config['hide_action_template'])) &&
-    ($this->HasAccess('write') && $this->HasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner()))))) {
+    ($this->HasAccess('write') && $this->HasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->UserIsAdmin() || $this->UserIsOwner()))))
+) {
     // graphical options : theme and background image
     $selecteur = '
 <div id="graphical_options" class="modal fade">' . "\n" .
-    '  <div class="modal-dialog">' . "\n" .
-    '    <div class="modal-content">' . "\n" .
-    '      <div class="modal-header">' . "\n" .
-    '        <a class="close" data-dismiss="modal">&times;</a>' . "\n" .
-    '        <h3>' . _t('TEMPLATE_CUSTOM_GRAPHICS') . ' ' . $this->GetPageTag() . '</h3>' . "\n" .
-    '      </div>' . "\n" .
-    '      <div class="modal-body">' . "\n";
+        '  <div class="modal-dialog">' . "\n" .
+        '    <div class="modal-content">' . "\n" .
+        '      <div class="modal-header">' . "\n" .
+        '        <a class="close" data-dismiss="modal">&times;</a>' . "\n" .
+        '        <h3>' . _t('TEMPLATE_CUSTOM_GRAPHICS') . ' ' . $this->GetPageTag() . '</h3>' . "\n" .
+        '      </div>' . "\n" .
+        '      <div class="modal-body">' . "\n";
     $selecteur .= $this->services->get(\YesWiki\Templates\Controller\ThemeController::class)->showFormThemeSelector('edit');
     $selecteur .= '
       </div>' . "\n" .
-      '      <div class="modal-footer">' . "\n" .
-      '        <a href="#" class="btn btn-default button_cancel" data-dismiss="modal">' . _t('TEMPLATE_CANCEL') . '</a>' . "\n" .
-      '        <a href="#" class="btn btn-primary button_save" data-dismiss="modal">' . _t('TEMPLATE_APPLY') . '</a>' . "\n" .
-      '      </div>' . "\n" .
-      '    </div>' . "\n" .
-      '  </div>' . "\n" .
-      '</div> <!-- /#graphical_options -->' . "\n";
+        '      <div class="modal-footer">' . "\n" .
+        '        <a href="#" class="btn btn-default button_cancel" data-dismiss="modal">' . _t('TEMPLATE_CANCEL') . '</a>' . "\n" .
+        '        <a href="#" class="btn btn-primary button_save" data-dismiss="modal">' . _t('TEMPLATE_APPLY') . '</a>' . "\n" .
+        '      </div>' . "\n" .
+        '    </div>' . "\n" .
+        '  </div>' . "\n" .
+        '</div> <!-- /#graphical_options -->' . "\n";
 
     //quand le changement des valeurs du template est cache, il faut stocker les valeurs deja entrees pour ne pas retourner au template par defaut
     $selecteur .= '<input id="hiddentheme" type="hidden" name="theme" value="' . $themeManager->getFavoriteTheme() . '" />' . "\n";
@@ -78,10 +76,10 @@ if (!$this->HasAccess('write')) {
     $output .= $header[0] . '<body class="login-body">' . "\n"
         . '<div class="yeswiki-page-widget page-widget page">' . "\n";
     $output .= '<div class="alert alert-danger alert-error">'
-    . _t('LOGIN_NOT_AUTORIZED_EDIT') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.'
-    . '</div><!-- end .alert -->' . "\n"
-    . $this->Format('{{login signupurl="0"}}' . "\n\n")
-    . '</div><!-- end .page -->' . "\n";
+        . _t('LOGIN_NOT_AUTORIZED_EDIT') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.'
+        . '</div><!-- end .alert -->' . "\n"
+        . $this->Format('{{login signupurl="0"}}' . "\n\n")
+        . '</div><!-- end .page -->' . "\n";
     // on recupere juste les javascripts et la fin des balises body et html
     $output .= preg_replace('/^.+<script/Us', '<script', $this->Footer());
     $this->exit($output);

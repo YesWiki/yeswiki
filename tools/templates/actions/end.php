@@ -2,10 +2,6 @@
 
 use YesWiki\Templates\Controller\TabsController;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // classe css supplémentaire
 $elem = $this->GetParameter('elem');
 if (empty($elem)) {

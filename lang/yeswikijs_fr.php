@@ -1,8 +1,6 @@
 <?php
 
 return [
-    // commons
-    'APRIL' => 'Avril',
     'AUGUST' => 'Août',
     'CANCEL' => 'Annuler',
     'COPY' => 'Copier',
@@ -38,8 +36,6 @@ return [
     'TUESDAY' => 'Mardi',
     'WEDNESDAY' => 'Mercredi',
     'YES' => 'Oui',
-
-    // /javascripts/actions/admin-backups.js
     'ADMIN_BACKUPS_LOADING_LIST' => 'Chargement de la liste des sauvegardes',
     'ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' => 'Impossible de mettre à jour la liste des sauvegardes',
     'ADMIN_BACKUPS_DELETE_ARCHIVE' => 'Suppression de {filename}',
@@ -66,8 +62,7 @@ return [
     'ADMIN_BACKUPS_UID_STATUS_STOP' => 'Sauvegarde arrêtée',
     'ADMIN_BACKUPS_STOP_BACKUP_ERROR' => "Erreur : impossible d'arrêter la sauvegarde",
     'ADMIN_BACKUPS_STOPPING_ARCHIVE' => 'Arrêt en cours de la sauvegarde',
-    'ADMIN_BACKUPS_CONFIRMATION_TO_DELETE' => "Les fichiers suivants seront supprimés par la sauvegarde.\n" .
-        "Veuillez confirmer leur suppression en cochant la case ci-dessous.\n<pre>{files}</pre>",
+    'ADMIN_BACKUPS_CONFIRMATION_TO_DELETE' => "Les fichiers suivants seront supprimés par la sauvegarde.\nVeuillez confirmer leur suppression en cochant la case ci-dessous.\n<pre>{files}</pre>",
     'ADMIN_BACKUPS_START_BACKUP_ERROR_ARCHIVING' => "Lancement de la sauvegarde impossible car une sauvegarde semble être déjà en cours.\n" .
         'Suivez <a href="{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde" title="Aide pour relancer une sauvegarde" target="blank">cette aide</a> pour corriger ceci.',
     'ADMIN_BACKUPS_START_BACKUP_ERROR_HIBERNATE' => "Lancement de la sauvegarde impossible car le site est en hibernation.\n" .
@@ -85,69 +80,58 @@ return [
         "Il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
     'ADMIN_BACKUPS_START_BACKUP_NOT_DB' => "Lancement de la sauvegarde non optimal \n" .
         "L'utilitaire d'export de base de données ('mysqldump') n'est pas accessible (<a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide sur mysqldump\" target=\"blank\">voir aide</a>).",
-
-    // /javascripts/handlers/revisions.js
     'REVISIONS_COMMIT_DIFF' => 'Modifs apportées par cette version',
     'REVISIONS_DIFF' => 'Comparaison avec version actuelle',
     'REVISIONS_PREVIEW' => 'Aperçu de cette version',
-
-    // javascripts/documentation.js
     'DOCUMENTATION_TITLE' => 'Documentation YesWiki',
-
-    // javascripts/favorites.js
     'FAVORITES_ADD' => 'Ajouter aux favoris',
     'FAVORITES_ALL_DELETED' => 'Favoris supprimés',
     'FAVORITES_ERROR' => 'Une erreur est survenue : {error}',
     'FAVORITES_REMOVE' => 'Retirer des favoris',
     'FAVORITES_ADDED' => 'Favori ajouté',
     'FAVORITES_REMOVED' => 'Favori supprimé',
-
-    // javascripts/list-form-id-attribute.js
     'LIST_CREATE_TITLE' => 'Nouvelle Liste',
     'LIST_UPDATE_TITLE' => 'Modifier la Liste',
     'LIST_CREATED' => 'La liste a bien été crée',
     'LIST_UPDATED' => 'La liste a été mise à jour avec succès',
-
-    // javascripts/multidelete.js
     'MULTIDELETE_END' => 'Suppressions réalisées',
     'MULTIDELETE_ERROR' => "L'élément {itemId} n'a pas été supprimé ! {error}",
-
-    // javascripts/users-table.js
-    'LINK_TO_CHANGE_PASSWORD' => "Lien pour changer le mot de passe",
+    'LINK_TO_CHANGE_PASSWORD' => 'Lien pour changer le mot de passe',
     'USERSTABLE_USER_CREATED' => "Utilisateur '{name}' créé",
     'USERSTABLE_USER_NOT_CREATED' => "Utilisateur '{name}' non créé : {error}",
     'USERSTABLE_USER_DELETED' => 'L\'utilisateur "{username}" a été supprimé.',
     'USERSTABLE_USER_NOT_DELETED' => 'L\'utilisateur "{username}" n\'a pas été supprimé.',
-
-    // /javascripts/yeswiki-base.js
     'DATATABLES_PROCESSING' => 'Traitement en cours...',
     'DATATABLES_SEARCH' => 'Rechercher&nbsp;:',
-    'DATATABLES_LENGTHMENU' => 'Afficher _MENU_ &eacute;l&eacute;ments',
-    'DATATABLES_INFO' => "Affichage de l'&eacute;l&eacute;ment _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
-    'DATATABLES_INFOEMPTY' => "Affichage de l'&eacute;l&eacute;ment 0 &agrave; 0 sur 0 &eacute;l&eacute;ment",
-    'DATATABLES_INFOFILTERED' => '(filtr&eacute; de _MAX_ &eacute;l&eacute;ments au total)',
+    'DATATABLES_LENGTHMENU' => 'Afficher _MENU_ éléments',
+    'DATATABLES_INFO' => "Affichage de l'élément _START_ à _END_ sur _TOTAL_ éléments",
+    'DATATABLES_INFOEMPTY' => "Affichage de l'élément 0 à 0 sur 0 élément",
+    'DATATABLES_INFOFILTERED' => '(filtré de _MAX_ éléments au total)',
     'DATATABLES_LOADINGRECORDS' => 'Chargement en cours...',
-    'DATATABLES_ZERORECORD' => 'Aucun &eacute;l&eacute;ment &agrave; afficher',
-    'DATATABLES_EMPTYTABLE' => 'Aucune donn&eacute;e disponible dans le tableau',
+    'DATATABLES_ZERORECORD' => 'Aucun élément à afficher',
+    'DATATABLES_EMPTYTABLE' => 'Aucune donnée disponible dans le tableau',
     'DATATABLES_SORTASCENDING' => ': activer pour trier la colonne par ordre croissant',
-    'DATATABLES_SORTDESCENDING' => ': activer pour trier la colonne par ordre d&eacute;croissant',
+    'DATATABLES_SORTDESCENDING' => ': activer pour trier la colonne par ordre décroissant',
     'DATATABLES_COLS_TO_DISPLAY' => 'Colonnes à afficher',
     'DELETE_COMMENT_AND_ANSWERS' => 'Supprimer ce commentaire et les réponses associées ?',
-
     'NAVBAR_EDIT_MESSAGE' => 'Editer une zone du menu horizontal',
-
     'YESWIKIMODAL_EDIT_MSG' => 'Éditer la page',
     'EDIT_OUPS_MSG' => 'En fait, je ne voulais pas double-cliquer...',
-
     'COMMENT_NOT_DELETED' => 'Le commentaire {comment} n\'a pas été supprimé.',
     'COMMENT_DELETED' => 'Commentaire supprimé.',
-
-    // reactions
     'REACTION_NOT_POSSIBLE_TO_ADD_REACTION' => "Impossible d'ajouter la réaction en raison de l'erreur suivante : {error}!",
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => "Impossible de supprimer la réaction en raison de l'erreur suivante : {error}!",
     'REACTION_CONFIRM_DELETE' => 'Etes-vous sur de vouloir supprimer cette réaction ?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Etes-vous sur de vouloir supprimer toutes les réactions de ce vote ?',
-
-    // Doc
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'Modifier cette page sur Github',
+    'NOT_VALID_URL' => 'Url non valide : {url}',
+    'PAGE_AVAILABLE' => 'La page {tag} est disponible sur le YesWiki de destination',
+    'PAGE_NOT_AVAILABLE' => 'La page {tag} n\'est pas disponible sur le YesWiki de destination',
+    'NOT_CONNECTED' => 'Il faut se connecter au YesWiki de destination avec un compte disposant de droits d\'administration.',
+    'CONNECTED_AS_ADMIN' => 'L\'utilisateurice {user} est bien connecté.e sur le YesWiki de destination, avec des droits d\'administration.',
+    'CONNECTED_BUT_NOT_ADMIN' => 'L\'utilisateurice {user} est bien connecté.e sur le YesWiki de destination, mais n\'a pas les droits d\'administration. Veuillez-vous connecter avec un compte admin.',
+    'NOT_WIKI_OR_OLD_WIKI' => 'Le site indiqué ne semble pas être un YesWiki, ou sa version est antérieure à 4.5.0',
+    'FORM_ID_AVAILABLE' => 'Le formulaire avec l\'identifiant {id} n\'existant pas encore sur l\'url indiqué, il sera créé.',
+    'FORM_ID_NOT_AVAILABLE' => 'Le formulaire avec l\'identifiant {id} n\'est plus disponible sur l\'url indiqué, il faut changer d\'identifiant.',
+    'FORM_ID_IS_COMPATIBLE' => 'Un formulaire du même identifiant ({id}) existe sur l\'url indiqué et semble avoir au moins les champs obligatoires similaires. Il sera utilisé pour la duplication.',
 ];

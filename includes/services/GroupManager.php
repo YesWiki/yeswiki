@@ -20,17 +20,16 @@ class GroupManager
      */
     public function groupExists(string $group_name): bool
     {
-        return $this->tripleStore->getMatching(GROUP_PREFIX . $group_name, null, null, '=') != null | $this->userManager->userExist($group_name);
-
+        return $this->tripleStore->getMatching(GROUP_PREFIX . $group_name, null, null, '=') != null || $this->userManager->userExist($group_name);
     }
 
     /**
      * create group with members.
      */
-    public function create(string $group_name, array $members): void
+    public function create(string $group_name, array $members): int
     {
         $member_str = implode("\n", $members);
-        $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $member_str, GROUP_PREFIX);
+        return $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $member_str, GROUP_PREFIX);
     }
 
     public function delete(string $group_name): void

@@ -103,8 +103,9 @@
 					<div class="form-group">
 						<label class="control-label col-sm-3" title="{{ _t('ALT_INFOS') }}">{{ _t('ALTERNATIVE_TEXT') }}</label>
 						<div class="controls col-sm-9">
-							<input type="text" name="attach_alt" value="" class="attach_alt form-control">
+							<input type="text" name="attach_alt" value="" class="attach_alt form-control" aria-describedby="helpAltBlock">
 						</div>
+            <span id="helpAltBlock" class="help-block">{{ _t('ALT_INFOS')}}</span>
 					</div>
 
           <a title="{{ _t('SEE_THE_ADVANCED_PARAMETERS') }}" href="#avanced-settings" data-toggle="collapse" class="btn btn-default">{{ _t('ADVANCED_PARAMETERS') }}</a>

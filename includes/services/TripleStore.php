@@ -103,7 +103,20 @@ class TripleStore
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        return $this->dbService->loadAll($sql);
+        // Add a local in function cache
+        // TODO This cache should be shared with "$this->cacheByResource[$res][$prop]"
+        //      - but $res in this cache can be with a $re_prefix
+        //      - but $prop in this cache can be with $prop_prefix
+        //      - $re_prefix and $prop_prefix are not parameters of the getMatching function
+        // TODO This cache is not invalidated if the object is deleted or updated (like $this->cacheByResource)
+        //
+        static $cache = [];
+
+        if (!array_key_exists($sql, $cache)) {
+            $cache[$sql] = $this->dbService->loadAll($sql);
+        }
+
+        return $cache[$sql];
     }
 
     /**

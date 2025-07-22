@@ -9,17 +9,14 @@ actions:
       url:
         label: _t(AB_syndication_action_url_label)
         hint: _t(AB_syndication_action_url_hint)
-        value: yeswiki.net, lemonde.fr
+        value: https://forum.yeswiki.net/c/annonces/8.rss, https://www.mediapart.fr/articles/feed
         type: url
         required: true
-      #      title:
-      #       label: _t(AB_syndication_action_title_label)
-      #       type: text
       source:
         label: _t(AB_syndication_action_source_label)
         hint: _t(AB_syndication_action_source_hint)
         type: text
-        value: Yeswiki, le Monde
+        value: Annonces forum YesWiki, Articles mediapart
       nb:
         label: _t(AB_syndication_action_nb_label)
         type: number
@@ -27,9 +24,19 @@ actions:
         type: list
         label: _t(AB_syndication_action_template_label)
         options:
-          accordeon.tpl.html: _t(AB_syndication_action_template_acordion)
-          liste.tpl.html: _t(AB_syndication_action_template_list)
-          liste_description.tpl.html: _t(AB_syndication_action_template_list_and_description)
+          accordeon.twig: _t(AB_syndication_action_template_acordion)
+          liste.twig: _t(AB_syndication_action_template_list)
+          liste_description.twig: _t(AB_syndication_action_template_list_and_description)
+      showimage:
+        type: checkbox
+        label: _t(AB_syndication_action_show_image)
+        default: '0'
+        checkedvalue: '1'
+        uncheckedvalue: '0'
+      title:
+        advanced: true
+        label: _t(AB_syndication_action_title_label)
+        type: text
       nouvellefenetre:
         advanced: true
         label: _t(AB_syndication_action_nouvellefenetre_label)
@@ -46,3 +53,8 @@ actions:
           jma: _t(AB_syndication_action_formatdate_option_jma)
           jmh: _t(AB_syndication_action_formatdate_option_jmh)
           jmah: _t(AB_syndication_action_formatdate_option_jmah)
+      mapping:
+        advanced: true
+        label: _t(AB_syndication_action_mapping_bazar)
+        hint: _t(AB_syndication_action_mapping_hint)
+        type: text

@@ -2,14 +2,10 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $entryManager = $this->services->get(EntryManager::class);
 
 if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess('read')) {
-    if (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
+    if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
         $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
         $contentType = $semantic ? 'application/ld+json' : 'application/json';
 

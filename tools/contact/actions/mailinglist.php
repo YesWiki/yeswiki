@@ -1,13 +1,10 @@
 <?php
-/**
-* mailinglist.php.
-*
-* Description : action permettant d'inscrire ou d?sinscrire massivement des mails a une newsletter
-*/
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 
+/**
+ * mailinglist.php.
+ *
+ * Description : action permettant d'inscrire ou d?sinscrire massivement des mails a une newsletter
+ */
 include_once 'includes/email.inc.php';
 
 //recuperation des parametres

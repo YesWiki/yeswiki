@@ -10,7 +10,7 @@ export default {
   },
   // Define an entire group of fields to be added to the stage at a time.
   set: {
-    label: _t('BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL'),
+    label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_MAIN_LABEL'),
     name: 'conditionschecking',
     icon: '<i class="fas fa-project-diagram"></i>',
     fields: [
@@ -55,8 +55,8 @@ export default {
     return {
       field: '',
       onRender() {
-        renderHelper.prependHint(data, _t('BAZ_FORM_CONDITIONSCHEKING_HINT', { '\\n': '<BR>' }))
-        renderHelper.defineLabelHintForGroup(data, 'noclean', _t('BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT'))
+        renderHelper.prependHint(data, _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT', { br: '<BR>' }))
+        renderHelper.defineLabelHintForGroup(data, 'noclean', _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_HINT'))
       }
     }
   }

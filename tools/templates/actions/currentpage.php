@@ -1,12 +1,8 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $content = $this->getParameter('content');
 switch ($content) {
-    // todo finish the cases
+        // todo finish the cases
     case 'title':
         echo 'title';
         break;

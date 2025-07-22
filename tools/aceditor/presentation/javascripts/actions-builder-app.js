@@ -2,6 +2,7 @@ import InputHelper from './components/InputHelper.js'
 import InputHidden from './components/InputHidden.js'
 import InputText from './components/InputText.js'
 import InputPageList from './components/InputPageList.js'
+import InputNavLinks from './components/InputNavLinks.js'
 import InputCheckbox from './components/InputCheckbox.js'
 import InputList from './components/InputList.js'
 import InputDivider from './components/InputDivider.js'
@@ -9,6 +10,7 @@ import InputIcon from './components/InputIcon.js'
 import InputColor from './components/InputColor.js'
 import InputFormField from './components/InputFormField.js'
 import InputFacette from './components/InputFacette.js'
+import InputSortFields from './components/InputSortFields.js'
 import InputReaction from './components/InputReaction.js'
 import InputIconMapping from './components/InputIconMapping.js'
 import InputColorMapping from './components/InputColorMapping.js'
@@ -32,9 +34,11 @@ const components = {
   InputHidden,
   InputDivider,
   InputFacette,
+  InputSortFields,
   InputReaction,
   InputIconMapping,
   InputColorMapping,
+  InputNavLinks,
   InputGeo,
   InputClass,
   InputCorrespondance,
@@ -116,7 +120,7 @@ export const app = {
       this.configPanels.forEach((panel) => { result = { ...result, ...panel.params.properties } })
       return result
     },
-    wikiCodeBase() {
+    wikiCodeStart() {
       let actionId = this.selectedActionId
       if (this.isBazarListeAction) actionId = 'bazarliste'
       let result = `{{${actionId}`
@@ -126,18 +130,45 @@ export const app = {
       result += ' }}'
       return result
     },
+    wikiCodeDefaultContent() {
+      let content = this.selectedAction.wrappedContentExample
+      if (this.selectedActionId === 'tabs' && this.actionParams.titles) {
+        content = this.actionParams.titles.split(',')
+          .map((tabName) => this.selectedAction.wrappedContentExample.replace('{tabName}', tabName))
+          .join('\n')
+      }
+      if (this.selectedActionId === 'accordion') {
+        content = '\n'
+        for (let i = 0; i < this.values.nb; i++) {
+          content += `${this.selectedAction.wrappedContentExample}\n`
+        }
+      }
+      if (this.selectedActionId === 'grid') {
+        content = '\n'
+        const size = 12 / this.values.nb
+        for (let i = 0; i < this.values.nb; i++) {
+          content += `${this.selectedAction.wrappedContentExample.replace('{size}', size)}\n`
+        }
+      }
+      if (!['label', 'accordion', 'grid'].includes(this.selectedActionId)) content = `\n${content}\n`
+      return content
+    },
+    wikiCodeEnd() {
+      return `{{end elem="${this.selectedActionId}"}}`
+    },
     wikiCode() {
-      let result = this.wikiCodeBase
+      let result = this.wikiCodeStart
       if (this.selectedAction.isWrapper && !this.isEditingExistingAction) {
-        result += `\n${this.selectedAction.wrappedContentExample}{{end elem="${this.selectedActionId}"}}`
+        result += this.wikiCodeDefaultContent
+        result += this.wikiCodeEnd
       }
       return result
     },
     wikiCodeForIframe() {
-      let result = this.wikiCodeBase
+      let result = this.wikiCodeStart
       if (this.selectedAction.isWrapper && result) {
-        result += `${this.selectedAction.wrappedContentExample}\n`
-        result += `{{end elem="${this.selectedActionId}"}}`
+        result += this.wikiCodeDefaultContent
+        result += this.wikiCodeEnd
       }
       return result
     }
@@ -159,7 +190,9 @@ export const app = {
         // use a fake dom to parse wiki code attributes
         const fakeDom = $(`<${this.currentSelectedAction}/>`)[0]
 
-        for (const attribute of fakeDom.attributes) Vue.set(this.values, attribute.name, attribute.value)
+        for (const attribute of fakeDom.attributes) {
+          Vue.set(this.values, attribute.name, attribute.value)
+        }
 
         const newActionId = fakeDom.tagName.toLowerCase()
         this.selectedActionId = newActionId
@@ -319,7 +352,8 @@ export const app = {
         const config = this.selectedActionAllConfigs[key]
         const value = this.values[key]
         if (result.hasOwnProperty(key) || value === undefined || config && config.default && `${value}` == `${config.default}`
-            || typeof value == 'object' || config && !this.checkConfigDisplay(config)) { continue }
+            || typeof value == 'object' || config && config.mapped === false
+            || config && !this.checkConfigDisplay(config)) { continue }
         result[key] = value
       }
       // Adds values from special components

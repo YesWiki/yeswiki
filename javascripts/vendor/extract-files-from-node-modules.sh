@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Extract files that we need from the node_modules folder
 # The extracted files are integrated to the repository, so production server don't need to
@@ -133,5 +133,4 @@ cp -f node_modules/ace-builds/src-min-noconflict/ext-searchbox.js tools/aceditor
 # iframe-resizer
 mkdir -p javascripts/vendor/iframe-resizer && \
   cp -f node_modules/iframe-resizer/js/iframeResizer.min.js javascripts/vendor/iframe-resizer && \
-  cp -f node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer && \
-  cp -f node_modules/iframe-resizer/LICENSE javascripts/vendor/iframe-resizer
+  cp -f node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer

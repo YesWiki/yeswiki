@@ -2,10 +2,6 @@
 
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $themeManager = $this->services->get(ThemeManager::class);
 
 $param = $this->GetParameter('param');

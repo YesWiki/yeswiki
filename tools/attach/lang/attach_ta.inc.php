@@ -1,8 +1,7 @@
 <?php
+
 return [
-    // controllers/ApiController.php
     'ATTACH_GET_CACHE_URLIMAGE_NO_FILE' => 'பட கோப்பு இல்லை',
-    // libs/attach.lib.php
     'ATTACH_ACTION_ATTACH' => 'செயல் {{attach ...}}',
     'ATTACH_PARAM_DESC_REQUIRED' => 'ஒரு படத்திற்கான அளவுரு "கட்டாய"',
     'ATTACH_PARAM_HEIGHT_NOT_NUMERIC' => '"உயரம்" என்ற அளவுரு, பிக்சல்களில், இசையமைப்பை மட்டுமே செய்ய வேண்டும் & éacute; முழு புள்ளிவிவரங்களின்',
@@ -34,20 +33,16 @@ return [
     'ATTACH_PAGE_REVISION' => 'பக்க பதிப்பு',
     'ATTACH_FILE_REVISION' => 'கோப்பு பதிப்பு',
     'ATTACH_DELETION' => 'அடக்குமுறை',
-    // actions/filemanager.php
     'ATTACH_NO_RIGHTS_TO_ACCESS_FILEMANAGER' => 'நீங்கள் குற்றம் சாட்டப்பட வேண்டும்; Eacute; இணைப்பின் மேலாளருக்கு துல்லியமான பக்கம் & eacute;',
     'FILEMANAGER_ACTION_NEED_ACCESS' => 'இந்த பக்கத்தின் உரிமையாளர் மட்டுமே இணைக்கப்பட்ட கோப்பு மேலாளரை அணுக முடியும்',
-    // actions/backgroundimage.php
     'ATTACH_ACTION_BACKGROUNDIMAGE' => 'செயல் {{backgroundimage ...}}',
     'ATTACH_PARAM_FILE_OR_BGCOLOR_NOT_FOUND' => 'நீங்கள் "கோப்பு" அளவுருவைக் கொண்ட ஒரு படத்தை அல்லது "BGColor" அளவுருவுடன் பின்னணி நிறத்தைக் குறிக்க வேண்டும்',
-    // actions/player.php
     'ATTACH_ACTION_PLAYER' => 'செயல் {{player ...}}',
     'ATTACH_DOWNLOAD_THE_FILE' => 'எல் & eacute கோப்பை ஏற்றவும்',
     'ATTACH_URL_NOT_VALID' => 'முகவரி செல்லுபடியாகாது அல்லது திறந்திருக்க முடியாது',
     'ATTACH_PARAM_URL_REQUIRED' => 'கட்டாய "முகவரி" அளவுரு',
     'ATTACH_PLAYER_CAN_ONLY_OPEN_FILES_LIKE' => 'பிளேயர் எம்பி 3, எஃப்.எல்.வி மற்றும் எம்.எம் கோப்புகள் மற்றும் உங்கள் முகவரி ஐ மட்டுமே படிக்க முடியும்',
     'ATTACH_NOT_LINKED_TO_GOOD_FILE_EXTENSION' => 'இந்த வகை கோப்புகளை சுட்டிக்காட்ட வேண்டாம்',
-    // actions/pointimage.php
     'ATTACH_ACTION_POINTIMAGE' => 'செயல் {{pointimage ...}}',
     'ATTACH_PARAM_FILE_NOT_FOUND' => 'கட்டாய "கோப்பு" அளவுரு',
     'ATTACH_PARAM_FILE_MUST_BE_IMAGE' => 'அளவுரு "என்பது ஒரு படமாக இருக்க வேண்டும் (எச்.வி.சி, சி.ஐ.எஃப், சே.பி.சி, சே.பி.சி, பி.என்.சி)',
@@ -57,14 +52,11 @@ return [
     'ATTACH_DESCRIPTION' => 'விவரம்',
     'ATTACH_CANCEL' => 'ரத்துசெய்',
     'ATTACH_SAVE' => 'சேமிக்கவும்',
-    // actions/video.php
     'ATTACH_ACTION_VIDEO_PARAM_ERROR' => 'வீடியோ செயலை "ஐடி" மற்றும் "சேவையகம்" அளவுருக்கள் மூலம் அழைக்க வேண்டும். "சேவையகம்" க்கு, "விமியோ" அல்லது "யூடியூப்" அல்லது "பீர்டியூப்" மதிப்புகள் மட்டுமே ஏற்றுக்கொள்ளப்படுகின்றன.',
-    // actions/pdf.php
     'ATTACH_ACTION_PDF_PARAM_URL_ERROR' => 'PDF நடவடிக்கை "முகவரி" அளவுருவுடன் அழைக்கப்பட வேண்டும், மேலும் தகவலறிந்த முகவரி விக்கியின் அதே தோற்றத்திலிருந்து வர வேண்டும்: அதாவது சேவையகத்தின் அதே துணை டொமைனைப் பற்றி சொல்ல வேண்டும் (எடுத்துக்காட்டாக \'xxx.yyy.com\') , அதே வரைபடத்திலிருந்து (எடுத்துக்காட்டாக \'https\') மற்றும் அதே துறைமுகம் குறிப்பிடப்பட்டால் (எடுத்துக்காட்டாக \'8080\').',
     'ATTACH_ACTION_DISPLAY_PDF_TEXT' => 'பக்கத்தில் PDF ஐக் காட்டுங்கள்:',
     'ATTACH_ACTION_DISPLAY_PDF_LINK_TEXT' => 'ஒரு இணைப்பின் வடிவத்தில்',
     'ATTACH_ACTION_DISPLAY_PDF_INCLUDED_TEXT' => 'பக்கத்தில் நேரடியாக சேர்க்கப்பட்டுள்ளது',
-    // handler edit
     'ACTIVATE_JS_TO_UPLOAD_FILES' => 'கோப்புகளை இணைக்க சாவாச்கிரிப்டை செயல்படுத்தவும்',
     'UPLOAD_A_FILE' => 'சேர / அதற்கு பதிலாக ஒரு கோப்பு',
     'UPLOAD_A_FILE_SHORT' => 'கோப்பு',
@@ -93,14 +85,12 @@ return [
     'CENTER' => 'நடுவண்',
     'RIGHT' => 'சரி',
     'FAILED' => '& Eacute;',
-    // handler ajaxupload
     'ATTACH_HANDLER_AJAXUPLOAD_FOLDER_NOT_READABLE' => 'பதிவிறக்க கோப்புறை எழுத்துப்பூர்வமாக அணுக முடியாது.',
     'ATTACH_HANDLER_AJAXUPLOAD_NO_FILE' => 'கோப்புகள் அனுப்பப்படவில்லை.',
     'ATTACH_HANDLER_AJAXUPLOAD_EMPTY_FILE' => 'கோப்பு காலியாக உள்ளது.',
     'ATTACH_HANDLER_AJAXUPLOAD_FILE_TOO_LARGE' => 'கோப்பு மிகவும் அகலமானது.',
     'ATTACH_HANDLER_AJAXUPLOAD_AUTHORIZED_EXT' => 'கோப்பில் அங்கீகரிக்கப்பட்ட நீட்டிப்பு இல்லை, இங்கே அங்கீகரிக்கப்பட்டவை: {ext}.',
     'ATTACH_HANDLER_AJAXUPLOAD_ERROR' => 'கோப்பை சேமிக்க முடியவில்லை. பதிவேற்றம் ரத்து செய்யப்பட்டது அல்லது சேவையகம் நடப்பட்டது ...',
-    // edit config action
     'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_VIDEO_SERVICE]' => 'இயல்புநிலை வீடியோ பணி (PEERTUBE, YouTube அல்லது VIMEO)',
     'EDIT_CONFIG_HINT_ATTACH-VIDEO-CONFIG[DEFAULT_PEERTUBE_INSTANCE]' => 'இயல்புநிலை PEERTUBE சேவையகத்தின் முகவரி',
     'EDIT_CONFIG_HINT_MAX_FILE_SIZE' => 'சேகரிக்கப்பட்ட கோப்புகளின் அதிகபட்ச அளவு - பைட்டுகள் (எ.கா. சேகரிக்கப்பட்ட கோப்புகளின் அதிகபட்ச அளவு (எ.கா: 2097152, 2048 கே, 2 மீ)',

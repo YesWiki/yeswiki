@@ -15,13 +15,16 @@ class GroupController extends YesWikiController
 {
     protected $groupManager;
     protected $userManager;
+    protected $authController;
 
     public function __construct(
         GroupManager $groupManager,
-        UserManager $userManager
+        UserManager $userManager,
+        AuthController $authController
     ) {
         $this->groupManager = $groupManager;
         $this->userManager = $userManager;
+        $this->authController = $authController;
     }
 
     private function isNameValid(string $name): bool
@@ -79,11 +82,11 @@ class GroupController extends YesWikiController
                         throw new InvalidInputException(_t('ERROR_RECURSIVE_GROUP'));
                 }
             }
-            $this->groupManager->create($name, $members);
+            $group_created = $this->groupManager->create($name, $members);
         } else {
             throw new InvalidGroupNameException(_t('INVALID_GROUP_NAME'));
         }
-        if ($this->groupManager->groupExists($name)) {
+        if ($group_created != 1) {
             $entry = $this->groupManager->getMembers($name);
 
             return ['name' => $name, 'members' => $entry];
@@ -131,7 +134,7 @@ class GroupController extends YesWikiController
      * Check if member is valid for group. Perform following check :
      *  - if $member is a user, check if the user exists
      *  - if $member is a group, check if the group exists
-     *  - if $member is a group, check if the group doesn't define itself recursively
+     *  - if $member is a group, check if the group doesn't define itself recursively.
      *
      * @param string $groupName (without !/@)
      * @param string $member    (with !/@ if present)
@@ -219,6 +222,12 @@ class GroupController extends YesWikiController
         if (!$this->groupManager->groupExists($groupName)) {
             throw new GroupNameDoesNotExistException(_t('GROUP_NAME_DOES_NOT_EXIST'));
         }
+        if ($groupName == ADMIN_GROUP) {
+            $currentUser = $this->authController->getLoggedUser()['name'];
+            if (in_array($currentUser, $members)) {
+                throw new InvalidInputException(_t('USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN'));
+            }
+        }
         $this->groupManager->removeMembers($groupName, $members);
     }
 
@@ -243,9 +252,9 @@ class GroupController extends YesWikiController
                 case 0:
                     break;
                 case 1:
-                    throw new UserNameDoesNotExistException(_t('USER_NAME_DOES_NOT_EXIST') . ' : ' . $member . ' ');
+                    throw new UserNameDoesNotExistException(_t('USER_NAME_DOES_NOT_EXIST') . ' : ' . $member);
                 case 2:
-                    throw new GroupNameDoesNotExistException('included ' . _t('GROUP_NAME_DOES_NOT_EXIST'));
+                    throw new GroupNameDoesNotExistException('included "' . $member . '" ' . _t('GROUP_NAME_DOES_NOT_EXIST'));
                 case 3:
                     throw new InvalidInputException(_t('ERROR_RECURSIVE_GROUP'));
             }
@@ -268,6 +277,12 @@ class GroupController extends YesWikiController
      */
     public function update(string $groupName, array $members): void
     {
+        if ($groupName == ADMIN_GROUP) {
+            $currentUser = $this->authController->getLoggedUser()['name'];
+            if (!in_array($currentUser, $members)) {
+                throw new InvalidInputException(_t('USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN'));
+            }
+        }
         $this->addOrUpdate($groupName, $members, false);
     }
 }

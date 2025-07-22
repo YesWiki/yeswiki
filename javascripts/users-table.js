@@ -31,11 +31,10 @@ const usersTableService = {
             '',
             userEmail,
             signuptime,
-            '',
             ''
           ]).draw()
           if (userLink !== '') {
-            $(`#users-table-link-change-password`).html("<br/><label>"+_t('LINK_TO_CHANGE_PASSWORD')+"</label><br/><a href='"+userLink+"' target='_blank'>"+userLink+"</a>")
+            $('#users-table-link-change-password').html(`<br/><label>${_t('LINK_TO_CHANGE_PASSWORD')}</label><br/><a href='${userLink}' target='_blank'>${userLink}</a>`)
           }
           toastMessage(_t('USERSTABLE_USER_CREATED', { name: userName }), 1100, 'alert alert-success')
         },

@@ -1,4 +1,5 @@
 <?php
+
 /*
 Some usefull functions to deal with internationalisation
 
@@ -19,9 +20,6 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 // Security check
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 
 /**
  * Translate the text in the page's language.
@@ -34,14 +32,14 @@ function _t($textkey, $params = [])
 {
     if (isset($GLOBALS['translations'][$textkey])) {
         $result = $GLOBALS['translations'][$textkey];
-        foreach ($params as $transKey => $value) {
-            $result = str_replace('%{' . $transKey . '}', $value, $result);
-        }
-
-        return $result;
     } else {
-        return $textkey;
+        $result = $textkey;
     }
+    foreach ($params as $transKey => $value) {
+        $result = str_replace('%{' . $transKey . '}', $value, $result);
+    }
+
+    return $result;
 }
 
 /**
@@ -74,24 +72,24 @@ function _convert($text, $fromencoding, $database = false)
                     YW_CHARSET,
                     mb_detect_encoding($text, 'UTF-8, ISO-8859-1, ISO-8859-15', true)
                 );
-            //return \ForceUTF8\Encoding::toLatin1($text);
+            // return \ForceUTF8\Encoding::toLatin1($text);
             } else {
                 return $text;
             }
         } else {
             if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
-                $text = \ForceUTF8\Encoding::toUTF8($text);
+                $text = ForceUTF8\Encoding::toUTF8($text);
 
-                return \ForceUTF8\Encoding::fixUTF8($text);
+                return ForceUTF8\Encoding::fixUTF8($text);
             } else {
-                //return $text;
+                // return $text;
                 // if (strstr($text, 'disposition selon'))  {
                 //   var_dump(strip_tags($text), \ForceUTF8\Encoding::fixUTF8(strip_tags($text)));
                 //   exit;
                 //
                 // }
 
-                return \ForceUTF8\Encoding::fixUTF8($text);
+                return ForceUTF8\Encoding::fixUTF8($text);
             }
         }
     }
@@ -126,6 +124,7 @@ function detectAvailableLanguages()
  *  copied from http://php.net/manual/en/function.http-negotiate-language.php#example-4353.
  *
  *  @array $available_languages        array with language-tag-strings (must be lowercase) that are available
+ *
  *  @string $http_accept_language a HTTP_ACCEPT_LANGUAGE string (read from $_SERVER['HTTP_ACCEPT_LANGUAGE'] if left out)
  *  @string $page    name of WikiPage to check for informations on language
  */
@@ -266,7 +265,7 @@ function initI18n()
         isset($GLOBALS['wiki']->config['charset']) ? $GLOBALS['wiki']->config['charset'] : 'UTF-8'
     );
     // supported languages
-    define('SUPPORTED_LANGS', ['ca', 'en', 'es', 'fr', 'nl', 'pt']);
+    define('SUPPORTED_LANGS', ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro']);
 
     // get the language list
     require_once 'lang/languages_list.php';
@@ -313,7 +312,7 @@ function load_translations($returnedArray, bool $jsmode = false)
 {
     $translationName = $jsmode ? 'translations_js' : 'translations';
     if (is_array($returnedArray)) {
-        $GLOBALS[$translationName] = array_merge(($GLOBALS[$translationName] ?? []), $returnedArray);
+        $GLOBALS[$translationName] = array_merge($GLOBALS[$translationName] ?? [], $returnedArray);
     }
 }
 

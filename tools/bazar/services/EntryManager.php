@@ -333,9 +333,14 @@ class EntryManager
                                 $requeteSQL .= ' NOT ';
                                 $nom = substr($nom, 0, -1);
                             }
-                            $requeteSQL .= '(body REGEXP \'"' . $nom . '":("' . $rawCriteron .
-                                '"|"[^"]*,' . $rawCriteron . '"|"' . $rawCriteron . ',[^"]*"|"[^"]*,'
-                                . $rawCriteron . ',[^"]*")\')';
+
+                            if (($params['regexp'] ?? '0') == '1') {
+                                $requeteSQL .= 'JSON_VALID(body) AND JSON_EXTRACT(body, "$.' . $nom . '") REGEXP "' . $val . '"';
+                            } else {
+                                $requeteSQL .= '(body REGEXP \'"' . $nom . '":("' . $rawCriteron .
+                                    '"|"[^"]*,' . $rawCriteron . '"|"' . $rawCriteron . ',[^"]*"|"[^"]*,'
+                                    . $rawCriteron . ',[^"]*")\')';
+                            }
                         }
                     }
                 } else {
@@ -534,7 +539,8 @@ class EntryManager
             $data['id_fiche'],
             json_encode($data),
             '',
-            $ignoreAcls // Ignore les ACLs
+            $ignoreAcls, // Ignore les ACLs
+            $data['date_maj_fiche']
         );
 
         // on cree un triple pour specifier que la page wiki creee est une fiche
@@ -784,16 +790,19 @@ class EntryManager
      * prepare la requete d'insertion ou de MAJ de la fiche en supprimant
      * de la valeur POST les valeurs inadequates et en formattant les champs.
      *
-     * @param $data
+     * @param $data current raw entry values
      *
-     * @return array
+     * @return array with extra calculated fields like id_fiche, and time, and handled fields with acls
      *
      * @throws Exception
      */
-    public function formatDataBeforeSave($data, bool $isCreation = false)
+    public function formatDataBeforeSave($data, bool $isCreation = false): array
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        if (empty($form)) {
+            throw new Exception('No form with id: ' . $data['id_typeannonce']);
+        }
 
         // If there is a title field, compute the entry's title
         if (is_array($form['prepared'])) {
@@ -820,7 +829,7 @@ class EntryManager
 
         // Get creation date if it exists, initialize it otherwise
         $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $data['id_fiche'] . "'");
-        $data['date_creation_fiche'] = $result['firsttime'] ? $result['firsttime'] : date('Y-m-d H:i:s', time());
+        $data['date_creation_fiche'] = $data['date_creation_fiche'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
         // Entry status
         if ($this->wiki->UserIsAdmin()) {
@@ -851,7 +860,7 @@ class EntryManager
             throw new Exception('$data[\'id_fiche\'] is empty !');
         }
 
-        $data['date_maj_fiche'] = date('Y-m-d H:i:s', time());
+        $data['date_maj_fiche'] = $data['date_maj_fiche'] ?? date('Y-m-d H:i:s', time());
 
         // on enleve les champs hidden pas necessaires a la fiche
         unset($data['valider']);
@@ -1179,5 +1188,13 @@ class EntryManager
         }
 
         return $entriesIds;
+    }
+
+    private function duplicate($sourceTag, $destinationTag): bool
+    {
+        $result = false;
+        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');
+
+        return $result;
     }
 }

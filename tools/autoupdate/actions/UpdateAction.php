@@ -25,6 +25,20 @@ class UpdateAction extends YesWikiAction
             return $this->render('@autoupdate/norepo.twig', []);
         }
 
+        // At the time we introduced the migration concept in YesWiki, the old code was not redirecting
+        // to "post_install" action. So we add this code to detect the first time the code is run
+        // after migrations are introduced, and we run them.
+        $migrationService = $this->getService(MigrationService::class);
+        if (count($migrationService->getCompletedMigrations()) === 0) {
+            $messages = $migrationService->run();
+            foreach ($messages as $message) {
+                flash(
+                    $message['text'] . ' : ' . $message['status'],
+                    $message['status'] == _t('AU_OK') ? 'success' : 'error'
+                );
+            }
+        }
+
         $action = $securityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
         if (empty($action) || !$this->wiki->UserIsAdmin() || $this->isWikiHibernated()) {
             // Base action, display current status of software, extension and themes
@@ -73,7 +87,7 @@ class UpdateAction extends YesWikiAction
                     $messages = [];
                 }
                 // Run migrations
-                $migrationMessages = $this->getService(MigrationService::class)->run();
+                $migrationMessages = $migrationService->run();
                 $messages = array_merge($messages, $migrationMessages->toArray());
                 break;
             case 'update_admin_pages':

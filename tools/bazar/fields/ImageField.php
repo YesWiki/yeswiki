@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
+use Tamtamchik\SimpleFlash\Flash;
 
 /**
  * @Field({"image"})
@@ -53,6 +54,7 @@ class ImageField extends FileField
         if (file_exists($this->getBasePath() . $default_image_filename)) {
             return $default_image_filename;
         }
+
         return false;
     }
 
@@ -91,6 +93,7 @@ class ImageField extends FileField
                 || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
             ) {
                 $img = $value ? $value : $imgDefault;
+
                 return $output . ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', [
                     'value' => $img,
                     'downloadUrl' => $this->getBasePath() . $img,
@@ -165,10 +168,10 @@ class ImageField extends FileField
                         }
                     }
                 } else {
-                    flash(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')), 'info');
+                    Flash::info(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')));
                 }
             } else {
-                flash(_t('BAZ_NOT_AUTHORIZED_EXTENSION'), 'error');
+                Flash::error(_t('BAZ_NOT_AUTHORIZED_EXTENSION'));
 
                 return [$this->propertyName => ''];
             }
@@ -182,6 +185,7 @@ class ImageField extends FileField
         } else {
             $entry[$this->propertyName] = '';
         }
+
         return [
             $this->propertyName => $this->getValue($entry),
             'fields-to-remove' => ['oldimage_' . $this->propertyName],

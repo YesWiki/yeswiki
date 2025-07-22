@@ -1,15 +1,11 @@
 <?php
+
 return [
-    // actions/abonnement.php
     'CONTACT_ACTION_ABONNEMENT' => 'Acció {{abonnement ...}}',
     'CONTACT_MAIL_REQUIRED' => 'L\'adreça email de contacte és obligatòria.',
-    // actions/contact.php
     'CONTACT_ACTION_CONTACT' => 'Acció {{contact ...}}',
-    // actions/desabonnement.php
     'CONTACT_ACTION_DESABONNEMENT' => 'Acció {{desabonnement ...}}',
-    // actions/listsubscription.php
     'CONTACT_ACTION_LISTSUBSCRIPTION' => 'Acció {{listsubscription ...}}',
-    // actions/mailinglist.php
     'CONTACT_ACTION_MAILINGLIST' => 'Acció {{mailinglist ...}}',
     'CONTACT_PARAMETER_LIST_REQUIRED' => 'El paràmetre "list" és obligatori (és l\'adreça email de la llista de difusió)',
     'CONTACT_MAILS_TO_ADD_OR_REMOVE' => 'Correus que cal afegir o suprimir de la llista',
@@ -44,8 +40,6 @@ return [
     'CONTACT_MESSAGE_NOT_SENT' => 'El missatge no s\'ha pogut enviar... potser és un problema de la configuració del servidor?',
     'CONTACT_SUBSCRIBE_ORDER_SENT' => 'La petició de registre ha estat enviada. Moltes gràcies!',
     'CONTACT_UNSUBSCRIBE_ORDER_SENT' => 'La petició de baixa ha estat enviada. Moltes gràcies!',
-    'CONTACT_HANDLER_MAIL_FOR_ADMINS' => 'El gestor de correu està reservat als administradors.',
-    'CONTACT_LOGIN_IF_ADMIN' => 'Si sou membre d\'aquest grup, identifiqueu-vos sisplau.',
     'CONTACT_SUBSCRIBE' => 'Registrar-se',
     'CONTACT_UNSUBSCRIBE' => 'Donar-se de baixa',
     'CONTACT_FROM' => 'De',
@@ -92,21 +86,21 @@ return [
     'CONTACT_WELCOME_ON' => 'Benvinguts',
     'CONTACT_HELP_IN_NOTIFICATION' => 'vés al contingut',
     'CONTACT_NEW_USER_SUBJECT' => 'Els vostres nous identificadors al lloc',
-    'AB_contact_group_label' => "Correu electrònic",
+    'AB_contact_group_label' => 'Correu electrònic',
     'AB_abonnement_action_label' => "Subscriure's a una llista de discussió",
     'AB_abonnement_template_label' => 'plantilla',
     'AB_abonnement_class_label' => 'classe',
     'AB_abonnement_mailinglist_label' => 'Llista de discussió',
-    'AB_deabonnement_action_label' => "Subscriure's a una llista de discussió",
-    'AB_contact_action_label' => 'Formulari de contacte',
-    'AB_contact_action_entete_default' => 'Enviat del lloc...',
-    'AB_contact_action_template_label' => 'Plantilla personalitzada',
-    'AB_contact_action_template_hint' => 'Ex.: complet-contact-form.tpl.html',
-    'AB_contact_action_class_label' => 'cs',
-    'AB_listsubscription_action_label' => 'llista',
-    'AB_mailperiod_action_label' => "Subscriu-te per rebre el contingut d'una pàgina periòdicament per correu electrònic",
-    'AB_mailperiod_action_hint' => 'Per a aquesta acció de treball cal comprovar certs paràmetres del servidor. Veure documents a https://yeswiki.net/?MailPeriod',
-    'AB_mailinglist_action_label' => 'Correu electrònic massiu a un butlletí',
-    'AB_mailinglist_action_description' => "Acció per donar-se d'alta o donar-se de baixa massivament de correus electrònics",
-    'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Afegir 'wiki=' als enllaços d'aquest wiki en correus electrònics",
+    'AB_deabonnement_action_label' => "Donar-se de baixa d'una llista de discussió",
+    'AB_contact_action_label' => 'Anunciar un formulari de contacte',
+    'AB_contact_action_entete_default' => 'Enviat des del lloc...',
+    'AB_contact_action_template_label' => 'Template personalitzat',
+    'AB_contact_action_template_hint' => 'Ex.: complete-contacte-form.tpl.html',
+    'AB_contact_action_class_label' => 'classifica css',
+    'AB_listsubscription_action_label' => 'listsubscription',
+    'AB_mailperiod_action_label' => "Abonar-se per rebre periòdicament el contingut d'una pàgina per email",
+    'AB_mailperiod_action_hint' => 'Perquè aquesta acció funcioni heu de verificar certs paràmetres sobre el vostre servidor. Veure la documentació sobre https://yeswiki.net/?MailPeriod',
+    'AB_mailinglist_action_label' => 'Inscriure massivament correus a un butlletí informatiu',
+    'AB_mailinglist_action_description' => 'Acció permetent inscriure o désinscrire massivament dels correus a un butlletí informatiu',
+    'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => "Afegir 'wiki=' als enllaços cap a aquest wiki en els e-mails",
 ];

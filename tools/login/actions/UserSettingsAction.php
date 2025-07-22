@@ -4,6 +4,7 @@ namespace YesWiki\Login;
 
 use Exception;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use Tamtamchik\SimpleFlash\Flash;
 use Throwable;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
@@ -11,6 +12,7 @@ use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\ExitException;
+use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
@@ -26,6 +28,7 @@ class UserSettingsAction extends YesWikiAction
         'changepass',
         'signup',
         'checklogged',
+        'resetpass',
     ];
 
     private $authController;
@@ -43,7 +46,6 @@ class UserSettingsAction extends YesWikiAction
     private $referrer;
     private $wantedEmail;
     private $wantedUserName;
-    private $userlink;
 
     public function formatArguments($arg)
     {
@@ -61,11 +63,6 @@ class UserSettingsAction extends YesWikiAction
         $this->errorPasswordChange = '';
         $this->referrer = '';
         $user = $this->getUser($_GET ?? []);
-        if (!boolval($this->wiki->config['contact_disable_email_for_password']) && !empty($user)) {
-            $this->userlink = $this->userManager->getLastUserLink($user);
-        } else {
-            $this->userlink = '';
-        }
 
         $this->doPrerenderingActions($_POST ?? [], $user);
 
@@ -142,6 +139,9 @@ class UserSettingsAction extends YesWikiAction
             case 'changepass':
                 $this->changePassword($user, $post);
                 break;
+            case 'resetpass':
+                $this->resetPassword($user, $post);
+                break;
             case 'checklogged':
                 $this->checklogged($post);
                 break;
@@ -165,7 +165,6 @@ class UserSettingsAction extends YesWikiAction
                 'referrer' => $this->referrer,
                 'user' => $user,
                 'userLoggedIn' => $this->userLoggedIn,
-                'userlink' => $this->userlink
             ]);
         } else {
             $captcha = $this->securityController->renderCaptchaField();
@@ -180,12 +179,12 @@ class UserSettingsAction extends YesWikiAction
             // TODO remove the .tpl.html for ectoplasme and use directly .twig
             return $this->render('@login/user-signup-form.tpl.html', [
                 'link' => $this->wiki->href(), // notice 'link' is not used in .twig TODO remove this line for ectoplasme
-                'namesToExport' => ['error', 'name', 'email', 'captcha'], // TOTO remove this line when removing .tpl.html
+                'namesToExport' => ['error', 'name', 'email', 'captcha', 'regexUserName'], // TOTO remove this line when removing .tpl.html
                 'error' => $this->error,
                 'name' => $this->wantedUserName,
                 'email' => $this->wantedEmail,
                 'captcha' => $captcha,
-                'userlink' => ''
+                'regexUserName' => UserController::PATTERN_USER_NAME,
             ]);
         }
     }
@@ -234,12 +233,6 @@ class UserSettingsAction extends YesWikiAction
                     $user,
                     $sanitizedPost
                 );
-                $this->userlink = '';
-                if (!boolval($this->wiki->config['contact_disable_email_for_password'])) {
-                    if ($this->userManager->sendPasswordRecoveryEmail($user, _t('LOGIN_PASSWORD_FOR'))) {
-                        $this->userlink = $this->userManager->getUserLink();
-                    }
-                }
 
                 $user = $this->userManager->getOneByEmail($sanitizedPost['email']);
 
@@ -291,12 +284,22 @@ class UserSettingsAction extends YesWikiAction
                     $this->wiki->Redirect($this->wiki->href());
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
-                } catch (BadFormatPasswordException | Throwable $ex) {
+                } catch (BadFormatPasswordException|Throwable $ex) {
                     // Something when wrong when updating the user in DB
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $ex->getMessage();
                 }
             }
         }
+    }
+
+    private function resetPassword(?User $user, array $post)
+    {
+        $link = $this->userManager->sendPasswordRecoveryEmail($user);
+        if (!boolval($this->wiki->config['contact_disable_email_for_password'])) {
+            Flash::success(str_replace('{email}', $user['email'], _t('RECOVERY_MESSAGE_SENT')));
+        }
+        $resetText = _t('RECOVERY_LINK');
+        Flash::success("<a href='$link' target='_blank'>$resetText</a>");
     }
 
     private function retrieveUsernameAndEmailFromPost(array $post)

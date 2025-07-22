@@ -9,19 +9,20 @@ use YesWiki\Security\Controller\SecurityController;
 
 class AceditorAction extends YesWikiAction
 {
-    public function formatArguments($args)
+    public function formatArguments($args): array
     {
         return [
             'name' => $args['name'] ?? 'aceditor',
             'value' => $args['value'] ?? '',
             'placeholder' => $args['placeholder'] ?? '',
             'rows' => $args['rows'] ?? 3,
+            'maxChars' => $args['maxChars'] ?? null,
             'tempTag' => $args['tempTag'] ?? null, // used in new entry form
             'saveButton' => $this->formatBoolean($args['saveButton'] ?? null, false),
         ];
     }
 
-    public function run()
+    public function run(): string
     {
         $data = $this->getService(ActionsBuilderService::class)->getData();
         $pageTags = $this->getService(PageManager::class)->getReadablePageTags();

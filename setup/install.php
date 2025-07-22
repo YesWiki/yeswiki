@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 if (empty($_POST['config'])) {
     header('Location: ' . myLocation());
     exit(_t('PROBLEM_WHILE_INSTALLING'));
@@ -35,6 +31,15 @@ if (!$version = trim($wakkaConfig['wikini_version'])) {
 if ($version) {
     test(_t('VERIFY_MYSQL_PASSWORD') . ' ...', isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD') . ' !');
 }
+
+// As of PHP 8.1.0, the default setting is MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT.
+// Previously, it was MYSQLI_REPORT_OFF.
+// https://www.php.net/manual/en/mysqli-driver.report-mode.php
+//
+// So mysqli_connect() will return an exception instead of 'false'.
+// To let tests in this script work, come back to MYSQLI_REPORT_OFF
+mysqli_report(MYSQLI_REPORT_OFF);
+
 test(_t('TEST_MYSQL_CONNECTION') . ' ...', $dblink = @mysqli_connect($config['mysql_host'], $config['mysql_user'], $config['mysql_password']));
 
 $testdb = test(
@@ -87,6 +92,14 @@ if (!$version || empty($_POST['admin_login'])) {
     unset($admin_password);
 }
 
+// Check the admin name based on the function sanitizeName() in UserController
+test(
+    _t('CHECKING_THE_ADMIN_NAME') . ' ...',
+    !empty($admin_name) && is_string($admin_name) && strlen($admin_name) <= 80 && preg_match('/^[^!#@<>\\\\\/][^<>\\\\\/]{2,}$/', $admin_name),
+    _t('USER_THIS_IS_NOT_A_VALID_NAME'),
+    1
+);
+
 $config['root_page'] = trim($config['root_page']);
 test(
     _t('CHECKING_ROOT_PAGE_NAME') . ' ...',
@@ -129,8 +142,10 @@ if (!$result) {
     mysqli_rollback($dblink);
     foreach ($tablesNames as $tableName) {
         try {
-            if (mysqli_num_rows(mysqli_query($dblink, "SHOW TABLES LIKE \"{$config['table_prefix']}$tableName\";")) !== 0 // existing table
-                && mysqli_num_rows(mysqli_query($dblink, "SELECT * FROM `{$config['table_prefix']}$tableName`;")) === 0) { /* empty table */
+            if (
+                mysqli_num_rows(mysqli_query($dblink, "SHOW TABLES LIKE \"{$config['table_prefix']}$tableName\";")) !== 0 // existing table
+                && mysqli_num_rows(mysqli_query($dblink, "SELECT * FROM `{$config['table_prefix']}$tableName`;")) === 0
+            ) { /* empty table */
                 mysqli_query($dblink, "DROP TABLE IF EXISTS `{$config['table_prefix']}$tableName`;");
             }
         } catch (\Throwable $th) {
@@ -220,8 +235,9 @@ foreach (['allow_raw_html', 'rewrite_mode'] as $name) {
 ?>
 <br />
 <div class="alert alert-info"><?php echo _t('NEXT_STEP_WRITE_CONFIGURATION_FILE'); ?>
-<tt><?php echo $wakkaConfigLocation; ?></tt>.</br>
-<?php echo _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE'); ?>.  </div>
+    <tt><?php echo $wakkaConfigLocation; ?></tt>.</br>
+    <?php echo _t('VERIFY_YOU_HAVE_RIGHTS_TO_WRITE_FILE'); ?>.
+</div>
 <?php
 $_POST['config'] = json_encode($config);
 require_once 'setup/writeconfig.php';

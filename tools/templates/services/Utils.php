@@ -41,8 +41,8 @@ class Utils
                 $image = $this->getResizedFilename($images[1], $page, $page['tag'], $width, $height, true);
             } else {
                 $images = [];
-                if (preg_match('/"imagebf_image":"(.*)"/U', $page['body'], $images) &&
-                        !empty($images[1])) {
+                if (preg_match('/"imagebf_image":"(.*)"/U', $page['body'], $images)
+                        && !empty($images[1])) {
                     $imageFileName = json_decode('"' . $images[1] . '"', true);
                     if (!empty($imageFileName)) {
                         if (file_exists("files/$imageFileName")) {
@@ -51,8 +51,8 @@ class Utils
                     }
                 } else {
                     $images = [];
-                    if (preg_match("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $page['body'], $images) &&
-                        !empty($images[1])) {
+                    if (preg_match("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $page['body'], $images)
+                        && !empty($images[1])) {
                         if (file_exists('files/' . basename($images[1][0]))) {
                             $image = $this->getResizedFilename('files/' . basename($images[1]), $page, $page['tag'], $width, $height, false);
                         }
@@ -72,9 +72,9 @@ class Utils
         $image = '';
         if ($this->params->has('opengraph_image')) {
             $opengraphImage = $this->params->get('opengraph_image');
-            if (!empty($opengraphImage) &&
-                is_string($opengraphImage) &&
-                file_exists($opengraphImage)
+            if (!empty($opengraphImage)
+                && is_string($opengraphImage)
+                && file_exists($opengraphImage)
             ) {
                 $image = "{$this->wiki->getBaseUrl()}/$opengraphImage";
             }
@@ -135,7 +135,7 @@ class Utils
             include_once 'tools/attach/libs/attach.lib.php';
         }
 
-        return new Attach($this->wiki);
+        return new \Attach($this->wiki);
     }
 
     /**
@@ -159,7 +159,7 @@ class Utils
     /**
      * Parcours des dossiers a la recherche de templates.
      *
-     * @param $directory : chemin relatif vers le dossier contenant les templates
+     * @param      $directory : chemin relatif vers le dossier contenant les templates
      * @param bool $isCustom
      *
      * return array : tableau des themes trouves, ranges par ordre alphabetique
@@ -245,9 +245,9 @@ class Utils
     /**
      * cree un diaporama a partir d'une PageWiki.
      *
-     * @param $pagetag : nom de la PageWiki
+     * @param $pagetag  : nom de la PageWiki
      * @param $template : fichier template pour le diaporama
-     * @param $class : classe CSS a ajouter au diaporama
+     * @param $class    : classe CSS a ajouter au diaporama
      */
     public function printDiaporama($pagetag, $template = 'diaporama_slides.tpl.html', $class = '')
     {
@@ -263,7 +263,7 @@ class Utils
             } else {
                 // $body_f = $this->wiki->Format($page["body"], 'wakka', $pagetag);
                 // on regarde si on gere la 2d pour reveal
-                //preg_match_all('/<h1>.*<\/h1>/m', $body_f, $titles);
+                // preg_match_all('/<h1>.*<\/h1>/m', $body_f, $titles);
                 preg_match_all('/======.*======/Um', $page['body'], $titles);
                 $istwodimensions = count($titles[0]) > 1;
                 $first = true;
@@ -283,7 +283,7 @@ class Utils
                     -1,
                     PREG_SPLIT_DELIM_CAPTURE
                 );
-                //var_dump($body);break;
+                // var_dump($body);break;
                 if (!$body) {
                     return '<div class="=alert alert-danger">'
                         . _t('TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW') . ' (' . $pagetag . ').</div>';
@@ -295,7 +295,7 @@ class Utils
                     $previousistitle = false;
                     foreach ($body as $slide) {
                         $slide = $this->wiki->Format($slide);
-                        //var_dump($slide);
+                        // var_dump($slide);
                         // s'il a des titres de niveau 1 ou 2 il s'agit des separateurs de diapo
                         if (preg_match('/<h[12]>.*<\/h[12]>/', $slide)) {
                             // s'il y a un titre de niveau 1 qui commence la diapositive, on la deplace en titre
@@ -310,7 +310,7 @@ class Utils
                                     $slides[$i]['opensection'] = true;
                                 }
                             }
-                            //pour les titres de niveau 2, on les transforme en titre 1
+                            // pour les titres de niveau 2, on les transforme en titre 1
                             $titles[$i] = str_replace('<h2', '<h1', $slide);
                             if ($previousistitle) {
                                 $slides[$i]['html'] = '';
@@ -328,7 +328,7 @@ class Utils
             }
 
             $buttons = '';
-            //si la fonction est appelee par le handler diaporama, on ajoute les liens d'edition et de retour
+            // si la fonction est appelee par le handler diaporama, on ajoute les liens d'edition et de retour
             if ($this->wiki->GetMethod() == 'diaporama') {
                 $buttons .= '<a class="btn" href="' . $this->wiki->href('', $pagetag) . '">&times;</a>' . "\n";
             }
@@ -397,12 +397,8 @@ class Utils
      */
     public function recupDroits($page)
     {
-        $readACL = $this->wiki->LoadAcl($page, 'read', false);
-        $writeACL = $this->wiki->LoadAcl($page, 'write', false);
-        $commentACL = $this->wiki->LoadAcl($page, 'comment', false);
-
         $acls = [
-            'page' => $page,
+            'page' => $page['tag'],
             'lire' => $this->wiki->GetConfigValue('default_read_acl'),
             'lire_default' => true,
             'ecrire' => $this->wiki->GetConfigValue('default_write_acl'),
@@ -410,16 +406,16 @@ class Utils
             'comment' => $this->wiki->GetConfigValue('default_comment_acl'),
             'comment_default' => true,
         ];
-        if (isset($readACL['list'])) {
-            $acls['lire'] = $readACL['list'];
+        if (!empty($page['acl_read'])) {
+            $acls['lire'] = $page['acl_read'];
             $acls['lire_default'] = false;
         }
-        if (isset($writeACL['list'])) {
-            $acls['ecrire'] = $writeACL['list'];
+        if (!empty($page['acl_write'])) {
+            $acls['ecrire'] = $page['acl_write'];
             $acls['ecrire_default'] = false;
         }
-        if (isset($commentACL['list'])) {
-            $acls['comment'] = $commentACL['list'];
+        if (!empty($page['acl_comment'])) {
+            $acls['comment'] = $page['acl_comment'];
             $acls['comment_default'] = false;
         }
 
@@ -433,7 +429,7 @@ class Utils
      *
      * @return string The title string
      */
-    public function getTitleFromBody($page)
+    public function getTitleFromBody($page): string
     {
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
@@ -445,7 +441,7 @@ class Utils
         if ($entryManager->isEntry($page['tag'])) {
             $entry = $entryManager->getOne($page['tag']);
             if (isset($entry['bf_titre'])) {
-                $title = _convert($entry['bf_titre'], 'UTF-8');
+                $title = $entry['bf_titre'];
             }
         } else {
             // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2

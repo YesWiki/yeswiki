@@ -1,12 +1,7 @@
 <?php
 
-// Vérification de sécurité
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Service\FormManager;
-
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 
 if (isset($_REQUEST['demand'])) {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
@@ -44,8 +39,8 @@ if (isset($_REQUEST['demand'])) {
     if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']) && (
             $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'POST' ||
-                $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
-                $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
+            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'DELETE' ||
+            $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] == 'PUT'
         )) {
             header('Access-Control-Allow-Credentials: true');
             header('Access-Control-Allow-Headers: X-Requested-With');
@@ -101,8 +96,10 @@ if (isset($_REQUEST['demand'])) {
                     $formtemplate = '';
                     $tableau = formulaire_valeurs_template_champs($tab_nature['bn_template']);
                     for ($i = 0; $i < count($tableau); $i++) {
-                        if ($tableau[$i][0] == 'liste' || $tableau[$i][0] == 'checkbox' ||
-                        $tableau[$i][0] == 'listefiche' || $tableau[$i][0] == 'checkboxfiche') {
+                        if (
+                            $tableau[$i][0] == 'liste' || $tableau[$i][0] == 'checkbox' ||
+                            $tableau[$i][0] == 'listefiche' || $tableau[$i][0] == 'checkboxfiche'
+                        ) {
                             $nom_champ = $tableau[$i][0] . $tableau[$i][1] . $tableau[$i][6];
                         } elseif ($tableau[$i][0] == 'image' || $tableau[$i][0] == 'fichier') {
                             $nom_champ = $tableau[$i][0] . $tableau[$i][1];
@@ -122,10 +119,12 @@ if (isset($_REQUEST['demand'])) {
                         } elseif ($tableau[$i][0] == 'labelhtml') {
                             $res .= $tableau[$i][0]($formtemplate, $tableau[$i], 'html', []);
                         } elseif ($tableau[$i][0] == 'inscriptionliste' || $tableau[$i][0] == 'utilisateur_wikini') {
-                        } elseif ($tableau[$i][0] == 'liste' || $tableau[$i][0] == 'textelong'
+                        } elseif (
+                            $tableau[$i][0] == 'liste' || $tableau[$i][0] == 'textelong'
                             || $tableau[$i][0] == 'jour' || $tableau[$i][0] == 'listedatefin'
                             || $tableau[$i][0] == 'listedatedeb' || $tableau[$i][0] == 'champs_mail'
-                            || $tableau[$i][0] == 'lien_internet') {
+                            || $tableau[$i][0] == 'lien_internet'
+                        ) {
                             $res .= '{{#if ' . $nom_champ . '}}' . "\n" .
                                 '<div class="BAZ_rubrique" data-id="' . $nom_champ . '">' . "\n" .
                                 '<span class="BAZ_label">' . $tableau[$i][2] . ' :</span>' . "\n" .
@@ -205,9 +204,11 @@ if (isset($_REQUEST['demand'])) {
             } else {
                 // sort on label
                 usort($forms, function ($a, $b) {
-                    if (!isset($a['bn_label_nature']) ||
+                    if (
+                        !isset($a['bn_label_nature']) ||
                         !isset($b['bn_label_nature']) ||
-                        $a['bn_label_nature'] == $b['bn_label_nature']) {
+                        $a['bn_label_nature'] == $b['bn_label_nature']
+                    ) {
                         return 0;
                     }
 

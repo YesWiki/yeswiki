@@ -79,7 +79,7 @@ export default {
       field: '',
       onRender() {
         renderHelper.prependHint(field, _t('BAZ_FORM_TABS_HINT', {
-          '\\n': '<BR>',
+          br: '<BR>',
           'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
           'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
         }))

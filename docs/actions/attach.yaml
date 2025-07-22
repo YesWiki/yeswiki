@@ -27,7 +27,6 @@ actions:
       nofullimagelink:
         label: _t(AB_attach_nofullimagelink_label)
         type: checkbox
-        default: '1'
         checkedvalue: '0'
         uncheckedvalue: '1'
         showif:

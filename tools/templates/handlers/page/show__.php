@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // on efface des événements javascript issus de wikini
 $plugin_output_new = str_replace('ondblclick="doubleClickEdit(event);"', '', $plugin_output_new);
 
@@ -39,9 +35,9 @@ if (!$this->HasAccess('read')) {
         $output = str_replace(
             '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>', // to sync with /handlers/page/show.php
             '<div class="alert alert-danger alert-error">' .
-            _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
-            '</div>' . "\n" .
-            $this->Format('{{login signupurl="0"}}'),
+                _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
+                '</div>' . "\n" .
+                $this->Format('{{login signupurl="0"}}'),
             $plugin_output_new
         );
     }

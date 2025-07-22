@@ -403,21 +403,22 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                     elseif (preg_match('/(?:^|(?<=\>""))(\#{1,6}) (.*)$/s', $thing, $matches)) {
                         $nb_hash_tags = strlen($matches[1]);
 
-                        return $this->titleHeader($nb_hash_tags) . $matches[2] . $this->titleHeader($nb_hash_tags);
+                        return $this->titleHeader($nb_hash_tags) . htmlspecialchars($matches[2]) . $this->titleHeader($nb_hash_tags);
                     }
                     // markdown italic compatibility
                     elseif (preg_match('/^_(.*)_$/s', $thing, $matches)) {
-                        return $this->inLineTag('i') . $matches[1] . $this->inLineTag('i');
+                        return $this->inLineTag('i') . htmlspecialchars($matches[1]) . $this->inLineTag('i');
                     }
                     // markdown italic compatibility 2
                     elseif (preg_match('/^\*(.*)\*$/s', $thing, $matches)) {
-                        return $this->inLineTag('i') . $matches[1] . $this->inLineTag('i');
+                        return $this->inLineTag('i') . htmlspecialchars($matches[1]) . $this->inLineTag('i');
                     }
                     // markdown images compatibility
                     elseif (preg_match('/^\!\[([^\]]*)\]\(([^\) ]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
                         $src = $matches[2];
-                        $alt = htmlspecialchars($matches[1]);
-                        $title = htmlspecialchars($matches[3]);
+                        $alt = htmlspecialchars($matches[1] ?? '');
+                        $title = htmlspecialchars($matches[3] ?? '');
+
                         return '<img loading="lazy" class="img-responsive" src="' . $src . '" alt="' . $alt . '" ' . (empty($title) ? '' : 'title="' . $title . '"') . ' />';
                     }
                     // if we reach this point, it must have been an accident.

@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // taille de la colonne
 $size = $this->GetParameter('size');
 if (empty($size)) {

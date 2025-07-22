@@ -1,13 +1,13 @@
 <?php
+
 return [
     'TEMPLATE_ACTION' => 'செயல்',
     'TEMPLATE_FILE_NOT_FOUND' => 'வார்ப்புரு அல்ல',
-    // actions/button.php
     'TEMPLATE_ACTION_BUTTON' => 'செயல் {{button ...}}',
     'TEMPLATE_LINK_PARAMETER_REQUIRED' => 'param & egrave; tre "இணைப்பு" WOMPIGATOIRE',
     'TEMPLATE_RSS_LAST_CHANGES' => 'ஃப்ளக்ச் ஆர்எச்எச் டெச் டெர்னி & எக்ரேவ்; ரெச் பக்கங்கள் மோடிஃபி & ஈகூட்; எச்',
     'TEMPLATE_RSS_LAST_COMMENTS' => 'ஃப்ளக்ச் ஆர்எச்எச் டெச் டெர்னியர்ச் கருத்துரை',
-    'TEMPLATE_NO_DEFAULT_THEME' => 'Les fichiers du template par d&eacute;faut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez r&eacute;installer le tools template ou contacter l\'administrateur du site',
+    'TEMPLATE_NO_DEFAULT_THEME' => 'Les fichiers du template par défaut ont disparu, l\'utilisation des templates est impossible.<br />Veuillez réinstaller le tools template ou contacter l\'administrateur du site',
     'TEMPLATE_CUSTOM_GRAPHICS' => 'தோற்றம் டி லா பக்கம்',
     'TEMPLATE_SAVE' => 'சாவர்',
     'TEMPLATE_REEDIT' => 'எடிட்டர் டி நோவியோ',
@@ -22,14 +22,12 @@ return [
     'TEMPLATE_BG_IMAGE' => 'இமேச் டி ஃபாண்ட்',
     'TEMPLATE_ERROR_NO_DATA' => 'எர்ரூர்: ரியான் & அக்ரேவ்; அசூட்டர் டான்ச் லெச் மெட்டா-டோன் & eacute; es.',
     'TEMPLATE_ERROR_NO_ACCESS' => 'எர்ரூர்: பாச் லெச் ட்ரோய்ட்ச் டி அக் & ஈகூட்; கள்.',
-    // barre de redaction
     'TEMPLATE_VIEW_PAGE' => 'Voir LA பக்கம்',
     'TEMPLATE_EDIT' => '& Eacute; diter',
     'TEMPLATE_EDIT_THIS_PAGE' => '& Eacute; டிட்டர் லா பக்கம்',
     'TEMPLATE_WIKINAME_IS_NOT_A_PAGE' => 'Ce chatmot n\'est pas une பக்கம்',
     'TEMPLATE_CLICK_TO_SEE_REVISIONS' => 'லெச் டெர்னி & எக்ரேவ்; ரெச் மாற்றங்கள் டி லா பக்கம்',
     'TEMPLATE_LAST_UPDATE' => 'டெர்னியர் எலிசன்:',
-    'TEMPLATE_OWNER' => '',
     'TEMPLATE_YOU' => 'நீங்கள்',
     'TEMPLATE_NO_OWNER' => 'பாச் டி ப்ராப்ரிடேர்',
     'TEMPLATE_CLAIM' => 'ஒதுக்கீடு',
@@ -46,26 +44,18 @@ return [
     'TEMPLATE_SEE_SHARING_OPTIONS' => 'Partager la பக்கம்',
     'TEMPLATE_SHARE' => 'பங்கு',
     'TEMPLATE_OPEN_COMMENTS' => 'ஓவ்ரிர் லெச் கருத்துரை',
-    'TEMPLATE_CLICK_TO_OPEN_COMMENTS' => 'கிளிக்கர் ஓவ்ரிர் லெச் வர்ணனைகளை ஊற்றவும்',
     'TEMPLATE_CLOSE_COMMENTS' => 'ஃபெர்மர் லெச் கருத்துரை',
-    'TEMPLATE_CLICK_TO_CLOSE_COMMENTS' => 'கிளிக்கர் ஃபெர்மர் லெச் வர்ணனைகளை ஊற்றவும்',
     'TEMPLATE_FOR_CONNECTED_PEOPLE' => 'லெச் பெர்சனென்ச் இணைப்புகளை ஊற்றவும்',
     'TEMPLATE_FOR_MEMBERS_OF_GROUP' => 'லெச் மெக்ச் டு குழுமத்தை ஊற்றவும்',
-    'TEMPLATES_SEE_ATTACHED_FILES' => 'Voir les fichiers Cansage’s à la பக்கம்',
-    // action/diaporama
     'DIAPORAMA_PAGE_PARAM_MISSING' => 'அதிரடி டயபோராமா: பரம் & ஈசிஐசி;',
     'DIAPORAMA_TEMPLATE_PARAM_ERROR' => 'அதிரடி டயோபாராமா: லு பரம் & ஈசிஐசி; Le வார்ப்புரு par டி & eacute; faut சேரா utilis & eacute ;.',
-    // formatage des dates
     'TEMPLATE_DATE_FORMAT' => '௳ ௴ ௵',
-    // recherche
     'TEMPLATE_SEARCH_INPUT_TITLE' => 'ரீச்சர் டான்ச் யெச்விகி [Alt-Shift-C]',
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'ரீச்சர் லெச் பக்கங்கள் காம்போர்டன்ட் சிஇ டெக்ச்டே.',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'மறுசீரமைப்பு ...',
     'TEMPLATE_SEARCH' => 'மறுசீரமைப்பு',
-    // handler widget
     'TEMPLATE_WIDGET_TITLE' => 'விட்செட்: இன்ட் & ஈகூட்;',
     'TEMPLATE_WIDGET_COPY_PASTE' => 'COPIER-COLLEZ LE குறியீடு உஉகுமொ CI-Dessus Pour int & eacute; கிரெர் லு கான்டெனு டெல் க்யூயில் எஞ்சர் தொஒ டெசச்.',
-    // handler share
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'குறியீடு d\'in & eacute; கிரேசன் டி கான்டெனு டான்ச் une பக்கம் உஉகுமொ',
     'TEMPLATE_SHARE_MUST_READ' => 'ஒரு லைர்: ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Partager சுர் facebook',
@@ -76,11 +66,9 @@ return [
     'TEMPLATE_SHARE_MAIL' => 'தூதர் லு கான்டெனு டி செட் பேச் பார் மெயில்',
     'TEMPLATE_ADD_SHARE_BUTTON' => 'அசூட்டர் அன் பூட்டன் டி பார்ட்டேச் என் ஆட் & அக்ரேவ்; droite de la பக்கம்',
     'TEMPLATE_ADD_EDIT_BAR' => 'அசூட்டர் லா பாரே டி \'& eacute; dition என் bas de page',
-    // handler diaporama
     'TEMPLATE_NO_ACCESS_TO_PAGE' => 'Vous n\'avez pas le droit d\'acc & eacute; der & agrave; செட் பக்கம்.',
     'TEMPLATE_PAGE_DOESNT_EXIST' => 'பக்கம் இல்லை',
     'PAGE_CANNOT_BE_SLIDESHOW' => 'லா பேச் நே பியூட் பாச் & ஈசிஐசி;',
-    // handler edit
     'TEMPLATE_CUSTOM_PAGE' => 'R & eacute; டி & eacute; பிரான்சிச் டி லா பக்கம்',
     'TEMPLATE_PAGE_PREFERENCES' => 'பரம் & எக்ரேவ்; ட்ரெச் டி லா பக்கம்',
     'PAGE_LANGUAGE' => 'லாங் டி லா பக்கம்',
@@ -92,34 +80,26 @@ return [
     'FOR_2_OR_3_COLUMN_THEMES' => 'Les th & egrave; mes & agrave; 2 OU 3 கோர்ன்ச்',
     'VERTICAL_MENU_PAGE' => 'LE பட்டியல் செங்குத்து',
     'RIGHT_COLUMN_PAGE' => 'லா கோலன் டி டிராயிட்',
-    // actions/yeswikiversion.php
     'RUNNING_WITH' => 'கலோப் ச ous ச்',
     'TEMPLATE_ACTION_SECTION' => 'செயல் {{section ...}}',
     'TEMPLATE_ELEM_SECTION_NOT_CLOSED' => 'l\'act {{section ...}} doit & ecirc; tre ferm & eacute;',
     'TEMPLATE_NO_THEME_FILES' => 'Fichiers du & egrave; me manquants',
     'TEMPLATE_DEFAULT_THEME_USED' => 'Le th & egrave; me par defaut est donc utilisé',
-    // actions/end.php
     'TEMPLATE_ACTION_END' => 'செயல் {{end ...}}',
     'TEMPLATE_ELEM_PARAMETER_REQUIRED' => 'param & egrave; tre "elem" WOMPIGATOIRE',
-    // actions/col.php
     'TEMPLATE_ACTION_COL' => 'செயல் {{col ...}}',
     'TEMPLATE_SIZE_PARAMETER_REQUIRED' => 'param & egrave; tre "size" willigatoire',
     'TEMPLATE_SIZE_PARAMETER_MUST_BE_INTEGER_FROM_1_TO_12' => 'le param & egrave; tre "size" doit & ecirc; tre un entier compris entre 1 et 12',
     'TEMPLATE_ELEM_COL_NOT_CLOSED' => 'l\'act {{col ...}} doit & ecirc; tre ferm & eacute;',
-    // actions/grid.php
     'TEMPLATE_ACTION_GRID' => 'செயல் {{grid ...}}',
     'TEMPLATE_ELEM_GRID_NOT_CLOSED' => 'l\'act {{grid ...}} doit & ecirc; tre ferm & eacute;',
-    // action/panel.php
     'TEMPLATE_ACTION_PANEL' => 'செயல் {{panel ...}}',
     'TEMPLATE_ELEM_PANEL_NOT_CLOSED' => 'l\'act {{panel ...}} doit & ecirc; tre ferm & eacute;',
     'TEMPLATE_TITLE_PARAMETER_REQUIRED' => 'பரம் & எக்ரேவ்; TRE தலைப்பு கடமைப்பட்டது',
-    // action/accordion.php
     'TEMPLATE_ACTION_ACCORDION' => 'செயல் {{accordion ...}}',
     'TEMPLATE_ELEM_ACORDION_NOT_CLOSED' => 'l\'act {{accordion ...}} doit & ecirc; tre ferm & eacute;',
-    // actions/buttondropdown.php
     'TEMPLATE_ACTION_BUTTONDROPDOWN' => 'செயல் {{buttondropdown ...}}',
     'TEMPLATE_ELEM_BUTTONDROPDOWN_NOT_CLOSED' => 'l\'act {{buttondropdown ...}} doit & ecirc; tre ferm & eacute;',
-    // actions/adminpages.php
     'TEMPLATE_ACTION_FOR_ADMINS_ONLY' => 'அதிரடி réservée aux நிர்வாகிகள்',
     'TEMPLATE_CONFIRM_DELETE_PAGE' => 'Etes vous sûr (e) de vouloir supprimer definitivement cete பக்கம்?',
     'TEMPLATE_PAGE' => 'பக்கம்',
@@ -127,9 +107,7 @@ return [
     'TEMPLATE_OWNER' => 'ப்ராப்ரி & ஈகூட்; டெய்ர்',
     'TEMPLATE_ACTIONS' => 'செயல்கள்',
     'TEMPLATE_MODIFY' => 'மாற்றியமைப்பாளர்',
-    // actions/setwikidefaultheme.php
     'TEMPLATE_FORCE_TEMPLATE' => 'ஃபோர்சர் லு சோயிக்ச் லு விக்கி பவர் டவுட்.',
-    // themeselector.tpl.html
     'TEMPLATE_PRIMARY_COLOR' => 'கூலூர் ப்ரிமெய்ர்',
     'TEMPLATE_SECONDARY_COLOR_1' => 'கூலூர் செகண்டேர் 1',
     'TEMPLATE_SECONDARY_COLOR_2' => 'கூலூர் செகண்டேர் 2',
@@ -153,7 +131,6 @@ return [
     'TEMPLATE_PRESETS' => 'உள்ளமைவுகள் கிராபிக்ச்',
     'TEMPLATE_CREATE_PRESET' => 'க்ரீயர் யு.என்.இ நோவெல் உள்ளமைவு கிராபிக்',
     'TEMPLATE_CUSTOMIZE_PRESET' => 'உள்ளமைவு கிராபிக்',
-    // actions-builder
     'AB_template_group_label' => 'Mise என் forme',
     'AB_template_action_label_label' => 'ஆசாரம்',
     'AB_template_action_label_example' => 'டெக்ச்டே டி வோட்ரே எட்டிகெட் à சேஞ்சர் பார் லா சூட்',
@@ -177,13 +154,6 @@ return [
     'AB_templates_nav_label' => 'ONGLETS AVEC DES பக்கங்கள் வேறுபடுகின்றன',
     'AB_templates_nav_description' => 'Générer un பட்டியல்',
     'AB_templates_nav_hint' => 'Lenomdevotrepage doit être le nom de la page dans laquelle vous mettrez cete action. பென்செச் à கொலர் லு கோட் ஒப்டெனு டான்ச் சாக்யூன் டெச் பக்கங்கள் டெச் ஓன்கெட்ச்.',
-    'AB_templates_nav_links_label' => 'லீன்ச் வெர்சச் வோச் பக்கங்கள் விக்கி',
-    'AB_templates_nav_links_default' => 'Lenomdevotrepage, lasecondepage, latroisiemepage',
-    // no special chars !!
-    'AB_templates_nav_links_hint' => 'நோம் டெச் பக்கங்கள் விக்கி செபரீச் பார் டெச் கன்னி',
-    'AB_templates_nav_titles_label' => 'இன்ட்யூல்ச் டி வோச் பக்கங்கள்',
-    'AB_templates_nav_titles_default' => 'பிரீமியர் பக்கம், இரண்டாம் பக்கம், ட்ரோயிசிமே பக்கம்',
-    'AB_templates_nav_titles_hint' => 'டெக்ச்டெச் டி சாக் ஓங்க்லெட் செபரின் பார் டெச் கன்னி',
     'AB_templates_nav_class_label' => 'அஃபிசேச்',
     'AB_templates_nav_class_tabs' => 'கிடைமட்ட சோல்',
     'AB_templates_nav_class_pills' => 'கிடைமட்ட சோப்ரே',
@@ -200,7 +170,6 @@ return [
     'AB_templates_section_label' => 'பிரிவு',
     'AB_templates_section_wrappedcontentexample' => 'குறிப்பிடத்தக்க',
     'AB_templates_section_bgcolor_label' => 'கூலூர்',
-    'AB_templates_section_height_label' => '',
     'AB_templates_section_pattern_label' => 'அமைப்பு',
     'AB_templates_section_pattern_solid' => 'உனி',
     'AB_templates_section_pattern_border_solid' => 'எல்லை',
@@ -285,27 +254,21 @@ return [
     'AB_templates_tabs_btncolor_secondary_1' => 'இரண்டாம் நிலை 1',
     'AB_templates_tabs_btncolor_secondary_2' => 'செகண்டேர் 2',
     'AB_templates_tabs_selectedtab_label' => 'Onglet sélectionne',
-    // gererdroits
     'ACLS_SELECT_PAGES_FILTER' => 'வடிகட்டி :',
     'ACLS_SELECT_PAGES_FILTER_ON_PAGES' => 'லெச் பக்கங்கள் தனித்துவமானது',
     'ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES' => 'லெச் பக்கங்கள் ச்பெசியல்ச் தனித்துவம்',
     'ACLS_SELECT_PAGES_FILTER_ON_LISTS' => 'லெச் தனித்துவத்தை பட்டியலிடுகிறார்',
     'ACLS_SELECT_PAGES_FILTER_FORM' => 'லெச் ஃபிடச் டு ஃபார்முலேர்: {name} ({id})',
-    // actions/gererthemes.php
     'GERERTHEMES_ACTIONS' => 'செயல்கள்',
     'GERERTHEMES_HINT' => 'கோச்செச் லெச் பக்கங்கள் கியூ வவுச் ச ou ஐடெச் மாற்றியமைப்பாளர் எட் சோயிசெச் யூன் அதிரடி என் பாச் டி பக்கம்',
     'GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES' => 'Réinitialiser les பக்கங்கள் தேர்வு (ELLES UNTITERONT LE THEME PAR DEFAUT)',
     'GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES' => 'மாற்றியமைக்கும் லெச் வேலியர்ச் லெச் பக்கங்கள் ச்லெக்சனீசை ஊற்றுகிறார்',
     'GERERTHEMES_PAGE' => 'பக்கம்',
-    // actions/progressbar.php
     'PROGRESSBAR_REQUIRED_VAL_PARAM' => 'param & egrave; tre "val" willigatoire.',
     'PROGRESSBAR_ERROR_VAL_PARAM' => 'லு பரம் & எக்ரேவ்; ட்ரே "வால்" டொயிட் அன் சிஃப்ரே என்ட்ரே 0 மற்றும் 100.',
-    // templates/setdefaulttheme.tpl.html
     'SETDEFAULTTHEME_HNIT' => 'Le theme par defaut est utilise pour les பக்கங்கள் Qui n\'ont aucun theme defini (லெச் லிக்னெச் வைட்ச் டான்ச் லு டேப்லூ சி டெசச்)',
-    // for edit config
     'EDIT_CONFIG_HINT_META_KEYWORDS' => 'மோட்ச் கிளெச் லு ரெஃபெரென்செமென்ட் (செபரின் பார் டெச் கன்னி, பிஏஎச் மற்றும் டி 20-30)',
     'EDIT_CONFIG_HINT_META_DESCRIPTION' => 'விளக்கம் du site என் une சொற்றொடர், ஊற்ற லே referencement (கவனம்: ne pas mettre de "." (புள்ளி))',
     'EDIT_CONFIG_HINT_META[ROBOTS]' => 'எம்பேசர் லெச் ரோபோக்கள் à குறியீட்டாளர் லு விக்கி (நொய்டெக்ச், நோஃபாலோ, மேக்ச்-இமேச்-முன்னுரிமை: எதுவுமில்லை, நொயார்கிவ், நொயிமாசின்டெக்ச்)',
-    // idéalement 'Mise en forme' mais templates est pour le moment uniquement utilisé pour meta
     'EDIT_CONFIG_GROUP_TEMPLATES' => 'பாலிசச் மேவு எல் இன் இன்டக்டேசன் வலையை ஊற்றவும்',
 ];

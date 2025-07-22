@@ -1,17 +1,14 @@
 <?php
+
 return [
-    // fields/CalcField.php
     'BAZ_FORM_EDIT_CALC_LABEL' => 'கால்குலச்',
     'BAZ_FORM_EDIT_DISPLAYTEXT_LABEL' => 'டெக்ச்டே டி அஃபிசேச்',
     'BAZ_FORM_EDIT_DISPLAYTEXT_HELP' => 'Ajouter si benoin une Unité aprres {value}, (ex: `{value} €`)',
     'BAZ_FORM_EDIT_FORMULA_LABEL' => 'தேற்றம்',
-    // fields/FileField.php
     'BAZ_FILEFIELD_FILE' => 'Fichier: {கோப்பு பெயர்}',
     'BAZ_FORM_EDIT_FILE_READLABEL_LABEL' => 'சிட்டை à l\'afichage',
     'FILEFIELD_TOO_LARGE_FILE' => 'லு ஃபைச்சியர் எச்ட் டிராப் வால்யூமினக்ச், அதிகபட்சம் {fileMaxSize} ஆக்டெட்டுகள்',
-    // fields/ImageField.php
     'IMAGEFIELD_TOO_LARGE_IMAGE' => 'L\'ame est trop volumineuse, அதிகபட்சம் {imageMaxSize} ஆக்டெட்டுகள்',
-    // fields/MapField.php
     'BAZ_FORM_EDIT_GEOLOCATE' => 'சியோலோகலைசர் டெபுயிச் மா நிலை',
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY' => 'சாம்பியன் ரெசியன்/காம்டே',
     'BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_COUNTY_PLACEHOLDER' => 'BF_REGION',
@@ -41,10 +38,6 @@ return [
     'GEOLOCATER_GROUP_GEOLOCATIZATION' => 'சாம்ப்ச் à பயன்பாட்டு ப our ர் லா சியோலோகலைசேசன்',
     'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT' => 'Renencigenez அயு moins un samp',
     'GEOLOCATER_NOT_FOUND' => 'Adresse "{addr}" intowable',
-    // libs/bazar.edit_lists.js
-    'BAZ_EDIT_LISTS_CONFIRM_DELETE' => 'உறுதிப்படுத்தல்-வவுச் லா அடக்குமுறை டி செட் வாலூர் டான்ச் லா லிச்டே?',
-    'BAZ_EDIT_LISTS_DELETE_ERROR' => 'லு டெர்னியர் élément ne peut être supprimé.',
-    // presentation/javascripts/bazar.js
     'BAZ_FORM_REQUIRED_FIELD' => 'Veuillez Saisir Tous les Samps Walligatoires (நட்சத்திரக் கயிறு)',
     'BAZ_FORM_INVALID_EMAIL' => 'L\'aigral saisi n\'est pas valuide',
     'BAZ_FORM_INVALID_TEXT' => 'லு டெக்ச்டே என்ச்ட் பாச் மதிப்புமிக்கது',
@@ -79,10 +72,8 @@ return [
     'BAZ_DATESHORT_NOVEMBER' => 'ஒன்பது',
     'BAZ_DATESHORT_DECEMBER' => 'டெக்',
     'BAZ_SAVING' => 'என் cours d\'endergisrament',
-    // presentation/javascripts/components/BazarMap.js
     'BAZ_FULLSCREEN' => 'பயன்முறை ப்ளீன் écran',
     'BAZ_BACK_TO_NORMAL_VIEW' => 'Rature à la vue normale',
-    // form-edit-template.js
     'MEMBER_OF_GROUP' => 'மெம்ப்ரே டு குரூப் {groupName}',
     'BAZ_FORM_EDIT_HELP' => 'டெக்ச்டே டி உதவி',
     'BAZ_FORM_EDIT_HIDE' => 'எடிட்டர்/முகமூடி',
@@ -221,18 +212,15 @@ return [
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_LABEL' => 'டெக்ச்டே ஊற்ற வேண்டும்',
     'BAZ_FORM_EDIT_COMMENTS_FIELD_ACTIVATE_HINT' => 'லெய்சர் வைட் பவுர் பயன்பாட்டு லு டெக்ச்டே பார் டெஃபாட்',
     'BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL' => 'டிமாண்டர் டி ஆகிவர் லெச் கருத்துரைகள்?',
-    // condition checking field
-    'BAZ_FORM_EDIT_CONDITIONCHECKING_LABEL' => 'Affichage நிபந்தனைகள்',
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_MAIN_LABEL' => 'Affichage நிபந்தனைகள்',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL' => 'நிலை',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_END' => 'ஃபின் டி நிபந்தனை',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_LABEL' => 'Iffacer அயு masquage',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_CLEAN_OPTION' => 'எஃப்ஃபேசர்',
     'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_OPTION' => 'NE PAS EFFACER',
-    'BAZ_FORM_CONDITIONSCHEKING_NOCLEAN_HINT' => 'ஊற்றவும்',
-    // jsvascripts/form-edit-templates/fields/file.js
+    'BAZ_FORM_EDIT_CONDITIONS_CHECKING_NOCLEAN_HINT' => 'ஊற்றவும்',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_LABEL' => 'நீட்டிப்புகள் presélectionnées (அவெக் லே பாயிண்ட், செபாரீச் பார் டெச் கன்னி)',
     'BAZ_FORM_EDIT_FILE_AUTHEXTS_PLACEHOLDER' => 'எ.கா: .pdf, .png',
-    // reactions
     'BAZ_ACTIVATE_REACTIONS' => 'ஆக்டிவர் லெச் ரியாக்டன்ச் சுர் செட் ஃபிச்?',
     'BAZ_REACTIONS_FIELD' => 'Reéactions',
     'BAZ_REACTIONS_FIELD_ACTIVATE_HINT' => 'லெய்சர் வைட் பவுர் பயன்பாட்டு லு டெக்ச்டே பார் டெஃபாட்',
@@ -246,9 +234,7 @@ return [
     'BAZ_REACTIONS_FIELD_LABELS_HINT' => 'Laisser with ou sépares par des rigules',
     'BAZ_REACTIONS_FIELD_LABELS_LABEL' => 'NOMS DES Réactions',
     'BAZ_REACTIONS_FIELD_LABELS_PLACEHOLDER' => 'நன்றியுணர்வு, J\'aime, j\'ai appris quelques தேர்ந்தெடுக்கப்பட்ட, J\'ai pas compris, je ne suis pas d\'att, ca me perturbe',
-    // presentation/javascripts/map-field-leaflet.js
     'BAZ_ADJUST_MARKER_POSITION' => 'Déplacez moi si benoin',
-    // presentation/javascripts/form-edit-template/fields/url.js
     'BAZAR_VIDEO_MAXHEIGHT_LABEL' => 'ஆட்டூர் மேக்சிமல் டி லா விடோ',
     'BAZAR_VIDEO_MAXWIDTH_LABEL' => 'பெரிய அதிகபட்சம் டி லா விடோ',
     'BAZAR_VIDEO_MAX_HINT' => 'தனித்துவமானது அன் நோம்ப்ரே பாசிட்டிஃப் டி படப்புள்ளிகள் சான்ச் எல் யூனிட்டே; எ.கா: 200',
@@ -257,13 +243,12 @@ return [
     'BAZAR_VIDEO_POSITION_LEFT' => 'சீரமை à gauche',
     'BAZAR_VIDEO_POSITION_RIGHT' => 'சீரமைப்பது',
     'BAZAR_URL_DISPLAY_VIDEO' => 'Afficher le lecter si le lien est une vidéo?',
-    // templates/entries/index-dynamic-temapltes/BazarCalendar_ButtonICS.js
     'BAZ_CALENDAR_EXPORT_BUTTON_TITLE' => 'அசூட்டர் à வோட்ரே காலென்ட்ரியர்',
     'LIST_TEXT' => 'உரை',
-    'LIST_DRAGDROP' => "உறுப்பை நகர்த்தவும்",
+    'LIST_DRAGDROP' => 'உறுப்பை நகர்த்தவும்',
     'LIST_KEY' => 'விசை',
     'LIST_ADD_NODE' => 'மதிப்பு',
     'LIST_ADD_CHILD_NODE' => 'மதிப்பின் கீழ் ஒன்றைச் சேர்க்கவும்',
-    'LIST_ERROR_MISSING_IDS' => "சில மதிப்புகளில் தொடர்புடைய விசை இல்லை",
+    'LIST_ERROR_MISSING_IDS' => 'சில மதிப்புகளில் தொடர்புடைய விசை இல்லை',
     'LIST_ERROR_DUPLICATES_IDS' => 'ஒவ்வொரு விசையும் தனித்துவமாக இருக்க வேண்டும். இந்த விசைகள் பல முறை பயன்படுத்தப்படுகின்றன: ',
 ];

@@ -15,18 +15,19 @@ use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\InvalidGroupNameException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
+use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameDoesNotExistException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
+use YesWiki\Core\Service\DuplicationManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class ApiController extends YesWikiController
 {
@@ -42,31 +43,37 @@ class ApiController extends YesWikiController
             '<h4>' . _t('LIST') . ' ' . _t('USERS') . '</h4>' . "\n" .
             '<p><code>GET ' . $urlUser . '</code></p>' . "\n" .
             '<h4>' . _t('GET') . ' ' . _t('USER') . '</h4>' . "\n" .
-            '<p><code>GET ' . $urlUser . '/{userId}' . '</code></p>' . "\n" . '<h4>' . _t('CREATE') . ' ' . _t('USER') . '</h4>' . "\n" .
+            '<p><code>GET ' . $urlUser . '/{userId}</code></p>' . "\n" . '<h4>' . _t('CREATE') . ' ' . _t('USER') . '</h4>' . "\n" .
             '<p><code>POST ' . $urlUser . '</code></p>' . "\n" .
-            '<p><code> ' . 'name=…&email=…' . '</code></p>' . "\n" .
+            '<p><code> name=…&email=…</code></p>' . "\n" .
             '<h4>' . _t('DELETE') . ' ' . _t('USER') . '</h4>' . "\n" .
-            '<p><code>POST ' . $urlUser . '/{userId}/delete' . '</code></p>' . "\n";
+            '<p><code>POST ' . $urlUser . '/{userId}/delete</code></p>' . "\n";
 
         $urlGroup = $this->wiki->Href('', 'api/groups');
         $output .= '<h2>' . _t('GROUPS') . '</h2>' . "\n" .
             '<h4>' . _t('LIST') . ' ' . _t('GROUPS') . '</h4>' . "\n" .
             '<p><code>GET ' . $urlGroup . '</code></p>' . "\n" .
             '<h4>' . _t('GET') . ' ' . _t('GROUP') . '</h4>' . "\n" .
-            '<p><code>GET ' . $urlGroup . '/{group_name}' . '</code></p>' . "\n" . '<h4>' . _t('CREATE') . ' ' . _t('GROUP') . '</h4>' . "\n" .
+            '<p><code>GET ' . $urlGroup . '/{group_name}</code></p>' . "\n" . '<h4>' . _t('CREATE') . ' ' . _t('GROUP') . '</h4>' . "\n" .
             '<p><code>POST ' . $urlGroup . '</code></p>' . "\n" .
-            '<p><code> ' . 'name=…&users[0]=…&users[1]' . '</code></p>' . "\n" .
+            '<p><code> name=…&users[0]=…&users[1]</code></p>' . "\n" .
             '<h4>' . _t('DELETE') . ' ' . _t('GROUP') . '</h4>' . "\n" .
-            '<p><code>POST ' . $urlGroup . '/{group_name}/delete' . '</code></p>' . "\n" .
+            '<p><code>POST ' . $urlGroup . '/{group_name}/delete</code></p>' . "\n" .
             '<h4>' . _t('UPDATE') . ' ' . _t('GROUP') . '</h4>' . "\n" .
-            '<p><code>POST ' . $urlGroup . '/{group_name}/update' . '</code></p>' . "\n" .
-            '<p><code> ' . 'users[0]=…&users[1]' . '</code></p>' . "\n";
+            '<p><code>POST ' . $urlGroup . '/{group_name}/update</code></p>' . "\n" .
+            '<p><code> users[0]=…&users[1]</code></p>' . "\n";
 
         $urlPages = $this->wiki->Href('', 'api/pages');
         $output .= '<h2>' . _t('PAGES') . '</h2>' . "\n" .
-            '<p><code>GET ' . $urlPages . '</code></p>';
-        $urlPagesComments = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
-        $output .= '<p><code>GET ' . $urlPagesComments . '</code></p>';
+            '<p><code>GET ' . $urlPages . '</code><br>Get all pages</p>';
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}');
+        $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s informations, with raw and html contents</p>';
+
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
+        $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s comments</p>';
+
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/duplicate');
+        $output .= '<p><code>POST ' . $urlPages . '</code><br>Duplicate an external page into this YesWiki pageTag</p>';
 
         $urlComments = $this->wiki->Href('', 'api/comments');
         $output .= '<h2>' . _t('COMMENTS') . '</h2>' . "\n" .
@@ -85,7 +92,6 @@ class ApiController extends YesWikiController
             '<p><code>POST ' . $urlArchives . '/{id}</code></p>';
 
         // TODO use annotations to document the API endpoints
-        $extensions = $this->wiki->extensions;
         foreach ($this->wiki->extensions as $extension => $pluginBase) {
             $response = null;
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
@@ -123,11 +129,11 @@ class ApiController extends YesWikiController
     {
         $this->denyAccessUnlessAdmin();
 
-        return new ApiResponse($this->getService(UserManager::class)->getOne($userId));
+        return new ApiResponse($this->getService(UserManager::class)->getOneByName($userId));
     }
 
     /**
-     * @Route("/api/users/{userId}/delete",methods={"POST"}, options={"acl":{"public","@admins"}})
+     * @Route("/api/users/{userId}/delete",methods={"POST"}, options={"acl":{"@admins"}})
      */
     public function deleteUser($userId)
     {
@@ -177,12 +183,13 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/users",methods={"POST"}, options={"acl":{"public","@admins"}})
+     * @Route("/api/users",methods={"POST"}, options={"acl":{"@admins"}})
      */
     public function createUser()
     {
         $this->denyAccessUnlessAdmin();
         $userController = $this->getService(UserController::class);
+        $userManager = $this->getService(UserManager::class);
 
         if (empty($_POST['name'])) {
             $code = Response::HTTP_BAD_REQUEST;
@@ -201,11 +208,7 @@ class ApiController extends YesWikiController
                     'email' => strval($_POST['email']),
                     'password' => $this->wiki->generateRandomString(30),
                 ]);
-                if (!boolval($this->wiki->config['contact_disable_email_for_password']) && !empty($user)) {
-                    $link = $userController->sendPasswordRecoveryEmail($user);
-                } else {
-                    $link = '';
-                }
+                $link = $userManager->sendPasswordRecoveryEmail($user);
                 $code = Response::HTTP_OK;
                 $result = [
                     'created' => [$user['name']],
@@ -273,7 +276,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("api/groups/{group_name}/delete",methods={"POST"},options={"acl":{"public","@admins"}})
+     * @Route("api/groups/{group_name}/delete",methods={"POST"},options={"acl":{"@admins"}})
      */
     public function deleteGroup(string $group_name)
     {
@@ -448,7 +451,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments",methods={"POST"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments",methods={"POST"}, options={"acl":{"+"}})
      */
     public function postComment()
     {
@@ -459,7 +462,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments/{tag}",methods={"POST"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}",methods={"POST"}, options={"acl":{"+"}})
      */
     public function editComment($tag)
     {
@@ -470,7 +473,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments/{tag}",methods={"DELETE"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}",methods={"DELETE"}, options={"acl":{"+"}})
      */
     public function deleteComment($tag)
     {
@@ -485,7 +488,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/comments/{tag}/delete",methods={"POST"}, options={"acl":{"public","+"}})
+     * @Route("/api/comments/{tag}/delete",methods={"POST"}, options={"acl":{"+"}})
      */
     public function deleteCommentViaPostMethod($tag)
     {
@@ -560,7 +563,23 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}",methods={"DELETE"},options={"acl":{"public","+"}})
+     * @Route("/api/pages/{tag}/duplicate",methods={"POST"},options={"acl":{"@admins"}})
+     */
+    public function duplicatePage(Request $request, $tag)
+    {
+        $this->denyAccessUnlessAdmin();
+        $duplicationManager = $this->getService(DuplicationManager::class);
+        try {
+            $duplicationManager->importDistantContent($tag, $request);
+        } catch (\Throwable $th) {
+            return new ApiResponse($th->getMessage(), Response::HTTP_FORBIDDEN);
+        }
+
+        return new ApiResponse($request->request->all(), Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/api/pages/{tag}",methods={"DELETE"},options={"acl":{"+"}})
      */
     public function deletePage($tag)
     {
@@ -616,7 +635,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/pages/{tag}/delete",methods={"POST"},options={"acl":{"public","+"}})
+     * @Route("/api/pages/{tag}/delete",methods={"POST"},options={"acl":{"+"}})
      */
     public function deletePageByGetMethod($tag)
     {
@@ -681,7 +700,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}", methods={"DELETE"}, options={"acl":{"public", "+"}})
+     * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}", methods={"DELETE"}, options={"acl":{"+"}})
      */
     public function deleteReaction($idreaction, $id, $page, $username)
     {
@@ -719,7 +738,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}/delete",methods={"GET"},options={"acl":{"public","+"}})
+     * @Route("/api/reactions/{idreaction}/{id}/{page}/{username}/delete",methods={"GET"},options={"acl":{"+"}})
      */
     public function deleteReactionByGetMethod($idreaction, $id, $page, $username)
     {
@@ -727,7 +746,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/reactions", methods={"POST"}, options={"acl":{"public", "+"}})
+     * @Route("/api/reactions", methods={"POST"}, options={"acl":{"+"}})
      */
     public function addReactionFromUser()
     {
@@ -804,7 +823,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/triples", methods={"GET"}, options={"acl":{"public", "+"}})
+     * @Route("/api/triples", methods={"GET"}, options={"acl":{"+"}})
      */
     public function ByResource()
     {
@@ -829,7 +848,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/triples/{resource}", methods={"GET"}, options={"acl":{"public", "+"}})
+     * @Route("/api/triples/{resource}", methods={"GET"}, options={"acl":{"+"}})
      */
     public function getTriplesByResource($resource)
     {
@@ -854,7 +873,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/triples/{resource}", methods={"POST"}, options={"acl":{"public", "+"}})
+     * @Route("/api/triples/{resource}", methods={"POST"}, options={"acl":{"+"}})
      */
     public function setTriple($resource)
     {
@@ -901,7 +920,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/triples/{resource}/delete", methods={"POST"}, options={"acl":{"public", "+"}})
+     * @Route("/api/triples/{resource}/delete", methods={"POST"}, options={"acl":{"+"}})
      */
     public function deleteTriples($resource)
     {
@@ -998,11 +1017,14 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         } else {
-            $property = $this->getService(SecurityController::class)->filterInput($method, 'property', FILTER_DEFAULT, true);
+            $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
+            $property = in_array($property, [false, null], true) ? '' : htmlspecialchars(strip_tags($property));
             if (empty($property)) {
                 $property = null;
             }
-            $username = $this->getService(SecurityController::class)->filterInput($method, 'user', FILTER_DEFAULT, true);
+
+            $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
+            $username = in_array($username, [false, null], true) ? '' : htmlspecialchars(strip_tags($username));
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
@@ -1023,7 +1045,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/{id}", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/{id}", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchive($id)
     {
@@ -1031,7 +1053,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/uidstatus/{uid}", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/uidstatus/{uid}", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchiveStatus($uid)
     {
@@ -1042,7 +1064,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/archivingStatus/", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/archivingStatus/", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchivingStatus()
     {
@@ -1053,7 +1075,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/forcedUpdateToken/", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/forcedUpdateToken/", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getForcedUpdateToken()
     {
@@ -1066,8 +1088,8 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/", methods={"GET"}, options={"acl":{"public", "@admins"}})
-     * @Route("/api/archives", methods={"GET"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/", methods={"GET"}, options={"acl":{"@admins"}})
+     * @Route("/api/archives", methods={"GET"}, options={"acl":{"@admins"}})
      */
     public function getArchives()
     {
@@ -1080,7 +1102,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives/{id}", methods={"POST"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives/{id}", methods={"POST"}, options={"acl":{"@admins"}})
      */
     public function archiveAction($id)
     {
@@ -1088,7 +1110,7 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * @Route("/api/archives", methods={"POST"}, options={"acl":{"public", "@admins"}})
+     * @Route("/api/archives", methods={"POST"}, options={"acl":{"@admins"}})
      */
     public function archivesAction()
     {

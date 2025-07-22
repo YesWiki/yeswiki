@@ -1,7 +1,6 @@
 <?php
+
 return [
-    // commons
-    'APRIL' => '',
     'AUGUST' => '',
     'CANCEL' => '',
     'COPY' => '',
@@ -36,7 +35,6 @@ return [
     'TUESDAY' => '',
     'WEDNESDAY' => '',
     'YES' => '',
-    // /javascripts/actions/admin-backups.js
     'ADMIN_BACKUPS_LOADING_LIST' => '',
     'ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' => '',
     'ADMIN_BACKUPS_DELETE_ARCHIVE' => '',
@@ -62,33 +60,26 @@ return [
     'ADMIN_BACKUPS_STOPPING_ARCHIVE' => '',
     'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => '',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => '',
-    // /javascripts/handlers/revisions.js
     'REVISIONS_COMMIT_DIFF' => '',
     'REVISIONS_DIFF' => '',
     'REVISIONS_PREVIEW' => '',
-    // javascripts/documentation.js
     'DOCUMENTATION_TITLE' => '',
-    // javascripts/favorites.js
     'FAVORITES_ADD' => '',
     'FAVORITES_ALL_DELETED' => '',
     'FAVORITES_ERROR' => '',
     'FAVORITES_REMOVE' => '',
     'FAVORITES_ADDED' => '',
     'FAVORITES_REMOVED' => '',
-    // javascripts/list-form-id-attribute.js
     'LIST_CREATE_TITLE' => '',
     'LIST_UPDATE_TITLE' => '',
     'LIST_CREATED' => '',
     'LIST_UPDATED' => '',
-    // javascripts/multidelete.js
     'MULTIDELETE_END' => '',
     'MULTIDELETE_ERROR' => '',
-    // javascripts/users-table.js
     'USERSTABLE_USER_CREATED' => '',
     'USERSTABLE_USER_NOT_CREATED' => '',
     'USERSTABLE_USER_DELETED' => '',
     'USERSTABLE_USER_NOT_DELETED' => '',
-    // /javascripts/yeswiki-base.js
     'DATATABLES_PROCESSING' => '',
     'DATATABLES_SEARCH' => '',
     'DATATABLES_LENGTHMENU' => '',
@@ -107,12 +98,10 @@ return [
     'EDIT_OUPS_MSG' => '',
     'COMMENT_NOT_DELETED' => '',
     'COMMENT_DELETED' => '',
-    // reactions
     'REACTION_NOT_POSSIBLE_TO_ADD_REACTION' => '',
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => '',
     'REACTION_CONFIRM_DELETE' => '',
     'REACTION_CONFIRM_DELETE_ALL' => '',
-    // Doc
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => '',
     'SAVE' => '',
 ];

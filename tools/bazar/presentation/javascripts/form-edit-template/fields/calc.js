@@ -37,7 +37,7 @@ export default {
     return {
       field: '',
       onRender() {
-        renderHelper.prependHint(field, _t('BAZ_FORM_CALC_HINT', { '\\n': '<BR>' }))
+        renderHelper.prependHint(field, _t('BAZ_FORM_CALC_HINT', { br: '<BR>' }))
         renderHelper.defineLabelHintForGroup(field, 'displaytext', _t('BAZ_FORM_EDIT_DISPLAYTEXT_HELP'))
       }
     }

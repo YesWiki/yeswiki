@@ -181,13 +181,30 @@ class CommentService implements EventSubscriberInterface
     }
 
     /**
+     * Load comments recursivelly.
+     *
+     * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
+     *
+     * @return array all comments and their corresponding properties
+     */
+    public function loadCommentsRecursive($tag, bool $bypassAcls = false)
+    {
+        $comments = $this->loadComments($tag);
+        foreach ($comments as $k => $c) {
+            $comments[$k]['comments'] = $this->loadCommentsRecursive($c['tag']);
+        }
+
+        return $comments;
+    }
+
+    /**
      * Load comments for given page.
      *
      * @param string $tag Page name (Ex : "PagePrincipale") if empty, all comments
      *
      * @return array all comments and their corresponding properties
      */
-    public function loadComments($tag, bool $bypassAcls = false)
+    public function loadComments($tag, bool $bypassAcls = false, $username = null)
     {
         $query = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages ' . 'WHERE ';
         if (empty($tag)) {
@@ -251,6 +268,14 @@ class CommentService implements EventSubscriberInterface
         }
 
         return $this->wiki->render('@core/comment-list.twig', $com);
+    }
+
+    public function getCommentsCount($tag)
+    {
+        return $this->dbService->count("
+            SELECT * FROM {$this->dbService->prefixTable('pages')} 
+            WHERE comment_on = '{$this->dbService->escape($tag)}' AND latest = 'Y'
+        ");
     }
 
     private function setUserData(array $comment, string $key, array &$data)

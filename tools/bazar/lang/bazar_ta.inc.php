@@ -1,11 +1,11 @@
 <?php
+
 return [
     'BAZ_FORMULAIRE' => 'சூத்திரங்கள்',
     'BAZ_LISTES' => 'பட்டியல்கள்',
     'BAZ_NOUVELLE_LISTE' => 'க்ரீயர் une nouvelle liste',
     'BAZ_DU' => 'of',
     'LONGITUDE' => 'லோன்',
-    // fields/video.twig
     'VIDEO_LINK_FIELD' => 'வீடியோவுக்கான இணைப்பு: %{link}',
     'EDIT_CONFIG_HINT_BAZARIGNOREACLS' => 'விக்கி எழுத்துப்பூர்வமாக (உண்மை அல்லது பொய்) மூடப்பட்டிருந்தாலும் தாள்களை உருவாக்க அனுமதிக்கவும்',
     'EDIT_CONFIG_GROUP_BAZAR' => 'தரவுத்தளம்',
@@ -15,8 +15,6 @@ return [
     'EVENT_EVERY_X_YEARS' => 'அனைத்து ஃச் ஆண்டுகள்',
     'BAZ_NOM_LISTE' => 'நோம் டி லா லிச்டே',
     'BAZ_VALEURS_LISTE' => 'வேலியர்ச் டி லா லிச்டே',
-    'BAZ_VALEURS_LISTE_HINT' => 'லா cl & eacute; பாச் டி அக்சென்ட், டி காராக்ட் & எக்ரேவ்; ரெச் எச்பி & ஈகுட்; சியாக்ச், டி\'எச்பேச். சாக் சி.எல் & ஈகூட்; செரா தனித்துவமானது.',
-    'BAZ_AJOUTER_LABEL_LISTE' => 'அசூட்டர் யு.என்.இ நோவல் வாலூர் & அக்ரேவ்; லா பட்டியல்',
     'BAZ_AJOUTER_CHAMPS_FORMULAIRE' => 'அசூட்டர் அன் நோவியோ சாம்ப்ச் அயு தேற்றம்',
     'BAZ_MODIFIER_FORMULAIRES' => 'கெச்டியன் டெச் ஃபார்முலேர்ச்',
     'BAZ_GESTION_LISTES' => 'கெச்டியன் டெச் பட்டியல்கள்',
@@ -210,11 +208,8 @@ return [
     'IMAGE_VALIDE_REQUIS' => 'ஒரு படத்தைச் சேர்க்கவும் & அக்ரேவ்; இந்த தாள் கட்டாயமானது',
     'BAZ_LE_FICHIER_A_ETE_EFFACE' => 'Le fichier {file} a & eacute; t & eacute; effac & eacute ;.',
     'BAZ_PAS_DE_FICHES_SAUVEES_EN_VOTRE_NOM' => 'இப்போதைக்கு பதிவுகள் எதுவும் பதிவு செய்யப்படவில்லை.',
-    'BAZ_DEPLACER_L_ELEMENT' => 'டி & eacute;',
     'BAZ_LIST_NAME' => 'பட்டியலின் பெயர்',
     'BAZ_SAVE' => 'சேமிக்கவும்',
-    'BAZ_KEY' => 'Cl & eacute;',
-    'BAZ_TEXT' => 'உரை',
     'BAZ_BAD_IMAGE_FILE_EXTENSION' => 'படத்திற்கான மோசமான நீட்டிப்பு (.jpg அல்லது .png அல்லது .gif ஆக இருக்க வேண்டும்)',
     'BAZ_IMAGE_FILE_NOT_FOUND' => 'படக் கோப்பு கிடைக்கவில்லை & eacute;',
     'BAZAR_ACTION_VALEUR' => 'செயல் {{valeur...}}',
@@ -233,7 +228,6 @@ return [
     'BAZ_UNKNOWN_USER' => 'தெரியாத பயனர்',
     'BAZ_RADIO_REFRESH' => 'பட்டியலிலிருந்து தகவல்களைப் புதுப்பிக்கவும்',
     'BAZ_NOT_CATEGORIZED' => 'ஒருபோதும்',
-    //================ Calendrier Bazar =======================================
     'BAZ_AFFICHE_TITRES_COMPLETS' => 'முழுமையான நிகழ்வு தலைப்புகளைக் காட்டு',
     'BAZ_TRONQUER_TITRES' => 'நிகழ்வுகளின் தலைப்புகளை துண்டிக்கவும்',
     'BAZ_CALENDRIER' => 'நாட்காட்டி',
@@ -270,17 +264,13 @@ return [
     'BAZ_ALL_DAY' => 'நாள் முழுவதும்',
     'BAZ_ENTER_HOUR' => 'நேரம் கிடைக்கும்',
     'BAZ_RESET_FILTERS' => 'வடிப்பான்களை மீட்டமை',
-    // controllers/FormController.php
     'BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM' => 'ஒரு பயனருக்கு ஒரு தாள்களின் எண்ணிக்கையை கட்டுப்படுத்துங்கள்',
     'BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST' => 'ஒரு தாள் ஏற்கனவே இருக்கும்போது காண்பிக்க செய்தி. இயல்புநிலை செய்தியை வைத்திருக்க காலியாக விடவும்.',
     'BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM' => '"{formName}" படிவத்திற்கு நீங்கள் ஏற்கனவே ஒரு தாளை உள்ளிட்டுள்ளீர்கள். இது கீழே காட்டப்பட்டுள்ளது.',
     'BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM' => 'இந்த படிவத்தை நிறைவு செய்ய இணைக்க வேண்டியது தேவை.',
-    // fields/MapField.php
     'BAZ_GEOLOCATE' => 'எனது நிலைப்பாட்டிலிருந்து புவிசார்மயமாக்கல்',
-    // fields/BookmarkletField.php
     'BAZ_CLOSE_THIS_WINDOW' => 'இந்த ஃபென் & குஞ்சு;',
     'BAZ_BOOKMARKLET_LABEL' => 'ஒரு %{form} தாளை உருவாக்கவும்',
-    // fields/CommentsField.php
     'BAZ_ACTIVATE_COMMENTS' => 'இந்த தாளில் கருத்துகளைச் செயல்படுத்தவா?',
     'BAZ_ACTIVATE_COMMENTS_HINT' => 'கோப்பை பதிவு செய்யும் போது புதுப்பிக்கப்பட்ட உரிமைகள்',
     'BAZ_COMMENTS_INFO_DISCOURSE' => 'கருத்துகள் சொற்பொழிவு தளத்தால் நிர்வகிக்கப்படுகின்றன: ஆனால் அது இன்னும் செயல்படவில்லை!',
@@ -288,15 +278,12 @@ return [
     'BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL' => 'கருத்துக்களை அம்அப் சமூக தளத்தால் நிர்வகிக்கப்படுகிறது (யெச்விகி அம்அப் ஒருங்கிணைத்தது)',
     'BAZ_COMMENTS_INFO_UNKNOWN' => 'கருத்துகளின் சரிசெய்தல் வகை தெரியவில்லை என்பதால் கருத்துகள் நிர்வகிக்கப்படவில்லை',
     'BAZ_COMMENTS_NOT_ACTIVATED' => 'கருத்துகள் யெச்விகியால் நிர்வகிக்கப்படுகின்றன, ஆனால் இவை செயல்படுத்தப்படவில்லை.',
-    // fields/FileField.php
     'BAZ_FILE_ALREADY_EXISTING' => 'ஏற்கனவே கோப்பு',
     'BAZ_NOT_AUTHORIZED_FILE' => 'அங்கீகரிக்கப்படாத கோப்பு',
     'BAZ_FILEFIELD_FILE' => 'Fichier: {filename}',
     'BAZ_FILEFIELD_TOO_LARGE_FILE' => 'கோப்பு மிகப் பெரியது, அதிகபட்சம் %{fileMaxSize} OCETS',
-    // fields/ImageField.php
     'BAZ_IMAGE_ALREADY_EXISTING' => 'படம் {fileName} இருந்தது, அது இல்லை & eacute; மாற்றப்பட்டது.',
     'BAZ_NOT_AUTHORIZED_EXTENSION' => 'நீட்டிப்பு அல்லது ஆசிரியர் & eacute ;.',
-    //================ Drag & Drop for Checkbox fiche =======================================
     'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => '& Eacute;',
     'BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO' => 'சொடுக்கு செய்வதன் மூலம் உங்கள் பட்டியலின் தேர்தல்களை ஒளிரச் செய்யுங்கள் ',
     'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM' => 'வடிகட்டவும்',
@@ -312,7 +299,6 @@ return [
     'BAZ_DRAG_n_DROP_CHECKBOX_LIST' => 'பட்டியல்',
     'BAZ_DRAG_n_DROP_CHECKBOX_EMPTY_LIST' => 'வெற்று பட்டியல்',
     'BAZ_DRAG_n_DROP_CHECKBOX_FILTER_TEXT' => 'பெயர் டி \'& eacute; ',
-    // fields/ReactionsField.php
     'BAZ_ACTIVATE_REACTIONS' => 'இந்த தாளில் எதிர்வினைகளை செயல்படுத்தவா?',
     'BAZ_REACTIONS_DEFAULT_BLACK_IDEA' => 'Ca me perturbe',
     'BAZ_REACTIONS_DEFAULT_GRATITUDE' => 'நன்றியுணர்வு',
@@ -322,16 +308,12 @@ return [
     'BAZ_REACTIONS_DEFAULT_NOT_UNDERSTOOD' => 'எனக்கு புரியவில்லை',
     'BAZ_SHARE_YOUR_COMMENT' => 'பிரதிபலிப்பை ஆழப்படுத்த ஒரு கருத்தை தெரிவிக்க தயங்க வேண்டாம்!',
     'BAZ_SHARE_YOUR_REACTION' => 'இந்த உள்ளடக்கத்திற்கு உங்கள் எதிர்வினையைப் பகிரவும்',
-    // fields/WidgetHandler.php
     'BAZ_WIDGET_HANDLER_TITLE' => 'விட்செட் உஉகுமொ (உட்பொதித்தல் குறியீடு) மூலம் முடிவுகளைப் பகிரவும்',
-    // libs/bazar.fonct.misc.php
     'BAZ_ERROR_IMAGE' => 'பட பிழை:',
-    // ==== ExternalBazarService ====
     'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM' => 'படிவத்தின் உள்ளடக்கம் மோசமாக வடிவமைக்கப்பட்டுள்ளது.',
     'BAZ_EXTERNAL_SERVICE_BAD_URL' => 'முகவரி அணுக முடியாதது.',
     'BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES' => 'தாள்களின் உள்ளடக்கம் மோசமாக வடிவமைக்கப்பட்டுள்ளது.',
     'BAZ_EXTERNAL_SERVICE_QUERIES_NOT_AVAILABLE' => 'வெளிப்புற தாள்களுக்கான \'வினவல்\' அளவுருவைப் பயன்படுத்துகிறீர்கள். இது இன்னும் செயல்படவில்லை.',
-    // for edit config
     'EDIT_CONFIG_HINT_BAZ_MAP_CENTER_LAT' => 'கார்ட்டோகிராஃபிக் காட்சிகளின் இயல்புநிலை அட்சரேகை',
     'EDIT_CONFIG_HINT_BAZ_MAP_CENTER_LON' => 'கார்ட்டோகிராஃபிக் காட்சிகளின் இயல்புநிலை தீர்க்கரேகை',
     'EDIT_CONFIG_HINT_BAZ_MAP_ZOOM' => 'கார்டுகளின் இயல்புநிலை பெரிதாக்க நிலை (1: உலகம் => 15: நகராட்சி)',
@@ -341,7 +323,6 @@ return [
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_CHECK_CHANGES]' => 'சாதொபொகு கோரிக்கைகளில் சேர்த்தல் மற்றும் மாற்றங்களை சரிபார்க்க தற்காலிக சேமிப்பின் இரண்டு புத்துணர்ச்சிகளுக்கு இடையில் நேரம் (கள்)',
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_CHECK_DELETION]' => 'சாதொபொகு கோரிக்கைகளில் நீக்குதல்களை சரிபார்க்க தற்காலிக சேமிப்பின் இரண்டு புத்துணர்ச்சிகளுக்கு இடையில் நேரம் (கள்)',
     'EDIT_CONFIG_HINT_BAZ_EXTERNAL_SERVICE[CACHE_TIME_TO_REFRESH_FORMS]' => 'சாதொபொகு கோரிக்கைகளுக்கு தேவையான படிவங்களுக்கான தற்காலிக சேமிப்பின் இரண்டு புத்துணர்ச்சிகளுக்கு இடையில் நேரம் (கள்)',
-    // USER FIELD
     'BAZ_USER_FIELD_EXISTING_USER_BY_NAME' => 'அடையாளங்காட்டி "{proposedName}" ஏற்கனவே உள்ளது
  பெட்டியின் மாற்றீட்டை "{currentName}" மூலம் உறுதிப்படுத்தவும் அல்லது கீழே உள்ள படிவத்தில் உங்கள் அடையாளங்காட்டியை மாற்றவும்.',
     'BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL' => 'வழங்கப்பட்ட மின்னஞ்சல் ஏற்கனவே யோவிகி கணக்குடன் தொடர்புடையது! தயவுசெய்து மற்றொரு மின்னஞ்சல் முகவரியை உள்ளிடவும் அல்லது இந்த கணக்குடன் இணைக்கவும்.',
@@ -350,18 +331,12 @@ return [
  உருவாக்கப்பட்ட கோப்பு தானாகவே உங்கள் கணக்கில் இணைக்கப்படும். புதிய கணக்கை உருவாக்க தயவுசெய்து துண்டிக்கவும்!',
     'BAZ_USER_FIELD_ALREADY_CONNECTED_AUTOUPDATE' => 'இந்த கணக்குடன் தொடர்புடைய மின்னஞ்சல் முகவரியை மாற்ற, "{email}" இலிருந்து வேறுபட்டது.',
     'BAZ_USER_FIELD_FORCE_SAVE_ENTRY' => 'ஒரு நிர்வாகியாக, கொடுக்கப்பட்ட மின்னஞ்சலுக்கான கோப்பை உருவாக்க கட்டாயப்படுத்தவும் (மற்றும் ஒரு கணக்கை ஏற்கனவே இல்லையென்றால் மட்டுமே உருவாக்கவும்)',
-    // presentation/templates/annuaire_alphabetique.tpl.html
     'BAZ_MEMBERS' => 'உறுப்பினர்கள்',
-    // presentation/templates/blog.tpl.html
     'BAZ_MORE_INFOS' => 'மேலும் தகவல்கள்',
-    // presentation/templates/liste_liens_date.tpl.html
     'BAZ_NO_ENTRY_FOR_THIS_PERIOD' => 'இந்த காலத்திற்கு தாள் இல்லை.',
-    // templates/entries/index-dynamic-templates/card.twig
     'BAZ_CARD_NBCOL_TOO_HIGH' => '`Nbcol` அளவுருவை` பாணி =" கிடைமட்ட "` உடன் கணக்கில் எடுத்துக்கொள்ள முடியாது, மேலும் 2 ஆக வரையறுக்கப்பட்டுள்ளது!',
-    // templates/tableau.twig
     'SUM' => 'சோம்',
     'URL' => 'முகவரி',
-    // templates/bazar/fields/date.twig
     'EVENT_IS_RECURRENT' => 'இந்த நிகழ்வு மீண்டும்: %{repetition}',
     'EVENT_LIMIT_DATE' => '%{date} வரை',
     'EVENT_REPETITION_FOR_DAYS' => 'அனைத்து %{x} நாட்கள்',
@@ -373,7 +348,6 @@ return [
     'EVENT_REPETITION_NTH_OF_MONTH_ALONE' => 'le %{nth}',
     'EVENT_REPETITION_IN_MONTH' => 'ஒரு மாதம்}, ',
     'EVENT_IS_LINKED_TO_RECURRENT' => 'இந்த நிகழ்வு %{link} தாளுடன் இணைக்கப்பட்ட தொடர்ச்சியான நிகழ்வு ஆகும்',
-    // templates/bazar/inputs/date.twig
     'EVENT_ACTIVATE_CUSTOM' => 'கூடுதல் விருப்பங்களைக் காண்க',
     'EVENT_EVERY_DAYS' => 'தினமும்',
     'EVENT_EVERY_X_DAYS' => 'ஒவ்வொரு ஃச் நாட்களும்',
@@ -396,9 +370,7 @@ return [
     'EVENT_THIRD_Y_OF_MONTH' => 'மாதத்தின் மூன்றாவது',
     'EVENT_UP_TO_DATE' => 'வரை:',
     'EVENTS_WHEN_IN_MONTH' => 'மாதத்தின் எந்த நேரத்தில்?',
-    // presentation/templates/timeline.tpl.html
     'BAZ_YEAR' => '& Eradte;',
-    // presentation/templates/widget.tpl.html
     'BAZ_FACETTES_DISPLAY' => 'அம்சங்களின் தோற்றம்',
     'BAZ_EXPANDED_FACETTES' => 'வெளிவந்த நற்பொருத்தங்கள்',
     'BAZ_NOT_EXPANDED' => 'விரும்பத்தகாத',
@@ -407,8 +379,6 @@ return [
     'BAZ_PREVIEW_DETAILS' => 'இந்த பகுதி உருவகமற்றது, இடது நெடுவரிசையில் அளவுருக்கள் மாறுகின்றன',
     'BAZ_WIDGET_INSTRUCTION' => 'உங்கள் தளத்தில் பேச்ட்டை நகலெடுக்க குறியீட்டை உட்பொதிக்கவும்',
     'BAZ_WIDGET_INSTRUCTION2' => 'இந்த தளத்தில் ஒரு பக்கத்தில் பேச்ட்டை நகலெடுக்க விக்கி செயல் குறியீடு',
-    // services/EntryManager.php
     'BAZ_CORRESPONDANCE_ERROR' => 'செயல் BAZAARLISTE: அளவுரு கடிதத் தொடர்பு நோய்வாய்ப்பட்டது -நிரப்பப்பட்டது: இது கடிதத் தொடர்பு = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2" அல்லது கடிதத் தொடர்பு = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2, அடையாளங்காட்டி_3 = அடையாளங்காட்டி_4"',
-    'BAZ_CORRESPONDANCE_ERROR2' => 'பசார்லிச்ட் நடவடிக்கை: கடித அளவுரு மோசமாக நிரப்பப்பட்டுள்ளது
- இது கடித வடிவத்தில் இருக்க வேண்டும் = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2" அல்லது கடித தொடர்பு = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2, அடையாளங்காட்டி_3 = அடையாளங்காட்டி_4"',
+    'BAZ_CORRESPONDANCE_ERROR2' => 'பசார்லிச்ட் நடவடிக்கை: கடித அளவுரு மோசமாக நிரப்பப்பட்டுள்ளது இது கடித வடிவத்தில் இருக்க வேண்டும் = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2" அல்லது கடித தொடர்பு = "அடையாளங்காட்டி_1 = அடையாளங்காட்டி_2, அடையாளங்காட்டி_3 = அடையாளங்காட்டி_4"',
 ];

@@ -112,7 +112,7 @@ if (!class_exists('qqFileUploader')) {
 
             /*if ($postSize < $this->sizeLimit || $uploadSize < $this->sizeLimit){
                 $size = max(1, $this->sizeLimit / 1024 / 1024) . 'M';
-                die("{'error':'La configuration de votre serveur devrait avoir un post_max_size et un upload_max_filesize sup&eacute;rieur &agrave; $size'}");
+                die("{'error':'La configuration de votre serveur devrait avoir un post_max_size et un upload_max_filesize supérieur à $size'}");
             }    */
         }
 
@@ -123,11 +123,14 @@ if (!class_exists('qqFileUploader')) {
             $l = strlen($str) - 1;
             $last = strtolower($str[$l]);
             switch ($last) {
-                case 'g': $val *= 1024;
+                case 'g':
+                    $val *= 1024;
                     // no break
-                case 'm': $val *= 1024;
+                case 'm':
+                    $val *= 1024;
                     // no break
-                case 'k': $val *= 1024;
+                case 'k':
+                    $val *= 1024;
             }
 
             return $val;

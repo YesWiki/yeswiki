@@ -5,18 +5,13 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\PageController;
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // get services
 $csrfTokenManager = $this->services->get(CsrfTokenManager::class);
 $csrfTokenController = $this->services->get(CsrfTokenController::class);
 
 // get the GET parameter 'incomingurl' for the incoming url
 if (!empty($_REQUEST['incomingurl'])) {
-    $incomingurl = urldecode($_GET['incomingurl']);
+    $incomingurl = filter_var($_REQUEST['incomingurl'], FILTER_VALIDATE_URL);
 }
 $redirectToIncoming = false;
 $hasBeenDeleted = false;
@@ -78,10 +73,12 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             }
         }
     } else {
-        if (isset($_GET['eraselink'])
+        if (
+            isset($_GET['eraselink'])
             && $_GET['eraselink'] === 'oui'
             && isset($_GET['confirme'])
-            && ($_GET['confirme'] === 'oui')) {
+            && ($_GET['confirme'] === 'oui')
+        ) {
             // a trouble occured, invald token ?
             try {
                 $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);

@@ -25,6 +25,7 @@ actions:
   tabs:
     label: _t(AB_templates_tabs_label)
     isWrapper: true
+    onlyAdd: true
     wrappedContentExample: _t(AB_templates_tabs_wrappedcontentexample)
     description: _t(AB_templates_tabs_description)
     hint: _t(AB_templates_tabs_hint)
@@ -78,16 +79,16 @@ actions:
     description: _t(AB_templates_nav_description)
     hint: _t(AB_templates_nav_hint)
     properties:
-      links:
-        label: _t(AB_templates_nav_links_label)
-        type: text
-        value: _t(AB_templates_nav_links_default)
-        hint: _t(AB_templates_nav_links_hint)
-      titles:
-        label: _t(AB_templates_nav_titles_label)
-        value: _t(AB_templates_nav_titles_default)
-        hint: _t(AB_templates_nav_titles_hint)
-        type: text
+      nav-links:
+        type: nav-links
+        btn-label-add: _t(AB_templates_nav_add_tag)
+        subproperties:
+          link:
+            label: _t(AB_templates_nav_link)
+            type: page-list
+          title:
+            label: _t(AB_templates_nav_title)
+            type: text
       class:
         type: class
         subproperties:
@@ -154,6 +155,7 @@ actions:
       pattern:
         label: _t(AB_templates_section_pattern_label)
         type: list
+        value: border-solid
         options:
           '': _t(AB_templates_section_pattern_solid)
           border-solid: _t(AB_templates_section_pattern_border_solid)
@@ -233,6 +235,7 @@ actions:
             label: _t(AB_templates_section_shape_label)
             type: list
             icon: shapes
+            value: shape-rounded
             default: ''
             options:
               '': _t(AB_templates_section_shape_rect)
@@ -300,41 +303,52 @@ actions:
         options:
           '1': _t(YES)
           '0': _t(NO)
-  #      data:
-  #        label: Data wow
-  #        type: text
-  #        subproperties:
-  #          wow-iteration:
-  #            label: Nb d'itération souhaitée
-  #            default: 2
-  #            type: number
-  #          wow-length:
-  #            label: Durée de l'effet (en sec)
-  #            type: number
-  #          wow-offset:
-  #            label: Délais de l'animation quand l'élément apparaît à l'écran (en sec)
-  #            type: number
-  #          wow-delay:
-  #            label: Délais de l'animation quand la page est chargée (en sec)
-  #            type: number
+      #  data:
+      #    label: Data wow
+      #    type: text
+      #    subproperties:
+      #      wow-iteration:
+      #        label: Nb d'itération souhaitée
+      #        default: 2
+      #        type: number
+      #      wow-length:
+      #        label: Durée de l'effet (en sec)
+      #        type: number
+      #      wow-offset:
+      #        label: Délais de l'animation quand l'élément apparaît à l'écran (en sec)
+      #        type: number
+      #      wow-delay:
+      #        label: Délais de l'animation quand la page est chargée (en sec)
+      #        type: number
   accordion:
     label: _t(AB_template_action_accordion_label)
     isWrapper: true
+    onlyAdd: true
     wrappedContentExample: _t(AB_template_action_accordion_example)
     properties:
-      class:
-        label: _t(AB_template_actions_class)
-        type: text
+      nb:
+        label: Nombre d'encadrés dans l'accordéon
+        type: number
+        mapped: false
+        value: 2
   grid:
     label: _t(AB_template_action_grid_label)
     isWrapper: true
+    onlyAdd: true
     wrappedContentExample: _t(AB_template_action_grid_example)
     properties:
-      class:
-        label: _t(AB_template_actions_class)
-        type: text
-        # doclink: https://yeswiki.net/?GriD
-  #  col: # moved to /docs/actions/col.yaml
+      nb:
+        label: _t(AB_template_action_grid_nb)
+        hint: _t(AB_template_action_grid_nb_hint)
+        type: list
+        mapped: false
+        value: 2
+        options:
+          2: 2
+          3: 3
+          4: 4
+          6: 6
+          12: 12
   # ariane:
   #   label: _t(AB_template_action_ariane_label)
   #   properties:

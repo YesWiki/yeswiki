@@ -5,10 +5,6 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ThemeManager;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // inclusion de la bibliotheque de fonctions pour l'envoi des mails
 include_once 'includes/email.inc.php';
 include_once 'tools/contact/libs/contact.functions.php';
@@ -21,7 +17,8 @@ $output = '';
 
 // si le handler est appele en ajax, on traite l'envoi de mail et on repond en ajax
 if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])
-    && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')) {
+    && ($_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest')
+) {
     // entête de mail qd le champ $_GET['field'] est spécifié
     $infomsg = '';
 
@@ -85,7 +82,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     } else {
         // pour un envoi de mail classique, le message en txt
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
-          ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false);
+            ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false);
         $message = (isset($_POST['message'])) ? stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
         $message_txt = trim(strip_tags($message));
         // euro symbol is not replaced by htmlspecialchar
@@ -217,7 +214,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             'message' => ($this->GetUser())
                 ? _t('LOGIN_NOT_AUTORIZED')
                 : (_t('CONTACT_HANDLER_MAIL_FOR_CONNECTED') . '<br />'
-                . _t('CONTACT_LOGIN_IF_CONNECTED')),
+                    . _t('CONTACT_LOGIN_IF_CONNECTED')),
         ]);
         $output .= $this->Format('{{login}}') . "\n";
     }

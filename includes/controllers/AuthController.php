@@ -155,10 +155,12 @@ class AuthController extends YesWikiController
             // connect in SESSION
             $this->login($data['user'], $data['remember'] ? 1 : 0);
         } catch (BadUserConnectException $th) {
-            if (empty($_SESSION['user']['name']) ||
+            if (
+                empty($_SESSION['user']['name']) ||
                 empty($data['user']['name']) ||
                 $data['user']['name'] != $_SESSION['user']['name'] ||
-                !$this->wiki->UserIsAdmin($data['user']['name'])) {
+                !$this->wiki->UserIsAdmin($data['user']['name'])
+            ) {
                 // do not disconnect admin during update
                 $this->logout();
             }
@@ -169,14 +171,24 @@ class AuthController extends YesWikiController
 
     public function getLoggedUser()
     {
-        if (isset($_SESSION['user']) && !empty($_SESSION['user']['name'])) {
+        // If the user isn't logged
+        if (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) {
+            return '';
+        }
+
+        // Else, if user is logged, store the user in a cache
+        static $cache = null;
+
+        if ($cache == null) {
             $user = $this->userManager->getOneByName($_SESSION['user']['name']);
             if (!empty($user)) {
-                return $user->getArrayCopy();
+                $cache = $user->getArrayCopy();
+            } else {
+                $cache = '';
             }
         }
 
-        return '';
+        return $cache;
     }
 
     public function getLoggedUserName()

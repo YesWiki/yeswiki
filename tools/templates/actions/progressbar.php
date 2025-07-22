@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // valeur de la progressbar
 $val = $this->GetParameter('val');
 if (empty($val)) {

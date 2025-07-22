@@ -19,7 +19,7 @@
   </label>
   <div class="controls col-sm-9">
     <input class="form-control" name="name" size="40" value="{{ name }}" 
-      pattern="[^!#@\\\/]{1}[^\\\/]{2,}"/>{# pattern for not special characters #}
+      pattern="{{ regexUserName | raw}}"/>{# pattern for valid user name #}
   </div>
 </div>
 <div class="control-group form-group">

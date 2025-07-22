@@ -2,11 +2,7 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
-
 // V?rification de s?curit?
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 
 use YesWiki\Core\Service\CommentService;
 
@@ -47,13 +43,13 @@ if ($HasAccessRead = $this->HasAccess('read')) {
             // if this is an old revision, display some buttons
             if ($this->HasAccess('write')) {
                 $latest = $this->LoadPage($this->tag); ?>
-				<?php
-                  $time = isset($_GET['time']) ? $_GET['time'] : '';
+                <?php
+                $time = isset($_GET['time']) ? $_GET['time'] : '';
                 echo $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get'); ?>
-				<input type="hidden" name="time" value="<?php echo $time; ?>" />
-				<input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
-				<?php echo $this->FormClose(); ?>
-				<?php
+                <input type="hidden" name="time" value="<?php echo $time; ?>" />
+                <input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
+                <?php echo $this->FormClose(); ?>
+<?php
             }
 
             echo '</div>' . "\n";

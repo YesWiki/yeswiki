@@ -1,15 +1,12 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
 if (empty($_POST['config'])) {
     header('Location: ' . myLocation());
     exit(_t('PROBLEM_WHILE_INSTALLING'));
 }
 ?>
-    <h2><?php echo _t('WRITING_CONFIGURATION_FILE'); ?></h2>
-    <?php
+<h2><?php echo _t('WRITING_CONFIGURATION_FILE'); ?></h2>
+<?php
 // fetch config
 $config = $config2 = json_decode($_POST['config'], true);
 
@@ -49,20 +46,20 @@ if ($fp) {
     fclose($fp);
 
     echo "<br />\n<div class=\"alert alert-success\"><strong>" . _t('FINISHED_CONGRATULATIONS') . ' !</strong><br />' . _t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE') . ' <tt>wakka.config.php</tt> (' . _t('THIS_COULD_BE_UNSECURE') . ').</div>';
-    echo "<div class=\"form-actions\">\n<a class=\"btn btn-lg btn-primary\" href=\"",$config['base_url'] . $config['root_page'],'">' . _t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE') . "</a>\n</div>\n";
+    echo "<div class=\"form-actions\">\n<a class=\"btn btn-lg btn-primary\" href=\"", $config['base_url'] . $config['root_page'], '">' . _t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE') . "</a>\n</div>\n";
 //header('Location: '.$config['base_url'].$config['root_page']);
 } else {
     // complain
-    echo "<br />\n<div class=\"alert alert-danger\"><strong>" . _t('WARNING') . '</strong> :</span> ' . _t('CONFIGURATION_FILE') . ' <tt>',$wakkaConfigLocation,'</tt> ' . _t('CONFIGURATION_FILE_NOT_CREATED') . '.<br />' .
-            _t('TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT') .
-            '<tt>wakka.config.php</tt> ' . _t('DIRECTLY_IN_THE_YESWIKI_FOLDER') . ".</div>\n";
-    echo "\n<pre><xmp>",$configCode,"</xmp></pre>\n"; ?>
-  <form action="<?php echo myLocation(); ?>?installAction=writeconfig" method="POST">
-  <input type="hidden" name="config" value="<?php echo htmlspecialchars(json_encode($config2), ENT_COMPAT, YW_CHARSET); ?>">
-  <div class="form-actions">
-    <input type="submit" class="btn btn-lg btn-primary" value="<?php echo _t('TRY_AGAIN'); ?>">
-  </div>
-  </form>
-    <?php
+    echo "<br />\n<div class=\"alert alert-danger\"><strong>" . _t('WARNING') . '</strong> :</span> ' . _t('CONFIGURATION_FILE') . ' <tt>', $wakkaConfigLocation, '</tt> ' . _t('CONFIGURATION_FILE_NOT_CREATED') . '.<br />' .
+        _t('TRY_CHANGE_ACCESS_RIGHTS_OR_FTP_TRANSFERT') .
+        '<tt>wakka.config.php</tt> ' . _t('DIRECTLY_IN_THE_YESWIKI_FOLDER') . ".</div>\n";
+    echo "\n<pre><xmp>", $configCode, "</xmp></pre>\n"; ?>
+    <form action="<?php echo myLocation(); ?>?installAction=writeconfig" method="POST">
+        <input type="hidden" name="config" value="<?php echo htmlspecialchars(json_encode($config2), ENT_COMPAT, YW_CHARSET); ?>">
+        <div class="form-actions">
+            <input type="submit" class="btn btn-lg btn-primary" value="<?php echo _t('TRY_AGAIN'); ?>">
+        </div>
+    </form>
+<?php
 }
 ?>

@@ -2,10 +2,6 @@
 
 use YesWiki\Core\Service\LinkTracker;
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // classe css supplémentaire
 $class = $this->GetParameter('class');
 $class = ((!empty($class)) ? $class : 'nav nav-tabs');

@@ -6,6 +6,8 @@ use attach;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -101,6 +103,16 @@ class TemplateEngine
         $this->twig->addGlobal('isInIframe', testUrlInIframe());
 
         // Adds Helpers
+        $this->addTwigHelper('dump', function ($var) {
+            if (isset($this->wiki->config['debug']) && $this->wiki->config['debug'] == 'yes') {
+                return dump($var);
+            }
+
+            return '';
+        });
+        $this->addTwigHelper('int', function ($content) {
+            return (int)$content;
+        });
         $this->addTwigHelper('_t', function ($key, $params = []) {
             return html_entity_decode(_t($key, $params));
         });
@@ -179,6 +191,23 @@ class TemplateEngine
         });
         $this->addTwigHelper('renderAction', function ($name, $params = []) {
             return $this->wiki->services->get(Performer::class)->run($name, 'action', $params);
+        });
+        $this->addTwigHelper('reaction', function ($entry, $reactionId) {
+            $form = $this->wiki->services->get(FormManager::class)->getOne($entry['id_typeannonce']);
+            $found = false;
+            foreach ($form['prepared'] as $i => $element) {
+                if ($reactionId == $element->getPropertyName()) {
+                    $found = $i;
+                }
+            }
+            if ($found) {
+                return $form['prepared'][$found]->renderStaticIfPermitted($entry);
+            }
+
+            return;
+        });
+        $this->addTwigHelper('listValues', function ($listId, $parent = null) {
+            return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);
         });
     }
 

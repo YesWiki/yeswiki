@@ -26,6 +26,15 @@ class MigrationService
         $this->params = $params;
     }
 
+    public function getCompletedMigrations()
+    {
+        $tripleStore = $this->wiki->services->get(TripleStore::class);
+
+        return array_map(function ($data) {
+            return $data['resource'];
+        }, $tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID));
+    }
+
     public function run()
     {
         if ($this->wiki->services->get(SecurityController::class)->isWikiHibernated()) {
@@ -33,11 +42,8 @@ class MigrationService
         }
 
         $messages = new Messages();
-
         $tripleStore = $this->wiki->services->get(TripleStore::class);
-        $completedMigrations = array_map(function ($data) {
-            return $data['resource'];
-        }, $tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID));
+        $completedMigrations = $this->getCompletedMigrations();
 
         // Get all Php files in migrations folder (in root or in any tools)
         // Run the file if it was not already run in the past

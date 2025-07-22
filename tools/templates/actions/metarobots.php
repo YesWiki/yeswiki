@@ -6,16 +6,13 @@ use YesWiki\Templates\Service\Utils;
  * Action to add usefull metas to html head
  */
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
-if ($this->GetMethod() != 'show') {
+if ($this->GetMethod() != 'show' || empty($this->page)) {
+    // no index if not with 'show' hander or if page is not existing
     echo '<meta name="robots" content="noindex, nofollow">' . "\n";
 } else {
     if (isset($this->config['meta']['robots'])) {
         echo '<meta name="robots" content="'
-          . $this->config['meta']['robots'] . '">' . "\n";
+            . $this->config['meta']['robots'] . '">' . "\n";
     }
     // canonical url
     $url = $this->href('', $this->getPageTag());
@@ -24,8 +21,8 @@ if ($this->GetMethod() != 'show') {
     // opengraph
     echo "\n" . '  <!-- opengraph -->' . "\n";
     echo '  <meta property="og:site_name" content="'
-      . $this->config['wakka_name'] . '" />' . "\n";
-    $utils = $this->services->get(\YesWiki\Templates\Service\Utils::class);
+        . $this->config['wakka_name'] . '" />' . "\n";
+    $utils = $this->services->get(Utils::class);
     $title = $utils->getTitleFromBody($this->page);
     echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['wakka_name']) . '" />' . "\n";
     $desc = htmlspecialchars($utils->getDescriptionFromBody($this->page, $title), ENT_COMPAT | ENT_HTML5);

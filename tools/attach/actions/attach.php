@@ -1,8 +1,8 @@
 <?php
 
 /******************************************************************************
-*			DOCUMENTATION
-*******************************************************************************
+ *			DOCUMENTATION
+ *******************************************************************************
     RESUME
 L'action {{attach}} permet de lier un fichier é une page, d'uploader ce fichier
 et de downloader ce fichier. Si le fichier est une image, elle est affichée
@@ -80,11 +80,7 @@ Exemple :
 .tableFM TBODY TR { text-align: center;  }
 .tableFMCol1 { background-color: Aqua; }
 .tableFMCol2 { background-color: Yellow; }
-*******************************************************************************/
-
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
+ *******************************************************************************/
 
 if (!class_exists('attach')) {
     include 'tools/attach/libs/attach.lib.php';

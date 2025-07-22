@@ -160,3 +160,10 @@ input.form-control.error {
   text-align: left;
   width: 100%;
 }
+
+.export-links {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 0.85em;
+  margin: 0.25em 0 0 -7px;
+}

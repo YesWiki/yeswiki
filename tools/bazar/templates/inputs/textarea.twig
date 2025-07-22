@@ -10,7 +10,7 @@
         <img loading="lazy" class="tooltip_aide" title="{{ field.hint|raw('html') }}" alt="{{ field.hint|raw('html') }}" src="tools/bazar/presentation/images/aide.png" width="16" height="16" />
     {% endif %}
     {{ field.label|raw }}
-    {% if field.maxChars and field.syntax == 'nohtml' %}(<span class="charsRemaining">{{ field.maxChars }}</span> caract&egrave;res restants){% endif %}
+    {% if field.maxChars and (field.syntax == 'nohtml' or field.syntax == 'wiki-textarea') %}(<span class="charsRemaining">{{ field.maxChars }}</span> caractères restants){% endif %}
 {% endblock %}
 
 {% block input %}
@@ -18,7 +18,16 @@
 
     <div id="{{ field.name ~ 'Container' }}">
         {% if field.syntax == 'wiki-textarea' %}
-            {{ renderAction('aceditor', { name: field.name, value: value, rows: field.numRows, tempTag: tempTag })|raw }}
+            {{ renderAction(
+              'aceditor',
+              { 
+                name: field.name,
+                value: value,
+                rows: field.numRows,
+                maxChars: field.maxChars,
+                tempTag: tempTag
+              }
+            )|raw }}
         {% else %}
             <textarea
                 id="{{ field.name }}"

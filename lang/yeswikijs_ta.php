@@ -1,7 +1,6 @@
 <?php
+
 return [
-    // commons
-    'APRIL' => 'அவ்ரில்',
     'AUGUST' => 'ஆகச்ட்',
     'CANCEL' => 'ரத்துசெய்',
     'COPY' => 'நகல்',
@@ -37,7 +36,6 @@ return [
     'TUESDAY' => 'மார்டி',
     'WEDNESDAY' => 'புதன்கிழமை',
     'YES' => 'Oui',
-    // /javascripts/actions/admin-backups.js
     'ADMIN_BACKUPS_LOADING_LIST' => 'காப்பு பட்டியலை ஏற்றுகிறது',
     'ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' => 'காப்புப்பிரதிகளின் பட்டியலைப் புதுப்பிக்க இயலாது',
     'ADMIN_BACKUPS_DELETE_ARCHIVE' => 'அடக்குமுறை டி {filename}',
@@ -63,33 +61,26 @@ return [
     'ADMIN_BACKUPS_STOPPING_ARCHIVE' => 'காப்புப்பிரதியின் காப்புப்பிரதியின் போது',
     'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => 'கட்டாய புதுப்பிப்பு சாத்தியமற்றது',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'பலப்படுத்தப்பட்ட புதுப்பிப்பு (தயவுசெய்து காத்திருங்கள்)',
-    // /javascripts/handlers/revisions.js
     'REVISIONS_COMMIT_DIFF' => 'இந்த பதிப்பால் செய்யப்பட்ட மாற்றங்கள்',
     'REVISIONS_DIFF' => 'தற்போதைய பதிப்போடு ஒப்பிடுதல்',
     'REVISIONS_PREVIEW' => 'இந்த பதிப்பின் கண்ணோட்டம்',
-    // javascripts/documentation.js
     'DOCUMENTATION_TITLE' => 'ஆவணங்கள் யெவிகி',
-    // javascripts/favorites.js
     'FAVORITES_ADD' => 'பிடித்தவையில் சேர்',
     'FAVORITES_ALL_DELETED' => 'பிடித்தவை நீக்கப்பட்டன',
     'FAVORITES_ERROR' => 'பிழை ஏற்பட்டது: {error}',
     'FAVORITES_REMOVE' => 'பிடித்தவைகளைத் திரும்பப் பெறுங்கள்',
     'FAVORITES_ADDED' => 'பிடித்த சேர்க்கப்பட்டது',
     'FAVORITES_REMOVED' => 'பிடித்த நீக்கப்பட்டது',
-    // javascripts/list-form-id-attribute.js
     'LIST_CREATE_TITLE' => 'புதிய பட்டியல்',
     'LIST_UPDATE_TITLE' => 'பட்டியலைத் திருத்தவும்',
     'LIST_CREATED' => 'பட்டியல் உருவாக்கப்பட்டுள்ளது',
     'LIST_UPDATED' => 'பட்டியல் வெற்றிகரமாக புதுப்பிக்கப்பட்டுள்ளது',
-    // javascripts/multidelete.js
     'MULTIDELETE_END' => 'நீக்குதல்கள் செய்யப்பட்டன',
     'MULTIDELETE_ERROR' => '{itemId} உறுப்பு நீக்கப்படவில்லை! {error}',
-    // javascripts/users-table.js
     'USERSTABLE_USER_CREATED' => "பயனர் '{name}' உருவாக்கப்பட்டது",
     'USERSTABLE_USER_NOT_CREATED' => "பயனர் '{name}' உருவாக்கப்படவில்லை: {error}",
     'USERSTABLE_USER_DELETED' => 'பயனர் "{பயனர்பெயர்}" நீக்கப்பட்டது.',
     'USERSTABLE_USER_NOT_DELETED' => 'பயனர் "{பயனர்பெயர்}" நீக்கப்படவில்லை.',
-    // /javascripts/yeswiki-base.js
     'DATATABLES_PROCESSING' => 'நடந்துகொண்டிருக்கும் மருத்தீடு ...',
     'DATATABLES_SEARCH' => 'ரீச்சர் & என்.பி.எச்.பி ;:',
     'DATATABLES_LENGTHMENU' => '_மெனு_ & eacute;',
@@ -108,12 +99,10 @@ return [
     'EDIT_OUPS_MSG' => 'உண்மையில், நான் இருமுறை சொடுக்கு செய்ய விரும்பவில்லை ...',
     'COMMENT_NOT_DELETED' => 'கருத்து {comment} நீக்கப்படவில்லை.',
     'COMMENT_DELETED' => 'கருத்து நீக்கப்பட்டது.',
-    // reactions
     'REACTION_NOT_POSSIBLE_TO_ADD_REACTION' => 'பின்வரும் பிழை காரணமாக எதிர்வினையைச் சேர்க்க முடியவில்லை: {error}!',
     'REACTION_NOT_POSSIBLE_TO_DELETE_REACTION' => 'பின்வரும் பிழை காரணமாக எதிர்வினையை நீக்க இயலாது: {error}!',
     'REACTION_CONFIRM_DELETE' => 'இந்த எதிர்வினையை நீக்க விரும்புகிறீர்களா?',
     'REACTION_CONFIRM_DELETE_ALL' => 'இந்த வாக்குகளிலிருந்து அனைத்து எதிர்வினைகளையும் அகற்ற விரும்புகிறீர்களா?',
-    // Doc
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'இந்த பக்கத்தை கிதுபில் மாற்றவும்',
-    'LINK_TO_CHANGE_PASSWORD' => "கடவுச்சொல்லை மாற்றுவதற்கான இணைப்பு",
+    'LINK_TO_CHANGE_PASSWORD' => 'கடவுச்சொல்லை மாற்றுவதற்கான இணைப்பு',
 ];

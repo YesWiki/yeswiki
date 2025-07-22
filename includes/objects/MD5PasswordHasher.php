@@ -23,7 +23,7 @@ class MD5PasswordHasher implements LegacyPasswordHasherInterface
      *
      * @throws InvalidPasswordException If the plain password is invalid, e.g. excessively long
      */
-    public function hash(string $plainPassword, string $salt = null): string
+    public function hash(string $plainPassword, ?string $salt = null): string
     {
         if ($this->isPasswordTooLong($plainPassword)) {
             throw new InvalidPasswordException();
@@ -35,7 +35,7 @@ class MD5PasswordHasher implements LegacyPasswordHasherInterface
     /**
      * Checks that a plain password and a salt match a password hash.
      */
-    public function verify(string $hashedPassword, string $plainPassword, string $salt = null): bool
+    public function verify(string $hashedPassword, string $plainPassword, ?string $salt = null): bool
     {
         return $hashedPassword === $this->hash($plainPassword);
     }

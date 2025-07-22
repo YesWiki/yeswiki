@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 if (!function_exists('wakkaProgressBar')) {
     function wakkaProgressBar($things)
     {

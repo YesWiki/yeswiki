@@ -19,6 +19,9 @@ export default {
         'some-descendant-checked': this.someDescendantChecked,
         expanded: this.expanded
       }
+    },
+    nodeTitle() {
+      return this.node.label.length > 8 ? this.node.label : null
     }
   },
   methods: {
@@ -55,9 +58,9 @@ export default {
               We want the behaviour to differ depending on where the user clicks 
             (checkbox itself or label) -->
         <span>
-          <span @click="labelClicked"> 
+          <span class="filter-node-label-wrapper" @click="labelClicked"> 
             <span class="filter-node-label">
-              <span v-html="node.label"></span>
+              <span v-html="node.label" :title="nodeTitle"></span>
               <i v-if="node.children.length > 0" class="chevron-icon fa fa-caret-down"></i>
             </span>
             <span class="count" v-if="node.count"><span>{{ node.count }}</span></span>

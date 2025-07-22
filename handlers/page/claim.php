@@ -1,10 +1,5 @@
 <?php
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 use YesWiki\Core\Service\AclService;
 
 $tag = $this->getPageTag();

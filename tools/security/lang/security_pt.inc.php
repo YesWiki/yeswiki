@@ -1,11 +1,12 @@
 <?php
+
 return [
     'HASHCASH_ERROR_PAGE_UNSAVED' => '<strong>A página não pode ser salvo.</strong><br />Talvez você clicou duas vezes no botão "Salvar", resultando em dois backups consecutivos demasiado perto, ou deixou a página em aberto no modo de edição demasiado tempo.<br />Para salvar suas alterações, por favor, copie o conteúdo, atualize a página e cole sua página editada novamente.',
     'HASHCASH_ANTISPAM_ACTIVATED' => 'Proteção anti-spam ativa',
     'HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT' => 'O seu comentário não foi salvo, o wiki acho que você é um robô.',
     'DESPAM_VALIDATE' => 'Validar',
     'HASHCASH_GENERAL_PASSWORD' => 'Responder emenbsp;: emenbsp;',
-    'HASHCASH_SEND' => 'Enviar',
+    'HASHCASH_SEND' => 'Não há registro para este período.',
     'CAPTCHA_WRITE' => 'Escreva aqui a palavra na imagem',
     'CAPTCHA_ERROR_PAGE_UNSAVED' => 'A página não foi salva porque você não retornou a palavra de verificação.',
     'CAPTCHA_ERROR_WRONG_WORD' => 'A página não foi salva porque a palavra de verificação retornada não está correta.',
@@ -16,7 +17,7 @@ return [
     'DESPAM_FOR_X_HOURS' => 'por horas',
     'DESPAM_FOR_ONE_WEEK' => '1 semana',
     'DESPAM_FOR_TWO_WEEKS' => '2 semanas',
-    'DESPAM_FOR_ONE_MONTH' => 'por um mês',
+    'DESPAM_FOR_ONE_MONTH' => '1 mês',
     'DESPAM_CLEAN_SPAMMED_PAGES' => 'Limpeza de páginas vandalizadas de {x} hora(s)',
     'DESPAM_DELETED_PAGES' => 'Páginas excluídas',
     'DESPAM_RESTORE_FROM' => 'Restauração de {time} versão por {user}',

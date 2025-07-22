@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $dblclic = $this->GetParameter('doubleclic');
 $actif = $this->GetParameter('actif');
 $pageincluded = $this->GetParameter('page');

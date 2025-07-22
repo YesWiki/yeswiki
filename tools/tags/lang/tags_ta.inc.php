@@ -1,4 +1,5 @@
 <?php
+
 return [
     'TAGS_TAGS' => 'மோட்ச் க்ளெச்',
     'TAGS_ACTION_ADMINTAGS' => 'செயல் {{admintags ...}}',
@@ -35,17 +36,13 @@ return [
     'TAGS_CONTAINING_TAG' => 'அவெக் லே மோட் சி.எல் & ஈகூட்;',
     'TAGS_ONE_PAGE' => 'Une பக்கம்',
     'TAGS_PAGES' => 'பக்கங்கள்',
-    // actions/admintag.php
     'TAGS_NO_TAG' => 'Aucun mot clé utilise bour le தருணம்',
-    // actions/listpagestag.php
     'TAGS_TOTAL_NB_PAGES' => 'Un மொத்த de %{nb_total} பக்கங்கள் a & eacute; t & eacute; tropev & eacute;',
     'TAGS_ONE_PAGE_FOUND' => 'Une பக்கம் A & eacute; t & eacute; ட்ரூவ் & ஈகூட்; இ',
     'TAGS_NO_PAGE' => 'Aucune Page trouv & eacute; இ',
     'TAGS_WITH_KEYWORD' => 'அவெக் லே மோட் சி.எல் & ஈகூட்;',
     'TAGS_WITH_KEYWORD_SEPARATOR' => 'et',
-    // actions/rss.php
     'TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS' => 'ஃப்ளக்ச் ஆர்எச்எச் டெச் நோவல்ச் பக்கங்கள் அவெக் லெச் குறிச்சொற்கள்',
-    // handler exportpages
     'TAGS_YOUR_EBOOK' => 'வோர்ட்ரே மின்புத்தகம்',
     'TAGS_SPAM_RISK' => 'Il faut Activer சாவாகைஉரை pour ne pas & ecirc; tre consid & eacute; r & eacute; COMME DU SPAM.',
     'TAGS_GENERATE_EBOOK' => 'G & eacute; n & eacute; rer l\'மின்புத்தகம்',
@@ -85,9 +82,7 @@ return [
     'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'கான்டெனு என் லிக்னே சுர் லா பக்கம்',
     'TAGS_NO_EBOOK_METADATAS' => 'Cete page ne poss & egrave; de pas les m & eacute; tadonn & eacute; es n & eacute; செசேர்கள் பவர் சிஆர் & eacute; er l\'ebook.',
     'TAGS_NO_EBOOK_FOUND' => 'பாச் டி\'புக் ட்ரூவ் & ஈகூட் ;.',
-    // handler/tagrss.php
     'TAGS_HIDDEN_CONTENT' => 'கான்டெனு மாச்குவே',
-    // action builder tags group
     'AB_tags_group_label' => 'கெச்டியன் டெச் குறிச்சொற்கள்',
     'AB_tags_admintag_label' => 'கெச்டியன் டெச் குறிச்சொற்கள்',
     'AB_tags_listpagestag_label' => 'பட்டியல் டெச் பக்கங்கள் பார் குறிச்சொல்',
@@ -110,7 +105,6 @@ return [
     'AB_tags_listpagestag_rss_label' => 'lien rss vers vers la liste bour des குறிச்சொற்கள் donnes',
     'AB_tags_listpagestag_nbclasses_label' => 'நோம்ப்ரே டி வகுப்புகள் சிஎச்எச் டிச்போனிபில்கள் லு நியூசை ஊற்றுகின்றன',
     'AB_tags_nuagetag_tri_shuffle' => 'அலாடோயர்',
-    // for edit config
     'EDIT_CONFIG_HINT_HIDE_KEYWORDS' => 'கேச்சர் லெச் மோட்ச்-கிளெச் என் பாச் டெச் பக்கங்கள் (உண்மையான தவறான)',
     'EDIT_CONFIG_GROUP_TAGS' => 'MOTS-CLES (குறிச்சொற்கள்)',
 ];

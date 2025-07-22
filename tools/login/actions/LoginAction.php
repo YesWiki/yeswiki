@@ -15,6 +15,7 @@
 
 namespace YesWiki\Login;
 
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
@@ -77,7 +78,7 @@ class LoginAction extends YesWikiAction
                     : $incomingurl
                 ),
 
-            'lostpasswordurl' => ! boolval($this->params->get('contact_disable_email_for_password')) ? (! empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) : 
+            'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? (!empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) :
             // TODO : check page name for other languages
             $this->wiki->Href('', 'MotDePassePerdu')) : '',
 
@@ -150,7 +151,7 @@ class LoginAction extends YesWikiAction
             'email' => ((isset($user['email'])) ? $user['email'] : ((isset($_POST['email'])) ? $_POST['email'] : '')),
             'incomingurl' => $this->arguments['incomingurl'],
             'signupurl' => $this->arguments['signupurl'],
-            'lostpasswordurl' => ! boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
+            'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? $this->arguments['lostpasswordurl'] : '',
             'profileurl' => $this->arguments['profileurl'],
             'userpage' => $this->arguments['userpage'],
             'PageMenuUser' => $pageMenuUserContent,
@@ -175,30 +176,37 @@ class LoginAction extends YesWikiAction
             $incomingurl = $this->arguments['incomingurl'];
         }
         try {
+            // First, try to find a user by name
             if (!empty($_POST['name'])) {
-                $name = $this->securityController->filterInput(INPUT_POST, 'name', FILTER_DEFAULT, true);
-                if (empty($name)) {
-                    throw new LoginException(_t('LOGIN_WRONG_USER'));
+                // No need to filter the name, it will be escaped in the request to the database.
+                // It can be possible to filter the name with the regex PATTERN_USER_NAME in UserManager, but if this regex changes,
+                // existing users will be unable to login. So just let the database check if the user is here.
+                $name = $_POST['name'];
+
+                $user = $this->userManager->getOneByName($name);
+
+                // TODO Strange, but the code allow an email to be pass in $_POST['name'] instead of $_POST['email']
+                // So if we don't find the user by name, it can be because it is an email instead of a username
+                if (empty($user) && empty($_POST['email'])) {
+                    $_POST['email'] = $_POST['name'];
                 }
-                if (strpos($name, '@') !== false) {
-                    // si le nomWiki est un mail
-                    $user = $this->userManager->getOneByEmail($name);
-                } else {
-                    $user = $this->userManager->getOneByName($name);
-                }
-            } else {
-                if (empty($_POST['email'])) {
-                    throw new LoginException(_t('LOGIN_WRONG_USER'));
-                }
-                $email = $this->securityController->filterInput(INPUT_POST, 'email', FILTER_DEFAULT, true);
-                if (empty($email)) {
-                    throw new LoginException(_t('LOGIN_WRONG_USER'));
-                }
-                $user = $this->userManager->getOneByEmail($email);
             }
+
+            // Then, try to find a user by email
+            if (empty($user) && !empty($_POST['email'])) {
+                // No need to filter the email, it will be escaped in the request to the database.
+                $email = $_POST['email'];
+
+                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $user = $this->userManager->getOneByEmail($email);
+                }
+            }
+
+            // Stop here if we don't have a user
             if (empty($user)) {
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
+
             $password = $this->securityController->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string');
             if (!$this->authController->checkPassword($password, $user)) {
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
@@ -218,7 +226,7 @@ class LoginAction extends YesWikiAction
             $this->wiki->Redirect($incomingurl);
         } catch (Exception $ex) {
             // error error
-            flash($ex->getMessage(), 'error');
+            Flash::error($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
         }
     }

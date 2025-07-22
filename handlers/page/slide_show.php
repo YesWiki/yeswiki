@@ -16,11 +16,6 @@ Le fichier "slideshow.css" sera reconnu automatiquement.
 
 */
 
-// Vérification de sécurité
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 // On teste si l'utilisateur peut lire la page
 if (!$this->HasAccess('read')) {
     return;
@@ -185,17 +180,17 @@ if (!$this->HasAccess('read')) {
             // Si ce n'est pas la premiere diapositive, on affiche les liens "<< précédent"
             // et "[Début]"
             if ($slide !== '1') {
-                echo '<a href="',$this->href(),'/slide_show&slide=',$_REQUEST['slide'] - 1,'"><< précédent</a>',
-                ' :: <a href="',$this->href(),"/slide_show&slide=1\">[début]</a>\n";
+                echo '<a href="', $this->href(), '/slide_show&slide=', $_REQUEST['slide'] - 1, '"><< précédent</a>',
+                ' :: <a href="', $this->href(), "/slide_show&slide=1\">[début]</a>\n";
             }
             echo ' :: ';
             // Si ce n'est pas la derniere diapositive, on affiche le lien "suivant >>"
             if (isset($body[($slide) * 2 - ($major * 2) + 2]) or $slide == '1') {
-                echo '<a href="',$this->href(),'/slide_show&slide=',$slide + 1,"\">suivant >></a>\n";
+                echo '<a href="', $this->href(), '/slide_show&slide=', $slide + 1, "\">suivant >></a>\n";
             }
             echo '</div>' . "\n";
             // Quelquesoit la diapositive, on affiche les liens "éditer" et "[]->" (pour quitter)
-            echo '<div class="edit_nav"><a href="',$this->href(),'/edit">éditer </a> :: <a href="',$this->href(),"\">[]-></a></p>\n";
+            echo '<div class="edit_nav"><a href="', $this->href(), '/edit">éditer </a> :: <a href="', $this->href(), "\">[]-></a></p>\n";
             echo "</div>\n\n";
 
             echo "<div class=\"slide\">\n";
@@ -210,7 +205,7 @@ if (!$this->HasAccess('read')) {
                 $idbis = ($slide * 2) - ($major * 2);
                 // A partir de la deuxième diapositive
                 if (isset($body[$id]) and isset($body[$idbis])) {
-                    echo $body[$id] . $body[$idbis],"\n\n";
+                    echo $body[$id] . $body[$idbis], "\n\n";
                 }
             }
             echo "</div>\n\n";

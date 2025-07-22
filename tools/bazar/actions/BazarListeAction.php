@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Service\BazarListService;
+use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\TemplateNotFound;
@@ -75,7 +76,9 @@ class BazarListeAction extends YesWikiAction
         }
 
         $template = $_GET['template'] ?? $arg['template'] ?? null;
-
+        if ($template) {
+            $template = htmlspecialchars($template);
+        }
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
 
@@ -91,7 +94,7 @@ class BazarListeAction extends YesWikiAction
             }
         }
 
-        if (in_array($template, ['list', 'card', 'map-and-table', 'table'])) {
+        if (in_array($template, ['list', 'card', 'map-and-table', 'table', 'timeline'])) {
             $dynamic = true;
         }
         if ($dynamic && $template == 'liste_accordeon') {
@@ -132,6 +135,11 @@ class BazarListeAction extends YesWikiAction
                 )
             );
 
+        // Ordre du tri (asc ou desc)
+        $ordre = $_GET['ordre'] ?? $arg['ordre'] ?? ((empty($arg['champ']) && $agendaMode) ? 'desc' : 'asc');
+        // Champ du formulaire utilisé pour le tri
+        $champ = $_GET['champ'] ?? $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
+
         return [
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -149,11 +157,16 @@ class BazarListeAction extends YesWikiAction
             'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
                 $this->getService(AuthController::class)->getLoggedUserName() : null),
             // Ordre du tri (asc ou desc)
-            'ordre' => $arg['ordre'] ?? ((empty($arg['champ']) && $agendaMode) ? 'desc' : 'asc'),
+            'ordre' => $ordre,
             // Champ du formulaire utilisé pour le tri
-            'champ' => $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre'),
+            'champ' => $champ,
+            // les tris disponibles par le bouton "Trier par"
+            'sortfields' => $this->formatArray($_GET['sortfields'] ?? $arg['sortfields'] ?? []),
+            'sortfieldstitles' => $this->formatArray($_GET['sortfieldstitles'] ?? $arg['sortfieldstitles'] ?? []),
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
+            // get comments , reactions and metadatas with entry
+            'extrafields' => $this->formatBoolean($arg, false, 'extrafields'),
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
             'pagination' => $arg['pagination'] ?? null,
             // Afficher les fiches dans un ordre aléatoire
@@ -228,14 +241,20 @@ class BazarListeAction extends YesWikiAction
 
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops
-        if (self::specialActionFromTemplate($this->arguments['template'], 'BAZARCARTO_TEMPLATES')
-                && (!isset($this->arguments['calledBy']) || !in_array($this->arguments['calledBy'], ['BazarCartoAction', 'BazarTableAction']))) {
+        if (
+            self::specialActionFromTemplate($this->arguments['template'], 'BAZARCARTO_TEMPLATES')
+            && (!isset($this->arguments['calledBy']) || !in_array($this->arguments['calledBy'], ['BazarCartoAction', 'BazarTableAction']))
+        ) {
             return $this->callAction('bazarcarto', $this->arguments);
-        } elseif (self::specialActionFromTemplate($this->arguments['template'], 'CALENDRIER_TEMPLATES')
-                && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')) {
+        } elseif (
+            self::specialActionFromTemplate($this->arguments['template'], 'CALENDRIER_TEMPLATES')
+            && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')
+        ) {
             return $this->callAction('calendrier', $this->arguments);
-        } elseif (self::specialActionFromTemplate($this->arguments['template'], 'BAZARTABLE_TEMPLATES')
-                && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarTableAction')) {
+        } elseif (
+            self::specialActionFromTemplate($this->arguments['template'], 'BAZARTABLE_TEMPLATES')
+            && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarTableAction')
+        ) {
             return $this->callAction('bazartable', $this->arguments);
         }
 
@@ -271,6 +290,17 @@ class BazarListeAction extends YesWikiAction
             }
             $GLOBALS['_BAZAR_']['nbbazarliste']++;
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
+
+            // add extra informations (comments, reactions, metadatas)
+            $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
+            if ($this->arguments['extrafields'] === true) {
+                foreach ($entries as $i => $entry) {
+                    $entryFieldsService->setEntryId($entry['id_fiche']);
+                    foreach (EntryExtraFieldsService::EXTRA_FIELDS as $field) {
+                        $entries[$i][$field] = $entryFieldsService->get($field);
+                    }
+                }
+            }
 
             // TODO put in all bazar templates
             $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');

@@ -1,9 +1,5 @@
 <?php
 
-if (!defined('WIKINI_VERSION')) {
-    exit('acc&egrave;s direct interdit');
-}
-
 $url = $this->GetParameter('url');
 $type = $this->getParameter('type');
 
@@ -98,11 +94,14 @@ if (!empty($url)) {
             $GLOBALS['jplayer']++;
         }
         switch ($extension) {
-            case 'flv': $playbackFormat = 'flv';
+            case 'flv':
+                $playbackFormat = 'flv';
                 break;
-            case 'ogg': $playbackFormat = 'ogv';
+            case 'ogg':
+                $playbackFormat = 'ogv';
                 break;
-            case 'webmv': $playbackFormat = 'webmv';
+            case 'webmv':
+                $playbackFormat = 'webmv';
                 break;
             case 'mp4':
             default:
@@ -189,5 +188,5 @@ if (!empty($url)) {
     }
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_PLAYER') . '</strong> : '
-      . _t('ATTACH_PARAM_URL_REQUIRED') . '.</div>' . "\n";
+        . _t('ATTACH_PARAM_URL_REQUIRED') . '.</div>' . "\n";
 }

@@ -28,6 +28,15 @@ export default class {
     return this.allAvailableActions.concat(Object.keys(ACTIONS_BACKWARD_COMPATIBILITY))
   }
 
+  getActionConfiguration(actionName) {
+    for (const group of Object.values(actionsBuilderData.action_groups)) {
+      if (group.actions[actionName]) {
+        return group.actions[actionName]
+      }
+    }
+    return {}
+  }
+
   open(editor, options) {
     // Handle backward compat
     if (options.action) {

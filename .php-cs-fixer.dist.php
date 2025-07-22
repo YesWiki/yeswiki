@@ -67,6 +67,7 @@ $rules = [
     'no_whitespace_before_comma_in_array' => true,
     'no_whitespace_in_blank_line' => true,
     'normalize_index_brace' => true,
+    'nullable_type_declaration_for_default_null_value' => true,
     'object_operator_without_whitespace' => true,
     'ordered_imports' => ['sort_algorithm' => 'alpha'],
     'semicolon_after_instruction' => true,

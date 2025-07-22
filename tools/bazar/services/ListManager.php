@@ -44,9 +44,14 @@ class ListManager
         $this->cachedLists = [];
     }
 
-    public function getOne($id): ?array
+    public function isList($id): bool
     {
-        if (isset($this->cachedLists[$id])) {
+        return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
+    }
+
+    public function getOne($id, $parent = null): ?array
+    {
+        if (isset($this->cachedLists[$id]) && $parent === null) { // we cache all information, not just a level
             return $this->cachedLists[$id];
         }
 
@@ -56,12 +61,37 @@ class ListManager
         }
 
         $page = $this->pageManager->getOne($id);
-        $json = json_decode($page['body'], true);
-        $json = $this->convertDataStructure($json);
-        $json['id'] = $id;
-        $this->cachedLists[$id] = $json;
+        if (empty($page)) {
+            echo '<div class="alert alert-danger">List id not found: '.$id.'</div>';
 
-        return $json;
+            return null;
+        }
+        $data = $this->loadJson($page['body'], $id);
+        if ($parent != null) {
+            $this->cachedLists[$id] = $data;
+        }
+
+        if ($parent === 'root') {
+            $data['nodes'] = array_map(function ($a) {
+                unset($a['children']);
+
+                return $a;
+            }, $data['nodes']);
+            $data['parentId'] = $parent;
+        } elseif (!empty($parent)) {
+            $data['nodes'] = multiArraySearch($data['nodes'], 'id', $parent)[0]['children'] ?? null;
+            $data['parentId'] = $parent;
+        }
+
+        return $data;
+    }
+
+    private function loadJson(string $json, $id): array
+    {
+        $data = $this->convertDataStructure(json_decode($json, true));
+        $data['id'] = $id;
+
+        return $data;
     }
 
     // The structure of List object has been changed in 2024
@@ -82,29 +112,34 @@ class ListManager
         return $json;
     }
 
-    public function getAll(): array
+    public function getAll($parent = null): array
     {
         $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
         $result = [];
         foreach ($lists as $list) {
-            $result[$list['resource']] = $this->getOne($list['resource']);
+            $result[$list['resource']] = $this->getOne($list['resource'], $parent);
         }
 
         return $result;
     }
 
-    public function create($title, $nodes)
+    public function create($title, $nodes, $id = null)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-
-        $id = genere_nom_wiki('List' . $title);
-        $this->pageManager->save($id, json_encode([
+        $id = $id ?? genere_nom_wiki('List ' . $title);
+        $nodes = $nodes ?? [];
+        $this->trimRecursiveInPlace($nodes);
+        $json = json_encode([
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ]));
+        ]);
+        $this->pageManager->save($id, $json);
+
+        $data = $this->loadJson($json, $id);
+        $this->cachedLists[$id] = $data;
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
@@ -116,11 +151,16 @@ class ListManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-
-        $this->pageManager->save($id, json_encode([
+        $nodes = $nodes ?? [];
+        $this->trimRecursiveInPlace($nodes);
+        $json = json_encode([
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ]));
+        ]);
+        $this->pageManager->save($id, $json);
+
+        $data = $this->loadJson($json, $id);
+        $this->cachedLists[$id] = $data;
     }
 
     public function delete($id)
@@ -138,6 +178,7 @@ class ListManager
 
         $this->pageManager->deleteOrphaned($id);
 
+        unset($this->cachedLists[$id]);
         $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
     }
 
@@ -145,9 +186,25 @@ class ListManager
     {
         return array_map(function ($node) {
             $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
-            $node['children'] = $this->sanitizeHMTL($node['children']);
+            $node['children'] = $this->sanitizeHMTL($node['children'] ?? []);
 
             return $node;
         }, $nodes);
+    }
+
+    /**
+     * Recursively trims string values in a multidimensional array (in-place).
+     * Non-string values are left untouched.
+     *
+     * @param array  $array    The input array (will be modified by reference)
+     * @param string $charlist Optional. The characters to trim. Defaults to whitespace.
+     */
+    private function trimRecursiveInPlace(array &$array, string $charlist = " \t\n\r\0\x0B"): void
+    {
+        array_walk_recursive($array, function (&$value) use ($charlist) {
+            if (is_string($value)) {
+                $value = trim($value, $charlist);
+            }
+        });
     }
 }
