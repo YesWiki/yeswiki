@@ -57,13 +57,14 @@ async function processEntry(entryCheckbox, counters) {
     link.textContent = `"${entryIdentifier}"`
 
     logItem.append('✅ Import de ', link, '.')
+    importLog.appendChild(logItem)
   } catch (error) {
     const logItem = document.createElement('li')
     logItem.textContent = `❌ Erreur: "${entryIdentifier}". Raison: ${error.message}`
     logItem.style.color = 'red'
+    importLog.appendChild(logItem)
   } finally {
     counters.processed++
-    importLog.appendChild(logItem)
     setTimeout(() => {
       importLog.scrollTo({
         top: importLog.scrollHeight,
