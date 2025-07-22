@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.3.31
- * pdfjsBuild = 47ad820d9
+ * pdfjsVersion = 5.3.93
+ * pdfjsBuild = cbeef3233
  */
 /******/ var __webpack_modules__ = ({
 
@@ -199,9 +199,15 @@ var getIteratorFlattenable = __webpack_require__(8646);
 var createIteratorProxy = __webpack_require__(9462);
 var iteratorClose = __webpack_require__(9539);
 var IS_PURE = __webpack_require__(6395);
+var iteratorHelperThrowsOnInvalidIterator = __webpack_require__(684);
 var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
 
-var flatMapWithoutClosingOnEarlyError = !IS_PURE && iteratorHelperWithoutClosingOnEarlyError('flatMap', TypeError);
+var FLAT_MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR = !IS_PURE
+  && !iteratorHelperThrowsOnInvalidIterator('flatMap', function () { /* empty */ });
+var flatMapWithoutClosingOnEarlyError = !IS_PURE && !FLAT_MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR
+  && iteratorHelperWithoutClosingOnEarlyError('flatMap', TypeError);
+
+var FORCED = IS_PURE || FLAT_MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR || flatMapWithoutClosingOnEarlyError;
 
 var IteratorProxy = createIteratorProxy(function () {
   var iterator = this.iterator;
@@ -227,7 +233,7 @@ var IteratorProxy = createIteratorProxy(function () {
 
 // `Iterator.prototype.flatMap` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.flatmap
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE || flatMapWithoutClosingOnEarlyError }, {
+$({ target: 'Iterator', proto: true, real: true, forced: FORCED }, {
   flatMap: function flatMap(mapper) {
     anObject(this);
     try {
@@ -291,6 +297,25 @@ var $TypeError = TypeError;
 module.exports = function (it, Prototype) {
   if (isPrototypeOf(Prototype, it)) return it;
   throw new $TypeError('Incorrect invocation');
+};
+
+
+/***/ }),
+
+/***/ 684:
+/***/ ((module) => {
+
+
+// Should throw an error on invalid iterator
+// https://issues.chromium.org/issues/336839115
+module.exports = function (methodName, argument) {
+  // eslint-disable-next-line es/no-iterator -- required for testing
+  var method = typeof Iterator == 'function' && Iterator.prototype[methodName];
+  if (method) try {
+    method.call({ next: null }, argument).next();
+  } catch (error) {
+    return true;
+  }
 };
 
 
@@ -537,6 +562,29 @@ module.exports = function (argument) {
 
 /***/ }),
 
+/***/ 1385:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var iteratorClose = __webpack_require__(9539);
+
+module.exports = function (iters, kind, value) {
+  for (var i = iters.length - 1; i >= 0; i--) {
+    if (iters[i] === undefined) continue;
+    try {
+      value = iteratorClose(iters[i].iterator, kind, value);
+    } catch (error) {
+      kind = 'throw';
+      value = error;
+    }
+  }
+  if (kind === 'throw') throw value;
+  return value;
+};
+
+
+/***/ }),
+
 /***/ 1548:
 /***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
@@ -652,11 +700,14 @@ $({ target: 'Promise', stat: true, forced: FORCED }, {
 
 var $ = __webpack_require__(6518);
 var union = __webpack_require__(4204);
+var setMethodGetKeysBeforeCloning = __webpack_require__(9835);
 var setMethodAcceptSetLike = __webpack_require__(4916);
+
+var FORCED = !setMethodAcceptSetLike('union') || !setMethodGetKeysBeforeCloning('union');
 
 // `Set.prototype.union` method
 // https://tc39.es/ecma262/#sec-set.prototype.union
-$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('union') }, {
+$({ target: 'Set', proto: true, real: true, forced: FORCED }, {
   union: union
 });
 
@@ -675,10 +726,15 @@ var getIteratorDirect = __webpack_require__(1767);
 var createIteratorProxy = __webpack_require__(9462);
 var callWithSafeIterationClosing = __webpack_require__(6319);
 var iteratorClose = __webpack_require__(9539);
+var iteratorHelperThrowsOnInvalidIterator = __webpack_require__(684);
 var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
 var IS_PURE = __webpack_require__(6395);
 
-var mapWithoutClosingOnEarlyError = !IS_PURE && iteratorHelperWithoutClosingOnEarlyError('map', TypeError);
+var MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR = !IS_PURE && !iteratorHelperThrowsOnInvalidIterator('map', function () { /* empty */ });
+var mapWithoutClosingOnEarlyError = !IS_PURE && !MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR
+  && iteratorHelperWithoutClosingOnEarlyError('map', TypeError);
+
+var FORCED = IS_PURE || MAP_WITHOUT_THROWING_ON_INVALID_ITERATOR || mapWithoutClosingOnEarlyError;
 
 var IteratorProxy = createIteratorProxy(function () {
   var iterator = this.iterator;
@@ -689,7 +745,7 @@ var IteratorProxy = createIteratorProxy(function () {
 
 // `Iterator.prototype.map` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.map
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE || mapWithoutClosingOnEarlyError }, {
+$({ target: 'Iterator', proto: true, real: true, forced: FORCED }, {
   map: function map(mapper) {
     anObject(this);
     try {
@@ -977,9 +1033,14 @@ var createIteratorProxy = __webpack_require__(9462);
 var callWithSafeIterationClosing = __webpack_require__(6319);
 var IS_PURE = __webpack_require__(6395);
 var iteratorClose = __webpack_require__(9539);
+var iteratorHelperThrowsOnInvalidIterator = __webpack_require__(684);
 var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
 
-var filterWithoutClosingOnEarlyError = !IS_PURE && iteratorHelperWithoutClosingOnEarlyError('filter', TypeError);
+var FILTER_WITHOUT_THROWING_ON_INVALID_ITERATOR = !IS_PURE && !iteratorHelperThrowsOnInvalidIterator('filter', function () { /* empty */ });
+var filterWithoutClosingOnEarlyError = !IS_PURE && !FILTER_WITHOUT_THROWING_ON_INVALID_ITERATOR
+  && iteratorHelperWithoutClosingOnEarlyError('filter', TypeError);
+
+var FORCED = IS_PURE || FILTER_WITHOUT_THROWING_ON_INVALID_ITERATOR || filterWithoutClosingOnEarlyError;
 
 var IteratorProxy = createIteratorProxy(function () {
   var iterator = this.iterator;
@@ -997,7 +1058,7 @@ var IteratorProxy = createIteratorProxy(function () {
 
 // `Iterator.prototype.filter` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.filter
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE || filterWithoutClosingOnEarlyError }, {
+$({ target: 'Iterator', proto: true, real: true, forced: FORCED }, {
   filter: function filter(predicate) {
     anObject(this);
     try {
@@ -1077,7 +1138,7 @@ module.exports = function (iterable, unboundFunction, options) {
   var iterator, iterFn, index, length, result, next, step;
 
   var stop = function (condition) {
-    if (iterator) iteratorClose(iterator, 'normal', condition);
+    if (iterator) iteratorClose(iterator, 'normal');
     return new Result(true, condition);
   };
 
@@ -1359,7 +1420,7 @@ var uncurryThis = __webpack_require__(9504);
 
 var id = 0;
 var postfix = Math.random();
-var toString = uncurryThis(1.0.toString);
+var toString = uncurryThis(1.1.toString);
 
 module.exports = function (key) {
   return 'Symbol(' + (key === undefined ? '' : key) + ')_' + toString(++id + postfix, 36);
@@ -1393,7 +1454,7 @@ module.exports = function difference(other) {
     if (otherRec.includes(e)) remove(result, e);
   });
   else iterateSimple(otherRec.getIterator(), function (e) {
-    if (has(O, e)) remove(result, e);
+    if (has(result, e)) remove(result, e);
   });
   return result;
 };
@@ -2447,11 +2508,14 @@ module.exports = {
 
 var $ = __webpack_require__(6518);
 var symmetricDifference = __webpack_require__(3650);
+var setMethodGetKeysBeforeCloning = __webpack_require__(9835);
 var setMethodAcceptSetLike = __webpack_require__(4916);
+
+var FORCED = !setMethodAcceptSetLike('symmetricDifference') || !setMethodGetKeysBeforeCloning('symmetricDifference');
 
 // `Set.prototype.symmetricDifference` method
 // https://tc39.es/ecma262/#sec-set.prototype.symmetricdifference
-$({ target: 'Set', proto: true, real: true, forced: !setMethodAcceptSetLike('symmetricDifference') }, {
+$({ target: 'Set', proto: true, real: true, forced: FORCED }, {
   symmetricDifference: symmetricDifference
 });
 
@@ -2572,7 +2636,7 @@ var uncurryThis = __webpack_require__(9504);
 var anUint8Array = __webpack_require__(4154);
 var notDetached = __webpack_require__(5169);
 
-var numberToString = uncurryThis(1.0.toString);
+var numberToString = uncurryThis(1.1.toString);
 
 // `Uint8Array.prototype.toHex` method
 // https://github.com/tc39/proposal-arraybuffer-base64
@@ -3389,10 +3453,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.42.0',
+  version: '3.43.0',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.42.0/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.43.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -3405,15 +3469,38 @@ var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, 
 
 var $ = __webpack_require__(6518);
 var difference = __webpack_require__(3440);
+var fails = __webpack_require__(9039);
 var setMethodAcceptSetLike = __webpack_require__(4916);
 
-var INCORRECT = !setMethodAcceptSetLike('difference', function (result) {
+var SET_LIKE_INCORRECT_BEHAVIOR = !setMethodAcceptSetLike('difference', function (result) {
   return result.size === 0;
+});
+
+var FORCED = SET_LIKE_INCORRECT_BEHAVIOR || fails(function () {
+  // https://bugs.webkit.org/show_bug.cgi?id=288595
+  var setLike = {
+    size: 1,
+    has: function () { return true; },
+    keys: function () {
+      var index = 0;
+      return {
+        next: function () {
+          var done = index++ > 1;
+          if (baseSet.has(1)) baseSet.clear();
+          return { done: done, value: 2 };
+        }
+      };
+    }
+  };
+  // eslint-disable-next-line es/no-set -- testing
+  var baseSet = new Set([1, 2, 3, 4]);
+  // eslint-disable-next-line es/no-set-prototype-difference -- testing
+  return baseSet.difference(setLike).size !== 3;
 });
 
 // `Set.prototype.difference` method
 // https://tc39.es/ecma262/#sec-set.prototype.difference
-$({ target: 'Set', proto: true, real: true, forced: INCORRECT }, {
+$({ target: 'Set', proto: true, real: true, forced: FORCED }, {
   difference: difference
 });
 
@@ -4683,10 +4770,15 @@ var notANaN = __webpack_require__(4149);
 var toPositiveInteger = __webpack_require__(9590);
 var iteratorClose = __webpack_require__(9539);
 var createIteratorProxy = __webpack_require__(9462);
+var iteratorHelperThrowsOnInvalidIterator = __webpack_require__(684);
 var iteratorHelperWithoutClosingOnEarlyError = __webpack_require__(4549);
 var IS_PURE = __webpack_require__(6395);
 
-var dropWithoutClosingOnEarlyError = !IS_PURE && iteratorHelperWithoutClosingOnEarlyError('drop', RangeError);
+var DROP_WITHOUT_THROWING_ON_INVALID_ITERATOR = !IS_PURE && !iteratorHelperThrowsOnInvalidIterator('drop', 0);
+var dropWithoutClosingOnEarlyError = !IS_PURE && !DROP_WITHOUT_THROWING_ON_INVALID_ITERATOR
+  && iteratorHelperWithoutClosingOnEarlyError('drop', RangeError);
+
+var FORCED = IS_PURE || DROP_WITHOUT_THROWING_ON_INVALID_ITERATOR || dropWithoutClosingOnEarlyError;
 
 var IteratorProxy = createIteratorProxy(function () {
   var iterator = this.iterator;
@@ -4705,7 +4797,7 @@ var IteratorProxy = createIteratorProxy(function () {
 
 // `Iterator.prototype.drop` method
 // https://tc39.es/ecma262/#sec-iterator.prototype.drop
-$({ target: 'Iterator', proto: true, real: true, forced: IS_PURE || dropWithoutClosingOnEarlyError }, {
+$({ target: 'Iterator', proto: true, real: true, forced: FORCED }, {
   drop: function drop(limit) {
     anObject(this);
     var remaining;
@@ -4805,10 +4897,13 @@ var getMethod = __webpack_require__(5966);
 var IteratorPrototype = (__webpack_require__(7657).IteratorPrototype);
 var createIterResultObject = __webpack_require__(2529);
 var iteratorClose = __webpack_require__(9539);
+var iteratorCloseAll = __webpack_require__(1385);
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
 var ITERATOR_HELPER = 'IteratorHelper';
 var WRAP_FOR_VALID_ITERATOR = 'WrapForValidIterator';
+var NORMAL = 'normal';
+var THROW = 'throw';
 var setInternalState = InternalStateModule.set;
 
 var createIteratorProxyPrototype = function (IS_ITERATOR) {
@@ -4839,11 +4934,16 @@ var createIteratorProxyPrototype = function (IS_ITERATOR) {
         return returnMethod ? call(returnMethod, iterator) : createIterResultObject(undefined, true);
       }
       if (state.inner) try {
-        iteratorClose(state.inner.iterator, 'normal');
+        iteratorClose(state.inner.iterator, NORMAL);
       } catch (error) {
-        return iteratorClose(iterator, 'throw', error);
+        return iteratorClose(iterator, THROW, error);
       }
-      if (iterator) iteratorClose(iterator, 'normal');
+      if (state.openIters) try {
+        iteratorCloseAll(state.openIters, NORMAL);
+      } catch (error) {
+        return iteratorClose(iterator, THROW, error);
+      }
+      if (iterator) iteratorClose(iterator, NORMAL);
       return createIterResultObject(undefined, true);
     }
   });
@@ -5113,6 +5213,43 @@ if (globalThis.Uint8Array) $({ target: 'Uint8Array', proto: true }, {
     return { read: read, written: read / 2 };
   }
 });
+
+
+/***/ }),
+
+/***/ 9835:
+/***/ ((module) => {
+
+
+// Should get iterator record of a set-like object before cloning this
+// https://bugs.webkit.org/show_bug.cgi?id=289430
+module.exports = function (METHOD_NAME) {
+  try {
+    // eslint-disable-next-line es/no-set -- needed for test
+    var baseSet = new Set();
+    var setLike = {
+      size: 0,
+      has: function () { return true; },
+      keys: function () {
+        // eslint-disable-next-line es/no-object-defineproperty -- needed for test
+        return Object.defineProperty({}, 'next', {
+          get: function () {
+            baseSet.clear();
+            baseSet.add(4);
+            return function () {
+              return { done: true };
+            };
+          }
+        });
+      }
+    };
+    var result = baseSet[METHOD_NAME](setLike);
+
+    return result.size !== 1 || result.values().next().value !== 4;
+  } catch (error) {
+    return false;
+  }
+};
 
 
 /***/ })
@@ -6099,6 +6236,9 @@ var esnext_json_parse = __webpack_require__(8335);
 
 
 
+
+
+
 const SVG_NS = "http://www.w3.org/2000/svg";
 class PixelsPerInch {
   static CSS = 96.0;
@@ -6291,19 +6431,71 @@ function getPdfFilenameFromUrl(url, defaultFilename = "document.pdf") {
     warn('getPdfFilenameFromUrl: ignore "data:"-URL for performance reasons.');
     return defaultFilename;
   }
-  const reURI = /^(?:(?:[^:]+:)?\/\/[^/]+)?([^?#]*)(\?[^#]*)?(#.*)?$/;
-  const reFilename = /[^/?#=]+\.pdf\b(?!.*\.pdf\b)/i;
-  const splitURI = reURI.exec(url);
-  let suggestedFilename = reFilename.exec(splitURI[1]) || reFilename.exec(splitURI[2]) || reFilename.exec(splitURI[3]);
-  if (suggestedFilename) {
-    suggestedFilename = suggestedFilename[0];
-    if (suggestedFilename.includes("%")) {
+  const getURL = urlString => {
+    try {
+      return new URL(urlString);
+    } catch {
       try {
-        suggestedFilename = reFilename.exec(decodeURIComponent(suggestedFilename))[0];
-      } catch {}
+        return new URL(decodeURIComponent(urlString));
+      } catch {
+        try {
+          return new URL(urlString, "https://foo.bar");
+        } catch {
+          try {
+            return new URL(decodeURIComponent(urlString), "https://foo.bar");
+          } catch {
+            return null;
+          }
+        }
+      }
+    }
+  };
+  const newURL = getURL(url);
+  if (!newURL) {
+    return defaultFilename;
+  }
+  const decode = name => {
+    try {
+      let decoded = decodeURIComponent(name);
+      if (decoded.includes("/")) {
+        decoded = decoded.split("/").at(-1);
+        if (decoded.test(/^\.pdf$/i)) {
+          return decoded;
+        }
+        return name;
+      }
+      return decoded;
+    } catch {
+      return name;
+    }
+  };
+  const pdfRegex = /\.pdf$/i;
+  const filename = newURL.pathname.split("/").at(-1);
+  if (pdfRegex.test(filename)) {
+    return decode(filename);
+  }
+  if (newURL.searchParams.size > 0) {
+    const values = Array.from(newURL.searchParams.values()).reverse();
+    for (const value of values) {
+      if (pdfRegex.test(value)) {
+        return decode(value);
+      }
+    }
+    const keys = Array.from(newURL.searchParams.keys()).reverse();
+    for (const key of keys) {
+      if (pdfRegex.test(key)) {
+        return decode(key);
+      }
     }
   }
-  return suggestedFilename || defaultFilename;
+  if (newURL.hash) {
+    const reFilename = /[^/?#=]+\.pdf\b(?!.*\.pdf\b)/i;
+    const hashFilename = reFilename.exec(newURL.hash);
+    if (hashFilename) {
+      return decode(hashFilename[0]);
+    }
+  }
+  return defaultFilename;
 }
 class StatTimer {
   started = Object.create(null);
@@ -6574,7 +6766,6 @@ class EditorToolbar {
       style.insetInlineEnd = `${100 * x}%`;
       style.top = `calc(${100 * position[1]}% + var(--editor-toolbar-vert-offset))`;
     }
-    this.#addDeleteButton();
     return editToolbar;
   }
   get div() {
@@ -6613,7 +6804,7 @@ class EditorToolbar {
     this.#toolbar.classList.remove("hidden");
     this.#altText?.shown();
   }
-  #addDeleteButton() {
+  addDeleteButton() {
     const {
       editorType,
       _uiManager
@@ -6638,19 +6829,35 @@ class EditorToolbar {
   async addAltText(altText) {
     const button = await altText.render();
     this.#addListenersToElement(button);
-    this.#buttons.prepend(button, this.#divider);
+    this.#buttons.append(button, this.#divider);
     this.#altText = altText;
   }
   addColorPicker(colorPicker) {
     this.#colorPicker = colorPicker;
     const button = colorPicker.renderButton();
     this.#addListenersToElement(button);
-    this.#buttons.prepend(button, this.#divider);
+    this.#buttons.append(button, this.#divider);
   }
   async addEditSignatureButton(signatureManager) {
     const button = this.#signatureDescriptionButton = await signatureManager.renderEditButton(this.#editor);
     this.#addListenersToElement(button);
-    this.#buttons.prepend(button, this.#divider);
+    this.#buttons.append(button, this.#divider);
+  }
+  async addButton(name, tool) {
+    switch (name) {
+      case "colorPicker":
+        this.addColorPicker(tool);
+        break;
+      case "altText":
+        await this.addAltText(tool);
+        break;
+      case "editSignature":
+        await this.addEditSignatureButton(tool);
+        break;
+      case "delete":
+        this.addDeleteButton();
+        break;
+    }
   }
   updateEditSignatureButton(description) {
     if (this.#signatureDescriptionButton) {
@@ -7196,6 +7403,7 @@ class AnnotationEditorUIManager {
   #translationTimeoutId = null;
   #container = null;
   #viewer = null;
+  #viewerAlert = null;
   #updateModeCapability = null;
   static TRANSLATE_SMALL = 1;
   static TRANSLATE_BIG = 10;
@@ -7257,10 +7465,11 @@ class AnnotationEditorUIManager {
       checker: arrowChecker
     }]]));
   }
-  constructor(container, viewer, altTextManager, signatureManager, eventBus, pdfDocument, pageColors, highlightColors, enableHighlightFloatingButton, enableUpdatedAddImage, enableNewAltTextWhenAddingImage, mlManager, editorUndoBar, supportsPinchToZoom) {
+  constructor(container, viewer, viewerAlert, altTextManager, signatureManager, eventBus, pdfDocument, pageColors, highlightColors, enableHighlightFloatingButton, enableUpdatedAddImage, enableNewAltTextWhenAddingImage, mlManager, editorUndoBar, supportsPinchToZoom) {
     const signal = this._signal = this.#abortController.signal;
     this.#container = container;
     this.#viewer = viewer;
+    this.#viewerAlert = viewerAlert;
     this.#altTextManager = altTextManager;
     this.#signatureManager = signatureManager;
     this._eventBus = eventBus;
@@ -7352,7 +7561,11 @@ class AnnotationEditorUIManager {
     return shadow(this, "direction", getComputedStyle(this.#container).direction);
   }
   get highlightColors() {
-    return shadow(this, "highlightColors", this.#highlightColors ? new Map(this.#highlightColors.split(",").map(pair => pair.split("=").map(x => x.trim()))) : null);
+    return shadow(this, "highlightColors", this.#highlightColors ? new Map(this.#highlightColors.split(",").map(pair => {
+      pair = pair.split("=").map(x => x.trim());
+      pair[1] = pair[1].toUpperCase();
+      return pair;
+    })) : null);
   }
   get highlightColorNames() {
     return shadow(this, "highlightColorNames", this.highlightColors ? new Map(Array.from(this.highlightColors, e => e.reverse())) : null);
@@ -7535,6 +7748,18 @@ class AnnotationEditorUIManager {
   addToAnnotationStorage(editor) {
     if (!editor.isEmpty() && this.#annotationStorage && !this.#annotationStorage.has(editor.id)) {
       this.#annotationStorage.setValue(editor.id, editor);
+    }
+  }
+  a11yAlert(messageId, args = null) {
+    const viewerAlert = this.#viewerAlert;
+    if (!viewerAlert) {
+      return;
+    }
+    viewerAlert.setAttribute("data-l10n-id", messageId);
+    if (args) {
+      viewerAlert.setAttribute("data-l10n-args", JSON.stringify(args));
+    } else {
+      viewerAlert.removeAttribute("data-l10n-args");
     }
   }
   #selectionChange() {
@@ -7924,7 +8149,7 @@ class AnnotationEditorUIManager {
   removeLayer(layer) {
     this.#allLayers.delete(layer.pageIndex);
   }
-  async updateMode(mode, editId = null, isFromKeyboard = false) {
+  async updateMode(mode, editId = null, isFromKeyboard = false, mustEnterInEditMode = false) {
     if (this.#mode === mode) {
       return;
     }
@@ -7963,7 +8188,9 @@ class AnnotationEditorUIManager {
     for (const editor of this.#allEditors.values()) {
       if (editor.annotationElementId === editId || editor.id === editId) {
         this.setSelected(editor);
-        editor.enterInEditMode();
+        if (mustEnterInEditMode) {
+          editor.enterInEditMode();
+        }
       } else {
         editor.unselect();
       }
@@ -8162,6 +8389,10 @@ class AnnotationEditorUIManager {
     });
   }
   setSelected(editor) {
+    this.updateToolbar({
+      mode: editor.mode,
+      editId: editor.id
+    });
     this.#currentDrawingSession?.commitOrRemove();
     for (const ed of this.#selectedEditors) {
       if (ed !== editor) {
@@ -9091,6 +9322,7 @@ class AnnotationEditor {
     this._willKeepAspectRatio = false;
     this._initialOptions.isCentered = parameters.isCentered;
     this._structTreeParentId = null;
+    this.annotationElementId = parameters.annotationElementId || null;
     const {
       rotation,
       rawDims: {
@@ -9112,6 +9344,9 @@ class AnnotationEditor {
   }
   get editorType() {
     return Object.getPrototypeOf(this).constructor._type;
+  }
+  get mode() {
+    return Object.getPrototypeOf(this).constructor._editorType;
   }
   static get isDrawer() {
     return false;
@@ -9247,6 +9482,9 @@ class AnnotationEditor {
     }
   }
   commit() {
+    if (!this.isInEditMode()) {
+      return;
+    }
     this.addToAnnotationStorage();
   }
   addToAnnotationStorage() {
@@ -9696,15 +9934,24 @@ class AnnotationEditor {
   altTextFinish() {
     this.#altText?.finish();
   }
+  get toolbarButtons() {
+    return null;
+  }
   async addEditToolbar() {
     if (this._editToolbar || this.#isInEditMode) {
       return this._editToolbar;
     }
     this._editToolbar = new EditorToolbar(this);
     this.div.append(this._editToolbar.render());
-    if (this.#altText) {
-      await this._editToolbar.addAltText(this.#altText);
+    const {
+      toolbarButtons
+    } = this;
+    if (toolbarButtons) {
+      for (const [name, tool] of toolbarButtons) {
+        await this._editToolbar.addButton(name, tool);
+      }
     }
+    this._editToolbar.addButton("delete");
     return this._editToolbar;
   }
   removeEditToolbar() {
@@ -9726,17 +9973,16 @@ class AnnotationEditor {
   getClientDimensions() {
     return this.div.getBoundingClientRect();
   }
-  async addAltTextButton() {
-    if (this.#altText) {
-      return;
+  createAltText() {
+    if (!this.#altText) {
+      AltText.initialize(AnnotationEditor._l10n);
+      this.#altText = new AltText(this);
+      if (this.#accessibilityData) {
+        this.#altText.data = this.#accessibilityData;
+        this.#accessibilityData = null;
+      }
     }
-    AltText.initialize(AnnotationEditor._l10n);
-    this.#altText = new AltText(this);
-    if (this.#accessibilityData) {
-      this.#altText.data = this.#accessibilityData;
-      this.#accessibilityData = null;
-    }
-    await this.addEditToolbar();
+    return this.#altText;
   }
   get altTextData() {
     return this.#altText?.data;
@@ -10077,7 +10323,8 @@ class AnnotationEditor {
     const editor = new this.prototype.constructor({
       parent,
       id: parent.getNextId(),
-      uiManager
+      uiManager,
+      annotationElementId: data.annotationElementId
     });
     editor.rotation = data.rotation;
     editor.#accessibilityData = data.accessibilityData;
@@ -17016,7 +17263,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "5.3.31",
+    apiVersion: "5.3.93",
     data,
     password,
     disableAutoFetch,
@@ -18626,8 +18873,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "5.3.31";
-const build = "47ad820d9";
+const version = "5.3.93";
+const build = "cbeef3233";
 
 // EXTERNAL MODULE: ./node_modules/core-js/modules/es.iterator.flat-map.js
 var es_iterator_flat_map = __webpack_require__(531);
@@ -18691,6 +18938,8 @@ class ColorConverters {
     return ["CMYK", c, m, y, k];
   }
 }
+const DateFormats = (/* unused pure expression or super */ null && (["m/d", "m/d/yy", "mm/dd/yy", "mm/yy", "d-mmm", "d-mmm-yy", "dd-mmm-yy", "yy-mm-dd", "mmm-yy", "mmmm-yy", "mmm d, yyyy", "mmmm d, yyyy", "m/d/yy h:MM tt", "m/d/yy HH:MM"]));
+const TimeFormats = (/* unused pure expression or super */ null && (["HH:MM", "h:MM tt", "HH:MM:ss", "h:MM:ss tt"]));
 
 ;// ./src/display/svg_factory.js
 
@@ -18956,7 +19205,6 @@ class XfaLayer {
 
 
 
-const DEFAULT_TAB_INDEX = 1000;
 const annotation_layer_DEFAULT_FONT_SIZE = 9;
 const GetElementsByNameSet = new WeakSet();
 class AnnotationElementFactory {
@@ -19050,11 +19298,10 @@ class AnnotationElement {
     }
   }
   static _hasPopupData({
-    titleObj,
     contentsObj,
     richText
   }) {
-    return !!(titleObj?.str || contentsObj?.str || richText?.str);
+    return !!(contentsObj?.str || richText?.str);
   }
   get _isEditable() {
     return this.data.isEditable;
@@ -19126,7 +19373,7 @@ class AnnotationElement {
     const container = document.createElement("section");
     container.setAttribute("data-annotation-id", data.id);
     if (!(this instanceof WidgetAnnotationElement)) {
-      container.tabIndex = DEFAULT_TAB_INDEX;
+      container.tabIndex = 0;
     }
     const {
       style
@@ -19375,6 +19622,7 @@ class AnnotationElement {
     svg.classList.add("quadrilateralsContainer");
     svg.setAttribute("width", 0);
     svg.setAttribute("height", 0);
+    svg.role = "none";
     const defs = svgFactory.createElement("defs");
     svg.append(defs);
     const clipPath = svgFactory.createElement("clipPath");
@@ -19420,7 +19668,8 @@ class AnnotationElement {
         parentRect: data.rect,
         borderStyle: 0,
         id: `popup_${data.id}`,
-        rotation: data.rotation
+        rotation: data.rotation,
+        noRotate: true
       },
       parent: this.parent,
       elements: [this]
@@ -19519,7 +19768,8 @@ class AnnotationElement {
       this.linkService.eventBus?.dispatch("switchannotationeditormode", {
         source: this,
         mode,
-        editId
+        editId,
+        mustEnterInEditMode: true
       });
     });
   }
@@ -19948,7 +20198,11 @@ class TextWidgetAnnotationElement extends WidgetAnnotationElement {
       element.setAttribute("data-element-id", id);
       element.disabled = this.data.readOnly;
       element.name = this.data.fieldName;
-      element.tabIndex = DEFAULT_TAB_INDEX;
+      element.tabIndex = 0;
+      const format = this.data.dateFormat || this.data.timeFormat;
+      if (format) {
+        element.title = format;
+      }
       this._setRequired(element, this.data.required);
       if (maxLen) {
         element.maxLength = maxLen;
@@ -20238,7 +20492,7 @@ class CheckboxWidgetAnnotationElement extends WidgetAnnotationElement {
       element.setAttribute("checked", true);
     }
     element.setAttribute("exportValue", data.exportValue);
-    element.tabIndex = DEFAULT_TAB_INDEX;
+    element.tabIndex = 0;
     element.addEventListener("change", event => {
       const {
         name,
@@ -20318,7 +20572,7 @@ class RadioButtonWidgetAnnotationElement extends WidgetAnnotationElement {
     if (value) {
       element.setAttribute("checked", true);
     }
-    element.tabIndex = DEFAULT_TAB_INDEX;
+    element.tabIndex = 0;
     element.addEventListener("change", event => {
       const {
         name,
@@ -20402,7 +20656,7 @@ class ChoiceWidgetAnnotationElement extends WidgetAnnotationElement {
     selectElement.disabled = this.data.readOnly;
     this._setRequired(selectElement, this.data.required);
     selectElement.name = this.data.fieldName;
-    selectElement.tabIndex = DEFAULT_TAB_INDEX;
+    selectElement.tabIndex = 0;
     let addAnEmptyEntry = this.data.combo && this.data.options.length > 0;
     if (!this.data.combo) {
       selectElement.size = this.data.options.length;
@@ -20618,7 +20872,11 @@ class PopupAnnotationElement extends AnnotationElement {
     this.popup = null;
   }
   render() {
-    this.container.classList.add("popupAnnotation");
+    const {
+      container
+    } = this;
+    container.classList.add("popupAnnotation");
+    container.role = "comment";
     const popup = this.popup = new PopupElement({
       container: this.container,
       color: this.data.color,
@@ -20721,12 +20979,13 @@ class PopupElement {
     } = this.#titleObj);
     popup.append(header);
     if (this.#dateObj) {
-      const modificationDate = document.createElement("span");
+      const modificationDate = document.createElement("time");
       modificationDate.classList.add("popupDate");
       modificationDate.setAttribute("data-l10n-id", "pdfjs-annotation-date-time-string");
       modificationDate.setAttribute("data-l10n-args", JSON.stringify({
         dateObj: this.#dateObj.valueOf()
       }));
+      modificationDate.dateTime = this.#dateObj.toISOString();
       header.append(modificationDate);
     }
     const html = this.#html;
@@ -21277,11 +21536,23 @@ class HighlightAnnotationElement extends AnnotationElement {
     this.annotationEditorType = AnnotationEditorType.HIGHLIGHT;
   }
   render() {
-    if (!this.data.popupRef && this.hasPopupData) {
+    const {
+      data: {
+        overlaidText,
+        popupRef
+      }
+    } = this;
+    if (!popupRef && this.hasPopupData) {
       this._createPopup();
     }
     this.container.classList.add("highlightAnnotation");
     this._editOnDoubleClick();
+    if (overlaidText) {
+      const mark = document.createElement("mark");
+      mark.classList.add("overlaidText");
+      mark.textContent = overlaidText;
+      this.container.append(mark);
+    }
     return this.container;
   }
 }
@@ -21294,10 +21565,22 @@ class UnderlineAnnotationElement extends AnnotationElement {
     });
   }
   render() {
-    if (!this.data.popupRef && this.hasPopupData) {
+    const {
+      data: {
+        overlaidText,
+        popupRef
+      }
+    } = this;
+    if (!popupRef && this.hasPopupData) {
       this._createPopup();
     }
     this.container.classList.add("underlineAnnotation");
+    if (overlaidText) {
+      const underline = document.createElement("u");
+      underline.classList.add("overlaidText");
+      underline.textContent = overlaidText;
+      this.container.append(underline);
+    }
     return this.container;
   }
 }
@@ -21310,10 +21593,22 @@ class SquigglyAnnotationElement extends AnnotationElement {
     });
   }
   render() {
-    if (!this.data.popupRef && this.hasPopupData) {
+    const {
+      data: {
+        overlaidText,
+        popupRef
+      }
+    } = this;
+    if (!popupRef && this.hasPopupData) {
       this._createPopup();
     }
     this.container.classList.add("squigglyAnnotation");
+    if (overlaidText) {
+      const underline = document.createElement("u");
+      underline.classList.add("overlaidText");
+      underline.textContent = overlaidText;
+      this.container.append(underline);
+    }
     return this.container;
   }
 }
@@ -21326,10 +21621,22 @@ class StrikeOutAnnotationElement extends AnnotationElement {
     });
   }
   render() {
-    if (!this.data.popupRef && this.hasPopupData) {
+    const {
+      data: {
+        overlaidText,
+        popupRef
+      }
+    } = this;
+    if (!popupRef && this.hasPopupData) {
       this._createPopup();
     }
     this.container.classList.add("strikeoutAnnotation");
+    if (overlaidText) {
+      const strikeout = document.createElement("s");
+      strikeout.classList.add("overlaidText");
+      strikeout.textContent = overlaidText;
+      this.container.append(strikeout);
+    }
     return this.container;
   }
 }
@@ -21437,7 +21744,7 @@ class AnnotationLayer {
   hasEditableAnnotations() {
     return this.#editableAnnotations.size > 0;
   }
-  async #appendElement(element, id) {
+  async #appendElement(element, id, popupElements) {
     const contentElement = element.firstChild || element;
     const annotationId = contentElement.id = `${AnnotationPrefix}${id}`;
     const ariaAttributes = await this.#structTreeLayer?.getAriaAttributes(annotationId);
@@ -21446,8 +21753,12 @@ class AnnotationLayer {
         contentElement.setAttribute(key, value);
       }
     }
-    this.div.append(element);
-    this.#accessibilityManager?.moveElementInDOM(this.div, element, contentElement, false);
+    if (popupElements) {
+      popupElements.at(-1).container.after(element);
+    } else {
+      this.div.append(element);
+      this.#accessibilityManager?.moveElementInDOM(this.div, element, contentElement, false);
+    }
   }
   async render(params) {
     const {
@@ -21504,7 +21815,7 @@ class AnnotationLayer {
       if (data.hidden) {
         rendered.style.visibility = "hidden";
       }
-      await this.#appendElement(rendered, data.id);
+      await this.#appendElement(rendered, data.id, elementParams.elements);
       if (element._isEditable) {
         this.#editableAnnotations.set(element.data.id, element);
         this._annotationEditorUIManager?.renderAnnotationElement(element);
@@ -21528,7 +21839,7 @@ class AnnotationLayer {
         continue;
       }
       const rendered = element.render();
-      await this.#appendElement(rendered, data.id);
+      await this.#appendElement(rendered, data.id, null);
     }
   }
   update({
@@ -21658,6 +21969,9 @@ class FreeTextEditor extends AnnotationEditor {
     });
     this.#color = params.color || FreeTextEditor._defaultColor || AnnotationEditor._defaultLineColor;
     this.#fontSize = params.fontSize || FreeTextEditor._defaultFontSize;
+    if (!this.annotationElementId) {
+      this._uiManager.a11yAlert("pdfjs-editor-freetext-added-alert");
+    }
   }
   static initialize(l10n, uiManager) {
     AnnotationEditor.initialize(l10n, uiManager);
@@ -22133,6 +22447,7 @@ class FreeTextEditor extends AnnotationEditor {
         pageIndex: pageNumber - 1,
         rect: rect.slice(0),
         rotation,
+        annotationElementId: id,
         id,
         deleted: false,
         popupRef
@@ -22142,7 +22457,6 @@ class FreeTextEditor extends AnnotationEditor {
     editor.#fontSize = data.fontSize;
     editor.#color = Util.makeHexColor(...data.color);
     editor.#content = FreeTextEditor.#deserializeContent(data.value);
-    editor.annotationElementId = data.id || null;
     editor._initialData = initialData;
     return editor;
   }
@@ -22925,7 +23239,7 @@ class ColorPicker {
     }
     this.#uiManager = editor?._uiManager || uiManager;
     this.#eventBus = this.#uiManager._eventBus;
-    this.#defaultColor = editor?.color || this.#uiManager?.highlightColors.values().next().value || "#FFFF98";
+    this.#defaultColor = editor?.color?.toUpperCase() || this.#uiManager?.highlightColors.values().next().value || "#FFFF98";
     ColorPicker.#l10nColor ||= Object.freeze({
       blue: "pdfjs-editor-colorpicker-blue",
       green: "pdfjs-editor-colorpicker-green",
@@ -22939,7 +23253,10 @@ class ColorPicker {
     button.className = "colorPicker";
     button.tabIndex = "0";
     button.setAttribute("data-l10n-id", "pdfjs-editor-colorpicker-button");
-    button.setAttribute("aria-haspopup", true);
+    button.ariaHasPopup = "true";
+    if (this.#editor) {
+      button.ariaControls = `${this.#editor.id}_colorpicker_dropdown`;
+    }
     const signal = this.#uiManager._signal;
     button.addEventListener("click", this.#openDropdown.bind(this), {
       signal
@@ -22949,15 +23266,15 @@ class ColorPicker {
     });
     const swatch = this.#buttonSwatch = document.createElement("span");
     swatch.className = "swatch";
-    swatch.setAttribute("aria-hidden", true);
+    swatch.ariaHidden = "true";
     swatch.style.backgroundColor = this.#defaultColor;
     button.append(swatch);
     return button;
   }
   renderMainDropdown() {
     const dropdown = this.#dropdown = this.#getDropdownRoot();
-    dropdown.setAttribute("aria-orientation", "horizontal");
-    dropdown.setAttribute("aria-labelledby", "highlightColorPickerLabel");
+    dropdown.ariaOrientation = "horizontal";
+    dropdown.ariaLabelledBy = "highlightColorPickerLabel";
     return dropdown;
   }
   #getDropdownRoot() {
@@ -22968,9 +23285,12 @@ class ColorPicker {
     });
     div.className = "dropdown";
     div.role = "listbox";
-    div.setAttribute("aria-multiselectable", false);
-    div.setAttribute("aria-orientation", "vertical");
+    div.ariaMultiSelectable = "false";
+    div.ariaOrientation = "vertical";
     div.setAttribute("data-l10n-id", "pdfjs-editor-colorpicker-dropdown");
+    if (this.#editor) {
+      div.id = `${this.#editor.id}_colorpicker_dropdown`;
+    }
     for (const [name, color] of this.#uiManager.highlightColors) {
       const button = document.createElement("button");
       button.tabIndex = "0";
@@ -22982,7 +23302,7 @@ class ColorPicker {
       button.append(swatch);
       swatch.className = "swatch";
       swatch.style.backgroundColor = color;
-      button.setAttribute("aria-selected", color === this.#defaultColor);
+      button.ariaSelected = color === this.#defaultColor;
       button.addEventListener("click", this.#colorSelect.bind(this, color), {
         signal
       });
@@ -23064,6 +23384,7 @@ class ColorPicker {
         signal: this.#uiManager.combinedSignal(this.#openDropdownAC)
       });
     }
+    this.#button.ariaExpanded = "true";
     if (this.#dropdown) {
       this.#dropdown.classList.remove("hidden");
       return;
@@ -23079,6 +23400,7 @@ class ColorPicker {
   }
   hideDropdown() {
     this.#dropdown?.classList.add("hidden");
+    this.#button.ariaExpanded = "false";
     this.#openDropdownAC?.abort();
     this.#openDropdownAC = null;
   }
@@ -23108,7 +23430,7 @@ class ColorPicker {
     }
     const i = this.#uiManager.highlightColors.values();
     for (const child of this.#dropdown.children) {
-      child.setAttribute("aria-selected", i.next().value === color);
+      child.ariaSelected = i.next().value === color.toUpperCase();
     }
   }
   destroy() {
@@ -23198,6 +23520,9 @@ class HighlightEditor extends AnnotationEditor {
       this.#createOutlines();
       this.#addToDrawLayer();
       this.rotate(this.rotation);
+    }
+    if (!this.annotationElementId) {
+      this._uiManager.a11yAlert("pdfjs-editor-highlight-added-alert");
     }
   }
   get telemetryInitialData() {
@@ -23393,18 +23718,14 @@ class HighlightEditor extends AnnotationEditor {
       thickness
     }, true);
   }
-  async addEditToolbar() {
-    const toolbar = await super.addEditToolbar();
-    if (!toolbar) {
-      return null;
-    }
+  get toolbarButtons() {
     if (this._uiManager.highlightColors) {
-      this.#colorPicker = new ColorPicker({
+      const colorPicker = this.#colorPicker = new ColorPicker({
         editor: this
       });
-      toolbar.addColorPicker(this.#colorPicker);
+      return [["colorPicker", colorPicker]];
     }
-    return toolbar;
+    return super.toolbarButtons;
   }
   disableEditing() {
     super.disableEditing();
@@ -23812,6 +24133,7 @@ class HighlightEditor extends AnnotationEditor {
         pageIndex: pageNumber - 1,
         rect: rect.slice(0),
         rotation,
+        annotationElementId: id,
         id,
         deleted: false,
         popupRef
@@ -23844,6 +24166,7 @@ class HighlightEditor extends AnnotationEditor {
         pageIndex: pageNumber - 1,
         rect: rect.slice(0),
         rotation,
+        annotationElementId: id,
         id,
         deleted: false,
         popupRef
@@ -23861,7 +24184,6 @@ class HighlightEditor extends AnnotationEditor {
     if (inkLists) {
       editor.#thickness = data.thickness;
     }
-    editor.annotationElementId = data.id || null;
     editor._initialData = initialData;
     const [pageWidth, pageHeight] = editor.pageDimensions;
     const [pageX, pageY] = editor.pageTranslation;
@@ -24043,6 +24365,9 @@ class DrawingEditor extends AnnotationEditor {
   }) {
     this.#drawOutlines = drawOutlines;
     this._drawingOptions ||= drawingOptions;
+    if (!this.annotationElementId) {
+      this._uiManager.a11yAlert(`pdfjs-editor-${this.editorType}-added-alert`);
+    }
     if (drawId >= 0) {
       this._drawId = drawId;
       this.parent.drawLayer.finalizeDraw(drawId, drawOutlines.defaultProperties);
@@ -25375,13 +25700,13 @@ class InkEditor extends DrawingEditor {
         pageIndex: pageNumber - 1,
         rect: rect.slice(0),
         rotation,
+        annotationElementId: id,
         id,
         deleted: false,
         popupRef
       };
     }
     const editor = await super.deserialize(data, parent, uiManager);
-    editor.annotationElementId = data.id || null;
     editor._initialData = initialData;
     return editor;
   }
@@ -26330,16 +26655,11 @@ class SignatureEditor extends DrawingEditor {
       outline: outlineData.outline
     };
   }
-  async addEditToolbar() {
-    const toolbar = await super.addEditToolbar();
-    if (!toolbar) {
-      return null;
+  get toolbarButtons() {
+    if (this._uiManager.signatureManager) {
+      return [["editSignature", this._uiManager.signatureManager]];
     }
-    if (this._uiManager.signatureManager && this.#description !== null) {
-      await toolbar.addEditSignatureButton(this._uiManager.signatureManager, this.#signatureUUID, this.#description);
-      toolbar.show();
-    }
-    return toolbar;
+    return super.toolbarButtons;
   }
   addSignature(data, heightInPage, description, uuid) {
     const {
@@ -26350,7 +26670,7 @@ class SignatureEditor extends DrawingEditor {
       outline
     } = this.#signatureData = data;
     this.#isExtracted = outline instanceof ContourDrawOutline;
-    this.#description = description;
+    this.description = description;
     this.div.setAttribute("data-l10n-args", JSON.stringify({
       description
     }));
@@ -26589,8 +26909,10 @@ class StampEditor extends AnnotationEditor {
       return;
     }
     if (this._uiManager.useNewAltTextWhenAddingImage && this._uiManager.useNewAltTextFlow && this.#bitmap) {
-      this._editToolbar.hide();
-      this._uiManager.editAltText(this, true);
+      this.addEditToolbar().then(() => {
+        this._editToolbar.hide();
+        this._uiManager.editAltText(this, true);
+      });
       return;
     }
     if (!this._uiManager.useNewAltTextWhenAddingImage && this._uiManager.useNewAltTextFlow && this.#bitmap) {
@@ -26748,6 +27070,9 @@ class StampEditor extends AnnotationEditor {
   isEmpty() {
     return !(this.#bitmapPromise || this.#bitmap || this.#bitmapUrl || this.#bitmapFile || this.#bitmapId || this.#missingCanvas);
   }
+  get toolbarButtons() {
+    return [["altText", this.createAltText()]];
+  }
   get isResizable() {
     return true;
   }
@@ -26762,7 +27087,7 @@ class StampEditor extends AnnotationEditor {
     }
     super.render();
     this.div.hidden = true;
-    this.addAltTextButton();
+    this.createAltText();
     if (!this.#missingCanvas) {
       if (this.#bitmap) {
         this.#createCanvas();
@@ -26852,6 +27177,9 @@ class StampEditor extends AnnotationEditor {
     });
     if (this.#bitmapFileName) {
       this.div.setAttribute("aria-description", this.#bitmapFileName);
+    }
+    if (!this.annotationElementId) {
+      this._uiManager.a11yAlert("pdfjs-editor-stamp-added-alert");
     }
   }
   copyCanvas(maxDataDimension, maxPreviewDimension, createImageData = false) {
@@ -27050,6 +27378,7 @@ class StampEditor extends AnnotationEditor {
         pageIndex: pageNumber - 1,
         rect: rect.slice(0),
         rotation,
+        annotationElementId: id,
         id,
         deleted: false,
         accessibilityData: {
@@ -27085,7 +27414,6 @@ class StampEditor extends AnnotationEditor {
     const [parentWidth, parentHeight] = editor.pageDimensions;
     editor.width = (rect[2] - rect[0]) / parentWidth;
     editor.height = (rect[3] - rect[1]) / parentHeight;
-    editor.annotationElementId = data.id || null;
     if (accessibilityData) {
       editor.altTextData = accessibilityData;
     }
@@ -27212,6 +27540,8 @@ class AnnotationEditorLayer {
   #focusedElement = null;
   #textLayer = null;
   #textSelectionAC = null;
+  #textLayerDblClickAC = null;
+  #lastPointerDownTimestamp = -1;
   #uiManager;
   static _initialized = false;
   static #editorTypes = new Map([FreeTextEditor, InkEditor, StampEditor, HighlightEditor, SignatureEditor].map(type => [type._editorType, type]));
@@ -27313,6 +27643,8 @@ class AnnotationEditorLayer {
     this.#isEnabling = true;
     this.div.tabIndex = 0;
     this.togglePointerEvents(true);
+    this.#textLayerDblClickAC?.abort();
+    this.#textLayerDblClickAC = null;
     const annotationElementIds = new Set();
     for (const editor of this.#editors.values()) {
       editor.enableEditing();
@@ -27348,6 +27680,53 @@ class AnnotationEditorLayer {
     this.#isDisabling = true;
     this.div.tabIndex = -1;
     this.togglePointerEvents(false);
+    if (this.#textLayer && !this.#textLayerDblClickAC) {
+      this.#textLayerDblClickAC = new AbortController();
+      const signal = this.#uiManager.combinedSignal(this.#textLayerDblClickAC);
+      this.#textLayer.div.addEventListener("pointerdown", e => {
+        const DBL_CLICK_THRESHOLD = 500;
+        const {
+          clientX,
+          clientY,
+          timeStamp
+        } = e;
+        const lastPointerDownTimestamp = this.#lastPointerDownTimestamp;
+        if (timeStamp - lastPointerDownTimestamp > DBL_CLICK_THRESHOLD) {
+          this.#lastPointerDownTimestamp = timeStamp;
+          return;
+        }
+        this.#lastPointerDownTimestamp = -1;
+        const {
+          classList
+        } = this.div;
+        classList.toggle("getElements", true);
+        const elements = document.elementsFromPoint(clientX, clientY);
+        classList.toggle("getElements", false);
+        if (!this.div.contains(elements[0])) {
+          return;
+        }
+        let id;
+        const regex = new RegExp(`^${AnnotationEditorPrefix}[0-9]+$`);
+        for (const element of elements) {
+          if (regex.test(element.id)) {
+            id = element.id;
+            break;
+          }
+        }
+        if (!id) {
+          return;
+        }
+        const editor = this.#editors.get(id);
+        if (editor?.annotationElementId === null) {
+          e.stopPropagation();
+          e.preventDefault();
+          editor.dblclick();
+        }
+      }, {
+        signal,
+        capture: true
+      });
+    }
     const changedAnnotations = new Map();
     const resetAnnotations = new Map();
     for (const editor of this.#editors.values()) {

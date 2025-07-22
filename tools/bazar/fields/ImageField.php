@@ -4,9 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
-use Tamtamchik\SimpleFlash\Flash;
 
 /**
  * @Field({"image"})

@@ -29,6 +29,7 @@ class GroupManager
     public function create(string $group_name, array $members): int
     {
         $member_str = implode("\n", $members);
+
         return $this->tripleStore->create($group_name, WIKINI_VOC_ACLS, $member_str, GROUP_PREFIX);
     }
 

@@ -62,7 +62,7 @@ class ListManager
 
         $page = $this->pageManager->getOne($id);
         if (empty($page)) {
-            echo '<div class="alert alert-danger">List id not found: '.$id.'</div>';
+            echo '<div class="alert alert-danger">List id not found: ' . $id . '</div>';
 
             return null;
         }

@@ -1,12 +1,12 @@
 <?php
 
+use function Symfony\Component\String\u;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
-use function Symfony\Component\String\u;
 
 function multiArraySearch($array, $key, $value)
 {

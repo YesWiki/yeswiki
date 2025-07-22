@@ -1,5 +1,5 @@
 const ConditionsChecking = {
-  checkDelay : 500, // delay between 2 wysiwig editor content condition checking
+  checkDelay: 500, // delay between 2 wysiwig editor content condition checking
   conditionsCache: [],
   fieldNamesCache: {},
   triggersCache: {},
@@ -103,7 +103,7 @@ const ConditionsChecking = {
     }
     return result
   },
-/* BEGIN AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */  
+  /* BEGIN AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
   getTextValues(field) {
     const result = []
     const value = $(field).val()
@@ -120,7 +120,7 @@ const ConditionsChecking = {
     }
     return result
   },
-/* END AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
+  /* END AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
   getFieldNameValues(fieldName) {
     if (typeof this.fieldNamesCache[fieldName] === 'undefined') {
       return []
@@ -135,12 +135,12 @@ const ConditionsChecking = {
         return this.getRadioValues(fieldData.node)
       case 'select':
         return this.getSelectValues(fieldData.node)
-/* BEGIN AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
+        /* BEGIN AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
       case 'text':
         return this.getTextValues(fieldData.node)
       case 'textarea':
  		return this.getTextareaValues(fieldData.node)
-/* END AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */ 		
+        /* END AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
       default:
         break
     }
@@ -186,27 +186,25 @@ const ConditionsChecking = {
     return eval(`${length} ${operation} ${number}`)
   },
   /* BEGIN AJOUT DE LA METHODE MATCH */
-  match (fieldName, values)
-  {
-	const extract = {
+  match(fieldName, values) {
+    const extract = {
       uniqueValues: [],
       uniqueFieldValues: []
     }
-    
+
     this.commonForOperations(fieldName, values, extract)
     if (extract.uniqueValues.length != extract.uniqueFieldValues.length) {
       return false
     }
-    
-    var uniqueValuesRE = extract.uniqueValues.map(str => {
-    const match = str.match(/^\/(.*)\/([a-z]*)$/i);
-    return match ? new RegExp(match[1], match[2]) : null;
-	})
-    
+
+    const uniqueValuesRE = extract.uniqueValues.map((str) => {
+      const match = str.match(/^\/(.*)\/([a-z]*)$/i)
+      return match ? new RegExp(match[1], match[2]) : null
+    })
+
     let result = true
     for (let index = 0; index < extract.uniqueFieldValues.length; index++) {
-      if (!uniqueValuesRE.some (regex => regex.test(extract.uniqueFieldValues[index])))
-      {
+      if (!uniqueValuesRE.some((regex) => regex.test(extract.uniqueFieldValues[index]))) {
         result = false
       }
     }
@@ -284,12 +282,12 @@ const ConditionsChecking = {
 
     return ''
   },
-  renderConditionSecured(fieldName, condition, values) {  
+  renderConditionSecured(fieldName, condition, values) {
     switch (condition) {
     /* BEGIN AJOUT DE L'OPERATEUR MATCH */
 	  case 'match':
         return ` this.match("${fieldName}","${values}")`
-    /* END AJOUT DE L'OPERATEUR MATCH */        
+        /* END AJOUT DE L'OPERATEUR MATCH */
       case '==':
         return ` this.isEqual("${fieldName}","${values}")`
       case '!=':
@@ -575,7 +573,7 @@ const ConditionsChecking = {
     const inputId = $(input).attr('id')
     if (typeof this.triggersCache[inputId] === 'undefined') {
       this.triggersCache[inputId] = [fieldName]
-			     		
+
       $(input).on('change', () => {
         ConditionsChecking.resolveTrigger(inputId)
       })
@@ -672,35 +670,30 @@ const ConditionsChecking = {
       result.type = 'textarea'
       result.node = inputs
       // register triggers
-      $(inputs).each(function() {      
-              
+      $(inputs).each(function() {
         /* BEGIN Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg */
-        
-        var vTextArea = $(this);
-        
-        if (vTextArea.hasClass ("aceditor-textarea") || vTextArea.hasClass ("summernote")) 
-        {	        
-		    var launchUpdateHandler = function ()
-		    {
-  			 	var vLastValue = vTextArea.val();
-  
-  				setInterval(() =>
-    				{
-  					var vValue = vTextArea.val();
-  					
-  					if (vValue !== vLastValue)
-  					{
-  					    vLastValue = vValue;
-  						vTextArea.trigger ("change");
+
+        const vTextArea = $(this)
+
+        if (vTextArea.hasClass('aceditor-textarea') || vTextArea.hasClass('summernote')) {
+		    const launchUpdateHandler = function() {
+  			 	let vLastValue = vTextArea.val()
+
+  				setInterval(() => {
+  					const vValue = vTextArea.val()
+
+  					if (vValue !== vLastValue) {
+  					    vLastValue = vValue
+  						vTextArea.trigger('change')
   					}
-  				}, ConditionsChecking.checkDelay); 
+  				}, ConditionsChecking.checkDelay)
 			  }
-			
-		  	launchUpdateHandler ();
-		}
-      	
+
+		  	launchUpdateHandler()
+        }
+
       	/* END Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg */
-      	
+
         ConditionsChecking.registerTrigger(this, fieldName)
       })
     }

@@ -725,7 +725,7 @@ $(document).ready(() => {
 
   // activer les filtres des facettes
   function updateFilters(e) {
-    const tabfilters = Array()
+    const tabfilters = []
     let i = 0
     let newquery = ''
     let select

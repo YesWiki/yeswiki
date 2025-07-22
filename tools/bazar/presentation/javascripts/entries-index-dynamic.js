@@ -197,20 +197,17 @@ const load = (domElement) => {
               let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some(function (value)
-              {
-              	if (typeof (value) == "string")
-              	{
+              return entryValues.some((value) => {
+              	if (typeof (value) == 'string') {
               		return (value
             	  	.replace(/&/g, '&amp;')
 				          .replace(/</g, '&lt;')
 				          .replace(/>/g, '&gt;')
 				          .replace(/"/g, '&quot;')
-				          .replace(/'/g, '&#039;') == node.value);
+				          .replace(/'/g, '&#039;') == node.value)
               	}
-              	else              	
-	               return (value == node.value);
-              });
+              	return (value == node.value)
+              })
             }).length
           })
         })

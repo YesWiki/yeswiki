@@ -211,11 +211,10 @@ class BazarListService
                 // We collect all values
                 $uniqValues = array_unique(array_column($entries, $propName));
 
-                usort($uniqValues, function($a, $b)
-				{
-				    return strcmp(strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $a)), strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $b)));
-				});
-                
+                usort($uniqValues, function ($a, $b) {
+                    return strcmp(strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $a)), strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $b)));
+                });
+
                 foreach ($uniqValues as $value) {
                     $filter['nodes'][] = $this->createFilterNode($value, $value);
                 }

@@ -63,6 +63,10 @@ async function processEntry(entryCheckbox, counters) {
     logItem.textContent = `❌ Erreur: "${entryIdentifier}". Raison: ${error.message}`
     logItem.style.color = 'red'
     importLog.appendChild(logItem)
+    importLog.scrollTo({
+      top: importLog.scrollHeight,
+      behavior: 'smooth'
+    })
   } finally {
     counters.processed++
     updateProgressUI(counters.processed, counters.successful, counters.total)

@@ -50,7 +50,7 @@ class ApiController extends YesWikiController
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
         $entries = $this->getService(EntryManager::class)->search([
-            'formsIds' => (is_array ($formId)?$formId:array_map ('trim', explode (",", $formId))), // allows route like /api/forms/1, 2/entries/...
+            'formsIds' => (is_array($formId) ? $formId : array_map('trim', explode(',', $formId))), // allows route like /api/forms/1, 2/entries/...
             'queries' => $this->getService(EntryController::class)
                 ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
             'minDate' => $_GET['dateMin'] ?? '',
@@ -248,7 +248,7 @@ class ApiController extends YesWikiController
         }, $_GET);
 
         $searchfields = isset($_GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
-       
+
         $searchfields = (empty($searchfields) || (!is_string($searchfields) && !is_array($searchfields)))
             ? ['bf_titre']
             : (
@@ -329,13 +329,13 @@ class ApiController extends YesWikiController
         // Reduce the size of the data sent by transforming entries object into array
         // we use the $fieldMapping to transform back the data when receiving data in the front end
         $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
-        $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService, $forms) {
+        $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
             $entryFieldsService->setEntryId($entry['id_fiche']);
             $result = [];
             foreach ($fieldList as $fieldName) {
                 // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
-                $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName,$entry['id_typeannonce']);
-                if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI){
+                $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['id_typeannonce']);
+                if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
                     $entry[$fieldName] = $this->wiki->Format($entry[$fieldName]);
                 }
                 // handle specific fields like comments, reactions

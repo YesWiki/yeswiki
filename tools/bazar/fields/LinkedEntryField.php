@@ -71,7 +71,7 @@ class LinkedEntryField extends BazarField
         $addEntryLink = $this->getWiki()->href(
             'iframe',
             'BazaR',
-            'context=addentry&voirmenu=0&vue=saisir&'.$this->linkedId.'='.$entry['id_fiche'].'&id='.$this->name,
+            'context=addentry&voirmenu=0&vue=saisir&' . $this->linkedId . '=' . $entry['id_fiche'] . '&id=' . $this->name,
             false
         );
         $emptyList = $this->isEmptyOutput($output);
@@ -102,11 +102,11 @@ class LinkedEntryField extends BazarField
     {
         $query = $this->getQueryForLinkedLabels($entry);
         if (!empty($query)) {
-            $query = ((!empty($this->query)) ? $this->query.'|' : '').$query;
-            $action = '{{bazarliste id="'.$this->name.'" query="'.$query.'" '
-                .((!empty($this->limit)) ? 'nb="'.$this->limit.'" ' : '')
-                .'template="'.(empty(trim($this->template)) ? 'liste_liens.tpl.html' : $this->template).'" '
-                .$this->otherParams.'}}';
+            $query = ((!empty($this->query)) ? $this->query . '|' : '') . $query;
+            $action = '{{bazarliste id="' . $this->name . '" query="' . $query . '" '
+                . ((!empty($this->limit)) ? 'nb="' . $this->limit . '" ' : '')
+                . 'template="' . (empty(trim($this->template)) ? 'liste_liens.tpl.html' : $this->template) . '" '
+                . $this->otherParams . '}}';
 
             return $action;
         } else {
@@ -125,7 +125,7 @@ class LinkedEntryField extends BazarField
         }
         if (!$externalForm) {
             // we just query on the field
-            return isset($entry['id_fiche']) ? $this->linkedId.'='.$entry['id_fiche'] : '';
+            return isset($entry['id_fiche']) ? $this->linkedId . '=' . $entry['id_fiche'] : '';
         }
         if (!is_array($form) || !is_array($form['prepared'])
                 || empty($entry['id_typeannonce'])
