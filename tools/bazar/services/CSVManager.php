@@ -893,4 +893,66 @@ class CSVManager
 
         return $csvToDisplay;
     }
+
+    public function sendCsvOrZip(array $formIds, array $query = [], string $zipFileName = 'yeswiki-csv-exports.zip')
+    {
+        $queryAsString = [];
+        foreach ($query as $i => $q) {
+            $queryAsString[] = $i.'='.$q;
+        }
+        $queryAsString = implode('|', $queryAsString);
+        $csvFiles = [];
+        foreach ($formIds as $fid) {
+            $csvFiles['export-fiche-'.$fid.'.csv'] = $this->arrayToCSV(
+                $this->getCSVfromFormId($fid, null, false, false, $queryAsString)
+            );
+        }
+
+        $fileCount = count($csvFiles);
+
+        if ($fileCount === 0) {
+            die('Error: No file data was provided.');
+        }
+
+        if ($fileCount === 1) {
+            $fileName = key($csvFiles);
+            $csvContent = reset($csvFiles);
+
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="'.$fileName.'"');
+            header('Content-Length: '.strlen($csvContent));
+            header('Connection: close');
+
+            echo $csvContent;
+            exit;
+        }
+
+        if ($fileCount > 1) {
+            if (!class_exists('ZipArchive')) {
+                die('Error: The ZipArchive PHP extension is not installed or enabled.');
+            }
+
+            $zip = new \ZipArchive();
+            $tempZipFile = tempnam(sys_get_temp_dir(), 'zip');
+
+            if ($zip->open($tempZipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                die('Error: Cannot create ZIP archive.');
+            }
+
+            foreach ($csvFiles as $filename => $csvString) {
+                $zip->addFromString($filename, $csvString);
+            }
+
+            $zip->close();
+
+            header('Content-Type: application/zip');
+            header('Content-Disposition: attachment; filename="'.$zipFileName.'"');
+            header('Content-Length: '.filesize($tempZipFile));
+            header('Connection: close');
+
+            readfile($tempZipFile);
+            unlink($tempZipFile);
+            exit;
+        }
+    }
 }

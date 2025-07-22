@@ -8,6 +8,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\BazarListService;
+use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
@@ -49,10 +50,16 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
+        $query = $this->getService(EntryController::class)->formatQuery(
+            !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
+            $_GET
+        );
+
+        $formId = is_array($formId) ? $formId : array_map('trim', explode(',', $formId));
+
         $entries = $this->getService(EntryManager::class)->search([
-            'formsIds' => (is_array($formId) ? $formId : array_map('trim', explode(',', $formId))), // allows route like /api/forms/1, 2/entries/...
-            'queries' => $this->getService(EntryController::class)
-                ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
+            'formsIds' => $formId,
+            'queries' => $query,
             'minDate' => $_GET['dateMin'] ?? '',
         ], true, true);
 
@@ -67,6 +74,9 @@ class ApiController extends YesWikiController
             $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         } elseif ($output == 'ical') {
             return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
+        } elseif ($output == 'csv') {
+            $csvManager = $this->getService(CSVManager::class);
+            $csvManager->sendCsvOrZip($formId, $query);
         } elseif (isset($_GET['fields'])) {
             $fields = explode(',', $_GET['fields']);
             $lightEntries = [];
