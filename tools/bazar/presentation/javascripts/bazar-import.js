@@ -56,19 +56,20 @@ async function processEntry(entryCheckbox, counters) {
     link.rel = 'noopener noreferrer'
     link.textContent = `"${entryIdentifier}"`
 
-    logItem.append('✅ Succès: import de ', link, '.')
-    importLog.appendChild(logItem)
+    logItem.append('✅ Import de ', link, '.')
   } catch (error) {
     const logItem = document.createElement('li')
     logItem.textContent = `❌ Erreur: "${entryIdentifier}". Raison: ${error.message}`
     logItem.style.color = 'red'
-    importLog.appendChild(logItem)
-    importLog.scrollTo({
-      top: importLog.scrollHeight,
-      behavior: 'smooth'
-    })
   } finally {
     counters.processed++
+    importLog.appendChild(logItem)
+    setTimeout(() => {
+      importLog.scrollTo({
+        top: importLog.scrollHeight,
+        behavior: 'smooth'
+      })
+    }, 0)
     updateProgressUI(counters.processed, counters.successful, counters.total)
   }
 }
