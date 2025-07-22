@@ -123,3 +123,35 @@ function testRefererUrlInIframe()
 
     return $iframe ? 'iframe' : '';
 }
+
+function getBaseUrl(): string
+{
+    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $scriptDir = dirname($_SERVER['SCRIPT_NAME']);
+    $scriptDir = rtrim($scriptDir, '/');
+
+    return $scheme . '://' . $host . $scriptDir;
+}
+
+function makeAbsoluteUrl (string $url, string $baseUrl) : string
+{
+    if (parse_url($url, PHP_URL_SCHEME)) {
+        return $url; // déjà absolue
+    }
+
+    if (strpos($url, '//') === 0) {
+        // protocole relatif, on le rend absolu
+        $scheme = parse_url($baseUrl, PHP_URL_SCHEME);
+        return $scheme . ':' . $url;
+    }
+
+    if (strpos($url, '/') === 0) {
+        // URL relative à la racine
+        $parsedBase = parse_url($baseUrl);
+        return $parsedBase['scheme'] . '://' . $parsedBase['host'] . $url;
+    }
+
+    // URL relative au chemin courant
+    return rtrim($baseUrl, '/') . '/' . ltrim($url, '/');
+}
