@@ -165,10 +165,12 @@ class CSVManager
 
                 if (!$fakeMode) {
                     $queries = [];
-                    $tab = explode('|', $query);
-                    foreach ($tab as $req) {
-                        $tabdecoup = explode('=', $req, 2);
-                        $queries[$tabdecoup[0]] = trim($tabdecoup[1]);
+                    if (!empty($query)) {
+                        $tab = explode('|', $query);
+                        foreach ($tab as $req) {
+                            $tabdecoup = explode('=', $req, 2);
+                            $queries[$tabdecoup[0]] = trim($tabdecoup[1]);
+                        }
                     }
 
                     // get lines for each entry
