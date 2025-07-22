@@ -50,7 +50,7 @@ class ApiController extends YesWikiController
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
         $entries = $this->getService(EntryManager::class)->search([
-            'formsIds' => $formId,
+            'formsIds' => (is_array ($formId)?$formId:array_map ('trim', explode (",", $formId))), // allows route like /api/forms/1, 2/entries/...
             'queries' => $this->getService(EntryController::class)
                 ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
             'minDate' => $_GET['dateMin'] ?? '',
@@ -247,9 +247,9 @@ class ApiController extends YesWikiController
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $_GET);
 
-        // format search field
-        $searchfields = isset($GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
-        $searchfields = (empty($searchfields) || !is_string($searchfields) || !is_array($searchfields))
+        $searchfields = isset($_GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
+       
+        $searchfields = (empty($searchfields) || (!is_string($searchfields) && !is_array($searchfields)))
             ? ['bf_titre']
             : (
                 is_string($searchfields)

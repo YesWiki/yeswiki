@@ -148,7 +148,9 @@
                     {% else %}<option value="*">{{ _t('ACLS_EVERYBODY') }}</option>{% endif %}
                     <option value="+">{{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
                     <option value="%">{{ _t('ACLS_OWNER') }}</option>
-                    <option value="@admins">{{ _t('ACLS_ADMIN_GROUP') }}</option>
+                {% for group in groups %}
+                <option value="@{{ group }}">{{ group }}</option>
+                {% endfor %}
                 </select>
                 <input placeholder="{{ _t('ACLS_LIST_OF_ACLS') }}" name="{{ labelRole }}_advanced" class="acl-advanced form-control" />
             </div>

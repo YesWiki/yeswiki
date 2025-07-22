@@ -1,5 +1,5 @@
 {{  include_javascript('tools/bazar/presentation/javascripts/bazar.js') }}
-<form method="post" class="form-horizontal"
+<form id="form-bazar-import" method="post" class="form-horizontal"
   action="{{ url({params:params}) }}" {% block formDetails %}{% endblock %}>
   {% block formContent %}
     {% if not (forms|length > 0) %}
