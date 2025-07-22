@@ -27,7 +27,7 @@ async function processEntry(entryCheckbox, counters) {
   const entryIdentifier = currentEntry.bf_titre || `#${counters.processed + 1}`
 
   try {
-    const response = await fetch(`/?api/entries/${formId}`, {
+    const response = await fetch(`?api/entries/${formId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
