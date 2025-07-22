@@ -155,7 +155,7 @@ class RssHandler extends YesWikiHandler
                         '<![CDATA[' . preg_replace(
                         '/data-id=".*"/Ui',
                         '',
-                        $this->sanitize($this->getService(EntryController::class)->view($ligne))
+                        $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($ligne)))
                     ) . ']]>'
                     );
                     $xml .= "\r\n        ";
@@ -204,5 +204,24 @@ class RssHandler extends YesWikiHandler
         $string = html_entity_decode($string, ENT_QUOTES, 'UTF-8');
 
         return $string;
+    }
+
+    private function updateRelativeLinks ($pBody)
+    {
+    	$vBody = $pBody;
+    
+    	$pattern = '~(<a[[:blank:]]*[^>]*[[:blank:]]*href[[:blank:]]*=[[:blank:]]*)(["\'])(.*?)(\2)([^>]*>)~i';
+        
+    	if (preg_match_all($pattern, $pBody, $matches)) { 
+        	
+		    foreach ($matches[3] as $vKey => $vURL) {	
+				
+				$vAbsoluteURL = \makeAbsoluteUrl ($vURL, \getBaseUrl());
+				
+				$vBody = str_replace($matches[0][$vKey], $matches[1][$vKey] . $matches[2][$vKey] . $vAbsoluteURL . $matches[2][$vKey] . $matches[5][$vKey], $vBody);
+		    }        
+	    }
+    	
+    	return $vBody;
     }
 }
