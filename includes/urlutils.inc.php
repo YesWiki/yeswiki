@@ -77,27 +77,33 @@ function detectRewriteMode()
 function replaceLinksWithIframe(string $body): string
 {
     // pattern qui rajoute le /iframe pour les liens au bon endroit, merci raphael@tela-botanica.org
-    $pattern = '~(<a.*?href.*?)((?:' . preg_quote($GLOBALS['wiki']->config['base_url'], '~') . '|\?))([\w\-_]+)(\/(?:edit|show))?([&#?].*?)?(["\'])([^>]*?>)~i';
+
+    $pattern = '~(<a[[:blank:]]*[^>]*[[:blank:]]*href[[:blank:]]*=[[:blank:]]*)(["\'])((?:'  . preg_quote($GLOBALS['wiki']->config['base_url'], '~') . '|\?))([\w\-_]+)(\/(?:edit|show))?([&#?].*?)?(\2)([^>]*>)~i';
+    
     $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_?blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
-    if (preg_match_all($pattern, $body, $matches)) { 
-        foreach ($matches[0] as $key => $match) {
+    
+    $OUTPUT = "";
+    
+    if (preg_match_all($pattern, $body, $matches)) {     
+        foreach ($matches[0] as $key => $match) {	
             if (!preg_match($NEW_WINDOW_PATTERN, $matches[1][$key]) && !preg_match(
                 $NEW_WINDOW_PATTERN,
-                $matches[7][$key]
+                $matches[8][$key]
             )) {
                 $replacement =
                     $matches[1][$key] .
                     $matches[2][$key] .
                     $matches[3][$key] .
-                    ($matches[4][$key] == '/edit' ? '/editiframe' : '/iframe') .
-                    $matches[5][$key] .
+                    $matches[4][$key] .                    
+                    ($matches[5][$key] == '/edit' ? '/editiframe' : '/iframe') .
                     $matches[6][$key] .
-                    $matches[7][$key];
+                    $matches[7][$key] .
+                    $matches[8][$key];
                 $body = str_replace($match, $replacement, $body);
             }
         }
     }
-
+    
     return $body;
 }
 
