@@ -81,9 +81,7 @@ function replaceLinksWithIframe(string $body): string
     $pattern = '~(<a[[:blank:]]*[^>]*[[:blank:]]*href[[:blank:]]*=[[:blank:]]*)(["\'])((?:'  . preg_quote($GLOBALS['wiki']->config['base_url'], '~') . '|\?))([\w\-_]+)(\/(?:edit|show))?([&#?].*?)?(\2)([^>]*>)~i';
     
     $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_?blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
-    
-    $OUTPUT = "";
-    
+
     if (preg_match_all($pattern, $body, $matches)) {     
         foreach ($matches[0] as $key => $match) {	
             if (!preg_match($NEW_WINDOW_PATTERN, $matches[1][$key]) && !preg_match(
