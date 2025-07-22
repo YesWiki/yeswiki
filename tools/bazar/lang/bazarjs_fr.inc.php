@@ -190,16 +190,15 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST' => 'Type de service de diffusion',
     'BAZ_FORM_EDIT_EDIT_CONTENT_LABEL' => 'Contenu lors de la saisie',
     'BAZ_FORM_EDIT_VIEW_CONTENT_LABEL' => 'Contenu lors de l\'affichage d\'une fiche',
-    'BAZ_FORM_EDIT_LISTEFICHES_FORMID_LABEL' => 'Identifiant du formulaire lié',
+    'BAZ_FORM_EDIT_LISTEFICHES_FORMID_LABEL' => 'id du formulaire lié',
     'BAZ_FORM_EDIT_LISTEFICHES_QUERY_LABEL' => 'Query',
     'BAZ_FORM_EDIT_LISTEFICHES_QUERY_PLACEHOLDER' => 'Voir doc sur {url}',
     'BAZ_FORM_EDIT_LISTEFICHES_PARAMS_LABEL' => 'Params de l\'action',
     'BAZ_FORM_EDIT_LISTEFICHES_NUMBER_LABEL' => 'Nombre de fiches à afficher',
     'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_LABEL' => 'Template de restitution',
     'BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_PLACEHOLDER' => 'Ex : template="liste_liens.tpl.html (par défault = accordéon)"',
-    'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_LABEL' => 'Identifiant du champ dans le formulaire lié',
-    'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'si dans un form. "personnes", on a une liste déroulante issue du form. "structure", indiquez son id. ex:\'bf_structure\'.',
-    'BAZ_FORM_EDIT_LISTEFICHES_PARAMS_ADD_ENTRY_BTN_LABEL' => 'Texte du bouton d\'ajout de fiche depuis la liste',
+    'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_LABEL' => 'Type de fiche liée (ou label du champ)',
+    'BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER' => 'mettre \'checkbox\' ici si vos fiches liées le sont via un checkbox',
     'BAZ_FORM_EDIT_ADDRESS' => 'Adresse',
     'BAZ_FORM_EDIT_CHECKBOX_LABEL' => 'Cases à cocher',
     'BAZ_FORM_EDIT_RADIO_LABEL' => 'Boutons radio',
@@ -228,6 +227,7 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
  - ` or ` : donne OU{br}
  - `==` : donne EST ÉGALE À{br}
  - `!=` : donne EST DIFFÉRENT DE {br}
+ - `match /Javascript Regular Expression/` : donne le même résultat que la methode Javacript String.match utilisant une expression régulière insensible à la casse{br}
  - ` in [value1,value2]` : FAIT PARTIE DE liste d\'éléments séparés par des virgules et entouré de crochets{br}
  - `|length > 6` : vérifie si le nombre d\'éléments cochés est supérieur à 6 (fonctionne avec ">=","<","<="){br}
  - ` == [value1,value2]` : VAUT EXACTEMENT la liste d\'éléments séparés par des virgules et entouré de crochets (uniquement pour checkbox){br}
