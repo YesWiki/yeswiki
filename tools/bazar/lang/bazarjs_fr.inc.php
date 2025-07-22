@@ -227,7 +227,7 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
  - ` or ` : donne OU{br}
  - `==` : donne EST ÉGALE À{br}
  - `!=` : donne EST DIFFÉRENT DE {br}
- - `match /Javascript Regular Expression/` : donne le même résultat que la methode Javacript String.match utilisant une expression régulière insensible à la casse{br}
+ - `match /Javascript Regular Expression (JRE)/JRE flags` : donne le même résultat que la methode Javacript RegExp.test (JRE, JRE flags){br}
  - ` in [value1,value2]` : FAIT PARTIE DE liste d\'éléments séparés par des virgules et entouré de crochets{br}
  - `|length > 6` : vérifie si le nombre d\'éléments cochés est supérieur à 6 (fonctionne avec ">=","<","<="){br}
  - ` == [value1,value2]` : VAUT EXACTEMENT la liste d\'éléments séparés par des virgules et entouré de crochets (uniquement pour checkbox){br}
