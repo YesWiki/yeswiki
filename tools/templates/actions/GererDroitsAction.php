@@ -6,6 +6,7 @@
  */
 
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Security\Controller\SecurityController;
@@ -16,6 +17,7 @@ class GererDroitsAction extends YesWikiAction
     protected $dbService;
     protected $securityController;
     protected $utils;
+    protected $groupController;
 
     public function run()
     {
@@ -30,6 +32,7 @@ class GererDroitsAction extends YesWikiAction
         $this->dbService = $this->getService(DbService::class);
         $this->securityController = $this->getService(SecurityController::class);
         $this->utils = $this->getService(Utils::class);
+        $this->groupController = $this->getService(GroupController::class);
 
         list('success' => $success, 'error' => $error) = $this->manageChangeRights($_POST ?? []);
         list('filter' => $filter, 'search' => $search) = $this->getFilterAndSearch($_GET ?? [], $_POST ?? []);
@@ -60,6 +63,8 @@ class GererDroitsAction extends YesWikiAction
             $pageEtDroits[] = $this->utils->recupDroits($pages);
         }
 
+        $groups = $this->groupController->getAll();
+
         return $this->render(
             '@templates/gerer-droits-action.twig',
             [
@@ -68,6 +73,7 @@ class GererDroitsAction extends YesWikiAction
                 'success' => $success,
                 'forms' => $forms,
                 'pageEtDroits' => $pageEtDroits,
+                'groups' => $groups,
                 'isHibernated' => $this->securityController->isWikiHibernated(),
             ]
         );
