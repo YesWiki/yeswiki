@@ -40,7 +40,7 @@ function setActionParameter ($pBody, $pAction, $pParameter, $pValue)
                 $vContenuBloc
             );
         } else {
-            // Ajouter incomingurl après l'action
+            // Ajouter le paramètre après l'action
 			
 			$vContenuModifie = preg_replace ('/{{[[:blank:]]*\b' . $pAction . '\b(.*?)}}/mi', '{{ ' . $pAction . ' ' . $pParameter . '="' . $pValue . '"\1 }}' , $vContenuBloc);
         }
