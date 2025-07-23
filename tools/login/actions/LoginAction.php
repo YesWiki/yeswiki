@@ -41,6 +41,9 @@ class LoginAction extends YesWikiAction
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
+
+            actionid' => !empty($arg['actionid'])?$arg['actionid']:"",
+            
             'signupurl' => $noSignupButton ? '0' : (
                 empty($arg['signupurl'])
                 // TODO : check page name for other languages
@@ -101,19 +104,30 @@ class LoginAction extends YesWikiAction
         $this->securityController = $this->getService(SecurityController::class);
         $this->userManager = $this->getService(UserManager::class);
 
-        $action = $_REQUEST['action'] ?? '';
-        switch ($action) {
-            case 'logout':
-                $this->logout();
-                break;
-            case 'login':
-                $this->login();
-                break;
+        $vActionID = $_REQUEST['actionid']??"";
 
-            case 'checklogged':
-            default:
-                return $this->renderForm($action);
-        }
+        $action = $_REQUEST['action'] ?? '';
+                
+        if ($vActionID == $this->arguments ["actionid"])
+        {
+		    switch ($action) {
+		        case 'logout':
+		            $this->logout();
+		            break;
+		        case 'login':
+		            $this->login();
+		            break;
+
+		        case 'checklogged':
+		        default:
+		            return $this->renderForm($action);
+		    }
+		}
+		else
+		{
+			return $this->renderForm($action);
+		}
+
 
         return null;
     }
@@ -146,6 +160,7 @@ class LoginAction extends YesWikiAction
         }
 
         $output = $this->render("@login/{$this->arguments['template']}", [
+            'actionid' => $this->arguments['actionid'],
             'connected' => $connected,
             'user' => ((isset($user['name'])) ? $user['name'] : ((isset($_POST['name'])) ? $_POST['name'] : '')),
             'email' => ((isset($user['email'])) ? $user['email'] : ((isset($_POST['email'])) ? $_POST['email'] : '')),
