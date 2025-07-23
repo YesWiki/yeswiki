@@ -55,6 +55,7 @@
 								<input type="hidden" name="action" value="login" />
 								<input type="hidden" name="incomingurl" value="{{ userpage == 'user' ? incomingurl : userpage }}" />
 								<input type="hidden" name="userpage" value="{{ userpage }}" />
+								<input type="hidden" name="actionid" value="{{ actionid }}" />
 							{% endblock %}
 							{% block signupurl %}
 								{% if signupurl is not empty and signupurl != "0" %}
