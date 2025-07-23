@@ -115,33 +115,6 @@ const load = (domElement) => {
       }
     },
     methods: {
-      reorderUrl(url) {
-        const arrayUrl = url.split('/?')
-        if (arrayUrl.length > 1) {
-          const p = arrayUrl[1].split(/([&/#][^&/#]?)/s)
-          const orderedParameters = {
-            base: `${arrayUrl[0]}/?`,
-            '#': [],
-            '/': [],
-            '&': []
-          }
-          const params = p.reduce((acc, el) => {
-            if (el.startsWith('/')) {
-              acc['/'].push(el)
-            } else if (el.startsWith('#')) {
-              acc['#'].push(el)
-            } else if (el.startsWith('&')) {
-              acc['&'].push(el)
-            } else {
-              acc.base += el
-            }
-            return acc
-          }, orderedParameters)
-          const reorderedUrl = `${params.base}${params['/']}${params['&']}${params['#']}`
-          return reorderedUrl
-        }
-        return url
-      },
       calculateBaseEntries() {
         let result = this.entries
         if (this.searchFormId) {
@@ -224,20 +197,7 @@ const load = (domElement) => {
               let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some(function (value)
-              {
-              	if (typeof (value) == "string")
-              	{
-              		return (value
-            	  	.replace(/&/g, '&amp;')
-				          .replace(/</g, '&lt;')
-				          .replace(/>/g, '&gt;')
-				          .replace(/"/g, '&quot;')
-				          .replace(/'/g, '&#039;') == node.value);
-              	}
-              	else
-	               return (value == node.value);
-              });
+              return entryValues.some((value) => value == node.value)
             }).length
           })
         })
