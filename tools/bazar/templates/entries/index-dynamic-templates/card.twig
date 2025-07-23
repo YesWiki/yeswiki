@@ -38,7 +38,7 @@
           data-size="modal-lg" data-header="false" data-iframe="1"
         {% endif %}
         {% if isLink %}
-          :href="`${entry.url + (({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
+          :href="`${reorderUrl(entry.url + ({{ isModal ? 'true' : 'false' }} || $root.isInIframe()) ? '/iframe' : '')}`"
           :title="entry.title"
         {% endif %}
         >

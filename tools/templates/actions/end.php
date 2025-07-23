@@ -49,6 +49,11 @@ if (empty($elem)) {
             case 'tabs':
                 echo $this->services->get(TabsController::class)->closeTabs();
                 break;
+            case 'color':
+                echo "</span>";
+                break;
+            case 'sectionheader':
+                echo "</div></div></div>\n</section><!-- end of section -->\n";
             default:
                 break;
         }

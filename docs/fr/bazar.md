@@ -2,7 +2,6 @@
 
 Bazar permet **la création et la gestion de bases de données** pour structurer des contenus et faciliter leur manipulation par les usagers. La page "bases de données" (BazaR) est accessible via la roue crantée en haut à droite du menu.
 
-
 ## 0. Introduction - Principe de fonctionnement
 
 Bazar utilise des formulaires qui permettent deux choses :
@@ -483,11 +482,11 @@ L'option "tri dynamique" permet à l'utilisateur de trier les fiches par n'impor
 
 #### 3.2.3. Afficher une partie des données (query)
 
-Il est possible d'afficher seulement une partie des données présentes dans la base de données en utilisant le paramètre query. Ce paramètre doit être ajouté dans le code `{{bazarliste ...}}` à la suite de vos autres paramètres. Vous souhaitez : 
+Il est possible d'afficher seulement une partie des données présentes dans la base de données en utilisant le paramètre query. Ce paramètre doit être ajouté dans le code `{{bazarliste ...}}` à la suite de vos autres paramètres. Vous souhaitez :
 
 - **trier sur base du contenu d'une (ou plusieurs) liste(s)**
   `query="listeListeGenre=M|listeListeDep=26"`
-Il est possible de trier sur plusieurs valeurs au sein de la même query en séparant les valeurs par une virgule (sans espace). Notez bien que la syntaxe est bien : liste+Nomdelaliste=clé ou liste+Nomdelaliste=clé1,clé2 (dans votre liste, la clé n'est pas le texte mais bien l'identifiant que vous avez indiqué juste devant).
+  Il est possible de trier sur plusieurs valeurs au sein de la même query en séparant les valeurs par une virgule (sans espace). Notez bien que la syntaxe est bien : liste+Nomdelaliste=clé ou liste+Nomdelaliste=clé1,clé2 (dans votre liste, la clé n'est pas le texte mais bien l'identifiant que vous avez indiqué juste devant).
 - **trier sur base du contenu d'une (ou plusieurs) checkbox(s)**
   `query="checkboxListeGenre=M|checkboxListeDep=26"`
   Notez bien que la syntaxe est bien checkbox+Nomdelaliste=clé
@@ -537,7 +536,7 @@ Il est possible d'afficher les données issues d'un YesWiki distant.
 - un formulaire local est uniquement représenté par un nombre. Dans l'exemple, nous avons les formulaires 1 et 6
 - un formulaire distant est représenté par son url suivi de `|` suivi du numéro de son formulaire. Dans l'exemple, nous avons deux formulaires distants.
 - plusieurs formulaires peuvent être appelés depuis une même action bazarliste, chaque formulaire est séparé par une virgule
-- S'il faut plusieurs formulaires distants d'un même YesWiki, il faut à chaque fois répéter l'url devant `|` 
+- S'il faut plusieurs formulaires distants d'un même YesWiki, il faut à chaque fois répéter l'url devant `|`
 
 ##### Rafraichir les données locales
 
@@ -632,8 +631,8 @@ Prérequis :
 
 - Disposer des accés administrateurs.
 - Avoir accés à un logiciel de tableur tel que libre office calc.
--    Avoir accés au serveur sur lequel est placé le wiki par les protocoles FTP.
--    Disposer d'un logiciel de transfert de fichiers FTP tel que [FileZilla](https://filezilla-project.org/).
+- Avoir accés au serveur sur lequel est placé le wiki par les protocoles FTP.
+- Disposer d'un logiciel de transfert de fichiers FTP tel que [FileZilla](https://filezilla-project.org/).
 
 Etapes :
 

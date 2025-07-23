@@ -103,6 +103,8 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE') . '</div>';
         }
 
+        dump('entry : ',$entry);
+
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
         // fake ->tag for the attached images
@@ -128,6 +130,7 @@ class EntryController extends YesWikiController
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
                 $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form, $userNameForRendering);
+                dump($customTemplateValues);
                 $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
             }
 
@@ -470,6 +473,14 @@ class EntryController extends YesWikiController
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $id = $field->getPropertyName();
+                if (empty($id)) {
+                    dump(get_class($field));
+                    if (get_class($field) == "YesWiki\Bazar\Field\LinkedEntryField") {
+                        $id = 'listefiche' . $field->getName();
+                        $entry['listefiche'][$field->getLabel()] = $field->getName(); //TODO voir pour mettre les fiches liées dans le tableau fiches
+                    }
+                }
+                dump($id);
                 if (!empty($id) && !in_array($id, $this->fieldsToExclude())) {
                     $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
                     // reset $matches before preg_match

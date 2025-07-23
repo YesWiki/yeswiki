@@ -326,9 +326,9 @@ class TripleStore
                 return false;
             }
             $sql = <<<SQL
-            SELECT `id` FROM {$this->dbService->prefixTable('triples')} 
-              WHERE `resource` = "{$this->dbService->escape($re_prefix . $resource)}" 
-                AND `property` = "{$this->dbService->escape($prop_prefix . $property)}" 
+            SELECT `id` FROM {$this->dbService->prefixTable('triples')}
+              WHERE `resource` = "{$this->dbService->escape($re_prefix . $resource)}"
+                AND `property` = "{$this->dbService->escape($prop_prefix . $property)}"
                 $valueQuery
                 $extraSQLQuery
                 ;

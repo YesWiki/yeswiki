@@ -11,6 +11,7 @@ use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
+use YesWiki\Core\Controller\GroupManager;
 
 /**
  * @Field({"yeswiki_user", "utilisateur_wikini"})
@@ -112,6 +113,7 @@ class UserField extends BazarField
         ) {
             // force entry creation but do not create user if existing for this email
             $userManager = $this->getService(UserManager::class);
+            $groupManager = $this->getService(GroupManager::class);
             $existingUser = $userManager->getOneByEmail($entry[$this->emailField]);
             if (!empty($existingUser)) {
                 $value = $existingUser['name'];
@@ -305,7 +307,7 @@ class UserField extends BazarField
         }
     }
 
-    private function addUserToGroups(string $wikiName, ?array $entry)
+    private function addUserToGroups(string $wikiName, ?array $entry, GroupManager $groupManager)
     {
         if (!empty($this->autoAddToGroup)) {
             $groups = explode(',', $this->autoAddToGroup);

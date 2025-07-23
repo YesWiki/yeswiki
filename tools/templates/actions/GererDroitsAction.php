@@ -166,8 +166,8 @@ class GererDroitsAction extends YesWikiAction
             SQL;
             } elseif ($filter === 'lists') {
                 $requete_pages_wiki_listes = <<<SQL
-                SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')} 
-                WHERE value = "liste" AND property = "http://outils-reseaux.org/_vocabulary/type" 
+                SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')}
+                WHERE value = "liste" AND property = "http://outils-reseaux.org/_vocabulary/type"
                 ORDER BY resource ASC
               SQL;
                 $search = <<<SQL
