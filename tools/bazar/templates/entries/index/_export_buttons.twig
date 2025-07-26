@@ -1,23 +1,21 @@
-<div class="export-links">
+<div class="export-links pull-right">
   <a class="btn btn-default btn-mini btn-xs"
     data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}"
-    href="{{ url({handler:'rss',params:(params.idtypeannonce 
-      ? (params.idtypeannonce|length == 1
-          ? 'id=' ~  params.idtypeannonce|first
-          : params.idtypeannonce|map((id,key) => 'id[' ~ key ~ ']=' ~ id)|join('&')
-        )
-      : []
-      )}) }}">
+    target="_blank" href="{{ url({handler:'rss', params: 
+    	[ (params.idtypeannonce ?'id=' ~ params.idtypeannonce|join(','):""),
+    	  (params.query ?'query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"")
+    	] | map(v => v|trim)|filter(v => v is not empty) | join('&') 
+      }) }}">
     <i class="fa fa-signal icon-signal"></i>
   </a>
   <a class="btn btn-default btn-mini btn-xs"
     data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}"
-    href="{{ url({handler:'',tag:'BazaR',params:'vue=exporter' ~ (params.idtypeannonce ? '&id=' ~ params.idtypeannonce|first : '') }) }}">
+    target="_blank" href="{{ url({ tag:"api", handler : "forms/" ~ params.idtypeannonce|join(',') ~ '/entries/csv', params :  (params.query ?'&query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"") }) }}">
     CSV
   </a>
   <a class="btn btn-default btn-mini btn-xs"
     data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}"
-    href="{{ url({tag:'api',handler: ( params.idtypeannonce ? 'forms/' ~ params.idtypeannonce|first ~'/': '') ~ 'entries'}) }}">
+    target="_blank" href="{{ url({ tag:"api", handler : "forms/" ~ params.idtypeannonce|join(',') ~ '/entries', params :  (params.query ?'&query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"") }) }}">
     JSON
   </a>
 </div>
