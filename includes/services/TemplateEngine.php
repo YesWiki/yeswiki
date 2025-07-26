@@ -7,7 +7,6 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
@@ -43,18 +42,26 @@ class TemplateEngine
             $paths = ["custom/templates/$extensionName/"];
             // Ability to override an extension template from the legacy directories, should not be used anymore for new templates.
             $paths[] = "custom/themes/tools/$extensionName/templates/";
-            foreach ([
-                'custom/templates',
-                'templates',
-                'themes/tools',
-                "themes/{$config->get('favorite_theme')}/tools",
-            ] as $dir) {
-                $paths[] = $dir . '/' . $extensionName . '/templates/';
-                $paths[] = $dir . '/' . $extensionName . '/';
-            }
+
+            $paths[] = 'custom/templates/' . $extensionName . '/templates/';
+
+            $paths[] = "custom/tools/$extensionName/templates";
+            
+            $paths[] = 'templates/' . $extensionName . '/templates/';
+            $paths[] = 'templates/' . $extensionName . '/';
+            
+            $paths[] = 'themes/tools/' . $extensionName . '/templates/';
+            $paths[] = 'themes/tools/' . $extensionName . '/';
+
+            $vFavoriteTheme = $config->get('favorite_theme');
+            
+            $paths[] = "themes/${vFavoriteTheme}/tools/" . $extensionName . '/templates/';
+            $paths[] = "themes/${vFavoriteTheme}/tools/" . $extensionName . '/';
+
             // Ability to override an extension template from another extension
             foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
-                $paths[] = "tools/$otherExtensionName/templates/$extensionName/";
+                $paths[] = "custom/tools/$otherExtensionName/templates/$extensionName/";
+                $paths[] = "tools/$otherExtensionName/templates/$extensionName/";                
             }
             // Standard path for an extension template
             $paths[] = "tools/$extensionName/templates/";
@@ -205,9 +212,6 @@ class TemplateEngine
             }
 
             return;
-        });
-        $this->addTwigHelper('listValues', function ($listId, $parent = null) {
-            return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);
         });
     }
 
