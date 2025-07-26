@@ -1394,37 +1394,57 @@ class Wiki
     }
 
     /**
-     * Load all extensions.
+     * Load extensions from a directory.
      *
      * @return void
      */
-    public function loadExtensions()
+     
+    private function loadExtensionsFromDir($pPluginsRoot)
     {
-        $pluginsRoot = 'tools/';
+    	include_once 'includes/YesWikiPlugins.php';
+        $objPlugins = new Plugins($pPluginsRoot);
+        $objPlugins->getPlugins(true);        
+        $vExtensions = $objPlugins->getPluginsList();
 
-        include_once 'includes/YesWikiPlugins.php';
-        $objPlugins = new Plugins($pluginsRoot);
-        $objPlugins->getPlugins(true);
-        $this->extensions = $objPlugins->getPluginsList();
-
-        // TODO refactor as custom and actionsbuilder are not extensions
-        foreach ($this->extensions as $pluginName => $pluginInfo) {
-            $this->extensions[$pluginName] = $pluginsRoot . $pluginName . '/';
+        foreach ($vExtensions as $pluginName => $pluginInfo) {
+            $vExtensions[$pluginName] = $pPluginsRoot . $pluginName . '/';
         }
-        $this->extensions['custom'] = 'custom/'; // Will load custom/actions, custom/handlers etc...
-        $this->extensions['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang
+        
+        $this->extensions = array_merge ($this->extensions, $vExtensions);
+    }
 
+    /**
+     * Load extensions
+     *
+     * @return void
+     */
+    private function loadExtensions() // make it private since once services are compiled, they cannot be modified - @YvesGufflet : contact@yvesgufflet.fr
+    {
+      	$this->loadExtensionsFromDir("tools/");
+        $this->loadExtensionsFromDir("custom/tools/");
+        // TODO refactor as custom and actionsbuilder are not extensions
+        $this->extensions['custom'] = 'custom/'; // Will load custom/actions, custom/handlers etc...
+        $this->extensions['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang       
+    
+    	$this->loadServices ();
+		$this->compileServices ();
+		$this->loadLanguages ();		
+		$this->loadTemplates ();		    
+    }
+
+    /**
+    * Load extensions's services
+    *
+    * @return void
+    */
+    private function loadServices ()
+    {     
         // This is necessary for retrocompatibility reasons, as these variables are used by the extensions
         // TODO refactor all extensions to use the correct variable name
         // TODO remove this when the retrocompatibility is no longer necessary
         $wiki = $this;
         $page = $this->tag;
         $wakkaConfig = &$this->config;
-
-        // TODO put elsewhere
-        $fullDomain = parse_url($this->Href());
-        $this->services->setParameter('host', $fullDomain['host']);
-        $this->services->setParameter('max-upload-size', $this->file_upload_max_size());
 
         // Load all services
         foreach ($this->extensions as $k => $pluginBase) {
@@ -1459,7 +1479,15 @@ class Wiki
         foreach ($config as $key => $value) {
             $this->services->setParameter($key, $value);
         }
+    }
 
+    /**
+     * Compile services
+     *
+     * @return void
+     */
+     private function compileServices ()
+     {
         // Now we have loaded all the services, compile them
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
         $this->services->compile();
@@ -1468,7 +1496,15 @@ class Wiki
         // need to be executed after $this->services->compile() because the %paramName% are resolved there
         $this->config = $this->services->getParameterBag()->all();
         $this->dblink = $this->services->get(DbService::class)->getLink();
-
+     }
+     
+     /**
+     * Load languages
+     *
+     * @return void
+     */
+     private function loadLanguages ()
+     {
         // This must be done after service initialization, as it uses services
         loadpreferredI18n($this, $this->tag);
 
@@ -1492,7 +1528,15 @@ class Wiki
                 load_translations($returnedArray, true);
             }
         }
-
+     }
+     
+     /**
+     * Load templates
+     *
+     * @return void
+     */
+     private function loadTemplates ()
+     {
         $metadata = $this->services->get(PageManager::class)->getMetadata($this->tag);
 
         if (isset($metadata['lang'])) {
@@ -1502,8 +1546,8 @@ class Wiki
         }
 
         $this->services->get(ThemeManager::class)->loadTemplates($metadata);
-    }
-
+     }
+     
     /**
      * Replace recursively all the indexed arrays of $array1 with the corresponding indexed array of $array2.
      *
