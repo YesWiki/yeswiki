@@ -329,6 +329,11 @@ class Init
         $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
         $loader->load('services.yaml');
 
+	    // "TODO put elsewhere" - old comment in YesWiki::LoadExtensions -> PUT IN YesWikiInit::initCoreServices - @YvesGufflet
+        $fullDomain = parse_url($wiki->Href());
+        $containerBuilder->setParameter('host', $fullDomain['host']);
+        $containerBuilder->setParameter('max-upload-size', $wiki->file_upload_max_size());
+        
         return $containerBuilder;
     }
 
