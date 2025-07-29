@@ -1,9 +1,9 @@
 export default {
   props: ['value', 'config'],
   computed: {
-    pageList() {
+    entryList() {
       $.ajax({
-        url: wiki.url('?api/pages'),
+        url: wiki.url('?api/entries'),
         async: true,
         dataType: 'json',
         type: 'GET',
@@ -11,7 +11,7 @@ export default {
         success: (data) => {
           const pages = []
           for (const key in data) {
-            const pageTag = data[key].tag
+            const pageTag = data[key].id_fiche
             if (pageTag) {
               pages.push(pageTag)
             }
@@ -37,7 +37,7 @@ export default {
       <addon-icon :config="config" v-if="config.icon"></addon-icon>
       <label v-if="config.label" class="control-label">{{ config.label }}</label>
       <input type="text" autocomplete="off" :value="value" class="form-control"
-             data-provide="typeahead" data-items="5" :data-source="pageList"
+             data-provide="typeahead" data-items="5" :data-source="entryList"
              @input="$emit('input', $event.target.value)"
              @blur="$emit('input', $event.target.value)"
              :required="config.required" :min="config.min" :max="config.max" ref="input"
