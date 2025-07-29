@@ -40,7 +40,7 @@ const load = (domElement) => {
       pagination: 10,
 
       search: '',
-      currentSort: { field: '', asc: null, label: '' },
+      currentSort: { field: '', order : null, label: '' },
 
       // wether to search for a particular form ID (only used when no
       // form id is defined for the bazar list action)
@@ -94,14 +94,14 @@ const load = (domElement) => {
       search() {
         clearTimeout(this.searchTimer)
         this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
-        this.saveFiltersIntoHash()
+        this.updateHash()
       },
       searchFormId() {
         this.calculateBaseEntries()
       },
       computedFilters() {
         this.filterEntries()
-        this.saveFiltersIntoHash()
+        this.updateHash()
       },
       currentPage() {
         this.paginateEntries()
@@ -111,7 +111,7 @@ const load = (domElement) => {
       },
       currentSort() {
         this.sortEntries()
-        this.saveFiltersIntoHash()
+        this.updateHash()
       }
     },
     methods: {
@@ -139,7 +139,25 @@ const load = (domElement) => {
             if (!entry[propName] || typeof entry[propName] != 'string') return false
             return entry[propName]
               .split(',')
-              .some((value) => filter.includes(value))
+              .map (str => 
+						str
+						.replace(/&/g, '&amp;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;')
+						.replace(/"/g, '&quot;')
+						.replace(/'/g, '&#039;'))
+              .some(function (value) 
+              {
+              	return filter.includes(value)
+              })
+              /*
+              var filterValues = hashValue.split(',').map (str => 
+						str
+						.replace(/&/g, '&amp;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;')
+						.replace(/"/g, '&quot;')
+						.replace(/'/g, '&#039;'))*/
           })
         })
         this.filteredEntries = result
@@ -148,7 +166,7 @@ const load = (domElement) => {
       sortEntries() {
         if (!this.currentSort.field) return
 
-        const { field, asc } = this.currentSort
+        const { field, order } = this.currentSort
         const collator = new Intl.Collator()
 
         this.filteredEntries.sort((a, b) => {
@@ -156,12 +174,14 @@ const load = (domElement) => {
           const valueB = deepGet(b, field)
 
           if (typeof valueA === 'number' && typeof valueB === 'number') {
-            return asc ? valueA - valueB : valueB - valueA
+            return order == "asc" ? valueA - valueB : valueB - valueA
           }
 
-          return asc
-            ? collator.compare(String(valueA).toLowerCase(), String(valueB).toLowerCase())
-            : collator.compare(String(valueB).toLowerCase(), String(valueA).toLowerCase())
+			// Case and accent insensitive sort
+	
+          return order == "asc"
+            ? collator.compare(String(valueA).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(), String(valueB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
+            : collator.compare(String(valueB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(), String(valueA).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
         })
 
         this.paginateEntries()
@@ -197,20 +217,122 @@ const load = (domElement) => {
               let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some((value) => {
-              	if (typeof (value) == 'string') {
+              return entryValues.some(function (value)
+              {
+	              // Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
+	              
+              	if (typeof (value) == "string") 
+              	{
               		return (value
             	  	.replace(/&/g, '&amp;')
-				          .replace(/</g, '&lt;')
-				          .replace(/>/g, '&gt;')
-				          .replace(/"/g, '&quot;')
-				          .replace(/'/g, '&#039;') == node.value)
+				    .replace(/</g, '&lt;')
+				    .replace(/>/g, '&gt;')
+				    .replace(/"/g, '&quot;')
+				    .replace(/'/g, '&#039;') == node.value);
               	}
-              	return (value == node.value)
-              })
+              	else              	
+	               return (value == node.value);
+              });
             }).length
           })
         })
+      },
+      parseSearchParams (pParams) // Return params as a structured object
+      {
+			var vParams = new URLSearchParams(pParams);
+			
+			var vParseds = {};
+			
+			for (const cKey of vParams.keys())
+		  	{
+				var vValue = vParams.get (cKey);
+				
+		  		if ((cKey == 'q')||(cKey == 'keywords')) // keywords supports. q is confusing with query
+				{
+					vParseds ["keywords"] = vValue; // privilegiate use of "keywords"
+				}
+				else if ((cKey == 'champ') || (cKey == 'ordre'))
+				{
+					vParseds [cKey] = vValue;
+				}
+				else if (cKey == 'query')
+				{
+					var vQuery = {};
+				
+					decodeURIComponent (vValue)
+					.split ("|")
+					.filter(Boolean)
+					.forEach (function (pCondition)
+					{
+						var vSplitted = pCondition.split ("=", 2);
+						
+						var vField = vSplitted[0].trim();
+
+						var vValue = vSplitted[1];
+						
+						if (vQuery[vField] === undefined) vQuery[vField] = vValue;
+						else vQuery[vField] = vQuery[vField] + "," + vValue;
+					});
+					
+					vParseds [cKey] = vQuery;
+				}													   
+			    else	      	
+			    {
+				    vParseds [cKey] = vValue;//.replace ("+", " ")
+				}								
+			}
+			
+			return vParseds;			 
+      },
+      mergeSearchParams (pParams1, pParams2) // string or structured params objet
+      {
+	      	var vMerged = {};
+      
+      		var vParamsObject1 =	typeof (pParams1) == "string"?this.parseSearchParams(pParams1):pParams1;
+      		var vParamsObject2 =	typeof (pParams2) == "string"?this.parseSearchParams(pParams2):pParams2;
+
+			if (vParamsObject1.query && vParamsObject2.query)
+			{
+				Object
+				.entries (vParamsObject2.query)
+				.forEach (function ([ pKey, pValue])
+				{					
+					vParamsObject1.query[pKey] = pValue;
+				});
+				
+				vMerged.query = vParamsObject1.query; 				
+			}
+			else
+			if (vParamsObject1.query)
+			{
+				vMerged.query = vParamsObject1.query; 
+			}
+			else
+			if (vParamsObject2.query)
+			{
+				vMerged.query = vParamsObject2.query; 
+			}			
+			
+			if (vMerged.query) 
+				vMerged.query = encodeURIComponent
+				(
+					Object
+					.entries (vMerged.query)
+					.map ( ([ pKey, pValue ]) => pKey + "=" + pValue )
+					.join ("|")
+				);
+
+			vParamsObject1.query = undefined;
+			vParamsObject2.query = undefined;
+      
+			$.extend (true, vMerged, vParamsObject1, vParamsObject2);
+			
+			var vResult = Object
+				.entries (vMerged)
+				.map ( ([ pName, pValue ]) => pName + "=" + pValue );
+			
+			return vResult;
+
       },
       resetFilters() {
         this.filters.forEach((filter) => {
@@ -220,105 +342,168 @@ const load = (domElement) => {
         })
         this.search = ''
         if (this.sortOptions.length > 0) this.currentSort = this.sortOptions[0]
-        this.saveFiltersIntoHash()
+        this.updateHash()
       },
-      saveFiltersIntoHash() {
-        if (!this.ready) return
+      initFilters (pFilters, pHash)
+      {
+        var vHash = decodeURIComponent(pHash.substring(1)) // remove # and avoid confusion between hash parameter and search parameter when using & symbol in the hash
 
-        const hashParams = new URLSearchParams()
-        for (const filterId in this.computedFilters) {
-          hashParams.set(filterId, this.computedFilters[filterId].join(','))
-        }
-        if (this.search) hashParams.set('q', this.search)
-        if (this.currentSort.field) {
-          hashParams.set('sort', `${this.currentSort.field}:${this.currentSort.asc}`)
-        }
-        history.pushState({}, '', `#${hashParams.toString()}`)
-        this.updateExportLinks(hashParams)
-      },
-      updateExportLinks(hashParams) {
-        document.querySelectorAll('.export-links > a').forEach((link) => {
-          link.href = this.addOrUpdateQueryParameter(
-            link.getAttribute('href'),
-            'query',
-            `${hashParams.toString()}`
-          )
-        })
-      },
-      addOrUpdateQueryParameter(url, parameterName, parameterValue) {
-        if (typeof url !== 'string' || url.trim() === '') {
-          console.error('Invalid URL provided.')
-          return url
-        }
+		var vParams = this.parseSearchParams (vHash); // Return hash as a structured object
+		var vChamp;
+		var vOrdre;
 
-        try {
-          const urlObject = new URL(url)
-          const { searchParams } = urlObject
-          const existingParams = []
-          const seenParamNames = new Set()
+		if (vParams["q"] !== undefined && vParams["q"].trim () !== "")
+		{
+            this.search = vParams["q"];
+		}
+		
+		if (vParams["keyword"] !== undefined && vParams["keywords"].trim () !== "")
+		{
+            this.search = vParams["keywords"];
+		}
+		
+		if (vParams["champ"] !== undefined && vParams["champ"].trim () !== "")
+		{
+            vChamp = vParams["champ"];
+		}
+		
+		if (vParams["ordre"] !== undefined && vParams["ordre"].trim () !== "")
+		{
+            vChamp = vParams["ordre"];
+		}
+		
+		if (vParams["query"] !== undefined)
+		{		
+			var vQueryEntries = Object.entries (vParams["query"]);
+			
+			if (vQueryEntries.length > 0)
+			{
+				vQueryEntries.forEach (function ( [ pKey, pValue] )
+				{
+					const cFilter = pFilters.find((pF) => pF.propName == pKey);
 
-          const originalSearch = urlObject.search.substring(1) // Remove leading '?'
-          if (originalSearch) {
-            originalSearch.split('&').forEach((pair) => {
-              const parts = pair.split('=')
-              const name = decodeURIComponent(parts[0])
-              const value = parts.length > 1 ? decodeURIComponent(parts[1]) : ''
+					if (cFilter)
+					{
+						cFilter.flattenNodes.forEach((pNode) =>
+				        {
+					    	// Handle values with special chars 
+					    	// like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
+					    	// ie : Figuier goutte d&#039;or
+					    
+							const cFilterValues = pValue
+							.split(',')
+							.map (pString => 
+									pString
+									.toLowerCase ()
+									.replace(/&/g, '&amp;')
+									.replace(/</g, '&lt;')
+									.replace(/>/g, '&gt;')
+									.replace(/"/g, '&quot;')
+									.replace(/'/g, '&#039;'));
+							
+							if (cFilterValues.includes(pNode.value.toLowerCase ())) pNode.checked = true
+					    })
+					}				
+				})
+			}
+		}	
+					
+		var vMe = this;
+					
+	    const cSort = this.sortOptions.find((s) => s.field == (vChamp??(typeof (vMe.currentSort)!="undefined")?vMe.currentSort.field:"") && s.order == (vOrdre??(typeof (vMe.currentSort)!="undefined")?vMe.currentSort.order:""));
 
-              // Check if this is the parameter we are going to modify/add
-              if (name === parameterName) {
-                // We'll handle adding/updating this parameter later
-              } else {
-                existingParams.push({ name, value, hasValue: parts.length > 1 })
-                seenParamNames.add(name)
-              }
-            })
-          }
+        if (cSort)
+        {
+        	this.currentSort = cSort;
+		}	  
+        
+        return pFilters;
+      },            
+      updateHash ()
+      {
+		if (!this.ready) return
+		
+		var cCurrentHash = decodeURIComponent (new URL(document.URL).hash.slice(1));		
+		
+		var vQuery = {};
+		var vCurrentParams = {};
+		var vMergedParams;
+		
+		if (this.search.trim() != "") vCurrentParams.keywords = this.search;
+		if (this.currentSort.field != "") vCurrentParams.champ = this.currentSort.field;
+		if (this.currentSort.order) vCurrentParams.ordre = this.currentSort.order;
+		
+		var bHasFilter = false;
+		
+		for (const cFilterId in this.computedFilters)
+		{
+			bHasFilter = true;
+		
+			vQuery [cFilterId] = this.computedFilters[cFilterId]
+								.map (	pString =>
+										pString
+										.replace(/&amp;/g, '&')
+										.replace(/&lt;/g, '<')
+										.replace(/&gt;/g, '>')
+										.replace(/&quot;/g, '"')
+										.replace(/&#039;/g, "'")
+								)
+								.join (",");			
+		}
+			
+		if (bHasFilter) vCurrentParams.query = vQuery;		
+		
+		vMergedParams = this
+			.mergeSearchParams (cCurrentHash, vCurrentParams)
+			.join ("&");
+		
+		history.pushState({}, '', '#' + encodeURIComponent (vMergedParams)); // Avoid confusion between hash parameter and search parameter when using & symbol in the hash
 
-          if (!seenParamNames.has(parameterName)) {
-            existingParams.push({ name: parameterName, value: parameterValue.replace('&', '|'), hasValue: parameterValue !== '' })
-          }
+		this.updateExportLinks(vMergedParams) // Export 
+      },      
+      updateExportLinks(pSearchParams)
+      {            	
+	    document.querySelectorAll('.export-links > a').forEach((link) => {
+        
+			var vOldHREF = link.getAttribute('oldhref'); // Get the original href
+ 	
+			if (!vOldHREF) // if it didn't exist yet, remember what it is.
+			{
+				vOldHREF = link.getAttribute('href')
+				link.setAttribute('oldhref', vOldHREF);
+			}
 
-          // Reconstruct the query string
-          let newSearch = ''
-          existingParams.forEach((param, index) => {
-            if (index > 0) {
-              newSearch += '&'
-            }
-            newSearch += encodeURIComponent(param.name)
-            if (param.hasValue) {
-              newSearch += `=${encodeURIComponent(param.value)}`
-            }
-          })
+			var vNewHREF;
 
-          urlObject.search = newSearch ? `?${newSearch}` : ''
+			if (vOldHREF.trim() === '')
+			{
+				console.error('Invalid URL provided.')
+			}
+			else
+			{	        	
+				var vNewURL = new URL (vOldHREF);
 
-          return urlObject.toString()
-        } catch (error) {
-          console.error('Error processing URL:', error)
-          return url
-        }
-      },
-      initFiltersFromHash(filters, hash) {
-        hash = hash.substring(1) // remove #
-        hash.split('&').forEach((combinaison) => {
-          const hashKey = combinaison.split('=')[0]
-          const hashValue = decodeURIComponent(combinaison.split('=')[1])
-          const filter = filters.find((f) => f.propName == hashKey)
-          if (hashKey == 'q') {
-            this.search = hashValue
-          } else if (hashKey == 'sort') {
-            const [field, order] = hashValue.split(':')
-            const val = this.sortOptions.find((s) => s.field == field && s.asc == (order == 'true'))
-            if (val) this.currentSort = val
-          } else if (hashKey && hashValue && filter) {
-            filter.flattenNodes.forEach((node) => {
-              const filterValues = hashValue.split(',')
-			        if (filterValues.includes(node.value)) node.checked = true
-            })
-          }
-        })
-        return filters
-      },
+			 	var vHandler = vNewURL.searchParams.keys().next();			 	
+				var vHandlerValue = vHandler.value;
+				
+				if (vHandler) vNewURL.searchParams.delete (vHandlerValue)
+				else vHandlerValue = "";
+
+				if (vNewURL.searchParams.has ("query"))
+				{
+					vNewURL.searchParams.set ("query", decodeURIComponent (vNewURL.searchParams.get("query")));
+				}
+
+				link.setAttribute ("href",
+					vNewURL.origin + 
+					vNewURL.pathname + 
+					"?" + vHandlerValue + 
+					"&" + (this.mergeSearchParams (vNewURL.searchParams.toString(), pSearchParams).join("&")) +
+					vNewURL.hash)	        	
+			}
+		})
+	  },
+      
       getEntryRender(entry) {
         if (entry.html_render) return
         if (this.isExternalUrl(entry)) {
@@ -425,6 +610,7 @@ const load = (domElement) => {
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
       // Retrieve data asynchronoulsy
+
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
         // process the filters
         const filters = data.filters || []
@@ -443,23 +629,25 @@ const load = (domElement) => {
 
         this.params.sortfields.forEach((field, index) => {
           const label = this.params.sortfieldstitles[index]
-          this.sortOptions.push({ field, label, asc: true })
-          this.sortOptions.push({ field, label, asc: false })
+          this.sortOptions.push({ field : field.trim(), label, order : "asc" })
+          this.sortOptions.push({ field : field.trim(), label, order : "desc" })
         })
+
         if (this.sortOptions.length > 0) {
           // params "champ" is used to choose default sort (backend sort). If present
           // we do not overwride this backend sort by the front end dynamic sort
           if (this.params.champ) {
             const sort = this.sortOptions
-              .find((o) => o.field === this.params.champ && o.asc === (this.params.ordre === 'asc'))
-            if (sort) this.currentSort = sort
-          } else {
-            this.currentSort = this.sortOptions[0]
-          }
-        }
+			.find((o) =>	o.field === this.params.champ.trim() && 
+						   	o.order === ((typeof (this.params.ordre)=="boolean"?this.params.ordre:(this.params.ordre=="1"||this.params.ordre=="true"||this.params.ordre=="asc"))?"asc":"desc"))
+
+            if (sort) { this.currentSort = sort }
+            else { this.currentSort = this.sortOptions[0] }
+        }}
+
 
         // First display filters cause entries can be a bit long to load
-        this.filters = this.initFiltersFromHash(filters, savedHash)
+        this.filters = this.initFilters(filters, savedHash)
 
         // Auto paginate if large numbers
         if (data.entries.length > 50 && !this.pagination) this.pagination = 20
@@ -519,7 +707,7 @@ const load = (domElement) => {
 
           this.calculateBaseEntries()
           this.ready = true
-          this.saveFiltersIntoHash()
+          this.updateHash()
           const event = new Event('bazar-list-dynamic-ready')
           document.dispatchEvent(event)
         }, 0)
