@@ -41,6 +41,9 @@ class LoginAction extends YesWikiAction
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
+            // as there can be multiple login actions in one page, we can add a context so that the good action is used
+            // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
+            'context' => $arg['context'] ?? $this->wiki->getPageTag(),
             'signupurl' => $noSignupButton ? '0' : (
                 empty($arg['signupurl'])
                 // TODO : check page name for other languages
@@ -102,6 +105,10 @@ class LoginAction extends YesWikiAction
         $this->userManager = $this->getService(UserManager::class);
 
         $action = $_REQUEST['action'] ?? '';
+        if (empty($_REQUEST['context']) || $_REQUEST['context'] !== $this->arguments['context']) {
+            // no action if not in the good context
+            $action = '';
+        }
         switch ($action) {
             case 'logout':
                 $this->logout();
@@ -159,6 +166,7 @@ class LoginAction extends YesWikiAction
             'class' => $this->arguments['class'],
             'nobtn' => $this->arguments['nobtn'],
             'error' => $error,
+            'context' => $this->arguments['context'],
         ]);
 
         // backward compatibility TODO remove it for ectoplasme

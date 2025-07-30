@@ -12,7 +12,7 @@
 						{% endblock %}
 						<li>
 							{% block logoutLink %}
-								<a href="{{ incomingurl ~ (incomingurl matches '/\\?/' ? '&' : '?') }}action=logout" class="{% block logoutLinkClass %}login-signout-link{% endblock %}" title="{{ _t('LOGIN_LOGOUT') }}"><i class="fas fa-sign-out-alt"></i> {{ _t('LOGIN_LOGOUT') }}</a>
+								<a href="{{ incomingurl ~ (incomingurl matches '/\\?/' ? '&' : '?') }}action=logout&context={{context}}" class="{% block logoutLinkClass %}login-signout-link{% endblock %}" title="{{ _t('LOGIN_LOGOUT') }}"><i class="fas fa-sign-out-alt"></i> {{ _t('LOGIN_LOGOUT') }}</a>
 							{% endblock %}
 						</li>
 					{% endblock %}
@@ -52,6 +52,7 @@
 							</div>
 							<button type="submit" class="btn btn-block {{ btnclass }} btn-primary">{{ _t('LOGIN_LOGIN') }}</button>
 							{% block hidden %}
+								<input type="hidden" name="context" value="{{ context }}" />
 								<input type="hidden" name="action" value="login" />
 								<input type="hidden" name="incomingurl" value="{{ userpage == 'user' ? incomingurl : userpage }}" />
 								<input type="hidden" name="userpage" value="{{ userpage }}" />
