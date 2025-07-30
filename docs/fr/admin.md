@@ -525,6 +525,9 @@ Trois options sont possibles :
 - option 2 : restaurer la base de donnée à partir d'une sauvegarde. ATTENTION, pour cette option, il faut avoir une sauvegarde et les accès à phpmyadmin
 - option 3 : pour la suppression massive de nouvelles pages : extension `maintenance` (cf paragraphe ci-dessus).
 
+#### Pour vérifier quelles pages ont été modifiées par un user suspect
+Une action **listpages** permet d'obtenir la liste des pages qui ont été modifiées par un user : {{listpages user="xxx" }} , remplacer xxx par l'identifiant du user suspect
+
 #### Pour supprimer les utilisateurs non désirables (utilisateurs avancés)
 
 - se rendre sur la page [`GererUtilisateurs`](?GererUtilisateurs ':ignore') du wiki, en tant qu'administrateurice
