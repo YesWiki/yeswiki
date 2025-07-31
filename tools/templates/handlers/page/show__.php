@@ -25,7 +25,7 @@ if (!$this->HasAccess('read')) {
         $output .= '<div class="alert alert-danger alert-error">' .
             _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
             '</div>' . "\n";
-        $output .= $this->Format($contenu['body']);
+        $output .= $this->Format('{{include page="PageLogin"}}');
         $output .= '</div><!-- end .page-widget -->' . "\n";
         $output .= '</div><!-- end .container -->' . "\n";
         $output = $this->Header() . $output;
