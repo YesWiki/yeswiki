@@ -182,6 +182,18 @@ class ListManager
         $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
     }
 
+    public function getLabel($idList, $key): string
+    {
+        $list = $this->getOne($idList);
+        if (empty($list)) {
+            return '';
+        }
+        $val = multiArraySearch($list['nodes'], 'id', $key);
+        $val = array_shift($val);
+
+        return $val['label'] ?? '';
+    }
+
     private function sanitizeHMTL(array $nodes)
     {
         return array_map(function ($node) {
