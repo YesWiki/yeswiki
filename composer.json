@@ -52,7 +52,7 @@
     "symfony/string": "^5.4",
     "symfony/yaml": "^5.1",
     "tamtamchik/simple-flash": "^3.0",
-    "twig/twig": "^3.4.3",
+    "twig/twig": "^3.0",
     "voku/anti-xss": "^4.1",
     "yeswiki/theme-margot": "^1.0"
   },
