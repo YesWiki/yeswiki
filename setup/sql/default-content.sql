@@ -355,7 +355,7 @@ Aplat de couleur : supprimer file=\"bandeau.webp\", cliquez sur section, cliquez
  - changer la tonalité du texte
  - le caler à droite, le centrer
  - faire varier la hauteur du bandeau...#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageLogin',  now(), '{{login}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('PageLogin',  now(), '{{login context="login-page" signupurl="0"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageMenu',  now(), ' - [Accueil]({{rootPage}})
  - [Test du look](LookWiki)
 
@@ -425,7 +425,7 @@ Yeswiki repose sur le bénévolat et le don. [En contribuant (même juste un peu
  - {{button nobtn=\"1\" icon=\"fas fa-user\" text=\"Mes contenus\" link=\"MesContenus\"}}
  - {{button nobtn=\"1\" icon=\"fa fa-briefcase\" text=\"Formulaires\" link=\"BazaR\"}}
 {{end elem=\"buttondropdown\"}}
-{{login template=\"modal.tpl.html\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+{{login template=\"modal.twig\"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageTitre',  now(), '{{configuration param=\"wakka_name\" }}
 
 {#Astuce, vous pouvez remplacer le code précédent par ce que vous souhaitez afficher comme titre en haut à gauche #}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
