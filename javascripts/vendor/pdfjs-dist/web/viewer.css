@@ -1015,6 +1015,7 @@
   color-scheme:only light;
 
   --annotation-unfocused-field-background:url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
+  --comment-edit-image:url(images/comment_editButton.svg);
   --input-focus-border-color:Highlight;
   --input-focus-outline:1px solid Canvas;
   --input-unfocused-border-color:transparent;
@@ -1330,8 +1331,9 @@
     display:inline-block;
   }
 
-.annotationLayer .popup > .header h1{
+.annotationLayer .popup > .header > .title{
     display:inline;
+    font-weight:bold;
   }
 
 .annotationLayer .popup > .header .popupDate{
@@ -1355,6 +1357,11 @@
 .annotationLayer .popupTriggerArea{
     cursor:pointer;
   }
+
+:is(.annotationLayer .popupTriggerArea):hover{
+      -webkit-backdrop-filter:var(--hcm-highlight-filter);
+              backdrop-filter:var(--hcm-highlight-filter);
+    }
 
 .annotationLayer section svg{
     position:absolute;
@@ -2826,7 +2833,7 @@
         }
 
 :is(:is(#editorSignatureParamsToolbar #addSignatureDoorHanger) .toolbarAddSignatureButtonContainer) .toolbarAddSignatureButton{
-        width:auto;
+        width:calc(0.8 * var(--editor-toolbar-min-width));
         height:100%;
         min-height:var(--menuitem-height);
         aspect-ratio:unset;
@@ -2914,7 +2921,294 @@
     height:16px !important;
   }
 
+#commentManagerDialog{
+  --comment-actions-button-icon:url(images/comment-actionsButton.svg);
+  --comment-close-button-icon:url(images/comment-closeButton.svg);
+
+  --default-dialog-bg-color:#ffff98;
+  --dialog-base-color:var(--default-dialog-bg-color);
+  --dialog-bg-color:color-mix(in srgb, var(--dialog-base-color), white 30%);
+  --dialog-border-color:var(--dialog-base-color);
+
+  --menuitem-bg-color:transparent;
+  --menuitem-fg-color:black;
+  --menuitem-hover-bg-color:#3383e7;
+  --menuitem-hover-fg-color:white;
+
+  --comment-text-input-bg:white;
+  --comment-text-input-fg:black;
+  --comment-text-input-border:#0060df;
+  --comment-focus-outline-color:#0060df;
+
+  --hover-filter:brightness(0.9);
+  --text-primary-color:#15141a;
+
+  --button-secondary-bg-color:#f0f0f4;
+  --button-secondary-active-bg-color:color-mix(
+    in srgb,
+    var(--button-secondary-bg-color),
+    black 14%
+  );
+  --button-secondary-hover-bg-color:color-mix(
+    in srgb,
+    var(--button-secondary-bg-color),
+    black 7%
+  );
+
+  --button-primary-bg-color:#0060df;
+  --button-primary-fg-color:#fbfbfe;
+  --button-primary-active-bg-color:#0050c0;
+  --button-primary-hover-bg-color:#0250bb;
+
+  --menu-bg-color:rgb(253 250 244);
+  --menu-button-border-color:transparent;
+  --menu-button-focus-outline-color:var(--comment-text-input-border);
+}
+
+@media screen and (forced-colors: active){
+
+#commentManagerDialog{
+    --hover-filter:none;
+    --text-primary-color:CanvasText;
+    --button-secondary-bg-color:HighlightText;
+    --button-secondary-active-bg-color:HighlightText;
+    --button-secondary-hover-bg-color:HighlightText;
+    --button-primary-bg-color:ButtonText;
+    --button-primary-fg-color:HighlightText;
+    --button-primary-active-bg-color:SelectedItem;
+    --button-primary-hover-bg-color:SelectedItem;
+
+    --menu-button-border-color:Canvas;
+    --menu-button-focus-outline-color:CanvasText;
+}
+  }
+
+#commentManagerDialog{
+
+  width:308px;
+  padding:8px 16px 16px;
+  overflow:visible;
+  position:absolute;
+  margin:0;
+
+  border-radius:4px;
+  border:1px solid var(--dialog-border-color);
+  background:var(--dialog-bg-color);
+  box-shadow:0 2px 14px 0 rgb(58 57 68 / 0.2);
+}
+
+#commentManagerDialog .mainContainer{
+    width:100%;
+    height:auto;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+
+:is(#commentManagerDialog .mainContainer) *:focus-visible{
+      outline:2px solid var(--comment-focus-outline-color);
+      outline-offset:0;
+    }
+
+:is(#commentManagerDialog .mainContainer) #commentManagerToolbar{
+      width:100%;
+      display:flex;
+      justify-content:flex-end;
+      align-items:flex-start;
+      gap:8px;
+      align-self:stretch;
+
+      cursor:move;
+    }
+
+:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar)  > button{
+        --csstools-color-scheme--light:initial;
+        color-scheme:light;
+        width:24px;
+        height:24px;
+        padding:0;
+        border:none;
+
+        cursor:pointer;
+      }
+
+:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) > button)::before{
+          content:"";
+          display:inline-block;
+          width:100%;
+          height:100%;
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+        }
+
+#commentActionsButton:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) > button)::before{
+          -webkit-mask-image:var(--comment-actions-button-icon);
+                  mask-image:var(--comment-actions-button-icon);
+        }
+
+#commentCloseButton:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) > button)::before{
+          -webkit-mask-image:var(--comment-close-button-icon);
+                  mask-image:var(--comment-close-button-icon);
+        }
+
+:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) > button)  > span{
+          display:inline-block;
+          width:0;
+          height:0;
+          overflow:hidden;
+        }
+
+:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) menu{
+        width:-moz-max-content;
+        width:max-content;
+        min-width:90px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:1px;
+        padding:5px 6px;
+        cursor:auto;
+        z-index:1;
+        margin:0;
+
+        position:absolute;
+        top:8px;
+        right:-6.5px;
+
+        border-radius:6px;
+        border:0.5px solid #b4b4b6;
+        background-color:var(--menu-bg-color);
+        box-shadow:1px -1px 0 0 #fff inset, -1px 1px 0 0 #fff inset, -1px -1px 0 0 #fff inset, 1px 1px 0 0 #fff inset, 0 0 15px 0 rgb(0 0 0 / 0.25);
+      }
+
+:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) menu) button{
+          background-color:var(--menu-bg-color);
+          width:100%;
+          height:24px;
+          padding:0;
+          box-sizing:border-box;
+          display:flex;
+          border:2px solid var(--menu-button-border-color);
+          color:var(--menuitem-fg-color);
+        }
+
+:is(:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) menu) button):hover{
+            background-color:var(--menuitem-hover-bg-color);
+            color:var(--menuitem-hover-fg-color);
+          }
+
+:is(:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) menu) button):is(:focus-visible,:focus){
+            outline:none;
+            border:2px solid var(--menu-button-focus-outline-color);
+          }
+
+:is(:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) menu) button):disabled{
+            opacity:0.5;
+            pointer-events:none;
+          }
+
+:is(:is(:is(:is(#commentManagerDialog .mainContainer) #commentManagerToolbar) menu) button) span{
+            align-content:center;
+            width:100%;
+            max-width:-moz-min-content;
+            max-width:min-content;
+            padding-inline:8px;
+            color:inherit;
+            text-align:start;
+            font:menu;
+            font-size:15px;
+            font-weight:400;
+            line-height:normal;
+          }
+
+:is(#commentManagerDialog .mainContainer) #commentManagerTextInput{
+      width:100%;
+      min-height:132px;
+      resize:none;
+      box-sizing:border-box;
+      margin-bottom:12px;
+
+      border-radius:4px;
+      border:2px solid var(--comment-text-input-border);
+      background-color:var(--comment-text-input-bg);
+      color:var(--comment-text-input-fg);
+    }
+
+:is(#commentManagerDialog .mainContainer) #commentManagerTextView{
+      width:100%;
+      height:-moz-max-content;
+      height:max-content;
+      resize:none;
+      box-sizing:border-box;
+      margin-bottom:12px;
+
+      border:none;
+      background-color:transparent;
+      color:var(--comment-text-input-fg);
+    }
+
+:is(#commentManagerDialog .mainContainer) .dialogButtonsGroup{
+      gap:8px;
+    }
+
+:is(:is(#commentManagerDialog .mainContainer) .dialogButtonsGroup) #commentManagerSaveButton:disabled{
+        background-color:color-mix(
+          in srgb,
+          var(--button-primary-disabled-bg-color),
+          transparent 50%
+        );
+        border-color:color-mix(
+          in srgb,
+          var(--button-primary-disabled-border-color),
+          transparent 50%
+        );
+        opacity:1;
+      }
+
+.annotationLayer{
+  --comment-inline-button-bg:#e0e0e6;
+  --comment-inline-button-fg:black;
+  --comment-inline-button-border-color:#8f8f9d;
+  --comment-button-dim:24px;
+  --comment-button-offset:calc(var(--comment-button-dim) / 2);
+}
+
+.annotationLayer .annotationCommentButton{
+    position:absolute;
+    width:var(--comment-button-dim);
+    height:var(--comment-button-dim);
+    background-color:var(--comment-inline-button-bg);
+    cursor:auto;
+    z-index:1;
+    border:1px solid var(--comment-inline-button-border-color);
+    border-radius:4px;
+    padding:2px;
+    margin:0;
+    box-sizing:border-box;
+    pointer-events:auto;
+  }
+
+:is(.annotationLayer .annotationCommentButton)::before{
+      content:"";
+      display:inline-block;
+      width:100%;
+      height:100%;
+      -webkit-mask-repeat:no-repeat;
+              mask-repeat:no-repeat;
+      -webkit-mask-size:cover;
+              mask-size:cover;
+      -webkit-mask-image:var(--comment-edit-image);
+              mask-image:var(--comment-edit-image);
+      background-color:var(--comment-inline-button-fg);
+      margin:0;
+      padding:0;
+    }
+
 :root{
+  --editor-toolbar-vert-offset:6px;
   --outline-width:2px;
   --outline-color:#0060df;
   --outline-around-width:1px;
@@ -3090,6 +3384,7 @@
     --csstools-light-dark-toggle--75:var(--csstools-color-scheme--light) #2b2a33;
     --editor-toolbar-bg-color:var(--csstools-light-dark-toggle--75, #f0f0f4);
     --editor-toolbar-highlight-image:url(images/toolbarButton-editorHighlight.svg);
+    --editor-toolbar-comment-edit-image:url(images/comment-editButton.svg);
     --csstools-light-dark-toggle--76:var(--csstools-color-scheme--light) #fbfbfe;
     --editor-toolbar-fg-color:var(--csstools-light-dark-toggle--76, #2e2e56);
     --editor-toolbar-border-color:#8f8f9d;
@@ -3101,7 +3396,6 @@
     --csstools-light-dark-toggle--78:var(--csstools-color-scheme--light) #0df;
     --editor-toolbar-focus-outline-color:var(--csstools-light-dark-toggle--78, #0060df);
     --editor-toolbar-shadow:0 2px 6px 0 rgb(58 57 68 / 0.2);
-    --editor-toolbar-vert-offset:6px;
     --editor-toolbar-height:28px;
     --editor-toolbar-padding:2px;
     --csstools-light-dark-toggle--79:var(--csstools-color-scheme--light) #54ffbd;
@@ -3437,6 +3731,24 @@
 
             pointer-events:none;
           }
+
+:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .comment{
+        width:var(--editor-toolbar-height);
+      }
+
+:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .comment)::before{
+          content:"";
+          -webkit-mask-image:var(--editor-toolbar-comment-edit-image);
+                  mask-image:var(--editor-toolbar-comment-edit-image);
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          display:inline-block;
+          background-color:var(--editor-toolbar-fg-color);
+          width:100%;
+          height:100%;
+        }
 
 .annotationEditorLayer .freeTextEditor{
   padding:calc(var(--freetext-padding) * var(--total-scale-factor));
@@ -4028,6 +4340,18 @@
 
 .colorPicker button:is(:hover,.selected) > .swatch{
     border:none;
+  }
+
+.basicColorPicker{
+  width:28px;
+}
+
+.basicColorPicker::-moz-color-swatch{
+    border-radius:100%;
+  }
+
+.basicColorPicker::-webkit-color-swatch{
+    border-radius:100%;
   }
 
 .annotationEditorLayer[data-main-rotation="0"] .highlightEditor:not(.free) > .editToolbar{
@@ -5834,8 +6158,12 @@ dialog :link{
   }
 
 .toolbarButtonWithContainer .editorParamsToolbar{
+    --editor-toolbar-min-width:220px;
+
     height:auto;
-    width:220px;
+    min-width:var(--editor-toolbar-min-width);
+    width:-moz-max-content;
+    width:max-content;
     position:absolute;
     z-index:30000;
     cursor:default;
