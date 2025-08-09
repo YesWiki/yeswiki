@@ -123,8 +123,13 @@ const load = (domElement) => {
             (entry) => entry.id_typeannonce == this.searchFormId
           )
         }
-        if (this.search && this.search.length > 2) {
-          result = this.searchEntries(result, this.search)
+        
+        var vSearch = this.params["keywords"]??"";
+
+        if (this.search && this.search.length > 2) vSearch += (vSearch!=""?"|":"") + this.search;
+        
+        if (vSearch && vSearch.length > 2) {
+          result = this.searchEntries(result, vSearch)
           if (result == undefined) {
             result = this.entries
           }
@@ -237,6 +242,40 @@ const load = (domElement) => {
           })
         })
       },
+	  parseCondition (pValue)
+      {
+	    // Extraire nom, opérateur et valeurs
+	    const regex = /([^=!<>]*)([=!<>]+)([^=!<>]*)/;
+		const matches = pValue.match(regex);
+
+		if (!matches) return null;
+
+		let vName = matches[1].trim();
+		let vOperator = matches[2].trim();
+		let rawValues = matches[3].trim();
+
+		// Convertir l'opérateur "=" en "=="
+		if (vOperator === "=") vOperator = "==";
+
+		// Transformer la liste en tableau avec valeurs uniques
+		const vUniqueValues = Array.from(
+		    new Set(
+		        rawValues.split(',').map(v => v.trim()).filter(v => v !== "")
+		    )
+		);
+
+	    // Retourner la structure
+	    
+	    var vResult =
+	    {
+	        name : vName,
+	        operator : vOperator,
+	        values: vUniqueValues
+      	};
+	    
+	    return vResult;
+
+	  },
       parseSearchParams (pParams) // Return params as a structured object
       {
 			var vParams = new URLSearchParams(pParams);
@@ -247,7 +286,7 @@ const load = (domElement) => {
 		  	{
 				var vValue = vParams.get (cKey);
 				
-		  		if ((cKey == 'q')||(cKey == 'keywords')) // keywords supports. q is confusing with query
+		  		if ((cKey == 'q')||(cKey == 'keywords')) // keywords supports for clarity (q parameter is confusing with query parameter)
 				{
 					vParseds ["keywords"] = vValue; // privilegiate use of "keywords"
 				}
@@ -256,25 +295,8 @@ const load = (domElement) => {
 					vParseds [cKey] = vValue;
 				}
 				else if (cKey == 'query')
-				{
-					var vQuery = {};
-				
-					decodeURIComponent (vValue)
-					.split ("|")
-					.filter(Boolean)
-					.forEach (function (pCondition)
-					{
-						var vSplitted = pCondition.split ("=", 2);
-						
-						var vField = vSplitted[0].trim();
-
-						var vValue = vSplitted[1];
-						
-						if (vQuery[vField] === undefined) vQuery[vField] = vValue;
-						else vQuery[vField] = vQuery[vField] + "," + vValue;
-					});
-					
-					vParseds [cKey] = vQuery;
+				{			
+					vParseds [cKey] = parseCondition (decodeURIComponent (vValue));
 				}													   
 			    else	      	
 			    {
@@ -292,15 +314,8 @@ const load = (domElement) => {
       		var vParamsObject2 =	typeof (pParams2) == "string"?this.parseSearchParams(pParams2):pParams2;
 
 			if (vParamsObject1.query && vParamsObject2.query)
-			{
-				Object
-				.entries (vParamsObject2.query)
-				.forEach (function ([ pKey, pValue])
-				{					
-					vParamsObject1.query[pKey] = pValue;
-				});
-				
-				vMerged.query = vParamsObject1.query; 				
+			{				
+				vMerged.query = { ...vParamsObject1.query, ...vParamsObject2.query };
 			}
 			else
 			if (vParamsObject1.query)
@@ -318,7 +333,7 @@ const load = (domElement) => {
 				(
 					Object
 					.entries (vMerged.query)
-					.map ( ([ pKey, pValue ]) => pKey + "=" + pValue )
+					.map ( ([ pName, pOperator, pValue ]) => pName + pOperator + pValue )
 					.join ("|")
 				);
 
@@ -326,13 +341,8 @@ const load = (domElement) => {
 			vParamsObject2.query = undefined;
       
 			$.extend (true, vMerged, vParamsObject1, vParamsObject2);
-			
-			var vResult = Object
-				.entries (vMerged)
-				.map ( ([ pName, pValue ]) => pName + "=" + pValue );
-			
-			return vResult;
 
+			return vMerged;
       },
       resetFilters() {
         this.filters.forEach((filter) => {
@@ -453,8 +463,9 @@ const load = (domElement) => {
 			
 		if (bHasFilter) vCurrentParams.query = vQuery;		
 		
-		vMergedParams = this
-			.mergeSearchParams (cCurrentHash, vCurrentParams)
+		vMergedParams = Object
+			.entries (this.mergeSearchParams (cCurrentHash, vCurrentParams))
+			.map ( ([ pName, pOperator, pValue ]) => pName + pOperator + pValue )			
 			.join ("&");
 		
 		history.pushState({}, '', '#' + encodeURIComponent (vMergedParams)); // Avoid confusion between hash parameter and search parameter when using & symbol in the hash
@@ -498,7 +509,15 @@ const load = (domElement) => {
 					vNewURL.origin + 
 					vNewURL.pathname + 
 					"?" + vHandlerValue + 
-					"&" + (this.mergeSearchParams (vNewURL.searchParams.toString(), pSearchParams).join("&")) +
+					"&" + (	
+								Object.entries
+								(
+									this									
+									.mergeSearchParams (vNewURL.searchParams.toString(), pSearchParams)
+								)
+								.map ( ([ pName, pOperator, pValue ]) => pName + pOperator + pValue )	
+								.join("&")
+						  ) +
 					vNewURL.hash)	        	
 			}
 		})
