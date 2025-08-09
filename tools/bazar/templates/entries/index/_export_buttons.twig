@@ -3,19 +3,44 @@
     data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}"
     target="_blank" href="{{ url({handler:'rss', params: 
     	[ (params.idtypeannonce ?'id=' ~ params.idtypeannonce|join(','):""),
-    	  (params.query ?'query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"")
+    	  (params.query ?'query=' ~ params.query
+    	  							| map(p => p.name ~ p.operator ~ (p.values|join(",")))
+    	  							| join('|') 
+    	  							| url_encode :'')
     	] | map(v => v|trim)|filter(v => v is not empty) | join('&') 
       }) }}">
-    <i class="fa fa-signal icon-signal"></i>
+    <i class="fa fa-signal icon-signal"></i>TEST
   </a>
   <a class="btn btn-default btn-mini btn-xs"
     data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}"
-    target="_blank" href="{{ url({ tag:"api", handler : "forms/" ~ params.idtypeannonce|join(',') ~ '/entries/csv', params :  (params.query ?'&query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"") }) }}">
+    target="_blank" href="{{
+								 url({
+								   tag: 'api',
+								   handler: 'forms/' ~ (params.idtypeannonce|join(',')) ~ '/entries/csv',
+								   params: params.query
+									 ? { query: params.query
+												 | map(p => p.name ~ p.operator ~ (p.values|join(",")) )
+												 | join('|')
+												 | url_encode }
+									 : {}
+								 })
+						}}">
     CSV
   </a>
   <a class="btn btn-default btn-mini btn-xs"
     data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}"
-    target="_blank" href="{{ url({ tag:"api", handler : "forms/" ~ params.idtypeannonce|join(',') ~ '/entries', params :  (params.query ?'&query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"") }) }}">
+    target="_blank" href="{{
+								 url({
+								   tag: 'api',
+								   handler: 'forms/' ~ (params.idtypeannonce|join(',')) ~ '/entries',
+								   params: params.query
+									 ? { query: params.query
+												 | map(p => p.name ~ p.operator ~ p.values)
+												 | join('|')
+												 | url_encode }
+									 : {}
+								 })
+						}}">
     JSON
   </a>
 </div>
