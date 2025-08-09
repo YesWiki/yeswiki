@@ -6,7 +6,6 @@ use DateInterval;
 use DateTime;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Tamtamchik\SimpleFlash\Flash;
 use Throwable;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
@@ -365,7 +364,7 @@ class EntryController extends YesWikiController
                 if (!$this->entryManager->isEntry($entryId)) {
                     $this->triggerDeletedEvent($entryId, $entry);
                     if ($redirectAfter) {
-                        Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
+                        flash(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)", 'success');
                         $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                     }
 
@@ -373,7 +372,7 @@ class EntryController extends YesWikiController
                 }
             } catch (Throwable $th) {
                 if ($redirectAfter) {
-                    Flash::error(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}");
+                    flash(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}", 'error');
                     $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                 }
                 throw new Exception($th->getMessage(), $th->getCode(), $th);
@@ -508,51 +507,164 @@ class EntryController extends YesWikiController
         return $values;
     }
 
-    /**
-     * format queries form GET and from $arg in order to give the right 'queries' to EntryManager->search.
+	/**
+     * Transform a query to a string
      *
-     * @param array|string|null $arg
-     * @param array             $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
+     * @param $pQuery array|string|null the query
+     * @param array $pGet (copy of $_GET) but pass in parameters to be more visible in primary level controllers
      */
-    public function formatQuery($arg, array $get): array
+    public function queryToString ($pQuery)
     {
-        $queryArray = [];
+    	if ($pQuery === null) return "";
+    	
+    	if (is_array($pQuery))
+    	{    
+			// format [ "bf_field" => "toto", "bf_field2!" => "tata" ] 
+			// OR
+			// format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ] 	
+			
+			return implode
+			(
+				'|',
+				array_map
+				(											
+					function ($pKey)
+					{
+						if (is_int($pKey)) // format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto" ] ] ] 
+							return $pQuery[$pKey]["name"] . $pQuery[$pKey]["operator"] . implode (",", $pQuery[$pKey]["values"]);
+						else
+						{
+							return $pKey . "=" . $pQuery[$pKey];
+						}
+					}										
+					, array_keys ($pQuery)
+				)
+			);								
+	     }
+	     else	     
+	     if (is_string ($pQuery)) 
+	     {
+		    // format : bf_field=toto1|bf_field2!=tata 	
+			return $pQuery;
+	     }	     
+	     else
+	     {
+			// Unknown format
+	     	return "";	     				
+	     }
+    }
 
-        // Aggregate argument and $get values
-        if (isset($get['query'])) {
-            if (!empty($arg['query'])) {
-                if (is_array($arg['query'])) {
-                    $queryArray = $arg['query'];
-                    $query = $get['query'];
-                } else {
-                    $query = $arg['query'] . '|' . $get['query'];
-                }
-            } else {
-                $query = $get['query'];
-            }
-        } else {
-            if (isset($arg['query']) && is_array($arg['query'])) {
-                $queryArray = $arg['query'];
-                $query = null;
-            } else {
-                $query = $arg['query'] ?? null;
-            }
+    /**
+     * format queries from GET and from $arg to give the right 'queries' to EntryManager->search.
+     *
+     * @param array|string|null $pArg
+     * @param array             $pGet (copy of $_GET) but pass in parameters to be more visible in primary level controllers
+     */
+    public function formatQuery(array $pArg, array $pGet = null): array
+    {
+    	$vArgQuery = "";
+	   	$vGetQuery = "";	   	
+		$vAggregatedQueries = [];
+		
+        // Aggregate argument and get queries :
+        
+        // Convert queries to string
+        
+        if (isset ($pArg))
+        {
+        	$vQuery = $pArg["query"]??$pArg["queries"]??null;
+        
+      		$vArgQuery = 	isset ($vQuery)
+      						? $this->queryToString ($vQuery)
+      						:"";
+        }
+        
+        if (isset ($pGet))
+        {
+           	$vQuery = $pGet["query"]??$pGet["queries"]??null;
+        
+       		$vGetQuery = 	isset ($vQuery)
+      						? $this->queryToString ($vQuery)
+      						:"";		                
         }
 
-        // Create an array from the queries
-        if (!empty($query)) {
-            $res1 = explode('|', $query);
-            foreach ($res1 as $req) {
-                $res2 = explode('=', $req, 2);
-                if (isset($queryArray[$res2[0]]) && !empty($queryArray[$res2[0]])) {
-                    $queryArray[$res2[0]] = $queryArray[$res2[0]] . ',' . trim($res2[1] ?? '');
-                } else {
-                    $queryArray[$res2[0]] = trim($res2[1] ?? '');
-                }
-            }
-        }
+		// build queries array
 
-        return $queryArray;
+		$vAggregatedQueries = explode ('|', $vArgQuery .
+											(
+												$vArgQuery != ""
+												? (
+														$vGetQuery != "" 
+														? "|" . $vGetQuery
+														:""
+												  )
+												: $vGetQuery
+											)
+									);
+
+		// Build the queries structure to pass to EntryManager::search method
+
+        return array_filter 
+    	(
+		    array_map
+	    	(
+	    		// For each query in queries 
+	    	
+	    		function ($pValue)
+				{					
+					// Extract name, operator and values
+												
+					preg_match_all ("/([^=!<>]*)([=!<>]+)([^=!<>]*)/", $pValue, $pMatches);
+
+					$vName = trim ($pMatches[1][0]);
+
+					$vOperator = trim ($pMatches[2][0]);
+
+					// Convert old operator format to new refactored format
+					
+					if ($vOperator == "=") $vOperator = "==";
+
+					// Transform comma separated values list to an array eliminating duplicates
+
+					$vUniqueValues = [];
+
+					foreach (explode(",", trim ($pMatches[3][0])) as $vValue)
+					{
+						if (!in_array($vValue, $vUniqueValues, true))
+						{
+						   $vUniqueValues[] = $vValue;
+						}
+					}   
+			
+					// Return the queries structure
+			
+					return
+						[ 
+							"name" => $vName, 
+							"operator" => $vOperator, 
+							"values" => $vUniqueValues
+						];
+				}, 
+				
+				// Use the agregated query where empty element are removed
+				
+				array_filter
+				(					
+					$vAggregatedQueries,
+					function ($pValue)
+					{
+						return trim($pValue) != "";
+					}
+				)
+			),
+			
+			// Remove query with no parameter name
+			
+			function ($pValue)
+			{
+				return trim ($pValue ["name"]) != "";
+			}
+		);
     }
 
     /* PART TO FILTER ON DATE */
