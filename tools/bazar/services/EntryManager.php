@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
@@ -16,6 +17,8 @@ use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
+
+use YesWiki\Bazar\Field\CheckboxListField;
 
 class EntryManager
 {
@@ -168,7 +171,8 @@ class EntryManager
      *
      * @return $string
      */
-    private function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
+     
+    private function prepareSearchRequestOld(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
     {
         // Merge les paramètres passé avec des paramètres par défaut
         $params = array_merge(
@@ -188,7 +192,7 @@ class EntryManager
         // TODO refactor to use the TripleStore service
         $requete_pages_wiki_bazar_fiches =
             'SELECT DISTINCT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
+            'WHERE value = "' . self::TRIPLES_ENTRY_ID . '" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
             'ORDER BY resource ASC';
 
         $requete =
@@ -423,7 +427,1011 @@ class EntryManager
             echo '<hr><code style="width:100%;height:100px;">' . $requete . '</code><hr>';
         }
 
+//		echo ($requete);
+
         return $requete;
+    }
+    
+    /**
+     * Test if a string represents a regexp
+	 * A string is considered as a regexp if it contains at least on ".*"
+	 * of if it begins and ends with "/"
+	 * @param pString <string> : the string to test
+	 * @return <boolean> : true if the string represent a regexp, false otherwise
+	 */
+    
+    private function isRegExp ($pString) // return true is $pString is a regular expression
+    {
+	    return (preg_match('/\.\*/', $pString) == 1 || (mb_substr ($pString, 0, 1) == "/" && mb_substr ($pString, -1, 1) == "/"));
+    }
+    
+    /**
+	 * Normalise une chaîne : 
+	 *   - met en minuscules (Unicode-safe)
+	 *   - transforme les caractères accentués en leur équivalent non accentué
+	 *   - gère les ligatures courantes (œ, æ, ß, etc.)
+	 *
+	 * @param <string> : chaîne d'entrée (n'importe quel encodage détectable)
+	 * @return <string> : chaîne lowercase, sans accents
+	 */
+
+	private function toLowerCaseWithoutAccent (string $s): string {
+		// 1. Assurer que c'est en UTF-8
+		if (!mb_check_encoding($s, 'UTF-8')) {
+		    $s = mb_convert_encoding($s, 'UTF-8', 'auto');
+		}
+
+		// 2. Mettre en lowercase Unicode
+		$s = mb_strtolower($s, 'UTF-8');
+
+		// 3. Remplacer les ligatures avant translitération
+		$replacements = [
+		    'œ' => 'oe',
+		    'æ' => 'ae',
+		    'ß' => 'ss', // allemand
+		    'ø' => 'o',
+		    'ð' => 'd',
+		    'þ' => 'th',
+		];
+		$s = str_replace(array_keys($replacements), array_values($replacements), $s);
+
+		// 4. Décomposer les caractères Unicode (NFD) pour séparer base + accent si possible
+		if (class_exists('Normalizer')) {
+		    $s = \Normalizer::normalize($s, \Normalizer::FORM_D);
+		}
+
+		// 5. Supprimer les marques diacritiques (accents)
+		$s = preg_replace('/\p{M}/u', '', $s);
+
+		// 6. En dernier recours : translitération ASCII pour les restes (ex: ñ -> n)
+		$translit = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $s);
+		if ($translit !== false) {
+		    $s = $translit;
+		}
+
+		// 7. Nettoyage : retirer ce qui ne soit pas lettre/nombre si besoin (optionnel)
+		// $s = preg_replace('/[^a-z0-9]+/', '', $s);
+
+		return $s;
+	}
+    
+    /**
+     * Extract and transform a regexp string from a string recognized by isRegExp as a regexp
+	 * + It removes beginning and ending "/" if it exists
+	 * + Optionnaly, it add alternatives for each character that has an accented version
+	 * @param pString : <string> a regexp string recognized by isRegExp as a regexp
+	 * @param pAccentInsensitive : <boolean> true to make the regexp accent insensitive
+	 * @return <string> : the transformed regexp string
+	 */
+    
+    private function extractRegExp ($pString, $pAccentInsensitive = true) 
+    {
+    	$vString;
+    
+	    if (mb_substr ($pString, 0, 1) == "/" && mb_substr ($pString, -1, 1) == "/")
+	    	$vString = mb_substr ($pString, 1, mb_strlen($pString)-2);	    
+		else
+		    $vString = $pString;
+
+		if ($pAccentInsensitive)
+		{		    
+		    $vString = $this->toLowerCaseWithoutAccent ($vString);
+		    
+            $vString = str_replace(
+		        [
+		            'a',
+		            'c',
+		            'e',
+		            'i',
+		            'n',
+		            'o',
+		            'u',
+		            'y',
+		        ],
+		        [
+		            '(a|à|á|â|ã|ä|A|À|Á|Â|Ã|Ä)',
+		            '(c|ç|C|Ç)',
+		            '(e|è|é|ê|ë|E|È|É|Ê|Ë)',
+		            '(i|ì|í|î|ï|I|Ì|Í|Î|Ï)',
+		            '(n|ñ|N|Ñ)',
+		            '(o|ò|ó|ô|õ|ö|O|Ò|Ó|Ô|Õ|Ö)',
+		            '(u|ù|ú|û|ü|U|Ù|Ú|Û|Ü)',
+		            '(y|ý|ÿ|Y|Ý)',
+		        ],
+		        $vString
+		    );
+		}
+		    
+		return $vString;
+    }
+    
+	/**
+     * Build a hash from structure definition
+	 * The hash is a facility for associative array search 
+	 * @param pStructure <array> : the structure as
+	 * 	[ 
+	 		"mode" : "single" | "multiple", 			-- indicates if the field is a single value or a list of values
+	 		"type" : "boolean" | "string" | "number"	-- type of the field
+	 		"ids" : <array> form IDs					-- form IDs to which this structure apply
+	 	]
+	 * @return <string> : the hash
+	 */
+	     
+    private function buildFieldDescriptorHash ($pStructure) // 
+    {
+	    return $pStructure[ "mode"] . '|' . $pStructure["type"];
+    }
+    
+    /**
+     * Parse a keywords search string
+     * Keywords search string are composed of tokens 
+     * Tokens can be single words (without space) or expression composed of several words seperated by spaces enclosed in quote or double quote.
+     * Tokens may be separated by |
+     * | stands for logical AND
+     * A token may be prefixed with - to exclude the results containing the token
+     * The position of excluded tokens is not relevant
+     * Ex : cat "my dog" -parrot | bulldog "small bird" -"cocker spaniel"
+     *    will match result that contain ("cat" or "my dog") and ("bulldog" or "small bird) 
+     *    excluding results containing "parrot" or "cocker spaniel"     
+     *
+     * @param pKeywords <string> : the keywords search string
+     *
+     * @return <array> : the parsed string as an associative array containing the keys :
+     * 	- CNF =	the Conjonctive Normal Form (= [a OR b] AND [d or e]) of the keywords search string
+     *			(ie : an AND-array of OR-arrays)
+     *	- excludeds = <array> an array of excluded tokens
+     */
+
+	function parseKeywords ($pKeywords)
+    {
+    	// The default results : nothing recognized
+    
+    	$vResults = [ "CNF" => [], "excludeds" => [] ];
+    
+    	// Check if the $pKeywords parameter is valid for parsing
+    
+		if (!(is_string($pKeywords) && trim($pKeywords) != '' && $pKeywords != _t('BAZ_MOT_CLE')))
+			return $vResults;
+
+		// Let's analyse the keywords to build a structure representing the CNF and to extract the excludeds tokens
+
+		// Separates AND clauses
+
+		$vANDs = array_map ('trim',	explode ("|", $pKeywords));
+		
+		foreach ($vANDs as $vAND)
+		{
+			// Extract tokens
+		
+		    preg_match_all
+		    (
+		    	'/(-)?("(?:\\\\.|[^"\\\\])*"|' .	// double quoted with optional backslash escapes
+                '\'(?:\\\\.|[^\'\\\\])*\'|' .   	// single quoted
+                '\S+)/u',                      	  	// or unquoted token
+                 $vAND, 
+                 $vTokens, 
+                 PREG_SET_ORDER
+            );
+             
+            // Update the CNF and the excludeds token
+             
+            $vORs = [];
+                   
+			foreach ($vTokens as $vToken)
+			{
+				if ($vToken[1] == "-")
+					$vResults ["excludeds"][] = trim ($vToken[2], '"\'');
+				else
+					$vORs [] = trim ($vToken[2], '"\'');
+			}
+			
+			$vResults ["CNF"][] = $vORs;						
+		}
+		
+		// Return the parsed keywords search string
+		
+		return $vResults;		
+	}
+	
+	/**
+     * Build the SQL fields conditions for keywords
+     *
+     *  @param pKeywords <string> : the keywords search string in the format :
+     *      <keywords>       = ( <token> | <exluded token> )+ [ "|" <keywords> ]
+     *      <token>          = <string without space>	| 
+     *				           "'" <string with spaces between single quotes> "'" |
+     *				           '"' <string with spaces between double quotes> '"'
+     *      <excluded token> = "-" <token>
+     *
+     * 	 example : toto -"tata tutu" | "titi tutu" tete -tyty
+     *				=
+     *            "toto" AND ("titi tutu" OR "tete") AND NOT "tata tutu" AND NOT "tyty"
+     *
+     *   NOTE : position of excluded fields has no signification
+     *
+     *  @param pSearchFields <array> of <fields> 
+     *				   <fields> = <array> of properties 
+     *		: fields descriptions (structures, etc...)
+     *
+     * @return <string> : fields conditions for keywords
+     */
+	
+    private function buildKeywordsConditions ($pKeywords, $pSearchFields)
+    {
+    	// Let's parse the given keywords search string...
+    
+    	$vParsedKeywords = $this->parseKeywords ($pKeywords);
+    
+    	// if there is nothing to do, there is nothing to do
+    	
+    	if ((count ($vParsedKeywords["CNF"]) == 0 && count ($vParsedKeywords["excludeds"]) == 0) || count ($pSearchFields) == 0)
+	    	return "";
+    
+    	// ... and let's analyse it
+    
+    	// Analyses ANDs clauses
+        
+    	// We will merge ANDs later
+    	
+    	$vANDs = [];
+    
+		foreach ($vParsedKeywords["CNF"] as $vAND)
+		{
+			// We will merge ORs later
+		
+			$vORs = [];
+			
+	    	// Analyse ORs clauses
+			
+			foreach ($vAND as $vOR)
+			{
+				// Remember if the token value is a regexp
+						
+				$vIsRegExp = $this->isRegExp ($vOR);
+				
+				// For each ORs token, we will build a condition that apply on each search field
+
+				foreach ($pSearchFields as $vFieldName => $vField)
+	    		{
+	    			// For each search field
+
+	    			// let's initialize the request being constructed
+		    		
+		    		$vORRequest = "";
+	    
+	    			// We need to build a specific condition for each field structure
+	    			
+	    			foreach ($vField["descriptors"] as $vHash => $vFieldDescriptor)
+	    			{	    			
+	    				// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
+	    			
+	    				if ($vField["hasMultipleStructures"])	    				
+		    				$vORRequest .= '( id_typeannonce in ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
+
+						switch ($vFieldDescriptor["mode"])
+						{
+							// If this field instance in is intended to store a single value...
+						
+							case "single" :		
+								// Add a field condition adapted to a regexp or not
+	    			
+								if ($vIsRegExp)
+									$vORRequest .= $vFieldName . ' COLLATE utf8mb4_unicode_ci REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vOR)) . '\'';
+								else
+									$vORRequest .= $vFieldName . ' COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vOR) . '%\'';
+ '\'';
+							break;							
+									
+							// If this field instance is intended to store multiple values separated by comma...
+									
+							case "multiple" :
+								
+								// Add a field condition adapted to a regexp or not
+							
+								if ($vIsRegExp)																			
+	   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\')' ; 
+								else
+									$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '%\')' ;
+							
+							break;						
+						}	
+	    			
+	    				if ($vField["hasMultipleStructures"])
+		    				$vORRequest .= ')';
+							
+						$vORs [] = $vORRequest;			
+	    			}	    				
+	    		}
+    		}
+    		
+    		$vANDs [] = '(' . implode (" OR ", $vORs) . ')';
+		}
+
+		foreach ($vParsedKeywords["excludeds"] as $vExcluded)
+		{			
+			// Remember if the excluded token value is a regexp
+		
+			$vIsRegExp = $this->isRegExp ($vExcluded);
+		
+			// For each excluded token, we will build a condition that apply on each search field
+		
+			foreach ($pSearchFields as $vFieldName => $vField)
+	    	{	    	
+		    	// The condition we will construct 
+		    		
+	    		$vExcludedRequest = "";
+	    	
+    			// We need to build a specific condition for each field structure
+	    	
+	    		foreach ($vField["descriptors"] as $vHash => $vFieldDescriptor )
+	    		{	    			
+	    			// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
+	    			
+	    			if ($vField["hasMultipleStructures"])	    				
+		    			$vExcludedRequest .= '( id_typeannonce in ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
+	    			
+	    			switch ($vFieldDescriptor["mode"])
+					{
+						// If this field instance is intended to store a single value...
+					
+						case "single" :		
+							// Add a field condition adapted to a regexp or not
+    			
+							if ($vIsRegExp)
+								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci NOT REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '\'';
+							else
+								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\'';
+'\'';
+						break;							
+								
+						// If this field instance is intended to store multiple values separated by comma...
+								
+						case "multiple" :
+							
+							// Add a field condition adapted to a regexp or not
+						
+							if ($vIsRegExp)																			
+   								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '$\')'; 
+							else
+								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\')';
+						
+						break;						
+					}
+	    			
+					$vANDs [] = $vExcludedRequest;
+	    		}
+    		}
+		}
+    
+    	return implode
+    	(			
+			" AND ",
+			$vANDs
+    	);
+    }
+	
+	/**
+     * Build the SQL fields conditions for queries
+     * 
+     * @param $pQueries : <array> of <query> 
+     *			   <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
+     *
+     * @return = <string> fields conditions for queries
+     */
+	
+    private function buildQueriesConditions ($pQueries, $pFields)
+    {
+    	// The conditions we are going to build
+    
+	    $vQueriesConditions = [];     
+        
+        // For each field query
+
+        foreach ($pQueries as $vQuery)
+        {        		        
+        	// Build the query condition for this field 
+			
+	    	// Name of the field
+    
+	   		$vFieldName = $vQuery ["name"];
+	   		
+	   		// operator to be applied to the field
+    
+	   		$vOperator = $vQuery ["operator"];
+	   		
+	   		// Get the field structure for later use
+
+	   		$vField = $pFields [$vFieldName];
+	   		
+			// We will store individual field conditions in an array to facilitate merging later
+
+			$vQueryConditions = [];
+		
+			// Let's check what is the operator
+		
+			switch ($vOperator)
+			{
+				// "is equal" and "is different"
+			
+				case "==" :	
+				case "!=" :
+				
+					// We need to add conditions that take into account all the possible structures 
+					// that may have the field depending on which form it belongs
+				
+					// So, for each structure...
+				
+					foreach ($vField ["descriptors"] as $vHash => $vDescriptor)
+					{									
+						$vDescriptorCondition = "( ";
+						
+						// if we had remembered that this field can have multiple structures 
+						// we need to specify the form IDs in the condition request that use this structure
+					
+						if ($vField ["hasMultipleStructures"])
+						{
+							$vDescriptorCondition .= "id_typeannonce IN " . implode (",", $vDescriptor["ids"]) . " AND ";
+						}										
+
+						// Build the condition for each value specified in the request ("comma separated values")
+
+						$vValueConditions = [];
+							
+						foreach ($vQuery ["values"] as $vValue)
+						{
+							// Store helpers to know what to apply in the request for equals or different operator
+											
+							if ($vOperator == "==")
+							{
+								$vRegExpOperator = "REGEXP";
+								$vComparisonOperator = "=";
+								$vFindInSetOperator = "FIND_IN_SET";
+							}
+							else 
+							{
+								$vRegExpOperator = "NOT REGEXP";
+								$vComparisonOperator = "!=";						
+								$vFindInSetOperator = "NOT FIND_IN_SET";
+							}
+						
+							// Remember if the value is a regexp
+						
+							$vIsRegExp = $this->isRegExp ($vValue);
+
+							switch ($vDescriptor["mode"])
+							{
+								// If the field is intended to store a single value...
+							
+								case "single" :		
+																		
+									// It the value is a regexp, let's build a condition that match (or NOT) the regexp
+																		
+									if ($vIsRegExp)	
+										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vRegExpOperator . ' \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\'';
+										
+									// else let's just compare using the appropriated comparison operator (= or !=)
+										
+									else 
+										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\'';
+									
+								break;				
+										
+								// If the field is intended to store multiple values separated by comma...
+										
+								case "multiple" :
+								
+									// It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
+								
+									if ($vIsRegExp)																			
+		   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci ' . $vRegExpOperator . ' \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\')' ; 
+									else
+									
+									// else let's just check in the value belongs (or NOT) to the set of values
+																
+										$vValueConditions [] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\' COLLATE utf8mb4_unicode_ci), ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci)';
+								break;						
+							}				
+						}		
+												
+						// Merge all value conditions with a logical OR
+						
+						$vDescriptorCondition .= implode ( " OR ", $vValueConditions);
+						
+						$vDescriptorCondition .= ") ";	
+						
+						// Add the structure conditions to the field conditions
+						
+						$vQueryConditions [] = $vDescriptorCondition;		
+					}			
+				break;
+				case "===":
+				break;
+				case "!=":
+				break;						
+				case "!==":
+				break;			
+				case "<":
+				break;			
+				case ">":
+				break;			
+				case "<=":
+				case ">=":			
+				break;			
+			}
+			
+			// Merge all the field conditions with a logical OR
+			
+			if (count ($vQueryConditions) > 0) 
+				$vQueriesConditions [] = implode (' OR ', $vQueryConditions);
+		}
+        
+        return implode (" AND ", $vQueriesConditions);        
+    }
+    
+    /**
+     * Return the request for searching entries in database.
+     *
+     * @param array &$params
+     *
+     * @return $string
+     */
+    
+    private function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
+   	{
+        // Merge default parameters with given parameters
+        
+        $params = array_merge(
+            [
+                'queries' => [], // array of [ name => <string>, operator => <string> , values => [ <string>, ... ] ]
+                'formsIds' => [], // Types de fiches (par ID de formulaire)
+                'user' => '', // N'affiche que les fiches d'un utilisateur
+                'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
+                'minDate' => '', // Date minimale des fiches
+                'correspondance' => '',
+            ],
+            $params
+        );
+
+		// Merge, with AND operator "|", the keywords parameters from $params["keywords"], $_REQUEST['q'] and $_REQUEST['keywords'] 
+        
+        $vKeywords = 
+        	implode
+	        (
+    	    	"|",
+    	    	array_filter
+    	    	(
+					[ $params["keywords"]??null, $_REQUEST['q']??null, $_REQUEST['keywords']??null ],
+		        	function ($pValue) { return ($pValue !== null && is_string($pValue) && !empty (trim($pValue))); },
+				)
+			);
+
+		$vQueries = $this->wiki->services->get(EntryController::class)->formatQuery ($params);
+
+        // Limit the request to the specified form ids
+        
+        $vIDsRequest = "";
+        
+        if (!empty($params['formsIds']))
+        {
+        	$vFormIDs = $params['formsIds'];
+        
+            if (!is_array ($vFormIDs))
+            {
+				$vFormIDs = [ $vFormIDs ];
+            }
+
+            $vFormIDs = array_map
+            	(
+            		function ($vID)
+            		{ 
+            			$vType = \gettype ($vID);
+
+						if ($vType == "integer") return $vID;
+
+						if ($vType == "string")
+						{
+							$vTrimmed = trim ($vID);
+							$vIntValue = intval ($vID);
+							
+							if (strval($vID) == strval($vIntValue))							
+								return $vIntValue;
+							else
+								return null;
+						}
+						
+						return null;
+            		},
+					$vFormIDs            	
+            	);
+
+            $vFormIDs = array_filter
+            	(
+		           	$vFormIDs,
+					function ($pID)
+					{
+						return $pID !== null;
+					}
+	            );
+
+			$vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
+		}
+
+        // Limit the request depending on the date
+        
+        $vPeriodRequest = "";
+        
+        if (!empty($params['minDate']))
+        {
+            $vPeriodRequest .= 'time >= "' . mysqli_real_escape_string ($this->wiki->dblink, $params['minDate']) . '"';
+        }
+
+        // Limit the request to a user if specified
+        
+        $vUserRequest = "";
+                
+        if (!empty($params['user']))
+        {
+            $vUserRequest .= 'owner = _utf8\'' . mysqli_real_escape_string ($this->wiki->dblink, $params['user']) . '\'';
+        }
+
+		// Determine the necessary fields from searchfields and queries
+		
+		$vKeywordsFields = [];
+		$vQueriesFields = [];
+
+		if ($vKeywords != "" && isset($params["searchfields"]))
+		{
+			 $vKeywordsFields = array_map ('trim', explode (",", $params["searchfields"]));
+		}		
+
+		foreach ($vQueries as $vQuery) 
+		{	
+			$vQueriesFields [] = $vQuery ["name"];
+		}
+
+		$vNecessaryFields = array_unique(array_merge ([ "bf_titre" ], $vKeywordsFields, $vQueriesFields));
+
+		// Build necessary fields infos (structures, ...)
+		
+		$vFields = [];
+
+        // Each field can have different value structure (handling mode : "single"|"multiple", and type "boolean"|"number"|"string")
+        // depending on the form it belongs to
+        // ex : form1 -> bf_myfield = single text value
+        // 		form2 -> bf_myfield = multiple text values separated by commas
+        // We need to handle it differently
+        
+        // So, first, let's get all the forms used in the request for later use
+        
+        $vFormManager = $this->wiki->services->get(FormManager::class);
+    	
+    	$vForms = $vFormManager->getMany($vFormIDs);
+
+		// For each necessary field, let retrieve value structure...
+
+   		foreach ($vNecessaryFields as $vField)
+  		{  		  		
+  			// Get the field name
+  		
+  			if (isset ($vFields[$vField])) // value structure already retrieved for this field, let's ignore it
+  				continue;
+			  		
+  			// We will store the field structure associated with form IDs, so create a place for it
+	  		
+	  		if (!isset ($vFields [$vField] ["descriptors"])) $vFields [$vField] ["descriptors"] = [];
+	  		if (!isset ($vFields [$vField] ["needSplit"])) $vFields [$vField] ["needSplit"] = false;
+	  		
+  			// For each form...
+  		
+	  		foreach ($vForms as $vFormID => $vForm)
+			{			
+				// ... we find the field if it exists ...
+			
+				foreach ($vForm["prepared"] as $vFieldObject)
+				{											
+					if ($vFieldObject->getPropertyName () == $vField)
+					{					
+						// If it exists
+						
+						// We get it's structure
+					
+						$vStructure = $vFieldObject->getValueStructure ();
+
+						// Then we find the field name in the structure to get its mode and type
+						
+						$vCurrentArray = $vStructure;
+						
+						$vFound = true;
+						
+						foreach (explode('.', $vField) as $vSegment)
+						{
+					        if (is_array($vCurrentArray) && array_key_exists($vSegment, $vCurrentArray))
+					        {
+				            	$vCurrentArray = $vCurrentArray[$vSegment];
+					        }
+					        else
+					        {					       
+					            $vFound = false;
+					        }
+					    }
+
+					    if ($vFound) 
+					    {
+					    	// We found it : we know the mode and type of the field
+
+					    	$vFieldDescriptor = $vCurrentArray;					    	
+					    }
+					    else
+					    {
+					        // We do not found it : we cannot determine the mode and type. 
+					        // Set it to default value;
+					
+						    $vFieldDescriptor = [ "_mode_" => "single", "_type_" => "string"];
+						}
+
+						// Remember that the field $vField can have this mode and type in the form $vFormID :
+
+						// Build a hash for fast access...
+
+						$vHash = $this->buildFieldDescriptorHash ($vFieldDescriptor);
+
+						// and remember it.
+
+						if (isset($vFields [$vField]["descriptors"][$vHash]))
+						{
+							$vFields [$vField]["descriptors"][$vHash]["ids"][] = $vFormID;
+						}
+						else
+						{
+							$vFields [$vField]["descriptors"][$vHash] = [ "mode" => $vFieldDescriptor["_mode_"], "type" => $vFieldDescriptor["_type_"], "ids" => [ $vFormID ] ];
+						}
+						
+						// If the "mode" of this field in this form Id is "multiple", let's remember we have to split it
+						
+						if ($vFieldDescriptor == "multiple") $vFields [$vField]["needSplit"] = true;
+								
+						break; // We found it, so we can stop searching						
+					}
+					
+					// else we continue searching...
+				}
+			}
+
+			// We will remember if the field can have different kind of structures so that we can optimize SQL request.
+
+			$vFields [$vField] ["hasMultipleStructures"] = count (array_keys ($vFields [$vField]["descriptors"])) > 1;
+
+			// Let's remember that the field has not been yet extracted 
+			
+			$vFields [$vField]["isExtracted"] = false; 
+			
+			// ...neither is has been yet splitted if necessary
+			
+			$vFields [$vField]["isSplitted"] = false;
+		}
+   
+        // Build the SELECT part of the request :
+
+		// - Retrieves all columns and extract id_typeannonce
+
+		$vSelectRequest =
+		[  
+			'p.*',
+			'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS id_typeannonce'
+		];
+        
+        // - Extract all fields ("single" and "multiple" mode)
+        
+        foreach ($vFields as $vFieldName => $vField)
+        {
+	       	// Extract one field
+                
+            // Check that it was not already extracted
+                
+	        if (!$vField ["isExtracted"]) 
+	        {        
+				// Extract it if it is not yet done
+	        
+	           	$vSQLNom = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName);
+            
+            	$vSelectRequest [] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS ' . $vSQLNom;
+            	
+				// rembember it was extracted
+            	
+   	            $vField ["isExtracted"] = true; 
+            }        
+        }
+        
+        // - Finaly, concatenate the SELECT request
+        
+        $vSelectRequest = implode (", ", $vSelectRequest);
+        
+        // Split fields that may be in multiple mode :
+
+		// - We will concatenate splitted fields later
+        
+		$vSplitteds = []; 
+		$vSplittedsRequest = "";
+
+		// - Let's check each field :
+
+		foreach ($vFields as $vFieldName => $vField)
+		{		
+			// If the field doesn't have to be splitted (= it is always in single value mode) 
+			// or it was already splitted then we can ignore it.
+		
+			if (!$vField ["needSplit"] || $vField ["isSplitted"]) continue; 
+		
+			// else we split it		
+		
+			$vSplitteds[] = 'SELECT id, champ, elt FROM ' . $vFieldName . '_multiple';
+				
+			$vSplittedsRequest .=
+						', ' . $vFieldName . '_multiple AS ' . 
+						'( ' .
+							'SELECT ' .
+								'id, ' .
+								'\'' . $vFieldName . '\' AS champ, ' .
+								'TRIM(SUBSTRING_INDEX(' . $vFieldName . ', \',\', 1)) AS elt, ' .
+								'CASE ' .
+									'WHEN INSTR(' . $vFieldName . ', \',\') = 0 THEN \'\' ' .
+									'ELSE SUBSTR(' . $vFieldName . ', INSTR(' . $vFieldName . ', \',\') + 1) ' .
+								'END AS rest ' .
+							'FROM filteredPages ' .
+							'UNION ALL ' .
+							'SELECT ' .
+								'id, ' .
+								'champ, ' .
+								'TRIM(SUBSTRING_INDEX(rest, \',\', 1)) AS elt, ' .
+								'CASE ' .
+									'WHEN INSTR(rest, \',\') = 0 THEN \'\' ' .
+									'ELSE SUBSTR(rest, INSTR(rest, \',\') + 1) ' .
+								'END AS rest ' .
+							'FROM ' . $vFieldName . '_multiple ' .
+							'WHERE rest <> \'\'' .
+						')';
+				
+			// And we remember it has been done
+						
+			$vField ["isSplitted"] = true;
+		}
+		
+		// Union of all splitted fields
+		
+		$vSplittedsCount = count ($vSplitteds);
+		
+		if ($vSplittedsCount > 0)		
+			$vSplittedsRequest .= 
+						', all_multiples AS ' .
+						'( ' .
+							implode (" UNION ALL ", $vSplitteds) .
+						') ';	
+        
+        // Construct WHERE part with queries and keywords conditions
+        
+        $vWhereRequest = "";
+        
+        // Keywords conditions
+
+        $vKeywordsConditions = $this->buildKeywordsConditions
+        (
+        	$vKeywords,  // the keywords search string
+        	array_filter // apply only to search fields
+        	(        		       		
+        		$vFields, 
+        		function ($vFieldName) use ($vKeywordsFields)
+        		{        	
+        			return in_array ($vFieldName, $vKeywordsFields);
+        		},
+        		ARRAY_FILTER_USE_KEY
+        	)
+        );
+        
+		$vWhereRequest .= $vKeywordsConditions;
+        
+        // Queries conditions
+        
+        $vQueriesConditions = $this->buildQueriesConditions ($vQueries, $vFields);
+        
+	   	$vWhereRequest .= ($vWhereRequest != ""?" AND ":"") . $vQueriesConditions;
+	   	
+        // Construct full request
+        
+		$vCompleteRequest =	'WITH RECURSIVE ' .
+								'filteredPages AS ' .
+								'( ' .
+									'SELECT '. 
+										$vSelectRequest . ' ' .
+									'FROM ' . $this->dbService->prefixTable('pages') . ' p ' .
+									'JOIN ywa_triples t ON ' .
+										't.resource = p.tag AND ' .
+										't.value = \''. self::TRIPLES_ENTRY_ID . '\' AND ' .
+										't.property = \'http://outils-reseaux.org/_vocabulary/type\' ' .
+									'WHERE ' .
+										($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ') . 
+										'p.comment_on = \'\' AND ' .
+										($vUserRequest !== "" ? $vUserRequest . " AND ":'') .
+										($vPeriodRequest !== "" ? $vPeriodRequest . " AND ":'') .
+										$vIDsRequest .
+								')' .
+								($vSplittedsRequest != "" ? ", " . $vSplittedsRequest . " " : " ") .
+								'SELECT DISTINCT f.* ' . 
+								'FROM filteredPages f ' .								
+								($vSplittedsCount > 0 ? 'JOIN all_multiples s ON s.id = f.id ' : '') .
+								($vWhereRequest != "" ? "WHERE " . $vWhereRequest : "");
+/*
+        // requete de jointure : reprend la requete precedente et ajoute des criteres
+        if (isset($_GET['joinquery'])) {
+            $join = $this->dbService->escape($_GET['joinquery']);
+            $joinrequeteSQL = '';
+            $tableau = [];
+            $tab = explode('|', $join);
+            //découpe la requete autour des |
+            foreach ($tab as $req) {
+                $tabdecoup = explode('=', $req, 2);
+                $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
+            }
+            $first = true;
+
+            foreach ($tableau as $nom => $val) {
+                if (!empty($nom) && !empty($val)) {
+                    $valcrit = explode(',', $val);
+                    if (is_array($valcrit) && count($valcrit) > 1) {
+                        foreach ($valcrit as $critere) {
+                            if (!$first) {
+                                $joinrequeteSQL .= ' AND ';
+                            } else {
+                                $first = false;
+                            }
+                            $rawCriteron = $this->convertToRawJSONStringForREGEXP($critere);
+                            $joinrequeteSQL .=
+                                '(body REGEXP \'"' . $nom . '":"[^"]*' . $rawCriteron .
+                                '[^"]*"\')';
+                        }
+                        $joinrequeteSQL .= ')';
+                    } else {
+                        if (!$first) {
+                            $joinrequeteSQL .= ' AND ';
+                        } else {
+                            $first = false;
+                        }
+                        $rawCriteron = $this->convertToRawJSONStringForREGEXP($val);
+                        if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
+                            $joinrequeteSQL .=
+                                '(body REGEXP \'"' . $nom . '":"' . $rawCriteron . '"\')';
+                        } else {
+                            $joinrequeteSQL .=
+                                '(body REGEXP \'"' . $nom . '":("' . $rawCriteron .
+                                '"|"[^"]*,' . $rawCriteron . '"|"' . $rawCriteron . ',[^"]*"|"[^"]*,'
+                                . $rawCriteron . ',[^"]*")\')';
+                        }
+                    }
+                }
+            }
+            if ($requeteSQL != '') {
+                $requeteSQL .= ' UNION ' . $requete . ' AND (' . $joinrequeteSQL . ')';
+            } else {
+                $requeteSQL .= ' AND (' . $joinrequeteSQL . ')';
+            }
+            $requete .= $requeteSQL;
+        } elseif ($requeteSQL != '') {
+            $requete .= $requeteSQL;
+        }
+*/
+
+        // Optionnaly, filter on read ACL
+       
+        if (!$this->wiki->UserIsAdmin() && $filterOnReadACL) {
+            $vCompleteRequest .= $this->aclService->updateRequestWithACL();
+        }
+
+        // debug
+        
+        if (isset($_GET['showreq'])) {
+            echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
+        }  
+		//echo ($vCompleteRequest . "<br><br>");//exit();
+        return $vCompleteRequest;
     }
 
     /**
