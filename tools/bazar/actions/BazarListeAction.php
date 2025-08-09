@@ -140,6 +140,19 @@ class BazarListeAction extends YesWikiAction
         // Champ du formulaire utilisé pour le tri
         $champ = $_GET['champ'] ?? $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
 
+		$vKeywords = implode
+			(
+				"|",
+				array_filter
+				(
+					[ $arg['keywords']??"", $_REQUEST["q"]??"", $_REQUEST["keywords"]??"" ],
+					function ($pValue)
+					{ 
+						return (trim ($pValue) != "");
+					}
+				)
+			);
+
         return [
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -151,7 +164,9 @@ class BazarListeAction extends YesWikiAction
             'refresh' => $this->formatBoolean($_GET, false, 'refresh'),
             // Paramètres pour une requete specifique
             'query' => $this->getService(EntryController::class)->formatQuery($arg, $_GET),
-            // filtrer les resultats sur une periode données si une date est indiquée
+            // filtrer sur des mots clefs
+            'keywords' => $vKeywords,            
+            // filtrer les resultats sur une periode données si une date est indiquée            
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur
             'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
@@ -236,7 +251,7 @@ class BazarListeAction extends YesWikiAction
     }
 
     public function run()
-    {
+    {	
         $this->debug = ($this->wiki->GetConfigValue('debug') == 'yes');
 
         // If the template is a map or a calendar, call the dedicated action so that
@@ -269,6 +284,7 @@ class BazarListeAction extends YesWikiAction
 
             return $this->render("@bazar/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
                 'params' => $this->arguments,
+                'keywords' => $this->arguments["keywords"],
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
                 'currentUserName' => empty($currentUser['name']) ? '' : $currentUser['name'],
             ]);
@@ -312,7 +328,7 @@ class BazarListeAction extends YesWikiAction
                 'numEntries' => count($entries),
                 'params' => $this->arguments,
                 // Search form parameters
-                'keywords' => $_GET['q'] ?? '',
+                'keywords' => $this->arguments["keywords"],
                 'pageTag' => $this->wiki->getPageTag(),
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
                 'formId' => $this->arguments['idtypeannonce'][0] ?? null,
