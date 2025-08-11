@@ -912,7 +912,7 @@ class EntryManager
 		
 			foreach ($vField ["descriptors"] as $vHash => $vDescriptor)
 			{									
-				$vDescriptorCondition = "( ";
+				$vDescriptorCondition = "";
 				
 				// if we had remembered that this field can have multiple structures 
 				// we need to specify the form IDs in the condition request that use this structure
@@ -947,9 +947,12 @@ class EntryManager
 								
 							else
 							{ 
-								if ($vDescriptor["type"] == "number" && isset ($vValue) && trim ($vValue) !== "")
+								if ($vDescriptor["type"] == "number")
 								{
-									$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';																	
+									if (isset ($vValue) && trim ($vValue) !== "")
+										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';
+									else
+										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci = \'\'';																									
 								}
 								else
 								{
@@ -977,13 +980,14 @@ class EntryManager
 										
 				// Merge all value conditions with a logical OR
 				
-				$vDescriptorCondition .= implode ( " OR ", $vValueConditions);
+				if (count ($vValueConditions) > 0)
+				{				
+					$vDescriptorCondition .= '(' . implode ( " OR ", $vValueConditions) . ')';
 				
-				$vDescriptorCondition .= ") ";	
+					// Add the structure conditions to the field conditions
 				
-				// Add the structure conditions to the field conditions
-				
-				$vQueryConditions [] = $vDescriptorCondition;		
+					$vQueryConditions [] = $vDescriptorCondition;		
+				}
 			}						
 			
 			// Merge all the field conditions with a logical OR
@@ -1379,6 +1383,7 @@ class EntryManager
 								'FROM filteredPages f ' .								
 								($vSplittedsCount > 0 ? 'JOIN all_multiples s ON s.id = f.id ' : '') .
 								($vWhereRequest != "" ? "WHERE " . $vWhereRequest : "");
+
 /*
         // requete de jointure : reprend la requete precedente et ajoute des criteres
         if (isset($_GET['joinquery'])) {
@@ -1450,6 +1455,8 @@ class EntryManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
+
+//echo ($vCompleteRequest);
 
         return $vCompleteRequest;
     }
