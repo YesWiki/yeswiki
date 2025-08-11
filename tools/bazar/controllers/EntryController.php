@@ -6,6 +6,7 @@ use DateInterval;
 use DateTime;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use Throwable;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
@@ -364,7 +365,7 @@ class EntryController extends YesWikiController
                 if (!$this->entryManager->isEntry($entryId)) {
                     $this->triggerDeletedEvent($entryId, $entry);
                     if ($redirectAfter) {
-                        flash(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)", 'success');
+                        Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
                         $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                     }
 
@@ -372,7 +373,7 @@ class EntryController extends YesWikiController
                 }
             } catch (Throwable $th) {
                 if ($redirectAfter) {
-                    flash(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}", 'error');
+                    Flash::error(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}");
                     $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                 }
                 throw new Exception($th->getMessage(), $th->getCode(), $th);
@@ -510,8 +511,9 @@ class EntryController extends YesWikiController
 	/**
      * Transform a query to a string
      *
-     * @param $pQuery array|string|null the query
-     * @param array $pGet (copy of $_GET) but pass in parameters to be more visible in primary level controllers
+     * @param $pQuery array|string|null the query in different format
+     *
+	 * @return the string representing the query
      */
     public function queryToString ($pQuery)
     {
@@ -519,21 +521,27 @@ class EntryController extends YesWikiController
     	
     	if (is_array($pQuery))
     	{    
-			// format [ "bf_field" => "toto", "bf_field2!" => "tata" ] 
-			// OR
-			// format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ] 	
-			
+	    	// format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ] 	
+	    	// OR 
+	    	// old array format : [ "bf_field" => "toto", "bf_field2!" => "tata" ]			
+
 			return implode
 			(
 				'|',
 				array_map
 				(											
-					function ($pKey)
-					{
-						if (is_int($pKey)) // format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto" ] ] ] 
-							return $pQuery[$pKey]["name"] . $pQuery[$pKey]["operator"] . implode (",", $pQuery[$pKey]["values"]);
-						else
+					function ($pKey) use ($pQuery)
+					{									
+						if (is_int($pKey)) 
 						{
+							// format [ [ "name" => "bf_field", "operator" => "==" , values => "toto, tata" ] ] 
+										
+							return $pQuery[$pKey]["name"] . $pQuery[$pKey]["operator"] . (is_array($pQuery[$pKey]["values"]) ? implode(",", $pQuery[$pKey]["values"]) : $pQuery[$pKey]["values"]);
+						}
+						else
+						{			
+							// format [ "bf_field" => "toto", "bf_field2!" => "tata" ]		
+								
 							return $pKey . "=" . $pQuery[$pKey];
 						}
 					}										
@@ -543,8 +551,10 @@ class EntryController extends YesWikiController
 	     }
 	     else	     
 	     if (is_string ($pQuery)) 
-	     {
+	     {	     	
 		    // format : bf_field=toto1|bf_field2!=tata 	
+		    // It is already the string representation of the query
+		    
 			return $pQuery;
 	     }	     
 	     else
@@ -555,16 +565,19 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * format queries from GET and from $arg to give the right 'queries' to EntryManager->search.
+     * Agregate queries from GET and from $arg and build a conditions array to be used by EntryManager->search.
      *
      * @param array|string|null $pArg
      * @param array             $pGet (copy of $_GET) but pass in parameters to be more visible in primary level controllers
+	 * @return a <condition> array
+	 *	<condition> as [ "name" => <string>, operator => <string>, values => [ <string>, ...] ]
      */
     public function formatQuery(array $pArg, array $pGet = null): array
     {
     	$vArgQuery = "";
-	   	$vGetQuery = "";	   	
-		$vAggregatedQueries = [];
+	   	$vGetQuery = "";	   
+	   	$vAggregatedQuery = "";	
+		$vConditions = [];
 		
         // Aggregate argument and get queries :
         
@@ -575,7 +588,11 @@ class EntryController extends YesWikiController
         	$vQuery = $pArg["query"]??$pArg["queries"]??null;
         
       		$vArgQuery = 	isset ($vQuery)
-      						? $this->queryToString ($vQuery)
+      						? (
+      							is_array ($vQuery)
+      							? $this->queryToString ($vQuery)
+      							: $vQuery
+      						)
       						:"";
         }
         
@@ -584,13 +601,17 @@ class EntryController extends YesWikiController
            	$vQuery = $pGet["query"]??$pGet["queries"]??null;
         
        		$vGetQuery = 	isset ($vQuery)
-      						? $this->queryToString ($vQuery)
+       						? (
+      							is_array ($vQuery)
+      							? $this->queryToString ($vQuery)
+      							: $vQuery
+      						)
       						:"";		                
         }
 
 		// build queries array
 
-		$vAggregatedQueries = explode ('|', $vArgQuery .
+		$vConditions = explode ('|', $vArgQuery .
 											(
 												$vArgQuery != ""
 												? (
@@ -650,7 +671,7 @@ class EntryController extends YesWikiController
 				
 				array_filter
 				(					
-					$vAggregatedQueries,
+					$vConditions,
 					function ($pValue)
 					{
 						return trim($pValue) != "";
