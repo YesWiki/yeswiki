@@ -433,19 +433,6 @@ class EntryManager
     }
     
     /**
-     * Test if a string represents a regexp
-	 * A string is considered as a regexp if it contains at least on ".*"
-	 * of if it begins and ends with "/"
-	 * @param pString <string> : the string to test
-	 * @return <boolean> : true if the string represent a regexp, false otherwise
-	 */
-    
-    private function isRegExp ($pString) // return true is $pString is a regular expression
-    {
-	    return (preg_match('/\.\*/', $pString) == 1 || (mb_substr ($pString, 0, 1) == "/" && mb_substr ($pString, -1, 1) == "/"));
-    }
-    
-    /**
 	 * Normalise une chaîne : 
 	 *   - met en minuscules (Unicode-safe)
 	 *   - transforme les caractères accentués en leur équivalent non accentué
@@ -496,6 +483,28 @@ class EntryManager
 	}
     
     /**
+     * Test if a string represents a regexp
+	 * A string is considered as a regexp if it contains at least on ".*"
+	 * of if it begins and ends with "/"
+	 * @param pString <string> : the string to test
+	 * @return <integer> : 
+	 *	0 if the string doesn't represent a regexp
+	 *	1 if the string represent a regexp in the old YesWiki format : ex: .*toto.* 
+	 *  2 if the string represent a regexp in MYSQL format /<regexp>/ : ex: / .*toto.* /
+	 */
+    
+    private function isRegExp ($pString) // return true is $pString is a regular expression
+    {
+    	if ((mb_substr ($pString, 0, 1) == "/" && mb_substr ($pString, -1, 1) == "/"))
+    		return 2;
+   		else
+   		if (preg_match('/\.\*/', $pString) == 1)
+   			return 1;
+   		else 
+   			return 0;
+    }
+    
+    /**
      * Extract and transform a regexp string from a string recognized by isRegExp as a regexp
 	 * + It removes beginning and ending "/" if it exists
 	 * + Optionnaly, it add alternatives for each character that has an accented version
@@ -506,13 +515,22 @@ class EntryManager
     
     private function extractRegExp ($pString, $pAccentInsensitive = true) 
     {
-    	$vString;
+    	$vString = $pString;
     
-	    if (mb_substr ($pString, 0, 1) == "/" && mb_substr ($pString, -1, 1) == "/")
-	    	$vString = mb_substr ($pString, 1, mb_strlen($pString)-2);	    
-		else
-		    $vString = $pString;
-
+    	switch ($this->isRegExp ($pString))
+    	{
+    		case 0 :
+    			 throw new Exception($pString . " is not a regexp");
+    			 return "";
+    		break;
+    		case 1 : 
+    			 $vString = '^' . $pString .'$';
+    		break;
+    		case 2 :
+    			 $vString = mb_substr ($pString, 1, mb_strlen($pString)-2);	 
+    		break;    		    		
+    	}
+    
 		if ($pAccentInsensitive)
 		{		    
 		    $vString = $this->toLowerCaseWithoutAccent ($vString);
@@ -559,7 +577,7 @@ class EntryManager
 	     
     private function buildFieldDescriptorHash ($pStructure) // 
     {
-	    return $pStructure[ "mode"] . '|' . $pStructure["type"];
+	    return $pStructure[ "_mode_"] . '|' . $pStructure["_type_"];
     }
     
     /**
@@ -847,117 +865,126 @@ class EntryManager
 
 			$vQueryConditions = [];
 		
-			// Let's check what is the operator
-		
+			// Let's check what is the operator and store helpers to know what to apply in the request
+					
 			switch ($vOperator)
 			{
 				// "is equal" and "is different"
 			
 				case "==" :	
-				case "!=" :
-				
-					// We need to add conditions that take into account all the possible structures 
-					// that may have the field depending on which form it belongs
-				
-					// So, for each structure...
-				
-					foreach ($vField ["descriptors"] as $vHash => $vDescriptor)
-					{									
-						$vDescriptorCondition = "( ";
-						
-						// if we had remembered that this field can have multiple structures 
-						// we need to specify the form IDs in the condition request that use this structure
-					
-						if ($vField ["hasMultipleStructures"])
-						{
-							$vDescriptorCondition .= "id_typeannonce IN " . implode (",", $vDescriptor["ids"]) . " AND ";
-						}										
-
-						// Build the condition for each value specified in the request ("comma separated values")
-
-						$vValueConditions = [];
-							
-						foreach ($vQuery ["values"] as $vValue)
-						{
-							// Store helpers to know what to apply in the request for equals or different operator
-											
-							if ($vOperator == "==")
-							{
-								$vRegExpOperator = "REGEXP";
-								$vComparisonOperator = "=";
-								$vFindInSetOperator = "FIND_IN_SET";
-							}
-							else 
-							{
-								$vRegExpOperator = "NOT REGEXP";
-								$vComparisonOperator = "!=";						
-								$vFindInSetOperator = "NOT FIND_IN_SET";
-							}
-						
-							// Remember if the value is a regexp
-						
-							$vIsRegExp = $this->isRegExp ($vValue);
-
-							switch ($vDescriptor["mode"])
-							{
-								// If the field is intended to store a single value...
-							
-								case "single" :		
-																		
-									// It the value is a regexp, let's build a condition that match (or NOT) the regexp
-																		
-									if ($vIsRegExp)	
-										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vRegExpOperator . ' \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\'';
-										
-									// else let's just compare using the appropriated comparison operator (= or !=)
-										
-									else 
-										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\'';
-									
-								break;				
-										
-								// If the field is intended to store multiple values separated by comma...
-										
-								case "multiple" :
-								
-									// It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
-								
-									if ($vIsRegExp)																			
-		   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci ' . $vRegExpOperator . ' \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\')' ; 
-									else
-									
-									// else let's just check in the value belongs (or NOT) to the set of values
-																
-										$vValueConditions [] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\' COLLATE utf8mb4_unicode_ci), ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci)';
-								break;						
-							}				
-						}		
-												
-						// Merge all value conditions with a logical OR
-						
-						$vDescriptorCondition .= implode ( " OR ", $vValueConditions);
-						
-						$vDescriptorCondition .= ") ";	
-						
-						// Add the structure conditions to the field conditions
-						
-						$vQueryConditions [] = $vDescriptorCondition;		
-					}			
-				break;
-				case "===":
-				break;
-				case "!=":
-				break;						
-				case "!==":
+					$vRegExpOperator = "REGEXP";
+					$vComparisonOperator = "=";
+					$vFindInSetOperator = "FIND_IN_SET";
 				break;			
+				case "!=" :
+					$vRegExpOperator = "NOT REGEXP";
+					$vComparisonOperator = "!=";						
+					$vFindInSetOperator = "NOT FIND_IN_SET";
+				break;				
 				case "<":
+					$vRegExpOperator = "REGEXP"; // Should not be used or not yet implemented
+					$vComparisonOperator = "<";
+					$vFindInSetOperator = "FIND_IN_SET"; // Should not be used or not yet implemented
 				break;			
 				case ">":
+					$vRegExpOperator = "REGEXP"; // Should not be used or not yet implemented
+					$vComparisonOperator = ">";
+					$vFindInSetOperator = "FIND_IN_SET"; // Should not be used or not yet implemented
 				break;			
 				case "<=":
-				case ">=":			
+					$vRegExpOperator = "REGEXP"; // Should not be used or not yet implemented
+					$vComparisonOperator = "<=";
+					$vFindInSetOperator = "FIND_IN_SET"; // Should not be used or not yet implemented
 				break;			
+				case ">=":			
+					$vRegExpOperator = "REGEXP"; // Should not be used or not yet implemented
+					$vComparisonOperator = ">=";
+					$vFindInSetOperator = "FIND_IN_SET"; // Should not be used or not yet implemented
+				break;	
+				default : 
+					throw new Exception($vOperator . " is not recognized");
+    				return [];
 			}
+			// We need to add conditions that take into account all the possible structures 
+			// that may have the field depending on which form it belongs
+		
+			// So, for each structure...
+		
+			foreach ($vField ["descriptors"] as $vHash => $vDescriptor)
+			{									
+				$vDescriptorCondition = "( ";
+				
+				// if we had remembered that this field can have multiple structures 
+				// we need to specify the form IDs in the condition request that use this structure
+			
+				if ($vField ["hasMultipleStructures"])
+				{
+					$vDescriptorCondition .= "id_typeannonce IN (" . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ") AND ";
+				}										
+
+				// Build the condition for each value specified in the request ("comma separated values")
+
+				$vValueConditions = [];
+					
+				foreach ($vQuery ["values"] as $vValue)
+				{					
+					// Remember if the value is a regexp
+				
+					$vIsRegExp = $this->isRegExp ($vValue);
+
+					switch ($vDescriptor["mode"])
+					{
+						// If the field is intended to store a single value...
+					
+						case "single" :		
+																
+							// It the value is a regexp, let's build a condition that match (or NOT) the regexp
+																
+							if ($vIsRegExp)	
+								$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vRegExpOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '\'';
+								
+							// else let's just compare using the appropriated comparison operator
+								
+							else
+							{ 
+								if ($vDescriptor["type"] == "number")
+								{
+									$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';																	
+								}
+								else
+								{
+									$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\'';							
+								}							
+							}
+						break;				
+								
+						// If the field is intended to store multiple values separated by comma...
+								
+						case "multiple" :
+						
+							// It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
+						
+							if ($vIsRegExp)																			
+   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '\')' ; 
+							else
+							
+							// else let's just check in the value belongs (or NOT) to the set of values
+														
+								$vValueConditions [] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\' COLLATE utf8mb4_unicode_ci, ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci)';
+						break;						
+					}				
+				}		
+										
+				// Merge all value conditions with a logical OR
+				
+				$vDescriptorCondition .= implode ( " OR ", $vValueConditions);
+				
+				$vDescriptorCondition .= ") ";	
+				
+				// Add the structure conditions to the field conditions
+				
+				$vQueryConditions [] = $vDescriptorCondition;		
+			}						
 			
 			// Merge all the field conditions with a logical OR
 			
@@ -987,23 +1014,16 @@ class EntryManager
                 'user' => '', // N'affiche que les fiches d'un utilisateur
                 'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
                 'minDate' => '', // Date minimale des fiches
-                'correspondance' => '',
+                'correspondance' => ''
             ],
             $params
         );
 
-		// Merge, with AND operator "|", the keywords parameters from $params["keywords"], $_REQUEST['q'] and $_REQUEST['keywords'] 
+		// Get Keywords
         
-        $vKeywords = 
-        	implode
-	        (
-    	    	"|",
-    	    	array_filter
-    	    	(
-					[ $params["keywords"]??null, $_REQUEST['q']??null, $_REQUEST['keywords']??null ],
-		        	function ($pValue) { return ($pValue !== null && is_string($pValue) && !empty (trim($pValue))); },
-				)
-			);
+        $vKeywords = $params ["keywords"]??"";
+
+		// Ensure queries is correctly formated
 
 		$vQueries = $this->wiki->services->get(EntryController::class)->formatQuery ($params);
 
@@ -1188,7 +1208,7 @@ class EntryManager
 						
 						// If the "mode" of this field in this form Id is "multiple", let's remember we have to split it
 						
-						if ($vFieldDescriptor == "multiple") $vFields [$vField]["needSplit"] = true;
+						if ($vFieldDescriptor["_mode_"] == "multiple") $vFields [$vField]["needSplit"] = true;
 								
 						break; // We found it, so we can stop searching						
 					}
@@ -1217,7 +1237,7 @@ class EntryManager
 		$vSelectRequest =
 		[  
 			'p.*',
-			'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS id_typeannonce'
+			'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS `id_typeannonce`'
 		];
         
         // - Extract all fields ("single" and "multiple" mode)
@@ -1234,7 +1254,7 @@ class EntryManager
 	        
 	           	$vSQLNom = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName);
             
-            	$vSelectRequest [] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS ' . $vSQLNom;
+            	$vSelectRequest [] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS `' . $vSQLNom . '`';
             	
 				// rembember it was extracted
             	
@@ -1332,7 +1352,7 @@ class EntryManager
         // Queries conditions
         
         $vQueriesConditions = $this->buildQueriesConditions ($vQueries, $vFields);
-        
+
 	   	$vWhereRequest .= ($vWhereRequest != ""?" AND ":"") . $vQueriesConditions;
 	   	
         // Construct full request
@@ -1354,7 +1374,7 @@ class EntryManager
 										($vPeriodRequest !== "" ? $vPeriodRequest . " AND ":'') .
 										$vIDsRequest .
 								')' .
-								($vSplittedsRequest != "" ? ", " . $vSplittedsRequest . " " : " ") .
+								($vSplittedsRequest != "" ? $vSplittedsRequest . " " : " ") .
 								'SELECT DISTINCT f.* ' . 
 								'FROM filteredPages f ' .								
 								($vSplittedsCount > 0 ? 'JOIN all_multiples s ON s.id = f.id ' : '') .
@@ -1430,7 +1450,7 @@ class EntryManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
-		//echo ($vCompleteRequest . "<br><br>");//exit();
+
         return $vCompleteRequest;
     }
 
