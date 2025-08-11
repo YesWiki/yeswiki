@@ -6,41 +6,76 @@
     	  (params.query ?'query=' ~ params.query
     	  							| map(p => p.name ~ p.operator ~ (p.values|join(",")))
     	  							| join('|') 
-    	  							| url_encode :'')
+    	  							| url_encode :''),
+		(params.keywords ?'keywords=' ~ params.keywords | url_encode :'')
     	] | map(v => v|trim)|filter(v => v is not empty) | join('&') 
       }) }}">
-    <i class="fa fa-signal icon-signal"></i>TEST
+    <i class="fa fa-signal icon-signal"></i>
   </a>
   <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}"
-    target="_blank" href="{{
-								 url({
-								   tag: 'api',
-								   handler: 'forms/' ~ (params.idtypeannonce|join(',')) ~ '/entries/csv',
-								   params: params.query
-									 ? { query: params.query
-												 | map(p => p.name ~ p.operator ~ (p.values|join(",")) )
-												 | join('|')
-												 | url_encode }
-									 : {}
-								 })
-						}}">
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="{{ _t('BAZ_CSV')|raw('html') }}"
+    target="_blank" 
+{% set vParams = {} %}
+
+{% if params.query is defined %}
+{% 
+	set vParams = vParams|merge	({ 	
+									query :	params.query
+											| map(p => p.name ~ p.operator ~ (p.values|join(",")) )
+											| join('|')
+											| url_encode
+								})
+%}
+{% endif %}
+{% if params.keywords is defined %}
+{% 
+	set vParams = vParams|merge	({ 	
+									keywords :	params.keywords | url_encode
+								})
+%}
+{% endif %}
+    
+    href="{{ url ({
+				 	  tag: 'api',
+					  handler: 'forms/' ~ (params.idtypeannonce|join(',')) ~ '/entries/csv',
+					  params: vParams										
+				 })
+		 }}">
     CSV
   </a>
   <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}"
-    target="_blank" href="{{
-								 url({
-								   tag: 'api',
-								   handler: 'forms/' ~ (params.idtypeannonce|join(',')) ~ '/entries',
-								   params: params.query
-									 ? { query: params.query
-												 | map(p => p.name ~ p.operator ~ p.values)
-												 | join('|')
-												 | url_encode }
-									 : {}
-								 })
-						}}">
+    data-toggle="tooltip"
+    data-placement="bottom"
+    title="{{ _t('BAZ_JSON')|raw('html') }}"
+    target="_blank" 
+    {% set vParams = {} %}
+
+{% if params.query is defined %}
+{% 
+	set vParams = vParams|merge	({ 	
+									query :	params.query
+											| map(p => p.name ~ p.operator ~ (p.values|join(",")) )
+											| join('|')
+											| url_encode
+								})
+%}
+{% endif %}
+{% if params.keywords is defined %}
+{% 
+	set vParams = vParams|merge	({ 	
+									keywords :	params.keywords | url_encode
+								})
+%}
+{% endif %}
+    
+    href="{{ url ({
+				 	  tag: 'api',
+					  handler: 'forms/' ~ (params.idtypeannonce|join(',')) ~ '/entries',
+					  params: vParams										
+				 })
+		 }}">
     JSON
   </a>
 </div>
