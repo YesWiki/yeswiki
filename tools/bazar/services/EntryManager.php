@@ -947,7 +947,7 @@ class EntryManager
 								
 							else
 							{ 
-								if ($vDescriptor["type"] == "number")
+								if ($vDescriptor["type"] == "number" && isset ($vValue) && trim ($vValue) !== "")
 								{
 									$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';																	
 								}
