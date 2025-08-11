@@ -288,19 +288,20 @@ const load = (domElement) => {
 				
 		  		if ((cKey == 'q')||(cKey == 'keywords')) // keywords supports for clarity (q parameter is confusing with query parameter)
 				{
-					vParseds ["keywords"] = vValue; // privilegiate use of "keywords"
+					if (vParseds ["keywords"] !== undefined) vParseds ["keywords"] = decodeURIComponent(vValue); // privilegiate use of "keywords"
+					
 				}
 				else if ((cKey == 'champ') || (cKey == 'ordre'))
 				{
 					vParseds [cKey] = vValue;
 				}
 				else if (cKey == 'query')
-				{			
-					vParseds [cKey] = parseCondition (decodeURIComponent (vValue));
+				{	
+					if (vParseds [cKey] !== undefined) vParseds [cKey] = decodeURIComponent (vValue).split ("|").map (this.parseCondition);
 				}													   
 			    else	      	
 			    {
-				    vParseds [cKey] = vValue;//.replace ("+", " ")
+				    vParseds [cKey] = vValue;
 				}								
 			}
 			
@@ -309,40 +310,100 @@ const load = (domElement) => {
       mergeSearchParams (pParams1, pParams2) // string or structured params objet
       {
 	      	var vMerged = {};
+      		var vQuery;
+      		var vKeywords;
       
       		var vParamsObject1 =	typeof (pParams1) == "string"?this.parseSearchParams(pParams1):pParams1;
       		var vParamsObject2 =	typeof (pParams2) == "string"?this.parseSearchParams(pParams2):pParams2;
 
+			// Merge query parameter
+
 			if (vParamsObject1.query && vParamsObject2.query)
 			{				
-				vMerged.query = { ...vParamsObject1.query, ...vParamsObject2.query };
+				vParamsObject2
+				.query
+				.forEach (function (pCondition2)
+				{ 
+					var vFound = false;
+				
+					vParamsObject1
+					.query
+					.map (function (pCondition1)
+					{
+						if (pCondition1.name === pCondition2.name && pCondition1.operator === pCondition2.operator)
+						{						
+							vFound = true;
+							return pCondition2;
+						}
+						else
+							return pCondition1;
+					});
+					
+					if (!vFound) vParamsObject1.query.push (pCondition2);
+				});
+			
+				vQuery = vParamsObject1.query;
 			}
 			else
 			if (vParamsObject1.query)
 			{
-				vMerged.query = vParamsObject1.query; 
+				vQuery = vParamsObject1.query; 
 			}
 			else
 			if (vParamsObject2.query)
 			{
-				vMerged.query = vParamsObject2.query; 
-			}			
+				vQuery = vParamsObject2.query; 
+			}
 			
-			if (vMerged.query) 
-				vMerged.query = encodeURIComponent
-				(
-					Object
-					.entries (vMerged.query)
-					.map ( ([ pName, pOperator, pValue ]) => pName + pOperator + pValue )
-					.join ("|")
-				);
-
-			vParamsObject1.query = undefined;
+			vParamsObject1.query = undefined; // The query parameter was merged into vMerged
 			vParamsObject2.query = undefined;
+            
+            if (vQuery !== undefined)
+            {
+	            // Remove duplicates and rebuild the query string
+            
+      			vQuery = [...new Set (	Object
+							      		.entries (vQuery)
+					      				.map (({name, operator, values}) => name+operator+values)
+					      			)
+						].join ("|");
+				
+				if (vQuery.trim() != "") vMerge.query = encodeURIComponent (vQuery);
+			}
+						
+   			// Merge keywords parameter
       
+      		if (vParamsObject1.keywords && vParamsObject2.keywords)
+			{				
+				vKeywords = vParamsObject1.keywords + "|" + vParamsObject2.keywords;
+			}
+			else
+			if (vParamsObject1.keywords)
+			{
+				vKeywords = vParamsObject1.keywords; 
+			}
+			else
+			if (vParamsObject2.keywords)
+			{
+				vKeywords = vParamsObject2.keywords; 
+			}
+			
+			vParamsObject1.keywords = undefined; // The keywords parameter was merged into vMerged
+			vParamsObject2.keywords = undefined;
+      
+      		if (vKeywords != undefined && vKeywords.trim() != "")
+			{
+		    	// URI encode the keywords
+      
+				vMerged.keywords = encodeURIComponent (vKeywords);
+      		}
+      		
 			$.extend (true, vMerged, vParamsObject1, vParamsObject2);
 
-			return vMerged;
+			return	Object
+					.entries (vMerged)
+					.map ( ([ pKey, pValue ]) => pKey + "=" + pValue )
+					.join ("&");
       },
       resetFilters() {
         this.filters.forEach((filter) => {
@@ -356,9 +417,7 @@ const load = (domElement) => {
       },
       initFilters (pFilters, pHash)
       {
-        var vHash = decodeURIComponent(pHash.substring(1)) // remove # and avoid confusion between hash parameter and search parameter when using & symbol in the hash
-
-		var vParams = this.parseSearchParams (vHash); // Return hash as a structured object
+		var vParams = this.parseSearchParams (pHash); // Return hash as a structured object
 		var vChamp;
 		var vOrdre;
 
@@ -367,9 +426,9 @@ const load = (domElement) => {
             this.search = vParams["q"];
 		}
 		
-		if (vParams["keyword"] !== undefined && vParams["keywords"].trim () !== "")
+		if (vParams["keywords"] !== undefined && vParams["keywords"].trim () !== "")
 		{
-            this.search = vParams["keywords"];
+            this.search = (this.search!=""?this.search + "|":"") + vParams["keywords"];
 		}
 		
 		if (vParams["champ"] !== undefined && vParams["champ"].trim () !== "")
@@ -433,7 +492,7 @@ const load = (domElement) => {
       {
 		if (!this.ready) return
 		
-		var cCurrentHash = decodeURIComponent (new URL(document.URL).hash.slice(1));		
+		var cCurrentHash = this.savedHash;
 		
 		var vQuery = {};
 		var vCurrentParams = {};
@@ -461,66 +520,67 @@ const load = (domElement) => {
 								.join (",");			
 		}
 			
-		if (bHasFilter) vCurrentParams.query = vQuery;		
+		if (bHasFilter) vCurrentParams.query = 	Object
+												.entries (vQuery)
+												.map ( ([ pKey, pValue ]) => pKey + "==" + pValue )
+												.join ("|");
+
+		vMergedParams = this.mergeSearchParams (cCurrentHash, vCurrentParams);
 		
-		vMergedParams = Object
-			.entries (this.mergeSearchParams (cCurrentHash, vCurrentParams))
-			.map ( ([ pName, pOperator, pValue ]) => pName + pOperator + pValue )			
-			.join ("&");
+		// Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
 		
-		history.pushState({}, '', '#' + encodeURIComponent (vMergedParams)); // Avoid confusion between hash parameter and search parameter when using & symbol in the hash
+		history.pushState({}, '', '#' + encodeURIComponent (vMergedParams)); 
 
 		this.updateExportLinks(vMergedParams) // Export 
       },      
       updateExportLinks(pSearchParams)
       {            	
-	    document.querySelectorAll('.export-links > a').forEach((link) => {
-        
-			var vOldHREF = link.getAttribute('oldhref'); // Get the original href
+		    document
+		    .querySelectorAll('.export-links > a')
+		    .forEach ((pLink) => 
+		    {        
+				var vOldHREF = pLink.getAttribute('oldhref'); // Get the original href
  	
-			if (!vOldHREF) // if it didn't exist yet, remember what it is.
-			{
-				vOldHREF = link.getAttribute('href')
-				link.setAttribute('oldhref', vOldHREF);
-			}
-
-			var vNewHREF;
-
-			if (vOldHREF.trim() === '')
-			{
-				console.error('Invalid URL provided.')
-			}
-			else
-			{	        	
-				var vNewURL = new URL (vOldHREF);
-
-			 	var vHandler = vNewURL.searchParams.keys().next();			 	
-				var vHandlerValue = vHandler.value;
-				
-				if (vHandler) vNewURL.searchParams.delete (vHandlerValue)
-				else vHandlerValue = "";
-
-				if (vNewURL.searchParams.has ("query"))
+				if (!vOldHREF) // if it didn't exist yet, remember what it is.
 				{
-					vNewURL.searchParams.set ("query", decodeURIComponent (vNewURL.searchParams.get("query")));
+					vOldHREF = pLink.getAttribute('href')
+					pLink.setAttribute('oldhref', vOldHREF);
 				}
 
-				link.setAttribute ("href",
-					vNewURL.origin + 
-					vNewURL.pathname + 
-					"?" + vHandlerValue + 
-					"&" + (	
-								Object.entries
-								(
-									this									
-									.mergeSearchParams (vNewURL.searchParams.toString(), pSearchParams)
-								)
-								.map ( ([ pName, pOperator, pValue ]) => pName + pOperator + pValue )	
-								.join("&")
-						  ) +
-					vNewURL.hash)	        	
-			}
-		})
+				var vNewHREF;
+
+				if (vOldHREF.trim() === '')
+				{
+					console.error('Invalid URL provided.')
+				}
+				else
+				{	        	
+					var vNewURL = new URL (vOldHREF);
+
+				 	var vHandler = vNewURL.searchParams.keys().next();			 	
+					var vHandlerValue = vHandler.value;
+					
+					if (vHandler) vNewURL.searchParams.delete (vHandlerValue)
+					else vHandlerValue = "";
+
+					if (vNewURL.searchParams.has ("query"))
+					{
+						vNewURL.searchParams.set ("query", decodeURIComponent (vNewURL.searchParams.get("query")));
+					}
+
+					var vParams = 	this.mergeSearchParams (vNewURL.searchParams.toString(), pSearchParams);
+
+					pLink.setAttribute
+					(	
+						"href",
+						vNewURL.origin + 
+						vNewURL.pathname + 
+						"?" + vHandlerValue + 
+						(vParams ? "&" + vParams : "") +
+						vNewURL.hash						
+					)
+				}
+			});
 	  },
       
       getEntryRender(entry) {
@@ -624,7 +684,7 @@ const load = (domElement) => {
     },
     mounted() {
       $(this.$el).on('dblclick', (e) => false)
-      const savedHash = document.location.hash // don't know how, but the hash get cleared after
+      this.savedHash = decodeURIComponent(document.location.hash.substring(1)) // Save the hash for later updating
       this.params = JSON.parse(this.$el.dataset.params)
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
@@ -666,7 +726,7 @@ const load = (domElement) => {
 
 
         // First display filters cause entries can be a bit long to load
-        this.filters = this.initFilters(filters, savedHash)
+        this.filters = this.initFilters(filters, this.savedHash)
 
         // Auto paginate if large numbers
         if (data.entries.length > 50 && !this.pagination) this.pagination = 20
