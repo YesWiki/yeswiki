@@ -270,7 +270,17 @@ class BazarListeAction extends YesWikiAction
             self::specialActionFromTemplate($this->arguments['template'], 'BAZARTABLE_TEMPLATES')
             && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarTableAction')
         ) {
-            return $this->callAction('bazartable', $this->arguments);
+        	// Ceci est bancal : bazarliste action appelle bazartable action qui rappelle une deuxieme bazarliste action.
+        	// L'objectif est de formater les arguments correctement pour les tables.
+        	// Ainsi on créé une action bazartable qui créée une deuxieme bazarliste action avec les paramètres correctement formatés pour les tables
+        	// Cela a des effets de bords : 
+        	// ex : si la bazarliste action utilise des parametres de $_REQUEST pour définir ses arguments, alors ces arguments peuvent être dupliqués dans la deuxième bazarliste action créée 
+        	// ie : 
+        	//		- 1ere bazarliste action : bazartable ($arg + $_REQUEST)
+        	// 		- bazartable action : bazarliste ($arg + $_REQUEST)
+        	// 		- 2eme bazarliste action : bazarliste (($arg + $_REQUEST) + $_REQUEST)
+        
+            return $this->callAction('bazartable', $this->arguments); 
         }
 
         $bazarListService = $this->getService(BazarListService::class);
