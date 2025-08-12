@@ -578,11 +578,11 @@ class EntryController extends YesWikiController
 	   	$vGetQuery = "";	   
 	   	$vAggregatedQuery = "";	
 		$vConditions = [];
-		
+
         // Aggregate argument and get queries :
         
         // Convert queries to string
-        
+                
         if (isset ($pArg))
         {
         	$vQuery = $pArg["query"]??$pArg["queries"]??null;
@@ -609,19 +609,22 @@ class EntryController extends YesWikiController
       						:"";		                
         }
 
-		// build queries array
+		// merge query strings
 
-		$vConditions = explode ('|', $vArgQuery .
-											(
-												$vArgQuery != ""
-												? (
-														$vGetQuery != "" 
-														? "|" . $vGetQuery
-														:""
-												  )
-												: $vGetQuery
-											)
-									);
+		$vAggregatedQuery = $vArgQuery .
+							(
+								$vArgQuery != ""
+								? (
+										$vGetQuery != "" 
+										? "|" . $vGetQuery
+										:""
+								  )
+								: $vGetQuery
+							);
+									
+		// Eliminates duplicates
+
+		$vConditions = array_unique (explode ("|", $vAggregatedQuery));
 
 		// Build the queries structure to pass to EntryManager::search method
 
