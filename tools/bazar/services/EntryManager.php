@@ -38,6 +38,8 @@ class EntryManager
     private $cachedEntriestags;
 
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
+    public const MISSING_PROPERTY= '_MISSING_PROPERTY_';
+    public const MISSING_FIELD = '_MISSING_FIELD_';
 
     public function __construct(
         Wiki $wiki,
@@ -577,7 +579,7 @@ class EntryManager
 	     
     private function buildFieldDescriptorHash ($pStructure) // 
     {
-	    return $pStructure[ "_mode_"] . '|' . $pStructure["_type_"];
+	    return $pStructure[ "_mode_"] . '|' . $pStructure["_type_"];	
     }
     
     /**
@@ -824,7 +826,7 @@ class EntryManager
     	return implode
     	(			
 			" AND ",
-			$vANDs
+			unique_array ($vANDs)
     	);
     }
 	
@@ -847,7 +849,7 @@ class EntryManager
 
         foreach ($pQueries as $vQuery)
         {        		        
-        	// Build the query condition for this field 
+        	// Build the query condition for this field :
 			
 	    	// Name of the field
     
@@ -911,21 +913,11 @@ class EntryManager
 			// So, for each structure...
 		
 			foreach ($vField ["descriptors"] as $vHash => $vDescriptor)
-			{									
-				$vDescriptorCondition = "";
-				
-				// if we had remembered that this field can have multiple structures 
-				// we need to specify the form IDs in the condition request that use this structure
-			
-				if ($vField ["hasMultipleStructures"])
-				{
-					$vDescriptorCondition .= "id_typeannonce IN (" . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ") AND ";
-				}										
-
+			{							
 				// Build the condition for each value specified in the request ("comma separated values")
 
 				$vValueConditions = [];
-					
+
 				foreach ($vQuery ["values"] as $vValue)
 				{					
 					// Remember if the value is a regexp
@@ -936,8 +928,8 @@ class EntryManager
 					{
 						// If the field is intended to store a single value...
 					
-						case "single" :		
-																
+						case "single" :	
+						{										
 							// It the value is a regexp, let's build a condition that match (or NOT) the regexp
 																
 							if ($vIsRegExp)	
@@ -952,19 +944,20 @@ class EntryManager
 									if (isset ($vValue) && trim ($vValue) !== "")
 										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';
 									else
-										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci = \'\'';																									
+										$vValueConditions [] = '(' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																									
 								}
 								else
 								{
 									$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\'';							
 								}							
 							}
+						}
 						break;				
 								
 						// If the field is intended to store multiple values separated by comma...
 								
-						case "multiple" :
-						
+						case "multiple" : 
+						{
 							// It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
 						
 							if ($vIsRegExp)																			
@@ -974,26 +967,45 @@ class EntryManager
 							// else let's just check in the value belongs (or NOT) to the set of values
 														
 								$vValueConditions [] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\' COLLATE utf8mb4_unicode_ci, ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci)';
-						break;						
+						}
+						break;		
+						
+						// The field is missing : we need to add a specific condition
+						
+						case $this->MISSING_FIELD :
+						{
+							$vValueConditions [] = '(' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																				
+						}
+						break;
 					}				
 				}		
+				
+				$vDescriptorCondition = "";
+				
+				// if we had remembered that this field can have multiple structures 
+				// we need to specify the form IDs that use this structure in the condition request 
+			
+				if ($vField ["hasMultipleStructures"])
+				{
+					$vDescriptorCondition .= "id_typeannonce IN (" . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ")";
+				}	
 										
-				// Merge all value conditions with a logical OR
+				// Merge all value conditions with a logical OR and add it to the descripted field condition
 				
 				if (count ($vValueConditions) > 0)
 				{				
-					$vDescriptorCondition .= '(' . implode ( " OR ", $vValueConditions) . ')';
-				
-					// Add the structure conditions to the field conditions
-				
-					$vQueryConditions [] = $vDescriptorCondition;		
+					$vDescriptorCondition = ($vDescriptorCondition?$vDescriptorCondition . " AND ":"") . implode ( " OR ", $vValueConditions);
 				}
+
+				// Add the structure conditions to the field conditions
+				
+				if ($vDescriptorCondition) 	$vQueryConditions [] = "(" . $vDescriptorCondition . ')';
 			}						
 			
 			// Merge all the field conditions with a logical OR
 			
 			if (count ($vQueryConditions) > 0) 
-				$vQueriesConditions [] = implode (' OR ', $vQueryConditions);
+				$vQueriesConditions [] = '(' . implode (' OR ', $vQueryConditions) . ')';
 		}
         
         return implode (" AND ", $vQueriesConditions);        
@@ -1134,12 +1146,10 @@ class EntryManager
 		// For each necessary field, let retrieve value structure...
 
    		foreach ($vNecessaryFields as $vField)
-  		{  		  		
-  			// Get the field name
-  		
+  		{  		  		  		
   			if (isset ($vFields[$vField])) // value structure already retrieved for this field, let's ignore it
   				continue;
-			  		
+
   			// We will store the field structure associated with form IDs, so create a place for it
 	  		
 	  		if (!isset ($vFields [$vField] ["descriptors"])) $vFields [$vField] ["descriptors"] = [];
@@ -1149,37 +1159,52 @@ class EntryManager
   		
 	  		foreach ($vForms as $vFormID => $vForm)
 			{			
-				// ... we find the field if it exists ...
+				// ... we try to find the field by property name if it exists ...
+				// ex :"geolocation" in geolocation.bf_latitude
+			
+				$vPropertyFound = false;
 			
 				foreach ($vForm["prepared"] as $vFieldObject)
-				{											
-					if ($vFieldObject->getPropertyName () == $vField)
+				{					
+					// Extract the JSON path of the field
+					
+					$vJSONPath = explode('.', $vField);
+					
+					// Get the property name
+					
+					$vPropertyName = $vJSONPath [0]??"";
+					
+					if ($vFieldObject->getPropertyName () == $vPropertyName)
 					{					
-						// If it exists
+						// We found it
+					
+						$vPropertyFound = true;
+					
+						// We need to find the field mode and type associated to the complete field name (ex : "geolocation.bf_latitude")
 						
-						// We get it's structure
+						// So, let's get the field structure
 					
 						$vStructure = $vFieldObject->getValueStructure ();
 
-						// Then we find the field name in the structure to get its mode and type
+						// and try to find inside the complete field name 
 						
 						$vCurrentArray = $vStructure;
 						
-						$vFound = true;
+						$vFieldFound = true;
 						
-						foreach (explode('.', $vField) as $vSegment)
+						foreach ($vJSONPath as $vJSONPathSegment)
 						{
-					        if (is_array($vCurrentArray) && array_key_exists($vSegment, $vCurrentArray))
+					        if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray))
 					        {
-				            	$vCurrentArray = $vCurrentArray[$vSegment];
+				            	$vCurrentArray = $vCurrentArray[$vJSONPathSegment];
 					        }
 					        else
 					        {					       
-					            $vFound = false;
+					            $vFieldFound = false;
 					        }
 					    }
 
-					    if ($vFound) 
+					    if ($vFieldFound) 
 					    {
 					    	// We found it : we know the mode and type of the field
 
@@ -1187,10 +1212,9 @@ class EntryManager
 					    }
 					    else
 					    {
-					        // We do not found it : we cannot determine the mode and type. 
-					        // Set it to default value;
-					
-						    $vFieldDescriptor = [ "_mode_" => "single", "_type_" => "string"];
+					        // We do not found it : the field is missing in the form
+
+						    $vFieldDescriptor = [ "_mode_" => $this->MISSING_FIELD, "_type_" => $this->MISSING_FIELD ];
 						}
 
 						// Remember that the field $vField can have this mode and type in the form $vFormID :
@@ -1219,6 +1243,24 @@ class EntryManager
 					
 					// else we continue searching...
 				}
+				
+				// If we do not found the property in this form, let's memorize it
+				
+				if (!$vPropertyFound)
+				{
+					$vFieldDescriptor = [ "_mode_" => $this->MISSING_PROPERTY, "_type_" => $this->MISSING_PROPERTY ];
+					
+					$vHash = $this->buildFieldDescriptorHash ($vFieldDescriptor);
+								
+					if (isset($vFields [$vField]["descriptors"][$vHash]))
+					{
+						$vFields [$vField]["descriptors"][$vHash]["ids"][] = $vFormID;
+					}
+					else
+					{
+						$vFields [$vField]["descriptors"][$vHash] = [ "mode" => $vFieldDescriptor["_mode_"], "type" => $vFieldDescriptor["_type_"], "ids" => [ $vFormID ] ];
+					}													
+				}				
 			}
 
 			// We will remember if the field can have different kind of structures so that we can optimize SQL request.
@@ -1245,7 +1287,7 @@ class EntryManager
 		];
         
         // - Extract all fields ("single" and "multiple" mode)
-        
+
         foreach ($vFields as $vFieldName => $vField)
         {
 	       	// Extract one field
@@ -1381,7 +1423,7 @@ class EntryManager
 								($vSplittedsRequest != "" ? $vSplittedsRequest . " " : " ") .
 								'SELECT DISTINCT f.* ' . 
 								'FROM filteredPages f ' .								
-								($vSplittedsCount > 0 ? 'JOIN all_multiples s ON s.id = f.id ' : '') .
+								($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '') .
 								($vWhereRequest != "" ? "WHERE " . $vWhereRequest : "");
 
 /*
@@ -1456,7 +1498,7 @@ class EntryManager
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
 
-//echo ($vCompleteRequest);
+//echo ($vCompleteRequest);//exit();
 
         return $vCompleteRequest;
     }
