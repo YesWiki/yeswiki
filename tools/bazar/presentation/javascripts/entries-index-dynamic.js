@@ -288,7 +288,7 @@ const load = (domElement) => {
 				
 		  		if ((cKey == 'q')||(cKey == 'keywords')) // keywords supports for clarity (q parameter is confusing with query parameter)
 				{
-					if (vParseds ["keywords"] !== undefined) vParseds ["keywords"] = decodeURIComponent(vValue); // privilegiate use of "keywords"
+					if (vValue && vValue.trim() !== "") vParseds ["keywords"] = decodeURIComponent(vValue); // privilegiate use of "keywords"
 					
 				}
 				else if ((cKey == 'champ') || (cKey == 'ordre'))
@@ -297,7 +297,7 @@ const load = (domElement) => {
 				}
 				else if (cKey == 'query')
 				{	
-					if (vParseds [cKey] !== undefined) vParseds [cKey] = decodeURIComponent (vValue).split ("|").map (this.parseCondition);
+					if (vValue && vValue.trim() !== "") vParseds [cKey] = decodeURIComponent (vValue).split ("|").map (this.parseCondition);
 				}													   
 			    else	      	
 			    {
@@ -362,13 +362,9 @@ const load = (domElement) => {
             {
 	            // Remove duplicates and rebuild the query string
             
-      			vQuery = [...new Set (	Object
-							      		.entries (vQuery)
-					      				.map (({name, operator, values}) => name+operator+values)
-					      			)
-						].join ("|");
+      			vQuery = [...new Set (	vQuery.map (({name, operator, values}) => name+operator+values )) ].join ("|");
 				
-				if (vQuery.trim() != "") vMerge.query = encodeURIComponent (vQuery);
+				if (vQuery.trim() != "") vMerged.query = encodeURIComponent (vQuery);
 			}
 						
    			// Merge keywords parameter
@@ -395,7 +391,11 @@ const load = (domElement) => {
 			{
 		    	// URI encode the keywords
       
-				vMerged.keywords = encodeURIComponent (vKeywords);
+	            // Remove duplicates and rebuild the query string
+            
+      			vKeywords = [...new Set (	vKeywords.split ("|")) ].join ("|");
+				
+				if (vKeywords.trim() != "") vMerged.keywords = encodeURIComponent (vKeywords);
       		}
       		
 			$.extend (true, vMerged, vParamsObject1, vParamsObject2);
