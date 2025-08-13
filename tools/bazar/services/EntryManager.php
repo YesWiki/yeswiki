@@ -383,6 +383,19 @@ class EntryManager
 		return $vResults;		
 	}
 	
+	 /**
+     * Rename a JSON path variable (ex : "geolocation.bf_latitude") in order to be exploitable in SQL request
+     *
+     * @param string $pPath
+     *
+     * @return string the transformed path
+     */
+    
+    private function renameJSONPathVariable ($pPath)
+   	{
+		return (str_replace (".", "__", $pPath));
+    }
+	
 	/**
      * Build the SQL fields conditions for keywords
      *
@@ -456,7 +469,7 @@ class EntryManager
 	    				// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
 	    			
 	    				if ($vField["hasMultipleStructures"])	    				
-		    				$vORRequest .= '( id_typeannonce in ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
+		    				$vORRequest .= '( ' . $this->renameJSONPathVariable("id_typeannonce") . ' IN ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
 
 						switch ($vFieldDescriptor["mode"])
 						{
@@ -466,9 +479,9 @@ class EntryManager
 								// Add a field condition adapted to a regexp or not
 	    			
 								if ($vIsRegExp)
-									$vORRequest .= $vFieldName . ' COLLATE utf8mb4_unicode_ci REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vOR)) . '\'';
+									$vORRequest .= $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vOR)) . '\'';
 								else
-									$vORRequest .= $vFieldName . ' COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vOR) . '%\'';
+									$vORRequest .= $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vOR) . '%\'';
  '\'';
 							break;							
 									
@@ -479,9 +492,9 @@ class EntryManager
 								// Add a field condition adapted to a regexp or not
 							
 								if ($vIsRegExp)																			
-	   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\')' ; 
+	   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\')' ; 
 								else
-									$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '%\')' ;
+									$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '%\')' ;
 							
 							break;						
 						}	
@@ -518,7 +531,7 @@ class EntryManager
 	    			// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
 	    			
 	    			if ($vField["hasMultipleStructures"])	    				
-		    			$vExcludedRequest .= '( id_typeannonce in ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
+		    			$vExcludedRequest .= '( ' . $this->renameJSONPathVariable("id_typeannonce") . ' IN ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
 	    			
 	    			switch ($vFieldDescriptor["mode"])
 					{
@@ -528,9 +541,9 @@ class EntryManager
 							// Add a field condition adapted to a regexp or not
     			
 							if ($vIsRegExp)
-								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci NOT REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '\'';
+								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '\'';
 							else
-								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\'';
+								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\'';
 '\'';
 						break;							
 								
@@ -541,9 +554,9 @@ class EntryManager
 							// Add a field condition adapted to a regexp or not
 						
 							if ($vIsRegExp)																			
-   								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '$\')'; 
+   								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '$\')'; 
 							else
-								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\')';
+								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\')';
 						
 						break;						
 					}
@@ -663,7 +676,7 @@ class EntryManager
 							// It the value is a regexp, let's build a condition that match (or NOT) the regexp
 																
 							if ($vIsRegExp)	
-								$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vRegExpOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '\'';
+								$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . " COLLATE utf8mb4_unicode_ci " . $vRegExpOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '\'';
 								
 							// else let's just compare using the appropriated comparison operator
 								
@@ -672,13 +685,13 @@ class EntryManager
 								if ($vDescriptor["type"] == "number")
 								{
 									if (isset ($vValue) && trim ($vValue) !== "")
-										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';
+										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';
 									else
-										$vValueConditions [] = '(' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																									
+										$vValueConditions [] = '(' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																									
 								}
 								else
 								{
-									$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\'';							
+									$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\'';							
 								}							
 							}
 						}
@@ -691,12 +704,12 @@ class EntryManager
 							// It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
 						
 							if ($vIsRegExp)																			
-   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . '\' AND s.elt COLLATE utf8mb4_unicode_ci ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '\')' ; 
+   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '\')' ; 
 							else
 							
 							// else let's just check in the value belongs (or NOT) to the set of values
 														
-								$vValueConditions [] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\' COLLATE utf8mb4_unicode_ci, ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci)';
+								$vValueConditions [] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\' COLLATE utf8mb4_unicode_ci, ' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci)';
 						}
 						break;		
 						
@@ -704,7 +717,7 @@ class EntryManager
 						
 						case $this->MISSING_FIELD :
 						{
-							$vValueConditions [] = '(' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $vFieldName) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																				
+							$vValueConditions [] = '(' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																				
 						}
 						break;
 					}				
@@ -717,7 +730,7 @@ class EntryManager
 			
 				if ($vField ["hasMultipleStructures"])
 				{
-					$vDescriptorCondition .= "id_typeannonce IN (" . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ")";
+					$vDescriptorCondition .= $this->renameJSONPathVariable("id_typeannonce") . ' IN (" ' . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ")";
 				}	
 										
 				// Merge all value conditions with a logical OR and add it to the descripted field condition
@@ -819,7 +832,7 @@ class EntryManager
 					}
 	            );
 
-			$vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
+			$vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $this->renameJSONPathVariable("id_typeannonce") . '\')) IN (' . join (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
 		}
 
         // Limit the request depending on the date
@@ -1013,7 +1026,7 @@ class EntryManager
 		$vSelectRequest =
 		[  
 			'p.*',
-			'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS `id_typeannonce`'
+			'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS `' . $this->renameJSONPathVariable("id_typeannonce") . '`'
 		];
         
         // - Extract all fields ("single" and "multiple" mode)
@@ -1028,7 +1041,7 @@ class EntryManager
 	        {        
 				// Extract it if it is not yet done
 	        
-	           	$vSQLNom = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName);
+	           	$vSQLNom = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
             
             	$vSelectRequest [] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS `' . $vSQLNom . '`';
             	
@@ -1060,18 +1073,18 @@ class EntryManager
 		
 			// else we split it		
 		
-			$vSplitteds[] = 'SELECT id, champ, elt FROM ' . $vFieldName . '_multiple';
+			$vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple';
 				
 			$vSplittedsRequest .=
-						', ' . $vFieldName . '_multiple AS ' . 
+						', ' . $this->renameJSONPathVariable($vFieldName) . '_multiple AS ' . 
 						'( ' .
 							'SELECT ' .
 								'id, ' .
-								'\'' . $vFieldName . '\' AS champ, ' .
+								'\'' . $this->renameJSONPathVariable($vFieldName) . '\' AS champ, ' .
 								'TRIM(SUBSTRING_INDEX(' . $vFieldName . ', \',\', 1)) AS elt, ' .
 								'CASE ' .
-									'WHEN INSTR(' . $vFieldName . ', \',\') = 0 THEN \'\' ' .
-									'ELSE SUBSTR(' . $vFieldName . ', INSTR(' . $vFieldName . ', \',\') + 1) ' .
+									'WHEN INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') = 0 THEN \'\' ' .
+									'ELSE SUBSTR(' . $this->renameJSONPathVariable($vFieldName) . ', INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') + 1) ' .
 								'END AS rest ' .
 							'FROM filteredPages ' .
 							'UNION ALL ' .
@@ -1083,7 +1096,7 @@ class EntryManager
 									'WHEN INSTR(rest, \',\') = 0 THEN \'\' ' .
 									'ELSE SUBSTR(rest, INSTR(rest, \',\') + 1) ' .
 								'END AS rest ' .
-							'FROM ' . $vFieldName . '_multiple ' .
+							'FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple ' .
 							'WHERE rest <> \'\'' .
 						')';
 				
@@ -1228,7 +1241,7 @@ class EntryManager
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
 
-//echo ($vCompleteRequest);//exit();
+echo ($vCompleteRequest);//exit();
 
         return $vCompleteRequest;
     }
