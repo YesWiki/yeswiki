@@ -1240,9 +1240,7 @@ class EntryManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
-
-echo ($vCompleteRequest);//exit();
-
+        
         return $vCompleteRequest;
     }
 
