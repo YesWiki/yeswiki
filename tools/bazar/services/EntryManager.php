@@ -67,8 +67,6 @@ class EntryManager
 
     /**
      * Returns true if the provided page is a Bazar fiche.
-     *
-     * @param $tag
      */
     public function isEntry($tag): bool
     {
@@ -101,7 +99,6 @@ class EntryManager
     /**
      * Get one specified fiche.
      *
-     * @param $tag
      * @param bool        $semantic
      * @param string      $time                   pour consulter une fiche dans l'historique
      * @param bool        $cache                  if false, don't use the page cache
@@ -110,7 +107,7 @@ class EntryManager
      *
      * @return mixed|null
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getOne($tag, $semantic = false, $time = null, $cache = true, $bypassAcls = false, ?string $userNameForCheckingACL = null): ?array
     {
@@ -224,7 +221,7 @@ class EntryManager
 
         $requeteSQL = '';
 
-        //preparation de la requete pour trouver les mots cles
+        // preparation de la requete pour trouver les mots cles
         if (is_string($params['keywords']) && trim($params['keywords']) != '' && $params['keywords'] != _t('BAZ_MOT_CLE')) {
             $needles = $this->searchManager->searchWithLists($params['keywords'], $this->getFormsFromIds($param['formsIds'] ?? null));
             if (!empty($needles)) {
@@ -264,7 +261,7 @@ class EntryManager
             }
         }
 
-        //on ajoute dans la requete les valeurs passees dans les champs liste et checkbox du moteur de recherche
+        // on ajoute dans la requete les valeurs passees dans les champs liste et checkbox du moteur de recherche
         if ($params['queries'] == '') {
             $params['queries'] = [];
 
@@ -361,7 +358,7 @@ class EntryManager
             $joinrequeteSQL = '';
             $tableau = [];
             $tab = explode('|', $join);
-            //découpe la requete autour des |
+            // découpe la requete autour des |
             foreach ($tab as $req) {
                 $tabdecoup = explode('=', $req, 2);
                 $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
@@ -467,38 +464,34 @@ class EntryManager
     /**
      * Validate the fiche's data.
      *
-     * @param $data
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function validate($data)
     {
         if (!isset($data['antispam']) or !$data['antispam'] == 1) {
-            throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
+            throw new \Exception(_t('BAZ_PROTECTION_ANTISPAM'));
         }
 
         // On teste le titre car ça peut bugguer sérieusement sans
         if (!isset($data['bf_titre'])) {
-            throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+            throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
         }
 
         // form metadata
         if (!isset($data['id_typeannonce'])) {
-            throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
+            throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
         }
     }
 
     /**
      * Create a new fiche.
      *
-     * @param $formId
-     * @param $data
      * @param false $semantic
      * @param null  $sourceUrl
      *
      * @return array
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function create($formId, $data, $semantic = false, $sourceUrl = null)
     {
@@ -590,14 +583,12 @@ class EntryManager
     /**
      * Update an entry with the provided data.
      *
-     * @param $tag
-     * @param $data
      * @param false $semantic
      * @param false $replace  If true, all the data will be provided (no merge with the previous data)
      *
      * @return array
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function update($tag, $data, $semantic = false, $replace = false)
     {
@@ -605,7 +596,7 @@ class EntryManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->aclService->hasAccess('write', $tag)) {
-            throw new Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
+            throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
         // replace id_fiche with $tag to prevent errors before getOne
@@ -701,7 +692,7 @@ class EntryManager
      *
      * @return array the data with the merged values
      *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function mergeFields(array $previousData, array $data, array $form)
     {
@@ -718,10 +709,7 @@ class EntryManager
     }
 
     /**
-     * @param $entryId
-     * @param $accepted
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function publish($entryId, $accepted)
     {
@@ -735,29 +723,27 @@ class EntryManager
             } else {
                 $this->dbService->query('UPDATE' . $this->dbService->prefixTable('fiche') . 'SET bf_statut_fiche=2 WHERE bf_id_fiche="' . $this->dbService->escape($entryId) . '"');
             }
-            //TODO envoie mail annonceur
+            // TODO envoie mail annonceur
         }
     }
 
     /**
      * Delete a fiche.
      *
-     * @param $tag
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function delete($tag, bool $forceEvenIfNotOwner = false)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$forceEvenIfNotOwner && !$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)) {
-            throw new Exception(_t('DELETEPAGE_NOT_DELETED') . _t('DELETEPAGE_NOT_OWNER'));
+            throw new \Exception(_t('DELETEPAGE_NOT_DELETED') . _t('DELETEPAGE_NOT_OWNER'));
         }
 
         $fiche = $this->getOne($tag, false, null, true, $forceEvenIfNotOwner);
         if (empty($fiche)) {
-            throw new Exception("Not existing entry : $tag");
+            throw new \Exception("Not existing entry : $tag");
         }
 
         $this->pageManager->deleteOrphaned($tag);
@@ -794,14 +780,14 @@ class EntryManager
      *
      * @return array with extra calculated fields like id_fiche, and time, and handled fields with acls
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function formatDataBeforeSave($data, bool $isCreation = false): array
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
         if (empty($form)) {
-            throw new Exception('No form with id: ' . $data['id_typeannonce']);
+            throw new \Exception('No form with id: ' . $data['id_typeannonce']);
         }
 
         // If there is a title field, compute the entry's title
@@ -817,12 +803,12 @@ class EntryManager
         if (!isset($data['id_fiche'])) {
             // Generate the ID from the title
             if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
-                throw new Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
+                throw new \Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
             }
             // TODO see if we can remove this
             $_POST['id_fiche'] = $data['id_fiche'];
         } elseif (empty($data['id_fiche'])) {
-            throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
+            throw new \Exception('$data[\'id_fiche\'] is set but with empty value !');
         }
 
         $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
@@ -857,7 +843,7 @@ class EntryManager
         }
         // $data['id_fiche'] can not be empty
         if (empty($data['id_fiche'])) {
-            throw new Exception('$data[\'id_fiche\'] is empty !');
+            throw new \Exception('$data[\'id_fiche\'] is empty !');
         }
 
         $data['date_maj_fiche'] = $data['date_maj_fiche'] ?? date('Y-m-d H:i:s', time());
@@ -891,13 +877,12 @@ class EntryManager
      * Append data needed for display
      * TODO move this to a class dedicated to display.
      *
-     * @param $fiche
      * @param bool   $semantic
      * @param string $correspondance
      * @param array  $page           , appendDisplayData is called in environement with access to $page
      *                               helping to get owner without asking a new Time to Page manager to get it
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function appendDisplayData(&$fiche, $semantic, $correspondance, array $page)
     {
@@ -922,9 +907,8 @@ class EntryManager
                 echo '<div class="alert alert-danger">' . str_replace("\n", '<br/>', _t('BAZ_CORRESPONDANCE_ERROR2')) . '</div>';
             }
         }
-
         // HTML data
-        $fiche['html_data'] = getHtmlDataAttributes($fiche);
+        $fiche['html_data'] = $this->getHtmlDataAttributes($fiche);
 
         // Fiche URL
         if (!isset($fiche['url'])) {
@@ -1010,8 +994,6 @@ class EntryManager
 
     /**
      * sanitize formsIds and get forms.
-     *
-     * @param mixed $formsIds
      *
      * @return array $forms
      */
@@ -1196,5 +1178,59 @@ class EntryManager
         $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');
 
         return $result;
+    }
+
+    protected function getHtmlDataAttributes($fiche, $formtab = '')
+    {
+        $htmldata = '';
+        if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
+            $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+            foreach ($fiche as $key => $value) {
+                if (!empty($value)) {
+                    if (
+                        in_array(
+                            $key,
+                            [
+                                'bf_latitude',
+                                'bf_longitude',
+                                'id_typeannonce',
+                                'owner',
+                                'date_creation_fiche',
+                                'date_debut_validite_fiche',
+                                'date_fin_validite_fiche',
+                                'id_fiche',
+                                'statut_fiche',
+                                'date_maj_fiche',
+                            ]
+                        )
+                    ) {
+                        $htmldata .=
+                        'data-' . htmlspecialchars($key) . '="' .
+                        htmlspecialchars($value) . '" ';
+                    } elseif ($key === 'linked_data') {
+                        $htmldata .= 'coucou_linked_data ';
+                    } else {
+                        if (isset($form['prepared'])) {
+                            foreach ($form['prepared'] as $field) {
+                                $propertyName = $field->getPropertyName();
+                                if ($propertyName === $key) {
+                                    if (
+                                        $field instanceof EnumField
+                                        || $field instanceof DateField
+                                        || $field->getName() == 'scope'
+                                    ) {
+                                        $htmldata .=
+                                        'data-' . htmlspecialchars($key) . '="' .
+                                        htmlspecialchars(is_array($value) ? '[' . implode(',', $value) . ']' : $value) . '" ';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $htmldata;
     }
 }

@@ -491,4 +491,24 @@ class FormManager
 
         return $this->isAvailableOnlyOneEntryMessage;
     }
+
+    public function findTypeOfFields($formId, array $fieldTypes): array
+    {
+        $res = [];
+        $form = $this->getOne($formId);
+        if (empty($form)) {
+            return $res;
+        }
+
+        foreach ($form['prepared'] as $field) {
+            $class = get_class($field);
+            $class = explode('\\', $class);
+            $class = array_pop($class);
+            if (in_array($class, $fieldTypes)) {
+                $res[] = $field;
+            }
+        }
+
+        return $res;
+    }
 }

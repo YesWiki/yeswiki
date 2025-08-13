@@ -299,15 +299,19 @@ class BazarListeAction extends YesWikiAction
                     foreach (EntryExtraFieldsService::EXTRA_FIELDS as $field) {
                         $entries[$i][$field] = $entryFieldsService->get($field);
                     }
+                    // for the linked entries, we need to add some informations to html_data
+                    if (!empty($entries[$i]['linked_data'])) {
+                        $entries[$i]['html_data'] .= $entryFieldsService->appendHtmlData($entries[$i]['linked_data']);
+                    }
                 }
             }
-
             // TODO put in all bazar templates
             $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
             return $this->render('@bazar/entries/index.twig', [
                 'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
                 'filters' => $filters,
+                'entries' => $entries,
                 'renderedEntries' => $this->renderEntries($entries, $filters),
                 'numEntries' => count($entries),
                 'params' => $this->arguments,
@@ -329,7 +333,7 @@ class BazarListeAction extends YesWikiAction
             $templateName = $templateName . '.tpl.html';
             $this->arguments['template'] = $templateName;
         }
-
+        $data = [];
         $data['fiches'] = $entries;
         $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">' . _t('BAZ_IL_Y_A') . ' ' . count($data['fiches']) . ' ' . (count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')) . '</div>' : '';
         $data['param'] = $this->arguments;
@@ -421,8 +425,6 @@ class BazarListeAction extends YesWikiAction
      * extract external url from ids
      * get form ids for ExternalBazarService
      * format id="4,https://example.com|6,7,https://example.com|6->8".
-     *
-     * @param string $ids
      *
      * @return array
      */
