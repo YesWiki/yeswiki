@@ -1398,47 +1398,46 @@ class Wiki
      *
      * @return void
      */
-     
     private function loadExtensionsFromDir($pPluginsRoot)
     {
-    	include_once 'includes/YesWikiPlugins.php';
+        include_once 'includes/YesWikiPlugins.php';
         $objPlugins = new Plugins($pPluginsRoot);
-        $objPlugins->getPlugins(true);        
+        $objPlugins->getPlugins(true);
         $vExtensions = $objPlugins->getPluginsList();
 
         foreach ($vExtensions as $pluginName => $pluginInfo) {
             $vExtensions[$pluginName] = $pPluginsRoot . $pluginName . '/';
         }
-        
-        $this->extensions = array_merge ($this->extensions, $vExtensions);
+
+        $this->extensions = array_merge($this->extensions, $vExtensions);
     }
 
     /**
-     * Load extensions
+     * Load extensions.
      *
      * @return void
      */
     private function loadExtensions() // make it private since once services are compiled, they cannot be modified - @YvesGufflet : contact@yvesgufflet.fr
     {
-      	$this->loadExtensionsFromDir("tools/");
-        $this->loadExtensionsFromDir("custom/tools/");
+        $this->loadExtensionsFromDir('tools/');
+        $this->loadExtensionsFromDir('custom/tools/');
         // TODO refactor as custom and actionsbuilder are not extensions
         $this->extensions['custom'] = 'custom/'; // Will load custom/actions, custom/handlers etc...
-        $this->extensions['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang       
-    
-    	$this->loadServices ();
-		$this->compileServices ();
-		$this->loadLanguages ();		
-		$this->loadTemplates ();		    
+        $this->extensions['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang
+
+        $this->loadServices();
+        $this->compileServices();
+        $this->loadLanguages();
+        $this->loadTemplates();
     }
 
     /**
-    * Load extensions's services
-    *
-    * @return void
-    */
-    private function loadServices ()
-    {     
+     * Load extensions's services.
+     *
+     * @return void
+     */
+    private function loadServices()
+    {
         // This is necessary for retrocompatibility reasons, as these variables are used by the extensions
         // TODO refactor all extensions to use the correct variable name
         // TODO remove this when the retrocompatibility is no longer necessary
@@ -1482,12 +1481,12 @@ class Wiki
     }
 
     /**
-     * Compile services
+     * Compile services.
      *
      * @return void
      */
-     private function compileServices ()
-     {
+    private function compileServices()
+    {
         // Now we have loaded all the services, compile them
         // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
         $this->services->compile();
@@ -1496,15 +1495,15 @@ class Wiki
         // need to be executed after $this->services->compile() because the %paramName% are resolved there
         $this->config = $this->services->getParameterBag()->all();
         $this->dblink = $this->services->get(DbService::class)->getLink();
-     }
-     
-     /**
-     * Load languages
+    }
+
+    /**
+     * Load languages.
      *
      * @return void
      */
-     private function loadLanguages ()
-     {
+    private function loadLanguages()
+    {
         // This must be done after service initialization, as it uses services
         loadpreferredI18n($this, $this->tag);
 
@@ -1528,15 +1527,15 @@ class Wiki
                 load_translations($returnedArray, true);
             }
         }
-     }
-     
-     /**
-     * Load templates
+    }
+
+    /**
+     * Load templates.
      *
      * @return void
      */
-     private function loadTemplates ()
-     {
+    private function loadTemplates()
+    {
         $metadata = $this->services->get(PageManager::class)->getMetadata($this->tag);
 
         if (isset($metadata['lang'])) {
@@ -1546,8 +1545,8 @@ class Wiki
         }
 
         $this->services->get(ThemeManager::class)->loadTemplates($metadata);
-     }
-     
+    }
+
     /**
      * Replace recursively all the indexed arrays of $array1 with the corresponding indexed array of $array2.
      *
