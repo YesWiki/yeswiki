@@ -58,12 +58,18 @@ class BazarCartoAction extends YesWikiAction
                 $arg['tablewith'] === 'only-geolocation'
             )
         ) {
-            if (!isset($query['bf_latitude!'])) {
-                $query['bf_latitude!'] = '';
-            }
-            if (!isset($query['bf_longitude!'])) {
-                $query['bf_longitude!'] = '';
-            }
+        
+
+                
+        	if (count (array_filter ($query, function ($pCondition) { return (($pCondition ["name"] == "bf_latitude"||($pCondition["name"] == "geolocation.bf_latitude")) && $pCondition ["operator"] == "!="); })) == 0)
+        	{
+        		$query[] = [ "name" => "geolocation.bf_latitude", "operator" => "!=", "values" => [ '' ]];
+        	}
+        	
+        	if (count (array_filter ($query, function ($pCondition) { return (($pCondition ["name"] == "bf_longitude"||($pCondition["name"] == "geolocation.bf_longitude")) && $pCondition ["operator"] == "!="); })) == 0)
+        	{
+        		$query[] = [ "name" => "geolocation.bf_longitude", "operator" => "!=", "values" => [ '' ]];
+        	}
         }
 
         return [
