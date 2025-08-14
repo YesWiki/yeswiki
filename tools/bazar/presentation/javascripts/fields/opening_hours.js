@@ -16,6 +16,9 @@ Vue.component('opening-hours', {
     this.intervals = this.groupBy(oh.getOpenIntervals(currentDay, endWeek))
     this.todayName = new Date().toLocaleDateString(this.locale, { weekday: 'long' })
     this.today = this.intervals[now.getDay()] || []
+    if (this.intervals[0][0].day_id === 0) {
+      this.intervals.push(this.intervals.shift())
+    }
   },
   methods: {
 
@@ -26,6 +29,7 @@ Vue.component('opening-hours', {
           acc[cle] = []
         }
         acc[cle].push({
+          day_id: obj[0].getDay(),
           day: obj[0].toLocaleDateString(this.locale, { weekday: 'long' }),
           start: obj[0].toLocaleTimeString(this.locale, {
             hour: '2-digit',
@@ -50,7 +54,7 @@ Vue.component('opening-hours', {
        <li v-if="!today.length"> ${_t('BAZ_OPENING_HOURS_CLOSED')}  </li>
         <li v-for="interval in today"> {{ interval.start }} - {{ interval.end }} </li>
         </ul>
-        <i class="fas fa-angle-down" style="margin-left: 1em;font-size: 2em;"></i>
+        <i class="fas fa-angle-down" style="margin-left: 10px;font-size: 2em;"></i>
         </summary>
         <div style="background: white;padding: 1em;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
         z-index: 1;position: absolute;border-radius: 10px;">

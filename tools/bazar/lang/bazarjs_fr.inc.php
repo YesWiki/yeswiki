@@ -281,4 +281,5 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'BAZ_OPENING_HOURS_REMOVE_DAY' => 'Supprimer le jour',
     'BAZ_OPENING_HOURS_ADD_DAY' => 'Ajouter un nouveau jour',
     'BAZ_OPENING_HOURS_CLOSED' => 'Fermé',
+    'BAZ_OPENING_HOURS_HELP_DAY' => 'Maintenir CTRL pour sélectionner plusieurs jours',
 ];
