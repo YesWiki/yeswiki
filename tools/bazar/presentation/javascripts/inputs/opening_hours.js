@@ -106,6 +106,7 @@ Vue.component('opening-hours-create', {
         <button type="button" class="btn btn-info btn-block" title="${_t('BAZ_OPENING_HOURS_ADD_DAY')}"
           @click="addDay()">
             <i style="margin: 0px;" class="fas fa-plus-circle"></i>
+            ${_t('BAZ_OPENING_HOURS_ADD_DAY')}
         </button>
         <input type="hidden" :name=field.name  :value="openingHours">
     </div>

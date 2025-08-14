@@ -28,6 +28,7 @@ class OpeningHoursField extends BazarField
         $GLOBALS['wiki']->addJavascriptFile('javascripts/vendor/opening_hours/opening_hours.js');
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/fields/opening_hours.js');
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/vueapp.js');
+        $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/opening_hours.css');
 
 
 

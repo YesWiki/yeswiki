@@ -16,6 +16,9 @@ Vue.component('opening-hours', {
     this.intervals = this.groupBy(oh.getOpenIntervals(currentDay, endWeek))
     this.todayName = new Date().toLocaleDateString(this.locale, { weekday: 'long' })
     this.today = this.intervals[now.getDay()] || []
+    if (this.intervals[0][0].day_id === 0) {
+      this.intervals.push(this.intervals.shift())
+    }
   },
   methods: {
 
@@ -26,6 +29,7 @@ Vue.component('opening-hours', {
           acc[cle] = []
         }
         acc[cle].push({
+          day_id: obj[0].getDay(),
           day: obj[0].toLocaleDateString(this.locale, { weekday: 'long' }),
           start: obj[0].toLocaleTimeString(this.locale, {
             hour: '2-digit',
