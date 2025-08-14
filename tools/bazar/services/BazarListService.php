@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Attach;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Wiki;
@@ -11,6 +10,7 @@ class BazarListService
 {
     protected $entryController;
     protected $entryManager;
+    protected $entryExtraFields;
     protected $externalBazarService;
     protected $formManager;
     protected $wiki;
@@ -18,12 +18,14 @@ class BazarListService
     public function __construct(
         Wiki $wiki,
         EntryManager $entryManager,
+        EntryExtraFieldsService $entryExtrafields,
         EntryController $entryController,
         ExternalBazarService $externalBazarService,
         FormManager $formManager
     ) {
         $this->wiki = $wiki;
         $this->entryManager = $entryManager;
+        $this->entryExtraFields = $entryExtrafields;
         $this->entryController = $entryController;
         $this->externalBazarService = $externalBazarService;
         $this->formManager = $formManager;
@@ -45,7 +47,7 @@ class BazarListService
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
         }
-        $attach = new attach($this->wiki);
+        $attach = new \Attach($this->wiki);
         $basePath = $attach->GetUploadPath();
         $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
         $formIds = array_keys($forms) ?? [];
@@ -112,6 +114,19 @@ class BazarListService
         }
         $entries = $this->replaceDefaultImage($options, $forms, $entries);
 
+        // add extra informations (comments, reactions, metadatas)
+        if ($options['extrafields'] === true) {
+            foreach ($entries as $i => $entry) {
+                $this->entryExtraFields->setEntryId($entry['id_fiche']);
+                foreach (EntryExtraFieldsService::EXTRA_FIELDS as $field) {
+                    $entries[$i][$field] = $this->entryExtraFields->get($field);
+                }
+                // for the linked entries, we need to add some informations to html_data
+                if (!empty($entries[$i]['linked_data'])) {
+                    $entries[$i]['html_data'] .= $this->entryExtraFields->appendHtmlData($entries[$i]['linked_data']);
+                }
+            }
+        }
         // filter entries on datefilter parameter
         if (!empty($options['datefilter'])) {
             $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']);
@@ -163,7 +178,7 @@ class BazarListService
         }
 
         $filters = [];
-
+        $linkedSep = '__';
         foreach ($propNames as $index => $propName) {
             // Create a filter object to be returned to the view
             $filter = [
@@ -174,11 +189,16 @@ class BazarListService
                 'collapsed' => true,
             ];
 
-            // Check if an existing Form Field existing by this propName
-            foreach ($allFields as $aField) {
-                if ($aField->getPropertyName() == $propName) {
-                    $field = $aField;
-                    break;
+            // Check if linked data value
+            if (str_contains($propName, $linkedSep)) {
+                $field = $propName;
+            } else {
+                // Check if an existing Form Field existing by this propName
+                foreach ($allFields as $aField) {
+                    if ($aField->getPropertyName() == $propName) {
+                        $field = $aField;
+                        break;
+                    }
                 }
             }
             // Depending on the propName, get the list of filter nodes
@@ -205,6 +225,36 @@ class BazarListService
                 usort($filter['nodes'], function ($a, $b) {
                     return strcmp($a['label'], $b['label']);
                 });
+            } elseif (str_contains($propName, $linkedSep)) {
+                $idLinkedData = explode($linkedSep, $propName);
+                $linkedField = [];
+                if (!empty($idLinkedData[0]) && !empty($idLinkedData[1])) {
+                    foreach ($formIdsUsed as $formId) {
+                        $linkedField = $this->formManager->findFieldWithId($formId, $idLinkedData[0]);
+                        if (!empty($linkedField)) {
+                            break;
+                        }
+                    }
+                    if (!empty($linkedField)) {
+                        $linkedFormId = $linkedField->getLinkedObjectName();
+                        $linkedForm = $this->formManager->getOne($linkedFormId);
+                        $finalField = $this->formManager->findFieldWithId($linkedFormId, $idLinkedData[1]);
+                        if (!empty($finalField) && $finalField instanceof EnumField) {
+                            $filter['title'] = $finalField->getLabel();
+
+                            if (!empty($finalField->getOptionsTree()) && $options['dynamic'] == true) {
+                                // OptionsTree only supported by bazarlist dynamic
+                                foreach ($finalField->getOptionsTree() as $node) {
+                                    $filter['nodes'][$node['value']] = $this->recursivelyCreateNode($node);
+                                }
+                            } else {
+                                foreach ($finalField->getOptions() as $value => $label) {
+                                    $filter['nodes'][$value] = $this->createFilterNode($value, $label);
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
                 // OTHER PROPNAME (for example a field that is not an Enum)
                 $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
@@ -219,7 +269,6 @@ class BazarListService
                     $filter['nodes'][] = $this->createFilterNode($value, $value);
                 }
             }
-
             // Filter Icon
             if (!empty($options['groupicons'][$index])) {
                 $filter['icon'] = '<i class="' . $options['groupicons'][$index] . '"></i> ';

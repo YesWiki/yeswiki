@@ -511,4 +511,20 @@ class FormManager
 
         return $res;
     }
+
+    public function findFieldWithId($formId, $fieldId)
+    {
+        $res = [];
+        $form = $this->getOne($formId);
+        if (empty($form)) {
+            return $res;
+        }
+        foreach ($form['prepared'] as $field) {
+            if ($field->getPropertyName() === $fieldId) {
+                return $field;
+            }
+        }
+
+        return $res;
+    }
 }
