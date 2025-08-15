@@ -527,12 +527,6 @@ const load = (domElement) => {
 		if (bHasFilter) vCurrentParams.query = vQuery;
 		else vCurrentParams = "";
 		
-		/*
-			Object
-												.entries (vQuery)
-												.map ( ([ pKey, pValue ]) => pKey + "==" + pValue )
-												.join ("|");*/
-
 		vMergedParams = this.mergeSearchParams (cCurrentHash, vCurrentParams);
 		
 		// Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
