@@ -494,7 +494,7 @@ const load = (domElement) => {
 		
 		var cCurrentHash = this.savedHash;
 		
-		var vQuery = {};
+		var vQuery = [];
 		var vCurrentParams = {};
 		var vMergedParams;
 		
@@ -508,22 +508,30 @@ const load = (domElement) => {
 		{
 			bHasFilter = true;
 		
-			vQuery [cFilterId] = this.computedFilters[cFilterId]
-								.map (	pString =>
-										pString
-										.replace(/&amp;/g, '&')
-										.replace(/&lt;/g, '<')
-										.replace(/&gt;/g, '>')
-										.replace(/&quot;/g, '"')
-										.replace(/&#039;/g, "'")
-								)
-								.join (",");			
+			vQuery.push ({ 
+							"name" : cFilterId, 
+							"operator" : "==", 
+							"values" :	this.computedFilters[cFilterId]
+										.map (	pString =>
+												pString
+												.replace(/&amp;/g, '&')
+												.replace(/&lt;/g, '<')
+												.replace(/&gt;/g, '>')
+												.replace(/&quot;/g, '"')
+												.replace(/&#039;/g, "'")
+											 )
+										.join (",")
+						});
 		}
-			
-		if (bHasFilter) vCurrentParams.query = 	Object
+		
+		if (bHasFilter) vCurrentParams.query = vQuery;
+		else vCurrentParams = "";
+		
+		/*
+			Object
 												.entries (vQuery)
 												.map ( ([ pKey, pValue ]) => pKey + "==" + pValue )
-												.join ("|");
+												.join ("|");*/
 
 		vMergedParams = this.mergeSearchParams (cCurrentHash, vCurrentParams);
 		
