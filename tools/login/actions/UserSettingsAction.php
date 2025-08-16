@@ -174,10 +174,8 @@ class UserSettingsAction extends YesWikiAction
                 preg_quote('<strong>', '/') .
                 ')[^<]*(' .
                 preg_quote('</strong>', '/') .
-                ')/', '$1' . _t('USERSETTINGS_CAPTCHA_USER_CREATION') . '$2', $captcha);
-            // this file is kept to manage custom user-signup-form.tpl.html that will not been used if use directly .twig
-            // TODO remove the .tpl.html for ectoplasme and use directly .twig
-            return $this->render('@login/user-signup-form.tpl.html', [
+                ')/', '$1' . _t('USERSETTINGS_CAPTCHA_USER_CREATION') . '$2', $captcha);            
+            return $this->render('@login/user-signup-form.twig', [
                 'link' => $this->wiki->href(), // notice 'link' is not used in .twig TODO remove this line for ectoplasme
                 'namesToExport' => ['error', 'name', 'email', 'captcha', 'regexUserName'], // TOTO remove this line when removing .tpl.html
                 'error' => $this->error,
