@@ -326,7 +326,7 @@ class EntryManager
      *
      * @param pKeywords <string> : the keywords search string
      *
-     * @return <array> : the parsed string as an associative array containing the keys :
+     * @return <array> : an associative array containing the keys :
      * 	- CNF =	the Conjonctive Normal Form (= [a OR b] AND [d or e]) of the keywords search string
      *			(ie : an AND-array of OR-arrays)
      *	- excludeds = <array> an array of excluded tokens
@@ -334,6 +334,16 @@ class EntryManager
 
 	function parseKeywords ($pKeywords)
     {
+    	// Let's retrieve the minimum search keyword length
+    
+		$vMinimumSearchKeywordLength = $this->wiki->GetConfigValue('min_search_keyword_length');
+		
+		if (empty($vMinimumSearchKeywordLength))
+			$vMinimumSearchKeywordLength = MIN_SEARCH_KEYWORD_LENGTH;
+			
+		else
+			$vMinimumSearchKeywordLength = intval($vMinimumSearchKeywordLength);
+    
     	// The default results : nothing recognized
     
     	$vResults = [ "CNF" => [], "excludeds" => [] ];
@@ -347,8 +357,11 @@ class EntryManager
 
 		// Separates AND clauses
 
-		$vANDs = array_map ('trim',	explode ("|", $pKeywords));
-		
+		$vANDs = array_filter(array_unique(array_map ('trim',	explode ("|", $pKeywords))), function ($pKeyword) use ($vMinimumSearchKeywordLength)
+		{
+			return strlen($pKeyword) >= $vMinimumSearchKeywordLength;
+		});
+
 		foreach ($vANDs as $vAND)
 		{
 			// Extract tokens
@@ -565,7 +578,7 @@ class EntryManager
 	    		}
     		}
 		}
-    
+
     	return implode
     	(			
 			" AND ",
@@ -715,7 +728,7 @@ class EntryManager
 						
 						// The field is missing : we need to add a specific condition
 						
-						case $this->MISSING_FIELD :
+						case self::MISSING_FIELD :
 						{
 							$vValueConditions [] = '(' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' IS NULL OR ' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																				
 						}
@@ -961,7 +974,7 @@ class EntryManager
 					    {
 					        // We do not found it : the field is missing in the form
 
-						    $vFieldDescriptor = [ "_mode_" => $this->MISSING_FIELD, "_type_" => $this->MISSING_FIELD ];
+						    $vFieldDescriptor = [ "_mode_" => self::MISSING_FIELD, "_type_" => self::MISSING_FIELD ];
 						}
 
 						// Remember that the field $vField can have this mode and type in the form $vFormID :
@@ -995,7 +1008,7 @@ class EntryManager
 				
 				if (!$vPropertyFound)
 				{
-					$vFieldDescriptor = [ "_mode_" => $this->MISSING_PROPERTY, "_type_" => $this->MISSING_PROPERTY ];
+					$vFieldDescriptor = [ "_mode_" => self::MISSING_PROPERTY, "_type_" => self::MISSING_PROPERTY ];
 					
 					$vHash = $this->buildFieldDescriptorHash ($vFieldDescriptor);
 								
@@ -1144,9 +1157,9 @@ class EntryManager
         
         // Queries conditions
         
-        $vQueriesConditions = $this->buildQueriesConditions ($vQueries, $vFields);
+        $vQueriesConditions = trim ($this->buildQueriesConditions ($vQueries, $vFields));
 
-	   	$vWhereRequest .= ($vWhereRequest != ""?" AND ":"") . $vQueriesConditions;
+        if ($vQueriesConditions != "") $vWhereRequest .= ($vWhereRequest != ""?" AND ":"") . $vQueriesConditions;
 	   	
         // Construct full request
         
@@ -1244,6 +1257,8 @@ class EntryManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
+
+//echo ($vCompleteRequest);
 
         return $vCompleteRequest;
     }
