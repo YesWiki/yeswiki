@@ -525,7 +525,6 @@ const load = (domElement) => {
 		}
 		
 		if (bHasFilter) vCurrentParams.query = vQuery;
-		else vCurrentParams = "";
 		
 		vMergedParams = this.mergeSearchParams (cCurrentHash, vCurrentParams);
 		
