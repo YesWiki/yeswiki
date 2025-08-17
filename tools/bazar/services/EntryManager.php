@@ -730,7 +730,7 @@ class EntryManager
 			
 				if ($vField ["hasMultipleStructures"])
 				{
-					$vDescriptorCondition .= $this->renameJSONPathVariable("id_typeannonce") . ' IN (" ' . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ")";
+					$vDescriptorCondition .= $this->renameJSONPathVariable("id_typeannonce") . ' IN (' . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ")";
 				}	
 										
 				// Merge all value conditions with a logical OR and add it to the descripted field condition
@@ -1240,7 +1240,7 @@ class EntryManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
-        
+	
         return $vCompleteRequest;
     }
 
