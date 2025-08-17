@@ -569,7 +569,7 @@ class EntryManager
     	return implode
     	(			
 			" AND ",
-			unique_array ($vANDs)
+			array_unique ($vANDs)
     	);
     }
 	
@@ -858,9 +858,13 @@ class EntryManager
 		$vKeywordsFields = [];
 		$vQueriesFields = [];
 
-		if ($vKeywords != "" && isset($params["searchfields"]))
+		if ($vKeywords != "")
 		{
-			 $vKeywordsFields = array_map ('trim', explode (",", $params["searchfields"]));
+			 $vSearchFields = $params["searchfields"]??"";
+
+			 $vSearchFields .= ($vSearchFields !=""? ",":"") . "bf_titre";
+			 		
+			 $vKeywordsFields = array_unique (array_map ('trim', explode (",", $vSearchFields)));
 		}		
 
 		foreach ($vQueries as $vQuery) 
@@ -868,7 +872,7 @@ class EntryManager
 			$vQueriesFields [] = $vQuery ["name"];
 		}
 
-		$vNecessaryFields = array_unique(array_merge ([ "bf_titre" ], $vKeywordsFields, $vQueriesFields));
+		$vNecessaryFields = array_unique(array_merge ($vKeywordsFields, $vQueriesFields));
 
 		// Build necessary fields infos (structures, ...)
 		
@@ -1240,7 +1244,7 @@ class EntryManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
-	
+
         return $vCompleteRequest;
     }
 
