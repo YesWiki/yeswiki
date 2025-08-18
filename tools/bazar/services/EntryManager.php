@@ -1183,6 +1183,7 @@ class EntryManager
     protected function getHtmlDataAttributes($fiche, $formtab = '')
     {
         $htmldata = '';
+        $notFilterFields = ['bf_titre', 'id_fiche'];
         if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
             $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             foreach ($fiche as $key => $value) {
@@ -1191,8 +1192,6 @@ class EntryManager
                         in_array(
                             $key,
                             [
-                                'bf_latitude',
-                                'bf_longitude',
                                 'id_typeannonce',
                                 'owner',
                                 'date_creation_fiche',
@@ -1215,9 +1214,15 @@ class EntryManager
                                 $propertyName = $field->getPropertyName();
                                 if ($propertyName === $key) {
                                     if (
-                                        $field instanceof EnumField
-                                        || $field instanceof DateField
-                                        || $field->getName() == 'scope'
+                                        get_class($field) != 'YesWiki\Bazar\Field\HiddenField'
+                                        && get_class($field) != 'YesWiki\Bazar\Field\FileField'
+                                        && get_class($field) != 'YesWiki\Bazar\Field\ImageField'
+                                        && get_class($field) != 'YesWiki\Bazar\Field\LabelField'
+                                        && get_class($field) != 'YesWiki\Bazar\Field\LinkField'
+                                        && get_class($field) != 'YesWiki\Bazar\Field\TextareaField'
+                                        && get_class($field) != 'YesWiki\Bazar\Field\TitleField'
+                                        && get_class($field) != 'YesWiki\Bazar\Field\UserField'
+                                        && !in_array($propertyName, $notFilterFields)
                                     ) {
                                         $htmldata .=
                                         'data-' . htmlspecialchars($key) . '="' .
