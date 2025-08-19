@@ -1183,7 +1183,21 @@ class EntryManager
     protected function getHtmlDataAttributes($fiche, $formtab = '')
     {
         $htmldata = '';
-        $notFilterFields = ['bf_titre', 'id_fiche'];
+        $filterFieldIds = [
+            'id_typeannonce',
+            'owner',
+            'date_creation_fiche',
+            'date_debut_validite_fiche',
+            'date_fin_validite_fiche',
+            'id_fiche',
+            'statut_fiche',
+            'date_maj_fiche',
+        ]
+        ;
+        $notFilterFieldIds = ['bf_titre'];
+        $notFilterFieldClasses = [
+            'YesWiki\Bazar\Field\HiddenField', 'YesWiki\Bazar\Field\FileField', 'YesWiki\Bazar\Field\ImageField', 'YesWiki\Bazar\Field\LabelField', 'YesWiki\Bazar\Field\LinkField', 'YesWiki\Bazar\Field\TextareaField', 'YesWiki\Bazar\Field\TitleField', 'YesWiki\Bazar\Field\UserField',
+        ];
         if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
             $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             foreach ($fiche as $key => $value) {
@@ -1191,38 +1205,20 @@ class EntryManager
                     if (
                         in_array(
                             $key,
-                            [
-                                'id_typeannonce',
-                                'owner',
-                                'date_creation_fiche',
-                                'date_debut_validite_fiche',
-                                'date_fin_validite_fiche',
-                                'id_fiche',
-                                'statut_fiche',
-                                'date_maj_fiche',
-                            ]
+                            $filterFieldIds
                         )
                     ) {
                         $htmldata .=
                         'data-' . htmlspecialchars($key) . '="' .
                         htmlspecialchars($value) . '" ';
-                    } elseif ($key === 'linked_data') {
-                        $htmldata .= 'coucou_linked_data ';
                     } else {
                         if (isset($form['prepared'])) {
                             foreach ($form['prepared'] as $field) {
                                 $propertyName = $field->getPropertyName();
                                 if ($propertyName === $key) {
                                     if (
-                                        get_class($field) != 'YesWiki\Bazar\Field\HiddenField'
-                                        && get_class($field) != 'YesWiki\Bazar\Field\FileField'
-                                        && get_class($field) != 'YesWiki\Bazar\Field\ImageField'
-                                        && get_class($field) != 'YesWiki\Bazar\Field\LabelField'
-                                        && get_class($field) != 'YesWiki\Bazar\Field\LinkField'
-                                        && get_class($field) != 'YesWiki\Bazar\Field\TextareaField'
-                                        && get_class($field) != 'YesWiki\Bazar\Field\TitleField'
-                                        && get_class($field) != 'YesWiki\Bazar\Field\UserField'
-                                        && !in_array($propertyName, $notFilterFields)
+                                        !in_array(get_class($field), $notFilterFieldClasses)
+                                        && !in_array($propertyName, $notFilterFieldIds)
                                     ) {
                                         $htmldata .=
                                         'data-' . htmlspecialchars($key) . '="' .

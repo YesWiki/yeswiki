@@ -113,12 +113,13 @@ class EntryExtraFieldsService
 
     public function appendHtmlData(array $linkedData): string
     {
+        $sep = '_-_';
         $htmlData = '';
         foreach ($linkedData as $fieldName => $entries) {
             foreach ($entries as $entry) {
                 $htmlData .= str_replace(
                     'data-',
-                    'data-' . $fieldName . ':' . $entry['id_fiche'] . ':',
+                    'data-' . $fieldName . $sep . $entry['id_fiche'] . $sep,
                     $entry['html_data']
                 ) . ' ';
             }

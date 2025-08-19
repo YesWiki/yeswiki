@@ -178,7 +178,7 @@ class BazarListService
         }
 
         $filters = [];
-        $linkedSep = '__';
+        $linkedSep = '_-_';
         foreach ($propNames as $index => $propName) {
             // Create a filter object to be returned to the view
             $filter = [
@@ -229,35 +229,38 @@ class BazarListService
                 $idLinkedData = explode($linkedSep, $propName);
                 $linkedField = [];
                 if (!empty($idLinkedData[0]) && !empty($idLinkedData[1])) {
-                    foreach ($formIdsUsed as $formId) {
-                        $linkedField = $this->formManager->findFieldWithId($formId, $idLinkedData[0]);
-                        if (!empty($linkedField)) {
-                            break;
-                        }
-                    }
+                    $linkedField = $this->formManager->findFieldWithId($formIdsUsed, $idLinkedData[0]);
                     if (!empty($linkedField)) {
                         $linkedFormId = $linkedField->getLinkedObjectName();
-                        $linkedForm = $this->formManager->getOne($linkedFormId);
-                        $finalField = $this->formManager->findFieldWithId($linkedFormId, $idLinkedData[1]);
-                        if (!empty($finalField) && $finalField instanceof EnumField) {
+                        $finalField = $this->formManager->findFieldWithId([$linkedFormId], $idLinkedData[1]);
+                        if (!empty($finalField)) {
                             $filter['title'] = $finalField->getLabel();
-
-                            if (!empty($finalField->getOptionsTree()) && $options['dynamic'] == true) {
-                                // OptionsTree only supported by bazarlist dynamic
-                                foreach ($finalField->getOptionsTree() as $node) {
-                                    $filter['nodes'][$node['value']] = $this->recursivelyCreateNode($node);
+                            if ($finalField instanceof EnumField) {
+                                if (!empty($finalField->getOptionsTree()) && $options['dynamic'] == true) {
+                                    // OptionsTree only supported by bazarlist dynamic
+                                    foreach ($finalField->getOptionsTree() as $node) {
+                                        $filter['nodes'][$node['value']] = $this->recursivelyCreateNode($node);
+                                    }
+                                } else {
+                                    foreach ($finalField->getOptions() as $value => $label) {
+                                        $filter['nodes'][$value] = $this->createFilterNode($value, $label);
+                                    }
                                 }
                             } else {
-                                foreach ($finalField->getOptions() as $value => $label) {
-                                    $filter['nodes'][$value] = $this->createFilterNode($value, $label);
-                                }
+                                // TODO: options?
                             }
                         }
                     }
                 }
             } else {
                 // OTHER PROPNAME (for example a field that is not an Enum)
-                $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
+                $foundField = $this->formManager->findFieldWithId($formIdsUsed, $propName);
+                if (!empty($foundField)) {
+                    $filter['title'] = $foundField->getLabel();
+                } else {
+                    $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
+                }
+
                 // We collect all values
                 $uniqValues = array_unique(array_column($entries, $propName));
 
