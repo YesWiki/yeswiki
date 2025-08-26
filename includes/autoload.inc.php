@@ -27,7 +27,12 @@ spl_autoload_register(function ($className) {
                     break;
                 default:
                     $extension = strtolower($matches[1]);
-                    $basePath = "tools/$extension";
+
+                    if (is_dir("custom/tools/{$extension}")) {
+                        $basePath = "custom/tools/{$extension}";
+                    } else {
+                        $basePath = "tools/{$extension}";
+                    }
                     break;
             }
             // Autoload services

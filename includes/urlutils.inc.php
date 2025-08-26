@@ -125,33 +125,34 @@ function testRefererUrlInIframe()
 }
 
 /**
- * Test si une URL est locale
+ * Test si une URL est locale.
  *
- * @param string $pURL l'url à tester.
- * 
- * @return boolean true if URL is local, false otherwise
+ * @param string $pURL l'url à tester
+ *
+ * @return bool true if URL is local, false otherwise
  */
-
-function isLocalUrl ($pURL)
+function isLocalUrl($pURL)
 {
-	$vParsed = parse_url($pURL);
+    $vParsed = parse_url($pURL);
 
-	if ($vParsed === false) return true;
-	else
-	if ($vParsed["scheme"] . "://" . $vParsed["host"] . ":" . $vParsed["port"] == getRootUrl())
-		return true;
-	else
-		return false;
+    if ($vParsed === false) {
+        return true;
+    } elseif ($vParsed['scheme'] . '://' . $vParsed['host'] . ':' . $vParsed['port'] == getRootUrl()) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /**
  * Résout une URL en une URL absolue en se basant sur une URL de référence.
  *
  * @param string $pPageAbsoluteURL L'URL absolue du document contenant le lien (ex: "https://exemple.com/chemin/page.html")
- * @param string $pLink Le href trouvé dans le fichier (ex: "../img/photo.jpg" ou "/css/style.css" ou "https://autre.com/")
- * @return string L'URL absolue résolue.
+ * @param string $pLink            Le href trouvé dans le fichier (ex: "../img/photo.jpg" ou "/css/style.css" ou "https://autre.com/")
+ *
+ * @return string L'URL absolue résolue
  */
-function getAbsoluteURLForLinkInAPage ($pPageAbsoluteURL, $pLink)
+function getAbsoluteURLForLinkInAPage($pPageAbsoluteURL, $pLink)
 {
     // Si $pLink est déjà absolu, on le retourne tel quel.
     if (parse_url($pLink, PHP_URL_SCHEME) !== null) {
@@ -210,7 +211,7 @@ function getAbsoluteURLForLinkInAPage ($pPageAbsoluteURL, $pLink)
     if (isset($vPageParts['port'])) {
         $vAbsolutePath .= ':' . $vPageParts['port'];
     }
-    
+
     $vAbsolutePath .= $vNormalizedPath;
 
     return $vAbsolutePath;
