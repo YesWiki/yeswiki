@@ -151,7 +151,7 @@ class BazarListService
     // To create a filters array to be used by the view
     // Note for [old-non-dynamic-bazarlist] For old bazarlist, most of the calculation happens on the backend
     // But with the new dynamic bazalist, everything is done on the front
-    public function getFilters($options, $entries, $forms): array
+    public function getFilters($options, $entries, $forms, $withIdIndexes = false): array
     {
         // add default options
         $options = array_merge([
@@ -301,8 +301,11 @@ class BazarListService
                 }
                 $filter['nodes'] = $adjustedNodes;
             }
-
-            $filters[] = $filter;
+            if ($withIdIndexes) {
+                $filters[$filter['propName']] = $filter;
+            } else {
+                $filters[] = $filter;
+            }
         }
 
         return $filters;
@@ -349,7 +352,7 @@ class BazarListService
         $result = array_merge($node, [
             'id' => $propName . $node['value'],
             'name' => $propName,
-            'count' => $countedValues[$node['value']] ?? 0,
+            'count' => $countedValues[$node['value']] ?? 1,
             'checked' => isset($checkedValues[$propName]) && in_array($node['value'], $checkedValues[$propName]) ? ' checked' : '',
         ]);
 

@@ -1,0 +1,10 @@
+{% if fiches|length > 0 %}
+  <div class="entries-container">
+    {% for fiche in fiches %}
+       <div class="bazar-entry" {{ fiche.html_data|raw }}>
+         {{ format('{{include class="clearfix" page="'~ fiche.id_fiche ~'"}}')|raw }}
+       </div>
+    {% endfor %}
+  </div> <!-- / entries-container -->
+{% endif %}
+{{ pager_links }}

@@ -104,4 +104,13 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Mode verbeux pour débugguer (mettre 2 pour avoir des informations)',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Désactiver l\'envoie d\'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)',
+    // templates/notify-newuser-email-text.twig (no special chars)
+    'CONTACT_NEW_USER_MESSAGE' => "Bonjour!\n\n" .
+        "Votre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\n" .
+        "Url : {{ baseUrl }}\n\n" .
+        "Votre identifiant NomWiki : {{ wikiName }}\n\n" .
+        "Votre email : {{ email }}\n\n" .
+        "Votre mot de passe : (le mot de passe que vous avez choisi)\n\n" .
+        "Pour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\n" .
+        'A tres bientot ! ',
 ];
