@@ -476,7 +476,7 @@ class SearchManager
 						
 						case self::MISSING_FIELD :
 						case self::MISSING_PROPERTY :
-						{
+						{echo ($vDescriptor["mode"]);
 							$vValueConditions [] = 'FALSE';//'(' . /* mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' IS NULL OR ' . */ mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																				
 						}
 						break;
@@ -698,9 +698,11 @@ class SearchManager
 						$vCurrentArray = $vStructure;
 						
 						$vFieldFound = true;
-						
+
 						foreach ($vJSONPath as $vJSONPathSegment)
-						{
+						{	
+						    if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray))	
+						
 					        if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray))
 					        {
 				            	$vCurrentArray = $vCurrentArray[$vJSONPathSegment];
@@ -1009,7 +1011,7 @@ class SearchManager
         if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }  
-
+echo ($vCompleteRequest);
         return $vCompleteRequest;
     }   
     

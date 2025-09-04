@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Field;
 
+include_once ("./custom/php/utils.php");
+
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
@@ -78,6 +80,16 @@ class MapField extends BazarField
         $state = empty($data[5]) ? self::DEFAULT_FIELDNAME_STATE : $data[5];
 
         $this->autocompleteFieldnames = compact(['postalCode', 'town', 'street', 'street1', 'street2', 'county', 'state']);
+    }
+
+	public function getValueStructure () // See BazarField::getValueStructure
+    {		
+        return	[ 
+        			$this->name =>	[ 
+        								"bf_latitude" => [ "_mode_" => "single", "_type_" => "number" ],
+										"bf_longitude" => [ "_mode_" => "single", "_type_" => "number" ]
+									]
+        		];
     }
 
     protected function getValue($entry)
@@ -163,25 +175,36 @@ class MapField extends BazarField
         return $this->formatValuesBeforeSaveIfEditable($entry, false);
     }
 
+
     public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
-    {
+    {		
         if (!$this->canEdit($entry, $isCreation)) {
-            // retrieve value from value because redefined with right value
+            // retrieve value from value because redefined with right value            
+            
             $values = $this->getValue($entry);
-            if (empty($values)) {
-                if (isset($entry[$this->getLatitudeField()])) {
+
+            if (empty($values))
+            {
+                if (isset($entry[$this->getLatitudeField()]))
+                {
                     unset($entry[$this->getLatitudeField()]);
                 }
-                if (isset($entry[$this->getLongitudeField()])) {
+                if (isset($entry[$this->getLongitudeField()]))
+                {
                     unset($entry[$this->getLongitudeField()]);
                 }
-            } else {
+            }
+            else
+            {
                 $entry[$this->getPropertyName()] = $values;
                 $entry[$this->getLatitudeField()] = $values[$this->getLatitudeField()];
                 $entry[$this->getLongitudeField()] = $values[$this->getLatitudeField()];
             }
         }
-        if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
+
+        
+        if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()]))
+        {
             $entry[$this->getPropertyName()] = [
                 $this->getLatitudeField() => $entry[$this->getLatitudeField()],
                 $this->getLongitudeField() => $entry[$this->getLongitudeField()],
@@ -189,11 +212,13 @@ class MapField extends BazarField
 
             return [
                 $this->getPropertyName() => $entry[$this->getPropertyName()],
-                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                $this->getLongitudeField() => $entry[$this->getLongitudeField()],
-                'fields-to-remove' => ['carte_google'],
+                /*$this->getLatitudeField() => $entry[$this->getLatitudeField()],
+                $this->getLongitudeField() => $entry[$this->getLongitudeField()],*/
+                'fields-to-remove' => [ $this->getLatitudeField(), $this->getLongitudeField(),'carte_google'],
             ];
-        } else {
+        }
+        else
+        {
             return [
                 'fields-to-remove' => [
                     $this->getPropertyName(),
