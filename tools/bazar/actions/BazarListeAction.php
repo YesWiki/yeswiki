@@ -5,6 +5,7 @@ use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Core\YesWikiAction;
@@ -140,6 +141,10 @@ class BazarListeAction extends YesWikiAction
         // Champ du formulaire utilisé pour le tri
         $champ = $_GET['champ'] ?? $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
 
+		$vSearchManager = $this->getService(SearchManager::class);
+
+		$vKeywords = $vSearchManager->aggregateKeywords ($arg['keywords']??null, $_REQUEST["q"]??null, $_REQUEST["keywords"]??null);
+		
         return [
             // SELECTION DES FICHES
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
@@ -150,8 +155,10 @@ class BazarListeAction extends YesWikiAction
             // to be able to refresh cache for external json
             'refresh' => $this->formatBoolean($_GET, false, 'refresh'),
             // Paramètres pour une requete specifique
-            'query' => $this->getService(EntryController::class)->formatQuery($arg, $_GET),
-            // filtrer les resultats sur une periode données si une date est indiquée
+            'query' => $vSearchManager->parseQuery ($vSearchManager->aggregateQueries($arg, $_GET)),
+            // filtrer sur des mots clefs
+            'keywords' => $vKeywords,            
+            // filtrer les resultats sur une periode données si une date est indiquée            
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
             // sélectionner seulement les fiches d'un utilisateur
             'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
@@ -236,7 +243,7 @@ class BazarListeAction extends YesWikiAction
     }
 
     public function run()
-    {
+    {	
         $this->debug = ($this->wiki->GetConfigValue('debug') == 'yes');
 
         // If the template is a map or a calendar, call the dedicated action so that
@@ -255,7 +262,17 @@ class BazarListeAction extends YesWikiAction
             self::specialActionFromTemplate($this->arguments['template'], 'BAZARTABLE_TEMPLATES')
             && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'BazarTableAction')
         ) {
-            return $this->callAction('bazartable', $this->arguments);
+        	// Ceci est bancal : bazarliste action appelle bazartable action qui rappelle une deuxieme bazarliste action.
+        	// L'objectif est de formater les arguments correctement pour les tables.
+        	// Ainsi on créé une action bazartable qui créée une deuxieme bazarliste action avec les paramètres correctement formatés pour les tables
+        	// Cela a des effets de bords : 
+        	// ex : si la bazarliste action utilise des parametres de $_REQUEST pour définir ses arguments, alors ces arguments peuvent être dupliqués dans la deuxième bazarliste action créée 
+        	// ie : 
+        	//		- 1ere bazarliste action : bazartable ($arg + $_REQUEST)
+        	// 		- bazartable action : bazarliste ($arg + $_REQUEST)
+        	// 		- 2eme bazarliste action : bazarliste (($arg + $_REQUEST) + $_REQUEST)
+        
+            return $this->callAction('bazartable', $this->arguments); 
         }
 
         $bazarListService = $this->getService(BazarListService::class);
@@ -269,6 +286,7 @@ class BazarListeAction extends YesWikiAction
 
             return $this->render("@bazar/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
                 'params' => $this->arguments,
+                'keywords' => $this->arguments["keywords"],
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
                 'currentUserName' => empty($currentUser['name']) ? '' : $currentUser['name'],
             ]);
@@ -312,7 +330,7 @@ class BazarListeAction extends YesWikiAction
                 'numEntries' => count($entries),
                 'params' => $this->arguments,
                 // Search form parameters
-                'keywords' => $_GET['q'] ?? '',
+                'keywords' => $this->arguments["keywords"],
                 'pageTag' => $this->wiki->getPageTag(),
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
                 'formId' => $this->arguments['idtypeannonce'][0] ?? null,

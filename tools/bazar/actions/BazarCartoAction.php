@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Core\YesWikiAction;
 
@@ -51,19 +52,28 @@ class BazarCartoAction extends YesWikiAction
             $this->formatBoolean($arg, false, 'cluster');
 
         // Filters entries via query to remove whose withou bf_latitude nor bf_longitude
-        $query = $this->getService(EntryController::class)->formatQuery($arg, $_GET);
+        
+        $vSearchManager = $this->getService(SearchManager::class);
+        
+        $query = $vSearchManager->aggregateQueries($arg, $_GET);
+        
+        $vConditions = $vSearchManager->parseQuery ($query);
+        
         if ($template != 'map-and-table' ||
             (
                 !empty($arg['tablewith']) &&
                 $arg['tablewith'] === 'only-geolocation'
             )
-        ) {
-            if (!isset($query['bf_latitude!'])) {
-                $query['bf_latitude!'] = '';
-            }
-            if (!isset($query['bf_longitude!'])) {
-                $query['bf_longitude!'] = '';
-            }
+        ) {        
+        	if (count (array_filter ($vConditions, function ($pCondition) { return (($pCondition ["name"] == "bf_latitude"||($pCondition["name"] == "geolocation.bf_latitude")) && $pCondition ["operator"] == "!="); })) == 0)
+        	{
+        		$query = (trim($query) != ""? "|":"") . 'geolocation.bf_latitude!=';
+        	}
+        	
+        	if (count (array_filter ($vConditions, function ($pCondition) { return (($pCondition ["name"] == "bf_longitude"||($pCondition["name"] == "geolocation.bf_longitude")) && $pCondition ["operator"] == "!="); })) == 0)
+        	{
+        		$query = (trim($query) != ""? "|":"") . 'geolocation.bf_longitude!=';        
+        	}
         }
 
         return [

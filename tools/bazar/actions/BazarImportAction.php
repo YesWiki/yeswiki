@@ -76,7 +76,7 @@ class BazarImportAction extends YesWikiAction
             case 'default':
             default:
                 // get csv_template
-                $csv_template = $this->CSVManager->getCSVfromFormId($this->arguments['id'], null, true);
+                $csv_template = $this->CSVManager->getCSVfromFormId($this->arguments['id'], [], [ "fakeMode" => true ]);
                 break;
         }
 
