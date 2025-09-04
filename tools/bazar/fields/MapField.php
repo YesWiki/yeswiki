@@ -2,8 +2,6 @@
 
 namespace YesWiki\Bazar\Field;
 
-include_once ("./custom/php/utils.php");
-
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
