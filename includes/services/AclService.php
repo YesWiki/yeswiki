@@ -335,7 +335,7 @@ class AclService
         }
 
         // check default readacl
-        $newRequestStart = ' AND ';
+        $newRequestStart = '';
         $newRequestEnd = '';
         if ($this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
             // current user can display pages without read acl

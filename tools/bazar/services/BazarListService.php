@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Attach;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Wiki;
@@ -103,9 +105,9 @@ class BazarListService
                     'regexp' => $options['regexp'] ?? '0',
                     'queries' => $options['query'] ?? '',
                     'formsIds' => $options['idtypeannonce'] ?? [],
-                    'keywords' => $_REQUEST['q'] ?? '',
-                    'user' => $options['user'] ?? null,
-                    'minDate' => $options['dateMin'] ?? null,
+                    'keywords' => $this->wiki->services->get(SearchManager::class)->aggregateKeywords ($_REQUEST["q"]??null, $_REQUEST["keywords"]??null),
+                    'user' => $options['user']??null,
+                    'minDate' => $options['dateMin']??null,
                     'correspondance' => $options['correspondance'] ?? '',
                 ],
                 true, // filter on read ACL,
@@ -133,14 +135,14 @@ class BazarListService
         }
 
         // Sort entries
-        if ($options['random'] ?? false) {
+        if ($options['random']??false) {
             shuffle($entries);
         } else {
-            usort($entries, $this->buildFieldSorter($options['ordre'] ?? 'asc', $options['champ'] ?? 'bf_titre'));
+            usort($entries, $this->buildFieldSorter($options['ordre']??"asc", $options['champ']??"bf_titre"));
         }
 
         // Limit entries
-        if ($options['nb'] ?? false) {
+        if ($options['nb']??false) {
             $entries = array_slice($entries, 0, $options['nb']);
         }
 

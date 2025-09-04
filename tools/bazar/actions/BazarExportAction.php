@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarExportAction extends YesWikiAction
@@ -18,7 +19,7 @@ class BazarExportAction extends YesWikiAction
 
         return [
             'id' => $id,
-            'q' => $_GET['q'] ?? null, // chaine de recherche
+            'keywords' => $this->getService(SearchManager::class)->aggregateKeywords ($_GET['q']??null, $_GET['keywords']??null), // chaine de recherche
             'query' => $_GET['query'] ?? null,
             'bazar-export-option-keys-instead-of-values' => $this->formatBoolean($_REQUEST, false, 'bazar-export-option-keys-instead-of-values'),
             'params' => array_merge(
@@ -44,10 +45,14 @@ class BazarExportAction extends YesWikiAction
         // get CSV
         $csv_raw = $this->CSVManager->getCSVfromFormId(
             $this->arguments['id'],
-            $this->arguments['q'],
-            false, // noFakeCSV
-            $this->arguments['bazar-export-option-keys-instead-of-values'],
-            $this->arguments['query'],
+            [ 
+            	"query" => $this->arguments['query'],
+            	"keywords" => $this->arguments['keywords'],
+            ],
+            [
+            	"fakeMode" => false, // No fake CSV
+            	"keysInsteadOfValues" => $this->arguments['bazar-export-option-keys-instead-of-values']
+            ]           
         );
 
         return $this->render('@bazar/bazar-export.twig', [

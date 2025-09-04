@@ -34,6 +34,11 @@ abstract class CheckboxField extends EnumField
         $this->dragAndDropDisplayMode = '';
     }
 
+	public function getValueStructure () // See BazarField::getValueStructure
+    {		
+        return [ $this->name => [ "_mode_" => "multiple", "_type_" => "string" ]];
+    }
+
     protected function renderInput($entry)
     {
         switch ($this->displayMethod) {

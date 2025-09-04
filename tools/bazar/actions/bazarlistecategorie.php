@@ -60,19 +60,8 @@ if (empty($list)) {
         $query = '';
     }
     unset($_GET['query']);
-    if (!empty($query)) {
-        $tabquery = [];
-        $tableau = [];
-        $tab = explode('|', $query); //découpe la requete autour des |
-        foreach ($tab as $req) {
-            $tabdecoup = explode('=', $req, 2);
-            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-        }
-        $tabquery = array_merge($tabquery, $tableau);
-    } else {
-        $tabquery = '';
-    }
-    $tabfiches = $entryManager->search(['queries' => $tabquery, 'formsIds' => [$id_typeannonce]]);
+    
+    $tabfiches = $entryManager->search(['queries' => $query, 'formsIds' => [$id_typeannonce]]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';

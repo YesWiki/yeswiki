@@ -65,6 +65,35 @@ abstract class BazarField implements \JsonSerializable
         $this->propertyName = $values[self::FIELD_NAME];
     }
 
+	/**
+     * Get the structure of the value
+     *
+     *	The structure indicates how to handle SQL filtering
+     *
+     *	It has the format [ _mode_ => "single"|"multiple", _type_ => "string"|"number"|"boolean" ]
+     *
+     * 	example :
+     *		[ _mode_ => "single", _type_ => "string" ]
+	 *			-> bf_montext = "toto"
+	 *		[ _mode_ => "multiple", _type_ => "string"  ]
+	 *			-> bf_jours = "lundi,mardi"
+     *
+     *  the structure may contain subfields descrived in the same format    
+     *
+	 *	example : 
+	 *		[ bf_latitude => [ _mode_ => "single", _type_ => "number"  ], bf_longitude => [ _mode_ => "single", _type_ => "number"  ] ] 
+     *
+     *	By default field's value are considered as single string
+     *	[ bf_monfield => [ _mode_ => "single", _type_ => "string"  ]
+     *
+     * @return the structure
+     */
+     
+    public function getValueStructure ()
+    {		
+        return [ $this->name => [ "_mode_" => "single", "_type_" => "string" ]];
+    }
+
     /**
      * Render the edit view of the field. Check ACLS first.
      *
