@@ -36,7 +36,7 @@ abstract class CheckboxField extends EnumField
 
 	public function getValueStructure () // See BazarField::getValueStructure
     {		
-        return [ $this->name => [ "_mode_" => "multiple", "_type_" => "string" ]];
+        return [ $this->propertyName => [ "_mode_" => "multiple", "_type_" => "string" ]];
     }
 
     protected function renderInput($entry)

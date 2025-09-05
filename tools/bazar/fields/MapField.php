@@ -83,7 +83,7 @@ class MapField extends BazarField
 	public function getValueStructure () // See BazarField::getValueStructure
     {		
         return	[ 
-        			$this->name =>	[ 
+        			$this->propertyName =>	[ 
         								"bf_latitude" => [ "_mode_" => "single", "_type_" => "number" ],
 										"bf_longitude" => [ "_mode_" => "single", "_type_" => "number" ]
 									]

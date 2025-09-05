@@ -91,7 +91,7 @@ abstract class BazarField implements \JsonSerializable
      
     public function getValueStructure ()
     {		
-        return [ $this->name => [ "_mode_" => "single", "_type_" => "string" ]];
+        return [ $this->propertyName => [ "_mode_" => "single", "_type_" => "string" ]];
     }
 
     /**
