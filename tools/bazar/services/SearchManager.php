@@ -936,10 +936,10 @@ class SearchManager
 										't.property = \'http://outils-reseaux.org/_vocabulary/type\' ' .
 									'WHERE ' .
 										($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ') . 
-										'p.comment_on = \'\' AND ' .
-										($vUserRequest !== "" ? $vUserRequest . " AND ":'') .
-										($vPeriodRequest !== "" ? $vPeriodRequest . " AND ":'') .
-										$vIDsRequest .
+										'p.comment_on = \'\'' .
+										($vUserRequest !== "" ? " AND " . $vUserRequest : '') .
+										($vPeriodRequest !== "" ? " AND " . $vPeriodRequest : '') .
+										($vIDsRequest !== "" ? " AND " . $vIDsRequest : '') .
 								')' .
 								($vSplittedsRequest != "" ? $vSplittedsRequest . " " : " ") .
 								'SELECT DISTINCT f.* ' . 
