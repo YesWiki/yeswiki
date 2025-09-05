@@ -1084,11 +1084,11 @@ class SearchManager
 					$vORs [] = trim ($vToken[2], '"\'');
 			}
 			
-			$vResults ["CNF"][] = $vORs;						
+			if (count ($vORs) > 0) $vResults ["CNF"][] = $vORs;
 		}
 		
-		// Return the parsed keywords search string
-		
+		// Return the parsed keywords array
+
 		return $vResults;		
 	}
 		 	
