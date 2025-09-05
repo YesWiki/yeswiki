@@ -349,7 +349,7 @@ class SearchManager
         // For each field query
 
         foreach ($pQueries as $vQuery)
-        {        		        
+        {        		                   	         	
         	// Build the query condition for this field :
 			
 	    	// Name of the field
@@ -413,9 +413,9 @@ class SearchManager
 			// that may have the field depending on which form it belongs
 		
 			// So, for each structure...
-		
+
 			foreach ($vField ["descriptors"] as $vHash => $vDescriptor)
-			{						
+			{								
 				// Build the condition for each value specified in the request ("comma separated values")
 
 				$vValueConditions = [];
@@ -444,9 +444,9 @@ class SearchManager
 								if ($vDescriptor["type"] == "number")
 								{
 									if (isset ($vValue) && trim ($vValue) !== "")
-										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';
+										$vValueConditions [] = 'CAST(' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . " AS DOUBLE) " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue);
 									else
-										$vValueConditions [] = '(' . /*mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' IS NULL OR ' . */ mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																									
+										$vValueConditions [] = '(' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci ' . $vComparisonOperator . ' \'\' )';																									
 								}
 								else
 								{
@@ -476,8 +476,8 @@ class SearchManager
 						
 						case self::MISSING_FIELD :
 						case self::MISSING_PROPERTY :
-						{echo ($vDescriptor["mode"]);
-							$vValueConditions [] = 'FALSE';//'(' . /* mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' IS NULL OR ' . */ mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																				
+						{
+							$vValueConditions [] = 'FALSE';
 						}
 						break;
 					}				
@@ -592,7 +592,7 @@ class SearchManager
 					}
 	            );
 
-			$vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $this->renameJSONPathVariable("id_typeannonce") . '\')) IN (' . join (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
+			$vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
 		}
 
         // Limit the request depending on the date
@@ -717,7 +717,7 @@ class SearchManager
 					    {
 					    	// We found it : we know the mode and type of the field
 
-					    	$vFieldDescriptor = $vCurrentArray;					    	
+					    	$vFieldDescriptor = $vCurrentArray;				    
 					    }
 					    else
 					    {
@@ -806,10 +806,11 @@ class SearchManager
 	        if (!$vField ["isExtracted"]) 
 	        {        
 				// Extract it if it is not yet done
-	        
-	           	$vSQLNom = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
-            
-            	$vSelectRequest [] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS `' . $vSQLNom . '`';
+
+	           	$vSQLNom = mysqli_real_escape_string ($this->wiki->dblink, $vFieldName);
+				$vRenamedSQLNom = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));	        
+
+            	$vSelectRequest [] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS `' . $vRenamedSQLNom . '`';
             	
 				// rembember it was extracted
             	
