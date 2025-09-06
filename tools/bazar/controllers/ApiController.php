@@ -268,7 +268,7 @@ class ApiController extends YesWikiController
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $_GET);
 
-        $searchfields = isset($_GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
+        $searchfields = $_GET['searchfields'] ?? [];
 
         $searchfields = (empty($searchfields) || (!is_string($searchfields) && !is_array($searchfields)))
             ? ['bf_titre']
@@ -277,6 +277,10 @@ class ApiController extends YesWikiController
                 ? explode(',', $searchfields)
                 : $searchfields
             );
+            
+        $vKeywords = $_GET['keywords'] ?? [];
+            
+        $formattedGet['keywords'] = $vKeywords;
         $formattedGet['searchfields'] = $searchfields;
         $formattedGet['externalModeActivated'] = $externalModeActivated;
 

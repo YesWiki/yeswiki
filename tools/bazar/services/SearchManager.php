@@ -180,7 +180,7 @@ class SearchManager
     public function buildKeywordsConditions ($pKeywords, $pSearchFields, $pMinKeywordsLength)
     {
     	// Let's parse the given keywords search string...
-    
+
     	$vParsedKeywords = $this->parseKeywords ($pKeywords, $pMinKeywordsLength);
     
     	// if there is nothing to do, there is nothing to do
@@ -214,21 +214,12 @@ class SearchManager
 
 				foreach ($pSearchFields as $vFieldName => $vField)
 	    		{
-	    			// For each search field
-
-	    			// let's initialize the request being constructed
-		    		
-		    		$vORRequest = "";
-	    
 	    			// We need to build a specific condition for each field structure
 	    			
 	    			foreach ($vField["descriptors"] as $vHash => $vFieldDescriptor)
-	    			{	    			
-	    				// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
-	    			
-	    				if ($vField["hasMultipleStructures"])	    				
-		    				$vORRequest .= '( ' . $this->renameJSONPathVariable("id_typeannonce") . ' IN ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
-
+	    			{	    				
+		    			$vORRequest = "";
+	    			    				
 						switch ($vFieldDescriptor["mode"])
 						{
 							// If this field instance in is intended to store a single value...
@@ -237,9 +228,9 @@ class SearchManager
 								// Add a field condition adapted to a regexp or not
 	    			
 								if ($vIsRegExp)
-									$vORRequest .= $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vOR)) . '\'';
+									$vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vOR)) . '\'';
 								else
-									$vORRequest .= $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vOR) . '%\'';
+									$vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vOR) . '%\'';
  '\'';
 							break;							
 									
@@ -250,22 +241,26 @@ class SearchManager
 								// Add a field condition adapted to a regexp or not
 							
 								if ($vIsRegExp)																			
-	   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\')' ; 
+	   								$vORRequest = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vOR)) . '$\')' ; 
 								else
-									$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '%\')' ;
+									$vORRequest = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vOR) . '%\')' ;
 							
 							break;						
 						}	
 	    			
+	    				// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
+	    				    			
 	    				if ($vField["hasMultipleStructures"])
-		    				$vORRequest .= ')';
-							
-						$vORs [] = $vORRequest;			
-	    			}	    				
-	    		}
+		    			{   
+		    				if ($vORRequest != "") $vORRequest = '( ' . $this->renameJSONPathVariable("id_typeannonce") . ' IN (' . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFieldDescriptor["ids"])) . ') AND ' . $vORRequest . ')';
+	    				}
+
+	    				if ($vORRequest != "") $vORs [] = $vORRequest;
+	    			}	    			    			
+	    		}	    		
     		}
-    		
-    		$vANDs [] = '(' . implode (" OR ", $vORs) . ')';
+	
+			if (count ($vORs) > 0) $vANDs [] = '(' . implode (" OR ", $vORs) . ')';
 		}
 
 		foreach ($vParsedKeywords["excludeds"] as $vExcluded)
@@ -285,12 +280,7 @@ class SearchManager
     			// We need to build a specific condition for each field structure
 	    	
 	    		foreach ($vField["descriptors"] as $vHash => $vFieldDescriptor )
-	    		{	    			
-	    			// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
-	    			
-	    			if ($vField["hasMultipleStructures"])	    				
-		    			$vExcludedRequest .= '( ' . $this->renameJSONPathVariable("id_typeannonce") . ' IN ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
-	    			
+	    		{	    				    			
 	    			switch ($vFieldDescriptor["mode"])
 					{
 						// If this field instance is intended to store a single value...
@@ -299,9 +289,9 @@ class SearchManager
 							// Add a field condition adapted to a regexp or not
     			
 							if ($vIsRegExp)
-								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '\'';
+								$vExcludedRequest = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '\'';
 							else
-								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\'';
+								$vExcludedRequest = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\'';
 '\'';
 						break;							
 								
@@ -312,14 +302,21 @@ class SearchManager
 							// Add a field condition adapted to a regexp or not
 						
 							if ($vIsRegExp)																			
-   								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '$\')'; 
+   								$vExcludedRequest = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '$\')'; 
 							else
-								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\')';
+								$vExcludedRequest = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\')';
 						
 						break;						
 					}
 	    			
-					$vANDs [] = $vExcludedRequest;
+	    			// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
+	    			
+	    			if ($vField["hasMultipleStructures"])	
+	    			{   
+		    			if ($vExcludedRequest != "") $vExcludedRequest = '( ' . $this->renameJSONPathVariable("id_typeannonce") . ' IN (' . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFieldDescriptor["ids"])) . ') AND ' . $vExcludedRequest . ')';
+		    		}
+	    			
+	    			if ($vExcludedRequest != "") $vANDs [] = $vExcludedRequest;
 	    		}
     		}
 		}
@@ -484,25 +481,25 @@ class SearchManager
 				}		
 				
 				$vDescriptorCondition = "";
-				
-				// if we had remembered that this field can have multiple structures 
-				// we need to specify the form IDs that use this structure in the condition request 
-			
-				if ($vField ["hasMultipleStructures"])
-				{
-					$vDescriptorCondition .= $this->renameJSONPathVariable("id_typeannonce") . ' IN (' . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ")";
-				}	
 										
 				// Merge all value conditions with a logical OR and add it to the descripted field condition
 				
 				if (count ($vValueConditions) > 0)
-				{				
-					$vDescriptorCondition = ($vDescriptorCondition?$vDescriptorCondition . " AND ":"") . implode ( " OR ", $vValueConditions);
+				{								
+					$vDescriptorCondition = implode ( " OR ", $vValueConditions);
+					
+					// if we had remembered that this field can have multiple structures 
+					// we need to specify the form IDs that use this structure in the condition request 
+			
+					if ($vField ["hasMultipleStructures"])
+					{
+						if (vDescriptorCondition != "") $vDescriptorCondition = $this->renameJSONPathVariable("id_typeannonce") . ' IN (' . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ") AND (" . vDescriptorCondition . ")";
+					}						
 				}
 
 				// Add the structure conditions to the field conditions
 				
-				if ($vDescriptorCondition) 	$vQueryConditions [] = "(" . $vDescriptorCondition . ')';
+				if ($vDescriptorCondition != "") $vQueryConditions [] = "(" . $vDescriptorCondition . ')';
 			}						
 			
 			// Merge all the field conditions with a logical OR
@@ -531,7 +528,6 @@ class SearchManager
                 'queries' => [], // array of [ name => <string>, operator => <string> , values => [ <string>, ... ] ]
                 'formsIds' => [], // Types de fiches (par ID de formulaire)
                 'user' => '', // N'affiche que les fiches d'un utilisateur
-                'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
                 'minDate' => '', // Date minimale des fiches
                 'correspondance' => ''
             ],
@@ -620,11 +616,15 @@ class SearchManager
 
 		if ($vKeywords != "")
 		{
-			 $vSearchFields = $params["searchfields"]??"";
+			 $vSearchFields =	isset ($params["searchfields"])
+			 					?	is_array ($params["searchfields"])
+			 						? $params["searchfields"]
+			 						: explode (",", $params["searchfields"])
+			 					: [];
 
-			 $vSearchFields .= ($vSearchFields !=""? ",":"") . "bf_titre";
-			 		
-			 $vKeywordsFields = array_unique (array_map ('trim', explode (",", $vSearchFields)));
+			 $vSearchFields [] = "bf_titre";
+			
+			 $vKeywordsFields = array_unique (array_map ('trim', $vSearchFields));
 		}		
 
 		foreach ($vQueries as $vQuery) 
@@ -907,7 +907,7 @@ class SearchManager
         	),
         	$vMinSearchKeywordLength
         );
-        
+
 		$vWhereRequest .= $vKeywordsConditions;
         
         // Queries conditions

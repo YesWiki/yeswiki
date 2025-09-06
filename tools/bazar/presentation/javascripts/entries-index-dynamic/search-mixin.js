@@ -402,14 +402,17 @@ export default {
 								
 		var vResult = entries.filter((pEntry) =>
 		{
-			pEntry.searchScore = 0;
+			pEntry.searchScore = 1;
 
 			var vMatchedAnds = 0;
+			var vAndsCount = 0;
 
 			vParsedKeywords.CNF.every (function (pAnd)
 			{
 				var vMatchedOrs = 0;
 				var vAndScore = 0;
+				
+				vAndsCount++;
 
 				pAnd.forEach ((pOr) => 
 				{
@@ -465,7 +468,10 @@ export default {
 				return true;
 		    });
 		    
-			pEntry.searchScore *= vMatchedAnds;
+		    if (vAndsCount > 0)
+		    {		    	
+				pEntry.searchScore *= vMatchedAnds/vAndsCount;
+			}
 
 			vParsedKeywords.excludeds.forEach (function (pExcluded)
 			{
