@@ -624,7 +624,7 @@ class SearchManager
 
 			 $vSearchFields [] = "bf_titre";
 			
-			 $vKeywordsFields = array_unique (array_map ('trim', $vSearchFields));
+			 $vKeywordsFields = array_unique (array_map ('trim', $vSearchFields));			
 		}		
 
 		foreach ($vQueries as $vQuery) 
@@ -1037,23 +1037,21 @@ class SearchManager
      */
 
 	private function parseKeywords ($pKeywords, $pMinKeywordLength)
-    {    	
-    	$vKeywords = urldecode ($pKeywords);
-    
+    {    	    
     	// The default results : nothing recognized
     
     	$vResults = [ "CNF" => [], "excludeds" => [] ];
     
     	// Check if the $pKeywords parameter is valid for parsing
     
-		if (!(is_string($vKeywords) && trim($vKeywords) != '' && $vKeywords != _t('BAZ_MOT_CLE')))
+		if (!(is_string($pKeywords) && trim($pKeywords) != '' && $pKeywords != _t('BAZ_MOT_CLE')))
 			return $vResults;
 
 		// Let's analyse the keywords to build a structure representing the CNF and to extract the excludeds tokens
 
 		// Separates AND clauses
 
-		$vANDs = array_filter(array_unique(array_map ('trim',	explode ("|", $vKeywords))), function ($pKeyword) use ($pMinKeywordLength)
+		$vANDs = array_filter(array_unique(array_map ('trim',	explode ("|", $pKeywords))), function ($pKeyword) use ($pMinKeywordLength)
 		{
 			return strlen($pKeyword) >= $pMinKeywordLength;
 		});
@@ -1111,7 +1109,7 @@ class SearchManager
     	if (is_array ($pQuery)) 
     		$vQuery = $this->queryToString ($pQuery);
     	else
-    		$vQuery = urldecode ($pQuery);
+    		$vQuery = $pQuery;
     	
     	if (trim ($vQuery) == "") return [];    	
     	
@@ -1125,7 +1123,7 @@ class SearchManager
 				{					
 					// Extract name, operator and values
 												
-					preg_match_all ("/([^=!<>]*)([=!<>]+)([^=!<>]*)/", $pValue, $pMatches);
+					preg_match_all ("/\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/", $pValue, $pMatches);
 
 					$vName = trim ($pMatches[1][0]);
 

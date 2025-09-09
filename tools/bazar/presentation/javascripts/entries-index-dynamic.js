@@ -52,9 +52,13 @@ const load = (domElement) => {
         this.filters.forEach((filter) => {
           const checkedValues = filter.flattenNodes
             .filter((node) => node.checked)
-            .map((node) => node.value)
+            .map(function (node) 
+            {
+	            return node.value;
+            })
           if (checkedValues.length > 0) result[filter.propName] = checkedValues
         })
+
         return result
       },
       filteredEntriesCount() {
@@ -152,6 +156,9 @@ const load = (domElement) => {
               .split(',')
               .map (str => 
 						str
+						.normalize('NFD')
+				   		.replace(/[\u0300-\u036f]/g, '')
+				   		.toLowerCase ()
 						.replace(/&/g, '&amp;')
 						.replace(/</g, '&lt;')
 						.replace(/>/g, '&gt;')
@@ -159,7 +166,9 @@ const load = (domElement) => {
 						.replace(/'/g, '&#039;'))
               .some(function (value) 
               {
-              	return filter.includes(value)
+              	return 	filter
+              			.map (str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase ())
+              			.includes(value)
               })              
           })
         })
@@ -222,19 +231,16 @@ const load = (domElement) => {
               entryValues = entryValues.split(',')
               return entryValues.some(function (value)
               {
-	              // Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
-	              
-              	if (typeof (value) == "string") 
-              	{
+	            	// Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first					                            	
               		return (value
-            	  	.replace(/&/g, '&amp;')
-				    .replace(/</g, '&lt;')
-				    .replace(/>/g, '&gt;')
-				    .replace(/"/g, '&quot;')
-				    .replace(/'/g, '&#039;') == node.value);
-              	}
-              	else              	
-	               return (value == node.value);
+		          		.normalize('NFD')
+				   		.replace(/[\u0300-\u036f]/g, '')
+		          		.toLowerCase()
+		        	  	.replace(/&/g, '&amp;')
+						.replace(/</g, '&lt;')
+						.replace(/>/g, '&gt;')
+						.replace(/"/g, '&quot;')
+						.replace(/'/g, '&#039;') == node.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase ());
               });
             }).length
           })
@@ -306,6 +312,8 @@ const load = (domElement) => {
 							const cFilterValues = pCondition.values
 							.map (pString => 
 									pString
+									.normalize('NFD')
+							   		.replace(/[\u0300-\u036f]/g, '')
 									.toLowerCase ()
 									.replace(/&/g, '&amp;')
 									.replace(/</g, '&lt;')
@@ -313,7 +321,7 @@ const load = (domElement) => {
 									.replace(/"/g, '&quot;')
 									.replace(/'/g, '&#039;'));
 							
-							if (cFilterValues.includes(pNode.value.toLowerCase ())) pNode.checked = true
+							if (cFilterValues.includes(pNode.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase ())) pNode.checked = true
 					    })
 					}				
 				})
@@ -350,7 +358,7 @@ const load = (domElement) => {
 		for (const cFilterId in this.computedFilters)
 		{
 			bHasFilter = true;
-		
+
 			vQuery.push ({ 
 							"name" : cFilterId, 
 							"operator" : "==", 
@@ -368,17 +376,17 @@ const load = (domElement) => {
 		}
 		
 		if (bHasFilter) vCurrentParams.query = vQuery;
-		
+
 		vMergedParams = this.mergeSearchParams (cCurrentHash, vCurrentParams, { returnMode : "string", overrideKeywords : true, overrideQuery : true });
-		
+
 		// Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
-		
+
 		history.pushState({}, '', '#' + encodeURIComponent (vMergedParams)); 
 
 		this.updateExportLinks(vMergedParams) // Export 
       },      
       updateExportLinks(pSearchParams)
-      {            	
+      {            
 		    document
 		    .querySelectorAll('.export-links > a')
 		    .forEach ((pLink) => 
@@ -406,12 +414,7 @@ const load = (domElement) => {
 					
 					if (vHandler) vNewURL.searchParams.delete (vHandlerValue)
 					else vHandlerValue = "";
-
-					if (vNewURL.searchParams.has ("query"))
-					{
-						vNewURL.searchParams.set ("query", decodeURIComponent (vNewURL.searchParams.get("query")));
-					}
-
+	
 					var vParams = this.mergeSearchParams (vNewURL.searchParams.toString(), pSearchParams, { returnMode : "string", overrideKeywords : false, overrideQuery : false });
 
 					pLink.setAttribute

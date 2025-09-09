@@ -76,9 +76,15 @@ class RssHandler extends YesWikiHandler
 
         // chaine de recherche
 
-        $vKeywords = $this->getService(SearchManager::class)->aggregateKeywords ($_GET['q']??null, $_GET['keywords']??null);
+        $vKeywords = $this->getService(SearchManager::class)->aggregateKeywords
+        	(
+        		isset ($_GET['q'])?urldecode ($_GET['q']):null,
+        		isset ($_GET['keywords'])?urldecode ($_GET['keywords']):null
+        	);
         
-        $vQuery = $this->getService(SearchManager::class)->parseQuery ($_GET['query']??null);
+        $vSearchFields = isset ($_GET['searchfields'])?urldecode ($_GET['searchfields']):null;
+
+        $vQuery = $this->getService(SearchManager::class)->parseQuery (isset ($_GET['query'])?urldecode ($_GET['query']):"");
         
 		// ordre
         $ordre = "desc";
@@ -92,6 +98,7 @@ class RssHandler extends YesWikiHandler
                 'formsIds' => $vIDsArray,
                 'user' => $utilisateur,
                 'keywords' => $vKeywords,
+                'searchfields' => $vSearchFields 
             ],
             true, // filter on read ACL
             true  // use Guard

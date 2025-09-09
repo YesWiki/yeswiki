@@ -161,6 +161,7 @@ class CSVManager
     
     	$vQuery = $pParams["query"]??"";
 	   	$vKeywords = $pParams["keywords"]??"";
+	   	$vSearchFields = $pParams["searchfields"]??"";
     	
         if (!empty($pFormId)) {
             if ($form = $this->formManager->getOne($pFormId)) {
@@ -187,7 +188,8 @@ class CSVManager
                     $entries = $this->entryManager->search([
                         'formsIds' => [$pFormId],
                         'keywords' => $vKeywords,
-                        'queries' => $vQuery
+                        'queries' => $vQuery,
+                        'searchfields' => $vSearchFields
                     ]);
                                         
                     foreach ($entries as $entry) {                    

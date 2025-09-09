@@ -55,17 +55,19 @@ class ApiController extends YesWikiController
     
 	    $query = $vSearchManager->aggregateQueries(
 		        !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
-		        $_GET
+		        isset ($_GET['query'])?urldecode ($_GET['query']):""
 		    );
 
 		$vKeywords = $vSearchManager->aggregateKeywords ($_GET["keywords"]??"", $_GET["q"]??"");
+		
+		$vSearchFields = isset ($_GET['searchfields'])?urldecode ($_GET['searchfields']):null;
 
 	    $formId = is_array($formId) ? $formId : array_map('trim', explode(',', $formId));
 
 	    if ($output == 'csv') // Search is done in the CSV Manager
 	    {
             $csvManager = $this->getService(CSVManager::class);
-            $csvManager->sendCsvOrZip($formId, [ "query" => $query, "keywords" => $vKeywords ]);
+            $csvManager->sendCsvOrZip($formId, [ "query" => $query, "keywords" => $vKeywords, "searchfields" => $vSearchFields ]);
         }
         else
     	{		    
@@ -73,6 +75,7 @@ class ApiController extends YesWikiController
 		        'formsIds' => $formId,
 		        'queries' => $query,
 		        'keywords' => $vKeywords,
+		        'searchfields' => $vSearchFields,
 		        'minDate' => $_GET['dateMin'] ?? '',
 		    ], true, true);
 
@@ -268,7 +271,9 @@ class ApiController extends YesWikiController
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $_GET);
 
-        $searchfields = $_GET['searchfields'] ?? [];
+        $searchfields = $_GET['searchfields']??null;
+        
+        $searchfields = is_string ($searchfields)?urldecode ($searchfields):$searchfields;
 
         $searchfields = (empty($searchfields) || (!is_string($searchfields) && !is_array($searchfields)))
             ? ['bf_titre']
@@ -277,8 +282,8 @@ class ApiController extends YesWikiController
                 ? explode(',', $searchfields)
                 : $searchfields
             );
-            
-        $vKeywords = $_GET['keywords'] ?? [];
+
+        $vKeywords = isset($_GET['keywords'])?urldecode($_GET['keywords']):"";
             
         $formattedGet['keywords'] = $vKeywords;
         $formattedGet['searchfields'] = $searchfields;
