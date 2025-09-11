@@ -591,4 +591,5 @@ return [
     'DUPLICATE_AND_OPEN' => 'Dupliquer',
     'VERIFY_PAGE_AVAILABILITY' => 'Vérifier la disponibilité de la page',
     'DISTANT_LOGIN' => 'S\'identifier sur le YesWiki distant',
+    'LOGS_ARE_FOR_ADMINS_ONLY' => 'Les logs SQL ne sont visibles qu\'aux administrateurs',
 ];
