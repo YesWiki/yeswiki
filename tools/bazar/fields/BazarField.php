@@ -81,7 +81,7 @@ abstract class BazarField implements \JsonSerializable
      *  the structure may contain subfields descrived in the same format    
      *
 	 *	example : 
-	 *		[ bf_latitude => [ _mode_ => "single", _type_ => "number"  ], bf_longitude => [ _mode_ => "single", _type_ => "number"  ] ] 
+	 *		[ geolocation => [ bf_latitude => [ _mode_ => "single", _type_ => "number"  ], bf_longitude => [ _mode_ => "single", _type_ => "number"  ] ] ]
      *
      *	By default field's value are considered as single string
      *	[ bf_monfield => [ _mode_ => "single", _type_ => "string"  ]
