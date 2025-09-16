@@ -232,6 +232,9 @@ class EntryController extends YesWikiController
         if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
+        // we need to store this globally so we can have the form id in the fields
+        // TODO: there must be a better way 
+        $_SESSION['current_form_id'] = $formId; 
         $form = $this->formManager->getOne($formId);
         if (!$form) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';

@@ -48,7 +48,7 @@ class ImageField extends FileField
         if (!empty($entry)) {
             $id = $entry['id_typeannonce'];
         } else {
-            $id = empty($GLOBALS['wiki']->GetParameter('id')) ? $_REQUEST['id'] : $GLOBALS['wiki']->GetParameter('id');
+            $id = $_SESSION['current_form_id'] ?? 'no_id';
         }
         $default_image_filename = "defaultimage{$id}_{$this->name}.jpg";
         if (file_exists($this->getBasePath() . $default_image_filename)) {
