@@ -1354,9 +1354,9 @@ class Wiki
     /**
      * @deprecated Use AssetsManager service instead
      */
-    public function AddJavascript($script)
+    public function AddJavascript($script, $module = false)
     {
-        return $this->services->get(AssetsManager::class)->AddJavascript($script);
+        return $this->services->get(AssetsManager::class)->AddJavascript($script, $module);
     }
 
     /**

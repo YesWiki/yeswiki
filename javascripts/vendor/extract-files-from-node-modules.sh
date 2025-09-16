@@ -134,3 +134,11 @@ cp -f node_modules/ace-builds/src-min-noconflict/ext-searchbox.js tools/aceditor
 mkdir -p javascripts/vendor/iframe-resizer && \
   cp -f node_modules/iframe-resizer/js/iframeResizer.min.js javascripts/vendor/iframe-resizer && \
   cp -f node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer
+
+# mermaid
+mkdir -p javascripts/vendor/mermaid && \
+  mkdir -p javascripts/vendor/mermaid/chunks/mermaid.esm.min && \
+  cp -f node_modules/mermaid/dist/mermaid.esm.min.mjs javascripts/vendor/mermaid/mermaid.esm.min.mjs && \
+  cp -f node_modules/mermaid/dist/chunks/mermaid.esm.min/* javascripts/vendor/mermaid/chunks/mermaid.esm.min && \
+
+
