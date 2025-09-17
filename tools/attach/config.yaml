@@ -27,6 +27,8 @@ parameters:
     avi: 'AVI'
     flac: 'Free Lossless Audio Codec'
     flv: 'Flash Video'
+    json: 'Json'
+    geojson: 'GeoJson'
     mid: 'Midi'
     mng: 'MNG'
     mka: 'Matroska Audio'

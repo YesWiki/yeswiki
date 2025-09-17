@@ -15,6 +15,7 @@
 
 namespace YesWiki\Login;
 
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
@@ -40,6 +41,9 @@ class LoginAction extends YesWikiAction
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
+            // as there can be multiple login actions in one page, we can add a context so that the good action is used
+            // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
+            'context' => $arg['context'] ?? $this->wiki->tag,
             'signupurl' => $noSignupButton ? '0' : (
                 empty($arg['signupurl'])
                 // TODO : check page name for other languages
@@ -101,6 +105,10 @@ class LoginAction extends YesWikiAction
         $this->userManager = $this->getService(UserManager::class);
 
         $action = $_REQUEST['action'] ?? '';
+        if (!isset($_REQUEST['context']) || $_REQUEST['context'] !== $this->arguments['context']) {
+            // no action if not in the good context
+            $action = '';
+        }
         switch ($action) {
             case 'logout':
                 $this->logout();
@@ -158,12 +166,8 @@ class LoginAction extends YesWikiAction
             'class' => $this->arguments['class'],
             'nobtn' => $this->arguments['nobtn'],
             'error' => $error,
+            'context' => $this->arguments['context'],
         ]);
-
-        // backward compatibility TODO remove it for ectoplasme
-        if (!empty($this->arguments['class']) && substr($this->arguments['template'], -strlen('.tpl.html')) == '.tpl.html') {
-            $output = "<div class=\"{$this->arguments['class']}\">\n$output\n</div>\n";
-        }
 
         return $output;
     }
@@ -225,7 +229,7 @@ class LoginAction extends YesWikiAction
             $this->wiki->Redirect($incomingurl);
         } catch (Exception $ex) {
             // error error
-            flash($ex->getMessage(), 'error');
+            Flash::error($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
         }
     }

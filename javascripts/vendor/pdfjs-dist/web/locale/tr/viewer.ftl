@@ -320,6 +320,22 @@ pdfjs-editor-signature-button =
     .title = İmza ekle
 pdfjs-editor-signature-button-label = İmza ekle
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Vurgu düzenleyici
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Çizim düzenleyici
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = İmza düzenleyici: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Resim düzenleyici
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -348,9 +364,16 @@ pdfjs-editor-stamp-add-image-button-label = Resim ekle
 pdfjs-editor-free-highlight-thickness-input = Kalınlık
 pdfjs-editor-free-highlight-thickness-title =
     .title = Metin dışındaki öğeleri vurgularken kalınlığı değiştir
+pdfjs-editor-add-signature-container =
+    .aria-label = İmza yönetimi ve kayıtlı imzalar
 pdfjs-editor-signature-add-signature-button =
     .title = Yeni imza ekle
 pdfjs-editor-signature-add-signature-button-label = Yeni imza ekle
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Kayıtlı imza: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Metin düzenleyicisi
@@ -461,7 +484,6 @@ pdfjs-editor-new-alt-text-error-close-button = Kapat
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Alt metin yapay zekâ modeli indiriliyor ({ $downloadedSize } / { $totalSize } MB)
     .aria-valuetext = Alt metin yapay zekâ modeli indiriliyor ({ $downloadedSize } / { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -580,9 +602,9 @@ pdfjs-editor-edit-signature-update-button = Güncelle
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = İmzayı kaldır
-pdfjs-editor-delete-signature-button-label = İmzayı kaldır
+pdfjs-editor-delete-signature-button1 =
+    .title = Kayıtlı imzayı kaldır
+pdfjs-editor-delete-signature-button-label1 = Kayıtlı imzayı kaldır
 
 ## Editor toolbar
 

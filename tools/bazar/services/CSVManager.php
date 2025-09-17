@@ -116,7 +116,7 @@ class CSVManager
 
             foreach ($data as $line) {
                 // output the column headings
-                fputcsv($csvResource, $line);
+                fputcsv($csvResource, $line, ',', '"', '\\');
             }
             rewind($csvResource);
 
@@ -143,7 +143,8 @@ class CSVManager
         ?string $formId,
         ?string $keywords = null,
         bool $fakeMode = false,
-        bool $keysInsteadOfValues = false
+        bool $keysInsteadOfValues = false,
+        ?string $query = null
     ): ?array {
         if (!empty($formId)) {
             if ($form = $this->formManager->getOne($formId)) {
@@ -163,10 +164,20 @@ class CSVManager
                 ));
 
                 if (!$fakeMode) {
+                    $queries = [];
+                    if (!empty($query)) {
+                        $tab = explode('|', $query);
+                        foreach ($tab as $req) {
+                            $tabdecoup = explode('=', $req, 2);
+                            $queries[$tabdecoup[0]] = trim($tabdecoup[1]);
+                        }
+                    }
+
                     // get lines for each entry
                     $entries = $this->entryManager->search([
                         'formsIds' => [$formId],
                         'keywords' => $keywords,
+                        'queries' => $queries,
                     ]);
                     foreach ($entries as $entry) {
                         $csv_line = $this->getCSVLineFromEntry($entry, $headers, $keysInsteadOfValues);
@@ -409,13 +420,13 @@ class CSVManager
                     $ext = substr($filename, strrpos($filename, '.') + 1);
                     if ($ext == 'csv') {
                         if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
-                            if (($firstLine = fgetcsv($handle, 0, ',')) !== false) {
+                            if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
                                 if ($columnIndexesForPropertyNames =
                                     $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
                                 ) {
                                     // next lines
                                     $extracted = [];
-                                    while (($data = fgetcsv($handle, 0, ',')) !== false) { // init errors
+                                    while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
                                         $this->errormsg = [];
                                         $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $formId);
                                         $extracted[] = [
@@ -746,20 +757,28 @@ class CSVManager
     private function extractValueFromEnumFieldData(string $value, EnumField $field): string
     {
         // get Options
-        $options = $field->getOptions();
+        $options = array_map('trim', $field->getOptions());
         $flippedOptions = [];
-        // not usinf array_flip because it takes the last duplicated index, we prefer the first one
+        // not using array_flip because it takes the last duplicated index, we prefer the first one
         foreach ($options as $key => $val) {
+            $key = trim($key);
+            $val = trim($val);
+
             if (!isset($flippedOptions[$val])) {
                 $flippedOptions[$val] = $key;
             }
         }
 
-        // extract CSV
-        $values = str_getcsv($value, ',');
+        // extract CSV and check if multiple values are present : they should be quoted
+        if (preg_match('/"[^"]+"/', $value)) {
+            $values = str_getcsv($value, ',', '"', '\\');
+        } else {
+            $values = [$value];
+        }
 
         // convert values to index
         $indexes = array_map(function ($option) use ($options, $flippedOptions) {
+            $option = trim($option);
             if (isset($flippedOptions[$option])) {
                 // search if $option is a correct value then take assoiacted index
                 return $flippedOptions[$option];
@@ -873,5 +892,67 @@ class CSVManager
         $csvToDisplay = str_replace('>', htmlentities('>'), $csvToDisplay);
 
         return $csvToDisplay;
+    }
+
+    public function sendCsvOrZip(array $formIds, array $query = [], string $zipFileName = 'yeswiki-csv-exports.zip')
+    {
+        $queryAsString = [];
+        foreach ($query as $i => $q) {
+            $queryAsString[] = $i . '=' . $q;
+        }
+        $queryAsString = implode('|', $queryAsString);
+        $csvFiles = [];
+        foreach ($formIds as $fid) {
+            $csvFiles['export-fiche-' . $fid . '.csv'] = $this->arrayToCSV(
+                $this->getCSVfromFormId($fid, null, false, false, $queryAsString)
+            );
+        }
+
+        $fileCount = count($csvFiles);
+
+        if ($fileCount === 0) {
+            exit('Error: No file data was provided.');
+        }
+
+        if ($fileCount === 1) {
+            $fileName = key($csvFiles);
+            $csvContent = reset($csvFiles);
+
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="' . $fileName . '"');
+            header('Content-Length: ' . strlen($csvContent));
+            header('Connection: close');
+
+            echo $csvContent;
+            exit;
+        }
+
+        if ($fileCount > 1) {
+            if (!class_exists('ZipArchive')) {
+                exit('Error: The ZipArchive PHP extension is not installed or enabled.');
+            }
+
+            $zip = new \ZipArchive();
+            $tempZipFile = tempnam(sys_get_temp_dir(), 'zip');
+
+            if ($zip->open($tempZipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                exit('Error: Cannot create ZIP archive.');
+            }
+
+            foreach ($csvFiles as $filename => $csvString) {
+                $zip->addFromString($filename, $csvString);
+            }
+
+            $zip->close();
+
+            header('Content-Type: application/zip');
+            header('Content-Disposition: attachment; filename="' . $zipFileName . '"');
+            header('Content-Length: ' . filesize($tempZipFile));
+            header('Connection: close');
+
+            readfile($tempZipFile);
+            unlink($tempZipFile);
+            exit;
+        }
     }
 }

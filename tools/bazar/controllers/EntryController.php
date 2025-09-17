@@ -6,6 +6,7 @@ use DateInterval;
 use DateTime;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use Throwable;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
@@ -231,6 +232,9 @@ class EntryController extends YesWikiController
         if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
+        // we need to store this globally so we can have the form id in the fields
+        // TODO: there must be a better way 
+        $_SESSION['current_form_id'] = $formId; 
         $form = $this->formManager->getOne($formId);
         if (!$form) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
@@ -364,7 +368,7 @@ class EntryController extends YesWikiController
                 if (!$this->entryManager->isEntry($entryId)) {
                     $this->triggerDeletedEvent($entryId, $entry);
                     if ($redirectAfter) {
-                        flash(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)", 'success');
+                        Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
                         $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                     }
 
@@ -372,7 +376,7 @@ class EntryController extends YesWikiController
                 }
             } catch (Throwable $th) {
                 if ($redirectAfter) {
-                    flash(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}", 'error');
+                    Flash::error(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}");
                     $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
                 }
                 throw new Exception($th->getMessage(), $th->getCode(), $th);

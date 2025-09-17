@@ -36,6 +36,11 @@ class FooterAction extends YesWikiAction
                     $T_SQL = $T_SQL + $query['time'];
                 }
 
+                // SQL queries maybe contain classified informations, so let's keep them for admins
+                if (!$this->wiki->UserIsAdmin()) {
+                    $debug_log_sql_queries = _t('LOGS_ARE_FOR_ADMINS_ONLY');
+                }
+
                 $end = microtime(true);
                 $debug_log = "<div class=\"debug\">\n<h4>Query log</h4>\n";
                 $debug_log .= '<strong>' . round($end - T_START, 4) . " s total time<br />\n";

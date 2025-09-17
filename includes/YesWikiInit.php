@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ArchiveService;
+use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\YesWikiEventCompilerPass;
 
 // TODO put elsewhere
@@ -36,7 +37,7 @@ class Init
     public $page = '';
     public $method = '';
     public $config = [];
-    public $configFile = 'wakka.config.php';
+    public $configFile;
 
     /**
      * Create a new Init instance.
@@ -47,6 +48,8 @@ class Init
      */
     public function __construct($config = [])
     {
+        $this->configFile = ConfigurationFileProvider::getConfigFileFromEnv();
+
         $this->getRoute();
         $this->config = $this->getConfig($config);
         $this->setIframeHeaders();
@@ -326,6 +329,11 @@ class Init
         $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
         $loader->load('services.yaml');
 
+        // "TODO put elsewhere" - old comment in YesWiki::LoadExtensions -> PUT IN YesWikiInit::initCoreServices - @YvesGufflet
+        $fullDomain = parse_url($wiki->Href());
+        $containerBuilder->setParameter('host', $fullDomain['host']);
+        $containerBuilder->setParameter('max-upload-size', $wiki->file_upload_max_size());
+
         return $containerBuilder;
     }
 
@@ -339,7 +347,6 @@ class Init
                 new AnnotationReader()
             )
         );
-
         // Core controllers
         $routes->addCollection($loader->load('includes/controllers'));
 

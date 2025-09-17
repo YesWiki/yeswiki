@@ -32,6 +32,7 @@
     "leaflet-providers": "^1.13",
     "leaflet.fullscreen": "^2.4",
     "leaflet.markercluster": "^1.5.3",
+    "mermaid": "^11.11.0",
     "minimist": "^1.2.6",
     "moment": "^2.29.2",
     "node-fetch": "^2.6.7",
@@ -45,6 +46,8 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.13.12",
     "eslint": "^9.22.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.31",

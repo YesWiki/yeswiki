@@ -62,7 +62,7 @@ class BazarImportAction extends YesWikiAction
                     // append displayData
                     $extracted = array_map(function ($extract) {
                         $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0);
-                        $extract['base64'] = base64_encode(serialize($extract['entry']));
+                        $extract['json'] = json_encode($extract['entry']);
 
                         return $extract;
                     }, $extracted);

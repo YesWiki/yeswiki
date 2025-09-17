@@ -11,7 +11,7 @@ $csrfTokenController = $this->services->get(CsrfTokenController::class);
 
 // get the GET parameter 'incomingurl' for the incoming url
 if (!empty($_REQUEST['incomingurl'])) {
-    $incomingurl = urldecode($_GET['incomingurl']);
+    $incomingurl = filter_var($_REQUEST['incomingurl'], FILTER_VALIDATE_URL);
 }
 $redirectToIncoming = false;
 $hasBeenDeleted = false;

@@ -1,5 +1,6 @@
 <?php
 
+use function Symfony\Component\String\u;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Field\EnumField;
@@ -180,6 +181,7 @@ function genere_nom_wiki($nom, $occurence = 1)
         // histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents et ponctuation
         // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
+        $nom = u($nom)->ascii();
         $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ', $nom), 0, 47, YW_CHARSET));
         $temp = explode(' ', ucwords(strtolower($temp)));
         $nom = '';

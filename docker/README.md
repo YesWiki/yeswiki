@@ -1,6 +1,6 @@
 # Docker usage
 
-This directory contain 2 dockerfiles and 2 docker-compose. One of each for dev and the other for production.
+This directory contain 2 dockerfiles and 3 docker-compose. One for dev, one for e2e testing and one for production.
 
 ## Dev
 
@@ -98,3 +98,17 @@ If you want to update php or yarn dependency without restarting everything, you 
 docker compose exec yeswiki-app composer install
 docker compose exec yeswiki-app yarn install
 ```
+
+
+## Test
+
+The test docker-compose is similar to the dev one but it also launches a playwright server to launch e2e tests.
+
+The tests are located in the `tests/e2e` directory and are written in typescript.
+
+You need to launch the server with the following command :
+```
+docker compose -f docker-compose.yml -f docker-compose-test.yml up --build
+```
+
+Then you can access to the test interface on http://localhost:8083.

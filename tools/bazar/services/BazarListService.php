@@ -102,8 +102,8 @@ class BazarListService
                     'queries' => $options['query'] ?? '',
                     'formsIds' => $options['idtypeannonce'] ?? [],
                     'keywords' => $_REQUEST['q'] ?? '',
-                    'user' => $options['user'],
-                    'minDate' => $options['dateMin'],
+                    'user' => $options['user'] ?? null,
+                    'minDate' => $options['dateMin'] ?? null,
                     'correspondance' => $options['correspondance'] ?? '',
                 ],
                 true, // filter on read ACL,
@@ -118,14 +118,14 @@ class BazarListService
         }
 
         // Sort entries
-        if ($options['random']) {
+        if ($options['random'] ?? false) {
             shuffle($entries);
         } else {
-            usort($entries, $this->buildFieldSorter($options['ordre'], $options['champ']));
+            usort($entries, $this->buildFieldSorter($options['ordre'] ?? 'asc', $options['champ'] ?? 'bf_titre'));
         }
 
         // Limit entries
-        if ($options['nb'] !== '') {
+        if ($options['nb'] ?? false) {
             $entries = array_slice($entries, 0, $options['nb']);
         }
 
@@ -210,7 +210,11 @@ class BazarListService
                 $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
                 // We collect all values
                 $uniqValues = array_unique(array_column($entries, $propName));
-                sort($uniqValues);
+
+                usort($uniqValues, function ($a, $b) {
+                    return strcmp(strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $a)), strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $b)));
+                });
+
                 foreach ($uniqValues as $value) {
                     $filter['nodes'][] = $this->createFilterNode($value, $value);
                 }

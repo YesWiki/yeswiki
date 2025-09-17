@@ -4,7 +4,7 @@ namespace YesWiki\Login;
 
 use Exception;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use Throwable;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\UserController;
@@ -92,8 +92,7 @@ class UserSettingsAction extends YesWikiAction
         $user = null;
         if ($this->wiki->UserIsAdmin() && (
             !empty($this->wantedUserName)
-            ||
-            !empty($this->wantedEmail)
+            || !empty($this->wantedEmail)
         )) {
             if (!empty($this->wantedUserName)) {
                 $this->adminIsActing = true;
@@ -174,11 +173,8 @@ class UserSettingsAction extends YesWikiAction
                 ')[^<]*(' .
                 preg_quote('</strong>', '/') .
                 ')/', '$1' . _t('USERSETTINGS_CAPTCHA_USER_CREATION') . '$2', $captcha);
-            // this file is kept to manage custom user-signup-form.tpl.html that will not been used if use directly .twig
-            // TODO remove the .tpl.html for ectoplasme and use directly .twig
-            return $this->render('@login/user-signup-form.tpl.html', [
-                'link' => $this->wiki->href(), // notice 'link' is not used in .twig TODO remove this line for ectoplasme
-                'namesToExport' => ['error', 'name', 'email', 'captcha', 'regexUserName'], // TOTO remove this line when removing .tpl.html
+
+            return $this->render('@login/user-signup-form.twig', [
                 'error' => $this->error,
                 'name' => $this->wantedUserName,
                 'email' => $this->wantedEmail,
@@ -247,14 +243,14 @@ class UserSettingsAction extends YesWikiAction
                         $this->wiki->Redirect($this->wiki->href('', '', 'user=' . $this->wantedUserName . '&from=' . $this->referrer, false));
                     }
                 } else { // Unable to update
-                    throw new Exception('');
+                    throw new \Exception('');
                 }
             } catch (TokenNotFoundException $th) {
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . $th->getMessage();
             } catch (UserEmailAlreadyUsedException $th) {
                 $email = isset($post['email']) && is_string($post['email']) ? htmlspecialchars($post['email']) : '';
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . str_replace('{email}', $email, _t('USERSETTINGS_EMAIL_ALREADY_USED'));
-            } catch (Exception $th) {
+            } catch (\Exception $th) {
                 // TODO use a specific exception
                 $this->errorUpdate = _t('USERSETTINGS_EMAIL_NOT_CHANGED') . ' ' . $th->getMessage();
             }
@@ -283,7 +279,7 @@ class UserSettingsAction extends YesWikiAction
                     $this->wiki->Redirect($this->wiki->href());
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
-                } catch (BadFormatPasswordException|Throwable $ex) {
+                } catch (BadFormatPasswordException|\Throwable $ex) {
                     // Something when wrong when updating the user in DB
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $ex->getMessage();
                 }
@@ -295,10 +291,10 @@ class UserSettingsAction extends YesWikiAction
     {
         $link = $this->userManager->sendPasswordRecoveryEmail($user);
         if (!boolval($this->wiki->config['contact_disable_email_for_password'])) {
-            flash(str_replace('{email}', $user['email'], _t('RECOVERY_MESSAGE_SENT')), 'success');
+            Flash::success(str_replace('{email}', $user['email'], _t('RECOVERY_MESSAGE_SENT')));
         }
         $resetText = _t('RECOVERY_LINK');
-        flash("<a href='$link' target='_blank'>$resetText</a>", 'success');
+        Flash::success("<a href='$link' target='_blank'>$resetText</a>");
     }
 
     private function retrieveUsernameAndEmailFromPost(array $post)
@@ -320,8 +316,8 @@ class UserSettingsAction extends YesWikiAction
                 if (!empty($emptyInputsParametersNames)) {
                     $this->error = str_replace('{parameters}', implode(',', $emptyInputsParametersNames), _t('USERSETTINGS_SIGNUP_MISSING_INPUT'));
                 } elseif (
-                    $this->authController->checkPasswordValidateRequirements($password) &&
-                    $post['confpassword'] !== $password
+                    $this->authController->checkPasswordValidateRequirements($password)
+                    && $post['confpassword'] !== $password
                 ) {
                     $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL') . '.';
                 } else { // Password is correct
@@ -354,7 +350,7 @@ class UserSettingsAction extends YesWikiAction
                 $this->error = str_replace('{email}', strval($post['email']), _t('USERSETTINGS_EMAIL_ALREADY_USED'));
             } catch (ExitException $ex) {
                 throw $ex;
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 $this->error = $ex->getMessage();
             }
         }

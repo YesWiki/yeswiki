@@ -6,7 +6,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\BazarListService;
+use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
@@ -48,10 +50,16 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
+        $query = $this->getService(EntryController::class)->formatQuery(
+            !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
+            $_GET
+        );
+
+        $formId = is_array($formId) ? $formId : array_map('trim', explode(',', $formId));
+
         $entries = $this->getService(EntryManager::class)->search([
             'formsIds' => $formId,
-            'queries' => $this->getService(EntryController::class)
-                ->formatQuery(!empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [], $_GET),
+            'queries' => $query,
             'minDate' => $_GET['dateMin'] ?? '',
         ], true, true);
 
@@ -66,6 +74,9 @@ class ApiController extends YesWikiController
             $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
         } elseif ($output == 'ical') {
             return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
+        } elseif ($output == 'csv') {
+            $csvManager = $this->getService(CSVManager::class);
+            $csvManager->sendCsvOrZip($formId, $query);
         } elseif (isset($_GET['fields'])) {
             $fields = explode(',', $_GET['fields']);
             $lightEntries = [];
@@ -246,9 +257,9 @@ class ApiController extends YesWikiController
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $_GET);
 
-        // format search field
-        $searchfields = isset($GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
-        $searchfields = (empty($searchfields) || !is_string($searchfields) || !is_array($searchfields))
+        $searchfields = isset($_GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
+
+        $searchfields = (empty($searchfields) || (!is_string($searchfields) && !is_array($searchfields)))
             ? ['bf_titre']
             : (
                 is_string($searchfields)
@@ -331,16 +342,17 @@ class ApiController extends YesWikiController
         $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
             $entryFieldsService->setEntryId($entry['id_fiche']);
             $result = [];
-            foreach ($fieldList as $field) {
-                // Format subtitle (why?)
-                if (!empty($entry[$field]) && !empty($_GET['displayfields']['subtitle']) && $_GET['displayfields']['subtitle'] == $field) {
-                    $entry[$field] = $this->wiki->Format($entry[$field]);
+            foreach ($fieldList as $fieldName) {
+                // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
+                $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['id_typeannonce']);
+                if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
+                    $entry[$fieldName] = $this->wiki->Format($entry[$fieldName]);
                 }
                 // handle specific fields like comments, reactions
-                if (empty($entry[$field])) {
-                    $entry[$field] = $entryFieldsService->get($field);
+                if (empty($entry[$fieldName])) {
+                    $entry[$fieldName] = $entryFieldsService->get($fieldName);
                 }
-                $result[] = $entry[$field] ?? null;
+                $result[] = $entry[$fieldName] ?? null;
             }
 
             return $result;
