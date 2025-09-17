@@ -237,7 +237,8 @@ class PageManager
 
         // append request to filter on acls during the request
         if (!$this->wiki->UserIsAdmin()) {
-            $sqlRequest .= $this->aclService->updateRequestWithACL();
+        	$aclRequest = $this->aclService->updateRequestWithACL();
+            $sqlRequest .= !empty($aclRequest)?" AND " . $aclRequest:"";
         }
         $pages = $this->dbService->loadAll($sqlRequest);
 

@@ -2,6 +2,8 @@
 
 namespace YesWiki\Bazar\Service;
 
+use YesWiki\Bazar\Controller\EntryController;
+
 use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
@@ -10,6 +12,7 @@ use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\UserField;
+
 use YesWiki\Wiki;
 
 class CSVManager
@@ -133,21 +136,34 @@ class CSVManager
     /**
      * get CSV of all entries from form.
      *
-     * @param string|null $keywords            for EntryManager->search
-     * @param bool        $fakeMode            to create a template
-     * @param bool        $keysInsteadOfValues to export keys insteadof values
-     *
+     * @param <string>|null $pFormId : the form ID for EntryManager::search
+	 * @param <array> $pParams : parameters for EntryManager::search
+	 *	        	[
+	 *					"query" => <string>|<array> the query
+	 *					"keywords" => <string> the keywords string
+	 *				]
+	 * @param <array>|null $pOptions =
+	 *			 [ 
+	 * 				"fakeMode" => <bool> to create a template (default false), 
+	 *				"keysInsteadOfValues" => <bool> export keys instead of values (default false)
+	 *			]
+	 *
      * @return array|null csv; null is empty or error
      */
     public function getCSVfromFormId(
-        ?string $formId,
-        ?string $keywords = null,
-        bool $fakeMode = false,
-        bool $keysInsteadOfValues = false,
-        ?string $query = null
+        ?string $pFormId,
+        array $pParams,
+        ?array $pOptions = null
     ): ?array {
-        if (!empty($formId)) {
-            if ($form = $this->formManager->getOne($formId)) {
+    
+    	$vFakeMode = isset ($pOptions)?($pOptions["fakeMode"]??false):false;
+    	$vKeysInsteadOfValues = isset ($pOptions)?($pOptions["keysInsteadOfValues"]??false):false;
+    
+    	$vQuery = $pParams["query"]??"";
+	   	$vKeywords = $pParams["keywords"]??"";
+    	
+        if (!empty($pFormId)) {
+            if ($form = $this->formManager->getOne($pFormId)) {
                 $csv_raw = [];
 
                 // get headers
@@ -155,32 +171,27 @@ class CSVManager
 
                 // add header to csv_raw
                 $csv_raw[] = array_values(array_merge(
-                    $fakeMode ? [] : ['datetime_create', 'datetime_latest'],
-                    $keysInsteadOfValues
+                    $vFakeMode ? [] : ['datetime_create', 'datetime_latest'],
+                    $vKeysInsteadOfValues
                         ? array_keys($headers)
                         : array_map(function ($fieldHeader) {
                             return $fieldHeader['fullHeader'];
                         }, $headers)
                 ));
 
-                if (!$fakeMode) {
-                    $queries = [];
-                    if (!empty($query)) {
-                        $tab = explode('|', $query);
-                        foreach ($tab as $req) {
-                            $tabdecoup = explode('=', $req, 2);
-                            $queries[$tabdecoup[0]] = trim($tabdecoup[1]);
-                        }
-                    }
-
+                if (!$vFakeMode) {
+                
+                	$vQuery = $this->wiki->services->get(SearchManager::class)->aggregateQueries ($vQuery, $_GET);
+                	
                     // get lines for each entry
                     $entries = $this->entryManager->search([
-                        'formsIds' => [$formId],
-                        'keywords' => $keywords,
-                        'queries' => $queries,
+                        'formsIds' => [$pFormId],
+                        'keywords' => $vKeywords,
+                        'queries' => $vQuery
                     ]);
-                    foreach ($entries as $entry) {
-                        $csv_line = $this->getCSVLineFromEntry($entry, $headers, $keysInsteadOfValues);
+                                        
+                    foreach ($entries as $entry) {                    
+                        $csv_line = $this->getCSVLineFromEntry($entry, $headers, $vKeysInsteadOfValues);
                         if ($csv_line) {
                             $csv_raw[] = $csv_line;
                         }
@@ -894,24 +905,27 @@ class CSVManager
         return $csvToDisplay;
     }
 
-    public function sendCsvOrZip(array $formIds, array $query = [], string $zipFileName = 'yeswiki-csv-exports.zip')
-    {
-        $queryAsString = [];
-        foreach ($query as $i => $q) {
-            $queryAsString[] = $i . '=' . $q;
-        }
-        $queryAsString = implode('|', $queryAsString);
+	/**
+     * send CSV file or archive
+     *
+     * @params <array> $formIds : forms ids
+     * @params <array> params for search. ex : [ "query" => ..., "keywords" => ..., "champ" => ..., "ordre" => ... ]
+     * @return string $csvToDisplay
+     */
+
+    public function sendCsvOrZip(array $formIds, array $pParams, string $zipFileName = 'yeswiki-csv-exports.zip')
+    {        
         $csvFiles = [];
         foreach ($formIds as $fid) {
-            $csvFiles['export-fiche-' . $fid . '.csv'] = $this->arrayToCSV(
-                $this->getCSVfromFormId($fid, null, false, false, $queryAsString)
+            $csvFiles['export-fiche-'.$fid.'.csv'] = $this->arrayToCSV(
+                $this->getCSVfromFormId($fid, $pParams)
             );
         }
 
         $fileCount = count($csvFiles);
 
         if ($fileCount === 0) {
-            exit('Error: No file data was provided.');
+            die('Error: No file data was provided.');
         }
 
         if ($fileCount === 1) {
@@ -919,8 +933,8 @@ class CSVManager
             $csvContent = reset($csvFiles);
 
             header('Content-Type: text/csv');
-            header('Content-Disposition: attachment; filename="' . $fileName . '"');
-            header('Content-Length: ' . strlen($csvContent));
+            header('Content-Disposition: attachment; filename="'.$fileName.'"');
+            header('Content-Length: '.strlen($csvContent));
             header('Connection: close');
 
             echo $csvContent;
@@ -929,14 +943,14 @@ class CSVManager
 
         if ($fileCount > 1) {
             if (!class_exists('ZipArchive')) {
-                exit('Error: The ZipArchive PHP extension is not installed or enabled.');
+                die('Error: The ZipArchive PHP extension is not installed or enabled.');
             }
 
             $zip = new \ZipArchive();
             $tempZipFile = tempnam(sys_get_temp_dir(), 'zip');
 
             if ($zip->open($tempZipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-                exit('Error: Cannot create ZIP archive.');
+                die('Error: Cannot create ZIP archive.');
             }
 
             foreach ($csvFiles as $filename => $csvString) {
@@ -946,8 +960,8 @@ class CSVManager
             $zip->close();
 
             header('Content-Type: application/zip');
-            header('Content-Disposition: attachment; filename="' . $zipFileName . '"');
-            header('Content-Length: ' . filesize($tempZipFile));
+            header('Content-Disposition: attachment; filename="'.$zipFileName.'"');
+            header('Content-Length: '.filesize($tempZipFile));
             header('Connection: close');
 
             readfile($tempZipFile);

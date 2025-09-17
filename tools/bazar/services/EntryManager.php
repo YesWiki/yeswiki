@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
@@ -432,7 +433,7 @@ class EntryManager
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
-        $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
+        $requete = $this->searchManager->prepareSearchRequest($params, $filterOnReadACL);
         $searchResults = [];
         $results = $this->dbService->loadAll($requete);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
