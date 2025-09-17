@@ -96,7 +96,7 @@ class AssetsManager
             $GLOBALS['js'] = '';
         }
         if (!empty($script) && !strpos($GLOBALS['js'], $script . '</script>')) {
-            $GLOBALS['js'] .= '  <script'.($module ? ' type="module"' : '').'>' . "\n" . $script . '</script>' . "\n";
+            $GLOBALS['js'] .= '  <script' . ($module ? ' type="module"' : '') . '>' . "\n" . $script . '</script>' . "\n";
         }
 
         return;

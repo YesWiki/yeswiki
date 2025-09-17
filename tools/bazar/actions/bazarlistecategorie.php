@@ -60,7 +60,7 @@ if (empty($list)) {
         $query = '';
     }
     unset($_GET['query']);
-    
+
     $tabfiches = $entryManager->search(['queries' => $query, 'formsIds' => [$id_typeannonce]]);
 
     $fiches['info_res'] = '';

@@ -3,7 +3,7 @@ Vue.component('opening-hours-create', {
     return {
       opening_days: [],
       field: {},
-      title: "",
+      title: '',
       locale: new URLSearchParams(document.URL).get('lang') || navigator.language,
       dayNames: [{ key: 'Mo', val: 0 }, { key: 'Tu', val: 1 }, { key: 'We', val: 2 },
         { key: 'Th', val: 3 }, { key: 'Fr', val: 4 }, { key: 'Sa', val: 5 }, { key: 'Su', val: 6 }]

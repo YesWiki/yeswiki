@@ -103,7 +103,7 @@ echo "<script>
             }
         },
         ...{
-        	minSearchKeywordLength : ' . (isset($this->config['min_search_keyword_length'])?intval($this->config['min_search_keyword_length']):MIN_SEARCH_KEYWORD_LENGTH) . '
+        	minSearchKeywordLength : ' . (isset($this->config['min_search_keyword_length']) ? intval($this->config['min_search_keyword_length']) : MIN_SEARCH_KEYWORD_LENGTH) . '
         }
     };
 </script>';

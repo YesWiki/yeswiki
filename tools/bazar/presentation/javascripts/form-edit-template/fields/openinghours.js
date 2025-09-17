@@ -1,11 +1,11 @@
-import { readConf, writeconf, semanticConf, defaultMapping } from '/tools/bazar/presentation/javascripts/form-edit-template/fields/commons/attributes.js'
+import { readConf, writeconf, semanticConf, defaultMapping } from '../../../../../../../../../../tools/bazar/presentation/javascripts/form-edit-template/fields/commons/attributes.js'
 
 export default {
   field: {
     label: "horaires d'ouverture",
     name: 'openinghours',
     attrs: { type: 'openinghours' },
-    icon: '<i class="far fa-calendar-alt"></i>',
+    icon: '<i class="far fa-calendar-alt"></i>'
   },
   defaultIdentifier: 'horaires_ouverture',
   attributes: {
@@ -17,5 +17,5 @@ export default {
   advancedAttributes: ['read', 'write', 'semantic'],
   renderInput(fieldData) {
     return { field: '<input type="date"/>' }
-  },
+  }
 }

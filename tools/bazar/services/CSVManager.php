@@ -2,8 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use YesWiki\Bazar\Controller\EntryController;
-
 use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
@@ -12,7 +10,6 @@ use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\UserField;
-
 use YesWiki\Wiki;
 
 class CSVManager
@@ -137,17 +134,17 @@ class CSVManager
      * get CSV of all entries from form.
      *
      * @param <string>|null $pFormId : the form ID for EntryManager::search
-	 * @param <array> $pParams : parameters for EntryManager::search
-	 *	        	[
-	 *					"query" => <string>|<array> the query
-	 *					"keywords" => <string> the keywords string
-	 *				]
-	 * @param <array>|null $pOptions =
-	 *			 [ 
-	 * 				"fakeMode" => <bool> to create a template (default false), 
-	 *				"keysInsteadOfValues" => <bool> export keys instead of values (default false)
-	 *			]
-	 *
+     * @param <array> $pParams : parameters for EntryManager::search
+     *	        	[
+     *					"query" => <string>|<array> the query
+     *					"keywords" => <string> the keywords string
+     *				]
+     * @param <array>|null $pOptions =
+     *			 [
+     * 				"fakeMode" => <bool> to create a template (default false),
+     *				"keysInsteadOfValues" => <bool> export keys instead of values (default false)
+     *			]
+     *
      * @return array|null csv; null is empty or error
      */
     public function getCSVfromFormId(
@@ -155,14 +152,13 @@ class CSVManager
         array $pParams,
         ?array $pOptions = null
     ): ?array {
-    
-    	$vFakeMode = isset ($pOptions)?($pOptions["fakeMode"]??false):false;
-    	$vKeysInsteadOfValues = isset ($pOptions)?($pOptions["keysInsteadOfValues"]??false):false;
-    
-    	$vQuery = $pParams["query"]??"";
-	   	$vKeywords = $pParams["keywords"]??"";
-	   	$vSearchFields = $pParams["searchfields"]??"";
-    	
+        $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
+        $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
+
+        $vQuery = $pParams['query'] ?? '';
+        $vKeywords = $pParams['keywords'] ?? '';
+        $vSearchFields = $pParams['searchfields'] ?? '';
+
         if (!empty($pFormId)) {
             if ($form = $this->formManager->getOne($pFormId)) {
                 $csv_raw = [];
@@ -181,18 +177,17 @@ class CSVManager
                 ));
 
                 if (!$vFakeMode) {
-                
-                	$vQuery = $this->wiki->services->get(SearchManager::class)->aggregateQueries ($vQuery, $_GET);
-                	
+                    $vQuery = $this->wiki->services->get(SearchManager::class)->aggregateQueries($vQuery, $_GET);
+
                     // get lines for each entry
                     $entries = $this->entryManager->search([
                         'formsIds' => [$pFormId],
                         'keywords' => $vKeywords,
                         'queries' => $vQuery,
-                        'searchfields' => $vSearchFields
+                        'searchfields' => $vSearchFields,
                     ]);
-                                        
-                    foreach ($entries as $entry) {                    
+
+                    foreach ($entries as $entry) {
                         $csv_line = $this->getCSVLineFromEntry($entry, $headers, $vKeysInsteadOfValues);
                         if ($csv_line) {
                             $csv_raw[] = $csv_line;
@@ -907,19 +902,19 @@ class CSVManager
         return $csvToDisplay;
     }
 
-	/**
-     * send CSV file or archive
+    /**
+     * send CSV file or archive.
      *
      * @params <array> $formIds : forms ids
      * @params <array> params for search. ex : [ "query" => ..., "keywords" => ..., "champ" => ..., "ordre" => ... ]
+     *
      * @return string $csvToDisplay
      */
-
     public function sendCsvOrZip(array $formIds, array $pParams, string $zipFileName = 'yeswiki-csv-exports.zip')
-    {        
+    {
         $csvFiles = [];
         foreach ($formIds as $fid) {
-            $csvFiles['export-fiche-'.$fid.'.csv'] = $this->arrayToCSV(
+            $csvFiles['export-fiche-' . $fid . '.csv'] = $this->arrayToCSV(
                 $this->getCSVfromFormId($fid, $pParams)
             );
         }
@@ -927,7 +922,7 @@ class CSVManager
         $fileCount = count($csvFiles);
 
         if ($fileCount === 0) {
-            die('Error: No file data was provided.');
+            exit('Error: No file data was provided.');
         }
 
         if ($fileCount === 1) {
@@ -935,8 +930,8 @@ class CSVManager
             $csvContent = reset($csvFiles);
 
             header('Content-Type: text/csv');
-            header('Content-Disposition: attachment; filename="'.$fileName.'"');
-            header('Content-Length: '.strlen($csvContent));
+            header('Content-Disposition: attachment; filename="' . $fileName . '"');
+            header('Content-Length: ' . strlen($csvContent));
             header('Connection: close');
 
             echo $csvContent;
@@ -945,14 +940,14 @@ class CSVManager
 
         if ($fileCount > 1) {
             if (!class_exists('ZipArchive')) {
-                die('Error: The ZipArchive PHP extension is not installed or enabled.');
+                exit('Error: The ZipArchive PHP extension is not installed or enabled.');
             }
 
             $zip = new \ZipArchive();
             $tempZipFile = tempnam(sys_get_temp_dir(), 'zip');
 
             if ($zip->open($tempZipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-                die('Error: Cannot create ZIP archive.');
+                exit('Error: Cannot create ZIP archive.');
             }
 
             foreach ($csvFiles as $filename => $csvString) {
@@ -962,8 +957,8 @@ class CSVManager
             $zip->close();
 
             header('Content-Type: application/zip');
-            header('Content-Disposition: attachment; filename="'.$zipFileName.'"');
-            header('Content-Length: '.filesize($tempZipFile));
+            header('Content-Disposition: attachment; filename="' . $zipFileName . '"');
+            header('Content-Length: ' . filesize($tempZipFile));
             header('Connection: close');
 
             readfile($tempZipFile);

@@ -19,18 +19,16 @@ if (isset($_REQUEST['demand'])) {
     $idfiche = (isset($_REQUEST['id_fiche']) ? $_REQUEST['id_fiche'] : '');
     $pagetag = (isset($_REQUEST['pagetag']) ? $_REQUEST['pagetag'] : '');
     $is_semantic = (isset($_REQUEST['ld']) ? $_REQUEST['ld'] : '');
-    
+
     $vSearchManager = $this->services->get(SearchManager::class);
-    
+
     // On recupere les parametres query pour une requete specifique
     // NOTE : It doesn't seem to be used
     $query = (isset($_REQUEST['query']) ? $_REQUEST['query'] : '');
-    if (!empty($query))    
-    {
-	    $vQueries = $vSearchManager->parseQuery ($query);
-    } else
-    {
-	    $vQueries = [];
+    if (!empty($query)) {
+        $vQueries = $vSearchManager->parseQuery($query);
+    } else {
+        $vQueries = [];
     }
 
     header('Content-type: ' . ($is_semantic ? 'application/ld+json' : 'application/json') . '; charset=UTF-8');

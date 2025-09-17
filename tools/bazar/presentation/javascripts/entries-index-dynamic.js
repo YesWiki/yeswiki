@@ -40,7 +40,7 @@ const load = (domElement) => {
       pagination: 10,
 
       search: '',
-      currentSort: { field: '', order : null, label: '' },
+      currentSort: { field: '', order: null, label: '' },
 
       // wether to search for a particular form ID (only used when no
       // form id is defined for the bazar list action)
@@ -52,10 +52,7 @@ const load = (domElement) => {
         this.filters.forEach((filter) => {
           const checkedValues = filter.flattenNodes
             .filter((node) => node.checked)
-            .map(function (node) 
-            {
-	            return node.value;
-            })
+            .map((node) => node.value)
           if (checkedValues.length > 0) result[filter.propName] = checkedValues
         })
 
@@ -94,13 +91,12 @@ const load = (domElement) => {
       filteredEntriesCount() {
         this.currentPage = 0
       },
-      search() {      
-      	if (this.ready)
-      	{
-	        clearTimeout(this.searchTimer);
-			this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350);
-	        this.updateHash();
-		}
+      search() {
+      	if (this.ready) {
+	        clearTimeout(this.searchTimer)
+          this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
+	        this.updateHash()
+        }
       },
       searchFormId() {
         this.calculateBaseEntries()
@@ -129,15 +125,12 @@ const load = (domElement) => {
             (entry) => entry.id_typeannonce == this.searchFormId
           )
         }
-        
-        var vSearch = this.params["keywords"]??"";
-        if (this.search) vSearch += (vSearch!=""?"|":"") + this.search;
-        
-        vSearch = vSearch.split ("|").filter (function (pKeyword)
-        {
-			return pKeyword.length >= wiki.minSearchKeywordLength;
-        }).join ("|");
-              
+
+        let vSearch = this.params.keywords ?? ''
+        if (this.search) vSearch += (vSearch != '' ? '|' : '') + this.search
+
+        vSearch = vSearch.split('|').filter((pKeyword) => pKeyword.length >= wiki.minSearchKeywordLength).join('|')
+
         if (vSearch && vSearch.length >= wiki.minSearchKeywordLength) {
           result = this.searchEntries(result, vSearch)
           if (result == undefined) {
@@ -154,22 +147,18 @@ const load = (domElement) => {
             if (!entry[propName] || typeof entry[propName] != 'string') return false
             return entry[propName]
               .split(',')
-              .map (str => 
-						str
-						.normalize('NFD')
+              .map((str) => str
+                .normalize('NFD')
 				   		.replace(/[\u0300-\u036f]/g, '')
-				   		.toLowerCase ()
-						.replace(/&/g, '&amp;')
-						.replace(/</g, '&lt;')
-						.replace(/>/g, '&gt;')
-						.replace(/"/g, '&quot;')
-						.replace(/'/g, '&#039;'))
-              .some(function (value) 
-              {
-              	return 	filter
-              			.map (str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase ())
-              			.includes(value)
-              })              
+				   		.toLowerCase()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;'))
+              .some((value) => filter
+              			.map((str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
+              			.includes(value))
           })
         })
         this.filteredEntries = result
@@ -186,12 +175,12 @@ const load = (domElement) => {
           const valueB = deepGet(b, field)
 
           if (typeof valueA === 'number' && typeof valueB === 'number') {
-            return order == "asc" ? valueA - valueB : valueB - valueA
+            return order == 'asc' ? valueA - valueB : valueB - valueA
           }
 
-			// Case and accent insensitive sort
-	
-          return order == "asc"
+          // Case and accent insensitive sort
+
+          return order == 'asc'
             ? collator.compare(String(valueA).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(), String(valueB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
             : collator.compare(String(valueB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(), String(valueA).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
         })
@@ -229,19 +218,17 @@ const load = (domElement) => {
               let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some(function (value)
-              {
-	            	// Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first					                            	
-              		return (value
+              return entryValues.some((value) =>
+	            	// Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
+              		 (value
 		          		.normalize('NFD')
 				   		.replace(/[\u0300-\u036f]/g, '')
 		          		.toLowerCase()
 		        	  	.replace(/&/g, '&amp;')
-						.replace(/</g, '&lt;')
-						.replace(/>/g, '&gt;')
-						.replace(/"/g, '&quot;')
-						.replace(/'/g, '&#039;') == node.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase ());
-              });
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;') == node.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()))
             }).length
           })
         })
@@ -256,179 +243,154 @@ const load = (domElement) => {
         if (this.sortOptions.length > 0) this.currentSort = this.sortOptions[0]
         this.updateHash()
       },
-      initFromHash (pHash)
-      {      
-      	var vThis = this;
-      
-		var vParams = this.parseSearchParams (pHash); // Return hash as a structured object
-		var vChamp;
-		var vOrdre;
+      initFromHash(pHash) {
+      	const vThis = this
 
-		var vSearch = "";
+        const vParams = this.parseSearchParams(pHash) // Return hash as a structured object
+        let vChamp
+        let vOrdre
 
-		if (vParams["q"] !== undefined && vParams["q"].trim () !== "")
-		{
-            vSearch = vParams["q"];
-		}
-		
-		if (vParams["keywords"] !== undefined && vParams["keywords"].trim () !== "")
-		{
-            vSearch = (vSearch!=""?vSearch + "|":"") + vParams["keywords"];
-		}
-		
-		if (vSearch != "") this.search = vSearch;
-		
-		if (vParams["champ"] !== undefined && vParams["champ"].trim () !== "")
-		{
-            vChamp = vParams["champ"];
-		}
-		
-		if (vParams["ordre"] !== undefined && vParams["ordre"].trim () !== "")
-		{
-            vChamp = vParams["ordre"];
-		}
-		
-		if (vParams["query"] !== undefined)
-		{		
-			var vQueryEntries = Object.entries (vParams["query"]);
-			
-			if (vQueryEntries.length > 0)
-			{
-				vQueryEntries.forEach (function ( [ pKey, pCondition] )
-				{
-					const cFilter = vThis.filters.find(function (pF) 
-					{
-						return pF.propName == pCondition.name;
-					});
+        let vSearch = ''
 
-					if (cFilter)
-					{
-						cFilter.flattenNodes.forEach((pNode) =>
-				        {
-					    	// Handle values with special chars 
+        if (vParams.q !== undefined && vParams.q.trim() !== '') {
+          vSearch = vParams.q
+        }
+
+        if (vParams.keywords !== undefined && vParams.keywords.trim() !== '') {
+          vSearch = (vSearch != '' ? `${vSearch}|` : '') + vParams.keywords
+        }
+
+        if (vSearch != '') this.search = vSearch
+
+        if (vParams.champ !== undefined && vParams.champ.trim() !== '') {
+          vChamp = vParams.champ
+        }
+
+        if (vParams.ordre !== undefined && vParams.ordre.trim() !== '') {
+          vChamp = vParams.ordre
+        }
+
+        if (vParams.query !== undefined) {
+          const vQueryEntries = Object.entries(vParams.query)
+
+          if (vQueryEntries.length > 0) {
+            vQueryEntries.forEach(([pKey, pCondition]) => {
+              const cFilter = vThis.filters.find((pF) => pF.propName == pCondition.name)
+
+              if (cFilter) {
+                cFilter.flattenNodes.forEach((pNode) => {
+					    	// Handle values with special chars
 					    	// like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
 					    	// ie : Figuier goutte d&#039;or
-					    
-							const cFilterValues = pCondition.values
-							.map (pString => 
-									pString
-									.normalize('NFD')
+
+                  const cFilterValues = pCondition.values
+                    .map((pString) => pString
+                      .normalize('NFD')
 							   		.replace(/[\u0300-\u036f]/g, '')
-									.toLowerCase ()
-									.replace(/&/g, '&amp;')
-									.replace(/</g, '&lt;')
-									.replace(/>/g, '&gt;')
-									.replace(/"/g, '&quot;')
-									.replace(/'/g, '&#039;'));
-							
-							if (cFilterValues.includes(pNode.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase ())) pNode.checked = true
+                      .toLowerCase()
+                      .replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#039;'))
+
+                  if (cFilterValues.includes(pNode.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())) pNode.checked = true
 					    })
-					}				
-				})
-			}
-		}	
-					
-	    const cSort = this.sortOptions.find((s) => s.field == (vChamp??(typeof (vThis.currentSort)!="undefined")?vThis.currentSort.field:"") && s.order == (vOrdre??(typeof (vThis.currentSort)!="undefined")?vThis.currentSort.order:""));
+              }
+            })
+          }
+        }
 
-        if (cSort)
-        {
-        	this.currentSort = cSort;
-		}	         
-      },            
-      updateHash ()
-      {
-		if (!this.ready) return
-		
-		var cCurrentHash = this.savedHash;
-		
-		var vQuery = [];
-		var vCurrentParams = {};
-		var vMergedParams;
-		
-		var vSearch = this.search.trim();
-		
-		if (vSearch.length < wiki.minSearchKeywordLength) vSearch = "";
-		
-		if (vSearch != "") vCurrentParams.keywords = vSearch;
-		if (this.currentSort.field && this.currentSort.field != "") vCurrentParams.champ = this.currentSort.field;
-		if (this.currentSort.order && this.currentSort.order != "") vCurrentParams.ordre = this.currentSort.order;
-		
-		var bHasFilter = false;
-		
-		for (const cFilterId in this.computedFilters)
-		{
-			bHasFilter = true;
+	    const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
 
-			vQuery.push ({ 
-							"name" : cFilterId, 
-							"operator" : "==", 
-							"values" :	this.computedFilters[cFilterId]
-										.map (	pString =>
-												pString
-												.replace(/&amp;/g, '&')
-												.replace(/&lt;/g, '<')
-												.replace(/&gt;/g, '>')
-												.replace(/&quot;/g, '"')
-												.replace(/&#039;/g, "'")
-											 )
-										.join (",")
-						});
-		}
-		
-		if (bHasFilter) vCurrentParams.query = vQuery;
+        if (cSort) {
+        	this.currentSort = cSort
+        }
+      },
+      updateHash() {
+        if (!this.ready) return
 
-		vMergedParams = this.mergeSearchParams (cCurrentHash, vCurrentParams, { returnMode : "string", overrideKeywords : true, overrideQuery : true });
+        const cCurrentHash = this.savedHash
 
-		// Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
+        const vQuery = []
+        const vCurrentParams = {}
+        let vMergedParams
 
-		history.pushState({}, '', '#' + encodeURIComponent (vMergedParams)); 
+        let vSearch = this.search.trim()
 
-		this.updateExportLinks(vMergedParams) // Export 
-      },      
-      updateExportLinks(pSearchParams)
-      {            
+        if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
+
+        if (vSearch != '') vCurrentParams.keywords = vSearch
+        if (this.currentSort.field && this.currentSort.field != '') vCurrentParams.champ = this.currentSort.field
+        if (this.currentSort.order && this.currentSort.order != '') vCurrentParams.ordre = this.currentSort.order
+
+        let bHasFilter = false
+
+        for (const cFilterId in this.computedFilters) {
+          bHasFilter = true
+
+          vQuery.push({
+            name: cFilterId,
+            operator: '==',
+            values:	this.computedFilters[cFilterId]
+              .map((pString) => pString
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#039;/g, "'"))
+              .join(',')
+          })
+        }
+
+        if (bHasFilter) vCurrentParams.query = vQuery
+
+        vMergedParams = this.mergeSearchParams(cCurrentHash, vCurrentParams, { returnMode: 'string', overrideKeywords: true, overrideQuery: true })
+
+        // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
+
+        history.pushState({}, '', `#${encodeURIComponent(vMergedParams)}`)
+
+        this.updateExportLinks(vMergedParams) // Export
+      },
+      updateExportLinks(pSearchParams) {
 		    document
 		    .querySelectorAll('.export-links > a')
-		    .forEach ((pLink) => 
-		    {        
-				var vOldHREF = pLink.getAttribute('oldhref'); // Get the original href
- 	
-				if (!vOldHREF) // if it didn't exist yet, remember what it is.
-				{
-					vOldHREF = pLink.getAttribute('href')
-					pLink.setAttribute('oldhref', vOldHREF);
-				}
+		    .forEach((pLink) => {
+            let vOldHREF = pLink.getAttribute('oldhref') // Get the original href
 
-				var vNewHREF;
+            if (!vOldHREF) // if it didn't exist yet, remember what it is.
+            {
+              vOldHREF = pLink.getAttribute('href')
+              pLink.setAttribute('oldhref', vOldHREF)
+            }
 
-				if (vOldHREF.trim() === '')
-				{
-					console.error('Invalid URL provided.')
-				}
-				else
-				{	        	
-					var vNewURL = new URL (vOldHREF);
+            let vNewHREF
 
-				 	var vHandler = vNewURL.searchParams.keys().next();			 	
-					var vHandlerValue = vHandler.value;
-					
-					if (vHandler) vNewURL.searchParams.delete (vHandlerValue)
-					else vHandlerValue = "";
-	
-					var vParams = this.mergeSearchParams (vNewURL.searchParams.toString(), pSearchParams, { returnMode : "string", overrideKeywords : false, overrideQuery : false });
+            if (vOldHREF.trim() === '') {
+              console.error('Invalid URL provided.')
+            } else {
+              const vNewURL = new URL(vOldHREF)
 
-					pLink.setAttribute
-					(	
-						"href",
-						vNewURL.origin + 
-						vNewURL.pathname + 
-						"?" + vHandlerValue + 
-						(vParams ? "&" + vParams : "") +
-						vNewURL.hash						
-					)
-				}
-			});
-	  },      
+				 	const vHandler = vNewURL.searchParams.keys().next()
+              let vHandlerValue = vHandler.value
+
+              if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
+              else vHandlerValue = ''
+
+              const vParams = this.mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
+
+              pLink.setAttribute(
+                'href',
+                `${vNewURL.origin
+						+ vNewURL.pathname
+						 }?${vHandlerValue
+						 }${vParams ? `&${vParams}` : ''
+						 }${vNewURL.hash}`
+              )
+            }
+          })
+	  },
       getEntryRender(entry) {
         if (entry.html_render) return
         if (this.isExternalUrl(entry)) {
@@ -555,8 +517,8 @@ const load = (domElement) => {
 
         this.params.sortfields.forEach((field, index) => {
           const label = this.params.sortfieldstitles[index]
-          this.sortOptions.push({ field : field.trim(), label, order : "asc" })
-          this.sortOptions.push({ field : field.trim(), label, order : "desc" })
+          this.sortOptions.push({ field: field.trim(), label, order: 'asc' })
+          this.sortOptions.push({ field: field.trim(), label, order: 'desc' })
         })
 
         if (this.sortOptions.length > 0) {
@@ -564,18 +526,18 @@ const load = (domElement) => {
           // we do not overwride this backend sort by the front end dynamic sort
           if (this.params.champ) {
             const sort = this.sortOptions
-			.find((o) =>	o.field === this.params.champ.trim() && 
-						   	o.order === ((typeof (this.params.ordre)=="boolean"?this.params.ordre:(this.params.ordre=="1"||this.params.ordre=="true"||this.params.ordre=="asc"))?"asc":"desc"))
+              .find((o) =>	o.field === this.params.champ.trim()
+						   	&& o.order === ((typeof (this.params.ordre) == 'boolean' ? this.params.ordre : (this.params.ordre == '1' || this.params.ordre == 'true' || this.params.ordre == 'asc')) ? 'asc' : 'desc'))
 
-            if (sort) { this.currentSort = sort }
-            else { this.currentSort = this.sortOptions[0] }
-        }}
-        
+            if (sort) { this.currentSort = sort } else { this.currentSort = this.sortOptions[0] }
+          }
+        }
+
         // First display filters cause entries can be a bit long to load
 
-		this.filters = filters;
-       
-		this.initFromHash (this.savedHash)
+        this.filters = filters
+
+        this.initFromHash(this.savedHash)
 
         // Auto paginate if large numbers
         if (data.entries.length > 50 && !this.pagination) this.pagination = 20
@@ -649,4 +611,3 @@ const load = (domElement) => {
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.bazar-list-dynamic-container').forEach(load)
 })
-
