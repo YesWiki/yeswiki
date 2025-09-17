@@ -97,8 +97,13 @@ class DbService
         try {
             if (!$result = mysqli_query($this->link, $query)) {
                 throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
-            }
-        } finally {
+            }            
+        }
+        catch (Exception $e)
+        {
+        	echo ($query);exit();
+        }        
+        finally {
             if ($this->params->get('debug')) {
                 $this->addQueryLog($query, $this->getMicroTime() - $start);
             }

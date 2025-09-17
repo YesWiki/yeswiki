@@ -12,6 +12,7 @@ use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Controller\AuthController;
@@ -512,50 +513,18 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * format queries form GET and from $arg in order to give the right 'queries' to EntryManager->search.
+     * format queries from GET and from $arg in order to give the right 'queries' to EntryManager->search.
      *
      * @param array|string|null $arg
      * @param array             $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
+	 * 
+     * NOTE : this function is kept for retrocompatibility. You should use SearchManager::aggregateQueries
      */
-    public function formatQuery($arg, array $get): array
+    public function formatQuery($arg, array $get): array   
     {
-        $queryArray = [];
-
-        // Aggregate argument and $get values
-        if (isset($get['query'])) {
-            if (!empty($arg['query'])) {
-                if (is_array($arg['query'])) {
-                    $queryArray = $arg['query'];
-                    $query = $get['query'];
-                } else {
-                    $query = $arg['query'] . '|' . $get['query'];
-                }
-            } else {
-                $query = $get['query'];
-            }
-        } else {
-            if (isset($arg['query']) && is_array($arg['query'])) {
-                $queryArray = $arg['query'];
-                $query = null;
-            } else {
-                $query = $arg['query'] ?? null;
-            }
-        }
-
-        // Create an array from the queries
-        if (!empty($query)) {
-            $res1 = explode('|', $query);
-            foreach ($res1 as $req) {
-                $res2 = explode('=', $req, 2);
-                if (isset($queryArray[$res2[0]]) && !empty($queryArray[$res2[0]])) {
-                    $queryArray[$res2[0]] = $queryArray[$res2[0]] . ',' . trim($res2[1] ?? '');
-                } else {
-                    $queryArray[$res2[0]] = trim($res2[1] ?? '');
-                }
-            }
-        }
-
-        return $queryArray;
+    	$vSearchManager = $this->getService(SearchManager::class);
+    	
+		return $vSearchManager->parseQuery ($vSearchManager->aggregateQueries ($arg, $get));
     }
 
     /* PART TO FILTER ON DATE */
@@ -809,5 +778,5 @@ class EntryController extends YesWikiController
 
         // TODO check if redirect to outside website ?
         return empty($incomingUrl) ? '' : $incomingUrl;
-    }
+    }    
 }

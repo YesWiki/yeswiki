@@ -11,6 +11,7 @@ use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\ApiResponse;
@@ -50,52 +51,65 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
-        $query = $this->getService(EntryController::class)->formatQuery(
-            !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
-            $_GET
-        );
+    	$vSearchManager = $this->getService(SearchManager::class);
+    
+	    $query = $vSearchManager->aggregateQueries(
+		        !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
+		        isset ($_GET['query'])?urldecode ($_GET['query']):""
+		    );
 
-        $formId = is_array($formId) ? $formId : array_map('trim', explode(',', $formId));
+		$vKeywords = $vSearchManager->aggregateKeywords ($_GET["keywords"]??"", $_GET["q"]??"");
+		
+		$vSearchFields = isset ($_GET['searchfields'])?urldecode ($_GET['searchfields']):null;
 
-        $entries = $this->getService(EntryManager::class)->search([
-            'formsIds' => $formId,
-            'queries' => $query,
-            'minDate' => $_GET['dateMin'] ?? '',
-        ], true, true);
+	    $formId = is_array($formId) ? $formId : array_map('trim', explode(',', $formId));
 
-        if ($output == 'json-ld' || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
-            return $this->getAllSemanticEntries($formId, $entries);
-        } // add entries in html format if asked
-        elseif ($output == 'html') {
-            foreach ($entries as $id => $entry) {
-                $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
-            }
-        } elseif ($output == 'geojson') {
-            $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
-        } elseif ($output == 'ical') {
-            return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
-        } elseif ($output == 'csv') {
+	    if ($output == 'csv') // Search is done in the CSV Manager
+	    {
             $csvManager = $this->getService(CSVManager::class);
-            $csvManager->sendCsvOrZip($formId, $query);
-        } elseif (isset($_GET['fields'])) {
-            $fields = explode(',', $_GET['fields']);
-            $lightEntries = [];
-            if (!empty($entries) && !empty($fields)) {
-                foreach ($entries as $id => $entry) {
-                    $lightEntry = [];
-                    foreach ($fields as $field_name) {
-                        if (isset($entry[$field_name])) {
-                            $lightEntry[$field_name] = $entry[$field_name];
-                        }
-                    }
-                    if (!empty($lightEntry)) {
-                        $lightEntries[$id] = $lightEntry;
-                    }
-                }
-            }
-
-            return new ApiResponse(empty($lightEntries) ? null : $lightEntries);
+            $csvManager->sendCsvOrZip($formId, [ "query" => $query, "keywords" => $vKeywords, "searchfields" => $vSearchFields ]);
         }
+        else
+    	{		    
+		    $entries = $this->getService(EntryManager::class)->search([
+		        'formsIds' => $formId,
+		        'queries' => $query,
+		        'keywords' => $vKeywords,
+		        'searchfields' => $vSearchFields,
+		        'minDate' => $_GET['dateMin'] ?? '',
+		    ], true, true);
+
+		    if ($output == 'json-ld' || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
+		        return $this->getAllSemanticEntries($formId, $entries);
+		    } // add entries in html format if asked
+		    elseif ($output == 'html') {
+		        foreach ($entries as $id => $entry) {
+		            $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
+		        }
+		    } elseif ($output == 'geojson') {
+		        $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
+		    } elseif ($output == 'ical') {
+		        return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
+		    } elseif (isset($_GET['fields'])) {
+		        $fields = explode(',', $_GET['fields']);
+		        $lightEntries = [];
+		        if (!empty($entries) && !empty($fields)) {
+		            foreach ($entries as $id => $entry) {
+		                $lightEntry = [];
+		                foreach ($fields as $field_name) {
+		                    if (isset($entry[$field_name])) {
+		                        $lightEntry[$field_name] = $entry[$field_name];
+		                    }
+		                }
+		                if (!empty($lightEntry)) {
+		                    $lightEntries[$id] = $lightEntry;
+		                }
+		            }
+		        }
+
+		        return new ApiResponse(empty($lightEntries) ? null : $lightEntries);
+		    }
+		}
 
         return new ApiResponse(empty($entries) ? null : $entries);
     }
@@ -257,7 +271,9 @@ class ApiController extends YesWikiController
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $_GET);
 
-        $searchfields = isset($_GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
+        $searchfields = $_GET['searchfields']??null;
+        
+        $searchfields = is_string ($searchfields)?urldecode ($searchfields):$searchfields;
 
         $searchfields = (empty($searchfields) || (!is_string($searchfields) && !is_array($searchfields)))
             ? ['bf_titre']
@@ -266,6 +282,10 @@ class ApiController extends YesWikiController
                 ? explode(',', $searchfields)
                 : $searchfields
             );
+
+        $vKeywords = isset($_GET['keywords'])?urldecode($_GET['keywords']):"";
+            
+        $formattedGet['keywords'] = $vKeywords;
         $formattedGet['searchfields'] = $searchfields;
         $formattedGet['externalModeActivated'] = $externalModeActivated;
 

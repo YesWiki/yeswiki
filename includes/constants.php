@@ -3,8 +3,8 @@
 // do not change this line, you fool. In fact, don't change anything! Ever!
 define('WAKKA_VERSION', '0.1.1');
 define('WIKINI_VERSION', '0.5.0');
-define('YESWIKI_VERSION', 'doryphore');
-define('YESWIKI_RELEASE', '2020-01-22-1');
+define("YESWIKI_VERSION", 'doryphore');
+define("YESWIKI_RELEASE", '2020-01-22-1');
 define('T_START', microtime(true));
 
 // to update with constraint in composer.json > config > platform > php and
@@ -58,3 +58,7 @@ define('SEMVER', '(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*
 
 // default max size for upload
 define('DEFAULT_MAX_UPLOAD_SIZE', 2000 * 1024);
+
+// define min search keyword length
+define('MIN_SEARCH_KEYWORD_LENGTH', 3);
+

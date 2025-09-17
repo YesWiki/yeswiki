@@ -1,21 +1,59 @@
+{% 
+	set vIDs =	(params.idtypeannonce is defined
+					? params.idtypeannonce	| filter(v => v is not empty)
+											| join(',')
+					:null
+				)
+%}
+
+{% 
+	set vQuery =	(params.query is defined
+						? (params.query	| map(p => p.name ~ p.operator ~ (p.values|join(",")))
+										| filter(v => v is not empty)
+    		  							| join('|'))
+    		  			: null
+    		  		) 
+%}
+
+{% 
+	set vKeywords =	(params.keywords is defined
+						? params.keywords
+						: null
+					)
+%}
+
+{% 
+	set vSearchFields =	(params.searchfields is defined
+							? params.searchfields |join(",")													
+							: null
+						)
+%}
+
 <div class="export-links pull-right">
-  <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}"
-    target="_blank" href="{{ url({handler:'rss', params: 
-    	[ (params.idtypeannonce ?'id=' ~ params.idtypeannonce|join(','):""),
-    	  (params.query ?'query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"")
-    	] | map(v => v|trim)|filter(v => v is not empty) | join('&') 
-      }) }}">
-    <i class="fa fa-signal icon-signal"></i>
-  </a>
-  <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}"
-    target="_blank" href="{{ url({ tag:"api", handler : "forms/" ~ params.idtypeannonce|join(',') ~ '/entries/csv', params :  (params.query ?'&query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"") }) }}">
-    CSV
-  </a>
-  <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}"
-    target="_blank" href="{{ url({ tag:"api", handler : "forms/" ~ params.idtypeannonce|join(',') ~ '/entries', params :  (params.query ?'&query=' ~ params.query | map((v, k) => k ~ '=' ~ v) | join('|') | url_encode :"") }) }}">
-    JSON
-  </a>
+
+{% set vRSSParams = {} %}
+{% set vRSSParams = vIDs is not null ? vRSSParams | merge ({ 'id' : vIDs }) : vRSSParams %}
+{% set vRSSParams = vQuery is not null ? vRSSParams | merge ({ 'query' : vQuery }) : vRSSParams %}
+{% set vRSSParams = vKeywords is not null ? vRSSParams | merge ({ 'keywords' : vKeywords }) : vRSSParams %}
+{% set vRSSParams = vSearchFields is not null ? vRSSParams | merge ({ 'searchfields' : vSearchFields }) : vRSSParams %}
+{% set vRSSParams = vRSSParams %}	
+
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}" target="_blank" href="{{ url({handler:'rss', params: vRSSParams  }) }}"><i class="fa fa-signal icon-signal"></i></a>
+
+{% set vCSVParams = {} %}
+{% set vCSVParams = vQuery is not null ? vCSVParams | merge ({ 'query' : vQuery }) : vCSVParams %}
+{% set vCSVParams = vKeywords is not null ? vCSVParams | merge ({ 'keywords' : vKeywords }) : vCSVParams %}
+{% set vCSVParams = vSearchFields is not null ? vCSVParams | merge ({ 'searchfields' : vSearchFields }) : vCSVParams %}
+{% set vCSVParams = vCSVParams %}	
+
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}" target="_blank" href="{{ url ({ tag: 'api', handler: 'forms/' ~ vIDs ~ '/entries/csv', params: vCSVParams }) }}">CSV</a>
+  
+{% set vJSONParams = {} %}
+{% set vJSONParams = vQuery is not null ? vJSONParams | merge ({ 'query' : vQuery }) : vJSONParams %}
+{% set vJSONParams = vKeywords is not null ? vJSONParams | merge ({ 'keywords' : vKeywords }) : vJSONParams %}
+{% set vJSONParams = vSearchFields is not null ? vJSONParams | merge ({ 'searchfields' : vSearchFields }) : vJSONParams %}
+{% set vJSONParams = vJSONParams %}
+  
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}" target="_blank" href="{{ url ({ tag: 'api', handler: 'forms/' ~ (params.idtypeannonce|join(',')) ~ '/entries', params: vJSONParams }) }}">JSON</a>
+	
 </div>
