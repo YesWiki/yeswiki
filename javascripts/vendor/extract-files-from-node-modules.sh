@@ -73,14 +73,14 @@ mkdir -p javascripts/vendor/datatables-full && \
       node_modules/datatables.net-fixedheader-bs/js/fixedHeader.bootstrap.min.js  \
       node_modules/datatables.net-responsive/js/dataTables.responsive.min.js  \
       node_modules/datatables.net-responsive-bs/js/responsive.bootstrap.min.js  \
-      > javascripts/vendor/datatables-full/jquery.dataTables.min.js 
+      > javascripts/vendor/datatables-full/jquery.dataTables.min.js
 
 mkdir -p styles/vendor/datatables-full && \
   cat node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css \
       node_modules/datatables.net-buttons-bs/css/buttons.bootstrap.min.css  \
       node_modules/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css  \
       node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css  \
-      > styles/vendor/datatables-full/dataTables.bootstrap.min.css 
+      > styles/vendor/datatables-full/dataTables.bootstrap.min.css
 
 # fullcalendar
 mkdir -p styles/vendor/fullcalendar && \
@@ -134,3 +134,8 @@ cp -f node_modules/ace-builds/src-min-noconflict/ext-searchbox.js tools/aceditor
 mkdir -p javascripts/vendor/iframe-resizer && \
   cp -f node_modules/iframe-resizer/js/iframeResizer.min.js javascripts/vendor/iframe-resizer && \
   cp -f node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer
+
+
+# opening_hours
+mkdir -p javascripts/vendor/opening_hours && \
+  curl -o javascripts/vendor/opening_hours/opening_hours.js https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js
