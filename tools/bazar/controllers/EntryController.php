@@ -12,8 +12,8 @@ use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
@@ -233,6 +233,9 @@ class EntryController extends YesWikiController
         if (empty($formId)) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
         }
+        // we need to store this globally so we can have the form id in the fields
+        // TODO: there must be a better way
+        $_SESSION['current_form_id'] = $formId;
         $form = $this->formManager->getOne($formId);
         if (!$form) {
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FORM_AVEC_CET_ID') . ' : \'' . $formId . '\'</div>';
@@ -514,14 +517,14 @@ class EntryController extends YesWikiController
      *
      * @param array|string|null $arg
      * @param array             $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
-	 * 
+     *
      * NOTE : this function is kept for retrocompatibility. You should use SearchManager::aggregateQueries
      */
-    public function formatQuery($arg, array $get): array   
+    public function formatQuery($arg, array $get): array
     {
-    	$vSearchManager = $this->getService(SearchManager::class);
-    	
-		return $vSearchManager->parseQuery ($vSearchManager->aggregateQueries ($arg, $get));
+        $vSearchManager = $this->getService(SearchManager::class);
+
+        return $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $get));
     }
 
     /* PART TO FILTER ON DATE */
@@ -775,5 +778,5 @@ class EntryController extends YesWikiController
 
         // TODO check if redirect to outside website ?
         return empty($incomingUrl) ? '' : $incomingUrl;
-    }    
+    }
 }

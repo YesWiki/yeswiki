@@ -2,8 +2,6 @@
 
 namespace YesWiki\Bazar\Field;
 
-use YesWiki\Bazar\Field\BazarField;
-
 /**
  * @Field({"openinghours"})
  */
@@ -12,8 +10,8 @@ class OpeningHoursField extends BazarField
     protected function renderInput($entry)
     {
         return $this->render('@bazar/inputs/openingHours.twig', [
-            'opening_hours' => $this->getValue($entry) ?? "",
-            'title' => $this->getLabel()
+            'opening_hours' => $this->getValue($entry) ?? '',
+            'title' => $this->getLabel(),
         ]);
     }
 
@@ -29,8 +27,6 @@ class OpeningHoursField extends BazarField
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/fields/opening_hours.js');
         $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/vueapp.js');
         $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/opening_hours.css');
-
-
 
         return $this->render('@bazar/fields/openingHours.twig', [
             'opening_hours' => $value,

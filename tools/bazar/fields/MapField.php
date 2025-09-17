@@ -80,6 +80,16 @@ class MapField extends BazarField
         $this->autocompleteFieldnames = compact(['postalCode', 'town', 'street', 'street1', 'street2', 'county', 'state']);
     }
 
+    public function getValueStructure() // See BazarField::getValueStructure
+    {
+        return [
+            $this->propertyName => [
+                'bf_latitude' => ['_mode_' => 'single', '_type_' => 'number'],
+                'bf_longitude' => ['_mode_' => 'single', '_type_' => 'number'],
+            ],
+        ];
+    }
+
     protected function getValue($entry)
     {
         $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
@@ -168,6 +178,9 @@ class MapField extends BazarField
         if (!$this->canEdit($entry, $isCreation)) {
             // retrieve value from value because redefined with right value
             $values = $this->getValue($entry);
+
+            $values = $this->getValue($entry);
+
             if (empty($values)) {
                 if (isset($entry[$this->getLatitudeField()])) {
                     unset($entry[$this->getLatitudeField()]);
@@ -181,6 +194,7 @@ class MapField extends BazarField
                 $entry[$this->getLongitudeField()] = $values[$this->getLatitudeField()];
             }
         }
+
         if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
             $entry[$this->getPropertyName()] = [
                 $this->getLatitudeField() => $entry[$this->getLatitudeField()],
@@ -192,6 +206,9 @@ class MapField extends BazarField
                 $this->getLatitudeField() => $entry[$this->getLatitudeField()],
                 $this->getLongitudeField() => $entry[$this->getLongitudeField()],
                 'fields-to-remove' => ['carte_google'],
+                /*$this->getLatitudeField() => $entry[$this->getLatitudeField()],
+                $this->getLongitudeField() => $entry[$this->getLongitudeField()],*/
+                'fields-to-remove' => [$this->getLatitudeField(), $this->getLongitudeField(), 'carte_google'],
             ];
         } else {
             return [

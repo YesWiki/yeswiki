@@ -5,9 +5,9 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Wiki;
 
 abstract class EnumField extends BazarField
@@ -119,13 +119,12 @@ abstract class EnumField extends BazarField
         $entryManager = $this->getService(EntryManager::class);
         $vSearchManager = $this->getService(SearchManager::class);
 
-        if (!empty($this->queries))
-        {
-	        $vQueries = $vSearchManager->parseQuery ($this->queries);        
+        if (!empty($this->queries)) {
+            $vQueries = $vSearchManager->parseQuery($this->queries);
+        } else {
+            $vQueries = [];
         }
-        else
-	        $vQueries = [];
-        
+
         $fiches = $entryManager->search(
             [
                 'queries' => $vQueries,

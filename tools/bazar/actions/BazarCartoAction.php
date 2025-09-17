@@ -1,7 +1,6 @@
 <?php
 
 use YesWiki\Bazar\Service\SearchManager;
-use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Core\YesWikiAction;
 
 class BazarCartoAction extends YesWikiAction
@@ -52,28 +51,26 @@ class BazarCartoAction extends YesWikiAction
             $this->formatBoolean($arg, false, 'cluster');
 
         // Filters entries via query to remove whose withou bf_latitude nor bf_longitude
-        
+
         $vSearchManager = $this->getService(SearchManager::class);
-        
+
         $query = $vSearchManager->aggregateQueries($arg, $_GET);
-        
-        $vConditions = $vSearchManager->parseQuery ($query);
-        
+
+        $vConditions = $vSearchManager->parseQuery($query);
+
         if ($template != 'map-and-table' ||
             (
                 !empty($arg['tablewith']) &&
                 $arg['tablewith'] === 'only-geolocation'
             )
-        ) {        
-        	if (count (array_filter ($vConditions, function ($pCondition) { return (($pCondition ["name"] == "bf_latitude"||($pCondition["name"] == "geolocation.bf_latitude")) && $pCondition ["operator"] == "!="); })) == 0)
-        	{
-        		$query = (trim($query) != ""? "|":"") . 'geolocation.bf_latitude!=';
-        	}
-        	
-        	if (count (array_filter ($vConditions, function ($pCondition) { return (($pCondition ["name"] == "bf_longitude"||($pCondition["name"] == "geolocation.bf_longitude")) && $pCondition ["operator"] == "!="); })) == 0)
-        	{
-        		$query = (trim($query) != ""? "|":"") . 'geolocation.bf_longitude!=';        
-        	}
+        ) {
+            if (count(array_filter($vConditions, function ($pCondition) { return ($pCondition['name'] == 'bf_latitude' || ($pCondition['name'] == 'geolocation.bf_latitude')) && $pCondition['operator'] == '!='; })) == 0) {
+                $query = (trim($query) != '' ? '|' : '') . 'geolocation.bf_latitude!=';
+            }
+
+            if (count(array_filter($vConditions, function ($pCondition) { return ($pCondition['name'] == 'bf_longitude' || ($pCondition['name'] == 'geolocation.bf_longitude')) && $pCondition['operator'] == '!='; })) == 0) {
+                $query = (trim($query) != '' ? '|' : '') . 'geolocation.bf_longitude!=';
+            }
         }
 
         return [

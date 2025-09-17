@@ -1376,6 +1376,9 @@ class Wiki
             return intval((int)round($size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
         } else {
             return intval((int)round($size));
+            return intval(round((int)$size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
+        } else {
+            return intval(round((int)$size));
         }
     }
 
