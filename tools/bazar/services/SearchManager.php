@@ -570,6 +570,8 @@ class SearchManager
                 );
 
             $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
+        } else {
+            $vFormIDs = [];
         }
 
         // Limit the request depending on the date
