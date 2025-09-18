@@ -539,35 +539,35 @@ class SearchManager
             }
 
             $vFormIDs = array_map(
-                    function ($vID) {
-                        $vType = \gettype($vID);
+                function ($vID) {
+                    $vType = \gettype($vID);
 
-                        if ($vType == 'integer') {
-                            return $vID;
+                    if ($vType == 'integer') {
+                        return $vID;
+                    }
+
+                    if ($vType == 'string') {
+                        $vTrimmed = trim($vID);
+                        $vIntValue = intval($vID);
+
+                        if (strval($vID) == strval($vIntValue)) {
+                            return $vIntValue;
+                        } else {
+                            return null;
                         }
+                    }
 
-                        if ($vType == 'string') {
-                            $vTrimmed = trim($vID);
-                            $vIntValue = intval($vID);
-
-                            if (strval($vID) == strval($vIntValue)) {
-                                return $vIntValue;
-                            } else {
-                                return null;
-                            }
-                        }
-
-                        return null;
-                    },
-                    $vFormIDs
-                );
+                    return null;
+                },
+                $vFormIDs
+            );
 
             $vFormIDs = array_filter(
-                    $vFormIDs,
-                    function ($pID) {
-                        return $pID !== null;
-                    }
-                );
+                $vFormIDs,
+                function ($pID) {
+                    return $pID !== null;
+                }
+            );
 
             $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
         } else {
