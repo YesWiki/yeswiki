@@ -121,25 +121,42 @@ abstract class BazarField implements \JsonSerializable
     public function renderInputIfPermitted($entry)
     {
         // Safety checks, must be run before every renderInput
-        if (!$this->canEdit($entry, !$entry)) {
+        if (!$this->canEdit($entry)) {
             return '';
         }
 
         return $this->renderInput($entry);
     }
 
-    public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
+    public function formatValuesBeforeSaveIfEditable($entry)
     {
-        // this method is defined to check $this->canEdit with $isCreation
-        // without changing signature of formatValuesBeforeSave()
-        return $this->formatValuesBeforeSave($entry);
+        // Let's prevent creation of empty keys
+    
+    	if (empty($this->propertyName)) return [];
+    
+    	// Let's check if we are authorized to set or modify the field
+    	
+    	if ($this->canEdit ($entry))
+    	{
+    		// We can : let's return the formatted given value
+    	
+	    	return $this->formatValuesBeforeSave($entry);
+    	}    	
+    	else
+	{
+		// We cannot : let's return the default value
+		            
+		return [ $this->propertyName => $this->default ];
+	}        	
     }
 
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
-        // to prevent creation of empty keys
-        return empty($this->propertyName) ? [] : [$this->propertyName => $this->getValue($entry)];
+	    // By default, let's return the value 
+	    // NOTE : The emptiness test is already done in formatValuesBeforeSaveIfEditable. Let's keep it for safety reason.
+    
+        return empty($this->propertyName) ? [] : [$this->propertyName => $this->getValue($entry)]; 
     }
 
     // Render the show view of the field
@@ -191,10 +208,12 @@ abstract class BazarField implements \JsonSerializable
         return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['id_fiche']);
     }
 
-    /* Return true if we are if editing is allowed for the field */
-    public function canEdit($entry, bool $isCreation = false)
+    /* Return true if editing is allowed for the field */
+    public function canEdit($entry)
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
+
+		$isCreation = !$entry;
 
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : 'edit');
     }

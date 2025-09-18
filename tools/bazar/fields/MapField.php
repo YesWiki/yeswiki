@@ -209,6 +209,16 @@ class MapField extends BazarField
                 /*$this->getLatitudeField() => $entry[$this->getLatitudeField()],
                 $this->getLongitudeField() => $entry[$this->getLongitudeField()],*/
                 'fields-to-remove' => [$this->getLatitudeField(), $this->getLongitudeField(), 'carte_google'],
+        $vValue = $this->getValue ($entry);
+        
+        if ($vValue && !empty($vValue[$this->getLatitudeField()]) && !empty($vValue[$this->getLongitudeField()]))
+		{
+            return
+            [
+                $this->getPropertyName() => $entry[$this->getPropertyName()],
+                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
+                $this->getLongitudeField() => $entry[$this->getLongitudeField()],
+                'fields-to-remove' => ['carte_google']
             ];
         } else {
             return [
@@ -216,7 +226,7 @@ class MapField extends BazarField
                     $this->getPropertyName(),
                     $this->getLatitudeField(),
                     $this->getLongitudeField(),
-                    'carte_google',
+                    'carte_google'
                 ],
             ];
         }

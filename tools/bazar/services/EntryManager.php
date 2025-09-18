@@ -36,6 +36,11 @@ class EntryManager
 
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
+	public const VALIDATE_FLAG_ANTISPAM = 		1 << 0;
+	public const VALIDATE_FLAG_BF_TITRE = 		1 << 1;	
+	public const VALIDATE_FLAG_ID_TYPEANNONCE =	1 << 2;
+	public const VALIDATE_FLAG_ALL =			self::VALIDATE_FLAG_ANTISPAM | self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE;
+
     public function __construct(
         Wiki $wiki,
         Mailer $mailer,
@@ -466,21 +471,31 @@ class EntryManager
      *
      * @throws \Exception
      */
-    public function validate($data)
+    public function validate($data, $pFlags = self::VALIDATE_FLAG_ALL)
     {
-        if (!isset($data['antispam']) or !$data['antispam'] == 1) {
-            throw new \Exception(_t('BAZ_PROTECTION_ANTISPAM'));
-        }
+    	if ($pFlags & self::VALIDATE_FLAG_ANTISPAM)
+    	{    
+	        if (!isset($data['antispam']) or !$data['antispam'] == 1) {
+	            throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
+	        }
+	    }
 
         // On teste le titre car ça peut bugguer sérieusement sans
-        if (!isset($data['bf_titre'])) {
-            throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
-        }
+        
+        if ($pFlags & self::VALIDATE_FLAG_BF_TITRE)
+    	{            
+	        if (!isset($data['bf_titre'])) {
+	            throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+	        }
+	    }
 
-        // form metadata
-        if (!isset($data['id_typeannonce'])) {
-            throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
-        }
+        if ($pFlags & self::VALIDATE_FLAG_ID_TYPEANNONCE)
+    	{            
+	        // form metadata
+	        if (!isset($data['id_typeannonce'])) {
+	            throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
+	        }
+	    }
     }
 
     /**
@@ -498,16 +513,25 @@ class EntryManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+
         $data['id_typeannonce'] = "$formId"; // Must be a string
 
         if ($semantic) {
             $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
         }
 
-        $this->validate($data);
+		// We need to check antispam before if it is removed from data
+
+        $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
+
+		// Let's format the data
 
         $data = $this->formatDataBeforeSave($data, true);
-
+        
+        // We need to check bf_titre and id_typeannonce once the data are formated
+        
+        $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
+        
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
             $olduser = $this->authController->getLoggedUser();
@@ -782,7 +806,7 @@ class EntryManager
      *
      * @throws \Exception
      */
-    public function formatDataBeforeSave($data, bool $isCreation = false): array
+    public function formatDataBeforeSave($data): array
     {
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
@@ -790,26 +814,64 @@ class EntryManager
             throw new \Exception('No form with id: ' . $data['id_typeannonce']);
         }
 
-        // If there is a title field, compute the entry's title
-        if (is_array($form['prepared'])) {
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof TitleField) {
-                    $data = array_merge($data, $field->formatValuesBeforeSaveIfEditable($data, $isCreation));
+		// We first need to ensure default values for uneditable fields are set
+		// so we can use it later to build the automatic title if necessary
+
+		foreach ($form['prepared'] as $bazarField)
+		{
+            if ($bazarField instanceof BazarField && !($bazarField instanceof TitleField))
+            {
+                $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
+            }
+
+            if (is_array($tab))
+            {
+                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove']))
+                {
+                    foreach ($tab['fields-to-remove'] as $field)
+                    {
+                        if (isset($data[$field]))
+                        {
+                            unset($data[$field]);
+                        }
+                    }
+                    unset($tab['fields-to-remove']);
+                }
+                $data = array_merge($data, $tab);
+            }
+        }
+        
+        // We can now build the field title if there is one        
+        
+        if (is_array($form['prepared']))
+        {
+            foreach ($form['prepared'] as $field)
+            {
+                if ($field instanceof TitleField)
+                {
+                    $data = array_merge($data, $field->formatValuesBeforeSave($data));
                 }
             }
         }
 
-        // Entry ID
-        if (!isset($data['id_fiche'])) {
+        // Let's generate fiche id if necessary
+        
+        if (!isset($data['id_fiche']))
+        {
             // Generate the ID from the title
-            if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
-                throw new \Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
+            if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre'])))
+            {
+                throw new Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
             }
             // TODO see if we can remove this
-            $_POST['id_fiche'] = $data['id_fiche'];
-        } elseif (empty($data['id_fiche'])) {
-            throw new \Exception('$data[\'id_fiche\'] is set but with empty value !');
+            //$_POST['id_fiche'] = $data['id_fiche'];
         }
+        elseif (empty($data['id_fiche']))
+        {
+            throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
+        }
+
+		// Let's set the value of id_typeannonce
 
         $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
 
@@ -824,24 +886,7 @@ class EntryManager
             $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
         }
 
-        foreach ($form['prepared'] as $bazarField) {
-            if ($bazarField instanceof BazarField) {
-                $tab = $bazarField->formatValuesBeforeSaveIfEditable($data, $isCreation);
-            }
-
-            if (is_array($tab)) {
-                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
-                    foreach ($tab['fields-to-remove'] as $field) {
-                        if (isset($data[$field])) {
-                            unset($data[$field]);
-                        }
-                    }
-                    unset($tab['fields-to-remove']);
-                }
-                $data = array_merge($data, $tab);
-            }
-        }
-        // $data['id_fiche'] can not be empty
+        // Let's ensure $data['id_fiche'] is not empty
         if (empty($data['id_fiche'])) {
             throw new \Exception('$data[\'id_fiche\'] is empty !');
         }
