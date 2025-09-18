@@ -97,33 +97,16 @@ abstract class CheckboxField extends EnumField
     }
 
     public function formatValuesBeforeSave($entry)
-    {
-        return $this->formatValuesBeforeSaveIfEditable($entry, false);
-    }
-
-    public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
-    {
-        if ($this->canEdit($entry, $isCreation)) {
-            // get value
-            $checkboxField = $entry[$this->propertyName] ?? null;
-            // detect if from Form to check if clean field
-            if (isset($entry[$this->propertyName . self::FROM_FORM_ID])) {
-                $oldValue = $entry[$this->propertyName . self::FROM_FORM_ID];
-                $oldValue = ($oldValue == "''") ? '' : $oldValue;
-                if (!is_array($checkboxField) && ($checkboxField == $oldValue)) {
-                    $checkboxField = '';
-                }
-            }
-
-            // format value
-            $entry[$this->propertyName] = $this->sanitizeValues($checkboxField, 'string');
+    {       
+    	// Get the value
+    
+		$checkboxField = $this->getValue($entry);
+		
+		if ($checkboxField === null) return [];
+		else        
+        {
+        	return [ $this->propertyName => $this->sanitizeValues($checkboxField, 'string') ];
         }
-
-        return [$this->propertyName => $this->getValue($entry),
-            'fields-to-remove' => [
-                $this->propertyName . self::FROM_FORM_ID,
-                $this->propertyName,
-            ], ];
     }
 
     /**
