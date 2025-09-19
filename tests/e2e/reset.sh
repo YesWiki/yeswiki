@@ -3,7 +3,7 @@
 set -e
 
 rm -f  /var/www/html/test.config.php
-echo "DROP DATABASE IF EXISTS yeswiki_test; CREATE DATABASE yeswiki_test;" |  mysql -h yeswiki-db -u root -proot
+echo "DROP DATABASE IF EXISTS yeswiki_test; CREATE DATABASE yeswiki_test;" |  mysql -h yeswiki-db -u root -proot --skip-ssl
 curl --silent --fail --show-error \
           -F "config[default_language]=fr" \
           -F "config[wakka_name]=MyTestWiki" \
