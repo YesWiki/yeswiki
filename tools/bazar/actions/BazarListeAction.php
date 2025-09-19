@@ -349,7 +349,7 @@ class BazarListeAction extends YesWikiAction
 
         $data['fiches'] = $entries;
         $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">' . _t('BAZ_IL_Y_A') . ' ' . count($data['fiches']) . ' ' . (count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')) . '</div>' : '';
-        $data['param'] = $this->arguments;
+        $data['params'] = $this->arguments;
         $data['pager_links'] = '';
         $data['filters'] = $filters; // in case some template need it, like gogocarto
 
