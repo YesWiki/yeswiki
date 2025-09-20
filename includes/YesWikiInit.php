@@ -140,7 +140,6 @@ class Init
                         break;
                 }
             }
-
             $_GET['wiki'] = $this->page . ($this->method ? '/' . $this->method : '');
         }
     }

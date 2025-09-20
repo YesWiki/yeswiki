@@ -1235,7 +1235,7 @@ class Wiki
                     $path = 'api';
                 } else {
                     $path = $this->tag . '/' . $this->method;
-                    $newQuerytring = implode('&', $extract);
+                    $newQuerystring = implode('&', $extract);
                 }
             } else {
                 $response = new Response(_t('ROUTE_BAD_CONFIGURED'), Response::HTTP_BAD_REQUEST);
@@ -1244,10 +1244,10 @@ class Wiki
             }
         } elseif (count($extract) > 1) {
             array_shift($extract);
-            $newQuerytring = implode('&', $extract);
+            $newQuerystring = implode('&', $extract);
         }
-        $context->setPathInfo('/' . $path);
-        $context->setQueryString($newQuerytring ?? '');
+        $context->setPathInfo('/' . $_GET['wiki']);
+        $context->setQueryString($newQuerystring ?? $_GET['wiki']);
 
         $matcher = new UrlMatcher($this->routes, $context);
 
