@@ -284,6 +284,7 @@ class BazarListeAction extends YesWikiAction
             $currentUser = $this->getService(AuthController::class)->getLoggedUser();
 
             return $this->render("@bazar/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
+                'param' => $this->arguments, // DEPRECATED but still there for retro-compatibility: use params (plural)
                 'params' => $this->arguments,
                 'keywords' => $this->arguments['keywords'],
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
