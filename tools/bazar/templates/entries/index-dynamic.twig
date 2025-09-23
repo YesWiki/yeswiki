@@ -13,7 +13,10 @@
 
 {# Extra Fields to retrieve from API call. customizable inside templates #}
 {# Adds them to params to it's available in vueJs #}
-{% set params = params|merge({necessary_fields: necessary_fields|default([])}) %}
+
+{# Merge necessary fields and remove duplicates #}
+
+{% set params = params|merge({necessary_fields: (necessary_fields|default([])|reduce((carry, v) => carry|merge({ (v): v }), {})|keys)}) %}
 
 <div class="bazar-list-dynamic-container no-dblclick {{ params.class ? params.class : ''}}" data-params="{{ params|json_encode }}"
      style="opacity: 0" :class="{mounted: mounted}">
