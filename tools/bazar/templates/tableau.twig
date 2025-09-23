@@ -2,22 +2,22 @@
 {{ infoRes|raw }} {# affiche le nombre de résultats #}
 
 {# l'id doit être unique - dans le cas où il y a plusieurs tableaux sur la même page
-, on utilise $param['nbbazarliste'] qui s'incrémente à chaque fois qu'on appelle bazarliste
+, on utilise $params['nbbazarliste'] qui s'incrémente à chaque fois qu'on appelle bazarliste
 pour différencier les différents tableaux table_1 table_2 #}
 
-<table id="table_{{ param.nbbazarliste}}" class="table prevent-auto-init table-condensed display in-tableau-template" data-scroll-x="true">
+<table id="table_{{ params.nbbazarliste}}" class="table prevent-auto-init table-condensed display in-tableau-template" data-scroll-x="true">
   <thead>
     <tr>
       {# Column titles #}
           {% if displayadmincol %}
-            {{ multidelete.insertSelectAll('bazar-list-'~ param.nbbazarliste,'top') }}
+            {{ multidelete.insertSelectAll('bazar-list-'~ params.nbbazarliste,'top') }}
           {% endif %}
       {% for index,info in columnsInfo %}
         <th{{ (info.propertyName in sumFieldsIds) ? ' class="sum-activated"' : ''}}
           {% if columnswidth[info.propertyName] is not empty %}
             data-width="{{ columnswidth[info.propertyName] }}"
-          {% elseif param.defaultcolumnwidth is not empty %}
-            data-width="{{ param.defaultcolumnwidth }}"
+          {% elseif params.defaultcolumnwidth is not empty %}
+            data-width="{{ params.defaultcolumnwidth }}"
           {% endif %}
           {% if info['not-visible'] %}
             data-visible="false"
@@ -33,7 +33,7 @@ pour différencier les différents tableaux table_1 table_2 #}
       <tr {{ entry.html_data|raw }}>
         {% if displayadmincol %}
           {{ multidelete.insertSelectLine(
-              'bazar-list-'~ param.nbbazarliste,
+              'bazar-list-'~ params.nbbazarliste,
               entry.id_fiche,
               entry.external-data is not empty or not(
                 wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche))) }}
@@ -145,7 +145,7 @@ pour différencier les différents tableaux table_1 table_2 #}
       <tfoot>
         <tr>
           {% if displayadmincol %}
-            {{ multidelete.insertSelectAll('bazar-list-'~ param.nbbazarliste,'bottom') }}
+            {{ multidelete.insertSelectAll('bazar-list-'~ params.nbbazarliste,'bottom') }}
           {% endif %}
           {% for index,info in columnsInfo %}
             <th>
@@ -163,7 +163,7 @@ pour différencier les différents tableaux table_1 table_2 #}
   </tbody>
 </table>
 {% if displayadmincol %}
-            {{ multidelete.insertButton('bazar-list-'~ param.nbbazarliste,'pages') }}
+            {{ multidelete.insertButton('bazar-list-'~ params.nbbazarliste,'pages') }}
 {% endif %}
 
 {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}

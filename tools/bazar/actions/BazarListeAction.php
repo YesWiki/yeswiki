@@ -171,6 +171,8 @@ class BazarListeAction extends YesWikiAction
             'sortfieldstitles' => $this->formatArray($_GET['sortfieldstitles'] ?? $arg['sortfieldstitles'] ?? []),
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
+            // fields that will be used in dynamic views
+            'necessary_fields' => $this->formatArray($_GET['necessary_fields'] ?? $arg['necessary_fields'] ?? []),
             // get comments , reactions and metadatas with entry
             'extrafields' => $this->formatBoolean($arg, false, 'extrafields'),
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
@@ -284,6 +286,7 @@ class BazarListeAction extends YesWikiAction
             $currentUser = $this->getService(AuthController::class)->getLoggedUser();
 
             return $this->render("@bazar/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
+                'param' => $this->arguments, // DEPRECATED but still there for retro-compatibility: use params (plural)
                 'params' => $this->arguments,
                 'keywords' => $this->arguments['keywords'],
                 'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
