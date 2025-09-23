@@ -171,6 +171,8 @@ class BazarListeAction extends YesWikiAction
             'sortfieldstitles' => $this->formatArray($_GET['sortfieldstitles'] ?? $arg['sortfieldstitles'] ?? []),
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
+            // fields that will be used in dynamic views
+            'necessary_fields' => $this->formatArray($_GET['necessary_fields'] ?? $arg['necessary_fields'] ?? []),
             // get comments , reactions and metadatas with entry
             'extrafields' => $this->formatBoolean($arg, false, 'extrafields'),
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
