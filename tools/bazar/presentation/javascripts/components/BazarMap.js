@@ -23,7 +23,7 @@ Vue.component('BazarMap', {
     }
   },
   computed: {
-    entries() {console.log (this.$root.entriesToDisplay);
+    entries() {
       var vMe = this;
       return this.$root.entriesToDisplay.filter(function (entry) 
 	  {
