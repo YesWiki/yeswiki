@@ -130,10 +130,7 @@ class MapField extends BazarField
 	       	$vLongitude = $value [$vLongitudeField];
         }
 
-        return	[	"geolocation" =>  [ $this->getLatitudeField() => $vLatitude, $this->getLongitudeField() => $vLongitude ]/*,
-			        $this->getLatitudeField() => $vLatitude, 
-			        $this->getLongitudeField() => $vLongitude*/
-        		];
+        return	[ $this->getLatitudeField() => $vLatitude, $this->getLongitudeField() => $vLongitude ];
     }
 
     protected function getMapFieldData($entry)
@@ -191,9 +188,9 @@ class MapField extends BazarField
     {
         $vValue = $this->getValue ($entry);
         
-        $vLatitude = isset ($vValue["geolocation"])?($vValue["geolocation"][$this->getLatitudeField()]??$vValue[$this->getLatitudeField()]??""):$vValue[$this->getLatitudeField()]??"";
-        $vLongitude = isset ($vValue["geolocation"])?($vValue["geolocation"][$this->getLongitudeField()]??$vValue[$this->getLongitudeField()]??""):$vValue[$this->getLongitudeField()]??"";        
-
+        $vLatitude = isset ($vValue[$this->getLatitudeField()])?$vValue[$this->getLatitudeField()]:"";
+        $vLongitude = isset ($vValue[$this->getLongitudeField()])?$vValue[$this->getLongitudeField()]:"";
+        
         if ($vValue && !empty($vLatitude) && !empty($vLongitude))
 		{                  
             return
@@ -203,8 +200,6 @@ class MapField extends BazarField
                 	$this->getLatitudeField() => $vLatitude,
                 	$this->getLongitudeField() => $vLongitude
                 ],
-//                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-//               $this->getLongitudeField() => $entry[$this->getLongitudeField()],
                 'fields-to-remove' => [ 'carte_google', $this->getLatitudeField(), $this->getLongitudeField () ]
             ];
         } else {
