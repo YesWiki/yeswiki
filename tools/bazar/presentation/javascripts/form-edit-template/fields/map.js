@@ -1,3 +1,4 @@
+import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
 import renderHelper from './commons/render-helper.js'
 
 export default {
@@ -25,20 +26,26 @@ export default {
     show_map_in_entry_view: {
       label: _t('BAZ_FORM_EDIT_SHOW_MAP_IN_ENTRY_VIEW'),
       options: { 0: _t('NO'), 1: _t('YES') }
-    }
+    },
+    read: readConf,
+    write: writeconf,
+    semantic: semanticConf
   },
   advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view'],
   // disabledAttributes: [],
   attributesMapping: {
-    0: 'type',
-    1: 'name_latitude',
-    2: 'name_longitude',
-    3: '',
-    4: 'autocomplete_postalcode',
-    5: 'autocomplete_town',
-    6: 'autocomplete_other',
-    7: 'show_map_in_entry_view',
-    8: 'required'
+  	...defaultMapping,
+  	...{
+		    0: 'type',
+		    1: 'name_latitude',
+		    2: 'name_longitude',
+		    3: '',
+		    4: 'autocomplete_postalcode',
+		    5: 'autocomplete_town',
+		    6: 'autocomplete_other',
+		    7: 'show_map_in_entry_view',
+		    8: 'required'
+		}
   },
   renderInput(fieldData) {
     return {

@@ -68,7 +68,7 @@ if (count($fiches)>0) :
             $fiche['geolocation']['bf_longitude'] = $fiche['bf_longitude'];
 		}
       }
-      if (count($fiche['geolocation'])>1 && $fiche['geolocation']['bf_latitude']!='' && $fiche['geolocation']['bf_longitude']!='' && is_numeric($fiche['geolocation']['bf_latitude']) && is_numeric($fiche['geolocation']['bf_longitude'])) {
+      if (is_array($fiche['geolocation']) && count($fiche['geolocation'])>1 && $fiche['geolocation']['bf_latitude']!='' && $fiche['geolocation']['bf_longitude']!='' && is_numeric($fiche['geolocation']['bf_latitude']) && is_numeric($fiche['geolocation']['bf_longitude'])) {
 					// on genere le point marqueur sur la carte
 					$markersjs .= '
 					i++;

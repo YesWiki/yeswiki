@@ -139,9 +139,41 @@ class EntryManager
      */
     private function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $correspondance = ''): array
     {
+
         $data = [];
         if (!empty($page['body'])) {
             $data = $this->decode($page['body']);
+			
+			// Keep only the fields defined in the form definition
+			
+			$form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+            
+            $vRegisteredData = [];
+            
+            foreach ($form['prepared'] as $field)
+            {
+	            if ($field instanceof BazarField)
+	            {
+	                $propName = $field->getPropertyName();
+	                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
+    	            // see BazarField->formatValuesBeforeSave() for details
+    	            // so do not save the previous data even if existing
+    	            if (!empty($propName))
+    	            {    	            	
+    	            	if (isset ($data [$propName])) $vRegisteredData[$propName] = $data [$propName];
+    	            }
+    	        }
+    	    }
+            
+            // Add extra fields that doesn't belong to the form definition
+            
+            if (isset ($data['id_typeannonce'])) $vRegisteredData['id_typeannonce'] = $data ['id_typeannonce'];
+            if (isset ($data['date_creation_fiche'])) $vRegisteredData['date_creation_fiche'] = $data ['date_creation_fiche'];
+            if (isset ($data['date_maj_fiche'])) $vRegisteredData['date_maj_fiche'] = $data ['date_maj_fiche'];
+            if (isset ($data['statut_fiche'])) $vRegisteredData['statut_fiche'] = $data ['statut_fiche'];
+            if (isset ($data['url'])) $vRegisteredData['url'] = $data ['url'];
+
+			$data = $vRegisteredData;
 
             if ($debug) {
                 if (empty($data['id_fiche'])) {
@@ -157,6 +189,7 @@ class EntryManager
             if (!isset($data['id_fiche'])) {
                 $data['id_fiche'] = $page['tag'];
             }
+          
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic, $correspondance, $page);
         } elseif ($debug) {
