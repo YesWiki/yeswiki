@@ -474,8 +474,8 @@ class SearchManager
                     // we need to specify the form IDs that use this structure in the condition request
 
                     if ($vField['hasMultipleStructures']) {
-                        if (vDescriptorCondition != '') {
-                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor['ids'])) . ') AND (' . vDescriptorCondition . ')';
+                        if ($vDescriptorCondition != '') {
+                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor['ids'])) . ') AND (' . $vDescriptorCondition . ')';
                         }
                     }
                 }
