@@ -462,7 +462,7 @@ class EntryManager
                 // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
                 // see BazarField->formatValuesBeforeSave() for details
                 // so do not save the previous data even if existing
-                if (!empty($propName) && !$field->canEdit($data, false)) {
+                if (!empty($propName) && !$field->canEdit($data)) {
                     $restrictedFields[] = $propName;
                 }
             }
