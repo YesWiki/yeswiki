@@ -7,6 +7,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\TitleField;
+use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Field\FileField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
@@ -590,6 +592,10 @@ class EntryManager
      */
     public function formatDataBeforeSave($data): array
     {
+	    // Let's set the value of id_typeannonce
+
+        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
+   
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
         if (empty($form)) {
@@ -601,7 +607,11 @@ class EntryManager
 
 		foreach ($form['prepared'] as $bazarField)
 		{
-            if ($bazarField instanceof BazarField && !($bazarField instanceof TitleField))
+            if ($bazarField instanceof BazarField && 
+            	!($bazarField instanceof TitleField) &&
+	           	!($bazarField instanceof ImageField) && // ImageField and File Field need the bf_titre to be defined before to call formatValuesBeforeSave 
+	           	!($bazarField instanceof FileField)	    // So we will handle it later. 
+            	) 
             {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
             }
@@ -653,9 +663,33 @@ class EntryManager
             throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
         }
 
-		// Let's set the value of id_typeannonce
+		// We can now handle ImageField and File Field
 
-        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
+		foreach ($form['prepared'] as $bazarField)
+		{
+            if (($bazarField instanceof ImageField) || 
+	           	($bazarField instanceof FileField)	    
+            	) 
+            {
+                $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
+            }
+
+            if (is_array($tab))
+            {
+                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove']))
+                {
+                    foreach ($tab['fields-to-remove'] as $field)
+                    {
+                        if (isset($data[$field]))
+                        {
+                            unset($data[$field]);
+                        }
+                    }
+                    unset($tab['fields-to-remove']);
+                }
+                $data = array_merge($data, $tab);
+            }
+        }
 
         // Get creation date if it exists, initialize it otherwise
         $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $data['id_fiche'] . "'");
@@ -666,6 +700,11 @@ class EntryManager
             $data['statut_fiche'] = '1';
         } else {
             $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
+        }
+
+		// Let's ensure $data['id_typeannonce'] is not empty
+        if (empty($data['id_typeannonce'])) {
+            throw new Exception('$data[\'id_typeannonce\'] is empty !');
         }
 
         // Let's ensure $data['id_fiche'] is not empty
