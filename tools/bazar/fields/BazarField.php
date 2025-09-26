@@ -197,7 +197,7 @@ abstract class BazarField implements \JsonSerializable
     public function canRead($entry, ?string $userNameForRendering = null)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
-        $isCreation = !$entry;
+        $isCreation = !isset ($entry) || !is_array($entry) || !isset ($entry['id_fiche']);
 
         return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['id_fiche']);
     }
@@ -207,7 +207,7 @@ abstract class BazarField implements \JsonSerializable
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
 
-		$isCreation = !$entry;
+		$isCreation = !isset ($entry) || !is_array($entry) || !isset ($entry['id_fiche']);
 
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : 'edit');
     }
