@@ -626,7 +626,6 @@ const load = (domElement) => {
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
       // Retrieve data asynchronoulsy
-
       $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
         // process the filters
         const filters = data.filters || []

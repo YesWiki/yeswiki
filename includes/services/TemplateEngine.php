@@ -105,6 +105,9 @@ class TemplateEngine
             'server' => $_SERVER,
             'session' => $_SESSION,
         ]);
+        $this->twig->addGlobal('user', [
+            'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
+        ]);
         $this->twig->addGlobal('config', $this->wiki->config);
         $this->twig->addGlobal('isInIframe', testUrlInIframe());
 
