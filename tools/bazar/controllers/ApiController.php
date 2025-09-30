@@ -213,6 +213,7 @@ class ApiController extends YesWikiController
     }
 
     /**
+     * Create or update an entry
      * @Route("/api/entries/{formId}", methods={"POST"}, options={"acl":{"+"}})
      */
     public function createEntry($formId)
@@ -222,8 +223,12 @@ class ApiController extends YesWikiController
         }
 
         $_POST['antispam'] = 1;
-        $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL'] ?? null);
-
+        
+       	if (!isset ($_POST["id_fiche"]))
+	        $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL'] ?? null);
+		else
+			$entry = $this->getService(EntryManager::class)->update($_POST["id_fiche"], $_POST, false, true);
+			
         if (!$entry) {
             throw new BadRequestHttpException();
         }

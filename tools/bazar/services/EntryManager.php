@@ -303,7 +303,7 @@ class EntryManager
 
 		// Let's format the data
 
-        $data = $this->formatDataBeforeSave($data, true);
+        $data = $this->formatDataBeforeSave($data);
         
         // We need to check bf_titre and id_typeannonce once the data are formated
         
@@ -406,8 +406,20 @@ class EntryManager
         $data['id_fiche'] = $tag;
         // if there are some restricted fields, load the previous data by bypassing the rights
         $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
+
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
+		// We need to check antispam before data are modified
+        
+        $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
+
+		// Let's get formatted values (it will format each values and take into account access right and defaut values)
+		$data = $this->formatDataBeforeSave($data);
+        
+        // Title can be automatic, we need to check it now. Check also id_typeannonce (necessary ?)
+        
+        $this->validate($data, self::VALIDATE_FLAG_BF_TITRE|self::VALIDATE_FLAG_ID_TYPEANNONCE);
+        
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
@@ -423,9 +435,7 @@ class EntryManager
             $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
         }
 
-        $this->validate($data);
-
-        $data = $this->formatDataBeforeSave($data, false);
+//        $this->validate($data);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
