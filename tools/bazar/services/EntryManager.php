@@ -6,9 +6,9 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\TitleField;
-use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\FileField;
+use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
@@ -38,10 +38,10 @@ class EntryManager
 
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
-	public const VALIDATE_FLAG_ANTISPAM = 		1 << 0;
-	public const VALIDATE_FLAG_BF_TITRE = 		1 << 1;	
-	public const VALIDATE_FLAG_ID_TYPEANNONCE =	1 << 2;
-	public const VALIDATE_FLAG_ALL =			self::VALIDATE_FLAG_ANTISPAM | self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE;
+    public const VALIDATE_FLAG_ANTISPAM = 1 << 0;
+    public const VALIDATE_FLAG_BF_TITRE = 1 << 1;
+    public const VALIDATE_FLAG_ID_TYPEANNONCE = 1 << 2;
+    public const VALIDATE_FLAG_ALL = self::VALIDATE_FLAG_ANTISPAM | self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE;
 
     public function __construct(
         Wiki $wiki,
@@ -141,41 +141,52 @@ class EntryManager
      */
     private function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $correspondance = ''): array
     {
-
         $data = [];
         if (!empty($page['body'])) {
             $data = $this->decode($page['body']);
-			
-			// Keep only the fields defined in the form definition
-			
-			$form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
-            
-            $vRegisteredData = [];
-            
-            foreach ($form['prepared'] as $field)
-            {
-	            if ($field instanceof BazarField)
-	            {
-	                $propName = $field->getPropertyName();
-	                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
-    	            // see BazarField->formatValuesBeforeSave() for details
-    	            // so do not save the previous data even if existing
-    	            if (!empty($propName))
-    	            {    	            	
-    	            	if (isset ($data [$propName])) $vRegisteredData[$propName] = $data [$propName];
-    	            }
-    	        }
-    	    }
-            
-            // Add extra fields that doesn't belong to the form definition
-            
-            if (isset ($data['id_typeannonce'])) $vRegisteredData['id_typeannonce'] = $data ['id_typeannonce'];
-            if (isset ($data['date_creation_fiche'])) $vRegisteredData['date_creation_fiche'] = $data ['date_creation_fiche'];
-            if (isset ($data['date_maj_fiche'])) $vRegisteredData['date_maj_fiche'] = $data ['date_maj_fiche'];
-            if (isset ($data['statut_fiche'])) $vRegisteredData['statut_fiche'] = $data ['statut_fiche'];
-            if (isset ($data['url'])) $vRegisteredData['url'] = $data ['url'];
 
-			$data = $vRegisteredData;
+            // Keep only the fields defined in the form definition
+
+            $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+
+            $vRegisteredData = [];
+
+            foreach ($form['prepared'] as $field) {
+                if ($field instanceof BazarField) {
+                    $propName = $field->getPropertyName();
+                    // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
+                    // see BazarField->formatValuesBeforeSave() for details
+                    // so do not save the previous data even if existing
+                    if (!empty($propName)) {
+                        if (isset($data[$propName])) {
+                            $vRegisteredData[$propName] = $data[$propName];
+                        }
+                    }
+                }
+            }
+
+            // Add extra fields that doesn't belong to the form definition
+
+            if (isset($data['id_fiche'])) {
+                $vRegisteredData['id_fiche'] = $data['id_fiche'];
+            }
+            if (isset($data['id_typeannonce'])) {
+                $vRegisteredData['id_typeannonce'] = $data['id_typeannonce'];
+            }
+            if (isset($data['date_creation_fiche'])) {
+                $vRegisteredData['date_creation_fiche'] = $data['date_creation_fiche'];
+            }
+            if (isset($data['date_maj_fiche'])) {
+                $vRegisteredData['date_maj_fiche'] = $data['date_maj_fiche'];
+            }
+            if (isset($data['statut_fiche'])) {
+                $vRegisteredData['statut_fiche'] = $data['statut_fiche'];
+            }
+            if (isset($data['url'])) {
+                $vRegisteredData['url'] = $data['url'];
+            }
+
+            $data = $vRegisteredData;
 
             if ($debug) {
                 if (empty($data['id_fiche'])) {
@@ -191,7 +202,7 @@ class EntryManager
             if (!isset($data['id_fiche'])) {
                 $data['id_fiche'] = $page['tag'];
             }
-          
+
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic, $correspondance, $page);
         } elseif ($debug) {
@@ -248,29 +259,26 @@ class EntryManager
      */
     public function validate($data, $pFlags = self::VALIDATE_FLAG_ALL)
     {
-    	if ($pFlags & self::VALIDATE_FLAG_ANTISPAM)
-    	{    
-	        if (!isset($data['antispam']) or !$data['antispam'] == 1) {
-	            throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
-	        }
-	    }
+        if ($pFlags & self::VALIDATE_FLAG_ANTISPAM) {
+            if (!isset($data['antispam']) or !$data['antispam'] == 1) {
+                throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
+            }
+        }
 
         // On teste le titre car ça peut bugguer sérieusement sans
-        
-        if ($pFlags & self::VALIDATE_FLAG_BF_TITRE)
-    	{            
-	        if (!isset($data['bf_titre'])) {
-	            throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
-	        }
-	    }
 
-        if ($pFlags & self::VALIDATE_FLAG_ID_TYPEANNONCE)
-    	{            
-	        // form metadata
-	        if (!isset($data['id_typeannonce'])) {
-	            throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
-	        }
-	    }
+        if ($pFlags & self::VALIDATE_FLAG_BF_TITRE) {
+            if (!isset($data['bf_titre'])) {
+                throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+            }
+        }
+
+        if ($pFlags & self::VALIDATE_FLAG_ID_TYPEANNONCE) {
+            // form metadata
+            if (!isset($data['id_typeannonce'])) {
+                throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
+            }
+        }
     }
 
     /**
@@ -297,18 +305,18 @@ class EntryManager
             $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
         }
 
-		// We need to check antispam before if it is removed from data
+        // We need to check antispam before if it is removed from data
 
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
-		// Let's format the data
+        // Let's format the data
 
         $data = $this->formatDataBeforeSave($data, true);
-        
+
         // We need to check bf_titre and id_typeannonce once the data are formated
-        
+
         $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
-        
+
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
             $olduser = $this->authController->getLoggedUser();
@@ -592,38 +600,32 @@ class EntryManager
      */
     public function formatDataBeforeSave($data): array
     {
-	    // Let's set the value of id_typeannonce
+        // Let's set the value of id_typeannonce
 
         $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
-   
+
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
         if (empty($form)) {
             throw new Exception('No form with id: ' . $data['id_typeannonce']);
         }
 
-		// We first need to ensure default values for uneditable fields are set
-		// so we can use it later to build the automatic title if necessary
+        // We first need to ensure default values for uneditable fields are set
+        // so we can use it later to build the automatic title if necessary
 
-		foreach ($form['prepared'] as $bazarField)
-		{
-            if ($bazarField instanceof BazarField && 
-            	!($bazarField instanceof TitleField) &&
-	           	!($bazarField instanceof ImageField) && // ImageField and File Field need the bf_titre to be defined before to call formatValuesBeforeSave 
-	           	!($bazarField instanceof FileField)	    // So we will handle it later. 
-            	) 
-            {
+        foreach ($form['prepared'] as $bazarField) {
+            if ($bazarField instanceof BazarField &&
+                !($bazarField instanceof TitleField) &&
+                   !($bazarField instanceof ImageField) && // ImageField and File Field need the bf_titre to be defined before to call formatValuesBeforeSave
+                   !($bazarField instanceof FileField)	    // So we will handle it later.
+                ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
             }
 
-            if (is_array($tab))
-            {
-                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove']))
-                {
-                    foreach ($tab['fields-to-remove'] as $field)
-                    {
-                        if (isset($data[$field]))
-                        {
+            if (is_array($tab)) {
+                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
+                    foreach ($tab['fields-to-remove'] as $field) {
+                        if (isset($data[$field])) {
                             unset($data[$field]);
                         }
                     }
@@ -632,56 +634,43 @@ class EntryManager
                 $data = array_merge($data, $tab);
             }
         }
-        
-        // We can now build the field title if there is one        
-        
-        if (is_array($form['prepared']))
-        {
-            foreach ($form['prepared'] as $field)
-            {
-                if ($field instanceof TitleField)
-                {
+
+        // We can now build the field title if there is one
+
+        if (is_array($form['prepared'])) {
+            foreach ($form['prepared'] as $field) {
+                if ($field instanceof TitleField) {
                     $data = array_merge($data, $field->formatValuesBeforeSave($data));
                 }
             }
         }
 
         // Let's generate fiche id if necessary
-        
-        if (!isset($data['id_fiche']))
-        {
+
+        if (!isset($data['id_fiche'])) {
             // Generate the ID from the title
-            if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre'])))
-            {
+            if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
                 throw new Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
             }
             // TODO see if we can remove this
             //$_POST['id_fiche'] = $data['id_fiche'];
-        }
-        elseif (empty($data['id_fiche']))
-        {
+        } elseif (empty($data['id_fiche'])) {
             throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
         }
 
-		// We can now handle ImageField and File Field
+        // We can now handle ImageField and File Field
 
-		foreach ($form['prepared'] as $bazarField)
-		{
-            if (($bazarField instanceof ImageField) || 
-	           	($bazarField instanceof FileField)	    
-            	) 
-            {
+        foreach ($form['prepared'] as $bazarField) {
+            if (($bazarField instanceof ImageField) ||
+                   ($bazarField instanceof FileField)
+                ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
             }
 
-            if (is_array($tab))
-            {
-                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove']))
-                {
-                    foreach ($tab['fields-to-remove'] as $field)
-                    {
-                        if (isset($data[$field]))
-                        {
+            if (is_array($tab)) {
+                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
+                    foreach ($tab['fields-to-remove'] as $field) {
+                        if (isset($data[$field])) {
                             unset($data[$field]);
                         }
                     }
@@ -702,7 +691,7 @@ class EntryManager
             $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
         }
 
-		// Let's ensure $data['id_typeannonce'] is not empty
+        // Let's ensure $data['id_typeannonce'] is not empty
         if (empty($data['id_typeannonce'])) {
             throw new Exception('$data[\'id_typeannonce\'] is empty !');
         }
