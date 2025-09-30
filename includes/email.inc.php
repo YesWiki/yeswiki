@@ -86,6 +86,11 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
             }
         }
 
+        // for retro-compatibility, if $mail_receiver is not an array, we convert it
+        if (!is_array($mail_receiver) && filter_var($mail_receiver, FILTER_VALIDATE_EMAIL)) {
+            $mail_receiver[] = $mail_receiver;
+        }
+
         $recipientBatches = array_chunk($mail_receiver, $batchSize);
 
         foreach ($recipientBatches as $batchIndex => $batch) {
