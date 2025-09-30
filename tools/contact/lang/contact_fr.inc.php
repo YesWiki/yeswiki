@@ -2,7 +2,7 @@
 
 return [
     'CONTACT_ACTION_ABONNEMENT' => 'Action {{abonnement ...}}',
-    'CONTACT_MAIL_REQUIRED' => 'le paramètre mail, obligatoire, est manquant.',
+    'CONTACT_MAIL_REQUIRED' => 'le paramètre mail est obligatoire et doit contenir soit des emails valides, soit des groupes wikis commencant par @.',
     'CONTACT_ACTION_CONTACT' => 'Action {{contact ...}}',
     'CONTACT_ACTION_DESABONNEMENT' => 'Action {{desabonnement ...}}',
     'CONTACT_ACTION_LISTSUBSCRIPTION' => 'Action {{listsubscription ...}}',
