@@ -3,4 +3,4 @@ jobs:
   test:
     runs-on: docker
     steps:
-      - run: echo All Good
+      - run: echo All Good 2
