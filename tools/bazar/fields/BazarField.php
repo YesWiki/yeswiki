@@ -93,6 +93,15 @@ abstract class BazarField implements \JsonSerializable
         return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
     }
 
+	/*
+	*	indicates if id_fiche must be set before to format the value
+	*/
+
+	public function requireIDFiche ()
+	{
+		return false;
+	}
+
     /**
      * Render the edit view of the field. Check ACLS first.
      *

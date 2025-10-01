@@ -125,6 +125,15 @@ class ImageField extends FileField
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize]);
     }
 
+	/*
+	*	indicates if id_fiche must be set before to format the value
+	*/
+
+	public function requireIDFiche ()
+	{
+		return true;
+	}
+
     public function formatValuesBeforeSave($entry)
     {
         $params = $this->getService(ParameterBagInterface::class);

@@ -6,8 +6,6 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\FileField;
-use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
@@ -626,8 +624,7 @@ class EntryManager
         foreach ($form['prepared'] as $bazarField) {
             if ($bazarField instanceof BazarField &&
                 !($bazarField instanceof TitleField) &&
-                   !($bazarField instanceof ImageField) && // ImageField and File Field need the bf_titre to be defined before to call formatValuesBeforeSave
-                   !($bazarField instanceof FileField)	    // So we will handle it later.
+                   !($bazarField->requireIDFiche ()) // Some fields like ImageField and File Field need the id_fiche to be defined before to call formatValuesBeforeSave. So we will handle them later.
                 ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
             }
@@ -668,12 +665,10 @@ class EntryManager
             throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
         }
 
-        // We can now handle ImageField and File Field
+        // We can now handle fields like ImageField and File Field that require id_fiche in order to format their values 
 
         foreach ($form['prepared'] as $bazarField) {
-            if (($bazarField instanceof ImageField) ||
-                   ($bazarField instanceof FileField)
-                ) {
+            if ($bazarField->requireIDFiche()) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
             }
 
