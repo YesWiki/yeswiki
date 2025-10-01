@@ -128,3 +128,6 @@ docker-compose.local.yml
 *.old
 .php-cs-fixer.cache
 TODO
+
+# Forgejo workflow
+!.forgejo/
