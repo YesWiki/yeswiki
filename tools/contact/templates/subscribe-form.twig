@@ -1,0 +1,15 @@
+<form id="ajax-contact-form{{ nbactionmail }}" class="ajax-mail-form form-inline {{ class }}" action="{{ mailerurl }}">
+  <div class="form-group">
+    <div class="input-group">
+      <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
+      <input required class="form-control" type="email" name="email" placeholder="{{ _t('CONTACT_YOUR_MAIL') }}">
+      <span class="input-group-btn">
+        <button class="btn btn-primary mail-submit" type="submit" name="submit">{{ placeholder }}</button>
+      </span>
+    </div><!-- /input-group -->
+  </div><!-- /form-group -->
+  {{ hiddeninputs }}
+	<input type="hidden" name="nbactionmail" value="{{ nbactionmail }}" />
+	<input type="hidden" name="entete" value="{{ placeholder }}" />
+	<input type="hidden" name="type" value="{{ demand }}" />
+</form>

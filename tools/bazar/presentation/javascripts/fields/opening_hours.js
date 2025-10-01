@@ -54,7 +54,7 @@ Vue.component('opening-hours', {
        <li v-if="!today.length"> ${_t('BAZ_OPENING_HOURS_CLOSED')}  </li>
         <li v-for="interval in today"> {{ interval.start }} - {{ interval.end }} </li>
         </ul>
-        <i class="fas fa-angle-down" style="margin-left: 1em;font-size: 2em;"></i>
+        <i class="fas fa-angle-down" style="margin-left: 10px;font-size: 2em;"></i>
         </summary>
         <div style="background: white;padding: 1em;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
         z-index: 1;position: absolute;border-radius: 10px;">
