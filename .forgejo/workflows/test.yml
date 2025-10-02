@@ -1,8 +1,8 @@
 on: [push, workflow_dispatch]
 jobs:
-  forgejo:
-    workspace: /var/www/html
   test:
+    forgejo:
+      workspace: /var/www/html
     runs-on: docker
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
