@@ -9,6 +9,7 @@ set -e
 
 /opt/entrypoint.sh &
 while ! echo . | curl --silent --fail localhost:8085 > /dev/null; do sleep 1; done # Wait for server initialized
+while ! echo . | nc -W 1 yeswiki-db 3306; do sleep 1; done # Wait for server initialized
 
 export PLAYWRIGHT_BROWSERS_PATH=0
 yarn run playwright install
