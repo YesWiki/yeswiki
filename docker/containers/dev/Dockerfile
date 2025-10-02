@@ -42,4 +42,4 @@ RUN rm -f /etc/nginx/nginx.conf && chown yeswiki:yeswiki /etc/nginx
 
 USER yeswiki
 
-ENTRYPOINT /opt/entrypoint.sh
+CMD ["/opt/entrypoint.sh"]

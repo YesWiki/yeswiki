@@ -23,5 +23,4 @@ jobs:
             node_modules
             vendor
           key: ${{ forge.job }}-${{ forge.ref_name }}
-      - run: /opt/install.sh
-      - run: ./tests/tests.sh
+      - run: ./tests/start_and_test.sh
