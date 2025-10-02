@@ -11,9 +11,15 @@ COPY --from=node /usr/local/bin /usr/local/bin
 COPY --from=node /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN npm install -g corepack && corepack enable
 
+# Install php extensions
 COPY --from=mlocati/php-extension-installer:2.9 /usr/bin/install-php-extensions /usr/local/bin/
-
 RUN install-php-extensions gd mysqli zip intl
+
+# Install other dependencies
+RUN apt-get update && \
+    apt-get install -y git &&\
+    rm -rf /var/lib/apt/lists/*
+
 
 COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
 
