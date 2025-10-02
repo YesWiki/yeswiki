@@ -1,9 +1,10 @@
 #!/bin/bash
+
+set -xe
+
 cd /var/www/html
 composer install
-source /home/yeswiki/.nvm/nvm.sh
-nvm use 20
-corepack enable
+export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 yarn install
 ./yeswicli migrate
 php-fpm

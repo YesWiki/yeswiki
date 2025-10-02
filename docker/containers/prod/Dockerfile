@@ -1,4 +1,3 @@
-
 # download composer dependencies
 FROM composer:2.1.11 AS composer
 WORKDIR /var/www/html
@@ -13,7 +12,7 @@ WORKDIR /var/www/html
 
 RUN apt-get update && apt-get install -y git
 
-COPY .. .
+COPY ../../.. .
 
 RUN yarn install
 
@@ -30,7 +29,7 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
 
 RUN docker-php-ext-install mysqli zip gd
 
-COPY . /var/www/html/
+COPY ../.. /var/www/html/
 
 COPY --from=composer /php/vendor /var/www/html/vendor/
 COPY --from=yarn /var/www/html/node_modules/ /var/www/html/node_modules/

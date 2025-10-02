@@ -9,18 +9,19 @@ services:
     yeswiki-app:
         build:
           context: ..
-          dockerfile: ./docker/dockerfile
+          dockerfile: docker/containers/dev/Dockerfile
           args:
             UID: "${UID:-1000}"
             GID: "${UIS:-1000}"
         container_name: yeswiki
+        working_dir: /var/www/html
         volumes:
           - ..:/var/www/html
         depends_on:
           - yeswiki-db
         env_file: ./yeswiki.secrets
         user: "${UID}:${UID}"
-        command: /var/www/html/docker/entrypoint.sh
+        command: docker/containers/dev/start.sh
         networks:
           - yeswiki
 
