@@ -62,3 +62,9 @@ jobs:
         with:
           name: test-results
           path: test-results
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: logs
+          path: /var/log
