@@ -31,6 +31,7 @@ jobs:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
       env:
         NGINX_WEB_ROOT: ${{ forge.workspace }}
+        WAKKA_CONFIG_FILE: test.config.php
     services:
       yeswiki-db:
         image: mysql:8.0
