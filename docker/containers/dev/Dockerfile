@@ -13,7 +13,7 @@ RUN npm install -g corepack && corepack enable
 
 # Install other dependencies
 RUN apt-get update && \
-    apt-get install -y git unzip mariadb-client netcat-openbsd inetutils-ping &&\
+    apt-get install -y git unzip mariadb-client netcat-openbsd inetutils-ping gettext-base &&\
     rm -rf /var/lib/apt/lists/*
 
 # Install php extensions
@@ -24,7 +24,6 @@ COPY --from=composer:2.8 /usr/bin/composer /usr/local/bin/composer
 
 COPY --from=nginx:1.29 /usr/sbin/nginx /usr/sbin/nginx
 COPY --from=nginx:1.29 /etc/nginx/ /etc/nginx/
-COPY ./nginx.conf /etc/nginx/nginx.conf
 RUN mkdir -p /var/log/nginx
 RUN mkdir -p /var/cache/nginx
 RUN mkdir -p /var/run/nginx/
@@ -38,6 +37,8 @@ RUN groupadd -g "${GID}" yeswiki \
 RUN chown -R yeswiki:yeswiki /var/log/nginx
 RUN chown -R yeswiki:yeswiki /var/cache/nginx
 RUN chown -R yeswiki:yeswiki /var/run/nginx/
+COPY ./nginx.conf.template /etc/nginx/nginx.conf.template
+RUN rm -f /etc/nginx/nginx.conf && chown yeswiki:yeswiki /etc/nginx
 
 USER yeswiki
 
