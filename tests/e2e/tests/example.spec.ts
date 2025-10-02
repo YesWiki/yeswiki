@@ -25,13 +25,12 @@ test('can edit main page title', async({ page }) => {
   await expect(page.locator(('h1'))).toContainText(/Test de modification de titre/)
 })
 
-//
-// test('have an error message when editing with no change', async({ page }) => {
-//   await page.goto('/')
-//   await page.getByRole('link', { name: 'Éditer la page' }).click()
-//   await page.waitForLoadState()
-//
-//   await page.getByRole('button', { name: 'Sauver' }).first().click()
-//
-//   await errorShouldBe(page, "Cette page n'a pas été enregistrée car elle n'a subi aucune modification.")
-// })
+test('have an error message when editing with no change', async({ page }) => {
+  await page.goto('/')
+  await page.getByRole('link', { name: 'Éditer la page' }).click()
+  await page.waitForLoadState()
+
+  await page.getByRole('button', { name: 'Sauver' }).first().click()
+
+  await errorShouldBe(page, "Cette page n'a pas été enregistrée car elle n'a subi aucune modification.")
+})
