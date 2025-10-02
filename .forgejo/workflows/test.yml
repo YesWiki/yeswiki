@@ -13,13 +13,14 @@ jobs:
       yeswiki-db:
         image: mysql:8.0
     steps:
-      - uses: actions/checkout@v4
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            vendor
-          key: ${{ forge.job }}-${{ forge.ref_name }}
-      - run: /opt/install.sh
-      - run: ./tests/tests.sh
+      - run:  apt update && apt install -y inetutils-ping  && ping 1.1.1.1
+#      - uses: actions/checkout@v4
+#      - name: Cache dependencies
+#        uses: actions/cache@v4
+#        with:
+#          path: |
+#            node_modules
+#            vendor
+#          key: ${{ forge.job }}-${{ forge.ref_name }}
+#      - run: /opt/install.sh
+#      - run: ./tests/tests.sh
