@@ -13,7 +13,7 @@ jobs:
       yeswiki-db:
         image: mysql:8.0
     steps:
-      - run:  apt update && apt install -y inetutils-ping  && ping yeswiki-db
+      - run: ping yeswiki-db
 #      - uses: actions/checkout@v4
 #      - name: Cache dependencies
 #        uses: actions/cache@v4
