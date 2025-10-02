@@ -1,6 +1,7 @@
 on: [push, workflow_dispatch]
 jobs:
-  workspace: /var/www/html
+  forgejo:
+    workspace: /var/www/html
   test:
     runs-on: docker
     container:
