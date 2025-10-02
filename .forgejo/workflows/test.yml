@@ -5,4 +5,10 @@ jobs:
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     steps:
+      - run: mkdir -p /var/www/html
+      - uses: actions/checkout@v4
+        with:
+          path: /var/www/html
+          show-progress: true
+      - run: cd /var/www/html
       - run: composer install
