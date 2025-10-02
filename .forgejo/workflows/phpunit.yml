@@ -1,0 +1,26 @@
+on: [push, workflow_dispatch]
+jobs:
+  phpunit:
+    runs-on: docker
+    container:
+      image: code.yeswiki.net/sylvainlehmann/php:8-2
+      env:
+        NGINX_WEB_ROOT: ${{ forge.workspace }}
+    services:
+      yeswiki-db:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: yeswiki
+          MYSQL_USER: yeswiki
+          MYSQL_PASSWORD: secret
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            vendor
+          key: ${{ forge.job }}-${{ forge.ref_name }}
+      - run: ./tests/start_and_test.sh
