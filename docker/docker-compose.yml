@@ -21,8 +21,6 @@ services:
         env_file: ./yeswiki.secrets
         environment:
           - NGINX_WEB_ROOT=/var/www/html
-        user: "${UID}:${UID}"
-        command: /opt/entrypoint.sh
         networks:
           - yeswiki
         ports:

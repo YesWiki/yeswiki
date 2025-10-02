@@ -2,8 +2,7 @@
 
 set -xe
 
-/opt/entrypoint_test.sh &
-while ! echo exit | curl --silent --fail localhost; do sleep 1; done # Wait for server initialized
+while ! echo exit | curl --silent --fail localhost > /dev/null; do sleep 1; done # Wait for server initialized
 
 ./tests/reset.sh
 
