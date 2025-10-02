@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Reset environment for tests
+
 set -e
 
 rm -f  /var/www/html/test.config.php

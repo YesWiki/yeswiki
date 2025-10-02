@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Run all phpunit tests
+
 set -xe
 
 ./tests/reset.sh

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Base entrypoint for test launch. Add playwright run
+
 /opt/entrypoint.sh &
 
 export PLAYWRIGHT_BROWSERS_PATH=0
