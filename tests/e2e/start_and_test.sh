@@ -14,4 +14,5 @@ while ! echo exit | nc yeswiki-db 3306; do sleep 1; done # Wait for server initi
 export PLAYWRIGHT_BROWSERS_PATH=0
 yarn run playwright install
 
+./tests/reset.sh
 ./tests/e2e/tests.sh
