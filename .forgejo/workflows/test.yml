@@ -4,13 +4,10 @@ jobs:
     runs-on: docker
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
+      working-directory: /var/www/html
     steps:
-      - run: mkdir -p /var/www/html
-      - run: source /home/yeswiki/.nvm/nvm.sh
-      - run: nvm use 20
       - uses: actions/checkout@v4
         with:
           path: /var/www/html
           show-progress: true
-      - run: cd /var/www/html
       - run: composer install
