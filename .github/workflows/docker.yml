@@ -3,7 +3,7 @@ name: Docker Image
 on:
   push:
     paths:
-      - ../../docker/docker/dev/dockerfile
+      - docker/dockerfile
       - docker/docker-compose*.yml
       - .github/workflows/docker.yml
 

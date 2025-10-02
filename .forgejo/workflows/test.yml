@@ -5,4 +5,4 @@ jobs:
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     steps:
-      - run: echo All Good 6
+      - run: composer install
