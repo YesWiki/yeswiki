@@ -1,6 +1,4 @@
 on: [push, workflow_dispatch]
-env:
-  FORGEJO_WORKSPACE: /var/www/html/
 jobs:
   test:
     runs-on: docker
@@ -11,5 +9,7 @@ jobs:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: /var/www/html/
       #      - run: composer install
       - run: ls -al
