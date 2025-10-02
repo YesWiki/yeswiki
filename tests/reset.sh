@@ -4,11 +4,11 @@ set -e
 
 rm -f  /var/www/html/test.config.php
 echo "DROP DATABASE IF EXISTS yeswiki_test; CREATE DATABASE yeswiki_test;" |  mysql -h yeswiki-db -u root -proot --skip-ssl
-curl --silent --fail --show-error \
+curl  --silent --fail --show-error  \
           -F "config[default_language]=fr" \
           -F "config[wakka_name]=MyTestWiki" \
           -F "config[root_page]=PagePrincipale" \
-          -F "config[base_url]=http://yeswiki-web/?" \
+          -F "config[base_url]=http://localhost/?" \
           -F "config[mysql_host]=yeswiki-db" \
           -F "config[mysql_database]=yeswiki_test" \
           -F "config[mysql_user]=root" \
@@ -21,5 +21,5 @@ curl --silent --fail --show-error \
           -F "admin_password_conf=WikiAdminPassword" \
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
-          "http://yeswiki-web/?PagePrincipale&installAction=install"
-/var/www/html/yeswicli migrate
+          "http://localhost/?PagePrincipale&installAction=install" > /dev/null
+#/var/www/html/yeswicli migrate
