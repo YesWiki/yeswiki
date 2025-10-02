@@ -22,5 +22,4 @@ jobs:
             vendor
           key: ${{ forge.job }}-${{ forge.ref_name }}
       - run: /opt/install.sh
-      - run: /opt/entrypoint_test.php &
-      - run: ./tests/tests.sh
+      - run: bash -c "/opt/entrypoint_test.php &; ./tests/tests.sh"
