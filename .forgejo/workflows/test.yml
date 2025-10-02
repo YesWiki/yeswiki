@@ -3,7 +3,7 @@ jobs:
   test:
     runs-on: docker
     env:
-      GITHUB_WORKSPACE: /var/www/html/
+      FORGEJO_WORKSPACE: /var/www/html/
     defaults:
       run:
         working-directory: /var/www/html/
