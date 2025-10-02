@@ -8,7 +8,7 @@
 set -e
 
 /opt/entrypoint.sh &
-while ! echo . | curl --silent --fail localhost > /dev/null; do sleep 1; done # Wait for server initialized
+while ! echo . | curl --silent --fail localhost:8085 > /dev/null; do sleep 1; done # Wait for server initialized
 while ! echo . | nc yeswiki-db 3306; do sleep 1; done # Wait for server initialized
 
 ./tests/tests.sh
