@@ -13,7 +13,7 @@ RUN npm install -g corepack && corepack enable
 
 # Install other dependencies
 RUN apt-get update && \
-    apt-get install -y git unzip mariadb-client netcat-openbsd inetutils-ping gettext-base supervisor &&\
+    apt-get install -y git unzip mariadb-client netcat-openbsd inetutils-ping gettext-base &&\
     rm -rf /var/lib/apt/lists/*
 
 # Install php extensions
