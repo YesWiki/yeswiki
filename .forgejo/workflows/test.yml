@@ -2,16 +2,16 @@ on: [push, workflow_dispatch]
 jobs:
   phpunit:
     runs-on: docker
-    env:
-      MYSQL_DATABASE: yeswiki
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: yeswiki
-      MYSQL_PASSWORD: password
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     services:
       yeswikidb:
         image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: yeswiki
+          MYSQL_USER: yeswiki
+          MYSQL_PASSWORD: secret
     steps:
       - run: ping yeswikidb
 #      - uses: actions/checkout@v4
