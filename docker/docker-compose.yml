@@ -25,7 +25,7 @@ services:
         networks:
           - yeswiki
         ports:
-          - "8085:80"
+          - "8085:8085"
 
     yeswiki-db:
         image: mysql:8.0

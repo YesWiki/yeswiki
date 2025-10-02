@@ -100,7 +100,6 @@ class DbService
             }
         } catch (Exception $e) {
             echo $query;
-            echo PHP_EOL . $e->getMessage();
             exit();
         } finally {
             if ($this->params->get('debug')) {

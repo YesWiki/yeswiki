@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -xe
+set -e
 
 composer install
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0

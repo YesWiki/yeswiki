@@ -10,7 +10,7 @@ curl  --silent --fail --show-error  \
           -F "config[default_language]=fr" \
           -F "config[wakka_name]=MyTestWiki" \
           -F "config[root_page]=PagePrincipale" \
-          -F "config[base_url]=http://localhost/?" \
+          -F "config[base_url]=http://localhost:8085/?" \
           -F "config[mysql_host]=yeswiki-db" \
           -F "config[mysql_database]=yeswiki_test" \
           -F "config[mysql_user]=root" \
@@ -23,5 +23,5 @@ curl  --silent --fail --show-error  \
           -F "admin_password_conf=WikiAdminPassword" \
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
-          "http://localhost/?PagePrincipale&installAction=install" > /dev/null
+          "http://localhost:8085/?PagePrincipale&installAction=install" > /dev/null
 #/var/www/html/yeswicli migrate
