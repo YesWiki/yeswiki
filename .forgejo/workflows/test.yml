@@ -49,3 +49,8 @@ jobs:
             vendor
           key: ${{ forge.job }}-${{ forge.ref_name }}
       - run: ./tests/e2e/start_and_test.sh
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: playwright-report
