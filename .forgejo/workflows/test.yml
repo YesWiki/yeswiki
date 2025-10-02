@@ -5,7 +5,7 @@ jobs:
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     services:
-      yeswikidb:
+      yeswiki-db:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
@@ -13,14 +13,13 @@ jobs:
           MYSQL_USER: yeswiki
           MYSQL_PASSWORD: secret
     steps:
-      - run: ping yeswikidb
-#      - uses: actions/checkout@v4
-#      - name: Cache dependencies
-#        uses: actions/cache@v4
-#        with:
-#          path: |
-#            node_modules
-#            vendor
-#          key: ${{ forge.job }}-${{ forge.ref_name }}
-#      - run: /opt/install.sh
-#      - run: ./tests/tests.sh
+      - uses: actions/checkout@v4
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            vendor
+          key: ${{ forge.job }}-${{ forge.ref_name }}
+      - run: /opt/install.sh
+      - run: ./tests/tests.sh
