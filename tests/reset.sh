@@ -4,7 +4,7 @@
 
 set -e
 
-rm -f  /var/www/html/test.config.php
+rm -f  test.config.php
 echo "DROP DATABASE IF EXISTS yeswiki_test; CREATE DATABASE yeswiki_test;" |  mysql -h yeswiki-db -u root -proot --skip-ssl
 curl  --silent --fail --show-error  \
           -F "config[default_language]=fr" \
@@ -24,5 +24,4 @@ curl  --silent --fail --show-error  \
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
           "http://localhost/?PagePrincipale&installAction=install" > /dev/null
-sleep 5
 #/var/www/html/yeswicli migrate
