@@ -24,4 +24,5 @@ curl  --silent --fail --show-error  \
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
           "http://localhost/?PagePrincipale&installAction=install" > /dev/null
+sleep 5
 #/var/www/html/yeswicli migrate
