@@ -8,8 +8,7 @@ networks:
 services:
     yeswiki-app:
         build:
-          context: ..
-          dockerfile: docker/containers/dev/Dockerfile
+          context: containers/dev
           args:
             UID: "${UID:-1000}"
             GID: "${UIS:-1000}"
@@ -21,9 +20,11 @@ services:
           - yeswiki-db
         env_file: ./yeswiki.secrets
         user: "${UID}:${UID}"
-        command: docker/containers/dev/start.sh
+        command: /opt/entrypoint.sh
         networks:
           - yeswiki
+        ports:
+          - "8085:80"
 
     yeswiki-db:
         image: mysql:latest
@@ -34,19 +35,19 @@ services:
         networks:
           - yeswiki
 
-    yeswiki-web:
-        image: nginx:alpine
-        container_name: yeswiki-web
-        volumes:
-          - ..:/var/www/html:ro
-          - ./nginx.conf:/etc/nginx/nginx.conf:ro
-        ports:
-          - "8085:80"
-        depends_on:
-          - yeswiki-app
-          - myadmin
-        networks:
-          - yeswiki
+#    yeswiki-web:
+#        image: nginx:alpine
+#        container_name: yeswiki-web
+#        volumes:
+#          - ..:/var/www/html:ro
+#          - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#        ports:
+#          - "8085:80"
+#        depends_on:
+#          - yeswiki-app
+#          - myadmin
+#        networks:
+#          - yeswiki
 
     myadmin:
       image: phpmyadmin:latest

@@ -1,9 +1,11 @@
 on: [push, workflow_dispatch]
 jobs:
-  test:
+  phpunit:
     runs-on: docker
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     steps:
       - uses: actions/checkout@v4
-      - run: ./docker/containers/dev/install.sh
+      - run: /opt/install.sh
+      - run: ./tests/tests.sh
+
