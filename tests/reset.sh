@@ -23,5 +23,5 @@ curl  --silent --fail --show-error  \
           -F "admin_password_conf=WikiAdminPassword" \
           -F "admin_email=test@example.com" \
           -F "submit=Continue" \
-          "http://localhost/?PagePrincipale&installAction=install"
+          "http://localhost/?PagePrincipale&installAction=install" > /dev/null
 #/var/www/html/yeswicli migrate
