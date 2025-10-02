@@ -1,10 +1,10 @@
 on: [push, workflow_dispatch]
+env:
+  FORGEJO_WORKSPACE: /var/www/html/
 jobs:
   test:
     runs-on: docker
     defaults:
-      forgejo:
-        workspace: /var/www/html/
       run:
         working-directory: /var/www/html/
     container:
