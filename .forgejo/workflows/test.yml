@@ -6,6 +6,20 @@ jobs:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     steps:
       - uses: actions/checkout@v4
+      - name: Restore cached dependencies
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            vendor
       - run: /opt/install.sh
       - run: ./tests/tests.sh
+      - name: Restore cached dependencies
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+           node_modules
+           vendor
 
