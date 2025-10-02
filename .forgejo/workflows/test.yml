@@ -10,10 +10,10 @@ jobs:
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     services:
-      yeswiki-db:
+      yeswikidb:
         image: mysql:8.0
     steps:
-      - run: ping yeswiki-db
+      - run: ping yeswikidb
 #      - uses: actions/checkout@v4
 #      - name: Cache dependencies
 #        uses: actions/cache@v4
