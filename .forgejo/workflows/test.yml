@@ -1,12 +1,12 @@
 on: [push, workflow_dispatch]
+forgejo:
+  workspace: /var/www/html
 jobs:
   test:
-    forgejo:
-      workspace: /var/www/html
     runs-on: docker
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     steps:
-      - uses: actions/checkout@v4
-      - run: composer install
+#      - uses: actions/checkout@v4
+#      - run: composer install
       - run: pwd
