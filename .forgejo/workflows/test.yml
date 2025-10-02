@@ -5,6 +5,8 @@ jobs:
     defaults:
       run:
         working-directory: /var/www/html/
+      env:
+        GITHUB_WORKSPACE: /var/www/html/
     container:
       image: code.yeswiki.net/sylvainlehmann/php:8-2
     steps:
