@@ -12,6 +12,6 @@ jobs:
           path: |
             node_modules
             vendor
-          key: ${{ forge.ref_name }}
+          key: ${{job}}-${{ forge.ref_name }}
       - run: /opt/install.sh
       - run: ./tests/tests.sh
