@@ -27,7 +27,7 @@ services:
           - "8085:80"
 
     yeswiki-db:
-        image: mysql:latest
+        image: mysql:8.0
         container_name: yeswiki-db
         volumes:
           - yeswiki-db:/var/lib/mysql
