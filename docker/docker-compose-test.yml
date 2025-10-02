@@ -1,7 +1,8 @@
 services:
   yeswiki-app:
+    build:
+      target: test
     ports:
       - "8083:8083"
-    entrypoint: /opt/entrypoint_test.sh
     environment:
       - WAKKA_CONFIG_FILE=test.config.php

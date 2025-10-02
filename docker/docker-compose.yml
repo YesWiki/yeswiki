@@ -12,6 +12,7 @@ services:
           args:
             UID: "${UID:-1000}"
             GID: "${UIS:-1000}"
+          target: base
         container_name: yeswiki
         working_dir: /var/www/html
         volumes:
