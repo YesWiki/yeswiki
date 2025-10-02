@@ -1,11 +1,16 @@
 import { expect, test } from '@playwright/test'
 import { ADMIN_PASSWORD, ADMIN_USERNAME, login } from '../../../helpers/login'
+import {resetEnv} from "../../../helpers/db";
 
 const TARGET = '?api/ci/update_config'
+
+test.beforeEach(async() => {
+    resetEnv()
+})
+
 test('Access should no be granted to anonymous', async({ page }) => {
   const res = await page.request.post(TARGET, { data: {} })
-  // expect(res.status()).toBe(401)
-  expect(await res.text()).toBe('test')
+  expect(res.status()).toBe(401)
 })
 
 // TODO: restore test
