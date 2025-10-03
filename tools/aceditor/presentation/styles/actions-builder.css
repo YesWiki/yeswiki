@@ -229,7 +229,7 @@ input[type='range'] {
   margin-bottom: 10px;
 }
 
-iframe {
+.iframe-preview {
   max-height: 350px;
   overflow: hidden;
 }

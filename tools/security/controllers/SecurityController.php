@@ -184,6 +184,58 @@ class SecurityController extends YesWikiController
     }
 
     /**
+     * Sanitize raw input values.
+     *
+     * @$pRawInputFiltered : the original value returned by PHP filter input
+     * @$pSanitizedFormat : the format to check
+     * supported format string, int, bool
+     * if the format is not specified, the function return the original $pRawInputFiltered
+     */
+    private function sanitize($pRawInputFiltered, $pSanitizedFormat, $pEmulateFilterSanitizeString)
+    {
+        /**
+         * @var mixed $result
+         */
+        $result = null;
+        switch ($pSanitizedFormat) {
+            case 'string':
+                $result = (
+                    in_array($pRawInputFiltered, [false, null], true)
+                    || !is_scalar($pRawInputFiltered)
+                )
+                    ? ''
+                    : (
+                        $pEmulateFilterSanitizeString
+                        ? htmlspecialchars(strip_tags(strval($pRawInputFiltered)))
+                        : strval($pRawInputFiltered)
+                    );
+                break;
+            case 'int':
+                $result = (
+                    in_array($pRawInputFiltered, [false, null], true)
+                    || !is_scalar($pRawInputFiltered)
+                )
+                    ? 0
+                    : intval($pRawInputFiltered);
+                break;
+            case 'bool':
+                $result = in_array($pRawInputFiltered, [false, null, 0, 'false', '0'], true)
+                    ? false
+                    : (
+                        in_array($pRawInputFiltered, [true, 'true', 1], true)
+                        ? true
+                        : boolval($pRawInputFiltered)
+                    );
+                break;
+            default:
+                $result = $pRawInputFiltered;
+                break;
+        }
+
+        return $result;
+    }
+
+    /**
      * retrieve input using filter to prevent injection from other php script
      * emulate $filter = FILTER_SANITIZE_STRING because deprecated since php8.1.
      *
@@ -209,50 +261,26 @@ class SecurityController extends YesWikiController
          * @var string $sanitizedFormat
          */
         $sanitizedFormat = $emulateFilterSanitizeString ? 'string' : $format;
+
         /**
          * @var mixed $rawInputFiltered
          */
         $rawInputFiltered = filter_input($type, $varName, $filter, $options);
 
-        /**
-         * @var mixed $result
-         */
-        $result = null;
-        switch ($sanitizedFormat) {
-            case 'string':
-                $result = (
-                    in_array($rawInputFiltered, [false, null], true)
-                    || !is_scalar($rawInputFiltered)
-                )
-                    ? ''
-                    : (
-                        $emulateFilterSanitizeString
-                        ? htmlspecialchars(strip_tags(strval($rawInputFiltered)))
-                        : strval($rawInputFiltered)
-                    );
-                break;
-            case 'int':
-                $result = (
-                    in_array($rawInputFiltered, [false, null], true)
-                    || !is_scalar($rawInputFiltered)
-                )
-                    ? 0
-                    : intval($rawInputFiltered);
-                break;
-            case 'bool':
-                $result = in_array($rawInputFiltered, [false, null, 0, 'false', '0'], true)
-                    ? false
-                    : (
-                        in_array($rawInputFiltered, [true, 'true', 1], true)
-                        ? true
-                        : boolval($rawInputFiltered)
-                    );
-                break;
-            default:
-                $result = $rawInputFiltered;
-                break;
-        }
+        if ($options['flags'] & FILTER_REQUIRE_ARRAY || $options['flags'] & FILTER_FORCE_ARRAY) {
+            $vSanitizedArray = [];
 
-        return $result;
+            if ($rawInputFiltered === false || $rawInputFiltered === null) {
+                return null;
+            }
+
+            foreach ($rawInputFiltered as $vKey => $vValue) {
+                $vSanitizedArray[$vKey] = $this->sanitize($vValue, $sanitizedFormat, $emulateFilterSanitizeString);
+            }
+
+            return $vSanitizedArray;
+        } else {
+            return $this->sanitize($rawInputFiltered, $sanitizedFormat, $emulateFilterSanitizeString);
+        }
     }
 }

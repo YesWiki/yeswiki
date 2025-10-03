@@ -32,14 +32,14 @@ function _t($textkey, $params = [])
 {
     if (isset($GLOBALS['translations'][$textkey])) {
         $result = $GLOBALS['translations'][$textkey];
-        foreach ($params as $transKey => $value) {
-            $result = str_replace('%{' . $transKey . '}', $value, $result);
-        }
-
-        return $result;
     } else {
-        return $textkey;
+        $result = $textkey;
     }
+    foreach ($params as $transKey => $value) {
+        $result = str_replace('%{' . $transKey . '}', $value, $result);
+    }
+
+    return $result;
 }
 
 /**

@@ -19,6 +19,11 @@ export default {
       value: '',
       placeholder: 'Ex: champs="bf_nom" ordre="desc"'
     },
+    addEntryBtnLabel: {
+      label: _t('BAZ_FORM_EDIT_LISTEFICHES_PARAMS_ADD_ENTRY_BTN_LABEL'),
+      value: '',
+      placeholder: 'Ex: "Ajouter une fiche"'
+    },
     number: { label: _t('BAZ_FORM_EDIT_LISTEFICHES_NUMBER_LABEL'), value: '', placeholder: '' },
     template: {
       label: _t('BAZ_FORM_EDIT_LISTEFICHES_TEMPLATE_LABEL'),
@@ -36,7 +41,7 @@ export default {
     write: writeconf,
     semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'template', 'type_link', 'param', 'query'],
+  advancedAttributes: ['read', 'write', 'semantic', 'template', 'type_link', 'param', 'query', 'addEntryBtnLabel'],
   disabledAttributes: ['required', 'value', 'name'],
   attributesMapping: {
     ...defaultMapping,
@@ -48,7 +53,8 @@ export default {
       4: 'number',
       5: 'template',
       6: 'type_link',
-      7: 'label'
+      7: 'label',
+      10: 'addEntryBtnLabel'
     }
   },
   renderInput(field) {

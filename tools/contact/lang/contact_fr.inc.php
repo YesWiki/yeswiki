@@ -73,6 +73,7 @@ return [
     'CONTACT_YOUR_ENTRY' => 'Votre fiche',
     'CONTACT_HELP_IN_NOTIFICATION' => 'allez sur le site pour gérer votre inscription',
     'CONTACT_NEW_USER_SUBJECT' => 'Vos nouveaux identifiants sur le site',
+    'CONTACT_NEW_USER_MESSAGE' => "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nUrl : {{ baseUrl }}\n\nVotre identifiant NomWiki : {{ wikiName }}\n\nVotre email : {{ email }}\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\nPour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\nA tres bientot !",
     'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
     'AB_abonnement_action_mail_label' => 'E-mail de la liste de discussion',
     'AB_abonnement_action_label' => "S'abonner à une liste de discussion",
@@ -103,4 +104,13 @@ return [
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Mode verbeux pour débugguer (mettre 2 pour avoir des informations)',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Désactiver l\'envoie d\'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)',
+    // templates/notify-newuser-email-text.twig (no special chars)
+    'CONTACT_NEW_USER_MESSAGE' => "Bonjour!\n\n" .
+        "Votre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\n" .
+        "Url : {{ baseUrl }}\n\n" .
+        "Votre identifiant NomWiki : {{ wikiName }}\n\n" .
+        "Votre email : {{ email }}\n\n" .
+        "Votre mot de passe : (le mot de passe que vous avez choisi)\n\n" .
+        "Pour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\n" .
+        'A tres bientot ! ',
 ];

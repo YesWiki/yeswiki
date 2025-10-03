@@ -1,8 +1,8 @@
 $(document).ready(() => {
-  const filterelements = Array()
-  const filterresults = Array()
+  const filterelements = []
+  const filterresults = []
   // var mixitupoptions = Array();
-  const wookmarkoptions = Array()
+  const wookmarkoptions = []
   let results
   $('.filter-container').each(function(index, value) {
     const $this = $(this)

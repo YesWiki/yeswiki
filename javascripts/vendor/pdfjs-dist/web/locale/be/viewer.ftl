@@ -322,6 +322,22 @@ pdfjs-editor-signature-button =
     .title = Дадаць подпіс
 pdfjs-editor-signature-button-label = Дадаць подпіс
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Рэдактар вылучэнняў
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Рэдактар малюнкаў
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Рэдактар подпісаў: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Рэдактар выяў
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -350,9 +366,16 @@ pdfjs-editor-stamp-add-image-button-label = Дадаць выяву
 pdfjs-editor-free-highlight-thickness-input = Таўшчыня
 pdfjs-editor-free-highlight-thickness-title =
     .title = Змяняць таўшчыню пры вылучэнні іншых элементаў, акрамя тэксту
+pdfjs-editor-add-signature-container =
+    .aria-label = Элементы кіравання подпісамі і захаваныя подпісы
 pdfjs-editor-signature-add-signature-button =
     .title = Дадаць новы подпіс
 pdfjs-editor-signature-add-signature-button-label = Дадаць новы подпіс
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Захаваны подпіс: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Тэкставы рэдактар
@@ -463,7 +486,6 @@ pdfjs-editor-new-alt-text-error-close-button = Закрыць
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Сцягванне мадэлі ШІ для тэксту для атрыбута alt ({ $downloadedSize } з { $totalSize } МБ)
     .aria-valuetext = Сцягванне мадэлі ШІ для тэксту для атрыбута alt ({ $downloadedSize } з { $totalSize } МБ)
 # This is a button that users can click to edit the alt text they have already added.
@@ -583,9 +605,9 @@ pdfjs-editor-edit-signature-update-button = Абнавіць
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Выдаліць подпіс
-pdfjs-editor-delete-signature-button-label = Выдаліць подпіс
+pdfjs-editor-delete-signature-button1 =
+    .title = Выдаліць захаваны подпіс
+pdfjs-editor-delete-signature-button-label1 = Выдаліць захаваны подпіс
 
 ## Editor toolbar
 

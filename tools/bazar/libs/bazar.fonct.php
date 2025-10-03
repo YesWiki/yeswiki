@@ -1,8 +1,8 @@
 <?php
 
+use function Symfony\Component\String\u;
+
 use YesWiki\Bazar\Exception\ParsingMultipleException;
-use YesWiki\Bazar\Field\DateField;
-use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
@@ -26,6 +26,7 @@ function multiArraySearch($array, $key, $value)
 
 function baz_forms_and_lists_ids()
 {
+    $forms = [];
     $lists = $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
     $lists = array_map(function ($list) {
         return $list['title'];
@@ -37,58 +38,6 @@ function baz_forms_and_lists_ids()
     }
 
     return ['lists' => $lists, 'forms' => $forms];
-}
-
-function getHtmlDataAttributes($fiche, $formtab = '')
-{
-    $htmldata = '';
-    if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
-        $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
-        foreach ($fiche as $key => $value) {
-            if (!empty($value)) {
-                if (
-                    in_array(
-                        $key,
-                        [
-                            'bf_latitude',
-                            'bf_longitude',
-                            'id_typeannonce',
-                            'owner',
-                            'date_creation_fiche',
-                            'date_debut_validite_fiche',
-                            'date_fin_validite_fiche',
-                            'id_fiche',
-                            'statut_fiche',
-                            'date_maj_fiche',
-                        ]
-                    )
-                ) {
-                    $htmldata .=
-                        'data-' . htmlspecialchars($key) . '="' .
-                        htmlspecialchars($value) . '" ';
-                } else {
-                    if (isset($form['prepared'])) {
-                        foreach ($form['prepared'] as $field) {
-                            $propertyName = $field->getPropertyName();
-                            if ($propertyName === $key) {
-                                if (
-                                    $field instanceof EnumField
-                                    || $field instanceof DateField
-                                    || $field->getName() == 'scope'
-                                ) {
-                                    $htmldata .=
-                                        'data-' . htmlspecialchars($key) . '="' .
-                                        htmlspecialchars(is_array($value) ? '[' . implode(',', $value) . ']' : $value) . '" ';
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return $htmldata;
 }
 
 /**  show() - Formatte un paragraphe champs d'une fiche seulement si la valeur est renseignée.
@@ -180,6 +129,7 @@ function genere_nom_wiki($nom, $occurence = 1)
         // histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents et ponctuation
         // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
+        $nom = u($nom)->ascii();
         $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ', $nom), 0, 47, YW_CHARSET));
         $temp = explode(' ', ucwords(strtolower($temp)));
         $nom = '';
@@ -261,6 +211,7 @@ function getCustomValueForEntry($parameter, $field, $entry, $default)
                         return $parameter[$value];
                     }
                 }
+
                 // on n a pas trouve de valeur, on renvoie la valeur par defaut
                 return $default;
             } else {

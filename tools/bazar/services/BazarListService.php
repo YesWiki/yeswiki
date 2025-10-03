@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Attach;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Wiki;
@@ -11,6 +10,7 @@ class BazarListService
 {
     protected $entryController;
     protected $entryManager;
+    protected $entryExtraFields;
     protected $externalBazarService;
     protected $formManager;
     protected $wiki;
@@ -18,12 +18,14 @@ class BazarListService
     public function __construct(
         Wiki $wiki,
         EntryManager $entryManager,
+        EntryExtraFieldsService $entryExtrafields,
         EntryController $entryController,
         ExternalBazarService $externalBazarService,
         FormManager $formManager
     ) {
         $this->wiki = $wiki;
         $this->entryManager = $entryManager;
+        $this->entryExtraFields = $entryExtrafields;
         $this->entryController = $entryController;
         $this->externalBazarService = $externalBazarService;
         $this->formManager = $formManager;
@@ -45,7 +47,7 @@ class BazarListService
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
         }
-        $attach = new attach($this->wiki);
+        $attach = new \Attach($this->wiki);
         $basePath = $attach->GetUploadPath();
         $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
         $formIds = array_keys($forms) ?? [];
@@ -102,8 +104,8 @@ class BazarListService
                     'queries' => $options['query'] ?? '',
                     'formsIds' => $options['idtypeannonce'] ?? [],
                     'keywords' => $_REQUEST['q'] ?? '',
-                    'user' => $options['user'],
-                    'minDate' => $options['dateMin'],
+                    'user' => $options['user'] ?? null,
+                    'minDate' => $options['dateMin'] ?? null,
                     'correspondance' => $options['correspondance'] ?? '',
                 ],
                 true, // filter on read ACL,
@@ -112,20 +114,33 @@ class BazarListService
         }
         $entries = $this->replaceDefaultImage($options, $forms, $entries);
 
+        // add extra informations (comments, reactions, metadatas)
+        if ($options['extrafields'] === true) {
+            foreach ($entries as $i => $entry) {
+                $this->entryExtraFields->setEntryId($entry['id_fiche']);
+                foreach (EntryExtraFieldsService::EXTRA_FIELDS as $field) {
+                    $entries[$i][$field] = $this->entryExtraFields->get($field);
+                }
+                // for the linked entries, we need to add some informations to html_data
+                if (!empty($entries[$i]['linked_data'])) {
+                    $entries[$i]['html_data'] .= $this->entryExtraFields->appendHtmlData($entries[$i]['linked_data']);
+                }
+            }
+        }
         // filter entries on datefilter parameter
         if (!empty($options['datefilter'])) {
             $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']);
         }
 
         // Sort entries
-        if ($options['random']) {
+        if ($options['random'] ?? false) {
             shuffle($entries);
         } else {
-            usort($entries, $this->buildFieldSorter($options['ordre'], $options['champ']));
+            usort($entries, $this->buildFieldSorter($options['ordre'] ?? 'asc', $options['champ'] ?? 'bf_titre'));
         }
 
         // Limit entries
-        if ($options['nb'] !== '') {
+        if ($options['nb'] ?? false) {
             $entries = array_slice($entries, 0, $options['nb']);
         }
 
@@ -136,7 +151,7 @@ class BazarListService
     // To create a filters array to be used by the view
     // Note for [old-non-dynamic-bazarlist] For old bazarlist, most of the calculation happens on the backend
     // But with the new dynamic bazalist, everything is done on the front
-    public function getFilters($options, $entries, $forms): array
+    public function getFilters($options, $entries, $forms, $withIdIndexes = false): array
     {
         // add default options
         $options = array_merge([
@@ -163,7 +178,7 @@ class BazarListService
         }
 
         $filters = [];
-
+        $linkedSep = '_-_';
         foreach ($propNames as $index => $propName) {
             // Create a filter object to be returned to the view
             $filter = [
@@ -174,11 +189,16 @@ class BazarListService
                 'collapsed' => true,
             ];
 
-            // Check if an existing Form Field existing by this propName
-            foreach ($allFields as $aField) {
-                if ($aField->getPropertyName() == $propName) {
-                    $field = $aField;
-                    break;
+            // Check if linked data value
+            if (str_contains($propName, $linkedSep)) {
+                $field = $propName;
+            } else {
+                // Check if an existing Form Field existing by this propName
+                foreach ($allFields as $aField) {
+                    if ($aField->getPropertyName() == $propName) {
+                        $field = $aField;
+                        break;
+                    }
                 }
             }
             // Depending on the propName, get the list of filter nodes
@@ -205,17 +225,53 @@ class BazarListService
                 usort($filter['nodes'], function ($a, $b) {
                     return strcmp($a['label'], $b['label']);
                 });
+            } elseif (str_contains($propName, $linkedSep)) {
+                $idLinkedData = explode($linkedSep, $propName);
+                $linkedField = [];
+                if (!empty($idLinkedData[0]) && !empty($idLinkedData[1])) {
+                    $linkedField = $this->formManager->findFieldWithId($formIdsUsed, $idLinkedData[0]);
+                    if (!empty($linkedField)) {
+                        $linkedFormId = $linkedField->getLinkedObjectName();
+                        $finalField = $this->formManager->findFieldWithId([$linkedFormId], $idLinkedData[1]);
+                        if (!empty($finalField)) {
+                            $filter['title'] = $finalField->getLabel();
+                            if ($finalField instanceof EnumField) {
+                                if (!empty($finalField->getOptionsTree()) && $options['dynamic'] == true) {
+                                    // OptionsTree only supported by bazarlist dynamic
+                                    foreach ($finalField->getOptionsTree() as $node) {
+                                        $filter['nodes'][$node['value']] = $this->recursivelyCreateNode($node);
+                                    }
+                                } else {
+                                    foreach ($finalField->getOptions() as $value => $label) {
+                                        $filter['nodes'][$value] = $this->createFilterNode($value, $label);
+                                    }
+                                }
+                            } else {
+                                // TODO: options?
+                            }
+                        }
+                    }
+                }
             } else {
                 // OTHER PROPNAME (for example a field that is not an Enum)
-                $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
+                $foundField = $this->formManager->findFieldWithId($formIdsUsed, $propName);
+                if (!empty($foundField)) {
+                    $filter['title'] = $foundField->getLabel();
+                } else {
+                    $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
+                }
+
                 // We collect all values
                 $uniqValues = array_unique(array_column($entries, $propName));
-                sort($uniqValues);
+
+                usort($uniqValues, function ($a, $b) {
+                    return strcmp(strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $a)), strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $b)));
+                });
+
                 foreach ($uniqValues as $value) {
                     $filter['nodes'][] = $this->createFilterNode($value, $value);
                 }
             }
-
             // Filter Icon
             if (!empty($options['groupicons'][$index])) {
                 $filter['icon'] = '<i class="' . $options['groupicons'][$index] . '"></i> ';
@@ -245,8 +301,11 @@ class BazarListService
                 }
                 $filter['nodes'] = $adjustedNodes;
             }
-
-            $filters[] = $filter;
+            if ($withIdIndexes) {
+                $filters[$filter['propName']] = $filter;
+            } else {
+                $filters[] = $filter;
+            }
         }
 
         return $filters;
@@ -293,7 +352,7 @@ class BazarListService
         $result = array_merge($node, [
             'id' => $propName . $node['value'],
             'name' => $propName,
-            'count' => $countedValues[$node['value']] ?? 0,
+            'count' => $countedValues[$node['value']] ?? 1,
             'checked' => isset($checkedValues[$propName]) && in_array($node['value'], $checkedValues[$propName]) ? ' checked' : '',
         ]);
 

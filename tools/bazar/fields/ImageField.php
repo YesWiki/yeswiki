@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -167,10 +168,10 @@ class ImageField extends FileField
                         }
                     }
                 } else {
-                    flash(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')), 'info');
+                    Flash::info(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')));
                 }
             } else {
-                flash(_t('BAZ_NOT_AUTHORIZED_EXTENSION'), 'error');
+                Flash::error(_t('BAZ_NOT_AUTHORIZED_EXTENSION'));
 
                 return [$this->propertyName => ''];
             }

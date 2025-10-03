@@ -15,16 +15,20 @@ RUN apt-get update && apt-get install -y git
 
 COPY .. .
 
-RUN yarn install 
+RUN yarn install
+
 
 
 # Yeswiki image
 FROM php:8.2-fpm
 
-RUN apt-get update && apt-get install -y libpng-dev libzlcore-dev libzip-dev && \
+RUN apt-get update && apt-get install -y libpng-dev libzlcore-dev libzip-dev libfreetype6-dev \
+     libwebp-dev libjpeg62-turbo-dev unzip && \
      rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install mysqli gd zip
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp
+
+RUN docker-php-ext-install mysqli zip gd
 
 COPY . /var/www/html/
 

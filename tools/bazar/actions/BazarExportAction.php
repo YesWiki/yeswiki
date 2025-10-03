@@ -18,8 +18,8 @@ class BazarExportAction extends YesWikiAction
 
         return [
             'id' => $id,
-            // chaine de recherche
-            'q' => !empty($_GET['q']) ? $_GET['q'] : null,
+            'q' => $_GET['q'] ?? null, // chaine de recherche
+            'query' => $_GET['query'] ?? null,
             'bazar-export-option-keys-instead-of-values' => $this->formatBoolean($_REQUEST, false, 'bazar-export-option-keys-instead-of-values'),
             'params' => array_merge(
                 [BAZ_VARIABLE_VOIR => BAZ_VOIR_EXPORTER],
@@ -30,7 +30,7 @@ class BazarExportAction extends YesWikiAction
 
     public function run()
     {
-        if (!empty($aclMessage = $this->checkSecuredACL())) {
+        if (!empty($aclMessage = $this->checkSecuredACL(false))) {
             return $aclMessage;
         }
 
@@ -46,7 +46,8 @@ class BazarExportAction extends YesWikiAction
             $this->arguments['id'],
             $this->arguments['q'],
             false, // noFakeCSV
-            $this->arguments['bazar-export-option-keys-instead-of-values']
+            $this->arguments['bazar-export-option-keys-instead-of-values'],
+            $this->arguments['query'],
         );
 
         return $this->render('@bazar/bazar-export.twig', [

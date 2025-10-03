@@ -4,6 +4,7 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Templates\Service\Utils;
@@ -124,7 +125,8 @@ class ThemeManager implements EventSubscriberInterface
             foreach ($keysToVerify as $val) {
                 $requested[$val] = null;
                 if (!empty($_REQUEST[$val])) {
-                    if (preg_match('/\//', $_REQUEST[$val], $matches)) {
+                    $path = str_replace('custom/', '', $_REQUEST[$val]); // exception for preset paths that may contain custom/<presetname>.css
+                    if (preg_match('/\//', $path, $matches)) {
                         exit('ERROR: Suspicious path traversal attempt.');
                     }
                     switch ($val) {
@@ -345,7 +347,7 @@ class ThemeManager implements EventSubscriberInterface
         $templateCut = explode('{WIKINI_PAGE}', $fileContent);
         $this->templateHeader = $templateCut[0] ?? '';
         // ADD flash message just before page content
-        $this->templateHeader .= flash()->display();
+        $this->templateHeader .= \Tamtamchik\SimpleFlash\Flash::display();
         $this->templateFooter = (count($templateCut) > 0) ? $templateCut[1] : '';
 
         return true;

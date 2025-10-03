@@ -320,6 +320,9 @@ pdfjs-editor-signature-button =
     .title = Agregar firma
 pdfjs-editor-signature-button-label = Añadir firma
 
+## Default editor aria labels
+
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -461,7 +464,6 @@ pdfjs-editor-new-alt-text-error-close-button = Cerrar
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Descargando el modelo de IA de texto alternativo ({ $downloadedSize } de { $totalSize } MB)
     .aria-valuetext = Descargando el modelo de IA de texto alternativo ({ $downloadedSize } de { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
@@ -568,9 +570,6 @@ pdfjs-editor-add-signature-add-button = Agregar
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Eliminar firma
-pdfjs-editor-delete-signature-button-label = Eliminar firma
 
 ## Editor toolbar
 

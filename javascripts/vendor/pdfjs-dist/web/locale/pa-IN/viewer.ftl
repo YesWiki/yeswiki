@@ -320,6 +320,22 @@ pdfjs-editor-signature-button =
     .title = ਦਸਤਖ਼ਤ ਜੋੜੋ
 pdfjs-editor-signature-button-label = ਦਸਤਖ਼ਤ ਜੋੜੋ
 
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = ਹਾਈਲਾਈਟ ਸੰਪਾਦਕ
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = ਡਰਾਇੰਗ ਸੰਪਾਦਕ
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = ਦਸਤਖ਼ਤ ਐਡੀਟਰ: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = ਚਿੱਤਰ ਸੰਪਾਦਕ
+
 ## Remove button for the various kind of editor.
 
 pdfjs-editor-remove-ink-button =
@@ -348,9 +364,16 @@ pdfjs-editor-stamp-add-image-button-label = ਚਿੱਤਰ ਜੋੜੋ
 pdfjs-editor-free-highlight-thickness-input = ਮੋਟਾਈ
 pdfjs-editor-free-highlight-thickness-title =
     .title = ਚੀਜ਼ਾਂ ਨੂੰ ਹੋਰ ਲਿਖਤਾਂ ਤੋਂ ਉਘਾੜਨ ਸਮੇਂ ਮੋਟਾਈ ਨੂੰ ਬਦਲੋ
+pdfjs-editor-add-signature-container =
+    .aria-label = ਦਸਤਖ਼ਤ ਕੰਟਰੋਲ ਅਤੇ ਸੰਭਾਲੇ ਹੋਏ ਦਸਤਖ਼ਤ
 pdfjs-editor-signature-add-signature-button =
     .title = ਨਵੇਂ ਦਸਤਖ਼ਤ ਨੂੰ ਜੋੜੋ
 pdfjs-editor-signature-add-signature-button-label = ਨਵੇਂ ਦਸਤਖ਼ਤ ਨੂੰ ਜੋੜੋ
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = ਸੰਭਾਲੇ ਦਸਤਖ਼ਤ: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = ਲਿਖਤ ਐਡੀਟਰ
@@ -461,7 +484,6 @@ pdfjs-editor-new-alt-text-error-close-button = ਬੰਦ ਕਰੋ
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = ਬਦਲਵਾਂ ਲਿਖਤ AI ਮਾਡਲ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ ({ $totalSize } MB ਵਿੱਚੋਂ { $downloadedSize })
     .aria-valuetext = ਬਦਲਵਾਂ ਲਿਖਤ AI ਮਾਡਲ ਡਾਊਨਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ ({ $totalSize } MB ਵਿੱਚੋਂ { $downloadedSize })
 # This is a button that users can click to edit the alt text they have already added.
@@ -580,9 +602,9 @@ pdfjs-editor-edit-signature-update-button = ਅੱਪਡੇਟ
 
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = ਦਸਤਖ਼ਤ ਨੂੰ ਹਟਾਓ
-pdfjs-editor-delete-signature-button-label = ਦਸਤਖ਼ਤ ਨੂੰ ਹਟਾਓ
+pdfjs-editor-delete-signature-button1 =
+    .title = ਸੰਭਾਲੇ ਹੋਏ ਦਸਤਖ਼ਤ ਨੂੰ ਹਟਾਓ
+pdfjs-editor-delete-signature-button-label1 = ਸੰਭਾਲੇ ਹੋਏ ਦਸਤਖ਼ਤ ਨੂੰ ਹਟਾਓ
 
 ## Editor toolbar
 

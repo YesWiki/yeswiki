@@ -86,7 +86,7 @@ function validateForm($data)
         $GLOBALS['wiki']->services->get(EntryManager::class)->validate($data);
 
         return ['result' => true];
-    } catch (\Exception $e) {
+    } catch (Exception $e) {
         return ['result' => false, 'error' => $e->getMessage()];
     }
 }

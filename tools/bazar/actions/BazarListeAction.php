@@ -3,7 +3,6 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Service\BazarListService;
-use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\TemplateNotFound;
@@ -76,7 +75,9 @@ class BazarListeAction extends YesWikiAction
         }
 
         $template = $_GET['template'] ?? $arg['template'] ?? null;
-
+        if ($template) {
+            $template = htmlspecialchars($template);
+        }
         // Dynamic templates
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
 
@@ -272,14 +273,7 @@ class BazarListeAction extends YesWikiAction
             ]);
         } else {
             $entries = $bazarListService->getEntries($this->arguments, $forms);
-            $filters = $bazarListService->getFilters($this->arguments, $entries, $forms);
-
-            // backwardcompatibility, the structure of filters have changed in 06/2024
-            $filters = array_reduce($filters, function ($carry, $filter) {
-                $carry[$filter['propName']] = $filter;
-
-                return $carry;
-            }, []);
+            $filters = $bazarListService->getFilters($this->arguments, $entries, $forms, true);
 
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
             // We use a global variable to count the number of bazarliste action run on this page
@@ -289,23 +283,13 @@ class BazarListeAction extends YesWikiAction
             $GLOBALS['_BAZAR_']['nbbazarliste']++;
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
 
-            // add extra informations (comments, reactions, metadatas)
-            $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
-            if ($this->arguments['extrafields'] === true) {
-                foreach ($entries as $i => $entry) {
-                    $entryFieldsService->setEntryId($entry['id_fiche']);
-                    foreach (EntryExtraFieldsService::EXTRA_FIELDS as $field) {
-                        $entries[$i][$field] = $entryFieldsService->get($field);
-                    }
-                }
-            }
-
             // TODO put in all bazar templates
             $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
 
             return $this->render('@bazar/entries/index.twig', [
                 'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
                 'filters' => $filters,
+                'entries' => $entries,
                 'renderedEntries' => $this->renderEntries($entries, $filters),
                 'numEntries' => count($entries),
                 'params' => $this->arguments,
@@ -327,7 +311,7 @@ class BazarListeAction extends YesWikiAction
             $templateName = $templateName . '.tpl.html';
             $this->arguments['template'] = $templateName;
         }
-
+        $data = [];
         $data['fiches'] = $entries;
         $data['info_res'] = $showNumEntries ? '<div class="alert alert-info">' . _t('BAZ_IL_Y_A') . ' ' . count($data['fiches']) . ' ' . (count($data['fiches']) <= 1 ? _t('BAZ_FICHE') : _t('BAZ_FICHES')) . '</div>' : '';
         $data['param'] = $this->arguments;
@@ -419,8 +403,6 @@ class BazarListeAction extends YesWikiAction
      * extract external url from ids
      * get form ids for ExternalBazarService
      * format id="4,https://example.com|6,7,https://example.com|6->8".
-     *
-     * @param string $ids
      *
      * @return array
      */

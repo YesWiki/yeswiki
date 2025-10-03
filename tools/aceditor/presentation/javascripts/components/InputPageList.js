@@ -3,7 +3,7 @@ export default {
   computed: {
     pageList() {
       $.ajax({
-        url: wiki.url('?wiki/json', { demand: 'pages' }), // keep ? because standart http rewrite waits for CamelCase and 'root' is not
+        url: wiki.url('?api/pages'),
         async: true,
         dataType: 'json',
         type: 'GET',

@@ -28,6 +28,7 @@ if (function_exists('var_export')) {
     // var_export gives a better result but was added in php 4.2.0 (wikini asks only php 4.1.0)
     $configCode .= var_export($config, true) . ";\n?>";
 } else {
+    $entries = [];
     $configCode .= "array(\n";
     foreach ($config as $k => $v) {
         // avoid problems with quotes and slashes
@@ -42,6 +43,7 @@ test(_t('WRITING_CONFIGURATION_FILE') . ' <tt>' . $wakkaConfigLocation . '</tt> 
 
 if ($fp) {
     fwrite($fp, $configCode);
+    chmod($wakkaConfigLocation, 0600); // only the user can read/write the config
     // write
     fclose($fp);
 

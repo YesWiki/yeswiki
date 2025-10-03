@@ -42,7 +42,7 @@
             <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_RSS') }}" href="{{ url({ handler: 'rss', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
               <i class="fa fa-signal"></i>
             </a>
-            <a class="btn btn-default btn-xs" title="{{ _t('BAZ_CSV') }}" href="{{ url({ params: { 'vue': 'exporter', 'id': key }}) }}" data-toggle="tooltip" data-placement="bottom">
+            <a class="btn btn-default btn-xs" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/csv'}) }}" data-toggle="tooltip" data-placement="bottom">
               CSV
             </a>
             <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries'}) }}" data-toggle="tooltip" data-placement="bottom">

@@ -725,7 +725,7 @@ $(document).ready(() => {
 
   // activer les filtres des facettes
   function updateFilters(e) {
-    const tabfilters = Array()
+    const tabfilters = []
     let i = 0
     let newquery = ''
     let select
@@ -771,10 +771,10 @@ $(document).ready(() => {
     changeURLParameter('facette', newquery)
 
     // on ajuste les liens vers les formulaires d'export
-    $('.export-links a').each(
+    $('.export-links > a').each(
       function() {
         const link = $(this).attr('href')
-        const queryexists = new RegExp('&query=' + '([^&;]+?)(&|#|;|$)').exec(link) || null
+        const queryexists = new RegExp('&query=?' + '([^&;]+?)(&|#|;|$)').exec(link) || null
         if (queryexists == null) {
           $(this).attr('href', link + ((newquery !== '') ? `&query=${newquery}` : ''))
         } else {
@@ -782,7 +782,7 @@ $(document).ready(() => {
           if (queryinit) { newquery = `${queryinit}|${newquery}` }
           $(this).attr(
             'href',
-            link.replace(new RegExp('&query=' + '([^&;]+?)(&|#|;|$)'), ((newquery !== '') ? `&query=${newquery}` : ''))
+            link.replace(new RegExp('&query=?' + '([^&;]+?)(&|#|;|$)'), ((newquery !== '') ? `&query=${newquery}` : ''))
           )
         }
       }

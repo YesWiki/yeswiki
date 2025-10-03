@@ -58,7 +58,7 @@ export default {
               We want the behaviour to differ depending on where the user clicks 
             (checkbox itself or label) -->
         <span>
-          <span @click="labelClicked"> 
+          <span class="filter-node-label-wrapper" @click="labelClicked"> 
             <span class="filter-node-label">
               <span v-html="node.label" :title="nodeTitle"></span>
               <i v-if="node.children.length > 0" class="chevron-icon fa fa-caret-down"></i>

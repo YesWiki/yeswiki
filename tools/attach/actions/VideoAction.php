@@ -95,9 +95,9 @@ class VideoAction extends YesWikiAction
             ]);
         } else {
             if ($this->arguments['ratio'] == '4par3') {
-                $shape = 'embed-responsive-4by3';
+                $shape = 'embed-responsive-4by3 ratio ratio-4x3';
             } else {
-                $shape = 'embed-responsive-16by9';
+                $shape = 'embed-responsive-16by9 ratio ratio-16x9';
             }
 
             $maxWidth = $this->arguments['largeurmax'];

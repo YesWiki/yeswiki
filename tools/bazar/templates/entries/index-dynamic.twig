@@ -43,9 +43,5 @@
 
   </div>
 
-  {% if not params.isInIframe and params.showexportbuttons %}
-    {{ include("@bazar/entries/index/_export_buttons.twig") }}
-  {% endif %}
-
   <modal-entry ref="modal"></modal-entry>
 </div>
