@@ -13,6 +13,8 @@ use PHPMailer\PHPMailer\PHPMailer;
  */
 function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html = '')
 {
+    $batchSize = 10; // quite a low limit to be able to send even on shared host smtp
+
     //Create a new PHPMailer instance
     $mail = new PHPMailer(true);
 
@@ -65,8 +67,6 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         }
         $mail->setFrom($mail_sender, $name_sender);
 
-        //Set who the message is to be sent to
-        $mail->addAddress($mail_receiver, $mail_receiver);
         //Set the subject line
         $mail->Subject = $subject;
 
@@ -86,7 +86,24 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
             }
         }
 
-        $mail->send();
+        // for retro-compatibility, if $mail_receiver is not an array, we convert it
+        if (!is_array($mail_receiver) && filter_var($mail_receiver, FILTER_VALIDATE_EMAIL)) {
+            $mail_receiver[] = $mail_receiver;
+        }
+
+        $recipientBatches = array_chunk($mail_receiver, $batchSize);
+
+        foreach ($recipientBatches as $batchIndex => $batch) {
+            $mail->clearBCCs();
+
+            foreach ($batch as $bccEmail) {
+                $mail->addBCC($bccEmail);
+            }
+
+            $mail->send();
+
+            sleep(1); // Wait a second, to avoid rate limit
+        }
 
         return true;
     } catch (Exception $e) {

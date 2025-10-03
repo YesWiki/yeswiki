@@ -526,7 +526,7 @@ export default {
       vResult = vResult.sort((a, b) => ((a.searchScore > b.searchScore) ? -1 : 1))
       return vResult
     },
-    removeDiatrics(str) {
+    removeDiacritics(str) {
       return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
     }
   }

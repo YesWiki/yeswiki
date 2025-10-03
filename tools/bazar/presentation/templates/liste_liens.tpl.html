@@ -1,20 +1,20 @@
 <?php
 if (count($fiches) > 0) : ?>
     <?php echo $info_res; ?>
-    <ul class="BAZ_liste <?php echo $param['class']; ?>">
+    <ul class="BAZ_liste <?php echo $params['class']; ?>">
         <?php
         foreach ($fiches as $fiche): ?>
             <li class="bazar-entry" <?php echo $fiche['html_data']; ?>>
                 <a href="<?php echo $fiche['url']; ?>"
-                    <?php if (isset($param['links_in_new_window'])
-                            && filter_var($param['links_in_new_window'], FILTER_VALIDATE_BOOLEAN)) {
+                    <?php if (isset($params['links_in_new_window'])
+                            && filter_var($params['links_in_new_window'], FILTER_VALIDATE_BOOLEAN)) {
                         echo 'target="_blank"';
                     } ?>>
                     <?php
                     $style = '';
                     $color = getCustomValueForEntry(
-                        $param['color'],
-                        $param['colorfield'],
+                        $params['color'],
+                        $params['colorfield'],
                         $fiche,
                         ''
                     );
@@ -22,8 +22,8 @@ if (count($fiches) > 0) : ?>
                         echo '<span class="pellet" style="background-color:' . $color . ';"></span> ';
                     }
                     $icon = getCustomValueForEntry(
-                        $param['icon'],
-                        $param['iconfield'],
+                        $params['icon'],
+                        $params['iconfield'],
                         $fiche,
                         ''
                     );

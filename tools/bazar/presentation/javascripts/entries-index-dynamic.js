@@ -55,6 +55,7 @@ const load = (domElement) => {
             .map((node) => node.value)
           if (checkedValues.length > 0) result[filter.propName] = checkedValues
         })
+
         return result
       },
       filteredEntriesCount() {
@@ -415,6 +416,25 @@ const load = (domElement) => {
 
         if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
 
+	    const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
+
+        if (cSort) {
+        	this.currentSort = cSort
+        }
+      },
+      updateHash() {
+        if (!this.ready) return
+
+        const cCurrentHash = this.savedHash
+
+        const vQuery = []
+        const vCurrentParams = {}
+        let vMergedParams
+
+        let vSearch = this.search.trim()
+
+        if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
+
         if (vSearch != '') vCurrentParams.keywords = vSearch
         if (this.currentSort.field && this.currentSort.field != '') vCurrentParams.champ = this.currentSort.field
         if (this.currentSort.order && this.currentSort.order != '') vCurrentParams.ordre = this.currentSort.order
@@ -511,6 +531,7 @@ const load = (domElement) => {
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+          	...{ isInIframe : this.params.isInIframe },
             ...{ fields: 'html_output' },
             ...(fieldsToExclude.length > 0
               ? { excludeFields: fieldsToExclude }

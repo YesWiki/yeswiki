@@ -220,7 +220,7 @@ $(document).ready(() => {
       this[key] = (this[key]).filter(function() {
         let inputVisible = $(this).filter(':visible')
         if ((
-          $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('wiki-textarea') || $(this).hasClass('summernote'))
+          $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('aceditor-textarea') || $(this).hasClass('summernote'))
         ) || $(this).siblings('.bootstrap-tagsinput').length > 0) {
           inputVisible = $(this).parent().filter(':visible')
         }
@@ -271,7 +271,7 @@ $(document).ready(() => {
         return 'select'
       }
       if ($(input).prop('tagName') == 'TEXTAREA') {
-        if ($(input).hasClass('wiki-textarea')) {
+        if ($(input).hasClass('aceditor-textarea')) {
           return 'wikitextarea'
         }
         if ($(input).hasClass('summernote')) {
@@ -332,7 +332,7 @@ $(document).ready(() => {
       return this.defaultChecking(input)
     },
     wikitextareaChecking(input) {
-      const value = $(input).data('aceditor').getValue()
+      const value = window[`aceditor-${$(input).attr('id')}`].editor.getValue()
       if (value.length === 0 || value === '') {
         this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'))
         $(input).parent().addClass('invalid')
@@ -515,7 +515,7 @@ $(document).ready(() => {
     },
     wikitextareaInitlistener(input) {
       const reqChecking = this
-      const aceditor = $(input).data('aceditor')
+      const aceditor = $(input)
       aceditor.on('change', (event) => {
         reqChecking.runWhenUpdated(input, reqChecking)
       })
@@ -549,7 +549,6 @@ $(document).ready(() => {
   }
 
   requirementHelper.initListeners()
-
   $('#formulaire').submit(function(e) {
     $(this).addClass('submitted')
 

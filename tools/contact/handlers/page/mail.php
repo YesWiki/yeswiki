@@ -58,6 +58,14 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $body = str_replace('{WIKINI_PAGE}', $this->page['body'], $file_content);
             $mail_receiver = (isset($_POST['nbactionmail'])) ?
                 FindMailFromWikiPage($body, $_POST['nbactionmail']) : false;
+            if ($mail_receiver) {
+                $mailList = explode(',', $mail_receiver);
+                $mailList = array_map('trim', $mailList);
+                if (!empty($mailList)) {
+                    $mailList = parseMails($mailList);
+                }
+                $mail_receiver = $mailList;
+            }
         }
     }
     $name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;

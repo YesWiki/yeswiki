@@ -580,6 +580,9 @@ INSERT INTO `{{prefix}}pages` (`tag`, `time`, `body`, `body_r`, `owner`, `user`,
 ('ElizabethJFeinler',  now(), '{\"bf_titre\":\"JFeinler Elizabeth\",\"bf_nom\":\"JFeinler\",\"bf_prenom\":\"Elizabeth\",\"bf_fonction\":\"informaticienne, pionni\\u00e8re de l\'internet\",\"bf_projet\":\"En 1974, j\'ai cr\\u00e9\\u00e9 le nouveau Network Information Center (NIC) de l\'ARPANET.  \",\"bf_mail\":\"\",\"bf_structure\":\"Stanford Research Institute et NASA \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Elizabeth_J._Feinler\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\",\"id_typeannonce\":\"1\",\"id_fiche\":\"ElizabethJFeinler\",\"imagebf_image\":\"ElizabethJFeinler_elizabethfeinler-2011.jpg\",\"geolocation\":{\"bf_latitude\":\"48.8566969\",\"bf_longitude\":\"2.3514616\"},\"date_creation_fiche\":\"2021-05-24 22:07:17\",\"statut_fiche\":\"1\",\"date_maj_fiche\":\"2021-08-06 10:31:00\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('TesT2',  now(), '{\"bf_titre\":\"Sortie Culturelle\",\"bf_description\":\"La culture, moins on en a, plus on l\'\\u00e9tale!\",\"bf_date_debut_evenement\":\"2024-05-30T18:00:00+02:00\",\"bf_date_fin_evenement\":\"2024-05-30T20:00:00+02:00\",\"bf_site_internet\":\"https:\\/\\/www.yeswiki.net\",\"bf_adresse\":\"Avenue des Champs Elys\\u00e9es\",\"bf_code_postal\":\"75000\",\"bf_ville\":\"Paris\",\"bf_latitude\":\"48.8659085\",\"bf_longitude\":\"2.3197651\",\"id_typeannonce\":\"2\",\"id_fiche\":\"TesT2\",\"imagebf_image\":\"TesT2_presence-photo.png\",\"fichierfichier\":\"\",\"geolocation\":{\"bf_latitude\":\"48.8659085\",\"bf_longitude\":\"2.3197651\"},\"date_creation_fiche\":\"2024-04-02 16:25:51\",\"statut_fiche\":\"1\",\"date_maj_fiche\":\"2024-04-02 16:48:20\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('LovelaceAda',  now(), '{\"bf_titre\":\"Lovelace Ada\",\"bf_nom\":\"Lovelace\",\"bf_prenom\":\"Ada\",\"bf_fonction\":\"Pionni\\u00e8re de la science informatique \",\"bf_projet\":\"<p>J\'ai r\\u00e9alis\\u00e9 le premier v\\u00e9ritable programme informatique, lors de mon travail sur un anc\\u00eatre de l\'ordinateur : la machine analytique de Charles Babbage. <br><\\/p>\",\"bf_mail\":\"\",\"bf_structure\":\"Universit\\u00e9 de Cambridge \",\"bf_site_internet\":\"https:\\/\\/fr.wikipedia.org\\/wiki\\/Ada_Lovelace\",\"bf_adresse\":\"\",\"bf_code_postal\":\"\",\"bf_ville\":\"Londres \",\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\",\"id_typeannonce\":\"1\",\"id_fiche\":\"LovelaceAda\",\"geolocation\":{\"bf_latitude\":\"51.5073219\",\"bf_longitude\":\"-0.1276474\"},\"date_creation_fiche\":\"2021-05-25 11:00:19\",\"statut_fiche\":\"1\",\"imagebf_image\":\"LovelaceAda_lovelace.png\",\"date_maj_fiche\":\"2021-05-25 11:01:13\"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+# end Bazar entries
+
+# triples
 INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
 ('Bordeaux', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('YeswikiLeSiteOfficiel', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
@@ -589,4 +592,22 @@ INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
 ('ElizabethJFeinler', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('TesT2', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('LovelaceAda', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar');
-# end Bazar entries
+
+# if fresh install, we can add the past migrations so they are not re-run
+INSERT INTO `{{prefix}}triples` (`resource`, `property`, `value`) VALUES
+('0000000000000_DemoMigration', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_AddYeswikiReleaseConf', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_CalcFieldToString', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_CercopitequePostInstall', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_CheckSQLTablesThenFixThem', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_DropColumnsFromNature', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_FixDefaultCommentsAcls', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_IntroduceArchiveMecanism', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_RemoveAttributesFromEntries', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425000000_UpdatePasswordSize', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425153022_CleanBase64', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240425172243_CleanOldCartoGoogle', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240502083251_RefactorListStruture', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20240621202127_RefactorEnumFieldPropertyName', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
+('20250730162434_AddContextToPageLogin', 'http://outils-reseaux.org/_vocabulary/type', 'migration');
+# end triples

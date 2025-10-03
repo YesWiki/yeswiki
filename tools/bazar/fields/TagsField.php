@@ -28,6 +28,11 @@ class TagsField extends EnumField
         return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
     }
 
+    public function getValueStructure() // See BazarField::getValueStructure
+    {
+        return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
+    }
+
     protected function renderInput($entry)
     {
         $tagsManager = $this->getService(TagsManager::class);

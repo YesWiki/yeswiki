@@ -304,9 +304,13 @@ pdfjs-web-fonts-disabled = Шрыфты Сеціва забаронены: не�
 
 pdfjs-editor-free-text-button =
     .title = Тэкст
+pdfjs-editor-color-picker-free-text-input =
+    .title = Змяніць колер тэксту
 pdfjs-editor-free-text-button-label = Тэкст
 pdfjs-editor-ink-button =
     .title = Маляваць
+pdfjs-editor-color-picker-ink-input =
+    .title = Змяніць колер малюнка
 pdfjs-editor-ink-button-label = Маляваць
 pdfjs-editor-stamp-button =
     .title = Дадаць або змяніць выявы
@@ -318,6 +322,10 @@ pdfjs-highlight-floating-button1 =
     .title = Падфарбаваць
     .aria-label = Падфарбаваць
 pdfjs-highlight-floating-button-label = Падфарбаваць
+pdfjs-comment-floating-button =
+    .title = Каментаваць
+    .aria-label = Каментаваць
+pdfjs-comment-floating-button-label = Каментаваць
 pdfjs-editor-signature-button =
     .title = Дадаць подпіс
 pdfjs-editor-signature-button-label = Дадаць подпіс
@@ -526,6 +534,14 @@ pdfjs-editor-alt-text-settings-show-dialog-button-label = Адразу пака�
 pdfjs-editor-alt-text-settings-show-dialog-description = Дапамагае пераканацца, што ўсе вашы выявы маюць альтэрнатыўны тэкст.
 pdfjs-editor-alt-text-settings-close-button = Закрыць
 
+## Accessibility labels (announced by screen readers) for objects added to the editor.
+
+pdfjs-editor-highlight-added-alert = Вылучэнне дададзена
+pdfjs-editor-freetext-added-alert = Тэкст дададзены
+pdfjs-editor-ink-added-alert = Малюнак дададзены
+pdfjs-editor-stamp-added-alert = Выява дададзена
+pdfjs-editor-signature-added-alert = Подпіс дададзены
+
 ## "Annotations removed" bar
 
 pdfjs-editor-undo-bar-message-highlight = Падсвятленне выдалена
@@ -595,6 +611,8 @@ pdfjs-editor-add-signature-save-checkbox = Захаваць подпіс
 pdfjs-editor-add-signature-save-warning-message = Вы дасягнулі ліміту ў 5 захаваных подпісаў. Выдаліце адзін, каб захаваць іншы.
 pdfjs-editor-add-signature-image-upload-error-title = Не ўдалося загрузіць выяву
 pdfjs-editor-add-signature-image-upload-error-description = Праверце падключэнне да сеткі ці паспрабуйце іншую выяву.
+pdfjs-editor-add-signature-image-no-data-error-title = Не ўдалося пераўтварыць гэту выяву ў подпіс
+pdfjs-editor-add-signature-image-no-data-error-description = Калі ласка, паспрабуйце зацягнуць іншую выяву.
 pdfjs-editor-add-signature-error-close-button = Закрыць
 
 ## Dialog buttons
@@ -602,6 +620,26 @@ pdfjs-editor-add-signature-error-close-button = Закрыць
 pdfjs-editor-add-signature-cancel-button = Скасаваць
 pdfjs-editor-add-signature-add-button = Дадаць
 pdfjs-editor-edit-signature-update-button = Абнавіць
+
+##  Edit a comment dialog
+
+pdfjs-editor-edit-comment-actions-button-label = Дзеянні
+pdfjs-editor-edit-comment-actions-button =
+    .title = Дзеянні
+pdfjs-editor-edit-comment-close-button-label = Закрыць
+pdfjs-editor-edit-comment-close-button =
+    .title = Закрыць
+pdfjs-editor-edit-comment-actions-edit-button-label = Праўка
+pdfjs-editor-edit-comment-actions-delete-button-label = Выдаліць
+pdfjs-editor-edit-comment-manager-text-input =
+    .placeholder = Увядзіце свой каментарый
+pdfjs-editor-edit-comment-manager-cancel-button = Скасаваць
+pdfjs-editor-edit-comment-manager-save-button = Захаваць
+
+## Edit a comment button in the editor toolbar
+
+pdfjs-editor-edit-comment-button =
+    .title = Змяніць каментарый
 
 ## Main menu for adding/removing signatures
 

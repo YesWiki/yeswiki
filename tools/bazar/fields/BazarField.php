@@ -99,6 +99,15 @@ abstract class BazarField implements \JsonSerializable
         return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
     }
 
+	/*
+	*	indicates if id_fiche must be set before to format the value
+	*/
+
+	public function requireIDFiche ()
+	{
+		return false;
+	}
+
     /**
      * Render the edit view of the field. Check ACLS first.
      *
@@ -148,6 +157,11 @@ abstract class BazarField implements \JsonSerializable
 		            
 		return [ $this->propertyName => $this->default ];
 	}        	
+		{
+			// We cannot : let's return nothing
+		            
+			return [];
+		}        	
     }
 
     // Format input values before save
@@ -203,7 +217,7 @@ abstract class BazarField implements \JsonSerializable
     public function canRead($entry, ?string $userNameForRendering = null)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
-        $isCreation = !$entry;
+        $isCreation = !isset ($entry) || !is_array($entry) || !isset ($entry['id_fiche']);
 
         return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['id_fiche']);
     }
@@ -214,6 +228,7 @@ abstract class BazarField implements \JsonSerializable
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
 
 		$isCreation = !$entry;
+		$isCreation = !isset ($entry) || !is_array($entry) || !isset ($entry['id_fiche']);
 
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : 'edit');
     }

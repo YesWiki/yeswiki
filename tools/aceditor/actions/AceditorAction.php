@@ -14,6 +14,7 @@ class AceditorAction extends YesWikiAction
         return [
             'name' => $args['name'] ?? 'aceditor',
             'value' => $args['value'] ?? '',
+            'required' => $args['required'] ?? null,
             'placeholder' => $args['placeholder'] ?? '',
             'rows' => $args['rows'] ?? 3,
             'maxChars' => $args['maxChars'] ?? null,

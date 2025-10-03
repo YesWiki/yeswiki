@@ -2,8 +2,9 @@
 
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
-{% block necessary_fields %}
-  {% set necessary_fields = ['owner']
+{% 
+	set necessary_fields =( necessary_fields|default([]))
+	|merge (['owner'])
     |merge((
       (params.exportallcolumns is defined and (params.exportallcolumns == '1' or params.exportallcolumns == 'true'))
       ? params.exportallcolumnsids|split(',')
@@ -14,8 +15,8 @@
     ))
     |merge((params.displaycreationdate is defined and (params.displaycreationdate != 'no'))? ['date_creation_fiche']: [])
     |merge((params.displaylastchangedate is defined and (params.displaycreationdate != 'no'))? ['date_maj_fiche']: [])
-  %}
-{% endblock %}
+
+%}
 
 {% block assets %}
   {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}

@@ -766,6 +766,8 @@ class SearchManager
                     if ($vField['hasMultipleStructures']) {
                         if (vDescriptorCondition != '') {
                             $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor['ids'])) . ') AND (' . vDescriptorCondition . ')';
+                        if ($vDescriptorCondition != '') {
+                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor['ids'])) . ') AND (' . $vDescriptorCondition . ')';
                         }
                     }
                 }
@@ -863,6 +865,39 @@ class SearchManager
                 );
 
             $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
+                function ($vID) {
+                    $vType = \gettype($vID);
+
+                    if ($vType == 'integer') {
+                        return $vID;
+                    }
+
+                    if ($vType == 'string') {
+                        $vTrimmed = trim($vID);
+                        $vIntValue = intval($vID);
+
+                        if (strval($vID) == strval($vIntValue)) {
+                            return $vIntValue;
+                        } else {
+                            return null;
+                        }
+                    }
+
+                    return null;
+                },
+                $vFormIDs
+            );
+
+            $vFormIDs = array_filter(
+                $vFormIDs,
+                function ($pID) {
+                    return $pID !== null;
+                }
+            );
+
+            $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
+        } else {
+            $vFormIDs = [];
         }
 
         // Limit the request depending on the date

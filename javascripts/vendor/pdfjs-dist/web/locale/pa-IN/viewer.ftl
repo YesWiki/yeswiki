@@ -302,9 +302,13 @@ pdfjs-web-fonts-disabled = ਵੈਬ ਫੋਂਟ ਬੰਦ ਹਨ: ਇੰਬੈ
 
 pdfjs-editor-free-text-button =
     .title = ਲਿਖਤ
+pdfjs-editor-color-picker-free-text-input =
+    .title = ਲਿਖਤ ਦੇ ਰੰਗ ਨੂੰ ਬਦਲੋ
 pdfjs-editor-free-text-button-label = ਲਿਖਤ
 pdfjs-editor-ink-button =
     .title = ਵਾਹੋ
+pdfjs-editor-color-picker-ink-input =
+    .title = ਡਰਾਇੰਗ ਰੰਗ ਨੂੰ ਬਦਲੋ
 pdfjs-editor-ink-button-label = ਵਾਹੋ
 pdfjs-editor-stamp-button =
     .title = ਚਿੱਤਰ ਜੋੜੋ ਜਾਂ ਸੋਧੋ
@@ -316,6 +320,10 @@ pdfjs-highlight-floating-button1 =
     .title = ਹਾਈਲਾਈਟ
     .aria-label = ਹਾਈਲਾਈਟ
 pdfjs-highlight-floating-button-label = ਹਾਈਲਾਈਟ
+pdfjs-comment-floating-button =
+    .title = ਟਿੱਪਣੀ
+    .aria-label = ਟਿੱਪਣੀ
+pdfjs-comment-floating-button-label = ਟਿੱਪਣੀ
 pdfjs-editor-signature-button =
     .title = ਦਸਤਖ਼ਤ ਜੋੜੋ
 pdfjs-editor-signature-button-label = ਦਸਤਖ਼ਤ ਜੋੜੋ
@@ -524,6 +532,14 @@ pdfjs-editor-alt-text-settings-show-dialog-button-label = ਜਦੋਂ ਵਿੱ
 pdfjs-editor-alt-text-settings-show-dialog-description = ਤੁਹਾਡੀ ਮਦਦ ਕਰਦਾ ਹੈ ਕਿ ਤੁਹਾਡੇ ਸਾਰੇ ਚਿੱਤਰਾਂ ਲਈ ਬਦਲਵੀਂ ਲਿਖਤ ਮੌਜੂਦ ਹੋਵੇ।
 pdfjs-editor-alt-text-settings-close-button = ਬੰਦ ਕਰੋ
 
+## Accessibility labels (announced by screen readers) for objects added to the editor.
+
+pdfjs-editor-highlight-added-alert = ਹਾਈਲਾਈਟ ਨੂੰ ਜੋੜਿਆ
+pdfjs-editor-freetext-added-alert = ਲਿਖਤ ਨੂੰ ਜੋੜਿਆ ਗਿਆ
+pdfjs-editor-ink-added-alert = ਡਰਾਇੰਗ ਨੂੰ ਜੋੜਿਆ
+pdfjs-editor-stamp-added-alert = ਚਿੱਤਰ ਨੂੰ ਜੋੜਿਆ
+pdfjs-editor-signature-added-alert = ਦਸਤਖ਼ਤਾਂ ਨੂੰ ਜੋੜਿਆ
+
 ## "Annotations removed" bar
 
 pdfjs-editor-undo-bar-message-highlight = ਹਾਈਲਾਈਟ ਨੂੰ ਹਟਾਇਆ ਗਿਆ
@@ -592,6 +608,8 @@ pdfjs-editor-add-signature-save-checkbox = ਦਸਤਖ਼ਤ ਨੂੰ ਸੰ�
 pdfjs-editor-add-signature-save-warning-message = ਤੁਸੀਂ ਵੱਧ ਤੋਂ ਵੱਧ 5 ਸੰਭਾਲੇ ਦਸਤਖ਼ਤਾਂ ਦੀ ਹੱਦ ਤੱਕ ਅੱਪੜੇ। ਹੋਰ ਸੰਭਾਲਣ ਲਈ ਇੱਕ ਨੂੰ ਹਟਾਓ।
 pdfjs-editor-add-signature-image-upload-error-title = ਚਿੱਤਰ ਨੂੰ ਅੱਪਲੋਡ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ
 pdfjs-editor-add-signature-image-upload-error-description = ਆਪਣੇ ਕਨੈਕਸ਼ਨ ਦੀ ਜਾਂਚ ਕਰੋ ਜਾਂ ਹੋਰ ਚਿੱਤਰ ਨੂੰ ਅਜ਼ਮਾਓ।
+pdfjs-editor-add-signature-image-no-data-error-title = ਇਸ ਚਿੱਤਰ ਨੂੰ ਦਸਤਖ਼ਤ ਵਿੱਚ ਬਦਲਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ ਹੈ
+pdfjs-editor-add-signature-image-no-data-error-description = ਵੱਖਰੇ ਚਿੱਤਰ ਨੂੰ ਅੱਪਲੋਡ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
 pdfjs-editor-add-signature-error-close-button = ਬੰਦ ਕਰੋ
 
 ## Dialog buttons
@@ -599,6 +617,26 @@ pdfjs-editor-add-signature-error-close-button = ਬੰਦ ਕਰੋ
 pdfjs-editor-add-signature-cancel-button = ਰੱਦ ਕਰੋ
 pdfjs-editor-add-signature-add-button = ਜੋੜੋ
 pdfjs-editor-edit-signature-update-button = ਅੱਪਡੇਟ
+
+##  Edit a comment dialog
+
+pdfjs-editor-edit-comment-actions-button-label = ਕਾਰਵਾਈਆਂ
+pdfjs-editor-edit-comment-actions-button =
+    .title = ਕਾਰਵਾਈਆਂ
+pdfjs-editor-edit-comment-close-button-label = ਬੰਦ ਕਰੋ
+pdfjs-editor-edit-comment-close-button =
+    .title = ਬੰਦ ਕਰੋ
+pdfjs-editor-edit-comment-actions-edit-button-label = ਸੋਧੋ
+pdfjs-editor-edit-comment-actions-delete-button-label = ਹਟਾਓ
+pdfjs-editor-edit-comment-manager-text-input =
+    .placeholder = ਆਪਣੀ ਟਿੱਪਣੀ ਦਿਓ
+pdfjs-editor-edit-comment-manager-cancel-button = ਰੱਦ ਕਰੋ
+pdfjs-editor-edit-comment-manager-save-button = ਸੰਭਾਲੋ
+
+## Edit a comment button in the editor toolbar
+
+pdfjs-editor-edit-comment-button =
+    .title = ਟਿੱਪਣੀ ਨੂੰ ਸੋਧੋ
 
 ## Main menu for adding/removing signatures
 
