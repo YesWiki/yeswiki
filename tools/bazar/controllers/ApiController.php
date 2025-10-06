@@ -81,7 +81,11 @@ class ApiController extends YesWikiController
             } // add entries in html format if asked
             elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
-                    $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
+	                $vHTMLOutput = $this->getService(EntryController::class)->view($entry, '', 0);
+	                if ($_GET['isInIframe'] && $_GET['isInIframe'] == "iframe")
+	                	$vHTMLOutput = replaceLinksWithIframe ($vHTMLOutput);
+                
+                    $entries[$id]['html_output'] = vHTMLOutput;
                 }
             } elseif ($output == 'geojson') {
                 $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
@@ -119,8 +123,10 @@ class ApiController extends YesWikiController
         // fast access for one entry
         if ($this->isEntryViewFastAccess($output, $selectedEntries, $_GET)) {
             $entryId = explode(',', $selectedEntries)[0];
-            if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
+            if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {            
                 $html = $this->getService(EntryController::class)->view($entryId, '', 1);
+                if ($_GET['isInIframe'] && $_GET['isInIframe'] == "iframe")
+                	$html = replaceLinksWithIframe ($html);
             } else {
                 $html = $this->render('@templates/alert-message.twig', [
                     'type' => 'info',

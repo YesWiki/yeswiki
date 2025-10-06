@@ -404,6 +404,7 @@ const load = (domElement) => {
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+          	...{ isInIframe : this.params.isInIframe },
             ...{ fields: 'html_output' },
             ...(fieldsToExclude.length > 0
               ? { excludeFields: fieldsToExclude }
