@@ -62,6 +62,7 @@ async function createEntry(formId, data) {
  */
 async function modifyEntry(pageTag, data) {
   try {
+    console.log(pageTag, data)
     const response = await fetch(`${BASE_URL}?${pageTag}`, {
       method: 'PUT',
       headers: {
@@ -87,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const { execute = false, onValid } = options
     const results = []
     const targetSel = el.dataset.targetId
-    const { targetField } = el.dataset
     const valueSel = el.dataset.value
     const targetNode = targetSel ? document.querySelector(targetSel) : null
     const valueNode = valueSel ? document.querySelector(valueSel) : null
@@ -98,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('Data‑attribute validation failed:', {
         element: el,
         targetSel,
-        targetField,
         valueSel,
         targetNode,
         valueNode
@@ -122,15 +121,23 @@ document.addEventListener('DOMContentLoaded', () => {
       validateDataTargets(clicked, {
         execute: true,
         onValid: (targetEl, valueEl, action) => {
-          entryId = targetEl.value
-          fieldId = valueEl.value
+          const entryId = targetEl.value
+          const fieldId = clicked.dataset.targetField
+          const val = valueEl.value
           if (action === 'add') {
             console.log(targetEl.value, valueEl.value, action)
-            let entryVal = null
             loadEntry(entryId)
               .then((entry) => {
                 console.log('Loaded entry:', entry)
-                entryVal = entry
+                entry.antispam = 1
+                if (entry[fieldId] === undefined || entry[fieldId].length == 0) {
+                  entry[fieldId] = val
+                } else {
+                  entry[fieldId] = `${entry[fieldId]},${val}`
+                }
+                modifyEntry(entryId, entry)
+                  .then((response) => console.log('Entry modified:', response))
+                  .catch((error) => console.error('Failed to modify entry:', error))
               })
               .catch((error) => console.error('Failed to load entry:', error))
 
@@ -142,10 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // createEntry('blogForm', newEntryData)
             //     .then(response => console.log('Entry created:', response))
             //     .catch(error => console.error('Failed to create entry:', error));
-
-            // modifyEntry(entryId, entryVal)
-            //   .then((response) => console.log('Entry modified:', response))
-            //   .catch((error) => console.error('Failed to modify entry:', error))
           }
         }
       })
