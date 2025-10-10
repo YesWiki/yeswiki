@@ -152,13 +152,12 @@ class CSVManager
         array $pParams,
         ?array $pOptions = null
     ): ?array {
-    
-    	$vFakeMode = isset ($pOptions)?($pOptions["fakeMode"]??false):false;
-    	$vKeysInsteadOfValues = isset ($pOptions)?($pOptions["keysInsteadOfValues"]??false):false;
-    
-    	$vQuery = $pParams["query"]??"";
-	   	$vKeywords = $pParams["keywords"]??"";
-    	
+        $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
+        $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
+
+        $vQuery = $pParams['query'] ?? '';
+        $vKeywords = $pParams['keywords'] ?? '';
+
         $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
         $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
 
@@ -190,7 +189,6 @@ class CSVManager
                     $entries = $this->entryManager->search([
                         'formsIds' => [$pFormId],
                         'keywords' => $vKeywords,
-                        'queries' => $vQuery
                         'queries' => $vQuery,
                         'searchfields' => $vSearchFields,
                     ]);

@@ -34,9 +34,6 @@ abstract class CheckboxField extends EnumField
         $this->dragAndDropDisplayMode = '';
     }
 
-	public function getValueStructure () // See BazarField::getValueStructure
-    {		
-        return [ $this->name => [ "_mode_" => "multiple", "_type_" => "string" ]];
     public function getValueStructure() // See BazarField::getValueStructure
     {
         return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
@@ -97,15 +94,15 @@ abstract class CheckboxField extends EnumField
     }
 
     public function formatValuesBeforeSave($entry)
-    {       
-    	// Get the value
-    
-		$checkboxField = $this->getValue($entry);
-		
-		if ($checkboxField === null) return [];
-		else        
-        {
-        	return [ $this->propertyName => $this->sanitizeValues($checkboxField, 'string') ];
+    {
+        // Get the value
+
+        $checkboxField = $this->getValue($entry);
+
+        if ($checkboxField === null) {
+            return [];
+        } else {
+            return [$this->propertyName => $this->sanitizeValues($checkboxField, 'string')];
         }
     }
 

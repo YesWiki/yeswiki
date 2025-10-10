@@ -51,14 +51,14 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
-    	$vSearchManager = $this->getService(SearchManager::class);
-    
-	    $query = $vSearchManager->aggregateQueries(
-		        !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
-		        $_GET
-		    );
+        $vSearchManager = $this->getService(SearchManager::class);
 
-		$vKeywords = $vSearchManager->aggregateKeywords ($_GET["keywords"]??"", $_GET["q"]??"");
+        $query = $vSearchManager->aggregateQueries(
+            !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
+            $_GET
+        );
+
+        $vKeywords = $vSearchManager->aggregateKeywords($_GET['keywords'] ?? '', $_GET['q'] ?? '');
         $vSearchManager = $this->getService(SearchManager::class);
 
         $query = $vSearchManager->aggregateQueries(
@@ -74,55 +74,12 @@ class ApiController extends YesWikiController
 
         if ($output == 'csv') { // Search is done in the CSV Manager
             $csvManager = $this->getService(CSVManager::class);
-            $csvManager->sendCsvOrZip($formId, [ "query" => $query, "keywords" => $vKeywords ]);
-        }
-        else
-    	{		    
-		    $entries = $this->getService(EntryManager::class)->search([
-		        'formsIds' => $formId,
-		        'queries' => $query,
-		        'keywords' => $vKeywords,
-		        'minDate' => $_GET['dateMin'] ?? '',
-		    ], true, true);
-
-		    if ($output == 'json-ld' || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
-		        return $this->getAllSemanticEntries($formId, $entries);
-		    } // add entries in html format if asked
-		    elseif ($output == 'html') {
-		        foreach ($entries as $id => $entry) {
-		            $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
-		        }
-		    } elseif ($output == 'geojson') {
-		        $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
-		    } elseif ($output == 'ical') {
-		        return $this->getService(IcalFormatter::class)->apiResponse($entries, $formId, $_GET);
-		    } elseif (isset($_GET['fields'])) {
-		        $fields = explode(',', $_GET['fields']);
-		        $lightEntries = [];
-		        if (!empty($entries) && !empty($fields)) {
-		            foreach ($entries as $id => $entry) {
-		                $lightEntry = [];
-		                foreach ($fields as $field_name) {
-		                    if (isset($entry[$field_name])) {
-		                        $lightEntry[$field_name] = $entry[$field_name];
-		                    }
-		                }
-		                if (!empty($lightEntry)) {
-		                    $lightEntries[$id] = $lightEntry;
-		                }
-		            }
-		        }
-
-		        return new ApiResponse(empty($lightEntries) ? null : $lightEntries);
-		    }
-		}
-            $csvManager->sendCsvOrZip($formId, ['query' => $query, 'keywords' => $vKeywords, 'searchfields' => $vSearchFields]);
+            $csvManager->sendCsvOrZip($formId, ['query' => $query, 'keywords' => $vKeywords]);
         } else {
             $entries = $this->getService(EntryManager::class)->search([
                 'formsIds' => $formId,
                 'queries' => $query,
                 'keywords' => $vKeywords,
-                'searchfields' => $vSearchFields,
                 'minDate' => $_GET['dateMin'] ?? '',
             ], true, true);
 
@@ -132,11 +89,6 @@ class ApiController extends YesWikiController
             elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
                     $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
-	                $vHTMLOutput = $this->getService(EntryController::class)->view($entry, '', 0);
-	                if ($_GET['isInIframe'] && $_GET['isInIframe'] == "iframe")
-	                	$vHTMLOutput = replaceLinksWithIframe ($vHTMLOutput);
-                
-                    $entries[$id]['html_output'] = vHTMLOutput;
                 }
             } elseif ($output == 'geojson') {
                 $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
@@ -174,10 +126,11 @@ class ApiController extends YesWikiController
         // fast access for one entry
         if ($this->isEntryViewFastAccess($output, $selectedEntries, $_GET)) {
             $entryId = explode(',', $selectedEntries)[0];
-            if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {            
+            if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
                 $html = $this->getService(EntryController::class)->view($entryId, '', 1);
-                if ($_GET['isInIframe'] && $_GET['isInIframe'] == "iframe")
-                	$html = replaceLinksWithIframe ($html);
+                if ($_GET['isInIframe'] && $_GET['isInIframe'] == 'iframe') {
+                    $html = replaceLinksWithIframe($html);
+                }
             } else {
                 $html = $this->render('@templates/alert-message.twig', [
                     'type' => 'info',
@@ -270,7 +223,8 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * Create or update an entry
+     * Create or update an entry.
+     *
      * @Route("/api/entries/{formId}", methods={"POST"}, options={"acl":{"+"}})
      */
     public function createEntry($formId)
@@ -280,12 +234,13 @@ class ApiController extends YesWikiController
         }
 
         $_POST['antispam'] = 1;
-        
-       	if (!isset ($_POST["id_fiche"]))
-	        $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL'] ?? null);
-		else
-			$entry = $this->getService(EntryManager::class)->update($_POST["id_fiche"], $_POST, false, true);
-			
+
+        if (!isset($_POST['id_fiche'])) {
+            $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL'] ?? null);
+        } else {
+            $entry = $this->getService(EntryManager::class)->update($_POST['id_fiche'], $_POST, false, true);
+        }
+
         if (!$entry) {
             throw new BadRequestHttpException();
         }

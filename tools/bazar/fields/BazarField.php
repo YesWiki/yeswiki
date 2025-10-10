@@ -80,8 +80,8 @@ abstract class BazarField implements \JsonSerializable
      *
      *  the structure may contain subfields descrived in the same format
      *
-	 *	example : 
-	 *		[ bf_latitude => [ _mode_ => "single", _type_ => "number"  ], bf_longitude => [ _mode_ => "single", _type_ => "number"  ] ] 
+     *	example :
+     *		[ bf_latitude => [ _mode_ => "single", _type_ => "number"  ], bf_longitude => [ _mode_ => "single", _type_ => "number"  ] ]
      *	example :
      *		[ geolocation => [ bf_latitude => [ _mode_ => "single", _type_ => "number"  ], bf_longitude => [ _mode_ => "single", _type_ => "number"  ] ] ]
      *
@@ -90,23 +90,19 @@ abstract class BazarField implements \JsonSerializable
      *
      * @return the structure
      */
-     
-    public function getValueStructure ()
-    {		
-        return [ $this->name => [ "_mode_" => "single", "_type_" => "string" ]];
     public function getValueStructure()
     {
         return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
     }
 
-	/*
-	*	indicates if id_fiche must be set before to format the value
-	*/
+    /*
+    *	indicates if id_fiche must be set before to format the value
+    */
 
-	public function requireIDFiche ()
-	{
-		return false;
-	}
+    public function requireIDFiche()
+    {
+        return false;
+    }
 
     /**
      * Render the edit view of the field. Check ACLS first.
@@ -140,37 +136,35 @@ abstract class BazarField implements \JsonSerializable
     public function formatValuesBeforeSaveIfEditable($entry)
     {
         // Let's prevent creation of empty keys
-    
-    	if (empty($this->propertyName)) return [];
-    
-    	// Let's check if we are authorized to set or modify the field
-    	
-    	if ($this->canEdit ($entry))
-    	{
-    		// We can : let's return the formatted given value
-    	
-	    	return $this->formatValuesBeforeSave($entry);
-    	}    	
-    	else
-	{
-		// We cannot : let's return the default value
-		            
-		return [ $this->propertyName => $this->default ];
-	}        	
-		{
-			// We cannot : let's return nothing
-		            
-			return [];
-		}        	
+
+        if (empty($this->propertyName)) {
+            return [];
+        }
+
+        // Let's check if we are authorized to set or modify the field
+
+        if ($this->canEdit($entry)) {
+            // We can : let's return the formatted given value
+
+            return $this->formatValuesBeforeSave($entry);
+        } else {
+            // We cannot : let's return the default value
+
+            return [$this->propertyName => $this->default];
+        }
+
+        // We cannot : let's return nothing
+
+        return [];
     }
 
     // Format input values before save
     public function formatValuesBeforeSave($entry)
     {
-	    // By default, let's return the value 
-	    // NOTE : The emptiness test is already done in formatValuesBeforeSaveIfEditable. Let's keep it for safety reason.
-    
-        return empty($this->propertyName) ? [] : [$this->propertyName => $this->getValue($entry)]; 
+        // By default, let's return the value
+        // NOTE : The emptiness test is already done in formatValuesBeforeSaveIfEditable. Let's keep it for safety reason.
+
+        return empty($this->propertyName) ? [] : [$this->propertyName => $this->getValue($entry)];
     }
 
     // Render the show view of the field
@@ -217,7 +211,7 @@ abstract class BazarField implements \JsonSerializable
     public function canRead($entry, ?string $userNameForRendering = null)
     {
         $readAcl = empty($this->readAccess) ? '' : $this->readAccess;
-        $isCreation = !isset ($entry) || !is_array($entry) || !isset ($entry['id_fiche']);
+        $isCreation = !isset($entry) || !is_array($entry) || !isset($entry['id_fiche']);
 
         return empty($readAcl) || $this->getService(AclService::class)->check($readAcl, $userNameForRendering, true, $isCreation ? '' : $entry['id_fiche']);
     }
@@ -227,8 +221,8 @@ abstract class BazarField implements \JsonSerializable
     {
         $writeAcl = empty($this->writeAccess) ? '' : $this->writeAccess;
 
-		$isCreation = !$entry;
-		$isCreation = !isset ($entry) || !is_array($entry) || !isset ($entry['id_fiche']);
+        $isCreation = !$entry;
+        $isCreation = !isset($entry) || !is_array($entry) || !isset($entry['id_fiche']);
 
         return empty($writeAcl) || $this->getService(AclService::class)->check($writeAcl, null, true, $isCreation ? '' : $entry['id_fiche'], $isCreation ? 'creation' : 'edit');
     }

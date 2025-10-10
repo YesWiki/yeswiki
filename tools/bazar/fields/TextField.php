@@ -39,12 +39,6 @@ class TextField extends BazarField
         }
     }
 
-	public function getValueStructure () // See BazarField::getValueStructure
-    {		
-    	if ($this->type == "number" || $this->type == "range")
-	        return [ $this->name => [ "_mode_" => "single", "_type_" => "number" ]];
-        else
-        	return [ $this->name => [ "_mode_" => "single", "_type_" => "string" ]];	        
     public function getValueStructure() // See BazarField::getValueStructure
     {
         if ($this->type == 'number' || $this->type == 'range') {

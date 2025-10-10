@@ -94,43 +94,34 @@ class MapField extends BazarField
     {
         $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
 
-		$vLatitudeField = $this->getLatitudeField();
-		$vLongitudeField = $this->getLongitudeField();
+        $vLatitudeField = $this->getLatitudeField();
+        $vLongitudeField = $this->getLongitudeField();
 
-		$vLatitude = null;
-		$vLongitude = null;
+        $vLatitude = null;
+        $vLongitude = null;
 
         // backward compatibility with former `carte_google` propertyName
         // and bf_latitude propertyName
-        if (empty($value))
-        {
-            if (!empty($entry['carte_google']))
-            {
+        if (empty($value)) {
+            if (!empty($entry['carte_google'])) {
                 $value = explode('|', $entry['carte_google']);
 
-                if (empty($value[0]) || empty($value[1]))
-                {
+                if (empty($value[0]) || empty($value[1])) {
                     $value = null;
-                }
-                else
-                {
+                } else {
                     $vLatitude = $value[0];
-	                $vLongitude = $value[1];
+                    $vLongitude = $value[1];
                 }
+            } elseif (!empty($entry[$vLatitudeField]) && !empty($entry[$vLongitudeField])) {
+                $vLatitude = $entry[$vLatitudeField];
+                $vLongitude = $entry[$vLongitudeField];
             }
-            elseif (!empty($entry[$vLatitudeField]) && !empty($entry[$vLongitudeField]))
-            {
-            	$vLatitude = $entry[$vLatitudeField];
-				$vLongitude = $entry[$vLongitudeField];
-			}
-        }
-        else
-        {
-        	$vLatitude = $value [$vLatitudeField];
-	       	$vLongitude = $value [$vLongitudeField];
+        } else {
+            $vLatitude = $value[$vLatitudeField];
+            $vLongitude = $value[$vLongitudeField];
         }
 
-        return	[ $this->getLatitudeField() => $vLatitude, $this->getLongitudeField() => $vLongitude ];
+        return [$this->getLatitudeField() => $vLatitude, $this->getLongitudeField() => $vLongitude];
     }
 
     protected function getMapFieldData($entry)
@@ -186,70 +177,19 @@ class MapField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        return $this->formatValuesBeforeSaveIfEditable($entry, false);
-    }
+        $vValue = $this->getValue($entry);
 
-    public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
-    {
-        if (!$this->canEdit($entry, $isCreation)) {
-            // retrieve value from value because redefined with right value
-            $values = $this->getValue($entry);
+        $vLatitude = isset($vValue[$this->getLatitudeField()]) ? $vValue[$this->getLatitudeField()] : '';
+        $vLongitude = isset($vValue[$this->getLongitudeField()]) ? $vValue[$this->getLongitudeField()] : '';
 
-            $values = $this->getValue($entry);
-
-            if (empty($values)) {
-                if (isset($entry[$this->getLatitudeField()])) {
-                    unset($entry[$this->getLatitudeField()]);
-                }
-                if (isset($entry[$this->getLongitudeField()])) {
-                    unset($entry[$this->getLongitudeField()]);
-                }
-            } else {
-                $entry[$this->getPropertyName()] = $values;
-                $entry[$this->getLatitudeField()] = $values[$this->getLatitudeField()];
-                $entry[$this->getLongitudeField()] = $values[$this->getLatitudeField()];
-            }
-        }
-
-        if (!empty($entry[$this->getLatitudeField()]) && !empty($entry[$this->getLongitudeField()])) {
-            $entry[$this->getPropertyName()] = [
-                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                $this->getLongitudeField() => $entry[$this->getLongitudeField()],
-            ];
-
-            return [
-                $this->getPropertyName() => $entry[$this->getPropertyName()],
-                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                $this->getLongitudeField() => $entry[$this->getLongitudeField()],
-                'fields-to-remove' => ['carte_google'],
-                /*$this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                $this->getLongitudeField() => $entry[$this->getLongitudeField()],*/
-                'fields-to-remove' => [$this->getLatitudeField(), $this->getLongitudeField(), 'carte_google'],
-        $vValue = $this->getValue ($entry);
-        
-        if ($vValue && !empty($vValue[$this->getLatitudeField()]) && !empty($vValue[$this->getLongitudeField()]))
-		{
+        if ($vValue && !empty($vLatitude) && !empty($vLongitude)) {
             return
             [
-                $this->getPropertyName() => $entry[$this->getPropertyName()],
-                $this->getLatitudeField() => $entry[$this->getLatitudeField()],
-                $this->getLongitudeField() => $entry[$this->getLongitudeField()],
-                'fields-to-remove' => ['carte_google']
-        $vValue = $this->getValue ($entry);
-        
-        $vLatitude = isset ($vValue[$this->getLatitudeField()])?$vValue[$this->getLatitudeField()]:"";
-        $vLongitude = isset ($vValue[$this->getLongitudeField()])?$vValue[$this->getLongitudeField()]:"";
-        
-        if ($vValue && !empty($vLatitude) && !empty($vLongitude))
-		{                  
-            return
-            [
-                $this->getPropertyName() =>
-                [ 
-                	$this->getLatitudeField() => $vLatitude,
-                	$this->getLongitudeField() => $vLongitude
+                $this->getPropertyName() => [
+                    $this->getLatitudeField() => $vLatitude,
+                    $this->getLongitudeField() => $vLongitude,
                 ],
-                'fields-to-remove' => [ 'carte_google', $this->getLatitudeField(), $this->getLongitudeField () ]
+                'fields-to-remove' => ['carte_google', $this->getLatitudeField(), $this->getLongitudeField()],
             ];
         } else {
             return [
@@ -257,7 +197,7 @@ class MapField extends BazarField
                     $this->getPropertyName(),
                     $this->getLatitudeField(),
                     $this->getLongitudeField(),
-                    'carte_google'
+                    'carte_google',
                 ],
             ];
         }

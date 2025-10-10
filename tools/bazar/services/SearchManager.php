@@ -173,150 +173,6 @@ class SearchManager
      */
     public function buildKeywordsConditions($pKeywords, $pSearchFields, $pMinKeywordsLength)
     {
-    	// Let's parse the given keywords search string...
-    
-    	$vParsedKeywords = $this->parseKeywords ($pKeywords, $pMinKeywordsLength);
-    
-    	// if there is nothing to do, there is nothing to do
-    	
-    	if ((count ($vParsedKeywords["CNF"]) == 0 && count ($vParsedKeywords["excludeds"]) == 0) || count ($pSearchFields) == 0)
-	    	return "";
-    
-    	// ... and let's analyse it
-    
-    	// Analyses ANDs clauses
-        
-    	// We will merge ANDs later
-    	
-    	$vANDs = [];
-    
-		foreach ($vParsedKeywords["CNF"] as $vAND)
-		{
-			// We will merge ORs later
-		
-			$vORs = [];
-			
-	    	// Analyse ORs clauses
-			
-			foreach ($vAND as $vOR)
-			{
-				// Remember if the token value is a regexp
-						
-				$vIsRegExp = $this->isRegExp ($vOR);
-				
-				// For each ORs token, we will build a condition that apply on each search field
-
-				foreach ($pSearchFields as $vFieldName => $vField)
-	    		{
-	    			// For each search field
-
-	    			// let's initialize the request being constructed
-		    		
-		    		$vORRequest = "";
-	    
-	    			// We need to build a specific condition for each field structure
-	    			
-	    			foreach ($vField["descriptors"] as $vHash => $vFieldDescriptor)
-	    			{	    			
-	    				// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
-	    			
-	    				if ($vField["hasMultipleStructures"])	    				
-		    				$vORRequest .= '( ' . $this->renameJSONPathVariable("id_typeannonce") . ' IN ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
-
-						switch ($vFieldDescriptor["mode"])
-						{
-							// If this field instance in is intended to store a single value...
-						
-							case "single" :		
-								// Add a field condition adapted to a regexp or not
-	    			
-								if ($vIsRegExp)
-									$vORRequest .= $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vOR)) . '\'';
-								else
-									$vORRequest .= $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vOR) . '%\'';
- '\'';
-							break;							
-									
-							// If this field instance is intended to store multiple values separated by comma...
-									
-							case "multiple" :
-								
-								// Add a field condition adapted to a regexp or not
-							
-								if ($vIsRegExp)																			
-	   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '$\')' ; 
-								else
-									$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '%\')' ;
-							
-							break;						
-						}	
-	    			
-	    				if ($vField["hasMultipleStructures"])
-		    				$vORRequest .= ')';
-							
-						$vORs [] = $vORRequest;			
-	    			}	    				
-	    		}
-    		}
-    		
-    		$vANDs [] = '(' . implode (" OR ", $vORs) . ')';
-		}
-
-		foreach ($vParsedKeywords["excludeds"] as $vExcluded)
-		{			
-			// Remember if the excluded token value is a regexp
-		
-			$vIsRegExp = $this->isRegExp ($vExcluded);
-		
-			// For each excluded token, we will build a condition that apply on each search field
-		
-			foreach ($pSearchFields as $vFieldName => $vField)
-	    	{	    	
-		    	// The condition we will construct 
-		    		
-	    		$vExcludedRequest = "";
-	    	
-    			// We need to build a specific condition for each field structure
-	    	
-	    		foreach ($vField["descriptors"] as $vHash => $vFieldDescriptor )
-	    		{	    			
-	    			// If the field can have multiple structures, we need to specify the form IDs to which the condition apply
-	    			
-	    			if ($vField["hasMultipleStructures"])	    				
-		    			$vExcludedRequest .= '( ' . $this->renameJSONPathVariable("id_typeannonce") . ' IN ' . implode (",", $vFieldDescriptor["ids"]) . ' AND ';
-	    			
-	    			switch ($vFieldDescriptor["mode"])
-					{
-						// If this field instance is intended to store a single value...
-					
-						case "single" :		
-							// Add a field condition adapted to a regexp or not
-    			
-							if ($vIsRegExp)
-								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT REGEXP \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '\'';
-							else
-								$vExcludedRequest .= mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\'';
-'\'';
-						break;							
-								
-						// If this field instance is intended to store multiple values separated by comma...
-								
-						case "multiple" :
-							
-							// Add a field condition adapted to a regexp or not
-						
-							if ($vIsRegExp)																			
-   								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT REGEXP \'^' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vExcluded)) . '$\')'; 
-							else
-								$vExcludedRequest .= '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string ($this->wiki->dblink, $vExcluded) . '%\')';
-						
-						break;						
-					}
-	    			
-					$vANDs [] = $vExcludedRequest;
-	    		}
-    		}
-		}
         // Let's parse the given keywords search string...
 
         $vParsedKeywords = $this->parseKeywords($pKeywords, $pMinKeywordsLength);
@@ -483,13 +339,6 @@ class SearchManager
 
         // For each field query
 
-        foreach ($pQueries as $vQuery)
-        {        		        
-        	// Build the query condition for this field :
-			
-	    	// Name of the field
-    
-	   		$vFieldName = $vQuery ["name"];
         foreach ($pQueries as $vQuery) {
             // Build the query condition for this field :
 
@@ -497,57 +346,6 @@ class SearchManager
 
             $vFieldName = $vQuery['name'];
 
-			$vQueryConditions = [];
-		
-			// Let's check what is the operator and store helpers to know what to apply in the request
-					
-			switch ($vOperator)
-			{
-				// "is equal" and "is different"
-			
-				case "==" :	
-					$vRegExpOperator = "REGEXP";
-					$vComparisonOperator = "=";
-					$vFindInSetOperator = "FIND_IN_SET";
-				break;			
-				case "!=" :
-					$vRegExpOperator = "NOT REGEXP";
-					$vComparisonOperator = "!=";						
-					$vFindInSetOperator = "NOT FIND_IN_SET";
-				break;				
-				case "<":
-					$vRegExpOperator = "REGEXP"; // Should not be used or not yet implemented
-					$vComparisonOperator = "<";
-					$vFindInSetOperator = "FIND_IN_SET"; // Should not be used or not yet implemented
-				break;			
-				case ">":
-					$vRegExpOperator = "REGEXP"; // Should not be used or not yet implemented
-					$vComparisonOperator = ">";
-					$vFindInSetOperator = "FIND_IN_SET"; // Should not be used or not yet implemented
-				break;			
-				case "<=":
-					$vRegExpOperator = "REGEXP"; // Should not be used or not yet implemented
-					$vComparisonOperator = "<=";
-					$vFindInSetOperator = "FIND_IN_SET"; // Should not be used or not yet implemented
-				break;			
-				case ">=":			
-					$vRegExpOperator = "REGEXP"; // Should not be used or not yet implemented
-					$vComparisonOperator = ">=";
-					$vFindInSetOperator = "FIND_IN_SET"; // Should not be used or not yet implemented
-				break;	
-				default : 
-					throw new Exception($vOperator . " is not recognized");
-    				return [];
-			}
-			
-			// We need to add conditions that take into account all the possible structures 
-			// that may have the field depending on which form it belongs
-		
-			// So, for each structure...
-		
-			foreach ($vField ["descriptors"] as $vHash => $vDescriptor)
-			{						
-				// Build the condition for each value specified in the request ("comma separated values")
             // operator to be applied to the field
 
             $vOperator = $vQuery['operator'];
@@ -556,94 +354,6 @@ class SearchManager
 
             $vField = $pFields[$vFieldName];
 
-					switch ($vDescriptor["mode"])
-					{
-						// If the field is intended to store a single value...
-					
-						case "single" :	
-						{										
-							// It the value is a regexp, let's build a condition that match (or NOT) the regexp
-																
-							if ($vIsRegExp)	
-								$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . " COLLATE utf8mb4_unicode_ci " . $vRegExpOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '\'';
-								
-							// else let's just compare using the appropriated comparison operator
-								
-							else
-							{ 
-								if ($vDescriptor["type"] == "number")
-								{
-									if (isset ($vValue) && trim ($vValue) !== "")
-										$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' ' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '';
-									else
-										$vValueConditions [] = '(' . /*mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' IS NULL OR ' . */ mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																									
-								}
-								else
-								{
-									$vValueConditions [] = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . " COLLATE utf8mb4_unicode_ci " . $vComparisonOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\'';							
-								}							
-							}
-						}
-						break;				
-								
-						// If the field is intended to store multiple values separated by comma...
-								
-						case "multiple" : 
-						{
-							// It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
-						
-							if ($vIsRegExp)																			
-   								$vValueConditions [] = '(s.champ = \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string ($this->wiki->dblink, $this->extractRegExp ($vValue)) . '\')' ; 
-							else
-							
-							// else let's just check in the value belongs (or NOT) to the set of values
-														
-								$vValueConditions [] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string ($this->wiki->dblink, $vValue) . '\' COLLATE utf8mb4_unicode_ci, ' . mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci)';
-						}
-						break;		
-						
-						// The field is missing : we need to add a specific condition
-						
-						case self::MISSING_FIELD :
-						case self::MISSING_PROPERTY :
-						{
-							$vValueConditions [] = 'FALSE';//'(' . /* mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' IS NULL OR ' . */ mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci = \'\' )';																				
-						}
-						break;
-					}				
-				}		
-				
-				$vDescriptorCondition = "";
-				
-				// if we had remembered that this field can have multiple structures 
-				// we need to specify the form IDs that use this structure in the condition request 
-			
-				if ($vField ["hasMultipleStructures"])
-				{
-					$vDescriptorCondition .= $this->renameJSONPathVariable("id_typeannonce") . ' IN (' . implode (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor["ids"])) . ")";
-				}	
-										
-				// Merge all value conditions with a logical OR and add it to the descripted field condition
-				
-				if (count ($vValueConditions) > 0)
-				{				
-					$vDescriptorCondition = ($vDescriptorCondition?$vDescriptorCondition . " AND ":"") . implode ( " OR ", $vValueConditions);
-				}
-
-				// Add the structure conditions to the field conditions
-				
-				if ($vDescriptorCondition) 	$vQueryConditions [] = "(" . $vDescriptorCondition . ')';
-			}						
-			
-			// Merge all the field conditions with a logical OR
-			
-			if (count ($vQueryConditions) > 0) 
-				$vQueriesConditions [] = '(' . implode (' OR ', $vQueryConditions) . ')';
-		}
-        
-        return implode (" AND ", $vQueriesConditions);        
-    }   
-    
             // We will store individual field conditions in an array to facilitate merging later
 
             $vQueryConditions = [];
@@ -764,8 +474,6 @@ class SearchManager
                     // we need to specify the form IDs that use this structure in the condition request
 
                     if ($vField['hasMultipleStructures']) {
-                        if (vDescriptorCondition != '') {
-                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor['ids'])) . ') AND (' . vDescriptorCondition . ')';
                         if ($vDescriptorCondition != '') {
                             $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor['ids'])) . ') AND (' . $vDescriptorCondition . ')';
                         }
@@ -805,7 +513,6 @@ class SearchManager
                 'queries' => [], // array of [ name => <string>, operator => <string> , values => [ <string>, ... ] ]
                 'formsIds' => [], // Types de fiches (par ID de formulaire)
                 'user' => '', // N'affiche que les fiches d'un utilisateur
-                'searchOperator' => 'OR', // Opérateur à appliquer aux mots-clés
                 'minDate' => '', // Date minimale des fiches
                 'correspondance' => '',
             ],
@@ -832,39 +539,6 @@ class SearchManager
             }
 
             $vFormIDs = array_map(
-                    function ($vID) {
-                        $vType = \gettype($vID);
-
-                        if ($vType == 'integer') {
-                            return $vID;
-                        }
-
-                        if ($vType == 'string') {
-                            $vTrimmed = trim($vID);
-                            $vIntValue = intval($vID);
-
-                            if (strval($vID) == strval($vIntValue)) {
-                                return $vIntValue;
-                            } else {
-                                return null;
-                            }
-                        }
-
-			$vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $this->renameJSONPathVariable("id_typeannonce") . '\')) IN (' . join (',', array_map (function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
-		}
-                        return null;
-                    },
-                    $vFormIDs
-                );
-
-            $vFormIDs = array_filter(
-                    $vFormIDs,
-                    function ($pID) {
-                        return $pID !== null;
-                    }
-                );
-
-            $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
                 function ($vID) {
                     $vType = \gettype($vID);
 
@@ -918,14 +592,6 @@ class SearchManager
 
         // Determine the necessary fields from searchfields and queries
 
-		if ($vKeywords != "")
-		{
-			 $vSearchFields = $params["searchfields"]??"";
-
-			 $vSearchFields .= ($vSearchFields !=""? ",":"") . "bf_titre";
-			 		
-			 $vKeywordsFields = array_unique (array_map ('trim', explode (",", $vSearchFields)));
-		}		
         $vKeywordsFields = [];
         $vQueriesFields = [];
 
@@ -965,304 +631,6 @@ class SearchManager
 
         // For each necessary field, let's retrieve the value structures of all forms...
 
-  			// We will store the field structure associated with form IDs, so create a place for it
-	  		
-	  		if (!isset ($vFields [$vField] ["descriptors"])) $vFields [$vField] ["descriptors"] = [];
-	  		if (!isset ($vFields [$vField] ["needSplit"])) $vFields [$vField] ["needSplit"] = false;
-	  		
-  			// For each form...
-  		
-	  		foreach ($vForms as $vFormID => $vForm)
-			{			
-				// ... we try to find the field by property name if it exists ...
-				// ex :"geolocation" in geolocation.bf_latitude
-			
-				$vPropertyFound = false;
-			
-				foreach ($vForm["prepared"] as $vFieldObject)
-				{					
-					// Extract the JSON path of the field
-					
-					$vJSONPath = explode('.', $vField);
-					
-					// Get the property name
-					
-					$vPropertyName = $vJSONPath [0]??"";
-					
-					if ($vFieldObject->getPropertyName () == $vPropertyName)
-					{					
-						// We found it
-					
-						$vPropertyFound = true;
-					
-						// We need to find the field mode and type associated to the complete field name (ex : "geolocation.bf_latitude")
-						
-						// So, let's get the field structure
-					
-						$vStructure = $vFieldObject->getValueStructure ();
-
-						// and try to find inside the complete field name 
-						
-						$vCurrentArray = $vStructure;
-						
-						$vFieldFound = true;
-						
-						foreach ($vJSONPath as $vJSONPathSegment)
-						{
-					        if (is_array($vCurrentArray) && array_key_exists($vJSONPathSegment, $vCurrentArray))
-					        {
-				            	$vCurrentArray = $vCurrentArray[$vJSONPathSegment];
-					        }
-					        else
-					        {					       
-					            $vFieldFound = false;
-					        }
-					    }
-
-					    if ($vFieldFound) 
-					    {
-					    	// We found it : we know the mode and type of the field
-
-					    	$vFieldDescriptor = $vCurrentArray;					    	
-					    }
-					    else
-					    {
-					        // We do not found it : the complete field name is missing in the form
-
-						    $vFieldDescriptor = [ "_mode_" => self::MISSING_FIELD, "_type_" => self::MISSING_FIELD ];
-						}
-
-						// Remember that the field can have this mode and type in this the form :
-
-						// Build a hash for fast access...
-
-						$vHash = $this->buildFieldDescriptorHash ($vFieldDescriptor);
-
-						// and remember it.
-
-						if (isset($vFields [$vField]["descriptors"][$vHash]))
-						{
-							$vFields [$vField]["descriptors"][$vHash]["ids"][] = $vFormID;
-						}
-						else
-						{
-							$vFields [$vField]["descriptors"][$vHash] = [ "mode" => $vFieldDescriptor["_mode_"], "type" => $vFieldDescriptor["_type_"], "ids" => [ $vFormID ] ];
-						}
-						
-						// If the "mode" of this field in this form Id is "multiple", let's remember we have to split it
-						
-						if ($vFieldDescriptor["_mode_"] == "multiple") $vFields [$vField]["needSplit"] = true;
-								
-						break; // We found it, so we can stop searching						
-					}
-					
-					// else we continue searching...
-				}
-				
-				// If we do not found the property in this form, let's memorize it
-				
-				if (!$vPropertyFound)
-				{
-					$vFieldDescriptor = [ "_mode_" => self::MISSING_PROPERTY, "_type_" => self::MISSING_PROPERTY ];
-					
-					$vHash = $this->buildFieldDescriptorHash ($vFieldDescriptor);
-								
-					if (isset($vFields [$vField]["descriptors"][$vHash]))
-					{
-						$vFields [$vField]["descriptors"][$vHash]["ids"][] = $vFormID;
-					}
-					else
-					{
-						$vFields [$vField]["descriptors"][$vHash] = [ "mode" => $vFieldDescriptor["_mode_"], "type" => $vFieldDescriptor["_type_"], "ids" => [ $vFormID ] ];
-					}													
-				}				
-			}
-
-			// We will remember if the field can have different kind of structures so that we can optimize SQL request.
-
-			$vFields [$vField] ["hasMultipleStructures"] = count (array_keys ($vFields [$vField]["descriptors"])) > 1;
-
-			// Let's remember that the field has not been yet extracted 
-			
-			$vFields [$vField]["isExtracted"] = false; 
-			
-			// ...neither is has been yet splitted if necessary
-			
-			$vFields [$vField]["isSplitted"] = false;
-		}
-   
-        // Build the SELECT part of the request :
-
-		// - Retrieves all columns and extract id_typeannonce
-
-		$vSelectRequest =
-		[  
-			'p.*',
-			'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS `' . $this->renameJSONPathVariable("id_typeannonce") . '`'
-		];
-        
-        // - Extract all fields ("single" and "multiple" mode)
-
-        foreach ($vFields as $vFieldName => $vField)
-        {
-	       	// Extract one field
-                
-            // Check that it was not already extracted
-                
-	        if (!$vField ["isExtracted"]) 
-	        {        
-				// Extract it if it is not yet done
-	        
-	           	$vSQLNom = mysqli_real_escape_string ($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName));
-            
-            	$vSelectRequest [] = 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.' . $vSQLNom . '\')) AS `' . $vSQLNom . '`';
-            	
-				// rembember it was extracted
-            	
-   	            $vField ["isExtracted"] = true; 
-            }        
-        }
-        
-        // - Finaly, concatenate the SELECT request
-        
-        $vSelectRequest = implode (", ", $vSelectRequest);
-        
-        // Split fields that may be in multiple mode :
-
-		// - We will concatenate splitted fields later
-        
-		$vSplitteds = []; 
-		$vSplittedsRequest = "";
-
-		// - Let's check each field :
-
-		foreach ($vFields as $vFieldName => $vField)
-		{		
-			// If the field doesn't have to be splitted (= it is always in single value mode) 
-			// or it was already splitted then we can ignore it.
-		
-			if (!$vField ["needSplit"] || $vField ["isSplitted"]) continue; 
-		
-			// else we split it		
-		
-			$vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple';
-				
-			$vSplittedsRequest .=
-						', ' . $this->renameJSONPathVariable($vFieldName) . '_multiple AS ' . 
-						'( ' .
-							'SELECT ' .
-								'id, ' .
-								'\'' . $this->renameJSONPathVariable($vFieldName) . '\' AS champ, ' .
-								'TRIM(SUBSTRING_INDEX(' . $vFieldName . ', \',\', 1)) AS elt, ' .
-								'CASE ' .
-									'WHEN INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') = 0 THEN \'\' ' .
-									'ELSE SUBSTR(' . $this->renameJSONPathVariable($vFieldName) . ', INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') + 1) ' .
-								'END AS rest ' .
-							'FROM filteredPages ' .
-							'UNION ALL ' .
-							'SELECT ' .
-								'id, ' .
-								'champ, ' .
-								'TRIM(SUBSTRING_INDEX(rest, \',\', 1)) AS elt, ' .
-								'CASE ' .
-									'WHEN INSTR(rest, \',\') = 0 THEN \'\' ' .
-									'ELSE SUBSTR(rest, INSTR(rest, \',\') + 1) ' .
-								'END AS rest ' .
-							'FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple ' .
-							'WHERE rest <> \'\'' .
-						')';
-				
-			// And we remember it has been done
-						
-			$vField ["isSplitted"] = true;
-		}
-		
-		// Union of all splitted fields
-		
-		$vSplittedsCount = count ($vSplitteds);
-		
-		if ($vSplittedsCount > 0)		
-			$vSplittedsRequest .= 
-						', all_multiples AS ' .
-						'( ' .
-							implode (" UNION ALL ", $vSplitteds) .
-						') ';	
-        
-        // Construct WHERE part with queries and keywords conditions
-        
-        $vWhereRequest = "";
-        
-        // Keywords conditions
-
-		// Let's retrieve the minimum search keyword length
-    
-		$vMinSearchKeywordLength = $this->getMinSearchKeywordLength ();
-		
-        $vKeywordsConditions = $this->buildKeywordsConditions
-        (
-        	$vKeywords,  // the keywords search string
-        	array_filter // apply only to search fields
-        	(        		       		
-        		$vFields, 
-        		function ($vFieldName) use ($vKeywordsFields)
-        		{        	
-        			return in_array ($vFieldName, $vKeywordsFields);
-        		},
-        		ARRAY_FILTER_USE_KEY
-        	),
-        	$vMinSearchKeywordLength
-        );
-        
-		$vWhereRequest .= $vKeywordsConditions;
-        
-        // Queries conditions
-        
-        $vQueriesConditions = trim ($this->buildQueriesConditions ($vQueries, $vFields));
-
-        if ($vQueriesConditions != "") $vWhereRequest .= ($vWhereRequest != ""?" AND ":"") . $vQueriesConditions;
-	   	
-	   	 // Optionnaly, filter on read ACL
-       
-        if (!$this->wiki->UserIsAdmin() && $filterOnReadACL) {
-            $vWhereRequest .= ($vWhereRequest != ""?" AND ":"") . $this->aclService->updateRequestWithACL();
-        }
-	   	
-        // Construct full request
-        
-		$vCompleteRequest =	'WITH RECURSIVE ' .
-								'filteredPages AS ' .
-								'( ' .
-									'SELECT '. 
-										$vSelectRequest . ' ' .
-									'FROM ' . $this->dbService->prefixTable('pages') . ' p ' .
-									'JOIN ' . $this->dbService->prefixTable('triples') . ' t ON ' .
-										't.resource = p.tag AND ' .
-										't.value = \''. $this->wiki->services->get(EntryManager::class)::TRIPLES_ENTRY_ID . '\' AND ' .
-										't.property = \'http://outils-reseaux.org/_vocabulary/type\' ' .
-									'WHERE ' .
-										($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ') . 
-										'p.comment_on = \'\' AND ' .
-										($vUserRequest !== "" ? $vUserRequest . " AND ":'') .
-										($vPeriodRequest !== "" ? $vPeriodRequest . " AND ":'') .
-										$vIDsRequest .
-								')' .
-								($vSplittedsRequest != "" ? $vSplittedsRequest . " " : " ") .
-								'SELECT DISTINCT f.* ' . 
-								'FROM filteredPages f ' .								
-								($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '') .
-								($vWhereRequest != "" ? "WHERE " . $vWhereRequest : "");
-
-/*
-        // requete de jointure : reprend la requete precedente et ajoute des criteres
-        if (isset($_GET['joinquery'])) {
-            $join = $this->dbService->escape($_GET['joinquery']);
-            $joinrequeteSQL = '';
-            $tableau = [];
-            $tab = explode('|', $join);
-            //découpe la requete autour des |
-            foreach ($tab as $req) {
-                $tabdecoup = explode('=', $req, 2);
-                $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
         foreach ($vNecessaryFields as $vField) {
             if (isset($vFields[$vField])) { // value structures already retrieved for this field, let's ignore it
                 continue;
@@ -1639,18 +1007,6 @@ class SearchManager
     {
         // The default results : nothing recognized
 
-	private function parseKeywords ($pKeywords, $pMinKeywordLength)
-    {    	
-    	$vKeywords = urldecode ($pKeywords);
-    
-    	// The default results : nothing recognized
-    
-    	$vResults = [ "CNF" => [], "excludeds" => [] ];
-    
-    	// Check if the $pKeywords parameter is valid for parsing
-    
-		if (!(is_string($vKeywords) && trim($vKeywords) != '' && $vKeywords != _t('BAZ_MOT_CLE')))
-			return $vResults;
         $vResults = ['CNF' => [], 'excludeds' => []];
 
         // Check if the $pKeywords parameter is valid for parsing
@@ -1659,10 +1015,6 @@ class SearchManager
             return $vResults;
         }
 
-		$vANDs = array_filter(array_unique(array_map ('trim',	explode ("|", $vKeywords))), function ($pKeyword) use ($pMinKeywordLength)
-		{
-			return strlen($pKeyword) >= $pMinKeywordLength;
-		});
         // Let's analyse the keywords to build a structure representing the CNF and to extract the excludeds tokens
 
         // Separates AND clauses
@@ -1682,30 +1034,6 @@ class SearchManager
                 $vTokens,
                 PREG_SET_ORDER
             );
-             
-            // Update the CNF and the excludeds token
-             
-            $vORs = [];
-                   
-			foreach ($vTokens as $vToken)
-			{
-				if ($vToken[1] == "-")
-					$vResults ["excludeds"][] = trim ($vToken[2], '"\'');
-				else
-					$vORs [] = trim ($vToken[2], '"\'');
-			}
-			
-			$vResults ["CNF"][] = $vORs;						
-		}
-		
-		// Return the parsed keywords search string
-		
-		return $vResults;		
-	}
-		 	
-	
-	/**
-     * Parse a query string
 
             // Update the CNF and the excludeds token
 
@@ -1744,24 +1072,6 @@ class SearchManager
      */
     public function parseQuery($pQuery)
     {
-    	if (is_array ($pQuery)) 
-    		$vQuery = $this->queryToString ($pQuery);
-    	else
-    		$vQuery = urldecode ($pQuery);
-    	
-    	if (trim ($vQuery) == "") return [];    	
-    	
-        return array_filter 
-    	(
-		    array_map
-	    	(
-	    		// For each query in queries 
-	    	
-	    		function ($pValue)
-				{					
-					// Extract name, operator and values
-												
-					preg_match_all ("/([^=!<>]*)([=!<>]+)([^=!<>]*)/", $pValue, $pMatches);
         if (is_array($pQuery)) {
             $vQuery = $this->queryToString($pQuery);
         } else {

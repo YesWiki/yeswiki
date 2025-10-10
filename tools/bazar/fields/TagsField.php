@@ -18,15 +18,6 @@ class TagsField extends EnumField
         $this->maxChars = $this->maxChars ?? 255;
         $this->propertyName = $this->name;
     }
-    
-    public function getValueStructure () // See BazarField::getValueStructure
-    {		
-        return [ $this->name => [ "_mode_" => "multiple", "_type_" => "string" ]];
-
-    public function getValueStructure() // See BazarField::getValueStructure
-    {
-        return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
-    }
 
     public function getValueStructure() // See BazarField::getValueStructure
     {

@@ -1375,9 +1375,6 @@ class Wiki
             // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
             return intval(round((int)$size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
         } else {
-            return intval((int)round($size));
-            return intval(round((int)$size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
-        } else {
             return intval(round((int)$size));
         }
     }
