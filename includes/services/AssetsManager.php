@@ -90,7 +90,7 @@ class AssetsManager
         }
     }
 
-    public function AddJavascript($script)
+    public function AddJavascript($script, $module = false)
     {
         if (!isset($GLOBALS['js'])) {
             $GLOBALS['js'] = '';

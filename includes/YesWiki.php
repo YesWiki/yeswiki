@@ -1235,7 +1235,7 @@ class Wiki
                     $path = 'api';
                 } else {
                     $path = $this->tag . '/' . $this->method;
-                    $newQuerytring = implode('&', $extract);
+                    $newQuerystring = implode('&', $extract);
                 }
             } else {
                 $response = new Response(_t('ROUTE_BAD_CONFIGURED'), Response::HTTP_BAD_REQUEST);
@@ -1244,10 +1244,10 @@ class Wiki
             }
         } elseif (count($extract) > 1) {
             array_shift($extract);
-            $newQuerytring = implode('&', $extract);
+            $newQuerystring = implode('&', $extract);
         }
-        $context->setPathInfo('/' . $path);
-        $context->setQueryString($newQuerytring ?? '');
+        $context->setPathInfo('/' . $_GET['wiki']);
+        $context->setQueryString($newQuerystring ?? $_GET['wiki']);
 
         $matcher = new UrlMatcher($this->routes, $context);
 
@@ -1354,9 +1354,9 @@ class Wiki
     /**
      * @deprecated Use AssetsManager service instead
      */
-    public function AddJavascript($script)
+    public function AddJavascript($script, $module = false)
     {
-        return $this->services->get(AssetsManager::class)->AddJavascript($script);
+        return $this->services->get(AssetsManager::class)->AddJavascript($script, $module);
     }
 
     /**
@@ -1373,7 +1373,7 @@ class Wiki
         $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
         if ($unit) {
             // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
-            return intval((int)round($size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
+            return intval(round((int)$size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
         } else {
             return intval((int)round($size));
             return intval(round((int)$size * pow(1024, stripos('bkmgtpezy', $unit[0]))));

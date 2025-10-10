@@ -59,4 +59,9 @@ input {
 .opening-hours-display ul {
   list-style: none;
   margin: 2px;
+  padding-left: 0.5em;
+}
+
+.opening-hours-display li {
+  min-width: 6.5em;
 }

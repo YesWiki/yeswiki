@@ -15,7 +15,7 @@
     </a>
   </div>
 
-  <textarea id="{{ arguments.name }}" name="{{ arguments.name }}" maxlength="{{ arguments.maxChars }}" rows="{{ arguments.rows }}" placeholder="{{ arguments.placeholder }}"
+  <textarea id="{{ arguments.name }}" name="{{ arguments.name }}" maxlength="{{ arguments.maxChars }}" rows="{{ arguments.rows }}" placeholder="{{ arguments.placeholder }}" {% if arguments.required is not empty %}required{% endif %}
             class="aceditor-textarea">
     {{- arguments.value|raw -}}
   </textarea>

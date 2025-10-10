@@ -33,7 +33,7 @@ if (count($fiches)>0) {
             'columnfieldsids' => 'columnFieldsIdsRaw',
             'sumfieldsids' => 'sumFieldsIds',
             ] as $paramKey => $varName){
-            $tmp = (isset($param[$paramKey]) && is_string($param[$paramKey])) ? $param[$paramKey] : "";
+            $tmp = (isset($params[$paramKey]) && is_string($params[$paramKey])) ? $params[$paramKey] : "";
             $tmp = array_filter(
                 array_map('trim', explode(',', trim($tmp))),
                 function ($name) {
@@ -44,11 +44,11 @@ if (count($fiches)>0) {
         }
 
 
-        $checkboxFieldsInColumns = $param['checkboxfieldsincolumns'] ?? null;
+        $checkboxFieldsInColumns = $params['checkboxfieldsincolumns'] ?? null;
         $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ["0",0,false,"false","non"], true);
 
         foreach(['displayadmincol','displaycreationdate','displaylastchangedate','displayowner'] as $paramName){
-            $paramValue = (!empty($param[$paramName]) && in_array($param[$paramName], ['yes','onlyadmins'], true)) ? $param[$paramName] : false;
+            $paramValue = (!empty($params[$paramName]) && in_array($params[$paramName], ['yes','onlyadmins'], true)) ? $params[$paramName] : false;
             switch ($paramValue) {
                 case 'onlyadmins':
                     $paramValue = $this->wiki->UserIsAdmin();
@@ -63,13 +63,13 @@ if (count($fiches)>0) {
             }
             $sanitizedParams[$paramName] = $paramValue;
         }
-        $sanitizedParams['displayvaluesinsteadofkeys'] = !isset($param['displayvaluesinsteadofkeys']) ? false : filter_var($param['displayvaluesinsteadofkeys'],FILTER_VALIDATE_BOOLEAN);
-        $sanitizedParams['exportallcolumns'] = !isset($param['exportallcolumns']) ? false : filter_var($param['exportallcolumns'],FILTER_VALIDATE_BOOLEAN);
-        $sanitizedParams['displayimagesasthumbnails'] = !isset($param['displayimagesasthumbnails']) ? false : filter_var($param['displayimagesasthumbnails'],FILTER_VALIDATE_BOOLEAN);
+        $sanitizedParams['displayvaluesinsteadofkeys'] = !isset($params['displayvaluesinsteadofkeys']) ? false : filter_var($params['displayvaluesinsteadofkeys'],FILTER_VALIDATE_BOOLEAN);
+        $sanitizedParams['exportallcolumns'] = !isset($params['exportallcolumns']) ? false : filter_var($params['exportallcolumns'],FILTER_VALIDATE_BOOLEAN);
+        $sanitizedParams['displayimagesasthumbnails'] = !isset($params['displayimagesasthumbnails']) ? false : filter_var($params['displayimagesasthumbnails'],FILTER_VALIDATE_BOOLEAN);
 
         $sanitizedParams['columnswidth'] = [];
-        if (isset($param['columnswidth']) && is_string($param['columnswidth'])){
-            foreach(explode(',',$param['columnswidth']) as $columnInfo){
+        if (isset($params['columnswidth']) && is_string($params['columnswidth'])){
+            foreach(explode(',',$params['columnswidth']) as $columnInfo){
                 $columnInfoExtracted = explode('=',$columnInfo);
                 if (!empty($columnInfoExtracted[0]) && !empty($columnInfoExtracted[1])){
                     $sanitizedParams['columnswidth'][$columnInfoExtracted[0]] = $columnInfoExtracted[1];
@@ -236,14 +236,14 @@ if (count($fiches)>0) {
         /* manage colors and icons */
         foreach($fiches as $fiche){
             $colors[$fiche['id_fiche']] = getCustomValueForEntry(
-                $param['color'],
-                $param['colorfield'],
+                $params['color'],
+                $params['colorfield'],
                 $fiche,
                 ''
               );
             $icons[$fiche['id_fiche']] = getCustomValueForEntry(
-                $param['icon'],
-                $param['iconfield'],
+                $params['icon'],
+                $params['iconfield'],
                 $fiche,
                 ''
               );
@@ -257,7 +257,7 @@ if (count($fiches)>0) {
 }
 echo $this->render('@bazar/tableau.twig', [
     'infoRes' => $info_res ?? null,
-    'param' => $param,
+    'params' => $param,
     'columnsInfo' => $columnsInfo,
     'entries' => $fiches,
     'sumFieldsIds' => $sumFieldsIds ?? null,

@@ -22,15 +22,14 @@ if (preg_match('/(?=<[^>]+(?=[\s+\"\']markdown[\s+\"\']).+)([^>]+>)/uU', $plugin
 
 // mermaid
 if (preg_match('/(?=<[^>]+(?=[\s+\"\']mermaid[\s+\"\']).+)([^>]+>)/uU', $plugin_output_new)) {
-    $this->addJavascriptFile('tools/templates/libs/vendor/mermaid/mermaid.min.js');
-    $this->addJavascript('$(document).ready(function() {
+//    $this->addJavascriptFile('tools/templates/libs/vendor/mermaid/mermaid.min.js', false, true);
+    $this->addJavascript('import mermaid from \'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs\';
         mermaid.initialize({
             startOnLoad: true,
             fontFamily: \'inherit\',
             theme: "default",
-            themeCSS: \':root { --mermaid-font-family: inherit;} .titleText, .taskText, .sectionTitle, .grid , .grid .tick text {font-family:inherit;}\'            
-        });
-    });');
+            themeCSS: \':root { --mermaid-font-family: inherit;} .titleText, .taskText, .sectionTitle, .grid , .grid .tick text {font-family:inherit;} g.label {color:inherit;}\'            
+    });', true);
 }
 
 // izmir

@@ -65,8 +65,12 @@ Vue.component('opening-hours-create', {
     openingHours() {
       const intervals = []
       for (const interval of this.opening_days) {
-        const hours = interval.hours.map((hour) => `${hour.start}-${hour.end}`)
-        intervals.push(`${interval.days.join(',')} ${hours.join(',')}`)
+        const hours = interval.hours
+          .map((hour) => `${hour.start}-${hour.end}`)
+          .filter((value) => !value.includes('null'))
+        if (interval.days.length !== 0) {
+          intervals.push(`${interval.days.join(',')} ${hours.join(',')}`)
+        }
       }
       return intervals.join(';')
     }

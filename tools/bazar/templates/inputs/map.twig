@@ -30,8 +30,8 @@
         <a class="btn btn-primary btn-geolocate-address">
             {{ _t('BAZ_VERIFIER_MON_ADRESSE') }}
         </a>
-        <input type="hidden" value="{{ latitude }}" id="{{ field.latitudeField }}" name="{{ field.latitudeField }}">
-        <input type="hidden" value="{{ longitude }}" id="{{ field.longitudeField }}" name="{{ field.longitudeField }}">
+        <input type="hidden" value="{{ latitude }}" id="{{ field.latitudeField }}" name="geolocation[{{ field.latitudeField }}]">
+        <input type="hidden" value="{{ longitude }}" id="{{ field.longitudeField }}" name="geolocation[{{ field.longitudeField }}]">
         <div id="osmmapform" style="margin-top:5px; width:{{ config.baz_map_width }}; height:{{ config.baz_map_height }};"></div>
     </div>
 </div>
