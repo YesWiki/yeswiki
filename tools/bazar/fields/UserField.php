@@ -133,7 +133,6 @@ class UserField extends BazarField
             $this->updateEmailIfNeeded($wikiName, $entry[$this->emailField] ?? null);
         } else {
             $wikiName = $entry[$this->nameField];
-
             if (!$wiki->IsWikiName($wikiName)) {
                 // create a UserName from value that is a wikiname
                 // so the User could have a chance to have the same name as the created entry

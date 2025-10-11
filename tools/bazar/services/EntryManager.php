@@ -6,7 +6,6 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
@@ -925,68 +924,35 @@ class EntryManager
     public function formatDataBeforeSave($data): array
     {
         // Let's set the value of id_typeannonce
+
         $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
 
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
         if (empty($form)) {
-            throw new \Exception('No form with id: ' . $data['id_typeannonce']);
+            throw new Exception('No form with id: ' . $data['id_typeannonce']);
         }
 
         // We first need to ensure default values for uneditable fields are set
         // so we can use it later to build the automatic title if necessary
 
         foreach ($form['prepared'] as $bazarField) {
-            $tab = [];
             if ($bazarField instanceof BazarField &&
-                !($bazarField instanceof TitleField) &&
-                   !($bazarField instanceof ImageField) && // ImageField and File Field need the bf_titre to be defined before to call formatValuesBeforeSave
-                   !($bazarField instanceof FileField)	    // So we will handle it later.
-                ) {
-                $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
-            }
-
-            if (is_array($tab)) {
-                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
-                    foreach ($tab['fields-to-remove'] as $field) {
-                        if (isset($data[$field])) {
-                            unset($data[$field]);
-                        }
-                    }
-                    unset($tab['fields-to-remove']);
-                }
-                $data = array_merge($data, $tab);
-            }
-        }
-
-        // We can now build the field title if there is one
-
-        if (is_array($form['prepared'])) {
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof TitleField) {
-                    // We first need to ensure default values for uneditable fields are set
-                    // so we can use it later to build the automatic title if necessary
-
-                    foreach ($form['prepared'] as $bazarField) {
-                        if ($bazarField instanceof BazarField &&
                 !($bazarField instanceof TitleField) &&
                 !($bazarField->requireIDFiche()) // Some fields like ImageField and File Field need the id_fiche to be defined before to call formatValuesBeforeSave. So we will handle them later.
                 ) {
-                            $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
+                $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
-                            if (is_array($tab)) {
-                                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
-                                    foreach ($tab['fields-to-remove'] as $field) {
-                                        if (isset($data[$field])) {
-                                            unset($data[$field]);
-                                        }
-                                    }
-                                    unset($tab['fields-to-remove']);
-                                }
-                                $data = array_merge($data, $tab);
+                if (is_array($tab)) {
+                    if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
+                        foreach ($tab['fields-to-remove'] as $field) {
+                            if (isset($data[$field])) {
+                                unset($data[$field]);
                             }
                         }
+                        unset($tab['fields-to-remove']);
                     }
+                    $data = array_merge($data, $tab);
                 }
             }
         }
@@ -1002,6 +968,7 @@ class EntryManager
         }
 
         // Let's generate fiche id if necessary
+
         if (!isset($data['id_fiche'])) {
             // Generate the ID from the title
             if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
@@ -1011,28 +978,6 @@ class EntryManager
             //$_POST['id_fiche'] = $data['id_fiche'];
         } elseif (empty($data['id_fiche'])) {
             throw new Exception('$data[\'id_fiche\'] is set but with empty value !');
-        }
-
-        // We can now handle ImageField and File Field
-
-        foreach ($form['prepared'] as $bazarField) {
-            if (($bazarField instanceof ImageField) ||
-                   ($bazarField instanceof FileField)
-                ) {
-                $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
-            }
-
-            if (is_array($tab)) {
-                if (isset($tab['fields-to-remove']) and is_array($tab['fields-to-remove'])) {
-                    foreach ($tab['fields-to-remove'] as $field) {
-                        if (isset($data[$field])) {
-                            unset($data[$field]);
-                        }
-                    }
-                    unset($tab['fields-to-remove']);
-                }
-                $data = array_merge($data, $tab);
-            }
         }
 
         // We can now handle fields like ImageField and File Field that require id_fiche in order to format their values
@@ -1073,7 +1018,7 @@ class EntryManager
 
         // Let's ensure $data['id_fiche'] is not empty
         if (empty($data['id_fiche'])) {
-            throw new \Exception('$data[\'id_fiche\'] is empty !');
+            throw new Exception('$data[\'id_fiche\'] is empty !');
         }
 
         $data['date_maj_fiche'] = $data['date_maj_fiche'] ?? date('Y-m-d H:i:s', time());
@@ -1093,7 +1038,7 @@ class EntryManager
             unset($data['owner']);
         }
 
-        // on encode en utf-8 pour reussir a encoder en json
+        // on encode en utf-8 pour reussir a encoder en json TODO: still necessary ?
         if (YW_CHARSET != 'UTF-8') {
             $data = array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
