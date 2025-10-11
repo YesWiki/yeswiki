@@ -149,16 +149,20 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   top: 70px;
   right: 0;
 }
+
 .ace_mobile-menu {
   display: none;
 }
-.component-action-list > li.open-existing-action {
+
+.component-action-list>li.open-existing-action {
   display: none;
 }
-.component-action-list.only-edit > li.open-existing-action {
+
+.component-action-list.only-edit>li.open-existing-action {
   display: block;
 }
-.component-action-list.only-edit > li:not(.open-existing-action) {
+
+.component-action-list.only-edit>li:not(.open-existing-action) {
   display: none;
 }
 
@@ -180,7 +184,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   margin: 0 !important;
 }
 
-.ace_editor.ace_autocomplete .ace_text-layer > .ace_line {
+.ace_editor.ace_autocomplete .ace_text-layer>.ace_line {
   padding: 0 0.5rem;
 }
 
@@ -225,7 +229,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 }
 
 /* in small screen, make button smaller and overlapping textarea */
-@media (width <= 1200px) {
+@media (width <=1200px) {
   body:not(.yeswiki-iframe-body) .flying-edit-button .btn {
     border-radius: 4px;
     padding: 0.4rem 0;

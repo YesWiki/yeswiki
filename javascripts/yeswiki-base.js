@@ -949,5 +949,6 @@ $('.tab-content [data-toggle="tab"]').on('click', function() {
 $('#yw-a11y-jump-content').click(() => {
   setTimeout(() => {
     $('#yw-topnav').removeClass('nav-down').addClass('nav-up')
+    $('body').removeClass('nav-down').addClass('nav-up')
   }, 300)
 })
