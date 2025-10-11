@@ -133,15 +133,14 @@ class AutoUpdateService
         $messages->add(_t('AU_UPDATE_PACKAGE') . $packageName, 'AU_OK');
 
         if (get_class($package) === PackageCollection::CORE_CLASS) {
-            
-            if (!$package->upgradeDefaultTheme)) {
+            if (!$package->upgradeDefaultTheme()) {
                 $messages->add('AU_UPDATE_THEME', 'AU_ERROR');
                 $package->cleanTempFiles();
 
                 return $messages;
             }
             $messages->add('AU_UPDATE_THEME', 'AU_OK');
-            
+
             // Mise à jour des tools.
             if (!$package->upgradeTools()) {
                 $messages->add('AU_UPDATE_TOOL', 'AU_ERROR');
