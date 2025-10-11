@@ -27,11 +27,11 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     $hasReadAccess = true;
     if (!empty($_GET['field'])) {
         $hasReadAccess = $aclService->hasAccess('read');
-        $mail_receiver = '';
+        $mail_receiver = [];
         if ($hasReadAccess) {
             $val = $entryManager->getOne($this->GetPageTag());
             if (is_array($val) and isset($val[$_GET['field']])) {
-                $mail_receiver = $val[$_GET['field']];
+                $mail_receiver[] = $val[$_GET['field']];
             }
             $form = baz_valeurs_formulaire($val['id_typeannonce']);
             $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->href('', $val['id_fiche']) . '">'
