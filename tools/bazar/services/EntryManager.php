@@ -570,7 +570,6 @@ class EntryManager
      */
     public function validate($data, $pFlags = self::VALIDATE_FLAG_ALL)
     {
-        dump($data);
         if ($pFlags & self::VALIDATE_FLAG_ANTISPAM) {
             if (!isset($data['antispam']) || !$data['antispam'] == 1) {
                 throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
