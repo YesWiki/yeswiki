@@ -2,7 +2,6 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Attach;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Wiki;
@@ -104,9 +103,9 @@ class BazarListService
                     'regexp' => $options['regexp'] ?? '0',
                     'queries' => $options['query'] ?? '',
                     'formsIds' => $options['idtypeannonce'] ?? [],
-                    'keywords' => $this->wiki->services->get(SearchManager::class)->aggregateKeywords ($_REQUEST["q"]??null, $_REQUEST["keywords"]??null),
-                    'user' => $options['user']??null,
-                    'minDate' => $options['dateMin']??null,
+                    'keywords' => $this->wiki->services->get(SearchManager::class)->aggregateKeywords($_REQUEST['q'] ?? null, $_REQUEST['keywords'] ?? null),
+                    'user' => $options['user'] ?? null,
+                    'minDate' => $options['dateMin'] ?? null,
                     'keywords' => $options['keywords'] ?? null,
                     'searchfields' => $options['searchfields'] ?? '',
                     'user' => $options['user'] ?? null,

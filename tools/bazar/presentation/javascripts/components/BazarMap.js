@@ -24,11 +24,10 @@ Vue.component('BazarMap', {
   },
   computed: {
     entries() {
-      var vMe = this;
-      return this.$root.entriesToDisplay.filter(function (entry) 
-	  {
-	  	var vGeolocation = vMe.getGeolocation (entry);
-	  	return vGeolocation.latitude && vGeolocation.longitude;
+      const vMe = this
+      return this.$root.entriesToDisplay.filter((entry) => {
+	  	const vGeolocation = vMe.getGeolocation(entry)
+	  	return vGeolocation.latitude && vGeolocation.longitude
       })
     },
     map() {
@@ -51,21 +50,19 @@ Vue.component('BazarMap', {
     }
   },
   methods: {
-  	getGeolocation (pEntry)
-  	{
-  		var vLatitude;
- 		var vLongitude;
-  	
-  		if (pEntry.geolocation)
-  		{  			
-  			vLatitude = pEntry.geolocation.bf_latitude??null;
-  			vLongitude = pEntry.geolocation.bf_longitude??null;
+  	getGeolocation(pEntry) {
+  		let vLatitude
+ 		let vLongitude
+
+  		if (pEntry.geolocation) {
+  			vLatitude = pEntry.geolocation.bf_latitude ?? null
+  			vLongitude = pEntry.geolocation.bf_longitude ?? null
   		}
-  		
-  		if (!vLatitude) vLatitude = pEntry.bf_latitude??null;
-  		if (!vLongitude) vLongitude = pEntry.bf_longitude??null;  		
-  		
-  		return { latitude : vLatitude, longitude : vLongitude };
+
+  		if (!vLatitude) vLatitude = pEntry.bf_latitude ?? null
+  		if (!vLongitude) vLongitude = pEntry.bf_longitude ?? null
+
+  		return { latitude: vLatitude, longitude: vLongitude }
   	},
     updateBounds() {
       if (!this.$refs.map) return
@@ -146,8 +143,8 @@ Vue.component('BazarMap', {
     createMarker(entry) {
       if (entry.marker) return entry.marker
       try {
-	    var vGeolocation = this.getGeolocation (entry);
-      
+	    const vGeolocation = this.getGeolocation(entry)
+
         entry.marker = L.marker([vGeolocation.latitude, vGeolocation.longitude], { riseOnHover: true })
         const isLink = (this.isModalDisplay() || this.isDirectLinkDisplay() || this.isNewTabDisplay())
         const tagName = isLink ? 'a' : 'div'

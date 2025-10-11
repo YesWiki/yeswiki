@@ -123,8 +123,8 @@ class AclField extends BazarField
             return (!empty($this->propertyName))
             ? [
                 'fields-to-remove' => [
-                    $this->propertyName
-                ]
+                    $this->propertyName,
+                ],
             ]
             : [];
         }

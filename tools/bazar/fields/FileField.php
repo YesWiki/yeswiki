@@ -95,14 +95,14 @@ class FileField extends BazarField
         ));
     }
 
-	/*
-	*	indicates if id_fiche must be set before to format the value
-	*/
+    /*
+    *	indicates if id_fiche must be set before to format the value
+    */
 
-	public function requireIDFiche ()
-	{
-		return true;
-	}
+    public function requireIDFiche()
+    {
+        return true;
+    }
 
     public function formatValuesBeforeSave($entry)
     {

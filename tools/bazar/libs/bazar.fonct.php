@@ -1,7 +1,6 @@
 <?php
 
 use function Symfony\Component\String\u;
-
 use YesWiki\Bazar\Exception\ParsingMultipleException;
 use YesWiki\Bazar\Field\DateField;
 use YesWiki\Bazar\Field\EnumField;
@@ -73,11 +72,11 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                 } else {
                     if (isset($form['prepared'])) {
                         foreach ($form['prepared'] as $field) {
-                            $propertyName = $field->getPropertyName();                            
-                            if ($propertyName === $key) {                            							
+                            $propertyName = $field->getPropertyName();
+                            if ($propertyName === $key) {
                                 if (
-	                                $field instanceof MapField
-	                                || $field instanceof EnumField
+                                    $field instanceof MapField
+                                    || $field instanceof EnumField
                                     || $field instanceof DateField
                                     || $field->getName() == 'scope'
                                 ) {

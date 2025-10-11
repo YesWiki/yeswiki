@@ -19,6 +19,7 @@ class RssHandler extends YesWikiHandler
 
             $securityController = $this->getService(SecurityController::class);
 
+            $id = null;
             if (isset($_GET['id'])) {
                 $id = $securityController->filterInput(INPUT_GET, 'id', FILTER_DEFAULT, true, 'string', ['flags' => FILTER_FORCE_ARRAY]);
             } elseif (isset($_GET['id_typeannonce'])) {
@@ -44,24 +45,6 @@ class RssHandler extends YesWikiHandler
                     }
                 }
 
-        $vKeywords = $this->getService(SearchManager::class)->aggregateKeywords ($_GET['q']??null, $_GET['keywords']??null);
-        
-        $vQuery = $this->getService(SearchManager::class)->parseQuery ($_GET['query']??null);
-        
-		// ordre
-        $ordre = "desc";
-        
-        // champ
-        $champ = 'date_creation_fiche';
-
-        $tableau_flux_rss = $this->getService(EntryManager::class)->search(
-            [
-                'queries' => $vQuery,
-                'formsIds' => $vIDsArray,
-                'user' => $utilisateur,
-                'keywords' => $vKeywords,
-            ],
-            true, // filter on read ACL
                 foreach ($vIDsArray as $vID) {
                     if (strval($vID) != strval(intval($vID))) {
                         $vIDsArray = '';
@@ -178,10 +161,10 @@ class RssHandler extends YesWikiHandler
                         'description',
                         null,
                         '<![CDATA[' . preg_replace(
-                        '/data-id=".*"/Ui',
-                        '',
-                        $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($ligne), $this->wiki->href('', $ligne['id_fiche'])))
-                    ) . ']]>'
+                            '/data-id=".*"/Ui',
+                            '',
+                            $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($ligne), $this->wiki->href('', $ligne['id_fiche'])))
+                        ) . ']]>'
                     );
                     $xml .= "\r\n        ";
                     $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime($ligne['date_creation_fiche'])));

@@ -267,7 +267,7 @@ class SecurityController extends YesWikiController
          */
         $rawInputFiltered = filter_input($type, $varName, $filter, $options);
 
-        if (is_array ($options) && ($options['flags'] & FILTER_REQUIRE_ARRAY || $options['flags'] & FILTER_FORCE_ARRAY)) {
+        if (is_array($options) && ($options['flags'] & FILTER_REQUIRE_ARRAY || $options['flags'] & FILTER_FORCE_ARRAY)) {
             $vSanitizedArray = [];
 
             if ($rawInputFiltered === false || $rawInputFiltered === null) {

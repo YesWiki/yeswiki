@@ -45,7 +45,7 @@ export default {
 		    6: 'autocomplete_other',
 		    7: 'show_map_in_entry_view',
 		    8: 'required'
-		}
+    }
   },
   renderInput(fieldData) {
     return {
