@@ -571,27 +571,12 @@ class EntryManager
      */
     public function validate($data, $pFlags = self::VALIDATE_FLAG_ALL)
     {
+        dump($data);
         if ($pFlags & self::VALIDATE_FLAG_ANTISPAM) {
-            if (!isset($data['antispam']) or !$data['antispam'] == 1) {
+            if (!isset($data['antispam']) || !$data['antispam'] == 1) {
                 throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
             }
         }
-
-        // On teste le titre car ça peut bugguer sérieusement sans
-
-        if ($pFlags & self::VALIDATE_FLAG_ID_TYPEANNONCE) {
-            // form metadata
-            if (!isset($data['id_typeannonce'])) {
-                throw new Exception(_t('BAZ_NO_FORMS_FOUND'));
-            }
-        }
-        if ($pFlags & self::VALIDATE_FLAG_ANTISPAM) {
-            if (!isset($data['antispam']) or !$data['antispam'] == 1) {
-                throw new Exception(_t('BAZ_PROTECTION_ANTISPAM'));
-            }
-        }
-
-        // On teste le titre car ça peut bugguer sérieusement sans
 
         if ($pFlags & self::VALIDATE_FLAG_BF_TITRE) {
             if (!isset($data['bf_titre'])) {
@@ -630,19 +615,6 @@ class EntryManager
         }
 
         // We need to check antispam before if it is removed from data
-
-        $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
-
-        // Let's format the data
-
-        $data = $this->formatDataBeforeSave($data, true);
-
-        // We need to check bf_titre and id_typeannonce once the data are formated
-
-        $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
-
-        // We need to check antispam before if it is removed from data
-
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
         // not possible to init the formManager in the constructor because of circular reference problem
@@ -652,11 +624,9 @@ class EntryManager
         $data = $this->assignRestrictedFields($data, [], $form);
 
         // Let's format the data
-
         $data = $this->formatDataBeforeSave($data);
 
         // We need to check bf_titre and id_typeannonce once the data are formated
-
         $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
 
         // on change provisoirement d'utilisateur
@@ -967,6 +937,7 @@ class EntryManager
         // so we can use it later to build the automatic title if necessary
 
         foreach ($form['prepared'] as $bazarField) {
+            $tab = [];
             if ($bazarField instanceof BazarField &&
                 !($bazarField instanceof TitleField) &&
                    !($bazarField instanceof ImageField) && // ImageField and File Field need the bf_titre to be defined before to call formatValuesBeforeSave
