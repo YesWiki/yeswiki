@@ -32,6 +32,11 @@ class UserField extends BazarField
     private const CONFIRM_NAME_SUFFIX = '_confirmNewName';
     private const FORCE_LABEL = '_force_label';
 
+    public function requireIDFiche()
+    {
+        return true;
+    }
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
