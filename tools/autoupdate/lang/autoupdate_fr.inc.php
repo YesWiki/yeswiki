@@ -47,4 +47,9 @@ return [
     'AU_ONE_THEME_UPDATE' => 'Vous avez 1 thème à mettre à jour',
     'AU_SEVERAL_TOOLS_UPDATE' => 'Vous avez {nbMaj} extensions à mettre à jour',
     'AU_ONE_TOOL_UPDATE' => 'Vous avez 1 extension à mettre à jour',
+    'SUPPORT_YESWIKI' => 'Soutenez YesWiki',
+    'SUPPORT_YESWIKI_DESC' => 'YesWiki est un logiciel libre et gratuit, mais ce sont vos dons qui permettent de faire tourner cette nouvelle version',
+    'SUPPORT_US' => 'soutenez-nous',
+    'DONATE' => 'Je donne',
+    'LEARN_MORE' => 'En savoir plus',
 ];
