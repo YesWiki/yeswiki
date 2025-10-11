@@ -17,8 +17,6 @@ export default {
      */
     parseCondition(pValue) {
 	    // Extraire nom, opérateur et valeurs
-	    const regex = /([^=!<>]*)([=!<>]+)([^=!<>]*)/;
-		const matches = pValue.match(regex);
 	    const regex = /\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/
       const matches = pValue.match(regex)
 
@@ -124,7 +122,7 @@ export default {
     {
       const vParams = new URLSearchParams(pParams)
 
-      const vParseds = {}
+      const vParseds = {}
 
       for (const cKey of vParams.keys()) {
         const vValue = vParams.get(cKey)
@@ -203,13 +201,6 @@ export default {
 
       if (vQuery !== undefined) {
 		    // Remove duplicates and rebuild the query string
-		
-			vQuery = [...new Set (	vQuery.map (({name, operator, values}) => name+operator+values )) ].join ("|");
-			
-			if (vQuery.trim() != "") vMerged.query = encodeURIComponent (vQuery);
-		}
-		
-		// Merge keywords parameter
 
         vQuery = [...new Set(vQuery.map(({ name, operator, values }) => name + operator + values))].join('|')
 
@@ -232,18 +223,6 @@ export default {
         // URI encode the keywords
 
 		    // Remove duplicates and rebuild the query string
-		
-			vKeywords = [...new Set (	vKeywords.split ("|")) ].join ("|");
-			
-			if (vKeywords.trim() != "") vMerged.keywords = encodeURIComponent (vKeywords);
-		}
-		
-		if (pOptions.returnMode == "string")
-			return $.param (vMerged); 
-		else
-			return vMerged;
-	},  
-	/**
 
         vKeywords = [...new Set(vKeywords.split('|'))].join('|')
 
@@ -366,10 +345,6 @@ export default {
     },
     // Search with existing data in javascript
     localSearch(entries, search) {
-    
-    	var vThis = this;
-    
-		// Parse search as a keywords search string
     	const vThis = this
 
       // Parse search as a keywords search string
@@ -382,45 +357,6 @@ export default {
           .filter((pOr) => pOr.length > 2 && !wordsToExcludeFromSearch.includes(pOr)))
         .filter((pAnd) => pAnd.length > 0)
 
-		vParsedKeywords.CNF = vParsedKeywords.CNF
-								.map (	(pAnd) => 
-										pAnd
-										.map ((pOr) => vThis.removeDiatrics(pOr))
-										.filter ((pOr) => pOr.length > 2 && !wordsToExcludeFromSearch.includes(pOr))
-									)
-								.filter ((pAnd) => pAnd.length > 0);
-
-		vParsedKeywords.excludeds = vParsedKeywords.excludeds
-										.map ((pExcluded) => vThis.removeDiatrics(pExcluded))
-										.filter((pExcluded) => pExcluded.length > 2 && !wordsToExcludeFromSearch.includes(pExcluded));
-								
-		var vResult = entries.filter((pEntry) =>
-		{
-			pEntry.searchScore = 0;
-
-			var vMatchedAnds = 0;
-
-			vParsedKeywords.CNF.every (function (pAnd)
-			{
-				var vMatchedOrs = 0;
-				var vAndScore = 0;
-
-				pAnd.forEach ((pOr) => 
-				{
-					var vMatchedFields = 0;
-					var vOrScore = 0;
-								
-					vThis.params.searchfields.forEach(function (pField)
-					{
-						var vFieldValue = pEntry[pField] ? pEntry[pField] : '';
-						
-						if (Array.isArray(vFieldValue)) vFieldValue = vFieldValue.join(' ');
-
-						vFieldValue = vThis.removeDiatrics(vFieldValue);
-							
-						vFieldValue = vFieldValue.trim ();
-							
-						var vRegExp = vThis.extractRegExp (pOr);
       vParsedKeywords.excludeds = vParsedKeywords.excludeds
         .map((pExcluded) => vThis.removeDiacritics(pExcluded))
         .filter((pExcluded) => pExcluded.length > 2 && !wordsToExcludeFromSearch.includes(pExcluded))
@@ -476,19 +412,10 @@ export default {
             return false
           }
 
-				return true;
-		    });
-		    
-			pEntry.searchScore *= vMatchedAnds;
           vAndScore *= vMatchedOrs + 1
 
           pEntry.searchScore += vAndScore
 
-					vFieldValue = vThis.removeDiatrics(vFieldValue);
-						
-					vFieldValue = vFieldValue.trim ();
-						
-					var vRegExp = vThis.extractRegExp (pExcluded);
           if (vMatchedOrs > 0) vMatchedAnds++
 
           return true

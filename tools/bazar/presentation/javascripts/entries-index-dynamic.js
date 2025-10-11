@@ -147,17 +147,13 @@ const load = (domElement) => {
             if (!entry[propName] || typeof entry[propName] != 'string') return false
             return entry[propName]
               .split(',')
-              .map (str => 
-						str
-						.replace(/&/g, '&amp;')
-						.replace(/</g, '&lt;')
-						.replace(/>/g, '&gt;')
-						.replace(/"/g, '&quot;')
-						.replace(/'/g, '&#039;'))
-              .some(function (value) 
-              {
-              	return filter.includes(value)
-              })              
+              .map((str) => str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;'))
+              .some((value) => filter.includes(value))
               .map((str) => str
                 .normalize('NFD')
 				   		.replace(/[\u0300-\u036f]/g, '')
@@ -229,22 +225,6 @@ const load = (domElement) => {
               let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some(function (value)
-              {
-	              // Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
-	              
-              	if (typeof (value) == "string") 
-              	{
-              		return (value
-            	  	.replace(/&/g, '&amp;')
-				    .replace(/</g, '&lt;')
-				    .replace(/>/g, '&gt;')
-				    .replace(/"/g, '&quot;')
-				    .replace(/'/g, '&#039;') == node.value);
-              	}
-              	else              	
-	               return (value == node.value);
-              });
               return entryValues.some((value) =>
 	            	// Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
               		 (value
@@ -309,18 +289,6 @@ const load = (domElement) => {
 					    	// Handle values with special chars
 					    	// like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
 					    	// ie : Figuier goutte d&#039;or
-					    
-							const cFilterValues = pCondition.values
-							.map (pString => 
-									pString
-									.toLowerCase ()
-									.replace(/&/g, '&amp;')
-									.replace(/</g, '&lt;')
-									.replace(/>/g, '&gt;')
-									.replace(/"/g, '&quot;')
-									.replace(/'/g, '&#039;'));
-							
-							if (cFilterValues.includes(pNode.value.toLowerCase ())) pNode.checked = true
 
                   const cFilterValues = pCondition.values
                     .map((pString) => pString
@@ -340,63 +308,58 @@ const load = (domElement) => {
           }
         }
 
-        if (cSort)
-        {
-        	this.currentSort = cSort;
-		}	         
-      },            
-      updateHash ()
-      {
-		if (!this.ready) return
-		
-		var cCurrentHash = this.savedHash;
-		
-		var vQuery = [];
-		var vCurrentParams = {};
-		var vMergedParams;
-		
-		var vSearch = this.search.trim();
-		
-		if (vSearch.length < wiki.minSearchKeywordLength) vSearch = "";
-		
-		if (vSearch != "") vCurrentParams.keywords = vSearch;
-		if (this.currentSort.field && this.currentSort.field != "") vCurrentParams.champ = this.currentSort.field;
-		if (this.currentSort.order && this.currentSort.order != "") vCurrentParams.ordre = this.currentSort.order;
-		
-		var bHasFilter = false;
-		
-		for (const cFilterId in this.computedFilters)
-		{
-			bHasFilter = true;
-		
-			vQuery.push ({ 
-							"name" : cFilterId, 
-							"operator" : "==", 
-							"values" :	this.computedFilters[cFilterId]
-										.map (	pString =>
-												pString
-												.replace(/&amp;/g, '&')
-												.replace(/&lt;/g, '<')
-												.replace(/&gt;/g, '>')
-												.replace(/&quot;/g, '"')
-												.replace(/&#039;/g, "'")
-											 )
-										.join (",")
-						});
-		}
-		
-		if (bHasFilter) vCurrentParams.query = vQuery;
-		
-		vMergedParams = this.mergeSearchParams (cCurrentHash, vCurrentParams, { returnMode : "string", overrideKeywords : true, overrideQuery : true });
-		
-		// Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
-		
-		history.pushState({}, '', '#' + encodeURIComponent (vMergedParams)); 
+        const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
+        if (cSort) {
+        	this.currentSort = cSort
+        }
+      },
+      updateHash() {
+        if (!this.ready) return
 
-		this.updateExportLinks(vMergedParams) // Export 
-      },      
-      updateExportLinks(pSearchParams)
-      {            	
+        const cCurrentHash = this.savedHash
+
+        const vQuery = []
+        const vCurrentParams = {}
+        let vMergedParams
+
+        let vSearch = this.search.trim()
+
+        if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
+
+        if (vSearch != '') vCurrentParams.keywords = vSearch
+        if (this.currentSort.field && this.currentSort.field != '') vCurrentParams.champ = this.currentSort.field
+        if (this.currentSort.order && this.currentSort.order != '') vCurrentParams.ordre = this.currentSort.order
+
+        let bHasFilter = false
+
+        for (const cFilterId in this.computedFilters) {
+          bHasFilter = true
+
+          vQuery.push({
+            name: cFilterId,
+            operator: '==',
+            values:	this.computedFilters[cFilterId]
+              .map((pString) => pString
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#039;/g, "'"))
+              .join(',')
+          })
+        }
+
+        if (bHasFilter) vCurrentParams.query = vQuery
+
+        vMergedParams = this.mergeSearchParams(cCurrentHash, vCurrentParams, { returnMode: 'string', overrideKeywords: true, overrideQuery: true })
+
+        // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
+
+        history.pushState({}, '', `#${encodeURIComponent(vMergedParams)}`)
+
+        this.updateExportLinks(vMergedParams) // Export
+      },
+      updateExportLinks(pSearchParams) {
 	    const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
 
         if (cSort) {
@@ -482,18 +445,17 @@ const load = (domElement) => {
 
             let vNewHREF
 
-				 	var vHandler = vNewURL.searchParams.keys().next();			 	
-					var vHandlerValue = vHandler.value;
-					
-					if (vHandler) vNewURL.searchParams.delete (vHandlerValue)
-					else vHandlerValue = "";
+				 	const vHandler = vNewURL.searchParams.keys().next()
+            let vHandlerValue = vHandler.value
 
-					if (vNewURL.searchParams.has ("query"))
-					{
-						vNewURL.searchParams.set ("query", decodeURIComponent (vNewURL.searchParams.get("query")));
-					}
+            if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
+            else vHandlerValue = ''
 
-					var vParams = this.mergeSearchParams (vNewURL.searchParams.toString(), pSearchParams, { returnMode : "string", overrideKeywords : false, overrideQuery : false });
+            if (vNewURL.searchParams.has('query')) {
+              vNewURL.searchParams.set('query', decodeURIComponent(vNewURL.searchParams.get('query')))
+            }
+
+            const vParams = this.mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
             if (vOldHREF.trim() === '') {
               console.error('Invalid URL provided.')
             } else {
@@ -531,7 +493,7 @@ const load = (domElement) => {
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
-          	...{ isInIframe : this.params.isInIframe },
+          	...{ isInIframe: this.params.isInIframe },
             ...{ fields: 'html_output' },
             ...(fieldsToExclude.length > 0
               ? { excludeFields: fieldsToExclude }
