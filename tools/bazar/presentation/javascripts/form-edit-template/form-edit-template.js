@@ -46,20 +46,20 @@ window.defaultImage = {}
 window.formBuilderFields = {
   text,
   textarea,
-  date,
   image,
   url,
   file,
   champs_mail,
   select,
-  openinghours,
   'checkbox-group': checkbox_group,
   'radio-group': radio_group,
+  date,
+  openinghours,
   map,
   tags,
   labelhtml,
   titre,
-  bookmarklet,
+  listefichesliees,
   conditionschecking,
   calc,
   reactions,
@@ -67,10 +67,10 @@ window.formBuilderFields = {
   utilisateur_wikini,
   acls,
   metadatas,
-  listefichesliees,
-  custom,
   tabs,
-  tabchange
+  tabchange,
+  bookmarklet,
+  custom
 }
 
 function initializeFormbuilder() {
