@@ -13,6 +13,7 @@ return [
     'AU_FORCE_UPDATE' => 'Réinstaller',
     'AU_VERSION_UPDATE' => 'Changer de version',
     'AU_UPDATE_TOOL' => 'Mise à jour des tools',
+    'AU_UPDATE_THEME' => 'Mise à jour du thème par défaut',
     'AU_UPDATE_PACKAGE' => 'Mise à jour de ',
     'AU_INSTALL' => 'Installer',
     'AU_UPDATE_INFOS' => 'Mise à jour des informations de version',
