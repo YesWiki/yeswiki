@@ -138,7 +138,7 @@ class ThemeManager implements EventSubscriberInterface
 
                         case 'squelette':
                             $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $_REQUEST[$val]));
-                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . 'squelettes/' . $_REQUEST[$val]));
+                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . '/squelettes/' . $_REQUEST[$val]));
                             $requested[$val] = null;
                             if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $customPath)) {
                                 $requested[$val] = $customPath;
