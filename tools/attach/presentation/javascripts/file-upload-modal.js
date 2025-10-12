@@ -49,7 +49,6 @@ export default class {
         if (imagesExtensions.includes(responseJSON.extension)) {
           this.$imagesOptions.show()
           this.$hiddenFilenameInput.val(responseJSON.simplefilename)
-          this.$modal.find('.attach_caption').val(`image ${responseJSON.simplefilename} (${filesize.text()})`)
         } else if (responseJSON.extension === 'pdf') {
           this.$fileOptions.show()
           this.$pdfOptions.show()
