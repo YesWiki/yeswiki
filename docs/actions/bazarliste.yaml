@@ -2,6 +2,7 @@ label: _t(AB_bazar_label)
 position: 1998
 needFormField: true
 previewHeight: 450px
+dynamic : true
 actions:
   # -------------------------------------
   # Champs Communs concernant l'affichage
