@@ -235,7 +235,7 @@ class ApiController extends YesWikiController
 
         $_POST['antispam'] = 1;
 
-        if (!isset($_POST['id_fiche'])) {
+        if (!isset($_POST['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($_POST['id_fiche'])) {
             $entry = $this->getService(EntryManager::class)->create($formId, $_POST, false, $_SERVER['HTTP_SOURCE_URL'] ?? null);
         } else {
             $entry = $this->getService(EntryManager::class)->update($_POST['id_fiche'], $_POST, false, true);
