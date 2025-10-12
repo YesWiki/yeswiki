@@ -22,7 +22,7 @@ if (empty($listelements['mail'])) {
     // on choisit le template utilisé
     $template = $this->GetParameter('template');
     if (empty($template)) {
-        $template = 'subscribe-form.tpl.html';
+        $template = 'subscribe-form.twig';
     }
 
     $listelements['hiddeninputs'] = '';
