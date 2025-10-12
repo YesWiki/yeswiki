@@ -65,11 +65,11 @@ class BazarCartoAction extends YesWikiAction
             )
         ) {
             if (count(array_filter($vConditions, function ($pCondition) { return ($pCondition['name'] == 'bf_latitude' || ($pCondition['name'] == 'geolocation.bf_latitude')) && $pCondition['operator'] == '!='; })) == 0) {
-                $query = (trim($query) != '' ? '|' : '') . 'geolocation.bf_latitude!=';
+                $query = (trim($query) != '' ? $query . '|' : '') . 'geolocation.bf_latitude!=';
             }
 
             if (count(array_filter($vConditions, function ($pCondition) { return ($pCondition['name'] == 'bf_longitude' || ($pCondition['name'] == 'geolocation.bf_longitude')) && $pCondition['operator'] == '!='; })) == 0) {
-                $query = (trim($query) != '' ? '|' : '') . 'geolocation.bf_longitude!=';
+                $query = (trim($query) != '' ? $query . '|' : '') . 'geolocation.bf_longitude!=';
             }
         }
 
