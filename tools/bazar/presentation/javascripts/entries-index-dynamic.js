@@ -148,13 +148,6 @@ const load = (domElement) => {
             return entry[propName]
               .split(',')
               .map((str) => str
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;'))
-              .some((value) => filter.includes(value))
-              .map((str) => str
                 .normalize('NFD')
 				   		.replace(/[\u0300-\u036f]/g, '')
 				   		.toLowerCase()
