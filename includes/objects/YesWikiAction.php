@@ -32,4 +32,9 @@ abstract class YesWikiAction extends YesWikiPerformable
             return null;
         }
     }
+
+    public function end(): string
+    {
+        return '\n</div>';
+    }
 }

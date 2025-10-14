@@ -1,5 +1,8 @@
 <?php
 
+require_once 'includes/YesWikiPerformable.php';
+
+use YesWiki\Core\Service\Performer;
 use YesWiki\Templates\Controller\TabsController;
 
 // classe css supplémentaire
@@ -50,6 +53,7 @@ if (empty($elem)) {
                 echo $this->services->get(TabsController::class)->closeTabs();
                 break;
             default:
+                echo $this->services->get(Performer::class)->run($elem, 'action', [], true);
                 break;
         }
     }
