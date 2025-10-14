@@ -30,9 +30,6 @@ if (empty($elem)) {
             case 'col':
                 echo "\n</div> <!-- end of col -->\n";
                 break;
-            case 'section':
-                echo "\n</div>\n</section> <!-- end of section -->\n";
-                break;
             case 'label':
                 echo '</span>';
                 break;
