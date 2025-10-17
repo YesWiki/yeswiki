@@ -83,7 +83,7 @@ class TagsField extends EnumField
         $value = $this->getValue($entry);
 
         // Delete existing tags linked to this entry
-        if (!isset($GLOBALS['delete_tags'])) {
+        if (!isset($GLOBALS['delete_tags']) && !empty($entry['id_fiche'])) {
             $tripleStore->delete($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
             $GLOBALS['delete_tags'] = true;
         }

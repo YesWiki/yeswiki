@@ -722,7 +722,6 @@ class EntryManager
         $data['id_fiche'] = $tag;
         // if there are some restricted fields, load the previous data by bypassing the rights
         $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
-
         $data['id_typeannonce'] = $previousData['id_typeannonce'];
 
         // We need to check antispam before data are modified
@@ -750,8 +749,6 @@ class EntryManager
         // Title can be automatic, we need to check it now. Check also id_typeannonce (necessary ?)
 
         $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
-
-//        $this->validate($data);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
