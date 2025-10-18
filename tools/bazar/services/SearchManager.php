@@ -616,21 +616,21 @@ class SearchManager
         // Build necessary fields infos (structures, ...)
 
         $vFields = [];
-	
-	// Add ID Fiche field
 
-	$vFieldDescriptor = ['mode' => "single", 'type' => "string"];
+        // Add ID Fiche field
 
-       	$vHash = $this->buildFieldDescriptorHash($vFieldDescriptor);
+        $vFieldDescriptor = ['_mode_' => 'single', '_type_' => 'string'];
 
-        $vFields["id_fiche"] =
+        $vHash = $this->buildFieldDescriptorHash($vFieldDescriptor);
+
+        $vFields['id_fiche'] =
         [
-        	'needSplit' => true,
-        	'hasMultipleStructures' => false,
-        	'isExtracted' => false,
-        	'isSplitted' => false,
-        	'descriptors' => [ $vHash => array_merge ($vFieldDescriptor, [ "ids" => $vFormIDs ]) ]
-	];
+            'needSplit' => true,
+            'hasMultipleStructures' => false,
+            'isExtracted' => false,
+            'isSplitted' => false,
+            'descriptors' => [$vHash => array_merge($vFieldDescriptor, ['ids' => $vFormIDs])],
+        ];
 
         // Each field can have differents value structures (handling mode : "single"|"multiple", and type "boolean"|"number"|"string")
         // depending on the form it belongs to
