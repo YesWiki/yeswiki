@@ -71,7 +71,7 @@ class SectionAction extends YesWikiAction
         css;
         }
 
-
+        ob_start();
         // image's filename
         $file = $this->arguments['file'] ?? '';
         $backgroundimg = true;
@@ -158,8 +158,10 @@ class SectionAction extends YesWikiAction
             }
         } else {
             echo $this->generate_error_msg('section');
-            return;
         }
+        $section = ob_get_contents();
+        ob_end_clean();
+        return $section;
     }
 
     public function end(): string {
