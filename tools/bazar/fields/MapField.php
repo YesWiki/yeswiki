@@ -92,7 +92,7 @@ class MapField extends BazarField
 
     protected function getValue($entry)
     {
-        $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
+        $value = $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? '';
 
         $vLatitudeField = $this->getLatitudeField();
         $vLongitudeField = $this->getLongitudeField();
