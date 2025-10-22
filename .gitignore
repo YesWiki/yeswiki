@@ -127,4 +127,5 @@ docker-compose.local.yml
 .phpintel/
 *.old
 .php-cs-fixer.cache
+.twig-cs-fixer.cache
 TODO
