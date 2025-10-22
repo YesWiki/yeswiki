@@ -1,5 +1,22 @@
 const BASE_URL = `${wiki.baseUrl.replace(/\?+$/, '')}`
 
+function addCommaSeparatedString(mainString, stringToAdd) {
+  if (!stringToAdd) {
+    return mainString; // Return mainString if stringToAdd is empty
+  }
+
+  const mainArray = mainString ? mainString.split(',').map(item => item.trim()) : [];
+  const addArray = stringToAdd.split(',').map(item => item.trim());
+
+  addArray.forEach(item => {
+    if (!mainArray.includes(item)) {
+      mainArray.push(item);
+    }
+  });
+
+  return mainArray.join(',');
+}
+
 /**
  * Loads an entry's value from the API.
  * @param {string} pageTag - The tag of the page to load.
@@ -86,16 +103,13 @@ async function modifyEntry(pageTag, data) {
 document.addEventListener('DOMContentLoaded', () => {
   function validateDataTargets(el, options = {}) {
     const { execute = false, onValid } = options
-    const results = []
     const targetSel = el.dataset.targetId
     const valueSel = el.dataset.value
     const targetNode = targetSel ? document.querySelector(targetSel) : null
     const valueNode = valueSel ? document.querySelector(valueSel) : null
 
-    results.push({ el, target: targetNode, valueEl: valueNode })
-
     if (!targetNode || !valueNode) {
-      console.warn('Data‑attribute validation failed:', {
+      console.warn('Data-attribute validation failed:', {
         element: el,
         targetSel,
         valueSel,
@@ -105,50 +119,44 @@ document.addEventListener('DOMContentLoaded', () => {
       return false
     }
 
-    // Optional immediate action
     if (execute && typeof onValid === 'function') {
       onValid(targetNode, valueNode, el.dataset.action)
     }
 
-    return false
+    return true
   }
 
   document.querySelector('.page').addEventListener('click', (event) => {
-    event.preventDefault()
-    event.stopPropagation()
     const clicked = event.target.closest('.bazar-api')
     if (clicked) {
       validateDataTargets(clicked, {
         execute: true,
-        onValid: (targetEl, valueEl, action) => {
+        onValid: async (targetEl, valueEl, action) => { 
+          event.preventDefault()
+          event.stopPropagation()
+          
           const entryId = targetEl.value
           const fieldId = clicked.dataset.targetField
+          const onSuccess = clicked.dataset.onSuccess 
           const val = valueEl.value
-          if (action === 'add') {
-            console.log(targetEl.value, valueEl.value, action)
-            loadEntry(entryId)
-              .then((entry) => {
-                console.log('Loaded entry:', entry)
-                entry.antispam = 1
-                if (entry[fieldId] === undefined || entry[fieldId].length == 0) {
-                  entry[fieldId] = val
-                } else {
-                  entry[fieldId] = `${entry[fieldId]},${val}`
-                }
-                modifyEntry(entryId, entry)
-                  .then((response) => console.log('Entry modified:', response))
-                  .catch((error) => console.error('Failed to modify entry:', error))
-              })
-              .catch((error) => console.error('Failed to load entry:', error))
 
-            // // Create a new entry
-            // const newEntryData = {
-            //     title: 'My New Post',
-            //     content: 'This is the content of my new post.'
-            // };
-            // createEntry('blogForm', newEntryData)
-            //     .then(response => console.log('Entry created:', response))
-            //     .catch(error => console.error('Failed to create entry:', error));
+          if (action === 'add' && val.length > 0) { 
+            try {
+              let entry = await loadEntry(entryId)
+              entry.antispam = 1 
+              
+              const currentFieldValue = entry[fieldId] || ''; 
+              entry[fieldId] = addCommaSeparatedString(currentFieldValue, val)
+              
+              const response = await modifyEntry(entryId, entry)
+              console.log('Entry modified:', response)
+              
+              if (onSuccess === 'refresh') {
+                window.location.href = window.location.href 
+              }
+            } catch (error) {
+              console.error('Failed during add operation:', error)
+            }
           }
         }
       })
