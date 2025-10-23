@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
               console.log('Entry modified:', response)
               
               if (onSuccess === 'refresh') {
-                window.location.href = window.location.href 
+                window.location.replace(window.location.href)
               }
             } catch (error) {
               console.error('Failed during add operation:', error)
