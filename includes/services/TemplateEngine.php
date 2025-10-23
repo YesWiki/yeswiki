@@ -226,6 +226,11 @@ class TemplateEngine
         $this->twig->addFunction($function);
     }
 
+    public function addGlobal($name, $options)
+    {
+        $this->twig->addGlobal($name, $options);
+    }
+
     public function renderInSquelette($templatePath, $data = [])
     {
         $result = '<div class="page">';

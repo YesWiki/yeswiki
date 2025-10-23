@@ -5,6 +5,7 @@ namespace YesWiki\Core;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
@@ -77,6 +78,14 @@ abstract class YesWikiPerformable
     public function render($templatePath, $data = [], $method = 'render')
     {
         $data = array_merge($data, ['arguments' => $this->arguments]);
+
+        // add some addition globals
+        $vUserManager = $this->wiki->services->get(UserManager::class);
+        $userEntry = $vUserManager->getAssociatedEntry();
+        $this->twig->addGlobal('user', [
+            'entry' => $userEntry ?? [],
+            'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
+        ]);
 
         return $this->twig->$method($templatePath, $data);
     }
