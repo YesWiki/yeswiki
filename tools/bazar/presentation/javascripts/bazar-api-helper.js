@@ -72,16 +72,14 @@ async function createEntry(formId, data) {
 
 /**
  * Modifies an existing entry via the API.
- * @param {string} pageTag - The tag of the page to modify.
  * @param {object} data - The updated data for the entry.
  * @returns {Promise<object>} A promise that resolves with the JSON response from the API.
  * @throws {Error} If the network request fails or the response is not OK.
  */
-async function modifyEntry(pageTag, data) {
+async function modifyEntry(data) {
   try {
-    console.log(pageTag, data)
-    const response = await fetch(`${BASE_URL}?${pageTag}`, {
-      method: 'PUT',
+    const response = await fetch(`${BASE_URL}api/entries/${data.id_typeannonce}`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
@@ -148,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const currentFieldValue = entry[fieldId] || ''; 
               entry[fieldId] = addCommaSeparatedString(currentFieldValue, val)
               
-              const response = await modifyEntry(entryId, entry)
+              const response = await modifyEntry(entry)
               console.log('Entry modified:', response)
               
               if (onSuccess === 'refresh') {

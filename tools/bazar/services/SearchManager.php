@@ -4,8 +4,10 @@ namespace YesWiki\Bazar\Service;
 
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
 class SearchManager
@@ -243,7 +245,9 @@ class SearchManager
 
                         if ($vField['hasMultipleStructures']) {
                             if ($vORRequest != '') {
-                                $vORRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFieldDescriptor['ids'])) . ') AND ' . $vORRequest . ')';
+                                $vORRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                                    return '\'' . $pFormID . '\'';
+                                }, $vFieldDescriptor['ids'])) . ') AND ' . $vORRequest . ')';
                             }
                         }
 
@@ -306,7 +310,9 @@ class SearchManager
 
                     if ($vField['hasMultipleStructures']) {
                         if ($vExcludedRequest != '') {
-                            $vExcludedRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFieldDescriptor['ids'])) . ') AND ' . $vExcludedRequest . ')';
+                            $vExcludedRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                                return '\'' . $pFormID . '\'';
+                            }, $vFieldDescriptor['ids'])) . ') AND ' . $vExcludedRequest . ')';
                         }
                     }
 
@@ -475,7 +481,9 @@ class SearchManager
 
                     if ($vField['hasMultipleStructures']) {
                         if ($vDescriptorCondition != '') {
-                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vDescriptor['ids'])) . ') AND (' . $vDescriptorCondition . ')';
+                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                                return '\'' . $pFormID . '\'';
+                            }, $vDescriptor['ids'])) . ') AND (' . $vDescriptorCondition . ')';
                         }
                     }
                 }
@@ -569,7 +577,9 @@ class SearchManager
                 }
             );
 
-            $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) { return '\'' . $pFormID . '\''; }, $vFormIDs)) . ')';
+            $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) {
+                return '\'' . $pFormID . '\'';
+            }, $vFormIDs)) . ')';
         } else {
             $vFormIDs = [];
         }
@@ -1121,6 +1131,22 @@ class SearchManager
                     $vUniqueValues = [];
 
                     foreach (explode(',', trim($pMatches[3][0])) as $vValue) {
+                        // replace tokens like [user.name] and [user.entry.id_fiche]
+                        // TODO: make it a service that could be used for any params
+                        if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
+                            switch ($matches[1]) {
+                                case 'user.name':
+                                    $vValue = $this->wiki->getUserName();
+                                    break;
+                                case 'user.entry.id_fiche':
+                                    $vUserManager = $this->wiki->services->get(UserManager::class);
+                                    $entry = $vUserManager->getAssociatedEntry();
+                                    if (!empty($entry)) {
+                                        $vValue  = $entry['id_fiche'];
+                                    }
+                                    break;
+                            }
+                        }
                         if (!in_array($vValue, $vUniqueValues, true)) {
                             $vUniqueValues[] = $vValue;
                         }

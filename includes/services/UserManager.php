@@ -10,6 +10,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Entity\User;
@@ -343,6 +345,42 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         return $this->wiki->services->get(AclService::class)->check(implode("\n", $members), $username, $admincheck, '', '', $formerGroups);
+    }
+
+    /**
+     * get the entry that is linked to the username.
+     */
+    public function getAssociatedEntry($user = '')
+    {
+        if (empty($user)) {
+            $user = $this->wiki->services->get(AuthController::class)->getLoggedUser();
+            if (empty($user['name'])) {
+                return null;
+            } else {
+                $user = $user['name'];
+            }
+        }
+        $vFormManager = $this->wiki->services->get(FormManager::class);
+        $formsIds = array_keys($vFormManager->getAll());
+        $vEntryManager = $this->wiki->services->get(EntryManager::class);
+        // in case if a username is generated from a bazar entry, nomwiki should be the right id
+        $entry = $vEntryManager->search([
+            'queries' => [
+                [
+                    'name' => 'nomwiki',
+                    'operator' => '==',
+                    'values' => [$user],
+                ],
+            ],
+            'formsIds' => $formsIds,
+        ]);
+        if (empty($entry)) {
+            return null;
+        }
+        $found = array_pop($entry);
+        if (!empty($found['id_fiche'])) {
+            return $found;
+        }
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */

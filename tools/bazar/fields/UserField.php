@@ -207,10 +207,15 @@ class UserField extends BazarField
 
     protected function renderStatic($entry)
     {
-        $value = $this->getValue($entry);
+        $vUserManager = $this->getService(UserManager::class);
+        $userEntry = $vUserManager->getAssociatedEntry($this->getValue($entry));
+        $value = '';
+        if (!empty($userEntry)) {
+            $value  = $userEntry['id_fiche'];
+        }
         $authController = $this->getService(AuthController::class);
 
-        if ($value) {
+        if (!empty($value)) {
             return $this->render('@bazar/fields/user.twig', [
                 'value' => $value,
                 'isLoggedUser' => $authController->getLoggedUser() && $authController->getLoggedUserName() === $value,
