@@ -360,6 +360,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 $user = $user['name'];
             }
         }
+        if (!empty($GLOBALS['user_entries'][$user])) {
+            return $GLOBALS['user_entries'][$user];
+        }
         $vFormManager = $this->wiki->services->get(FormManager::class);
         $formsIds = array_keys($vFormManager->getAll());
         $vEntryManager = $this->wiki->services->get(EntryManager::class);
@@ -379,6 +382,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
         $found = array_pop($entry);
         if (!empty($found['id_fiche'])) {
+            $GLOBALS['user_entries'][$user] = $found;
+
             return $found;
         }
     }
