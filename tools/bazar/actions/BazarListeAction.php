@@ -312,6 +312,7 @@ class BazarListeAction extends YesWikiAction
                 'entries' => $entries,
                 'renderedEntries' => $this->renderEntries($entries, $filters),
                 'numEntries' => count($entries),
+                'param' => $this->arguments,
                 'params' => $this->arguments,
                 // Search form parameters
                 'keywords' => $this->arguments['keywords'],
