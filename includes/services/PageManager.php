@@ -370,6 +370,11 @@ class PageManager
                 if ($comment_on == '') {
                     $comment_on = $oldPage['comment_on'];
                 }
+
+                // don't save if body didn't change
+                if (rtrim($oldPage['body']) == rtrim($body)) {
+                    return 0;
+                }
             }
 
             // set all other revisions to old
