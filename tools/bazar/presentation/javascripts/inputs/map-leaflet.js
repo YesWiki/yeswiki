@@ -16,6 +16,78 @@ $(document).ready(() => {
     });
     if (mapFieldData.hasGeometries) {
       drawnItems = L.featureGroup().addTo(map);
+      L.drawLocal.edit.toolbar.actions.save.title = _t('SAVE_CHANGES_TITLE');
+      L.drawLocal.edit.toolbar.actions.save.text = _t('SAVE_BUTTON_TEXT');
+      L.drawLocal.edit.toolbar.actions.cancel.title = _t(
+        'CANCEL_EDITING_TITLE',
+      );
+      L.drawLocal.edit.toolbar.actions.cancel.text = _t('CANCEL_BUTTON_TEXT');
+      L.drawLocal.edit.toolbar.actions.clearAll.title = _t(
+        'CLEAR_ALL_LAYERS_TITLE',
+      );
+      L.drawLocal.edit.toolbar.actions.clearAll.text = _t(
+        'CLEAR_ALL_BUTTON_TEXT',
+      );
+      L.drawLocal.edit.toolbar.buttons.edit = _t('EDIT_LAYERS_BUTTON');
+      L.drawLocal.edit.toolbar.buttons.editDisabled = _t(
+        'EDIT_DISABLED_BUTTON',
+      );
+      L.drawLocal.edit.toolbar.buttons.remove = _t('DELETE_LAYERS_BUTTON');
+      L.drawLocal.edit.toolbar.buttons.removeDisabled = _t(
+        'DELETE_DISABLED_BUTTON',
+      );
+      L.drawLocal.edit.handlers.edit.tooltip.text = _t('EDIT_TOOLTIP_TEXT');
+      L.drawLocal.edit.handlers.edit.tooltip.subtext = _t(
+        'EDIT_TOOLTIP_SUBTEXT',
+      );
+      L.drawLocal.edit.handlers.remove.tooltip.text = _t('REMOVE_TOOLTIP_TEXT');
+      L.drawLocal.draw.toolbar.actions.title = _t('CANCEL_DRAWING_TITLE');
+      L.drawLocal.draw.toolbar.actions.text = _t('CANCEL_BUTTON_TEXT');
+      L.drawLocal.draw.toolbar.finish.title = _t('FINISH_DRAWING_TITLE');
+      L.drawLocal.draw.toolbar.finish.text = _t('FINISH_BUTTON_TEXT');
+      L.drawLocal.draw.toolbar.undo.title = _t('DELETE_LAST_POINT_TITLE');
+      L.drawLocal.draw.toolbar.undo.text = _t('DELETE_LAST_POINT_TEXT');
+      L.drawLocal.draw.toolbar.buttons.polyline = _t('DRAW_POLYLINE_BUTTON');
+      L.drawLocal.draw.toolbar.buttons.polygon = _t('DRAW_POLYGON_BUTTON');
+      L.drawLocal.draw.toolbar.buttons.rectangle = _t('DRAW_RECTANGLE_BUTTON');
+      L.drawLocal.draw.toolbar.buttons.circle = _t('DRAW_CIRCLE_BUTTON');
+      L.drawLocal.draw.toolbar.buttons.marker = _t('DRAW_MARKER_BUTTON');
+      L.drawLocal.draw.toolbar.buttons.circlemarker = _t(
+        'DRAW_CIRCLE_MARKER_BUTTON',
+      );
+      L.drawLocal.draw.handlers.circle.tooltip.start = _t(
+        'CIRCLE_TOOLTIP_START',
+      );
+      L.drawLocal.draw.handlers.circle.radius = _t('CIRCLE_RADIUS_LABEL');
+      L.drawLocal.draw.handlers.circlemarker.tooltip.start = _t(
+        'CIRCLE_MARKER_TOOLTIP_START',
+      );
+      L.drawLocal.draw.handlers.marker.tooltip.start = _t(
+        'MARKER_TOOLTIP_START',
+      );
+      L.drawLocal.draw.handlers.polygon.tooltip.start = _t(
+        'POLYGON_TOOLTIP_START',
+      );
+      L.drawLocal.draw.handlers.polygon.tooltip.cont = _t(
+        'POLYGON_TOOLTIP_CONT',
+      );
+      L.drawLocal.draw.handlers.polygon.tooltip.end = _t('POLYGON_TOOLTIP_END');
+      L.drawLocal.draw.handlers.polyline.error = _t('POLYLINE_ERROR');
+      L.drawLocal.draw.handlers.polyline.tooltip.start = _t(
+        'POLYLINE_TOOLTIP_START',
+      );
+      L.drawLocal.draw.handlers.polyline.tooltip.cont = _t(
+        'POLYLINE_TOOLTIP_CONT',
+      );
+      L.drawLocal.draw.handlers.polyline.tooltip.end = _t(
+        'POLYLINE_TOOLTIP_END',
+      );
+      L.drawLocal.draw.handlers.rectangle.tooltip.start = _t(
+        'RECTANGLE_TOOLTIP_START',
+      );
+      L.drawLocal.draw.handlers.simpleshape.tooltip.end = _t(
+        'SIMPLE_SHAPE_TOOLTIP_END',
+      );
       map.addControl(
         new L.Control.Draw({
           edit: {
@@ -33,35 +105,9 @@ $(document).ready(() => {
             circle: mapFieldData.chosenGeometries.includes('circle'),
             circlemarker: false,
             marker: false,
-
-            // polygon: {
-            //   allowIntersection: false,
-            //   showArea: true,
-            // },
-            toolbar: {
-              actions: {
-                title: _t('Cancel drawing'),
-                text: _t('Cancel'),
-              },
-              finish: {
-                title: 'Finish drawing',
-                text: 'Finish',
-              },
-              undo: {
-                title: 'Delete last point drawn',
-                text: 'Delete last point',
-              },
-              buttons: {
-                polyline: 'Draw a polyline',
-                polygon: 'Draw a polygon',
-                rectangle: 'Draw a rectangle',
-                circle: 'Draw a circle',
-              },
-            },
           },
         }),
       );
-      console.log(L.drawLocal, mapFieldData);
       map.on(L.Draw.Event.CREATED, function (event) {
         var layer = event.layer;
         $('input[name="bf_bioregion"]').val(JSON.stringify(layer.toGeoJSON()));
