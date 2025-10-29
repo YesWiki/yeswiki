@@ -27,11 +27,13 @@ export default {
       label: _t('BAZ_FORM_EDIT_SHOW_MAP_IN_ENTRY_VIEW'),
       options: { 0: _t('NO'), 1: _t('YES') }
     },
+    geometries: { label: _t('BAZ_FORM_EDIT_MAP_GEOMETRIES'), value: 'marker' },
+    max_geometries: { label: _t('BAZ_FORM_EDIT_MAP_MAX_GEOMETRIES'), value: '' },
     read: readConf,
     write: writeconf,
     semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view'],
+  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view', 'geometries', 'max_geometries'],
   // disabledAttributes: [],
   attributesMapping: {
   	...defaultMapping,
@@ -44,7 +46,9 @@ export default {
 		    5: 'autocomplete_town',
 		    6: 'autocomplete_other',
 		    7: 'show_map_in_entry_view',
-		    8: 'required'
+		    8: 'required',
+      9: 'geometries',
+      13: 'max_geometries'
     }
   },
   renderInput(fieldData) {

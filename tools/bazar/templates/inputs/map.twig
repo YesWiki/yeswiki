@@ -12,6 +12,10 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-geolocation-helper.js') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
+{% if mapFieldData.hasGeometries %}
+    {{ include_javascript('javascripts/vendor/leaflet-draw/leaflet.draw.js') }}
+    {{ include_css('styles/vendor/leaflet-draw/leaflet.draw.css') }}
+{% endif %}
 
 <script>
     var mapFieldData = {{ mapFieldData|json_encode|raw }}
@@ -19,7 +23,7 @@
 
 {{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-leaflet.js') }}
 
-<div class="control-group form-group geocode-input {% if field.required %}required{% endif %}" data-field-names="{{ field.autocompleteFieldNames|merge({latitude:field.latitudeField,longitude:field.longitudeField})|json_encode }}">
+<div class="control-group form-group geocode-input {% if field.required %}required{% endif %}" data-field-names="{{ field.autocompleteFieldNames|merge({latitude: field.latitudeField, longitude: field.longitudeField})|json_encode }}">
     <label class="col-sm-3"></label>
     <div class="controls col-sm-9">
         {% if field.geolocate %}
@@ -27,11 +31,14 @@
                 {{ _t('BAZ_GEOLOCATE') }}
             </a>
         {% endif %}
+        {% if 'marker' in mapFieldData.chosenGeometries %}
         <a class="btn btn-primary btn-geolocate-address">
             {{ _t('BAZ_VERIFIER_MON_ADRESSE') }}
         </a>
-        <input type="hidden" value="{{ latitude }}" id="{{ field.latitudeField }}" name="geolocation[{{ field.latitudeField }}]">
-        <input type="hidden" value="{{ longitude }}" id="{{ field.longitudeField }}" name="geolocation[{{ field.longitudeField }}]">
+        {% endif %}
+        <input type="hidden" value="{{ latitude }}" id="{{ field.latitudeField }}" name="geolocation[{{ field.latitudeField }}]" />
+        <input type="hidden" value="{{ longitude }}" id="{{ field.longitudeField }}" name="geolocation[{{ field.longitudeField }}]" />
+        <input type="hidden" value="{{ geometries|json_encode }}" id="geometries" name="geolocation[geometries]" />
         <div id="osmmapform" style="margin-top:5px; width:{{ config.baz_map_width }}; height:{{ config.baz_map_height }};"></div>
     </div>
 </div>

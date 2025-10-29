@@ -16,6 +16,9 @@ class MapField extends BazarField
     protected $autocomplete;
     protected $geolocate;
     protected $showMapInEntryView;
+    protected $geometries;
+    protected $max_geometries;
+    protected $has_geometries;
 
     protected const FIELD_LATITUDE_FIELD = 1;
     protected const FIELD_LONGITUDE_FIELD = 2;
@@ -23,7 +26,8 @@ class MapField extends BazarField
     protected const FIELD_AUTOCOMPLETE_TOWN = 5;
     protected const FIELD_AUTOCOMPLETE_OTHERS = 6;
     protected const FIELD_SHOW_MAP_IN_ENTRY_VIEW = 7;
-
+    protected const FIELD_GEOMETRIES = 9;
+    protected const FIELD_MAX_GEOMETRIES = 13;
     public const DEFAULT_FIELDNAME_POSTALCODE = 'bf_code_postal';
     public const DEFAULT_FIELDNAME_STREET = 'bf_adresse';
     public const DEFAULT_FIELDNAME_STREET1 = 'bf_adresse1';
@@ -31,6 +35,8 @@ class MapField extends BazarField
     public const DEFAULT_FIELDNAME_TOWN = 'bf_ville';
     public const DEFAULT_FIELDNAME_COUNTY = '';
     public const DEFAULT_FIELDNAME_STATE = 'bf_pays';
+    public const DEFAULT_GEOMETRIES = 'marker';
+    public const AVAILABLE_GEOMETRIES = ['marker', 'line', 'polygon', 'rectangle', 'circle'];
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -78,6 +84,17 @@ class MapField extends BazarField
         $state = empty($data[5]) ? self::DEFAULT_FIELDNAME_STATE : $data[5];
 
         $this->autocompleteFieldnames = compact(['postalCode', 'town', 'street', 'street1', 'street2', 'county', 'state']);
+
+        $geometries = $values[self::FIELD_GEOMETRIES] ?? self::DEFAULT_GEOMETRIES;
+        $geometries = explode(',', $geometries);
+        $geometries = array_map('trim', $geometries);
+        $geometries = array_intersect($geometries, self::AVAILABLE_GEOMETRIES);
+        $this->geometries = !empty($geometries) ? $geometries : self::DEFAULT_GEOMETRIES;
+
+        $this->max_geometries = intval($values[self::FIELD_MAX_GEOMETRIES] ?? 0);
+
+        $geometriesWithoutMarker = array_diff($geometries, ['marker']);
+        $this->has_geometries = !empty($geometriesWithoutMarker);
     }
 
     public function getValueStructure() // See BazarField::getValueStructure
@@ -99,6 +116,7 @@ class MapField extends BazarField
 
         $vLatitude = null;
         $vLongitude = null;
+        $vGeometries = $value['geometries'] ?? [];
 
         // backward compatibility with former `carte_google` propertyName
         // and bf_latitude propertyName
@@ -121,7 +139,11 @@ class MapField extends BazarField
             $vLongitude = $value[$vLongitudeField];
         }
 
-        return [$this->getLatitudeField() => $vLatitude, $this->getLongitudeField() => $vLongitude];
+        return [
+            $this->getLatitudeField() => $vLatitude,
+            $this->getLongitudeField() => $vLongitude,
+            'geometries' => $vGeometries,
+        ];
     }
 
     protected function getMapFieldData($entry)
@@ -150,6 +172,7 @@ class MapField extends BazarField
 
         $latitude = is_array($value) && !empty($value[$this->getLatitudeField()]) ? $value[$this->getLatitudeField()] : null;
         $longitude = is_array($value) && !empty($value[$this->getLongitudeField()]) ? $value[$this->getLongitudeField()] : null;
+        $geometries = $value['geometries'] ?? [];
 
         return [
             'bazWheelZoom' => $params->get('baz_wheel_zoom'),
@@ -161,6 +184,10 @@ class MapField extends BazarField
             'mapProviderCredentials' => $mapProviderCredentials,
             'latitude' => $latitude,
             'longitude' => $longitude,
+            'geometries' => $geometries,
+            'chosenGeometries' => $this->geometries,
+            'maxGeometries' => $this->max_geometries,
+            'hasGeometries' => $this->has_geometries,
         ];
     }
 
@@ -171,6 +198,7 @@ class MapField extends BazarField
         return $this->render('@bazar/inputs/map.twig', [
             'latitude' => $mapFieldData['latitude'],
             'longitude' => $mapFieldData['longitude'],
+            'geometries' => $mapFieldData['geometries'],
             'mapFieldData' => $mapFieldData,
         ]);
     }
@@ -181,6 +209,7 @@ class MapField extends BazarField
 
         $vLatitude = isset($vValue[$this->getLatitudeField()]) ? $vValue[$this->getLatitudeField()] : '';
         $vLongitude = isset($vValue[$this->getLongitudeField()]) ? $vValue[$this->getLongitudeField()] : '';
+        $vGeometries = $vValue['geometries'] ?? [];
 
         if ($vValue && !empty($vLatitude) && !empty($vLongitude)) {
             return
@@ -188,6 +217,7 @@ class MapField extends BazarField
                 $this->getPropertyName() => [
                     $this->getLatitudeField() => $vLatitude,
                     $this->getLongitudeField() => $vLongitude,
+                    'geometries' => $vGeometries,
                 ],
                 'fields-to-remove' => ['carte_google', $this->getLatitudeField(), $this->getLongitudeField()],
             ];

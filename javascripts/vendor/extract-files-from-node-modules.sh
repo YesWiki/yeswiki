@@ -11,9 +11,9 @@ mkdir -p styles/vendor/fontawesome && cp -f -r node_modules/@fortawesome/fontawe
 mkdir -p styles/vendor/fontawesome/css && cp -f node_modules/@fortawesome/fontawesome-free/css/all.min.css styles/vendor/fontawesome/css
 # Bootstrap
 mkdir -p javascripts/vendor/bootstrap && cp -f node_modules/bootstrap/dist/js/bootstrap.min.js javascripts/vendor/bootstrap/bootstrap.min.js
-mkdir -p styles/vendor/bootstrap/css && \
-  cp -f node_modules/bootstrap/dist/css/bootstrap.min.css styles/vendor/bootstrap/css/bootstrap.min.css && \
-  cp -f node_modules/bootstrap/dist/css/bootstrap.min.css.map styles/vendor/bootstrap/css
+mkdir -p styles/vendor/bootstrap/css &&
+	cp -f node_modules/bootstrap/dist/css/bootstrap.min.css styles/vendor/bootstrap/css/bootstrap.min.css &&
+	cp -f node_modules/bootstrap/dist/css/bootstrap.min.css.map styles/vendor/bootstrap/css
 mkdir -p styles/vendor/bootstrap && cp -f -r node_modules/bootstrap/dist/fonts styles/vendor/bootstrap
 
 #  Vue
@@ -39,6 +39,10 @@ mkdir -p javascripts/vendor/leaflet-providers && cp -f node_modules/leaflet-prov
 # Leaflet Fullscreen
 mkdir -p javascripts/vendor/leaflet-fullscreen && cp -f node_modules/leaflet.fullscreen/Control.FullScreen.js javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js
 mkdir -p styles/vendor/leaflet-fullscreen && cp -f node_modules/leaflet.fullscreen/Control.FullScreen.css styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css
+# Leaflet Draw
+mkdir -p javascripts/vendor/leaflet-draw && cp -f node_modules/leaflet-draw/dist/leaflet.draw.js javascripts/vendor/leaflet-draw/leaflet.draw.js
+mkdir -p styles/vendor/leaflet-draw && cp -f node_modules/leaflet-draw/dist/leaflet.draw.css styles/vendor/leaflet-draw/leaflet.draw.css
+mkdir -p styles/vendor/leaflet-draw/images && cp -f -r node_modules/leaflet-draw/dist/images/* styles/vendor/leaflet-draw/images
 
 # GoGoCartoJs
 mkdir -p javascripts/vendor/gogocarto && cp -f node_modules/gogocarto-js/dist/gogocarto.js javascripts/vendor/gogocarto/gogocarto.min.js
@@ -60,42 +64,42 @@ mkdir -p javascripts/vendor/formbuilder-languages && cp -f node_modules/formbuil
 mkdir -p javascripts/vendor/jquery-ui-sortable && cp -f node_modules/jquery-ui-sortable/jquery-ui.min.js javascripts/vendor/jquery-ui-sortable
 
 # DataTables
-mkdir -p javascripts/vendor/datatables-full && \
-  cat node_modules/datatables.net/js/jquery.dataTables.min.js \
-      node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js \
-      node_modules/datatables.net-buttons/js/dataTables.buttons.min.js \
-      node_modules/datatables.net-buttons/js/buttons.colVis.min.js \
-      node_modules/datatables.net-buttons/js/buttons.flash.min.js \
-      node_modules/datatables.net-buttons/js/buttons.html5.min.js \
-      node_modules/datatables.net-buttons/js/buttons.print.min.js  \
-      node_modules/datatables.net-buttons-bs/js/buttons.bootstrap.min.js  \
-      node_modules/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js  \
-      node_modules/datatables.net-fixedheader-bs/js/fixedHeader.bootstrap.min.js  \
-      node_modules/datatables.net-responsive/js/dataTables.responsive.min.js  \
-      node_modules/datatables.net-responsive-bs/js/responsive.bootstrap.min.js  \
-      > javascripts/vendor/datatables-full/jquery.dataTables.min.js
+mkdir -p javascripts/vendor/datatables-full &&
+	cat node_modules/datatables.net/js/jquery.dataTables.min.js \
+		node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js \
+		node_modules/datatables.net-buttons/js/dataTables.buttons.min.js \
+		node_modules/datatables.net-buttons/js/buttons.colVis.min.js \
+		node_modules/datatables.net-buttons/js/buttons.flash.min.js \
+		node_modules/datatables.net-buttons/js/buttons.html5.min.js \
+		node_modules/datatables.net-buttons/js/buttons.print.min.js \
+		node_modules/datatables.net-buttons-bs/js/buttons.bootstrap.min.js \
+		node_modules/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js \
+		node_modules/datatables.net-fixedheader-bs/js/fixedHeader.bootstrap.min.js \
+		node_modules/datatables.net-responsive/js/dataTables.responsive.min.js \
+		node_modules/datatables.net-responsive-bs/js/responsive.bootstrap.min.js \
+		>javascripts/vendor/datatables-full/jquery.dataTables.min.js
 
-mkdir -p styles/vendor/datatables-full && \
-  cat node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css \
-      node_modules/datatables.net-buttons-bs/css/buttons.bootstrap.min.css  \
-      node_modules/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css  \
-      node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css  \
-      > styles/vendor/datatables-full/dataTables.bootstrap.min.css
+mkdir -p styles/vendor/datatables-full &&
+	cat node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css \
+		node_modules/datatables.net-buttons-bs/css/buttons.bootstrap.min.css \
+		node_modules/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css \
+		node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css \
+		>styles/vendor/datatables-full/dataTables.bootstrap.min.css
 
 # fullcalendar
-mkdir -p styles/vendor/fullcalendar && \
-  cp -f node_modules/fullcalendar/main.min.css styles/vendor/fullcalendar
+mkdir -p styles/vendor/fullcalendar &&
+	cp -f node_modules/fullcalendar/main.min.css styles/vendor/fullcalendar
 
-mkdir -p javascripts/vendor/fullcalendar && \
-  cp -f node_modules/fullcalendar/main.min.js javascripts/vendor/fullcalendar && \
-  cp -f node_modules/fullcalendar/locales-all.min.js javascripts/vendor/fullcalendar && \
-  cp -f node_modules/fullcalendar/LICENSE.txt javascripts/vendor/fullcalendar && \
-  cp -f node_modules/fullcalendar/README.md javascripts/vendor/fullcalendar
+mkdir -p javascripts/vendor/fullcalendar &&
+	cp -f node_modules/fullcalendar/main.min.js javascripts/vendor/fullcalendar &&
+	cp -f node_modules/fullcalendar/locales-all.min.js javascripts/vendor/fullcalendar &&
+	cp -f node_modules/fullcalendar/LICENSE.txt javascripts/vendor/fullcalendar &&
+	cp -f node_modules/fullcalendar/README.md javascripts/vendor/fullcalendar
 
 # Moment
-mkdir -p javascripts/vendor/moment && \
-  cp -f node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment && \
-  cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment
+mkdir -p javascripts/vendor/moment &&
+	cp -f node_modules/moment/min/moment-with-locales.min.js javascripts/vendor/moment &&
+	cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment
 
 # Docsify
 # Sept 2022: Docsify have vulnerability warnings, so we remove it from our dependency
@@ -104,10 +108,10 @@ mkdir -p javascripts/vendor/moment && \
 #   cp -f node_modules/docsify/lib/docsify.min.js javascripts/vendor/docsify && \
 #   cp -f node_modules/docsify/LICENSE javascripts/vendor/docsify && \
 #   cp -f node_modules/docsify/README.md javascripts/vendor/docsify
-mkdir -p javascripts/vendor/docsify/plugins && \
-  # cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins && \
-  cp -f node_modules/docsify-copy-code/dist/*.min.js javascripts/vendor/docsify/plugins
-  cp -f node_modules/docsify-copy-code/LICENSE javascripts/vendor/docsify/plugins/LICENSE-docisfy-copy-code
+mkdir -p javascripts/vendor/docsify/plugins &&
+	# cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins && \
+	cp -f node_modules/docsify-copy-code/dist/*.min.js javascripts/vendor/docsify/plugins
+cp -f node_modules/docsify-copy-code/LICENSE javascripts/vendor/docsify/plugins/LICENSE-docisfy-copy-code
 # mkdir -p styles/vendor/docsify && \
 #   cat node_modules/docsify/lib/themes/vue.css \
 #     | sed -E "s|(@import url\(\"https://fonts.googleapis.com)|/*  \n  This file has been modified just to remove google font import on first line\n  It's based on Vue theme maintained by docsify\n  https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css\n */\n/* \1|g" \
@@ -115,32 +119,32 @@ mkdir -p javascripts/vendor/docsify/plugins && \
 #     > styles/vendor/docsify/vue-theme-modified.min.css
 
 # Lazysizes
-mkdir -p javascripts/vendor/lazysizes && \
-  cp -f node_modules/lazysizes/lazysizes.min.js javascripts/vendor/lazysizes && \
-  cp -f node_modules/lazysizes/LICENSE javascripts/vendor/lazysizes && \
-  cp -f node_modules/lazysizes/README.md javascripts/vendor/lazysizes
+mkdir -p javascripts/vendor/lazysizes &&
+	cp -f node_modules/lazysizes/lazysizes.min.js javascripts/vendor/lazysizes &&
+	cp -f node_modules/lazysizes/LICENSE javascripts/vendor/lazysizes &&
+	cp -f node_modules/lazysizes/README.md javascripts/vendor/lazysizes
 
 # Ace
-mkdir -p javascripts/vendor/ace && \
-  cp -f node_modules/ace-builds/src-min-noconflict/ace.js javascripts/vendor/ace && \
-  cp -f node_modules/ace-builds/src-min-noconflict/mode-html.js javascripts/vendor/ace && \
-  cp -f node_modules/ace-builds/src-min-noconflict/worker-html.js javascripts/vendor/ace && \
-  cp -f node_modules/ace-builds/src-min-noconflict/mode-markdown.js javascripts/vendor/ace &&\
-  cp -f node_modules/ace-builds/src-min-noconflict/ext-language_tools.js javascripts/vendor/ace
+mkdir -p javascripts/vendor/ace &&
+	cp -f node_modules/ace-builds/src-min-noconflict/ace.js javascripts/vendor/ace &&
+	cp -f node_modules/ace-builds/src-min-noconflict/mode-html.js javascripts/vendor/ace &&
+	cp -f node_modules/ace-builds/src-min-noconflict/worker-html.js javascripts/vendor/ace &&
+	cp -f node_modules/ace-builds/src-min-noconflict/mode-markdown.js javascripts/vendor/ace &&
+	cp -f node_modules/ace-builds/src-min-noconflict/ext-language_tools.js javascripts/vendor/ace
 # This one need to be in the same folder than aceditor otherwise it's not working
 cp -f node_modules/ace-builds/src-min-noconflict/ext-searchbox.js tools/aceditor/presentation/javascripts
 
 # iframe-resizer
-mkdir -p javascripts/vendor/iframe-resizer && \
-  cp -f node_modules/iframe-resizer/js/iframeResizer.min.js javascripts/vendor/iframe-resizer && \
-  cp -f node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer
+mkdir -p javascripts/vendor/iframe-resizer &&
+	cp -f node_modules/iframe-resizer/js/iframeResizer.min.js javascripts/vendor/iframe-resizer &&
+	cp -f node_modules/iframe-resizer/js/iframeResizer.contentWindow.min.js javascripts/vendor/iframe-resizer
 
 # opening_hours
-mkdir -p javascripts/vendor/opening_hours && \
-  curl -o javascripts/vendor/opening_hours/opening_hours.js https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js
+mkdir -p javascripts/vendor/opening_hours &&
+	curl -o javascripts/vendor/opening_hours/opening_hours.js https://openingh.openstreetmap.de/opening_hours.js/opening_hours+deps.min.js
 
 # mermaid
-mkdir -p javascripts/vendor/mermaid && \
-  mkdir -p javascripts/vendor/mermaid/chunks/mermaid.esm.min && \
-  cp -f node_modules/mermaid/dist/mermaid.esm.min.mjs javascripts/vendor/mermaid/mermaid.esm.min.mjs && \
-  cp -f node_modules/mermaid/dist/chunks/mermaid.esm.min/* javascripts/vendor/mermaid/chunks/mermaid.esm.min
+mkdir -p javascripts/vendor/mermaid &&
+	mkdir -p javascripts/vendor/mermaid/chunks/mermaid.esm.min &&
+	cp -f node_modules/mermaid/dist/mermaid.esm.min.mjs javascripts/vendor/mermaid/mermaid.esm.min.mjs &&
+	cp -f node_modules/mermaid/dist/chunks/mermaid.esm.min/* javascripts/vendor/mermaid/chunks/mermaid.esm.min

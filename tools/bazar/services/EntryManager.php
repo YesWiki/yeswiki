@@ -1353,6 +1353,41 @@ class EntryManager
         return $result;
     }
 
+    protected function is_multidimensional_array(array $array): bool
+    {
+        foreach ($array as $item) {
+            if (is_array($item)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function buildHtmlDataAttributes(array $data): string
+    {
+        $htmldata = '';
+        foreach ($data as $key => $value) {
+            $attributeValue = '';
+
+            if (is_array($value)) {
+                if ($this->is_multidimensional_array($value)) {
+                    $attributeValue = json_encode($value);
+                } else {
+                    $attributeValue = '[' . implode(',', $value) . ']';
+                }
+            } else {
+                $attributeValue = $value;
+            }
+
+            // Always HTML-escape the key and the attribute value
+            $htmldata .= 'data-' . htmlspecialchars($key, ENT_QUOTES, 'UTF-8') . '="' .
+                     htmlspecialchars($attributeValue, ENT_QUOTES, 'UTF-8') . '" ';
+        }
+
+        return $htmldata;
+    }
+
     protected function getHtmlDataAttributes($fiche, $formtab = '')
     {
         $htmldata = '';
@@ -1381,8 +1416,7 @@ class EntryManager
                             $filterFieldIds
                         )
                     ) {
-                        $htmldata .=
-                        'data-' . htmlspecialchars($key) . '="' .
+                        $htmldata .= 'data-' . htmlspecialchars($key) . '="' .
                         htmlspecialchars($value) . '" ';
                     } else {
                         if (isset($form['prepared'])) {
@@ -1393,9 +1427,7 @@ class EntryManager
                                         !in_array(get_class($field), $notFilterFieldClasses)
                                         && !in_array($propertyName, $notFilterFieldIds)
                                     ) {
-                                        $htmldata .=
-                                        'data-' . htmlspecialchars($key) . '="' .
-                                        htmlspecialchars(is_array($value) ? '[' . implode(',', $value) . ']' : $value) . '" ';
+                                        $htmldata .= $this->buildHtmlDataAttributes([$key => $value]);
                                     }
                                 }
                             }
