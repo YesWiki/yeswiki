@@ -108,14 +108,16 @@ $(document).ready(() => {
           },
         }),
       );
-      map.on(L.Draw.Event.CREATED, function (event) {
-        var layer = event.layer;
-        $('input[name="bf_bioregion"]').val(JSON.stringify(layer.toGeoJSON()));
-
+      map.on(L.Draw.Event.CREATED, function (e) {
+        var layer = e.layer;
+        $('#geometries').val(JSON.stringify(drawnItems.toGeoJSON()));
         drawnItems.addLayer(layer);
       });
+      map.on('draw:edited', function (e) {
+        $('#geometries').val(JSON.stringify(drawnItems.toGeoJSON()));
+      });
       map.on(L.Draw.Event.DELETED, function (e) {
-        $('input[name="bf_bioregion"]').val('');
+        $('#geometries').val(JSON.stringify(drawnItems.toGeoJSON()));
       });
     }
 
