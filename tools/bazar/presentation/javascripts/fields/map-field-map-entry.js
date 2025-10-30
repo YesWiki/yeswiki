@@ -5,21 +5,21 @@ export function initEntryMap(newMap) {
   // Init leaflet entry map
   const map = new L.Map(newMap, {
     scrollWheelZoom: mapData.bazWheelZoom,
-    zoomControl: mapData.bazShowNav
+    zoomControl: mapData.bazShowNav,
   })
   const provider = L.tileLayer.provider(
     mapData.mapProvider,
-    mapData.mapProviderCredentials
+    mapData.mapProviderCredentials,
   )
   map.addLayer(provider)
 
   const point = new L.LatLng(mapData.latitude, mapData.longitude)
-  map.setView(
-    point,
-    mapData.bazMapZoom
-  )
+  map.setView(point, mapData.bazMapZoom)
   L.marker(point).addTo(map)
-
+  if (mapData.geometries) {
+    const geojsonGeometries = JSON.parse(mapData.geometries)
+    L.geoJSON(geojsonGeometries).addTo(map)
+  }
   newMap.classList.add('initialized')
 }
 
@@ -42,7 +42,7 @@ function addMapObserver() {
   const observer = new IntersectionObserver(lazyloadMaps, {
     root: document.body,
     rootMargin: '20px',
-    threshold: 0
+    threshold: 0,
   })
   document.querySelectorAll('.map-entry:not(.initialized)').forEach((map) => {
     observer.observe(map)
