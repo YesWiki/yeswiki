@@ -1,3 +1,5 @@
+import { drawGeometries } from '../leaflet-draw.helper.js'
+
 $(document).ready(() => {
   if (
     typeof mapFieldData == 'object' &&
@@ -15,7 +17,7 @@ $(document).ready(() => {
       zoomControl: mapFieldData.bazShowNav,
     })
     if (mapFieldData.hasGeometries) {
-      drawnItems = L.featureGroup().addTo(map)
+      var drawnItems = L.featureGroup().addTo(map)
       L.drawLocal.edit.toolbar.actions.save.title = _t('SAVE_CHANGES_TITLE')
       L.drawLocal.edit.toolbar.actions.save.text = _t('SAVE_BUTTON_TEXT')
       L.drawLocal.edit.toolbar.actions.cancel.title = _t('CANCEL_EDITING_TITLE')
@@ -101,21 +103,10 @@ $(document).ready(() => {
         mapFieldData.bazMapZoom,
       )
       if (mapFieldData.geometries) {
-        const geojsonGeometries = JSON.parse(mapFieldData.geometries)
-
-        L.geoJSON(geojsonGeometries, {
-          onEachFeature: function (feature, layer) {
-            if (layer instanceof L.Path) {
-              drawnItems.addLayer(layer)
-            } else if (layer instanceof L.Marker) {
-              drawnItems.addLayer(layer)
-            }
-          },
-        })
-
-        if (drawnItems.getBounds().isValid()) {
-          map.fitBounds(drawnItems.getBounds())
-        }
+        drawnItems = drawGeometries(
+          drawnItems,
+          mapFieldData.geometries.features,
+        )
       }
       map.addControl(
         new L.Control.Draw({
@@ -140,15 +131,52 @@ $(document).ready(() => {
 
       map.on(L.Draw.Event.CREATED, function (e) {
         var layer = e.layer
-        $('#geometries').val(JSON.stringify(drawnItems.toGeoJSON()))
         drawnItems.addLayer(layer)
+        $('#geometries').val(JSON.stringify(drawnItemsToGeoJSON(drawnItems)))
       })
       map.on('draw:edited', function (e) {
-        $('#geometries').val(JSON.stringify(drawnItems.toGeoJSON()))
+        $('#geometries').val(JSON.stringify(drawnItemsToGeoJSON(drawnItems)))
       })
       map.on(L.Draw.Event.DELETED, function (e) {
-        $('#geometries').val(JSON.stringify(drawnItems.toGeoJSON()))
+        $('#geometries').val(JSON.stringify(drawnItemsToGeoJSON(drawnItems)))
       })
+
+      map.whenReady(function () {
+        var bounds = drawnItems.getBounds()
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            padding: [50, 50],
+          })
+        }
+      })
+    }
+
+    function drawnItemsToGeoJSON(drawnItems) {
+      var data = {
+        type: 'FeatureCollection',
+        features: [],
+      }
+
+      drawnItems.eachLayer(function (layer) {
+        if (layer instanceof L.Circle) {
+          // For circles, store center and radius as custom properties
+          data.features.push({
+            type: 'Feature',
+            properties: {
+              type: 'circle',
+              radius: layer.getRadius(),
+              ...layer.options,
+            },
+            geometry: {
+              type: 'Point', // GeoJSON still sees it as a point
+              coordinates: [layer.getLatLng().lng, layer.getLatLng().lat],
+            },
+          })
+        } else {
+          data.features.push(layer.toGeoJSON())
+        }
+      })
+      return data
     }
 
     function getParentGeocode({ element }) {
@@ -510,8 +538,6 @@ $(document).ready(() => {
           minWidth: 300,
         })
         .openPopup()
-      map.setView(point, 18)
-      // map.panTo( geocodedmarker.getLatLng(), {animate:true});
       $('#bf_latitude').val(point.lat)
       $('#bf_longitude').val(point.lng)
 

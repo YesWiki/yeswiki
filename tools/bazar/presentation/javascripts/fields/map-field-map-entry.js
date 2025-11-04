@@ -1,3 +1,5 @@
+import { drawGeometries } from '../leaflet-draw.helper.js'
+
 export function initEntryMap(newMap) {
   if (newMap.classList.contains('initialized')) return
 
@@ -13,13 +15,25 @@ export function initEntryMap(newMap) {
   )
   map.addLayer(provider)
 
+  var drawnFeatures = new L.FeatureGroup()
+  map.addLayer(drawnFeatures)
+
   const point = new L.LatLng(mapData.latitude, mapData.longitude)
-  map.setView(point, mapData.bazMapZoom)
-  L.marker(point).addTo(map)
-  if (mapData.geometries) {
-    const geojsonGeometries = JSON.parse(mapData.geometries)
-    L.geoJSON(geojsonGeometries).addTo(map)
-  }
+  var marker = L.marker(point)
+  drawnFeatures.addLayer(marker)
+  map.setView(point, mapData.bazMapZoom || 13)
+
+  drawnFeatures = drawGeometries(drawnFeatures, mapData.geometries.features)
+
+  map.whenReady(function () {
+    var bounds = drawnFeatures.getBounds()
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, {
+        padding: [30, 30],
+      })
+    }
+  })
+
   newMap.classList.add('initialized')
 }
 

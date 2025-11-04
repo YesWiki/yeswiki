@@ -1404,7 +1404,7 @@ class EntryManager
         ;
         $notFilterFieldIds = ['bf_titre'];
         $notFilterFieldClasses = [
-            'YesWiki\Bazar\Field\HiddenField', 'YesWiki\Bazar\Field\FileField', 'YesWiki\Bazar\Field\ImageField', 'YesWiki\Bazar\Field\LabelField', 'YesWiki\Bazar\Field\LinkField', 'YesWiki\Bazar\Field\TextareaField', 'YesWiki\Bazar\Field\TitleField', 'YesWiki\Bazar\Field\UserField',
+            'YesWiki\Bazar\Field\MapField', 'YesWiki\Bazar\Field\HiddenField', 'YesWiki\Bazar\Field\FileField', 'YesWiki\Bazar\Field\ImageField', 'YesWiki\Bazar\Field\LabelField', 'YesWiki\Bazar\Field\LinkField', 'YesWiki\Bazar\Field\TextareaField', 'YesWiki\Bazar\Field\TitleField', 'YesWiki\Bazar\Field\UserField',
         ];
         if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
             $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);

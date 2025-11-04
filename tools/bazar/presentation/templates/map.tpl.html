@@ -5,9 +5,12 @@ if (count($fiches)>0) :
 
     $GLOBALS['wiki']->AddCSSFile('styles/vendor/leaflet/leaflet.css');
     $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/bazarcarto.css');
+    $GLOBALS['wiki']->AddCSSFile('javascripts/vendor/leaflet-draw/leaflet.draw.css');
     $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
     $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
     $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
+    $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/leaflet-draw/leaflet.draw.js', false, true);
+
     ?>
 
     <div id="osmmap<?php echo $params['nbbazarliste']; ?>"
@@ -47,6 +50,7 @@ if (count($fiches)>0) :
 	}
 
 	$i = 0;
+$geometries = [];
 	foreach ($fiches as $fiche) :?>
 			<?php
 
@@ -99,6 +103,9 @@ if (count($fiches)>0) :
 					}
 					$i++;
 			}
+     if (!empty($fiche['geolocation']['geometries'])) {
+         $geometries[$fiche['id_fiche']] = $fiche['geolocation']['geometries'];
+     }
 	endforeach; ?>
 
 	<?php
@@ -143,7 +150,7 @@ if (count($fiches)>0) :
 				$js.= 'provider=baseLayers["'.$provider.'"];' ;
 			}
 		}
-		//$GLOBALS['wiki']->AddJavascript( $js );
+
 
 		$js .= 'var layers = {};' ;
 		if( is_array($params['layers']) ){
@@ -262,8 +269,22 @@ if (count($fiches)>0) :
 
 		$js.= 'L.control.layers(baseLayers, layers).addTo(map'.$params['nbbazarliste'].');' ;
 	}
-	$GLOBALS['wiki']->AddJavascript( '
-	$(document).ready(function() {
+  $geometriesModuleJs = '';
+ if (!empty($geometries)) {
+     $geometriesModuleJs .= "
+
+    var drawnFeatures = new L.FeatureGroup()
+    map".$params['nbbazarliste'].".addLayer(drawnFeatures)\n";
+    foreach ($geometries as $id => $g) {
+         $geometriesModuleJs .= "const geo{$id} = ".json_encode($g)."\n";
+         $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features)\n";
+    }
+  }
+  $GLOBALS['wiki']->AddJavascript( '
+import { drawGeometries } from "./tools/bazar/presentation/javascripts/leaflet-draw.helper.js"
+
+var map'.$params['nbbazarliste'].';	
+$(document).ready(function() {
     if ($(\'#osmmap'.$params['nbbazarliste'].'\').length>0) {
 		'.$js.'
 		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
@@ -273,7 +294,8 @@ if (count($fiches)>0) :
 		var marker = Array();
     '. $markersjs .'
     }
-	});'
+    '.$geometriesModuleJs.'
+	});', true
 	);
 
 endif;

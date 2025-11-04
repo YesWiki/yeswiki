@@ -3,6 +3,7 @@
 {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
 {{ include_javascript('tools/bazar/presentation/javascripts/fields/map-field-map-entry.js', false, true) }}
 <div
-  class="map-entry"
-  data-map-field="{{ mapFieldData | json_encode | e('html_attr') }}"
+  class="map-entry no-dblclick"
+  data-map-field="{{ mapFieldData|json_encode|e('html_attr') }}"
 ></div>
+

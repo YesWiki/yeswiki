@@ -21,7 +21,7 @@
     var mapFieldData = {{ mapFieldData|json_encode|raw }}
 </script>
 
-{{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-leaflet.js') }}
+{{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-leaflet.js', false, true) }}
 
 <div class="control-group form-group geocode-input {% if field.required %}required{% endif %}" data-field-names="{{ field.autocompleteFieldNames|merge({latitude: field.latitudeField, longitude: field.longitudeField})|json_encode }}">
     <label class="col-sm-3"></label>
