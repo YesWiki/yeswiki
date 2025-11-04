@@ -21,8 +21,7 @@ if (preg_match('/(?=<[^>]+(?=[\s+\"\']markdown[\s+\"\']).+)([^>]+>)/uU', $plugin
 }
 
 // mermaid
-if (preg_match('/(?=<[^>]+(?=[\s+\"\']mermaid[\s+\"\']).+)([^>]+>)/uU', $plugin_output_new)) {
-//    $this->addJavascriptFile('tools/templates/libs/vendor/mermaid/mermaid.min.js', false, true);
+if (preg_match('/<([a-z]+)([^>]*class="mermaid"[^>]*)>(.*?)<\/\1>/is', $plugin_output_new)) {
     $this->addJavascript('import mermaid from \'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs\';
         mermaid.initialize({
             startOnLoad: true,
