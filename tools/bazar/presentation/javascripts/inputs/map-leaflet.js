@@ -530,25 +530,30 @@ $(document).ready(() => {
 
     function geocodedmarkerRefresh(point) {
       if (geocodedmarker) map.removeLayer(geocodedmarker)
-      geocodedmarker = L.marker(point, { draggable: true }).addTo(map)
-      geocodedmarker
-        .bindPopup(popupHtml(geocodedmarker.getLatLng()), {
-          closeButton: false,
-          closeOnClick: false,
-          minWidth: 300,
-        })
-        .openPopup()
-      $('#bf_latitude').val(point.lat)
-      $('#bf_longitude').val(point.lng)
+      if (mapFieldData.chosenGeometries.includes('marker')) {
+        geocodedmarker = L.marker(point, { draggable: true }).addTo(map)
+        geocodedmarker
+          .bindPopup(popupHtml(geocodedmarker.getLatLng()), {
+            closeButton: false,
+            closeOnClick: false,
+            minWidth: 300,
+          })
+          .openPopup()
+        $('#bf_latitude').val(point.lat)
+        $('#bf_longitude').val(point.lng)
 
-      geocodedmarker.on('dragend', function (ev) {
-        this.openPopup()
-        const changedPos = ev.target.getLatLng()
-        $('#bf_latitude').val(changedPos.lat)
-        $('#bf_longitude').val(changedPos.lng)
-        $('.bf_latitude').val(changedPos.lat)
-        $('.bf_longitude').val(changedPos.lng)
-      })
+        geocodedmarker.on('dragend', function (ev) {
+          this.openPopup()
+          const changedPos = ev.target.getLatLng()
+          $('#bf_latitude').val(changedPos.lat)
+          $('#bf_longitude').val(changedPos.lng)
+          $('.bf_latitude').val(changedPos.lat)
+          $('.bf_longitude').val(changedPos.lng)
+        })
+      } else {
+        // remove formerly encoded marker position
+        $('#bf_latitude,#bf_longitude,.bf_latitude,.bf_longitude').val('')
+      }
     }
     $('.btn-geolocate').on('click', function () {
       const names = getLatLon({ element: $(this) })
