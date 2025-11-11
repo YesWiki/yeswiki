@@ -3210,6 +3210,12 @@
   --csstools-light-dark-toggle--101:var(--csstools-color-scheme--light) #52525e;
   --button-comment-hover-bg:var(--csstools-light-dark-toggle--101, #e0e0e6);
   --button-comment-hover-color:var(--button-comment-color);
+
+  --csstools-light-dark-toggle--102:var(--csstools-color-scheme--light) #0df;
+
+  --link-fg-color:var(--csstools-light-dark-toggle--102, #0060df);
+  --csstools-light-dark-toggle--103:var(--csstools-color-scheme--light) #80ebff;
+  --link-hover-fg-color:var(--csstools-light-dark-toggle--103, #0250bb);
 }
 
 @supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
@@ -3239,6 +3245,9 @@
   --comment-indicator-selected-fg-color:light-dark(#0062fa, #00cadb);
   --button-comment-active-bg:light-dark(#cfcfd8, #5b5b66);
   --button-comment-hover-bg:light-dark(#e0e0e6, #52525e);
+
+  --link-fg-color:light-dark(#0060df, #0df);
+  --link-hover-fg-color:light-dark(#0250bb, #80ebff);
 }
 }
 
@@ -3275,6 +3284,12 @@
   --button-comment-active-bg:var(--csstools-light-dark-toggle--100, #cfcfd8);
   --csstools-light-dark-toggle--101:var(--csstools-color-scheme--light) #52525e;
   --button-comment-hover-bg:var(--csstools-light-dark-toggle--101, #e0e0e6);
+
+  --csstools-light-dark-toggle--102:var(--csstools-color-scheme--light) #0df;
+
+  --link-fg-color:var(--csstools-light-dark-toggle--102, #0060df);
+  --csstools-light-dark-toggle--103:var(--csstools-color-scheme--light) #80ebff;
+  --link-hover-fg-color:var(--csstools-light-dark-toggle--103, #0250bb);
   }
 }
 
@@ -3297,11 +3312,13 @@
     --comment-indicator-selected-fg-color:SelectedItem;
     --button-comment-bg:ButtonFace;
     --button-comment-color:ButtonText;
-    --button-comment-active-bg:ButtonText;
+    --button-comment-active-bg:Highlight;
     --button-comment-active-color:HighlightText;
     --button-comment-border:1px solid ButtonText;
     --button-comment-hover-bg:Highlight;
     --button-comment-hover-color:HighlightText;
+    --link-fg-color:LinkText;
+    --link-hover-fg-color:LinkText;
 }
   }
 
@@ -3360,8 +3377,8 @@
       height:32px;
       padding:8px;
       border-radius:4px;
-      border:none;
-      background:none;
+      border:var(--button-comment-border);
+      background-color:var(--button-comment-bg);
       cursor:pointer;
     }
 
@@ -3376,16 +3393,25 @@
                 mask-position:center;
         -webkit-mask-image:var(--comment-close-button-icon);
                 mask-image:var(--comment-close-button-icon);
-        background-color:var(--comment-fg-color);
+        background-color:var(--button-comment-color);
       }
 
 :is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):hover{
-        background-color:var(--comment-hover-bg-color);
+        background-color:var(--button-comment-hover-bg);
       }
 
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):hover::before{
+          background-color:var(--button-comment-hover-color);
+        }
+
 :is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):active{
-        background-color:var(--comment-active-bg-color);
+        border:var(--button-comment-active-border);
+        background-color:var(--button-comment-active-bg);
       }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):active::before{
+          background-color:var(--button-comment-active-color);
+        }
 
 :is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):focus-visible{
         outline:var(--focus-ring-outline);
@@ -3522,10 +3548,15 @@
             height:auto;
             overflow-wrap:break-word;
             margin-block-start:15px;
+            color:var(--link-fg-color);
           }
 
 :is(.noComments:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) a):focus-visible{
               outline:var(--focus-ring-outline);
+            }
+
+:is(.noComments:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) a):hover{
+              color:var(--link-hover-fg-color);
             }
 
 :is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) time{
@@ -3559,12 +3590,12 @@
   --csstools-color-scheme--light:initial;
   color-scheme:light dark;
 
-  --csstools-light-dark-toggle--102:var(--csstools-color-scheme--light) #3a3944;
+  --csstools-light-dark-toggle--104:var(--csstools-color-scheme--light) #3a3944;
 
-  --divider-color:var(--csstools-light-dark-toggle--102, #cfcfd8);
-  --csstools-light-dark-toggle--103:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
-  --csstools-light-dark-toggle--104:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
-  --comment-shadow:0 0.5px 2px 0 var(--csstools-light-dark-toggle--103, rgb(0 0 0 / 0.05)), 0 4px 16px 0 var(--csstools-light-dark-toggle--104, rgb(0 0 0 / 0.1));
+  --divider-color:var(--csstools-light-dark-toggle--104, #cfcfd8);
+  --csstools-light-dark-toggle--105:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--106:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --comment-shadow:0 0.5px 2px 0 var(--csstools-light-dark-toggle--105, rgb(0 0 0 / 0.05)), 0 4px 16px 0 var(--csstools-light-dark-toggle--106, rgb(0 0 0 / 0.1));
 }
 
 @supports (color: light-dark(red, red)){
@@ -3584,12 +3615,12 @@
 
 .commentPopup *{
 
-  --csstools-light-dark-toggle--102:var(--csstools-color-scheme--light) #3a3944;
+  --csstools-light-dark-toggle--104:var(--csstools-color-scheme--light) #3a3944;
 
-  --divider-color:var(--csstools-light-dark-toggle--102, #cfcfd8);
-  --csstools-light-dark-toggle--103:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
-  --csstools-light-dark-toggle--104:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
-  --comment-shadow:0 0.5px 2px 0 var(--csstools-light-dark-toggle--103, rgb(0 0 0 / 0.05)), 0 4px 16px 0 var(--csstools-light-dark-toggle--104, rgb(0 0 0 / 0.1));
+  --divider-color:var(--csstools-light-dark-toggle--104, #cfcfd8);
+  --csstools-light-dark-toggle--105:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--106:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --comment-shadow:0 0.5px 2px 0 var(--csstools-light-dark-toggle--105, rgb(0 0 0 / 0.05)), 0 4px 16px 0 var(--csstools-light-dark-toggle--106, rgb(0 0 0 / 0.1));
   }
 }
 
@@ -3949,26 +3980,26 @@
 
 :is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar{
     --editor-toolbar-delete-image:url(images/editor-toolbar-delete.svg);
-    --csstools-light-dark-toggle--105:var(--csstools-color-scheme--light) #2b2a33;
-    --editor-toolbar-bg-color:var(--csstools-light-dark-toggle--105, #f0f0f4);
+    --csstools-light-dark-toggle--107:var(--csstools-color-scheme--light) #2b2a33;
+    --editor-toolbar-bg-color:var(--csstools-light-dark-toggle--107, #f0f0f4);
     --editor-toolbar-highlight-image:url(images/toolbarButton-editorHighlight.svg);
-    --csstools-light-dark-toggle--106:var(--csstools-color-scheme--light) #fbfbfe;
-    --editor-toolbar-fg-color:var(--csstools-light-dark-toggle--106, #2e2e56);
+    --csstools-light-dark-toggle--108:var(--csstools-color-scheme--light) #fbfbfe;
+    --editor-toolbar-fg-color:var(--csstools-light-dark-toggle--108, #2e2e56);
     --editor-toolbar-border-color:#8f8f9d;
     --editor-toolbar-hover-border-color:var(--editor-toolbar-border-color);
-    --csstools-light-dark-toggle--107:var(--csstools-color-scheme--light) #52525e;
-    --editor-toolbar-hover-bg-color:var(--csstools-light-dark-toggle--107, #e0e0e6);
+    --csstools-light-dark-toggle--109:var(--csstools-color-scheme--light) #52525e;
+    --editor-toolbar-hover-bg-color:var(--csstools-light-dark-toggle--109, #e0e0e6);
     --editor-toolbar-hover-fg-color:var(--editor-toolbar-fg-color);
     --editor-toolbar-hover-outline:none;
-    --csstools-light-dark-toggle--108:var(--csstools-color-scheme--light) #0df;
-    --editor-toolbar-focus-outline-color:var(--csstools-light-dark-toggle--108, #0060df);
+    --csstools-light-dark-toggle--110:var(--csstools-color-scheme--light) #0df;
+    --editor-toolbar-focus-outline-color:var(--csstools-light-dark-toggle--110, #0060df);
     --editor-toolbar-shadow:0 2px 6px 0 rgb(58 57 68 / 0.2);
     --editor-toolbar-height:28px;
     --editor-toolbar-padding:2px;
-    --csstools-light-dark-toggle--109:var(--csstools-color-scheme--light) #54ffbd;
-    --alt-text-done-color:var(--csstools-light-dark-toggle--109, #2ac3a2);
-    --csstools-light-dark-toggle--110:var(--csstools-color-scheme--light) #80ebff;
-    --alt-text-warning-color:var(--csstools-light-dark-toggle--110, #0090ed);
+    --csstools-light-dark-toggle--111:var(--csstools-color-scheme--light) #54ffbd;
+    --alt-text-done-color:var(--csstools-light-dark-toggle--111, #2ac3a2);
+    --csstools-light-dark-toggle--112:var(--csstools-color-scheme--light) #80ebff;
+    --alt-text-warning-color:var(--csstools-light-dark-toggle--112, #0090ed);
     --alt-text-hover-done-color:var(--alt-text-done-color);
     --alt-text-hover-warning-color:var(--alt-text-warning-color);
   }
@@ -3987,18 +4018,18 @@
 @supports not (color: light-dark(tan, tan)){
 
 :is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) *{
-    --csstools-light-dark-toggle--105:var(--csstools-color-scheme--light) #2b2a33;
-    --editor-toolbar-bg-color:var(--csstools-light-dark-toggle--105, #f0f0f4);
-    --csstools-light-dark-toggle--106:var(--csstools-color-scheme--light) #fbfbfe;
-    --editor-toolbar-fg-color:var(--csstools-light-dark-toggle--106, #2e2e56);
-    --csstools-light-dark-toggle--107:var(--csstools-color-scheme--light) #52525e;
-    --editor-toolbar-hover-bg-color:var(--csstools-light-dark-toggle--107, #e0e0e6);
-    --csstools-light-dark-toggle--108:var(--csstools-color-scheme--light) #0df;
-    --editor-toolbar-focus-outline-color:var(--csstools-light-dark-toggle--108, #0060df);
-    --csstools-light-dark-toggle--109:var(--csstools-color-scheme--light) #54ffbd;
-    --alt-text-done-color:var(--csstools-light-dark-toggle--109, #2ac3a2);
-    --csstools-light-dark-toggle--110:var(--csstools-color-scheme--light) #80ebff;
-    --alt-text-warning-color:var(--csstools-light-dark-toggle--110, #0090ed);
+    --csstools-light-dark-toggle--107:var(--csstools-color-scheme--light) #2b2a33;
+    --editor-toolbar-bg-color:var(--csstools-light-dark-toggle--107, #f0f0f4);
+    --csstools-light-dark-toggle--108:var(--csstools-color-scheme--light) #fbfbfe;
+    --editor-toolbar-fg-color:var(--csstools-light-dark-toggle--108, #2e2e56);
+    --csstools-light-dark-toggle--109:var(--csstools-color-scheme--light) #52525e;
+    --editor-toolbar-hover-bg-color:var(--csstools-light-dark-toggle--109, #e0e0e6);
+    --csstools-light-dark-toggle--110:var(--csstools-color-scheme--light) #0df;
+    --editor-toolbar-focus-outline-color:var(--csstools-light-dark-toggle--110, #0060df);
+    --csstools-light-dark-toggle--111:var(--csstools-color-scheme--light) #54ffbd;
+    --alt-text-done-color:var(--csstools-light-dark-toggle--111, #2ac3a2);
+    --csstools-light-dark-toggle--112:var(--csstools-color-scheme--light) #80ebff;
+    --alt-text-warning-color:var(--csstools-light-dark-toggle--112, #0090ed);
   }
 }
 
@@ -4221,13 +4252,13 @@
         }
 
 .show:is(:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .altText) .tooltip){
-            --csstools-light-dark-toggle--111:var(--csstools-color-scheme--light) #1c1b22;
-            --alt-text-tooltip-bg:var(--csstools-light-dark-toggle--111, #f0f0f4);
-            --csstools-light-dark-toggle--112:var(--csstools-color-scheme--light) #fbfbfe;
-            --alt-text-tooltip-fg:var(--csstools-light-dark-toggle--112, #15141a);
+            --csstools-light-dark-toggle--113:var(--csstools-color-scheme--light) #1c1b22;
+            --alt-text-tooltip-bg:var(--csstools-light-dark-toggle--113, #f0f0f4);
+            --csstools-light-dark-toggle--114:var(--csstools-color-scheme--light) #fbfbfe;
+            --alt-text-tooltip-fg:var(--csstools-light-dark-toggle--114, #15141a);
             --alt-text-tooltip-border:#8f8f9d;
-            --csstools-light-dark-toggle--113:var(--csstools-color-scheme--light) #15141a;
-            --alt-text-tooltip-shadow:0 2px 6px 0 var(--csstools-light-dark-toggle--113, rgb(58 57 68 / 0.2));
+            --csstools-light-dark-toggle--115:var(--csstools-color-scheme--light) #15141a;
+            --alt-text-tooltip-shadow:0 2px 6px 0 var(--csstools-light-dark-toggle--115, rgb(58 57 68 / 0.2));
           }
 
 @supports (color: light-dark(red, red)){
@@ -4246,12 +4277,12 @@
 @supports not (color: light-dark(tan, tan)){
 
 .show:is(:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .altText) .tooltip) *{
-            --csstools-light-dark-toggle--111:var(--csstools-color-scheme--light) #1c1b22;
-            --alt-text-tooltip-bg:var(--csstools-light-dark-toggle--111, #f0f0f4);
-            --csstools-light-dark-toggle--112:var(--csstools-color-scheme--light) #fbfbfe;
-            --alt-text-tooltip-fg:var(--csstools-light-dark-toggle--112, #15141a);
-            --csstools-light-dark-toggle--113:var(--csstools-color-scheme--light) #15141a;
-            --alt-text-tooltip-shadow:0 2px 6px 0 var(--csstools-light-dark-toggle--113, rgb(58 57 68 / 0.2));
+            --csstools-light-dark-toggle--113:var(--csstools-color-scheme--light) #1c1b22;
+            --alt-text-tooltip-bg:var(--csstools-light-dark-toggle--113, #f0f0f4);
+            --csstools-light-dark-toggle--114:var(--csstools-color-scheme--light) #fbfbfe;
+            --alt-text-tooltip-fg:var(--csstools-light-dark-toggle--114, #15141a);
+            --csstools-light-dark-toggle--115:var(--csstools-color-scheme--light) #15141a;
+            --alt-text-tooltip-shadow:0 2px 6px 0 var(--csstools-light-dark-toggle--115, rgb(58 57 68 / 0.2));
   }
 }
 
@@ -4386,12 +4417,12 @@
   }
 
 :is(.annotationEditorLayer .stampEditor) .noAltTextBadge{
-    --csstools-light-dark-toggle--114:var(--csstools-color-scheme--light) #52525e;
-    --no-alt-text-badge-border-color:var(--csstools-light-dark-toggle--114, #f0f0f4);
-    --csstools-light-dark-toggle--115:var(--csstools-color-scheme--light) #fbfbfe;
-    --no-alt-text-badge-bg-color:var(--csstools-light-dark-toggle--115, #cfcfd8);
-    --csstools-light-dark-toggle--116:var(--csstools-color-scheme--light) #15141a;
-    --no-alt-text-badge-fg-color:var(--csstools-light-dark-toggle--116, #5b5b66);
+    --csstools-light-dark-toggle--116:var(--csstools-color-scheme--light) #52525e;
+    --no-alt-text-badge-border-color:var(--csstools-light-dark-toggle--116, #f0f0f4);
+    --csstools-light-dark-toggle--117:var(--csstools-color-scheme--light) #fbfbfe;
+    --no-alt-text-badge-bg-color:var(--csstools-light-dark-toggle--117, #cfcfd8);
+    --csstools-light-dark-toggle--118:var(--csstools-color-scheme--light) #15141a;
+    --no-alt-text-badge-fg-color:var(--csstools-light-dark-toggle--118, #5b5b66);
   }
 
 @supports (color: light-dark(red, red)){
@@ -4405,12 +4436,12 @@
 @supports not (color: light-dark(tan, tan)){
 
 :is(:is(.annotationEditorLayer .stampEditor) .noAltTextBadge) *{
-    --csstools-light-dark-toggle--114:var(--csstools-color-scheme--light) #52525e;
-    --no-alt-text-badge-border-color:var(--csstools-light-dark-toggle--114, #f0f0f4);
-    --csstools-light-dark-toggle--115:var(--csstools-color-scheme--light) #fbfbfe;
-    --no-alt-text-badge-bg-color:var(--csstools-light-dark-toggle--115, #cfcfd8);
-    --csstools-light-dark-toggle--116:var(--csstools-color-scheme--light) #15141a;
-    --no-alt-text-badge-fg-color:var(--csstools-light-dark-toggle--116, #5b5b66);
+    --csstools-light-dark-toggle--116:var(--csstools-color-scheme--light) #52525e;
+    --no-alt-text-badge-border-color:var(--csstools-light-dark-toggle--116, #f0f0f4);
+    --csstools-light-dark-toggle--117:var(--csstools-color-scheme--light) #fbfbfe;
+    --no-alt-text-badge-bg-color:var(--csstools-light-dark-toggle--117, #cfcfd8);
+    --csstools-light-dark-toggle--118:var(--csstools-color-scheme--light) #15141a;
+    --no-alt-text-badge-fg-color:var(--csstools-light-dark-toggle--118, #5b5b66);
   }
 }
 
@@ -4644,8 +4675,8 @@
 .dialog.newAltText{
   --new-alt-text-ai-disclaimer-icon:url(images/altText_disclaimer.svg);
   --new-alt-text-spinner-icon:url(images/altText_spinner.svg);
-  --csstools-light-dark-toggle--117:var(--csstools-color-scheme--light) #2b2a33;
-  --preview-image-bg-color:var(--csstools-light-dark-toggle--117, #f0f0f4);
+  --csstools-light-dark-toggle--119:var(--csstools-color-scheme--light) #2b2a33;
+  --preview-image-bg-color:var(--csstools-light-dark-toggle--119, #f0f0f4);
   --preview-image-border:none;
 }
 
@@ -4658,8 +4689,8 @@
 @supports not (color: light-dark(tan, tan)){
 
 .dialog.newAltText *{
-  --csstools-light-dark-toggle--117:var(--csstools-color-scheme--light) #2b2a33;
-  --preview-image-bg-color:var(--csstools-light-dark-toggle--117, #f0f0f4);
+  --csstools-light-dark-toggle--119:var(--csstools-color-scheme--light) #2b2a33;
+  --preview-image-bg-color:var(--csstools-light-dark-toggle--119, #f0f0f4);
   }
 }
 
@@ -4850,12 +4881,12 @@
         }
 
 .colorPicker{
-  --csstools-light-dark-toggle--118:var(--csstools-color-scheme--light) #80ebff;
-  --hover-outline-color:var(--csstools-light-dark-toggle--118, #0250bb);
-  --csstools-light-dark-toggle--119:var(--csstools-color-scheme--light) #aaf2ff;
-  --selected-outline-color:var(--csstools-light-dark-toggle--119, #0060df);
-  --csstools-light-dark-toggle--120:var(--csstools-color-scheme--light) #52525e;
-  --swatch-border-color:var(--csstools-light-dark-toggle--120, #cfcfd8);
+  --csstools-light-dark-toggle--120:var(--csstools-color-scheme--light) #80ebff;
+  --hover-outline-color:var(--csstools-light-dark-toggle--120, #0250bb);
+  --csstools-light-dark-toggle--121:var(--csstools-color-scheme--light) #aaf2ff;
+  --selected-outline-color:var(--csstools-light-dark-toggle--121, #0060df);
+  --csstools-light-dark-toggle--122:var(--csstools-color-scheme--light) #52525e;
+  --swatch-border-color:var(--csstools-light-dark-toggle--122, #cfcfd8);
 }
 
 @supports (color: light-dark(red, red)){
@@ -4869,12 +4900,12 @@
 @supports not (color: light-dark(tan, tan)){
 
 .colorPicker *{
-  --csstools-light-dark-toggle--118:var(--csstools-color-scheme--light) #80ebff;
-  --hover-outline-color:var(--csstools-light-dark-toggle--118, #0250bb);
-  --csstools-light-dark-toggle--119:var(--csstools-color-scheme--light) #aaf2ff;
-  --selected-outline-color:var(--csstools-light-dark-toggle--119, #0060df);
-  --csstools-light-dark-toggle--120:var(--csstools-color-scheme--light) #52525e;
-  --swatch-border-color:var(--csstools-light-dark-toggle--120, #cfcfd8);
+  --csstools-light-dark-toggle--120:var(--csstools-color-scheme--light) #80ebff;
+  --hover-outline-color:var(--csstools-light-dark-toggle--120, #0250bb);
+  --csstools-light-dark-toggle--121:var(--csstools-color-scheme--light) #aaf2ff;
+  --selected-outline-color:var(--csstools-light-dark-toggle--121, #0060df);
+  --csstools-light-dark-toggle--122:var(--csstools-color-scheme--light) #52525e;
+  --swatch-border-color:var(--csstools-light-dark-toggle--122, #cfcfd8);
   }
 }
 
@@ -5121,9 +5152,9 @@
       align-items:center;
       align-self:stretch;
 
-      --csstools-light-dark-toggle--121:var(--csstools-color-scheme--light) #80808e;
+      --csstools-light-dark-toggle--123:var(--csstools-color-scheme--light) #80808e;
 
-      --example-color:var(--csstools-light-dark-toggle--121, #bfbfc9);
+      --example-color:var(--csstools-light-dark-toggle--123, #bfbfc9);
     }
 
 @supports (color: light-dark(red, red)){
@@ -5137,9 +5168,9 @@
 
 :is(:is(#highlightParamsToolbarContainer #editorHighlightThickness) .thicknessPicker) *{
 
-      --csstools-light-dark-toggle--121:var(--csstools-color-scheme--light) #80808e;
+      --csstools-light-dark-toggle--123:var(--csstools-color-scheme--light) #80808e;
 
-      --example-color:var(--csstools-light-dark-toggle--121, #bfbfc9);
+      --example-color:var(--csstools-light-dark-toggle--123, #bfbfc9);
   }
 }
 
@@ -5181,8 +5212,8 @@
   }
 
 :is(#highlightParamsToolbarContainer #editorHighlightVisibility) .divider{
-      --csstools-light-dark-toggle--122:var(--csstools-color-scheme--light) #8f8f9d;
-      --divider-color:var(--csstools-light-dark-toggle--122, #d7d7db);
+      --csstools-light-dark-toggle--124:var(--csstools-color-scheme--light) #8f8f9d;
+      --divider-color:var(--csstools-light-dark-toggle--124, #d7d7db);
     }
 
 @supports (color: light-dark(red, red)){
@@ -5194,8 +5225,8 @@
 @supports not (color: light-dark(tan, tan)){
 
 :is(:is(#highlightParamsToolbarContainer #editorHighlightVisibility) .divider) *{
-      --csstools-light-dark-toggle--122:var(--csstools-color-scheme--light) #8f8f9d;
-      --divider-color:var(--csstools-light-dark-toggle--122, #d7d7db);
+      --csstools-light-dark-toggle--124:var(--csstools-color-scheme--light) #8f8f9d;
+      --divider-color:var(--csstools-light-dark-toggle--124, #d7d7db);
   }
 }
 
@@ -5276,21 +5307,21 @@
     }
 
 .sidebar{
-  --csstools-light-dark-toggle--123:var(--csstools-color-scheme--light) #23222b;
-  --sidebar-bg-color:var(--csstools-light-dark-toggle--123, #fff);
-  --csstools-light-dark-toggle--124:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
-  --sidebar-border-color:var(--csstools-light-dark-toggle--124, rgb(21 20 26 / 0.1));
-  --csstools-light-dark-toggle--125:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
-  --csstools-light-dark-toggle--126:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
-  --sidebar-box-shadow:0 0.25px 0.75px var(--csstools-light-dark-toggle--125, rgb(0 0 0 / 0.05)), 0 2px 6px 0 var(--csstools-light-dark-toggle--126, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--125:var(--csstools-color-scheme--light) #23222b;
+  --sidebar-bg-color:var(--csstools-light-dark-toggle--125, #fff);
+  --csstools-light-dark-toggle--126:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
+  --sidebar-border-color:var(--csstools-light-dark-toggle--126, rgb(21 20 26 / 0.1));
+  --csstools-light-dark-toggle--127:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--128:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --sidebar-box-shadow:0 0.25px 0.75px var(--csstools-light-dark-toggle--127, rgb(0 0 0 / 0.05)), 0 2px 6px 0 var(--csstools-light-dark-toggle--128, rgb(0 0 0 / 0.1));
   --sidebar-border-radius:8px;
   --sidebar-padding:5px;
   --sidebar-min-width:180px;
   --sidebar-max-width:632px;
   --sidebar-width:239px;
   --resizer-width:4px;
-  --csstools-light-dark-toggle--127:var(--csstools-color-scheme--light) #00cadb;
-  --resizer-hover-bg-color:var(--csstools-light-dark-toggle--127, #0062fa);
+  --csstools-light-dark-toggle--129:var(--csstools-color-scheme--light) #00cadb;
+  --resizer-hover-bg-color:var(--csstools-light-dark-toggle--129, #0062fa);
 }
 
 @supports (color: light-dark(red, red)){
@@ -5318,15 +5349,15 @@
 @supports not (color: light-dark(tan, tan)){
 
 .sidebar *{
-  --csstools-light-dark-toggle--123:var(--csstools-color-scheme--light) #23222b;
-  --sidebar-bg-color:var(--csstools-light-dark-toggle--123, #fff);
-  --csstools-light-dark-toggle--124:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
-  --sidebar-border-color:var(--csstools-light-dark-toggle--124, rgb(21 20 26 / 0.1));
-  --csstools-light-dark-toggle--125:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
-  --csstools-light-dark-toggle--126:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
-  --sidebar-box-shadow:0 0.25px 0.75px var(--csstools-light-dark-toggle--125, rgb(0 0 0 / 0.05)), 0 2px 6px 0 var(--csstools-light-dark-toggle--126, rgb(0 0 0 / 0.1));
-  --csstools-light-dark-toggle--127:var(--csstools-color-scheme--light) #00cadb;
-  --resizer-hover-bg-color:var(--csstools-light-dark-toggle--127, #0062fa);
+  --csstools-light-dark-toggle--125:var(--csstools-color-scheme--light) #23222b;
+  --sidebar-bg-color:var(--csstools-light-dark-toggle--125, #fff);
+  --csstools-light-dark-toggle--126:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
+  --sidebar-border-color:var(--csstools-light-dark-toggle--126, rgb(21 20 26 / 0.1));
+  --csstools-light-dark-toggle--127:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--128:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --sidebar-box-shadow:0 0.25px 0.75px var(--csstools-light-dark-toggle--127, rgb(0 0 0 / 0.05)), 0 2px 6px 0 var(--csstools-light-dark-toggle--128, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--129:var(--csstools-color-scheme--light) #00cadb;
+  --resizer-hover-bg-color:var(--csstools-light-dark-toggle--129, #0062fa);
   }
 }
 
@@ -5393,8 +5424,8 @@
   --page-border:9px solid transparent;
   --spreadHorizontalWrapped-margin-LR:-3.5px;
   --loading-icon-delay:400ms;
-  --csstools-light-dark-toggle--128:var(--csstools-color-scheme--light) #0df;
-  --focus-ring-color:var(--csstools-light-dark-toggle--128, #0060df);
+  --csstools-light-dark-toggle--130:var(--csstools-color-scheme--light) #0df;
+  --focus-ring-color:var(--csstools-light-dark-toggle--130, #0060df);
   --focus-ring-outline:2px solid var(--focus-ring-color);
 }
 
@@ -5407,8 +5438,8 @@
 @supports not (color: light-dark(tan, tan)){
 
 :root *{
-  --csstools-light-dark-toggle--128:var(--csstools-color-scheme--light) #0df;
-  --focus-ring-color:var(--csstools-light-dark-toggle--128, #0060df);
+  --csstools-light-dark-toggle--130:var(--csstools-color-scheme--light) #0df;
+  --focus-ring-color:var(--csstools-light-dark-toggle--130, #0060df);
   }
 }
 
