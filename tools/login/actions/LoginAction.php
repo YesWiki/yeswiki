@@ -105,6 +105,7 @@ class LoginAction extends YesWikiAction
         $this->userManager = $this->getService(UserManager::class);
 
         $action = $_REQUEST['action'] ?? '';
+        $vContext = $_REQUEST['context'] ?? $this->wiki->tag;
         if (!isset($_REQUEST['context']) || $_REQUEST['context'] !== $this->arguments['context']) {
             // no action if not in the good context
             $action = '';
@@ -127,11 +128,41 @@ class LoginAction extends YesWikiAction
 
     private function getIncomingUrlFromServer(array $server): string
     {
-        $url = explode('?', $server['REQUEST_URI']);
-        $d = dirname($url[0] . '?');
-        $t = ($d != '/' ? str_replace($d, '', $server['REQUEST_URI']) : $server['REQUEST_URI']);
+        $parts = parse_url($server['REQUEST_URI']);
+        $params = [];
 
-        return $this->wiki->getBaseUrl() . $t;
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $parsedQuery);
+
+            foreach ($parsedQuery as $key => $value) {
+                // Skip 'context' parameter
+                if ($key === 'context') {
+                    continue;
+                }
+
+                if (is_array($value)) {
+                    foreach ($value as $val) {
+                        $params[] = ['key' => $key, 'value' => $val];
+                    }
+                } else {
+                    $params[] = ['key' => $key, 'value' => $value];
+                }
+            }
+        }
+
+        $newQuery = [];
+        foreach ($params as $param) {
+            $key = urlencode($param['key']);
+            $value = $param['value'];
+
+            if (empty($value)) {
+                $newQuery[] = $key;
+            } else {
+                $newQuery[] = $key . '=' . urlencode($value);
+            }
+        }
+
+        return $this->wiki->getBaseUrl() . '/?' . implode('&', $newQuery);
     }
 
     private function renderForm(string $action): string
