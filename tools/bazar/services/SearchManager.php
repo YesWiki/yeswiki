@@ -213,7 +213,7 @@ class SearchManager
                     foreach ($vField['descriptors'] as $vHash => $vFieldDescriptor) {
                         $vORRequest = '';
 
-                        switch ($vFieldDescriptor['mode']) {
+                        switch ($vFieldDescriptor['_mode_']) {
                             // If this field instance in is intended to store a single value...
 
                             case 'single':
@@ -247,7 +247,7 @@ class SearchManager
                             if ($vORRequest != '') {
                                 $vORRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                     return '\'' . $pFormID . '\'';
-                                }, $vFieldDescriptor['ids'])) . ') AND ' . $vORRequest . ')';
+                                }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vORRequest . ')';
                             }
                         }
 
@@ -278,7 +278,7 @@ class SearchManager
                 // We need to build a specific condition for each field structure
 
                 foreach ($vField['descriptors'] as $vHash => $vFieldDescriptor) {
-                    switch ($vFieldDescriptor['mode']) {
+                    switch ($vFieldDescriptor['_mode_']) {
                         // If this field instance is intended to store a single value...
 
                         case 'single':
@@ -312,7 +312,7 @@ class SearchManager
                         if ($vExcludedRequest != '') {
                             $vExcludedRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                 return '\'' . $pFormID . '\'';
-                            }, $vFieldDescriptor['ids'])) . ') AND ' . $vExcludedRequest . ')';
+                            }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vExcludedRequest . ')';
                         }
                     }
 
@@ -420,7 +420,7 @@ class SearchManager
 
                     $vIsRegExp = $this->isRegExp($vValue);
 
-                    switch ($vDescriptor['mode']) {
+                    switch ($vDescriptor['_mode_']) {
                         // If the field is intended to store a single value...
 
                         case 'single':
@@ -433,7 +433,7 @@ class SearchManager
                             // else let's just compare using the appropriated comparison operator
 
                             else {
-                                if ($vDescriptor['type'] == 'number') {
+                                if ($vDescriptor['_type_'] == 'number') {
                                     if (isset($vValue) && trim($vValue) !== '') {
                                         $vValueConditions[] = 'CAST(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . mysqli_real_escape_string($this->wiki->dblink, $vValue);
                                     } else {
@@ -483,7 +483,7 @@ class SearchManager
                         if ($vDescriptorCondition != '') {
                             $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                 return '\'' . $pFormID . '\'';
-                            }, $vDescriptor['ids'])) . ') AND (' . $vDescriptorCondition . ')';
+                            }, $vDescriptor['_ids_'])) . ') AND (' . $vDescriptorCondition . ')';
                         }
                     }
                 }
@@ -535,7 +535,7 @@ class SearchManager
 
         $vQueries = $this->parseQuery($params['queries']);
 
-        // Limit the request to the specified form ids
+        // Limit the request to the specified form IDs
 
         $vIDsRequest = '';
 
@@ -629,7 +629,7 @@ class SearchManager
 
         // Add ID Fiche field
 
-        $vFieldDescriptor = ['mode' => 'single', 'type' => 'string'];
+        $vFieldDescriptor = ['_mode_' => 'single', '_type_' => 'string'];
 
         $vHash = $this->buildFieldDescriptorHash($vFieldDescriptor);
 
@@ -639,7 +639,7 @@ class SearchManager
             'hasMultipleStructures' => false,
             'isExtracted' => false,
             'isSplitted' => false,
-            'descriptors' => [$vHash => array_merge($vFieldDescriptor, ['ids' => $vFormIDs])],
+            'descriptors' => [$vHash => array_merge($vFieldDescriptor, ['_ids_' => $vFormIDs])],
         ];
 
         // Each field can have differents value structures (handling mode : "single"|"multiple", and type "boolean"|"number"|"string")
@@ -733,9 +733,9 @@ class SearchManager
                         // and remember it.
 
                         if (isset($vFields[$vField]['descriptors'][$vHash])) {
-                            $vFields[$vField]['descriptors'][$vHash]['ids'][] = $vFormID;
+                            $vFields[$vField]['descriptors'][$vHash]['_ids_'][] = $vFormID;
                         } else {
-                            $vFields[$vField]['descriptors'][$vHash] = ['mode' => $vFieldDescriptor['_mode_'], 'type' => $vFieldDescriptor['_type_'], 'ids' => [$vFormID]];
+                            $vFields[$vField]['descriptors'][$vHash] = ['_mode_' => $vFieldDescriptor['_mode_'], '_type_' => $vFieldDescriptor['_type_'], '_ids_' => [$vFormID]];
                         }
 
                         // If the "mode" of this field in this form Id is "multiple", let's remember we have to split it
@@ -758,9 +758,9 @@ class SearchManager
                     $vHash = $this->buildFieldDescriptorHash($vFieldDescriptor);
 
                     if (isset($vFields[$vField]['descriptors'][$vHash])) {
-                        $vFields[$vField]['descriptors'][$vHash]['ids'][] = $vFormID;
+                        $vFields[$vField]['descriptors'][$vHash]['_ids_'][] = $vFormID;
                     } else {
-                        $vFields[$vField]['descriptors'][$vHash] = ['mode' => $vFieldDescriptor['_mode_'], 'type' => $vFieldDescriptor['_type_'], 'ids' => [$vFormID]];
+                        $vFields[$vField]['descriptors'][$vHash] = ['_mode_' => $vFieldDescriptor['_mode_'], '_type_' => $vFieldDescriptor['_type_'], '_ids_' => [$vFormID]];
                     }
                 }
             }
