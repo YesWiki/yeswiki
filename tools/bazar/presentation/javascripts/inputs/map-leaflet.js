@@ -1,5 +1,7 @@
 import { drawGeometries } from '../leaflet-draw.helper.js'
 
+var leafletInputMap
+
 $(document).ready(() => {
   if (
     typeof mapFieldData == 'object' &&
@@ -12,12 +14,23 @@ $(document).ready(() => {
     'bazMapZoom' in mapFieldData
   ) {
     // Init leaflet map
-    const map = new L.Map('osmmapform', {
+    leafletInputMap = new L.Map('osmmapform', {
       scrollWheelZoom: mapFieldData.bazWheelZoom,
       zoomControl: mapFieldData.bazShowNav,
     })
+    const provider = L.tileLayer.provider(
+      mapFieldData.mapProvider,
+      mapFieldData.mapProviderCredentials,
+    )
+    leafletInputMap.addLayer(provider)
+
+    leafletInputMap.setView(
+      new L.LatLng(mapFieldData.bazMapCenterLat, mapFieldData.bazMapCenterLon),
+      mapFieldData.bazMapZoom,
+    )
+
     if (mapFieldData.hasGeometries) {
-      var drawnItems = L.featureGroup().addTo(map)
+      var drawnItems = L.featureGroup().addTo(leafletInputMap)
       L.drawLocal.edit.toolbar.actions.save.title = _t('SAVE_CHANGES_TITLE')
       L.drawLocal.edit.toolbar.actions.save.text = _t('SAVE_BUTTON_TEXT')
       L.drawLocal.edit.toolbar.actions.cancel.title = _t('CANCEL_EDITING_TITLE')
@@ -86,29 +99,15 @@ $(document).ready(() => {
       L.drawLocal.draw.handlers.simpleshape.tooltip.end = _t(
         'SIMPLE_SHAPE_TOOLTIP_END',
       )
-
       var geocodedmarker
 
-      const provider = L.tileLayer.provider(
-        mapFieldData.mapProvider,
-        mapFieldData.mapProviderCredentials,
-      )
-      map.addLayer(provider)
-
-      map.setView(
-        new L.LatLng(
-          mapFieldData.bazMapCenterLat,
-          mapFieldData.bazMapCenterLon,
-        ),
-        mapFieldData.bazMapZoom,
-      )
       if (mapFieldData.geometries) {
         drawnItems = drawGeometries(
           drawnItems,
           mapFieldData.geometries.features,
         )
       }
-      map.addControl(
+      leafletInputMap.addControl(
         new L.Control.Draw({
           edit: {
             featureGroup: drawnItems,
@@ -129,28 +128,27 @@ $(document).ready(() => {
         }),
       )
 
-      map.on(L.Draw.Event.CREATED, function (e) {
+      leafletInputMap.on(L.Draw.Event.CREATED, function (e) {
         var layer = e.layer
         drawnItems.addLayer(layer)
         $('#geometries').val(JSON.stringify(drawnItemsToGeoJSON(drawnItems)))
       })
-      map.on('draw:edited', function (e) {
+      leafletInputMap.on('draw:edited', function (e) {
         $('#geometries').val(JSON.stringify(drawnItemsToGeoJSON(drawnItems)))
       })
-      map.on(L.Draw.Event.DELETED, function (e) {
+      leafletInputMap.on(L.Draw.Event.DELETED, function (e) {
         $('#geometries').val(JSON.stringify(drawnItemsToGeoJSON(drawnItems)))
       })
 
-      map.whenReady(function () {
+      leafletInputMap.whenReady(function () {
         var bounds = drawnItems.getBounds()
         if (bounds.isValid()) {
-          map.fitBounds(bounds, {
+          leafletInputMap.fitBounds(bounds, {
             padding: [50, 50],
           })
         }
       })
     }
-
     function drawnItemsToGeoJSON(drawnItems) {
       var data = {
         type: 'FeatureCollection',
@@ -302,7 +300,7 @@ $(document).ready(() => {
       address = fieldsNames.fields.map((field) => field.val()).join(' ')
       address = address.replace(/\\("|'|\\)/g, ' ').trim()
       if (!address) {
-        geocodedmarkerRefresh(map.getCenter())
+        geocodedmarkerRefresh(leafletInputMap.getCenter())
         return
       }
       const formattedFields = {}
@@ -511,7 +509,7 @@ $(document).ready(() => {
       // console.log("showAddressError: "+msg);
       if (msg == 'not found') {
         alert(_t('BAZ_GEOLOC_NOT_FOUND'))
-        geocodedmarkerRefresh(map.getCenter())
+        geocodedmarkerRefresh(leafletInputMap.getCenter())
       } else {
         alert(_t('BAZ_MAP_ERROR', { msg }))
       }
@@ -529,9 +527,11 @@ $(document).ready(() => {
     }
 
     function geocodedmarkerRefresh(point) {
-      if (geocodedmarker) map.removeLayer(geocodedmarker)
+      if (geocodedmarker) leafletInputMap.removeLayer(geocodedmarker)
       if (mapFieldData.chosenGeometries.includes('marker')) {
-        geocodedmarker = L.marker(point, { draggable: true }).addTo(map)
+        geocodedmarker = L.marker(point, { draggable: true }).addTo(
+          leafletInputMap,
+        )
         geocodedmarker
           .bindPopup(popupHtml(geocodedmarker.getLatLng()), {
             closeButton: false,
@@ -561,7 +561,7 @@ $(document).ready(() => {
         $(`#${names.latitude}`).val(e.latitude)
         $(`#${names.longitude}`).val(e.longitude)
         geocodedmarkerRefresh(e.latlng)
-        map.panTo(e.latlng, { animate: true })
+        leafletInputMap.panTo(e.latlng, { animate: true })
       }
 
       function onLocationError(e) {
@@ -570,13 +570,13 @@ $(document).ready(() => {
         console.log(e.message)
       }
 
-      map.on('locationfound', onLocationFound)
-      map.on('locationerror', onLocationError)
+      leafletInputMap.on('locationfound', onLocationFound)
+      leafletInputMap.on('locationerror', onLocationError)
 
-      map.locate({ setView: true, maxZoom: 16 })
+      leafletInputMap.locate({ setView: true, maxZoom: 16 })
     })
     $('.btn-geolocate-address').on('click', function () {
-      showAddress(map, $(this))
+      showAddress(leafletInputMap, $(this))
     })
     $('body').on('change', '.bf_latitude, .bf_longitude', function (e) {
       const names = getLatLon({ element: $(this) })
@@ -595,8 +595,10 @@ $(document).ready(() => {
           $(`#${names.latitude}`).val(),
           $(`#${names.longitude}`).val(),
         ])
-        map.panTo(geocodedmarker.getLatLng(), { animate: true })
+        leafletInputMap.panTo(geocodedmarker.getLatLng(), { animate: true })
       }
     })
   }
 })
+
+export { leafletInputMap }
