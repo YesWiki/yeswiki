@@ -532,6 +532,7 @@ $(document).ready(() => {
         geocodedmarker = L.marker(point, { draggable: true }).addTo(
           leafletInputMap,
         )
+        leafletInputMap.setView(point, 18)
         geocodedmarker
           .bindPopup(popupHtml(geocodedmarker.getLatLng()), {
             closeButton: false,
