@@ -629,7 +629,7 @@ class SearchManager
 
         // Add ID Fiche field
 
-        $vFieldDescriptor = ['_mode_' => 'single', '_type_' => 'string'];
+        $vFieldDescriptor = ['mode' => 'single', 'type' => 'string'];
 
         $vHash = $this->buildFieldDescriptorHash($vFieldDescriptor);
 
