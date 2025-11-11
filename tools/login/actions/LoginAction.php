@@ -106,7 +106,7 @@ class LoginAction extends YesWikiAction
 
         $action = $_REQUEST['action'] ?? '';
         $vContext = $_REQUEST['context'] ?? $this->wiki->tag;
-        if (!isset($_REQUEST['context']) || $_REQUEST['context'] !== $this->arguments['context']) {
+        if ($vContext !== $this->arguments['context']) {
             // no action if not in the good context
             $action = '';
         }
