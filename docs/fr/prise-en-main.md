@@ -27,7 +27,7 @@ Deux solutions en cas de soucis :
 - supprimer tous les codes de la partie impactée et remettre les choses en place calmement
 
 ?>**Exemple:**
-    si tout le texte de ma page est en gras ou en     italique, c'est souvent une balise qui est     ouverte et n'est  pas fermée, par exemple : `**texte  en gras`
+    si tout le texte de ma page est en gras ou en     italique, c'est souvent une balise qui est     ouverte et n'est pas fermée, par exemple : `**texte  en gras`
 
 
 ### 1.2 Mise en forme
@@ -177,7 +177,7 @@ Lors de l'édition d'une page, il vous est facile de téléverser différents ty
 ```
 
 !> **Attention!**
- Pour les vidéos, il est préférable de les héberger sur un site spécifique puis de les insérer via le composant "Vidéo  intégrée"
+Pour les vidéos, il est préférable de les héberger sur un site spécifique puis de les insérer via le composant "Vidéo intégrée"
 
 ### 5.2 Réutiliser le fichier sur une autre page
 
@@ -199,7 +199,7 @@ Cliquez, en mode admin sur l'icone dossier en bas de la page ou ajoutez `/filema
 
 ## 6. Insérer des éléments d'un autre site (iframe)
 
-!> Une **iframe** est un petit bout de code qui     permet à une page d'embarquer (encapsuler, intégrer... _embed_ en    anglais) des contenus et fonctionalités issus d'autres sites internet.
+!> Une **iframe** est un petit bout de code qui     permet à une page d'embarquer (encapsuler, intégrer... _embed_ en anglais) des contenus et fonctionalités issus d'autres sites internet.
 
 
 Vous pouvez ainsi profiter des fonctionnalités de cet autre site au sein même de votre wiki : lire une vidéo, écrire dans un pad et bien d'autre... Voici comment faire :
@@ -273,7 +273,7 @@ La PageMenuHaut est organisée comme une liste de liens ou de boutons.
  - {{button icon="fas fa-leaf" link="PageMargot" text="Margot" }}
 ```
 
-!> A noter : lorsque que vous souhaitez mettre en place un menu déroulant, un simple mot suffira en premier niveau de  liste à puce et non une page wiki.
+!> A noter : lorsque que vous souhaitez mettre en place un menu déroulant, un simple mot suffira en premier niveau de liste à puce et non une page wiki.
 
 ### 7.3 Visite de la roue crantée
 
@@ -342,11 +342,28 @@ Mise en forme propose 7 possibilités :
 - **Afficher plusieurs colonnes** : permet de créer plusieurs colonnes dans une page ou une partie de page, très utile pour des mises en page avancées.
 
 !> **Attention !** 
-    La somme des size (largeur) de vos colonnes doit être égal à 12, cela veut dire que vous pouvez faire 12 colonnes  de size 1 ou 3 colonnes de size 4 et bien sur mixer les possibilités (une de 6 et deux de 3)
+    La somme des size (largeur) de vos colonnes doit être égal à 12, cela veut dire que vous pouvez faire 12 colonnes de size 1 ou 3 colonnes de size 4 et bien sur mixer les possibilités (une de 6 et deux de 3)
 
 ### 8.3 Syndication / Flux RSS
 
-Permet d'afficher des informations arrivant de sites internet externe, permet de créer une page de veille.
+YesWiki est capable d'afficher des informations émisent par d'autres sites-web sous forme de flux rss.
+
+!> Pour afficher un flux RSS il faut déjà disposer de son URL. Pour le trouver on peut installer sur son naviguateur un détecteur de flux RSS comme par exemple "Awesome RSS" avec firefox.
+
+Cette option se trouve dans les composants, sélectionner "Syndication / Flux RSS".
+
+ - **Adresse du flux RSS :** Permet de spécifier l'URL du flux auquel on souhaite sa'abonner. Il est possible de s'abonne rà plusieurs flux en séparant les différentes URLs par des virgules ",".
+ - **Titre des flux :** Lister les noms des fluxs un par un dans le même ordre que les URLs en les séparant par des virgules.
+ - **Nb d'infos à afficher :** Limitera le nombre d'éléments affichés au nombre renseigné.
+ - **Affiches les dates de publications :** Permet de demander l'affichage des dates des éléments et d'en spécifier le format.
+ - **Mapping vers une fiche bazar :** Avec ce paramètre il est possible de renvoyer les données issus du flux RSS dans un formulaire. Pour sélectionner le formulaire entrer la valeur suivante `id=xx` en remplaçant `xx` par l'ID du formulaire cible.
+
+!> Si le mapping est renseigné, il sera possible en cliquant sur le symbole "+" à la fin de chaque article d'envoyer l'article en question dans le formulaire qui a été renseigné.
+
+!> Il est possible de modifier les paramètres par défaut suivant si les identifiants différents des standarts. 
+```
+id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags
+```
 
 ### 8.4 Gestion des tags
 
@@ -376,6 +393,16 @@ Permet 3 actions :
 - Afficher un formulaire de contact
 - S’abonner à une liste de discussion (qui devra être créée par ailleurs)
 - Se désabonner à une liste de discussion
+
+#### 8.7.1 Afficher un formulaire de contact
+
+Depuis la version 4.6, il est possible de :
+ - Définir plusieurs mails pour réceptionner l'envoi d'un formulaire de contact. Il conviendra alors de séparer chaque mail par une virgule.
+ - Ajouter tous les membres d'un groupe comme par exemple `@admins` (dans ce cas tous les membres du groupe recevront un courriel)
+
+#### 8.7.2 S’abonner à une liste de discussion
+
+Avant cela il conviendra de créer une liste de diffusion tel que par exemple avec [Frama groupe](https://framagroupes.org)
 
 ### 8.8 Afficher un formulaire de création de fiche
 
@@ -501,7 +528,6 @@ Un handler est une URL spéciale qui permet de modifier la façon d'afficher une
 - **/deletepage** : si vous êtes propriétaire de la page, vous pouvez la supprimer
 - **/claim** : si la page n'a pas de propriétaire, vous pouvez vous l'approprier
 - **/acls** : si vous êtes propriétaire de la page, vous pouvez gérer les droits
-- **/share** : pour afficher des possibilités de partage sur les réseaux sociaux, et pour générer un code embed (iframe) qui permettra d'afficher la page sur un site externe
-- **/debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage...
+- **/share** : pour afficher des possibilités de partage sur les réseaux sociaux, et pour générer un code embed (iframe) qui permettra d'afficher la page sur un site externe.
+- **&amp;debug** : permet d'afficher en bas de page toutes les actions effectuées au niveau informatique, permet de repérer les bugs, causes de plantage...
 - **/editiframe** : permet d'ouvrir la page en mode édition mais en cachant les autres pages du squelette (utile quand une image ou un spam sur le bandeau empêche de voir le contenu de la page à modifier ou dans le cas d'un wiki intégré en iframe)
-- **/referrers** : affiche la liste des pages qui font référence à la page en question (les rétroliens)
