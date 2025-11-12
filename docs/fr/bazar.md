@@ -184,7 +184,7 @@ Une zone de texte permet la saisie d'un texte relativement long et pouvant courr
   - **Texte non interprété –** Cette valeur limite la saisie aux seuls caractères sans mise en forme (pas d'italique ni de gras par exemple). C'est très utile pour saisir des adresses postales.
 - **Largeur champ de saisie** : Ce paramètre permet de préciser la largeur du champ de saisie.
 
-### 1.2.5. Date
+### 1.2.5. Champ Date
 
 Un champ de type date permet de saisir sans erreur une date.
 Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la présence d'un champ date, ou même deux la plupart du temps pour avoir une date de début et une date de fin.
@@ -194,11 +194,23 @@ Certains affichages des résultats (calendrier, agenda, etc.) nécessitent la pr
 - **Initialiser à Aujourd'hui** : Ce paramètre permet de préciser si on souhaite que la date soit prédéfinie à la date du jour.
 
 #### Programmer la récurrence d'un évènement
-Il est possible de proposer lors de la saisie d'une fiche, de programmer la récurrence d'un évènement  : pour cela il faut insérer deux champs dates dont les identifiants uniques devront être nommés :
-- bf_date_debut_evenement
-- bf_date_fin_evenement
+Afin de permettre à l'utilisateurice, de pouvoir programmer la récurrence d'un évènement, il conviendra d'insérer deux champs dates dans le formulaire. Leurs identifiants uniques devront être respectivements :
+ - `bf_date_debut_evenement`
+ - `bf_date_fin_evenement`
 
-### 1.2.6. Image
+Lors de la complétion d'une fiche contenant ces deux dates, il est possible de programmer une récurrence.
+ - Compléter les dates et horaire d'un évènement. Les suivants seront créés par la réccurrence.
+ - **Récurrence :** Sélectionner la bonne récurence (Une fois par semaine, une fois par mois ...)
+
+Si cette veleur est renseignée, les menus suivants s'afficheront : 
+     - **Jusqu'au :** Permet de déterminer une date de fin de la récurrence.
+     - Le bloc suivant dépendra des réponses aux questions précédente et permettra de sélectionner les bonnes occurences ou d'en exclure d'autres.
+
+### 1.2.5. Champ Horaires d'ouvertures
+Ce champ permet à l'utilisateur de spécifier des horaires d'ouverture d'un lieu. 
+En mode complétion de fiche, on pourra pour chaque jour compléter les horaires d'ouvertures.
+
+### 1.2.7. Image
 Un champ de type image permet d'importer un fichier image qui sera ensuite visualisable dans la fiche.
 Il est possible de définir une image par défaut.
 #### Paramètres spécifiques au type de champs « image » :
@@ -210,12 +222,12 @@ Il est possible de définir une image par défaut.
 - **Alignement** : C'est là que l'on paramètre le comportement d'affichage de l'image. Son fonctionnement est similaire à ce qui se passe dans l'édition de pages (quand on joint une image avec le bouton Fichier).
 - **Taille max** Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'octets mais qui peut être écrit avec des préfixe d'unités : k pour kilo, m pour mega (par ex.: 2097152, 2048k, 2m). Si la valeur donnée dépasse la valeur configurée sur le serveur, la valeur du serveur sera prise.
 
-### 1.2.7. URL
+### 1.2.8. URL
 
 Permet de saisir un lien web qui sera cliquable dans la fiche
 Vous pourrez demander, si le lien proposé est celui d'une vidéo, que celle ci s'affiche automatiquement
 
-### 1.2.8. Upload de fichier
+### 1.2.9. Upload de fichier
 
 Ce type de champ permet d'uploader un fichier (par exemple au format PDF). Ce fichier est ensuite téléchargeable par les personnes qui visualisent la fiche.
 
@@ -223,7 +235,7 @@ Ce type de champ permet d'uploader un fichier (par exemple au format PDF). Ce fi
 
 - **Taille max** Ce paramètre permet de limiter la taille du fichier. Il s'agit d'un nombre d'octets mais qui peut être écrit avec des préfixe d'unités : k pour kilo, m pour mega (par ex.: 2097152, 2048k, 2m). Si la valeur donnée dépasse la valeur configurée sur le serveur, la valeur du serveur sera prise.
 
-### 1.2.9. Email
+### 1.2.10. Email
 
 Ce type de champs permet de saisir une adresse électronique. YesWiki effectue automatiquement des contrôles sur la syntaxe de l'adresse et propose également de paramétrer des comportements spécifiquement liés à ce type de données.
 
@@ -235,7 +247,7 @@ Ce type de champs permet de saisir une adresse électronique. YesWiki effectue a
   **Astuce** : Il est possible d'ajouter un contenu personnalisé dans le corps du mail via la page Fichier de configuration dans Gestion du site. Pour cela : insérer votre contenu (avec mise en forme possible en HTML) au niveau du paramètre `Message personnalisé des mails envoyés depuis l'action contact - mail_custom_message`
   **Pour aller plus loin dans la personnalisation des mails envoyés** : pour les développeurs Il est possible d'adapter les messages affichés dans les e-mails en copiant les templates associés depuis tools/contact/templates/notify-email-\*.twig dans custom/templates/contact/ puis en modifiant le contenu de ces modèles (syntaxe twig)
 
-### 1.2.10. Proposer des choix entre plusieurs possibilités
+### 1.2.11. Proposer des choix entre plusieurs possibilités
 
 Les 3 types de champs suivants permettent de proposer à l'utilisateur une liste fermée de choix.
 
@@ -246,7 +258,7 @@ En premier lieu, il faut donc pouvoir énumérer les différentes valeurs possib
 - **Choix de la liste/du formulaire** : avec ce paramètre vous choisissez la liste (ou le formulaire) à partir de laquelle vous souhaitez que les utilisateurices choisissent.
 - **Valeur par défaut** : ce paramètre vous permet de proposer une valeur par défaut. Attention, pour préciser la valeur par défaut, il faut indiquer sa clef dans la liste (et non pas sa valeur).
 
-Il est également possible de créer des **listes à deux niveaux**. Par exemple le premier niveau peut être des régions, et le second niveau les départements. Cela permettra lorsqu'une région est choisie de ne proposer ensuite un choix que parmi les départements rattachés à la région.
+Il est également possible de créer des **listes à deux niveaux**. Par exemple le premier niveau peut être des régions, et le second niveau les départements. Cela permettra lorsqu'une région est choisie de ne proposer ensuite qu'un choix parmi les départements rattachés à la région.
 
 
 
@@ -254,19 +266,19 @@ Il est également possible de créer des **listes à deux niveaux**. Par exemple
 
 
 
-#### 1.2.10.1. Liste déroulante
+#### 1.2.11.1. Liste déroulante
 
 Les choix possibles seront présentés sous forme d'une liste déroulante : une seule valeur pourra être sélectionnée par l'utilisateurice.
 
-#### 1.2.10.2. Cases à cocher
+#### 1.2.11.2. Cases à cocher
 
 Les choix possibles seront présentés sous forme de cases à cocher : plusieurs valeurs pourront être sélectionnées par l'utilisateurice.
 
-#### 1.2.10.3. Boutons radio
+#### 1.2.11.3. Boutons radio
 
 Les choix possibles seront présentés sous forme d'un groupe de boutons radio : cela se présente comme les cases à cocher mais l'utilisateurice ne pourra choisir qu'une option parmi la liste.
 
-### 1.2.11. Géolocalisation de l'adresse
+### 1.2.12. Géolocalisation de l'adresse
 
 ![image champ_zone.png (24.5kB)](images/DocBazarChampGeo_champ_geoloc.png)
 
@@ -293,11 +305,11 @@ Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous s
 
 - Possibilité d'activer l'affichage d'une carte de localisation dans la fiche
 
-### 1.2.12. Mots clés
+### 1.2.13. Mots clés
 
 Possibilité d'ajouter des mots clés en les séparant par un clic sur la touche entrée
 
-### 1.2.13. Custom HTML
+### 1.2.14. Custom HTML
 
 Le champ custom html permet d'insérer un texte, un titre, un lien, ou tout autre contenu au format HTML.
 Il se décline en deux options :
@@ -329,18 +341,18 @@ Figurez-vous déjà dans la liste ? (ci-dessous). ```<a href="URLCOMPLETE"  clas
 
 
 
-### 1.2.14. Titre automatique
+### 1.2.15. Titre automatique
 
 Il est possible d'utiliser un titre combiné à partir de 2 champs (ou plus) : par exemple : "champ prénom + champ nom".
 Dans le paramètre **valeur** mettre les identifiants uniques des champs que l'on souhaite utiliser : {{bf_nom}} {{bf_prenom}} .
 Vous pouvez également y ajouter du texte : par exemple mettre un tiret entre le nom et le prénom.
 !> Si vous utilisez un titre automatique, il faudra supprimer le champ bf_titre créé par défaut.
 
-### 1.2.15. Bookmarklet
+### 1.2.16. Bookmarklet
 
 Ce champ spécial génère un bouton qui sera affiché dans votre formulaire de saisie. En glissant le bouton vers la barre de raccourci du navigateur, les utilisateurs pourront bénéficier d'un raccourci pour faire une veille partagée.
 
-### 1.2.16. Affichage conditionnel
+### 1.2.17. Affichage conditionnel
 
 Ce champ permet d'afficher certaines questions en fonction de la réponse apportée à une des questions précédentes. Par exemple : lorsque lʼutilisateur répond « autre » à une liste, on lui propose alors un champ texte pour préciser.
 **La question conditionnelle fait donc suite à une question de type Liste déroulante, Cases à cocher ou Radio.**
@@ -367,7 +379,7 @@ Lorsque vous insérez un « Affichage conditionnel » dans votre formulaire, deu
   - valeur par défaut :`Effacer` supprime le champ et les valeurs éventuellement saisies precedemment dedans,
   - autre valeur :`ne pas effacer` permet de cacher le champ et les valeurs et on retrouverait les valeurs si le champs réapparaissait
 
-### 1.2.17. Calculs
+### 1.2.18. Calculs
 
 Ce champ permet de réaliser un calcul mathématique à l'enregistrement de la fiche. Le résultat sera visible après avoir sauvé la fiche.
 
@@ -376,7 +388,7 @@ Ce champ permet de réaliser un calcul mathématique à l'enregistrement de la f
 - **Texte d'affichage** : permet d'ajouter un symbole après la valeur si nécessaire - exemple : `{value}€`
 - **Formule** : pour faire référence à un nombre saisi dans le formulaire utilisez son identifant - exemple : `bf_nombre*15`
 
-### 1.2.18. Réactions
+### 1.2.19. Réactions
 
 Permet au rédacteur de la fiche d'ajouter la possibilité de réagir au contenu et pour le lecteur identifié de réagir sur en cliquant sur des propositions
 Par défaut, vous aurez les propositions suivantes
@@ -387,12 +399,12 @@ Elles sont modifiables et agissant sur les champs
 - Noms des fichiers d'images (séparées par des virgules)
   vous pouvez vous inspirer du composant réactions afin de repérer les possibilités notamment au niveau des illustrations :far fa-grin,far fa-angry
 
-### 1.2.19. Inscription liste de diffusion
+### 1.2.20. Inscription liste de diffusion
 
 - Email d'inscription fourni par le service ex. subscribe@framaliste.net
 - Type de Service de Diffusion : sympa ou mailman
 
-### 1.2.20. Créer un utilisateur lorsque la fiche est validée
+### 1.2.21. Créer un utilisateur lorsque la fiche est validée
 
 Ce champ est utile pour créer un compte utilisateur à partir des informations contenues dans le formulaire.
 
@@ -403,17 +415,17 @@ Ce champ est utile pour créer un compte utilisateur à partir des informations 
 
 Tips : ce champ peut être associé à l'option **Config droits d'accès** afin de permettre à ce nouvel utilisateur de modifier sa propre fiche par la suite.
 
-### 1.2.21. Config droits d'accès
+### 1.2.22. Config droits d'accès
 
 Ce champ n'est pas un vrai champ. Il s'agit d'un outil qui permet de définir les droits d'accès qui seront affectés à chacune des fiches du formulaire. Vous pouvez donc ainsi préciser quelles catégories d'utilisateurs (Tout le monde, Utilisateurs identifiés, Membres du groupe admins, ou Propriétaire de la fiche et admins) peuvent lire, saisir ou modifier ou encore commenter des fiches de votre formulaire.
 
 !> Cette configuration des droits d'accès ne s'applique qu'aux fiches saisies après son paramétrage. Autrement dit, si vous ajoutez ce « champ » à votre formulaire, ou si vous le modifiez, seules les fiches saisies ou modifiées après cet ajout, ou cette modfication, auront les droits que vous avez définis.
 
-### 1.2.22. Config thème de la fiche
+### 1.2.23. Config thème de la fiche
 
 Permet de définir un thème graphique spécifique à associer à toutes les fiches du formulaire, cela peut être un jeu de couleur que vous définissez dans la page LookWiki
 
-### 1.2.23. Liste des fiches liées
+### 1.2.24. Liste des fiches liées
 
 Ce type de champs est utilisable dans le cas où un autre formulaire est lié à celui-ci. Il permet d'afficher les fiches liées.
 Son effet n'est visible que dans la phase 3 d'affichage des résultats du formulaire.
@@ -423,7 +435,7 @@ Son effet n'est visible que dans la phase 3 d'affichage des résultats du formul
     Le formulaire livre contiendra un champ liste     basé sur le formulaire auteur pour identifier son     auteur
     Le formulaire auteur pourra contenir un champ     liste des fiches liées afin d'afficher dans la     fiche auteur tous les livres qui ont été écrits     par l'auteur .
 
-#### 1.2.23.1 Paramètres spécifiques au type de champs « liste des fiches liées »
+#### 1.2.24.1 Paramètres spécifiques au type de champs « liste des fiches liées »
  
 - **Id du formulaire lié** : Ce paramètre, obligatoire, doit contenir l'identifiant Bazar du formulaire lié.
   Le formulaire lié est celui qui contient la référence au formulaire courant (via une liste déroulante, des cases à cocher ou des boutons radio)
@@ -439,11 +451,11 @@ Son effet n'est visible que dans la phase 3 d'affichage des résultats du formul
   « checkbox » pour un groupe de cases à cocher.
   « radio » pour un groupe de boutons radio.
 
-### 1.2.24. Custom
+### 1.2.25. Custom
 
 Ce champ sera utile pour les développeurs qui ont recours à un champ custom. Plus de détails (dans la section développeurs)[/docs/fr/dev?id=custom-bazar-field]
 
-### 1.2.25. Navigation par onglet /Passage à l'onglet suivant
+### 1.2.26. Navigation par onglet /Passage à l'onglet suivant
 
 Il est possible de découper le formulaire en plusieurs onglets pour rendre le formulaire plus lisible.
 
@@ -483,35 +495,50 @@ L'option "tri dynamique" permet à l'utilisateur de trier les fiches par n'impor
 
 #### 3.2.3. Afficher une partie des données (query)
 
-Il est possible d'afficher seulement une partie des données présentes dans la base de données en utilisant le paramètre query. Ce paramètre doit être ajouté dans le code `{{bazarliste ...}}` à la suite de vos autres paramètres. Vous souhaitez : 
+Dans certains cas, il peut être nécéssaire de n'afficher qu'une seule partie des fiches d'un formulaire.
 
-- **trier sur base du contenu d'une (ou plusieurs) liste(s)**
-  `query="listeListeGenre=M|listeListeDep=26"`
-Il est possible de trier sur plusieurs valeurs au sein de la même query en séparant les valeurs par une virgule (sans espace). Notez bien que la syntaxe est bien : liste+Nomdelaliste=clé ou liste+Nomdelaliste=clé1,clé2 (dans votre liste, la clé n'est pas le texte mais bien l'identifiant que vous avez indiqué juste devant).
-- **trier sur base du contenu d'une (ou plusieurs) checkbox(s)**
-  `query="checkboxListeGenre=M|checkboxListeDep=26"`
-  Notez bien que la syntaxe est bien checkbox+Nomdelaliste=clé
-- **trier sur base du contenu de boutons radios**
-  `query="radioListeGenre=M|radioListeDep=26"`
-  Notez bien que la syntaxe est bien radio+Nomdelaliste=clé
-- **trier sur base du contenu d'un champ (bf\_...)**
-  query="bf*titre=a.*" (affiche tous les titres commençant par a)
-  query="bf*titre=*.a" (affiche tous les titres finissant par a)
-  query="bf_titre=NomYeswiki (affiche la fiche dont le champ titre est NomYeswiki)
-  query="bf_titre=." (affiche toutes les fiches dont le champ "bf_titre" est vierge)
-- **trier sur base d'une liste dynamique de type "checkboxfiche"**
-  ` query="checkboxfiche<numeroduformulaireappelé>=Chat-Mot dufiltre"}}`
-  Exemple : {{bazarliste id="2" query="checkboxfiche2=TesT"}}
-  Cet exemple est un annuaire. Ici, on veut voir les personnes qui ont rempli l'annuaire (formulaire 2), en affichant uniquement les personnes qui appartiennent au groupe de travail "Test" (dont le ChatMot est TesT - donc à écrire exactement comme ça)
-- **trier sur base d'un contenu vide**
-  `query="radioListeGenre=" `
-  Permet de ne garder que les fiches dont le champ radioListeGenre est vide
-- **trier sur base d'un contenu non vide**
-  `query="radioListeGenre!="`
-  Permet de ne garder que les fiches dont le champ radioListeGenre n'est pas vide
-- **trier sur base d'un contenu différent d'une valeur**
-  ` query="radioListeGenre!=M"`
-  Permet de ne garder que les fiches dont le champ radioListeGenre n'est pas égale à M
+> Par exemple : On dispose d'une base d'informations où chaque fiches contient une adresse (code postale et ville). Dans ce cas on peut d'une page à l'autre n'afficher qu'une partie de ces fiches avec par exemple, une page par département.
+
+!> Ce qui suit ne peut à ce jour pas être fait avec l'interface graphique.
+
+Ceci se fait dans le code de la page en ajoutant le paramètre `query` à l'objet`{{bazarliste ...}}`. Ce paramètre sera suivi d'une condition.
+
+> Par exemple dans le code `{{bazarliste id=2 query="bf_departement=29"}}` Pourrait se lire : Afficher les fiches du formulaire "2" pour lesquelles la valeur du champ "bf_departement" est égal à 29. Afficher uniquement les fiches qui concernent le Finistère (29).
+
+Avant de rentrer dans les exemples, explorons les oppérateurs logiques qui permettent de comparer des valeurs ou de réaliser plusieurs actions en même temps.
+
+Les deux symboles ci-dessous s'emploient entre deux expressions et permettent de vérifier si une des deux conditions est vraie (ou), ou si les deux conditions sont vraies (et).
+
+ - Le symbole `|` (et logique) permet de vérifier que plusieurs conditions sont vrais.
+ - Le symbole `,` (ou logique)  permet de vérifier que au moins une des conditions est vrais.
+
+Quelques expressions régulières simples à connaitre. 
+ - `.*Toto` permettra de renvoyer les chaines de caractères se terminant par "Toto".
+ - `Toto.*` permettra de renvoyer les chaines de caractères commençant par "Toto".
+ - `.*Toto.*` permettra de renvoyer les chaines de caractères qui contiennent "Toto".
+
+> **Pour aller plus loin :** Il est possible d'utiliser les expressions régulières de "MySQL"
+
+Les oppérateurs logiques suivants s'emploient pour évaluer la relation entre un champ et la valeur qu'il contient.
+
+ - `=` (ou enciennement `==`) pour une égalité. *ex : `bf_departement=29`, la condition est vraie si le champ departement contient le nombre "29"*
+ - `<` Strictement inférieur à. *ex : `bf_departement<29`, la condition est vraie si le champ departement est inférieur à "29"*
+ - `>` Strictement supérieur à
+ - `<=` Inférieur ou égal à
+ - `>=` Supérieur ou égal à
+ - `!=` Différent de
+
+
+**Quelques exemples**
+ - `query="bf_description=.*toto"` : Renverra les fiches dont le champ "bf_description" se termine par "toto"
+ - `query="bf_description=toto.*"` Renverra les fiches dont le champ "bf_description" commençant par "toto"
+ - `query="bf_description=.*toto.*tata.*"` : Renverra les fiches dont le champ "bf_description" contient "toto" suivi de "tata".
+ - `query="bf_description=/Ta+To?/"` : Renverra les fiches dont le champ "bf_description" contient un "T" suivi de au moins un caractère "a" suivi de "T" et éventuellement "o"
+ - `query="bf_age>18"` Renverra les fiches dont le champ "bf_age" est supérieur à 18.
+ - `query="bf_age >= 20  | bf_age < 40` : Renverra les fiches dont le champ "bf_age" est supérieur ou égal à 20 et strictement inférieur à 40.
+query="bf_nom=/.*toto/, /.*tata.*/ | bf_age < 18" : (bf_nom finit par toto OU contient tata) ET bf_age  < 18  
+
+ - `query="listeListeGenre=M|listeListeDep=26"` : On peut aussi filtrer selon plusieurs champs. Ici la fche sera affiché si les deux conditions sont vraies.
 
 #### 3.2.4. Ordre et champ
 
