@@ -206,12 +206,11 @@ class MapField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $vValue = $this->getValue($entry);
-
         $vLatitude = isset($vValue[$this->getLatitudeField()]) ? $vValue[$this->getLatitudeField()] : '';
         $vLongitude = isset($vValue[$this->getLongitudeField()]) ? $vValue[$this->getLongitudeField()] : '';
         $vGeometries = $vValue['geometries'] ?? [];
         $vGeometries = json_decode($vGeometries, true);
-        if ($vValue && !empty($vLatitude) && !empty($vLongitude)) {
+        if ($vValue && (!empty($vLatitude) && !empty($vLongitude) || !empty($vGeometries))) {
             return
             [
                 $this->getPropertyName() => [
@@ -267,7 +266,7 @@ class MapField extends BazarField
             || $showMapInListView
         ) {
             $mapFieldData = $this->getMapFieldData($entry);
-            if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude'])) {
+            if ((!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries']))) {
                 $output .= $this->render('@bazar/fields/map.twig', [
                     'tag' => $entry['id_fiche'],
                     'mapFieldData' => $mapFieldData,

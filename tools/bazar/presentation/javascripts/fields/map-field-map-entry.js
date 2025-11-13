@@ -14,17 +14,22 @@ export function initEntryMap(newMap) {
     mapData.mapProviderCredentials,
   )
   map.addLayer(provider)
+  map.setView(
+    [mapData.bazMapCenterLat, mapData.bazMapCenterLon],
+    mapData.bazMapZoom || 13,
+  )
 
   var drawnFeatures = new L.FeatureGroup()
   map.addLayer(drawnFeatures)
 
-  const point = new L.LatLng(mapData.latitude, mapData.longitude)
-  var marker = L.marker(point)
-  drawnFeatures.addLayer(marker)
-  map.setView(point, mapData.bazMapZoom || 13)
+  if (mapData.latitude && mapData.longitude) {
+    const point = new L.LatLng(mapData.latitude, mapData.longitude)
+    var marker = L.marker(point)
+    drawnFeatures.addLayer(marker)
+    map.setView(point, mapData.bazMapZoom || 13)
+  }
 
   drawnFeatures = drawGeometries(drawnFeatures, mapData.geometries.features)
-
   map.whenReady(function () {
     var bounds = drawnFeatures.getBounds()
     if (bounds.isValid()) {
