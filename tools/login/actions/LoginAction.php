@@ -34,7 +34,7 @@ class LoginAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
-        $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0');
+        $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0') || $this->wiki->GetConfigValue('noSignupButton', false);
         $incomingurl = !empty($arg['incomingurl'])
             ? $this->wiki->generateLink($arg['incomingurl'])
             : $this->getIncomingUrlFromServer($_SERVER ?? []);
@@ -45,10 +45,7 @@ class LoginAction extends YesWikiAction
             // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
             'context' => $arg['context'] ?? $this->wiki->tag,
             'signupurl' => $noSignupButton ? '0' : (
-                empty($arg['signupurl'])
-                // TODO : check page name for other languages
-                ? $this->wiki->Href('', 'ParametresUtilisateur')
-                : $this->wiki->generateLink($arg['signupurl'])
+                $this->wiki->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametreUtilisateur'))
             ),
 
             'profileurl' => empty($arg['profileurl'])
