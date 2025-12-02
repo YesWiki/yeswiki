@@ -635,7 +635,7 @@ class SearchManager
 
         $vFields['id_fiche'] =
         [
-            'needSplit' => true,
+            'needSplit' => false,
             'hasMultipleStructures' => false,
             'isExtracted' => false,
             'isSplitted' => false,
