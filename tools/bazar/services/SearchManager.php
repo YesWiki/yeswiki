@@ -583,7 +583,6 @@ class SearchManager
         } else {
             $vFormIDs = [];
         }
-
         // Limit the request depending on the date
 
         $vPeriodRequest = '';
