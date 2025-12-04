@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.4.394
- * pdfjsBuild = 2cc809ade
+ * pdfjsVersion = 5.4.449
+ * pdfjsBuild = f44e5f0e6
  */
 /******/ var __webpack_modules__ = ({
 
@@ -7882,7 +7882,7 @@ function renderRichText({
       intent: "richText"
     });
   }
-  fragment.firstChild.classList.add("richText", className);
+  fragment.firstElementChild.classList.add("richText", className);
   container.append(fragment);
 }
 function makePathFromDrawOPS(data) {
@@ -12403,11 +12403,11 @@ class AnnotationEditor {
     if (nextFirstPosition !== firstPosition) {
       if (nextFirstPosition < firstPosition) {
         for (let i = 0; i < firstPosition - nextFirstPosition; i++) {
-          this.#resizersDiv.append(this.#resizersDiv.firstChild);
+          this.#resizersDiv.append(this.#resizersDiv.firstElementChild);
         }
       } else if (nextFirstPosition > firstPosition) {
         for (let i = 0; i < nextFirstPosition - firstPosition; i++) {
-          this.#resizersDiv.firstChild.before(this.#resizersDiv.lastChild);
+          this.#resizersDiv.firstElementChild.before(this.#resizersDiv.lastElementChild);
         }
       }
       let i = 0;
@@ -12419,7 +12419,7 @@ class AnnotationEditor {
     }
     this.#setResizerTabIndex(0);
     this.#isResizerEnabledForKeyboard = true;
-    this.#resizersDiv.firstChild.focus({
+    this.#resizersDiv.firstElementChild.focus({
       focusVisible: true
     });
     event.preventDefault();
@@ -12650,10 +12650,10 @@ class AnnotationEditor {
   }
   resetAnnotationElement(annotation) {
     const {
-      firstChild
+      firstElementChild
     } = annotation.container;
-    if (firstChild?.nodeName === "DIV" && firstChild.classList.contains("annotationContent")) {
-      firstChild.remove();
+    if (firstElementChild?.nodeName === "DIV" && firstElementChild.classList.contains("annotationContent")) {
+      firstElementChild.remove();
     }
   }
 }
@@ -13325,6 +13325,9 @@ class FontFaceObject {
   get disableFontFace() {
     return this.#fontData.disableFontFace ?? false;
   }
+  set disableFontFace(value) {
+    shadow(this, "disableFontFace", !!value);
+  }
   get fontExtraProperties() {
     return this.#fontData.fontExtraProperties ?? false;
   }
@@ -13357,6 +13360,9 @@ class FontFaceObject {
   }
   get bbox() {
     return this.#fontData.bbox;
+  }
+  set bbox(bbox) {
+    shadow(this, "bbox", bbox);
   }
   get fontMatrix() {
     return this.#fontData.fontMatrix;
@@ -20727,7 +20733,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "5.4.394",
+    apiVersion: "5.4.449",
     data,
     password,
     disableAutoFetch,
@@ -20984,6 +20990,9 @@ class PDFDocumentProxy {
   }
   saveDocument() {
     return this._transport.saveDocument();
+  }
+  extractPages(pageInfos) {
+    return this._transport.extractPages(pageInfos);
   }
   getDownloadInfo() {
     return this._transport.downloadInfoCapability.promise;
@@ -22053,6 +22062,11 @@ class WorkerTransport {
       this.annotationStorage.resetModified();
     });
   }
+  extractPages(pageInfos) {
+    return this.messageHandler.sendWithPromise("ExtractPages", {
+      pageInfos
+    });
+  }
   getPage(pageNumber) {
     if (!Number.isInteger(pageNumber) || pageNumber <= 0 || pageNumber > this._numPages) {
       return Promise.reject(new Error("Invalid page request."));
@@ -22169,7 +22183,8 @@ class WorkerTransport {
       info: results[0],
       metadata: results[1] ? new Metadata(results[1]) : null,
       contentDispositionFilename: this._fullReader?.filename ?? null,
-      contentLength: this._fullReader?.contentLength ?? null
+      contentLength: this._fullReader?.contentLength ?? null,
+      hasStructTree: results[2]
     }));
     this.#methodPromises.set(name, promise);
     return promise;
@@ -22383,8 +22398,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "5.4.394";
-const build = "2cc809ade";
+const version = "5.4.449";
+const build = "f44e5f0e6";
 
 ;// ./src/display/editor/color_picker.js
 
@@ -22517,13 +22532,13 @@ class ColorPicker {
       return;
     }
     if (event.target === this.#button) {
-      this.#dropdown.firstChild?.focus();
+      this.#dropdown.firstElementChild?.focus();
       return;
     }
     event.target.nextSibling?.focus();
   }
   _moveToPrevious(event) {
-    if (event.target === this.#dropdown?.firstChild || event.target === this.#button) {
+    if (event.target === this.#dropdown?.firstElementChild || event.target === this.#button) {
       if (this.#isDropdownVisible) {
         this._hideDropdownFromKeyboard();
       }
@@ -22539,14 +22554,14 @@ class ColorPicker {
       this.#openDropdown(event);
       return;
     }
-    this.#dropdown.firstChild?.focus();
+    this.#dropdown.firstElementChild?.focus();
   }
   _moveToEnd(event) {
     if (!this.#isDropdownVisible) {
       this.#openDropdown(event);
       return;
     }
-    this.#dropdown.lastChild?.focus();
+    this.#dropdown.lastElementChild?.focus();
   }
   #keyDown(event) {
     ColorPicker._keyboardManager.exec(this, event);
@@ -32073,7 +32088,7 @@ class AnnotationEditorLayer {
       return;
     }
     if (editor.parent && editor.annotationElementId) {
-      this.#uiManager.addDeletedAnnotationElement(editor.annotationElementId);
+      this.#uiManager.addDeletedAnnotationElement(editor);
       AnnotationEditor.deleteAnnotationElement(editor);
       editor.annotationElementId = null;
     }
@@ -32605,8 +32620,8 @@ class DrawLayer {
       }
     }
     if (path) {
-      const defs = element.firstChild;
-      const pathElement = defs.firstChild;
+      const defs = element.firstElementChild;
+      const pathElement = defs.firstElementChild;
       this.#updateProperties(pathElement, path);
     }
   }

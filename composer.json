@@ -33,7 +33,7 @@
     "doctrine/annotations": "^1.11",
     "doctrine/cache": "^1.10",
     "enshrined/svg-sanitize": "^0.22.0",
-    "ezyang/htmlpurifier": "^4.14",
+    "ezyang/htmlpurifier": "^4.19",
     "jbroadway/urlify": "^1.2",
     "nesbot/carbon": "^2.66.0",
     "oomphinc/composer-installers-extender": "^2.0",
@@ -53,7 +53,6 @@
     "symfony/yaml": "^5.1",
     "tamtamchik/simple-flash": "^3.0",
     "twig/twig": "^3.0",
-    "voku/anti-xss": "^4.1",
     "yeswiki/theme-margot": "^1.0"
   },
   "conflict": {},

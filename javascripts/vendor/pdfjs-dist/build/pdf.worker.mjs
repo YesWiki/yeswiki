@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.4.394
- * pdfjsBuild = 2cc809ade
+ * pdfjsVersion = 5.4.449
+ * pdfjsBuild = f44e5f0e6
  */
 /******/ var __webpack_modules__ = ({
 
@@ -6787,6 +6787,9 @@ class Dict {
   getRawValues() {
     return [...this._map.values()];
   }
+  getRawEntries() {
+    return this._map.entries();
+  }
   set(key, value) {
     this._map.set(key, value);
   }
@@ -6814,6 +6817,11 @@ class Dict {
     if (typeof value === "string") {
       this.set(key, Name.get(value));
     } else if (value instanceof Name) {
+      this.set(key, value);
+    }
+  }
+  setIfDict(key, value) {
+    if (value instanceof Dict) {
       this.set(key, value);
     }
   }
@@ -6963,6 +6971,11 @@ class RefSetCache {
   *items() {
     for (const [ref, value] of this._map) {
       yield [Ref.fromString(ref), value];
+    }
+  }
+  *keys() {
+    for (const ref of this._map.keys()) {
+      yield Ref.fromString(ref);
     }
   }
 }
@@ -8724,6 +8737,9 @@ class Stream extends BaseStream {
   makeSubStream(start, length, dict = null) {
     return new Stream(this.bytes.buffer, start, length, dict);
   }
+  clone() {
+    return new Stream(this.bytes.buffer, this.start, this.end - this.start, this.dict.clone());
+  }
 }
 class StringStream extends Stream {
   constructor(str) {
@@ -9780,6 +9796,12 @@ class DecodeStream extends BaseStream {
   }
   getBaseStreams() {
     return this.stream ? this.stream.getBaseStreams() : null;
+  }
+  clone() {
+    while (!this.eof) {
+      this.readBlock();
+    }
+    return new Stream(this.buffer, this.start, this.end - this.start, this.dict.clone());
   }
 }
 class StreamsSequenceStream extends DecodeStream {
@@ -42494,7 +42516,7 @@ class NameOrNumberTree {
     this.xref = xref;
     this._type = type;
   }
-  getAll() {
+  getAll(isRaw = false) {
     const map = new Map();
     if (!this.root) {
       return map;
@@ -42527,7 +42549,7 @@ class NameOrNumberTree {
         continue;
       }
       for (let i = 0, ii = entries.length; i < ii; i += 2) {
-        map.set(xref.fetchIfRef(entries[i]), xref.fetchIfRef(entries[i + 1]));
+        map.set(xref.fetchIfRef(entries[i]), isRaw ? entries[i + 1] : xref.fetchIfRef(entries[i + 1]));
       }
     }
     return map;
@@ -43248,6 +43270,7 @@ class StructTreeRoot {
     this.roleMap = new Map();
     this.structParentIds = null;
     this.kidRefToPosition = undefined;
+    this.parentTree = null;
   }
   getKidPosition(kidRef) {
     if (this.kidRefToPosition === undefined) {
@@ -43272,6 +43295,11 @@ class StructTreeRoot {
   }
   init() {
     this.readRoleMap();
+    const parentTree = this.dict.get("ParentTree");
+    if (!parentTree) {
+      return;
+    }
+    this.parentTree = new NumberTree(parentTree, this.xref);
   }
   #addIdToPage(pageRef, id, type) {
     if (!(pageRef instanceof Ref) || id < 0) {
@@ -43894,7 +43922,9 @@ class StructTreePage {
     if (!this.root || !this.rootDict || !(pageRef instanceof Ref)) {
       return;
     }
-    const parentTree = this.rootDict.get("ParentTree");
+    const {
+      parentTree
+    } = this.root;
     if (!parentTree) {
       return;
     }
@@ -43904,9 +43934,8 @@ class StructTreePage {
       return;
     }
     const map = new Map();
-    const numberTree = new NumberTree(parentTree, this.xref);
     if (Number.isInteger(id)) {
-      const parentArray = numberTree.get(id);
+      const parentArray = parentTree.get(id);
       if (Array.isArray(parentArray)) {
         for (const ref of parentArray) {
           if (ref instanceof Ref) {
@@ -43919,7 +43948,7 @@ class StructTreePage {
       return;
     }
     for (const [elemId, type] of ids) {
-      const obj = numberTree.get(elemId);
+      const obj = parentTree.get(elemId);
       if (obj) {
         const elem = this.addNode(this.xref.fetchIfRef(obj), map);
         if (elem?.kids?.length === 1 && elem.kids[0].type === StructElementType.OBJECT) {
@@ -44250,6 +44279,9 @@ class Catalog {
       }
     }
     return markInfo;
+  }
+  get hasStructTree() {
+    return this.#catDict.has("StructTreeRoot");
   }
   get structTreeRoot() {
     let structTree = null;
@@ -44663,6 +44695,14 @@ class Catalog {
     }
     return rawDests;
   }
+  get rawPageLabels() {
+    const obj = this.#catDict.getRaw("PageLabels");
+    if (!obj) {
+      return null;
+    }
+    const numberTree = new NumberTree(obj, this.xref);
+    return numberTree.getAll();
+  }
   get pageLabels() {
     let obj = null;
     try {
@@ -44676,15 +44716,13 @@ class Catalog {
     return shadow(this, "pageLabels", obj);
   }
   #readPageLabels() {
-    const obj = this.#catDict.getRaw("PageLabels");
-    if (!obj) {
+    const nums = this.rawPageLabels;
+    if (!nums) {
       return null;
     }
     const pageLabels = new Array(this.numPages);
     let style = null,
       prefix = "";
-    const numberTree = new NumberTree(obj, this.xref);
-    const nums = numberTree.getAll();
     let currentLabel = "",
       currentIndex = 1;
     for (let i = 0, ii = this.numPages; i < ii; i++) {
@@ -50975,7 +51013,7 @@ class Occur extends XFAObject {
     }) : "";
     this.max = attributes.max !== "" ? getInteger({
       data: attributes.max,
-      defaultValue: 1,
+      defaultValue: -1,
       validate: x => true
     }) : "";
     this.min = attributes.min !== "" ? getInteger({
@@ -60696,6 +60734,9 @@ class DecryptStream extends DecodeStream {
     buffer.set(chunk, bufferLength);
     this.bufferLength = newLength;
   }
+  getOriginalStream() {
+    return this;
+  }
 }
 
 ;// ./src/core/crypto.js
@@ -62378,7 +62419,7 @@ class Page {
     const resources = this.#getInheritableProperty("Resources");
     return shadow(this, "resources", resources instanceof Dict ? resources : Dict.empty);
   }
-  #getBoundingBox(name) {
+  getBoundingBox(name) {
     if (this.xfaData) {
       return this.xfaData.bbox;
     }
@@ -62392,10 +62433,10 @@ class Page {
     return null;
   }
   get mediaBox() {
-    return shadow(this, "mediaBox", this.#getBoundingBox("MediaBox") || LETTER_SIZE_MEDIABOX);
+    return shadow(this, "mediaBox", this.getBoundingBox("MediaBox") || LETTER_SIZE_MEDIABOX);
   }
   get cropBox() {
-    return shadow(this, "cropBox", this.#getBoundingBox("CropBox") || this.mediaBox);
+    return shadow(this, "cropBox", this.getBoundingBox("CropBox") || this.mediaBox);
   }
   get userUnit() {
     const obj = this.pageDict.get("UserUnit");
@@ -64266,28 +64307,25 @@ class MessageHandler {
 
 
 async function writeObject(ref, obj, buffer, {
-  encrypt = null
+  encrypt = null,
+  encryptRef = null
 }) {
-  const transform = encrypt?.createCipherTransform(ref.num, ref.gen);
+  const transform = encrypt && encryptRef !== ref ? encrypt.createCipherTransform(ref.num, ref.gen) : null;
   buffer.push(`${ref.num} ${ref.gen} obj\n`);
-  if (obj instanceof Dict) {
-    await writeDict(obj, buffer, transform);
-  } else if (obj instanceof BaseStream) {
-    await writeStream(obj, buffer, transform);
-  } else if (Array.isArray(obj) || ArrayBuffer.isView(obj)) {
-    await writeArray(obj, buffer, transform);
-  }
+  await writeValue(obj, buffer, transform);
   buffer.push("\nendobj\n");
 }
 async function writeDict(dict, buffer, transform) {
   buffer.push("<<");
-  for (const key of dict.getKeys()) {
+  for (const [key, rawObj] of dict.getRawEntries()) {
     buffer.push(` /${escapePDFName(key)} `);
-    await writeValue(dict.getRaw(key), buffer, transform);
+    await writeValue(rawObj, buffer, transform);
   }
   buffer.push(">>");
 }
 async function writeStream(stream, buffer, transform) {
+  stream = stream.getOriginalStream();
+  stream.reset();
   let bytes = stream.getBytes();
   const {
     dict
@@ -64296,7 +64334,7 @@ async function writeStream(stream, buffer, transform) {
   const filterZero = Array.isArray(filter) ? await dict.xref.fetchIfRefAsync(filter[0]) : filter;
   const isFilterZeroFlateDecode = isName(filterZero, "FlateDecode");
   const MIN_LENGTH_FOR_COMPRESSING = 256;
-  if (bytes.length >= MIN_LENGTH_FOR_COMPRESSING || isFilterZeroFlateDecode) {
+  if (bytes.length >= MIN_LENGTH_FOR_COMPRESSING && !isFilterZeroFlateDecode) {
     try {
       const cs = new CompressionStream("deflate");
       const writer = cs.writable.getWriter();
@@ -64336,14 +64374,11 @@ async function writeStream(stream, buffer, transform) {
 }
 async function writeArray(array, buffer, transform) {
   buffer.push("[");
-  let first = true;
-  for (const val of array) {
-    if (!first) {
+  for (let i = 0, ii = array.length; i < ii; i++) {
+    await writeValue(array[i], buffer, transform);
+    if (i < ii - 1) {
       buffer.push(" ");
-    } else {
-      first = false;
     }
-    await writeValue(val, buffer, transform);
   }
   buffer.push("]");
 }
@@ -64360,7 +64395,7 @@ async function writeValue(value, buffer, transform) {
     }
     buffer.push(`(${escapeString(value)})`);
   } else if (typeof value === "number") {
-    buffer.push(numberToString(value));
+    buffer.push(value.toString());
   } else if (typeof value === "boolean") {
     buffer.push(value.toString());
   } else if (value instanceof Dict) {
@@ -64499,7 +64534,7 @@ async function getXRefTable(xrefInfo, baseOffset, newRefs, newXref, buffer) {
   }
   computeIDs(baseOffset, xrefInfo, newXref);
   buffer.push("trailer\n");
-  await writeDict(newXref, buffer);
+  await writeDict(newXref, buffer, null);
   buffer.push("\nstartxref\n", baseOffset.toString(), "\n%%EOF\n");
 }
 function getIndexes(newRefs) {
@@ -64521,11 +64556,16 @@ async function getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer
   let maxGen = 0;
   for (const {
     ref,
-    data
+    data,
+    objStreamRef,
+    index
   } of newRefs) {
     let gen;
     maxOffset = Math.max(maxOffset, baseOffset);
-    if (data !== null) {
+    if (objStreamRef) {
+      gen = index;
+      xrefTableData.push([2, objStreamRef.num, gen]);
+    } else if (data !== null) {
       gen = Math.min(ref.gen, 0xffff);
       xrefTableData.push([1, baseOffset, gen]);
       baseOffset += data.length;
@@ -64557,12 +64597,12 @@ async function getXRefStreamTable(xrefInfo, baseOffset, newRefs, newXref, buffer
 function computeIDs(baseOffset, xrefInfo, newXref) {
   if (Array.isArray(xrefInfo.fileIds) && xrefInfo.fileIds.length > 0) {
     const md5 = computeMD5(baseOffset, xrefInfo);
-    newXref.set("ID", [xrefInfo.fileIds[0], md5]);
+    newXref.set("ID", [xrefInfo.fileIds[0] || md5, md5]);
   }
 }
 function getTrailerDict(xrefInfo, changes, useXrefStream) {
   const newXref = new Dict(null);
-  newXref.set("Prev", xrefInfo.startXRef);
+  newXref.setIfDefined("Prev", xrefInfo?.startXRef);
   const refForXrefTable = xrefInfo.newRef;
   if (useXrefStream) {
     changes.put(refForXrefTable, {
@@ -64573,22 +64613,27 @@ function getTrailerDict(xrefInfo, changes, useXrefStream) {
   } else {
     newXref.set("Size", refForXrefTable.num);
   }
-  if (xrefInfo.rootRef !== null) {
-    newXref.set("Root", xrefInfo.rootRef);
-  }
-  if (xrefInfo.infoRef !== null) {
-    newXref.set("Info", xrefInfo.infoRef);
-  }
-  if (xrefInfo.encryptRef !== null) {
-    newXref.set("Encrypt", xrefInfo.encryptRef);
-  }
+  newXref.setIfDefined("Root", xrefInfo?.rootRef);
+  newXref.setIfDefined("Info", xrefInfo?.infoRef);
+  newXref.setIfDefined("Encrypt", xrefInfo?.encryptRef);
   return newXref;
 }
 async function writeChanges(changes, xref, buffer = []) {
   const newRefs = [];
   for (const [ref, {
-    data
+    data,
+    objStreamRef,
+    index
   }] of changes.items()) {
+    if (objStreamRef) {
+      newRefs.push({
+        ref,
+        data,
+        objStreamRef,
+        index
+      });
+      continue;
+    }
     if (data === null || typeof data === "string") {
       newRefs.push({
         ref,
@@ -64662,6 +64707,1331 @@ async function incrementalUpdate({
     offset = writeString(str, offset, array);
   }
   return array;
+}
+
+;// ./src/core/editor/pdf_editor.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const MAX_LEAVES_PER_PAGES_NODE = 16;
+const MAX_IN_NAME_TREE_NODE = 64;
+class PageData {
+  constructor(page, documentData) {
+    this.page = page;
+    this.documentData = documentData;
+    this.annotations = null;
+    this.pointingNamedDestinations = null;
+    documentData.pagesMap.put(page.ref, this);
+  }
+}
+class DocumentData {
+  constructor(document) {
+    this.document = document;
+    this.destinations = null;
+    this.pageLabels = null;
+    this.pagesMap = new RefSetCache();
+    this.oldRefMapping = new RefSetCache();
+    this.dedupNamedDestinations = new Map();
+    this.usedNamedDestinations = new Set();
+    this.postponedRefCopies = new RefSetCache();
+    this.usedStructParents = new Set();
+    this.oldStructParentMapping = new Map();
+    this.structTreeRoot = null;
+    this.parentTree = null;
+    this.idTree = null;
+    this.roleMap = null;
+    this.classMap = null;
+    this.namespaces = null;
+    this.structTreeAF = null;
+    this.structTreePronunciationLexicon = [];
+  }
+}
+class XRefWrapper {
+  constructor(entries) {
+    this.entries = entries;
+  }
+  fetch(ref) {
+    return ref instanceof Ref ? this.entries[ref.num] : ref;
+  }
+}
+class PDFEditor {
+  constructor({
+    useObjectStreams = true,
+    title = "",
+    author = ""
+  } = {}) {
+    this.hasSingleFile = false;
+    this.currentDocument = null;
+    this.oldPages = [];
+    this.newPages = [];
+    this.xref = [null];
+    this.xrefWrapper = new XRefWrapper(this.xref);
+    this.newRefCount = 1;
+    [this.rootRef, this.rootDict] = this.newDict;
+    [this.infoRef, this.infoDict] = this.newDict;
+    [this.pagesRef, this.pagesDict] = this.newDict;
+    this.namesDict = null;
+    this.useObjectStreams = useObjectStreams;
+    this.objStreamRefs = useObjectStreams ? new Set() : null;
+    this.version = "1.7";
+    this.title = title;
+    this.author = author;
+    this.pageLabels = null;
+    this.namedDestinations = new Map();
+    this.parentTree = new Map();
+    this.structTreeKids = [];
+    this.idTree = new Map();
+    this.classMap = new Dict();
+    this.roleMap = new Dict();
+    this.namespaces = new Map();
+    this.structTreeAF = [];
+    this.structTreePronunciationLexicon = [];
+  }
+  get newRef() {
+    const ref = Ref.get(this.newRefCount++, 0);
+    return ref;
+  }
+  get newDict() {
+    const ref = this.newRef;
+    const dict = this.xref[ref.num] = new Dict();
+    return [ref, dict];
+  }
+  async #cloneObject(obj, xref) {
+    const ref = this.newRef;
+    this.xref[ref.num] = await this.#collectDependencies(obj, true, xref);
+    return ref;
+  }
+  cloneDict(dict) {
+    const newDict = dict.clone();
+    newDict.xref = this.xrefWrapper;
+    return newDict;
+  }
+  async #collectDependencies(obj, mustClone, xref) {
+    if (obj instanceof Ref) {
+      const {
+        currentDocument: {
+          oldRefMapping
+        }
+      } = this;
+      let newRef = oldRefMapping.get(obj);
+      if (newRef) {
+        return newRef;
+      }
+      const oldRef = obj;
+      obj = await xref.fetchAsync(oldRef);
+      if (typeof obj === "number") {
+        return obj;
+      }
+      newRef = this.newRef;
+      oldRefMapping.put(oldRef, newRef);
+      this.xref[newRef.num] = await this.#collectDependencies(obj, true, xref);
+      return newRef;
+    }
+    const promises = [];
+    const {
+      currentDocument: {
+        postponedRefCopies
+      }
+    } = this;
+    if (Array.isArray(obj)) {
+      if (mustClone) {
+        obj = obj.slice();
+      }
+      for (let i = 0, ii = obj.length; i < ii; i++) {
+        const postponedActions = postponedRefCopies.get(obj[i]);
+        if (postponedActions) {
+          postponedActions.push(ref => obj[i] = ref);
+          continue;
+        }
+        promises.push(this.#collectDependencies(obj[i], true, xref).then(newObj => obj[i] = newObj));
+      }
+      await Promise.all(promises);
+      return obj;
+    }
+    let dict;
+    if (obj instanceof BaseStream) {
+      ({
+        dict
+      } = obj = obj.getOriginalStream().clone());
+      dict.xref = this.xrefWrapper;
+    } else if (obj instanceof Dict) {
+      if (mustClone) {
+        obj = obj.clone();
+        obj.xref = this.xrefWrapper;
+      }
+      dict = obj;
+    }
+    if (dict) {
+      for (const [key, rawObj] of dict.getRawEntries()) {
+        const postponedActions = postponedRefCopies.get(rawObj);
+        if (postponedActions) {
+          postponedActions.push(ref => dict.set(key, ref));
+          continue;
+        }
+        promises.push(this.#collectDependencies(rawObj, true, xref).then(newObj => dict.set(key, newObj)));
+      }
+      await Promise.all(promises);
+    }
+    return obj;
+  }
+  async #cloneStructTreeNode(parentStructRef, node, xref, removedStructElements, dedupIDs, dedupClasses, dedupRoles, visited = new RefSet()) {
+    const {
+      currentDocument: {
+        pagesMap,
+        oldRefMapping
+      }
+    } = this;
+    const pg = node.getRaw("Pg");
+    if (pg instanceof Ref && !pagesMap.has(pg)) {
+      return null;
+    }
+    let kids;
+    const k = kids = node.getRaw("K");
+    if (k instanceof Ref) {
+      if (visited.has(k)) {
+        return null;
+      }
+      kids = await xref.fetchAsync(k);
+      if (!Array.isArray(kids)) {
+        kids = [k];
+      }
+    }
+    kids = Array.isArray(kids) ? kids : [kids];
+    const newKids = [];
+    const structElemIndices = [];
+    for (let kid of kids) {
+      const kidRef = kid instanceof Ref ? kid : null;
+      if (kidRef) {
+        if (visited.has(kidRef)) {
+          continue;
+        }
+        visited.put(kidRef);
+        kid = await xref.fetchAsync(kidRef);
+      }
+      if (typeof kid === "number") {
+        newKids.push(kid);
+        continue;
+      }
+      if (!(kid instanceof Dict)) {
+        continue;
+      }
+      const pgRef = kid.getRaw("Pg");
+      if (pgRef instanceof Ref && !pagesMap.has(pgRef)) {
+        continue;
+      }
+      const type = kid.get("Type");
+      if (!type || isName(type, "StructElem")) {
+        let setAsSpan = false;
+        if (kidRef && removedStructElements.has(kidRef)) {
+          if (!isName(kid.get("S"), "Link")) {
+            continue;
+          }
+          setAsSpan = true;
+        }
+        const newKidRef = await this.#cloneStructTreeNode(kidRef, kid, xref, removedStructElements, dedupIDs, dedupClasses, dedupRoles, visited);
+        if (newKidRef) {
+          structElemIndices.push(newKids.length);
+          newKids.push(newKidRef);
+          if (kidRef) {
+            oldRefMapping.put(kidRef, newKidRef);
+          }
+          if (setAsSpan) {
+            this.xref[newKidRef.num].setIfName("S", "Span");
+          }
+        }
+        continue;
+      }
+      if (isName(type, "OBJR")) {
+        if (!kidRef) {
+          continue;
+        }
+        const newKidRef = oldRefMapping.get(kidRef);
+        if (!newKidRef) {
+          continue;
+        }
+        const newKid = this.xref[newKidRef.num];
+        const objRef = newKid.getRaw("Obj");
+        if (objRef instanceof Ref) {
+          const obj = this.xref[objRef.num];
+          if (obj instanceof Dict && !obj.has("StructParent") && parentStructRef) {
+            const structParent = this.parentTree.size;
+            this.parentTree.set(structParent, [oldRefMapping, parentStructRef]);
+            obj.set("StructParent", structParent);
+          }
+        }
+        newKids.push(newKidRef);
+        continue;
+      }
+      if (isName(type, "MCR")) {
+        const newKid = await this.#collectDependencies(kidRef || kid, true, xref);
+        newKids.push(newKid);
+        continue;
+      }
+      if (kidRef) {
+        const newKidRef = await this.#collectDependencies(kidRef, true, xref);
+        newKids.push(newKidRef);
+      }
+    }
+    if (kids.length !== 0 && newKids.length === 0) {
+      return null;
+    }
+    const newNodeRef = this.newRef;
+    const newNode = this.xref[newNodeRef.num] = this.cloneDict(node);
+    newNode.delete("ID");
+    newNode.delete("C");
+    newNode.delete("K");
+    newNode.delete("P");
+    newNode.delete("S");
+    await this.#collectDependencies(newNode, false, xref);
+    const classNames = node.get("C");
+    if (classNames instanceof Name) {
+      const newClassName = dedupClasses.get(classNames.name);
+      if (newClassName) {
+        newNode.set("C", Name.get(newClassName));
+      } else {
+        newNode.set("C", classNames);
+      }
+    } else if (Array.isArray(classNames)) {
+      const newClassNames = [];
+      for (const className of classNames) {
+        if (className instanceof Name) {
+          const newClassName = dedupClasses.get(className.name);
+          if (newClassName) {
+            newClassNames.push(Name.get(newClassName));
+          } else {
+            newClassNames.push(className);
+          }
+        }
+      }
+      newNode.set("C", newClassNames);
+    }
+    const roleName = node.get("S");
+    if (roleName instanceof Name) {
+      const newRoleName = dedupRoles.get(roleName.name);
+      if (newRoleName) {
+        newNode.set("S", Name.get(newRoleName));
+      } else {
+        newNode.set("S", roleName);
+      }
+    }
+    const id = node.get("ID");
+    if (typeof id === "string") {
+      const stringId = stringToPDFString(id, false);
+      const newId = dedupIDs.get(stringId);
+      if (newId) {
+        newNode.set("ID", stringToAsciiOrUTF16BE(newId));
+      } else {
+        newNode.set("ID", id);
+      }
+    }
+    let attributes = newNode.get("A");
+    if (attributes) {
+      if (!Array.isArray(attributes)) {
+        attributes = [attributes];
+      }
+      for (let attr of attributes) {
+        attr = this.xrefWrapper.fetch(attr);
+        if (isName(attr.get("O"), "Table") && attr.has("Headers")) {
+          const headers = this.xrefWrapper.fetch(attr.getRaw("Headers"));
+          if (Array.isArray(headers)) {
+            for (let i = 0, ii = headers.length; i < ii; i++) {
+              const newId = dedupIDs.get(stringToPDFString(headers[i], false));
+              if (newId) {
+                headers[i] = newId;
+              }
+            }
+          }
+        }
+      }
+    }
+    for (const index of structElemIndices) {
+      const structElemRef = newKids[index];
+      const structElem = this.xref[structElemRef.num];
+      structElem.set("P", newNodeRef);
+    }
+    if (newKids.length === 1) {
+      newNode.set("K", newKids[0]);
+    } else if (newKids.length > 1) {
+      newNode.set("K", newKids);
+    }
+    return newNodeRef;
+  }
+  async extractPages(pageInfos) {
+    const promises = [];
+    let newIndex = 0;
+    this.hasSingleFile = pageInfos.length === 1;
+    const allDocumentData = [];
+    for (const {
+      document,
+      includePages,
+      excludePages
+    } of pageInfos) {
+      if (!document) {
+        continue;
+      }
+      const documentData = new DocumentData(document);
+      allDocumentData.push(documentData);
+      promises.push(this.#collectDocumentData(documentData));
+      let keptIndices, keptRanges, deletedIndices, deletedRanges;
+      for (const page of includePages || []) {
+        if (Array.isArray(page)) {
+          (keptRanges ||= []).push(page);
+        } else {
+          (keptIndices ||= new Set()).add(page);
+        }
+      }
+      for (const page of excludePages || []) {
+        if (Array.isArray(page)) {
+          (deletedRanges ||= []).push(page);
+        } else {
+          (deletedIndices ||= new Set()).add(page);
+        }
+      }
+      for (let i = 0, ii = document.numPages; i < ii; i++) {
+        if (deletedIndices?.has(i)) {
+          continue;
+        }
+        if (deletedRanges) {
+          let isDeleted = false;
+          for (const [start, end] of deletedRanges) {
+            if (i >= start && i <= end) {
+              isDeleted = true;
+              break;
+            }
+          }
+          if (isDeleted) {
+            continue;
+          }
+        }
+        let takePage = false;
+        if (keptIndices) {
+          takePage = keptIndices.has(i);
+        }
+        if (!takePage && keptRanges) {
+          for (const [start, end] of keptRanges) {
+            if (i >= start && i <= end) {
+              takePage = true;
+              break;
+            }
+          }
+        }
+        if (!takePage && !keptIndices && !keptRanges) {
+          takePage = true;
+        }
+        if (!takePage) {
+          continue;
+        }
+        const newPageIndex = newIndex++;
+        promises.push(document.getPage(i).then(page => {
+          this.oldPages[newPageIndex] = new PageData(page, documentData);
+        }));
+      }
+    }
+    await Promise.all(promises);
+    promises.length = 0;
+    this.#collectValidDestinations(allDocumentData);
+    this.#collectPageLabels();
+    for (const page of this.oldPages) {
+      promises.push(this.#postCollectPageData(page));
+    }
+    await Promise.all(promises);
+    this.#findDuplicateNamedDestinations();
+    this.#setPostponedRefCopies(allDocumentData);
+    for (let i = 0, ii = this.oldPages.length; i < ii; i++) {
+      this.newPages[i] = await this.#makePageCopy(i, null);
+    }
+    this.#fixPostponedRefCopies(allDocumentData);
+    await this.#mergeStructTrees(allDocumentData);
+    return this.writePDF();
+  }
+  async #collectDocumentData(documentData) {
+    const {
+      document: {
+        pdfManager,
+        xref
+      }
+    } = documentData;
+    await Promise.all([pdfManager.ensureCatalog("destinations").then(destinations => documentData.destinations = destinations), pdfManager.ensureCatalog("rawPageLabels").then(pageLabels => documentData.pageLabels = pageLabels), pdfManager.ensureCatalog("structTreeRoot").then(structTreeRoot => documentData.structTreeRoot = structTreeRoot)]);
+    const structTreeRoot = documentData.structTreeRoot;
+    if (structTreeRoot) {
+      const rootDict = structTreeRoot.dict;
+      const parentTree = rootDict.get("ParentTree");
+      if (parentTree) {
+        const numberTree = new NumberTree(parentTree, xref);
+        documentData.parentTree = numberTree.getAll(true);
+      }
+      const idTree = rootDict.get("IDTree");
+      if (idTree) {
+        const nameTree = new NameTree(idTree, xref);
+        documentData.idTree = nameTree.getAll(true);
+      }
+      documentData.roleMap = rootDict.get("RoleMap") || null;
+      documentData.classMap = rootDict.get("ClassMap") || null;
+      let namespaces = rootDict.get("Namespaces") || null;
+      if (namespaces && !Array.isArray(namespaces)) {
+        namespaces = [namespaces];
+      }
+      documentData.namespaces = namespaces;
+      documentData.structTreeAF = rootDict.get("AF") || null;
+      documentData.structTreePronunciationLexicon = rootDict.get("PronunciationLexicon") || null;
+    }
+  }
+  async #postCollectPageData(pageData) {
+    const {
+      page: {
+        xref,
+        annotations
+      },
+      documentData: {
+        pagesMap,
+        destinations,
+        usedNamedDestinations
+      }
+    } = pageData;
+    if (!annotations) {
+      return;
+    }
+    const promises = [];
+    let newAnnotations = [];
+    let newIndex = 0;
+    for (const annotationRef of annotations) {
+      const newAnnotationIndex = newIndex++;
+      promises.push(xref.fetchIfRefAsync(annotationRef).then(async annotationDict => {
+        if (!isName(annotationDict.get("Subtype"), "Link")) {
+          newAnnotations[newAnnotationIndex] = annotationRef;
+          return;
+        }
+        const action = annotationDict.get("A");
+        const dest = action instanceof Dict ? action.get("D") : annotationDict.get("Dest");
+        if (!dest || Array.isArray(dest) && (!(dest[0] instanceof Ref) || pagesMap.has(dest[0]))) {
+          newAnnotations[newAnnotationIndex] = annotationRef;
+        } else if (typeof dest === "string") {
+          const destString = stringToPDFString(dest, true);
+          if (destinations.has(destString)) {
+            newAnnotations[newAnnotationIndex] = annotationRef;
+            usedNamedDestinations.add(destString);
+          }
+        }
+      }));
+    }
+    await Promise.all(promises);
+    newAnnotations = newAnnotations.filter(annot => !!annot);
+    pageData.annotations = newAnnotations.length > 0 ? newAnnotations : null;
+  }
+  #setPostponedRefCopies(allDocumentData) {
+    for (const {
+      postponedRefCopies,
+      pagesMap
+    } of allDocumentData) {
+      for (const oldPageRef of pagesMap.keys()) {
+        postponedRefCopies.put(oldPageRef, []);
+      }
+    }
+  }
+  #fixPostponedRefCopies(allDocumentData) {
+    for (const {
+      postponedRefCopies,
+      oldRefMapping
+    } of allDocumentData) {
+      for (const [oldRef, actions] of postponedRefCopies.items()) {
+        const newRef = oldRefMapping.get(oldRef);
+        for (const action of actions) {
+          action(newRef);
+        }
+      }
+      postponedRefCopies.clear();
+    }
+  }
+  #visitObject(obj, callback, visited = new RefSet()) {
+    if (obj instanceof Ref) {
+      if (!visited.has(obj)) {
+        visited.put(obj);
+        this.#visitObject(this.xref[obj.num], callback, visited);
+      }
+      return;
+    }
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        this.#visitObject(item, callback, visited);
+      }
+      return;
+    }
+    let dict;
+    if (obj instanceof BaseStream) {
+      ({
+        dict
+      } = obj);
+    } else if (obj instanceof Dict) {
+      dict = obj;
+    }
+    if (dict) {
+      callback(dict);
+      for (const value of dict.getRawValues()) {
+        this.#visitObject(value, callback, visited);
+      }
+    }
+  }
+  async #mergeStructTrees(allDocumentData) {
+    let newStructParentId = 0;
+    const {
+      parentTree: newParentTree
+    } = this;
+    for (let i = 0, ii = this.newPages.length; i < ii; i++) {
+      const {
+        documentData: {
+          parentTree,
+          oldRefMapping,
+          oldStructParentMapping,
+          usedStructParents,
+          document: {
+            xref
+          }
+        }
+      } = this.oldPages[i];
+      if (!parentTree) {
+        continue;
+      }
+      const pageRef = this.newPages[i];
+      const pageDict = this.xref[pageRef.num];
+      this.#visitObject(pageDict, dict => {
+        const structParent = dict.get("StructParent") ?? dict.get("StructParents");
+        if (typeof structParent !== "number") {
+          return;
+        }
+        usedStructParents.add(structParent);
+        let parent = parentTree.get(structParent);
+        const parentRef = parent instanceof Ref ? parent : null;
+        if (parentRef) {
+          const array = xref.fetch(parentRef);
+          if (Array.isArray(array)) {
+            parent = array;
+          }
+        }
+        if (Array.isArray(parent) && parent.every(ref => ref === null)) {
+          parent = null;
+        }
+        if (!parent) {
+          if (dict.has("StructParent")) {
+            dict.delete("StructParent");
+          } else {
+            dict.delete("StructParents");
+          }
+          return;
+        }
+        let newStructParent = oldStructParentMapping.get(structParent);
+        if (newStructParent === undefined) {
+          newStructParent = newStructParentId++;
+          oldStructParentMapping.set(structParent, newStructParent);
+          newParentTree.set(newStructParent, [oldRefMapping, parent]);
+        }
+        if (dict.has("StructParent")) {
+          dict.set("StructParent", newStructParent);
+        } else {
+          dict.set("StructParents", newStructParent);
+        }
+      });
+    }
+    const {
+      structTreeKids,
+      idTree: newIdTree,
+      classMap: newClassMap,
+      roleMap: newRoleMap,
+      namespaces: newNamespaces,
+      structTreeAF: newStructTreeAF,
+      structTreePronunciationLexicon: newStructTreePronunciationLexicon
+    } = this;
+    for (const documentData of allDocumentData) {
+      const {
+        document: {
+          xref
+        },
+        oldRefMapping,
+        parentTree,
+        usedStructParents,
+        structTreeRoot,
+        idTree,
+        classMap,
+        roleMap,
+        namespaces,
+        structTreeAF,
+        structTreePronunciationLexicon
+      } = documentData;
+      if (!structTreeRoot) {
+        continue;
+      }
+      this.currentDocument = documentData;
+      const removedStructElements = new RefSet();
+      for (const [key, value] of parentTree || []) {
+        if (!usedStructParents.has(key) && value instanceof Ref) {
+          removedStructElements.put(value);
+        }
+      }
+      const dedupIDs = new Map();
+      for (const [id, nodeRef] of idTree || []) {
+        let _id = id;
+        if (newIdTree.has(id)) {
+          for (let i = 1;; i++) {
+            const newId = `${id}_${i}`;
+            if (!newIdTree.has(newId)) {
+              dedupIDs.set(id, newId);
+              _id = newId;
+              break;
+            }
+          }
+        }
+        newIdTree.set(_id, nodeRef);
+      }
+      const dedupClasses = new Map();
+      if (classMap?.size > 0) {
+        for (let [className, classDict] of classMap) {
+          classDict = await this.#collectDependencies(classDict, true, xref);
+          if (newClassMap.has(className)) {
+            for (let i = 1;; i++) {
+              const newClassName = `${className}_${i}`;
+              if (!newClassMap.has(newClassName)) {
+                dedupClasses.set(className, newClassName);
+                className = newClassName;
+                break;
+              }
+            }
+          }
+          newClassMap.set(className, classDict);
+        }
+      }
+      const dedupRoles = new Map();
+      if (roleMap?.size > 0) {
+        for (const [roleName, mappedName] of roleMap) {
+          const newMappedName = newRoleMap.get(roleName);
+          if (!newMappedName) {
+            newRoleMap.set(roleName, mappedName);
+            continue;
+          }
+          if (newMappedName === mappedName) {
+            continue;
+          }
+          for (let i = 1;; i++) {
+            const newRoleName = `${roleName}_${i}`;
+            if (!newRoleMap.has(newRoleName)) {
+              dedupRoles.set(roleName, newRoleName);
+              newRoleMap.set(newRoleName, mappedName);
+              break;
+            }
+          }
+        }
+      }
+      if (namespaces?.length > 0) {
+        for (const namespaceRef of namespaces) {
+          const namespace = await xref.fetchIfRefAsync(namespaceRef);
+          let ns = namespace.get("NS");
+          if (!ns || newNamespaces.has(ns)) {
+            continue;
+          }
+          ns = stringToPDFString(ns, false);
+          const newNamespace = await this.#collectDependencies(namespace, true, xref);
+          newNamespaces.set(ns, newNamespace);
+        }
+      }
+      if (structTreeAF) {
+        for (const afRef of structTreeAF) {
+          newStructTreeAF.push(await this.#collectDependencies(afRef, true, xref));
+        }
+      }
+      if (structTreePronunciationLexicon) {
+        for (const lexiconRef of structTreePronunciationLexicon) {
+          newStructTreePronunciationLexicon.push(await this.#collectDependencies(lexiconRef, true, xref));
+        }
+      }
+      let kids = structTreeRoot.dict.get("K");
+      if (!kids) {
+        continue;
+      }
+      kids = Array.isArray(kids) ? kids : [kids];
+      for (let kid of kids) {
+        const kidRef = kid instanceof Ref ? kid : null;
+        if (kidRef && removedStructElements.has(kidRef)) {
+          continue;
+        }
+        kid = await xref.fetchIfRefAsync(kid);
+        const newKidRef = await this.#cloneStructTreeNode(kidRef, kid, xref, removedStructElements, dedupIDs, dedupClasses, dedupRoles);
+        if (newKidRef) {
+          structTreeKids.push(newKidRef);
+        }
+      }
+      for (const [id, nodeRef] of idTree || []) {
+        const newNodeRef = oldRefMapping.get(nodeRef);
+        const newId = dedupIDs.get(id) || id;
+        if (newNodeRef) {
+          newIdTree.set(newId, newNodeRef);
+        } else {
+          newIdTree.delete(newId);
+        }
+      }
+    }
+    for (const [key, [oldRefMapping, parent]] of newParentTree) {
+      if (!parent) {
+        newParentTree.delete(key);
+        continue;
+      }
+      if (!Array.isArray(parent)) {
+        const newParent = oldRefMapping.get(parent);
+        if (newParent === undefined) {
+          newParentTree.delete(key);
+        } else {
+          newParentTree.set(key, newParent);
+        }
+        continue;
+      }
+      const newParents = parent.map(ref => ref instanceof Ref && oldRefMapping.get(ref) || null);
+      if (newParents.length === 0 || newParents.every(ref => ref === null)) {
+        newParentTree.delete(key);
+        continue;
+      }
+      newParentTree.set(key, newParents);
+    }
+    this.currentDocument = null;
+  }
+  #collectValidDestinations(allDocumentData) {
+    for (const documentData of allDocumentData) {
+      if (!documentData.destinations) {
+        continue;
+      }
+      const {
+        destinations,
+        pagesMap
+      } = documentData;
+      const newDestinations = documentData.destinations = new Map();
+      for (const [key, dest] of Object.entries(destinations)) {
+        const pageRef = dest[0];
+        const pageData = pagesMap.get(pageRef);
+        if (!pageData) {
+          continue;
+        }
+        (pageData.pointingNamedDestinations ||= new Set()).add(key);
+        newDestinations.set(key, dest);
+      }
+    }
+  }
+  #findDuplicateNamedDestinations() {
+    const {
+      namedDestinations
+    } = this;
+    for (let i = 0, ii = this.oldPages.length; i < ii; i++) {
+      const page = this.oldPages[i];
+      const {
+        documentData: {
+          destinations,
+          dedupNamedDestinations,
+          usedNamedDestinations
+        }
+      } = page;
+      let {
+        pointingNamedDestinations
+      } = page;
+      if (!pointingNamedDestinations) {
+        continue;
+      }
+      page.pointingNamedDestinations = pointingNamedDestinations = pointingNamedDestinations.intersection(usedNamedDestinations);
+      for (const pointingDest of pointingNamedDestinations) {
+        if (!usedNamedDestinations.has(pointingDest)) {
+          continue;
+        }
+        const dest = destinations.get(pointingDest).slice();
+        if (!namedDestinations.has(pointingDest)) {
+          namedDestinations.set(pointingDest, dest);
+          continue;
+        }
+        const newName = `${pointingDest}_p${i + 1}`;
+        dedupNamedDestinations.set(pointingDest, newName);
+        namedDestinations.set(newName, dest);
+      }
+    }
+  }
+  #fixNamedDestinations(annotations, dedupNamedDestinations) {
+    if (dedupNamedDestinations.size === 0) {
+      return;
+    }
+    const fixDestination = (dict, key, dest) => {
+      if (typeof dest === "string") {
+        dict.set(key, dedupNamedDestinations.get(stringToPDFString(dest, true)) || dest);
+      }
+    };
+    for (const annotRef of annotations) {
+      const annotDict = this.xref[annotRef.num];
+      if (!isName(annotDict.get("Subtype"), "Link")) {
+        continue;
+      }
+      const action = annotDict.get("A");
+      if (action instanceof Dict && action.has("D")) {
+        const dest = action.get("D");
+        fixDestination(action, "D", dest);
+        continue;
+      }
+      const dest = annotDict.get("Dest");
+      fixDestination(annotDict, "Dest", dest);
+    }
+  }
+  async #collectPageLabels() {
+    if (!this.hasSingleFile) {
+      return;
+    }
+    const {
+      documentData: {
+        document,
+        pageLabels
+      }
+    } = this.oldPages[0];
+    if (!pageLabels) {
+      return;
+    }
+    const numPages = document.numPages;
+    const oldPageLabels = [];
+    const oldPageIndices = new Set(this.oldPages.map(({
+      page: {
+        pageIndex
+      }
+    }) => pageIndex));
+    let currentLabel = null;
+    let stFirstIndex = -1;
+    for (let i = 0; i < numPages; i++) {
+      const newLabel = pageLabels.get(i);
+      if (newLabel) {
+        currentLabel = newLabel;
+        stFirstIndex = currentLabel.has("St") ? i : -1;
+      }
+      if (!oldPageIndices.has(i)) {
+        continue;
+      }
+      if (stFirstIndex !== -1) {
+        const st = currentLabel.get("St");
+        currentLabel = this.cloneDict(currentLabel);
+        currentLabel.set("St", st + (i - stFirstIndex));
+        stFirstIndex = -1;
+      }
+      oldPageLabels.push(currentLabel);
+    }
+    currentLabel = oldPageLabels[0];
+    let currentIndex = 0;
+    const newPageLabels = this.pageLabels = [[0, currentLabel]];
+    for (let i = 0, ii = oldPageLabels.length; i < ii; i++) {
+      const label = oldPageLabels[i];
+      if (label === currentLabel) {
+        continue;
+      }
+      currentIndex = i;
+      currentLabel = label;
+      newPageLabels.push([currentIndex, currentLabel]);
+    }
+  }
+  async #makePageCopy(pageIndex) {
+    const {
+      page,
+      documentData,
+      annotations,
+      pointingNamedDestinations
+    } = this.oldPages[pageIndex];
+    this.currentDocument = documentData;
+    const {
+      dedupNamedDestinations,
+      oldRefMapping
+    } = documentData;
+    const {
+      xref,
+      rotate,
+      mediaBox,
+      resources,
+      ref: oldPageRef
+    } = page;
+    const pageRef = this.newRef;
+    const pageDict = this.xref[pageRef.num] = this.cloneDict(page.pageDict);
+    oldRefMapping.put(oldPageRef, pageRef);
+    if (pointingNamedDestinations) {
+      for (const pointingDest of pointingNamedDestinations) {
+        const name = dedupNamedDestinations.get(pointingDest) || pointingDest;
+        const dest = this.namedDestinations.get(name);
+        dest[0] = pageRef;
+      }
+    }
+    for (const key of ["Rotate", "MediaBox", "CropBox", "BleedBox", "TrimBox", "ArtBox", "Resources", "Annots", "Parent", "UserUnit"]) {
+      pageDict.delete(key);
+    }
+    const lastRef = this.newRefCount;
+    await this.#collectDependencies(pageDict, false, xref);
+    pageDict.set("Rotate", rotate);
+    pageDict.set("MediaBox", mediaBox);
+    for (const boxName of ["CropBox", "BleedBox", "TrimBox", "ArtBox"]) {
+      const box = page.getBoundingBox(boxName);
+      if (box?.some((value, index) => value !== mediaBox[index])) {
+        pageDict.set(boxName, box);
+      }
+    }
+    const userUnit = page.userUnit;
+    if (userUnit !== 1) {
+      pageDict.set("UserUnit", userUnit);
+    }
+    pageDict.setIfDict("Resources", await this.#collectDependencies(resources, true, xref));
+    if (annotations) {
+      const newAnnotations = await this.#collectDependencies(annotations, true, xref);
+      this.#fixNamedDestinations(newAnnotations, dedupNamedDestinations);
+      pageDict.setIfArray("Annots", newAnnotations);
+    }
+    if (this.useObjectStreams) {
+      const newLastRef = this.newRefCount;
+      const pageObjectRefs = [];
+      for (let i = lastRef; i < newLastRef; i++) {
+        const obj = this.xref[i];
+        if (obj instanceof BaseStream) {
+          continue;
+        }
+        pageObjectRefs.push(Ref.get(i, 0));
+      }
+      for (let i = 0; i < pageObjectRefs.length; i += 0xffff) {
+        const objStreamRef = this.newRef;
+        this.objStreamRefs.add(objStreamRef.num);
+        this.xref[objStreamRef.num] = pageObjectRefs.slice(i, i + 0xffff);
+      }
+    }
+    this.currentDocument = null;
+    return pageRef;
+  }
+  #makePageTree() {
+    const {
+      newPages: pages,
+      rootDict,
+      pagesRef,
+      pagesDict
+    } = this;
+    rootDict.set("Pages", pagesRef);
+    pagesDict.setIfName("Type", "Pages");
+    pagesDict.set("Count", pages.length);
+    const maxLeaves = MAX_LEAVES_PER_PAGES_NODE <= 1 ? pages.length : MAX_LEAVES_PER_PAGES_NODE;
+    const stack = [{
+      dict: pagesDict,
+      kids: pages,
+      parentRef: pagesRef
+    }];
+    while (stack.length > 0) {
+      const {
+        dict,
+        kids,
+        parentRef
+      } = stack.pop();
+      if (kids.length <= maxLeaves) {
+        dict.set("Kids", kids);
+        for (const ref of kids) {
+          this.xref[ref.num].set("Parent", parentRef);
+        }
+        continue;
+      }
+      const chunkSize = Math.max(maxLeaves, Math.ceil(kids.length / maxLeaves));
+      const kidsChunks = [];
+      for (let i = 0; i < kids.length; i += chunkSize) {
+        kidsChunks.push(kids.slice(i, i + chunkSize));
+      }
+      const kidsRefs = [];
+      dict.set("Kids", kidsRefs);
+      for (const chunk of kidsChunks) {
+        const [kidRef, kidDict] = this.newDict;
+        kidsRefs.push(kidRef);
+        kidDict.setIfName("Type", "Pages");
+        kidDict.set("Parent", parentRef);
+        kidDict.set("Count", chunk.length);
+        stack.push({
+          dict: kidDict,
+          kids: chunk,
+          parentRef: kidRef
+        });
+      }
+    }
+  }
+  #makeNameNumTree(map, areNames) {
+    const allEntries = map.sort(areNames ? ([keyA], [keyB]) => keyA.localeCompare(keyB) : ([keyA], [keyB]) => keyA - keyB);
+    const maxLeaves = MAX_IN_NAME_TREE_NODE <= 1 ? allEntries.length : MAX_IN_NAME_TREE_NODE;
+    const [treeRef, treeDict] = this.newDict;
+    const stack = [{
+      dict: treeDict,
+      entries: allEntries
+    }];
+    const valueType = areNames ? "Names" : "Nums";
+    while (stack.length > 0) {
+      const {
+        dict,
+        entries
+      } = stack.pop();
+      if (entries.length <= maxLeaves) {
+        dict.set("Limits", [entries[0][0], entries.at(-1)[0]]);
+        dict.set(valueType, entries.flat());
+        continue;
+      }
+      const entriesChunks = [];
+      const chunkSize = Math.max(maxLeaves, Math.ceil(entries.length / maxLeaves));
+      for (let i = 0; i < entries.length; i += chunkSize) {
+        entriesChunks.push(entries.slice(i, i + chunkSize));
+      }
+      const entriesRefs = [];
+      dict.set("Kids", entriesRefs);
+      for (const chunk of entriesChunks) {
+        const [entriesRef, entriesDict] = this.newDict;
+        entriesRefs.push(entriesRef);
+        entriesDict.set("Limits", [chunk[0][0], chunk.at(-1)[0]]);
+        stack.push({
+          dict: entriesDict,
+          entries: chunk
+        });
+      }
+    }
+    return treeRef;
+  }
+  #makePageLabelsTree() {
+    const {
+      pageLabels
+    } = this;
+    if (!pageLabels || pageLabels.length === 0) {
+      return;
+    }
+    const {
+      rootDict
+    } = this;
+    const pageLabelsRef = this.#makeNameNumTree(this.pageLabels, false);
+    rootDict.set("PageLabels", pageLabelsRef);
+  }
+  #makeDestinationsTree() {
+    const {
+      namedDestinations
+    } = this;
+    if (namedDestinations.size === 0) {
+      return;
+    }
+    if (!this.namesDict) {
+      [this.namesRef, this.namesDict] = this.newDict;
+      this.rootDict.set("Names", this.namesRef);
+    }
+    this.namesDict.set("Dests", this.#makeNameNumTree(Array.from(namedDestinations.entries()), true));
+  }
+  #makeStructTree() {
+    const {
+      structTreeKids
+    } = this;
+    if (!structTreeKids || structTreeKids.length === 0) {
+      return;
+    }
+    const {
+      rootDict
+    } = this;
+    const structTreeRef = this.newRef;
+    const structTree = this.xref[structTreeRef.num] = new Dict();
+    structTree.setIfName("Type", "StructTreeRoot");
+    structTree.setIfArray("K", structTreeKids);
+    for (const kidRef of structTreeKids) {
+      const kid = this.xref[kidRef.num];
+      const type = kid.get("Type");
+      if (!type || isName(type, "StructElem")) {
+        kid.set("P", structTreeRef);
+      }
+    }
+    if (this.parentTree.size > 0) {
+      const parentTreeRef = this.#makeNameNumTree(Array.from(this.parentTree.entries()), false);
+      const parentTree = this.xref[parentTreeRef.num];
+      parentTree.setIfName("Type", "ParentTree");
+      structTree.set("ParentTree", parentTreeRef);
+      structTree.set("ParentTreeNextKey", this.parentTree.size);
+    }
+    if (this.idTree.size > 0) {
+      const idTreeRef = this.#makeNameNumTree(Array.from(this.idTree.entries()), true);
+      const idTree = this.xref[idTreeRef.num];
+      idTree.setIfName("Type", "IDTree");
+      structTree.set("IDTree", idTreeRef);
+    }
+    if (this.classMap.size > 0) {
+      const classMapRef = this.newRef;
+      this.xref[classMapRef.num] = this.classMap;
+      structTree.set("ClassMap", classMapRef);
+    }
+    if (this.roleMap.size > 0) {
+      const roleMapRef = this.newRef;
+      this.xref[roleMapRef.num] = this.roleMap;
+      structTree.set("RoleMap", roleMapRef);
+    }
+    if (this.namespaces.size > 0) {
+      const namespacesRef = this.newRef;
+      this.xref[namespacesRef.num] = Array.from(this.namespaces.values());
+      structTree.set("Namespaces", namespacesRef);
+    }
+    if (this.structTreeAF.length > 0) {
+      const structTreeAFRef = this.newRef;
+      this.xref[structTreeAFRef.num] = this.structTreeAF;
+      structTree.set("AF", structTreeAFRef);
+    }
+    if (this.structTreePronunciationLexicon.length > 0) {
+      const structTreePronunciationLexiconRef = this.newRef;
+      this.xref[structTreePronunciationLexiconRef.num] = this.structTreePronunciationLexicon;
+      structTree.set("PronunciationLexicon", structTreePronunciationLexiconRef);
+    }
+    rootDict.set("StructTreeRoot", structTreeRef);
+  }
+  async #makeRoot() {
+    const {
+      rootDict
+    } = this;
+    rootDict.setIfName("Type", "Catalog");
+    rootDict.setIfName("Version", this.version);
+    this.#makePageTree();
+    this.#makePageLabelsTree();
+    this.#makeDestinationsTree();
+    this.#makeStructTree();
+  }
+  #makeInfo() {
+    const infoMap = new Map();
+    if (this.hasSingleFile) {
+      const {
+        xref: {
+          trailer
+        }
+      } = this.oldPages[0].documentData.document;
+      const oldInfoDict = trailer.get("Info");
+      for (const [key, value] of oldInfoDict || []) {
+        if (typeof value === "string") {
+          infoMap.set(key, stringToPDFString(value));
+        }
+      }
+    }
+    infoMap.delete("ModDate");
+    infoMap.set("CreationDate", getModificationDate());
+    infoMap.set("Creator", "PDF.js");
+    infoMap.set("Producer", "Firefox");
+    if (this.author) {
+      infoMap.set("Author", this.author);
+    }
+    if (this.title) {
+      infoMap.set("Title", this.title);
+    }
+    for (const [key, value] of infoMap) {
+      this.infoDict.set(key, stringToAsciiOrUTF16BE(value));
+    }
+    return infoMap;
+  }
+  async #makeEncrypt() {
+    if (!this.hasSingleFile) {
+      return [null, null, null];
+    }
+    const {
+      documentData
+    } = this.oldPages[0];
+    const {
+      document: {
+        xref: {
+          trailer,
+          encrypt
+        }
+      }
+    } = documentData;
+    if (!trailer.has("Encrypt")) {
+      return [null, null, null];
+    }
+    const encryptDict = trailer.get("Encrypt");
+    if (!(encryptDict instanceof Dict)) {
+      return [null, null, null];
+    }
+    this.currentDocument = documentData;
+    const result = [await this.#cloneObject(encryptDict, trailer.xref), encrypt, trailer.get("ID")];
+    this.currentDocument = null;
+    return result;
+  }
+  async #createChanges() {
+    const changes = new RefSetCache();
+    changes.put(Ref.get(0, 0xffff), {
+      data: null
+    });
+    for (let i = 1, ii = this.xref.length; i < ii; i++) {
+      if (this.objStreamRefs?.has(i)) {
+        await this.#createObjectStream(Ref.get(i, 0), this.xref[i], changes);
+      } else {
+        changes.put(Ref.get(i, 0), {
+          data: this.xref[i]
+        });
+      }
+    }
+    return [changes, this.newRef];
+  }
+  async #createObjectStream(objStreamRef, objRefs, changes) {
+    const streamBuffer = [""];
+    const objOffsets = [];
+    let offset = 0;
+    const buffer = [];
+    for (let i = 0, ii = objRefs.length; i < ii; i++) {
+      const objRef = objRefs[i];
+      changes.put(objRef, {
+        data: null,
+        objStreamRef,
+        index: i
+      });
+      objOffsets.push(`${objRef.num} ${offset}`);
+      const data = this.xref[objRef.num];
+      await writeValue(data, buffer, null);
+      const obj = buffer.join("");
+      buffer.length = 0;
+      streamBuffer.push(obj);
+      offset += obj.length + 1;
+    }
+    streamBuffer[0] = objOffsets.join("\n");
+    const objStream = new StringStream(streamBuffer.join("\n"));
+    const objStreamDict = objStream.dict = new Dict();
+    objStreamDict.setIfName("Type", "ObjStm");
+    objStreamDict.set("N", objRefs.length);
+    objStreamDict.set("First", streamBuffer[0].length + 1);
+    changes.put(objStreamRef, {
+      data: objStream
+    });
+  }
+  async writePDF() {
+    await this.#makeRoot();
+    const infoMap = this.#makeInfo();
+    const [encryptRef, encrypt, fileIds] = await this.#makeEncrypt();
+    const [changes, xrefTableRef] = await this.#createChanges();
+    const header = [...`%PDF-${this.version}\n%`.split("").map(c => c.charCodeAt(0)), 0xfa, 0xde, 0xfa, 0xce];
+    return incrementalUpdate({
+      originalData: new Uint8Array(header),
+      changes,
+      xrefInfo: {
+        startXRef: null,
+        rootRef: this.rootRef,
+        infoRef: this.infoRef,
+        encryptRef,
+        newRef: xrefTableRef,
+        fileIds: fileIds || [null, null],
+        infoMap
+      },
+      useXrefStream: this.useObjectStreams,
+      xref: {
+        encrypt,
+        encryptRef
+      }
+    });
+  }
 }
 
 ;// ./src/core/worker_stream.js
@@ -64805,6 +66175,7 @@ class PDFWorkerStreamRangeReader {
 
 
 
+
 class WorkerTask {
   constructor(name) {
     this.name = name;
@@ -64856,7 +66227,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "5.4.394";
+    const workerVersion = "5.4.449";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }
@@ -65149,7 +66520,7 @@ class WorkerMessageHandler {
       return pdfManager.ensureCatalog("permissions");
     });
     handler.on("GetMetadata", function (data) {
-      return Promise.all([pdfManager.ensureDoc("documentInfo"), pdfManager.ensureCatalog("metadata")]);
+      return Promise.all([pdfManager.ensureDoc("documentInfo"), pdfManager.ensureCatalog("metadata"), pdfManager.ensureCatalog("hasStructTree")]);
     });
     handler.on("GetMarkInfo", function (data) {
       return pdfManager.ensureCatalog("markInfo");
@@ -65181,6 +66552,92 @@ class WorkerMessageHandler {
     });
     handler.on("GetCalculationOrderIds", function (data) {
       return pdfManager.ensureDoc("calculationOrderIds");
+    });
+    handler.on("ExtractPages", async function ({
+      pageInfos
+    }) {
+      if (!pageInfos) {
+        warn("extractPages: nothing to extract.");
+        return null;
+      }
+      if (!Array.isArray(pageInfos)) {
+        pageInfos = [pageInfos];
+      }
+      let newDocumentId = 0;
+      for (const pageInfo of pageInfos) {
+        if (pageInfo.document === null) {
+          pageInfo.document = pdfManager.pdfDocument;
+        } else if (ArrayBuffer.isView(pageInfo.document)) {
+          const manager = new LocalPdfManager({
+            source: pageInfo.document,
+            docId: `${docId}_extractPages_${newDocumentId++}`,
+            handler,
+            password: pageInfo.password ?? null,
+            evaluatorOptions: Object.assign({}, pdfManager.evaluatorOptions)
+          });
+          let recoveryMode = false;
+          let isValid = true;
+          while (true) {
+            try {
+              await manager.requestLoadedStream();
+              await manager.ensureDoc("checkHeader");
+              await manager.ensureDoc("parseStartXRef");
+              await manager.ensureDoc("parse", [recoveryMode]);
+              break;
+            } catch (e) {
+              if (e instanceof XRefParseException) {
+                if (recoveryMode === false) {
+                  recoveryMode = true;
+                  continue;
+                } else {
+                  isValid = false;
+                  warn("extractPages: XRefParseException.");
+                }
+              } else if (e instanceof PasswordException) {
+                const task = new WorkerTask(`PasswordException: response ${e.code}`);
+                startWorkerTask(task);
+                try {
+                  const {
+                    password
+                  } = await handler.sendWithPromise("PasswordRequest", e);
+                  manager.updatePassword(password);
+                } catch {
+                  isValid = false;
+                  warn("extractPages: invalid password.");
+                } finally {
+                  finishWorkerTask(task);
+                }
+              } else {
+                isValid = false;
+                warn("extractPages: invalid document.");
+              }
+              if (!isValid) {
+                break;
+              }
+            }
+          }
+          if (!isValid) {
+            pageInfo.document = null;
+          }
+          const isPureXfa = await manager.ensureDoc("isPureXfa");
+          if (isPureXfa) {
+            pageInfo.document = null;
+            warn("extractPages does not support pure XFA documents.");
+          } else {
+            pageInfo.document = manager.pdfDocument;
+          }
+        } else {
+          warn("extractPages: invalid document.");
+        }
+      }
+      try {
+        const pdfEditor = new PDFEditor();
+        const buffer = await pdfEditor.extractPages(pageInfos);
+        return buffer;
+      } catch (reason) {
+        console.error(reason);
+        return null;
+      }
     });
     handler.on("SaveDocument", async function ({
       isPureXfa,
