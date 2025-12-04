@@ -100,7 +100,7 @@ parameters:
     xls: 'Excel'
     xlsx: 'Excel'
     xlsm: 'Excel'
-    xml: 'XML'
+    # xml: 'XML' removed by default because no more xss cleaner
     yaml: 'YAML'
     zip: 'Zip'
     scar: 'SCAR'
