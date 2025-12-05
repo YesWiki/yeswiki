@@ -600,7 +600,7 @@ class ExternalBazarService
                     $diffTime = -hrtime(true);
                 }
                 foreach ($entries as $key => $entry) {
-                    if (!isset($entriesList[$entry['id_fiche']])) {
+                    if (isset($entriesList) && isset($entry['id_fiche']) && !isset($entriesList[$entry['id_fiche']])) {
                         if ($this->debug && $this->wiki->UserIsAdmin()) {
                             trigger_error('Deleting ' . $entry['id_fiche'] . ' from ' . $cache_file);
                         }
