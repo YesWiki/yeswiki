@@ -165,6 +165,7 @@ return [
     'BAZ_LATITUDE' => 'Latitude',
     'BAZ_LONGITUDE' => 'Longitude',
     'BAZ_VERIFIER_MON_ADRESSE' => 'Géolocaliser depuis l\'adresse saisie',
+    'BAZ_MOVE_TO_ADDRESS' => 'Zoom sur l\'adresse saisie',
     'BAZ_PAS_DE_FORMULAIRES_TROUVES' => 'Pas de formulaires trouvés',
     'BAZ_CHAMPS_REQUIS' => 'champs requis',
     'BAZ_FICHES' => 'fiches.',

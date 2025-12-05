@@ -54,11 +54,6 @@
   padding-top: 1em;
 }
 
-.btn-geolocate {
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
 .filter-and-check-all-container {
   display: flex;
   margin: 10px 0;
@@ -72,4 +67,11 @@
 /* submit button disabled */
 #formulaire .form-actions button[type='submit'].submit-disabled {
   cursor: progress;
+}
+
+.btn-geolocate-address,
+.btn-move-to-address,
+.btn-geolocate {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }

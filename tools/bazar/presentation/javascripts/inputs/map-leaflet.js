@@ -294,7 +294,7 @@ $(document).ready(() => {
       })
     }
 
-    function showAddress(map, element) {
+    function showAddress(map, element, move = false) {
       let address = ''
       const fieldsNames = getFieldNames({ element })
       address = fieldsNames.fields.map((field) => field.val()).join(' ')
@@ -490,7 +490,7 @@ $(document).ready(() => {
       }
       processNextSet()
         .then((data) => {
-          showAddressOk(data[0].longitude, data[0].latitude)
+          showAddressOk(data[0].longitude, data[0].latitude, move)
         })
         .catch((error) => {
           showAddressError(
@@ -500,9 +500,12 @@ $(document).ready(() => {
 
       return false
     }
-    function showAddressOk(lon, lat) {
-      // console.log("showAddressOk: "+lon+", "+lat);
-      geocodedmarkerRefresh(L.latLng(lat, lon))
+    function showAddressOk(lon, lat, move) {
+      if (move) {
+         leafletInputMap.flyTo([lat, lon], leafletInputMap.getMaxZoom())
+      } else {
+         geocodedmarkerRefresh(L.latLng(lat, lon))
+      }
     }
 
     function showAddressError(msg) {
@@ -575,6 +578,9 @@ $(document).ready(() => {
       leafletInputMap.on('locationerror', onLocationError)
 
       leafletInputMap.locate({ setView: true, maxZoom: 16 })
+    })
+    $('.btn-move-to-address').on('click', function () {
+      showAddress(leafletInputMap, $(this), true)
     })
     $('.btn-geolocate-address').on('click', function () {
       showAddress(leafletInputMap, $(this))

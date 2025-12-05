@@ -36,6 +36,9 @@
             {{ _t('BAZ_VERIFIER_MON_ADRESSE') }}
         </a>
         {% endif %}
+        <a class="btn btn-primary btn-move-to-address">
+            {{ _t('BAZ_MOVE_TO_ADDRESS') }}
+        </a>
         <input type="hidden" value="{{ latitude }}" id="{{ field.latitudeField }}" name="geolocation[{{ field.latitudeField }}]" />
         <input type="hidden" value="{{ longitude }}" id="{{ field.longitudeField }}" name="geolocation[{{ field.longitudeField }}]" />
         <input type="hidden" value="{{ geometries|json_encode }}" id="geometries" name="geolocation[geometries]" />

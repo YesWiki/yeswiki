@@ -1,5 +1,6 @@
 {
   "name": "yeswiki",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/yeswiki/yeswiki.git"
