@@ -18,3 +18,10 @@
 {% else %}
   {{ include("@bazar/entries/index/_entries.twig") }}
 {% endif %}
+
+{# showexportbuttons #}
+{% if not params.isInIframe and params.showexportbuttons %}
+	{{ include("@bazar/entries/index/_export_buttons.twig") }}
+{% endif %}
+{# end for showexportbuttons #}
+
