@@ -6,6 +6,7 @@ use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ExternalBazarServiceException;
 use YesWiki\Bazar\Field\ExternalImageField;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Service\ImportService;
 use YesWiki\Wiki;
 
@@ -240,18 +241,6 @@ class ExternalBazarService
             throw new Exception('parameter forms should not be empty');
         }
 
-        // Formattage des queries
-        $querystring = '';
-        if (is_array($params['queries'])) {
-            foreach ($params['queries'] as $key => $value) {
-                if (is_array($value)) {
-                    $value = implode(',', $value);
-                }
-                $querystring .= $key . '=' . $value . '|';
-            }
-            $querystring = !empty($querystring) ? 'query=' . htmlspecialchars(substr($querystring, 0, -1)) : '';
-        }
-
         $entries = [];
         foreach ($params['forms'] as $form) {
             $localFormId = $form['bn_id_nature'];
@@ -276,6 +265,15 @@ class ExternalBazarService
                         trigger_error(get_class($this) . '::getEntries: ' . _t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
                     }
                 } else {
+                
+	                // Formattage des queries
+        
+        			$vSearchManager = $this->wiki->services->get(SearchManager::class);
+                
+			        $querystring = $vSearchManager->queryToString($params['queries']);
+        
+			        $querystring = !empty($querystring) ? 'query=' . htmlspecialchars($querystring) : '';        
+
                     $json = $this->getJSONCachedUrlContent(
                         $this->getEntriesViaApiUrl($urlDetails, $distantFormId, $querystring),
                         $this->timeCacheToCheckChanges,
