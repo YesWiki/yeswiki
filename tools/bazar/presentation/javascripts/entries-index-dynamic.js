@@ -438,18 +438,7 @@ const load = (domElement) => {
 
             let vNewHREF
 
-				 	const vHandler = vNewURL.searchParams.keys().next()
-            let vHandlerValue = vHandler.value
-
-            if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
-            else vHandlerValue = ''
-
-            if (vNewURL.searchParams.has('query')) {
-              vNewURL.searchParams.set('query', decodeURIComponent(vNewURL.searchParams.get('query')))
-            }
-
-            const vParams = this.mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
-            if (vOldHREF.trim() === '') {
+	if (vOldHREF.trim() === '') {
               console.error('Invalid URL provided.')
             } else {
               const vNewURL = new URL(vOldHREF)
@@ -464,11 +453,11 @@ const load = (domElement) => {
 
               pLink.setAttribute(
                 'href',
-                `${vNewURL.origin
-						+ vNewURL.pathname
-						 }?${vHandlerValue
-						 }${vParams ? `&${vParams}` : ''
-						 }${vNewURL.hash}`
+				vNewURL.origin + 
+				vNewURL.pathname + 
+				"?" + vHandlerValue + 
+				(vParams ? "&" + vParams : "") +
+				vNewURL.hash
               )
             }
           })
