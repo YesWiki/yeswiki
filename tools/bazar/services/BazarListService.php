@@ -166,7 +166,7 @@ class BazarListService
 
         $formIdsUsed = array_unique(array_column($entries, 'id_typeannonce'));
         $formsUsed = array_map(function ($formId) use ($forms) {
-            return $forms[$formId];
+            return $forms[$formId]??null;
         }, $formIdsUsed);
         $allFields = array_merge(...array_column($formsUsed, 'prepared'));
 
