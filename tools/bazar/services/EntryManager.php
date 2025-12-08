@@ -540,7 +540,7 @@ class EntryManager
                     $data[$propName] = $previousData[$propName];
                 }
 
-                if (trim($data[$propName]) == '' && trim($vDefaults[$propName]) != '') {
+                if (trim($data[$propName] ?? '') == '' && trim($vDefaults[$propName]) != '') {
                     $data[$propName] = $vDefaults[$propName];
                 }
 
@@ -671,7 +671,7 @@ class EntryManager
             if ($bazarField instanceof BazarField &&
                 !($bazarField instanceof TitleField) &&
                 !($bazarField->requireIDFiche()) // Some fields like ImageField and File Field need the id_fiche to be defined before to call formatValuesBeforeSave. So we will handle them later.
-                ) {
+            ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
                 if (is_array($tab)) {

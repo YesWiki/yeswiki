@@ -208,7 +208,7 @@ class MapField extends BazarField
         $vValue = $this->getValue($entry);
         $vLatitude = isset($vValue[$this->getLatitudeField()]) ? $vValue[$this->getLatitudeField()] : '';
         $vLongitude = isset($vValue[$this->getLongitudeField()]) ? $vValue[$this->getLongitudeField()] : '';
-        $vGeometries = $vValue['geometries'] ?? [];
+        $vGeometries = !empty($vValue['geometries']) ? $vValue['geometries'] : '';
         $vGeometries = json_decode($vGeometries, true);
         if ($vValue && (!empty($vLatitude) && !empty($vLongitude) || !empty($vGeometries))) {
             return
