@@ -543,10 +543,6 @@ class EntryManager
                 if (trim($data[$propName]) == '' && trim($vDefaults[$propName]) != '') {
                     $data[$propName] = $vDefaults[$propName];
                 }
-
-                if ($field->isRequired() && trim($data[$propName]) == '') {
-                    throw new Exception(_t('BAZ_CHAMPS_REQUIS' . ':' . $propName));
-                }
             }
         }
 
@@ -777,6 +773,16 @@ class EntryManager
         }
 
         $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
+
+		foreach ($form['prepared'] as $vBazarField) {
+            if ($vBazarField instanceof BazarField) {        
+            	$vPropertyName = $vBazarField->getPropertyName ();
+               
+                if (!empty($vPropertyName) && $vBazarField->isRequired() && trim($data[$vPropertyName]) == '') {
+                    throw new Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
+                }
+            }
+        }
 
         return $data;
     }
