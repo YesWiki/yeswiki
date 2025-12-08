@@ -676,7 +676,9 @@ class SearchManager
                 // ex :"geolocation" in geolocation.bf_latitude
 
                 $vPropertyFound = false;
-
+                if (!isset($vForm['prepared'])) {
+                    continue;
+                }
                 foreach ($vForm['prepared'] as $vFieldObject) {
                     // Extract the JSON path of the field
 
@@ -1114,10 +1116,9 @@ class SearchManager
                     // Extract name, operator and values
 
                     preg_match_all("/\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/", $pValue, $pMatches);
+                    $vName = isset($pMatches[1][0]) ? trim($pMatches[1][0]) : null;
 
-                    $vName = trim($pMatches[1][0]);
-
-                    $vOperator = trim($pMatches[2][0]);
+                    $vOperator = isset($pMatches[2][0]) ? trim($pMatches[2][0]) : null;
 
                     // Convert old operator format to new refactored format
 
@@ -1128,12 +1129,12 @@ class SearchManager
                     // Transform comma separated values list to an array eliminating duplicates
 
                     $vUniqueValues = [];
-
-                    foreach (explode(',', trim($pMatches[3][0])) as $vValue) {
-                        // replace tokens like [user.name] and [user.entry.id_fiche]
-                        // TODO: make it a service that could be used for any params
-                        if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
-                            switch ($matches[1]) {
+                    if (isset($pMatches[3][0])) {
+                        foreach (explode(',', trim($pMatches[3][0])) as $vValue) {
+                            // replace tokens like [user.name] and [user.entry.id_fiche]
+                            // TODO: make it a service that could be used for any params
+                            if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
+                                switch ($matches[1]) {
                                 case 'user.name':
                                     $vValue = $this->wiki->getUserName();
                                     break;
@@ -1145,9 +1146,10 @@ class SearchManager
                                     }
                                     break;
                             }
-                        }
-                        if (!in_array($vValue, $vUniqueValues, true)) {
-                            $vUniqueValues[] = $vValue;
+                            }
+                            if (!in_array($vValue, $vUniqueValues, true)) {
+                                $vUniqueValues[] = $vValue;
+                            }
                         }
                     }
 
@@ -1174,7 +1176,7 @@ class SearchManager
             // Remove query with no parameter name
 
             function ($pValue) {
-                return trim($pValue['name']) != '';
+                return isset($pValue['name']) && trim($pValue['name']) != '';
             }
         );
     }
