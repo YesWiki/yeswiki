@@ -774,11 +774,16 @@ class EntryManager
 
         $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
 
-		foreach ($form['prepared'] as $vBazarField) {
-            if ($vBazarField instanceof BazarField) {        
-            	$vPropertyName = $vBazarField->getPropertyName ();
-               
-                if (!empty($vPropertyName) && $vBazarField->isRequired() && trim($data[$vPropertyName]) == '') {
+        foreach ($form['prepared'] as $vBazarField) {
+            if ($vBazarField instanceof BazarField) {
+                $vPropertyName = $vBazarField->getPropertyName();
+                if (
+                    !empty($vPropertyName) && $vBazarField->isRequired()
+                    && (
+                        empty($data[$vPropertyName])
+                        || (is_string($data[$vPropertyName]) && trim($data[$vPropertyName]) == '')
+                    )
+                ) {
                     throw new Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
                 }
             }
