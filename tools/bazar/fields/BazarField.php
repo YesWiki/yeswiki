@@ -199,6 +199,11 @@ abstract class BazarField implements \JsonSerializable
         return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
     }
 
+	protected function isEmpty ($pValue)
+	{
+		return empty($pValue) || (is_string($pValue) && trim($pValue) == '');
+	}
+
     // HELPERS
     /**
      * Return true if we are if reading is allowed for the field.

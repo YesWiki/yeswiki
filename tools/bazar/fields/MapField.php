@@ -146,6 +146,17 @@ class MapField extends BazarField
         ];
     }
 
+	protected function isEmpty ($pValue)
+	{
+		return	empty ($pValue) || 
+				!is_array ($pValue) || 
+				count($pValue) == 0 || 
+				!is_int ($pValue [$this->getLatitudeField()]) ||
+				!is_float ($pValue [$this->getLatitudeField()]) ||
+				!is_int ($pValue [$this->getLongitudeField()]) ||
+				!is_float ($pValue [$this->getLongitudeField()]);
+	}
+
     protected function getMapFieldData($entry)
     {
         $value = $this->getValue($entry);

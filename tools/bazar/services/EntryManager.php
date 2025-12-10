@@ -777,13 +777,7 @@ class EntryManager
         foreach ($form['prepared'] as $vBazarField) {
             if ($vBazarField instanceof BazarField) {
                 $vPropertyName = $vBazarField->getPropertyName();
-                if (
-                    !empty($vPropertyName) && $vBazarField->isRequired()
-                    && (
-                        empty($data[$vPropertyName])
-                        || (is_string($data[$vPropertyName]) && trim($data[$vPropertyName]) == '')
-                    )
-                ) {
+                if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty ($data[$vPropertyName]??null)) {
                     throw new Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
                 }
             }
