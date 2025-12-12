@@ -255,7 +255,7 @@ $geometries = [];
 										str+= prop +": "+ feature.properties[prop] +"<br/>";
 									}
 								}
-								layer.bindPopup( str );
+								//layer.bindPopup( str );
 							}
 						} );' ;
 						if ($isVisibleByDefault){
@@ -277,7 +277,9 @@ $geometries = [];
     map".$params['nbbazarliste'].".addLayer(drawnFeatures)\n";
     foreach ($geometries as $id => $g) {
          $geometriesModuleJs .= "const geo{$id} = ".json_encode($g)."\n";
-         $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features)\n";
+				 $geometriesModuleJs .= 'var popup = \''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $id))).'\''."\n";
+
+         $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup)\n";
     }
   }
   $GLOBALS['wiki']->AddJavascript( '

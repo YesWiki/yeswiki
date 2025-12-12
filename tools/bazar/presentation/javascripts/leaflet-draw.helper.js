@@ -1,30 +1,78 @@
-export function drawGeometries(drawnItems, features) {
+export function drawGeometries(drawnItems, features, popup = '') {
   if (features && features.length > 0) {
     features.forEach(function (feature) {
       if (feature.properties && feature.properties.type === 'circle') {
         var latlng = L.latLng(
           feature.geometry.coordinates[1],
-          feature.geometry.coordinates[0],
+          feature.geometry.coordinates[0]
         )
         var radius = feature.properties.radius
 
         var circleOptions = { ...feature.properties }
         delete circleOptions.type
         delete circleOptions.radius
-        // Clean up any default marker properties
         if (circleOptions.icon) delete circleOptions.icon
         if (circleOptions.title) delete circleOptions.title
-
+        circleOptions.className = 'bazar-entry ' + (feature.properties.className || '');
         var circle = L.circle(latlng, { radius: radius, ...circleOptions })
-        drawnItems.addLayer(circle)
+        if (popup && popup.length > 0) {
+          circle.bindPopup(function (layer) {
+            return popup;
+          });
+        }
+
+        circle.on('add', function() {
+          var pathElement = this.getElement();
+          if (pathElement) {
+            pathElement.setAttribute('data-id', feature.properties.id || 'unknown');
+            pathElement.setAttribute('data-type', 'circle');
+          }
+        });
+
+        circle.feature = feature;
+
+        drawnItems.addLayer(circle);
       } else {
         L.geoJSON(feature, {
-          onEachFeature: function (f, layer) {
-            drawnItems.addLayer(layer)
-          },
-        })
+  
+  style: function (feature) {
+    return {
+      color: 'blue',
+      className: 'bazar-entry ' + (feature.properties.className || '')
+    };
+  },
+
+  pointToLayer: function (feature, latlng) {
+    var customIcon = L.Icon.Default.extend({
+      options: {
+        className: 'bazar-entry ' + (feature.properties.className || '')
+      }
+    });
+
+    return L.marker(latlng, { icon: new customIcon() });
+  },
+
+  onEachFeature: function (f, layer) {
+            if (popup && popup.length > 0) {
+              layer.bindPopup(function (l) {
+                return popup;
+              });
+            }
+    if (layer.getElement) {
+       layer.on('add', function() {
+          var elem = this.getElement();
+          if (elem) {
+             elem.setAttribute('data-id', f.properties.id || '');
+             elem.setAttribute('data-type', f.geometry.type);
+          }
+       });
+    }
+
+    drawnItems.addLayer(layer);
+  },
+});
       }
     })
-  }
-  return drawnItems
+    }
+    return drawnItems
 }
