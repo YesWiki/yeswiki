@@ -244,6 +244,7 @@ $geometries = [];
 
 						$js.= 'layers["'.$layerLabel.'"] = L.geoJson.ajax("'.$layerUrl.'",
 						{
+              interactive: false,
 							'.$styleJs.'
 							onEachFeature: function (feature, layer) {
 								//layer.bindPopup(feature.properties.NOM + feature.properties.NOM_QP);
