@@ -56,23 +56,6 @@ class BazarCartoAction extends YesWikiAction
 
         $query = $vSearchManager->aggregateQueries($arg, $_GET);
 
-        $vConditions = $vSearchManager->parseQuery($query);
-
-        if ($template != 'map-and-table' ||
-            (
-                !empty($arg['tablewith']) &&
-                $arg['tablewith'] === 'only-geolocation'
-            )
-        ) {
-            if (count(array_filter($vConditions, function ($pCondition) { return ($pCondition['name'] == 'bf_latitude' || ($pCondition['name'] == 'geolocation.bf_latitude')) && $pCondition['operator'] == '!='; })) == 0) {
-                $query = (trim($query) != '' ? $query . '|' : '') . 'geolocation.bf_latitude!=';
-            }
-
-            if (count(array_filter($vConditions, function ($pCondition) { return ($pCondition['name'] == 'bf_longitude' || ($pCondition['name'] == 'geolocation.bf_longitude')) && $pCondition['operator'] == '!='; })) == 0) {
-                $query = (trim($query) != '' ? $query . '|' : '') . 'geolocation.bf_longitude!=';
-            }
-        }
-
         return [
             /*
              * Le fond de carte utilisé pour la carte
