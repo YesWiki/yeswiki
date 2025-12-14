@@ -44,6 +44,7 @@ const load = (domElement) => {
 
       // wether to search for a particular form ID (only used when no
       // form id is defined for the bazar list action)
+      searchFormId: null,
       searchTimer: null // use ot debounce user input
     },
     computed: {
