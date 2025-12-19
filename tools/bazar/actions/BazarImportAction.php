@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
 
 class BazarImportAction extends YesWikiAction
@@ -10,6 +11,7 @@ class BazarImportAction extends YesWikiAction
     private $CSVManager;
     private $formManager;
     private $entryController;
+    private $bazarListService;
 
     public function formatArguments($arg)
     {
@@ -47,17 +49,30 @@ class BazarImportAction extends YesWikiAction
         $this->CSVManager = $this->getService(CSVManager::class);
         $this->formManager = $this->getService(FormManager::class);
         $this->entryController = $this->getService(EntryController::class);
+        $this->bazarListService = $this->getService(BazarListService::class);        
+
+		$vRefresh = $this->arguments['refresh']??$_GET['refresh']??"false";
+		$vRefresh = ($vRefresh == "true" || $vRefresh == "1")?true:false;
 
         // get Forms
-        $forms = $this->formManager->getAll();
+        $vForms = $this->bazarListService->getForms([ 'idtypeannonce' => $this->arguments['id'], 'refresh' => $vRefresh ]);
 
         // switch to right method
         switch ($this->arguments['mode']) {
             case 'submitfile':
+	            if (count ($vForms) != 1)
+				{
+					throw new Exception ("There should be exactly one form");
+					return "ERROR";
+				}
+
+				$vForm = $vForms [0];
+            
                 if ($extracted = $this->CSVManager->extractCSVfromCSVFile(
                     $this->arguments['id'],
                     $this->arguments['filesData'],
-                    $this->arguments['bazar-import-option-detect-columns-on-headers']
+                    $this->arguments['bazar-import-option-detect-columns-on-headers'], 
+					$vForm
                 )) {
                     // append displayData
                     $extracted = array_map(function ($extract) {
@@ -80,12 +95,12 @@ class BazarImportAction extends YesWikiAction
                 break;
         }
 
-        return $this->render('@bazar/bazar-import.twig', [
+        return  $this->render('@bazar/bazar-import.twig', [
             'id' => $this->arguments['id'],
-            'forms' => $forms,
+            'forms' => $vForms,
             'params' => $this->arguments['params'],
             'csv' => isset($csv_template) ? $this->CSVManager->arrayToCSVToDisplay($csv_template) : null,
-            'selectedForm' => $this->formManager->getOne($this->arguments['id']),
+            'selectedForm' => $vForm,
             'importedEntries' => $importedEntries ?? null,
             'extracted' => $extracted ?? null,
             'mode' => $this->arguments['mode'],

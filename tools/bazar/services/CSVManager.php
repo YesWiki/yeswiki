@@ -10,6 +10,10 @@ use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Field\TagsField;
 use YesWiki\Bazar\Field\UserField;
+
+use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Bazar\Service\BazarListService;
+
 use YesWiki\Wiki;
 
 class CSVManager
@@ -133,8 +137,8 @@ class CSVManager
     /**
      * get CSV of all entries from form.
      *
-     * @param <string>|null $pFormId : the form ID for EntryManager::search
-     * @param <array> $pParams : parameters for EntryManager::search
+     * @param $pFormId : the form ID for SearchManager::search
+     * @param <array> $pParams : parameters for SearchManager::search
      *	        	[
      *					"query" => <string>|<array> the query
      *					"keywords" => <string> the keywords string
@@ -148,64 +152,76 @@ class CSVManager
      * @return array|null csv; null is empty or error
      */
     public function getCSVfromFormId(
-        ?string $pFormId,
+        $pFormId,
         array $pParams,
         ?array $pOptions = null
     ): ?array {
+	    $vBazarListService = $this->wiki->services->get(BazarListService::class);
+    
+    	$vFormIDs = $vBazarListService->getIDs ($pFormId);
+   
+    	if (count ($vFormIDs['locals']) > 0) $vFormIDs['locals'] = [ array_shift ($vFormIDs['locals']) ];
+		else if (count ($vFormIDs['externals']) > 0) $vFormIDs['externals'] = [ array_shift ($vFormIDs['externals']) ];
+
+		if (count ($vFormIDs['locals']) == 0 && count ($vFormIDs['externals']) == 0)
+		{
+			throw new \Exception ('No ID specified');
+			return null;
+		}
+    
+        $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
+        $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
+        
         $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
         $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
 
-        $vQuery = $pParams['query'] ?? '';
-        $vKeywords = $pParams['keywords'] ?? '';
+        $vForms = $vBazarListService->getForms (array_merge ($pParams, [ 'idtypeannonce' => $vFormIDs ]));
+        
+        if (!empty ($vForms) && count ($vForms) > 0)
+        {
+        	$vForm = $vForms[0];
+        	
+            $csv_raw = [];
 
-        $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
-        $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
+            // get headers
+            $headers = $this->getHeaders($vForm);
 
-        $vQuery = $pParams['query'] ?? '';
-        $vKeywords = $pParams['keywords'] ?? '';
-        $vSearchFields = $pParams['searchfields'] ?? '';
+            // add header to csv_raw
+            $csv_raw[] = array_values(array_merge(
+                $vFakeMode ? [] : ['datetime_create', 'datetime_latest'],
+                $vKeysInsteadOfValues
+                    ? array_keys($headers)
+                    : array_map(function ($fieldHeader) {
+                        return $fieldHeader['fullHeader'];
+                    }, $headers)
+            ));
 
-        if (!empty($pFormId)) {
-            if ($form = $this->formManager->getOne($pFormId)) {
-                $csv_raw = [];
+            if (!$vFakeMode) {
+            
+				$vSearchManager = $this->wiki->services->get(SearchManager::class);					
+            
+                $vQuery = $vSearchManager->aggregateQueries($pParams['query']??null, $_GET);
+                $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $_REQUEST['q'] ?? null, $_REQUEST['keywords'] ?? null);
 
-                // get headers
-                $headers = $this->getHeaders($form);
+                // get lines for each entry
+                $vEntries = $vBazarListService->getEntries (array_merge ($pParams, [
+                    'idtypeannonce' => $vFormIDs,
+                    'keywords' => $vKeywords,
+                    'queries' => $vQuery
+                ]));
 
-                // add header to csv_raw
-                $csv_raw[] = array_values(array_merge(
-                    $vFakeMode ? [] : ['datetime_create', 'datetime_latest'],
-                    $vKeysInsteadOfValues
-                        ? array_keys($headers)
-                        : array_map(function ($fieldHeader) {
-                            return $fieldHeader['fullHeader'];
-                        }, $headers)
-                ));
-
-                if (!$vFakeMode) {
-                    $vQuery = $this->wiki->services->get(SearchManager::class)->aggregateQueries($vQuery, $_GET);
-
-                    // get lines for each entry
-                    $entries = $this->entryManager->search([
-                        'formsIds' => [$pFormId],
-                        'keywords' => $vKeywords,
-                        'queries' => $vQuery,
-                        'searchfields' => $vSearchFields,
-                    ]);
-
-                    foreach ($entries as $entry) {
-                        $csv_line = $this->getCSVLineFromEntry($entry, $headers, $vKeysInsteadOfValues);
-                        if ($csv_line) {
-                            $csv_raw[] = $csv_line;
-                        }
+                foreach ($vEntries as $vEntry) {
+                    $csv_line = $this->getCSVLineFromEntry($vEntry, $headers, $vKeysInsteadOfValues);
+                    if ($csv_line) {
+                        $csv_raw[] = $csv_line;
                     }
-                } else {
-                    // emulate an 4 empty lines
-                    for ($i = 1; $i < 4; $i++) {
-                        $csv_line = $this->getTemplateCSVLine($headers, $i);
-                        if ($csv_line) {
-                            $csv_raw[] = $csv_line;
-                        }
+                }
+            } else {
+                // emulate an 4 empty lines
+                for ($i = 1; $i < 4; $i++) {
+                    $csv_line = $this->getTemplateCSVLine($headers, $i);
+                    if ($csv_line) {
+                        $csv_raw[] = $csv_line;
                     }
                 }
             }
@@ -418,42 +434,41 @@ class CSVManager
     /**
      * extract CSV from csv file.
      *
-     * @param array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
+     * @return array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
      */
-    public function extractCSVfromCSVFile(?string $formId, $filesData, bool $detectColumnsOnHeaders = true)
+    public function extractCSVfromCSVFile(?string $pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null)
     {
-        if (!empty($formId)) {
-            if ($form = $this->formManager->getOne($formId)) {
-                // get headers
-                $headers = $this->getHeaders($form);
+        if (!empty($pFormId) && $pForm != null) {	                   
+            // get headers
+            $headers = $this->getHeaders($pForm);
 
-                // import file
-                if (!empty($filesData) && ($filesData['error'] == 0)) {
-                    //Check if the file is csv
-                    $filename = basename($filesData['name']);
-                    $ext = substr($filename, strrpos($filename, '.') + 1);
-                    if ($ext == 'csv') {
-                        if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
-                            if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
-                                if ($columnIndexesForPropertyNames =
-                                    $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
-                                ) {
-                                    // next lines
-                                    $extracted = [];
-                                    while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
-                                        $this->errormsg = [];
-                                        $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $formId);
-                                        $extracted[] = [
-                                            'entry' => $extractedData,
-                                            'errormsg' => $this->errormsg,
-                                        ];
-                                    }
+            // import file
+            if (!empty($filesData) && ($filesData['error'] == 0)) {
+                //Check if the file is csv
+                $filename = basename($filesData['name']);
+                $ext = substr($filename, strrpos($filename, '.') + 1);
+                if ($ext == 'csv') {ini_set('auto_detect_line_endings', '1');
+                    if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
+                        if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
+                            if ($columnIndexesForPropertyNames =
+                                $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
+                            ) {
+                                // next lines
+                                $extracted = [];
+                                while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
+                                
+                                    $this->errormsg = [];
+                                    $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $pFormId);
+                                    $extracted[] = [
+                                        'entry' => $extractedData,
+                                        'errormsg' => $this->errormsg,
+                                    ];
                                 }
                             }
-                            fclose($handle);
-
-                            return $extracted ?? null;
                         }
+                        fclose($handle);
+                        
+                        return $extracted ?? null;
                     }
                 }
             }
@@ -666,8 +681,10 @@ class CSVManager
             } else {
                 $field = ''; // fake entry for skipped fields
             }
+            
             if (intval($index) == $index) {
                 // standard case
+                
                 $value = $this->getValueFromData($data, $index);
                 if (!empty($value)) {
                     if (
@@ -916,12 +933,23 @@ class CSVManager
      *
      * @return string $csvToDisplay
      */
-    public function sendCsvOrZip(array $formIds, array $pParams, string $zipFileName = 'yeswiki-csv-exports.zip')
-    {
+    public function sendCsvOrZip($pFormIDs, array $pParams, string $zipFileName = 'yeswiki-csv-exports.zip')
+    {    	
+    	$vBazarListService = $this->wiki->services->get(BazarListService::class);
+    
+    	$vFormIDs = $vBazarListService->getIDs ($pFormIDs);
+
         $csvFiles = [];
-        foreach ($formIds as $fid) {
-            $csvFiles['export-fiche-' . $fid . '.csv'] = $this->arrayToCSV(
-                $this->getCSVfromFormId($fid, $pParams)
+        
+        foreach ($vFormIDs['locals'] as $vFormID) {
+            $csvFiles['export-fiche-' . $vFormID . '.csv'] = $this->arrayToCSV(
+                $this->getCSVfromFormId([ 'locals' => [ $vFormID ], 'externals' => [] ], $pParams)
+            );
+        }
+        
+        foreach ($vFormIDs['externals'] as $vFormID) {
+            $csvFiles['export-fiche-' . $vFormID . '.csv'] = $this->arrayToCSV(
+                $this->getCSVfromFormId([ 'locals' => [], 'externals' => [ $vFormID ] ], $pParams)
             );
         }
 

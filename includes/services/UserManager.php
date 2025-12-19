@@ -10,7 +10,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\GroupController;
@@ -365,9 +365,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
         $vFormManager = $this->wiki->services->get(FormManager::class);
         $formsIds = array_keys($vFormManager->getAll());
-        $vEntryManager = $this->wiki->services->get(EntryManager::class);
+        $vSearchManager = $this->wiki->services->get(SearchManager::class);
         // in case if a username is generated from a bazar entry, nomwiki should be the right id
-        $entry = $vEntryManager->search([
+        $entry = $vSearchManager->search([
             'queries' => [
                 [
                     'name' => 'nomwiki',

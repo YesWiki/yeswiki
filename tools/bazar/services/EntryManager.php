@@ -176,6 +176,14 @@ class EntryManager
             $vAuthorizedFields['url'] = $pData['url'];
         }
 
+        if (isset($pData['-is-external-'])) {
+            $vAuthorizedFields['-is-external-'] = $pData['-is-external-'];
+        }
+
+        if (isset($pData['external-data'])) {
+            $vAuthorizedFields['external-data'] = $pData['external-data'];
+        }
+
         return $vAuthorizedFields;
     }
 
@@ -186,7 +194,7 @@ class EntryManager
      *
      * @return array data formated
      */
-    private function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $correspondance = ''): array
+    public function getDataFromPage($page, bool $semantic = false, bool $debug = false, string $correspondance = ''): array
     {
         $data = [];
         if (!empty($page['body'])) {
@@ -254,37 +262,10 @@ class EntryManager
             // TODO call this function only when necessary
             $this->appendDisplayData($data, $semantic, $correspondance, $page);
         } elseif ($debug) {
-            trigger_error('empty \'body\'  in EntryManager::getDataFromPage for page \'' . ($page['tag'] ?? '!!empty tag!!') . '\'', E_USER_WARNING);
+            trigger_error('empty \'body\' in EntryManager::getDataFromPage for page \'' . ($page['tag'] ?? '!!empty tag!!') . '\'', E_USER_WARNING);
         }
 
         return $data;
-    }
-
-    /**
-     * Return an array of fiches based on search parameters.
-     *
-     * @param array $params
-     *
-     * @return mixed
-     */
-    public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
-    {
-        $requete = $this->searchManager->prepareSearchRequest($params, $filterOnReadACL);
-        $searchResults = [];
-        $results = $this->dbService->loadAll($requete);
-        $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
-        foreach ($results as $page) {
-            // save owner to reduce sql calls
-            $this->pageManager->cacheOwner($page);
-            // not possible to init the Guard in the constructor because of circular reference problem
-            $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
-                ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
-                : $page;
-            $data = $this->getDataFromPage($filteredPage, false, $debug, $params['correspondance']);
-            $searchResults[$data['id_fiche']] = $data;
-        }
-
-        return $searchResults;
     }
 
     /** format data as in sql.
@@ -750,7 +731,7 @@ class EntryManager
 
         $data['date_maj_fiche'] = $data['date_maj_fiche'] ?? date('Y-m-d H:i:s', time());
 
-        // on enleve les champs hidden pas necessaires a la fiche
+        // on enleve les champs hidden ou non necessaires a la fiche
         unset($data['valider']);
         unset($data['MAX_FILE_SIZE']);
         unset($data['antispam']);
@@ -759,6 +740,9 @@ class EntryManager
         unset($data['html_data']);
         unset($data['url']);
         unset($data['incomingurl']);
+
+        unset($data['-is-external-']);
+        unset($data['external-data']);        
 
         // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
         if (isset($data['owner'])) {
@@ -774,10 +758,10 @@ class EntryManager
 
         $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
 
-        foreach ($form['prepared'] as $vBazarField) {
-            if ($vBazarField instanceof BazarField) {
-                $vPropertyName = $vBazarField->getPropertyName();
-
+		foreach ($form['prepared'] as $vBazarField) {
+            if ($vBazarField instanceof BazarField) {        
+            	$vPropertyName = $vBazarField->getPropertyName ();
+               
                 if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty ($data[$vPropertyName]??null)) {
                     throw new Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
                 }
@@ -787,32 +771,33 @@ class EntryManager
         return $data;
     }
 
-    /**
-     * Append data needed for display
-     * TODO move this to a class dedicated to display.
+	/**
+     * Apply field correspondances to an entry
+     *   
+	 * @param array $pEntry
+     * @param string|array $pCorrespondances
      *
-     * @param bool   $semantic
-     * @param string $correspondance
-     * @param array  $page           , appendDisplayData is called in environement with access to $page
-     *                               helping to get owner without asking a new Time to Page manager to get it
+	 * @return the entry with modified fields
      *
      * @throws \Exception
      */
-    public function appendDisplayData(&$fiche, $semantic, $correspondance, array $page)
-    {
-        // user
-        $fiche['user'] = $page['user'] ?? null;
-        // owner
-        $fiche['owner'] = $page['owner'] ?? null;
 
-        // champs correspondants
-        if (!empty($correspondance)) {
-            try {
-                $tabcorrespondances = $this->getMultipleParameters($correspondance, ',', '=');
-                foreach ($tabcorrespondances as $key => $data) {
-                    if (isset($key)) {
-                        // not possible to init the Guard in the constructor because of circular reference problem
-                        $fiche[$key] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($page, $fiche, $data);
+	public function applyCorrespondances (&$pEntry, $pCorrespondances, $pPage)
+	{
+		if (empty ($pCorrespondances)) return $pEntry;
+
+		if (is_string ($pCorrespondances)) 
+			$vCorrespondances = $this->getMultipleParameters($pCorrespondances, ',', '=');
+		else 
+			$vCorrespondances = $pCorrespondances;
+
+		// champs correspondants
+        if (!empty($vCorrespondances)) {
+            try {                
+                foreach ($vCorrespondances as $vKey => $vData) {
+                    if (isset($vKey)) {
+                    
+                    	if (isset ($vData [$vKey])) $pEntry[$vKey] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($pPage, $pEntry, $vData);
                     } else {
                         echo '<div class="alert alert-danger">' . _t('BAZ_CORRESPONDANCE_ERROR') . '</div>';
                     }
@@ -821,20 +806,45 @@ class EntryManager
                 echo '<div class="alert alert-danger">' . str_replace("\n", '<br/>', _t('BAZ_CORRESPONDANCE_ERROR2')) . '</div>';
             }
         }
-        // HTML data
-        $fiche['html_data'] = $this->getHtmlDataAttributes($fiche);
 
-        // Fiche URL
-        if (!isset($fiche['url'])) {
+		return $pEntry;		
+	}
+
+    /**
+     * Append data needed for display
+     * TODO move this to a class dedicated to display.
+     *
+     * @param Array  $pFiche
+     * @param bool   $pSemantic
+     * @param string $pCorrespondances
+     * @param array  $pPage, appendDisplayData is called in environment with access to $pPage
+     *                       helping to get owner without asking another time to the page manager to get it
+     *
+     * @throws \Exception
+     */
+    public function appendDisplayData(&$pFiche, $pSemantic, $pCorrespondances, array $pPage)
+    {
+        // user
+        $pFiche['user'] = $pPage['user'] ?? null;
+        // owner
+        $pFiche['owner'] = $pPage['owner'] ?? null;
+
+		$pFiche = $this->applyCorrespondances ($pFiche, $pCorrespondances, $pPage);
+
+        // HTML data
+        $pFiche['html_data'] = $this->getHtmlDataAttributes($pFiche);
+
+        // pFiche URL
+        if (!isset($pFiche['url'])) {
             // could already be defined for entries from external json
-            $fiche['url'] = $this->wiki->Href('', $fiche['id_fiche']);
+            $pFiche['url'] = $this->wiki->Href('', $pFiche['id_fiche']);
         }
 
         // Données sémantiques
-        if ($semantic) {
+        if ($pSemantic) {
             // not possible to init the formManager in the constructor because of circular reference problem
-            $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
-            $fiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $fiche);
+            $form = $this->wiki->services->get(FormManager::class)->getOne($pFiche['id_typeannonce']);
+            $pFiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $pFiche);
         }
     }
 
@@ -1179,5 +1189,13 @@ class EntryManager
         }
 
         return $htmldata;
+    }    
+    
+    /* SEARCH : DEPRECATED use SearchManager->search instead */
+    
+    public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
+    {
+    	return $this->searchManager->search ($params, $filterOnReadACL,$useGuard);
     }
+    
 }

@@ -423,24 +423,14 @@ class FormManager
         return $prepared;
     }
 
-    /**
-     * put a form form External Wiki in cache.
-     */
-    public function putInCacheFromExternalBazarService(int $localFormId): bool
-    {
-        if (empty($localFormId) || !empty($this->getOne($localFormId))) {
-            // error
-            return false;
-        }
-        $form = $this->wiki->services->get(ExternalBazarService::class)->getTmpForm();
-        if (empty($form)) {
-            return false;
-        } else {
-            $this->cachedForms[$localFormId] = $form;
+	/*	
+		Add a form to the cache if it is not existing
+	*/
 
-            return true;
-        }
-    }
+	public function cacheForm ($pFormId, $pForm)
+	{
+		$this->cachedForms[$pFormId] = $pForm;
+	}
 
     /**
      * return field from field name or property name.

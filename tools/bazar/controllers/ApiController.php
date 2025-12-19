@@ -11,8 +11,8 @@ use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\AclService;
@@ -38,12 +38,20 @@ class ApiController extends YesWikiController
      */
     public function getForm($formId)
     {
-        $form = $this->getService(FormManager::class)->getOne($formId);
-        if (!$form || !isset($form['bn_id_nature'])) {
+		if (strpos($formId, "b64_") === 0)
+		{
+			$vFormId = base64_decode (urldecode (substr ($formId, 4)), true);
+		}
+		else
+			$vFormID = $formId;
+   
+        $vForm = $this->getService(BazarListService::class)->getForms ([ "idtypeannonce" => $vFormID ] )[0];
+        
+        if (!$vForm || !isset($vForm['bn_id_nature'])) {
             throw new NotFoundHttpException();
         }
 
-        return new ApiResponse($form);
+        return new ApiResponse($vForm);
     }
 
     /**
@@ -51,37 +59,58 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
+		if (strpos($formId, "b64_") === 0)
+		{			
+			$vFormID = base64_decode (urldecode (substr ($formId, 4)), true);  
+		}
+		else
+			$vFormID = $formId;
+
         $vSearchManager = $this->getService(SearchManager::class);
-
-        $query = $vSearchManager->aggregateQueries(
-            !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
-            $_GET
-        );
-
-        $vKeywords = $vSearchManager->aggregateKeywords($_GET['keywords'] ?? '', $_GET['q'] ?? '');
-        $vSearchManager = $this->getService(SearchManager::class);
-
-        $query = $vSearchManager->aggregateQueries(
+        
+        $vQuery = $vSearchManager->aggregateQueries(
             !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
             isset($_GET['query']) ? urldecode($_GET['query']) : ''
         );
 
-        $vKeywords = $vSearchManager->aggregateKeywords($_GET['keywords'] ?? '', $_GET['q'] ?? '');
-
+		$vKeywords = $vSearchManager->aggregateKeywords($_GET['keywords'] ?? '', $_GET['q'] ?? '');
+       
         $vSearchFields = isset($_GET['searchfields']) ? urldecode($_GET['searchfields']) : null;
-
-        $formId = is_array($formId) ? $formId : array_map('trim', explode(',', $formId));
+		$vCorrespondance = isset($_GET['correspondance']) ? urldecode($_GET['correspondance']) : null;            
+		$vDateFilter = isset($_GET['datefilter']) ? urldecode($_GET['datefilter']) : null;;	    
+	    $vOrdre = $_GET['ordre']??"asc";
+		$vChamp = $_GET['champ']??"bf_titre";
+		$vNb = intval ($_GET['nbitem']??$_GET['nb']??$this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS']??null);
+		$vMinDate = urldecode($_GET['dateMin'] ?? $_GET['minDate'] ?? $_GET['period'] ?? '');
 
         if ($output == 'csv') { // Search is done in the CSV Manager
             $csvManager = $this->getService(CSVManager::class);
-            $csvManager->sendCsvOrZip($formId, ['query' => $query, 'keywords' => $vKeywords]);
-        } else {
-            $entries = $this->getService(EntryManager::class)->search([
-                'formsIds' => $formId,
-                'queries' => $query,
+            $csvManager->sendCsvOrZip($vFormID, [
+            	'query' => $vQuery, 
+            	'keywords' => $vKeywords,
+            	'searchfields' => $vSearchFields,
+                'datefilter' => $vDateFilter,
+	            'correspondance' => $vCorrespondance,
+	            'ordre' => $vOrdre,
+	            'champ' => $vChamp,
+	            'nb' => $vNb,
+	            'minDate' => $vMinDate
+            ]);
+        } else {        
+	        $vBazarListService = $this->getService(BazarListService::class);
+
+            $entries = $vBazarListService->getEntries ([
+                'idtypeannonce' => $vFormID,
+                'queries' => $vQuery,
                 'keywords' => $vKeywords,
-                'minDate' => $_GET['dateMin'] ?? '',
-            ], true, true);
+				'searchfields' => $vSearchFields,
+                'datefilter' => $vDateFilter,
+	            'correspondance' => $vCorrespondance,
+	            'ordre' => $vOrdre,
+	            'champ' => $vChamp,
+	            'nb' => $vNb,
+	            'minDate' => $vMinDate
+            ]);
 
             if ($output == 'json-ld' || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
                 return $this->getAllSemanticEntries($formId, $entries);
@@ -274,63 +303,37 @@ class ApiController extends YesWikiController
      */
     public function getBazarListData()
     {
-        $bazarListService = $this->getService(BazarListService::class);
+        $vBazarListService = $this->getService(BazarListService::class);
 
         /* ------------------------------------ */
         /*             Format Params            */
         /* ------------------------------------ */
-        $externalIds = $_GET['externalIds'] ?? null;
-        $externalModeActivated = (is_array($externalIds) && isset($_GET['externalModeActivated'])) ? in_array($_GET['externalModeActivated'], [1, true, '1', 'true'], true) : false;
+
         $formattedGet = array_map(function ($value) {
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $_GET);
 
-        $searchfields = isset($_GET['search']) && $_GET['search'] == 'dynamic' ? $_GET['searchfields'] ?? [] : [];
         $searchfields = $_GET['searchfields'] ?? null;
-
-        $searchfields = is_string($searchfields) ? urldecode($searchfields) : $searchfields;
-
-        $searchfields = (empty($searchfields) || (!is_string($searchfields) && !is_array($searchfields)))
-            ? ['bf_titre']
-            : (
-                is_string($searchfields)
-                ? explode(',', $searchfields)
-                : $searchfields
-            );
+        $searchfields = is_string($searchfields) ? explode (',', urldecode($searchfields)) : $searchfields;
+		$searchfields = $searchfields == null ? [] : $searchfields;
 
         $vKeywords = isset($_GET['keywords']) ? urldecode($_GET['keywords']) : '';
 
         $formattedGet['keywords'] = $vKeywords;
-        $formattedGet['searchfields'] = $searchfields;
-        $formattedGet['externalModeActivated'] = $externalModeActivated;
+        $formattedGet['searchfields'] = $searchfields;        
+        $formattedGet['idtypeannonce'] = $_GET['idtypeannonce'] ?? $_GET['id'] ?? null;
 
         /* ------------------------------------ */
         /*               Get Data               */
         /* ------------------------------------ */
         // All forms
-        $forms = $bazarListService->getForms([
-            'externalModeActivated' => $externalModeActivated,
-            'externalIds' => $externalIds,
-            'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1, true, '1', 'true'], true) : false,
-        ]);
-
+        $forms = $vBazarListService->getForms($formattedGet + [ 'refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1, true, '1', 'true'], true) : false ]);
+	
         // Entries
-        $entries = $bazarListService->getEntries(
-            $formattedGet + [
-                'user' => null,
-                'dateMin' => null,
-                'random' => false,
-                'ordre' => 'asc',
-                'champ' => 'bf_titre',
-                'nb' => null,
-                'colorfield ' => null,
-                'iconfield ' => null,
-            ],
-            $forms
-        );
+        $entries = $vBazarListService->getEntries($formattedGet, $forms);
 
         // Filters
-        $filters = $bazarListService->getFilters($formattedGet, $entries, $forms);
+        $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
         /* ------------------------------------ */
         /*            Transform Data            */
@@ -348,13 +351,14 @@ class ApiController extends YesWikiController
         }, $usedForms);
 
         // Basic fields
-        $fieldList = ['id_fiche', 'bf_titre', 'url'];
+        $fieldList = ['id_fiche', 'bf_titre', 'url', '-is-external-', "external-data"];
         // If no id, we need idtypeannonce (== formId) to filter
         if (!isset($_GET['id'])) {
             $fieldList[] = 'id_typeannonce';
         }
         // fields for color / icon
-        $fieldList = array_merge($fieldList, [$_GET['colorfield'] ?? null, $_GET['iconfield'] ?? null]);
+        $fieldList = array_merge($fieldList, isset ($_GET['colorfield']) ? [ $_GET['colorfield'] ] : []);
+        $fieldList = array_merge($fieldList, isset ($_GET['iconfield']) ? [ $_GET['iconfield'] ] : []);
         // Fields used to search
         $fieldList = array_merge($fieldList, $searchfields);
         // Fields used to sort
@@ -363,6 +367,7 @@ class ApiController extends YesWikiController
         $fieldList = array_merge($fieldList, $_GET['displayfields'] ?? []);
         // extra fields required by template
         $fieldList = array_merge($fieldList, $_GET['necessary_fields'] ?? []);
+        $fieldList = array_merge($fieldList, $_GET['necessaryfields'] ?? []);
         // Fields for filters
         foreach ($filters as $filter) {
             $fieldList[] = $filter['propName'];
@@ -374,17 +379,18 @@ class ApiController extends YesWikiController
         // Reduce the size of the data sent by transforming entries object into array
         // we use the $fieldMapping to transform back the data when receiving data in the front end
         $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
+        
         $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
             $entryFieldsService->setEntryId($entry['id_fiche']);
             $result = [];
-            foreach ($fieldList as $fieldName) {
+            foreach ($fieldList as $fieldName) {                       
                 // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
                 $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['id_typeannonce']);
                 if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
                     $entry[$fieldName] = $this->wiki->Format($entry[$fieldName]);
                 }
                 // handle specific fields like comments, reactions
-                if (empty($entry[$fieldName])) {
+                if (!isset ($entry[$fieldName]) || (is_string ($entry[$fieldName]) && trim ($entry[$fieldName]) == "")) {
                     $entry[$fieldName] = $entryFieldsService->get($fieldName);
                 }
                 $result[] = $entry[$fieldName] ?? null;

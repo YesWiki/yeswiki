@@ -34,7 +34,7 @@ class CalcFieldToString extends YesWikiMigration
             if (!empty($fields)) {
                 foreach ($fields as $formId => $fieldNames) {
                     if (!empty($fieldNames)) {
-                        // prepare SQL to select concerned entries (EntryManager->search does not manage int)
+                        // prepare SQL to select concerned entries (SearchManager->search does not manage int)
                         $fieldsNamesList = implode('|', $fieldNames);
                         $sql = <<<SQL
                             SELECT DISTINCT * FROM {$this->dbService->prefixTable('pages')}

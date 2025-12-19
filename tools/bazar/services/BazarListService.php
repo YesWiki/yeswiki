@@ -2,13 +2,11 @@
 
 namespace YesWiki\Bazar\Service;
 
-use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Wiki;
 
 class BazarListService
 {
-    protected $entryController;
     protected $entryManager;
     protected $entryExtraFields;
     protected $externalBazarService;
@@ -19,27 +17,26 @@ class BazarListService
         Wiki $wiki,
         EntryManager $entryManager,
         EntryExtraFieldsService $entryExtrafields,
-        EntryController $entryController,
         ExternalBazarService $externalBazarService,
         FormManager $formManager
     ) {
         $this->wiki = $wiki;
         $this->entryManager = $entryManager;
         $this->entryExtraFields = $entryExtrafields;
-        $this->entryController = $entryController;
         $this->externalBazarService = $externalBazarService;
         $this->formManager = $formManager;
     }
 
-    public function getForms($options): array
-    {
-        // External mode activated ?
-        if (($options['externalModeActivated'] ?? false) === true) {
-            return $this->externalBazarService
-                ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
-        } else {
-            return $this->formManager->getAll();
-        }
+    public function getForms($pOptions = []): array
+    {    	        
+    	$vIDs = $this->getIDs ($pOptions["idtypeannonce"] ?? $pOptions["id"] ?? '');
+
+    	$vLocalForms = $this->formManager->getMany ($vIDs ["locals"]);
+    	$vExternalForms = $this->externalBazarService->getExternalForms ($vIDs ["externals"], $pOptions['refresh']??null);
+		
+    	$vForms = $vLocalForms + $vExternalForms;
+
+        return $vForms;
     }
 
     private function replaceDefaultImage($options, $forms, $entries): array
@@ -82,73 +79,67 @@ class BazarListService
         return $entries;
     }
 
-    public function getEntries($options, $forms = null): array
+    public function getEntries($pOptions, $pForms = null): array
     {
-        if (!$forms) {
-            $forms = $this->getForms($options);
-        }
+	   	if ($pForms == null)
+	   	{
+    		$vForms = $this->getForms ($pOptions);
+    	}
+		else
+		{
+	    	$vForms = $pForms;
+	    }
 
-        // External mode activated ?
-        // TODO BazarListdynamic test externalmode works
-        if (($options['externalModeActivated'] ?? false) === true) {
-            $entries = $this->externalBazarService->getEntries([
-                'forms' => $forms,
-                'refresh' => $options['refresh'] ?? false,
-                'queries' => $options['query'] ?? '',
-                'correspondance' => $options['correspondance'] ?? '',
-            ]);
-        } else {
-            $entries = $this->entryManager->search(
-                [
-                    'regexp' => $options['regexp'] ?? '0',
-                    'queries' => $options['query'] ?? '',
-                    'formsIds' => $options['idtypeannonce'] ?? [],
-                    'keywords' => $this->wiki->services->get(SearchManager::class)->aggregateKeywords($_REQUEST['q'] ?? null, $_REQUEST['keywords'] ?? null),
-                    'user' => $options['user'] ?? null,
-                    'minDate' => $options['dateMin'] ?? null,
-                    'keywords' => $options['keywords'] ?? null,
-                    'searchfields' => $options['searchfields'] ?? '',
-                    'user' => $options['user'] ?? null,
-                    'minDate' => $options['dateMin'] ?? null,
-                    'correspondance' => $options['correspondance'] ?? '',
-                ],
-                true, // filter on read ACL,
-                true // use Guard
-            );
-        }
-        $entries = $this->replaceDefaultImage($options, $forms, $entries);
+		$vIDs = $this->getIDs ($pOptions ["idtypeannonce"] ??  $pOptions["id"] ?? '');
+    
+    	$vLocalIDs = $vIDs ["locals"];
+    	$vExternalIDs = $vIDs ["externals"];
+
+		if (count ($vLocalIDs) > 0 || count ($vExternalIDs) == 0)
+		{
+				$vSearchManager = $this->wiki->services->get(SearchManager::class);
+
+				$vLocalEntries = $vSearchManager->search(array_merge ($pOptions,				
+			        [
+			            'formsIds' => $vLocalIDs
+			        ]),
+			        true, // filter on read ACL,
+			        true // use Guard
+			    );
+		}
+		else
+			$vLocalEntries = [];
+
+		if (count ($vExternalIDs) > 0) {
+			$vExternalEntries = $this->externalBazarService->getEntries (
+				array_merge ($pOptions, [ 
+					"idtypeannonce" => [ 'locals' => [], 'externals' => $vExternalIDs ],
+					'forms' => $vForms
+				])		
+			);
+		}
+		else
+        	$vExternalEntries = [];
+
+		$vEntries = array_merge ($vLocalEntries, $vExternalEntries);
+	   
+		$vEntries = $this->replaceDefaultImage($pOptions, $vForms, $vEntries);
 
         // add extra informations (comments, reactions, metadatas)
-        if ($options['extrafields'] === true) {
-            foreach ($entries as $i => $entry) {
-                $this->entryExtraFields->setEntryId($entry['id_fiche']);
-                foreach (EntryExtraFieldsService::EXTRA_FIELDS as $field) {
-                    $entries[$i][$field] = $this->entryExtraFields->get($field);
+        if (($pOptions['extrafields']??false) === true) {
+            foreach ($vEntries as $i => $vEntry) {
+                $this->entryExtraFields->setEntryId($vEntry['id_fiche']);
+                foreach (EntryExtraFieldsService::EXTRA_FIELDS as $vField) {
+                    $vEntries[$i][$vField] = $this->entryExtraFields->get($vField);
                 }
                 // for the linked entries, we need to add some informations to html_data
-                if (!empty($entries[$i]['linked_data'])) {
-                    $entries[$i]['html_data'] .= $this->entryExtraFields->appendHtmlData($entries[$i]['linked_data']);
+                if (!empty($vEntries[$i]['linked_data'])) {
+                    $vEntries[$i]['html_data'] .= $this->entryExtraFields->appendHtmlData($vEntries[$i]['linked_data']);
                 }
             }
         }
-        // filter entries on datefilter parameter
-        if (!empty($options['datefilter'])) {
-            $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']);
-        }
 
-        // Sort entries
-        if ($options['random'] ?? false) {
-            shuffle($entries);
-        } else {
-            usort($entries, $this->buildFieldSorter($options['ordre'] ?? 'asc', $options['champ'] ?? 'bf_titre'));
-        }
-
-        // Limit entries
-        if ($options['nb'] ?? false) {
-            $entries = array_slice($entries, 0, $options['nb']);
-        }
-
-        return $entries;
+        return $vEntries;
     }
 
     // Use bazarlist options like groups, titles, groupicons, groupsexpanded
@@ -356,7 +347,7 @@ class BazarListService
         $result = array_merge($node, [
             'id' => $propName . $node['value'],
             'name' => $propName,
-            'count' => $countedValues[$node['value']] ?? 1,
+            'count' => $countedValues[$node['value']] ?? 0,
             'checked' => isset($checkedValues[$propName]) && in_array($node['value'], $checkedValues[$propName]) ? ' checked' : '',
         ]);
 
@@ -391,40 +382,127 @@ class BazarListService
 
         return $array;
     }
-
-    private function buildFieldSorter($ordre, $champ): callable
+    
+    public function getIDs ($pIDs)
     {
-        return function ($a, $b) use ($ordre, $champ) {
-            if (strstr($champ, '.')) {
-                $val1 = $this->getValueForArray($a, $champ);
-                $val2 = $this->getValueForArray($b, $champ);
-            } else {
-                $val1 = $a[$champ] ?? '';
-                $val2 = $b[$champ] ?? '';
-            }
-            if ($ordre == 'desc') {
-                return strnatcmp(
-                    $this->sanitizeStringForCompare($val2),
-                    $this->sanitizeStringForCompare($val1)
-                );
-            } else {
-                return strnatcmp(
-                    $this->sanitizeStringForCompare($val1),
-                    $this->sanitizeStringForCompare($val2)
-                );
-            }
-        };
+	    if ($pIDs == null)
+    	{
+    		$vLocalIDs = array_map (function ($pForm)
+    			{
+    				return $pForm ["bn_id_nature"];
+    			}, $this->formManager->getAll ());
+    		$vExternalIDs = [];
+    	}
+    	else
+    	{ 
+    		$vIDs = $this->parseIDs ($pIDs);
+
+			$vLocalIDs = $vIDs["locals"];				
+			$vExternalIDs = $vIDs["externals"];			
+    	}
+    	
+    	return 
+    	[
+    		"locals" => $vLocalIDs,
+    		"externals" => $vExternalIDs
+    	];
     }
+    
+    protected function isValidID ($pID)
+	{
+		if (!is_string ($pID)) return false;
+		
+		$vID = intval ($pID);
+		
+		if ($vID < 0) return false;
+		
+		if (strval ($vID) != $pID) return false;
+	
+		return true; 
+	}
 
-    private function sanitizeStringForCompare($value): string
-    {
-        if ($value === null) {
-            $value = '';
+	protected function isValidURL ($pURL)
+	{
+		return true; // keep it for later : URL extracted by getExternalURLsFromIDs should be correct
+	}
+
+	protected function parseIDs ($pIDs)
+	{
+		if (is_array ($pIDs))
+		{
+			if (isset ($pIDs["locals"])) 
+				// already parsed
+				return $pIDs;
+			else
+				// Ensure it is a string
+				$pIDs = implode (",", $pIDs); // Ensure $pIDs is a string
+		}
+		
+		$pIDs = preg_replace ('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', "\"\\0\"", $pIDs);
+		
+		$vLines = str_getcsv($pIDs);
+
+		$vLines = array_filter ($vLines, function ($vLine) { return !empty($vLine) && trim($vLine) != ""; });
+
+		$vIDS = [];
+
+		foreach ($vLines as $vLine)
+		{       	
+       		if (preg_match ('/^[()0-9,\s\->]*$/', $vLine))
+       		{
+        		$vPiped = "|" . $vLine;
+        	}
+        	else        	
+        	if (!strpos ($vLine, "|")) {
+        		if (preg_match ('/^[()0-9,\s\->]*$/', $vLine))
+	        		$vPiped = "|" . $vLine;
+	        	else
+		        	$vPiped = $vLine . "|";
+        	}
+        	else $vPiped = $vLine;
+        
+        	$vExploded = explode ("|", $vPiped);
+        	
+        	$vURL = $vExploded[0];
+        	$vPostFix = $vExploded[1];
+        	
+        	$vPostFix = preg_replace ('/[\s()]*/', '', $vPostFix);
+        	
+        	$vPostFix = explode (",", $vPostFix);
+
+			foreach ($vPostFix as $vID)
+			{       
+        		$vCorrespondance = preg_split ('/\->?/', $vID);
+					
+				if (count ($vCorrespondance) > 1)
+				{
+					$vIDs [] = [ "url" => $vURL, "id" => $vCorrespondance[0], "localFormId" => $vCorrespondance[1] ];
+				}
+				else
+					$vIDs [] = [ "url" => $vURL, "id" => $vCorrespondance[0], "localFormId" => '' ];
+        	}
         }
-        $value = is_scalar($value)
-            ? strval($value)
-            : json_encode($value);
 
-        return strtoupper(removeAccents($value));
-    }
+		$vResults = [ "locals" => [], "externals" => [] ];
+		
+		foreach ($vIDs as &$vID)
+		{			
+			if (trim ($vID["url"]) == "")
+			{				
+				if (!$this->isValidID ($vID["id"])) throw new \Exception('Invalid ID');
+				
+				array_push ($vResults ["locals"], $vID["id"]);
+			}
+			else
+			{		
+				if (!$this->isValidURL ($vID["url"])) throw new \Exception('Invalid URL ' . $vID["url"]);
+				if (!$this->isValidID ($vID["id"])) throw new \Exception('Invalid external ID ' . $vID["id"]);
+				if (isset ($vID["localFormId"]) && (trim($vID["localFormId"]) != '') && !$this->isValidID ($vID["localFormId"])) throw new Exception('Invalid external ID'); 
+				
+				array_push ($vResults["externals"], $vID);
+			}
+		}
+
+		return $vResults;
+	}    
 }
