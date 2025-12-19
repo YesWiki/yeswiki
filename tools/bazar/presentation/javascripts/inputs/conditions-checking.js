@@ -278,8 +278,7 @@ const ConditionsChecking = {
         structuredCondition.rightPart.trim()
       )
     }
-    console.log(structuredCondition)
-
+    
     return ''
   },
   renderConditionSecured(fieldName, condition, values) {
