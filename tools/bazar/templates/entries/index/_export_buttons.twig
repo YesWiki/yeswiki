@@ -11,7 +11,10 @@
 {%
 
 	set vIDsString = vIDsParameter is iterable
-					? vIDsParameter | join(',')
+					? ( vIDsParameter is not empty
+							? vIDsParameter | join(',')
+							: ""
+					  )
 					: vIDsParameter 
 %}
 
@@ -29,7 +32,7 @@
 
 {% 
 	set vQuery =	(
-						params.query is defined
+						params.query is defined and params.query is not empty
 						? { query : (params.query	| map(p => p.name ~ p.operator ~ (p.values|join(",")))
 													| filter(v => v is not empty)
     		  										| join('|')) }
