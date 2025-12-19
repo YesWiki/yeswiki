@@ -315,7 +315,9 @@ class FormManager
 
     public function findNewId()
     {
-    	$vMaxCachedFormId = max(array_keys($this->cachedForms));
+    	$vArrayKeys = array_keys($this->cachedForms);
+    
+    	$vMaxCachedFormId = (count ($vArrayKeys) > 0) ? max($vArrayKeys) : 0;
     
         $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
 
