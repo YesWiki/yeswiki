@@ -66,6 +66,8 @@ class RssHandler extends YesWikiHandler
                 ]
             );
 
+			$vCount = count($vRSSEntries);
+
             // setlocale() pour avoir les formats de date valides (w3c) --julien
             setlocale(LC_TIME, 'C');
 
@@ -76,18 +78,20 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n    ";
             $xml .= XML_Util::createStartElement('channel');
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));
+            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));            
+            $xml .= "\r\n      ";
+			$xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
+            $xml .= "\r\n      ";            
+            $xml .= XML_Util::createTag('count', null, $vCount);
+            $xml .= "\r\n      ";                       
+            $xml .= XML_Util::createTag('description', null, $this->sanitize($this->wiki->config['BAZ_RSS_DESCRIPTIONSITE']));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('link', null, $this->sanitize($this->wiki->config['BAZ_RSS_ADRESSESITE']));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('description', null, $this->sanitize($this->wiki->config['BAZ_RSS_DESCRIPTIONSITE']));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('language', null, 'fr-FR');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) ' . date('Y') . ' ' . htmlentities(removeAccents($this->wiki->config['BAZ_RSS_NOMSITE'])));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
-            $xml .= "\r\n      ";
+            $xml .= "\r\n      ";            
             $xml .= XML_Util::createTag('docs', null, 'http://www.stervinou.com/projets/rss/');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('category', null, $this->wiki->config['BAZ_RSS_CATEGORIE']);
@@ -100,15 +104,11 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement('image');
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));
-            $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('url', null, $this->wiki->config['BAZ_RSS_LOGOSITE']);
-            $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('link', null, $this->wiki->config['BAZ_RSS_ADRESSESITE']);
+            $xml .= XML_Util::createTag('url', null, $this->wiki->config['BAZ_RSS_LOGOSITE']);            
             $xml .= "\r\n      ";
             $xml .= XML_Util::createEndElement('image');
 
-            if (count($vRSSEntries) > 0) {
+            if ($vCount > 0) {
                 // Creation des items : titre + lien + description + date de publication
                 foreach ($vRSSEntries as $vRSSEntry) {
                     $xml .= "\r\n      ";
