@@ -947,7 +947,7 @@ class CSVManager
         }
         
         foreach ($vFormIDs['externals'] as $vFormID) {
-            $csvFiles['export-fiche-' . $vFormID . '.csv'] = $this->arrayToCSV(
+            $csvFiles['export-fiche-' . (preg_replace ("/[^a-zA-Z0-9\-\s.]/", "_", $vFormID["url"])) . '.' . $vFormID["id"] . '.csv'] = $this->arrayToCSV(
                 $this->getCSVfromFormId([ 'locals' => [], 'externals' => [ $vFormID ] ], $pParams)
             );
         }
