@@ -315,22 +315,29 @@ class FormManager
 
     public function findNewId()
     {
-        $result = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
+    	$vMaxCachedFormId = max(array_keys($this->cachedForms));
+    
+        $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
 
-        if (!$result['maxi']) {
-            return 1;
-        }
-        if ($result['maxi'] < 999) {
-            return $result['maxi'] + 1;
-        }
+		if (!empty ($vResult) && isset ($vResult["maxi"]))
+			$vMaxDBFormIdLowerThan1000 = $vResult["maxi"];
+		else
+			$vMaxDBFormIdLowerThan1000 = 1;
 
-        $result = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
+		$vCandidate = max ($vMaxCachedFormId, $vMaxDBFormIdLowerThan1000) + 1;
 
-        if (!$result['maxi']) {
-            return 10001;
-        } else {
-            return $result['maxi'] + 1;
-        }
+		if ($vCandidate < 999) return $vCandidate;
+
+        $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
+
+		if (!empty ($vResult) && isset ($vResult["maxi"]))
+			$vMaxDBFormIdHigherThan10000 = $vResult["maxi"];
+		else
+			$vMaxDBFormIdHigherThan10000 = 10001;
+
+		$vCandidate = max ($vMaxCachedFormId, $vMaxDBFormIdHigherThan10000) + 1;
+
+		return $vCandidate;
     }
 
     /**

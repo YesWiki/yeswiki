@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Service;
 
 use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Wiki;
 
 class BazarListService
@@ -122,6 +123,23 @@ class BazarListService
         	$vExternalEntries = [];
 
 		$vEntries = array_merge ($vLocalEntries, $vExternalEntries);
+	   
+		// filter entries on datefilter parameter
+        if (!empty($pOptions['datefilter'])) {
+            $vEntries = $this->wiki->services->get(EntryController::class)->filterEntriesOnDate($vEntries, $pOptions['datefilter']);
+        }
+
+        // Sort entries
+        if ($pOptions['random'] ?? false) {
+            shuffle($vEntries);
+        } else {
+            usort($vEntries, $this->buildFieldSorter($pOptions['ordre'] ?? 'asc', $pOptions['champ'] ?? 'bf_titre'));
+        }
+
+        // Limit entries
+        if ($pOptions['nb'] ?? false) {
+            $vEntries = array_slice($vEntries, 0, $pOptions['nb']);
+        }
 	   
 		$vEntries = $this->replaceDefaultImage($pOptions, $vForms, $vEntries);
 
@@ -504,5 +522,42 @@ class BazarListService
 		}
 
 		return $vResults;
-	}    
+	}
+	
+	private function buildFieldSorter($ordre, $champ): callable
+    {
+        return function ($a, $b) use ($ordre, $champ) {
+            if (strstr($champ, '.')) {
+                $val1 = $this->getValueForArray($a, $champ);
+                $val2 = $this->getValueForArray($b, $champ);
+            } else {
+                $val1 = $a[$champ] ?? '';
+                $val2 = $b[$champ] ?? '';
+            }
+            if ($ordre == 'desc') {
+                return strnatcmp(
+                    $this->sanitizeStringForCompare($val2),
+                    $this->sanitizeStringForCompare($val1)
+                );
+            } else {
+                return strnatcmp(
+                    $this->sanitizeStringForCompare($val1),
+                    $this->sanitizeStringForCompare($val2)
+                );
+            }
+        };
+    }
+
+    private function sanitizeStringForCompare($value): string
+    {
+        if ($value === null) {
+            $value = '';
+        }
+        $value = is_scalar($value)
+            ? strval($value)
+            : json_encode($value);
+
+        return strtoupper(removeAccents($value));
+    }    
+	
 }

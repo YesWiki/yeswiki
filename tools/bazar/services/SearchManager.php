@@ -1029,8 +1029,7 @@ class SearchManager
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         
         $vPageManager =  $this->wiki->services->get(PageManager::class);
-        $vEntryManager =  $this->wiki->services->get(EntryManager::class);        
-        $vEntryController =  $this->wiki->services->get(EntryController::class);             
+        $vEntryManager =  $this->wiki->services->get(EntryManager::class);                  
         
         foreach ($results as $page) {
             // save owner to reduce sql calls
@@ -1042,23 +1041,6 @@ class SearchManager
             $data = $vEntryManager->getDataFromPage($filteredPage, false, $debug, $params['correspondance']??'');
             $data['-is-external-'] = "0";
             $searchResults[$data['id_fiche']] = $data;
-        }
-
-		 // filter entries on datefilter parameter
-        if (!empty($params['datefilter'])) {
-            $searchResults = $vEntryController->filterEntriesOnDate($searchResults, $params['datefilter']);
-        }
-
-        // Sort entries
-        if ($params['random'] ?? false) {
-            shuffle($searchResults);
-        } else {
-            usort($searchResults, $this->buildFieldSorter($params['ordre'] ?? 'asc', $params['champ'] ?? 'bf_titre'));
-        }
-
-        // Limit entries
-        if ($params['nb'] ?? false) {
-            $searchResults = array_slice($searchResults, 0, $params['nb']);
         }
 
         return $searchResults;
@@ -1648,42 +1630,5 @@ class SearchManager
     protected function renameJSONPathVariable($pPath)
     {
         return str_replace('.', '__', $pPath);
-    }
-    
-    private function buildFieldSorter($ordre, $champ): callable
-    {
-        return function ($a, $b) use ($ordre, $champ) {
-            if (strstr($champ, '.')) {
-                $val1 = $this->getValueForArray($a, $champ);
-                $val2 = $this->getValueForArray($b, $champ);
-            } else {
-                $val1 = $a[$champ] ?? '';
-                $val2 = $b[$champ] ?? '';
-            }
-            if ($ordre == 'desc') {
-                return strnatcmp(
-                    $this->sanitizeStringForCompare($val2),
-                    $this->sanitizeStringForCompare($val1)
-                );
-            } else {
-                return strnatcmp(
-                    $this->sanitizeStringForCompare($val1),
-                    $this->sanitizeStringForCompare($val2)
-                );
-            }
-        };
-    }
-
-    private function sanitizeStringForCompare($value): string
-    {
-        if ($value === null) {
-            $value = '';
-        }
-        $value = is_scalar($value)
-            ? strval($value)
-            : json_encode($value);
-
-        return strtoupper(removeAccents($value));
-    }
-    
+    }    
 }

@@ -60,8 +60,6 @@ class ExternalBazarService
     protected $params;
     protected $wiki;
 
-    protected $newFormId;
-    protected $tmpForm;
     private $urlCache;
     private $alreadyRefreshedURLs;
     private $alreadyCheckingDeletionsURLs;
@@ -85,7 +83,6 @@ class ExternalBazarService
         $this->timeCacheToRefreshForms = (int)($externalBazarServiceParameters['cache_time_to_refresh_forms'] ?? 7200); // seconds
         $this->timeDebug = (bool)($externalBazarServiceParameters['time_debug'] ?? false);
 
-        $this->newFormId = null;
         $this->urlCache = null;
         $this->alreadyRefreshedURLs = [];
         $this->alreadyCheckingDeletionsURLs = [];
@@ -188,28 +185,28 @@ class ExternalBazarService
                 
                 $vLocalFormId = $vIDValues['localFormId'];
 
-                if (!empty($vLocalFormId)) {                    
+                if ($vLocalFormId != "") {                                    
                     if ($vForm = $this->formManager->getOne($vLocalFormId)) {
 	                    $vForm['_isExternal_'] = true;
                         $vForm['external_bn_id_nature'] = $vIDValues['id'];
                         $vForm['external_url'] = $vURL;
-                        $vForms[] = $vForm;                            
+                        $vForms[] = $vForm;                        
                     } else {
                         $vLocalIDCorrespondToEmptyForm = true;
                     }
                 }
 
-                if (empty($vLocalFormId) || $vLocalIDCorrespondToEmptyForm) {      
+                if ($vLocalFormId == "" || $vLocalIDCorrespondToEmptyForm) { 
                     if ($vForm = $this->getForm($vURL, $vIDValues['id'], $pRefresh, false)) {                        
                         $vLocalFormId = $vLocalIDCorrespondToEmptyForm ? $vLocalFormId : $this->findNewId();
-                        
-                        $vForm = $this->prepareExtForm($vLocalFormId, $vURL, $vForm);
 
-        				if ((!(empty($vLocalFormId) || !empty($this->formManager->getOne($vLocalFormId)))) && !empty($vForm)) {
+                        $vForm = $this->prepareExtForm($vLocalFormId, $vURL, $vForm);
+                        
+        				if (!empty($vLocalFormId) && empty($this->formManager->getOne($vLocalFormId)) && !empty($vForm)) {        				
 							$this->formManager->cacheForm ($vLocalFormId, $vForm);
 							$vForms[] = $vForm;
 						}
-					}
+					}					
                 }
             }
         }
@@ -760,25 +757,11 @@ class ExternalBazarService
     }
 
     /**
-     * get newFormId using FormManager at first call.
+     * get newFormId using FormManager
      */
     private function findNewId(): int
     {
-        if (is_null($this->newFormId)) {
-            $this->newFormId = $this->formManager->findNewId();
-        } else {
-            $this->newFormId = ($this->newFormId == 999) ? 10001 : $this->newFormId + 1;
-        }
-
-        return $this->newFormId;
-    }
-
-    /**
-     * get temp form (to give data to FormManager).
-     */
-    public function getTmpForm(): array
-    {
-        return $this->tmpForm;
+    	return $this->formManager->findNewId();    
     }
 
     /**
