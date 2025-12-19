@@ -795,9 +795,11 @@ class EntryManager
         if (!empty($vCorrespondances)) {
             try {                
                 foreach ($vCorrespondances as $vKey => $vData) {
-                    if (isset($vKey)) {
-                    
-                    	if (isset ($vData [$vKey])) $pEntry[$vKey] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($pPage, $pEntry, $vData);
+                    if (isset($vKey)) {     
+                    	if (isset ($pEntry[$vData]))
+                    	{
+                    		$pEntry[$vKey] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($pPage, $pEntry, $vData);                    		
+                    	}
                     } else {
                         echo '<div class="alert alert-danger">' . _t('BAZ_CORRESPONDANCE_ERROR') . '</div>';
                     }

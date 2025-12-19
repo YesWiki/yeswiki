@@ -148,7 +148,7 @@ class BazarListeAction extends YesWikiAction
             'refresh' => $this->formatBoolean($_GET, false, 'refresh'),
             
             // Paramètres pour une requete specifique
-            'query' => $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $_GET)),
+            'queries' => $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $_GET)),
             // filtrer sur des mots clefs
             'keywords' => $vKeywords,
             // filtrer les resultats sur une periode données si une date est indiquée
