@@ -19,13 +19,13 @@
   {{ renderedEntry|raw }}
   {% if showFooter %}
     <div class="clearfix"></div>
-    <div class="BAZ_fiche_info">
+    <div class="BAZ_fiche_info">    
       {% if isAdmin %}
         <span class="BAZ_main_fiche_info">
           {{ _t('BAZ_ECRITE') }}
           {{ owner|raw }}
-          <span class="category"> ({{ form.bn_label_nature }})</span>
-          <br />
+          <span class="category"> ({{form.bn_label_nature ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.bn_label_nature:'') }})
+          <br />          
           <span class="date_creation">
             {{ _t('BAZ_DATE_CREATION')|capitalize }}
             {{ entry.date_creation_fiche|date('d/m/Y à H:i') }},

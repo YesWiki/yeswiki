@@ -24,7 +24,7 @@ class BazarListeAction extends YesWikiAction
         $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null;
 
         // ICONS
-        $icon = $_GET['icon'] ?? $arg['icon'] ?? null;
+        $icon = $_GET['icon'] ?? $arg['icon'] ?? $_GET['icons'] ?? $arg['icons'] ?? null;
         $iconAlreadyDefined = ($icon == $this->params->get('baz_marker_icon') || is_array($icon));
         if (!$iconAlreadyDefined) {
             if (!empty($icon)) {

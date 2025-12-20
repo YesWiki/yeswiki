@@ -134,20 +134,23 @@ class FormManager
     }
 
     public function getOne($formId): ?array
-    {
-        if (isset($this->cachedForms[$formId])) {
-            return $this->cachedForms[$formId];
+    {        	
+        if (isset($this->cachedForms[$formId . ""])) {
+            return $this->cachedForms[$formId . ""];
         }
 
-        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
+		if (intval($formId) . "" === $formId)
+		{
+		    $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
 
-        if (!$form) {
-            return null;
-        }
+		    if (!$form) {
+		        return null;
+		    }
 
-        $form = $this->getFromRawData($form);
+		    $form = $this->getFromRawData($form);
+		}
 
-        $this->cachedForms[$formId] = $form;
+		$this->cachedForms[$formId . ""] = $form;
 
         return $form;
     }
@@ -175,7 +178,7 @@ class FormManager
                 if (!empty($form['bn_id_nature'])) {
                     // save only not empty formId
                     $formId = $form['bn_id_nature'];
-                    $this->cachedForms[$formId] = $this->getFromRawData($form);
+                    $this->cachedForms[$formId . ""] = $this->getFromRawData($form);
                 }
             }
             $this->cacheValidatedForAll = true;
@@ -189,10 +192,10 @@ class FormManager
         $results = [];
 
         foreach ($formsIds as $formId) {
-            if (empty($this->cachedForms[$formId])) {
-                $this->cachedForms[$formId] = $this->getOne($formId);
+            if (empty($this->cachedForms[$formId . ""])) {
+                $this->cachedForms[$formId . ""] = $this->getOne($formId);
             }
-            $results[$formId] = $this->cachedForms[$formId];
+            $results[$formId] = $this->cachedForms[$formId . ""];
         }
 
         return $results;
@@ -316,7 +319,12 @@ class FormManager
     public function findNewId()
     {
     	$vArrayKeys = array_keys($this->cachedForms);
-    
+
+    	$vArrayKeys = array_map (function ($Key) { return intval($Key); }, array_filter ($vArrayKeys, function ($vKey)
+    	{
+    		return intval ($vKey) . "" === $vKey . "";
+    	}));
+
     	$vMaxCachedFormId = (count ($vArrayKeys) > 0) ? max($vArrayKeys) : 0;
     
         $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
@@ -438,7 +446,7 @@ class FormManager
 
 	public function cacheForm ($pFormId, $pForm)
 	{
-		$this->cachedForms[$pFormId] = $pForm;
+		$this->cachedForms[$pFormId . ""] = $pForm;
 	}
 
     /**

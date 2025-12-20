@@ -91,7 +91,7 @@ class EntryController extends YesWikiController
      * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
      * @param array $pForm form to be used to render the entry
      */
-    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pForm = null)
+    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = "", $pExternalForm = "")
     {
         if (is_array($entryId)) {
             // If entry ID is the full entry with all the values
@@ -106,11 +106,15 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE') . '</div>';
         }
 
-		if (empty ($pForm))	
-	        $form = $this->formManager->getOne($entry['id_typeannonce']);
-	    else 
-			$form = $pForm;
-			
+		if (empty ($pLocalForm)) $pLocalForm = $this->formManager->getOne($entry['id_typeannonce']);
+		
+		$vExternalData = $entry["external-data"];
+		
+		if (!empty ($vExternalData))
+		{			
+		    $pExternalForm = $this->formManager->getOne($entry['external-data']['formIDKey']);		   
+	    }
+	    
         // fake ->tag for the attached images
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
@@ -133,7 +137,7 @@ class EntryController extends YesWikiController
             // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
-                $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form, $userNameForRendering);
+                $customTemplateValues = $this->getValuesForCustomTemplate($entry, $pLocalForm, $userNameForRendering);
                 $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
             }
 
@@ -146,8 +150,8 @@ class EntryController extends YesWikiController
             }
             // if not found, use default template
             if (is_null($renderedEntry)) {
-                if (!empty($form)) {
-                    foreach ($form['prepared'] as $field) {
+                if (!empty($pLocalForm)) {
+                    foreach ($pLocalForm['prepared'] as $field) {
                         if ($field instanceof BazarField) {
                             // TODO handle html_outside_app mode for images
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
@@ -197,7 +201,8 @@ class EntryController extends YesWikiController
         }
 
         return $this->render('@bazar/entries/view.twig', [
-            'form' => $form,
+            'form' => $pLocalForm,
+            'externalForm' => $pExternalForm,
             'entry' => $entry,
             'entryId' => $entryId,
             'owner' => $owner,

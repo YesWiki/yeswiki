@@ -33,7 +33,7 @@ class BazarListService
     	$vIDs = $this->getIDs ($pOptions["idtypeannonce"] ?? $pOptions["id"] ?? '');
 
     	$vLocalForms = $this->formManager->getMany ($vIDs ["locals"]);
-    	$vExternalForms = $this->externalBazarService->getExternalForms ($vIDs ["externals"], $pOptions['refresh']??null);
+    	$vExternalForms = $this->externalBazarService->getForms ($vIDs ["externals"], $pOptions['refresh']??null);
 		
     	$vForms = $vLocalForms + $vExternalForms;
 
@@ -419,10 +419,28 @@ class BazarListService
 			$vExternalIDs = $vIDs["externals"];			
     	}
     	
+    	$vLocalIDs = array_values (array_unique ($vLocalIDs));
+    	
+    	$vUniqueExternalIDs = [];
+    	
+    	foreach ($vExternalIDs as $vExternalID)
+    	{
+    		$vKey = $vExternalID["url"] . "|" . $vExternalID["id"];
+    	
+	    	if (isset ($vUniqueExternalIDs[$vKey]))
+	    		throw new \Exception('The external ID ' . $vExternalID["id"] . " is requested multiple times for server " . $vExternalID["url"]);
+    		else
+    		{
+	    		$vUniqueExternalIDs[$vKey] = $vExternalID;
+			}
+    	}
+    	
+    	$vUniqueExternalIDs = array_values ($vUniqueExternalIDs);
+
     	return 
     	[
     		"locals" => $vLocalIDs,
-    		"externals" => $vExternalIDs
+    		"externals" => $vUniqueExternalIDs
     	];
     }
     
@@ -481,7 +499,7 @@ class BazarListService
         
         	$vExploded = explode ("|", $vPiped);
         	
-        	$vURL = $vExploded[0];
+        	$vURL = trim ($vExploded[0]);
         	$vPostFix = $vExploded[1];
         	
         	$vPostFix = preg_replace ('/[\s()]*/', '', $vPostFix);
@@ -514,7 +532,7 @@ class BazarListService
 			else
 			{		
 				if (!$this->isValidURL ($vID["url"])) throw new \Exception('Invalid URL ' . $vID["url"]);
-				if (!$this->isValidID ($vID["id"])) throw new \Exception('Invalid external ID ' . $vID["id"]);
+				if (!$this->isValidID ($vID["id"])) throw new \Exception('Invalid external ID ' . $vID["id"] . print_r ($vID, true));
 				if (isset ($vID["localFormId"]) && (trim($vID["localFormId"]) != '') && !$this->isValidID ($vID["localFormId"])) throw new Exception('Invalid external ID'); 
 				
 				array_push ($vResults["externals"], $vID);

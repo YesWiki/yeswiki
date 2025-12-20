@@ -64,6 +64,8 @@ class ExternalBazarService
     private $alreadyRefreshedURLs;
     private $alreadyCheckingDeletionsURLs;
 
+	private $aCachedForm;
+    
     public function __construct(
         Wiki $wiki,
         ParameterBagInterface $params,
@@ -85,7 +87,7 @@ class ExternalBazarService
 
         $this->urlCache = null;
         $this->alreadyRefreshedURLs = [];
-        $this->alreadyCheckingDeletionsURLs = [];
+        $this->alreadyCheckingDeletionsURLs = [];        
     }
 
 	private function getRefreshValue ($pRefresh = false)
@@ -104,11 +106,11 @@ class ExternalBazarService
     public function getForm (string $pURL, int $pFormId, $pRefresh = false, bool $pCheckUrl = true): ?array
     {	   
         $vRefresh = $this->getRefreshValue ($pRefresh);
-       
+
         if ($pCheckUrl) {
             $pURL = $this->formatUrl($pURL);
         }
-               
+
         $vURLDetails = $this->getURLDetails($pURL, $vRefresh ? 0 : $this->timeCacheToRefreshForms);
 
         if (empty($vURLDetails)) {
@@ -126,8 +128,9 @@ class ExternalBazarService
         );
 
         $vForms = json_decode($vJSON, true);        
+       
+        if (!empty($vForms)) {
 
-        if ($vForms) {
 	        $vForm = $vForms[0];
 	        $vForm ["_isExternal_"] = true;
             return $vForm;
@@ -138,22 +141,27 @@ class ExternalBazarService
         return null;
     }
 	
-	// getFormsForBazarListe : DEPRECATED : use getExternalForms instead
+	// getFormsForBazarListe : DEPRECATED : use getForms instead
 
 	public function getFormsForBazarListe(array $pExternalIDs, bool $pRefresh = false): ?array
 	{
-		return getExternalForms ($pExternalIDs, $pRefresh); 
+		return getForms ($pExternalIDs, $pRefresh); 
+	}
+	
+	public function getExternalFormIDKey ($pURL, $pExternalID, $pLocalID)
+	{
+		return preg_replace ("/[^a-zA-Z0-9\-\s.]/", "_", $pURL) . '.' . $pExternalID . "." . $pLocalID;
 	}
 	
     /**
-     * get forms from external wiki.
+     * get forms (locals and externals) for external bazarlist handling.
      *
      * @param array $pExternalIDs // format 'url' => url, 'id' => *id, 'localFormId' => $id
      *
      * @return array forms
      */
      
-    public function getExternalForms (array $pExternalIDs, $pRefresh = false): ?array
+    public function getForms (array $pExternalIDs, $pRefresh = false): ?array
     {    	
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
@@ -179,35 +187,42 @@ class ExternalBazarService
        
 		$vGroupedExternalIDs = $this->groupIDsByURL ($pExternalIDs);
 
-        foreach ($vGroupedExternalIDs as $vURL => $vIDs) {
-			foreach ($vIDs as $vIDValues) {                		
+        foreach ($vGroupedExternalIDs as $vURL => $vExternalIDs) {        
+			foreach ($vExternalIDs as $vIDValues) {                		
                 $vLocalIDCorrespondToEmptyForm = false;
                 
-                $vLocalFormId = $vIDValues['localFormId'];
+                $vLocalFormID = $vIDValues['localFormId'];
+                $vExternalFormID = $vIDValues['id'];
 
-                if ($vLocalFormId != "") {                                    
-                    if ($vForm = $this->formManager->getOne($vLocalFormId)) {
-	                    $vForm['_isExternal_'] = true;
-                        $vForm['external_bn_id_nature'] = $vIDValues['id'];
-                        $vForm['external_url'] = $vURL;
-                        $vForms[] = $vForm;                        
+                if ($vLocalFormID != "") {                                    
+                    if ($vLocalForm = $this->formManager->getOne($vLocalFormID)) {
+                        $vForms[$vLocalFormID . ""] = $vLocalForm;
                     } else {
                         $vLocalIDCorrespondToEmptyForm = true;
                     }
                 }
 
-                if ($vLocalFormId == "" || $vLocalIDCorrespondToEmptyForm) { 
-                    if ($vForm = $this->getForm($vURL, $vIDValues['id'], $pRefresh, false)) {                        
-                        $vLocalFormId = $vLocalIDCorrespondToEmptyForm ? $vLocalFormId : $this->findNewId();
-
-                        $vForm = $this->prepareExtForm($vLocalFormId, $vURL, $vForm);
-                        
-        				if (!empty($vLocalFormId) && empty($this->formManager->getOne($vLocalFormId)) && !empty($vForm)) {        				
-							$this->formManager->cacheForm ($vLocalFormId, $vForm);
-							$vForms[] = $vForm;
-						}
-					}					
+				if ($vLocalFormID == "" || $vLocalIDCorrespondToEmptyForm) {                 
+					$vLocalFormID = $vLocalIDCorrespondToEmptyForm ? $vLocalFormID : $this->findNewID();
                 }
+
+				$vExternalFormIDKey = $this->getExternalFormIDKey ($vURL, $vExternalFormID, $vLocalFormID);
+			
+				$vExternalForm = $this->getForm($vURL, $vExternalFormID, $pRefresh, false);
+					
+				if (empty ($vExternalForm))
+				{
+					throw new ExternalBazarServiceException("External form ID " . $vExternalFormID . " doesn't exist on server : " . $vURL);
+				}
+				else
+				{					
+					$vExternalForm = $this->prepareExtForm($vLocalFormID, $vURL, $vExternalForm);
+					
+					$this->formManager->cacheForm ($vLocalFormID, $vExternalForm);
+					$this->formManager->cacheForm ($vExternalFormIDKey, $vExternalForm);					
+				}
+
+				if (!empty ($vExternalForm)) $vForms[$vExternalFormIDKey] = $vExternalForm;
             }
         }
         
@@ -277,20 +292,17 @@ class ExternalBazarService
 
 		$vURLSearchParams = $vSearchManager->paramsToURLSearchParams ($pParams);
 
-		foreach ($vExternalIDs as $vExternalID)
-		{	
-			$vForm = array_filter ($vForms, function ($vForm) use ($vExternalID) {		
-				return	isset ($vForm["_isExternal_"]) && 
-						$vForm["_isExternal_"] &&
-						(strcmp ($vForm["external_url"], $this->formatUrl($vExternalID ["url"])) === 0) &&
-						($vForm["external_bn_id_nature"] === $vExternalID ["id"]);
-			});
-			
-			$vForm = array_values ($vForm)[0];
+		$vExternalForms = array_filter ($vForms, function ($vKey) use ($vExternalID) {
+			return ((intval($vKey) . "") !== $vKey . "");
+		}, ARRAY_FILTER_USE_KEY);
 
-			$vURL = $vForm['external_url'];
-			$vLocalFormId = $vForm['bn_id_nature'];            
-			$vDistantFormId = $vForm['external_bn_id_nature'];
+		foreach ($vExternalForms as $vExternalForm)
+		{				
+			$vURL = $vExternalForm['external_url'];
+			$vLocalFormID = $vExternalForm['bn_id_nature'];            
+			$vExternalFormID = $vExternalForm['external_bn_id_nature'];
+			$vExternalFormLabel = $vExternalForm['external_bn_label_nature'];
+			$vExternalFormIDKey = $vExternalForm['external_form_key'];			
 
 			$vURLDetails = $this->getURLDetails($vURL, $this->timeCacheToCheckChanges);
 
@@ -302,7 +314,7 @@ class ExternalBazarService
 				// Formattage des paramètres d'URL
 
 				$json = $this->getJSONCachedUrlContent(
-					$this->getEntriesViaApiUrl($vURLDetails, $vDistantFormId, $vURLSearchParams),
+					$this->getEntriesViaApiUrl($vURLDetails, $vExternalFormID, $vURLSearchParams),
 					$this->timeCacheToCheckChanges,
 					$pParams ['refresh'],
 					'entries'
@@ -313,7 +325,7 @@ class ExternalBazarService
 				if (empty($vBatchEntries)) {        
 					// check if old route is working
 					$json = $this->getJSONCachedUrlContent(
-						$this->getEntriesViaJsonHandlerUrl($vURLDetails, $vDistantFormId, $vURLSearchParams),
+						$this->getEntriesViaJsonHandlerUrl($vURLDetails, $vExternalFormID, $vURLSearchParams),
 						$this->timeCacheToCheckChanges,
 						$pParams ['refresh']
 					);
@@ -339,11 +351,13 @@ class ExternalBazarService
 						    // save external data with key 'external-data' because '-' is not used for name
 						    $vEntry['external-data'] = [
 						        'baseUrl' => $vURL,
-  						        'externalFormID' => $vDistantFormId,
-						        'localFormID' => $vLocalFormId
+  						        'externalFormID' => $vExternalFormID,
+  						        'externalFormLabel' => $vExternalFormLabel,
+						        'localFormID' => $vLocalFormID,
+						        'formIDKey' => $vExternalFormIDKey
 						    ];
 						    $vEntry['url'] = $vURL . '?' . $vEntry['id_fiche'];
-						    $vEntry['id_typeannonce'] = $vLocalFormId;
+						    $vEntry['id_typeannonce'] = $vLocalFormID;
 						    
 						    $vEntries[] = $vEntry;
 						}
@@ -417,7 +431,7 @@ class ExternalBazarService
      * @return string file content from cache
      */
     public function getJSONCachedUrlContent(string $url, int $cache_life = 90, bool $pForceRefresh = false, $mode = 'standard')
-    {	   
+    {         
         if (in_array($url, $this->alreadyRefreshedURLs)) {
             $testFileModificationDate = false;
             $pForceRefresh = false; // to prevent too many refreshes
@@ -425,6 +439,7 @@ class ExternalBazarService
             $this->alreadyRefreshedURLs[] = $url;
             $testFileModificationDate = true;
         }
+                
         $json = $this->getCachedUrlContent($url, $testFileModificationDate, $cache_life, $pForceRefresh, $mode);
         $json = $this->extractErrors($json, $url);
         
@@ -759,9 +774,11 @@ class ExternalBazarService
     /**
      * get newFormId using FormManager
      */
-    private function findNewId(): int
+    private function findNewID(): int
     {
-    	return $this->formManager->findNewId();    
+    	$vNewID = $this->formManager->findNewId();
+    
+    	return $vNewID;
     }
 
     /**
@@ -773,11 +790,13 @@ class ExternalBazarService
     {   
         // update FormId
         $form['_isExternal_'] = true;
-        $form['external_bn_id_nature'] = $form['bn_id_nature'];
+        $form['external_bn_id_nature'] = $form['bn_id_nature'];        
+        $form['external_bn_label_nature'] = $form['bn_label_nature'];
         $form['external_url'] = $url;
         $urlDetails = $this->getURLDetails($url, 999999); // no reset of cache because just done before
         $form['bn_id_nature'] = $localFormId;
-
+        $form['external_form_key'] = $this->getExternalFormIDKey ($url, $form['external_bn_id_nature'], $form['bn_id_nature']);
+        
         // change fields type before prepareData
         foreach ($form['template'] as $index => $fieldTemplate) {
             if (isset(self::CONVERT_FIELD_NAMES[$fieldTemplate[0]])) {
