@@ -352,6 +352,7 @@ Vue.component('BazarMap', {
       this.center = [this.params.latitude, this.params.longitude]
     },
     entries(newVal, oldVal) {
+      const vThis = this;    
       const newIds = newVal.map((e) => e.id_fiche)
       const oldIds = oldVal.map((e) => e.id_fiche)
       if (!this.arraysEqual(newIds, oldIds)) {
@@ -359,13 +360,13 @@ Vue.component('BazarMap', {
           this.entries.forEach((entry) => {
             this.createMarker(entry)
             if (entry.geolocation.geometries) {
-              const geojsonGeometries = JSON.parse(entry.geolocation.geometries)
+              const geojsonGeometries = entry.geolocation.geometries
               L.geoJSON(geojsonGeometries, {
                 onEachFeature: function (feature, layer) {
                   if (layer instanceof L.Path) {
-                    this.map.addLayer(layer)
+                    vThis.map.addLayer(layer)
                   } else if (layer instanceof L.Marker) {
-                    this.map.addLayer(layer)
+                    vThis.map.addLayer(layer)
                   }
                 },
               })
@@ -380,7 +381,7 @@ Vue.component('BazarMap', {
               .forEach((entry) => entry.marker.remove())
             entries.forEach((entry) => {
               try {
-                entry.marker.addTo(this.map)
+                entry.marker.addTo(vThis.map)
               } catch (error) {
                 console.error(
                   `Entry ${entry.id_fiche} has invalid geolocation`,
