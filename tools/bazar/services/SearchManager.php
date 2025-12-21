@@ -1302,7 +1302,7 @@ class SearchManager
 		{
 			$vParameters [] = "champ=" . trim ($pParameters['champ']);
 		}
-		
+
 		return implode ("&", array_filter ($vParameters, function ($pParameter) {
 			return !empty($pParameter);
 		}));

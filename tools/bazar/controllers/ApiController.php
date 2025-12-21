@@ -45,7 +45,7 @@ class ApiController extends YesWikiController
 		else
 			$vFormID = $formId;
    
-        $vForm = $this->getService(BazarListService::class)->getForms ([ "idtypeannonce" => $vFormID ] )[0];
+        $vForm = $this->getService(BazarListService::class)->getForms ([ "idtypeannonce" => $vFormID ] )[$vFormID];
         
         if (!$vForm || !isset($vForm['bn_id_nature'])) {
             throw new NotFoundHttpException();

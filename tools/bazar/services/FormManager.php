@@ -135,11 +135,11 @@ class FormManager
 
     public function getOne($formId): ?array
     {        	
-        if (isset($this->cachedForms[$formId . ""])) {
-            return $this->cachedForms[$formId . ""];
+        if (isset($this->cachedForms[$formId])) {
+            return $this->cachedForms[$formId];
         }
 
-		if (intval($formId) . "" === $formId)
+		if (intval($formId) . "" === $formId . "")
 		{
 		    $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
 
@@ -150,7 +150,7 @@ class FormManager
 		    $form = $this->getFromRawData($form);
 		}
 
-		$this->cachedForms[$formId . ""] = $form;
+		$this->cachedForms[$formId] = $form;
 
         return $form;
     }
@@ -178,7 +178,7 @@ class FormManager
                 if (!empty($form['bn_id_nature'])) {
                     // save only not empty formId
                     $formId = $form['bn_id_nature'];
-                    $this->cachedForms[$formId . ""] = $this->getFromRawData($form);
+                    $this->cachedForms[$formId] = $this->getFromRawData($form);
                 }
             }
             $this->cacheValidatedForAll = true;
@@ -192,10 +192,10 @@ class FormManager
         $results = [];
 
         foreach ($formsIds as $formId) {
-            if (empty($this->cachedForms[$formId . ""])) {
-                $this->cachedForms[$formId . ""] = $this->getOne($formId);
+            if (empty($this->cachedForms[$formId])) {
+                $this->cachedForms[$formId] = $this->getOne($formId);
             }
-            $results[$formId] = $this->cachedForms[$formId . ""];
+            $results[$formId] = $this->cachedForms[$formId];
         }
 
         return $results;
@@ -446,7 +446,7 @@ class FormManager
 
 	public function cacheForm ($pFormId, $pForm)
 	{
-		$this->cachedForms[$pFormId . ""] = $pForm;
+		$this->cachedForms[$pFormId] = $pForm;
 	}
 
     /**
