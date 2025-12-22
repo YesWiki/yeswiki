@@ -143,7 +143,7 @@ class BazarListeAction extends YesWikiAction
             
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null,
-            
+
             // to be able to refresh cache for external json
             'refresh' => $this->formatBoolean($_GET, false, 'refresh'),
             
@@ -326,7 +326,8 @@ class BazarListeAction extends YesWikiAction
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
 
             // TODO put in all bazar templates
-            $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+           
+            $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
 
             return $this->render('@bazar/entries/index.twig', [
                 'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],

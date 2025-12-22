@@ -90,7 +90,7 @@ class ExternalBazarService
 	private function getRefreshValue ($pRefresh = false)
 	{
 		// to prevent DDOS attack refresh only for admins
-	
+	return true;
 		if ($pRefresh == null || !$pRefresh || !$this->wiki->UserIsAdmin())
 			return false;
 		else 
@@ -141,9 +141,30 @@ class ExternalBazarService
 		return getForms ($pExternalIDs, $pRefresh); 
 	}
 	
-	public function getExternalFormIDKey ($pURL, $pExternalID, $pLocalID)
+	public function getExternalFormIDKey ($pExternalID)
+	{	
+		$vURL = $this->formatUrl ($pExternalID["url"]);
+	
+		return preg_replace ("/[^a-zA-Z0-9\-\s.]/", "_", $vURL) . '.' . $pExternalID["id"];
+	}
+	
+	public function getAllForms ($pServer)
 	{
-		return preg_replace ("/[^a-zA-Z0-9\-\s.]/", "_", $pURL) . '.' . $pExternalID . "." . $pLocalID;
+		$vURLDetails = $this->getURLDetails ($pServer);
+	
+		$vURL = $this->getFormUrl ($vURLDetails, "");
+	
+		$vAll = $this->getJSONFromURL ($vURL);
+		
+		$vResult  = [];
+
+		foreach ($vAll as $vForm) {
+			$vKey = $this->getExternalFormIDKey ([ "url" => $vURL, "id" => $vForm ['bn_id_nature'] ] );
+		    
+		    $vResult[$vKey] = $vForm;
+		}
+		
+		return $vResult;
 	}
 	
     /**
@@ -154,8 +175,10 @@ class ExternalBazarService
      * @return array forms
      */
      
-    public function getForms (array $pExternalIDs, $pRefresh = false): ?array
+    public function getForms ($pExternalIDs, $pRefresh = false): ?array
     {    	
+    	if (is_string ($pExternalIDs)) return $this->getAllForms ($pExternalIDs);
+    
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
@@ -199,7 +222,7 @@ class ExternalBazarService
 					$vLocalFormID = $vLocalIDCorrespondToEmptyForm ? $vLocalFormID : $this->findNewID();
                 }
 
-				$vExternalFormIDKey = $this->getExternalFormIDKey ($vURL, $vExternalFormID, $vLocalFormID);
+				$vExternalFormIDKey = $this->getExternalFormIDKey ([ "url" => $vURL, "id" => $vIDValues['id'] ] );
 			
 				$vExternalForm = $this->getForm($vURL, $vExternalFormID, $pRefresh, false);
 					
@@ -787,7 +810,7 @@ class ExternalBazarService
         $form['external_url'] = $url;
         $urlDetails = $this->getURLDetails($url, 999999); // no reset of cache because just done before
         $form['bn_id_nature'] = $localFormId;
-        $form['external_form_key'] = $this->getExternalFormIDKey ($url, $form['external_bn_id_nature'], $form['bn_id_nature']);
+        $form['external_form_key'] = $this->getExternalFormIDKey ([ "url" => $url, "id" => $form['external_bn_id_nature' ]]);
         
         // change fields type before prepareData
         foreach ($form['template'] as $index => $fieldTemplate) {

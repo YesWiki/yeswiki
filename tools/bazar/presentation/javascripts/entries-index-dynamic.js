@@ -5,7 +5,7 @@ import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import FilterNode from './components/FilterNode.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
-import { recursivelyCalculateRelations, deepGet } from './utils.js'
+import { recursivelyCalculateRelations, deepGet, updateExportLinks, updateHash, parseSearchParams, mergeSearchParams } from './utils.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
@@ -40,7 +40,7 @@ const load = (domElement) => {
       pagination: 10,
 
       search: '',
-      currentSort: { field: '', order: null, label: '' },
+      currentSort: { field: '', order : null, label: '' },
 
       // wether to search for a particular form ID (only used when no
       // form id is defined for the bazar list action)
@@ -247,7 +247,7 @@ const load = (domElement) => {
       initFromHash(pHash) {
       	const vThis = this
 
-        const vParams = this.parseSearchParams(pHash) // Return hash as a structured object
+        const vParams = parseSearchParams(pHash) // Return hash as a structured object
         let vChamp
         let vOrdre
 
@@ -310,159 +310,8 @@ const load = (domElement) => {
       updateHash() {
         if (!this.ready) return
 
-        const cCurrentHash = this.savedHash
-
-        const vQuery = []
-        const vCurrentParams = {}
-        let vMergedParams
-
-        let vSearch = this.search.trim()
-
-        if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
-
-        if (vSearch != '') vCurrentParams.keywords = vSearch
-        if (this.currentSort.field && this.currentSort.field != '') vCurrentParams.champ = this.currentSort.field
-        if (this.currentSort.order && this.currentSort.order != '') vCurrentParams.ordre = this.currentSort.order
-
-        let bHasFilter = false
-
-        for (const cFilterId in this.computedFilters) {
-          bHasFilter = true
-
-          vQuery.push({
-            name: cFilterId,
-            operator: '==',
-            values:	this.computedFilters[cFilterId]
-              .map((pString) => pString
-                .replace(/&amp;/g, '&')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/&quot;/g, '"')
-                .replace(/&#039;/g, "'"))
-              .join(',')
-          })
-        }
-
-        if (bHasFilter) vCurrentParams.query = vQuery
-
-        vMergedParams = this.mergeSearchParams(cCurrentHash, vCurrentParams, { returnMode: 'string', overrideKeywords: true, overrideQuery: true })
-
-        // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
-
-        history.pushState({}, '', `#${encodeURIComponent(vMergedParams)}`)
-
-        this.updateExportLinks(vMergedParams) // Export
-      },
-      updateExportLinks(pSearchParams) {
-	    const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
-
-        if (cSort) {
-        	this.currentSort = cSort
-        }
-      },
-      updateHash() {
-        if (!this.ready) return
-
-        const cCurrentHash = this.savedHash
-
-        const vQuery = []
-        const vCurrentParams = {}
-        let vMergedParams
-
-        let vSearch = this.search.trim()
-
-        if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
-
-	    const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
-
-        if (cSort) {
-        	this.currentSort = cSort
-        }
-      },
-      updateHash() {
-        if (!this.ready) return
-
-        const cCurrentHash = this.savedHash
-
-        const vQuery = []
-        const vCurrentParams = {}
-        let vMergedParams
-
-        let vSearch = this.search.trim()
-
-        if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
-
-        if (vSearch != '') vCurrentParams.keywords = vSearch
-        if (this.currentSort.field && this.currentSort.field != '') vCurrentParams.champ = this.currentSort.field
-        if (this.currentSort.order && this.currentSort.order != '') vCurrentParams.ordre = this.currentSort.order
-
-        let bHasFilter = false
-
-        for (const cFilterId in this.computedFilters) {
-          bHasFilter = true
-
-          vQuery.push({
-            name: cFilterId,
-            operator: '==',
-            values:	this.computedFilters[cFilterId]
-              .map((pString) => pString
-                .replace(/&amp;/g, '&')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/&quot;/g, '"')
-                .replace(/&#039;/g, "'"))
-              .join(',')
-          })
-        }
-
-        if (bHasFilter) vCurrentParams.query = vQuery
-
-        vMergedParams = this.mergeSearchParams(cCurrentHash, vCurrentParams, { returnMode: 'string', overrideKeywords: true, overrideQuery: true })
-
-        // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
-
-        history.pushState({}, '', `#${encodeURIComponent(vMergedParams)}`)
-
-        this.updateExportLinks(vMergedParams) // Export
-      },
-      updateExportLinks(pSearchParams) {
-		    document
-		    .querySelectorAll('.export-links > a')
-		    .forEach((pLink) => {
-            let vOldHREF = pLink.getAttribute('oldhref') // Get the original href
-
-            if (!vOldHREF) // if it didn't exist yet, remember what it is.
-            {
-              vOldHREF = pLink.getAttribute('href')
-              pLink.setAttribute('oldhref', vOldHREF)
-            }
-
-            let vNewHREF
-
-	if (vOldHREF.trim() === '') {
-              console.error('Invalid URL provided.')
-            } else {
-              const vNewURL = new URL(vOldHREF)
-
-				 	const vHandler = vNewURL.searchParams.keys().next()
-              let vHandlerValue = vHandler.value
-
-              if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
-              else vHandlerValue = ''
-
-              const vParams = this.mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
-
-              pLink.setAttribute(
-                'href',
-				vNewURL.origin + 
-				vNewURL.pathname + 
-				"?" + vHandlerValue + 
-				(vParams ? "&" + vParams : "") +
-				vNewURL.hash
-              )
-            }
-          })
-	  },
+		return updateHash (this.savedHash, this.search, this.currentSort.field, this.currentSort.order, this.computedFilters);
+      },            
       getEntryRender(entry) {
         if (entry.html_render) return
         if (this.isExternalUrl(entry)) {

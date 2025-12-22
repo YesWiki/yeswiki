@@ -152,18 +152,17 @@ class CSVManager
      * @return array|null csv; null is empty or error
      */
     public function getCSVfromFormId(
-        $pFormId,
+        $pFormID,
         array $pParams,
         ?array $pOptions = null
     ): ?array {
 	    $vBazarListService = $this->wiki->services->get(BazarListService::class);
-    
-    	$vFormIDs = $vBazarListService->getIDs ($pFormId);
-   	   	
-   		if (count ($vFormIDs['locals']) + count ($vFormIDs['externals']) != 1) {
-			throw new \Exception ('There should be exactly 1 ID');
-			return null;
-		}
+
+		$vID = $vBazarListService->getTheID ($pFormID);
+
+		$vForms = $pOptions["forms"]??$vBazarListService->getForms (array_merge ($pParams, [ 'idtypeannonce' => $pFormID ]));
+		
+		$vForm = $vForms [$vID["key"]];
 		
         $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
         $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
@@ -171,10 +170,6 @@ class CSVManager
         $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
         $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
 
-        $vForms = $vBazarListService->getForms (array_merge ($pParams, [ 'idtypeannonce' => $vFormIDs ]));
-        
-        $vForm = reset ($vForms);
-        
         if (empty ($vForm)) {
        		throw new \Exception ('Cannot get form');
 			return null;
@@ -204,7 +199,7 @@ class CSVManager
 
             // get lines for each entry
             $vEntries = $vBazarListService->getEntries (array_merge ($pParams, [
-                'idtypeannonce' => $vFormIDs,
+                'idtypeannonce' => $pFormID,
                 'keywords' => $vKeywords,
                 'queries' => $vQuery,
                 'forms' => $vForms
@@ -435,9 +430,13 @@ class CSVManager
      *
      * @return array|null [['entry' => $extractedData,'errormsg' => ['error1','error2']],...]
      */
-    public function extractCSVfromCSVFile(?string $pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null)
-    {
-        if (!empty($pFormId) && $pForm != null) {	                   
+    public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null)
+    {    	
+    	$vBazarListService = $this->wiki->services->get(BazarListService::class);
+    
+	    $vID = $vBazarListService->getTheID ($pFormId);
+    
+        if (!empty($vID) && $pForm != null) {	                   
             // get headers
             $headers = $this->getHeaders($pForm);
 
@@ -457,7 +456,7 @@ class CSVManager
                                 while (($data = fgetcsv($handle, 0, ',', '"', '\\')) !== false) { // init errors
                                 
                                     $this->errormsg = [];
-                                    $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $pFormId);
+                                    $extractedData = $this->getEntryFromCSVLine($data, $headers, $columnIndexesForPropertyNames, $vID["id"]);
                                     $extracted[] = [
                                         'entry' => $extractedData,
                                         'errormsg' => $this->errormsg,

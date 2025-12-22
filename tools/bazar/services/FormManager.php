@@ -184,11 +184,16 @@ class FormManager
             $this->cacheValidatedForAll = true;
         }
 
-        return $this->cachedForms;
+        return array_filter ($this->cachedForms, 
+        	function ($pKey)
+        	{
+	        	return intval($pKey) . "" === $pKey . "";
+        	},
+        	ARRAY_FILTER_USE_KEY);        	
     }
 
     public function getMany($formsIds): array
-    {
+    {    
         $results = [];
 
         foreach ($formsIds as $formId) {

@@ -401,9 +401,46 @@ class BazarListService
         return $array;
     }
     
+    /* Get the unique ID (local or external) contained in $pIDs as [ "locals" => [...], "externals" => [...] ]
+    or throw an exception if there is less or more than 1 
+    */ 
+    
+    public function getTheID ($pIDs, $pThrowException = true)    
+    {
+    	$vIDs = $this->getIDs ($pIDs);
+    
+    	$vLocalIDs = $vIDs["locals"];
+		$vExternalIDs = $vIDs["externals"];				
+		
+		$vLocalIDsCount = count ($vLocalIDs);
+		$vExternalIDsCount = count ($vExternalIDs);
+    
+        if ($vLocalIDsCount + $vExternalIDsCount != 1)
+		{
+			if ($pThrowException) throw new \Exception ("There should be exactly 1 ID specified instead of " . ($vLocalIDsCount + $vExternalIDsCount));
+				
+			return null;
+		}
+
+		if ($vLocalIDsCount == 1)
+		{
+			$vID = $vLocalIDs [0];
+			$vKey = $vID;
+			$vIsExternal = false;
+		}
+		else
+		{
+			$vID = $vExternalIDs [0]["id"];
+			$vKey = $this->externalBazarService->getExternalFormIDKey ($vExternalIDs [0]);
+			$vIsExternal = true;
+		}
+
+		return [ "id" => $vID, "key" => $vKey, "isExternal" => $vIsExternal ];		
+    }
+    
     public function getIDs ($pIDs)
     {
-	    if ($pIDs == null)
+	    if ($pIDs === null)
     	{
     		$vLocalIDs = array_map (function ($pForm)
     			{
@@ -480,7 +517,7 @@ class BazarListService
 
 		$vLines = array_filter ($vLines, function ($vLine) { return !empty($vLine) && trim($vLine) != ""; });
 
-		$vIDS = [];
+		$vIDs = [];
 
 		foreach ($vLines as $vLine)
 		{       	

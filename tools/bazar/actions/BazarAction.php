@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
 
 class BazarAction extends YesWikiAction
@@ -49,6 +50,7 @@ class BazarAction extends YesWikiAction
         $redirecturl = $this->sanitizedGet('redirecturl', function () use ($arg) {
             return $arg['redirecturl'] ?? '';
         });
+        
         // YesWiki pages links, like "HomePage" or "HomePage/xml"
         if (!empty($redirecturl)) {
             $wikiLink = $this->wiki->extractLinkParts((substr($redirecturl, 0, 1) == '?') ? substr($redirecturl, 1) : $redirecturl);
@@ -59,6 +61,20 @@ class BazarAction extends YesWikiAction
                 $redirecturl = $this->wiki->Href($method, $tag, $params, false);
             }
         }
+
+		$vIDs = (isset ($_REQUEST['id_typeannonce']) && trim ($_REQUEST['id_typeannonce']) != ""
+				? $_REQUEST['id_typeannonce']
+				: (isset ($_REQUEST['id']) && trim ($_REQUEST['id']) != ""
+					? $_REQUEST['id']
+					: (isset ($arg['id_typeannonce']) && trim ($arg['id_typeannonce']) != ""
+						? $arg['id_typeannonce']
+						: (isset ($arg['id']) && trim ($arg['id']) != ""
+						? $arg['id']
+						: ""))));
+
+		$vBazarListService = $this->wiki->services->get(BazarListService::class);
+
+		$vIDs = $vBazarListService->getIDs ($vIDs);
 
         return [
             self::VARIABLE_ACTION => $this->sanitizedGet(self::VARIABLE_ACTION, function () use ($arg) {
@@ -72,7 +88,7 @@ class BazarAction extends YesWikiAction
                 return $arg['voirmenu'] ?? $this->params->get('baz_menu');
             }),
             // Identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            'idtypeannonce' => $this->formatArray($_REQUEST['id_typeannonce'] ?? $arg['id'] ?? $arg['idtypeannonce'] ?? (!empty($_GET['id']) ? strip_tags($_GET['id']) : null)),
+            'idtypeannonce' => $vIDs,
             // Permet de rediriger vers une url après saisie de fiche
             'redirecturl' => $redirecturl,
         ];
@@ -99,7 +115,7 @@ class BazarAction extends YesWikiAction
         $entryController = $this->getService(EntryController::class);
 
         // TODO put in all bazar templates
-        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
 
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];
@@ -111,7 +127,7 @@ class BazarAction extends YesWikiAction
                 'view' => $view,
             ]);
         }
-
+        
         switch ($view) {
             case self::VOIR_SAISIR:
                 if ($this->isWikiHibernated()) {

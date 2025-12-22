@@ -68,9 +68,10 @@ class ApiController extends YesWikiController
 
         $vSearchManager = $this->getService(SearchManager::class);
         
+        $vQuery = $_GET['query']??$_GET['queries'];
         $vQuery = $vSearchManager->aggregateQueries(
-            !empty($selectedEntries) ? ['query' => ['id_fiche' => $selectedEntries]] : [],
-            isset($_GET['query']) ? urldecode($_GET['query']) : ''
+            !empty($selectedEntries) ? ['queries' => ['id_fiche' => $selectedEntries]] : [],
+            isset($vQuery) ? urldecode($vQuery) : ''
         );
 
 		$vKeywords = $vSearchManager->aggregateKeywords($_GET['keywords'] ?? '', $_GET['q'] ?? '');
@@ -86,7 +87,7 @@ class ApiController extends YesWikiController
         if ($output == 'csv') { // Search is done in the CSV Manager
             $csvManager = $this->getService(CSVManager::class);
             $csvManager->sendCsvOrZip($vFormID, [
-            	'query' => $vQuery, 
+            	'queries' => $vQuery, 
             	'keywords' => $vKeywords,
             	'searchfields' => $vSearchFields,
                 'datefilter' => $vDateFilter,

@@ -1,10 +1,6 @@
 {% 
 	
-	set vIDsParameter = params.idtypeannonce is defined
-						? params.idtypeannonce
-						: ( params.id is defined
-							? params.id
-							: null)
+	set vIDsParameter = params.idtypeannonce ?? params.id ?? null
 
 %}
 
@@ -31,20 +27,26 @@
 %}
 
 {% 
+	
+	set vQueryParameter = params.query ?? params.queries ?? null
+
+%}
+
+{% 
 	set vQueryString =	(
-							params.query is defined 
+							vQueryParameter is defined 
 							?	( 
-									params.query is iterable
+									vQueryParameter is iterable
 									?	(
-											params.query is not empty
+											vQueryParameter is not empty
 											?
-												params.query	
+												vQueryParameter
 												| map(p => p.name ~ p.operator ~ (p.values|join(",")))
 												| filter(v => v is not empty)
 					  							| join('|')
 							  				: ''
 							  			)
-						  			: params.query | trim
+						  			: vQueryParameter | trim
 						  		)
 				  			:	''
 				  		) 			  		
@@ -52,7 +54,7 @@
 
 {%
 
-	set vQuery = vQueryString != '' ? { query : (vQueryString | url_encode) } : {}
+	set vQueryObject = vQueryString != '' ? { query : (vQueryString | url_encode) } : {}
 
 %}
 
@@ -130,7 +132,7 @@
 
 {% 
 	set vGenericParams = {}
-		| merge (vQuery)
+		| merge (vQueryObject)
 		| merge (vKeywords)
 		| merge (vSearchFields)
 		| merge (vCorrespondance)
@@ -139,6 +141,7 @@
 		| merge (vPeriod)
 		
 %}
+
 
 {% 
 	set vRSSParams = {} 
@@ -162,12 +165,31 @@
 		| merge (vChamp)  		
 %}
 
-<div class="export-links pull-right">
-	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}" target="_blank" href="{{ url ({handler:'rss', params: vRSSParams  }) }}"><i class="fa fa-signal icon-signal"></i></a>
+{% 
 
-	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}" target="_blank" href="{{ url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries/csv', params: vCSVParams }) }}">CSV</a>
+	set vRSSHRef = url ({ handler:'rss', params: vRSSParams })
+
+%}
+
+{% 
+
+	set vCSSHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries/csv', params: vCSVParams })
+
+%}
+
+{% 
+
+	set vJSONHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries', params: vJSONParams })
+
+%}
+
+<div class="export-links pull-right">
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}" target="_blank" href="{{ vRSSHRef }}" data-href="{{ vRSSHRef }}"><i class="fa fa-signal icon-signal"></i></a>
+
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}" target="_blank" href="{{ vCSSHRef }}" data-href="{{ vCSSHRef }}">CSV</a>
   
-	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}" target="_blank" href="{{ url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries', params: vJSONParams }) }}">JSON</a>
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}" target="_blank" href="{{ vJSONHRef }}" data-href="{{ vJSONHRef }}">JSON</a>
+
   
 </div>
 

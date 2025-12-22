@@ -40,7 +40,8 @@ class RssHandler extends YesWikiHandler
 
             $vSearchFields = isset($_GET['searchfields']) ? urldecode($_GET['searchfields']) : null;
 
-            $vQuery = $vSearchManager->parseQuery(isset($_GET['query']) ? urldecode($_GET['query']) : '');
+			$vQuery = $_GET['query']??"";
+            $vQuery = $vSearchManager->parseQuery(urldecode($vQuery));
 
 			// correspondance
 

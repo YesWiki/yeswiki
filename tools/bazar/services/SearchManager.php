@@ -1242,9 +1242,9 @@ class SearchManager
 	{
 		$vParameters = [];
 		
-		if (isset ($pParameters['query']))
+		if (isset ($pParameters['queries']))
 		{
-			$vQuery = trim ($this->queryToString ($pParameters['query']));
+			$vQuery = trim ($this->queryToString ($pParameters['queries']));
 		
 			if ($vQuery != '') $vParameters [] = "query=" . urlencode ($vQuery);
 		}
