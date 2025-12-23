@@ -4,13 +4,10 @@ namespace YesWiki\Bazar\Service;
 
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Wiki;
 
 class SearchManager
@@ -541,7 +538,7 @@ class SearchManager
         // Limit the request to the specified form IDs
 
         $vIDsRequest = '';
-        
+
         if (!empty($params['formsIds'])) {
             $vFormIDs = $params['formsIds'];
 
@@ -1013,7 +1010,7 @@ class SearchManager
         return $vCompleteRequest;
     }
 
-	/**
+    /**
      * Return an array of fiches based on search parameters.
      *
      * @param array $params
@@ -1023,14 +1020,14 @@ class SearchManager
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
         $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
-        
+
         $searchResults = [];
         $results = $this->dbService->loadAll($requete);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
-        
-        $vPageManager =  $this->wiki->services->get(PageManager::class);
-        $vEntryManager =  $this->wiki->services->get(EntryManager::class);                  
-        
+
+        $vPageManager = $this->wiki->services->get(PageManager::class);
+        $vEntryManager = $this->wiki->services->get(EntryManager::class);
+
         foreach ($results as $page) {
             // save owner to reduce sql calls
             $vPageManager->cacheOwner($page);
@@ -1038,8 +1035,8 @@ class SearchManager
             $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
                 ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
                 : $page;
-            $data = $vEntryManager->getDataFromPage($filteredPage, false, $debug, $params['correspondance']??'');
-            $data['-is-external-'] = "0";
+            $data = $vEntryManager->getDataFromPage($filteredPage, false, $debug, $params['correspondance'] ?? '');
+            $data['-is-external-'] = '0';
             $searchResults[$data['id_fiche']] = $data;
         }
 
@@ -1067,9 +1064,12 @@ class SearchManager
      */
     private function parseKeywords($pKeywords, $pMinKeywordLength = null)
     {
-    	if ($pMinKeywordLength == null) $vMinKeywordLength = $this->getMinSearchKeywordLength();
-    	else $vMinKeywordLength = $pMinKeywordLength;
-    
+        if ($pMinKeywordLength == null) {
+            $vMinKeywordLength = $this->getMinSearchKeywordLength();
+        } else {
+            $vMinKeywordLength = $pMinKeywordLength;
+        }
+
         // The default results : nothing recognized
 
         $vResults = ['CNF' => [], 'excludeds' => []];
@@ -1181,7 +1181,7 @@ class SearchManager
                                     $vUserManager = $this->wiki->services->get(UserManager::class);
                                     $entry = $vUserManager->getAssociatedEntry();
                                     if (!empty($entry)) {
-                                        $vValue  = $entry['id_fiche'];
+                                        $vValue = $entry['id_fiche'];
                                     }
                                     break;
                             }
@@ -1238,75 +1238,70 @@ class SearchManager
         return $vMinimumSearchKeywordLength;
     }
 
-	public function paramsToURLSearchParams ($pParameters)
-	{
-		$vParameters = [];
-		
-		if (isset ($pParameters['queries']))
-		{
-			$vQuery = trim ($this->queryToString ($pParameters['queries']));
-		
-			if ($vQuery != '') $vParameters [] = "query=" . urlencode ($vQuery);
-		}
-		
-		if (isset ($pParameters['keywords']))
-		{
-			$vKeywords = $this->keywordsToString ($pParameters['keywords']);
-		
-			if ($vKeywords != '') $vParameters [] = "keywords=" . urlencode ($vKeywords);
-		}
-		
-		if (isset ($pParameters['searchfields']))
-		{
-			$vSearchFields = 	is_string ($pParameters['searchfields'])
-								? $pParameters['searchfields']
-								: implode (",", array_map (function ($pField) {
-									return trim ($pField);
-								}, $pParameters['searchfields']));
-		
-			$vParameters [] = "searchfields=" . $vSearchFields;
-		}
+    public function paramsToURLSearchParams($pParameters)
+    {
+        $vParameters = [];
 
-		if (isset ($pParameters['correspondance']))
-		{
-			$vCorrespondances = $pParameters['correspondance']; 
-		
-			$vParameters [] = "correspondance=" . urlencode (is_array ($vCorrespondances)
-					? implode (",", array_map (function ($pName) use ($vCorrespondances) {
-						return $pName . "=" . trim ($vCorrespondances[$pName]);
-					}, array_keys ($vCorrespondances)))
-					: $vCorrespondances);
-		}
-	
-		if (isset ($pParameters['datefilter']))
-		{
-			$vParameters [] = "datefilter=" . trim ($pParameters['datefilter']);
-		}
-		
-		if (isset ($pParameters['nb']))
-		{
-			$vParameters [] = "nb=" . trim ($pParameters['nb']);
-		}
-		
-		if (isset ($pParameters['period']))
-		{
-			$vParameters [] = "period=" . trim ($pParameters['period']);
-		}
-		
-		if (isset ($pParameters['ordre']))
-		{
-			$vParameters [] = "ordre=" . trim ($pParameters['ordre']);
-		}
-		
-		if (isset ($pParameters['champ']))
-		{
-			$vParameters [] = "champ=" . trim ($pParameters['champ']);
-		}
+        if (isset($pParameters['queries'])) {
+            $vQuery = trim($this->queryToString($pParameters['queries']));
 
-		return implode ("&", array_filter ($vParameters, function ($pParameter) {
-			return !empty($pParameter);
-		}));
-	}
+            if ($vQuery != '') {
+                $vParameters[] = 'query=' . urlencode($vQuery);
+            }
+        }
+
+        if (isset($pParameters['keywords'])) {
+            $vKeywords = $this->keywordsToString($pParameters['keywords']);
+
+            if ($vKeywords != '') {
+                $vParameters[] = 'keywords=' . urlencode($vKeywords);
+            }
+        }
+
+        if (isset($pParameters['searchfields'])) {
+            $vSearchFields = is_string($pParameters['searchfields'])
+                                ? $pParameters['searchfields']
+                                : implode(',', array_map(function ($pField) {
+                                    return trim($pField);
+                                }, $pParameters['searchfields']));
+
+            $vParameters[] = 'searchfields=' . $vSearchFields;
+        }
+
+        if (isset($pParameters['correspondance'])) {
+            $vCorrespondances = $pParameters['correspondance'];
+
+            $vParameters[] = 'correspondance=' . urlencode(is_array($vCorrespondances)
+                    ? implode(',', array_map(function ($pName) use ($vCorrespondances) {
+                        return $pName . '=' . trim($vCorrespondances[$pName]);
+                    }, array_keys($vCorrespondances)))
+                    : $vCorrespondances);
+        }
+
+        if (isset($pParameters['datefilter'])) {
+            $vParameters[] = 'datefilter=' . trim($pParameters['datefilter']);
+        }
+
+        if (isset($pParameters['nb'])) {
+            $vParameters[] = 'nb=' . trim($pParameters['nb']);
+        }
+
+        if (isset($pParameters['period'])) {
+            $vParameters[] = 'period=' . trim($pParameters['period']);
+        }
+
+        if (isset($pParameters['ordre'])) {
+            $vParameters[] = 'ordre=' . trim($pParameters['ordre']);
+        }
+
+        if (isset($pParameters['champ'])) {
+            $vParameters[] = 'champ=' . trim($pParameters['champ']);
+        }
+
+        return implode('&', array_filter($vParameters, function ($pParameter) {
+            return !empty($pParameter);
+        }));
+    }
 
     /**
      * Transform a query to a string.
@@ -1364,22 +1359,24 @@ class SearchManager
         }
     }
 
-	public function keywordsToString ($pKeywords)
-	{
-		if (is_string ($pKeywords)) return $pKeywords;
+    public function keywordsToString($pKeywords)
+    {
+        if (is_string($pKeywords)) {
+            return $pKeywords;
+        }
 
-		$vResult = [];
+        $vResult = [];
 
-		$vResult [] = implode ("|", array_map (function ($pORs) {
-			return implode (",", $pORs);
-		}, $pKeywords["CNF"]));
-		
-		$vResult [] = trim (implode (" ", array_map (function ($pExcluded) {
-			return implode ("-", $pORs);
-		}, $pKeywords["excluded"])));
+        $vResult[] = implode('|', array_map(function ($pORs) {
+            return implode(',', $pORs);
+        }, $pKeywords['CNF']));
 
-		return implode (" ", $vResult);
-	}
+        $vResult[] = trim(implode(' ', array_map(function ($pExcluded) {
+            return implode('-', $pORs);
+        }, $pKeywords['excluded'])));
+
+        return implode(' ', $vResult);
+    }
 
     /**
      * Aggregate keywords.
@@ -1630,5 +1627,5 @@ class SearchManager
     protected function renameJSONPathVariable($pPath)
     {
         return str_replace('.', '__', $pPath);
-    }    
+    }
 }

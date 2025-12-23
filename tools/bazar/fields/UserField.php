@@ -211,7 +211,7 @@ class UserField extends BazarField
         $userEntry = $vUserManager->getAssociatedEntry($this->getValue($entry));
         $value = '';
         if (!empty($userEntry)) {
-            $value  = $userEntry['id_fiche'];
+            $value = $userEntry['id_fiche'];
         }
         $authController = $this->getService(AuthController::class);
 

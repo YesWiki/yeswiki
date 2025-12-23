@@ -1,8 +1,8 @@
 <?php
 
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Security\Controller\SecurityController;

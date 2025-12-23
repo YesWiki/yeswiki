@@ -134,23 +134,22 @@ class FormManager
     }
 
     public function getOne($formId): ?array
-    {        	
+    {
         if (isset($this->cachedForms[$formId])) {
             return $this->cachedForms[$formId];
         }
 
-		if (intval($formId) . "" === $formId . "")
-		{
-		    $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
+        if (intval($formId) . '' === $formId . '') {
+            $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
 
-		    if (!$form) {
-		        return null;
-		    }
+            if (!$form) {
+                return null;
+            }
 
-		    $form = $this->getFromRawData($form);
-		}
+            $form = $this->getFromRawData($form);
+        }
 
-		$this->cachedForms[$formId] = $form;
+        $this->cachedForms[$formId] = $form;
 
         return $form;
     }
@@ -184,16 +183,17 @@ class FormManager
             $this->cacheValidatedForAll = true;
         }
 
-        return array_filter ($this->cachedForms, 
-        	function ($pKey)
-        	{
-	        	return intval($pKey) . "" === $pKey . "";
-        	},
-        	ARRAY_FILTER_USE_KEY);        	
+        return array_filter(
+            $this->cachedForms,
+            function ($pKey) {
+                return intval($pKey) . '' === $pKey . '';
+            },
+            ARRAY_FILTER_USE_KEY
+        );
     }
 
     public function getMany($formsIds): array
-    {    
+    {
         $results = [];
 
         foreach ($formsIds as $formId) {
@@ -323,36 +323,39 @@ class FormManager
 
     public function findNewId()
     {
-    	$vArrayKeys = array_keys($this->cachedForms);
+        $vArrayKeys = array_keys($this->cachedForms);
 
-    	$vArrayKeys = array_map (function ($Key) { return intval($Key); }, array_filter ($vArrayKeys, function ($vKey)
-    	{
-    		return intval ($vKey) . "" === $vKey . "";
-    	}));
+        $vArrayKeys = array_map(function ($Key) { return intval($Key); }, array_filter($vArrayKeys, function ($vKey) {
+            return intval($vKey) . '' === $vKey . '';
+        }));
 
-    	$vMaxCachedFormId = (count ($vArrayKeys) > 0) ? max($vArrayKeys) : 0;
-    
+        $vMaxCachedFormId = (count($vArrayKeys) > 0) ? max($vArrayKeys) : 0;
+
         $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
 
-		if (!empty ($vResult) && isset ($vResult["maxi"]))
-			$vMaxDBFormIdLowerThan1000 = $vResult["maxi"];
-		else
-			$vMaxDBFormIdLowerThan1000 = 1;
+        if (!empty($vResult) && isset($vResult['maxi'])) {
+            $vMaxDBFormIdLowerThan1000 = $vResult['maxi'];
+        } else {
+            $vMaxDBFormIdLowerThan1000 = 1;
+        }
 
-		$vCandidate = max ($vMaxCachedFormId, $vMaxDBFormIdLowerThan1000) + 1;
+        $vCandidate = max($vMaxCachedFormId, $vMaxDBFormIdLowerThan1000) + 1;
 
-		if ($vCandidate < 999) return $vCandidate;
+        if ($vCandidate < 999) {
+            return $vCandidate;
+        }
 
         $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
 
-		if (!empty ($vResult) && isset ($vResult["maxi"]))
-			$vMaxDBFormIdHigherThan10000 = $vResult["maxi"];
-		else
-			$vMaxDBFormIdHigherThan10000 = 10001;
+        if (!empty($vResult) && isset($vResult['maxi'])) {
+            $vMaxDBFormIdHigherThan10000 = $vResult['maxi'];
+        } else {
+            $vMaxDBFormIdHigherThan10000 = 10001;
+        }
 
-		$vCandidate = max ($vMaxCachedFormId, $vMaxDBFormIdHigherThan10000) + 1;
+        $vCandidate = max($vMaxCachedFormId, $vMaxDBFormIdHigherThan10000) + 1;
 
-		return $vCandidate;
+        return $vCandidate;
     }
 
     /**
@@ -445,14 +448,14 @@ class FormManager
         return $prepared;
     }
 
-	/*	
-		Add a form to the cache if it is not existing
-	*/
+    /*
+        Add a form to the cache if it is not existing
+    */
 
-	public function cacheForm ($pFormId, $pForm)
-	{
-		$this->cachedForms[$pFormId] = $pForm;
-	}
+    public function cacheForm($pFormId, $pForm)
+    {
+        $this->cachedForms[$pFormId] = $pForm;
+    }
 
     /**
      * return field from field name or property name.

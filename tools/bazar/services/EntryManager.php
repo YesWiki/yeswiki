@@ -742,7 +742,7 @@ class EntryManager
         unset($data['incomingurl']);
 
         unset($data['-is-external-']);
-        unset($data['external-data']);        
+        unset($data['external-data']);
 
         // on nettoie le champ owner qui n'est pas sauvegardé (champ owner de la page)
         if (isset($data['owner'])) {
@@ -758,11 +758,11 @@ class EntryManager
 
         $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
 
-		foreach ($form['prepared'] as $vBazarField) {
-            if ($vBazarField instanceof BazarField) {        
-            	$vPropertyName = $vBazarField->getPropertyName ();
-               
-                if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty ($data[$vPropertyName]??null)) {
+        foreach ($form['prepared'] as $vBazarField) {
+            if ($vBazarField instanceof BazarField) {
+                $vPropertyName = $vBazarField->getPropertyName();
+
+                if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty($data[$vPropertyName] ?? null)) {
                     throw new Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
                 }
             }
@@ -771,35 +771,36 @@ class EntryManager
         return $data;
     }
 
-	/**
-     * Apply field correspondances to an entry
-     *   
-	 * @param array $pEntry
+    /**
+     * Apply field correspondances to an entry.
+     *
+     * @param array        $pEntry
      * @param string|array $pCorrespondances
      *
-	 * @return the entry with modified fields
+     * @return the entry with modified fields
      *
      * @throws \Exception
      */
+    public function applyCorrespondances(&$pEntry, $pCorrespondances, $pPage)
+    {
+        if (empty($pCorrespondances)) {
+            return $pEntry;
+        }
 
-	public function applyCorrespondances (&$pEntry, $pCorrespondances, $pPage)
-	{
-		if (empty ($pCorrespondances)) return $pEntry;
+        if (is_string($pCorrespondances)) {
+            $vCorrespondances = $this->getMultipleParameters($pCorrespondances, ',', '=');
+        } else {
+            $vCorrespondances = $pCorrespondances;
+        }
 
-		if (is_string ($pCorrespondances)) 
-			$vCorrespondances = $this->getMultipleParameters($pCorrespondances, ',', '=');
-		else 
-			$vCorrespondances = $pCorrespondances;
-
-		// champs correspondants
+        // champs correspondants
         if (!empty($vCorrespondances)) {
-            try {                
+            try {
                 foreach ($vCorrespondances as $vKey => $vData) {
-                    if (isset($vKey)) {     
-                    	if (isset ($pEntry[$vData]))
-                    	{
-                    		$pEntry[$vKey] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($pPage, $pEntry, $vData);                    		
-                    	}
+                    if (isset($vKey)) {
+                        if (isset($pEntry[$vData])) {
+                            $pEntry[$vKey] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($pPage, $pEntry, $vData);
+                        }
                     } else {
                         echo '<div class="alert alert-danger">' . _t('BAZ_CORRESPONDANCE_ERROR') . '</div>';
                     }
@@ -809,18 +810,18 @@ class EntryManager
             }
         }
 
-		return $pEntry;		
-	}
+        return $pEntry;
+    }
 
     /**
      * Append data needed for display
      * TODO move this to a class dedicated to display.
      *
-     * @param Array  $pFiche
+     * @param array  $pFiche
      * @param bool   $pSemantic
      * @param string $pCorrespondances
-     * @param array  $pPage, appendDisplayData is called in environment with access to $pPage
-     *                       helping to get owner without asking another time to the page manager to get it
+     * @param array  $pPage,           appendDisplayData is called in environment with access to $pPage
+     *                                 helping to get owner without asking another time to the page manager to get it
      *
      * @throws \Exception
      */
@@ -831,7 +832,7 @@ class EntryManager
         // owner
         $pFiche['owner'] = $pPage['owner'] ?? null;
 
-		$pFiche = $this->applyCorrespondances ($pFiche, $pCorrespondances, $pPage);
+        $pFiche = $this->applyCorrespondances($pFiche, $pCorrespondances, $pPage);
 
         // HTML data
         $pFiche['html_data'] = $this->getHtmlDataAttributes($pFiche);
@@ -1191,13 +1192,12 @@ class EntryManager
         }
 
         return $htmldata;
-    }    
-    
+    }
+
     /* SEARCH : DEPRECATED use SearchManager->search instead */
-    
+
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
-    	return $this->searchManager->search ($params, $filterOnReadACL,$useGuard);
+        return $this->searchManager->search($params, $filterOnReadACL, $useGuard);
     }
-    
 }

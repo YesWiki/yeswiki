@@ -1,8 +1,8 @@
 <?php
 
 use YesWiki\Bazar\Service\BazarListService;
-use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiHandler;
 
 class __WidgetHandler extends YesWikiHandler

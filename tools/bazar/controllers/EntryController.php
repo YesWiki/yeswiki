@@ -89,9 +89,9 @@ class EntryController extends YesWikiController
      * @param string|null $time                 choose only the entry's revision corresponding to time, null = latest revision
      * @param bool        $showFooter
      * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
-     * @param array $pForm form to be used to render the entry
+     * @param array       $pForm                form to be used to render the entry
      */
-    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = "", $pExternalForm = "")
+    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = '', $pExternalForm = '')
     {
         if (is_array($entryId)) {
             // If entry ID is the full entry with all the values
@@ -106,15 +106,16 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE') . '</div>';
         }
 
-		if (empty ($pLocalForm)) $pLocalForm = $this->formManager->getOne($entry['id_typeannonce']);
-		
-		$vExternalData = $entry["external-data"];
-		
-		if (!empty ($vExternalData))
-		{			
-		    $pExternalForm = $this->formManager->getOne($entry['external-data']['formIDKey']);		   
-	    }
-	    
+        if (empty($pLocalForm)) {
+            $pLocalForm = $this->formManager->getOne($entry['id_typeannonce']);
+        }
+
+        $vExternalData = $entry['external-data'];
+
+        if (!empty($vExternalData)) {
+            $pExternalForm = $this->formManager->getOne($entry['external-data']['formIDKey']);
+        }
+
         // fake ->tag for the attached images
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
@@ -594,7 +595,7 @@ class EntryController extends YesWikiController
             $entries = array_filter($entries, function ($entry) use ($date) {
                 return $this->filterEntriesOnDateTraversing($entry, '>', $date);
             });
-        } elseif (preg_match_all($BEFORE_TEMPLATE, $datefilter, $matches)) {       
+        } elseif (preg_match_all($BEFORE_TEMPLATE, $datefilter, $matches)) {
             $sign = $matches[1][0];
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
@@ -631,26 +632,25 @@ class EntryController extends YesWikiController
 
     private function extractDate(string $pSign, string $nbYears, string $nbMonth, string $nbDays): DateTime
     {
-    	/*if ($pSign == "")
-    	{echo ("$pSign, string $nbYears, string $nbMonth, string $nbDays");
-    		$vDate = new DateTime(
-    				  (!empty($nbYears) ? $nbYears . 'Y' : '')
-		            . (!empty($nbMonth) ? $nbMonth . 'M' : '')
-		            . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : '')));
-    	}
-    	else*/
-    	{    	
-		    $vDateInterval = new DateInterval(
-		        'P'
-		            . (!empty($nbYears) ? $nbYears . 'Y' : '')
-		            . (!empty($nbMonth) ? $nbMonth . 'M' : '')
-		            . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
-		    );
-		    $vDateInterval->invert = ($pSign == '-') ? 1 : 0;
+        /*if ($pSign == "")
+        {echo ("$pSign, string $nbYears, string $nbMonth, string $nbDays");
+            $vDate = new DateTime(
+                      (!empty($nbYears) ? $nbYears . 'Y' : '')
+                    . (!empty($nbMonth) ? $nbMonth . 'M' : '')
+                    . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : '')));
+        }
+        else*/
 
-		    $vDate = new DateTime();
-		    $vDate->add($vDateInterval);
-		}
+        $vDateInterval = new DateInterval(
+            'P'
+                    . (!empty($nbYears) ? $nbYears . 'Y' : '')
+                    . (!empty($nbMonth) ? $nbMonth . 'M' : '')
+                    . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
+        );
+        $vDateInterval->invert = ($pSign == '-') ? 1 : 0;
+
+        $vDate = new DateTime();
+        $vDate->add($vDateInterval);
 
         return $vDate;
     }
@@ -739,7 +739,7 @@ class EntryController extends YesWikiController
      * @return array ["error" => string, "output" => string]
      */
     private function checkIfOnlyOneEntry(array $form): array
-    {	    
+    {
         $results = [
             'error' => '',
             'output' => '',
@@ -761,7 +761,7 @@ class EntryController extends YesWikiController
                 $userName = $loggerUser['name'];
 
                 $vSearchManager = $this->getService(SearchManager::class);
-                
+
                 $entries = $vSearchManager->search([
                     'formsIds' => [$form['bn_id_nature']],
                     'user' => $userName,

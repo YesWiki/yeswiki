@@ -17,13 +17,13 @@ class RssHandler extends YesWikiHandler
                 return null;
             }
 
-			$vSearchManager = $this->getService(SearchManager::class);
-			$vBazarListService = $this->getService(BazarListService::class);
+            $vSearchManager = $this->getService(SearchManager::class);
+            $vBazarListService = $this->getService(BazarListService::class);
             $securityController = $this->getService(SecurityController::class);
 
-			$vIDs = $vBazarListService->getIDs ($_GET['id'] ?? $_GET['id_typeannonce'] ?? $_GET['idtypeannonce'] ?? []);
+            $vIDs = $vBazarListService->getIDs($_GET['id'] ?? $_GET['id_typeannonce'] ?? $_GET['idtypeannonce'] ?? []);
 
-			$vItemCount = intval ($_GET['nbitem'] ?? $_GET['nb'] ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
+            $vItemCount = intval($_GET['nbitem'] ?? $_GET['nb'] ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
 
             if (isset($_GET['utilisateur'])) {
                 $utilisateur = $_GET['utilisateur'];
@@ -40,21 +40,21 @@ class RssHandler extends YesWikiHandler
 
             $vSearchFields = isset($_GET['searchfields']) ? urldecode($_GET['searchfields']) : null;
 
-			$vQuery = $_GET['query']??"";
+            $vQuery = $_GET['query'] ?? '';
             $vQuery = $vSearchManager->parseQuery(urldecode($vQuery));
 
-			// correspondance
+            // correspondance
 
             $vCorrespondance = isset($_GET['correspondance']) ? urldecode($_GET['correspondance']) : null;
-            
+
             // datefilter
 
             $vDateFilter = isset($_GET['datefilter']) ? urldecode($_GET['datefilter']) : null;
 
-			$vRSSEntries = $vBazarListService->getEntries (
+            $vRSSEntries = $vBazarListService->getEntries(
                 [
-					'idtypeannonce' => $vIDs,
-                    'queries' => $vQuery,                    
+                    'idtypeannonce' => $vIDs,
+                    'queries' => $vQuery,
                     'user' => $utilisateur,
                     'keywords' => $vKeywords,
                     'searchfields' => $vSearchFields,
@@ -63,11 +63,11 @@ class RssHandler extends YesWikiHandler
                     'ordre' => 'desc',
                     'champ' => 'date_creation_fiche',
                     'nb' => $vItemCount,
-                    'minDate' => $_GET['dateMin'] ?? $_GET['minDate'] ?? $_GET['period'] ?? ''
+                    'minDate' => $_GET['dateMin'] ?? $_GET['minDate'] ?? $_GET['period'] ?? '',
                 ]
             );
 
-			$vCount = count($vRSSEntries);
+            $vCount = count($vRSSEntries);
 
             // setlocale() pour avoir les formats de date valides (w3c) --julien
             setlocale(LC_TIME, 'C');
@@ -79,12 +79,12 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n    ";
             $xml .= XML_Util::createStartElement('channel');
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));            
+            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));
             $xml .= "\r\n      ";
-			$xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
-            $xml .= "\r\n      ";            
+            $xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
+            $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('count', null, $vCount);
-            $xml .= "\r\n      ";                       
+            $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('description', null, $this->sanitize($this->wiki->config['BAZ_RSS_DESCRIPTIONSITE']));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('link', null, $this->sanitize($this->wiki->config['BAZ_RSS_ADRESSESITE']));
@@ -92,7 +92,7 @@ class RssHandler extends YesWikiHandler
             $xml .= XML_Util::createTag('language', null, 'fr-FR');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) ' . date('Y') . ' ' . htmlentities(removeAccents($this->wiki->config['BAZ_RSS_NOMSITE'])));
-            $xml .= "\r\n      ";            
+            $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('docs', null, 'http://www.stervinou.com/projets/rss/');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('category', null, $this->wiki->config['BAZ_RSS_CATEGORIE']);
@@ -105,7 +105,7 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement('image');
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('url', null, $this->wiki->config['BAZ_RSS_LOGOSITE']);            
+            $xml .= XML_Util::createTag('url', null, $this->wiki->config['BAZ_RSS_LOGOSITE']);
             $xml .= "\r\n      ";
             $xml .= XML_Util::createEndElement('image');
 
@@ -117,9 +117,9 @@ class RssHandler extends YesWikiHandler
                     $xml .= "\r\n        ";
                     $xml .= XML_Util::createTag('title', null, str_replace('&', '&amp;', $this->sanitize($vRSSEntry['bf_titre'])));
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $vRSSEntry["url"] . ']]>');
+                    $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $vRSSEntry['url'] . ']]>');
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $vRSSEntry["url"] . ']]>');
+                    $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $vRSSEntry['url'] . ']]>');
                     $xml .= "\r\n        ";
                     $xml .= XML_Util::createTag('dc:creator', null, $vRSSEntry['owner']);
                     $xml .= "\r\n      ";

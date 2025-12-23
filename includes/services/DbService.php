@@ -95,12 +95,12 @@ class DbService
         }
 
         try {
-            if (!$result = mysqli_query($this->link, $query)) {            
+            if (!$result = mysqli_query($this->link, $query)) {
                 throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
-            }        
+            }
         }/*
         catch (Exception $e) {
-			file_put_contents ("log.txt", $query, FILE_APPEND);
+            file_put_contents ("log.txt", $query, FILE_APPEND);
         }*/
         finally {
             if ($this->params->get('debug')) {

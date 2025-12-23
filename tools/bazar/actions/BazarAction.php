@@ -50,7 +50,7 @@ class BazarAction extends YesWikiAction
         $redirecturl = $this->sanitizedGet('redirecturl', function () use ($arg) {
             return $arg['redirecturl'] ?? '';
         });
-        
+
         // YesWiki pages links, like "HomePage" or "HomePage/xml"
         if (!empty($redirecturl)) {
             $wikiLink = $this->wiki->extractLinkParts((substr($redirecturl, 0, 1) == '?') ? substr($redirecturl, 1) : $redirecturl);
@@ -62,19 +62,19 @@ class BazarAction extends YesWikiAction
             }
         }
 
-		$vIDs = (isset ($_REQUEST['id_typeannonce']) && trim ($_REQUEST['id_typeannonce']) != ""
-				? $_REQUEST['id_typeannonce']
-				: (isset ($_REQUEST['id']) && trim ($_REQUEST['id']) != ""
-					? $_REQUEST['id']
-					: (isset ($arg['id_typeannonce']) && trim ($arg['id_typeannonce']) != ""
-						? $arg['id_typeannonce']
-						: (isset ($arg['id']) && trim ($arg['id']) != ""
-						? $arg['id']
-						: ""))));
+        $vIDs = (isset($_REQUEST['id_typeannonce']) && trim($_REQUEST['id_typeannonce']) != ''
+                ? $_REQUEST['id_typeannonce']
+                : (isset($_REQUEST['id']) && trim($_REQUEST['id']) != ''
+                    ? $_REQUEST['id']
+                    : (isset($arg['id_typeannonce']) && trim($arg['id_typeannonce']) != ''
+                        ? $arg['id_typeannonce']
+                        : (isset($arg['id']) && trim($arg['id']) != ''
+                        ? $arg['id']
+                        : ''))));
 
-		$vBazarListService = $this->wiki->services->get(BazarListService::class);
+        $vBazarListService = $this->wiki->services->get(BazarListService::class);
 
-		$vIDs = $vBazarListService->getIDs ($vIDs);
+        $vIDs = $vBazarListService->getIDs($vIDs);
 
         return [
             self::VARIABLE_ACTION => $this->sanitizedGet(self::VARIABLE_ACTION, function () use ($arg) {
@@ -127,7 +127,7 @@ class BazarAction extends YesWikiAction
                 'view' => $view,
             ]);
         }
-        
+
         switch ($view) {
             case self::VOIR_SAISIR:
                 if ($this->isWikiHibernated()) {

@@ -5,10 +5,10 @@ use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Service\TemplateEngine;
 
 /**

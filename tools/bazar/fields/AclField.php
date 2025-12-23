@@ -87,15 +87,15 @@ class AclField extends BazarField
             : '';
     }
 
-   /*
-    *	indicates if id_fiche must be set before to format the value
-    */
+    /*
+     *	indicates if id_fiche must be set before to format the value
+     */
 
     public function requireIDFiche()
     {
         return true;
     }
-    
+
     public function formatValuesBeforeSave($entry)
     {
         if (empty($this->aclService->load($entry['id_fiche'], 'read', false)['list'])) {

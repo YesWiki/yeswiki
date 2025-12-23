@@ -48,8 +48,10 @@ class LabelField extends BazarField
     {
         if ($this->useWikiSyntax) {
             $content = str_replace('<br/>', "\n", $this->formText);
+
             return $this->getWiki()->Format($content);
         }
+
         return $this->formText;
     }
 
@@ -57,8 +59,10 @@ class LabelField extends BazarField
     {
         if ($this->useWikiSyntax) {
             $content = str_replace('<br/>', "\n", $this->viewText);
+
             return $this->getWiki()->Format($content);
         }
+
         return $this->viewText;
     }
 

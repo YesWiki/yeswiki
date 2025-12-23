@@ -199,10 +199,10 @@ abstract class BazarField implements \JsonSerializable
         return $entry[$this->propertyName] ?? $_REQUEST[$this->propertyName] ?? $this->default;
     }
 
-	public function isEmpty ($pValue)
-	{
-		return is_null($pValue) || (is_array($pValue) && count ($pValue) == 0) || (is_string($pValue) && trim($pValue) == '');
-	}
+    public function isEmpty($pValue)
+    {
+        return is_null($pValue) || (is_array($pValue) && count($pValue) == 0) || (is_string($pValue) && trim($pValue) == '');
+    }
 
     // HELPERS
     /**
