@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Exception\ExternalBazarServiceException;
 use YesWiki\Bazar\Field\ExternalImageField;
 use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Core\Service\ImportService;
 use YesWiki\Wiki;
 
@@ -16,7 +17,6 @@ class ExternalBazarService
     public const FIELD_ORIGINAL_TYPE = 4; // FIELD_MAX_CHARS = 4;
 
     private const MAX_CACHE_TIME = 864000; // 10 days ot to keep external data in local
-    private const JSON_FORM_BASE_URL = '{pageTag}/json{firstSeparator}demand=forms&id={formId}';
     private const JSON_ENTRIES_OLD_BASE_URL = '{pageTag}/json{firstSeparator}demand=entries&id={formId}';
     private const CACHE_FILENAME_PREFIX = 'ExternalBazarServiceCache_';
     private const CACHE_FILENAME_DETAILS_PREFIX = 'Details_';
@@ -59,11 +59,9 @@ class ExternalBazarService
     protected $params;
     protected $wiki;
 
-    protected $newFormId;
-    protected $tmpForm;
-    private $urlCache;
-    private $alreadyRefreshedURL;
-    private $alreadyCheckingDeletionsURL;
+    private $aURLDetailsCache;
+    private $aAlreadyRefreshedURLs;
+    private $aAlreadyCheckingDeletionsURLs;
 
     public function __construct(
         Wiki $wiki,
@@ -84,23 +82,35 @@ class ExternalBazarService
         $this->timeCacheToRefreshForms = (int)($externalBazarServiceParameters['cache_time_to_refresh_forms'] ?? 7200); // seconds
         $this->timeDebug = (bool)($externalBazarServiceParameters['time_debug'] ?? false);
 
-        $this->newFormId = null;
-        $this->tmpForm = null;
-        $this->urlCache = null;
-        $this->alreadyRefreshedURL = [];
-        $this->alreadyCheckingDeletionsURL = [];
+        $this->aURLDetailsCache = null;
+        $this->aAlreadyRefreshedURLs = [];
+        $this->aAlreadyCheckingDeletionsURLs = [];        
     }
+
+	private function getRefreshValue ($pRefresh = false)
+	{
+		// to prevent DDOS attack refresh only for admins
+	return true;
+		if ($pRefresh == null || !$pRefresh || !$this->wiki->UserIsAdmin())
+			return false;
+		else 
+			return true;		
+	}
 
     /**
      * get a form from external wiki.
      */
-    public function getForm(string $url, int $formId, bool $refresh = false, bool $checkUrl = true): ?array
-    {
-        if ($checkUrl) {
-            $url = $this->formatUrl($url);
+    public function getForm (string $pURL, int $pFormId, $pRefresh = false, bool $pCheckUrl = true): ?array
+    {	   
+        $vRefresh = $this->getRefreshValue ($pRefresh);
+
+        if ($pCheckUrl) {
+            $pURL = $this->formatUrl($pURL);
         }
-        $urlDetails = $this->getUrlDetails($url, $refresh ? 0 : $this->timeCacheToRefreshForms);
-        if (empty($urlDetails)) {
+
+        $vURLDetails = $this->getURLDetails($pURL, $vRefresh ? 0 : $this->timeCacheToRefreshForms);
+
+        if (empty($vURLDetails)) {
             if ($this->debug) {
                 trigger_error(get_class($this) . '::getForm: ' . _t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
             }
@@ -108,40 +118,73 @@ class ExternalBazarService
             return null;
         }
 
-        // to prevent DDOS attack refresh only for admins
-        if (!$this->wiki->UserIsAdmin()) {
-            $refresh = false;
-        }
-
-        $json = $this->getJSONCachedUrlContent(
-            $this->getFormUrl($urlDetails, $formId),
+        $vForm = $this->getJSONFromURL(
+            $this->getFormUrl($vURLDetails, $pFormId),
             $this->timeCacheToRefreshForms,
-            $refresh
+            $vRefresh
         );
-        $forms = json_decode($json, true);
 
-        if ($forms) {
-            return $forms[0];
+        if (!empty($vForm)) {
+	        $vForm ["_isExternal_"] = true;
+            return $vForm;
         } elseif ($this->debug) {
             trigger_error(get_class($this) . '::getForm: ' . _t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_FORM'));
         }
 
         return null;
     }
+	
+	// getFormsForBazarListe : DEPRECATED : use getForms instead
 
+	public function getFormsForBazarListe(array $pExternalIDs, bool $pRefresh = false): ?array
+	{
+		return getForms ($pExternalIDs, $pRefresh); 
+	}
+	
+	public function getExternalFormIDKey ($pExternalID)
+	{	
+		$vURL = $this->formatUrl ($pExternalID["url"]);
+	
+		return preg_replace ("/[^a-zA-Z0-9\-\s.]/", "_", $vURL) . '.' . $pExternalID["id"];
+	}
+	
+	public function getAllForms ($pServer)
+	{
+		$vURLDetails = $this->getURLDetails ($pServer);
+	
+		$vURL = $this->getFormUrl ($vURLDetails, "");
+	
+		$vAll = $this->getJSONFromURL ($vURL);
+		
+		$vResult  = [];
+
+		foreach ($vAll as $vForm) {
+			$vKey = $this->getExternalFormIDKey ([ "url" => $vURL, "id" => $vForm ['bn_id_nature'] ] );
+		    
+		    $vResult[$vKey] = $vForm;
+		}
+		
+		return $vResult;
+	}
+	
     /**
-     * get forms from external wiki.
+     * get forms (locals and externals) for external bazarlist handling.
      *
-     * @param array $externalIds // format 'url' => url, 'id' => *id, 'localFormId' => $id
+     * @param array $pExternalIDs // format 'url' => url, 'id' => *id, 'localFormId' => $id
      *
      * @return array forms
      */
-    public function getFormsForBazarListe(array $externalIds, bool $refresh = false): ?array
-    {
+     
+    public function getForms ($pExternalIDs, $pRefresh = false): ?array
+    {    	
+    	if (is_string ($pExternalIDs)) return $this->getAllForms ($pExternalIDs);
+    
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
-        $this->cleanOldCacheFiles();
+        
+        $this->cleanOldCacheFiles($pRefresh);
+        
         if ($this->debug && $this->timeDebug) {
             $diffTime += hrtime(true);
             trigger_error('Cleaning old cache files :' . $diffTime / 1E+6 . ' ms');
@@ -150,56 +193,61 @@ class ExternalBazarService
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
-        if (!$this->checkexternalIdsFormat($externalIds)) {
-            // error
-            return null;
+        
+        if (!$this->checkExternalIDsFormat($pExternalIDs)) {
+	        throw new ExternalBazarServiceException("Wrong format for external IDs");
+            return [];
         }
-        $groupedExternalIds = $this->groupIdsByUrl($externalIds);
+       
+        $vForms = [];
+       
+		$vGroupedExternalIDs = $this->groupIDsByURL ($pExternalIDs);
 
-        $forms = [];
-        foreach ($groupedExternalIds as $url => $ids) {
-            // local form
-            if (empty($url)) {
-                foreach ($ids as $values) {
-                    if ($form = $this->formManager->getOne($values['id'])) {
-                        $forms[] = $form;
+        foreach ($vGroupedExternalIDs as $vURL => $vExternalIDs) {        
+			foreach ($vExternalIDs as $vIDValues) {                		
+                $vLocalIDCorrespondToEmptyForm = false;
+                
+                $vLocalFormID = $vIDValues['localFormId'];
+                $vExternalFormID = $vIDValues['id'];
+
+                if ($vLocalFormID != "") {                                    
+                    if ($vLocalForm = $this->formManager->getOne($vLocalFormID)) {
+                        $vForms[$vLocalFormID . ""] = $vLocalForm;
+                    } else {
+                        $vLocalIDCorrespondToEmptyForm = true;
                     }
                 }
-            } else {
-                foreach ($ids as $values) {
-                    $localIdCorrespondToEmptyForm = false;
-                    if (!empty($values['localFormId'])) {
-                        $localFormId = $values['localFormId'];
-                        if ($form = $this->formManager->getOne($localFormId)) {
-                            $form['external_bn_id_nature'] = $values['id'];
-                            $form['external_url'] = $url;
-                            $forms[] = $form;
-                        } else {
-                            $localIdCorrespondToEmptyForm = true;
-                        }
-                    }
-                    if (empty($values['localFormId']) || $localIdCorrespondToEmptyForm) {
-                        if ($form = $this->getForm($url, $values['id'], $refresh, false)) {
-                            $localFormId = $localIdCorrespondToEmptyForm ? $localFormId : $this->findNewId();
-                            $form = $this->prepareExtForm($localFormId, $url, $form);
-                            // put in cache in FormManager
-                            $this->tmpForm = $form;
-                            $result = $this->formManager->putInCacheFromExternalBazarService($localFormId);
-                            $this->tmpForm = null;
-                            if ($result) {
-                                $forms[] = $form;
-                            }
-                        }
-                    }
+
+				if ($vLocalFormID == "" || $vLocalIDCorrespondToEmptyForm) {                 
+					$vLocalFormID = $vLocalIDCorrespondToEmptyForm ? $vLocalFormID : $this->findNewID();
                 }
+
+				$vExternalFormIDKey = $this->getExternalFormIDKey ([ "url" => $vURL, "id" => $vIDValues['id'] ] );
+			
+				$vExternalForm = $this->getForm($vURL, $vExternalFormID, $pRefresh, false);
+					
+				if (empty ($vExternalForm))
+				{
+					throw new ExternalBazarServiceException("External form ID " . $vExternalFormID . " doesn't exist on server : " . $vURL);
+				}
+				else
+				{					
+					$vExternalForm = $this->prepareExtForm($vLocalFormID, $vURL, $vExternalForm);
+					
+					$this->formManager->cacheForm ($vLocalFormID, $vExternalForm);
+					$this->formManager->cacheForm ($vExternalFormIDKey, $vExternalForm);					
+				}
+
+				if (!empty ($vExternalForm)) $vForms[$vExternalFormIDKey] = $vExternalForm;
             }
         }
+        
         if ($this->debug && $this->timeDebug) {
             $diffTime += hrtime(true);
             trigger_error('Getting forms :' . $diffTime / 1E+6 . ' ms');
         }
 
-        return $forms;
+        return $vForms;
     }
 
     /**
@@ -209,112 +257,130 @@ class ExternalBazarService
      *
      * @return array|null $entries
      */
-    public function getEntries($params): array
-    {
-        // Merge les paramètres passé avec des paramètres par défaut
-        $params = array_merge(
-            [
-                'forms' => [], // forms
-                'queries' => '', // Sélection par clé-valeur
-                'refresh' => false, // parameter to force refresh cache
-                'correspondance' => '', // parameter to reorder fields
-            ],
-            $params
-        );
-
-        if (!empty($params['correspondance']) && is_string($params['correspondance'])) {
-            $params['correspondance'] = $this->entryManager->getMultipleParameters($params['correspondance'], ',', '=');
-        } else {
-            $params['correspondance'] = '';
-        }
-
+    public function getEntries($pParams): array
+    {    	    	
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
+    
+	    $vSearchManager = $this->wiki->services->get(SearchManager::class);
+	    $vBazarListService = $this->wiki->services->get(BazarListService::class);
+    
+        // Merge les paramètres passé avec des paramètres par défaut
+        $pParams = array_merge(
+            [
+                'refresh' => false, // parameter to force refresh cache
+            ],
+            $pParams
+        );
 
-        // to prevent DDOS attack refresh only for admins
-        if (!$this->wiki->UserIsAdmin()) {
-            $params['refresh'] = false;
-        }
+		$vIDs = $vBazarListService->getIDs ($pParams ["idtypeannonce"] ?? $pParams["id"] ?? '');
 
-        if (empty($params['forms'])) {
-            throw new Exception('parameter forms should not be empty');
-        }
+	    $vLocalIDs = $vIDs ["locals"];
+    	$vExternalIDs = $vIDs ["externals"];
 
-        $entries = [];
-        foreach ($params['forms'] as $form) {
-            $localFormId = $form['bn_id_nature'];
-            $url = $form['external_url'] ?? null;
-            // local
-            if (empty($url)) {
-                $localEntries = array_values($this->entryManager->search(
-                    [
-                        'queries' => $params['queries'],
-                        'formsIds' => [$localFormId],
-                    ],
-                    true, // filter on read ACL
-                    true  // use Guard
-                ));
-                array_push($entries, ...$localEntries);
-            } else {
-                $distantFormId = $form['external_bn_id_nature'];
+    	if (empty($pParams['forms']))
+	   	{
+    		$vForms = $vBazarListService->getForms ($vIDs, $pParams['refresh']??false);
+    	}
+		else
+		{
+	    	$vForms = $pParams['forms'];
+	    }
+    
+        $vEntries = [];
 
-                $urlDetails = $this->getUrlDetails($url, $this->timeCacheToCheckChanges);
-                if (empty($urlDetails)) {
-                    if ($this->debug) {
-                        trigger_error(get_class($this) . '::getEntries: ' . _t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
-                    }
-                } else {
-                
-	                // Formattage des queries
-        
-        			$vSearchManager = $this->wiki->services->get(SearchManager::class);
-                
-			        $querystring = $vSearchManager->queryToString($params['queries']);
-        
-			        $querystring = !empty($querystring) ? 'query=' . htmlspecialchars($querystring) : '';        
+		if (count ($vLocalIDs) > 0 || count ($vExternalIDs) == 0)
+		{
+			$vLocalEntries = array_values($vSearchManager->search(
+                array_merge ($pParams, [ 
+                	'formsIds' => $vLocalIDs
+                ]),
+                true, // filter on read ACL
+                true  // use Guard
+            ));
+		
+			array_push($vEntries, ...$vLocalEntries);
+		}
 
-                    $json = $this->getJSONCachedUrlContent(
-                        $this->getEntriesViaApiUrl($urlDetails, $distantFormId, $querystring),
-                        $this->timeCacheToCheckChanges,
-                        $params['refresh'],
-                        'entries'
-                    );
-                    $batchEntries = json_decode($json, true);
-                    if (empty($batchEntries)) {
-                        // check if old route is working
-                        $json = $this->getJSONCachedUrlContent(
-                            $this->getEntriesViaJsonHandlerUrl($urlDetails, $distantFormId, $querystring),
-                            $this->timeCacheToCheckChanges,
-                            $params['refresh'],
-                        );
-                        $batchEntries = json_decode($json, true);
-                        if (is_array($batchEntries)) {
-                            $batchEntries = array_map(function ($entry) {
-                                return ['html_data' => ''] + $entry;
-                            }, $batchEntries);
-                        }
-                    }
-                    if (is_array($batchEntries)) {
-                        // replace formId
-                        foreach ($batchEntries as $entry) {
-                            // save external data with key 'external-data' because '-' is not used for name
-                            $entry['external-data'] = [
-                                // 'origin_id_typeannonce' => $entry['id_typeannonce'], // if needed in fields
-                                'baseUrl' => $url,
-                            ];
-                            $entry['url'] = $url . '?' . $entry['id_fiche'];
-                            $entry['id_typeannonce'] = $localFormId;
-                            if (!empty($params['correspondance'])) {
-                                foreach ($params['correspondance'] as $key => $fieldName) {
-                                    $entry[$key] = (empty($fieldName) || !isset($entry[$fieldName])) ? '' : $entry[$fieldName];
-                                }
-                            }
-                            $entries[] = $entry;
-                        }
-                    }
-                }
-            }
+		unset ($pParams ["id_typeannonce"]);
+		unset ($pParams ["id"]);
+
+		$vURLSearchParams = $vSearchManager->paramsToURLSearchParams ($pParams);
+
+		$vExternalForms = array_filter ($vForms, function ($vKey) {
+			return ((intval($vKey) . "") !== $vKey . "");
+		}, ARRAY_FILTER_USE_KEY);
+
+		foreach ($vExternalForms as $vExternalForm)
+		{				
+			$vURL = $vExternalForm['external_url'];
+			$vLocalFormID = $vExternalForm['bn_id_nature'];            
+			$vExternalFormID = $vExternalForm['external_bn_id_nature'];
+			$vExternalFormLabel = $vExternalForm['external_bn_label_nature'];
+			$vExternalFormIDKey = $vExternalForm['external_form_key'];			
+
+			$vURLDetails = $this->getURLDetails($vURL, $this->timeCacheToCheckChanges);
+
+			if (empty($vURLDetails)) {
+				if ($this->debug) {
+					trigger_error(get_class($this) . '::getEntries: ' . _t('BAZ_EXTERNAL_SERVICE_BAD_URL'));
+				}
+			} else {
+				$vBatchEntries = $this->getJSONFromURL(
+					$this->getEntriesViaApiUrl($vURLDetails, $vExternalFormID, $vURLSearchParams),
+					$this->timeCacheToCheckChanges,
+					$pParams ['refresh'],
+					'entries'
+				);
+			
+				if (empty($vBatchEntries)) {        
+					// check if old route is working
+					$vBatchEntries = $this->getJSONFromURL(
+						$this->getEntriesViaJsonHandlerUrl($vURLDetails, $vExternalFormID, $vURLSearchParams),
+						$this->timeCacheToCheckChanges,
+						$pParams ['refresh']
+					);
+					
+					if (is_array($vBatchEntries)) {
+						$vBatchEntries = array_map(function ($vEntry) {
+						    return ['html_data' => ''] + $vEntry;
+						}, $vBatchEntries);
+					}
+				}
+
+				if (is_array($vBatchEntries)) {
+				
+					if (isset ($vBatchEntries["error"]))
+					{
+						throw new ExternalBazarServiceException("Error while getting external entries : " . $vBatchEntries["error"]);
+						return [];
+					}
+				
+					foreach ($vBatchEntries as $vEntry) {					
+						if (is_string ($vEntry))
+						{
+							throw new ExternalBazarServiceException("Entry should not be a string : " . $vEntry);
+						}
+						else
+						{
+						    $vEntry['-is-external-'] = "1"; 
+						    // save external data with key 'external-data' because '-' is not used for name
+						    $vEntry['external-data'] = [
+						        'baseUrl' => $vURL,
+  						        'externalFormID' => $vExternalFormID,
+  						        'externalFormLabel' => $vExternalFormLabel,
+						        'localFormID' => $vLocalFormID,
+						        'formIDKey' => $vExternalFormIDKey
+						    ];
+						    $vEntry['url'] = $vURL . '?' . $vEntry['id_fiche'];
+						    $vEntry['id_typeannonce'] = $vLocalFormID;
+						    
+						    $vEntries[] = $vEntry;
+						}
+					}
+				}
+			}
         }
 
         if ($this->debug && $this->timeDebug) {
@@ -322,8 +388,8 @@ class ExternalBazarService
             trigger_error('Getting entries total time :' . $diffTime / 1E+6 . ' ms');
         }
 
-        if (!empty($entries)) {
-            return $entries;
+        if (!empty($vEntries)) {
+            return $vEntries;
         } elseif ($this->debug) {
             trigger_error(get_class($this) . '::getEntries: ' . _t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES'));
 
@@ -333,64 +399,74 @@ class ExternalBazarService
         return [];
     }
 
-    public function formatUrl($url)
-    {
-        $urlDetails = $this->getUrlDetails($url);
-        $newUrl = empty($urlDetails) ? $url : $urlDetails[0];
-        // add / at end if needed
-        if (substr($newUrl, -1) !== '/') {
-            $newUrl = $newUrl . '/';
-        }
-
-        return $newUrl;
-    }
-
-    /**
-     * Get content from url from cache.
-     *
-     * @param string $url        : url to get with  cache
-     * @param int    $cache_life : duration of the cache in second
-     * @param string $mode       'standard' or 'entries'
-     *
-     * @return string file content from cache
-     */
-    private function getCachedUrlContent(
-        string $url,
-        bool $testFileModificationDate,
-        int $cache_life = 90,
-        bool $forceRefresh = false,
-        string $mode = 'standard'
-    ) {
-        $cache_life = min($cache_life, self::MAX_CACHE_TIME);
-        $cache_file = ($mode === 'entries')
-            ? $this->cacheUrlForEntries($url, $testFileModificationDate, $cache_life, $forceRefresh)
-            : $this->cacheUrl($url, $testFileModificationDate, $cache_life, $forceRefresh);
-
-        return file_get_contents($cache_file);
-    }
-
-    /**
+	/**
      * Get content from url from cache in JSON removing notice message.
      *
-     * @param string $url        : url to get with  cache
-     * @param int    $cache_life : duration of the cache in second
+     * @param string $pURL        : url to get with  cache
+     * @param int    $pCacheTTL : duration of the cache in second
      * @param string $mode       'standard' or 'entries'
      *
      * @return string file content from cache
      */
-    public function getJSONCachedUrlContent(string $url, int $cache_life = 90, bool $forceRefresh = false, $mode = 'standard')
+    
+    public function getJSONFromURL (string $pURL, int $pCacheTTL = 90, bool $pForceRefresh = false, $pMode = 'standard')
     {
-        if (in_array($url, $this->alreadyRefreshedURL)) {
-            $testFileModificationDate = false;
-            $forceRefresh = false; // to prevent too many refreshes
-        } else {
-            $this->alreadyRefreshedURL[] = $url;
-            $testFileModificationDate = true;
-        }
-        $json = $this->getCachedUrlContent($url, $testFileModificationDate, $cache_life, $forceRefresh, $mode);
-        $json = $this->extractErrors($json, $url);
+    	try {   
+		    if (in_array($pURL, $this->aAlreadyRefreshedURLs)) {
+			    // to prevent too many refreshes
+		        $vTestFileModificationDate = false;
+		        $pForceRefresh = false; 
+		    } else {
+		        $this->aAlreadyRefreshedURLs[] = $pURL;
+		        $vTestFileModificationDate = true;
+		    }
 
-        return $json;
+		    $vJSON = $this->getCachedURLContent($pURL, $vTestFileModificationDate, $pCacheTTL, $pForceRefresh, $pMode);
+		    $vJSON = $this->extractErrors($vJSON, $pURL);
+		}
+		catch (ExternalBazarServiceException $e){
+			return '{ "error" : "ExternalBazarService exception (' . $e->getLine () . ') = ' . $e->getMessage () . '"}';
+		}
+		catch (\Exception $e){
+			return '{ "error" : "Exception in ExternalBazarService (' . $e->getLine () . ') = ' . $e->getMessage () . '"}';
+		}
+        
+        return json_decode($vJSON, true);
+    }
+
+    /**
+     * Get URL content from cache.
+     *
+     * @param string  $pURL        : url to get with  cache
+     * @param bool    $pTestFileModificationDate
+     * @param int     $pCacheTTL : duration of the cache in second
+     * @param bool    $pForceRefresh
+     * @param string  $pMode       'standard' or 'entries'
+     *
+     * @return string file content from cache
+     */
+     
+    private function getCachedURLContent(
+        string $pURL,
+        bool $pTestFileModificationDate,
+        int $pCacheTTL = 90,
+        bool $pForceRefresh = false,
+        string $pMode = 'standard'
+    ) {
+        $pCacheTTL = min($pCacheTTL, self::MAX_CACHE_TIME);
+        
+        $vCacheFile = ($pMode === 'entries')
+            ? $this->cacheURLForEntries ($pURL, $pTestFileModificationDate, $pCacheTTL, $pForceRefresh)
+            : $this->cacheURL ($pURL, $pTestFileModificationDate, $pCacheTTL, $pForceRefresh);
+
+		$vContent = file_get_contents($vCacheFile);
+
+		if ($vContent === false) {
+			throw new ExternalBazarServiceException("Error getting content from $pURL");
+			return "";
+		}
+
+        return $vContent;
     }
 
     /**
@@ -402,21 +478,26 @@ class ExternalBazarService
      *
      * @return string location of cached file
      */
-    public function cacheUrl(
+     
+    private function cacheURL(
         string $url,
-        bool $testFileModificationDate,
+        bool $pTestFileModificationDate,
         int $cache_life = 90,
-        bool $forceRefresh = false,
+        bool $pForceRefresh = false,
         string $dir = 'cache'
     ) {
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
+        
+        $vRefresh = $this->getRefreshValue ($pForceRefresh);
+        
         $cache_file = $dir . '/' . self::CACHE_FILENAME_PREFIX . $this->sanitizeFileName($url);
 
         $filemtime = @filemtime($cache_file); // returns FALSE if file does not exist
-        if ($forceRefresh || !$filemtime || ($testFileModificationDate && (time() - $filemtime >= $cache_life))) {
-            $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
+        
+        if ($vRefresh || !$filemtime || ($pTestFileModificationDate && (time() - $filemtime >= $cache_life))) {
+            $this->cacheURLContent($url, '', $cache_file, $vRefresh);
             if ($this->debug && $this->timeDebug) {
                 $diffTime += hrtime(true);
                 trigger_error('Caching file :' . $diffTime / 1E+6 . ' ms ; url : ' . $url);
@@ -435,112 +516,140 @@ class ExternalBazarService
      *
      * @return string location of cached file
      */
-    private function cacheUrlForEntries(
-        string $url,
-        bool $testFileModificationDate,
-        int $cache_life = 90,
-        bool $forceRefresh = false,
+     
+    private function cacheURLForEntries(
+        string $pURL,
+        bool $pTestFileModificationDate,
+        int $pCacheTTL = 90,
+        bool $pForceRefresh = false,
         string $dir = 'cache'
-    ) {
+    ) {                
         if ($this->debug && $this->timeDebug) {
             $diffTime = -hrtime(true);
         }
-        $url = $this->sanitizeUrlForEntries($url);
-        $cache_file = $dir . '/' . self::CACHE_FILENAME_PREFIX . $this->sanitizeFileName($url);
+        
+        $vRefresh = $this->getRefreshValue ($pForceRefresh);
+        
+        $pURL = $this->sanitizeUrlForEntries($pURL);
+        $vCacheFile = $dir . '/' . self::CACHE_FILENAME_PREFIX . $this->sanitizeFileName($pURL);
 
-        if (!file_exists($cache_file) || $forceRefresh) {
-            $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
+		// If the URL content is not cached or if we want to refresh, let's load the URL content
+
+        if (!file_exists($vCacheFile) || $vRefresh) {
+            $this->cacheURLContent($pURL, '', $vCacheFile, $vRefresh);
+            
             if ($this->debug && $this->timeDebug) {
                 $diffTime += hrtime(true);
-                trigger_error('Caching entries :' . $diffTime / 1E+6 . ' ms ; url : ' . $url);
+                trigger_error('Caching entries :' . $diffTime / 1E+6 . ' ms ; url : ' . $pURL);
             }
-        } elseif ($testFileModificationDate) {
-            $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
+        } elseif ($pTestFileModificationDate) {
+            $filemtime = @filemtime($vCacheFile);  // returns FALSE if file does not exist
+            
             if (time() - $filemtime >= $this->timeCacheToCheckDeletion) {
-                $this->checkForDeletion($url, $cache_file);
-                $this->checkOnlyEntriesChanges($url, $cache_file, $forceRefresh);
+                $this->checkForDeletion($pURL, $vCacheFile);
+                
+                $this->checkOnlyEntriesChanges($pURL, $vCacheFile, $vRefresh);
+                
                 if ($this->debug && $this->timeDebug) {
                     $diffTime += hrtime(true);
-                    trigger_error('Caching entries with deletion :' . $diffTime / 1E+6 . ' ms ; url : ' . $url);
+                    trigger_error('Caching entries with deletion :' . $diffTime / 1E+6 . ' ms ; url : ' . $pURL);
                 }
-            } elseif (time() - $filemtime >= $cache_life) {
+            } elseif (time() - $filemtime >= $pCacheTTL) {
                 // only check for changes
-                $this->checkOnlyEntriesChanges($url, $cache_file, $forceRefresh);
+                $this->checkOnlyEntriesChanges($pURL, $vCacheFile, $vRefresh);
+                
                 if ($this->debug && $this->timeDebug) {
                     $diffTime += hrtime(true);
-                    trigger_error('Caching entries :' . $diffTime / 1E+6 . ' ms ; url : ' . $url);
+                    trigger_error('Caching entries with changes :' . $diffTime / 1E+6 . ' ms ; url : ' . $pURL);
                 }
             }
         }
 
-        return $cache_file;
+        return $vCacheFile;
     }
 
     /**
-     * check existence of &fields=date_maj_fiche in url for entries refresh.
+     * Method cacheURLContent
+     * Cache given URL content or load it before to cache it
+     * create a temp file to indicate to other php session that the file is updating.
      *
-     * @param bool $addFields add fields=id_fiche,bf_titre,url
+     * @param string $pURL
+     * @param string $pContent used if url if empty
+     * @param string $cache_file
+     * @param bool $pForceRefresh
+     * @param string $content 
      *
-     * @return string $url
      */
-    private function sanitizeUrlForEntries(string $url, bool $addFields = false): string
+     
+    private function cacheURLContent(string $pURL, string $pContent, string $pCacheFile, bool $pForceRefresh = false)
+    {        
+        $vRefresh = $this->getRefreshValue ($pForceRefresh);
+    
+    	$vUpdatingFile = $pCacheFile . self::UPDATING_SUFFIX;
+    
+        $vUpdatingFileModificationTime = @filemtime($vUpdatingFile); // false if no file
+        
+        if (!$vUpdatingFileModificationTime || $vRefresh || (time() - $vUpdatingFileModificationTime >= 60)) { // after 60 seconds force creation            
+            file_put_contents($vUpdatingFile, date('Y-m-d H:i:s'));
+            
+            if (!empty($pURL))
+	            $vContent = $this->loadURLContent($pURL);
+			else
+	            $vContent = $pContent;
+
+			file_put_contents($pCacheFile, $vContent);
+            
+            if (file_exists($vUpdatingFile)) {
+                unlink($vUpdatingFile);
+            }
+        }
+    }
+
+    /**
+     * Method loadURLContent
+     *
+     * @param string $pURL to load
+     *
+     * @return string URL content loaded
+     *
+     * @throws ExternalBazarServiceException
+     */
+     
+    private function loadURLContent($pURL): string
     {
-        // sanitize url
-        $query = parse_url($url, PHP_URL_QUERY);
-        if (!empty($query)) {
-            parse_str($query, $queries);
-            foreach ($queries as $key => $value) {
-                if ($key === 'fields') {
-                    $fields = empty($value) ? [] : (
-                        !is_array($value)
-                        ? (
-                            is_scalar($value)
-                            ? explode(',', $value)
-                            : []
-                        )
-                        : $value
-                    );
-                    foreach (($addFields ? ['id_fiche', 'bf_titre', 'url', 'date_maj_fiche'] : ['date_maj_fiche']) as $fieldName) {
-                        if (!in_array($fieldName, $fields)) {
-                            $fields[] = $fieldName;
-                        }
-                    }
-                    if (empty($fields)) {
-                        unset($queries[$key]);
-                    } else {
-                        $queries[$key] = implode(',', $fields);
-                    }
-                }
-            }
-            if ($addFields && empty($fields)) {
-                $queries['fields'] = 'id_fiche,bf_titre,url,date_maj_fiche';
-            }
-            array_walk($queries, function (&$item, $key) {
-                $item = empty($item)
-                    ? $key
-                    : (
-                        is_array($item)
-                        ? $key . '=' . implode(',', $item)
-                        : $key . '=' . $item
-                    );
-            });
-            $newQuery = implode('&', $queries);
-            $url = str_replace($query, $newQuery, $url);
+        $vDestPath = tempnam('cache', 'tmp_to_delete_');
+        
+        $vFile = fopen($vDestPath, 'wb');
+
+        $vCurl = curl_init($pURL);       
+
+        curl_setopt($vCurl, CURLOPT_FILE, $vFile);
+        curl_setopt($vCurl, CURLOPT_HEADER, 0);
+        curl_setopt($vCurl, CURLOPT_CONNECTTIMEOUT, 3); // connect timeout in seconds
+        curl_setopt($vCurl, CURLOPT_TIMEOUT, 30); // total timeout in seconds
+
+        curl_exec($vCurl);
+
+        $vError = curl_errno($vCurl);
+
+        curl_close($vCurl);        
+        fclose($vFile);
+
+        if (!$vError && file_exists($vDestPath)) {
+            $vContent = file_get_contents($vDestPath);
+        }
+        else
+			$vContent = "";
+
+        unlink($vDestPath);
+        
+        if ($vError) {
+            throw new ExternalBazarServiceException("Error getting content from $pURL ($vError)");
         }
 
-        return $url;
+        return $vContent;
     }
-
-    /**
-     * sanitize file name.
-     *
-     * @return string $outputString
-     */
-    private function sanitizeFileName(string $inputString): string
-    {
-        return hash('sha256', $inputString);
-    }
-
+    
     /**
      * only check changes on external data and update cache file.
      */
@@ -551,15 +660,19 @@ class ExternalBazarService
             if ($this->debug) {
                 trigger_error($cache_file . " should contain 'date_maj_fiche' !", E_USER_WARNING);
             }
-            $this->secureFilePutContents($url, '', $cache_file, $forceRefresh);
+            
+            $this->cacheURLContent($url, '', $cache_file, $forceRefresh);
         } else {
             list($lastModificationDate, $entries) = $lastModificationDate;
+            
             $newEntries = $this->getNewEntries($url, $lastModificationDate);
+            
             if (!empty($newEntries) && is_array($newEntries)) {
                 foreach ($newEntries as $key => $entry) {
                     $entries[$entry['id_fiche'] ?? $key] = $entry;
                 }
-                $this->secureFilePutContents('', json_encode($entries), $cache_file, $forceRefresh);
+                
+                $this->cacheURLContent('', json_encode($entries), $cache_file, $forceRefresh);
             }
         }
     }
@@ -574,44 +687,49 @@ class ExternalBazarService
         }
 
         $urlToCheckDeletion = $this->sanitizeUrlForEntries($url, true);
-        if (in_array($urlToCheckDeletion, $this->alreadyCheckingDeletionsURL)) {
+        
+        if (in_array($urlToCheckDeletion, $this->aAlreadyCheckingDeletionsURLs)) {
             return null;
         } else {
-            $this->alreadyCheckingDeletionsURL[] = $urlToCheckDeletion;
+            $this->aAlreadyCheckingDeletionsURLs[] = $urlToCheckDeletion;
         }
-        $json = file_get_contents($cache_file);
-        $json = $this->extractErrors($json, $cache_file);
+        
+        $vJSON = file_get_contents($cache_file);
+        $vJSON = $this->extractErrors($vJSON, $cache_file);
 
-        $entries = json_decode($json, true);
+        $entries = json_decode($vJSON, true);
+        
         if (empty($entries) || !is_array($entries)) {
-            $this->secureFilePutContents($url, '', $cache_file, false);
+            $this->cacheURLContent($url, '', $cache_file, false);
+                       
             if ($this->debug && $this->timeDebug) {
                 $diffTime += hrtime(true);
                 trigger_error('checking deletions (refreshing) :' . $diffTime / 1E+6 . ' ms ; url : ' . $url);
             }
         } else {
-            try {
-                $entriesList = json_decode($this->extractErrors($this->securedFileGetContentFromUrl($urlToCheckDeletion), $urlToCheckDeletion), true);
-                if ($this->debug && $this->timeDebug) {
-                    $diffTime += hrtime(true);
-                    trigger_error('checking deletions (only list) :' . $diffTime / 1E+6 . ' ms ; url : ' . $urlToCheckDeletion);
-                    $diffTime = -hrtime(true);
-                }
-                foreach ($entries as $key => $entry) {
-                    if (isset($entriesList) && isset($entry['id_fiche']) && !isset($entriesList[$entry['id_fiche']])) {
-                        if ($this->debug && $this->wiki->UserIsAdmin()) {
-                            trigger_error('Deleting ' . $entry['id_fiche'] . ' from ' . $cache_file);
-                        }
-                        unset($entries[$key]);
-                    }
-                }
-                $this->secureFilePutContents('', json_encode($entries), $cache_file, false);
-                if ($this->debug && $this->timeDebug) {
-                    $diffTime += hrtime(true);
-                    trigger_error('Updating deletions :' . $diffTime / 1E+6 . ' ms ; url : ' . $url);
-                }
-            } catch (ExternalBazarServiceException $th) {
+            $entriesList = json_decode($this->extractErrors($this->loadURLContent($urlToCheckDeletion), $urlToCheckDeletion), true);
+            
+            if ($this->debug && $this->timeDebug) {
+                $diffTime += hrtime(true);
+                trigger_error('checking deletions (only list) :' . $diffTime / 1E+6 . ' ms ; url : ' . $urlToCheckDeletion);
+                $diffTime = -hrtime(true);
             }
+            
+            foreach ($entries as $key => $entry) {
+                if (isset($entriesList) && isset($entry['id_fiche']) && !isset($entriesList[$entry['id_fiche']])) {
+                    if ($this->debug && $this->wiki->UserIsAdmin()) {
+                        trigger_error('Deleting ' . $entry['id_fiche'] . ' from ' . $cache_file);
+                    }
+                    unset($entries[$key]);
+                }
+            }
+            
+            $this->cacheURLContent('', json_encode($entries), $cache_file, false);
+            
+            if ($this->debug && $this->timeDebug) {
+                $diffTime += hrtime(true);
+                trigger_error('Updating deletions :' . $diffTime / 1E+6 . ' ms ; url : ' . $url);
+            }            
         }
     }
 
@@ -620,14 +738,17 @@ class ExternalBazarService
      *
      * @return array|null [$lastModificationDate,$entries]
      */
+     
     private function getLastModificationDateFromFile(string $cache_file): ?array
     {
-        $json = file_get_contents($cache_file);
-        $json = $this->extractErrors($json, $cache_file);
-        $entries = json_decode($json, true);
+        $vJSON = file_get_contents($cache_file);
+        $vJSON = $this->extractErrors($vJSON, $cache_file);
+        
+        $entries = json_decode($vJSON, true);
 
         if (!empty($entries) && is_array($entries)) {
             $maxUpdatedDate = null;
+            
             foreach ($entries as $entry) {
                 if (
                     !empty($entry['date_maj_fiche'])
@@ -639,6 +760,7 @@ class ExternalBazarService
                     $maxUpdatedDate = $entry['date_maj_fiche'];
                 }
             }
+            
             if (!empty($maxUpdatedDate)) {
                 return [(new \DateTime($maxUpdatedDate))->add(new \DateInterval('PT1S'))->format('Y-m-d H:i:s'), $entries];
             }
@@ -652,6 +774,7 @@ class ExternalBazarService
      *
      * @return array|null $entries
      */
+     
     private function getNewEntries(string $url, string $dateMin): ?array
     {
         if ($this->debug && $this->timeDebug) {
@@ -659,7 +782,7 @@ class ExternalBazarService
         }
         $sanitizedUrl = $url . (strpos($url, '?') === false ? '?' : '&') . 'dateMin=' . urlencode($dateMin);
         try {
-            $newEntries = json_decode($this->extractErrors($this->securedFileGetContentFromUrl($sanitizedUrl), $sanitizedUrl), true);
+            $newEntries = json_decode($this->extractErrors($this->loadURLContent($sanitizedUrl), $sanitizedUrl), true);
             if ($this->debug && $this->timeDebug) {
                 $diffTime += hrtime(true);
                 trigger_error('Getting new entries :' . $diffTime / 1E+6 . ' ms ; url : ' . $url . ' ; sanitizedUrl : ' . $sanitizedUrl);
@@ -667,63 +790,9 @@ class ExternalBazarService
 
             return (empty($newEntries) || !is_array($newEntries)) ? null : $newEntries;
         } catch (ExternalBazarServiceException $th) {
-            return null;
+          	throw $th;
+            return null;            
         }
-    }
-
-    /**
-     * check format of externalIds.
-     */
-    private function checkexternalIdsFormat(array $externalIds): bool
-    {
-        return empty(array_filter($externalIds, function ($externalId) {
-            return !isset($externalId['url']) || !isset($externalId['id']) || !isset($externalId['localFormId']);
-        }));
-    }
-
-    /**
-     * groups ids by url.
-     */
-    private function groupIdsByUrl(array $externalIds): array
-    {
-        // group ids by url
-        $groupedExternalIds = [];
-        foreach ($externalIds as $externalId) {
-            if (!empty($externalId['url'])) {
-                $url = $this->formatUrl($externalId['url']);
-                $url = empty($url) ? $externalId['url'] : $url;
-            } else {
-                $url = '';
-            }
-            $groupedExternalIds[$url][] = [
-                'id' => $externalId['id'],
-                'localFormId' => $externalId['localFormId'],
-            ];
-        }
-
-        return $groupedExternalIds;
-    }
-
-    /**
-     * get newFormId usinf FormManager at first call.
-     */
-    private function findNewId(): int
-    {
-        if (is_null($this->newFormId)) {
-            $this->newFormId = $this->formManager->findNewId();
-        } else {
-            $this->newFormId = ($this->newFormId == 999) ? 10001 : $this->newFormId + 1;
-        }
-
-        return $this->newFormId;
-    }
-
-    /**
-     * get temp form (to give data to FormManager).
-     */
-    public function getTmpForm(): array
-    {
-        return $this->tmpForm;
     }
 
     /**
@@ -731,14 +800,18 @@ class ExternalBazarService
      *
      * @return array $form
      */
+     
     private function prepareExtForm(int $localFormId, string $url, array $form): array
-    {
+    {   
         // update FormId
-        $form['external_bn_id_nature'] = $form['bn_id_nature'];
+        $form['_isExternal_'] = true;
+        $form['external_bn_id_nature'] = $form['bn_id_nature'];        
+        $form['external_bn_label_nature'] = $form['bn_label_nature'];
         $form['external_url'] = $url;
-        $urlDetails = $this->getUrlDetails($url, 999999); // no reset of cache because just done before
+        $urlDetails = $this->getURLDetails($url, 999999); // no reset of cache because just done before
         $form['bn_id_nature'] = $localFormId;
-
+        $form['external_form_key'] = $this->getExternalFormIDKey ([ "url" => $url, "id" => $form['external_bn_id_nature' ]]);
+        
         // change fields type before prepareData
         foreach ($form['template'] as $index => $fieldTemplate) {
             if (isset(self::CONVERT_FIELD_NAMES[$fieldTemplate[0]])) {
@@ -767,106 +840,105 @@ class ExternalBazarService
     /**
      * clean old cache files to prevent leak of data between sites.
      */
-    private function cleanOldCacheFiles()
+     
+    private function cleanOldCacheFiles($pRefresh = false)
     {
-        $cacheFiles = glob('cache/' . self::CACHE_FILENAME_PREFIX . '*');
-        foreach ($cacheFiles as $filePath) {
-            $filemtime = @filemtime($filePath);  // returns FALSE if file does not exist
-            if (!$filemtime or (time() - $filemtime >= self::MAX_CACHE_TIME)) {
-                unlink($filePath);
+        $vCacheFiles = glob('cache/' . self::CACHE_FILENAME_PREFIX . '*');
+    
+	    $vRefresh = $this->getRefreshValue ($pRefresh);
+        
+        foreach ($vCacheFiles as $vFilePath) {
+            $vModificationTime = @filemtime($vFilePath);  // returns FALSE if file does not exist
+
+            if ($vRefresh || !$vModificationTime or (time() - $vModificationTime >= self::MAX_CACHE_TIME)) {
+                unlink($vFilePath);
             }
         }
+    }
+
+   /**
+     * check existence of &fields=date_maj_fiche in url for entries refresh.
+     *
+     * @param bool $addFields add fields=id_fiche,bf_titre,url
+     *
+     * @return string $url
+     */
+    private function sanitizeUrlForEntries(string $url, bool $addFields = false): string
+    {
+        // sanitize url
+        $query = parse_url($url, PHP_URL_QUERY);
+        
+        if (!empty($query)) {        
+            $queries = explode ("&", $query);
+            
+            foreach ($queries as $key => $value) {            
+                if ($key === 'fields') {
+                    $fields = empty($value) ? [] : (
+                        !is_array($value)
+                        ? (
+                            is_scalar($value)
+                            ? explode(',', $value)
+                            : []
+                        )
+                        : $value
+                    );
+                    foreach (($addFields ? ['id_fiche', 'bf_titre', 'url', 'date_maj_fiche'] : ['date_maj_fiche']) as $fieldName) {
+                        if (!in_array($fieldName, $fields)) {
+                            $fields[] = $fieldName;
+                        }
+                    }
+                    if (empty($fields)) {
+                        unset($queries[$key]);
+                    } else {
+                        $queries[$key] = implode(',', $fields);
+                    }
+                }
+            }
+
+            if ($addFields && empty($fields)) {
+                $queries['fields'] = 'id_fiche,bf_titre,url,date_maj_fiche';
+            }            
+
+            $newQuery = implode('&', $queries);
+            
+            $url = str_replace($query, $newQuery, $url);
+        }
+
+        return $url;
     }
 
     /**
      * get rewrite mode, base url for this external url.
-     *
-     * @param int    $cache_life : duration of the cache in second
-     * @param string $dir        : base dirname where save the cache
+     * @param string $pURL
+     * @param int    $pCacheTTL : duration of the cache in second
+     * @param string $pDirectory : base dirname where save the cache
      *
      * @return array [$baseUrl,$rootPage,$rewriteModeEnabled]
      */
-    private function getUrlDetails(string $url, int $cache_life = 120, string $dir = 'cache'): array
-    {
-        if (!isset($this->urlCache[$url])) {
-            $cache_file = $dir . '/' . self::CACHE_FILENAME_PREFIX . self::CACHE_FILENAME_DETAILS_PREFIX . $this->sanitizeFileName($url);
-            $filemtime = @filemtime($cache_file);  // returns FALSE if file does not exist
+     
+    private function getURLDetails(string $pURL, int $pCacheTTL = 120, string $pDirectory = 'cache'): array
+    {   
+        if (!isset($this->aURLDetailsCache[$pURL])) {
+            $vCacheFile = $pDirectory . '/' . self::CACHE_FILENAME_PREFIX . self::CACHE_FILENAME_DETAILS_PREFIX . $this->sanitizeFileName($pURL);
+            
+            $vModificationTime = @filemtime($vCacheFile);  // returns FALSE if file does not exist
 
-            if (!$filemtime or (time() - $filemtime >= $cache_life)) {
-                $details = $this->importService->extractBaseUrlAndRootPage($url);
-                file_put_contents($cache_file, json_encode($details));
+            if (!$vModificationTime or (time() - $vModificationTime >= $pCacheTTL)) {
+                $vDetails = $this->importService->extractBaseUrlAndRootPage($pURL);
+                file_put_contents($vCacheFile, json_encode($vDetails));
             } else {
-                $details = json_decode($this->extractErrors(file_get_contents($cache_file), $cache_file), true);
+                $vDetails = json_decode($this->extractErrors(file_get_contents($vCacheFile), $vCacheFile), true);
             }
 
-            $this->urlCache[$url] = $details;
+            $this->aURLDetailsCache[$pURL] = $vDetails;
         }
 
-        return $this->urlCache[$url];
-    }
-
-    /**
-     * secure saving content in file
-     * create a temp file to indicate to other php session that the file is updating.
-     *
-     * @param string $content used if url if empty
-     */
-    private function secureFilePutContents(string $url, string $content, string $cache_file, bool $forceRefresh = false)
-    {
-        $tmpFilemtime = @filemtime($cache_file . self::UPDATING_SUFFIX); // false if no file
-        if (!$tmpFilemtime || $forceRefresh || (time() - $tmpFilemtime >= 60)) { // after 60 seconds force creation
-            file_put_contents($cache_file . self::UPDATING_SUFFIX, date('Y-m-d H:i:s'));
-            if (!empty($url)) {
-                try {
-                    file_put_contents($cache_file, $this->securedFileGetContentFromUrl($url));
-                } catch (ExternalBazarServiceException $th) {
-                }
-            } else {
-                file_put_contents($cache_file, $content);
-            }
-            if (file_exists($cache_file . self::UPDATING_SUFFIX)) {
-                unlink($cache_file . self::UPDATING_SUFFIX);
-            }
-        }
-    }
-
-    /**
-     * @param string $url
-     *
-     * @throws ExternalBazarServiceException
-     */
-    private function securedFileGetContentFromUrl($url): string
-    {
-        $destPath = tempnam('cache', 'tmp_to_delete_');
-        $fp = fopen($destPath, 'wb');
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3); // connect timeout in seconds
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // total timeout in seconds
-        curl_exec($ch);
-        $error = curl_errno($ch);
-        curl_close($ch);
-        fclose($fp);
-        if (!$error && file_exists($destPath)) {
-            $content = file_get_contents($destPath);
-        }
-        unlink($destPath);
-        if ($error) {
-            throw new ExternalBazarServiceException("Error getting content from $url");
-        }
-
-        return $content;
+        return $this->aURLDetailsCache[$pURL];
     }
 
     private function getFormUrl(array $urlDetails, $formId): string
     {
-        return $urlDetails[0] . '/' . ($urlDetails[2] ? '' : '?') .
-            str_replace(
-                ['{pageTag}', '{firstSeparator}', '{formId}'],
-                [$urlDetails[1], ($urlDetails[2] ? '?' : '&'), $formId],
-                self::JSON_FORM_BASE_URL
-            );
+        return $urlDetails[0] . "/?api/forms/$formId";
     }
 
     private function getEntriesViaApiUrl(array $urlDetails, $distantFormId, $querystring): string
@@ -886,18 +958,100 @@ class ExternalBazarService
             (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&') . $querystring);
     }
 
-    private function extractErrors(string $json, string $from): string
+	/**
+     * check format of externalIds.
+     */
+     
+    private function checkExternalIDsFormat(array $pExternalIDs): bool
+    {
+        return empty(array_filter($pExternalIDs, function ($pExternalId) {
+            return !isset($pExternalId['url']) || !isset($pExternalId['id']) || !isset($pExternalId['localFormId']);
+        }));
+    }
+
+    /**
+     * groups ids by url.
+     */
+     
+    private function groupIDsByURL (array $pExternalIDs): array
+    {
+        // group ids by url
+        
+        $vGroupedExternalIDs = [];
+        
+        foreach ($pExternalIDs as $vExternalId) {                     	
+            if (!empty($vExternalId['url'])) {           
+                $vURL = $this->formatUrl($vExternalId['url']);
+                $vURL = empty($vURL) ? $vExternalId['url'] : $vURL;
+                
+                $vGroupedExternalIDs[$vURL][] = [
+                	'id' => $vExternalId['id'],
+	                'localFormId' => $vExternalId['localFormId'],
+            	];
+            }
+            else {
+				throw new ExternalBazarServiceException("URL should not be empty");
+            }                        
+        }
+
+        return $vGroupedExternalIDs;
+    }
+ 
+	/**
+     * get newFormId using FormManager
+     */
+     
+    private function findNewID(): int
+    {
+    	$vNewID = $this->formManager->findNewId();
+    
+    	return $vNewID;
+    }
+ 
+ 	/**
+     * sanitize file name.
+     *
+     * @return string $outputString
+     */
+    private function sanitizeFileName(string $inputString): string
+    {
+        return hash('sha256', $inputString);
+    }
+    
+    public function formatUrl($url)
+    {
+        $urlDetails = $this->getURLDetails($url);
+        
+        $newUrl = empty($urlDetails) ? $url : $urlDetails[0];
+        
+        // add / at end if needed
+        
+        if (substr($newUrl, -1) !== '/') {
+            $newUrl = $newUrl . '/';
+        }
+
+        return $newUrl;
+    }
+    
+    private function extractErrors(string $pJSON, string $pFrom): string
     {
         // remove string before '{' because the aimed website's api can give warning messages
-        $beginning = strpos($json, '{');
+        $beginning = strpos($pJSON, '{');
         if ($beginning > 1) {
-            $noticeMessage = substr($json, 0, $beginning);
-            $json = substr($json, $beginning);
+            $noticeMessage = substr($pJSON, 0, $beginning);
+            $pJSON = substr($pJSON, $beginning);
             if ($this->debug && $this->wiki->UserIsAdmin()) {
-                trigger_error($noticeMessage . ' from ' . $from);
+                trigger_error($noticeMessage . ' from ' . $pFrom);
             }
         }
 
-        return $json;
+        return $pJSON;
     }
+    
+    // DEPRECATED : should use renamed getJSONFromURL
+    
+    public function getJSONCachedUrlContent(string $url, int $cache_life = 90, bool $pForceRefresh = false, $mode = 'standard')
+    {         
+    	return json_encode ($this->getJSONFromURL ($url, $cache_life, $pForceRefresh, $mode));
+    }    
 }

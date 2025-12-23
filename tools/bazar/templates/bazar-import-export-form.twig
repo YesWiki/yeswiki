@@ -1,4 +1,5 @@
-{{  include_javascript('tools/bazar/presentation/javascripts/bazar.js') }}
+{# {  include_javascript('/tools/bazar/presentation/javascripts/bazar.js', true, true) } #}
+
 <form id="form-bazar-import" method="post" class="form-horizontal"
   action="{{ url({params:params}) }}" {% block formDetails %}{% endblock %}>
   {% block formContent %}
@@ -34,7 +35,7 @@
         </pre>
         
         {# on cree le lien vers ce fichier #}
-        <a href="#" onclick="downloadCSV(removeCSVCrochet($('.precsv').html()), '{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}');return false;" 
+        <a href="#" id="btnCSV" 
             class="btn btn-neutral link-csv-file">
           <i class="fa fa-download"></i>
             {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV') -}}{% endblock %}
@@ -43,3 +44,17 @@
     {% endblock %}{# {% block appendToForm %} #}
   {% endblock %}{# {% block formContent %} #}
 </form>
+
+<script type="module">
+	import { downloadCSV, removeCSVCrochet } from '/tools/bazar/presentation/javascripts/bazar.js'
+	
+	window.addEventListener ("load", function ()
+	{
+		document.getElementById('btnCSV').addEventListener('click', 
+		function ()
+		{
+			downloadCSV(removeCSVCrochet($('.precsv').html()), '{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}');return false;
+		});		
+	});	  
+</script>
+

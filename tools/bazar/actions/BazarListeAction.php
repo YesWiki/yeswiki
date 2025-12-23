@@ -24,7 +24,7 @@ class BazarListeAction extends YesWikiAction
         $iconField = $_GET['iconfield'] ?? $arg['iconfield'] ?? null;
 
         // ICONS
-        $icon = $_GET['icon'] ?? $arg['icon'] ?? null;
+        $icon = $_GET['icon'] ?? $arg['icon'] ?? $_GET['icons'] ?? $arg['icons'] ?? null;
         $iconAlreadyDefined = ($icon == $this->params->get('baz_marker_icon') || is_array($icon));
         if (!$iconAlreadyDefined) {
             if (!empty($icon)) {
@@ -51,7 +51,7 @@ class BazarListeAction extends YesWikiAction
         $colorField = $_GET['colorfield'] ?? $arg['colorfield'] ?? null;
 
         // COLORS
-        $color = $_GET['color'] ?? $arg['color'] ?? null;
+        $color = $_GET['color'] ?? $_GET['colors'] ?? $arg['colors'] ?? $arg['color'] ?? null;
         $colorAlreadyDefined = ($color == $this->params->get('baz_marker_color') || is_array($color));
         if (!$colorAlreadyDefined) {
             if (!empty($color)) {
@@ -108,19 +108,6 @@ class BazarListeAction extends YesWikiAction
 
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || (is_string($template) && substr($template, 0, strlen('agenda')) == 'agenda'));
 
-        // get form ids for ExternalBazarService
-        // format id="4,https://example.com|6,7,https://example.com|6->8"
-        $ids = $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null;
-        $externalIds = $this->getExternalUrlsFromIds(is_array($ids) ? implode(',', $ids) : $ids);
-        $externalModeActivated = !empty(array_filter($externalIds, function ($externalId) {
-            return !empty($externalId['url']);
-        }));
-        // format ids as standard
-        $ids = array_values(array_map(function ($externalId) {
-            return $externalId['id'];
-        }, $externalIds));
-        $ids = array_map('strip_tags', $ids); // filter xss
-
         // Only keep "true" and "dynamic" value, so we can still do if params.search in twig
         $search = !isset($arg['search'])
             ? null
@@ -144,23 +131,31 @@ class BazarListeAction extends YesWikiAction
         $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $_REQUEST['q'] ?? null, $_REQUEST['keywords'] ?? null);
 
         return [
+        	////////////////////
+	        // USER PARAMETERS
+        	//////////////////	        
+        	
             // SELECTION DES FICHES
+            
+            // sélectionner seulement les fiches d'un utilisateur
+            'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
+                $this->getService(AuthController::class)->getLoggedUserName() : null),
+            
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
-            'idtypeannonce' => $ids,
-            // external mode
-            'externalModeActivated' => $externalModeActivated,
-            'externalIds' => $externalIds,
+            'idtypeannonce' => $arg['id'] ?? $arg['idtypeannonce'] ?? $_GET['id'] ?? null,
+
             // to be able to refresh cache for external json
             'refresh' => $this->formatBoolean($_GET, false, 'refresh'),
+            
             // Paramètres pour une requete specifique
-            'query' => $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $_GET)),
+            'queries' => $vSearchManager->parseQuery($vSearchManager->aggregateQueries($arg, $_GET)),
             // filtrer sur des mots clefs
             'keywords' => $vKeywords,
             // filtrer les resultats sur une periode données si une date est indiquée
             'dateMin' => $this->formatDateMin($_GET['period'] ?? $arg['period'] ?? null),
-            // sélectionner seulement les fiches d'un utilisateur
-            'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
-                $this->getService(AuthController::class)->getLoggedUserName() : null),
+            
+            // Afficher les fiches dans un ordre aléatoire
+            'random' => $this->formatBoolean($arg, false, 'random'),
             // Ordre du tri (asc ou desc)
             'ordre' => $ordre,
             // Champ du formulaire utilisé pour le tri
@@ -168,18 +163,16 @@ class BazarListeAction extends YesWikiAction
             // les tris disponibles par le bouton "Trier par"
             'sortfields' => $this->formatArray($_GET['sortfields'] ?? $arg['sortfields'] ?? []),
             'sortfieldstitles' => $this->formatArray($_GET['sortfieldstitles'] ?? $arg['sortfieldstitles'] ?? []),
+            
             // Nombre maximal de résultats à afficher
             'nb' => $arg['nb'] ?? null,
-            // fields that will be used in dynamic views
-            'necessary_fields' => $this->formatArray($_GET['necessary_fields'] ?? $arg['necessary_fields'] ?? []),
-            // get comments , reactions and metadatas with entry
-            'extrafields' => $this->formatBoolean($arg, false, 'extrafields'),
+                        
             // Nombre de résultats affichés pour la pagination (permet d'activer la pagination)
             'pagination' => $arg['pagination'] ?? null,
-            // Afficher les fiches dans un ordre aléatoire
-            'random' => $this->formatBoolean($arg, false, 'random'),
+            
             // Transfere les valeurs d'un champs vers un autre, afin de correspondre dans un template
             'correspondance' => $arg['correspondance'] ?? null,
+            
             // paramètre de tri des fiches sur une date (en gardant la retrocompatibilité avec le paramètre agenda)
             'agenda' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
             'datefilter' => $arg['datefilter'] ?? $arg['agenda'] ?? null,
@@ -188,25 +181,41 @@ class BazarListeAction extends YesWikiAction
             // Only few bazar templates have been converted to javascript
             'dynamic' => $dynamic,
             'displayfields' => $displayFields,
-            // Number of columns for card template
-            'nbcol' => $arg['nbcol'] ?? null,
-
+            
+            // fields that will be used in dynamic views
+            'necessary_fields' => $this->formatArray($_GET['necessaryfields'] ?? $arg['necessaryfields'] ?? $_GET['necessary_fields'] ?? $arg['necessary_fields'] ?? []),
+            // get comments , reactions and metadatas with entry
+            'extrafields' => $this->formatBoolean($arg, false, 'extrafields'),
+            
             // AFFICHAGE
+            
             // Template pour l'affichage de la liste de fiches
             'template' => (!empty($template)) ? $template : $this->params->get('default_bazar_template'),
-            // classe css a ajouter en rendu des templates liste
-            'class' => $arg['class'] ?? '',
-            // ajout du footer pour gérer la fiche (modifier, droits, etc,.. )
+            
+            // ajout du footer pour gérer la fiche (modifier, droits, etc,.. )            
             'barregestion' => $this->formatBoolean($arg, true, 'barregestion'),
+            
+            // bouton de réinitialisation des filtres
+            'resetfiltersbutton' => $this->formatBoolean($arg, false, 'resetfiltersbutton'),
+            
             // ajout des options pour exporter les fiches
             'showexportbuttons' => $this->formatBoolean($arg, false, 'showexportbuttons'),
+
             // Affiche le formulaire de recherche en haut
             'search' => $search,
             'searchfields' => $searchfields,
+            
             // Affiche le nombre de fiche en haut
             'shownumentries' => $this->formatBoolean($arg, false, 'shownumentries'),
-            // Iframe ?
-            'isInIframe' => testUrlInIframe(),
+            
+            // affichage du nombre de fiches trouvées par les filtres
+            'filtersresultnb' => $this->formatBoolean($arg, true, 'filtersresultnb'),
+            
+            // classe css a ajouter en rendu des templates liste
+            'class' => $arg['class'] ?? '',
+            
+            // Number of columns for card template
+            'nbcol' => $arg['nbcol'] ?? null,
 
             // FACETTES
             // Identifiants des champs utilisés pour les facettes
@@ -215,30 +224,43 @@ class BazarListeAction extends YesWikiAction
             'groups' => $this->formatArray($_GET['groups'] ?? $arg['groups'] ?? null),
             // Titres des boite de facettes. Plusieures valeurs possibles, séparées par des virgules
             // Exemple : {{bazarliste titles="Titre,Pays,etc."..}}
-            'titles' => $this->formatArray($_GET['titles'] ?? $arg['titles'] ?? null),
+            'titles' => $this->formatArray($_GET['groupstitles'] ?? $arg['groupstitles']??$_GET['titles'] ?? $arg['titles'] ?? null),
+            
+            // déplier toutes les facettes
+            'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg, true, 'groupsexpanded'),
+            
             'groupicons' => $this->formatArray($arg['groupicons'] ?? null),
+            
             // ajout d'un filtre pour chercher du texte dans les resultats pour les facettes
             'filtertext' => $this->formatBoolean($arg, false, 'filtertext'),
+           
             // facette à gauche ou à droite
             'filterposition' => $_GET['filterposition'] ?? $arg['filterposition'] ?? 'right',
             // largeur colonne facettes
             'filtercolsize' => $_GET['filtercolsize'] ?? $arg['filtercolsize'] ?? '3',
-            // déplier toutes les facettes
-            'groupsexpanded' => $this->formatBoolean($_GET['groupsexpanded'] ?? $arg, true, 'groupsexpanded'),
+            
+            // ICONS
+            
             // Prefixe des classes CSS utilisees pour la carto et calendrier
             'iconprefix' => isset($_GET['iconprefix']) ? trim($_GET['iconprefix']) : (isset($arg['iconprefix']) ? trim($arg['iconprefix']) : ($this->params->get('baz_marker_icon_prefix') ?? '')),
             // Champ utilise pour les icones des marqueurs
             'iconfield' => $iconField,
             // icone des marqueurs
             'icon' => $icon,
+            
+            // COLORS
+            
             // Champ utilise pour la couleur des marqueurs
             'colorfield' => $colorField,
             // couleur des marqueurs
             'color' => $color,
-            // affichage du nombre de fiches trouvées par les filtres
-            'filtersresultnb' => $this->formatBoolean($arg, true, 'filtersresultnb'),
-            // bouton de réinitialisation des filtres
-            'resetfiltersbutton' => $this->formatBoolean($arg, false, 'resetfiltersbutton'),
+            
+            //////////////////////
+	        // SYSTEM PARAMETERS
+        	////////////////////
+        	
+        	// Iframe ?
+            'isInIframe' => testUrlInIframe(),        	
         ];
     }
 
@@ -276,7 +298,7 @@ class BazarListeAction extends YesWikiAction
         }
 
         $bazarListService = $this->getService(BazarListService::class);
-        $forms = $bazarListService->getForms($this->arguments);
+        $vForms = $bazarListService->getForms($this->arguments);
 
         if ($this->arguments['dynamic']) {
             if (isset($this->arguments['zoom'])) {
@@ -288,12 +310,12 @@ class BazarListeAction extends YesWikiAction
                 'param' => $this->arguments, // DEPRECATED but still there for retro-compatibility: use params (plural)
                 'params' => $this->arguments,
                 'keywords' => $this->arguments['keywords'],
-                'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
-                'currentUserName' => empty($currentUser['name']) ? '' : $currentUser['name'],
+                'forms' => $vForms,
+                'currentUserName' => empty($currentUser['name']) ? '' : $currentUser['name']
             ]);
         } else {
-            $entries = $bazarListService->getEntries($this->arguments, $forms);
-            $filters = $bazarListService->getFilters($this->arguments, $entries, $forms, true);
+            $entries = $bazarListService->getEntries($this->arguments, $vForms);
+            $filters = $bazarListService->getFilters($this->arguments, $entries, $vForms, true);
 
             // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
             // We use a global variable to count the number of bazarliste action run on this page
@@ -304,27 +326,28 @@ class BazarListeAction extends YesWikiAction
             $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
 
             // TODO put in all bazar templates
-            $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+           
+            $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
 
             return $this->render('@bazar/entries/index.twig', [
                 'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
                 'filters' => $filters,
                 'entries' => $entries,
-                'renderedEntries' => $this->renderEntries($entries, $filters),
+                'renderedEntries' => $this->renderEntries($entries, $filters, $vForms),
                 'numEntries' => count($entries),
                 'param' => $this->arguments,
                 'params' => $this->arguments,
                 // Search form parameters
                 'keywords' => $this->arguments['keywords'],
                 'pageTag' => $this->wiki->getPageTag(),
-                'forms' => count($this->arguments['idtypeannonce']) === 0 ? $forms : '',
-                'formId' => $this->arguments['idtypeannonce'][0] ?? null,
+                'forms' => $vForms,
+                //'formId' => $this->arguments['idtypeannonce'][0] ?? null,
                 'facette' => $_GET['facette'] ?? null,
             ]);
         }
     }
 
-    private function renderEntries($entries, $filters = []): string
+    private function renderEntries($entries, $filters = [], $pForms = ''): string
     {
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
         $templateName = $this->arguments['template'];
@@ -338,6 +361,7 @@ class BazarListeAction extends YesWikiAction
         $data['params'] = $this->arguments;
         $data['pager_links'] = '';
         $data['filters'] = $filters; // in case some template need it, like gogocarto
+        $data['forms'] = $pForms;
 
         if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {
             require_once 'tools/bazar/libs/vendor/Pager/Pager.php';
@@ -418,41 +442,5 @@ class BazarListeAction extends YesWikiAction
         }
 
         return in_array($templateName, $templatesnames);
-    }
-
-    /**
-     * extract external url from ids
-     * get form ids for ExternalBazarService
-     * format id="4,https://example.com|6,7,https://example.com|6->8".
-     *
-     * @return array
-     */
-    private function getExternalUrlsFromIds(?string $ids)
-    {
-        // external ids
-        $externalIds = [];
-        if (!is_null($ids) && preg_match_all('/(?:'
-            . '(' // begin url capturing
-            . '(?:(?:https?):\/\/)' // http or https protocol
-            . '(?:\S+(?::\S*)?@|\d{1,3}(?:\.\d{1,3}){3}|(?:(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)' // long part to catch url
-            . '(?:\.(?:[a-z\d\x{00a1}-\x{ffff}]+-?)*[a-z\d\x{00a1}-\x{ffff}]+)*(?:\.[a-z\x{00a1}-\x{ffff}]{2,6})'
-            . '|(?:localhost))' // or localhost
-            . '(?::\d+)?' // optionnal port
-            . '(?:[^\s^,^|]*)?)'
-            . '\|' // following by a '|'
-            . ')?' // 0 or 1 time - capturing
-            . '([0-9]+)' // and a number
-            . '(?:->([0-9]+))?' // optionnaly following by '->' and a number
-            . '/u', $ids, $matches)) {
-            foreach ($matches[0] as $index => $match) {
-                $externalIds[] = [
-                    'url' => $matches[1][$index] ?? '',
-                    'id' => $matches[2][$index] ?? '',
-                    'localFormId' => $matches[3][$index] ?? '',
-                ];
-            }
-        }
-
-        return $externalIds;
-    }
+    }	
 }

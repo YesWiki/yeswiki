@@ -4,7 +4,14 @@
  *
  * */
 
+import { updateHash, parseCondition } from './utils.js'
+
+var gSavedHash;
+
 $(document).ready(() => {
+
+  gSavedHash = decodeURIComponent(document.location.hash.substring(1));
+
   // accordeon pour bazarliste
   $('.titre_accordeon').on('click', function() {
     if ($(this).hasClass('current')) {
@@ -610,8 +617,8 @@ $(document).ready(() => {
   }
 
   // If start_date is greater than en_date, set end_date to start_date
-  $startDate = $('#formulaire #bf_date_debut_evenement')
-  $endDate = $('#formulaire #bf_date_fin_evenement')
+  const $startDate = $('#formulaire #bf_date_debut_evenement')
+  const $endDate = $('#formulaire #bf_date_fin_evenement')
   if ($startDate && $endDate) {
     $startDate.change(() => {
       if (new Date($startDate.val()) > new Date($endDate.val())) $endDate.val($startDate.val())
@@ -661,7 +668,7 @@ $(document).ready(() => {
         .replace(/\+/g, '%20')
     ) || null
   }
-
+  
   // modifier un parametre de l'url pour les modifier dynamiquement
   function changeURLParameter(name, value) {
     if (getURLParameter(name) == null) {
@@ -722,6 +729,7 @@ $(document).ready(() => {
     }
   }
 
+  
   // activer les filtres des facettes
   function updateFilters(e) {
     const tabfilters = []
@@ -746,10 +754,13 @@ $(document).ready(() => {
           }
           newquery += `${name}=${val}`
           first = false
+          
+          
         } else {
           newquery += `,${val}`
           select += ','
         }
+        
         // La requete de selection prend pour les champs non multiples :
         // - exactement la valeur de l'attribut html
         // Pour les champs multiples :
@@ -768,24 +779,6 @@ $(document).ready(() => {
 
     // on applique les changements a l'url
     changeURLParameter('facette', newquery)
-
-    // on ajuste les liens vers les formulaires d'export
-    $('.export-links > a').each(
-      function() {
-        const link = $(this).attr('href')
-        const queryexists = new RegExp('&query=?' + '([^&;]+?)(&|#|;|$)').exec(link) || null
-        if (queryexists == null) {
-          $(this).attr('href', link + ((newquery !== '') ? `&query=${newquery}` : ''))
-        } else {
-          const queryinit = $('#queryinit').val()
-          if (queryinit) { newquery = `${queryinit}|${newquery}` }
-          $(this).attr(
-            'href',
-            link.replace(new RegExp('&query=?' + '([^&;]+?)(&|#|;|$)'), ((newquery !== '') ? `&query=${newquery}` : ''))
-          )
-        }
-      }
-    )
 
     // au moins un filtre à actionner
     let tabres = []
@@ -819,6 +812,29 @@ $(document).ready(() => {
     }
 
     $('body').trigger('updatedfilters', (!tabres.length) ? [] : [tabres])
+    
+    let vParam = new URLSearchParams(document.location.search);
+	let vKeywords = vParam.get("keywords"); 
+	let vSortField = vParam.get("champ");
+	let vSortOrder = vParam.get("ordre");  
+
+	var vFacette = getURLParameter('facette');
+	var vQueries;
+	var vFilters = [];
+	if (vFacette)
+	{
+		vQueries = getURLParameter('facette')
+		.split ("|")
+		.map (parseCondition)
+		.forEach (function (pCondition)
+		{
+			vFilters [pCondition.name] = pCondition.values;
+		})		
+	}
+	else
+		vFilters = [];
+	
+	updateHash(gSavedHash, vKeywords, vSortField, vSortOrder, vFilters);
   }
 
   // process changes on visible entries according to filters
@@ -846,6 +862,7 @@ $(document).ready(() => {
         const $this = $(this)
         $(this).find('input:checkbox').prop('checked', false)
         const urlparamfacette = getURLParameter('facette')
+        
         const tabfacette = urlparamfacette.split('|')
         for (let i = 0; i < tabfacette.length; i++) {
           const tabfilter = tabfacette[i].split('=')
@@ -944,7 +961,7 @@ function exportTableToCSV(filename, selector = 'table tr') {
   downloadCSV(csv.join('\n'), filename)
 }
 
-function downloadCSV(csv, filename) {
+export function downloadCSV(csv, filename) {
   let csvFile
   let downloadLink
 
@@ -964,7 +981,7 @@ function downloadCSV(csv, filename) {
   downloadLink.click()
 }
 
-function removeCSVCrochet(str) {
+export function removeCSVCrochet(str) {
   let res = str.replace(/&lt;/gm, '<')
   res = res.replace(/&gt;/gm, '>')
   return res

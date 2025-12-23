@@ -125,6 +125,11 @@ class TemplateEngine
         $this->addTwigHelper('_t', function ($key, $params = []) {
             return html_entity_decode(_t($key, $params));
         });
+        
+        $this->addTwigHelper('b64', function ($pValue) {
+            return base64_encode ($pValue);
+        });
+        
         $this->addTwigHelper('url', function ($options) {
             $options = array_merge(['tag' => '', 'handler' => '', 'params' => []], $options);
             if (substr($options['tag'], 0, 4) === 'api/') {

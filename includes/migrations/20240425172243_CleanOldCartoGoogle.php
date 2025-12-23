@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
@@ -30,7 +31,7 @@ class CleanOldCartoGoogle extends YesWikiMigration
 
     private function searchEntriesWithOnlyOldGeoloc(): array
     {
-        $entries = $this->entryManager->search([
+        $entries = $this->wiki->services->get(SearchManager::class)->search([
             'queries' => [
                 'carte_google!' => '',
             ],

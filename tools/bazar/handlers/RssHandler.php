@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Security\Controller\SecurityController;
@@ -17,47 +17,13 @@ class RssHandler extends YesWikiHandler
                 return null;
             }
 
+			$vSearchManager = $this->getService(SearchManager::class);
+			$vBazarListService = $this->getService(BazarListService::class);
             $securityController = $this->getService(SecurityController::class);
 
-            $id = null;
-            if (isset($_GET['id'])) {
-                $id = $securityController->filterInput(INPUT_GET, 'id', FILTER_DEFAULT, true, 'string', ['flags' => FILTER_FORCE_ARRAY]);
-            } elseif (isset($_GET['id_typeannonce'])) {
-                $id = $securityController->filterInput(INPUT_GET, 'id_typeannonce', FILTER_DEFAULT, true, 'string', ['flags' => FILTER_FORCE_ARRAY]);
-            }
+			$vIDs = $vBazarListService->getIDs ($_GET['id'] ?? $_GET['id_typeannonce'] ?? $_GET['idtypeannonce'] ?? []);
 
-            if ($id == null) {
-                $vIDsArray = [];
-            } else {
-                // $id a été transformé en tableau ci dessus - cf PR précédente - on garde l'algorithme et on rajoute, pour plus de résilience, la possibilité
-                // d'une spécification des ids séparés par des virgules (ex : id=1,2) ou des ids en tableau id[0]=1&id[0]=2
-                // On extrait donc les élements du tableau séparés par des virgules afin d'avoir un tableau standardisé d'ids unique.
-
-                $vIDsArray = [];
-
-                foreach ($id as $vID) {
-                    if (strpos($vID, ',') !== false) {
-                        // S'il y a des virgules, on explode et merge
-                        $vIDsArray = array_merge($vIDsArray, array_map('trim', explode(',', $vID)));
-                    } else {
-                        // Sinon on ajoute simplement l'élément
-                        $vIDsArray[] = $vID;
-                    }
-                }
-
-                foreach ($vIDsArray as $vID) {
-                    if (strval($vID) != strval(intval($vID))) {
-                        $vIDsArray = '';
-                        break;
-                    }
-                }
-            }
-
-            if (isset($_GET['nbitem'])) {
-                $nbitem = $_GET['nbitem'];
-            } else {
-                $nbitem = $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'];
-            }
+			$vItemCount = intval ($_GET['nbitem'] ?? $_GET['nb'] ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
 
             if (isset($_GET['utilisateur'])) {
                 $utilisateur = $_GET['utilisateur'];
@@ -67,39 +33,41 @@ class RssHandler extends YesWikiHandler
 
             // chaine de recherche
 
-            $vKeywords = $this->getService(SearchManager::class)->aggregateKeywords(
+            $vKeywords = $vSearchManager->aggregateKeywords(
                 isset($_GET['q']) ? urldecode($_GET['q']) : null,
                 isset($_GET['keywords']) ? urldecode($_GET['keywords']) : null
             );
 
             $vSearchFields = isset($_GET['searchfields']) ? urldecode($_GET['searchfields']) : null;
 
-            $vQuery = $this->getService(SearchManager::class)->parseQuery(isset($_GET['query']) ? urldecode($_GET['query']) : '');
+			$vQuery = $_GET['query']??"";
+            $vQuery = $vSearchManager->parseQuery(urldecode($vQuery));
 
-            // ordre
-            $ordre = 'desc';
+			// correspondance
 
-            // champ
-            $champ = 'date_creation_fiche';
+            $vCorrespondance = isset($_GET['correspondance']) ? urldecode($_GET['correspondance']) : null;
+            
+            // datefilter
 
-            $tableau_flux_rss = $this->getService(EntryManager::class)->search(
+            $vDateFilter = isset($_GET['datefilter']) ? urldecode($_GET['datefilter']) : null;
+
+			$vRSSEntries = $vBazarListService->getEntries (
                 [
-                    'queries' => $vQuery,
-                    'formsIds' => $vIDsArray,
+					'idtypeannonce' => $vIDs,
+                    'queries' => $vQuery,                    
                     'user' => $utilisateur,
                     'keywords' => $vKeywords,
                     'searchfields' => $vSearchFields,
-                ],
-                true, // filter on read ACL
-            true  // use Guard
+                    'datefilter' => $vDateFilter,
+                    'correspondance' => $vCorrespondance,
+                    'ordre' => 'desc',
+                    'champ' => 'date_creation_fiche',
+                    'nb' => $vItemCount,
+                    'minDate' => $_GET['dateMin'] ?? $_GET['minDate'] ?? $_GET['period'] ?? ''
+                ]
             );
 
-            $GLOBALS['ordre'] = $ordre;
-            $GLOBALS['champ'] = $champ;
-            usort($tableau_flux_rss, 'champCompare');
-
-            // Limite le nombre de résultat au nombre de fiches demandées
-            $tableau_flux_rss = array_slice($tableau_flux_rss, 0, $nbitem);
+			$vCount = count($vRSSEntries);
 
             // setlocale() pour avoir les formats de date valides (w3c) --julien
             setlocale(LC_TIME, 'C');
@@ -111,18 +79,20 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n    ";
             $xml .= XML_Util::createStartElement('channel');
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));
+            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));            
+            $xml .= "\r\n      ";
+			$xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
+            $xml .= "\r\n      ";            
+            $xml .= XML_Util::createTag('count', null, $vCount);
+            $xml .= "\r\n      ";                       
+            $xml .= XML_Util::createTag('description', null, $this->sanitize($this->wiki->config['BAZ_RSS_DESCRIPTIONSITE']));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('link', null, $this->sanitize($this->wiki->config['BAZ_RSS_ADRESSESITE']));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('description', null, $this->sanitize($this->wiki->config['BAZ_RSS_DESCRIPTIONSITE']));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('language', null, 'fr-FR');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) ' . date('Y') . ' ' . htmlentities(removeAccents($this->wiki->config['BAZ_RSS_NOMSITE'])));
-            $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('lastBuildDate', null, date('r'));
-            $xml .= "\r\n      ";
+            $xml .= "\r\n      ";            
             $xml .= XML_Util::createTag('docs', null, 'http://www.stervinou.com/projets/rss/');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('category', null, $this->wiki->config['BAZ_RSS_CATEGORIE']);
@@ -135,27 +105,23 @@ class RssHandler extends YesWikiHandler
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement('image');
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_DERNIERE_ACTU')));
-            $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('url', null, $this->wiki->config['BAZ_RSS_LOGOSITE']);
-            $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('link', null, $this->wiki->config['BAZ_RSS_ADRESSESITE']);
+            $xml .= XML_Util::createTag('url', null, $this->wiki->config['BAZ_RSS_LOGOSITE']);            
             $xml .= "\r\n      ";
             $xml .= XML_Util::createEndElement('image');
 
-            if (count($tableau_flux_rss) > 0) {
+            if ($vCount > 0) {
                 // Creation des items : titre + lien + description + date de publication
-                foreach ($tableau_flux_rss as $ligne) {
+                foreach ($vRSSEntries as $vRSSEntry) {
                     $xml .= "\r\n      ";
                     $xml .= XML_Util::createStartElement('item');
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('title', null, str_replace('&', '&amp;', $this->sanitize($ligne['bf_titre'])));
+                    $xml .= XML_Util::createTag('title', null, str_replace('&', '&amp;', $this->sanitize($vRSSEntry['bf_titre'])));
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $this->wiki->href('', $ligne['id_fiche']) . ']]>');
+                    $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $vRSSEntry["url"] . ']]>');
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $this->wiki->href('', $ligne['id_fiche']) . ']]>');
+                    $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $vRSSEntry["url"] . ']]>');
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('dc:creator', null, $ligne['owner']);
+                    $xml .= XML_Util::createTag('dc:creator', null, $vRSSEntry['owner']);
                     $xml .= "\r\n      ";
                     $xml .= XML_Util::createTag(
                         'description',
@@ -163,11 +129,11 @@ class RssHandler extends YesWikiHandler
                         '<![CDATA[' . preg_replace(
                             '/data-id=".*"/Ui',
                             '',
-                            $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($ligne), $this->wiki->href('', $ligne['id_fiche'])))
+                            $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($vRSSEntry), $this->wiki->href('', $vRSSEntry['id_fiche'])))
                         ) . ']]>'
                     );
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime($ligne['date_creation_fiche'])));
+                    $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime($vRSSEntry['date_creation_fiche'])));
                     $xml .= "\r\n      ";
                     $xml .= XML_Util::createEndElement('item');
                 }

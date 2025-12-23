@@ -89,8 +89,9 @@ class EntryController extends YesWikiController
      * @param string|null $time                 choose only the entry's revision corresponding to time, null = latest revision
      * @param bool        $showFooter
      * @param string|null $userNameForRendering userName used to render the entry, if empty uses the connected user
+     * @param array $pForm form to be used to render the entry
      */
-    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null)
+    public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = "", $pExternalForm = "")
     {
         if (is_array($entryId)) {
             // If entry ID is the full entry with all the values
@@ -105,8 +106,15 @@ class EntryController extends YesWikiController
             return '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FICHE_INDIQUEE') . '</div>';
         }
 
-        $form = $this->formManager->getOne($entry['id_typeannonce']);
-
+		if (empty ($pLocalForm)) $pLocalForm = $this->formManager->getOne($entry['id_typeannonce']);
+		
+		$vExternalData = $entry["external-data"];
+		
+		if (!empty ($vExternalData))
+		{			
+		    $pExternalForm = $this->formManager->getOne($entry['external-data']['formIDKey']);		   
+	    }
+	    
         // fake ->tag for the attached images
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
@@ -129,7 +137,7 @@ class EntryController extends YesWikiController
             // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
-                $customTemplateValues = $this->getValuesForCustomTemplate($entry, $form, $userNameForRendering);
+                $customTemplateValues = $this->getValuesForCustomTemplate($entry, $pLocalForm, $userNameForRendering);
                 $renderedEntry = $this->render($customTemplatePath, $customTemplateValues);
             }
 
@@ -142,8 +150,8 @@ class EntryController extends YesWikiController
             }
             // if not found, use default template
             if (is_null($renderedEntry)) {
-                if (!empty($form)) {
-                    foreach ($form['prepared'] as $field) {
+                if (!empty($pLocalForm)) {
+                    foreach ($pLocalForm['prepared'] as $field) {
                         if ($field instanceof BazarField) {
                             // TODO handle html_outside_app mode for images
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
@@ -193,7 +201,8 @@ class EntryController extends YesWikiController
         }
 
         return $this->render('@bazar/entries/view.twig', [
-            'form' => $form,
+            'form' => $pLocalForm,
+            'externalForm' => $pExternalForm,
             'entry' => $entry,
             'entryId' => $entryId,
             'owner' => $owner,
@@ -513,7 +522,7 @@ class EntryController extends YesWikiController
     }
 
     /**
-     * format queries from GET and from $arg in order to give the right 'queries' to EntryManager->search.
+     * format queries from GET and from $arg in order to give the right 'queries' to SearchManager->search.
      *
      * @param array|string|null $arg
      * @param array             $get (copy of $_GET) but pass in parameters to be more visible in primary level controllers
@@ -539,20 +548,20 @@ class EntryController extends YesWikiController
      */
     public function filterEntriesOnDate($entries, $datefilter): array
     {
-        $TODAY_TEMPLATE = '/^(today|aujourdhui|=0(D)?)$/i';
+        $TODAY_TEMPLATE = '/^(today|aujourdhui|aujourd\'hui|=0(D)?)$/i';
         $FUTURE_TEMPLATE = '/^(futur|future|>0(D)?)$/i';
-        $PAST_TEMPLATE = '/^(past|passe|<0(D)?)$/i';
+        $PAST_TEMPLATE = '/^(past|passe|passé|<0(D)?)$/i';
         $DATE_TEMPLATE = "(\+|-)(([0-9]+)Y)?(([0-9]+)M)?(([0-9]+)D)?";
         $EQUAL_TEMPLATE = '/^=' . $DATE_TEMPLATE . '$/i';
-        $MORE_TEMPLATE = '/^>' . $DATE_TEMPLATE . '$/i';
-        $LOWER_TEMPLATE = '/^<' . $DATE_TEMPLATE . '$/i';
+        $AFTER_TEMPLATE = '/^>' . $DATE_TEMPLATE . '$/i';
+        $BEFORE_TEMPLATE = '/^<' . $DATE_TEMPLATE . '$/i';
         $BETWEEN_TEMPLATE = '/^>' . $DATE_TEMPLATE . '&<' . $DATE_TEMPLATE . '$/i';
 
         if (preg_match_all($TODAY_TEMPLATE, $datefilter, $matches)) {
-            $todayMidnigth = new DateTime();
-            $todayMidnigth->setTime(0, 0);
-            $entries = array_filter($entries, function ($entry) use ($todayMidnigth) {
-                return $this->filterEntriesOnDateTraversing($entry, '=', $todayMidnigth);
+            $todayMidnight = new DateTime();
+            $todayMidnight->setTime(0, 0);
+            $entries = array_filter($entries, function ($entry) use ($todayMidnight) {
+                return $this->filterEntriesOnDateTraversing($entry, '=', $todayMidnight);
             });
         } elseif (preg_match_all($FUTURE_TEMPLATE, $datefilter, $matches)) {
             $now = new DateTime();
@@ -575,7 +584,7 @@ class EntryController extends YesWikiController
             $entries = array_filter($entries, function ($entry) use ($dateMidnigth) {
                 return $this->filterEntriesOnDateTraversing($entry, '=', $dateMidnigth);
             });
-        } elseif (preg_match_all($MORE_TEMPLATE, $datefilter, $matches)) {
+        } elseif (preg_match_all($AFTER_TEMPLATE, $datefilter, $matches)) {
             $sign = $matches[1][0];
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
@@ -585,7 +594,7 @@ class EntryController extends YesWikiController
             $entries = array_filter($entries, function ($entry) use ($date) {
                 return $this->filterEntriesOnDateTraversing($entry, '>', $date);
             });
-        } elseif (preg_match_all($LOWER_TEMPLATE, $datefilter, $matches)) {
+        } elseif (preg_match_all($BEFORE_TEMPLATE, $datefilter, $matches)) {       
             $sign = $matches[1][0];
             $nbYears = $matches[3][0];
             $nbMonth = $matches[5][0];
@@ -620,20 +629,30 @@ class EntryController extends YesWikiController
         return $entries;
     }
 
-    private function extractDate(string $sign, string $nbYears, string $nbMonth, string $nbDays): DateTime
+    private function extractDate(string $pSign, string $nbYears, string $nbMonth, string $nbDays): DateTime
     {
-        $dateInterval = new DateInterval(
-            'P'
-                . (!empty($nbYears) ? $nbYears . 'Y' : '')
-                . (!empty($nbMonth) ? $nbMonth . 'M' : '')
-                . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
-        );
-        $dateInterval->invert = ($sign == '-') ? 1 : 0;
+    	/*if ($pSign == "")
+    	{echo ("$pSign, string $nbYears, string $nbMonth, string $nbDays");
+    		$vDate = new DateTime(
+    				  (!empty($nbYears) ? $nbYears . 'Y' : '')
+		            . (!empty($nbMonth) ? $nbMonth . 'M' : '')
+		            . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : '')));
+    	}
+    	else*/
+    	{    	
+		    $vDateInterval = new DateInterval(
+		        'P'
+		            . (!empty($nbYears) ? $nbYears . 'Y' : '')
+		            . (!empty($nbMonth) ? $nbMonth . 'M' : '')
+		            . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
+		    );
+		    $vDateInterval->invert = ($pSign == '-') ? 1 : 0;
 
-        $date = new DateTime();
-        $date->add($dateInterval);
+		    $vDate = new DateTime();
+		    $vDate->add($vDateInterval);
+		}
 
-        return $date;
+        return $vDate;
     }
 
     private function filterEntriesOnDateTraversing(?array $entry, string $mode, DateTime $date): bool
@@ -720,7 +739,7 @@ class EntryController extends YesWikiController
      * @return array ["error" => string, "output" => string]
      */
     private function checkIfOnlyOneEntry(array $form): array
-    {
+    {	    
         $results = [
             'error' => '',
             'output' => '',
@@ -740,7 +759,10 @@ class EntryController extends YesWikiController
                 $results['output'] .= $this->wiki->format(!empty($pageLogin) ? '{{include page="PageLogin"}}' : '{{login}}');
             } elseif (!empty($loggerUser)) {
                 $userName = $loggerUser['name'];
-                $entries = $this->entryManager->search([
+
+                $vSearchManager = $this->getService(SearchManager::class);
+                
+                $entries = $vSearchManager->search([
                     'formsIds' => [$form['bn_id_nature']],
                     'user' => $userName,
                 ]);

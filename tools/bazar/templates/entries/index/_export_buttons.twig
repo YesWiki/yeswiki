@@ -1,60 +1,195 @@
 {% 
-	set vIDs =	(params.idtypeannonce is defined
-					? params.idtypeannonce	| filter(v => v is not empty)
-											| join(',')
-					:null
-				)
+	
+	set vIDsParameter = params.idtypeannonce ?? params.id ?? null
+
+%}
+
+{%
+
+	set vIDsString = vIDsParameter is iterable
+					? ( vIDsParameter is not empty
+							? vIDsParameter | join(',')
+							: ""
+					  )
+					: vIDsParameter 
 %}
 
 {% 
-	set vQuery =	(params.query is defined
-						? (params.query	| map(p => p.name ~ p.operator ~ (p.values|join(",")))
-										| filter(v => v is not empty)
-    		  							| join('|'))
-    		  			: null
-    		  		) 
+	set vIDsObject = (
+						vIDsString is defined
+						? { id : vIDsString }
+						: {}
+		 			 )
+%}
+
+{%
+	set vBase64EncodedIDs = b64 (vIDsString) | url_encode
 %}
 
 {% 
-	set vKeywords =	(params.keywords is defined
-						? params.keywords
-						: null
+	
+	set vQueryParameter = params.query ?? params.queries ?? null
+
+%}
+
+{% 
+	set vQueryString =	(
+							vQueryParameter is defined 
+							?	( 
+									vQueryParameter is iterable
+									?	(
+											vQueryParameter is not empty
+											?
+												vQueryParameter
+												| map(p => p.name ~ p.operator ~ (p.values|join(",")))
+												| filter(v => v is not empty)
+					  							| join('|')
+							  				: ''
+							  			)
+						  			: vQueryParameter | trim
+						  		)
+				  			:	''
+				  		) 			  		
+%}
+
+{%
+
+	set vQueryObject = vQueryString != '' ? { query : (vQueryString | url_encode) } : {}
+
+%}
+
+{% 
+	set vKeywords =	(
+						params.keywords is defined
+						? { keywords : params.keywords }
+						: {}
 					)
 %}
 
 {% 
-	set vSearchFields =	(params.searchfields is defined
-							? params.searchfields |join(",")													
-							: null
+	set vSearchFields =	(
+							params.searchfields is defined
+							? { searchfields : params.searchfields | join(",") }													
+							: {}
 						)
 %}
 
+{% 
+	set vCorrespondance =	(
+								params.correspondance is defined
+								? { correspondance : params.correspondance }
+								: {}
+							)
+%}
+
+{% 
+	set vOrdre =	(
+							params.ordre is defined
+							? { ordre : params.ordre }
+							: {}
+					)
+%}
+
+{% 
+	set vChamp =	(
+							params.champ is defined
+							? { champ : params.champ }
+							: {}
+					)
+%}
+
+{% 
+	set vPeriod =	(
+						params.period is defined
+						? { period : params.period }
+						: {}
+					)
+%}
+
+{% 
+	set vDateFilter =	(
+							params.datefilter is defined
+							? { datefilter : params.datefilter }
+							: {}
+						)
+%}
+
+{% 
+	set vNb =	(
+					params.nb is defined
+					? { nb : params.nb }
+					: {}
+				)
+%}
+
+{% 
+	set vPeriod =	(
+						params.period is defined
+						? { period : params.period }
+						: {}
+					)
+%}
+
+{% 
+	set vGenericParams = {}
+		| merge (vQueryObject)
+		| merge (vKeywords)
+		| merge (vSearchFields)
+		| merge (vCorrespondance)
+		| merge (vDateFilter)
+		| merge (vNb)
+		| merge (vPeriod)
+		
+%}
+
+
+{% 
+	set vRSSParams = {} 
+		| merge (vGenericParams)
+		| merge (vIDsObject)
+		
+%}
+
+{%
+	set vCSVParams = {} 
+		| merge (vGenericParams)
+		| merge (vOrdre) 
+		| merge (vChamp)  
+
+%}
+
+{%
+	set vJSONParams = {}
+		| merge (vGenericParams)
+		| merge (vOrdre) 
+		| merge (vChamp)  		
+%}
+
+{% 
+
+	set vRSSHRef = url ({ handler:'rss', params: vRSSParams })
+
+%}
+
+{% 
+
+	set vCSSHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries/csv', params: vCSVParams })
+
+%}
+
+{% 
+
+	set vJSONHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries', params: vJSONParams })
+
+%}
+
 <div class="export-links pull-right">
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}" target="_blank" href="{{ vRSSHRef }}" data-href="{{ vRSSHRef }}"><i class="fa fa-signal icon-signal"></i></a>
 
-{% set vRSSParams = {} %}
-{% set vRSSParams = vIDs is not null ? vRSSParams | merge ({ 'id' : vIDs }) : vRSSParams %}
-{% set vRSSParams = vQuery is not null ? vRSSParams | merge ({ 'query' : vQuery }) : vRSSParams %}
-{% set vRSSParams = vKeywords is not null ? vRSSParams | merge ({ 'keywords' : vKeywords }) : vRSSParams %}
-{% set vRSSParams = vSearchFields is not null ? vRSSParams | merge ({ 'searchfields' : vSearchFields }) : vRSSParams %}
-{% set vRSSParams = vRSSParams %}	
-
-	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}" target="_blank" href="{{ url({handler:'rss', params: vRSSParams  }) }}"><i class="fa fa-signal icon-signal"></i></a>
-
-{% set vCSVParams = {} %}
-{% set vCSVParams = vQuery is not null ? vCSVParams | merge ({ 'query' : vQuery }) : vCSVParams %}
-{% set vCSVParams = vKeywords is not null ? vCSVParams | merge ({ 'keywords' : vKeywords }) : vCSVParams %}
-{% set vCSVParams = vSearchFields is not null ? vCSVParams | merge ({ 'searchfields' : vSearchFields }) : vCSVParams %}
-{% set vCSVParams = vCSVParams %}	
-
-	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}" target="_blank" href="{{ url ({ tag: 'api', handler: 'forms/' ~ vIDs ~ '/entries/csv', params: vCSVParams }) }}">CSV</a>
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}" target="_blank" href="{{ vCSSHRef }}" data-href="{{ vCSSHRef }}">CSV</a>
   
-{% set vJSONParams = {} %}
-{% set vJSONParams = vQuery is not null ? vJSONParams | merge ({ 'query' : vQuery }) : vJSONParams %}
-{% set vJSONParams = vKeywords is not null ? vJSONParams | merge ({ 'keywords' : vKeywords }) : vJSONParams %}
-{% set vJSONParams = vSearchFields is not null ? vJSONParams | merge ({ 'searchfields' : vSearchFields }) : vJSONParams %}
-{% set vJSONParams = vJSONParams %}
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}" target="_blank" href="{{ vJSONHRef }}" data-href="{{ vJSONHRef }}">JSON</a>
+
   
-	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}" target="_blank" href="{{ url ({ tag: 'api', handler: 'forms/' ~ (params.idtypeannonce|join(',')) ~ '/entries', params: vJSONParams }) }}">JSON</a>
-	
 </div>
 

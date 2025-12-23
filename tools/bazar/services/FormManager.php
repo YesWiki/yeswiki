@@ -134,20 +134,23 @@ class FormManager
     }
 
     public function getOne($formId): ?array
-    {
+    {        	
         if (isset($this->cachedForms[$formId])) {
             return $this->cachedForms[$formId];
         }
 
-        $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
+		if (intval($formId) . "" === $formId . "")
+		{
+		    $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
 
-        if (!$form) {
-            return null;
-        }
+		    if (!$form) {
+		        return null;
+		    }
 
-        $form = $this->getFromRawData($form);
+		    $form = $this->getFromRawData($form);
+		}
 
-        $this->cachedForms[$formId] = $form;
+		$this->cachedForms[$formId] = $form;
 
         return $form;
     }
@@ -181,11 +184,16 @@ class FormManager
             $this->cacheValidatedForAll = true;
         }
 
-        return $this->cachedForms;
+        return array_filter ($this->cachedForms, 
+        	function ($pKey)
+        	{
+	        	return intval($pKey) . "" === $pKey . "";
+        	},
+        	ARRAY_FILTER_USE_KEY);        	
     }
 
     public function getMany($formsIds): array
-    {
+    {    
         $results = [];
 
         foreach ($formsIds as $formId) {
@@ -315,22 +323,36 @@ class FormManager
 
     public function findNewId()
     {
-        $result = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
+    	$vArrayKeys = array_keys($this->cachedForms);
 
-        if (!$result['maxi']) {
-            return 1;
-        }
-        if ($result['maxi'] < 999) {
-            return $result['maxi'] + 1;
-        }
+    	$vArrayKeys = array_map (function ($Key) { return intval($Key); }, array_filter ($vArrayKeys, function ($vKey)
+    	{
+    		return intval ($vKey) . "" === $vKey . "";
+    	}));
 
-        $result = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
+    	$vMaxCachedFormId = (count ($vArrayKeys) > 0) ? max($vArrayKeys) : 0;
+    
+        $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
 
-        if (!$result['maxi']) {
-            return 10001;
-        } else {
-            return $result['maxi'] + 1;
-        }
+		if (!empty ($vResult) && isset ($vResult["maxi"]))
+			$vMaxDBFormIdLowerThan1000 = $vResult["maxi"];
+		else
+			$vMaxDBFormIdLowerThan1000 = 1;
+
+		$vCandidate = max ($vMaxCachedFormId, $vMaxDBFormIdLowerThan1000) + 1;
+
+		if ($vCandidate < 999) return $vCandidate;
+
+        $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
+
+		if (!empty ($vResult) && isset ($vResult["maxi"]))
+			$vMaxDBFormIdHigherThan10000 = $vResult["maxi"];
+		else
+			$vMaxDBFormIdHigherThan10000 = 10001;
+
+		$vCandidate = max ($vMaxCachedFormId, $vMaxDBFormIdHigherThan10000) + 1;
+
+		return $vCandidate;
     }
 
     /**
@@ -423,24 +445,14 @@ class FormManager
         return $prepared;
     }
 
-    /**
-     * put a form form External Wiki in cache.
-     */
-    public function putInCacheFromExternalBazarService(int $localFormId): bool
-    {
-        if (empty($localFormId) || !empty($this->getOne($localFormId))) {
-            // error
-            return false;
-        }
-        $form = $this->wiki->services->get(ExternalBazarService::class)->getTmpForm();
-        if (empty($form)) {
-            return false;
-        } else {
-            $this->cachedForms[$localFormId] = $form;
+	/*	
+		Add a form to the cache if it is not existing
+	*/
 
-            return true;
-        }
-    }
+	public function cacheForm ($pFormId, $pForm)
+	{
+		$this->cachedForms[$pFormId] = $pForm;
+	}
 
     /**
      * return field from field name or property name.

@@ -11,6 +11,8 @@ use Throwable;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\DateService as CoreDateService;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Bazar\Service\SearchManager;
+
 
 class DateService implements EventSubscriberInterface
 {
@@ -532,11 +534,13 @@ class DateService implements EventSubscriberInterface
      */
     protected function deleteLinkedEntries(array $entry)
     {
+		$vSearchManager = $this->getService(SearchManager::class);
+    
         $entryId = $entry['id_fiche'];
         $formId = $entry['id_typeannonce'];
         $hasEndDateField = isset($entry['bf_date_fin_evenement']);
         if ($hasEndDateField && !empty($entryId) && !empty($formId)) {
-            $entriesToDelete = $this->entryManager->search(
+            $entriesToDelete = $vSearchManager->search(
                 [
                     'formsIds' => [$formId],
                     'queries' => [

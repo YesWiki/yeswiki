@@ -5,6 +5,7 @@ use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Controller\ListController;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Bazar\Service\ListManager;
@@ -45,7 +46,7 @@ function baz_valeurs_fiche($idFiche)
 }
 
 /**
- * @deprecated Use EntryManager::search
+ * @deprecated Use SearchManager::search
  */
 function baz_requete_recherche_fiches(
     $tableau_criteres = '',
@@ -63,7 +64,7 @@ function baz_requete_recherche_fiches(
         $id = [];
     }
 
-    $fiches = $GLOBALS['wiki']->services->get(EntryManager::class)->search([
+    $fiches = $GLOBALS['wiki']->services->get(SearchManager::class)->search([
         'queries' => $tableau_criteres,
         'formsIds' => $id, // Types de fiches (par ID de formulaire)
         'user' => $personne, // N'affiche que les fiches d'un utilisateur
@@ -276,7 +277,7 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
 function baz_voir_fiche($danslappli, $idfiche, $form = '')
 {
     try {
-        $output = $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche, '', $danslappli);
+        $output = $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche, '', $danslappli, null, $form);
     } catch (Throwable $t) {
         return $GLOBALS['wiki']->services->get(TemplateEngine::class)
             ->render('@templates/alert-message.twig', [

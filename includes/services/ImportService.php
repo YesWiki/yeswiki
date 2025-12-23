@@ -28,6 +28,7 @@ class ImportService
     public function extractBaseUrlAndRootPage(string $inputUrl): array
     {
         $redirectedInputUrl = $this->retrieveUrlAfterRedirect($inputUrl);
+
         $extraction = $this->extractBaseUrlModeAndTag($redirectedInputUrl);
         if (empty($extraction)) {
             return [];
@@ -92,7 +93,7 @@ class ImportService
      * @return string $outputUrl
      */
     private function retrieveUrlAfterRedirect(string $inputUrl): string
-    {
+    {      
         try {
             $headers = $this->getHeaders($inputUrl);
         } catch (CurlTimeoutException $th) {
@@ -106,6 +107,7 @@ class ImportService
                 ? $headers['location']
                 : ''
             );
+            
         if (!empty($location)) {
             if (is_array($location)) {
                 $outputUrl = $location[count($location) - 1];
