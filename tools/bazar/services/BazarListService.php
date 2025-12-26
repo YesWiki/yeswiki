@@ -98,11 +98,11 @@ class BazarListService
 
             $vLocalEntries = $vSearchManager->search(
                 array_merge(
-                $pOptions,
-                [
+                    $pOptions,
+                    [
                     'formsIds' => $vLocalIDs,
                 ]
-            ),
+                ),
                 true, // filter on read ACL,
                     true // use Guard
             );
@@ -509,9 +509,11 @@ class BazarListService
 
         $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', $pIDs);
 
-        $vLines = str_getcsv($pIDs);
+        $vLines = str_getcsv($pIDs, ',', '"', '\\');
 
-        $vLines = array_filter($vLines, function ($vLine) { return !empty($vLine) && trim($vLine) != ''; });
+        $vLines = array_filter($vLines, function ($vLine) {
+            return !empty($vLine) && trim($vLine) != '';
+        });
 
         $vIDs = [];
 
