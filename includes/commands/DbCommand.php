@@ -76,8 +76,8 @@ class DbCommand extends Command
      */
     private function getDbParams(): array
     {
-        $hostname = $this->params->get('mysql_host');
-        $this->assertParamIsNotEmptyString('mysql_host', $hostname);
+        $hostname = $this->params->get('db_host');
+        $this->assertParamIsNotEmptyString('db_host', $hostname);
         if (strpos($hostname, ':') !== false) {
             list($hostname, $port) = explode(':', $hostname);
         }
@@ -87,17 +87,17 @@ class DbCommand extends Command
             $hostArg = ["--host=$hostname"];
         }
 
-        $databasename = $this->params->get('mysql_database');
-        $this->assertParamIsNotEmptyString('mysql_database', $databasename);
+        $databasename = $this->params->get('db_database');
+        $this->assertParamIsNotEmptyString('db_database', $databasename);
 
         $tablePrefix = $this->params->get('table_prefix');
         $this->assertParamIsNotEmptyString('table_prefix', $tablePrefix);
 
-        $username = $this->params->get('mysql_user');
-        $this->assertParamIsString('mysql_user', $username);
+        $username = $this->params->get('db_user');
+        $this->assertParamIsString('db_user', $username);
 
-        $password = $this->params->get('mysql_password');
-        $this->assertParamIsString('mysql_password', $password);
+        $password = $this->params->get('db_password');
+        $this->assertParamIsString('db_password', $password);
 
         return compact(['hostArg', 'databasename', 'tablePrefix', 'username', 'password']);
     }

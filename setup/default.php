@@ -117,28 +117,28 @@
       <div class="form-group">
         <label class="col-sm-3 control-label"><?php echo _t('MYSQL_SERVER'); ?></label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[mysql_host]" value="<?php echo $wakkaConfig['mysql_host']; ?>" />
+          <input type="text" required class="form-control" name="config[db_host]" value="<?php echo $wakkaConfig['mysql_host']; ?>" />
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-sm-3 control-label"><?php echo _t('MYSQL_DATABASE'); ?></label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[mysql_database]" value="" />
+          <input type="text" required class="form-control" name="config[db_database]" value="" />
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-sm-3 control-label"><?php echo _t('MYSQL_USERNAME'); ?></label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[mysql_user]" value="" />
+          <input type="text" required class="form-control" name="config[db_user]" value="" />
         </div>
       </div>
 
       <div class="form-group">
         <label class="col-sm-3 control-label"><?php echo _t('MYSQL_PASSWORD'); ?></label>
         <div class="col-sm-9">
-          <input type="password" class="form-control" name="config[mysql_password]" value="" />
+          <input type="password" class="form-control" name="config[db_password]" value="" />
         </div>
       </div>
 

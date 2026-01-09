@@ -29,7 +29,7 @@ if (!$version = trim($wakkaConfig['wikini_version'])) {
 }
 
 if ($version) {
-    test(_t('VERIFY_MYSQL_PASSWORD') . ' ...', isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD') . ' !');
+    test(_t('VERIFY_MYSQL_PASSWORD') . ' ...', isset($config2['db_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD') . ' !');
 }
 
 // As of PHP 8.1.0, the default setting is MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT.
@@ -40,23 +40,23 @@ if ($version) {
 // To let tests in this script work, come back to MYSQLI_REPORT_OFF
 mysqli_report(MYSQLI_REPORT_OFF);
 
-test(_t('TEST_MYSQL_CONNECTION') . ' ...', $dblink = @mysqli_connect($config['mysql_host'], $config['mysql_user'], $config['mysql_password']));
+test(_t('TEST_MYSQL_CONNECTION') . ' ...', $dblink = @mysqli_connect($config['db_host'], $config['db_user'], $config['db_password']));
 
 $testdb = test(
     _t('SEARCH_FOR_DATABASE') . ' ...',
-    @mysqli_select_db($dblink, $config['mysql_database']),
+    @mysqli_select_db($dblink, $config['db_database']),
     _t('NO_DATABASE_FOUND_TRY_TO_CREATE') . '.',
     0
 );
 if ($testdb == 1) {
     test(
         _t('TRYING_TO_CREATE_DATABASE') . ' ...',
-        @mysqli_query($dblink, 'CREATE DATABASE ' . $config['mysql_database']),
+        @mysqli_query($dblink, 'CREATE DATABASE ' . $config['db_database']),
         _t('DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY') . ' !'
     );
     test(
         _t('SEARCH_FOR_DATABASE') . ' ...',
-        @mysqli_select_db($dblink, $config['mysql_database']),
+        @mysqli_select_db($dblink, $config['db_database']),
         _t('DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT') . ' !',
         1
     );

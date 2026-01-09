@@ -12,11 +12,11 @@ if (isset($this)) {
         include_once 'includes/Encoding.php';
         $output = '';
         $result = $this->LoadAll(
-            'SHOW TABLES FROM ' . $this->config['mysql_database']
+            'SHOW TABLES FROM ' . $this->config['db_database']
             . ' LIKE "' . $this->config['table_prefix'] . '%"'
         );
         $this->query('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
-        $this->query('ALTER DATABASE `' . $this->config['mysql_database'] . '` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+        $this->query('ALTER DATABASE `' . $this->config['db_database'] . '` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
         $tables = [
             $this->config['table_prefix'] . 'acls',
             $this->config['table_prefix'] . 'links',
@@ -120,11 +120,11 @@ if (php_sapi_name() === 'cli') {
     include_once 'includes/Encoding.php';
 
     $GLOBALS['dblink'] = @mysqli_connect(
-        $wakkaConfig['mysql_host'],
-        $wakkaConfig['mysql_user'],
-        $wakkaConfig['mysql_password'],
-        $wakkaConfig['mysql_database'],
-        isset($wakkaConfig['mysql_port']) ? $wakkaConfig['mysql_port'] : ini_get('mysqli.default_port')
+        $wakkaConfig['db_host'],
+        $wakkaConfig['db_user'],
+        $wakkaConfig['db_password'],
+        $wakkaConfig['db_database'],
+        isset($wakkaConfig['db_port']) ? $wakkaConfig['mysql_port'] : ini_get('mysqli.default_port')
     );
 
     if ($GLOBALS['dblink']) {
@@ -164,11 +164,11 @@ if (php_sapi_name() === 'cli') {
     }
 
     $result = LoadAll(
-        'SHOW TABLES FROM ' . $wakkaConfig['mysql_database']
+        'SHOW TABLES FROM ' . $wakkaConfig['db_database']
         . ' LIKE "' . $wakkaConfig['table_prefix'] . '%"'
     );
     sqlQuery('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
-    sqlQuery('ALTER DATABASE `' . $wakkaConfig['mysql_database'] . '` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
+    sqlQuery('ALTER DATABASE `' . $wakkaConfig['db_database'] . '` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci');
     $tables = [
         $wakkaConfig['table_prefix'] . 'acls',
         $wakkaConfig['table_prefix'] . 'links',
