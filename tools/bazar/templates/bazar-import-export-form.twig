@@ -50,11 +50,15 @@
 	
 	window.addEventListener ("load", function ()
 	{
-		document.getElementById('btnCSV').addEventListener('click', 
-		function ()
+		const cCSVBtn = document.getElementById('btnCSV');
+		
+		if (cCSVBtn !== null)
 		{
-			downloadCSV(removeCSVCrochet($('.precsv').html()), '{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}');return false;
-		});		
+			cCSVBtn.addEventListener('click', function ()
+			{
+				downloadCSV(removeCSVCrochet($('.precsv').html()), '{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}');return false;
+			});		
+		}
 	});	  
 </script>
 
