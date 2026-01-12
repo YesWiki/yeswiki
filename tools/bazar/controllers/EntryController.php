@@ -110,7 +110,7 @@ class EntryController extends YesWikiController
             $pLocalForm = $this->formManager->getOne($entry['id_typeannonce']);
         }
 
-        $vExternalData = $entry['external-data'];
+        $vExternalData = $entry['external-data'] ?? null;
 
         if (!empty($vExternalData)) {
             $pExternalForm = $this->formManager->getOne($entry['external-data']['formIDKey']);

@@ -10,7 +10,7 @@ use YesWiki\Core\Service\TemplateEngine;
 
 $entryManager = $this->services->get(EntryManager::class);
 
-$this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+$this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
 
 // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
 if (!function_exists('champCompare')) {

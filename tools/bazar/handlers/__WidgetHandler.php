@@ -17,7 +17,7 @@ class __WidgetHandler extends YesWikiHandler
             return null;
         }
 
-        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
 
         ob_start();
         echo '<div class="page">';
