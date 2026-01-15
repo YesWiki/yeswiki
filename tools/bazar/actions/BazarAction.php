@@ -135,7 +135,7 @@ class BazarAction extends YesWikiAction
                 }
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
-                        return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
+                        return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update($_REQUEST['id_fiche']);
                     case self::ACTION_ENTRY_DELETE:
@@ -147,11 +147,11 @@ class BazarAction extends YesWikiAction
                     case self::CHOISIR_TYPE_FICHE:
                         return $entryController->selectForm();
                     default:
-                        if (!empty($this->arguments['idtypeannonce'])) {
-                            if (count($this->arguments['idtypeannonce']) > 1) {
-                                return $entryController->selectForm($this->arguments['idtypeannonce']);
+                        if (!empty($this->arguments['idtypeannonce']['locals'])) {
+                            if (count($this->arguments['idtypeannonce']['locals']) > 1) {
+                                return $entryController->selectForm($this->arguments['idtypeannonce']['locals']);
                             } else {
-                                return $entryController->create($this->arguments['idtypeannonce'][0], $this->arguments['redirecturl']);
+                                return $entryController->create($this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
                             }
                         } else {
                             return $entryController->selectForm();
