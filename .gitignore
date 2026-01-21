@@ -33,6 +33,7 @@ robots.txt
 
 # YesWiki stuff
 .env
+.php-version
 *.config.php
 info.php
 cache/*
