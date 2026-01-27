@@ -4,6 +4,7 @@ namespace YesWiki;
 
 require_once 'includes/constants.php';
 require_once 'includes/urlutils.inc.php';
+require_once 'includes/email.inc.php';
 require_once 'includes/i18n.inc.php';
 require_once 'includes/YesWikiInit.php';
 require_once 'includes/YesWikiPerformable.php';

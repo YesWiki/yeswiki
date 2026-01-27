@@ -42,6 +42,20 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
                 $mail->Username = $GLOBALS['wiki']->config['contact_smtp_user'];
                 //Password to use for SMTP authentication
                 $mail->Password = $GLOBALS['wiki']->config['contact_smtp_pass'];
+                
+               	$vSMTPSecure = $GLOBALS['wiki']->config['contact_smtp_secure']??null;
+
+				if (empty ($vSMTPSecure)) $vSMTPSecure = getSMTPSecure ($mail->Port??null);
+                
+                switch ($vSMTPSecure)
+                {
+                	case "ssl" :
+		                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;                
+		            break;
+		            case "tls" :
+		                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+		            break;
+	            }                
             } else {
                 $mail->SMTPAuth = false;
             }
@@ -116,3 +130,27 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         return false;
     }
 }
+
+function getMailDomain ($pHost)
+{
+	$vHost = preg_replace('/^www\./', '', $pHost);
+	$vParts = explode('.', $vHost);
+	$vDomain = implode('.', array_slice($vParts, -2));
+	
+	return $vDomain;
+}
+
+function getSMTPSecure ($pPort = null)
+{
+	if (!empty($pPort))
+	{
+		switch ($pPort)
+		{
+			case "465" : return "ssl";			
+			case "587" : return "tls";
+		}
+	}
+	
+	return "";
+}
+

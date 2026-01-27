@@ -216,3 +216,4 @@ function getAbsoluteURLForLinkInAPage($pPageAbsoluteURL, $pLink)
 
     return $vAbsolutePath;
 }
+

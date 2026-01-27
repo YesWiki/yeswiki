@@ -5,7 +5,7 @@ parameters:
   # Envoi automatique de mail aux admins ?
   BAZ_ENVOI_MAIL_ADMIN: false
   # Definition d'un mail par defaut, car il y peut y avoir envoi de mail aux utilisateurs avec la constante suivante
-  BAZ_ADRESSE_MAIL_ADMIN: 'noreply@%host%'
+  BAZ_ADRESSE_MAIL_ADMIN: 'noreply@%mail_domain%'
   # Choix du look du template par défaut $GLOBALS['wiki']->config['default_bazar_template']
   default_bazar_template: 'liste_accordeon.tpl.html'
   # Si un formulaire est sémantique et qu'il a un des contextes ci-dessous, nous allons chercher dans
