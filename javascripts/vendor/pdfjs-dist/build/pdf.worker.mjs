@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.4.449
- * pdfjsBuild = f44e5f0e6
+ * pdfjsVersion = 5.4.530
+ * pdfjsBuild = 50cc4adac
  */
 /******/ var __webpack_modules__ = ({
 
@@ -927,7 +927,7 @@ var wellKnownSymbol = __webpack_require__(8227);
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
 var test = {};
-
+// eslint-disable-next-line unicorn/no-immediate-mutation -- ES3 syntax limitation
 test[TO_STRING_TAG] = 'z';
 
 module.exports = String(test) === '[object z]';
@@ -2898,9 +2898,7 @@ module.exports = function (name, callback) {
         new Set()[name](createSetLikeWithInfinitySize(-Infinity));
         return false;
       } catch (error) {
-        var set = new Set();
-        set.add(1);
-        set.add(2);
+        var set = new Set([1, 2]);
         return callback(set[name](createSetLikeWithInfinitySize(Infinity)));
       }
     }
@@ -4146,10 +4144,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.46.0',
+  version: '3.47.0',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru), 2025 CoreJS Company (core-js.io)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.46.0/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.47.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -15087,15 +15085,15 @@ function readSegmentHeader(data, start) {
   let referredToCount = referredFlags >> 5 & 7;
   const retainBits = [referredFlags & 31];
   let position = start + 6;
-  if (referredFlags === 7) {
+  if (referredToCount === 7) {
     referredToCount = readUint32(data, position - 1) & 0x1fffffff;
     position += 3;
-    let bytes = referredToCount + 7 >> 3;
+    let bytes = referredToCount + 8 >> 3;
     retainBits[0] = data[position++];
     while (--bytes > 0) {
       retainBits.push(data[position++]);
     }
-  } else if (referredFlags === 5 || referredFlags === 6) {
+  } else if (referredToCount === 5 || referredToCount === 6) {
     throw new Jbig2Error("invalid referred-to flags");
   }
   segmentHeader.retainBits = retainBits;
@@ -22965,12 +22963,10 @@ const CharstringValidationData = [null, {
   resetStack: true
 }, null, {
   id: "callsubr",
-  min: 1,
-  undefStack: true
+  min: 1
 }, {
   id: "return",
-  min: 0,
-  undefStack: true
+  min: 0
 }, null, null, {
   id: "endchar",
   min: 0,
@@ -23019,8 +23015,7 @@ const CharstringValidationData = [null, {
   resetStack: true
 }, null, {
   id: "callgsubr",
-  min: 1,
-  undefStack: true
+  min: 1
 }, {
   id: "vhcurveto",
   min: 4,
@@ -23168,6 +23163,7 @@ class CFFParser {
     cff.isCIDFont = topDict.hasName("ROS");
     const charStringOffset = topDict.getByName("CharStrings");
     const charStringIndex = this.parseIndex(charStringOffset).obj;
+    cff.charStringCount = charStringIndex.count;
     const fontMatrix = topDict.getByName("FontMatrix");
     if (fontMatrix) {
       properties.fontMatrix = fontMatrix;
@@ -23458,15 +23454,13 @@ class CFFParser {
             data[j - 1] = value === 1 ? 3 : 23;
           }
         }
-        if ("min" in validationCommand) {
-          if (!state.undefStack && stackSize < validationCommand.min) {
-            warn("Not enough parameters for " + validationCommand.id + "; actual: " + stackSize + ", expected: " + validationCommand.min);
-            if (stackSize === 0) {
-              data[j - 1] = 14;
-              return true;
-            }
-            return false;
+        if (stackSize < validationCommand.min) {
+          warn("Not enough parameters for " + validationCommand.id + "; actual: " + stackSize + ", expected: " + validationCommand.min);
+          if (stackSize === 0) {
+            data[j - 1] = 14;
+            return true;
           }
+          return false;
         }
         if (state.firstStackClearing && validationCommand.stackClearing) {
           state.firstStackClearing = false;
@@ -23485,15 +23479,8 @@ class CFFParser {
             validationCommand.stackFn(stack, stackSize);
           }
           stackSize += validationCommand.stackDelta;
-        } else if (validationCommand.stackClearing) {
+        } else if (validationCommand.stackClearing || validationCommand.resetStack) {
           stackSize = 0;
-        } else if (validationCommand.resetStack) {
-          stackSize = 0;
-          state.undefStack = false;
-        } else if (validationCommand.undefStack) {
-          stackSize = 0;
-          state.undefStack = true;
-          state.firstStackClearing = false;
         }
       }
     }
@@ -23520,7 +23507,6 @@ class CFFParser {
         callDepth: 0,
         stackSize: 0,
         stack: [],
-        undefStack: true,
         hints: 0,
         firstStackClearing: true,
         seac: null,
@@ -23765,6 +23751,7 @@ class CFF {
     this.fdArray = [];
     this.fdSelect = null;
     this.isCIDFont = false;
+    this.charStringCount = 0;
   }
   duplicateFirstGlyph() {
     if (this.charStrings.count >= 65535) {
@@ -24937,6 +24924,39 @@ const getGlyphMapForStandardFonts = getLookupTableFactory(function (t) {
   t[598] = 1068;
   t[599] = 1069;
   t[600] = 1070;
+  t[601] = 1071;
+  t[602] = 1072;
+  t[603] = 1073;
+  t[604] = 1074;
+  t[605] = 1075;
+  t[606] = 1076;
+  t[607] = 1077;
+  t[608] = 1078;
+  t[609] = 1079;
+  t[610] = 1080;
+  t[611] = 1081;
+  t[612] = 1082;
+  t[613] = 1083;
+  t[614] = 1084;
+  t[615] = 1085;
+  t[616] = 1086;
+  t[617] = 1087;
+  t[618] = 1088;
+  t[619] = 1089;
+  t[620] = 1090;
+  t[621] = 1091;
+  t[622] = 1092;
+  t[623] = 1093;
+  t[624] = 1094;
+  t[625] = 1095;
+  t[626] = 1096;
+  t[627] = 1097;
+  t[628] = 1098;
+  t[629] = 1099;
+  t[630] = 1100;
+  t[631] = 1101;
+  t[632] = 1102;
+  t[633] = 1103;
   t[672] = 1488;
   t[673] = 1489;
   t[674] = 1490;
@@ -32679,14 +32699,10 @@ class Font {
       header = readOpenTypeHeader(font);
       tables = readTables(font, header.numTables);
     }
-    let cff, cffFile;
     const isTrueType = !tables["CFF "];
     if (!isTrueType) {
-      const isComposite = properties.composite && (properties.cidToGidMap?.length > 0 || !(properties.cMap instanceof IdentityCMap));
-      if (header.version === "OTTO" && !isComposite || !tables.head || !tables.hhea || !tables.maxp || !tables.post) {
-        cffFile = new Stream(tables["CFF "].data);
-        cff = new CFFFont(cffFile, properties);
-        return this.convert(name, cff, properties);
+      if (header.version === "OTTO" && !properties.composite || !tables.head || !tables.hhea || !tables.maxp || !tables.post) {
+        return this.convert(name, new CFFFont(new Stream(tables["CFF "].data), properties), properties);
       }
       delete tables.glyf;
       delete tables.loca;
@@ -32710,9 +32726,26 @@ class Font {
     if (!tables.maxp) {
       throw new FormatError('Required "maxp" table is not found');
     }
+    let numGlyphsFromCFF;
+    if (!isTrueType) {
+      try {
+        const parser = new CFFParser(new Stream(tables["CFF "].data), properties, SEAC_ANALYSIS_ENABLED);
+        const cff = parser.parse();
+        cff.duplicateFirstGlyph();
+        const compiler = new CFFCompiler(cff);
+        tables["CFF "].data = compiler.compile();
+        numGlyphsFromCFF = cff.charStringCount;
+      } catch {
+        warn("Failed to compile font " + properties.loadedName);
+      }
+    }
     font.pos = (font.start || 0) + tables.maxp.offset;
     let version = font.getInt32();
-    const numGlyphs = font.getUint16();
+    const numGlyphs = numGlyphsFromCFF ?? font.getUint16();
+    if (version === 0x00005000 && tables.maxp.length !== 6) {
+      tables.maxp.data = tables.maxp.data.subarray(0, 6);
+      tables.maxp.length = 6;
+    }
     if (version !== 0x00010000 && version !== 0x00005000) {
       if (tables.maxp.length === 6) {
         version = 0x0005000;
@@ -32723,11 +32756,28 @@ class Font {
       }
       writeUint32(tables.maxp.data, 0, version);
     }
+    let isGlyphLocationsLong = int16(tables.head.data[50], tables.head.data[51]);
+    if (tables.loca) {
+      const locaLength = isGlyphLocationsLong ? (numGlyphs + 1) * 4 : (numGlyphs + 1) * 2;
+      if (tables.loca.length !== locaLength) {
+        warn("Incorrect 'loca' table length -- attempting to fix it.");
+        const sortedTables = Object.values(tables).filter(Boolean).sort((a, b) => a.offset - b.offset);
+        const locaIndex = sortedTables.indexOf(tables.loca);
+        const nextTable = sortedTables[locaIndex + 1] || null;
+        if (nextTable && tables.loca.offset + locaLength < nextTable.offset) {
+          const previousPos = font.pos;
+          font.pos = font.start || 0;
+          font.skip(tables.loca.offset);
+          tables.loca.data = font.getBytes(locaLength);
+          tables.loca.length = locaLength;
+          font.pos = previousPos;
+        }
+      }
+    }
     if (properties.scaleFactors?.length === numGlyphs && isTrueType) {
       const {
         scaleFactors
       } = properties;
-      const isGlyphLocationsLong = int16(tables.head.data[50], tables.head.data[51]);
       const glyphs = new GlyfTable({
         glyfTable: tables.glyf.data,
         isGlyphLocationsLong,
@@ -32744,7 +32794,7 @@ class Font {
       tables.loca.data = loca;
       if (isLocationLong !== !!isGlyphLocationsLong) {
         tables.head.data[50] = 0;
-        tables.head.data[51] = isLocationLong ? 1 : 0;
+        isGlyphLocationsLong = tables.head.data[51] = isLocationLong ? 1 : 0;
       }
       const metrics = tables.hmtx.data;
       for (let i = 0; i < numGlyphs; i++) {
@@ -32792,7 +32842,6 @@ class Font {
     sanitizeHead(tables.head, numGlyphs, isTrueType ? tables.loca.length : 0);
     let missingGlyphs = Object.create(null);
     if (isTrueType) {
-      const isGlyphLocationsLong = int16(tables.head.data[50], tables.head.data[51]);
       const glyphsInfo = sanitizeGlyphLocations(tables.loca, tables.glyf, numGlyphs, isGlyphLocationsLong, hintsValid, dupFirstEntry, maxSizeOfInstructions);
       missingGlyphs = glyphsInfo.missingGlyphs;
       if (version >= 0x00010000 && tables.maxp.length >= 32) {
@@ -32958,18 +33007,6 @@ class Font {
           tag: "OS/2",
           data: createOS2Table(properties, newMapping.charCodeToGlyphId, metricsOverride)
         };
-      }
-    }
-    if (!isTrueType) {
-      try {
-        cffFile = new Stream(tables["CFF "].data);
-        const parser = new CFFParser(cffFile, properties, SEAC_ANALYSIS_ENABLED);
-        cff = parser.parse();
-        cff.duplicateFirstGlyph();
-        const compiler = new CFFCompiler(cff);
-        tables["CFF "].data = compiler.compile();
-      } catch {
-        warn("Failed to compile font " + properties.loadedName);
       }
     }
     if (!tables.name) {
@@ -33951,6 +33988,31 @@ class PatternInfo {
       return ["Mesh", shadingType, coords, colors, figures, bounds, bbox, background];
     }
     throw new Error(`Unsupported pattern kind: ${kind}`);
+  }
+}
+class FontPathInfo {
+  static write(path) {
+    let data;
+    let buffer;
+    if (FeatureTest.isFloat16ArraySupported) {
+      buffer = new ArrayBuffer(path.length * 2);
+      data = new Float16Array(buffer);
+    } else {
+      buffer = new ArrayBuffer(path.length * 4);
+      data = new Float32Array(buffer);
+    }
+    data.set(path);
+    return buffer;
+  }
+  #buffer;
+  constructor(buffer) {
+    this.#buffer = buffer;
+  }
+  get path() {
+    if (FeatureTest.isFloat16ArraySupported) {
+      return new Float16Array(this.#buffer);
+    }
+    return new Float32Array(this.#buffer);
   }
 }
 
@@ -36848,6 +36910,32 @@ const substitutionMap = new Map([["Times-Roman", {
   alias: "Wingdings"
 }], ["Wingdings-Bold", {
   alias: "Wingdings"
+}], ["\xCB\xCE\xCC\xE5", {
+  local: ["SimSun", "SimSun Regular", "NSimSun"],
+  style: NORMAL,
+  ultimate: "serif"
+}], ["\xBA\xDA\xCC\xE5", {
+  local: ["SimHei", "SimHei Regular"],
+  style: NORMAL,
+  ultimate: "sans-serif"
+}], ["\xBF\xAC\xCC\xE5", {
+  local: ["KaiTi", "SimKai", "SimKai Regular"],
+  style: NORMAL,
+  ultimate: "sans-serif"
+}], ["\xB7\xC2\xCB\xCE", {
+  local: ["FangSong", "SimFang", "SimFang Regular"],
+  style: NORMAL,
+  ultimate: "serif"
+}], ["\xBF\xAC\xCC\xE5_GB2312", {
+  alias: "\xBF\xAC\xCC\xE5"
+}], ["\xB7\xC2\xCB\xCE_GB2312", {
+  alias: "\xB7\xC2\xCB\xCE"
+}], ["\xC1\xA5\xCA\xE9", {
+  local: ["SimLi", "SimLi Regular"],
+  style: NORMAL,
+  ultimate: "serif"
+}], ["\xD0\xC2\xCB\xCE", {
+  alias: "\xCB\xCE\xCC\xE5"
 }]]);
 const fontAliases = new Map([["Arial-Black", "ArialBlack"]]);
 function getStyleToAppend(style) {
@@ -40461,7 +40549,7 @@ class PartialEvaluator {
     const toUnicodePromise = this.readToUnicode(properties.toUnicode);
     if (properties.composite) {
       const cidSystemInfo = dict.get("CIDSystemInfo");
-      if (cidSystemInfo instanceof Dict) {
+      if (cidSystemInfo instanceof Dict && !properties.cidSystemInfo) {
         properties.cidSystemInfo = {
           registry: stringToPDFString(cidSystemInfo.get("Registry")),
           ordering: stringToPDFString(cidSystemInfo.get("Ordering")),
@@ -40519,6 +40607,28 @@ class PartialEvaluator {
       isSymbolsFontName = getSymbolsFonts()[properties.name];
     if (baseEncodingName && nonEmbeddedFont && isSymbolsFontName) {
       baseEncodingName = null;
+    }
+    if (baseEncodingName === "WinAnsiEncoding" && nonEmbeddedFont && properties.name?.charCodeAt(0) >= 0xb7) {
+      const fontName = properties.name;
+      const chineseFontNames = ["\xCB\xCE\xCC\xE5", "\xBA\xDA\xCC\xE5", "\xBF\xAC\xCC\xE5", "\xB7\xC2\xCB\xCE", "\xBF\xAC\xCC\xE5_GB2312", "\xB7\xC2\xCB\xCE_GB2312", "\xC1\xA5\xCA\xE9", "\xD0\xC2\xCB\xCE"];
+      if (chineseFontNames.includes(fontName)) {
+        baseEncodingName = null;
+        properties.defaultEncoding = "Adobe-GB1-UCS2";
+        properties.composite = true;
+        properties.cidEncoding = Name.get("GBK-EUC-H");
+        const cMap = await CMapFactory.create({
+          encoding: properties.cidEncoding,
+          fetchBuiltInCMap: this._fetchBuiltInCMapBound,
+          useCMap: null
+        });
+        properties.cMap = cMap;
+        properties.vertical = properties.cMap.vertical;
+        properties.cidSystemInfo = {
+          registry: "Adobe",
+          ordering: "GB1",
+          supplement: 0
+        };
+      }
     }
     if (baseEncodingName) {
       properties.defaultEncoding = getEncoding(baseEncodingName);
@@ -41258,7 +41368,8 @@ class PartialEvaluator {
         if (font.renderer.hasBuiltPath(fontChar)) {
           return;
         }
-        handler.send("commonobj", [glyphName, "FontPath", font.renderer.getPathJs(fontChar)]);
+        const buffer = FontPathInfo.write(font.renderer.getPathJs(fontChar));
+        handler.send("commonobj", [glyphName, "FontPath", buffer], [buffer]);
       } catch (reason) {
         if (evaluatorOptions.ignoreErrors) {
           warn(`buildFontPaths - ignoring ${glyphName} glyph: "${reason}".`);
@@ -66227,7 +66338,7 @@ class WorkerMessageHandler {
       docId,
       apiVersion
     } = docParams;
-    const workerVersion = "5.4.449";
+    const workerVersion = "5.4.530";
     if (apiVersion !== workerVersion) {
       throw new Error(`The API version "${apiVersion}" does not match ` + `the Worker version "${workerVersion}".`);
     }

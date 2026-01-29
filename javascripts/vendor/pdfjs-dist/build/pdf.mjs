@@ -21,8 +21,8 @@
  */
 
 /**
- * pdfjsVersion = 5.4.449
- * pdfjsBuild = f44e5f0e6
+ * pdfjsVersion = 5.4.530
+ * pdfjsBuild = 50cc4adac
  */
 /******/ var __webpack_modules__ = ({
 
@@ -903,7 +903,7 @@ var wellKnownSymbol = __webpack_require__(8227);
 
 var TO_STRING_TAG = wellKnownSymbol('toStringTag');
 var test = {};
-
+// eslint-disable-next-line unicorn/no-immediate-mutation -- ES3 syntax limitation
 test[TO_STRING_TAG] = 'z';
 
 module.exports = String(test) === '[object z]';
@@ -2841,9 +2841,7 @@ module.exports = function (name, callback) {
         new Set()[name](createSetLikeWithInfinitySize(-Infinity));
         return false;
       } catch (error) {
-        var set = new Set();
-        set.add(1);
-        set.add(2);
+        var set = new Set([1, 2]);
         return callback(set[name](createSetLikeWithInfinitySize(Infinity)));
       }
     }
@@ -4086,10 +4084,10 @@ var SHARED = '__core-js_shared__';
 var store = module.exports = globalThis[SHARED] || defineGlobalProperty(SHARED, {});
 
 (store.versions || (store.versions = [])).push({
-  version: '3.46.0',
+  version: '3.47.0',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2014-2025 Denis Pushkarev (zloirock.ru), 2025 CoreJS Company (core-js.io)',
-  license: 'https://github.com/zloirock/core-js/blob/v3.46.0/LICENSE',
+  license: 'https://github.com/zloirock/core-js/blob/v3.47.0/LICENSE',
   source: 'https://github.com/zloirock/core-js'
 });
 
@@ -4602,256 +4600,8 @@ $({ target: 'Iterator', proto: true, real: true, forced: FAILS_ON_INITIAL_UNDEFI
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 
-var $ = __webpack_require__(6518);
-var DESCRIPTORS = __webpack_require__(3724);
-var globalThis = __webpack_require__(4576);
-var getBuiltIn = __webpack_require__(7751);
-var uncurryThis = __webpack_require__(9504);
-var call = __webpack_require__(9565);
-var isCallable = __webpack_require__(4901);
-var isObject = __webpack_require__(34);
-var isArray = __webpack_require__(4376);
-var hasOwn = __webpack_require__(9297);
-var toString = __webpack_require__(655);
-var lengthOfArrayLike = __webpack_require__(6198);
-var createProperty = __webpack_require__(4659);
-var fails = __webpack_require__(9039);
-var parseJSONString = __webpack_require__(8235);
-var NATIVE_SYMBOL = __webpack_require__(4495);
-
-var JSON = globalThis.JSON;
-var Number = globalThis.Number;
-var SyntaxError = globalThis.SyntaxError;
-var nativeParse = JSON && JSON.parse;
-var enumerableOwnProperties = getBuiltIn('Object', 'keys');
-// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
-var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
-var at = uncurryThis(''.charAt);
-var slice = uncurryThis(''.slice);
-var exec = uncurryThis(/./.exec);
-var push = uncurryThis([].push);
-
-var IS_DIGIT = /^\d$/;
-var IS_NON_ZERO_DIGIT = /^[1-9]$/;
-var IS_NUMBER_START = /^[\d-]$/;
-var IS_WHITESPACE = /^[\t\n\r ]$/;
-
-var PRIMITIVE = 0;
-var OBJECT = 1;
-
-var $parse = function (source, reviver) {
-  source = toString(source);
-  var context = new Context(source, 0, '');
-  var root = context.parse();
-  var value = root.value;
-  var endIndex = context.skip(IS_WHITESPACE, root.end);
-  if (endIndex < source.length) {
-    throw new SyntaxError('Unexpected extra character: "' + at(source, endIndex) + '" after the parsed data at: ' + endIndex);
-  }
-  return isCallable(reviver) ? internalize({ '': value }, '', reviver, root) : value;
-};
-
-var internalize = function (holder, name, reviver, node) {
-  var val = holder[name];
-  var unmodified = node && val === node.value;
-  var context = unmodified && typeof node.source == 'string' ? { source: node.source } : {};
-  var elementRecordsLen, keys, len, i, P;
-  if (isObject(val)) {
-    var nodeIsArray = isArray(val);
-    var nodes = unmodified ? node.nodes : nodeIsArray ? [] : {};
-    if (nodeIsArray) {
-      elementRecordsLen = nodes.length;
-      len = lengthOfArrayLike(val);
-      for (i = 0; i < len; i++) {
-        internalizeProperty(val, i, internalize(val, '' + i, reviver, i < elementRecordsLen ? nodes[i] : undefined));
-      }
-    } else {
-      keys = enumerableOwnProperties(val);
-      len = lengthOfArrayLike(keys);
-      for (i = 0; i < len; i++) {
-        P = keys[i];
-        internalizeProperty(val, P, internalize(val, P, reviver, hasOwn(nodes, P) ? nodes[P] : undefined));
-      }
-    }
-  }
-  return call(reviver, holder, name, val, context);
-};
-
-var internalizeProperty = function (object, key, value) {
-  if (DESCRIPTORS) {
-    var descriptor = getOwnPropertyDescriptor(object, key);
-    if (descriptor && !descriptor.configurable) return;
-  }
-  if (value === undefined) delete object[key];
-  else createProperty(object, key, value);
-};
-
-var Node = function (value, end, source, nodes) {
-  this.value = value;
-  this.end = end;
-  this.source = source;
-  this.nodes = nodes;
-};
-
-var Context = function (source, index) {
-  this.source = source;
-  this.index = index;
-};
-
-// https://www.json.org/json-en.html
-Context.prototype = {
-  fork: function (nextIndex) {
-    return new Context(this.source, nextIndex);
-  },
-  parse: function () {
-    var source = this.source;
-    var i = this.skip(IS_WHITESPACE, this.index);
-    var fork = this.fork(i);
-    var chr = at(source, i);
-    if (exec(IS_NUMBER_START, chr)) return fork.number();
-    switch (chr) {
-      case '{':
-        return fork.object();
-      case '[':
-        return fork.array();
-      case '"':
-        return fork.string();
-      case 't':
-        return fork.keyword(true);
-      case 'f':
-        return fork.keyword(false);
-      case 'n':
-        return fork.keyword(null);
-    } throw new SyntaxError('Unexpected character: "' + chr + '" at: ' + i);
-  },
-  node: function (type, value, start, end, nodes) {
-    return new Node(value, end, type ? null : slice(this.source, start, end), nodes);
-  },
-  object: function () {
-    var source = this.source;
-    var i = this.index + 1;
-    var expectKeypair = false;
-    var object = {};
-    var nodes = {};
-    while (i < source.length) {
-      i = this.until(['"', '}'], i);
-      if (at(source, i) === '}' && !expectKeypair) {
-        i++;
-        break;
-      }
-      // Parsing the key
-      var result = this.fork(i).string();
-      var key = result.value;
-      i = result.end;
-      i = this.until([':'], i) + 1;
-      // Parsing value
-      i = this.skip(IS_WHITESPACE, i);
-      result = this.fork(i).parse();
-      createProperty(nodes, key, result);
-      createProperty(object, key, result.value);
-      i = this.until([',', '}'], result.end);
-      var chr = at(source, i);
-      if (chr === ',') {
-        expectKeypair = true;
-        i++;
-      } else if (chr === '}') {
-        i++;
-        break;
-      }
-    }
-    return this.node(OBJECT, object, this.index, i, nodes);
-  },
-  array: function () {
-    var source = this.source;
-    var i = this.index + 1;
-    var expectElement = false;
-    var array = [];
-    var nodes = [];
-    while (i < source.length) {
-      i = this.skip(IS_WHITESPACE, i);
-      if (at(source, i) === ']' && !expectElement) {
-        i++;
-        break;
-      }
-      var result = this.fork(i).parse();
-      push(nodes, result);
-      push(array, result.value);
-      i = this.until([',', ']'], result.end);
-      if (at(source, i) === ',') {
-        expectElement = true;
-        i++;
-      } else if (at(source, i) === ']') {
-        i++;
-        break;
-      }
-    }
-    return this.node(OBJECT, array, this.index, i, nodes);
-  },
-  string: function () {
-    var index = this.index;
-    var parsed = parseJSONString(this.source, this.index + 1);
-    return this.node(PRIMITIVE, parsed.value, index, parsed.end);
-  },
-  number: function () {
-    var source = this.source;
-    var startIndex = this.index;
-    var i = startIndex;
-    if (at(source, i) === '-') i++;
-    if (at(source, i) === '0') i++;
-    else if (exec(IS_NON_ZERO_DIGIT, at(source, i))) i = this.skip(IS_DIGIT, i + 1);
-    else throw new SyntaxError('Failed to parse number at: ' + i);
-    if (at(source, i) === '.') i = this.skip(IS_DIGIT, i + 1);
-    if (at(source, i) === 'e' || at(source, i) === 'E') {
-      i++;
-      if (at(source, i) === '+' || at(source, i) === '-') i++;
-      var exponentStartIndex = i;
-      i = this.skip(IS_DIGIT, i);
-      if (exponentStartIndex === i) throw new SyntaxError("Failed to parse number's exponent value at: " + i);
-    }
-    return this.node(PRIMITIVE, Number(slice(source, startIndex, i)), startIndex, i);
-  },
-  keyword: function (value) {
-    var keyword = '' + value;
-    var index = this.index;
-    var endIndex = index + keyword.length;
-    if (slice(this.source, index, endIndex) !== keyword) throw new SyntaxError('Failed to parse value at: ' + index);
-    return this.node(PRIMITIVE, value, index, endIndex);
-  },
-  skip: function (regex, i) {
-    var source = this.source;
-    for (; i < source.length; i++) if (!exec(regex, at(source, i))) break;
-    return i;
-  },
-  until: function (array, i) {
-    i = this.skip(IS_WHITESPACE, i);
-    var chr = at(this.source, i);
-    for (var j = 0; j < array.length; j++) if (array[j] === chr) return i;
-    throw new SyntaxError('Unexpected character: "' + chr + '" at: ' + i);
-  }
-};
-
-var NO_SOURCE_SUPPORT = fails(function () {
-  var unsafeInt = '9007199254740993';
-  var source;
-  nativeParse(unsafeInt, function (key, value, context) {
-    source = context.source;
-  });
-  return source !== unsafeInt;
-});
-
-var PROPER_BASE_PARSE = NATIVE_SYMBOL && !fails(function () {
-  // Safari 9 bug
-  return 1 / nativeParse('-0 \t') !== -Infinity;
-});
-
-// `JSON.parse` method
-// https://tc39.es/ecma262/#sec-json.parse
-// https://github.com/tc39/proposal-json-parse-with-source
-$({ target: 'JSON', stat: true, forced: NO_SOURCE_SUPPORT }, {
-  parse: function parse(text, reviver) {
-    return PROPER_BASE_PARSE && !isCallable(reviver) ? nativeParse(text) : $parse(text, reviver);
-  }
-});
+// TODO: Remove from `core-js@4`
+__webpack_require__(9112);
 
 
 /***/ }),
@@ -5166,6 +4916,264 @@ module.exports = function (exec) {
     return true;
   }
 };
+
+
+/***/ }),
+
+/***/ 9112:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+
+var $ = __webpack_require__(6518);
+var DESCRIPTORS = __webpack_require__(3724);
+var globalThis = __webpack_require__(4576);
+var getBuiltIn = __webpack_require__(7751);
+var uncurryThis = __webpack_require__(9504);
+var call = __webpack_require__(9565);
+var isCallable = __webpack_require__(4901);
+var isObject = __webpack_require__(34);
+var isArray = __webpack_require__(4376);
+var hasOwn = __webpack_require__(9297);
+var toString = __webpack_require__(655);
+var lengthOfArrayLike = __webpack_require__(6198);
+var createProperty = __webpack_require__(4659);
+var fails = __webpack_require__(9039);
+var parseJSONString = __webpack_require__(8235);
+var NATIVE_SYMBOL = __webpack_require__(4495);
+
+var JSON = globalThis.JSON;
+var Number = globalThis.Number;
+var SyntaxError = globalThis.SyntaxError;
+var nativeParse = JSON && JSON.parse;
+var enumerableOwnProperties = getBuiltIn('Object', 'keys');
+// eslint-disable-next-line es/no-object-getownpropertydescriptor -- safe
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+var at = uncurryThis(''.charAt);
+var slice = uncurryThis(''.slice);
+var exec = uncurryThis(/./.exec);
+var push = uncurryThis([].push);
+
+var IS_DIGIT = /^\d$/;
+var IS_NON_ZERO_DIGIT = /^[1-9]$/;
+var IS_NUMBER_START = /^[\d-]$/;
+var IS_WHITESPACE = /^[\t\n\r ]$/;
+
+var PRIMITIVE = 0;
+var OBJECT = 1;
+
+var $parse = function (source, reviver) {
+  source = toString(source);
+  var context = new Context(source, 0, '');
+  var root = context.parse();
+  var value = root.value;
+  var endIndex = context.skip(IS_WHITESPACE, root.end);
+  if (endIndex < source.length) {
+    throw new SyntaxError('Unexpected extra character: "' + at(source, endIndex) + '" after the parsed data at: ' + endIndex);
+  }
+  return isCallable(reviver) ? internalize({ '': value }, '', reviver, root) : value;
+};
+
+var internalize = function (holder, name, reviver, node) {
+  var val = holder[name];
+  var unmodified = node && val === node.value;
+  var context = unmodified && typeof node.source == 'string' ? { source: node.source } : {};
+  var elementRecordsLen, keys, len, i, P;
+  if (isObject(val)) {
+    var nodeIsArray = isArray(val);
+    var nodes = unmodified ? node.nodes : nodeIsArray ? [] : {};
+    if (nodeIsArray) {
+      elementRecordsLen = nodes.length;
+      len = lengthOfArrayLike(val);
+      for (i = 0; i < len; i++) {
+        internalizeProperty(val, i, internalize(val, '' + i, reviver, i < elementRecordsLen ? nodes[i] : undefined));
+      }
+    } else {
+      keys = enumerableOwnProperties(val);
+      len = lengthOfArrayLike(keys);
+      for (i = 0; i < len; i++) {
+        P = keys[i];
+        internalizeProperty(val, P, internalize(val, P, reviver, hasOwn(nodes, P) ? nodes[P] : undefined));
+      }
+    }
+  }
+  return call(reviver, holder, name, val, context);
+};
+
+var internalizeProperty = function (object, key, value) {
+  if (DESCRIPTORS) {
+    var descriptor = getOwnPropertyDescriptor(object, key);
+    if (descriptor && !descriptor.configurable) return;
+  }
+  if (value === undefined) delete object[key];
+  else createProperty(object, key, value);
+};
+
+var Node = function (value, end, source, nodes) {
+  this.value = value;
+  this.end = end;
+  this.source = source;
+  this.nodes = nodes;
+};
+
+var Context = function (source, index) {
+  this.source = source;
+  this.index = index;
+};
+
+// https://www.json.org/json-en.html
+Context.prototype = {
+  fork: function (nextIndex) {
+    return new Context(this.source, nextIndex);
+  },
+  parse: function () {
+    var source = this.source;
+    var i = this.skip(IS_WHITESPACE, this.index);
+    var fork = this.fork(i);
+    var chr = at(source, i);
+    if (exec(IS_NUMBER_START, chr)) return fork.number();
+    switch (chr) {
+      case '{':
+        return fork.object();
+      case '[':
+        return fork.array();
+      case '"':
+        return fork.string();
+      case 't':
+        return fork.keyword(true);
+      case 'f':
+        return fork.keyword(false);
+      case 'n':
+        return fork.keyword(null);
+    } throw new SyntaxError('Unexpected character: "' + chr + '" at: ' + i);
+  },
+  node: function (type, value, start, end, nodes) {
+    return new Node(value, end, type ? null : slice(this.source, start, end), nodes);
+  },
+  object: function () {
+    var source = this.source;
+    var i = this.index + 1;
+    var expectKeypair = false;
+    var object = {};
+    var nodes = {};
+    while (i < source.length) {
+      i = this.until(['"', '}'], i);
+      if (at(source, i) === '}' && !expectKeypair) {
+        i++;
+        break;
+      }
+      // Parsing the key
+      var result = this.fork(i).string();
+      var key = result.value;
+      i = result.end;
+      i = this.until([':'], i) + 1;
+      // Parsing value
+      i = this.skip(IS_WHITESPACE, i);
+      result = this.fork(i).parse();
+      createProperty(nodes, key, result);
+      createProperty(object, key, result.value);
+      i = this.until([',', '}'], result.end);
+      var chr = at(source, i);
+      if (chr === ',') {
+        expectKeypair = true;
+        i++;
+      } else if (chr === '}') {
+        i++;
+        break;
+      }
+    }
+    return this.node(OBJECT, object, this.index, i, nodes);
+  },
+  array: function () {
+    var source = this.source;
+    var i = this.index + 1;
+    var expectElement = false;
+    var array = [];
+    var nodes = [];
+    while (i < source.length) {
+      i = this.skip(IS_WHITESPACE, i);
+      if (at(source, i) === ']' && !expectElement) {
+        i++;
+        break;
+      }
+      var result = this.fork(i).parse();
+      push(nodes, result);
+      push(array, result.value);
+      i = this.until([',', ']'], result.end);
+      if (at(source, i) === ',') {
+        expectElement = true;
+        i++;
+      } else if (at(source, i) === ']') {
+        i++;
+        break;
+      }
+    }
+    return this.node(OBJECT, array, this.index, i, nodes);
+  },
+  string: function () {
+    var index = this.index;
+    var parsed = parseJSONString(this.source, this.index + 1);
+    return this.node(PRIMITIVE, parsed.value, index, parsed.end);
+  },
+  number: function () {
+    var source = this.source;
+    var startIndex = this.index;
+    var i = startIndex;
+    if (at(source, i) === '-') i++;
+    if (at(source, i) === '0') i++;
+    else if (exec(IS_NON_ZERO_DIGIT, at(source, i))) i = this.skip(IS_DIGIT, i + 1);
+    else throw new SyntaxError('Failed to parse number at: ' + i);
+    if (at(source, i) === '.') i = this.skip(IS_DIGIT, i + 1);
+    if (at(source, i) === 'e' || at(source, i) === 'E') {
+      i++;
+      if (at(source, i) === '+' || at(source, i) === '-') i++;
+      var exponentStartIndex = i;
+      i = this.skip(IS_DIGIT, i);
+      if (exponentStartIndex === i) throw new SyntaxError("Failed to parse number's exponent value at: " + i);
+    }
+    return this.node(PRIMITIVE, Number(slice(source, startIndex, i)), startIndex, i);
+  },
+  keyword: function (value) {
+    var keyword = '' + value;
+    var index = this.index;
+    var endIndex = index + keyword.length;
+    if (slice(this.source, index, endIndex) !== keyword) throw new SyntaxError('Failed to parse value at: ' + index);
+    return this.node(PRIMITIVE, value, index, endIndex);
+  },
+  skip: function (regex, i) {
+    var source = this.source;
+    for (; i < source.length; i++) if (!exec(regex, at(source, i))) break;
+    return i;
+  },
+  until: function (array, i) {
+    i = this.skip(IS_WHITESPACE, i);
+    var chr = at(this.source, i);
+    for (var j = 0; j < array.length; j++) if (array[j] === chr) return i;
+    throw new SyntaxError('Unexpected character: "' + chr + '" at: ' + i);
+  }
+};
+
+var NO_SOURCE_SUPPORT = fails(function () {
+  var unsafeInt = '9007199254740993';
+  var source;
+  nativeParse(unsafeInt, function (key, value, context) {
+    source = context.source;
+  });
+  return source !== unsafeInt;
+});
+
+var PROPER_BASE_PARSE = NATIVE_SYMBOL && !fails(function () {
+  // Safari 9 bug
+  return 1 / nativeParse('-0 \t') !== -Infinity;
+});
+
+// `JSON.parse` method
+// https://tc39.es/ecma262/#sec-json.parse
+// https://github.com/tc39/proposal-json-parse-with-source
+$({ target: 'JSON', stat: true, forced: NO_SOURCE_SUPPORT }, {
+  parse: function parse(text, reviver) {
+    return PROPER_BASE_PARSE && !isCallable(reviver) ? nativeParse(text) : $parse(text, reviver);
+  }
+});
 
 
 /***/ }),
@@ -9615,7 +9623,7 @@ class AnnotationEditorUIManager {
   removeLayer(layer) {
     this.#allLayers.delete(layer.pageIndex);
   }
-  async updateMode(mode, editId = null, isFromKeyboard = false, mustEnterInEditMode = false, editComment = false) {
+  async updateMode(mode, editId = null, isFromUser = false, isFromKeyboard = false, mustEnterInEditMode = false, editComment = false) {
     if (this.#mode === mode) {
       return;
     }
@@ -9648,6 +9656,9 @@ class AnnotationEditorUIManager {
     }
     if (mode === AnnotationEditorType.SIGNATURE) {
       await this.#signatureManager?.loadSignatures();
+    }
+    if (isFromUser) {
+      CurrentPointers.clearPointerType();
     }
     this.setEditingState(true);
     await this.#enableAll();
@@ -13310,7 +13321,7 @@ class FontFaceObject {
     } catch (ex) {
       warn(`getPathGenerator - ignoring character: "${ex}".`);
     }
-    const path = makePathFromDrawOPS(cmds);
+    const path = makePathFromDrawOPS(cmds?.path);
     if (!this.fontExtraProperties) {
       objs.delete(objId);
     }
@@ -14056,6 +14067,31 @@ class PatternInfo {
       return ["Mesh", shadingType, coords, colors, figures, bounds, bbox, background];
     }
     throw new Error(`Unsupported pattern kind: ${kind}`);
+  }
+}
+class FontPathInfo {
+  static write(path) {
+    let data;
+    let buffer;
+    if (util_FeatureTest.isFloat16ArraySupported) {
+      buffer = new ArrayBuffer(path.length * 2);
+      data = new Float16Array(buffer);
+    } else {
+      buffer = new ArrayBuffer(path.length * 4);
+      data = new Float32Array(buffer);
+    }
+    data.set(path);
+    return buffer;
+  }
+  #buffer;
+  constructor(buffer) {
+    this.#buffer = buffer;
+  }
+  get path() {
+    if (util_FeatureTest.isFloat16ArraySupported) {
+      return new Float16Array(this.#buffer);
+    }
+    return new Float32Array(this.#buffer);
   }
 }
 
@@ -15812,12 +15848,34 @@ class RadialAxialShadingPattern extends BaseShadingPattern {
     this._r1 = IR[7];
     this.matrix = null;
   }
-  _createGradient(ctx) {
+  isOriginBased() {
+    return this._p0[0] === 0 && this._p0[1] === 0 && (!this.isRadial() || this._p1[0] === 0 && this._p1[1] === 0);
+  }
+  isRadial() {
+    return this._type === "radial";
+  }
+  _createGradient(ctx, transform = null) {
     let grad;
+    let firstPoint = this._p0;
+    let secondPoint = this._p1;
+    if (transform) {
+      firstPoint = firstPoint.slice();
+      secondPoint = secondPoint.slice();
+      Util.applyTransform(firstPoint, transform);
+      Util.applyTransform(secondPoint, transform);
+    }
     if (this._type === "axial") {
-      grad = ctx.createLinearGradient(this._p0[0], this._p0[1], this._p1[0], this._p1[1]);
+      grad = ctx.createLinearGradient(firstPoint[0], firstPoint[1], secondPoint[0], secondPoint[1]);
     } else if (this._type === "radial") {
-      grad = ctx.createRadialGradient(this._p0[0], this._p0[1], this._r0, this._p1[0], this._p1[1], this._r1);
+      let r0 = this._r0;
+      let r1 = this._r1;
+      if (transform) {
+        const scale = new Float32Array(2);
+        Util.singularValueDecompose2dScale(transform, scale);
+        r0 *= scale[0];
+        r1 *= scale[0];
+      }
+      grad = ctx.createRadialGradient(firstPoint[0], firstPoint[1], r0, secondPoint[0], secondPoint[1], r1);
     }
     for (const colorStop of this._colorStops) {
       grad.addColorStop(colorStop[0], colorStop[1]);
@@ -15827,6 +15885,25 @@ class RadialAxialShadingPattern extends BaseShadingPattern {
   getPattern(ctx, owner, inverse, pathType) {
     let pattern;
     if (pathType === PathType.STROKE || pathType === PathType.FILL) {
+      if (this.isOriginBased()) {
+        let transf = Util.transform(inverse, owner.baseTransform);
+        if (this.matrix) {
+          transf = Util.transform(transf, this.matrix);
+        }
+        const precision = 1e-3;
+        const n1 = Math.hypot(transf[0], transf[1]);
+        const n2 = Math.hypot(transf[2], transf[3]);
+        const ps = (transf[0] * transf[2] + transf[1] * transf[3]) / (n1 * n2);
+        if (Math.abs(ps) < precision) {
+          if (this.isRadial()) {
+            if (Math.abs(n1 - n2) < precision) {
+              return this._createGradient(ctx, transf);
+            }
+          } else {
+            return this._createGradient(ctx, transf);
+          }
+        }
+      }
       const ownerBBox = owner.current.getClippedPathBoundingBox(pathType, getCurrentTransform(ctx)) || [0, 0, 0, 0];
       const width = Math.ceil(ownerBBox[2] - ownerBBox[0]) || 1;
       const height = Math.ceil(ownerBBox[3] - ownerBBox[1]) || 1;
@@ -17685,14 +17762,17 @@ class CanvasGraphics {
       ctx.scale(textHScale, 1);
     }
     let patternFillTransform, patternStrokeTransform;
-    if (current.patternFill) {
+    const fillStrokeMode = current.textRenderingMode & TextRenderingMode.FILL_STROKE_MASK;
+    const needsFill = fillStrokeMode === TextRenderingMode.FILL || fillStrokeMode === TextRenderingMode.FILL_STROKE;
+    const needsStroke = fillStrokeMode === TextRenderingMode.STROKE || fillStrokeMode === TextRenderingMode.FILL_STROKE;
+    if (needsFill && current.patternFill) {
       ctx.save();
       const pattern = current.fillColor.getPattern(ctx, this, getCurrentTransformInverse(ctx), PathType.FILL, opIdx);
       patternFillTransform = getCurrentTransform(ctx);
       ctx.restore();
       ctx.fillStyle = pattern;
     }
-    if (current.patternStroke) {
+    if (needsStroke && current.patternStroke) {
       ctx.save();
       const pattern = current.strokeColor.getPattern(ctx, this, getCurrentTransformInverse(ctx), PathType.STROKE, opIdx);
       patternStrokeTransform = getCurrentTransform(ctx);
@@ -17702,8 +17782,7 @@ class CanvasGraphics {
     let lineWidth = current.lineWidth;
     const scale = current.textMatrixScale;
     if (scale === 0 || lineWidth === 0) {
-      const fillStrokeMode = current.textRenderingMode & TextRenderingMode.FILL_STROKE_MASK;
-      if (fillStrokeMode === TextRenderingMode.STROKE || fillStrokeMode === TextRenderingMode.FILL_STROKE) {
+      if (needsStroke) {
         lineWidth = this.getSinglePixelWidth();
       }
     } else {
@@ -20296,6 +20375,7 @@ class TextLayer {
     this.#pageWidth = pageWidth;
     this.#pageHeight = pageHeight;
     TextLayer.#ensureMinFontSizeComputed();
+    container.style.setProperty("--min-font-size", TextLayer.#minFontSize);
     setLayerDimensions(container, viewport);
     this.#capability.promise.finally(() => {
       TextLayer.#pendingTextLayers.delete(this);
@@ -20430,16 +20510,10 @@ class TextLayer {
       left = tx[4] + fontAscent * Math.sin(angle);
       top = tx[5] - fontAscent * Math.cos(angle);
     }
-    const scaleFactorStr = "calc(var(--total-scale-factor) *";
     const divStyle = textDiv.style;
-    if (this.#container === this.#rootContainer) {
-      divStyle.left = `${(100 * left / this.#pageWidth).toFixed(2)}%`;
-      divStyle.top = `${(100 * top / this.#pageHeight).toFixed(2)}%`;
-    } else {
-      divStyle.left = `${scaleFactorStr}${left.toFixed(2)}px)`;
-      divStyle.top = `${scaleFactorStr}${top.toFixed(2)}px)`;
-    }
-    divStyle.fontSize = `${scaleFactorStr}${(TextLayer.#minFontSize * fontHeight).toFixed(2)}px)`;
+    divStyle.left = `${(100 * left / this.#pageWidth).toFixed(2)}%`;
+    divStyle.top = `${(100 * top / this.#pageHeight).toFixed(2)}%`;
+    divStyle.setProperty("--font-height", `${fontHeight.toFixed(2)}px`);
     divStyle.fontFamily = fontFamily;
     textDivProperties.fontSize = fontHeight;
     textDiv.setAttribute("role", "presentation");
@@ -20486,10 +20560,6 @@ class TextLayer {
     const {
       style
     } = div;
-    let transform = "";
-    if (TextLayer.#minFontSize > 1) {
-      transform = `scale(${1 / TextLayer.#minFontSize})`;
-    }
     if (properties.canvasWidth !== 0 && properties.hasText) {
       const {
         fontFamily
@@ -20503,14 +20573,11 @@ class TextLayer {
         width
       } = ctx.measureText(div.textContent);
       if (width > 0) {
-        transform = `scaleX(${canvasWidth * this.#scale / width}) ${transform}`;
+        style.setProperty("--scale-x", canvasWidth * this.#scale / width);
       }
     }
     if (properties.angle !== 0) {
-      transform = `rotate(${properties.angle}deg) ${transform}`;
-    }
-    if (transform.length > 0) {
-      style.transform = transform;
+      style.setProperty("--rotate", `${properties.angle}deg`);
     }
   }
   static cleanup() {
@@ -20733,7 +20800,7 @@ function getDocument(src = {}) {
   }
   const docParams = {
     docId,
-    apiVersion: "5.4.449",
+    apiVersion: "5.4.530",
     data,
     password,
     disableAutoFetch,
@@ -21989,6 +22056,8 @@ class WorkerTransport {
           }
           break;
         case "FontPath":
+          this.commonObjs.resolve(id, new FontPathInfo(exportedData));
+          break;
         case "Image":
           this.commonObjs.resolve(id, exportedData);
           break;
@@ -22398,8 +22467,8 @@ class InternalRenderTask {
     }
   }
 }
-const version = "5.4.449";
-const build = "f44e5f0e6";
+const version = "5.4.530";
+const build = "50cc4adac";
 
 ;// ./src/display/editor/color_picker.js
 
@@ -28970,7 +29039,6 @@ class DrawingEditor extends AnnotationEditor {
       this._currentParent = null;
       DrawingEditor.#currentDraw = null;
       DrawingEditor.#currentDrawingOptions = null;
-      CurrentPointers.clearPointerType();
       CurrentPointers.clearTimeStamp();
     }
     if (DrawingEditor.#currentDrawingAC) {
