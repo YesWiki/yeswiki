@@ -17,7 +17,7 @@
             {% for form in forms %}
               <option value="{{ form.bn_id_nature }}"
                   {{ id == form.bn_id_nature ? ' selected="selected"' }}>
-                {{ form.bn_label_nature }}
+                {{ form.title }}
               </option>
             {% endfor %}
           </select>
