@@ -120,6 +120,7 @@ class BazarCartoAction extends YesWikiAction
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
             'pagination' => -1, // disable pagination
             'query' => $query,
+            'geolocationfield' => $_GET['geolocationfield'] ?? $arg['geolocationfield'] ?? 'bf_geolocation'
         ];
     }
 

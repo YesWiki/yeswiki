@@ -24,6 +24,8 @@ export function drawGeometries(drawnItems, features, popup = '') {
         circle.on('add', function() {
           var pathElement = this.getElement();
           if (pathElement) {
+			pathElement.setAttribute ('stroke', 'blue');
+			pathElement.setAttribute ('stroke-opacity', '1');
             pathElement.setAttribute('data-id', feature.properties.id || 'unknown');
             pathElement.setAttribute('data-type', 'circle');
           }
@@ -33,44 +35,41 @@ export function drawGeometries(drawnItems, features, popup = '') {
 
         drawnItems.addLayer(circle);
       } else {
-        L.geoJSON(feature, {
-  
-  style: function (feature) {
-    return {
-      color: 'blue',
-      className: 'bazar-entry ' + (feature.properties.className || '')
-    };
-  },
+        L.geoJSON (feature, {  
+			style:/* function (feature) {
+			    return */{
+		      color: 'blue',
+		      className: 'bazar-entry ' + (feature.properties.className || '')
+		    }//;
+		  ,
+		  pointToLayer: function (feature, latlng) {
+			var customIcon = L.Icon.Default.extend({
+			  options: {
+				className: 'bazar-entry ' + (feature.properties.className || '')
+			  }
+			});
 
-  pointToLayer: function (feature, latlng) {
-    var customIcon = L.Icon.Default.extend({
-      options: {
-        className: 'bazar-entry ' + (feature.properties.className || '')
-      }
-    });
+			return L.marker(latlng, { icon: new customIcon() });
+		  },
+		  onEachFeature: function (f, layer) {
+				    if (popup && popup.length > 0) {
+				      layer.bindPopup(function (l) {
+				        return popup;
+				      });
+				    }
+			if (layer.getElement) {
+			   layer.on('add', function() {
+				  var elem = this.getElement();
+				  if (elem) {
+				     elem.setAttribute('data-id', f.properties.id || '');
+				     elem.setAttribute('data-type', f.geometry.type);
+				  }
+			   });
+			}
 
-    return L.marker(latlng, { icon: new customIcon() });
-  },
-
-  onEachFeature: function (f, layer) {
-            if (popup && popup.length > 0) {
-              layer.bindPopup(function (l) {
-                return popup;
-              });
-            }
-    if (layer.getElement) {
-       layer.on('add', function() {
-          var elem = this.getElement();
-          if (elem) {
-             elem.setAttribute('data-id', f.properties.id || '');
-             elem.setAttribute('data-type', f.geometry.type);
-          }
-       });
-    }
-
-    drawnItems.addLayer(layer);
-  },
-});
+			drawnItems.addLayer(layer);
+		  }
+		});
       }
     })
     }

@@ -1,5 +1,6 @@
 import LeafletMarkerCluster from './LeafletMarkerCluster.js'
 import SpinnerLoader from './SpinnerLoader.js'
+import { drawGeometries } from '../leaflet-draw.helper.js'
 
 // allow usage of wiki in templates
 Vue.prototype.wiki = wiki
@@ -26,8 +27,9 @@ Vue.component('BazarMap', {
     entries() {
       const vMe = this
       return this.$root.entriesToDisplay.filter((entry) => {
-        const vGeolocation = vMe.getGeolocation(entry)
-        return vGeolocation.latitude && vGeolocation.longitude
+        const cGeolocation = vMe.getGeolocation(entry)
+        
+        return cGeolocation && cGeolocation.latitude && cGeolocation.longitude
       })
     },
     map() {
@@ -51,18 +53,21 @@ Vue.component('BazarMap', {
   },
   methods: {
     getGeolocation(pEntry) {
-      let vLatitude
-      let vLongitude
+    
+      let lLatitude
+      let lLongitude
 
-      if (pEntry.geolocation) {
-        vLatitude = pEntry.geolocation.bf_latitude ?? null
-        vLongitude = pEntry.geolocation.bf_longitude ?? null
+	  let lGeolocation = pEntry[this.params.geolocationfield];
+
+      if (lGeolocation) {
+        lLatitude = lGeolocation.latitude ?? null
+        lLongitude = lGeolocation.longitude ?? null
       }
 
-      if (!vLatitude) vLatitude = pEntry.bf_latitude ?? null
-      if (!vLongitude) vLongitude = pEntry.bf_longitude ?? null
-
-      return { latitude: vLatitude, longitude: vLongitude }
+	  if (lLatitude && lLongitude)	
+		return { latitude: lLatitude, longitude: lLongitude }
+	  else
+	  	return null
     },
     updateBounds() {
       if (!this.$refs.map) return
@@ -162,58 +167,61 @@ Vue.component('BazarMap', {
     createMarker(entry) {
       if (entry.marker) return entry.marker
       try {
-        const vGeolocation = this.getGeolocation(entry)
+        const cGeolocation = this.getGeolocation(entry)
 
-        entry.marker = L.marker(
-          [vGeolocation.latitude, vGeolocation.longitude],
-          { riseOnHover: true },
-        )
-        const isLink =
-          this.isModalDisplay() ||
-          this.isDirectLinkDisplay() ||
-          this.isNewTabDisplay()
-        const tagName = isLink ? 'a' : 'div'
-        const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
-        const modalData = this.isModalDisplay()
-          ? 'data-size="modal-lg" data-iframe="1" data-header="false"'
-          : ''
-        entry.marker.setIcon(
-          L.divIcon({
-            className: `bazar-marker ${this.params.smallmarker}`,
-            iconSize: JSON.parse(this.params.iconSize),
-            iconAnchor: JSON.parse(this.params.iconAnchor),
-            popupAnchor: JSON.parse(this.params.popupAnchor),
-            html:
-              `
-              <div class="entry-name">
-                <span style="background-color: ${entry.color}">
-                  ${entry.markerhover || entry.bf_titre}
-                </span>
-              </div>
-              <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
-              `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
-                <i class="${entry.icon || 'fa fa-bullseye'}"></i>
-              </${tagName}>`,
-          }),
-        )
-        if (this.isDirectLinkDisplay()) {
-          entry.marker.on('click', () => {
-            event.preventDefault()
-            window.location =
-              entry.url + (this.$root.isInIframe() ? '/iframe' : '')
-          })
-        } else if (this.isNewTabDisplay()) {
-          entry.marker.on('click', function () {
-            event.preventDefault()
-            window.open(entry.url)
-            this.selectedEntry = entry
-          })
-        } else if (!isLink) {
-          entry.marker.on('click', (ev) => {
-            this.selectedEntry = entry
-          })
-        }
-        return entry.marker
+		if (cGeolocation)
+		{
+		    entry.marker = L.marker(
+		      [cGeolocation.latitude, cGeolocation.longitude],
+		      { riseOnHover: true },
+		    )
+		    const isLink =
+		      this.isModalDisplay() ||
+		      this.isDirectLinkDisplay() ||
+		      this.isNewTabDisplay()
+		    const tagName = isLink ? 'a' : 'div'
+		    const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
+		    const modalData = this.isModalDisplay()
+		      ? 'data-size="modal-lg" data-iframe="1" data-header="false"'
+		      : ''
+		    entry.marker.setIcon(
+		      L.divIcon({
+		        className: `bazar-marker ${this.params.smallmarker}`,
+		        iconSize: JSON.parse(this.params.iconSize),
+		        iconAnchor: JSON.parse(this.params.iconAnchor),
+		        popupAnchor: JSON.parse(this.params.popupAnchor),
+		        html:
+		          `
+		          <div class="entry-name">
+		            <span style="background-color: ${entry.color}">
+		              ${entry.markerhover || entry.bf_titre}
+		            </span>
+		          </div>
+		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
+		          `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
+		            <i class="${entry.icon || 'fa fa-bullseye'}"></i>
+		          </${tagName}>`,
+		      }),
+		    )
+		    if (this.isDirectLinkDisplay()) {
+		      entry.marker.on('click', () => {
+		        event.preventDefault()
+		        window.location =
+		          entry.url + (this.$root.isInIframe() ? '/iframe' : '')
+		      })
+		    } else if (this.isNewTabDisplay()) {
+		      entry.marker.on('click', function () {
+		        event.preventDefault()
+		        window.open(entry.url)
+		        this.selectedEntry = entry
+		      })
+		    } else if (!isLink) {
+		      entry.marker.on('click', (ev) => {
+		        this.selectedEntry = entry
+		      })
+		    }
+		    return entry.marker
+	    }	    
       } catch (e) {
         entry.marker = null
         console.error(
@@ -359,17 +367,15 @@ Vue.component('BazarMap', {
         this.$nextTick(function () {
           this.entries.forEach((entry) => {
             this.createMarker(entry)
-            if (entry.geolocation.geometries) {
-              const geojsonGeometries = entry.geolocation.geometries
-              L.geoJSON(geojsonGeometries, {
-                onEachFeature: function (feature, layer) {
-                  if (layer instanceof L.Path) {
-                    vThis.map.addLayer(layer)
-                  } else if (layer instanceof L.Marker) {
-                    vThis.map.addLayer(layer)
-                  }
-                },
-              })
+            
+            let lGeolocation = entry[this.params.geolocationfield];
+            
+            if (lGeolocation.geometries) {
+              const geojsonGeometries = JSON.parse (lGeolocation.geometries)
+
+              var vDrawnItems = L.featureGroup().addTo(vThis.map)
+              
+              drawGeometries (vDrawnItems, geojsonGeometries.features);              
             }
           })
           const entries = this.entries.filter((entry) => entry.marker) // remove entries without marker (prob error creating it)

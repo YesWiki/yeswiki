@@ -1,6 +1,6 @@
 {% extends '@bazar/entries/index-dynamic.twig' %}
 
-{% set necessary_fields = (params.necessary_fields|default([]))|merge (['geolocation']) %}
+{% set necessary_fields = (params.necessary_fields|default([]))|merge ([ params.geolocationfield ]) %}
 
 {% block assets %}
   {{ include_css('styles/vendor/leaflet/leaflet.css') }}
