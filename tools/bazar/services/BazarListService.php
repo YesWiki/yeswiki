@@ -82,6 +82,8 @@ class BazarListService
 
     public function getEntries($pOptions, $pForms = null): array
     {
+    	if (is_array ($pOptions)) $pOptions["queries"] = $pOptions["queries"]??$pOptions["query"]??null;
+    
         if ($pForms == null) {
             $vForms = $this->getForms($pOptions);
         } else {
