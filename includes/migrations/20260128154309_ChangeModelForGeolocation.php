@@ -39,7 +39,7 @@ class ChangeModelForGeolocation extends YesWikiMigration
 				$pGeometries = null;					
 			}
 		}
-		else if ($pGeometries == '' || $pGeometries == '[]' || $pGeometries == '"[]"')
+		else if ($pGeometries == '""' || $pGeometries == '[]' || $pGeometries == '"[]"')
 		{
 			$vNeedUpdate = true;
 			$pGeometries = null;
@@ -94,6 +94,9 @@ class ChangeModelForGeolocation extends YesWikiMigration
         
         $vFormsToProcess = [];
         
+		$vUpdatedForms = 0;
+        $vUpdatedEntries = 0;
+        
         foreach ($vForms as &$vForm)
         {
 			$this->report ("Processing form " . $vForm["bn_label_nature"] . " (" . $vForm["bn_id_nature"] . ")...");    
@@ -131,6 +134,8 @@ class ChangeModelForGeolocation extends YesWikiMigration
 			
 			if ($vNeedUpdate)
 			{
+				$vUpdatedForms++;
+			
 				$this->report ("Updating form " . $vForm["bn_label_nature"] . " (" . $vForm["bn_id_nature"] . ")...");    	
 				
 				$this->dbService->query ('UPDATE ' . $this->dbService->prefixTable('nature') . ' SET bn_template = \'' . $this->dbService->escape($vFormManager->encodeTemplate($vTemplate)) . '\' WHERE bn_id_nature = \'' . $this->dbService->escape($vForm["bn_id_nature"]) . '\'');
@@ -193,7 +198,7 @@ class ChangeModelForGeolocation extends YesWikiMigration
 				
 				if (!empty ($vEntry['body']["carte_google"]))
 				{
-                    $vNeedUpdate = $vNeedUpdate || true;
+                    $vNeedUpdate = true;
 				
 					$vValues = explode('|', $vEntry['body']['carte_google']);
                     $vLatitude = $vValues[0] ?? null;
@@ -204,7 +209,7 @@ class ChangeModelForGeolocation extends YesWikiMigration
 				
 				if (!empty ($vEntry['body']["bf_latitude"]))
 				{
-					$vNeedUpdate = $vNeedUpdate || true;
+					$vNeedUpdate = true;
 				
 					$vLatitude = $vEntry['body']["bf_latitude"];
 					
@@ -213,7 +218,7 @@ class ChangeModelForGeolocation extends YesWikiMigration
 				
 				if (!empty ($vEntry['body']["bf_longitude"])) 
 				{
-					$vNeedUpdate = $vNeedUpdate || true;
+					$vNeedUpdate = true;
 				
 					$vLongitude = $vEntry['body']["bf_longitude"]; 				 
 					
@@ -221,9 +226,7 @@ class ChangeModelForGeolocation extends YesWikiMigration
 				}
 				
 				if (!empty ($vEntry['body']["geolocation"]))
-				{
-					$vNeedUpdate = $vNeedUpdate || true;
-				
+				{				
 					if (!empty ($vEntry['body']["geolocation"]["bf_latitude"])) $vLatitude = $vEntry['body']["geolocation"]["bf_latitude"];
 					if (!empty ($vEntry['body']["geolocation"]["bf_longitude"])) $vLongitude = $vEntry['body']["geolocation"]["bf_longitude"];
 					if (!empty ($vEntry['body']["geolocation"]["geometries"])) $vGeometries = $vEntry['body']["geolocation"]["geometries"];
@@ -245,8 +248,9 @@ class ChangeModelForGeolocation extends YesWikiMigration
 					$vCheckResult = $this->checkGeometries ($vGeometries);
 					
 					$vIsArray = $vCheckResult [ 'isArray' ];
+
 					$vNeedUpdate = $vNeedUpdate || $vCheckResult [ 'needUpdate' ];
-					
+
 					$this->report ('bf_geolocation field found : ' . $this->dumpGeolocation ($vLatitude, $vLongitude, $vGeometries, $vIsArray));
 				}
 				else
@@ -258,6 +262,8 @@ class ChangeModelForGeolocation extends YesWikiMigration
 				
 				if ($vNeedUpdate)
 				{
+					$vUpdatedEntries++;
+				
 					unset ($vEntry['body']['carte_google']);
 					unset ($vEntry['body']['bf_latitude']);
 					unset ($vEntry['body']['bf_longitude']);
@@ -281,10 +287,10 @@ class ChangeModelForGeolocation extends YesWikiMigration
 	        }
         }
 
-        print_r ($this->aReport);
+		$this->report ($vUpdatedForms . " updated forms , " . $vUpdatedEntries . " updated entries");
+
+        //print_r ($this->aReport);               
         
-        throw new Exception ("ChangeModelForGeolocation done");
-        
-        return false;
+        //throw new Exception ("done");
     }
 }
