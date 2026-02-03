@@ -51,33 +51,52 @@ class MigrationService
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {
-                while (($file = readdir($dh)) !== false) {
+            
+	            $vFiles = [];
+            
+                while (($file = readdir($dh)) !== false) {                
+
+					if ($file == "0000000000000_DemoMigration.php") continue;
+
                     if (preg_match("/^([a-zA-Z0-9_-]+)\.php$/", $file, $matches)) {
                         $fileName = $matches[1]; // 2024040500000_TestMigration
+                        
                         if (in_array($fileName, $completedMigrations)) {
                             continue;
                         }
 
-                        $filePath = $folder . $file; // tools/publication/2024040500000_TestMigration.php
-                        require_once $filePath;
+						$vFiles[] = $matches[1];
+					}
+				}
 
-                        $className = preg_replace('/^[\d_]*/', '', $fileName); // TestMigration
-                        if (!class_exists($className)) {
-                            throw new Exception("Error while loading $filePath. The class inside should be $className");
-                        }
+				sort ($vFiles);
+				
+				foreach ($vFiles as $vFile) {
 
-                        // Run Migration
-                        try {
-                            $instance = new $className();
-                            $instance->setWiki($this->wiki);
-                            $instance->setDbService($this->dbService);
-                            $instance->setParams($this->params);
-                            $instance->run();
-                            $messages->add("Migration $className", 'AU_OK');
-                            $tripleStore->create($fileName, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
-                        } catch (Exception $e) {
-                            $messages->add("Migration $className failed with error {$e->getMessage()}", 'AU_ERROR');
-                        }
+					$vFilename = $vFile . '.php';
+
+                    $filePath = $folder . $vFilename; // tools/publication/2024040500000_TestMigration.php
+                    require_once $filePath;
+
+					preg_match("/^([\d]*)/", $vFile, $vMatches);
+					$vDate = $vMatches[1]??"unknow date";					
+
+                    $className = preg_replace('/^[\d_]*/', '', $vFile); // TestMigration
+                    if (!class_exists($className)) {
+                        throw new Exception("Error while loading $filePath. The class inside should be $className");
+                    }
+
+                    // Run Migration
+                    try {
+                        $instance = new $className();
+                        $instance->setWiki($this->wiki);
+                        $instance->setDbService($this->dbService);
+                        $instance->setParams($this->params);
+                        $instance->run();
+                        $messages->add("Migration $className ($vDate)", 'AU_OK');
+                        $tripleStore->create($vFile, TripleStore::TYPE_URI, self::TRIPLES_MIGRATION_ID, '', '');
+                    } catch (Exception $e) {
+                        $messages->add("Migration $className ($vDate) failed with error {$e->getMessage()}", 'AU_ERROR');
                     }
                 }
             }
