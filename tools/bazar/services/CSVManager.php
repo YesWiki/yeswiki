@@ -238,30 +238,29 @@ class CSVManager
                 }
             }
             if ($header['field'] instanceof MapField) {
+                $vResult = [];
 
-				$vResult = [];
-		
                 if (!empty($entry[$header['field']->getPropertyName()])) {
                     $value = $entry[$header['field']->getPropertyName()];
-                    
+
                     if (is_array($value)) {
                         // standard case
-                        $vResult ["latitude"] = $value["latitude"] ?? $value["bf_latitude"] ?? null;
-                        $vResult ["longitude"] = $value["longitude"] ?? $value["bf_longitude"] ?? null;
-                        $vResult ["geometries"] = $value["geometries"] ?? null;
+                        $vResult['latitude'] = $value['latitude'] ?? $value['bf_latitude'] ?? null;
+                        $vResult['longitude'] = $value['longitude'] ?? $value['bf_longitude'] ?? null;
+                        $vResult['geometries'] = $value['geometries'] ?? null;
                     }
                 } elseif (!empty($entry['carte_google'])) {
                     // retrocompatibility carte_google
                     $values = explode('|', $entry['carte_google']);
-                    $vResult ["latitude"] = $values[0] ?? null;
-                    $vResult ["longitude"] = $values[1] ?? null;
+                    $vResult['latitude'] = $values[0] ?? null;
+                    $vResult['longitude'] = $values[1] ?? null;
                 } else {
                     // compatibility with very old data
-                    $vResult ["latitude"] = $entry["bf_latitude"] ?? null;
-                    $vResult ["longitude"] = $entry["bf_longitude"] ?? null;
+                    $vResult['latitude'] = $entry['bf_latitude'] ?? null;
+                    $vResult['longitude'] = $entry['bf_longitude'] ?? null;
                 }
-                
-                $value = json_encode ($vResult);                
+
+                $value = json_encode($vResult);
             }
 
             $line[] = $value ?? '';

@@ -51,35 +51,34 @@ class MigrationService
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {
-            
-	            $vFiles = [];
-            
-                while (($file = readdir($dh)) !== false) {                
+                $vFiles = [];
 
-					if ($file == "0000000000000_DemoMigration.php") continue;
+                while (($file = readdir($dh)) !== false) {
+                    if ($file == '0000000000000_DemoMigration.php') {
+                        continue;
+                    }
 
                     if (preg_match("/^([a-zA-Z0-9_-]+)\.php$/", $file, $matches)) {
                         $fileName = $matches[1]; // 2024040500000_TestMigration
-                        
+
                         if (in_array($fileName, $completedMigrations)) {
                             continue;
                         }
 
-						$vFiles[] = $matches[1];
-					}
-				}
+                        $vFiles[] = $matches[1];
+                    }
+                }
 
-				sort ($vFiles);
-				
-				foreach ($vFiles as $vFile) {
+                sort($vFiles);
 
-					$vFilename = $vFile . '.php';
+                foreach ($vFiles as $vFile) {
+                    $vFilename = $vFile . '.php';
 
                     $filePath = $folder . $vFilename; // tools/publication/2024040500000_TestMigration.php
                     require_once $filePath;
 
-					preg_match("/^([\d]*)/", $vFile, $vMatches);
-					$vDate = $vMatches[1]??"unknow date";					
+                    preg_match("/^([\d]*)/", $vFile, $vMatches);
+                    $vDate = $vMatches[1] ?? 'unknow date';
 
                     $className = preg_replace('/^[\d_]*/', '', $vFile); // TestMigration
                     if (!class_exists($className)) {

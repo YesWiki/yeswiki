@@ -37,7 +37,7 @@ class MapField extends BazarField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-	
+
         $this->showMapInEntryView = $values[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] ?? '0';
         $this->autocomplete = (!empty($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) && !empty($values[self::FIELD_AUTOCOMPLETE_TOWN])) ?
             trim($values[self::FIELD_AUTOCOMPLETE_POSTALCODE]) . ',' . trim($values[self::FIELD_AUTOCOMPLETE_TOWN]) : null;
@@ -95,7 +95,7 @@ class MapField extends BazarField
             $this->propertyName => [
                 'latitude' => ['_mode_' => 'single', '_type_' => 'number'],
                 'longitude' => ['_mode_' => 'single', '_type_' => 'number'],
-                'geometries' => ['_mode_' => 'single', '_type_' => 'string']
+                'geometries' => ['_mode_' => 'single', '_type_' => 'string'],
             ],
         ];
     }
@@ -105,9 +105,9 @@ class MapField extends BazarField
         $value = $entry[$this->propertyName] ?? [];
 
         return [
-            'latitude' => $value['latitude']??'',
-            'longitude' => $value['longitude']??'',
-            'geometries' => json_decode ($value['geometries'], true)??''
+            'latitude' => $value['latitude'] ?? '',
+            'longitude' => $value['longitude'] ?? '',
+            'geometries' => json_decode($value['geometries'] ?? [], true) ?? '',
         ];
     }
 
@@ -121,13 +121,13 @@ class MapField extends BazarField
         $vLongitude = $pValue['longitude'] ?? '';
         $vGeometries = $pValue['geometries'] ?? '';
 
-        return trim($vLatitude) == '' && trim($vLongitude) == '' && trim ($vGeometries) == '';
+        return trim($vLatitude) == '' && trim($vLongitude) == '' && trim($vGeometries) == '';
     }
 
     protected function getMapFieldData($entry)
-    {       
+    {
         $value = $this->getValue($entry);
-               
+
         $params = $this->getService(ParameterBagInterface::class);
 
         $mapProvider = $params->get('baz_provider');
@@ -151,7 +151,7 @@ class MapField extends BazarField
 
         $latitude = is_array($value) && !empty($value['latitude']) ? $value['latitude'] : null;
         $longitude = is_array($value) && !empty($value['longitude']) ? $value['longitude'] : null;
-        $geometries = is_array($value) && !empty($value['geometries']) ? $value['geometries'] : null ;
+        $geometries = is_array($value) && !empty($value['geometries']) ? $value['geometries'] : null;
 
         return [
             'bazWheelZoom' => $params->get('baz_wheel_zoom'),
@@ -179,17 +179,17 @@ class MapField extends BazarField
             'latitude' => $mapFieldData['latitude'],
             'longitude' => $mapFieldData['longitude'],
             'geometries' => $mapFieldData['geometries'],
-            'mapFieldData' => $mapFieldData
+            'mapFieldData' => $mapFieldData,
         ]);
     }
 
     public function formatValuesBeforeSave($entry)
-    {	  
+    {
         $vValue = $this->getValue($entry);
-        
-        $vLatitude = isset($vValue['latitude']) && is_numeric ($vValue['latitude']) && is_string ($vValue['latitude']) ? $vValue['latitude'] : '';
-        $vLongitude = isset($vValue['longitude']) && is_numeric ($vValue['longitude']) && is_string ($vValue['longitude']) ? $vValue['longitude'] : '';        
-        $vGeometries = isset($vValue['geometries']) && is_array ($vValue['geometries']) ? json_encode ($vValue['geometries']) : '';
+
+        $vLatitude = isset($vValue['latitude']) && is_numeric($vValue['latitude']) && is_string($vValue['latitude']) ? $vValue['latitude'] : '';
+        $vLongitude = isset($vValue['longitude']) && is_numeric($vValue['longitude']) && is_string($vValue['longitude']) ? $vValue['longitude'] : '';
+        $vGeometries = isset($vValue['geometries']) && is_array($vValue['geometries']) ? json_encode($vValue['geometries']) : '';
 
         if ((!empty($vLatitude) && !empty($vLongitude)) || !empty($vGeometries)) {
             return
@@ -197,13 +197,13 @@ class MapField extends BazarField
                 $this->getPropertyName() => [
                     'latitude' => $vLatitude,
                     'longitude' => $vLongitude,
-                    'geometries' => $vGeometries
-                ]
+                    'geometries' => $vGeometries,
+                ],
             ];
         } else {
             return [
                 'fields-to-remove' => [
-                    $this->getPropertyName()
+                    $this->getPropertyName(),
                 ],
             ];
         }
@@ -240,7 +240,7 @@ class MapField extends BazarField
         // or if action parameter showmapinlistview is set to '1'
         if (
             $this->showMapInEntryView === '1' && $currentUrlIsEntry
-            || $showMapInListView 
+            || $showMapInListView
         ) {
             $mapFieldData = $this->getMapFieldData($entry);
             if ((!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries']))) {

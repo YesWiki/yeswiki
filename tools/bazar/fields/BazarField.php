@@ -201,7 +201,7 @@ abstract class BazarField implements \JsonSerializable
 
     public function isEmpty($pValue)
     {
-        return is_null($pValue) || (is_array($pValue) && count(array_keys ($pValue)) == 0) || (is_string($pValue) && trim($pValue) == '');
+        return is_null($pValue) || (is_array($pValue) && count(array_keys($pValue)) == 0) || (is_string($pValue) && trim($pValue) == '');
     }
 
     // HELPERS

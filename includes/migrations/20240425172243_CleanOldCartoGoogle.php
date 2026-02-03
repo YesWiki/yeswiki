@@ -138,8 +138,8 @@ class CleanOldCartoGoogle extends YesWikiMigration
     {
         $value = $entry[$field->getPropertyName()] ?? $field->getDefault();
 
-		$vLatitudeField = is_callable ([$field, 'getLatitudeField' ])?$field->getLatitudeField():'bf_latitude';
-		$vLongitudeField = is_callable ([$field, 'getLongitudeField' ])?$field->getLongitudeField():'bf_longitude';		
+        $vLatitudeField = is_callable([$field, 'getLatitudeField']) ? $field->getLatitudeField() : 'bf_latitude';
+        $vLongitudeField = is_callable([$field, 'getLongitudeField']) ? $field->getLongitudeField() : 'bf_longitude';
 
         // backward compatibility with former `carte_google` propertyName
         $returnValue = [];
@@ -147,7 +147,7 @@ class CleanOldCartoGoogle extends YesWikiMigration
             if (!empty($entry['carte_google'])) {
                 $value = explode('|', $entry['carte_google']);
                 if (!empty($value[0]) && !empty($value[1])) {
-                    $returnValue = [ 
+                    $returnValue = [
                         $vLatitudeField => $value[0],
                         $vLongitudeField => $value[1],
                     ];

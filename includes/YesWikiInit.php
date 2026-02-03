@@ -230,7 +230,7 @@ class Init
             'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
-            'favorites_activated' => true,            
+            'favorites_activated' => true,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
                 'authorize_bypass_preupdate_backup' => false,
@@ -238,7 +238,7 @@ class Init
                 'call_archive_async' => true,
                 ArchiveService::KEY_FOR_PRIVATE_FOLDER => ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP,
                 'max_nb_files' => 10,
-            ]            
+            ],
         ];
         unset($_rewrite_mode);
 
@@ -297,8 +297,9 @@ class Init
             $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
         }
 
-		if (empty ($wakkaConfig ['mail_domain']??null))
-			$wakkaConfig ['mail_domain'] = \getMailDomain (parse_url($wakkaConfig ['base_url'])['host']);
+        if (empty($wakkaConfig['mail_domain'] ?? null)) {
+            $wakkaConfig['mail_domain'] = \getMailDomain(parse_url($wakkaConfig['base_url'])['host']);
+        }
 
         if (!empty($wakkaConfig['extra_headers'])) {
             foreach ($wakkaConfig['extra_headers'] as $header) {
@@ -334,7 +335,7 @@ class Init
         // "TODO put elsewhere" - old comment in YesWiki::LoadExtensions -> PUT IN YesWikiInit::initCoreServices - @YvesGufflet
         $fullDomain = parse_url($wiki->Href());
         $containerBuilder->setParameter('host', $fullDomain['host']);
-        $containerBuilder->setParameter('mail_domain', $wiki->config ['mail_domain']);
+        $containerBuilder->setParameter('mail_domain', $wiki->config['mail_domain']);
         $containerBuilder->setParameter('max-upload-size', $wiki->file_upload_max_size());
 
         return $containerBuilder;
