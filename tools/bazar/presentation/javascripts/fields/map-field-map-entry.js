@@ -29,15 +29,18 @@ export function initEntryMap(newMap) {
     map.setView(point, mapData.bazMapZoom || 13)
   }
 
-  drawnFeatures = drawGeometries(drawnFeatures, mapData.geometries.features)
-  map.whenReady(function () {
-    var bounds = drawnFeatures.getBounds()
-    if (bounds.isValid()) {
-      map.fitBounds(bounds, {
-        padding: [30, 30],
-      })
-    }
-  })
+  if (mapData.geometries)
+  {
+    drawnFeatures = drawGeometries(drawnFeatures, mapData.geometries.features)
+	map.whenReady(function () {
+		var bounds = drawnFeatures.getBounds()
+		if (bounds.isValid()) {
+		  map.fitBounds(bounds, {
+		    padding: [30, 30],
+		  })
+		}
+	  })
+  }
 
   newMap.classList.add('initialized')
 }
