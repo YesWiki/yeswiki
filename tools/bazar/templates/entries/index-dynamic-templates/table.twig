@@ -143,6 +143,9 @@
       <template v-else-if="fieldtype === 'urlnewwindow' && anchorData.length > 0">
         <a :href="url" v-html="anchorData" :title="anchorData" target="blank"></a>
       </template>
+      <template v-else-if="fieldtype === 'map' ">
+        <span v-html="anchorData.latitude&&anchorData.longitude?'[&nbsp;' + anchorData.latitude + ',&nbsp;' + anchorData.longitude + '&nbsp;]':''"></span>
+      </template>
       <template v-else>
         {{-'{{anchorData}}'-}}
       </template>

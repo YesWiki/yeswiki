@@ -40,7 +40,11 @@ const componentParams = {
                             && (isadmin || (currentusername.length > 0 && entry.owner == currentusername))
           } else if (['==adminsbuttons=='].includes(col.data)) {
             formattedData[col.data] = ''
-          } else if ('firstlevel' in col && typeof col.firstlevel === 'string' && col.firstlevel.length > 0) {
+          } 
+          else if (col.data == "geolocation") {
+            formattedData[col.geolocationfield] = entry[col.geolocationfield]
+          } 
+          else if ('firstlevel' in col && typeof col.firstlevel === 'string' && col.firstlevel.length > 0) {          
             formattedData[col.data] = (
               col.firstlevel in entry
                             && (typeof entry[col.firstlevel] === 'object')
@@ -293,27 +297,15 @@ const componentParams = {
           data.columns.push({
             ...{
               class: className,
-              data: field.latitudeField,
-              title: columntitles[field.latitudeField] || columntitles[titleIdx] || TemplateRenderer.getTemplateFromSlot('BazarTable', this, 'latitudetext'),
-              firstlevel: field.propertyname,
-              render: this.renderCell({ addLink, idx: titleIdx }),
+              data: 'geolocation',
+              title: field.label,
+              geolocationfield: field.propertyname,
+              render: this.renderCell({ fieldtype : field.type, fieldName : field.propertyname, addLink, idx: titleIdx }),
               footer: '',
               visible
             },
             ...width
-          })
-          data.columns.push({
-            ...{
-              class: className,
-              data: field.longitudeField,
-              title: columntitles[field.longitudeField] || columntitles[titleIdx + 1] || TemplateRenderer.getTemplateFromSlot('BazarTable', this, 'longitudetext'),
-              firstlevel: field.propertyname,
-              render: this.renderCell({ addLink }),
-              footer: '',
-              visible
-            },
-            ...width
-          })
+          })    
         } else if (checkboxfieldsincolumns
                     && typeof field.type === 'string'
                     && ['checkboxfiche', 'checkbox'].includes(field.type)
@@ -499,6 +491,20 @@ const componentParams = {
             }
           }).trim()).join(',\n')
         }
+        else if (fieldtype === 'map')
+        {
+			anchorData = row[fieldName]??{};
+			return TemplateRenderer.render(
+				'BazarTable',
+				this,
+				'rendercell',
+				{
+		            fieldtype,        
+		            fieldName,
+		            anchorData
+		        });
+        }
+        
         return TemplateRenderer.render(
           'BazarTable',
           this,

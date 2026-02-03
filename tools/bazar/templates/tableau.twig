@@ -57,7 +57,7 @@ pour différencier les différents tableaux table_1 table_2 #}
               {% set exportval = val %}
             {% endif %}
           {% elseif info.key is empty and info.mapFieldId %}
-            {% set val = entry[info.mapFieldId] %}
+            {% set val = entry[info.mapFieldId].latitude!='' and entry[info.mapFieldId].longitude!=''?'[' ~ entry[info.mapFieldId].latitude ~ ',' ~ entry[info.mapFieldId].longitude ~ ']'  : '' %}
             {% set exportval = val %}
           {% elseif info.key is not empty %}
             {% set val = (info.key in val|split(',')) ? 'X' : '' %}
@@ -75,6 +75,8 @@ pour différencier les différents tableaux table_1 table_2 #}
                 <a href="{{ entry.url }}" class="modalbox" data-size="modal-lg">
                   {{ val|nl2br }}
                 </a>
+              {% elseif info.mapFieldId %}
+				  {{ val|nl2br }}
               {% elseif info.imageAsThumbnail and val is not empty %}
                 {% set size = 100 %}
                 {% set width = size*3//2 %}

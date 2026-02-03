@@ -184,9 +184,8 @@
   display: none !important;
 }
 
-.map-field .label-wrap,
-.map-field .value-wrap,
-.map-field .name-wrap {
+.map-field .value-wrap
+{
   display: none !important;
 }
 

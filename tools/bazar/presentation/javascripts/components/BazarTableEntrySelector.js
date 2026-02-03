@@ -7,14 +7,13 @@ Vue.component('BazarTableEntrySelector', {
     entriesToDisplay() {
       return (this.params !== null && typeof this.params === 'object' && 'tablewith' in this.params && this.params.tablewith === 'no-geolocation')
         ? this.entries.filter((e) => typeof e === 'object' && e !== null && (
-          !('bf_latitude' in e)
-                    || !('bf_longitude' in e)
-                    || e.bf_latitude === null
-                    || e.bf_longitude === null
-                    || String(e.bf_longitude).length === 0
-                    || String(e.bf_latitude).length === 0
-                    || Number(e.bf_longitude) === 0
-                    || Number(e.bf_latitude) === 0
+		  	        (this.params.geolocationfield && !(this.params.geolocationfield in e))
+		  	        || (this.params.geolocationfield && this.params.geolocationfield in e && !e[this.params.geolocationfield].latitude)
+		  	        || (this.params.geolocationfield && this.params.geolocationfield in e && !e[this.params.geolocationfield].longitude)
+                    || String(e[this.params.geolocationfield].latitude).length === 0
+                    || String(e[this.params.geolocationfield].longitude).length === 0
+                    || Number(e[this.params.geolocationfield].latitude) === 0
+                    || Number(e[this.params.geolocationfield].longitude) === 0
         ))
         : this.entries
     }

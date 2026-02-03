@@ -69,20 +69,6 @@ class CSVManager
                         'field' => $field,
                         'fullHeader' => $fullHeader2,
                     ];
-                } elseif ($field instanceof MapField) {
-                    // TODO save userField data on one field
-                    // after refacto MapField
-                    $latitudeHeader = $field->getLatitudeField();
-                    $longitudeHeader = $field->getLongitudeField();
-
-                    $headers[$latitudeHeader] = [
-                        'field' => $field,
-                        'fullHeader' => $latitudeHeader,
-                    ];
-                    $headers[$longitudeHeader] = [
-                        'field' => $field,
-                        'fullHeader' => $longitudeHeader,
-                    ];
                 } else {
                     // *** standard case ****
                     $fullHeader = $field->getLabel();
@@ -159,9 +145,6 @@ class CSVManager
         $vForms = $pOptions['forms'] ?? $vBazarListService->getForms(array_merge($pParams, ['idtypeannonce' => $pFormID]));
 
         $vForm = $vForms[$vID['key']];
-
-        $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
-        $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
 
         $vFakeMode = isset($pOptions) ? ($pOptions['fakeMode'] ?? false) : false;
         $vKeysInsteadOfValues = isset($pOptions) ? ($pOptions['keysInsteadOfValues'] ?? false) : false;
@@ -255,35 +238,30 @@ class CSVManager
                 }
             }
             if ($header['field'] instanceof MapField) {
+
+				$vResult = [];
+		
                 if (!empty($entry[$header['field']->getPropertyName()])) {
                     $value = $entry[$header['field']->getPropertyName()];
+                    
                     if (is_array($value)) {
                         // standard case
-                        $latitude = $value[$header['field']->getLatitudeField()] ?? null;
-                        $longitude = $value[$header['field']->getLongitudeField()] ?? null;
+                        $vResult ["latitude"] = $value["latitude"] ?? $value["bf_latitude"] ?? null;
+                        $vResult ["longitude"] = $value["longitude"] ?? $value["bf_longitude"] ?? null;
+                        $vResult ["geometries"] = $value["geometries"] ?? null;
                     }
                 } elseif (!empty($entry['carte_google'])) {
                     // retrocompatibility carte_google
                     $values = explode('|', $entry['carte_google']);
-                    $latitude = $values[0] ?? null;
-                    $longitude = $values[1] ?? null;
+                    $vResult ["latitude"] = $values[0] ?? null;
+                    $vResult ["longitude"] = $values[1] ?? null;
                 } else {
                     // compatibility with very old data
-                    $latitude = $entry[$header['field']->getLatitudeField()] ?? null;
-                    $longitude = $entry[$header['field']->getLongitudeField()] ?? null;
+                    $vResult ["latitude"] = $entry["bf_latitude"] ?? null;
+                    $vResult ["longitude"] = $entry["bf_longitude"] ?? null;
                 }
-                if (!empty($latitude) && !empty($longitude)) {
-                    switch ($propertyName) {
-                        case $header['field']->getLatitudeField():
-                            $value = $latitude;
-                            break;
-                        case $header['field']->getLongitudeField():
-                            $value = $longitude;
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                
+                $value = json_encode ($vResult);                
             }
 
             $line[] = $value ?? '';
@@ -922,8 +900,8 @@ class CSVManager
     /**
      * send CSV file or archive.
      *
-     * @params <array> $formIds : forms ids
-     * @params <array> params for search. ex : [ "query" => ..., "keywords" => ..., "champ" => ..., "ordre" => ... ]
+     * @params $pFormIDs : forms ids
+     * @params <array> $pParams for search. ex : [ "query" => ..., "keywords" => ..., "champ" => ..., "ordre" => ... ]
      *
      * @return string $csvToDisplay
      */

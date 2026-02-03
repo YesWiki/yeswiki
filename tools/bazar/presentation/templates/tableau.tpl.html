@@ -91,18 +91,12 @@ if (count($fiches)>0) {
                     $cols = [];
                     $cols[]  = [
                         'propertyName' => $propertyName,
-                        'title' => _t('BAZ_LATITUDE'),
+                        'title' => $field->getLabel(),
                         'key' => null,
-                        'mapFieldId' => $field->getLatitudeField(),
-                        'multivalues' => false];
-                    $cols[]  = [
-                        'propertyName' => $propertyName,
-                        'title' => _t('BAZ_LONGITUDE'),
-                        'key' => null,
-                        'mapFieldId' => $field->getLongitudeField(),
+                        'mapFieldId' => $propertyName,
                         'multivalues' => false];
                     return $cols;
-                } elseif ($field instanceof CheckboxField && $checkboxFieldsInColumns) {
+                } else if ($field instanceof CheckboxField && $checkboxFieldsInColumns) {
                     $options = $field->getOptions();
                     if (empty($options)) {
                         return [];

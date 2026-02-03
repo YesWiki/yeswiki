@@ -390,8 +390,12 @@ $(document).ready(() => {
       $(bootstrapBaseDiv).removeClass('invalid')
       return true
     },
-    geocodeChecking(input) {
-      if (!$(input).find('#bf_latitude').val()) {
+    geocodeChecking(input) {console.log ("GEOCODE CHECKING");
+    	const vLatitude = $(input).find('.yw-latitude-input').val();
+    	const vLongitude = $(input).find('.yw-longitude-input').val();    	
+    	const vGeometries = $(input).find('.yw-geometries-input').val();    	
+    	console.log (vLatitude, vLongitude, vGeometries);
+		if (vLatitude == "" && vLongitude == "" && vGeometries == "") {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'))
         return false
       }

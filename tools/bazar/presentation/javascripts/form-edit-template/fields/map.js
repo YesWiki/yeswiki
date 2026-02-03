@@ -8,9 +8,8 @@ export default {
     attrs: { type: 'map' },
     icon: '<i class="fas fa-map-marked-alt"></i>'
   },
+  defaultIdentifier: 'bf_geolocation',
   attributes: {
-    name_latitude: { label: _t('BAZ_FORM_EDIT_MAP_LATITUDE'), value: 'bf_latitude' },
-    name_longitude: { label: _t('BAZ_FORM_EDIT_MAP_LONGITUDE'), value: 'bf_longitude' },
     autocomplete_street: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STREET'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STREET_PLACEHOLDER') },
     autocomplete_postalcode: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE_PLACEHOLDER') },
     autocomplete_town: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN_PLACEHOLDER') },
@@ -39,16 +38,14 @@ export default {
   	...defaultMapping,
   	...{
 		    0: 'type',
-		    1: 'name_latitude',
-		    2: 'name_longitude',
 		    3: '',
 		    4: 'autocomplete_postalcode',
 		    5: 'autocomplete_town',
 		    6: 'autocomplete_other',
 		    7: 'show_map_in_entry_view',
 		    8: 'required',
-      9: 'geometries',
-      13: 'max_geometries'
+		    9: 'geometries',
+		    13: 'max_geometries'
     }
   },
   renderInput(fieldData) {
