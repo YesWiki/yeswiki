@@ -66,7 +66,7 @@ class ApiController extends YesWikiController
 
         $vSearchManager = $this->getService(SearchManager::class);
 
-        $vQuery = $_GET['query'] ?? $_GET['queries'];
+        $vQuery = $_GET['query'] ?? $_GET['queries'] ?? null;
         $vQuery = $vSearchManager->aggregateQueries(
             !empty($selectedEntries) ? ['queries' => ['id_fiche' => $selectedEntries]] : [],
             isset($vQuery) ? urldecode($vQuery) : ''
