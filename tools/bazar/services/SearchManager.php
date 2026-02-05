@@ -1614,7 +1614,7 @@ class SearchManager
      */
     private function buildFieldDescriptorHash($pStructure)
     {
-        return $pStructure['_mode_'] . '|' . $pStructure['_type_'];
+        return $pStructure['_mode_'] ?? '#' . '|' . $pStructure['_type_'] ?? '#';
     }
 
     /**
