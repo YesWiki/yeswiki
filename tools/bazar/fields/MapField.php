@@ -107,7 +107,7 @@ class MapField extends BazarField
         return [
             'latitude' => $value['latitude'] ?? '',
             'longitude' => $value['longitude'] ?? '',
-            'geometries' => json_decode($value['geometries'] ?? [], true) ?? '',
+            'geometries' => json_decode($value['geometries'] ?? '', true) ?? '',
         ];
     }
 
