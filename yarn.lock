@@ -2116,9 +2116,10 @@ leaflet.markercluster@^1.5.3:
   resolved "https://registry.yarnpkg.com/leaflet.markercluster/-/leaflet.markercluster-1.5.3.tgz#9cdb52a4eab92671832e1ef9899669e80efc4056"
   integrity sha512-vPTw/Bndq7eQHjLBVlWpnGeLa3t+3zGiuM7fJwCkiMFq+nmRuG3RI3f7f4N4TDX7T4NpbAXpR2+NTRSEGfCSeA==
 
-"leaflet.markercluster@git+https://github.com/seballot/Leaflet.markercluster.git":
+"leaflet.markercluster@https://github.com/seballot/Leaflet.markercluster.git":
   version "1.5.4"
-  resolved "git+https://github.com/seballot/Leaflet.markercluster.git#ed6137194b7a435bfeea4a29748b57428fb5be98"
+  uid ed6137194b7a435bfeea4a29748b57428fb5be98
+  resolved "https://github.com/seballot/Leaflet.markercluster.git#ed6137194b7a435bfeea4a29748b57428fb5be98"
 
 leaflet@^1.8, leaflet@^1.9.4:
   version "1.9.4"
@@ -2204,9 +2205,9 @@ mi18n@^0.4.8:
     now "^11.5.2"
 
 minimatch@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
-  integrity sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==
+  version "3.1.5"
+  resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.5.tgz#580c88f8d5445f2bd6aa8f3cadefa0de79fbd69e"
+  integrity sha512-VgjWUsnnT6n+NUk6eZq77zeFdpW2LWDzP6zFGrCbHXiYNul5Dzqk2HHQ5uFH2DNW5Xbp8+jVzaeNt94ssEEl4w==
   dependencies:
     brace-expansion "^1.1.7"
 
