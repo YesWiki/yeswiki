@@ -198,363 +198,363 @@ $(document).ready(() => {
 						cMap.fitBounds(bounds, { padding : [50, 50] })
 					}
 				})
-			
-				function showAddress(pMove = false) {
-					let lAddress = ''
-					
-					lAddress = Object.values (cFields)
-					.map((pField) => { return pField.val()})
-					.join(' ')
-					.replace(/\\("|'|\\)/g, ' ')
-					.trim()
+      }
+      
+      function showAddress(pMove = false) {
+        let lAddress = ''
+        
+        lAddress = Object.values (cFields)
+        .map((pField) => { return pField.val()})
+        .join(' ')
+        .replace(/\\("|'|\\)/g, ' ')
+        .trim()
 
-					if (!lAddress) {
-						geocodedmarkerRefresh()
-						return
-					}
+        if (!lAddress) {
+          geocodedmarkerRefresh()
+          return
+        }
 
-					const formattedFields = {}
+        const formattedFields = {}
 
-					Object.keys (cFields)
-					.forEach((pName) => {					
-						formattedFields[pName] = cFields[pName].val()
-					})
+        Object.keys (cFields)
+        .forEach((pName) => {					
+          formattedFields[pName] = cFields[pName].val()
+        })
 
-					let setToTry = []
+        let setToTry = []
 
-					if (
-					'street' in formattedFields &&
-					'street1' in formattedFields &&
-					'street2' in formattedFields
-					) {
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{
-								  street: `${formattedFields.street} ${formattedFields.street1} ${formattedFields.street2}`,
-								}
-							}
-						})
-						
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street} ${formattedFields.street1}` }
-							}
-						})
-						
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street} ${formattedFields.street2}` }
-							}
-						})
-					
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street}` },
-							}
-						})
-						
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street1} ${formattedFields.street2}`}
-							},
-						})
-						
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street1}` }
-							}
-						})
-						
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street2}` }
-							}
-						})
-					
-						const withoutStreet = { ...formattedFields }
-						delete withoutStreet.street
-						setToTry.push({ method: 'geolocate', fields: withoutStreet })
-						
-					} else if ('street' in formattedFields && 'street1' in formattedFields) {
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street} ${formattedFields.street1}` }
-							}
-						})
-					
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street}` }
-							}
-						})
-						
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street1}` }
-							}
-						})
-						
-						const withoutStreet = { ...formattedFields }
-						delete withoutStreet.street
-						setToTry.push({ method: 'geolocate', fields: withoutStreet })
-					} else if ('street' in formattedFields && 'street2' in formattedFields) {
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{
-								  street: `${formattedFields.street} ${formattedFields.street2}`
-								}
-							}
-						})
-						
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street}` }
-							}
-						})
-						
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street2}` }
-							}
-						})
-						
-						const withoutStreet = { ...formattedFields }
-						delete withoutStreet.street
-						setToTry.push({ method: 'geolocate', fields: withoutStreet })
-						
-					} else if ('street' in formattedFields) {
-						setToTry.push({
-							method: 'geolocate',
-							fields: {
-								...formattedFields,
-								...{ street: `${formattedFields.street}` },
-							}
-						})
-						
-						const withoutStreet = { ...formattedFields }
-						delete withoutStreet.street
-						setToTry.push({ method: 'geolocate', fields: withoutStreet })
-					} else {
-						setToTry.push({ method: 'geolocate', fields: { ...formattedFields } })
-					}
-					
-					setToTry.push({
-						method: 'geolocateRetryWithoutNumberAtBeginningIfNeeded',
-						fields: lAddress
-					})
+        if (
+        'street' in formattedFields &&
+        'street1' in formattedFields &&
+        'street2' in formattedFields
+        ) {
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{
+                street: `${formattedFields.street} ${formattedFields.street1} ${formattedFields.street2}`,
+              }
+            }
+          })
+          
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street} ${formattedFields.street1}` }
+            }
+          })
+          
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street} ${formattedFields.street2}` }
+            }
+          })
+        
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street}` },
+            }
+          })
+          
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street1} ${formattedFields.street2}`}
+            },
+          })
+          
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street1}` }
+            }
+          })
+          
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street2}` }
+            }
+          })
+        
+          const withoutStreet = { ...formattedFields }
+          delete withoutStreet.street
+          setToTry.push({ method: 'geolocate', fields: withoutStreet })
+          
+        } else if ('street' in formattedFields && 'street1' in formattedFields) {
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street} ${formattedFields.street1}` }
+            }
+          })
+        
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street}` }
+            }
+          })
+          
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street1}` }
+            }
+          })
+          
+          const withoutStreet = { ...formattedFields }
+          delete withoutStreet.street
+          setToTry.push({ method: 'geolocate', fields: withoutStreet })
+        } else if ('street' in formattedFields && 'street2' in formattedFields) {
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{
+                street: `${formattedFields.street} ${formattedFields.street2}`
+              }
+            }
+          })
+          
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street}` }
+            }
+          })
+          
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street2}` }
+            }
+          })
+          
+          const withoutStreet = { ...formattedFields }
+          delete withoutStreet.street
+          setToTry.push({ method: 'geolocate', fields: withoutStreet })
+          
+        } else if ('street' in formattedFields) {
+          setToTry.push({
+            method: 'geolocate',
+            fields: {
+              ...formattedFields,
+              ...{ street: `${formattedFields.street}` },
+            }
+          })
+          
+          const withoutStreet = { ...formattedFields }
+          delete withoutStreet.street
+          setToTry.push({ method: 'geolocate', fields: withoutStreet })
+        } else {
+          setToTry.push({ method: 'geolocate', fields: { ...formattedFields } })
+        }
+        
+        setToTry.push({
+          method: 'geolocateRetryWithoutNumberAtBeginningIfNeeded',
+          fields: lAddress
+        })
 
-					let manageData = null
+        let manageData = null
 
-					const processNextSet = async () => {
-						if (setToTry.length == 0) {
-							throw new Error(_t('GEOLOCATER_NOT_FOUND', { addr: lAddress }))
-						} else {
-							const newSet = setToTry[0]
-							setToTry = setToTry.slice(1)
-							return await geolocationHelper[newSet.method](newSet.fields).then(manageData)
-						}
-					}
+        const processNextSet = async () => {
+          if (setToTry.length == 0) {
+            throw new Error(_t('GEOLOCATER_NOT_FOUND', { addr: lAddress }))
+          } else {
+            const newSet = setToTry[0]
+            setToTry = setToTry.slice(1)
+            return await geolocationHelper[newSet.method](newSet.fields).then(manageData)
+          }
+        }
 
-					manageData = async (pData) => {
-						if (
-							pData.length > 0 &&
-							pData[0].latitude.length > 0 &&
-							pData[0].longitude.length > 0
-						) {
-							return pData
-						}
-						
-						return await processNextSet().then((pData) => pData)
-					}
+        manageData = async (pData) => {
+          if (
+            pData.length > 0 &&
+            pData[0].latitude.length > 0 &&
+            pData[0].longitude.length > 0
+          ) {
+            return pData
+          }
+          
+          return await processNextSet().then((pData) => pData)
+        }
 
-					processNextSet()
-					.then((pData) => {
-						showAddressOk(pData[0].latitude, pData[0].longitude, pMove)
-					})
-					.catch((error) => {
-						showAddressError (error instanceof Error ? error.message : String(error))
-					})
+        processNextSet()
+        .then((pData) => {
+          showAddressOk(pData[0].latitude, pData[0].longitude, pMove)
+        })
+        .catch((error) => {
+          showAddressError (error instanceof Error ? error.message : String(error))
+        })
 
-					return false
-				}
-				
-				function showAddressOk(pLatitude, pLongitude, pMove) {
-					if (pMove) {
-						cMap.flyTo([pLatitude, pLongitude], cMap.getMaxZoom())
-					} else {
-						geocodedmarkerRefresh(L.latLng(pLatitude, pLongitude))
-					}
-				}
+        return false
+      }
+      
+      function showAddressOk(pLatitude, pLongitude, pMove) {
+        if (pMove) {
+          cMap.flyTo([pLatitude, pLongitude], cMap.getMaxZoom())
+        } else {
+          geocodedmarkerRefresh(L.latLng(pLatitude, pLongitude))
+        }
+      }
 
-				function showAddressError(pMessage) {
-					// console.log("showAddressError: " + pMessage);
-					if (msg == 'not found') {
-						alert(_t('BAZ_GEOLOC_NOT_FOUND'))
-						geocodedmarkerRefresh()
-					} else {
-						alert(_t('BAZ_MAP_ERROR', { pMessage }))
-					}
-				}
-				
-				function popupHtml(pPoint) {
-					return `
-						<div id="${cName}_geolocation_popup" class="input-group" style="margin-bottom: 10px">
-							<span class="input-group-addon">Lat</span>
-							<input id="${cName}_latitude_popup" type="text" class="form-control" pattern="-?\\\d{1,3}\\\.\\\d+" value="${pPoint.lat}" />
-							<span class="input-group-addon">Lon</span>
-							<input id="${cName}_longitude_popup" type="text" class="form-control" pattern="-?\\\d{1,3}\\\.\\\d+" value="${pPoint.lng}" />
-						</div>
-						<div class="text-center">${_t('BAZ_ADJUST_MARKER_POSITION')}</div>
-					`
-				}
+      function showAddressError(pMessage) {
+        // console.log("showAddressError: " + pMessage);
+        if (msg == 'not found') {
+          alert(_t('BAZ_GEOLOC_NOT_FOUND'))
+          geocodedmarkerRefresh()
+        } else {
+          alert(_t('BAZ_MAP_ERROR', { pMessage }))
+        }
+      }
+      
+      function popupHtml(pPoint) {
+        return `
+          <div id="${cName}_geolocation_popup" class="input-group" style="margin-bottom: 10px">
+            <span class="input-group-addon">Lat</span>
+            <input id="${cName}_latitude_popup" type="text" class="form-control" pattern="-?\\\d{1,3}\\\.\\\d+" value="${pPoint.lat}" />
+            <span class="input-group-addon">Lon</span>
+            <input id="${cName}_longitude_popup" type="text" class="form-control" pattern="-?\\\d{1,3}\\\.\\\d+" value="${pPoint.lng}" />
+          </div>
+          <div class="text-center">${_t('BAZ_ADJUST_MARKER_POSITION')}</div>
+        `
+      }
 
-				function geocodedmarkerRefresh(pPoint) {
-					if (vGeocodedMarker) cMap.removeLayer(vGeocodedMarker)
-					
-					if (!pPoint)
-					{
-						cLatitude.val("")
-						cLongitude.val("")
-						$(`#${cName}_latitude_popup`).val("")
-						$(`#${cName}_longitude_popup`).val("")
-						return;
-					}
-					
-					if (cMapFieldData.chosenGeometries.includes('marker')) {
-						vGeocodedMarker = L.marker(pPoint, { draggable: true }).addTo(cMap)
-						
-						cMap.setView(pPoint, 18)
-						
-						vGeocodedMarker
-						.bindPopup(popupHtml(vGeocodedMarker.getLatLng()), {
-							closeButton: false,
-							closeOnClick: false,
-							minWidth: 300,
-						})
-						.openPopup()
-						  
-						cLatitude.val(pPoint.lat)
-						cLongitude.val(pPoint.lng)
+      function geocodedmarkerRefresh(pPoint) {
+        if (vGeocodedMarker) cMap.removeLayer(vGeocodedMarker)
+        
+        if (!pPoint)
+        {
+          cLatitude.val("")
+          cLongitude.val("")
+          $(`#${cName}_latitude_popup`).val("")
+          $(`#${cName}_longitude_popup`).val("")
+          return;
+        }
+        
+        if (cMapFieldData.chosenGeometries.includes('marker')) {
+          vGeocodedMarker = L.marker(pPoint, { draggable: true }).addTo(cMap)
+          
+          cMap.setView(pPoint, 18)
+          
+          vGeocodedMarker
+          .bindPopup(popupHtml(vGeocodedMarker.getLatLng()), {
+            closeButton: false,
+            closeOnClick: false,
+            minWidth: 300,
+          })
+          .openPopup()
+            
+          cLatitude.val(pPoint.lat)
+          cLongitude.val(pPoint.lng)
 
-						vGeocodedMarker.on('dragend', function (ev) {
-							  this.openPopup()
-							  const changedPos = ev.target.getLatLng()
-							  cLatitude.val(changedPos.lat)
-							  cLongitude.val(changedPos.lng)
-							  $(`#${cName}_latitude_popup`).val(changedPos.lat)
-							  $(`#${cName}_longitude_popup`).val(changedPos.lng)
-						})
-					} else {
-						// remove formerly encoded marker position
-						$(`#${cName}_latitude,#${cName}_longitude,#${cName}_latitude_popup,#${cName}_longitude_popup`).val('')
-					}
-				}
-				
-				var vLatitude = cLatitude.val();
-				var vLongitude = cLongitude.val();
-				
-				if (
-					  vLatitude !== null &&
-					  vLatitude != 0 &&
-					  vLongitude !== null &&
-					  vLongitude != 0
-					) {
+          vGeocodedMarker.on('dragend', function (ev) {
+              this.openPopup()
+              const changedPos = ev.target.getLatLng()
+              cLatitude.val(changedPos.lat)
+              cLongitude.val(changedPos.lng)
+              $(`#${cName}_latitude_popup`).val(changedPos.lat)
+              $(`#${cName}_longitude_popup`).val(changedPos.lng)
+          })
+        } else {
+          // remove formerly encoded marker position
+          $(`#${cName}_latitude,#${cName}_longitude,#${cName}_latitude_popup,#${cName}_longitude_popup`).val('')
+        }
+      }
+      
+      var vLatitude = cLatitude.val();
+      var vLongitude = cLongitude.val();
+      
+      if (
+          vLatitude !== null &&
+          vLatitude != 0 &&
+          vLongitude !== null &&
+          vLongitude != 0
+        ) {
 
-					showAddressOk(vLatitude, vLongitude)
-				}
+        showAddressOk(vLatitude, vLongitude)
+      }
 
-				$('body').on('keyup keypress', `#${cName}_latitude, #${cName}_longitude`, function () {
-					const pattern = /^-?[\d]{1,3}[.][\d]+$/
-					const thisVal = $(this).val()
-					
-					if (!thisVal.match(pattern))
-						$(this).val(
-							$(this)
-							  .val()
-							  .replace(/[^\d.]/g, ''),
-						)
-				})
-					
-				$('body').on('blur', `#${cName}_latitude, #${cName}_longitude`, function () {
-					showAddressOk(cLatitude.val(), cLongitude.val())
-				})
-				
-				cGeolocateButton.on('click', function () {
-					function onLocationFound(e) {
-						cLatitude.val(e.latitude)
-						cLongitude.val(e.longitude)
-						geocodedmarkerRefresh(e.latlng)
-						cMap.panTo(e.latlng, { animate: true })
-					}
+      $('body').on('keyup keypress', `#${cName}_latitude, #${cName}_longitude`, function () {
+        const pattern = /^-?[\d]{1,3}[.][\d]+$/
+        const thisVal = $(this).val()
+        
+        if (!thisVal.match(pattern))
+          $(this).val(
+            $(this)
+              .val()
+              .replace(/[^\d.]/g, ''),
+          )
+      })
+        
+      $('body').on('blur', `#${cName}_latitude, #${cName}_longitude`, function () {
+        showAddressOk(cLatitude.val(), cLongitude.val())
+      })
+      
+      cGeolocateButton.on('click', function () {
+        function onLocationFound(e) {
+          cLatitude.val(e.latitude)
+          cLongitude.val(e.longitude)
+          geocodedmarkerRefresh(e.latlng)
+          cMap.panTo(e.latlng, { animate: true })
+        }
 
-					function onLocationError(e) {
-						cLatitude.val('')
-						cLongitude.val('')
-						console.log(e.message)
-					}
+        function onLocationError(e) {
+          cLatitude.val('')
+          cLongitude.val('')
+          console.log(e.message)
+        }
 
-					cMap.on('locationfound', onLocationFound)
-					cMap.on('locationerror', onLocationError)
+        cMap.on('locationfound', onLocationFound)
+        cMap.on('locationerror', onLocationError)
 
-					cMap.locate({ setView: true, maxZoom: 16 })
-				})
-				
-				cMoveToAddressButton.on('click', function () {
-					showAddress(true)
-				})
-				
-				cGeolocateAddressButton.on('click', function () {
-					showAddress()
-				})
-				
-				$('body').on('change', `#${cName}_geolocation_popup`, function (e) {
-					
-					if ($(this).is(':invalid')) {
-						cLatitude.val('')
-						cLongitude.val('')
-						alert(_t('BAZ_NOT_VALID_GEOLOC_FORMAT'))
-					} else {
-						const cLatitudePopup = $(this).find (`#${cName}_latitude_popup`).val();
-						const cLongitudePopup = $(this).find (`#${cName}_longitude_popup`).val();
-					
-						cLatitude.val(cLatitudePopup)
-						cLongitude.val(cLongitudePopup)
+        cMap.locate({ setView: true, maxZoom: 16 })
+      })
+      
+      cMoveToAddressButton.on('click', function () {
+        showAddress(true)
+      })
+      
+      cGeolocateAddressButton.on('click', function () {
+        showAddress()
+      })
+      
+      $('body').on('change', `#${cName}_geolocation_popup`, function (e) {
+        
+        if ($(this).is(':invalid')) {
+          cLatitude.val('')
+          cLongitude.val('')
+          alert(_t('BAZ_NOT_VALID_GEOLOC_FORMAT'))
+        } else {
+          const cLatitudePopup = $(this).find (`#${cName}_latitude_popup`).val();
+          const cLongitudePopup = $(this).find (`#${cName}_longitude_popup`).val();
+        
+          cLatitude.val(cLatitudePopup)
+          cLongitude.val(cLongitudePopup)
 
-						vGeocodedMarker.setLatLng([
-							cLatitudePopup,
-							cLongitudePopup
-						])
-					
-						cMap.panTo(vGeocodedMarker.getLatLng(), { animate: true })
-					}		
-				});
-			}
+          vGeocodedMarker.setLatLng([
+            cLatitudePopup,
+            cLongitudePopup
+          ])
+        
+          cMap.panTo(vGeocodedMarker.getLatLng(), { animate: true })
+        }		
+      });
 		}
 	})
 })
