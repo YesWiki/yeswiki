@@ -123,6 +123,7 @@ class EntryManager
 
         $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+      //  $debug = $this->wiki->isDebugEnabled ();
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
         return $data;
@@ -137,6 +138,11 @@ class EntryManager
 
     protected function removeUnknownFields($pFormID, $pData)
     {
+/*    
+We remove this code because it removes fields that are unknown in the form definition
+Recurrent event use extra fields...
+We should refactor date fields so that all informations are contained in one field as an array
+
         // Keep only the fields defined in the form definition
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($pFormID);
@@ -154,6 +160,8 @@ class EntryManager
                 }
             }
         }
+*/
+	$vAuthorizedFields = [...$pData];
 
         // Add extra fields that doesn't belong to the form definition
 
@@ -205,7 +213,11 @@ class EntryManager
 
             $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
-            $vRegisteredData = [];
+            $vRegisteredData = [...$data];
+/* CORRECT BUG FOR RECURRENT EVENT 
+We remove this code because it removes fields that are unknown in the form definition
+Recurrent event use extra fields...
+We should refactor date fields so that all informations are contained in one field as an array
 
             foreach ($form['prepared'] as $field) {
                 if ($field instanceof BazarField) {
@@ -220,7 +232,7 @@ class EntryManager
                     }
                 }
             }
-
+*/
             // Add extra fields that doesn't belong to the form definition
 
             if (isset($data['id_fiche'])) {
@@ -1162,7 +1174,7 @@ class EntryManager
         ];
         if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
             $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
-            foreach ($fiche as $key => $value) {
+            foreach ($fiche as $key => $value) {            
                 if (!empty($value)) {
                     if (
                         in_array(
