@@ -10,6 +10,11 @@ use YesWiki\Core\Service\DateService as CoreDateService;
  */
 class DateField extends BazarField
 {
+    public function requireIDFiche()
+    {
+        return true;
+    }
+    
     protected function renderInput($entry)
     {
         $day = '';
