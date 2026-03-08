@@ -74,6 +74,7 @@ return [
     'CONTACT_HELP_IN_NOTIFICATION' => 'allez sur le site pour gérer votre inscription',
     'CONTACT_NEW_USER_SUBJECT' => 'Vos nouveaux identifiants sur le site',
     'CONTACT_NEW_USER_MESSAGE' => "Bonjour!\n\nVotre inscription sur le site a ete finalisee, dorenavant vous pouvez vous identifier avec les informations suivantes :\n\nUrl : {{ baseUrl }}\n\nVotre identifiant NomWiki : {{ wikiName }}\n\nVotre email : {{ email }}\n\nVotre mot de passe : (le mot de passe que vous avez choisi)\n\nPour reinitialiser votre mot de passe : {{ urlForPasswordRenewal }}\n\nA tres bientot !",
+    'BAD_CAPTCHA' => 'Mauvaise vérification de CAPTCHA !',
     'AB_contact_group_label' => "Actions d'envoi d'e-mail/listes",
     'AB_abonnement_action_mail_label' => 'E-mail de la liste de discussion',
     'AB_abonnement_action_label' => "S'abonner à une liste de discussion",

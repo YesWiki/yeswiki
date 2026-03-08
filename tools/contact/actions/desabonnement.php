@@ -37,10 +37,13 @@ if (empty($listelements['mail'])) {
 
     // adresse url d'envoi du mail
     $listelements['mailerurl'] = $this->href('mail');
+    $listelements['captchaurl'] = $this->href('captcha');
 
     // type de demande et placeholder
     $listelements['demand'] = 'desabonnement';
     $listelements['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
+
+    $this->addJavascriptFile('javascripts/vendor/altcha/altcha.js', true, true);
 
     echo $this->render("@contact/$template", $listelements);
 

@@ -15,6 +15,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "ace-builds": "^1",
+    "altcha": "^2.3.0",
     "bootstrap": "^3",
     "datatables.net-bs": "^1.11.3",
     "datatables.net-buttons-bs": "^2.2.1",

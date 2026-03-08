@@ -4,6 +4,8 @@ use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ThemeManager;
+use AltchaOrg\Altcha\Hasher\Hasher;
+use AltchaOrg\Altcha\Altcha;
 
 // inclusion de la bibliotheque de fonctions pour l'envoi des mails
 include_once 'includes/email.inc.php';
@@ -22,102 +24,118 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     // entête de mail qd le champ $_GET['field'] est spécifié
     $infomsg = '';
 
-    //initialisation de variables passees en POST
-    $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
-    $hasReadAccess = true;
-    if (!empty($_GET['field'])) {
-        $hasReadAccess = $aclService->hasAccess('read');
-        $mail_receiver = [];
-        if ($hasReadAccess) {
-            $val = $entryManager->getOne($this->GetPageTag());
-            if (is_array($val) and isset($val[$_GET['field']])) {
-                $mail_receiver[] = $val[$_GET['field']];
-            }
-            $form = baz_valeurs_formulaire($val['id_typeannonce']);
-            $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->href('', $val['id_fiche']) . '">'
-                . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['bn_label_nature'] . ' » '
-                . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->config['wakka_name'] . ' ». ' .
-                ($mail_sender ? _t('CONTACT_REPLY') . ' <strong>' . $mail_sender . '</strong> '
-                    . _t('CONTACT_REPLY2') : '') . '.</em><br><br>';
-        }
+    if (!empty($_POST['altcha'])) {
+        $altchaHMACKey = $GLOBALS['wiki']->config['captchhmacKey'];
+        $hasher = new Hasher();
+        $altcha = new Altcha($altchaHMACKey, $hasher);        
+        $payload = json_decode(base64_decode($_POST['altcha'] ?? ''), true);    
+        $verified = $altcha->verifySolution($payload);
     } else {
-        $mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
+        $verified = false;
     }
-    if (!$mail_receiver) {
-        $hasReadAccess = $aclService->hasAccess('read');
-        if ($hasReadAccess) {
-            //on prend le squelette du theme qui pourrait contenir des actions avec des mails
-            $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
-            if (file_exists($chemin)) {
-                $file_content = file_get_contents($chemin);
-            } elseif (file_exists('tools/templates/' . $chemin)) {
-                $file_content = file_get_contents('tools/templates/' . $chemin);
-            } else {
-                $file_content = '{WIKINI_PAGE}';
-            }
-            $body = str_replace('{WIKINI_PAGE}', $this->page['body'], $file_content);
-            $mail_receiver = (isset($_POST['nbactionmail'])) ?
-                FindMailFromWikiPage($body, $_POST['nbactionmail']) : false;
-            if ($mail_receiver) {
-                $mailList = explode(',', $mail_receiver);
-                $mailList = array_map('trim', $mailList);
-                if (!empty($mailList)) {
-                    $mailList = parseMails($mailList);
-                }
-                $mail_receiver = $mailList;
-            }
-        }
-    }
-    $name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;
-    // when a mail is send from a bazar entry (no POST parameter 'type'), the type is ''
-    $type = !empty($_POST['type']) ? $_POST['type'] : '';
-
-    // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
-    if ($type == 'mail') {
-        $hasReadAccess = $aclService->hasAccess('read');
-        if ($hasReadAccess) {
-            $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
-            if ($entryManager->isEntry($this->GetPageTag())) {
-                $renderedPage = $entryController->view($this->GetPageTag());
-            } else {
-                $renderedPage = $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
-            }
-            $message_html = html_entity_decode(_convert($renderedPage, YW_CHARSET));
-            $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
-        }
-    } elseif ($type == 'abonnement' or $type == 'desabonnement') {
-        $message_html = $message_txt = 'Mailinglist : ' . $type;
-    } else {
-        // pour un envoi de mail classique, le message en txt
-        $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
-            ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false);
-        $message = (isset($_POST['message'])) ? stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
-        $message_txt = trim(strip_tags($message));
-        // euro symbol is not replaced by htmlspecialchar
-        $message_html = trim(nl2br(str_replace('€', '&euro;', htmlspecialchars($message, ENT_COMPAT, YW_CHARSET))));
-    }
-
-    // on verifie si tous les parametres sont bons
-    if ($hasReadAccess) {
-        $message = check_parameters_mail(
-            $type,
-            $mail_sender,
-            $name_sender,
-            $mail_receiver ?? '',
-            $subject ?? '',
-            $message_txt ?? ''
-        );
-
-        // adding the infomsg after checking the size of the message
-        if ($type != 'abonnement' && $type != 'desabonnement' && !empty($infomsg)) {
-            $message_txt = strip_tags($infomsg) . '\n\n' . $message_txt;
-            $message_html = $infomsg . $message_html;
-        }
-    } else {
+    if (!$verified) {
         $message = [
             'class' => 'danger',
-            'message' => _t('CONTACT_MESSAGE_NOT_SENT') . ' :<br />' . _t('LOGIN_NOT_AUTORIZED'),
-        ];
+            'message' => _t('BAD_CAPTCHA'),
+        ];        
+    } else {
+        //initialisation de variables passees en POST
+        $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
+        $hasReadAccess = true;
+        if (!empty($_GET['field'])) {
+            $hasReadAccess = $aclService->hasAccess('read');
+            $mail_receiver = [];
+            if ($hasReadAccess) {
+                $val = $entryManager->getOne($this->GetPageTag());
+                if (is_array($val) and isset($val[$_GET['field']])) {
+                    $mail_receiver[] = $val[$_GET['field']];
+                }
+                $form = baz_valeurs_formulaire($val['id_typeannonce']);
+                $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->href('', $val['id_fiche']) . '">'
+                    . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['bn_label_nature'] . ' » '
+                    . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->config['wakka_name'] . ' ». ' .
+                    ($mail_sender ? _t('CONTACT_REPLY') . ' <strong>' . $mail_sender . '</strong> '
+                        . _t('CONTACT_REPLY2') : '') . '.</em><br><br>';
+            }
+        } else {
+            $mail_receiver = (isset($_POST['mail'])) ? trim($_POST['mail']) : false;
+        }
+        if (!$mail_receiver) {
+            $hasReadAccess = $aclService->hasAccess('read');
+            if ($hasReadAccess) {
+                //on prend le squelette du theme qui pourrait contenir des actions avec des mails
+                $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
+                if (file_exists($chemin)) {
+                    $file_content = file_get_contents($chemin);
+                } elseif (file_exists('tools/templates/' . $chemin)) {
+                    $file_content = file_get_contents('tools/templates/' . $chemin);
+                } else {
+                    $file_content = '{WIKINI_PAGE}';
+                }
+                $body = str_replace('{WIKINI_PAGE}', $this->page['body'], $file_content);
+                $mail_receiver = (isset($_POST['nbactionmail'])) ?
+                    FindMailFromWikiPage($body, $_POST['nbactionmail']) : false;
+                if ($mail_receiver) {
+                    $mailList = explode(',', $mail_receiver);
+                    $mailList = array_map('trim', $mailList);
+                    if (!empty($mailList)) {
+                        $mailList = parseMails($mailList);
+                    }
+                    $mail_receiver = $mailList;
+                }
+            }
+        }
+        $name_sender = (isset($_POST['name'])) ? stripslashes($_POST['name']) : false;
+        // when a mail is send from a bazar entry (no POST parameter 'type'), the type is ''
+        $type = !empty($_POST['type']) ? $_POST['type'] : '';
+
+        // dans le cas d'une page wiki envoyee, on formate le message en html et en txt
+        if ($type == 'mail') {
+            $hasReadAccess = $aclService->hasAccess('read');
+            if ($hasReadAccess) {
+                $subject = ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
+                if ($entryManager->isEntry($this->GetPageTag())) {
+                    $renderedPage = $entryController->view($this->GetPageTag());
+                } else {
+                    $renderedPage = $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
+                }
+                $message_html = html_entity_decode(_convert($renderedPage, YW_CHARSET));
+                $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
+            }
+        } elseif ($type == 'abonnement' or $type == 'desabonnement') {
+            $message_html = $message_txt = 'Mailinglist : ' . $type;
+        } else {
+            // pour un envoi de mail classique, le message en txt
+            $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
+                ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false);
+            $message = (isset($_POST['message'])) ? stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
+            $message_txt = trim(strip_tags($message));
+            // euro symbol is not replaced by htmlspecialchar
+            $message_html = trim(nl2br(str_replace('€', '&euro;', htmlspecialchars($message, ENT_COMPAT, YW_CHARSET))));
+        }
+
+        // on verifie si tous les parametres sont bons
+        if ($hasReadAccess) {
+            $message = check_parameters_mail(
+                $type,
+                $mail_sender,
+                $name_sender,
+                $mail_receiver ?? '',
+                $subject ?? '',
+                $message_txt ?? ''
+            );
+
+            // adding the infomsg after checking the size of the message
+            if ($type != 'abonnement' && $type != 'desabonnement' && !empty($infomsg)) {
+                $message_txt = strip_tags($infomsg) . '\n\n' . $message_txt;
+                $message_html = $infomsg . $message_html;
+            }
+        } else {
+            $message = [
+                'class' => 'danger',
+                'message' => _t('CONTACT_MESSAGE_NOT_SENT') . ' :<br />' . _t('LOGIN_NOT_AUTORIZED'),
+            ];
+        }
     }
 
     // si pas d'erreur on envoie

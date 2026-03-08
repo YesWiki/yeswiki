@@ -148,3 +148,5 @@ mkdir -p javascripts/vendor/mermaid &&
 	mkdir -p javascripts/vendor/mermaid/chunks/mermaid.esm.min &&
 	cp -f node_modules/mermaid/dist/mermaid.esm.min.mjs javascripts/vendor/mermaid/mermaid.esm.min.mjs &&
 	cp -f node_modules/mermaid/dist/chunks/mermaid.esm.min/* javascripts/vendor/mermaid/chunks/mermaid.esm.min
+
+mkdir -p javascripts/vendor/altcha && cp -f node_modules/altcha/dist/altcha.i18n.js javascripts/vendor/altcha/altcha.js

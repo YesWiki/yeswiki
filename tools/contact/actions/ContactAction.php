@@ -38,9 +38,11 @@ class ContactAction extends YesWikiAction
             $options = array_merge($this->arguments, [
                 'nbactionmail' => $GLOBALS['nbactionmail'],
                 'mailerurl' => $this->wiki->href('mail'),
+                'captchaurl' => $this->wiki->href('captcha'),
             ]);
 
             $this->wiki->addJavascriptFile('tools/contact/libs/contact.js');
+            $this->wiki->addJavascriptFile('javascripts/vendor/altcha/altcha.js', true, true);
 
             return $this->render('@contact/' . $this->arguments['template'], $options);
         }
