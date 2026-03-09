@@ -92,7 +92,7 @@ class BazarListService
             $vForms = $pForms;
         }
 
-        $vIDs = $this->getIDs($pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
+        $vIDs = $this->getIDs($pOptions['selectedID'] ?? $pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
 
         $vLocalIDs = $vIDs['locals'];
         $vExternalIDs = $vIDs['externals'];

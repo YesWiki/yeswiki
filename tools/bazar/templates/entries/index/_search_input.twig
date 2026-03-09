@@ -10,10 +10,10 @@
         <input type="text" value="{{ params.keywords }}" name="keywords" placeholder="{{ _t('BAZ_MOT_CLE') }}" class="search-input form-control input-lg">
         {% if forms|length > 1 %}
           <span class="input-group-btn search-filter" style="width:auto;max-width:240px;">
-            <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id">
+            <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="selectedID">
               <option value="">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</option>
               {% for form in forms %}
-                <option value="{{ form.bn_id_nature }}" {% if form.bn_id_nature == formId %}selected{% endif %}>
+                <option value="{{ form.bn_id_nature }}" {% if form.bn_id_nature == selectedID %}selected{% endif %}>
                   {{ form.bn_label_nature }}
                 </option>
               {% endfor %}

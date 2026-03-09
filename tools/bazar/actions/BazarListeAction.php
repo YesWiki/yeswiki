@@ -261,6 +261,8 @@ class BazarListeAction extends YesWikiAction
 
             // Iframe ?
             'isInIframe' => testUrlInIframe(),
+            
+            'selectedID' => $_GET['selectedID']??$arg['selectedID']
         ];
     }
 
@@ -342,6 +344,7 @@ class BazarListeAction extends YesWikiAction
                 'pageTag' => $this->wiki->getPageTag(),
                 'forms' => $vForms,
                 //'formId' => $this->arguments['idtypeannonce'][0] ?? null,
+                'selectedID' => $this->arguments['selectedID']??null,
                 'facette' => $_GET['facette'] ?? null,
             ]);
         }
