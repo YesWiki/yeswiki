@@ -75,6 +75,40 @@ function toastMessage(
 }
 // polyfill placeholder
 (function($) {
+
+    $("input[type=password]")
+	.each (function ()
+	{
+		var vMe = $(this);
+
+		$("<div>")
+		.addClass ("far fa-eye")
+		.attr("title", _t('SHOW_PASSWORD'))
+		.css (
+		{
+			position: "absolute",
+			right: "0%",
+			top: "50%",
+			transform: "translate(0px, -50%)",
+			paddingRight: "1em",
+			fontSize: "1em"
+		})
+		.on ("click", function ()
+		{
+			if (vMe.attr ("type") == "password")
+			{
+				vMe.attr ("type", "text");
+				$(this).removeClass ("fa-eye").attr("title", _t('HIDE_PASSWORD')).addClass ("fa-eye-slash");
+			}
+			else
+			{
+				vMe.attr ("type", "password");
+				$(this).addClass ("fa-eye").removeClass ("fa-eye-slash").attr("title", _t('SHOW_PASSWORD'));
+			}
+		})
+		.insertAfter ($(this));
+	});	
+
   // gestion des classes actives pour les menus
   $('a.active-link')
     .parent()
