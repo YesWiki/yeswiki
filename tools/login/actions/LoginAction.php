@@ -45,7 +45,7 @@ class LoginAction extends YesWikiAction
             // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
             'context' => $arg['context'] ?? $this->wiki->tag,
             'signupurl' => $noSignupButton ? '0' : (
-                $this->wiki->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametreUtilisateur'))
+                $this->wiki->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametresUtilisateur'))
             ),
 
             'profileurl' => empty($arg['profileurl'])
