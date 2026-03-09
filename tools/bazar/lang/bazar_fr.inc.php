@@ -382,4 +382,5 @@ return [
     'BAZ_WIDGET_INSTRUCTION2' => 'Code action wiki a copier coller dans une page de ce site',
     'BAZ_CORRESPONDANCE_ERROR' => 'action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"',
     'BAZ_CORRESPONDANCE_ERROR2' => "action bazarliste : le paramètre correspondance est mal rempli.\nIl doit être de la forme correspondance=\"identifiant_1=identifiant_2\" ou correspondance=\"identifiant_1=identifiant_2, identifiant_3=identifiant_4\"",
+    'BAZ_FORM_EDIT_GEO_LABEL' => 'Géolocalisation de l\'adresse',
 ];
