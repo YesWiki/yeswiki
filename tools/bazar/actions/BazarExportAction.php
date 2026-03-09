@@ -49,7 +49,7 @@ class BazarExportAction extends YesWikiAction
         }
 
         // get CSV
-
+        $csv_raw=[];
         if (count($this->arguments['id']['locals']) + count($this->arguments['id']['externals']) == 1) {
             $forms = $this->bazarListService->getForms(['idtypeannonce' => $this->arguments['id']]);
 

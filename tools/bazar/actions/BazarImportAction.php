@@ -126,7 +126,7 @@ class BazarImportAction extends YesWikiAction
         }
 
         return $this->render('@bazar/bazar-import.twig', [
-            'id' => $vID['id'],
+            'id' => $vID['id'] ?? '',
             'server' => $this->arguments['server'],
             'forms' => $vForms,
             'params' => $this->arguments['params'],

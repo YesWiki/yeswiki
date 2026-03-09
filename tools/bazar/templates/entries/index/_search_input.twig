@@ -8,7 +8,7 @@
       <div class="input-group input-prepend input-append">
         <span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
         <input type="text" value="{{ params.keywords }}" name="keywords" placeholder="{{ _t('BAZ_MOT_CLE') }}" class="search-input form-control input-lg">
-        {% if forms|length > 0 %}
+        {% if forms|length > 1 %}
           <span class="input-group-btn search-filter" style="width:auto;max-width:240px;">
             <select onchange="javascript:this.form.submit();" class="form-control input-lg" name="id">
               <option value="">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</option>
