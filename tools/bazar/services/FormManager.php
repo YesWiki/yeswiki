@@ -194,6 +194,8 @@ class FormManager
 
     public function getMany($formsIds): array
     {
+        if (count ($formsIds) == 0) return $this->getAll ();
+    
         $results = [];
 
         foreach ($formsIds as $formId) {
