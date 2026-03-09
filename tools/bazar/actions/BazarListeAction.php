@@ -261,8 +261,8 @@ class BazarListeAction extends YesWikiAction
 
             // Iframe ?
             'isInIframe' => testUrlInIframe(),
-            
-            'selectedID' => $_GET['selectedID']??$arg['selectedID']
+
+            'selectedID' => $_GET['selectedID'] ?? ''
         ];
     }
 
