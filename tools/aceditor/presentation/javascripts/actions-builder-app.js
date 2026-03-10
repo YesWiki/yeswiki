@@ -243,8 +243,8 @@ export const app = {
       }
     },
     // prefer methods to computed to prevent cache
-    getSelectedFormId() {
-        if (typeof (this.selectedFormsIds) != "array" || this.selectedFormsIds.length == 0) return '';
+    getSelectedFormId() {console.log (this.selectedFormsIds);
+        if (!(this.selectedFormsIds instanceof Array) || this.selectedFormsIds.length == 0) return '';
         
         return this.selectedFormsIds.slice(0, 1)[0]  ?? '' // only the first one
     },
