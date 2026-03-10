@@ -129,4 +129,5 @@ docker-compose.local.yml
 *.old
 .php-cs-fixer.cache
 .twig-cs-fixer.cache
+.gitconfig
 TODO
