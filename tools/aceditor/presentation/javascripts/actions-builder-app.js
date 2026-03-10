@@ -244,7 +244,9 @@ export const app = {
     },
     // prefer methods to computed to prevent cache
     getSelectedFormId() {
-      return (this.selectedFormsIds) ? this.selectedFormsIds.slice(0, 1)[0] : '' // only the first one
+        if (typeof (this.selectedFormsIds) != "array" || this.selectedFormsIds.length == 0) return '';
+        
+        return this.selectedFormsIds.slice(0, 1)[0]  ?? '' // only the first one
     },
     setSelectedFormId() {
       const newValue = this.$refs.formSelection.value
