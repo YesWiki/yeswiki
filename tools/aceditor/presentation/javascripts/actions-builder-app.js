@@ -243,7 +243,7 @@ export const app = {
       }
     },
     // prefer methods to computed to prevent cache
-    getSelectedFormId() {console.log (this.selectedFormsIds);
+    getSelectedFormId() {
         if (!(this.selectedFormsIds instanceof Array) || this.selectedFormsIds.length == 0) return '';
         
         return this.selectedFormsIds.slice(0, 1)[0]  ?? '' // only the first one
