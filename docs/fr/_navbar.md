@@ -2,10 +2,10 @@
 
 [Revenir à mon wiki](/ ':id=back')
 
-- [Installation](/docs/fr/webmaster.md)
-- [Prise en main](/docs/fr/prise-en-main.md)
-- [Formulaires](/docs/fr/bazar.md)
-- [Administration](/docs/fr/admin.md)
+- [:wrench: Installation](/docs/fr/webmaster.md)
+- [	:v: Prise en main](/docs/fr/prise-en-main.md)
+- [:bookmark_tabs: Formulaires](/docs/fr/bazar.md)
+- [	:sunglasses: Administration](/docs/fr/admin.md)
 - Contribuer
   - [Participer à la communauté](/docs/fr/communaute.md)
   - [Améliorer la documentation](/docs/fr/documentation.md)
