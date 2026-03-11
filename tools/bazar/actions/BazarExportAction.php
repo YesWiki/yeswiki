@@ -49,7 +49,9 @@ class BazarExportAction extends YesWikiAction
         }
 
         // get CSV
-        $csv_raw=[];
+
+        $csvraw = null;
+
         if (count($this->arguments['id']['locals']) + count($this->arguments['id']['externals']) == 1) {
             $forms = $this->bazarListService->getForms(['idtypeannonce' => $this->arguments['id']]);
 
@@ -84,7 +86,7 @@ class BazarExportAction extends YesWikiAction
             'forms' => $forms,
             'params' => $this->arguments['params'],
             'selectedForm' => $vSelectedForm,
-            'csv' => $this->CSVManager->arrayToCSVToDisplay($csv_raw),
+            'csv' => !empty($csv_raw) ? $this->CSVManager->arrayToCSVToDisplay($csv_raw) : null,
             'nbEntries' => !empty($csv_raw) ? count($csv_raw) - 1 : 0,
             'optionKeysInsteadOfValuesChecked' => $this->arguments['bazar-export-option-keys-instead-of-values'],
         ]);
