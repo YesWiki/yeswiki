@@ -419,7 +419,6 @@ class CSVManager
                 $filename = basename($filesData['name']);
                 $ext = substr($filename, strrpos($filename, '.') + 1);
                 if ($ext == 'csv') {
-                    ini_set('auto_detect_line_endings', '1');
                     if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
                         if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
                             if ($columnIndexesForPropertyNames =
@@ -896,6 +895,18 @@ class CSVManager
         return $csvToDisplay;
     }
 
+    public function buildExportFilename ($pFormID)
+    {
+        $vFilename = 'export-fiche-';
+    
+        if (is_array ($pFormID)) $vFilename .= $pFormID['key'];
+        else $vFilename .= $vFormID;
+        
+        $vFilename .= '.csv';
+        
+        return $vFilename;
+    }
+
     /**
      * send CSV file or archive.
      *
@@ -913,13 +924,13 @@ class CSVManager
         $csvFiles = [];
 
         foreach ($vFormIDs['locals'] as $vFormID) {
-            $csvFiles['export-fiche-' . $vFormID . '.csv'] = $this->arrayToCSV(
+            $csvFiles[buildExportFilename($vFormID)] = $this->arrayToCSV(
                 $this->getCSVfromFormId(['locals' => [$vFormID], 'externals' => []], $pParams)
             );
         }
 
         foreach ($vFormIDs['externals'] as $vFormID) {
-            $csvFiles['export-fiche-' . (preg_replace("/[^a-zA-Z0-9\-\s.]/", '_', $vFormID['url'])) . '.' . $vFormID['id'] . '.csv'] = $this->arrayToCSV(
+            $csvFiles[buildExportFilename($vFormID)] = $this->arrayToCSV(
                 $this->getCSVfromFormId(['locals' => [], 'externals' => [$vFormID]], $pParams)
             );
         }

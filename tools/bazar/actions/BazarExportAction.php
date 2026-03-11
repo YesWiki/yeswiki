@@ -24,7 +24,7 @@ class BazarExportAction extends YesWikiAction
         $vIDs = $this->bazarListService->getIDs($vIDs);
 
         return [
-            'id' => $vIDs,
+            'id' => $vIDs ?? null,
             'keywords' => $this->getService(SearchManager::class)->aggregateKeywords($_GET['q'] ?? null, $_GET['keywords'] ?? null), // chaine de recherche
             'query' => $_GET['query'] ?? null,
             'bazar-export-option-keys-instead-of-values' => $this->formatBoolean($_REQUEST, false, 'bazar-export-option-keys-instead-of-values'),
@@ -44,27 +44,27 @@ class BazarExportAction extends YesWikiAction
         // get services
         $this->CSVManager = $this->getService(CSVManager::class);
         $this->formManager = $this->getService(FormManager::class);
-        if (!$this->bazarListService) {
-            $this->bazarListService = $this->getService(BazarListService::class);
-        }
+        if (!$this->bazarListService) $this->bazarListService = $this->getService(BazarListService::class);
+
+        $vForms = $this->formManager->getAll();
 
         // get CSV
 
         $csvraw = null;
 
-        if (count($this->arguments['id']['locals']) + count($this->arguments['id']['externals']) == 1) {
-            $forms = $this->bazarListService->getForms(['idtypeannonce' => $this->arguments['id']]);
+        $vTheID = $this->bazarListService->getTheID($this->arguments['id'], false);
 
+        if ($vTheID) {
+            
+            $vID = $vTheID['id'];
+            
             $vRefresh = $this->arguments['refresh'] ?? $_GET['refresh'] ?? 'false';
             $vRefresh = ($vRefresh == 'true' || $vRefresh == '1') ? true : false;
 
-            // get Forms
-            $vForms = $this->bazarListService->getForms(['idtypeannonce' => $this->arguments['id'], 'refresh' => $vRefresh]);
-
-            $vSelectedForm = reset($forms);
+            $vSelectedForm = $vForms [$vID];
 
             $csv_raw = $this->CSVManager->getCSVfromFormId(
-                $this->arguments['id'],
+                $vID,
                 [
                     'query' => $this->arguments['query'],
                     'keywords' => $this->arguments['keywords'],
@@ -74,17 +74,18 @@ class BazarExportAction extends YesWikiAction
                     'keysInsteadOfValues' => $this->arguments['bazar-export-option-keys-instead-of-values'],
                 ]
             );
-            $forms = [$vSelectedForm];
+            
+            $vFilename = $this->CSVManager->buildExportFilename($vTheID);
         } else {
-            // get Forms
-            $forms = $this->formManager->getAll();
+            // get Forms            
             $vSelectedForm = null;
         }
 
         return $this->render('@bazar/bazar-export.twig', [
-            'id' => $this->arguments['id'],
-            'forms' => $forms,
+            'id' => $vID ?? null,
+            'forms' => $vForms,
             'params' => $this->arguments['params'],
+            'filename' => $vFilename ?? null,
             'selectedForm' => $vSelectedForm,
             'csv' => !empty($csv_raw) ? $this->CSVManager->arrayToCSVToDisplay($csv_raw) : null,
             'nbEntries' => !empty($csv_raw) ? count($csv_raw) - 1 : 0,

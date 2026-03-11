@@ -126,11 +126,14 @@ class BazarImportAction extends YesWikiAction
                 break;
         }
 
+        if (!empty ($vID)) $vFilename = $this->CSVManager->buildExportFilename($vID);
+
         return $this->render('@bazar/bazar-import.twig', [
             'id' => $vID['id'] ?? '',
             'server' => $this->arguments['server'],
             'forms' => $vForms,
             'params' => $this->arguments['params'],
+            'filename' => $vFilename??'',
             'csv' => isset($csv_template) ? $this->CSVManager->arrayToCSVToDisplay($csv_template) : null,
             'selectedForm' => $vForm ?? null,
             'importedEntries' => $importedEntries ?? null,

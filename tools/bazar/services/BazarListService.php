@@ -92,7 +92,7 @@ class BazarListService
             $vForms = $pForms;
         }
 
-        $vSelectedID = $pOptions['selectedID'];
+        $vSelectedID = $pOptions['selectedID'] ?? '';
         if (trim ($vSelectedID) == '') $vSelectedID = null;
 
         $vIDs = $this->getIDs($vSelectedID ?? $pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');

@@ -7,7 +7,7 @@
             ~' - ' ~ _t('BAZ_TOTAL_FICHES') ~ ' : ' ~ nbEntries }}
 {% endblock %}
 
-{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}
+{% block downloadFileName %}{{ filename }}{% endblock %}
 {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV') -}}{% endblock %}
 
 {% block appendToForm %}

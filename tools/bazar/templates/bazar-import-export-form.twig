@@ -1,5 +1,3 @@
-{# {  include_javascript('/tools/bazar/presentation/javascripts/bazar.js', true, true) } #}
-
 <form id="form-bazar-import" method="post" class="form-horizontal"
   action="{{ url({params:params}) }}" {% block formDetails %}{% endblock %}>
   {% block formContent %}
@@ -56,7 +54,7 @@
 		{
 			cCSVBtn.addEventListener('click', function ()
 			{
-				downloadCSV(removeCSVCrochet($('.precsv').html()), '{% block downloadFileName %}export-bazar-{{ id }}.csv{% endblock %}');return false;
+				downloadCSV(removeCSVCrochet($('.precsv').html()), '{% block downloadFileName %}{{filename}}{% endblock %}');return false;
 			});		
 		}
 	});	  
