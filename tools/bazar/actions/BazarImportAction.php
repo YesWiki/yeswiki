@@ -91,13 +91,14 @@ class BazarImportAction extends YesWikiAction
                     $vForm
                 )) {
                     // append displayData
-                    $extracted = array_map(function ($extract) {
-                        $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0, $vForm);
+                    $extracted = array_map(function ($extract) use ($vForm) {
+                        $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0, null, $vForm);
                         $extract['json'] = json_encode($extract['entry']);
 
                         return $extract;
                     }, $extracted);
                 }
+
                 break;
 
             case 'importentries':
