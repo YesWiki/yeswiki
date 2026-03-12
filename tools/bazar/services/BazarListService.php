@@ -412,9 +412,9 @@ class BazarListService
     */
 
     public function getTheID($pIDs, $pThrowException = true)
-    {
+    {               
         $vIDs = $this->getIDs($pIDs);
-
+     
         $vLocalIDs = $vIDs['locals'];
         $vExternalIDs = $vIDs['externals'];
 
@@ -449,7 +449,7 @@ class BazarListService
                 return $pForm['bn_id_nature'];
             }, $this->formManager->getAll());
             $vExternalIDs = [];
-        } else {
+        } else {      
             $vIDs = $this->parseIDs($pIDs);
 
             $vLocalIDs = $vIDs['locals'];
@@ -460,7 +460,7 @@ class BazarListService
 
         $vUniqueExternalIDs = [];
 
-        foreach ($vExternalIDs as $vExternalID) {
+        foreach ($vExternalIDs as $vExternalID) {        
             $vKey = $vExternalID['url'] . '|' . $vExternalID['id'];
 
             if (isset($vUniqueExternalIDs[$vKey])) {
@@ -491,7 +491,7 @@ class BazarListService
             return false;
         }
 
-        if (strval($vID) != $pID) {
+        if (strval($vID) !== $pID) {
             return false;
         }
 
@@ -559,7 +559,7 @@ class BazarListService
 
         $vResults = ['locals' => [], 'externals' => []];
 
-        foreach ($vIDs as &$vID) {
+        foreach ($vIDs as $vID) {
             if (trim($vID['url']) == '') {
                 if (!$this->isValidID($vID['id'])) {
                     throw new \Exception('Invalid ID');
@@ -574,7 +574,7 @@ class BazarListService
                     throw new \Exception('Invalid external ID ' . $vID['id'] . print_r($vID, true));
                 }
                 if (isset($vID['localFormId']) && (trim($vID['localFormId']) != '') && !$this->isValidID($vID['localFormId'])) {
-                    throw new Exception('Invalid external ID');
+                    throw new Exception('Invalid local ID');
                 }
 
                 array_push($vResults['externals'], $vID);
