@@ -87,6 +87,7 @@ class FileField extends BazarField
             ]
             : [
                 'value' => $value,
+                'maxSize' => $this->maxSize,
                 'shortFileName' => $this->getShortFileName($value),
                 'fileUrl' => $this->getBasePath() . $value,
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
