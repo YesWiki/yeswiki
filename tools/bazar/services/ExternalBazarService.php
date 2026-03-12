@@ -379,15 +379,8 @@ class ExternalBazarService
             trigger_error('Getting entries total time :' . $diffTime / 1E+6 . ' ms');
         }
 
-        if (!empty($vEntries)) {
-            return $vEntries;
-        } elseif ($this->debug) {
-            trigger_error(get_class($this) . '::getEntries: ' . _t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES'));
-
-            return [];
-        }
-
-        return [];
+        if (!empty($vEntries)) return $vEntries;
+        else return [];
     }
 
     /**
