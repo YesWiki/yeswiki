@@ -136,6 +136,7 @@ class ArchiveService
         }
         if ($error) {
             $this->writeOutput($output, '! Private folder available on the internet', true, $outputFile);
+            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
@@ -148,12 +149,14 @@ class ArchiveService
         } catch (Throwable $th) {
             $this->writeOutput($output, 'There is not enough free space.', true, $outputFile);
             $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
+            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
             throw $th;
         }
         $this->writeOutput($output, 'There is enough free space.', true, $outputFile);
 
         if ($this->checkIfNeedStop($inputFile)) {
+            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
@@ -172,6 +175,7 @@ class ArchiveService
         }
 
         if ($this->checkIfNeedStop($inputFile)) {
+            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
@@ -210,6 +214,12 @@ class ArchiveService
             }
 
             $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
+
+            $this->unsetWikiStatus();
+            
+            // clean oldest files
+            $this->cleanOldestFiles();
+            
             $this->writeOutput($output, 'END', true, $outputFile);
         } catch (StopArchiveException $ex) {
             $this->unsetWikiStatus();
@@ -218,13 +228,13 @@ class ArchiveService
             return '';
         } catch (Throwable $th) {
             $this->unsetWikiStatus();
+            $this->writeOutput($output, 'STOP', true, $outputFile);            
+            
             throw $th;
         }
+        
         $this->unsetWikiStatus();
-
-        // clean oldest files
-        $this->cleanOldestFiles();
-
+        
         return $location;
     }
 
@@ -709,9 +719,20 @@ class ArchiveService
                                     $dirs[] = $dir . DIRECTORY_SEPARATOR . $file;
                                 }
                                 if ($this->checkIfNeedStop($inputFile)) {
-                                    $zip->unchangeAll();
-                                    $this->writeOutput($output, '== Closing archive after undoing all changes ==', true, $outputFile);
-                                    $zip->close();
+                                    $this->writeOutput($output, '== The archive processus need to be stopped ==', true, $outputFile);
+
+                                    if ($zip->unchangeAll())
+                                        $this->writeOutput($output, 'All changes were undo successfully', true, $outputFile);
+                                    else
+                                        $this->writeOutput($output, 'There was a problem undoing all changes', true, $outputFile);;
+
+                                    closedir($dh);
+                                    
+                                    if ($zip->close())
+                                        $this->writeOutput($output, 'Archive was closed successfully', true, $outputFile);
+                                    else
+                                        $this->writeOutput($output, 'There was a problem closing archive', true, $outputFile);
+                                    
                                     throw new StopArchiveException('Stop archive');
                                 }
                             }
@@ -744,9 +765,19 @@ class ArchiveService
         $this->writeOutput($output, 'Generating zip file', true, $outputFile);
         // register cancel callback if available
         if (method_exists($zip, 'registerCancelCallback')) {
-            $zip->registerCancelCallback(function () use ($inputFile) {
-                // 0 will continue process
-                return ($this->checkIfNeedStop($inputFile)) ? -1 : 0;
+            $zip->registerCancelCallback(function () use ($inputFile, &$output, $outputFile) {
+                $vNeedStop = $this->checkIfNeedStop($inputFile);
+
+                if ($vNeedStop) {
+                    $this->writeOutput($output, 'Archive creation canceled', true, $outputFile);
+                    $this->unsetWikiStatus();
+                    $this->writeOutput($output, 'STOP', true, $outputFile);
+                    
+                    return -1;
+                }
+                else {
+                    return 0;
+                }
             });
         }
         // register progress callback if available
@@ -755,7 +786,14 @@ class ArchiveService
                 $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $outputFile);
             });
         }
-        $zip->close();
+        
+        if ($zip->close())
+            $this->writeOutput($output, 'Archive was created successfully', true, $outputFile);
+        else {        
+            $this->writeOutput($output, 'There was a problem closing archive', true, $outputFile);
+
+            throw new StopArchiveException('Stop archive');
+        }        
     }
 
     /**
