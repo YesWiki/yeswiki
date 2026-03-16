@@ -333,11 +333,10 @@ class Stepper {
     });
 
     showBoxesCheckbox.addEventListener("change", () => {
-      if (showBoxesCheckbox.checked) {
-        this.pageContainer.classList.add("showDebugBoxes");
-      } else {
-        this.pageContainer.classList.remove("showDebugBoxes");
-      }
+      this.pageContainer.classList.toggle(
+        "showDebugBoxes",
+        showBoxesCheckbox.checked
+      );
     });
   }
 
@@ -678,14 +677,6 @@ const Stats = (function Stats() {
   function clear(node) {
     node.textContent = ""; // Remove any `node` contents from the DOM.
   }
-  function getStatIndex(pageNumber) {
-    for (const [i, stat] of stats.entries()) {
-      if (stat.pageNumber === pageNumber) {
-        return i;
-      }
-    }
-    return false;
-  }
   return {
     // Properties/functions needed by PDFBug.
     id: "Stats",
@@ -700,8 +691,8 @@ const Stats = (function Stats() {
       if (!stat) {
         return;
       }
-      const statsIndex = getStatIndex(pageNumber);
-      if (statsIndex !== false) {
+      const statsIndex = stats.findIndex(s => s.pageNumber === pageNumber);
+      if (statsIndex !== -1) {
         stats[statsIndex].div.remove();
         stats.splice(statsIndex, 1);
       }
