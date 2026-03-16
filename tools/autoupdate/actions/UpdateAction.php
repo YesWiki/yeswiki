@@ -17,20 +17,23 @@ class UpdateAction extends YesWikiAction
     }
 
     public function run()
-    {
-        $securityController = $this->getService(SecurityController::class);
-        $updateService = $this->getService(AutoUpdateService::class);
+    {                        
+        $vSecurityController = $this->getService(SecurityController::class);
+        $vUpdateService = $this->getService(AutoUpdateService::class);
+        $vMigrationService = $this->getService(MigrationService::class);
+        $vArchiveService = $this->getService(ArchiveService::class);
+        $vUpdateAdminPagesService = $this->getService(UpdateAdminPagesService::class);
 
-        if (!$updateService->initRepository($this->arguments['version'])) {
+        if (!$vUpdateService->initRepository($this->arguments['version'])) {
             return $this->render('@autoupdate/norepo.twig', []);
         }
 
         // At the time we introduced the migration concept in YesWiki, the old code was not redirecting
         // to "post_install" action. So we add this code to detect the first time the code is run
         // after migrations are introduced, and we run them.
-        $migrationService = $this->getService(MigrationService::class);
-        if (count($migrationService->getCompletedMigrations()) === 0) {
-            $messages = $migrationService->run();
+        
+        if (count($vMigrationService->getCompletedMigrations()) === 0) {
+            $messages = $vMigrationService->run();
             foreach ($messages as $message) {
                 flash(
                     $message['text'] . ' : ' . $message['status'],
@@ -39,15 +42,17 @@ class UpdateAction extends YesWikiAction
             }
         }
 
-        $action = $securityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
-        if (empty($action) || !$this->wiki->UserIsAdmin() || $this->isWikiHibernated()) {
+        $vIsReadOnly = $vArchiveService->isReadOnly ();
+
+        $action = $vSecurityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
+        if (empty($action) || !$this->wiki->UserIsAdmin() || $vIsReadOnly) {
             // Base action, display current status of software, extension and themes
             return $this->render('@autoupdate/status.twig', [
                 'isAdmin' => $this->wiki->UserIsAdmin(),
-                'isHibernated' => $this->isWikiHibernated(),
-                'core' => $updateService->repository->getCorePackage(),
-                'themes' => $updateService->repository->getThemesPackages(),
-                'tools' => $updateService->repository->getToolsPackages(),
+                'isHibernated' => $vIsReadOnly,
+                'core' => $vUpdateService->repository->getCorePackage(),
+                'themes' => $vUpdateService->repository->getThemesPackages(),
+                'tools' => $vUpdateService->repository->getToolsPackages(),
                 'phpVersion' => PHP_VERSION,
             ]);
         }
@@ -58,20 +63,20 @@ class UpdateAction extends YesWikiAction
 
         // Handle upgrade and delete actions
         // package can be 'yeswiki' for core upgrade, or extension name, or theme name
-        $packageName = $securityController->filterInput(INPUT_GET, 'package', FILTER_DEFAULT, true);
+        $packageName = $vSecurityController->filterInput(INPUT_GET, 'package', FILTER_DEFAULT, true);
 
         switch ($action) {
             case 'upgrade':
                 // Ensure a backup is made before the upgrade (or force upgrade)
-                $forcedUpdateToken = $securityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_DEFAULT, true);
-                if (!$this->getService(ArchiveService::class)->hasValidatedBackup($forcedUpdateToken)) {
+                $forcedUpdateToken = $vSecurityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_DEFAULT, true);
+                if (!$vArchiveService->hasValidatedBackup($forcedUpdateToken)) {
                     return $this->render('@core/preupdate-backup.twig', [
                         'packageName' => $packageName,
                     ]);
                 }
 
                 // Perform the upgrade
-                $messages = $updateService->upgrade($packageName);
+                $messages = $vUpdateService->upgrade($packageName);
 
                 // Reload the page to perform postInstall operation with the new code
                 $this->wiki->redirect($this->wiki->href('', '', [
@@ -81,20 +86,20 @@ class UpdateAction extends YesWikiAction
                 ], false));
                 break;
             case 'post_install':
-                $rawMessages = $securityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
+                $rawMessages = $vSecurityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
                 $messages = empty($rawMessages) ? [] : json_decode($rawMessages, true);
                 if (!is_array($messages)) {
                     $messages = [];
                 }
                 // Run migrations
-                $migrationMessages = $migrationService->run();
+                $migrationMessages = $vMigrationService->run();
                 $messages = array_merge($messages, $migrationMessages->toArray());
                 break;
             case 'update_admin_pages':
-                $messages = $this->getService(UpdateAdminPagesService::class)->updateAll();
+                $messages = $vUpdateAdminPagesService->updateAll();
                 break;
             case 'delete':
-                $messages = $updateService->delete($packageName);
+                $messages = $vUpdateService->delete($packageName);
                 break;
             default:
                 $messages = [];

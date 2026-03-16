@@ -11,6 +11,7 @@ use Symfony\Component\Process\Process;
 use Throwable;
 use YesWiki\Core\Exception\StopArchiveException;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Wiki;
 use ZipArchive;
 
@@ -228,6 +229,32 @@ class ArchiveService
     }
 
     /**
+     * Get YesWiki status
+     * We must use the configuration service to have the value of wiki_status since it can be modified dynamically
+     * and that ParameterBag is more static
+     *
+     * @return string : the status
+     */
+    public function getWikiStatus () {
+        $vConfig = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
+        $vConfig->load();
+            
+        if (trim ($vConfig['wiki_status']??'') == '') return 'running';
+        else return trim ($vConfig['wiki_status']);
+    }
+
+    /**
+     * Test if YesWiki is read only
+     * We must use the configuration service to have the value of wiki_status since it can be modified dynamically
+     * and that ParameterBag is more static
+     *
+     * @return bool : is read only
+     */
+    public function isReadOnly () {
+        return in_array($this->getWikiStatus (), ['hibernate', 'archiving', 'updating']);
+    }
+
+    /**
      * check if a recent and valided backup is present.
      *
      * @param mixed $token
@@ -286,15 +313,14 @@ class ArchiveService
         $callAsync = (isset($archiveParams['call_archive_async']) && is_bool($archiveParams['call_archive_async']))
             ? $archiveParams['call_archive_async']
             : true;
-        if ($this->securityController->isWikiHibernated()) {
-            switch ($this->params->get('wiki_status')) {
+        if ($this->isReadOnly ()) {
+            switch ($this->getWikiStatus ()) {
                 case 'archiving':
                     $archiving = true;
                     break;
                 case 'hibernate':
                     $hibernated = true;
                     break;
-
                 default:
                     break;
             }
