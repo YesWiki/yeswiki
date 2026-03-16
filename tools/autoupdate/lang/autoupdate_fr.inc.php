@@ -53,4 +53,6 @@ return [
     'SUPPORT_US' => 'soutenez-nous',
     'DONATE' => 'Je donne',
     'LEARN_MORE' => 'En savoir plus',
+    'AU_UNABLE_TO_REMOVE_FILES' => 'Les fichiers ci-dessous n\'ont pas pu être supprimé.\nVeuillez vérifier leurs droits d\'accès en écriture.\n',
+    'AU_NOT_WRITABLE_FILES' => 'Les fichiers suivants n\'existent pas ou ne sont pas accessibles en écriture par le serveur :\n'
 ];

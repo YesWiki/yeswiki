@@ -19,16 +19,16 @@ class Files
 
     protected function delete($path)
     {
-        if (empty($path)) {
-            return false;
-        }
+        if (empty($path)) return true;
+        
         if (is_file($path)) {
-            if (unlink($path)) {
+            if (@unlink($path)) {
                 return true;
+            } else {
+                return [ $path ]; 
             }
-
-            return false;
         }
+        
         if (is_dir($path)) {
             return $this->deleteFolder($path);
         }
@@ -94,40 +94,52 @@ class Files
     private function isWritableFolder($path)
     {
         $file2ignore = ['.', '..', '.git'];
+    
+        $vNotWritables = [];
+
         if ($res = opendir($path)) {
             while (($file = readdir($res)) !== false) {
                 if (!in_array($file, $file2ignore)) {
                     if (!$this->isWritable($path . '/' . $file)) {
-                        // TODO remonter les fichiers/dossier qui posent
-                        // problèmes
-                        return false;
+                        $vNotWritables [ $path . '/' . $file ];
                     }
                 }
             }
             closedir($res);
         }
 
-        return true;
+        if (count ($vNotWritables) == 0) return true;
+        else return $vNotWritables;
     }
 
     private function deleteFolder($path)
-    {
+    {    
         $file2ignore = ['.', '..'];
         if (is_link($path)) {
-            unlink($path);
+            if (@unlink($path)) return true;
+            else return [ $path ];
         } else {
+        
+            $vNotDeleteds = [];
+        
             if ($res = opendir($path)) {
                 while (($file = readdir($res)) !== false) {
                     if (!in_array($file, $file2ignore)) {
-                        $this->delete($path . '/' . $file);
+                        $vDeleteStatus = $this->delete(rtrim ($path, '/') . '/' . $file);
+                        
+                        if ($vDeleteStatus !== true) {                        
+                            $vNotDeleteds = array_merge ($vNotDeleteds, $vDeleteStatus);
+                        }
                     }
                 }
                 closedir($res);
             }
-            rmdir($path);
+
+            if (!@rmdir($path)) $vNotDeleteds [] = $path;
         }
 
-        return true;
+        if (count ($vNotDeleteds) == 0) return true;
+        else return $vNotDeleteds;
     }
 
     private function copyFolder($srcPath, $desPath)
@@ -136,7 +148,7 @@ class Files
         if ($res = opendir($srcPath)) {
             while (($file = readdir($res)) !== false) {
                 if (!in_array($file, $file2ignore)) {
-                    $this->copy($srcPath . '/' . $file, $desPath . '/' . $file);
+                    $this->copy(rtrim ($srcPath, '/') . '/' . $file, rtrim ($desPath, '/') . '/' . $file);
                 }
             }
             closedir($res);

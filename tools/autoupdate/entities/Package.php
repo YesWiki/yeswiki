@@ -75,15 +75,21 @@ abstract class Package extends Files
             'tools',
             'vendor',
         ];
-        $allGood = true;
+        
+        $vNotGoods = [];
+        
         foreach ($file2check as $f) {
             $path = $this->localPath . DIRECTORY_SEPARATOR . $f;
-            if (file_exists($path) and !$this->isWritable($path)) {
-                return false;
+            if (file_exists($path)) {
+                $vNotWritables = $this->isWritable($path);
+            
+                if ($vNotWritables !== true) {
+                    $vNotGoods [] = array_merge ($vNotGoods, $vNotWritables);
+                }
             }
         }
 
-        return $allGood;
+        return $vNotGoods;
     }
 
     public function checkIntegrity()
