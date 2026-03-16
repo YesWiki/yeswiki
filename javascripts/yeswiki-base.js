@@ -76,38 +76,34 @@ function toastMessage(
 // polyfill placeholder
 (function($) {
 
-    $("input[type=password]")
-	.each (function ()
-	{
-		var vMe = $(this);
+  $("input[type=password]")
+    .each(function() {
+      var vMe = $(this);
 
-		$("<div>")
-		.addClass ("far fa-eye")
-		.attr("title", _t('SHOW_PASSWORD'))
-		.css (
-		{
-			position: "absolute",
-			right: "0%",
-			top: "50%",
-			transform: "translate(0px, -50%)",
-			paddingRight: "1em",
-			fontSize: "1em"
-		})
-		.on ("click", function ()
-		{
-			if (vMe.attr ("type") == "password")
-			{
-				vMe.attr ("type", "text");
-				$(this).removeClass ("fa-eye").attr("title", _t('HIDE_PASSWORD')).addClass ("fa-eye-slash");
-			}
-			else
-			{
-				vMe.attr ("type", "password");
-				$(this).addClass ("fa-eye").removeClass ("fa-eye-slash").attr("title", _t('SHOW_PASSWORD'));
-			}
-		})
-		.insertAfter ($(this));
-	});	
+      $("<div>")
+        .addClass("far fa-eye")
+        .attr("title", _t('SHOW_PASSWORD'))
+        .css(
+          {
+            position: "absolute",
+            right: "0%",
+            top: "50%",
+            transform: "translate(0px, -50%)",
+            paddingRight: "1em",
+            fontSize: "1em"
+          })
+        .on("click", function() {
+          if (vMe.attr("type") == "password") {
+            vMe.attr("type", "text");
+            $(this).removeClass("fa-eye").attr("title", _t('HIDE_PASSWORD')).addClass("fa-eye-slash");
+          }
+          else {
+            vMe.attr("type", "password");
+            $(this).addClass("fa-eye").removeClass("fa-eye-slash").attr("title", _t('SHOW_PASSWORD'));
+          }
+        })
+        .insertAfter($(this));
+    });
 
   // gestion des classes actives pour les menus
   $('a.active-link')
@@ -187,7 +183,7 @@ function toastMessage(
         .find('.modal-body')
         .html(
           '<span id="yw-modal-loading" class="throbber"></span>'
-            + `<iframe id="yw-modal-iframe" src="${link}" referrerpolicy="no-referrer"></iframe>`
+          + `<iframe id="yw-modal-iframe" src="${link}" referrerpolicy="no-referrer"></iframe>`
         )
       $('#yw-modal-iframe').on('load', () => {
         $('#yw-modal-loading').hide()
@@ -344,16 +340,16 @@ function toastMessage(
             stateObject,
             document.title,
             window.location.pathname
-              + window.location.search
-              + $(this).attr('href')
+            + window.location.search
+            + $(this).attr('href')
           )
         } else {
           window.history.replaceState(
             stateObject,
             document.title,
             window.location.pathname
-              + window.location.search
-              + $(this).attr('href')
+            + window.location.search
+            + $(this).attr('href')
           )
         }
       })
@@ -372,17 +368,17 @@ function toastMessage(
     e.stopPropagation()
     $('body').append(
       '<div class="modal fade" id="YesWikiModal">'
-        + '<div class="modal-dialog">'
-        + '<div class="modal-content">'
-        + '<div class="modal-header">'
-        + '<button type="button" class="close" data-dismiss="modal">&times;</button>'
-        + `<h3>${_t('NAVBAR_EDIT_MESSAGE')}</h3>`
-        + '</div>'
-        + '<div class="modal-body">'
-        + '</div>'
-        + '</div>'
-        + '</div>'
-        + '</div>'
+      + '<div class="modal-dialog">'
+      + '<div class="modal-content">'
+      + '<div class="modal-header">'
+      + '<button type="button" class="close" data-dismiss="modal">&times;</button>'
+      + `<h3>${_t('NAVBAR_EDIT_MESSAGE')}</h3>`
+      + '</div>'
+      + '<div class="modal-body">'
+      + '</div>'
+      + '</div>'
+      + '</div>'
+      + '</div>'
     )
 
     const $editmodal = $('#YesWikiModal')
@@ -400,9 +396,9 @@ function toastMessage(
           .find('.modal-body')
           .append(
             `<a href="${href}" class="btn btn-default btn-block">`
-              + `<i class="fa fa-pencil-alt"></i> ${_t(
-                'YESWIKIMODAL_EDIT_MSG'
-              )} ${pagewiki}</a>`
+            + `<i class="fa fa-pencil-alt"></i> ${_t(
+              'YESWIKIMODAL_EDIT_MSG'
+            )} ${pagewiki}</a>`
           )
       })
 
@@ -732,7 +728,7 @@ function toastMessage(
       }
     }
     const { url, data, nb, nbInit } = extractData(this)
-    const deleteUserReaction = async(url, data, nb, nbInit, link) => {
+    const deleteUserReaction = async (url, data, nb, nbInit, link) => {
       const p = new Promise((resolve, reject) => {
         let currentReactionId = data.reactionid
         if ('oldId' in data && (data.oldId === true || data.oldId === 'true')) {
@@ -919,8 +915,7 @@ $('#commentsTableDeleteModal.modal').on('shown.bs.modal', function(event) {
         error(e) {
           multiDeleteService.addErrorMessage(
             $(modal),
-            `${_t('COMMENT_NOT_DELETED', { comment: name })} : ${
-              e.responseJSON && e.responseJSON.error ? e.responseJSON.error : ''
+            `${_t('COMMENT_NOT_DELETED', { comment: name })} : ${e.responseJSON && e.responseJSON.error ? e.responseJSON.error : ''
             }`
           )
         },
