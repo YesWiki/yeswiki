@@ -1,7 +1,8 @@
 // TODO better list and translatable
 const wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
-import { parseCondition, parseKeywords, parseSearchParams, mergeSearchParams, removeDiacritics, extractRegExp } from '../utils.js'
+import { parseCondition, parseKeywords, removeDiacritics, extractRegExp } from '../search.js'
+import { parseSearchParams, mergeSearchParams,  } from '../url.js'
 
 export default {
   data: {

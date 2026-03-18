@@ -4,7 +4,8 @@
  *
  * */
 
-import { updateHash, parseCondition } from './utils.js'
+import { updateHash } from './url.js'
+import { parseCondition } from './search.js'
 
 var gSavedHash;
 
