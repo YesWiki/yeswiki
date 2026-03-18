@@ -88,6 +88,13 @@ abstract class Package extends Files
                 }
             }
         }
+        
+        $vLocalPathLength = strlen ($this->localPath);
+        
+        $vNotGoods = array_map (function ($pPath) use ($vLocalPathLength)
+        {
+            return "." . substr ($pPath, $vLocalPathLength);
+        }, $vNotGoods);
 
         return $vNotGoods;
     }

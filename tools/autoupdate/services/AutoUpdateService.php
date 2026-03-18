@@ -118,8 +118,11 @@ class AutoUpdateService
         $vNotGoods = $package->checkACL();
         
         if (count ($vNotGoods) > 0)
-         {
-            $messages [] = [ 'text' => (_t('AU_ACL') . '\n' . _t('AU_NOT_WRITABLE_FILES') . implode (', ', $vNotGoods)), 'status' => _t('AU_ERROR') ];
+        {
+            $vMaxLength = 100;
+            $vFilesList = implode (', ', $vNotGoods);
+         
+            $messages [] = [ 'text' => (_t('AU_ACL') . '\n' . _t('AU_NOT_WRITABLE_FILES') . substr ($vFilesList, 0, 100) . (strlen ($vFilesList) > $vMaxLength ? '...' : '')), 'status' => _t('AU_ERROR') ];
             
             $package->cleanTempFiles();
 
