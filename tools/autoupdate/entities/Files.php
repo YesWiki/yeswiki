@@ -101,7 +101,7 @@ class Files
             while (($file = readdir($res)) !== false) {
                 if (!in_array($file, $file2ignore)) {
                     if (!$this->isWritable($path . '/' . $file)) {
-                        $vNotWritables [ $path . '/' . $file ];
+                        $vNotWritables [] = $path . '/' . $file;
                     }
                 }
             }

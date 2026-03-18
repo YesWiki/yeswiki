@@ -137,11 +137,11 @@ class ArchiveService
             }
         }
         if (!empty($outputFile)) {
-            file_put_contents($outputFile, '');
+            if (@file_put_contents($outputFile, '') === false) throw new Exception ("Cannot write to archive output file. Please check file system access rights");
         }
 
         // checking folder not available on the internet
-        file_put_contents("$privatePath/tmpTestFile000.txt", 'test');
+        if (@file_put_contents("$privatePath/tmpTestFile000.txt", 'test') === false) throw new Exception ("Cannot write to test file. Please check file system access rights");
         $error = !$this->localPrivateFolderNotAvailableOnInternet($privatePath, 'tmpTestFile000.txt');
         if (file_exists("$privatePath/tmpTestFile000.txt")) {
             unlink("$privatePath/tmpTestFile000.txt");
@@ -231,7 +231,7 @@ class ArchiveService
             
                 $this->writeOutput($output, 'END', true, $outputFile);
             }
-            else {file_put_contents ("log.txt", "createZip returns false", FILE_APPEND);
+            else {
                 throw new StopArchiveException('Stop archive : not saved !');
             }            
         } catch (StopArchiveException $ex) {        
@@ -359,11 +359,14 @@ class ArchiveService
                     unlink($tmpFileName);
                 }
                 try {
-                    file_put_contents($tmpFileName, 'test');
+                    if (@file_put_contents($tmpFileName, 'test') === false) throw new Exception ("Cannot write to tmp file. Please check file system access rights");
                     if (!file_exists($tmpFileName)) {
                         throw new Exception('Not writable folder');
                     }
-                    $content = file_get_contents($tmpFileName);
+                    $content = @file_get_contents($tmpFileName);
+                    
+                    if ($content === false) throw new Exception ("Cannot read tmp file. Please check file system access rights");
+                    
                     if ($content != 'test') {
                         throw new Exception('Bad content');
                     }
@@ -647,7 +650,7 @@ class ArchiveService
         ) {
             return false;
         }
-        file_put_contents($info[$uid]['input'], 'STOP');
+        if (@file_put_contents($info[$uid]['input'], 'STOP') === false) throw new Exception ("Cannot write to archive info file. Please check file system access rights");
 
         return true;
     }
@@ -660,7 +663,10 @@ class ArchiveService
         if (empty($inputFile) || !is_file($inputFile)) {
             return false;
         }
-        $content = file_get_contents($inputFile);
+        $content = @file_get_contents($inputFile);
+        
+        if ($content === false) throw new Exception ("Cannot read archive input file. Please check file system access rights");
+        
         if (empty($content)) {
             return false;
         }
@@ -690,7 +696,6 @@ class ArchiveService
             throw new Exception('Can only be started from main directory');
         }
         $pathToArchive = getcwd();
-        file_put_contents ('log.txt',  "CWD = " . getcwd() . " ", FILE_APPEND);
         
         $pathToArchive = preg_replace("/(\/|\\\\)$/", '', $pathToArchive);
         $dirs = [$pathToArchive];
@@ -982,7 +987,7 @@ class ArchiveService
     private function writeOutput(&$output, string $text, bool $newline = true, string $outputFile = '')
     {
         if (!empty($outputFile) && is_file($outputFile)) {
-            file_put_contents($outputFile, $text . ($newline ? "\n" : ''), FILE_APPEND);
+            if (@file_put_contents($outputFile, $text . ($newline ? "\n" : ''), FILE_APPEND) === false) throw new Exception ("Cannot write to output file. Please check file system access rights");
         }
         if ($output instanceof OutputInterface) {
             $output->write($text, $newline);
@@ -1105,8 +1110,12 @@ class ArchiveService
 
                 // get content
                 if (file_exists($resultFile)) {
-                    $sqlContent = file_get_contents($resultFile);
-                    unlink($resultFile);
+                    $sqlContent = @file_get_contents($resultFile);
+                    
+                    if ($sqlContent === false) throw new Exception ("Cannot read sql content file. Please check file system access rights");
+                                        
+                    @unlink($resultFile);
+                    
                     if (!empty($sqlContent)) {
                         return $sqlContent;
                     }
@@ -1288,9 +1297,12 @@ class ArchiveService
             $privateFolder = $this->getPrivateFolder();
         }
         if (!file_exists("$privateFolder/info.json")) {
-            file_put_contents("$privateFolder/info.json", '{}');
+            if (@file_put_contents("$privateFolder/info.json", '{}') === false) throw new Exception ("Cannot write to archive info file. Please check file system access rights");
         }
-        $fileContent = file_get_contents("$privateFolder/info.json");
+        $fileContent = @file_get_contents("$privateFolder/info.json");
+        
+        if ($fileContent === false) throw new Exception ("Cannot read archive info file. Please check file system access rights");
+        
         $content = json_decode($fileContent, true);
 
         return (empty($content) || !is_array($content)) ? [] : $content;
@@ -1306,7 +1318,8 @@ class ArchiveService
         if (empty($privateFolder)) {
             $privateFolder = $this->getPrivateFolder();
         }
-        file_put_contents("$privateFolder/info.json", json_encode($content));
+
+        if (@file_put_contents("$privateFolder/info.json", json_encode($content)) === false) throw new Exception ("Cannot set archive info to file. Please check file system access rights");
     }
 
     /**
@@ -1328,8 +1341,8 @@ class ArchiveService
         // create files
         $input = "$privateFolder/input-$uid.log";
         $output = "$privateFolder/output-$uid.log";
-        file_put_contents($input, '');
-        file_put_contents($output, '');
+        if (@file_put_contents($input, '') === false) throw new Exception ("Cannot write to archive input file. Please check file system access rights");
+        if (@file_put_contents($output, '') === false) throw new Exception ("Cannot write to archive output file. Please check file system access rights");
 
         $info[$uid] = [
             'input' => realpath($input),
@@ -1384,7 +1397,10 @@ class ArchiveService
         if (!is_file($info['output'])) {
             return false;
         }
-        $output = file_get_contents($info['output']);
+        $output = @file_get_contents($info['output']);
+        
+        if ($output === false) throw new Exception ("Cannot read archive output file. Please check file system access rights");
+        
         $running = !empty(trim($output));
         $finished = !$running 
             ? false 

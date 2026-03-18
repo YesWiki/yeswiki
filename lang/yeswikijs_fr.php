@@ -134,5 +134,6 @@ return [
     'FORM_ID_NOT_AVAILABLE' => 'Le formulaire avec l\'identifiant {id} n\'est plus disponible sur l\'url indiqué, il faut changer d\'identifiant.',
     'FORM_ID_IS_COMPATIBLE' => 'Un formulaire du même identifiant ({id}) existe sur l\'url indiqué et semble avoir au moins les champs obligatoires similaires. Il sera utilisé pour la duplication.',
     'SHOW_PASSWORD' => 'Afficher le mot de passe',
-    'HIDE_PASSWORD' => 'Masquer le mot de passe'
+    'HIDE_PASSWORD' => 'Masquer le mot de passe',
+    'ERROR_CONTACT_ADMIN' => 'Une erreur est survenue. Veuillez contacter l\'administrateur du site et lui communiquer le message suivant : '
 ];

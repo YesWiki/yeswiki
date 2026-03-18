@@ -53,7 +53,7 @@ new Vue({
           this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter((e) => archiveNames.includes(e))
         }, (pError) => {
           // on error
-          this.message = _t('ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' + (trim (pError) != '' ? ' : ' + pError : ''))
+          this.message = _t('ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' + (pError.message.trim () != '' ? ' : ' + pError : ''))
           this.messageClass = { alert: true, 'alert-danger': true }
           this.selectedArchivesToDelete = []
           return Promise.resolve()
@@ -137,13 +137,15 @@ new Vue({
           })
       }
     },    
-    async fetch(url, options = {}) {      
+    async fetch(url, options = {}) {
+        const cThis = this;
+    
         return await fetch(url, options)
         .then (async (pResponse) => {
             if (!pResponse.ok) {
                 const cJSON = await pResponse.json();
 
-                throw _t('ERROR_CONTACT_ADMIN') + ` ${pResponse.statusText} (${pResponse.status}) - "` + cJSON['error'] + '"';
+                throw new Error(_t('ERROR_CONTACT_ADMIN') + ` ${pResponse.statusText} (${pResponse.status}) - "` + cJSON['error'] + '"')
             }
             else
                 return pResponse.json();
@@ -272,7 +274,7 @@ new Vue({
           this.currentArchiveUid = data.uid
           setTimeout(this.updateStatus, 2000)
         }, (pError) => {console.log (pError);
-          this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR') + (trim (pError) != '' ? ' : ' + pError : ''));
+          this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR') + (pError.message.trim() != '' ? ' : ' + pError : ''));
         })
     },
     endStartingUpdateError(message = '', className = 'danger') {
@@ -332,7 +334,7 @@ new Vue({
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
           setTimeout(this.checkStopped, 500)
         }, (pError) => {
-          this.archiveMessage = _t('ADMIN_BACKUPS_STOP_BACKUP_ERROR' + (trim (pError) != '' ? ' : ' + pError : ''))
+          this.archiveMessage = _t('ADMIN_BACKUPS_STOP_BACKUP_ERROR' + (pError.message.trim () != '' ? ' : ' + pError : ''))
           this.archiveMessageClass = { alert: true, 'alert-danger': true }
           this.stoppingArchive = false
         })
@@ -415,7 +417,7 @@ new Vue({
               setTimeout(this.updateStatus, 1000)
             }
           }, (pError) => {
-            this.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR') + (trim (pError) != '' ? ' : ' + pError : ''), 'danger')
+            this.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR') + (pError.message.trim () != '' ? ' : ' + pError : ''), 'danger')
             setTimeout(this.loadArchives, 3000)
           })
           .catch((pError) => {
@@ -483,7 +485,7 @@ new Vue({
             })
           }
         }, (pError) => {
-          this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' + (trim (pError) != '' ? ' : ' + pError : ''))
+          this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' + (pError.message.trim () != '' ? ' : ' + pError : ''))
           this.canForceUpdate = false
         })
         .catch((pError) => {

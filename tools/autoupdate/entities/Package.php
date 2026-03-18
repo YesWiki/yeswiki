@@ -84,7 +84,7 @@ abstract class Package extends Files
                 $vNotWritables = $this->isWritable($path);
             
                 if ($vNotWritables !== true) {
-                    $vNotGoods [] = array_merge ($vNotGoods, $vNotWritables);
+                    $vNotGoods = array_merge ($vNotGoods, is_array ($vNotWritables) ? $vNotWritables : [ $path ]);
                 }
             }
         }
