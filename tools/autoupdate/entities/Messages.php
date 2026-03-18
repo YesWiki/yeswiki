@@ -11,12 +11,20 @@ class Messages extends Collection
         return $this->list;
     }
 
-    public function add($message, $status)
+    public function add($pMessage, $pStatus = '')
     {
-        $this[] = [
-            'text' => _t($message),
-            'status' => _t($status),
-        ];
+        if ($pMessage instanceof Messages) {
+            $this->add ($pMessage->toArray ());
+        }
+        else
+        if (is_array ($pMessage)) {
+            $this->list = array_merge ($this->list, $pMessage);
+        } else {
+            $this[] = [
+                'text' => _t($pMessage),
+                'status' => _t($pStatus),
+            ];
+        }
 
         return $this;
     }

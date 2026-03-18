@@ -64,92 +64,106 @@ class ArchiveController extends YesWikiController
 
     public function manageArchiveAction(?string $id = null)
     {
-        $action = $this->getService(SecurityController::class)->filterInput(INPUT_POST, 'action', FILTER_DEFAULT, true);
-        switch ($action) {
-            case 'delete':
-                if (!empty($id)) {
-                    $filenames = [$id];
-                } elseif (isset($_POST['filesnames']) && is_array($_POST['filesnames'])) {
-                    $filenames = $_POST['filesnames'];
-                } else {
+        try {
+            $action = $this->getService(SecurityController::class)->filterInput(INPUT_POST, 'action', FILTER_DEFAULT, true);
+            switch ($action) {
+                case 'delete':
+                    if (!empty($id)) {
+                        $filenames = [$id];
+                    } elseif (isset($_POST['filesnames']) && is_array($_POST['filesnames'])) {
+                        $filenames = $_POST['filesnames'];
+                    } else {
+                        return new ApiResponse(
+                            ['error' => "\$_POST['filesnames'] should be set and be an array for action 'delete'"],
+                            Response::HTTP_BAD_REQUEST
+                        );
+                    }
+                    $results = $this->archiveService->deleteArchives($filenames);
+
                     return new ApiResponse(
-                        ['error' => "\$_POST['filesnames'] should be set and be an array for action 'delete'"],
+                        $results,
+                        $results['main'] ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST
+                    );
+                    break;
+                case 'startArchive':
+                    try {        
+                        if (isset($_POST['params']) && !is_array($_POST['params'])) {
+                            return new ApiResponse(
+                                ['error' => "\$_POST['params'] should be set and be an array for action 'startArchive'"],
+                                Response::HTTP_BAD_REQUEST
+                            );
+                        }
+                        $params = (isset($_POST['params']) && is_array($_POST['params'])) ? $_POST['params'] : [];
+                        $callAsync = !isset($_POST['callAsync']) || in_array($_POST['callAsync'], [1, true, 'true', '1'], true);
+                        $uid = $this->startArchive($params, $callAsync);
+                        if (empty($uid)) {
+                            return new ApiResponse(
+                                ['error' => 'no process created when starting archive action'],
+                                Response::HTTP_INTERNAL_SERVER_ERROR
+                            );
+                        }
+
+                        return new ApiResponse(
+                            ['uid' => $uid],
+                            Response::HTTP_OK
+                        );
+                    } catch (\Throwable $pThrowable) {                        
+                            return new ApiResponse(
+                                ['error' => 'A problem occures while starting the backup process. Exception reveived from ' . $pThrowable->getFile () . ' at line ' . $pThrowable->getLine () . ' : ' . $pThrowable->getMessage() ],
+                                Response::HTTP_INTERNAL_SERVER_ERROR
+                            );                        
+                    }
+                    break;
+                case 'stopArchive':
+                    if (empty($_POST['uid']) || !is_string($_POST['uid'])) {
+                        return new ApiResponse(
+                            ['error' => "\$_POST['uid'] should be set and be an string for action 'stopArchive'"],
+                            Response::HTTP_BAD_REQUEST
+                        );
+                    }
+                    $uid = htmlspecialchars($_POST['uid']);
+                    $result = $this->archiveService->stopArchive($uid);
+
+                    return new ApiResponse(
+                        [],
+                        $result ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST
+                    );
+                    break;
+                case 'restore':
+                    if (empty($id)) {
+                        return new ApiResponse(
+                            ['error' => '"api/archives/{id}" should have not empty {id} when using action "restore"'],
+                            Response::HTTP_BAD_REQUEST
+                        );
+                    }
+                    // TODO update code here when restore will work
+                    return new ApiResponse(
+                        ['error' => 'action not defined'],
                         Response::HTTP_BAD_REQUEST
                     );
-                }
-                $results = $this->archiveService->deleteArchives($filenames);
+                    break;
 
-                return new ApiResponse(
-                    $results,
-                    $results['main'] ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST
-                );
-                break;
-            case 'startArchive':
-                if (isset($_POST['params']) && !is_array($_POST['params'])) {
+                case 'futureDeletedArchives':
+                    $files = $this->archiveService->archivesToDelete(true);
+
                     return new ApiResponse(
-                        ['error' => "\$_POST['params'] should be set and be an array for action 'startArchive'"],
+                        ['files' => $files],
+                        Response::HTTP_OK
+                    );
+                    break;
+
+                default:
+                    return new ApiResponse(
+                        ['error' => "Not supported action : $action"],
                         Response::HTTP_BAD_REQUEST
                     );
-                }
-                $params = (isset($_POST['params']) && is_array($_POST['params'])) ? $_POST['params'] : [];
-                $callAsync = !isset($_POST['callAsync']) || in_array($_POST['callAsync'], [1, true, 'true', '1'], true);
-                $uid = $this->startArchive($params, $callAsync);
-                if (empty($uid)) {
-                    return new ApiResponse(
-                        ['error' => 'no process created when starting archive action'],
-                        Response::HTTP_INTERNAL_SERVER_ERROR
-                    );
-                }
-
-                return new ApiResponse(
-                    ['uid' => $uid],
-                    Response::HTTP_OK
-                );
-                break;
-            case 'stopArchive':
-                if (empty($_POST['uid']) || !is_string($_POST['uid'])) {
-                    return new ApiResponse(
-                        ['error' => "\$_POST['uid'] should be set and be an string for action 'stopArchive'"],
-                        Response::HTTP_BAD_REQUEST
-                    );
-                }
-                $uid = htmlspecialchars($_POST['uid']);
-                $result = $this->archiveService->stopArchive($uid);
-
-                return new ApiResponse(
-                    [],
-                    $result ? Response::HTTP_OK : Response::HTTP_BAD_REQUEST
-                );
-                break;
-            case 'restore':
-                if (empty($id)) {
-                    return new ApiResponse(
-                        ['error' => '"api/archives/{id}" should have not empty {id} when using action "restore"'],
-                        Response::HTTP_BAD_REQUEST
-                    );
-                }
-                // TODO update code here when restore will work
-                return new ApiResponse(
-                    ['error' => 'action not defined'],
-                    Response::HTTP_BAD_REQUEST
-                );
-                break;
-
-            case 'futureDeletedArchives':
-                $files = $this->archiveService->archivesToDelete(true);
-
-                return new ApiResponse(
-                    ['files' => $files],
-                    Response::HTTP_OK
-                );
-                break;
-
-            default:
-                return new ApiResponse(
-                    ['error' => "Not supported action : $action"],
-                    Response::HTTP_BAD_REQUEST
-                );
-                break;
+                    break;
+            }
+        } catch (\Throwable $pThrowable) {        
+            return new ApiResponse(
+                ['error' => "an exception occures : " . $pThrowable->getMessage () . " in file " . $pThrowable->getFile () . " at line " . $pThrowable->getLine() ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
+            );                    
         }
     }
 
