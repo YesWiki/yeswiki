@@ -2,6 +2,8 @@
 
 namespace YesWiki\AutoUpdate\Entity;
 
+use Throwable;
+
 class Files
 {
     protected function tmpdir()
@@ -55,22 +57,27 @@ class Files
 
     protected function isWritable($path)
     {
-        // la destination n'existe pas et droits d'écriture sur le repertoire
-        // de destination
-        if (!file_exists($path) and is_writable(dirname($path))) {
-            return true;
-        }
+        try {    
+            // la destination n'existe pas et droits d'écriture sur le repertoire
+            // de destination
+            if (!@file_exists($path) and @is_writable(dirname($path))) {
+                return true;
+            }
 
-        if (is_file($path)) {
-            return is_writable($path);
-        }
+            if (@is_file($path)) {
+                if (@is_writable($path)) return true;
+                else return [ $path ];
+            }
 
-        if (is_dir($path)) {
-            return $this->isWritableFolder($path);
-        }
+            if (@is_dir($path)) {
+                return $this->isWritableFolder($path);
+            }
 
-        // TODO Gérer les liens
-        return false;
+            // TODO Gérer les liens
+            return [ $path ];
+        } catch (Throwable $pThrowable) {
+            return [ $path ];
+        }
     }
 
     public function download($sourceUrl, $destPath = null, $timeoutInSec = 5)
@@ -97,17 +104,26 @@ class Files
     
         $vNotWritables = [];
 
-        if ($res = opendir($path)) {
-            while (($file = readdir($res)) !== false) {
-                if (!in_array($file, $file2ignore)) {
-                    if (!$this->isWritable($path . '/' . $file)) {
-                        $vNotWritables [] = $path . '/' . $file;
-                    }
-                }
-            }
-            closedir($res);
-        }
+        if (@is_dir($path)) {	        
+            if (@is_writable($path) !== true) $vNotWritables [] = $path;
 
+            if ($res = @opendir($path)) {
+                while (($file = @readdir($res)) !== false) {
+                    if (!in_array($file, $file2ignore)) {
+                        $vIsWritable = $this->isWritable($path . '/' . $file);
+                        
+                        if ($vIsWritable !== true)
+                            $vNotWritables = array_merge ($vNotWritables, $vIsWritable);
+                        }
+                    }
+                @closedir($res);
+            } else {
+                $vNotWritables [] = $path;
+            }
+        } else {
+            $vNotWritables [] = $path;
+        }
+        
         if (count ($vNotWritables) == 0) return true;
         else return $vNotWritables;
     }
