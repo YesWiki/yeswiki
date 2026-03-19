@@ -269,7 +269,7 @@ class FormManager
 
         $activitypubEnabled = $this->activityPubService->isEnabled($data);
 
-        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === '') {
+        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === NULL) {
             $keyPair = $this->httpSignatureService->generateKeyPair();
             $privateKey = $keyPair[0];
             $publicKey = $keyPair[1];
