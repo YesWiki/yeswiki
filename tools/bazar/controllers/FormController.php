@@ -5,6 +5,8 @@ namespace YesWiki\Bazar\Controller;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Field\MapField;
+use YesWiki\Bazar\Service\ActivityPubService;
+use YesWiki\Bazar\Service\WebfingerService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\CsrfTokenController;
@@ -16,12 +18,16 @@ class FormController extends YesWikiController
     protected $csrfTokenController;
     protected $formManager;
     protected $securityController;
+    protected $activityPubService;
+    protected $webfingerService;
 
-    public function __construct(FormManager $formManager, SecurityController $securityController, CsrfTokenController $csrfTokenController)
+    public function __construct(FormManager $formManager, SecurityController $securityController, CsrfTokenController $csrfTokenController, ActivityPubService $activityPubService, WebfingerService $webfingerService)
     {
         $this->csrfTokenController = $csrfTokenController;
         $this->formManager = $formManager;
         $this->securityController = $securityController;
+        $this->activityPubService = $activityPubService;
+        $this->webfingerService = $webfingerService;
     }
 
     public function displayAll($message)
@@ -55,6 +61,7 @@ class FormController extends YesWikiController
                 $values[$form['bn_id_nature']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
                 $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
                 $values[$form['bn_id_nature']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== '';
+                $values[$form['bn_id_nature']]['isActivityPubEnabled'] = $form['bn_activitypub_enable'] === '1';
                 $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return $field instanceof MapField;
                 }));
@@ -79,6 +86,10 @@ class FormController extends YesWikiController
                 $form = $this->formManager->getFromRawData($_POST);
                 if ($this->formIsValid($form)) {
                     $this->formManager->create($_POST);
+
+                    if ($this->activityPubService->isEnabled($form)) {
+                        $this->activityPubService->postCreateActivity($form);
+                    }
 
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
                 }
@@ -176,6 +187,76 @@ class FormController extends YesWikiController
         } else {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
         }
+    }
+
+    public function manageAbonnements($id)
+    {
+        $form = $this->formManager->getOne($id);
+
+        if (isset($_POST['actor_handle'])) {
+            $recipientUri = str_starts_with($_POST['actor_handle'], 'http') ? $_POST['actor_handle'] : $this->webfingerService->getRemoteActor($_POST['actor_handle']);
+
+            $this->activityPubService->postActivity(["type" => "Follow", "object" => $recipientUri, "to" => $recipientUri], $form);
+
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'idformulaire' => $id], false));
+        }
+
+        $followers = $this->activityPubService->getFollowers($form);
+        $following = $this->activityPubService->getFollowing($form);
+
+        return $this->render('@bazar/forms/abonnements.twig', [
+            'message' => isset($_GET['msg']) ? $_GET['msg'] : null,
+            'form' => $form,
+            'followers' => $followers,
+            'following' => $following,
+        ]);
+    }
+
+    public function removeFollowing($id, $actorUri)
+    {
+        $form = $this->formManager->getOne($id);
+        $formActorUri = $this->activityPubService->getFormActorUri($form);
+
+        $this->activityPubService->removeFollowing($form, $actorUri);
+
+        $this->activityPubService->postActivity([
+            "type" => "Undo", 
+            "object" => [
+                "type" => "Follow", 
+                "actor" => $formActorUri,
+                "object" => $actorUri, 
+                "to" => $actorUri
+            ], 
+            "to" => $actorUri
+        ], $form);
+
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_REMOVED', 'idformulaire' => $id], false));
+    }
+
+    public function removeFollower($id, $actorUri)
+    {
+        $form = $this->formManager->getOne($id);
+        $formActorUri = $this->activityPubService->getFormActorUri($form);
+
+        $this->activityPubService->removeFollower($form, $actorUri);
+
+        $this->activityPubService->postActivity([
+            "type" => "Undo", 
+            "object" => [
+                "type" => "Accept", 
+                "actor" => $formActorUri,
+                "object" => [
+                    "type" => "Follow", 
+                    "actor" => $formActorUri,
+                    "object" => $actorUri,
+                    "to" => $actorUri,
+                ],
+                "to" => $actorUri
+            ], 
+            "to" => $actorUri
+        ], $form);
+
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWER_REMOVED', 'idformulaire' => $id], false));
     }
 
     private function getGroupsListIfEnabled(): ?array

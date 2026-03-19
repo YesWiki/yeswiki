@@ -15,15 +15,20 @@ class SemanticTransformer
         // If context is a JSON decode it, otherwise use the string
         $semanticData['@context'] = (array)json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'];
 
+        $isActivityStreams = $semanticData['@context'] === 'https://www.w3.org/ns/activitystreams';
+
+        $idProp = $isActivityStreams ? 'id' : '@id';
+        $typeProp = $isActivityStreams ? 'type' : '@type';
+
         // If we have multiple types split by comma, generate an array, otherwise use a string
-        $semanticData['@type'] = strpos($form['bn_sem_type'], ',')
+        $semanticData[$typeProp] = strpos($form['bn_sem_type'], ',')
             ? array_map(function ($str) {
                 return trim($str);
             }, explode(',', $form['bn_sem_type']))
             : $form['bn_sem_type'];
 
         // Add the ID of the Bazar object
-        $semanticData['@id'] = $GLOBALS['wiki']->href('', $data['id_fiche']);
+        $semanticData[$idProp] = $GLOBALS['wiki']->href('', $data['id_fiche']);
 
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {

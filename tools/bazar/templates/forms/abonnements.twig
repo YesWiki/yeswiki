@@ -1,0 +1,76 @@
+{% if message %}
+<div class="alert alert-success">
+  <a data-dismiss="alert" class="close" type="button">&times;</a>
+  {{ _t(message) }}
+</div>
+{% endif %}
+
+<strong>{{ _t('BAZ_FOLLOW_ACTOR') }}</strong>
+<form action="" method="post" class="form-horizontal">
+	<div class="input-prepend input-append input-group">
+		<span class="add-on input-group-addon">
+			<i class="fa fa-link icon-globe"></i>
+		</span>
+		<input name="actor_handle" class="form-control input-xxlarge" placeholder="{{ _t('BAZ_FOLLOW_ACTOR_INFO') }}" />
+		<span class="input-group-btn">
+			<button class="btn btn-primary" type="submit">
+				{{ _t('BAZ_GO') }}&nbsp;!
+			</button>
+		</span>
+	</div>
+</form>
+
+<table id="existing-lists-table" class="table table-condensed table-striped">
+	<thead>
+		<tr>
+			<th>{{ _t('BAZ_ABONNEMENTS') }}</th>
+			<th style="width:140px;">{{ _t('BAZ_ACTIONS') }}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for actorUri in following %}
+		<tr>
+			<td>
+				<a href="{{ actorUri }}" target="_blank">{{ actorUri }}</a>
+			</td>
+			<td>
+				<a
+					class="btn btn-danger btn-xs"
+					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
+				>
+					<i class="fa fa-trash icon-white"></i>
+				</a>
+		</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<table id="existing-lists-table" class="table table-condensed table-striped">
+	<thead>
+		<tr>
+			<th>{{ _t('BAZ_ABONNES') }}</th>
+			<th style="width:140px;">{{ _t('BAZ_ACTIONS') }}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for actorUri in followers %}
+		<tr>
+			<td>
+				<a href="{{ actorUri }}" target="_blank">{{ actorUri }}</a>
+			</td>
+			<td>
+				<a
+					class="btn btn-danger btn-xs"
+					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }}) }}"
+					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?');"
+				>
+					<i class="fa fa-trash icon-white"></i>
+				</a>
+		</td>
+	</tr>
+	{% endfor %}
+	</tbody>
+</table>
+

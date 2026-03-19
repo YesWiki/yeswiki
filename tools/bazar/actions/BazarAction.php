@@ -19,6 +19,7 @@ class BazarAction extends YesWikiAction
     public const VOIR_LISTES = 'listes';
     public const VOIR_IMPORTER = 'importer';
     public const VOIR_EXPORTER = 'exporter';
+    public const VOIR_ABONNEMENTS = 'abonnements';
 
     // Entries
     public const MOTEUR_RECHERCHE = 'recherche';
@@ -41,6 +42,10 @@ class BazarAction extends YesWikiAction
     public const ACTION_LIST_CREATE = 'saisir_liste';
     public const ACTION_LIST_EDIT = 'modif_liste';
     public const ACTION_LIST_DELETE = 'supprimer_liste';
+
+    // Abonnements
+    public const ACTION_ABONNEMENT_LIST = 'list';
+    public const ACTION_ABONNEMENT_REMOVE = 'remove';
 
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
     public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
@@ -199,6 +204,21 @@ class BazarAction extends YesWikiAction
                         }
 
                         return $formController->clone($_GET['idformulaire']);
+                    default:
+                        return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
+                }
+                // no break
+            case self::VOIR_ABONNEMENTS:
+                switch ($action) {
+                    case self::ACTION_ABONNEMENT_LIST:
+                        return $formController->manageAbonnements($_GET['idformulaire']);
+                    case self::ACTION_ABONNEMENT_REMOVE:
+                        if ($_GET['type'] === 'followers') {
+                            return $formController->removeFollower($_GET['idformulaire'], $_GET['actor']);
+                        } else {
+                            return $formController->removeFollowing($_GET['idformulaire'], $_GET['actor']);
+                        }
+                        
                     default:
                         return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
                 }

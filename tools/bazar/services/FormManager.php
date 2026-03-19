@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Core\Service\DbService;
@@ -13,6 +14,8 @@ class FormManager
 {
     protected $wiki;
     protected $dbService;
+    protected $activityPubService;
+    protected $httpSignatureService;
     protected $entryManager;
     protected $securityController;
     protected $fieldFactory;
@@ -29,13 +32,17 @@ class FormManager
         EntryManager $entryManager,
         FieldFactory $fieldFactory,
         ParameterBagInterface $params,
-        SecurityController $securityController
+        SecurityController $securityController,
+        ActivityPubService $activityPubService,
+        HttpSignatureService $httpSignatureService
     ) {
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
         }
         $this->wiki = $wiki;
         $this->dbService = $dbService;
+        $this->activityPubService = $activityPubService;
+        $this->httpSignatureService = $httpSignatureService;
         $this->entryManager = $entryManager;
         $this->fieldFactory = $fieldFactory;
         $this->params = $params;
@@ -217,11 +224,19 @@ class FormManager
             $data['bn_id_nature'] = $this->findNewId();
         }
 
+        $activitypubEnabled = $this->activityPubService->isEnabled($data);
+
+        if ($activitypubEnabled) {
+            $keyPair = $this->httpSignatureService->generateKeyPair();
+            $privateKey = $keyPair[0];
+            $publicKey = $keyPair[1];
+        }
+
         // reset cache
         $this->cacheValidatedForAll = false;
 
         return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
-            . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template`'
+            . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template`, `bn_activitypub_enable`, `bn_activitypub_username`, `bn_activitypub_private_key`)'
             . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
             . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
             . ',`bn_condition`)'
@@ -232,6 +247,10 @@ class FormManager
             . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
             . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
             . (isset($data['bn_sem_use_template']) ? '1' : '0') . ', "'
+            . '`bn_activitypub_enable`=' . $activitypubEnabled . ' ,'
+            . '`bn_activitypub_username`="' . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '" ,'
+            . (isset($privateKey) ? '`bn_activitypub_private_key`="' . $privateKey . '" ,' : '')
+            . (isset($publicKey) ? '`bn_activitypub_public_key`="' . $publicKey . '" ,' : '')
             . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '')
             . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '')
             . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
@@ -248,6 +267,14 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
 
+        $activitypubEnabled = $this->activityPubService->isEnabled($data);
+
+        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === '') {
+            $keyPair = $this->httpSignatureService->generateKeyPair();
+            $privateKey = $keyPair[0];
+            $publicKey = $keyPair[1];
+        }
+
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
             . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
             . '`bn_template`="' . $template . '" ,'
@@ -255,6 +282,10 @@ class FormManager
             . '`bn_sem_context`="' . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_type`="' . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
             . '`bn_sem_use_template`=' . (isset($data['bn_sem_use_template']) ? '1' : '0') . ' ,'
+            . '`bn_activitypub_enable`=' . $activitypubEnabled . ' ,'
+            . '`bn_activitypub_username`="' . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '" ,'
+            . (isset($privateKey) ? '`bn_activitypub_private_key`="' . $privateKey . '" ,' : '')
+            . (isset($publicKey) ? '`bn_activitypub_public_key`="' . $publicKey . '" ,' : '')
             . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '",' : '')
             . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
             . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
@@ -543,5 +574,17 @@ class FormManager
         }
 
         return $res;
+    }
+
+    public function findByActivityPubUsername($username)
+    {
+        $forms = $this->getAll();
+        foreach ($forms as $form) {
+            if ($form['bn_activitypub_username'] === $username) {
+                return $form;
+            }
+        }
+
+        return null;
     }
 }
