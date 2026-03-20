@@ -75,11 +75,14 @@ abstract class PackageExt extends Package
 
         if (is_dir($desPath)) {
             $vDeleteStatus = $this->delete($desPath);
-        
-            if ($vDeleteStatus === true) return true;
-            else return $vDeleteStatus;
+
+            if ($vDeleteStatus === true) {
+                return true;
+            } else {
+                return $vDeleteStatus;
+            }
         }
-        
+
         return true;
     }
 

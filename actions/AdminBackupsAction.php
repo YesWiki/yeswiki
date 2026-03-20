@@ -20,8 +20,8 @@ class AdminBackupsAction extends YesWikiAction
             $message = '';
 
             if ($status['archiving'] === true) {
-                $message = _t('ADMIN_BACKUPS_MESSAGE_ARCHIVING');                
-            } else if ($status['hibernated'] === true) {
+                $message = _t('ADMIN_BACKUPS_MESSAGE_ARCHIVING');
+            } elseif ($status['hibernated'] === true) {
                 $message = _t('ADMIN_BACKUPS_MESSAGE_HIBERNATION');
             } elseif ($status['privatePathWritable'] == false) {
                 $message = _t('ADMIN_BACKUPS_MESSAGE_WRITABLE_FILE');

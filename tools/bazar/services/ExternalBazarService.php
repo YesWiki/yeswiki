@@ -379,8 +379,11 @@ class ExternalBazarService
             trigger_error('Getting entries total time :' . $diffTime / 1E+6 . ' ms');
         }
 
-        if (!empty($vEntries)) return $vEntries;
-        else return [];
+        if (!empty($vEntries)) {
+            return $vEntries;
+        } else {
+            return [];
+        }
     }
 
     /**

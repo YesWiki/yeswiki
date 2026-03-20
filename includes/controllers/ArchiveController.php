@@ -86,7 +86,7 @@ class ArchiveController extends YesWikiController
                     );
                     break;
                 case 'startArchive':
-                    try {        
+                    try {
                         if (isset($_POST['params']) && !is_array($_POST['params'])) {
                             return new ApiResponse(
                                 ['error' => "\$_POST['params'] should be set and be an array for action 'startArchive'"],
@@ -107,11 +107,11 @@ class ArchiveController extends YesWikiController
                             ['uid' => $uid],
                             Response::HTTP_OK
                         );
-                    } catch (\Throwable $pThrowable) {                        
-                            return new ApiResponse(
-                                ['error' => 'A problem occures while starting the backup process. Exception reveived from ' . $pThrowable->getFile () . ' at line ' . $pThrowable->getLine () . ' : ' . $pThrowable->getMessage() ],
-                                Response::HTTP_INTERNAL_SERVER_ERROR
-                            );                        
+                    } catch (\Throwable $pThrowable) {
+                        return new ApiResponse(
+                            ['error' => 'A problem occures while starting the backup process. Exception reveived from ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine() . ' : ' . $pThrowable->getMessage()],
+                            Response::HTTP_INTERNAL_SERVER_ERROR
+                        );
                     }
                     break;
                 case 'stopArchive':
@@ -159,11 +159,11 @@ class ArchiveController extends YesWikiController
                     );
                     break;
             }
-        } catch (\Throwable $pThrowable) {        
+        } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => "an exception occures : " . $pThrowable->getMessage () . " in file " . $pThrowable->getFile () . " at line " . $pThrowable->getLine() ],
+                ['error' => 'an exception occures : ' . $pThrowable->getMessage() . ' in file ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine()],
                 Response::HTTP_INTERNAL_SERVER_ERROR
-            );                    
+            );
         }
     }
 

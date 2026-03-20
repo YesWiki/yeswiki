@@ -71,7 +71,7 @@ class AutoUpdateService
         $vDeleteStatus = $package->deletePackage();
 
         if ($vDeleteStatus !== true) {
-            $messages [] = [ 'text' => (_t('AU_DELETE') . ' - ' . _t('AU_ERROR') . '\n' . _t('AU_UNABLE_TO_REMOVE_FILES') . implode ('\n', $vDeleteStatus)), 'status' => _t('AU_ERROR') ];
+            $messages[] = ['text' => (_t('AU_DELETE') . ' - ' . _t('AU_ERROR') . '\n' . _t('AU_UNABLE_TO_REMOVE_FILES') . implode('\n', $vDeleteStatus)), 'status' => _t('AU_ERROR')];
 
             return $messages;
         }
@@ -114,16 +114,15 @@ class AutoUpdateService
         $messages->add('AU_EXTRACT', 'AU_OK');
 
         // Vérification des droits sur le fichiers
-        
+
         $vNotGoods = $package->checkACL();
-        
-        if (count ($vNotGoods) > 0)
-        {
+
+        if (count($vNotGoods) > 0) {
             $vMaxLength = 100;
-            $vFilesList = implode (', ', $vNotGoods);
-         
-            $messages [] = [ 'text' => (_t('AU_ACL') . '\n' . _t('AU_NOT_WRITABLE_FILES') . substr ($vFilesList, 0, 100) . (strlen ($vFilesList) > $vMaxLength ? '...' : '')), 'status' => _t('AU_ERROR') ];
-            
+            $vFilesList = implode(', ', $vNotGoods);
+
+            $messages[] = ['text' => (_t('AU_ACL') . '\n' . _t('AU_NOT_WRITABLE_FILES') . substr($vFilesList, 0, 100) . (strlen($vFilesList) > $vMaxLength ? '...' : '')), 'status' => _t('AU_ERROR')];
+
             $package->cleanTempFiles();
 
             return $messages;

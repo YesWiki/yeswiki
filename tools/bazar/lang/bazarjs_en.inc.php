@@ -243,7 +243,7 @@ return [
     'BAZ_FORM_EDIT_TEXT_TYPE_TEXT' => 'Text',
     'BAZ_REACTIONS_FIELD_ACTIVATE_LABEL' => 'Label',
     'BAZ_FORM_INVALID_EMAIL' => 'Invalid email address',
-    'BAZ_FORM_INVALID_URL' => 'Invalid URL',    
+    'BAZ_FORM_INVALID_URL' => 'Invalid URL',
     'BAZ_FORM_INVALID_TEXT' => 'Invalid text',
     'BAZ_FORM_EMPTY_RADIO' => 'A radio button value must be selected',
     'BAZ_FORM_EMPTY_CHECKBOX' => 'At least one checkbox must be ticked',

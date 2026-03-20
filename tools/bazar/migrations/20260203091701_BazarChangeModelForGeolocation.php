@@ -1,12 +1,9 @@
 <?php
 
-use YesWiki\Core\YesWikiMigration;
-
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
-use YesWiki\Bazar\Field\BazarField;
-use YesWiki\Bazar\Field\MapField;
+use YesWiki\Core\YesWikiMigration;
 
 class BazarChangeModelForGeolocation extends YesWikiMigration
 {
@@ -41,7 +38,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
             $pGeometries = null;
         }
 
-        return [ 'isArray' => $vIsArray, 'needUpdate' => $vNeedUpdate ];
+        return ['isArray' => $vIsArray, 'needUpdate' => $vNeedUpdate];
     }
 
     private function dumpGeolocation($pLatitude = null, $pLongitude = null, $pGeometries = null, $pGeometriesAsArray = null)
@@ -99,7 +96,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
             foreach ($vTemplate as &$vField) {
                 if ($vField[0] == 'map') {
-                    $this->report('MapField Found (param 1, param2) : ' . $vField[1] .  ', ' . $vField[2]);
+                    $this->report('MapField Found (param 1, param2) : ' . $vField[1] . ', ' . $vField[2]);
 
                     if ($vField[1] == 'bf_latitude' && $vField[2] == 'bf_longitude') {
                         $this->report('This field is NOT OK and needs to be updated');
@@ -107,7 +104,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
                         $vField[1] = 'bf_geolocation';
                         $vField[2] = _t('BAZ_FORM_EDIT_GEO_LABEL');
 
-                        $vFormsToProcess [] = $vForm['bn_id_nature'];
+                        $vFormsToProcess[] = $vForm['bn_id_nature'];
 
                         $vNeedUpdate = true;
                     } elseif ($vField[1] !== 'bf_geolocation') {
@@ -116,7 +113,7 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
                         $this->report('This field seems to be OK');
                     }
 
-                    $vFormsToProcess [] = $vForm['bn_id_nature'];
+                    $vFormsToProcess[] = $vForm['bn_id_nature'];
 
                     if (trim($vField[6]) != '') { // FIELD_AUTOCOMPLETE_OTHERS
                         $vAutocompleteFieldnames =
@@ -131,8 +128,8 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
                         $vAutocompleteOther = array_map('trim', explode('|', $vAutocompleteFieldnames));
 
                         if (count($vAutocompleteOther) == 6) {
-                            $vAutocompleteOther [6] = $vAutocompleteOther [5]??'';
-                            $vAutocompleteOther [5] = '';
+                            $vAutocompleteOther[6] = $vAutocompleteOther[5] ?? '';
+                            $vAutocompleteOther[5] = '';
 
                             $vField[6] = implode('|', $vAutocompleteOther);
                         }
@@ -174,12 +171,12 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
                         $this->report($vEntry['body']);
                         $this->report(json_decode($vEntry['body'], true));
 
-                        return [ 'id' => $vEntry['id'], 'time' => $vEntry['time'], 'body' => json_decode($vEntry['body'], true) ];
+                        return ['id' => $vEntry['id'], 'time' => $vEntry['time'], 'body' => json_decode($vEntry['body'], true)];
                     },
                     $vEntries
                 ),
                 function ($vEntry) use ($vForm) {
-                    return $vEntry ['body']['id_typeannonce'] == $vForm['bn_id_nature'];
+                    return $vEntry['body']['id_typeannonce'] == $vForm['bn_id_nature'];
                 }
             );
 
@@ -235,8 +232,8 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
                     $vCheckResult = $this->checkGeometries($vGeometries);
 
-                    $vIsArray = $vCheckResult [ 'isArray' ];
-                    $vNeedUpdate = $vNeedUpdate || $vCheckResult [ 'needUpdate' ];
+                    $vIsArray = $vCheckResult['isArray'];
+                    $vNeedUpdate = $vNeedUpdate || $vCheckResult['needUpdate'];
 
                     $this->report('geolocation field found : ' . $this->dumpGeolocation($vLatitude, $vLongitude, $vGeometries, $vIsArray));
                 }
@@ -258,9 +255,9 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
                     $vCheckResult = $this->checkGeometries($vGeometries);
 
-                    $vIsArray = $vCheckResult [ 'isArray' ];
+                    $vIsArray = $vCheckResult['isArray'];
 
-                    $vNeedUpdate = $vNeedUpdate || $vCheckResult [ 'needUpdate' ];
+                    $vNeedUpdate = $vNeedUpdate || $vCheckResult['needUpdate'];
 
                     $this->report('bf_geolocation field found : ' . $this->dumpGeolocation($vLatitude, $vLongitude, $vGeometries, $vIsArray));
                 } else {
@@ -281,9 +278,9 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
                     $vBFGeolocation = $vBFGeolocation ?? [];
 
-                    $vBFGeolocation ['latitude'] = $vLatitude;
-                    $vBFGeolocation ['longitude'] = $vLongitude;
-                    $vBFGeolocation ['geometries'] = $vGeometries;
+                    $vBFGeolocation['latitude'] = $vLatitude;
+                    $vBFGeolocation['longitude'] = $vLongitude;
+                    $vBFGeolocation['geometries'] = $vGeometries;
 
                     $this->report('updating entry ' . $vEntry['id'] . ' = ' . $vEntry['body']['id_fiche'] . ' (' . $vEntry['time'] . ')...');
 
@@ -293,10 +290,10 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
 
                     $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . ' SET body = \'' . $this->dbService->escape(chop($vBody)) . '\' WHERE id = \'' . $this->dbService->escape($vEntry['id']) . '\'');
 
-                    $this->report('bf_geolocation = ' . $this->dumpGeolocation($vEntry['body']['bf_geolocation']['latitude']??null, $vEntry['body']['bf_geolocation']['longitude']??null, $vEntry['body']['bf_geolocation']['geometries'], false));
+                    $this->report('bf_geolocation = ' . $this->dumpGeolocation($vEntry['body']['bf_geolocation']['latitude'] ?? null, $vEntry['body']['bf_geolocation']['longitude'] ?? null, $vEntry['body']['bf_geolocation']['geometries'], false));
                 } else {
                     $this->report('Entry ' . $vEntry['body']['id_fiche'] . ' (' . $vEntry['time'] . ') doesn\'t need to be updated');
-                    $this->report('bf_geolocation = ' . $this->dumpGeolocation($vEntry['body']['bf_geolocation']['latitude']??null, $vEntry['body']['bf_geolocation']['longitude']??null, $vEntry['body']['bf_geolocation']['geometries'], false));
+                    $this->report('bf_geolocation = ' . $this->dumpGeolocation($vEntry['body']['bf_geolocation']['latitude'] ?? null, $vEntry['body']['bf_geolocation']['longitude'] ?? null, $vEntry['body']['bf_geolocation']['geometries'], false));
                 }
             }
         }

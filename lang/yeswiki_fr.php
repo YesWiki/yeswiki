@@ -58,7 +58,7 @@ return [
     'ADMIN_BACKUPS_STOP' => 'Arrêter',
     'ADMIN_BACKUPS_STOP_BACKUP' => 'Arrêter la sauvegarde',
     'ADMIN_BACKUPS_CONFIRM_DELETE_FILES' => 'Confirmer la suppression des fichiers',
-    'ADMIN_BACKUPS_MESSAGE_ARCHIVING' => 'une opération d\'archivage est déjà en cours.',    
+    'ADMIN_BACKUPS_MESSAGE_ARCHIVING' => 'une opération d\'archivage est déjà en cours.',
     'ADMIN_BACKUPS_MESSAGE_HIBERNATION' => 'le wiki est en hibernation.',
     'ADMIN_BACKUPS_MESSAGE_WRITABLE_FILE' => 'il y a des soucis de droits d\'écriture des fichiers.',
     'ADMIN_BACKUPS_MESSAGE_CLI_NOT_WORKING' => 'les appels en ligne de commande sont impossibles.',

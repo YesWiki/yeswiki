@@ -123,7 +123,7 @@ class EntryManager
 
         $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
-      //  $debug = $this->wiki->isDebugEnabled ();
+        //  $debug = $this->wiki->isDebugEnabled ();
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
         return $data;
@@ -138,30 +138,30 @@ class EntryManager
 
     protected function removeUnknownFields($pFormID, $pData)
     {
-/*    
-We remove this code because it removes fields that are unknown in the form definition
-Recurrent event use extra fields...
-We should refactor date fields so that all informations are contained in one field as an array
+        /*
+        We remove this code because it removes fields that are unknown in the form definition
+        Recurrent event use extra fields...
+        We should refactor date fields so that all informations are contained in one field as an array
 
-        // Keep only the fields defined in the form definition
+                // Keep only the fields defined in the form definition
 
-        $form = $this->wiki->services->get(FormManager::class)->getOne($pFormID);
+                $form = $this->wiki->services->get(FormManager::class)->getOne($pFormID);
 
-        $vAuthorizedFields = [];
+                $vAuthorizedFields = [];
 
-        foreach ($form['prepared'] as $field) {
-            if ($field instanceof BazarField) {
-                $propName = $field->getPropertyName();
-                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
-                if (!empty($propName)) {
-                    if (isset($pData[$propName])) {
-                        $vAuthorizedFields[$propName] = $pData[$propName];
+                foreach ($form['prepared'] as $field) {
+                    if ($field instanceof BazarField) {
+                        $propName = $field->getPropertyName();
+                        // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
+                        if (!empty($propName)) {
+                            if (isset($pData[$propName])) {
+                                $vAuthorizedFields[$propName] = $pData[$propName];
+                            }
+                        }
                     }
                 }
-            }
-        }
-*/
-	$vAuthorizedFields = [...$pData];
+        */
+        $vAuthorizedFields = [...$pData];
 
         // Add extra fields that doesn't belong to the form definition
 
@@ -214,25 +214,25 @@ We should refactor date fields so that all informations are contained in one fie
             $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
             $vRegisteredData = [...$data];
-/* CORRECT BUG FOR RECURRENT EVENT 
-We remove this code because it removes fields that are unknown in the form definition
-Recurrent event use extra fields...
-We should refactor date fields so that all informations are contained in one field as an array
+            /* CORRECT BUG FOR RECURRENT EVENT
+            We remove this code because it removes fields that are unknown in the form definition
+            Recurrent event use extra fields...
+            We should refactor date fields so that all informations are contained in one field as an array
 
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof BazarField) {
-                    $propName = $field->getPropertyName();
-                    // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
-                    // see BazarField->formatValuesBeforeSave() for details
-                    // so do not save the previous data even if existing
-                    if (!empty($propName)) {
-                        if (isset($data[$propName])) {
-                            $vRegisteredData[$propName] = $data[$propName];
+                        foreach ($form['prepared'] as $field) {
+                            if ($field instanceof BazarField) {
+                                $propName = $field->getPropertyName();
+                                // be carefull : BazarField's objects, that do not save data (as ACL, Label, Hidden), do not have propertyName
+                                // see BazarField->formatValuesBeforeSave() for details
+                                // so do not save the previous data even if existing
+                                if (!empty($propName)) {
+                                    if (isset($data[$propName])) {
+                                        $vRegisteredData[$propName] = $data[$propName];
+                                    }
+                                }
+                            }
                         }
-                    }
-                }
-            }
-*/
+            */
             // Add extra fields that doesn't belong to the form definition
 
             if (isset($data['id_fiche'])) {
@@ -1174,7 +1174,7 @@ We should refactor date fields so that all informations are contained in one fie
         ];
         if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
             $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
-            foreach ($fiche as $key => $value) {            
+            foreach ($fiche as $key => $value) {
                 if (!empty($value)) {
                     if (
                         in_array(

@@ -93,7 +93,9 @@ class BazarListService
         }
 
         $vSelectedID = $pOptions['selectedID'] ?? '';
-        if (trim ($vSelectedID) == '') $vSelectedID = null;
+        if (trim($vSelectedID) == '') {
+            $vSelectedID = null;
+        }
 
         $vIDs = $this->getIDs($vSelectedID ?? $pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
 
@@ -412,9 +414,9 @@ class BazarListService
     */
 
     public function getTheID($pIDs, $pThrowException = true)
-    {               
+    {
         $vIDs = $this->getIDs($pIDs);
-     
+
         $vLocalIDs = $vIDs['locals'];
         $vExternalIDs = $vIDs['externals'];
 
@@ -449,7 +451,7 @@ class BazarListService
                 return $pForm['bn_id_nature'];
             }, $this->formManager->getAll());
             $vExternalIDs = [];
-        } else {      
+        } else {
             $vIDs = $this->parseIDs($pIDs);
 
             $vLocalIDs = $vIDs['locals'];
@@ -460,7 +462,7 @@ class BazarListService
 
         $vUniqueExternalIDs = [];
 
-        foreach ($vExternalIDs as $vExternalID) {        
+        foreach ($vExternalIDs as $vExternalID) {
             $vKey = $vExternalID['url'] . '|' . $vExternalID['id'];
 
             if (isset($vUniqueExternalIDs[$vKey])) {

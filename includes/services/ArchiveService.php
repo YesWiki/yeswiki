@@ -5,13 +5,12 @@ namespace YesWiki\Core\Service;
 use DateInterval;
 use DateTime;
 use Exception;
-use Throwable;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Process;
+use Throwable;
 use YesWiki\Core\Exception\StopArchiveException;
 use YesWiki\Security\Controller\SecurityController;
-use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Wiki;
 use ZipArchive;
 
@@ -117,14 +116,14 @@ class ArchiveService
 
         if (!$vStatus['canArchive']) {
             // if we cannot archive, we need to stop the process and inform the user so that he can handle the problem
-            $vMessages = $this->getCannotArchiveDetails ($vStatus);
-            
+            $vMessages = $this->getCannotArchiveDetails($vStatus);
+
             $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
-                   
-            throw new Exception (_t('AU_CANNOT_ARCHIVE') . implode (', ', $vMessages));
+
+            throw new Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
         }
-        
+
         $inputFile = '';
         $outputFile = '';
         $privatePath = $this->getPrivateFolder();
@@ -137,11 +136,15 @@ class ArchiveService
             }
         }
         if (!empty($outputFile)) {
-            if (@file_put_contents($outputFile, '') === false) throw new Exception ("Cannot write to archive output file. Please check file system access rights");
+            if (@file_put_contents($outputFile, '') === false) {
+                throw new Exception('Cannot write to archive output file. Please check file system access rights');
+            }
         }
 
         // checking folder not available on the internet
-        if (@file_put_contents("$privatePath/tmpTestFile000.txt", 'test') === false) throw new Exception ("Cannot write to test file. Please check file system access rights");
+        if (@file_put_contents("$privatePath/tmpTestFile000.txt", 'test') === false) {
+            throw new Exception('Cannot write to test file. Please check file system access rights');
+        }
         $error = !$this->localPrivateFolderNotAvailableOnInternet($privatePath, 'tmpTestFile000.txt');
         if (file_exists("$privatePath/tmpTestFile000.txt")) {
             unlink("$privatePath/tmpTestFile000.txt");
@@ -220,74 +223,91 @@ class ArchiveService
             }
 
             $this->writeOutput($output, '=== Creating zip archive ===', true, $outputFile);
-            
+
             if ($this->createZip($location, $foldersToInclude, $blacklistedRootFolders, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile)) {
                 $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
 
                 // clean oldest files
                 $this->cleanOldestFiles();
-                
+
                 $this->unsetWikiStatus();
-            
+
                 $this->writeOutput($output, 'END', true, $outputFile);
-            }
-            else {
+            } else {
                 throw new StopArchiveException('Stop archive : not saved !');
-            }            
-        } catch (StopArchiveException $ex) {        
-            @unlink ($location);
+            }
+        } catch (StopArchiveException $ex) {
+            @unlink($location);
             $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
         } catch (Throwable $th) {
-            @unlink ($location);        
+            @unlink($location);
             $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
-            
+
             throw $th;
         }
 
         return $location;
     }
 
-    public function getCannotArchiveDetails ($pStatus) {
+    public function getCannotArchiveDetails($pStatus)
+    {
         $vMessages = [];
-    
-        if ($pStatus['archiving']) $vMessages [] = _t('AU_ALREADY_ARCHIVING');
-        if ($pStatus['hibernated']) $vMessages [] = _t('AU_SITE_IS_HIBERNATED');
-        if (!$pStatus['privatePathWritable']) $vMessages [] = _t('AU_PRIVATE_PATH_NOT_WRITABLE');
-        if (!$pStatus['notAvailableOnTheInternet']) $vMessages [] = _t('AU_PRIVATE_PATH_AVAILABLE_ON_INTERNET');
-        if (!(!$pStatus['callAsync'] || $pStatus['canExec'])) $vMessages [] = _t('AU_CANNOT_EXECUTE_BACKUP');
-        if (!$pStatus['enoughSpace']) $vMessages [] = _t('AU_NOT_ENOUGHT_SPACE');
-        
-        return $vMessages;                        
+
+        if ($pStatus['archiving']) {
+            $vMessages[] = _t('AU_ALREADY_ARCHIVING');
+        }
+        if ($pStatus['hibernated']) {
+            $vMessages[] = _t('AU_SITE_IS_HIBERNATED');
+        }
+        if (!$pStatus['privatePathWritable']) {
+            $vMessages[] = _t('AU_PRIVATE_PATH_NOT_WRITABLE');
+        }
+        if (!$pStatus['notAvailableOnTheInternet']) {
+            $vMessages[] = _t('AU_PRIVATE_PATH_AVAILABLE_ON_INTERNET');
+        }
+        if (!(!$pStatus['callAsync'] || $pStatus['canExec'])) {
+            $vMessages[] = _t('AU_CANNOT_EXECUTE_BACKUP');
+        }
+        if (!$pStatus['enoughSpace']) {
+            $vMessages[] = _t('AU_NOT_ENOUGHT_SPACE');
+        }
+
+        return $vMessages;
     }
 
     /**
      * Get YesWiki status
      * We must use the configuration service to have the value of wiki_status since it can be modified dynamically
-     * and that ParameterBag is more static
+     * and that ParameterBag is more static.
      *
      * @return string : the status
      */
-    public function getWikiStatus () {
+    public function getWikiStatus()
+    {
         $vConfig = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $vConfig->load();
-            
-        if (trim ($vConfig['wiki_status']??'') == '') return 'running';
-        else return trim ($vConfig['wiki_status']);
+
+        if (trim($vConfig['wiki_status'] ?? '') == '') {
+            return 'running';
+        } else {
+            return trim($vConfig['wiki_status']);
+        }
     }
 
     /**
      * Test if YesWiki is read only
      * We must use the configuration service to have the value of wiki_status since it can be modified dynamically
-     * and that ParameterBag is more static
+     * and that ParameterBag is more static.
      *
      * @return bool : is read only
      */
-    public function isReadOnly () {
-        return in_array($this->getWikiStatus (), ['hibernate', 'archiving', 'updating']);
+    public function isReadOnly()
+    {
+        return in_array($this->getWikiStatus(), ['hibernate', 'archiving', 'updating']);
     }
 
     /**
@@ -296,21 +316,21 @@ class ArchiveService
      * @param mixed $token
      */
     public function hasValidatedBackup($token): bool
-    {             
+    {
         if (empty($token) || !is_string($token)) {
             return false;
         }
-        
+
         $privatePath = $this->getPrivateFolder();
         $info = $this->getInfoFromFile($privatePath);
         $result = ($info[$token]['isForcedUpdate'] ?? false) === true;
-                
+
         foreach ($info as $uid => $data) {
             if (($data['isForcedUpdate'] ?? false) === true) {
                 $this->cleanUID($uid, $privatePath);
             }
         }
-        
+
         return $result;
     }
 
@@ -332,8 +352,8 @@ class ArchiveService
         $callAsync = (isset($archiveParams['call_archive_async']) && is_bool($archiveParams['call_archive_async']))
             ? $archiveParams['call_archive_async']
             : true;
-        if ($this->isReadOnly ()) {
-            switch ($this->getWikiStatus ()) {
+        if ($this->isReadOnly()) {
+            switch ($this->getWikiStatus()) {
                 case 'archiving':
                     $archiving = true;
                     break;
@@ -359,14 +379,18 @@ class ArchiveService
                     unlink($tmpFileName);
                 }
                 try {
-                    if (@file_put_contents($tmpFileName, 'test') === false) throw new Exception ("Cannot write to tmp file. Please check file system access rights");
+                    if (@file_put_contents($tmpFileName, 'test') === false) {
+                        throw new Exception('Cannot write to tmp file. Please check file system access rights');
+                    }
                     if (!file_exists($tmpFileName)) {
                         throw new Exception('Not writable folder');
                     }
                     $content = @file_get_contents($tmpFileName);
-                    
-                    if ($content === false) throw new Exception ("Cannot read tmp file. Please check file system access rights");
-                    
+
+                    if ($content === false) {
+                        throw new Exception('Cannot read tmp file. Please check file system access rights');
+                    }
+
                     if ($content != 'test') {
                         throw new Exception('Bad content');
                     }
@@ -380,7 +404,7 @@ class ArchiveService
                 }
             }
         }
-       
+
         // test console
         try {
             $results = $this->consoleService->startConsoleSync('helloworld:hello', []);
@@ -392,7 +416,7 @@ class ArchiveService
                 ) {
                     $canExec = true;
                 }
-            }            
+            }
         } catch (Throwable $th) {
             $canExec = false;
         }
@@ -650,7 +674,9 @@ class ArchiveService
         ) {
             return false;
         }
-        if (@file_put_contents($info[$uid]['input'], 'STOP') === false) throw new Exception ("Cannot write to archive info file. Please check file system access rights");
+        if (@file_put_contents($info[$uid]['input'], 'STOP') === false) {
+            throw new Exception('Cannot write to archive info file. Please check file system access rights');
+        }
 
         return true;
     }
@@ -664,9 +690,11 @@ class ArchiveService
             return false;
         }
         $content = @file_get_contents($inputFile);
-        
-        if ($content === false) throw new Exception ("Cannot read archive input file. Please check file system access rights");
-        
+
+        if ($content === false) {
+            throw new Exception('Cannot read archive input file. Please check file system access rights');
+        }
+
         if (empty($content)) {
             return false;
         }
@@ -696,7 +724,7 @@ class ArchiveService
             throw new Exception('Can only be started from main directory');
         }
         $pathToArchive = getcwd();
-        
+
         $pathToArchive = preg_replace("/(\/|\\\\)$/", '', $pathToArchive);
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
@@ -705,36 +733,36 @@ class ArchiveService
 
         // open file
         $zip = new ZipArchive();
-        
+
         $vCanceled = false;
-        
+
         $resource = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         if ($resource !== true) {
             return;
         }
-       
+
         // register cancel callback if available
         if (method_exists($zip, 'registerCancelCallback')) {
             $zip->registerCancelCallback(function () use ($inputFile, &$vCanceled) {
-                $vNeedStop = $this->checkIfNeedStop($inputFile);                
+                $vNeedStop = $this->checkIfNeedStop($inputFile);
 
                 if ($vNeedStop) {
                     $vCanceled = true;
+
                     return -1;
-                }
-                else {
+                } else {
                     return 0;
                 }
             });
         }
-        
+
         // register progress callback if available
         if (method_exists($zip, 'registerProgressCallback')) {
             $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
                 $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $outputFile);
             });
         }
-        
+
         if (!$vCanceled && !$onlyDb) {
             // add empty cache folder
             $zip->addEmptyDir('cache');
@@ -763,7 +791,7 @@ class ArchiveService
                                 if ($this->shouldIncludeFolder($relativeName, $whitelistedRootFolders, $blacklistedRootFolders)) {
                                     $dirs[] = $dir . DIRECTORY_SEPARATOR . $file;
                                 }
-                                if ($this->checkIfNeedStop($inputFile)) {                                    
+                                if ($this->checkIfNeedStop($inputFile)) {
                                     $this->writeOutput($output, '== The archive processus need to be stopped ==', true, $outputFile);
                                     $vCanceled = true;
                                     break;
@@ -774,13 +802,15 @@ class ArchiveService
 
                     closedir($dh);
                 }
-                
-                if ($vCanceled) break;
-                
-                array_shift($dirs);                
+
+                if ($vCanceled) {
+                    break;
+                }
+
+                array_shift($dirs);
             }
         }
-                                                 
+
         if (!$vCanceled && !empty($sqlContent)) {
             $this->writeOutput($output, 'Adding SQL file', true, $outputFile);
             $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
@@ -813,25 +843,29 @@ class ArchiveService
 
             if ($vResult) {
                 $this->writeOutput($output, 'Archive was created successfully', true, $outputFile);
+
                 return true;
-            } else if (!$vCanceled) {
+            } elseif (!$vCanceled) {
                 $this->writeOutput($output, 'There was a problem closing archive', true, $outputFile);
             }
         }
-    
-        if ($vCanceled) $this->writeOutput($output, 'Archive creation canceled', true, $outputFile);
+
+        if ($vCanceled) {
+            $this->writeOutput($output, 'Archive creation canceled', true, $outputFile);
+        }
 
         if (!$vClosed) {
             $zip->unchangeAll();
-            
-            if ($zip->close())
+
+            if ($zip->close()) {
                 $this->writeOutput($output, 'Archive was closed successfully', true, $outputFile);
-            else
+            } else {
                 $this->writeOutput($output, 'There was a problem closing archive', true, $outputFile);
+            }
         }
-        
-        unlink ($zipPath);
-        
+
+        unlink($zipPath);
+
         return false;
     }
 
@@ -878,7 +912,7 @@ class ArchiveService
     private function getPrivateFolder(): string
     {
         $archiveParams = $this->getArchiveParams();
-        
+
         $folderPath = (
             empty($archiveParams[self::KEY_FOR_PRIVATE_FOLDER]) ||
             !is_string($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])
@@ -892,7 +926,7 @@ class ArchiveService
             ) {
                 return preg_replace("/(\/|\\\\)$/", '', $folderPath);
             } else {
-                throw new Exception(self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . ']' . " is not a directory.");
+                throw new Exception(self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . ']' . ' is not a directory.');
             }
         } else {
             $sanitizeWebsiteName = preg_replace(
@@ -987,7 +1021,9 @@ class ArchiveService
     private function writeOutput(&$output, string $text, bool $newline = true, string $outputFile = '')
     {
         if (!empty($outputFile) && is_file($outputFile)) {
-            if (@file_put_contents($outputFile, $text . ($newline ? "\n" : ''), FILE_APPEND) === false) throw new Exception ("Cannot write to output file. Please check file system access rights");
+            if (@file_put_contents($outputFile, $text . ($newline ? "\n" : ''), FILE_APPEND) === false) {
+                throw new Exception('Cannot write to output file. Please check file system access rights');
+            }
         }
         if ($output instanceof OutputInterface) {
             $output->write($text, $newline);
@@ -1111,11 +1147,13 @@ class ArchiveService
                 // get content
                 if (file_exists($resultFile)) {
                     $sqlContent = @file_get_contents($resultFile);
-                    
-                    if ($sqlContent === false) throw new Exception ("Cannot read sql content file. Please check file system access rights");
-                                        
+
+                    if ($sqlContent === false) {
+                        throw new Exception('Cannot read sql content file. Please check file system access rights');
+                    }
+
                     @unlink($resultFile);
-                    
+
                     if (!empty($sqlContent)) {
                         return $sqlContent;
                     }
@@ -1297,12 +1335,16 @@ class ArchiveService
             $privateFolder = $this->getPrivateFolder();
         }
         if (!file_exists("$privateFolder/info.json")) {
-            if (@file_put_contents("$privateFolder/info.json", '{}') === false) throw new Exception ("Cannot write to archive info file. Please check file system access rights");
+            if (@file_put_contents("$privateFolder/info.json", '{}') === false) {
+                throw new Exception('Cannot write to archive info file. Please check file system access rights');
+            }
         }
         $fileContent = @file_get_contents("$privateFolder/info.json");
-        
-        if ($fileContent === false) throw new Exception ("Cannot read archive info file. Please check file system access rights");
-        
+
+        if ($fileContent === false) {
+            throw new Exception('Cannot read archive info file. Please check file system access rights');
+        }
+
         $content = json_decode($fileContent, true);
 
         return (empty($content) || !is_array($content)) ? [] : $content;
@@ -1319,7 +1361,9 @@ class ArchiveService
             $privateFolder = $this->getPrivateFolder();
         }
 
-        if (@file_put_contents("$privateFolder/info.json", json_encode($content)) === false) throw new Exception ("Cannot set archive info to file. Please check file system access rights");
+        if (@file_put_contents("$privateFolder/info.json", json_encode($content)) === false) {
+            throw new Exception('Cannot set archive info to file. Please check file system access rights');
+        }
     }
 
     /**
@@ -1341,8 +1385,12 @@ class ArchiveService
         // create files
         $input = "$privateFolder/input-$uid.log";
         $output = "$privateFolder/output-$uid.log";
-        if (@file_put_contents($input, '') === false) throw new Exception ("Cannot write to archive input file. Please check file system access rights");
-        if (@file_put_contents($output, '') === false) throw new Exception ("Cannot write to archive output file. Please check file system access rights");
+        if (@file_put_contents($input, '') === false) {
+            throw new Exception('Cannot write to archive input file. Please check file system access rights');
+        }
+        if (@file_put_contents($output, '') === false) {
+            throw new Exception('Cannot write to archive output file. Please check file system access rights');
+        }
 
         $info[$uid] = [
             'input' => realpath($input),
@@ -1398,12 +1446,14 @@ class ArchiveService
             return false;
         }
         $output = @file_get_contents($info['output']);
-        
-        if ($output === false) throw new Exception ("Cannot read archive output file. Please check file system access rights");
-        
+
+        if ($output === false) {
+            throw new Exception('Cannot read archive output file. Please check file system access rights');
+        }
+
         $running = !empty(trim($output));
-        $finished = !$running 
-            ? false 
+        $finished = !$running
+            ? false
             : (preg_match("/(END|STOP)\s*$/", $output) ? true : false);
         $stopped = preg_match("/(STOP)\s*$/", $output) ? true : false;
         if ($finished) {

@@ -8,11 +8,10 @@ use DateTimeInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Throwable;
-use YesWiki\Wiki;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\DateService as CoreDateService;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Wiki;
 
 class DateService implements EventSubscriberInterface
 {
@@ -52,11 +51,11 @@ class DateService implements EventSubscriberInterface
         $this->formManager = $formManager;
         $this->pageManager = $pageManager;
         $this->params = $params;
-        
+
         $vDebugEnabled = $this->params->get('debug') ?? '';
-    	$vDebugEnabled = trim ($vDebugEnabled);
-    	$vDebugEnabled = $vDebugEnabled !== '' && $vDebugEnabled !== 'false' && $vDebugEnabled !== '0';
-    		
+        $vDebugEnabled = trim($vDebugEnabled);
+        $vDebugEnabled = $vDebugEnabled !== '' && $vDebugEnabled !== 'false' && $vDebugEnabled !== '0';
+
         $this->triggerError = $vDebugEnabled;
     }
 
@@ -539,13 +538,13 @@ class DateService implements EventSubscriberInterface
      */
     protected function deleteLinkedEntries(array $entry)
     {
-        $vSearchManager = $this->wiki->services->get (SearchManager::class); 
+        $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
         $entryId = $entry['id_fiche'];
         $formId = $entry['id_typeannonce'];
         $hasEndDateField = isset($entry['bf_date_fin_evenement']);
-        
-        if ($hasEndDateField && !empty($entryId) && !empty($formId)) { 
+
+        if ($hasEndDateField && !empty($entryId) && !empty($formId)) {
             $entriesToDelete = $vSearchManager->search(
                 [
                     'formsIds' => [$formId],

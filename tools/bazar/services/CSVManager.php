@@ -895,18 +895,18 @@ class CSVManager
         return $csvToDisplay;
     }
 
-    public function buildExportFilename ($pFormID)
+    public function buildExportFilename($pFormID)
     {
         $vFilename = 'export-fiche-';
 
-        if (is_array ($pFormID)) {                             
+        if (is_array($pFormID)) {
             $vFilename .= $pFormID['key'];
         } else {
             $vFilename .= $pFormID;
         }
-        
+
         $vFilename .= '.csv';
-        
+
         return $vFilename;
     }
 
@@ -928,17 +928,17 @@ class CSVManager
 
         foreach ($vFormIDs['locals'] as $vFormID) {
             $vFilename = $this->buildExportFilename($vFormID);
-        
+
             $csvFiles[$vFilename] = $this->arrayToCSV(
                 $this->getCSVfromFormId(['locals' => [$vFormID], 'externals' => []], $pParams)
             );
         }
 
-        foreach ($vFormIDs['externals'] as $vFormID) {        
-            $vFilename = $this->buildExportFilename($this->wiki->services->get(ExternalBazarService::class)->getExternalFormIDKey ($vFormID));
+        foreach ($vFormIDs['externals'] as $vFormID) {
+            $vFilename = $this->buildExportFilename($this->wiki->services->get(ExternalBazarService::class)->getExternalFormIDKey($vFormID));
 
             $csvFiles[$vFilename] = $this->arrayToCSV(
-                $this->getCSVfromFormId(['locals' => [], 'externals' => [ $vFormID ]], $pParams)
+                $this->getCSVfromFormId(['locals' => [], 'externals' => [$vFormID]], $pParams)
             );
         }
 

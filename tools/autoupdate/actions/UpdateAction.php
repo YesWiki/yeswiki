@@ -1,13 +1,12 @@
 <?php
 
+use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\AutoUpdate\Service\AutoUpdateService;
 use YesWiki\AutoUpdate\Service\MigrationService;
 use YesWiki\AutoUpdate\Service\UpdateAdminPagesService;
-use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Security\Controller\SecurityController;
-
 
 class UpdateAction extends YesWikiAction
 {
@@ -19,7 +18,7 @@ class UpdateAction extends YesWikiAction
     }
 
     public function run()
-    {           
+    {
         $vSecurityController = $this->getService(SecurityController::class);
         $vUpdateService = $this->getService(AutoUpdateService::class);
         $vMigrationService = $this->getService(MigrationService::class);
@@ -34,7 +33,7 @@ class UpdateAction extends YesWikiAction
         // to "post_install" action. So we add this code to detect the first time the code is run
         // after migrations are introduced, and we run them.
         $vMigrationService = $this->getService(MigrationService::class);
-        
+
         if (count($vMigrationService->getCompletedMigrations()) === 0) {
             $vMessages = $vMigrationService->run();
             foreach ($vMessages as $vMessage) {
@@ -45,7 +44,7 @@ class UpdateAction extends YesWikiAction
             }
         }
 
-       $vIsReadOnly = $vArchiveService->isReadOnly ();
+        $vIsReadOnly = $vArchiveService->isReadOnly();
 
         $vAction = $vSecurityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
         if (empty($vAction) || !$this->wiki->UserIsAdmin() || $vIsReadOnly) {
@@ -69,29 +68,26 @@ class UpdateAction extends YesWikiAction
         $vPackageName = $vSecurityController->filterInput(INPUT_GET, 'package', FILTER_DEFAULT, true);
 
         $vMessages = new Messages();
-       
+
         try {
-        
             switch ($vAction) {
-                case 'upgrade':     
-    
+                case 'upgrade':
                     $vCanUpgrade = false;
 
-                    $vArchiveParams = $vArchiveService->getArchiveParams ();
+                    $vArchiveParams = $vArchiveService->getArchiveParams();
 
                     // Check if the preupdate backup is activated
-                    if (in_array (($vArchiveParams ['preupdate_backup_activated'] ?? true), [ true, 'true', 1, '1' ])) {
-
+                    if (in_array(($vArchiveParams['preupdate_backup_activated'] ?? true), [true, 'true', 1, '1'])) {
                         // It is so let's go further...
 
-                        $vStatus = $vArchiveService->getArchivingStatus ();
+                        $vStatus = $vArchiveService->getArchivingStatus();
 
-                        if ($vStatus ['privatePathWritable']) {                            
+                        if ($vStatus['privatePathWritable']) {
                             // Get the forced update token if it exist
                             $vForcedUpdateToken = $vSecurityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_DEFAULT, true);
 
                             // Check if we need to do a backup...
-                        
+
                             if (!$vArchiveService->hasValidatedBackup($vForcedUpdateToken)) {
                                 // ...and, if so, let's the client handle it
                                 return $this->render('@core/preupdate-backup.twig', [
@@ -104,55 +100,53 @@ class UpdateAction extends YesWikiAction
                         } else {
                             $vMessages->add('AU_PRIVATE_PATH_NOT_WRITABLE', 'AU_ERROR');
                         }
-                   } else {
+                    } else {
                         $vCanUpgrade = true;
-                   }
-                   
-                   if ($vCanUpgrade) {                                                 
+                    }
+
+                   if ($vCanUpgrade) {
                        // Perform the upgrade
-                            
+
                        $vUpgradeMessages = $vUpdateService->upgrade($vPackageName);
-                        
-                       $vMessages->add ($vUpgradeMessages);
+
+                       $vMessages->add($vUpgradeMessages);
 
                        // Reload the page to perform postInstall operation with the new code
                        $this->wiki->redirect($this->wiki->href('', '', [
-                            'action' => 'post_install',
-                            'messages' => json_encode($vMessages->toArray()),
-                            'previous_version' => YESWIKI_VERSION,
-                        ], false));                                          
-                    }
+                           'action' => 'post_install',
+                           'messages' => json_encode($vMessages->toArray()),
+                           'previous_version' => YESWIKI_VERSION,
+                       ], false));
+                   }
                     break;
                 case 'post_install':
                     $vRawMessages = $vSecurityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
 
-                    $vMessages->add (empty($vRawMessages) ? [] : (json_decode($vRawMessages, true) ?? []));
+                    $vMessages->add(empty($vRawMessages) ? [] : (json_decode($vRawMessages, true) ?? []));
 
                     // Run migrations
-                    
+
                     $vMigrationMessages = $vMigrationService->run();
-                    
-                    $vMessages->add ($vMigrationMessages);
+
+                    $vMessages->add($vMigrationMessages);
                     break;
                 case 'update_admin_pages':
-                
                     // Update admin pages
-                
+
                     $vUpdateAdminPagesMessages = vUpdateAdminPagesService->updateAll();
-                
-                    $vMessages->add ($vUpdateAdminPagesMessages);
+
+                    $vMessages->add($vUpdateAdminPagesMessages);
                     break;
                 case 'delete':
-                
                     // Delete package
-                
+
                     $vDeleteMessages = $vUpdateService->delete($vPackageName);
-                
-                    $vMessages->add ($vDeleteMessages);
-                    break;                
+
+                    $vMessages->add($vDeleteMessages);
+                    break;
             }
         } catch (Throwable $pThrowable) {
-            $vMessages->add (_t('PERFORMABLE_ERROR') . ' Exception received from file ' . $pThrowable->getFile () . ' at line ' . $pThrowable->getLine() . ' - "' . $pThrowable->getMessage () . '"', 'AU_ERROR');
+            $vMessages->add(_t('PERFORMABLE_ERROR') . ' Exception received from file ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine() . ' - "' . $pThrowable->getMessage() . '"', 'AU_ERROR');
         }
 
         // Display result of action, with a list of success/error messages

@@ -45,8 +45,8 @@ class ArchiveCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        ob_start (); // This code is necessary because Symfony stop the process if a response is sent back.
-    
+        ob_start(); // This code is necessary because Symfony stop the process if a response is sent back.
+
         $databaseOnly = $input->getOption('database-only');
         $filesOnly = $input->getOption('files-only');
 
@@ -71,7 +71,7 @@ class ArchiveCommand extends Command
 
         $location = $this->archiveService->archive($output, !$databaseOnly, !$filesOnly, $foldersToInclude, $foldersToExclude, $hideConfigValues, $uid);
 
-        ob_end_clean (); // This code is necessary because Symfony stop the process if a response is sent back.
+        ob_end_clean(); // This code is necessary because Symfony stop the process if a response is sent back.
 
         return Command::SUCCESS;
     }

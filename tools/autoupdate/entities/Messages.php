@@ -14,11 +14,9 @@ class Messages extends Collection
     public function add($pMessage, $pStatus = '')
     {
         if ($pMessage instanceof Messages) {
-            $this->add ($pMessage->toArray ());
-        }
-        else
-        if (is_array ($pMessage)) {
-            $this->list = array_merge ($this->list, $pMessage);
+            $this->add($pMessage->toArray());
+        } elseif (is_array($pMessage)) {
+            $this->list = array_merge($this->list, $pMessage);
         } else {
             $this[] = [
                 'text' => _t($pMessage),

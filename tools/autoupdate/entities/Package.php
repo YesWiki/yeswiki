@@ -75,25 +75,24 @@ abstract class Package extends Files
             'tools',
             'vendor',
         ];
-        
+
         $vNotGoods = [];
-        
+
         foreach ($file2check as $f) {
             $path = $this->localPath . DIRECTORY_SEPARATOR . $f;
             if (file_exists($path)) {
                 $vNotWritables = $this->isWritable($path);
-            
+
                 if ($vNotWritables !== true) {
-                    $vNotGoods = array_merge ($vNotGoods, is_array ($vNotWritables) ? $vNotWritables : [ $path ]);
+                    $vNotGoods = array_merge($vNotGoods, is_array($vNotWritables) ? $vNotWritables : [$path]);
                 }
             }
         }
-        
-        $vLocalPathLength = strlen ($this->localPath);
-        
-        $vNotGoods = array_map (function ($pPath) use ($vLocalPathLength)
-        {
-            return "." . substr ($pPath, $vLocalPathLength);
+
+        $vLocalPathLength = strlen($this->localPath);
+
+        $vNotGoods = array_map(function ($pPath) use ($vLocalPathLength) {
+            return '.' . substr($pPath, $vLocalPathLength);
         }, $vNotGoods);
 
         return $vNotGoods;

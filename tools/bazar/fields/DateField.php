@@ -14,7 +14,7 @@ class DateField extends BazarField
     {
         return true;
     }
-    
+
     protected function renderInput($entry)
     {
         $day = '';

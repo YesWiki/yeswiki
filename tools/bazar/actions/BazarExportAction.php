@@ -44,7 +44,9 @@ class BazarExportAction extends YesWikiAction
         // get services
         $this->CSVManager = $this->getService(CSVManager::class);
         $this->formManager = $this->getService(FormManager::class);
-        if (!$this->bazarListService) $this->bazarListService = $this->getService(BazarListService::class);
+        if (!$this->bazarListService) {
+            $this->bazarListService = $this->getService(BazarListService::class);
+        }
 
         $vForms = $this->formManager->getAll();
 
@@ -55,13 +57,12 @@ class BazarExportAction extends YesWikiAction
         $vTheID = $this->bazarListService->getTheID($this->arguments['id'], false);
 
         if ($vTheID) {
-            
             $vID = $vTheID['id'];
-            
+
             $vRefresh = $this->arguments['refresh'] ?? $_GET['refresh'] ?? 'false';
             $vRefresh = ($vRefresh == 'true' || $vRefresh == '1') ? true : false;
 
-            $vSelectedForm = $vForms [$vID];
+            $vSelectedForm = $vForms[$vID];
 
             $csv_raw = $this->CSVManager->getCSVfromFormId(
                 $vID,
@@ -74,10 +75,10 @@ class BazarExportAction extends YesWikiAction
                     'keysInsteadOfValues' => $this->arguments['bazar-export-option-keys-instead-of-values'],
                 ]
             );
-            
+
             $vFilename = $this->CSVManager->buildExportFilename($vTheID);
         } else {
-            // get Forms            
+            // get Forms
             $vSelectedForm = null;
         }
 

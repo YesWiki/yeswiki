@@ -119,5 +119,5 @@ Please confirm their deletion by checking the box below.
     'FORM_ID_AVAILABLE' => 'The form with the identifier {id} does not yet exist on the indicated url, it will be created.',
     'FORM_ID_NOT_AVAILABLE' => 'The form with the identifier {id} is no longer available on the indicated url, you must change the identifier.',
     'SHOW_PASSWORD' => 'Show password',
-    'HIDE_PASSWORD' => 'Hide password'
+    'HIDE_PASSWORD' => 'Hide password',
 ];
