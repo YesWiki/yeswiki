@@ -1,0 +1,36 @@
+import { mergeSearchParams } from './url.js'
+
+/* update all export buttons in a page with the given search parameters */
+
+export function updateExportLinks(pSearchParams) {
+    document
+    .querySelectorAll('.export-links > a')
+    .forEach((pLink) => {
+		let vOldHREF = pLink.getAttribute('data-href') // Get the original href
+
+		let vNewHREF
+
+		if (vOldHREF.trim() === '') {
+			console.error('Invalid URL provided.')
+		} else {
+			const vNewURL = new URL(vOldHREF)
+
+    	 	const vHandler = vNewURL.searchParams.keys().next()
+			let vHandlerValue = vHandler.value
+
+			if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
+			else vHandlerValue = ''
+
+			const vParams = mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
+
+			pLink.setAttribute(
+			    'href',
+			    vNewURL.origin + 
+			    vNewURL.pathname + 
+			    "?" + vHandlerValue + 
+			    (vParams ? "&" + vParams : "") +
+			    vNewURL.hash
+			)
+		}
+	})
+}

@@ -39,6 +39,15 @@ class TextField extends BazarField
         }
     }
 
+    public function getValueStructure() // See BazarField::getValueStructure
+    {
+        if ($this->type == 'number' || $this->type == 'range') {
+            return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'number']];
+        } else {
+            return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
+        }
+    }
+
     protected function renderInput($entry)
     {
         // Handling all subtypes (url, number) in the text.twig

@@ -165,6 +165,7 @@ return [
     'BAZ_LATITUDE' => 'Latitude',
     'BAZ_LONGITUDE' => 'Longitude',
     'BAZ_VERIFIER_MON_ADRESSE' => 'Géolocaliser depuis l\'adresse saisie',
+    'BAZ_MOVE_TO_ADDRESS' => 'Zoom sur l\'adresse saisie',
     'BAZ_PAS_DE_FORMULAIRES_TROUVES' => 'Pas de formulaires trouvés',
     'BAZ_CHAMPS_REQUIS' => 'champs requis',
     'BAZ_FICHES' => 'fiches.',
@@ -381,4 +382,5 @@ return [
     'BAZ_WIDGET_INSTRUCTION2' => 'Code action wiki a copier coller dans une page de ce site',
     'BAZ_CORRESPONDANCE_ERROR' => 'action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"',
     'BAZ_CORRESPONDANCE_ERROR2' => "action bazarliste : le paramètre correspondance est mal rempli.\nIl doit être de la forme correspondance=\"identifiant_1=identifiant_2\" ou correspondance=\"identifiant_1=identifiant_2, identifiant_3=identifiant_4\"",
+    'BAZ_FORM_EDIT_GEO_LABEL' => 'Géolocalisation de l\'adresse',
 ];

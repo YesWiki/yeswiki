@@ -5,6 +5,7 @@ namespace YesWiki\Core;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\UserManager;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
@@ -78,6 +79,14 @@ abstract class YesWikiPerformable
     {
         $data = array_merge($data, ['arguments' => $this->arguments]);
 
+        // add some addition globals
+        $vUserManager = $this->wiki->services->get(UserManager::class);
+        $userEntry = $vUserManager->getAssociatedEntry();
+        $this->twig->addGlobal('user', [
+            'entry' => $userEntry ?? [],
+            'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
+        ]);
+
         return $this->twig->$method($templatePath, $data);
     }
 
@@ -86,7 +95,15 @@ abstract class YesWikiPerformable
         return $this->render($templatePath, $data, 'renderInSquelette');
     }
 
-    //  Shortcut to access services
+    /**
+     * Shortcut to access services.
+     *
+     * @template T
+     *
+     * @param class-string<T> $className
+     *
+     * @return T|null
+     */
     protected function getService($className)
     {
         return $this->wiki->services->get($className);

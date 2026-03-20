@@ -1,9 +1,6 @@
 {% extends "@bazar/entries/index-dynamic-templates/table.twig" %}
 
-{% block necessary_fields %}
-  {{ parent() }} 
-  {% set necessary_fields = necessary_fields|merge(['bf_latitude', 'bf_longitude']) %}
-{% endblock %}
+{% set necessary_fields = ( necessary_fields|default([]))|merge(['geolocation']) %}
 
 {% block assets %}
   {{ block('assets','@bazar/entries/index-dynamic-templates/map.twig') }}

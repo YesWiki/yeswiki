@@ -58,3 +58,6 @@ define('SEMVER', '(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*
 
 // default max size for upload
 define('DEFAULT_MAX_UPLOAD_SIZE', 2000 * 1024);
+
+// define min search keyword length
+define('MIN_SEARCH_KEYWORD_LENGTH', 3);

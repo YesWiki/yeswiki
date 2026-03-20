@@ -18,7 +18,7 @@ if ($pages = $this->LoadAll('SELECT body FROM ' . $this->config['table_prefix'] 
     $buffer = '';
     foreach ($pagesarray as $tag => $page) {
         // XXX: strtoupper is locale dependent
-        $firstChar = strtoupper($page[0]);
+        $firstChar = strtoupper($page[0] ?? '#');
         if (!preg_match('/' . WN_UPPER . '/', $firstChar)) {
             $firstChar = '#';
         }

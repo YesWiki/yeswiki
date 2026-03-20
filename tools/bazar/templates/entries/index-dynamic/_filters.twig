@@ -12,7 +12,7 @@
         <span class="result-label">
           <template v-if="entriesToDisplay.length > 1">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</template>
           <template v-else>{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</template>
-        </span>
+        </span>        
       </template>
 
       {# Reset filters #}
@@ -34,7 +34,7 @@
               aria-haspopup="true" aria-expanded="false" >
         <span v-html="currentSort.label"></span>
         <template v-if="currentSort.label">
-          <i v-if="currentSort.asc" class="fas fa-arrow-down"></i>
+          <i v-if="currentSort.order == 'asc'" class="fas fa-arrow-down"></i>
           <i v-else class="fas fa-arrow-up"></i>
         </template>
         <span class="caret"></span>
@@ -44,7 +44,7 @@
           <a href="#" @click.prevent="currentSort = sort">
             {{ _t('BAZ_SORT_BY') }}
             <span v-html="sort.label"></span> 
-            <i v-if="sort.asc" class="fas fa-arrow-down"></i>
+            <i v-if="sort.order == 'asc'" class="fas fa-arrow-down"></i>
             <i v-else class="fas fa-arrow-up"></i>
           </a>
         </li>

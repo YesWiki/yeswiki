@@ -87,12 +87,22 @@ class FileField extends BazarField
             ]
             : [
                 'value' => $value,
+                'maxSize' => $this->maxSize,
                 'shortFileName' => $this->getShortFileName($value),
                 'fileUrl' => $this->getBasePath() . $value,
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
             ]
         ));
+    }
+
+    /*
+    *	indicates if id_fiche must be set before to format the value
+    */
+
+    public function requireIDFiche()
+    {
+        return true;
     }
 
     public function formatValuesBeforeSave($entry)

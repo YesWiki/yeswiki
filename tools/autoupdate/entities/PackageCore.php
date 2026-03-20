@@ -106,6 +106,24 @@ class PackageCore extends Package
         return true;
     }
 
+    public function upgradeDefaultTheme()
+    {
+        $src = $this->extractionPath . '/themes/margot';
+        $desPath = $this->localPath . '/themes/margot';
+        $file2ignore = ['.', '..'];
+        if ($res = opendir($src)) {
+            while (($file = readdir($res)) !== false) {
+                // Ignore les fichiers de la liste
+                if (!in_array($file, $file2ignore)) {
+                    $this->copy($src . '/' . $file, $desPath . '/' . $file);
+                }
+            }
+            closedir($res);
+        }
+
+        return true;
+    }
+
     public function upgradeTools()
     {
         $src = $this->extractionPath . '/tools';

@@ -112,14 +112,6 @@ pdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) }
 #   $mb (Number) - the PDF file size in megabytes
 #   $b (Number) - the PDF file size in bytes
 pdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } MB ({ $b } bytes)
-# Variables:
-#   $size_kb (Number) - the PDF file size in kilobytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-kb = { $size_kb } KB ({ $size_b } bytes)
-# Variables:
-#   $size_mb (Number) - the PDF file size in megabytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-mb = { $size_mb } MB ({ $size_b } bytes)
 pdfjs-document-properties-title = Teratee:
 pdfjs-document-properties-author = Apohára:
 pdfjs-document-properties-subject = Mba’egua:
@@ -129,10 +121,6 @@ pdfjs-document-properties-modification-date = Iñambue hague arange:
 # Variables:
 #   $dateObj (Date) - the creation/modification date and time of the PDF file
 pdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: "short", timeStyle: "medium") }
-# Variables:
-#   $date (Date) - the creation/modification date of the PDF file
-#   $time (Time) - the creation/modification time of the PDF file
-pdfjs-document-properties-date-string = { $date }, { $time }
 pdfjs-document-properties-creator = Apo’ypyha:
 pdfjs-document-properties-producer = PDF mbosako’iha:
 pdfjs-document-properties-version = PDF mbojuehegua:
@@ -275,10 +263,6 @@ pdfjs-rendering-error = Oiko jejavy ehechaukasévo kuatiarogue.
 
 ## Annotations
 
-# Variables:
-#   $date (Date) - the modification date of the annotation
-#   $time (Time) - the modification time of the annotation
-pdfjs-annotation-date-string = { $date }, { $time }
 # .alt: This is used as a tooltip.
 # Variables:
 #   $type (String) - an annotation type from a list defined in the PDF spec
@@ -302,9 +286,13 @@ pdfjs-web-fonts-disabled = Ñanduti taity oñemongéma: ndaikatumo’ãi eiporu 
 
 pdfjs-editor-free-text-button =
     .title = Moñe’ẽrã
+pdfjs-editor-color-picker-free-text-input =
+    .title = Emoambue moñe’ẽrã sa’y
 pdfjs-editor-free-text-button-label = Moñe’ẽrã
 pdfjs-editor-ink-button =
     .title = Moha’ãnga
+pdfjs-editor-color-picker-ink-input =
+    .title = Emoambue ta’ãnga sa’y
 pdfjs-editor-ink-button-label = Moha’ãnga
 pdfjs-editor-stamp-button =
     .title = Embojuaju térã embosako’i ta’ãnga
@@ -316,9 +304,33 @@ pdfjs-highlight-floating-button1 =
     .title = Mbosa’y
     .aria-label = Mbosa’y
 pdfjs-highlight-floating-button-label = Mbosa’y
+pdfjs-comment-floating-button =
+    .title = Je’erei
+    .aria-label = Je’erei
+pdfjs-comment-floating-button-label = Je’erei
+pdfjs-editor-comment-button =
+    .title = Je’erei
+    .aria-label = Je’erei
+pdfjs-editor-comment-button-label = Je’erei
 pdfjs-editor-signature-button =
     .title = Embojuaju teraguapy
 pdfjs-editor-signature-button-label = Embojuaju teraguapy
+
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Jehechaukarã mbosako’iha
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Ta’ãnga’apo moheñoiha
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Teraguapy mbosako’iha: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Ta’ãnga mbosako’iha
 
 ## Remove button for the various kind of editor.
 
@@ -348,27 +360,41 @@ pdfjs-editor-stamp-add-image-button-label = Embojuaju ta’ãnga
 pdfjs-editor-free-highlight-thickness-input = Anambusu
 pdfjs-editor-free-highlight-thickness-title =
     .title = Emoambue anambusukue embosa’ývo mba’eporu ha’e’ỹva moñe’ẽrã
+pdfjs-editor-add-signature-container =
+    .aria-label = Teraguapy ñemaña ha teraguapy ñongatupyre
 pdfjs-editor-signature-add-signature-button =
     .title = Embojuaju teraguapy pyahu
 pdfjs-editor-signature-add-signature-button-label = Embojuaju teraguapy pyahu
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Teraguapy ñongatupyre: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Moñe’ẽrã moheñoiha
     .default-content = Eñepyrũ ehai…
-pdfjs-free-text =
-    .aria-label = Moñe’ẽrã moheñoiha
-pdfjs-free-text-default-content = Ehai ñepyrũ…
-pdfjs-ink =
-    .aria-label = Ta’ãnga moheñoiha
-pdfjs-ink-canvas =
-    .aria-label = Ta’ãnga omoheñóiva poruhára
+# Used to show how many comments are present in the pdf file.
+# Variables:
+#   $count (Number) - the number of comments.
+pdfjs-editor-comments-sidebar-title =
+    { $count ->
+        [one] Je’erei
+       *[other] Je’ereieta
+    }
+pdfjs-editor-comments-sidebar-close-button =
+    .title = Emboty ta'ãngarupa yke
+    .aria-label = Emboty ta'ãngarupa yke
+pdfjs-editor-comments-sidebar-close-button-label = Emboty ta'ãngarupa yke
+# Instructional copy to add a comment by selecting text or an annotations.
+pdfjs-editor-comments-sidebar-no-comments1 = ¿Ehechápa peteĩ mbaʼe iporãva? Emomba’e ha eheja jehaipy.
+pdfjs-editor-comments-sidebar-no-comments-link = Kuaave
 
 ## Alt-text dialog
 
 pdfjs-editor-alt-text-button-label = Moñe’ẽrã mokõiháva
 pdfjs-editor-alt-text-edit-button =
     .aria-label = Embojuruja moñe’ẽrã mokõiháva
-pdfjs-editor-alt-text-edit-button-label = Embojuruja moñe’ẽrã mokõiháva
 pdfjs-editor-alt-text-dialog-label = Eiporavo poravorã
 pdfjs-editor-alt-text-dialog-description = Moñe’ẽrã ykepegua (moñe’ẽrã ykepegua) nepytyvõ nderehecháiramo ta’ãnga térã nahenyhẽiramo.
 pdfjs-editor-alt-text-add-description-label = Embojuaju ñemoha’ãnga
@@ -388,14 +414,6 @@ pdfjs-editor-alt-text-button =
 ## Editor resizers
 ## This is used in an aria label to help to understand the role of the resizer.
 
-pdfjs-editor-resizer-label-top-left = Yvate asu gotyo — emoambue tuichakue
-pdfjs-editor-resizer-label-top-middle = Yvate mbytépe — emoambue tuichakue
-pdfjs-editor-resizer-label-top-right = Yvate akatúape — emoambue tuichakue
-pdfjs-editor-resizer-label-middle-right = Mbyte akatúape — emoambue tuichakue
-pdfjs-editor-resizer-label-bottom-right = Yvy gotyo akatúape — emoambue tuichakue
-pdfjs-editor-resizer-label-bottom-middle = Yvy gotyo mbytépe — emoambue tuichakue
-pdfjs-editor-resizer-label-bottom-left = Iguýpe asu gotyo — emoambue tuichakue
-pdfjs-editor-resizer-label-middle-left = Mbyte asu gotyo — emoambue tuichakue
 pdfjs-editor-resizer-top-left =
     .aria-label = Yvate asu gotyo — emoambue tuichakue
 pdfjs-editor-resizer-top-middle =
@@ -461,7 +479,6 @@ pdfjs-editor-new-alt-text-error-close-button = Mboty
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Emboguejyhína IA moñe’ẽrã mokõiháva ({ $downloadedSize } { $totalSize } MB) mba’e
     .aria-valuetext = Emboguejyhína IA moñe’ẽrã mokõiháva ({ $downloadedSize } { $totalSize } MB) mba’e
 # This is a button that users can click to edit the alt text they have already added.
@@ -502,6 +519,14 @@ pdfjs-editor-alt-text-settings-show-dialog-button-label = Ehechauka moñe’ẽr
 pdfjs-editor-alt-text-settings-show-dialog-description = Nepytyvõta ta’ãngakuéra orekotaha moñe’ẽrã mokõiha.
 pdfjs-editor-alt-text-settings-close-button = Mboty
 
+## Accessibility labels (announced by screen readers) for objects added to the editor.
+
+pdfjs-editor-highlight-added-alert = Techaukarã juajupyre
+pdfjs-editor-freetext-added-alert = Moñe’ẽrã juajupyre
+pdfjs-editor-ink-added-alert = Ta’ãnga juajupyre
+pdfjs-editor-stamp-added-alert = Ta’ãnga juajupyre
+pdfjs-editor-signature-added-alert = Teraguapy juajupyre
+
 ## "Annotations removed" bar
 
 pdfjs-editor-undo-bar-message-highlight = Mbosa’ýva mboguete
@@ -509,6 +534,7 @@ pdfjs-editor-undo-bar-message-freetext = Moñe’ẽrã mboguepyre
 pdfjs-editor-undo-bar-message-ink = Ta’ãnga mboguepyre
 pdfjs-editor-undo-bar-message-stamp = Ta’ãnga mboguepyre
 pdfjs-editor-undo-bar-message-signature = Teraguapy mboguepyre
+pdfjs-editor-undo-bar-message-comment = Je’epy mboguepyre
 # Variables:
 #   $count (Number) - the number of removed annotations.
 pdfjs-editor-undo-bar-message-multiple =
@@ -569,6 +595,8 @@ pdfjs-editor-add-signature-save-checkbox = Eñongatu teraguapy
 pdfjs-editor-add-signature-save-warning-message = Ehupytýma 5 mboheraguapy ñongatupyre. Embogue peteĩ eñongatukuaa jey hag̃ua.
 pdfjs-editor-add-signature-image-upload-error-title = Ndaikatúi ojehupi pe ta’ãnga
 pdfjs-editor-add-signature-image-upload-error-description = Ehechajey ne ñanduti oikópa térã aha’ã ambue ta’ãnga ndive.
+pdfjs-editor-add-signature-image-no-data-error-title = Ndaikatúi ejapo ko ta’ãngágui teraguapy
+pdfjs-editor-add-signature-image-no-data-error-description = Eñeha’ãkena ehupi ambuéva ta’ãnga.
 pdfjs-editor-add-signature-error-close-button = Mboty
 
 ## Dialog buttons
@@ -577,11 +605,115 @@ pdfjs-editor-add-signature-cancel-button = Heja
 pdfjs-editor-add-signature-add-button = Mbojuaju
 pdfjs-editor-edit-signature-update-button = Mbohekopyahu
 
+## Comment popup
+
+pdfjs-editor-edit-comment-popup-button-label = Je’erei mbosako’i
+pdfjs-editor-edit-comment-popup-button =
+    .title = Je’erei mbosako’i
+pdfjs-editor-delete-comment-popup-button-label = Je’erei mboguete
+pdfjs-editor-delete-comment-popup-button =
+    .title = Je’erei mboguete
+pdfjs-show-comment-button =
+    .title = Ehechauka je’epy
+
+##  Edit a comment dialog
+
+# An existing comment is edited
+pdfjs-editor-edit-comment-dialog-title-when-editing = Je’erei mbosako’i
+pdfjs-editor-edit-comment-dialog-save-button-when-editing = Mbohekopyahu
+# No existing comment
+pdfjs-editor-edit-comment-dialog-title-when-adding = Je’erei mbojuaju
+pdfjs-editor-edit-comment-dialog-save-button-when-adding = Mbojuaju
+pdfjs-editor-edit-comment-dialog-text-input =
+    .placeholder = Ehai ñepyrũ…
+pdfjs-editor-edit-comment-dialog-cancel-button = Eheja
+
+## Edit a comment button in the editor toolbar
+
+pdfjs-editor-add-comment-button =
+    .title = Je’erei mbojuaju
+
+## The view manager is a sidebar displaying different views:
+##  - thumbnails;
+##  - outline;
+##  - attachments;
+##  - layers.
+## The thumbnails view is used to edit the pdf: remove/insert pages, ...
+
+pdfjs-toggle-views-manager-button =
+    .title = Emoambue tenda yke
+pdfjs-toggle-views-manager-notification-button =
+    .title = Embojopyru tenda ykegua (kuatia oguereko mba’e’i, kuaakaha/moirũha/ñuãha)
+pdfjs-toggle-views-manager-button-label = Emoambue tenda yke
+pdfjs-views-manager-sidebar =
+    .aria-label = Ta’ãngarupa yke
+pdfjs-views-manager-sidebar-resizer =
+    .aria-label = Tuichakue mongu’eha tenda yképe
+pdfjs-views-manager-view-selector-button =
+    .title = Hechaha
+pdfjs-views-manager-view-selector-button-label = Hechaha
+pdfjs-views-manager-pages-title = Kuatiarogue
+pdfjs-views-manager-outlines-title = Kuatiaite jejapopy
+pdfjs-views-manager-attachments-title = Moirũha
+pdfjs-views-manager-layers-title = Ñuãha
+pdfjs-views-manager-pages-option-label = Kuatiarogueita
+pdfjs-views-manager-outlines-option-label = Kuatiaite jejapopy
+pdfjs-views-manager-attachments-option-label = Moirũhaita
+pdfjs-views-manager-layers-option-label = Ñuãhaita
+pdfjs-views-manager-add-file-button =
+    .title = Embojuaju marandurenda
+pdfjs-views-manager-add-file-button-label = Embojuaju marandurenda
+# Variables:
+#   $count (Number) - the number of selected pages.
+pdfjs-views-manager-pages-status-action-label =
+    { $count ->
+        [one] { $count } poravopyre
+       *[other] { $count } poravopyre
+    }
+pdfjs-views-manager-pages-status-none-action-label = Eiporavo kuatiarogue
+pdfjs-views-manager-pages-status-action-button-label = Ñangareko
+pdfjs-views-manager-pages-status-copy-button-label = Monguatia
+pdfjs-views-manager-pages-status-cut-button-label = Kytĩ
+pdfjs-views-manager-pages-status-delete-button-label = Mboguete
+pdfjs-views-manager-pages-status-save-as-button-label = Ñongatu pyahu…
+# Variables:
+#   $count (Number) - the number of selected pages to be cut.
+pdfjs-views-manager-status-undo-cut-label =
+    { $count ->
+        [one] 1 kuatiarogue kytĩmbyre
+       *[other] { $count } kuatiarogue kytĩmbyre
+    }
+# Variables:
+#   $count (Number) - the number of selected pages to be copied.
+pdfjs-views-manager-pages-status-undo-copy-label =
+    { $count ->
+        [one] 1 kuatiarogue monguatiapyre
+       *[other] { $count } kuatiarogue monguatiapyre
+    }
+# Variables:
+#   $count (Number) - the number of selected pages to be deleted.
+pdfjs-views-manager-pages-status-undo-delete-label =
+    { $count ->
+        [one] 1 kuatiarogue mboguepyre
+       *[other] { $count } kuatiarogue mboguepyre
+    }
+pdfjs-views-manager-pages-status-waiting-ready-label = Embosako’ihína ne marandurenda…
+pdfjs-views-manager-pages-status-waiting-uploading-label = Ehupihína marandurenda…
+pdfjs-views-manager-status-warning-cut-label = Ndaikatúi oñekytĩ. Embopyahu kuatiarogue ha eha’ã jey.
+pdfjs-views-manager-status-warning-copy-label = Ndaikatúi oñembokuatia. Embopyahu kuatiarogue ha eha’ã jey.
+pdfjs-views-manager-status-warning-delete-label = Ndaikatúi embogue. Embopyahu kuatiarogue ha eha’ã jey.
+pdfjs-views-manager-status-warning-save-label = Ndaikatúi eñongatu. Embopyahu kuatiarogue ha eha’ã jey.
+pdfjs-views-manager-status-undo-button-label = Mboguevi
+pdfjs-views-manager-status-close-button =
+    .title = Mboty
+pdfjs-views-manager-status-close-button-label = Mboty
+pdfjs-views-manager-paste-button-label = Mboja
+
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Embogue teraguapy
-pdfjs-editor-delete-signature-button-label = Embogue teraguapy
+pdfjs-editor-delete-signature-button1 =
+    .title = Embogue teraguapy ñongatupyre
+pdfjs-editor-delete-signature-button-label1 = Embogue teraguapy ñongatupyre
 
 ## Editor toolbar
 

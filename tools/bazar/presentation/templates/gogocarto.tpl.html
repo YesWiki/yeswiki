@@ -30,9 +30,9 @@
 <?php $GLOBALS['wiki']->AddCSSFile('styles/vendor/gogocarto/gogocarto.min.css'); ?>
 
 <?php if (!empty($filters)) { ?>
-  <div id="gogo-map<?php echo $param['nbbazarliste']; ?>"
+  <div id="gogo-map<?php echo $params['nbbazarliste']; ?>"
           class="no-dblclick"
-          style="<?php echo 'width:'.$param['width'].'; height:'.$param['height']; ?>"></div>
+          style="<?php echo 'width:'.$params['width'].'; height:'.$params['height']; ?>"></div>
 <?php } else { ?>
   <div class="alert alert-danger"><?php echo _t('BAZ_GOGO_NEED_GROUPS') ?></div>
 <?php } ?>
@@ -41,7 +41,7 @@
   // wiki data to display
   var data = <?php echo json_encode($fiches) ?>;
   // All param attached in bazarlist action
-  var param = <?php echo json_encode($param) ?>;
+  var param = <?php echo json_encode($params) ?>;
   // facettes filters
   var filters = <?php echo json_encode($filters) ?>;
 
@@ -65,7 +65,7 @@
       }
       el.bf_latitude = null
       el.bf_longitude = null
-      el.geolocation = null; 
+      el.geolocation = null;
       el.html_data = null; 
       el.id_typeannonce = null;
       el.id = el.id_fiche
@@ -192,7 +192,7 @@
       // When everything is ready, starts gogocarto
       interval = setInterval(function() {
         if (typeof goGoCarto != "undefined" && confReady) {
-          carto = goGoCarto('#gogo-map<?php echo $param['nbbazarliste']; ?>', gogoConf)
+          carto = goGoCarto('#gogo-map<?php echo $params['nbbazarliste']; ?>', gogoConf)
           clearInterval(interval);
         }
       },100)
@@ -240,7 +240,7 @@
     right: 0;
     left: auto !important;
   }
-  <?php if (!isset($param['search']) || !$param['search']) { ?>
+  <?php if (!isset($params['search']) || !$params['search']) { ?>
     .directory-menu-header .btn-close-menu { 
       display: none !important; 
     }

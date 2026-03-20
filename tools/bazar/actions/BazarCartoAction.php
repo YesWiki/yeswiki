@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Bazar\Controller\EntryController;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarCartoAction extends YesWikiAction
@@ -51,20 +51,10 @@ class BazarCartoAction extends YesWikiAction
             $this->formatBoolean($arg, false, 'cluster');
 
         // Filters entries via query to remove whose withou bf_latitude nor bf_longitude
-        $query = $this->getService(EntryController::class)->formatQuery($arg, $_GET);
-        if ($template != 'map-and-table' ||
-            (
-                !empty($arg['tablewith']) &&
-                $arg['tablewith'] === 'only-geolocation'
-            )
-        ) {
-            if (!isset($query['bf_latitude!'])) {
-                $query['bf_latitude!'] = '';
-            }
-            if (!isset($query['bf_longitude!'])) {
-                $query['bf_longitude!'] = '';
-            }
-        }
+
+        $vSearchManager = $this->getService(SearchManager::class);
+
+        $query = $vSearchManager->aggregateQueries($arg, $_GET);
 
         return [
             /*
@@ -130,6 +120,7 @@ class BazarCartoAction extends YesWikiAction
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
             'pagination' => -1, // disable pagination
             'query' => $query,
+            'geolocationfield' => $_GET['geolocationfield'] ?? $arg['geolocationfield'] ?? 'bf_geolocation',
         ];
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'APRIL' => 'Avril',
     'AUGUST' => 'Août',
     'CANCEL' => 'Annuler',
     'COPY' => 'Copier',
@@ -45,7 +46,7 @@ return [
     'ADMIN_BACKUPS_NO_ARCHIVE_TO_DELETE' => 'Aucune sauvegarde à supprimer',
     'ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES' => 'Suppression des sauvegardes sélectionnées',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE' => 'Restauration de {filename}',
-    'ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR' => 'Une erreur pourrait avoir eu lieu en restraurant {filename}',
+    'ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR' => 'Une erreur pourrait avoir eu lieu en restaurant {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS' => 'Restauration réussie de {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR' => 'Restauration impossible de {filename}',
     'ADMIN_BACKUPS_START_BACKUP' => "Lancement d'une sauvegarde",
@@ -71,15 +72,13 @@ return [
         'Suivez <a href="{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde" title="Aide pour configurer le dossier de sauvegarde" target="blank">cette aide</a> pour configurer le dossier de sauvegarde.',
     'ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' => 'Mise à jour forcée impossible',
     'ADMIN_BACKUPS_UID_STATUS_FINISHED_THEN_UPDATING' => 'Mise à jour lancée (veuillez patienter)',
-    'ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC' => "Lancement de la sauvegarde impossible \n" .
-        "Car il n'est pas possible de lancer des commandes console sur le serveur " .
+    'ADMIN_BACKUPS_START_BACKUP_CANNOT_EXEC' => "Lancement de la sauvegarde impossible car il n'est pas possible de lancer des commandes console sur le serveur " .
         '(<a href="{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde" title="Aide sur la commande console" target="blank">voir aide</a>).',
+    'ADMIN_BACKUPS_CANNOT_ARCHIVE' => "Lancement de la sauvegarde impossible car le serveur n'a pas la capacité d'archiver.",
     'ADMIN_BACKUPS_START_BACKUP_FOLDER_AVAILABLE' => "Lancement de la sauvegarde impossible car le dossier de sauvegarde est accessible sur internet.\n" .
         "Suivez <a href=\"{helpBaseUrl}?#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide pour restreindre l'accès au dossier de sauvegarde\" target=\"blank\">cette aide</a> pour restreindre l'accès au dossier de sauvegarde.",
-    'ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE' => "Lancement de la sauvegarde impossible \n" .
-        "Il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
-    'ADMIN_BACKUPS_START_BACKUP_NOT_DB' => "Lancement de la sauvegarde non optimal \n" .
-        "L'utilitaire d'export de base de données ('mysqldump') n'est pas accessible (<a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide sur mysqldump\" target=\"blank\">voir aide</a>).",
+    'ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE' => "Lancement de la sauvegarde impossible car il n'y a plus assez d'espace disque disponible pour une nouvelle sauvegarde.",
+    'ADMIN_BACKUPS_START_BACKUP_NOT_DB' => "Lancement de la sauvegarde non optimal : l'utilitaire d'export de base de données ('mysqldump') n'est pas accessible (<a href=\"{helpBaseUrl}#/docs/fr/admin?id=résoudre-les-problèmes-de-sauvegarde\" title=\"Aide sur mysqldump\" target=\"blank\">voir aide</a>).",
     'REVISIONS_COMMIT_DIFF' => 'Modifs apportées par cette version',
     'REVISIONS_DIFF' => 'Comparaison avec version actuelle',
     'REVISIONS_PREVIEW' => 'Aperçu de cette version',
@@ -134,4 +133,7 @@ return [
     'FORM_ID_AVAILABLE' => 'Le formulaire avec l\'identifiant {id} n\'existant pas encore sur l\'url indiqué, il sera créé.',
     'FORM_ID_NOT_AVAILABLE' => 'Le formulaire avec l\'identifiant {id} n\'est plus disponible sur l\'url indiqué, il faut changer d\'identifiant.',
     'FORM_ID_IS_COMPATIBLE' => 'Un formulaire du même identifiant ({id}) existe sur l\'url indiqué et semble avoir au moins les champs obligatoires similaires. Il sera utilisé pour la duplication.',
+    'SHOW_PASSWORD' => 'Afficher le mot de passe',
+    'HIDE_PASSWORD' => 'Masquer le mot de passe',
+    'ERROR_CONTACT_ADMIN' => 'Une erreur est survenue. Veuillez contacter l\'administrateur du site et lui communiquer le message suivant : ',
 ];

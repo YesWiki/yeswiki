@@ -15,6 +15,7 @@
 
 namespace YesWiki\Login;
 
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
@@ -33,18 +34,18 @@ class LoginAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
-        $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0');
+        $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0') || $this->wiki->GetConfigValue('noSignupButton', false);
         $incomingurl = !empty($arg['incomingurl'])
             ? $this->wiki->generateLink($arg['incomingurl'])
             : $this->getIncomingUrlFromServer($_SERVER ?? []);
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
+            // as there can be multiple login actions in one page, we can add a context so that the good action is used
+            // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
+            'context' => $arg['context'] ?? $this->wiki->tag,
             'signupurl' => $noSignupButton ? '0' : (
-                empty($arg['signupurl'])
-                // TODO : check page name for other languages
-                ? $this->wiki->Href('', 'ParametresUtilisateur')
-                : $this->wiki->generateLink($arg['signupurl'])
+                $this->wiki->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametresUtilisateur'))
             ),
 
             'profileurl' => empty($arg['profileurl'])
@@ -101,6 +102,11 @@ class LoginAction extends YesWikiAction
         $this->userManager = $this->getService(UserManager::class);
 
         $action = $_REQUEST['action'] ?? '';
+        $vContext = $_REQUEST['context'] ?? $this->wiki->tag;
+        if ($vContext !== $this->arguments['context']) {
+            // no action if not in the good context
+            $action = '';
+        }
         switch ($action) {
             case 'logout':
                 $this->logout();
@@ -119,11 +125,41 @@ class LoginAction extends YesWikiAction
 
     private function getIncomingUrlFromServer(array $server): string
     {
-        $url = explode('?', $server['REQUEST_URI']);
-        $d = dirname($url[0] . '?');
-        $t = ($d != '/' ? str_replace($d, '', $server['REQUEST_URI']) : $server['REQUEST_URI']);
+        $parts = parse_url($server['REQUEST_URI']);
+        $params = [];
 
-        return $this->wiki->getBaseUrl() . $t;
+        if (isset($parts['query'])) {
+            parse_str($parts['query'], $parsedQuery);
+
+            foreach ($parsedQuery as $key => $value) {
+                // Skip 'context' parameter
+                if ($key === 'context') {
+                    continue;
+                }
+
+                if (is_array($value)) {
+                    foreach ($value as $val) {
+                        $params[] = ['key' => $key, 'value' => $val];
+                    }
+                } else {
+                    $params[] = ['key' => $key, 'value' => $value];
+                }
+            }
+        }
+
+        $newQuery = [];
+        foreach ($params as $param) {
+            $key = urlencode($param['key']);
+            $value = $param['value'];
+
+            if (empty($value)) {
+                $newQuery[] = $key;
+            } else {
+                $newQuery[] = $key . '=' . urlencode($value);
+            }
+        }
+
+        return $this->wiki->getBaseUrl() . '/?' . implode('&', $newQuery);
     }
 
     private function renderForm(string $action): string
@@ -158,12 +194,8 @@ class LoginAction extends YesWikiAction
             'class' => $this->arguments['class'],
             'nobtn' => $this->arguments['nobtn'],
             'error' => $error,
+            'context' => $this->arguments['context'],
         ]);
-
-        // backward compatibility TODO remove it for ectoplasme
-        if (!empty($this->arguments['class']) && substr($this->arguments['template'], -strlen('.tpl.html')) == '.tpl.html') {
-            $output = "<div class=\"{$this->arguments['class']}\">\n$output\n</div>\n";
-        }
 
         return $output;
     }
@@ -225,7 +257,7 @@ class LoginAction extends YesWikiAction
             $this->wiki->Redirect($incomingurl);
         } catch (Exception $ex) {
             // error error
-            flash($ex->getMessage(), 'error');
+            Flash::error($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
         }
     }

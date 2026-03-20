@@ -429,7 +429,7 @@ class Utils
      *
      * @return string The title string
      */
-    public function getTitleFromBody($page)
+    public function getTitleFromBody($page): string
     {
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
@@ -441,7 +441,7 @@ class Utils
         if ($entryManager->isEntry($page['tag'])) {
             $entry = $entryManager->getOne($page['tag']);
             if (isset($entry['bf_titre'])) {
-                $title = _convert($entry['bf_titre'], 'UTF-8');
+                $title = $entry['bf_titre'];
             }
         } else {
             // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2

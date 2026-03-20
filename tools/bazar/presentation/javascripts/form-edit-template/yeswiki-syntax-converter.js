@@ -23,7 +23,7 @@ window.yesWikiTypes = {
   radiofiche: { type: 'radio-group', subtype2: 'form' },
   fichier: { type: 'file', subtype: 'file' },
   champs_cache: { type: 'hidden' },
-  listefiches: { type: 'listefichesliees' }
+  listefiches: { type: 'listefichesliees' },
 }
 
 function getYesWikiMapping() {
@@ -52,33 +52,49 @@ export function parseWikiTextIntoJsonData(text) {
     const fieldObject = {}
     if (fieldValues.length > 1) {
       const wikiType = fieldValues[0]
-      let fieldType = wikiType in yesWikiTypes ? yesWikiTypes[wikiType].type : wikiType
+      let fieldType =
+        wikiType in yesWikiTypes ? yesWikiTypes[wikiType].type : wikiType
       // check that the fieldType really exists in our form builder
       if (!(fieldType in yesWikiMapping)) fieldType = 'custom'
 
       const mapping = yesWikiMapping[fieldType]
 
       fieldObject.type = fieldType
-      fieldObject.subtype = wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype : ''
-      fieldObject.subtype2 = wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype2 : ''
+      fieldObject.subtype =
+        wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype : ''
+      fieldObject.subtype2 =
+        wikiType in yesWikiTypes ? yesWikiTypes[wikiType].subtype2 : ''
       const start = fieldType == 'custom' ? 0 : 1
       for (let j = start; j < fieldValues.length; j++) {
         let value = fieldValues[j]
         const field = mapping && j in mapping ? mapping[j] : j
+        if (field == 'useWikiSyntax') {
+          if (value.trim().length === 0) {
+            value = 'false'
+          }
+        }
         if (field == 'required') value = value == '1'
         if (field) {
           if (field == 'read' || field == 'write' || field == 'comment') {
-            fieldObject[field] = (value.trim() === '')
-              ? (
-                field == 'comment'
+            fieldObject[field] =
+              value.trim() === ''
+                ? field == 'comment'
                   ? [' + ']
                   : [' * ']
-              )
-              : value.split(',').map((e) => ((['+', '*', '%'].includes(e.trim())) ? ` ${e.trim()} ` : e))
+                : value
+                    .split(',')
+                    .map((e) =>
+                      ['+', '*', '%'].includes(e.trim()) ? ` ${e.trim()} ` : e,
+                    )
           } else if (field == 'seeEmailAcls') {
-            fieldObject[field] = (value.trim() === '')
-              ? ' % ' // if not define in tempalte, choose owner and admins
-              : value.split(',').map((e) => ((['+', '*', '%'].includes(e.trim())) ? ` ${e.trim()} ` : e))
+            fieldObject[field] =
+              value.trim() === ''
+                ? ' % ' // if not define in tempalte, choose owner and admins
+                : value
+                    .split(',')
+                    .map((e) =>
+                      ['+', '*', '%'].includes(e.trim()) ? ` ${e.trim()} ` : e,
+                    )
           } else {
             fieldObject[field] = value
           }
@@ -115,12 +131,12 @@ export function formatJsonDataIntoWikiText(formData) {
 
     for (const type in yesWikiTypes) {
       if (
-        formElement.type == yesWikiTypes[type].type
-        && (!formElement.subtype
-          || !yesWikiTypes[type].subtype
-          || formElement.subtype == yesWikiTypes[type].subtype)
-        && (!formElement.subtype2
-          || formElement.subtype2 == yesWikiTypes[type].subtype2)
+        formElement.type == yesWikiTypes[type].type &&
+        (!formElement.subtype ||
+          !yesWikiTypes[type].subtype ||
+          formElement.subtype == yesWikiTypes[type].subtype) &&
+        (!formElement.subtype2 ||
+          formElement.subtype2 == yesWikiTypes[type].subtype2)
       ) {
         wikiProps[0] = type
         break
@@ -136,10 +152,14 @@ export function formatJsonDataIntoWikiText(formData) {
       const property = mapping[key]
       if (property != 'type') {
         let value = formElement[property]
-        if (['required', 'access'].indexOf(property) > -1) value = value ? '1' : '0'
+        if (['required', 'access'].indexOf(property) > -1)
+          value = value ? '1' : '0'
         if (property == 'label') {
           wikiProps[key] = removeBR(value).replace(/\n$/gm, '')
-        } else if (['content_saisie', 'content_display'].includes(property) && typeof (value) === 'string') {
+        } else if (
+          ['content_saisie', 'content_display'].includes(property) &&
+          typeof value === 'string'
+        ) {
           // Remove line breaks otherwise it breaks the old wiki code syntax
           wikiProps[key] = value.replace(/\n/g, '<br/>')
         } else {

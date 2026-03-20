@@ -21,16 +21,16 @@ if (preg_match('/(?=<[^>]+(?=[\s+\"\']markdown[\s+\"\']).+)([^>]+>)/uU', $plugin
 }
 
 // mermaid
-if (preg_match('/(?=<[^>]+(?=[\s+\"\']mermaid[\s+\"\']).+)([^>]+>)/uU', $plugin_output_new)) {
-    $this->addJavascriptFile('tools/templates/libs/vendor/mermaid/mermaid.min.js');
-    $this->addJavascript('$(document).ready(function() {
+if (preg_match('/<([a-z]+)([^>]*class="mermaid"[^>]*)>(.*?)<\/\1>/is', $plugin_output_new)) {
+    $this->addJavascript('import mermaid from "./javascripts/vendor/mermaid/mermaid.esm.min.mjs";
+     document.addEventListener("DOMContentLoaded", function() {
         mermaid.initialize({
             startOnLoad: true,
             fontFamily: \'inherit\',
-            theme: "default",
-            themeCSS: \':root { --mermaid-font-family: inherit;} .titleText, .taskText, .sectionTitle, .grid , .grid .tick text {font-family:inherit;}\'            
+            theme: "base",
+            themeCSS: \':root { --mermaid-font-family: inherit;} .titleText, .taskText, .sectionTitle, .grid , .grid .tick text {font-family:inherit;} g.label {color:inherit;}\'            
         });
-    });');
+        })', true);
 }
 
 // izmir

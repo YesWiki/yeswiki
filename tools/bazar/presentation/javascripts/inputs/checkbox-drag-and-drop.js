@@ -127,27 +127,30 @@ $(document).ready(() => {
     }
   })
 
-  const filter = $('.checkbox-filter-input')
-  filter.keyup(function() {
-    // Retrieve the input field text and reset the count to zero
-    let count = 0
+  for (const filter of document.getElementsByClassName('checkbox-filter-input')) {
+    filter.onkeypress = function() {
+      // Retrieve the input field text and reset the count to zero
+      let count = 0
 
-    // Loop through the comment list
-    $(this).parents('.export-table-container').find('.list-group-item').not('.empty-list')
-      .each(function() {
-      // If the list item does not contain the text phrase fade it out
-        if ($(this).text().search(new RegExp(filter.val(), 'i')) < 0) {
-          $(this).hide()
+      // TODO get filter depend on id instead of getting global
 
-          // Show the list item if the phrase matches and increase the count by 1
-        } else {
-          $(this).show()
-          count++
-        }
-      })
+      // Loop through the comment list
+      $(this).parents('.export-table-container').find('.list-group-item').not('.empty-list')
+        .each(function () {
+          // If the list item does not contain the text phrase fade it out
+          if ($(this).text().search(new RegExp(filter.value, 'i')) < 0) {
+            $(this).hide()
 
-    // Update the count
-    const numberItems = count
-    $(this).parents('.export-table-container').find('.checkbox-filter-count').text(count)
-  })
+            // Show the list item if the phrase matches and increase the count by 1
+          } else {
+            $(this).show()
+            count++
+          }
+        })
+
+      // Update the count
+      const numberItems = count
+      $(this).parents('.export-table-container').find('.checkbox-filter-count').text(count)
+    }
+  }
 })

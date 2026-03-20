@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Controller\FormController;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
 
 if (isset($_REQUEST['demand'])) {
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && empty($_POST)) {
@@ -18,19 +19,16 @@ if (isset($_REQUEST['demand'])) {
     $idfiche = (isset($_REQUEST['id_fiche']) ? $_REQUEST['id_fiche'] : '');
     $pagetag = (isset($_REQUEST['pagetag']) ? $_REQUEST['pagetag'] : '');
     $is_semantic = (isset($_REQUEST['ld']) ? $_REQUEST['ld'] : '');
-    //on recupere les parametres query pour une requete specifique
+
+    $vSearchManager = $this->services->get(SearchManager::class);
+
+    // On recupere les parametres query pour une requete specifique
+    // NOTE : It doesn't seem to be used
     $query = (isset($_REQUEST['query']) ? $_REQUEST['query'] : '');
     if (!empty($query)) {
-        $tabquery = [];
-        $tableau = [];
-        $tab = explode('|', $query); //découpe la requete autour des |
-        foreach ($tab as $req) {
-            $tabdecoup = explode('=', $req, 2);
-            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-        }
-        $tabquery = array_merge($tabquery, $tableau);
+        $vQueries = $vSearchManager->parseQuery($query);
     } else {
-        $tabquery = '';
+        $vQueries = [];
     }
 
     header('Content-type: ' . ($is_semantic ? 'application/ld+json' : 'application/json') . '; charset=UTF-8');

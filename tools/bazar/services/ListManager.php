@@ -49,9 +49,9 @@ class ListManager
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
     }
 
-    public function getOne($id): ?array
+    public function getOne($id, $parent = null): ?array
     {
-        if (isset($this->cachedLists[$id])) {
+        if (isset($this->cachedLists[$id]) && $parent === null) { // we cache all information, not just a level
             return $this->cachedLists[$id];
         }
 
@@ -62,11 +62,26 @@ class ListManager
 
         $page = $this->pageManager->getOne($id);
         if (empty($page)) {
-            echo '<div class="alert alert-danger">List id not found: '.$id.'</div>';
+            echo '<div class="alert alert-danger">List id not found: ' . $id . '</div>';
+
             return null;
         }
         $data = $this->loadJson($page['body'], $id);
-        $this->cachedLists[$id] = $data;
+        if ($parent != null) {
+            $this->cachedLists[$id] = $data;
+        }
+
+        if ($parent === 'root') {
+            $data['nodes'] = array_map(function ($a) {
+                unset($a['children']);
+
+                return $a;
+            }, $data['nodes']);
+            $data['parentId'] = $parent;
+        } elseif (!empty($parent)) {
+            $data['nodes'] = multiArraySearch($data['nodes'], 'id', $parent)[0]['children'] ?? null;
+            $data['parentId'] = $parent;
+        }
 
         return $data;
     }
@@ -97,13 +112,13 @@ class ListManager
         return $json;
     }
 
-    public function getAll(): array
+    public function getAll($parent = null): array
     {
         $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
         $result = [];
         foreach ($lists as $list) {
-            $result[$list['resource']] = $this->getOne($list['resource']);
+            $result[$list['resource']] = $this->getOne($list['resource'], $parent);
         }
 
         return $result;
@@ -115,9 +130,11 @@ class ListManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $id = $id ?? genere_nom_wiki('List ' . $title);
+        $nodes = $nodes ?? [];
+        $this->trimRecursiveInPlace($nodes);
         $json = json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? []),
+            'nodes' => $this->sanitizeHMTL($nodes),
         ]);
         $this->pageManager->save($id, $json);
 
@@ -134,10 +151,11 @@ class ListManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-
+        $nodes = $nodes ?? [];
+        $this->trimRecursiveInPlace($nodes);
         $json = json_encode([
             'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes ?? []),
+            'nodes' => $this->sanitizeHMTL($nodes),
         ]);
         $this->pageManager->save($id, $json);
 
@@ -164,6 +182,18 @@ class ListManager
         $this->tripleStore->delete($id, TripleStore::TYPE_URI, null, '', '');
     }
 
+    public function getLabel($idList, $key): string
+    {
+        $list = $this->getOne($idList);
+        if (empty($list)) {
+            return '';
+        }
+        $val = multiArraySearch($list['nodes'], 'id', $key);
+        $val = array_shift($val);
+
+        return $val['label'] ?? '';
+    }
+
     private function sanitizeHMTL(array $nodes)
     {
         return array_map(function ($node) {
@@ -172,5 +202,21 @@ class ListManager
 
             return $node;
         }, $nodes);
+    }
+
+    /**
+     * Recursively trims string values in a multidimensional array (in-place).
+     * Non-string values are left untouched.
+     *
+     * @param array  $array    The input array (will be modified by reference)
+     * @param string $charlist Optional. The characters to trim. Defaults to whitespace.
+     */
+    private function trimRecursiveInPlace(array &$array, string $charlist = " \t\n\r\0\x0B"): void
+    {
+        array_walk_recursive($array, function (&$value) use ($charlist) {
+            if (is_string($value)) {
+                $value = trim($value, $charlist);
+            }
+        });
     }
 }

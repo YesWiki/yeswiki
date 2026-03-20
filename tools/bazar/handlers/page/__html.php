@@ -5,7 +5,7 @@ use YesWiki\Bazar\Service\EntryManager;
 $entryManager = $this->services->get(EntryManager::class);
 
 if ($entryManager->isEntry($this->GetPageTag())) {
-    $this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+    $this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
     $fiche = $entryManager->getOne($this->GetPageTag());
     $this->page['body'] = '""' . baz_voir_fiche(0, $fiche) . '""';
 }

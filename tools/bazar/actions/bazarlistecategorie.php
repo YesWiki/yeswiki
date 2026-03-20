@@ -10,7 +10,7 @@ use YesWiki\Core\Service\TemplateEngine;
 
 $entryManager = $this->services->get(EntryManager::class);
 
-$this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+$this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
 
 // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
 if (!function_exists('champCompare')) {
@@ -60,19 +60,8 @@ if (empty($list)) {
         $query = '';
     }
     unset($_GET['query']);
-    if (!empty($query)) {
-        $tabquery = [];
-        $tableau = [];
-        $tab = explode('|', $query); //découpe la requete autour des |
-        foreach ($tab as $req) {
-            $tabdecoup = explode('=', $req, 2);
-            $tableau[$tabdecoup[0]] = trim($tabdecoup[1]);
-        }
-        $tabquery = array_merge($tabquery, $tableau);
-    } else {
-        $tabquery = '';
-    }
-    $tabfiches = $entryManager->search(['queries' => $tabquery, 'formsIds' => [$id_typeannonce]]);
+
+    $tabfiches = $entryManager->search(['queries' => $query, 'formsIds' => [$id_typeannonce]]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';

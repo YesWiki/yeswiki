@@ -21,6 +21,13 @@ input[type='range'] {
   box-shadow: none !important;
 }
 
+/* ACTION BUILDER APP */
+
+#actions-builder-app
+{
+	overflow : hidden !important;
+}
+
 #actions-builder-app .form-group .control-label {
   left: 0.9rem !important;
 }
@@ -229,7 +236,7 @@ input[type='range'] {
   margin-bottom: 10px;
 }
 
-iframe {
+.iframe-preview {
   max-height: 350px;
   overflow: hidden;
 }

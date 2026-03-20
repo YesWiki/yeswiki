@@ -1,19 +1,19 @@
 <?php echo $info_res; ?>
 <?php if (count($fiches)>0) : ?>
     <?php echo $pager_links;?>
-    <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $param['nbbazarliste']; ?>">
+    <div class="panel-group accordion-group no-dblclick" id="accordion<?php echo $params['nbbazarliste']; ?>">
     <?php
-    foreach($fiches as $fiche): ?>
+    foreach($fiches as $vIndex=>$fiche): ?>	    
         <div class="bazar-entry panel panel-default collapsed" <?php echo $fiche['html_data'];?>>
           <button class="panel-heading collapsed" aria-expanded="false"
-            data-target="#collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_typeannonce']; ?>_<?php echo $fiche['id_fiche']; ?>"
+            data-target="#collapse<?php echo $params['nbbazarliste']; ?>_<?php echo $vIndex ?>"           
             data-toggle="collapse">
             <h4 class="panel-title">
               <?php
               $style = '';
               $color = getCustomValueForEntry(
-                $param['color'],
-                $param['colorfield'],
+                $params['color'],
+                $params['colorfield'],
                 $fiche,
                 ''
               );
@@ -21,8 +21,8 @@
                 echo '<span class="pellet" style="background-color:'.$color.';"></span> ';
               }
               $icon = getCustomValueForEntry(
-                $param['icon'],
-                $param['iconfield'],
+                $params['icon'],
+                $params['iconfield'],
                 $fiche,
                 ''
               );
@@ -44,9 +44,10 @@
               <?php else : ?>
               <?php endif; ?>
           </button>
-          <div id="collapse<?php echo $param['nbbazarliste']; ?>_<?php echo $fiche['id_typeannonce']; ?>_<?php echo $fiche['id_fiche']; ?>" class="panel-collapse collapse">
-            <div class="panel-body">
-              <?php echo baz_voir_fiche($param['barregestion'], $fiche); ?>
+          <div id="collapse<?php echo $params['nbbazarliste']; ?>_<?php echo $vIndex ?>" class="panel-collapse collapse">
+            <div class="panel-body">            
+              <?php 
+              echo baz_voir_fiche($params['barregestion'], $fiche, $forms[$fiche['id_typeannonce']]??null); ?>
             </div>
           </div>
         </div>

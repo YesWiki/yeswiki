@@ -2,6 +2,7 @@
 
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 use YesWiki\Security\Controller\SecurityController;
@@ -30,7 +31,7 @@ class CleanOldCartoGoogle extends YesWikiMigration
 
     private function searchEntriesWithOnlyOldGeoloc(): array
     {
-        $entries = $this->entryManager->search([
+        $entries = $this->wiki->services->get(SearchManager::class)->search([
             'queries' => [
                 'carte_google!' => '',
             ],
@@ -137,6 +138,9 @@ class CleanOldCartoGoogle extends YesWikiMigration
     {
         $value = $entry[$field->getPropertyName()] ?? $field->getDefault();
 
+        $vLatitudeField = is_callable([$field, 'getLatitudeField']) ? $field->getLatitudeField() : 'bf_latitude';
+        $vLongitudeField = is_callable([$field, 'getLongitudeField']) ? $field->getLongitudeField() : 'bf_longitude';
+
         // backward compatibility with former `carte_google` propertyName
         $returnValue = [];
         if (empty($value)) {
@@ -144,14 +148,14 @@ class CleanOldCartoGoogle extends YesWikiMigration
                 $value = explode('|', $entry['carte_google']);
                 if (!empty($value[0]) && !empty($value[1])) {
                     $returnValue = [
-                        $field->getLatitudeField() => $value[0],
-                        $field->getLongitudeField() => $value[1],
+                        $vLatitudeField => $value[0],
+                        $vLongitudeField => $value[1],
                     ];
                 }
             } elseif (!empty($entry[$field->getLatitudeField()]) && !empty($entry[$field->getLongitudeField()])) {
                 $returnValue = [
-                    $field->getLatitudeField() => $entry[$field->getLatitudeField()],
-                    $field->getLongitudeField() => $entry[$field->getLongitudeField()],
+                    $vLatitudeField => $entry[$vLatitudeField],
+                    $vLongitudeField => $entry[$vLongitudeField],
                 ];
             }
         }

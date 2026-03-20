@@ -32,6 +32,11 @@ class UserField extends BazarField
     private const CONFIRM_NAME_SUFFIX = '_confirmNewName';
     private const FORCE_LABEL = '_force_label';
 
+    public function requireIDFiche()
+    {
+        return true;
+    }
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -128,7 +133,6 @@ class UserField extends BazarField
             $this->updateEmailIfNeeded($wikiName, $entry[$this->emailField] ?? null);
         } else {
             $wikiName = $entry[$this->nameField];
-
             if (!$wiki->IsWikiName($wikiName)) {
                 // create a UserName from value that is a wikiname
                 // so the User could have a chance to have the same name as the created entry
@@ -203,10 +207,15 @@ class UserField extends BazarField
 
     protected function renderStatic($entry)
     {
-        $value = $this->getValue($entry);
+        $vUserManager = $this->getService(UserManager::class);
+        $userEntry = $vUserManager->getAssociatedEntry($this->getValue($entry));
+        $value = '';
+        if (!empty($userEntry)) {
+            $value = $userEntry['id_fiche'];
+        }
         $authController = $this->getService(AuthController::class);
 
-        if ($value) {
+        if (!empty($value)) {
             return $this->render('@bazar/fields/user.twig', [
                 'value' => $value,
                 'isLoggedUser' => $authController->getLoggedUser() && $authController->getLoggedUserName() === $value,

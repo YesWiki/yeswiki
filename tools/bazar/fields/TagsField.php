@@ -19,6 +19,11 @@ class TagsField extends EnumField
         $this->propertyName = $this->name;
     }
 
+    public function getValueStructure() // See BazarField::getValueStructure
+    {
+        return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
+    }
+
     protected function renderInput($entry)
     {
         $tagsManager = $this->getService(TagsManager::class);
@@ -78,7 +83,7 @@ class TagsField extends EnumField
         $value = $this->getValue($entry);
 
         // Delete existing tags linked to this entry
-        if (!isset($GLOBALS['delete_tags'])) {
+        if (!isset($GLOBALS['delete_tags']) && !empty($entry['id_fiche'])) {
             $tripleStore->delete($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
             $GLOBALS['delete_tags'] = true;
         }

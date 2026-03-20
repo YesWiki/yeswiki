@@ -112,14 +112,6 @@ pdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) }
 #   $mb (Number) - the PDF file size in megabytes
 #   $b (Number) - the PDF file size in bytes
 pdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } Mt ({ $b } tavua)
-# Variables:
-#   $size_kb (Number) - the PDF file size in kilobytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-kb = { $size_kb } kt ({ $size_b } tavua)
-# Variables:
-#   $size_mb (Number) - the PDF file size in megabytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-mb = { $size_mb } Mt ({ $size_b } tavua)
 pdfjs-document-properties-title = Otsikko:
 pdfjs-document-properties-author = Tekijä:
 pdfjs-document-properties-subject = Aihe:
@@ -129,10 +121,6 @@ pdfjs-document-properties-modification-date = Muokkauspäivämäärä:
 # Variables:
 #   $dateObj (Date) - the creation/modification date and time of the PDF file
 pdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: "short", timeStyle: "medium") }
-# Variables:
-#   $date (Date) - the creation/modification date of the PDF file
-#   $time (Time) - the creation/modification time of the PDF file
-pdfjs-document-properties-date-string = { $date }, { $time }
 pdfjs-document-properties-creator = Luoja:
 pdfjs-document-properties-producer = PDF-tuottaja:
 pdfjs-document-properties-version = PDF-versio:
@@ -275,10 +263,6 @@ pdfjs-rendering-error = Tapahtui virhe piirrettäessä sivua.
 
 ## Annotations
 
-# Variables:
-#   $date (Date) - the modification date of the annotation
-#   $time (Time) - the modification time of the annotation
-pdfjs-annotation-date-string = { $date }, { $time }
 # .alt: This is used as a tooltip.
 # Variables:
 #   $type (String) - an annotation type from a list defined in the PDF spec
@@ -302,9 +286,13 @@ pdfjs-web-fonts-disabled = Verkkosivujen omat kirjasinlajit on estetty: ei voida
 
 pdfjs-editor-free-text-button =
     .title = Teksti
+pdfjs-editor-color-picker-free-text-input =
+    .title = Muuta tekstin väriä
 pdfjs-editor-free-text-button-label = Teksti
 pdfjs-editor-ink-button =
     .title = Piirros
+pdfjs-editor-color-picker-ink-input =
+    .title = Vaihda piirustuksen väriä
 pdfjs-editor-ink-button-label = Piirros
 pdfjs-editor-stamp-button =
     .title = Lisää tai muokkaa kuvia
@@ -316,9 +304,33 @@ pdfjs-highlight-floating-button1 =
     .title = Korostus
     .aria-label = Korostus
 pdfjs-highlight-floating-button-label = Korostus
+pdfjs-comment-floating-button =
+    .title = Kommentti
+    .aria-label = Kommentti
+pdfjs-comment-floating-button-label = Kommentti
+pdfjs-editor-comment-button =
+    .title = Kommentti
+    .aria-label = Kommentti
+pdfjs-editor-comment-button-label = Kommentti
 pdfjs-editor-signature-button =
     .title = Lisää allekirjoitus
 pdfjs-editor-signature-button-label = Lisää allekirjoitus
+
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Korostusmuokkain
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Piirustusmuokkain
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Allekirjoituksen muokkain: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Kuvamuokkain
 
 ## Remove button for the various kind of editor.
 
@@ -348,27 +360,41 @@ pdfjs-editor-stamp-add-image-button-label = Lisää kuva
 pdfjs-editor-free-highlight-thickness-input = Paksuus
 pdfjs-editor-free-highlight-thickness-title =
     .title = Muuta paksuutta korostaessasi muita kohteita kuin tekstiä
+pdfjs-editor-add-signature-container =
+    .aria-label = Allekirjoitussäätimet ja tallennetut allekirjoitukset
 pdfjs-editor-signature-add-signature-button =
     .title = Lisää uusi allekirjoitus
 pdfjs-editor-signature-add-signature-button-label = Lisää uusi allekirjoitus
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Tallennettu allekirjoitus: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Tekstimuokkain
     .default-content = Aloita kirjoittaminen…
-pdfjs-free-text =
-    .aria-label = Tekstimuokkain
-pdfjs-free-text-default-content = Aloita kirjoittaminen…
-pdfjs-ink =
-    .aria-label = Piirrustusmuokkain
-pdfjs-ink-canvas =
-    .aria-label = Käyttäjän luoma kuva
+# Used to show how many comments are present in the pdf file.
+# Variables:
+#   $count (Number) - the number of comments.
+pdfjs-editor-comments-sidebar-title =
+    { $count ->
+        [one] Kommentti
+       *[other] Kommenttia
+    }
+pdfjs-editor-comments-sidebar-close-button =
+    .title = Sulje sivupaneeli
+    .aria-label = Sulje sivupaneeli
+pdfjs-editor-comments-sidebar-close-button-label = Sulje sivupaneeli
+# Instructional copy to add a comment by selecting text or an annotations.
+pdfjs-editor-comments-sidebar-no-comments1 = Näetkö jotain huomionarvoista? Korosta se ja jätä kommentti.
+pdfjs-editor-comments-sidebar-no-comments-link = Lue lisää
 
 ## Alt-text dialog
 
 pdfjs-editor-alt-text-button-label = Vaihtoehtoinen teksti
 pdfjs-editor-alt-text-edit-button =
     .aria-label = Muokkaa vaihtoehtoista tekstiä
-pdfjs-editor-alt-text-edit-button-label = Muokkaa vaihtoehtoista tekstiä
 pdfjs-editor-alt-text-dialog-label = Valitse vaihtoehto
 pdfjs-editor-alt-text-dialog-description = Vaihtoehtoinen teksti ("alt-teksti") auttaa ihmisiä, jotka eivät näe kuvaa tai kun kuva ei lataudu.
 pdfjs-editor-alt-text-add-description-label = Lisää kuvaus
@@ -388,14 +414,6 @@ pdfjs-editor-alt-text-button =
 ## Editor resizers
 ## This is used in an aria label to help to understand the role of the resizer.
 
-pdfjs-editor-resizer-label-top-left = Vasen yläkulma - muuta kokoa
-pdfjs-editor-resizer-label-top-middle = Ylhäällä keskellä - muuta kokoa
-pdfjs-editor-resizer-label-top-right = Oikea yläkulma - muuta kokoa
-pdfjs-editor-resizer-label-middle-right = Keskellä oikealla - muuta kokoa
-pdfjs-editor-resizer-label-bottom-right = Oikea alakulma - muuta kokoa
-pdfjs-editor-resizer-label-bottom-middle = Alhaalla keskellä - muuta kokoa
-pdfjs-editor-resizer-label-bottom-left = Vasen alakulma - muuta kokoa
-pdfjs-editor-resizer-label-middle-left = Keskellä vasemmalla - muuta kokoa
 pdfjs-editor-resizer-top-left =
     .aria-label = Vasen yläkulma - muuta kokoa
 pdfjs-editor-resizer-top-middle =
@@ -461,7 +479,6 @@ pdfjs-editor-new-alt-text-error-close-button = Sulje
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Ladataan vaihtoehtoisen tekstin tekoälymallia ({ $downloadedSize } / { $totalSize } Mt)
     .aria-valuetext = Ladataan vaihtoehtoisen tekstin tekoälymallia ({ $downloadedSize } / { $totalSize } Mt)
 # This is a button that users can click to edit the alt text they have already added.
@@ -502,6 +519,14 @@ pdfjs-editor-alt-text-settings-show-dialog-button-label = Näytä vaihtoehtoisen
 pdfjs-editor-alt-text-settings-show-dialog-description = Auttaa varmistamaan, että kaikissa kuvissasi on vaihtoehtoinen teksti.
 pdfjs-editor-alt-text-settings-close-button = Sulje
 
+## Accessibility labels (announced by screen readers) for objects added to the editor.
+
+pdfjs-editor-highlight-added-alert = Korostus lisätty
+pdfjs-editor-freetext-added-alert = Teksti lisätty
+pdfjs-editor-ink-added-alert = Piirustus lisätty
+pdfjs-editor-stamp-added-alert = Kuva lisätty
+pdfjs-editor-signature-added-alert = Allekirjoitus lisätty
+
 ## "Annotations removed" bar
 
 pdfjs-editor-undo-bar-message-highlight = Korostus poistettu
@@ -509,6 +534,7 @@ pdfjs-editor-undo-bar-message-freetext = Teksti poistettu
 pdfjs-editor-undo-bar-message-ink = Piirustus poistettu
 pdfjs-editor-undo-bar-message-stamp = Kuva poistettu
 pdfjs-editor-undo-bar-message-signature = Allekirjoitus poistettu
+pdfjs-editor-undo-bar-message-comment = Kommentti poistettu
 # Variables:
 #   $count (Number) - the number of removed annotations.
 pdfjs-editor-undo-bar-message-multiple =
@@ -570,6 +596,8 @@ pdfjs-editor-add-signature-save-checkbox = Tallenna allekirjoitus
 pdfjs-editor-add-signature-save-warning-message = Olet saavuttanut viiden tallennetun allekirjoituksen rajan. Poista yksi säästääksesi lisää.
 pdfjs-editor-add-signature-image-upload-error-title = Kuvaa ei voitu lähettää
 pdfjs-editor-add-signature-image-upload-error-description = Tarkista verkkoyhteyden tila tai kokeile toista kuvaa.
+pdfjs-editor-add-signature-image-no-data-error-title = Tätä kuvaa ei voida muuntaa allekirjoitukseksi
+pdfjs-editor-add-signature-image-no-data-error-description = Yritä lähettää eri kuva.
 pdfjs-editor-add-signature-error-close-button = Sulje
 
 ## Dialog buttons
@@ -578,11 +606,112 @@ pdfjs-editor-add-signature-cancel-button = Peruuta
 pdfjs-editor-add-signature-add-button = Lisää
 pdfjs-editor-edit-signature-update-button = Päivitä
 
+## Comment popup
+
+pdfjs-editor-edit-comment-popup-button-label = Muokkaa kommenttia
+pdfjs-editor-edit-comment-popup-button =
+    .title = Muokkaa kommenttia
+pdfjs-editor-delete-comment-popup-button-label = Poista kommentti
+pdfjs-editor-delete-comment-popup-button =
+    .title = Poista kommentti
+pdfjs-show-comment-button =
+    .title = Näytä kommentti
+
+##  Edit a comment dialog
+
+# An existing comment is edited
+pdfjs-editor-edit-comment-dialog-title-when-editing = Muokkaa kommenttia
+pdfjs-editor-edit-comment-dialog-save-button-when-editing = Päivitä
+# No existing comment
+pdfjs-editor-edit-comment-dialog-title-when-adding = Lisää kommentti
+pdfjs-editor-edit-comment-dialog-save-button-when-adding = Lisää
+pdfjs-editor-edit-comment-dialog-text-input =
+    .placeholder = Aloita kirjoittaminen…
+pdfjs-editor-edit-comment-dialog-cancel-button = Peruuta
+
+## Edit a comment button in the editor toolbar
+
+pdfjs-editor-add-comment-button =
+    .title = Lisää kommentti
+
+## The view manager is a sidebar displaying different views:
+##  - thumbnails;
+##  - outline;
+##  - attachments;
+##  - layers.
+## The thumbnails view is used to edit the pdf: remove/insert pages, ...
+
+pdfjs-toggle-views-manager-button =
+    .title = Näytä/piilota sivupaneeli
+pdfjs-toggle-views-manager-notification-button =
+    .title = Näytä/piilota sivupaneeli (dokumentissa on pienoiskuvat/sisällys/liitteitä/tasoja)
+pdfjs-toggle-views-manager-button-label = Näytä/piilota sivupaneeli
+pdfjs-views-manager-sidebar =
+    .aria-label = Sivupaneeli
+pdfjs-views-manager-view-selector-button =
+    .title = Näkymät
+pdfjs-views-manager-view-selector-button-label = Näkymät
+pdfjs-views-manager-pages-title = Sivut
+pdfjs-views-manager-outlines-title = Dokumentin sisällys
+pdfjs-views-manager-attachments-title = Liitteet
+pdfjs-views-manager-layers-title = Tasot
+pdfjs-views-manager-pages-option-label = Sivut
+pdfjs-views-manager-outlines-option-label = Dokumentin sisällys
+pdfjs-views-manager-attachments-option-label = Liitteet
+pdfjs-views-manager-layers-option-label = Tasot
+pdfjs-views-manager-add-file-button =
+    .title = Lisää tiedosto
+pdfjs-views-manager-add-file-button-label = Lisää tiedosto
+# Variables:
+#   $count (Number) - the number of selected pages.
+pdfjs-views-manager-pages-status-action-label =
+    { $count ->
+        [one] { $count } valittu
+       *[other] { $count } valittu
+    }
+pdfjs-views-manager-pages-status-none-action-label = Valitse sivut
+pdfjs-views-manager-pages-status-action-button-label = Hallitse
+pdfjs-views-manager-pages-status-copy-button-label = Kopioi
+pdfjs-views-manager-pages-status-cut-button-label = Leikkaa
+pdfjs-views-manager-pages-status-delete-button-label = Poista
+pdfjs-views-manager-pages-status-save-as-button-label = Tallenna nimellä…
+# Variables:
+#   $count (Number) - the number of selected pages to be cut.
+pdfjs-views-manager-status-undo-cut-label =
+    { $count ->
+        [one] 1 sivu leikattu
+       *[other] { $count } sivua leikattu
+    }
+# Variables:
+#   $count (Number) - the number of selected pages to be copied.
+pdfjs-views-manager-pages-status-undo-copy-label =
+    { $count ->
+        [one] 1 sivu kopioitu
+       *[other] { $count } sivua kopioitu
+    }
+# Variables:
+#   $count (Number) - the number of selected pages to be deleted.
+pdfjs-views-manager-pages-status-undo-delete-label =
+    { $count ->
+        [one] 1 sivu poistettu
+       *[other] { $count } sivua poistettu
+    }
+pdfjs-views-manager-pages-status-waiting-ready-label = Tiedostoa valmistellaan…
+pdfjs-views-manager-pages-status-waiting-uploading-label = Lähetetään tiedostoa…
+pdfjs-views-manager-status-warning-cut-label = Leikkaaminen epäonnistui. Päivitä sivu ja yritä uudelleen.
+pdfjs-views-manager-status-warning-copy-label = Kopiointi epäonnistui. Päivitä sivu ja yritä uudelleen.
+pdfjs-views-manager-status-warning-delete-label = Poisto epäonnistui. Päivitä sivu ja yritä uudelleen.
+pdfjs-views-manager-status-warning-save-label = Tallentaminen epäonnistui. Päivitä sivu ja yritä uudelleen.
+pdfjs-views-manager-status-undo-button-label = Kumoa
+pdfjs-views-manager-status-close-button =
+    .title = Sulje
+pdfjs-views-manager-status-close-button-label = Sulje
+
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Poista allekirjoitus
-pdfjs-editor-delete-signature-button-label = Poista allekirjoitus
+pdfjs-editor-delete-signature-button1 =
+    .title = Poista tallennettu allekirjoitus
+pdfjs-editor-delete-signature-button-label1 = Poista tallennettu allekirjoitus
 
 ## Editor toolbar
 

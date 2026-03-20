@@ -1,0 +1,67 @@
+.opening-hours-interval {
+  display: flex;
+  gap: 1em;
+  padding: 1em;
+  align-content: center;
+  align-items: center;
+
+  select {
+    min-width: 90px;
+  }
+}
+
+.opening-hours-block-hours {
+  display: flex;
+  margin: 0.5em;
+  align-self: flex-start;
+  gap: 0.5em;
+}
+
+.opening-hours-hours {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  align-self: flex-start;
+}
+
+.opening-hours {
+  border: 2px solid var(--primary-color);
+  border-radius: 3px;
+  padding: 1em;
+}
+
+.opening-hours > .control-label {
+  background-color: white;
+  margin-bottom: 0.3em;
+}
+.opening-hours-create select,
+input {
+  border-color: var(--primary-color);
+  border-radius: 5px;
+  padding: 0.5em;
+}
+
+.opening-hours-create {
+  margin-bottom: 2em;
+  display: flex;
+  flex-direction: column;
+}
+
+.opening-hours-create option {
+  border-radius: 5px;
+}
+
+.opening-hours-display td {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  list-style: none;
+}
+
+.opening-hours-display ul {
+  list-style: none;
+  margin: 2px;
+  padding-left: 0.5em;
+}
+
+.opening-hours-display li {
+  min-width: 6.5em;
+}

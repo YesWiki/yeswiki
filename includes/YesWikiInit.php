@@ -16,6 +16,7 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ArchiveService;
+use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\YesWikiEventCompilerPass;
 
 // TODO put elsewhere
@@ -36,7 +37,7 @@ class Init
     public $page = '';
     public $method = '';
     public $config = [];
-    public $configFile = 'wakka.config.php';
+    public $configFile;
 
     /**
      * Create a new Init instance.
@@ -47,6 +48,8 @@ class Init
      */
     public function __construct($config = [])
     {
+        $this->configFile = ConfigurationFileProvider::getConfigFileFromEnv();
+
         $this->getRoute();
         $this->config = $this->getConfig($config);
         $this->setIframeHeaders();
@@ -137,7 +140,6 @@ class Init
                         break;
                 }
             }
-
             $_GET['wiki'] = $this->page . ($this->method ? '/' . $this->method : '');
         }
     }
@@ -295,6 +297,10 @@ class Init
             $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
         }
 
+        if (empty($wakkaConfig['mail_domain'] ?? null)) {
+            $wakkaConfig['mail_domain'] = \getMailDomain(parse_url($wakkaConfig['base_url'])['host']);
+        }
+
         if (!empty($wakkaConfig['extra_headers'])) {
             foreach ($wakkaConfig['extra_headers'] as $header) {
                 header($header);
@@ -325,6 +331,12 @@ class Init
 
         $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
         $loader->load('services.yaml');
+
+        // "TODO put elsewhere" - old comment in YesWiki::LoadExtensions -> PUT IN YesWikiInit::initCoreServices - @YvesGufflet
+        $fullDomain = parse_url($wiki->Href());
+        $containerBuilder->setParameter('host', $fullDomain['host']);
+        $containerBuilder->setParameter('mail_domain', $wiki->config['mail_domain']);
+        $containerBuilder->setParameter('max-upload-size', $wiki->file_upload_max_size());
 
         return $containerBuilder;
     }

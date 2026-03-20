@@ -80,24 +80,12 @@ pdfjs-document-properties-button =
 pdfjs-document-properties-button-label = ලේඛනයේ ගුණාංග…
 pdfjs-document-properties-file-name = ගොනුවේ නම:
 pdfjs-document-properties-file-size = ගොනුවේ ප්‍රමාණය:
-# Variables:
-#   $size_kb (Number) - the PDF file size in kilobytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-kb = කි.බ. { $size_kb } (බයිට { $size_b })
-# Variables:
-#   $size_mb (Number) - the PDF file size in megabytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-mb = මෙ.බ. { $size_mb } (බයිට { $size_b })
 pdfjs-document-properties-title = සිරැසිය:
 pdfjs-document-properties-author = කතෘ:
 pdfjs-document-properties-subject = මාතෘකාව:
 pdfjs-document-properties-keywords = මූල පද:
 pdfjs-document-properties-creation-date = සෑදූ දිනය:
 pdfjs-document-properties-modification-date = සංශෝධිත දිනය:
-# Variables:
-#   $date (Date) - the creation/modification date of the PDF file
-#   $time (Time) - the creation/modification time of the PDF file
-pdfjs-document-properties-date-string = { $date }, { $time }
 pdfjs-document-properties-creator = නිර්මාතෘ:
 pdfjs-document-properties-producer = පීඩීඑෆ් සම්පාදක:
 pdfjs-document-properties-version = පීඩීඑෆ් අනුවාදය:
@@ -207,13 +195,6 @@ pdfjs-invalid-file-error = වලංගු නොවන හෝ හානිව�
 pdfjs-missing-file-error = මඟහැරුණු පීඩීඑෆ් ගොනුවකි.
 pdfjs-unexpected-response-error = අනපේක්‍ෂිත සේවාදායක ප්‍රතිචාරයකි.
 
-## Annotations
-
-# Variables:
-#   $date (Date) - the modification date of the annotation
-#   $time (Time) - the modification time of the annotation
-pdfjs-annotation-date-string = { $date }, { $time }
-
 ## Password
 
 pdfjs-password-label = මෙම පීඩීඑෆ් ගොනුව විවෘත කිරීමට මුරපදය යොදන්න.
@@ -234,9 +215,6 @@ pdfjs-editor-stamp-button =
     .title = රූප සංස්කරණය හෝ එක් කරන්න
 pdfjs-editor-stamp-button-label = රූප සංස්කරණය හෝ එක් කරන්න
 
-## Remove button for the various kind of editor.
-
-
 ##
 
 # Editor Parameters
@@ -244,55 +222,7 @@ pdfjs-editor-free-text-color-input = වර්ණය
 pdfjs-editor-free-text-size-input = තරම
 pdfjs-editor-ink-color-input = වර්ණය
 pdfjs-editor-ink-thickness-input = ඝණකම
-pdfjs-free-text =
-    .aria-label = වදන් සකසනය
-pdfjs-free-text-default-content = ලිවීීම අරඹන්න…
 
 ## Alt-text dialog
 
 pdfjs-editor-alt-text-mark-decorative-description = මෙය දාර හෝ දිය සලකුණු වැනි අලංකාර රූප සඳහා භාවිතා වේ.
-
-## Editor resizers
-## This is used in an aria label to help to understand the role of the resizer.
-
-
-## Color picker
-
-
-## Show all highlights
-## This is a toggle button to show/hide all the highlights.
-
-
-## New alt-text dialog
-## Group note for entire feature: Alternative text (alt text) helps when people can't see the image. This feature includes a tool to create alt text automatically using an AI model that works locally on the user's device to preserve privacy.
-
-
-## Image alt-text settings
-
-
-## "Annotations removed" bar
-
-
-## Add a signature dialog
-
-
-## Tab names
-
-
-## Tab panels
-
-
-## Controls
-
-
-## Dialog buttons
-
-
-## Main menu for adding/removing signatures
-
-
-## Editor toolbar
-
-
-## Edit signature description dialog
-

@@ -101,6 +101,9 @@ echo "<script>
                 ...((typeof wiki !== 'undefined') ? (wiki.lang ?? null) : null),
                 ..." . json_encode($GLOBALS['translations_js'] ?? null) . '
             }
+        },
+        ...{
+        	minSearchKeywordLength : ' . (isset($this->config['min_search_keyword_length']) ? intval($this->config['min_search_keyword_length']) : MIN_SEARCH_KEYWORD_LENGTH) . '
         }
     };
 </script>';

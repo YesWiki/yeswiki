@@ -1,3 +1,4 @@
+import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
 import renderHelper from './commons/render-helper.js'
 
 export default {
@@ -7,9 +8,8 @@ export default {
     attrs: { type: 'map' },
     icon: '<i class="fas fa-map-marked-alt"></i>'
   },
+  defaultIdentifier: 'bf_geolocation',
   attributes: {
-    name_latitude: { label: _t('BAZ_FORM_EDIT_MAP_LATITUDE'), value: 'bf_latitude' },
-    name_longitude: { label: _t('BAZ_FORM_EDIT_MAP_LONGITUDE'), value: 'bf_longitude' },
     autocomplete_street: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STREET'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_STREET_PLACEHOLDER') },
     autocomplete_postalcode: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_POSTALCODE_PLACEHOLDER') },
     autocomplete_town: { label: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN'), value: '', placeholder: _t('BAZ_FORM_EDIT_MAP_AUTOCOMPLETE_TOWN_PLACEHOLDER') },
@@ -25,20 +25,28 @@ export default {
     show_map_in_entry_view: {
       label: _t('BAZ_FORM_EDIT_SHOW_MAP_IN_ENTRY_VIEW'),
       options: { 0: _t('NO'), 1: _t('YES') }
-    }
+    },
+    geometries: { label: _t('BAZ_FORM_EDIT_MAP_GEOMETRIES'), value: 'marker' },
+    max_geometries: { label: _t('BAZ_FORM_EDIT_MAP_MAX_GEOMETRIES'), value: '' },
+    read: readConf,
+    write: writeconf,
+    semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view'],
+  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view', 'geometries', 'max_geometries'],
   // disabledAttributes: [],
   attributesMapping: {
-    0: 'type',
-    1: 'name_latitude',
-    2: 'name_longitude',
-    3: '',
-    4: 'autocomplete_postalcode',
-    5: 'autocomplete_town',
-    6: 'autocomplete_other',
-    7: 'show_map_in_entry_view',
-    8: 'required'
+  	...defaultMapping,
+  	...{
+		    0: 'type',
+		    3: '',
+		    4: 'autocomplete_postalcode',
+		    5: 'autocomplete_town',
+		    6: 'autocomplete_other',
+		    7: 'show_map_in_entry_view',
+		    8: 'required',
+		    9: 'geometries',
+		    13: 'max_geometries'
+    }
   },
   renderInput(fieldData) {
     return {

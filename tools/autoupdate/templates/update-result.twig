@@ -1,3 +1,9 @@
+<div class="alert alert-info">
+<h4>{{ _t('SUPPORT_YESWIKI') }}</h4>
+{{ _t('SUPPORT_YESWIKI_DESC') }},
+<strong>{{ _t('SUPPORT_US')}}</strong> !!!<br /><br />
+<a class="btn btn-primary" href="https://www.helloasso.com/associations/yeswiki/formulaires/1/widget"><i class="fas fa-heart"></i> {{_t('DONATE')}}</a> <a href="https://yeswiki.net/?SoutenirYesWiki">{{_t('LEARN_MORE')}}</a>
+</div>
 {# Upgrade messages result #}
 <ul class="list-group span4">
 {% for message in messages %}
@@ -7,7 +13,7 @@
     {% endif %}
     <li class="list-group-item">
         <span class="pull-right label label-{{ label }}">{{ message.status }}</span>
-        {{ message.text }}
+        {{ message.text | replace({'\\n': "\n"}) | nl2br }}
     </li>
 {% endfor %}
 </ul>

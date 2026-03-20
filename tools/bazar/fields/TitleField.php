@@ -35,7 +35,8 @@ class TitleField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        $dirtyHtml = $this->getValue($entry);
+        $dirtyHtml = $this->titleTemplate; //$this->getValue($entry);
+
         $value = $this->getService(HtmlPurifierService::class)->cleanHTML($dirtyHtml);
         $formManager = $this->getService(FormManager::class);
 
@@ -49,7 +50,7 @@ class TitleField extends BazarField
                     $fieldValue = $field->getValue($entry);
                     if ($field instanceof CheckboxField) {
                         // get first value instead of keys
-                        $formattedValue = $field->formatValuesBeforeSaveIfEditable($entry)[$field->getPropertyName()];
+                        $formattedValue = $field->formatValuesBeforeSave($entry)[$field->getPropertyName()];
                         $fieldValues = $field->getValues([$field->getPropertyName() => $formattedValue]);
                         $replacement = $field->getOptions()[$fieldValues[0] ?? null] ?? '';
                     } elseif ($field instanceof TagsField) {

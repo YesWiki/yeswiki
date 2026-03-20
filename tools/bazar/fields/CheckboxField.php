@@ -34,6 +34,11 @@ abstract class CheckboxField extends EnumField
         $this->dragAndDropDisplayMode = '';
     }
 
+    public function getValueStructure() // See BazarField::getValueStructure
+    {
+        return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
+    }
+
     protected function renderInput($entry)
     {
         switch ($this->displayMethod) {
@@ -90,32 +95,15 @@ abstract class CheckboxField extends EnumField
 
     public function formatValuesBeforeSave($entry)
     {
-        return $this->formatValuesBeforeSaveIfEditable($entry, false);
-    }
+        // Get the value
 
-    public function formatValuesBeforeSaveIfEditable($entry, bool $isCreation = false)
-    {
-        if ($this->canEdit($entry, $isCreation)) {
-            // get value
-            $checkboxField = $entry[$this->propertyName] ?? null;
-            // detect if from Form to check if clean field
-            if (isset($entry[$this->propertyName . self::FROM_FORM_ID])) {
-                $oldValue = $entry[$this->propertyName . self::FROM_FORM_ID];
-                $oldValue = ($oldValue == "''") ? '' : $oldValue;
-                if (!is_array($checkboxField) && ($checkboxField == $oldValue)) {
-                    $checkboxField = '';
-                }
-            }
+        $checkboxField = $this->getValue($entry);
 
-            // format value
-            $entry[$this->propertyName] = $this->sanitizeValues($checkboxField, 'string');
+        if ($checkboxField === null) {
+            return [];
+        } else {
+            return [$this->propertyName => $this->sanitizeValues($checkboxField, 'string')];
         }
-
-        return [$this->propertyName => $this->getValue($entry),
-            'fields-to-remove' => [
-                $this->propertyName . self::FROM_FORM_ID,
-                $this->propertyName,
-            ], ];
     }
 
     /**

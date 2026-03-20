@@ -21,7 +21,13 @@ export default {
       }
     },
     nodeTitle() {
-      return this.node.label.length > 8 ? this.node.label : null
+        var vLanguage = $('html').attr ('lang')??undefined;
+        var vLabel;
+        
+        if (vLanguage) vLabel = $('<span>' + this.node.label + '<span>').find ('[lang=' + vLanguage + ']').text()
+        else vLabel = this.node.label;
+
+        return vLabel; 
     }
   },
   methods: {
@@ -58,7 +64,7 @@ export default {
               We want the behaviour to differ depending on where the user clicks 
             (checkbox itself or label) -->
         <span>
-          <span @click="labelClicked"> 
+          <span class="filter-node-label-wrapper" @click="labelClicked"> 
             <span class="filter-node-label">
               <span v-html="node.label" :title="nodeTitle"></span>
               <i v-if="node.children.length > 0" class="chevron-icon fa fa-caret-down"></i>

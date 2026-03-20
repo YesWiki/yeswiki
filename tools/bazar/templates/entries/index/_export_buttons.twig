@@ -1,28 +1,195 @@
+{% 
+	
+	set vIDsParameter = params.idtypeannonce ?? params.id ?? null
+
+%}
+
+{%
+
+	set vIDsString = vIDsParameter is iterable
+					? ( vIDsParameter is not empty
+							? vIDsParameter | join(',')
+							: ""
+					  )
+					: vIDsParameter 
+%}
+
+{% 
+	set vIDsObject = (
+						vIDsString is defined
+						? { id : vIDsString }
+						: {}
+		 			 )
+%}
+
+{%
+	set vBase64EncodedIDs = b64 (vIDsString) | url_encode
+%}
+
+{% 
+	
+	set vQueryParameter = params.query ?? params.queries ?? null
+
+%}
+
+{% 
+	set vQueryString =	(
+							vQueryParameter is defined 
+							?	( 
+									vQueryParameter is iterable
+									?	(
+											vQueryParameter is not empty
+											?
+												vQueryParameter
+												| map(p => p.name ~ p.operator ~ (p.values|join(",")))
+												| filter(v => v is not empty)
+					  							| join('|')
+							  				: ''
+							  			)
+						  			: vQueryParameter | trim
+						  		)
+				  			:	''
+				  		) 			  		
+%}
+
+{%
+
+	set vQueryObject = vQueryString != '' ? { query : (vQueryString | url_encode) } : {}
+
+%}
+
+{% 
+	set vKeywords =	(
+						params.keywords is defined
+						? { keywords : params.keywords }
+						: {}
+					)
+%}
+
+{% 
+	set vSearchFields =	(
+							params.searchfields is defined
+							? { searchfields : params.searchfields | join(",") }													
+							: {}
+						)
+%}
+
+{% 
+	set vCorrespondance =	(
+								params.correspondance is defined
+								? { correspondance : params.correspondance }
+								: {}
+							)
+%}
+
+{% 
+	set vOrdre =	(
+							params.ordre is defined
+							? { ordre : params.ordre }
+							: {}
+					)
+%}
+
+{% 
+	set vChamp =	(
+							params.champ is defined
+							? { champ : params.champ }
+							: {}
+					)
+%}
+
+{% 
+	set vPeriod =	(
+						params.period is defined
+						? { period : params.period }
+						: {}
+					)
+%}
+
+{% 
+	set vDateFilter =	(
+							params.datefilter is defined
+							? { datefilter : params.datefilter }
+							: {}
+						)
+%}
+
+{% 
+	set vNb =	(
+					params.nb is defined
+					? { nb : params.nb }
+					: {}
+				)
+%}
+
+{% 
+	set vPeriod =	(
+						params.period is defined
+						? { period : params.period }
+						: {}
+					)
+%}
+
+{% 
+	set vGenericParams = {}
+		| merge (vQueryObject)
+		| merge (vKeywords)
+		| merge (vSearchFields)
+		| merge (vCorrespondance)
+		| merge (vDateFilter)
+		| merge (vNb)
+		| merge (vPeriod)
+		
+%}
+
+
+{% 
+	set vRSSParams = {} 
+		| merge (vGenericParams)
+		| merge (vIDsObject)
+		
+%}
+
+{%
+	set vCSVParams = {} 
+		| merge (vGenericParams)
+		| merge (vOrdre) 
+		| merge (vChamp)  
+
+%}
+
+{%
+	set vJSONParams = {}
+		| merge (vGenericParams)
+		| merge (vOrdre) 
+		| merge (vChamp)  		
+%}
+
+{% 
+
+	set vRSSHRef = url ({ handler:'rss', params: vRSSParams })
+
+%}
+
+{% 
+
+	set vCSSHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries/csv', params: vCSVParams })
+
+%}
+
+{% 
+
+	set vJSONHRef = url ({ tag: 'api', handler: 'forms/' ~ 'b64_' ~ vBase64EncodedIDs ~ '/entries', params: vJSONParams })
+
+%}
+
 <div class="export-links pull-right">
-  <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}"
-    href="{{ url({handler:'rss',params:(params.idtypeannonce 
-      ? (params.idtypeannonce|length == 1
-          ? 'id=' ~  params.idtypeannonce|first
-          : params.idtypeannonce|map((id,key) => 'id[' ~ key ~ ']=' ~ id)|join('&')
-        )
-      : []
-      )}) }}">
-    <i class="fa fa-signal icon-signal"></i>
-  </a>
-  <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}"
-    href="{{ url({handler:'',tag:'BazaR',params:'vue=exporter' ~ (params.idtypeannonce ? '&id=' ~ params.idtypeannonce|first : '') }) }}">
-    CSV
-  </a>
-  <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}"
-    href="{{ url({tag:'api',handler: ( params.idtypeannonce ? 'forms/' ~ params.idtypeannonce|first ~'/': '') ~ 'entries'}) }}">
-    JSON
-  </a>
-  <a class="btn btn-default btn-mini btn-xs"
-    data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_WIDGET')|raw('html') }}"
-    href="{{ url({handler:'widget',params:'id=' ~ (params.idtypeannonce ? params.idtypeannonce|join(',') : forms|map(form => form.bn_id_nature)|join(','))}) }}">
-    {{ _t('BAZ_WIDGET') }}
-  </a>
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_RSS')|raw('html') }}" target="_blank" href="{{ vRSSHRef }}" data-href="{{ vRSSHRef }}"><i class="fa fa-signal icon-signal"></i></a>
+
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_CSV')|raw('html') }}" target="_blank" href="{{ vCSSHRef }}" data-href="{{ vCSSHRef }}">CSV</a>
+  
+	<a class="btn btn-default btn-mini btn-xs" data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_JSON')|raw('html') }}" target="_blank" href="{{ vJSONHRef }}" data-href="{{ vJSONHRef }}">JSON</a>
+
+  
 </div>
+

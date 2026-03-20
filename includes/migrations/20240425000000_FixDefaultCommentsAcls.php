@@ -23,7 +23,6 @@ class FixDefaultCommentsAcls extends YesWikiMigration
             foreach ($pages as $page) {
                 $pageCommentAcl = $aclService->load($page['tag'], 'comment', false)['list'] ?? '';
                 if (!empty($pageCommentAcl) && preg_match("/comment-closed\s*/", strval($pageCommentAcl))) {
-                    dump($page['tag']);
                     $aclService->save($page['tag'], 'comment', 'comments-closed');
                 }
             }

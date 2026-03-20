@@ -4,7 +4,15 @@
  *
  * */
 
+import { updateHash } from './url.js'
+import { parseCondition } from './search.js'
+
+var gSavedHash;
+
 $(document).ready(() => {
+
+  gSavedHash = decodeURIComponent(document.location.hash.substring(1));
+
   // accordeon pour bazarliste
   $('.titre_accordeon').on('click', function() {
     if ($(this).hasClass('current')) {
@@ -40,11 +48,10 @@ $(document).ready(() => {
       $(this)
         .parent('div.BAZ_cadre_fiche')
         .prev('ul.css-tabs')
-        .append(`<li class='liste${i}'><a href="#">${
-          $(this).find('legend:first').hide().html()}</a></li>`)
+        .append(`<li class='liste${i}'><a href="#">${$(this).find('legend:first').hide().html()}</a></li>`)
     })
 
-    $('ul.css-tabs').tabs('fieldset.tab', { onClick() {} })
+    $('ul.css-tabs').tabs('fieldset.tab', { onClick() { } })
   })
 
   // initialise les tooltips pour l'aide et pour les cartes leaflet
@@ -220,7 +227,7 @@ $(document).ready(() => {
       this[key] = (this[key]).filter(function() {
         let inputVisible = $(this).filter(':visible')
         if ((
-          $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('wiki-textarea') || $(this).hasClass('summernote'))
+          $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('aceditor-textarea') || $(this).hasClass('summernote'))
         ) || $(this).siblings('.bootstrap-tagsinput').length > 0) {
           inputVisible = $(this).parent().filter(':visible')
         }
@@ -235,7 +242,7 @@ $(document).ready(() => {
         if ($(this).parentsUntil(':visible')
           .filter(function() {
             return $(this).css('display') == 'none'
-                && $(this).attr('role') != 'tabpanel'
+              && $(this).attr('role') != 'tabpanel'
           }).length == 0) {
           return true
         }
@@ -271,7 +278,7 @@ $(document).ready(() => {
         return 'select'
       }
       if ($(input).prop('tagName') == 'TEXTAREA') {
-        if ($(input).hasClass('wiki-textarea')) {
+        if ($(input).hasClass('aceditor-textarea')) {
           return 'wikitextarea'
         }
         if ($(input).hasClass('summernote')) {
@@ -332,7 +339,7 @@ $(document).ready(() => {
       return this.defaultChecking(input)
     },
     wikitextareaChecking(input) {
-      const value = $(input).data('aceditor').getValue()
+      const value = window[`aceditor-${$(input).attr('id')}`].editor.getValue()
       if (value.length === 0 || value === '') {
         this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'))
         $(input).parent().addClass('invalid')
@@ -384,7 +391,12 @@ $(document).ready(() => {
       return true
     },
     geocodeChecking(input) {
-      if (!$(input).find('#bf_latitude').val()) {
+      console.log("GEOCODE CHECKING");
+      const vLatitude = $(input).find('.yw-latitude-input').val();
+      const vLongitude = $(input).find('.yw-longitude-input').val();
+      const vGeometries = $(input).find('.yw-geometries-input').val();
+      console.log(vLatitude, vLongitude, vGeometries);
+      if (vLatitude == "" && vLongitude == "" && vGeometries == "") {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'))
         return false
       }
@@ -515,7 +527,7 @@ $(document).ready(() => {
     },
     wikitextareaInitlistener(input) {
       const reqChecking = this
-      const aceditor = $(input).data('aceditor')
+      const aceditor = $(input)
       aceditor.on('change', (event) => {
         reqChecking.runWhenUpdated(input, reqChecking)
       })
@@ -549,7 +561,6 @@ $(document).ready(() => {
   }
 
   requirementHelper.initListeners()
-
   $('#formulaire').submit(function(e) {
     $(this).addClass('submitted')
 
@@ -611,8 +622,8 @@ $(document).ready(() => {
   }
 
   // If start_date is greater than en_date, set end_date to start_date
-  $startDate = $('#formulaire #bf_date_debut_evenement')
-  $endDate = $('#formulaire #bf_date_fin_evenement')
+  const $startDate = $('#formulaire #bf_date_debut_evenement')
+  const $endDate = $('#formulaire #bf_date_fin_evenement')
   if ($startDate && $endDate) {
     $startDate.change(() => {
       if (new Date($startDate.val()) > new Date($endDate.val())) $endDate.val($startDate.val())
@@ -723,13 +734,13 @@ $(document).ready(() => {
     }
   }
 
+
   // activer les filtres des facettes
   function updateFilters(e) {
-    const tabfilters = Array()
+    const tabfilters = []
     let i = 0
     let newquery = ''
     let select
-
     // on filtre les resultat par boite de filtre pour faire l'intersection apres
     e.data.$filterboxes.each(function() {
       select = ''
@@ -747,10 +758,13 @@ $(document).ready(() => {
           }
           newquery += `${name}=${val}`
           first = false
+
+
         } else {
           newquery += `,${val}`
           select += ','
         }
+
         // La requete de selection prend pour les champs non multiples :
         // - exactement la valeur de l'attribut html
         // Pour les champs multiples :
@@ -769,24 +783,6 @@ $(document).ready(() => {
 
     // on applique les changements a l'url
     changeURLParameter('facette', newquery)
-
-    // on ajuste les liens vers les formulaires d'export
-    $('.export-links a').each(
-      function() {
-        const link = $(this).attr('href')
-        const queryexists = new RegExp('&query=' + '([^&;]+?)(&|#|;|$)').exec(link) || null
-        if (queryexists == null) {
-          $(this).attr('href', link + ((newquery !== '') ? `&query=${newquery}` : ''))
-        } else {
-          const queryinit = $('#queryinit').val()
-          if (queryinit) { newquery = `${queryinit}|${newquery}` }
-          $(this).attr(
-            'href',
-            link.replace(new RegExp('&query=' + '([^&;]+?)(&|#|;|$)'), ((newquery !== '') ? `&query=${newquery}` : ''))
-          )
-        }
-      }
-    )
 
     // au moins un filtre à actionner
     let tabres = []
@@ -807,7 +803,6 @@ $(document).ready(() => {
       e.data.$entries.show()
       e.data.$entries.parent('.bazar-marker').show()
     }
-
     // on compte les résultats visibles
     const nbresults = e.data.$entries.filter(':visible').length
     e.data.$nbresults.html(nbresults)
@@ -820,25 +815,48 @@ $(document).ready(() => {
     }
 
     $('body').trigger('updatedfilters', (!tabres.length) ? [] : [tabres])
+
+    let vParam = new URLSearchParams(document.location.search);
+    let vKeywords = vParam.get("keywords");
+    let vSortField = vParam.get("champ");
+    let vSortOrder = vParam.get("ordre");
+
+    var vFacette = getURLParameter('facette');
+    var vQueries;
+    var vFilters = [];
+    if (vFacette) {
+      vQueries = getURLParameter('facette')
+        .split("|")
+        .map(parseCondition)
+        .forEach(function(pCondition) {
+          vFilters[pCondition.name] = pCondition.values;
+        })
+    }
+    else
+      vFilters = [];
+
+    updateHash(gSavedHash, vKeywords, vSortField, vSortOrder, vFilters);
   }
 
   // process changes on visible entries according to filters
-  $('.facette-container:not(.dynamic)').each(function() {
-    const $container = $(this)
-    const $filters = $('.filter-checkbox', $container)
-    const data = {
-      $nbresults: $('.nb-results', $container),
-      $filterboxes: $('.filter-box', $container),
-      $entries: $('.bazar-entry', $container),
-      $resultlabel: $('.result-label', $container),
-      $resultslabel: $('.results-label', $container)
-    }
-    $filters.on('click', data, updateFilters)
-    jQuery(window).ready((e) => {
-      e.data = data
-      updateFilters(e)
+  setTimeout(function() {
+    $('.facette-container:not(.dynamic)').each(function() {
+      const $container = $(this)
+      const $filters = $('.filter-checkbox', $container)
+      const data = {
+        $nbresults: $('.nb-results', $container),
+        $filterboxes: $('.filter-box', $container),
+        $entries: $('.bazar-entry', $container),
+        $resultlabel: $('.result-label', $container),
+        $resultslabel: $('.results-label', $container)
+      }
+      $filters.on('click', data, updateFilters)
+      jQuery(window).ready((e) => {
+        e.data = data
+        updateFilters(e)
+      })
     })
-  })
+  }, 500)
 
   // gestion de l'historique : on reapplique les filtres
   window.onpopstate = function(e) {
@@ -847,6 +865,7 @@ $(document).ready(() => {
         const $this = $(this)
         $(this).find('input:checkbox').prop('checked', false)
         const urlparamfacette = getURLParameter('facette')
+
         const tabfacette = urlparamfacette.split('|')
         for (let i = 0; i < tabfacette.length; i++) {
           const tabfilter = tabfacette[i].split('=')
@@ -885,7 +904,7 @@ $(document).ready(() => {
     })
   })
 
-  $.extend($.fn.typeahead.Constructor.prototype, { val() {} })
+  $.extend($.fn.typeahead.Constructor.prototype, { val() { } })
 
   // on envoie la valeur au submit
   $('#formulaire').on('submit', function() {
@@ -945,7 +964,7 @@ function exportTableToCSV(filename, selector = 'table tr') {
   downloadCSV(csv.join('\n'), filename)
 }
 
-function downloadCSV(csv, filename) {
+export function downloadCSV(csv, filename) {
   let csvFile
   let downloadLink
 
@@ -965,7 +984,7 @@ function downloadCSV(csv, filename) {
   downloadLink.click()
 }
 
-function removeCSVCrochet(str) {
+export function removeCSVCrochet(str) {
   let res = str.replace(/&lt;/gm, '<')
   res = res.replace(/&gt;/gm, '>')
   return res

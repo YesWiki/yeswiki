@@ -68,8 +68,10 @@ class AutoUpdateService
         $messages = new Messages();
         $package = $this->repository->getPackage($packageName);
 
-        if (false === $package->deletePackage()) {
-            $messages->add('AU_DELETE', 'AU_ERROR');
+        $vDeleteStatus = $package->deletePackage();
+
+        if ($vDeleteStatus !== true) {
+            $messages[] = ['text' => (_t('AU_DELETE') . ' - ' . _t('AU_ERROR') . '\n' . _t('AU_UNABLE_TO_REMOVE_FILES') . implode('\n', $vDeleteStatus)), 'status' => _t('AU_ERROR')];
 
             return $messages;
         }
@@ -112,8 +114,15 @@ class AutoUpdateService
         $messages->add('AU_EXTRACT', 'AU_OK');
 
         // Vérification des droits sur le fichiers
-        if (!$package->checkACL()) {
-            $messages->add('AU_ACL', 'AU_ERROR');
+
+        $vNotGoods = $package->checkACL();
+
+        if (count($vNotGoods) > 0) {
+            $vMaxLength = 100;
+            $vFilesList = implode(', ', $vNotGoods);
+
+            $messages[] = ['text' => (_t('AU_ACL') . '\n' . _t('AU_NOT_WRITABLE_FILES') . substr($vFilesList, 0, 100) . (strlen($vFilesList) > $vMaxLength ? '...' : '')), 'status' => _t('AU_ERROR')];
+
             $package->cleanTempFiles();
 
             return $messages;
@@ -133,6 +142,14 @@ class AutoUpdateService
         $messages->add(_t('AU_UPDATE_PACKAGE') . $packageName, 'AU_OK');
 
         if (get_class($package) === PackageCollection::CORE_CLASS) {
+            if (!$package->upgradeDefaultTheme()) {
+                $messages->add('AU_UPDATE_THEME', 'AU_ERROR');
+                $package->cleanTempFiles();
+
+                return $messages;
+            }
+            $messages->add('AU_UPDATE_THEME', 'AU_OK');
+
             // Mise à jour des tools.
             if (!$package->upgradeTools()) {
                 $messages->add('AU_UPDATE_TOOL', 'AU_ERROR');

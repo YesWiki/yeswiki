@@ -273,9 +273,11 @@ et donc rajouter dans le fichier `wakka.config.php` les paramètres suivants :
 
 ```php
 'contact_mail_func' => 'smtp',
-'contact_smtp_host' => 'ssl://<mon serveur smtp>:465',
+'contact_smtp_host' => 'ssl://<mon serveur smtp>',
+ 'contact_smtp_port' => '465',
 'contact_smtp_user' => 'user@mail.ext',
 'contact_smtp_pass' => '<monpassword>',
+'contact_from' => 'user@mail.ext',
 ```
 
 Attention, tous les serveurs mail n'acceptent pas de jouer ce jeu.
@@ -289,6 +291,7 @@ Créez-vous un compte puis allez dans les paramètres (via [ce lien](https://acc
 'contact_smtp_host' => 'smtp-relay.sendinblue.com:587',
 'contact_smtp_user' => 'monmail@pourmoncomptesendinblue.com',
 'contact_smtp_pass' => '<ma cle smtp>',
+'contact_from' => 'monmail@pourmoncomptesendinblue.com',
 ```
 
 ou

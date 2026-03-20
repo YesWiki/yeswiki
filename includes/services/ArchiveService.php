@@ -112,6 +112,18 @@ class ArchiveService
         ?array $hideConfigValuesParams = null,
         string $uid = ''
     ) {
+        $vStatus = $this->getArchivingStatus();
+
+        if (!$vStatus['canArchive']) {
+            // if we cannot archive, we need to stop the process and inform the user so that he can handle the problem
+            $vMessages = $this->getCannotArchiveDetails($vStatus);
+
+            $this->unsetWikiStatus();
+            $this->writeOutput($output, 'STOP', true, $outputFile);
+
+            throw new Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
+        }
+
         $inputFile = '';
         $outputFile = '';
         $privatePath = $this->getPrivateFolder();
@@ -124,17 +136,22 @@ class ArchiveService
             }
         }
         if (!empty($outputFile)) {
-            file_put_contents($outputFile, '');
+            if (@file_put_contents($outputFile, '') === false) {
+                throw new Exception('Cannot write to archive output file. Please check file system access rights');
+            }
         }
 
         // checking folder not available on the internet
-        file_put_contents("$privatePath/tmpTestFile000.txt", 'test');
+        if (@file_put_contents("$privatePath/tmpTestFile000.txt", 'test') === false) {
+            throw new Exception('Cannot write to test file. Please check file system access rights');
+        }
         $error = !$this->localPrivateFolderNotAvailableOnInternet($privatePath, 'tmpTestFile000.txt');
         if (file_exists("$privatePath/tmpTestFile000.txt")) {
             unlink("$privatePath/tmpTestFile000.txt");
         }
         if ($error) {
             $this->writeOutput($output, '! Private folder available on the internet', true, $outputFile);
+            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
@@ -147,12 +164,14 @@ class ArchiveService
         } catch (Throwable $th) {
             $this->writeOutput($output, 'There is not enough free space.', true, $outputFile);
             $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
+            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
             throw $th;
         }
         $this->writeOutput($output, 'There is enough free space.', true, $outputFile);
 
         if ($this->checkIfNeedStop($inputFile)) {
+            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
@@ -171,6 +190,7 @@ class ArchiveService
         }
 
         if ($this->checkIfNeedStop($inputFile)) {
+            $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
@@ -203,28 +223,91 @@ class ArchiveService
             }
 
             $this->writeOutput($output, '=== Creating zip archive ===', true, $outputFile);
-            $this->createZip($location, $foldersToInclude, $blacklistedRootFolders, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile);
-            if (!file_exists($location)) {
+
+            if ($this->createZip($location, $foldersToInclude, $blacklistedRootFolders, $output, $sqlContent, $onlyDb, $hideConfigValuesParams, $inputFile, $outputFile)) {
+                $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
+
+                // clean oldest files
+                $this->cleanOldestFiles();
+
+                $this->unsetWikiStatus();
+
+                $this->writeOutput($output, 'END', true, $outputFile);
+            } else {
                 throw new StopArchiveException('Stop archive : not saved !');
             }
-
-            $this->writeOutput($output, "Archive \"$location\" successfully created !", true, $outputFile);
-            $this->writeOutput($output, 'END', true, $outputFile);
         } catch (StopArchiveException $ex) {
+            @unlink($location);
             $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
         } catch (Throwable $th) {
+            @unlink($location);
             $this->unsetWikiStatus();
+            $this->writeOutput($output, 'STOP', true, $outputFile);
+
             throw $th;
         }
-        $this->unsetWikiStatus();
-
-        // clean oldest files
-        $this->cleanOldestFiles();
 
         return $location;
+    }
+
+    public function getCannotArchiveDetails($pStatus)
+    {
+        $vMessages = [];
+
+        if ($pStatus['archiving']) {
+            $vMessages[] = _t('AU_ALREADY_ARCHIVING');
+        }
+        if ($pStatus['hibernated']) {
+            $vMessages[] = _t('AU_SITE_IS_HIBERNATED');
+        }
+        if (!$pStatus['privatePathWritable']) {
+            $vMessages[] = _t('AU_PRIVATE_PATH_NOT_WRITABLE');
+        }
+        if (!$pStatus['notAvailableOnTheInternet']) {
+            $vMessages[] = _t('AU_PRIVATE_PATH_AVAILABLE_ON_INTERNET');
+        }
+        if (!(!$pStatus['callAsync'] || $pStatus['canExec'])) {
+            $vMessages[] = _t('AU_CANNOT_EXECUTE_BACKUP');
+        }
+        if (!$pStatus['enoughSpace']) {
+            $vMessages[] = _t('AU_NOT_ENOUGHT_SPACE');
+        }
+
+        return $vMessages;
+    }
+
+    /**
+     * Get YesWiki status
+     * We must use the configuration service to have the value of wiki_status since it can be modified dynamically
+     * and that ParameterBag is more static.
+     *
+     * @return string : the status
+     */
+    public function getWikiStatus()
+    {
+        $vConfig = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
+        $vConfig->load();
+
+        if (trim($vConfig['wiki_status'] ?? '') == '') {
+            return 'running';
+        } else {
+            return trim($vConfig['wiki_status']);
+        }
+    }
+
+    /**
+     * Test if YesWiki is read only
+     * We must use the configuration service to have the value of wiki_status since it can be modified dynamically
+     * and that ParameterBag is more static.
+     *
+     * @return bool : is read only
+     */
+    public function isReadOnly()
+    {
+        return in_array($this->getWikiStatus(), ['hibernate', 'archiving', 'updating']);
     }
 
     /**
@@ -234,35 +317,18 @@ class ArchiveService
      */
     public function hasValidatedBackup($token): bool
     {
-        $archiveParams = $this->getArchiveParams();
-        // skip backup if not activated
-        if (empty($archiveParams['preupdate_backup_activated'])) {
-            return true;
-        }
-        $status = $this->getArchivingStatus();
-        // skip backup if not writable, because could be bloking otherwise
-        if (!$status['canArchive'] && !$status['privatePathWritable']) {
-            return true;
-        }
         if (empty($token) || !is_string($token)) {
             return false;
         }
+
         $privatePath = $this->getPrivateFolder();
         $info = $this->getInfoFromFile($privatePath);
-        $result =
-            (
-                $status['privatePathWritable'] &&
-                !empty($info[$token]) &&
-                isset($info[$token]['isForcedUpdate']) &&
-                $info[$token]['isForcedUpdate'] === true
-            );
+        $result = ($info[$token]['isForcedUpdate'] ?? false) === true;
+
         foreach ($info as $uid => $data) {
-            if (isset($data['isForcedUpdate']) && $data['isForcedUpdate'] === true) {
+            if (($data['isForcedUpdate'] ?? false) === true) {
                 $this->cleanUID($uid, $privatePath);
             }
-        }
-        if ($result && !$status['canArchive'] && $status['archiving']) {
-            $this->unsetWikiStatus();
         }
 
         return $result;
@@ -286,15 +352,14 @@ class ArchiveService
         $callAsync = (isset($archiveParams['call_archive_async']) && is_bool($archiveParams['call_archive_async']))
             ? $archiveParams['call_archive_async']
             : true;
-        if ($this->securityController->isWikiHibernated()) {
-            switch ($this->params->get('wiki_status')) {
+        if ($this->isReadOnly()) {
+            switch ($this->getWikiStatus()) {
                 case 'archiving':
                     $archiving = true;
                     break;
                 case 'hibernate':
                     $hibernated = true;
                     break;
-
                 default:
                     break;
             }
@@ -314,11 +379,18 @@ class ArchiveService
                     unlink($tmpFileName);
                 }
                 try {
-                    file_put_contents($tmpFileName, 'test');
+                    if (@file_put_contents($tmpFileName, 'test') === false) {
+                        throw new Exception('Cannot write to tmp file. Please check file system access rights');
+                    }
                     if (!file_exists($tmpFileName)) {
                         throw new Exception('Not writable folder');
                     }
-                    $content = file_get_contents($tmpFileName);
+                    $content = @file_get_contents($tmpFileName);
+
+                    if ($content === false) {
+                        throw new Exception('Cannot read tmp file. Please check file system access rights');
+                    }
+
                     if ($content != 'test') {
                         throw new Exception('Bad content');
                     }
@@ -359,6 +431,7 @@ class ArchiveService
         } catch (Throwable $th) {
             $enoughSpace = false;
         }
+
         $canArchive = (
             !$archiving &&
             !$hibernated &&
@@ -550,7 +623,7 @@ class ArchiveService
         ];
         $privateFolder = $this->getPrivateFolder();
         $info = $this->getInfoFromFile($privateFolder);
-        // clean others uids because it sould not be ever existing
+        // clean others uids because it should not be ever existing
         foreach ($info as $infoUid => $infoData) {
             if ($infoUid != $uid) {
                 $this->cleanUID($infoUid, $privateFolder);
@@ -601,7 +674,9 @@ class ArchiveService
         ) {
             return false;
         }
-        file_put_contents($info[$uid]['input'], 'STOP');
+        if (@file_put_contents($info[$uid]['input'], 'STOP') === false) {
+            throw new Exception('Cannot write to archive info file. Please check file system access rights');
+        }
 
         return true;
     }
@@ -614,7 +689,12 @@ class ArchiveService
         if (empty($inputFile) || !is_file($inputFile)) {
             return false;
         }
-        $content = file_get_contents($inputFile);
+        $content = @file_get_contents($inputFile);
+
+        if ($content === false) {
+            throw new Exception('Cannot read archive input file. Please check file system access rights');
+        }
+
         if (empty($content)) {
             return false;
         }
@@ -626,6 +706,8 @@ class ArchiveService
      * create the zip file.
      *
      * @param string|OutputInterface &$output
+     *
+     * @return bool : true on success, false on failure
      */
     protected function createZip(
         string $zipPath,
@@ -638,10 +720,11 @@ class ArchiveService
         string $inputFile = '',
         string $outputFile = ''
     ) {
-        if (!file_exists('index.php') || !file_exists('wakka.config.php') || !file_exists('composer.json') || !file_exists('composer.lock')) {
+        if (!file_exists('index.php') || !file_exists(ConfigurationFileProvider::getConfigFileFromEnv()) || !file_exists('composer.json') || !file_exists('composer.lock')) {
             throw new Exception('Can only be started from main directory');
         }
         $pathToArchive = getcwd();
+
         $pathToArchive = preg_replace("/(\/|\\\\)$/", '', $pathToArchive);
         $dirs = [$pathToArchive];
         $dirnamePathLen = strlen($pathToArchive);
@@ -650,11 +733,37 @@ class ArchiveService
 
         // open file
         $zip = new ZipArchive();
+
+        $vCanceled = false;
+
         $resource = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
         if ($resource !== true) {
             return;
         }
-        if (!$onlyDb) {
+
+        // register cancel callback if available
+        if (method_exists($zip, 'registerCancelCallback')) {
+            $zip->registerCancelCallback(function () use ($inputFile, &$vCanceled) {
+                $vNeedStop = $this->checkIfNeedStop($inputFile);
+
+                if ($vNeedStop) {
+                    $vCanceled = true;
+
+                    return -1;
+                } else {
+                    return 0;
+                }
+            });
+        }
+
+        // register progress callback if available
+        if (method_exists($zip, 'registerProgressCallback')) {
+            $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
+                $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $outputFile);
+            });
+        }
+
+        if (!$vCanceled && !$onlyDb) {
             // add empty cache folder
             $zip->addEmptyDir('cache');
 
@@ -674,7 +783,7 @@ class ArchiveService
                         if ($file != '.' && $file != '..') {
                             $localName = $dir . DIRECTORY_SEPARATOR . $file;
                             $relativeName = (empty($baseDirName) ? '' : "$baseDirName/") . $file;
-                            if (empty($baseDirName) && $file == 'wakka.config.php') {
+                            if (empty($baseDirName) && $file == ConfigurationFileProvider::getConfigFileFromEnv()) {
                                 $zip->addFromString($relativeName, $this->getWakkaConfigSanitized($whitelistedRootFolders, $blacklistedRootFolders, $hideConfigValuesParams));
                             } elseif (is_file($localName)) {
                                 $zip->addFile($localName, $relativeName);
@@ -683,20 +792,26 @@ class ArchiveService
                                     $dirs[] = $dir . DIRECTORY_SEPARATOR . $file;
                                 }
                                 if ($this->checkIfNeedStop($inputFile)) {
-                                    $zip->unchangeAll();
-                                    $this->writeOutput($output, '== Closing archive after undoing all changes ==', true, $outputFile);
-                                    $zip->close();
-                                    throw new StopArchiveException('Stop archive');
+                                    $this->writeOutput($output, '== The archive processus need to be stopped ==', true, $outputFile);
+                                    $vCanceled = true;
+                                    break;
                                 }
                             }
                         }
                     }
+
+                    closedir($dh);
                 }
-                closedir($dh);
+
+                if ($vCanceled) {
+                    break;
+                }
+
                 array_shift($dirs);
             }
         }
-        if (!empty($sqlContent)) {
+
+        if (!$vCanceled && !empty($sqlContent)) {
             $this->writeOutput($output, 'Adding SQL file', true, $outputFile);
             $zip->addEmptyDir(self::PRIVATE_FOLDER_NAME_IN_ZIP);
             $zip->addFromString(
@@ -715,21 +830,43 @@ class ArchiveService
                 self::PRIVATE_FOLDER_README_DEFAULT_CONTENT
             );
         }
-        $this->writeOutput($output, 'Generating zip file', true, $outputFile);
-        // register cancel callback if available
-        if (method_exists($zip, 'registerCancelCallback')) {
-            $zip->registerCancelCallback(function () use ($inputFile) {
-                // 0 will continue process
-                return ($this->checkIfNeedStop($inputFile)) ? -1 : 0;
-            });
+
+        $vClosed = false;
+        $vError = false;
+
+        if (!$vCanceled) {
+            $this->writeOutput($output, 'Generating zip file', true, $outputFile);
+
+            $vResult = $zip->close();
+
+            $vClosed = true;
+
+            if ($vResult) {
+                $this->writeOutput($output, 'Archive was created successfully', true, $outputFile);
+
+                return true;
+            } elseif (!$vCanceled) {
+                $this->writeOutput($output, 'There was a problem closing archive', true, $outputFile);
+            }
         }
-        // register progress callback if available
-        if (method_exists($zip, 'registerProgressCallback')) {
-            $zip->registerProgressCallback(0.1, function ($r) use (&$output, $outputFile) {
-                $this->writeOutput($output, 'Zip file creation : ' . strval(round($r * 100, 0)) . ' %', true, $outputFile);
-            });
+
+        if ($vCanceled) {
+            $this->writeOutput($output, 'Archive creation canceled', true, $outputFile);
         }
-        $zip->close();
+
+        if (!$vClosed) {
+            $zip->unchangeAll();
+
+            if ($zip->close()) {
+                $this->writeOutput($output, 'Archive was closed successfully', true, $outputFile);
+            } else {
+                $this->writeOutput($output, 'There was a problem closing archive', true, $outputFile);
+            }
+        }
+
+        unlink($zipPath);
+
+        return false;
     }
 
     /**
@@ -775,20 +912,21 @@ class ArchiveService
     private function getPrivateFolder(): string
     {
         $archiveParams = $this->getArchiveParams();
+
         $folderPath = (
             empty($archiveParams[self::KEY_FOR_PRIVATE_FOLDER]) ||
             !is_string($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])
         )
             ? self::PRIVATE_FOLDER_NAME_IN_ZIP
             : $archiveParams[self::KEY_FOR_PRIVATE_FOLDER];
+
         if ($folderPath != '%TMP') {
             if (
-                is_dir($folderPath) &&
-                $this->canWriteFolder($folderPath)
+                is_dir($folderPath)
             ) {
                 return preg_replace("/(\/|\\\\)$/", '', $folderPath);
             } else {
-                throw new Exception('Not writable ' . self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . ']');
+                throw new Exception(self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . ']' . ' is not a directory.');
             }
         } else {
             $sanitizeWebsiteName = preg_replace(
@@ -822,7 +960,7 @@ class ArchiveService
         }
     }
 
-    private function getArchiveParams(): array
+    public function getArchiveParams(): array
     {
         if ($this->params->has(self::PARAMS_KEY_IN_WAKKA)) {
             $archiveParams = $this->params->get(self::PARAMS_KEY_IN_WAKKA);
@@ -883,7 +1021,9 @@ class ArchiveService
     private function writeOutput(&$output, string $text, bool $newline = true, string $outputFile = '')
     {
         if (!empty($outputFile) && is_file($outputFile)) {
-            file_put_contents($outputFile, $text . ($newline ? "\n" : ''), FILE_APPEND);
+            if (@file_put_contents($outputFile, $text . ($newline ? "\n" : ''), FILE_APPEND) === false) {
+                throw new Exception('Cannot write to output file. Please check file system access rights');
+            }
         }
         if ($output instanceof OutputInterface) {
             $output->write($text, $newline);
@@ -900,7 +1040,7 @@ class ArchiveService
     private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
         // get wakka.config.php content
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         if (
             !isset($config[self::PARAMS_KEY_IN_WAKKA]) ||
@@ -949,7 +1089,7 @@ class ArchiveService
 
     protected function setWikiStatus()
     {
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         $config['wiki_status'] = 'archiving';
         $this->configurationService->write($config);
@@ -957,7 +1097,7 @@ class ArchiveService
 
     protected function unsetWikiStatus()
     {
-        $config = $this->configurationService->getConfiguration('wakka.config.php');
+        $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         unset($config['wiki_status']);
         $this->configurationService->write($config);
@@ -1006,8 +1146,14 @@ class ArchiveService
 
                 // get content
                 if (file_exists($resultFile)) {
-                    $sqlContent = file_get_contents($resultFile);
-                    unlink($resultFile);
+                    $sqlContent = @file_get_contents($resultFile);
+
+                    if ($sqlContent === false) {
+                        throw new Exception('Cannot read sql content file. Please check file system access rights');
+                    }
+
+                    @unlink($resultFile);
+
                     if (!empty($sqlContent)) {
                         return $sqlContent;
                     }
@@ -1189,9 +1335,16 @@ class ArchiveService
             $privateFolder = $this->getPrivateFolder();
         }
         if (!file_exists("$privateFolder/info.json")) {
-            file_put_contents("$privateFolder/info.json", '{}');
+            if (@file_put_contents("$privateFolder/info.json", '{}') === false) {
+                throw new Exception('Cannot write to archive info file. Please check file system access rights');
+            }
         }
-        $fileContent = file_get_contents("$privateFolder/info.json");
+        $fileContent = @file_get_contents("$privateFolder/info.json");
+
+        if ($fileContent === false) {
+            throw new Exception('Cannot read archive info file. Please check file system access rights');
+        }
+
         $content = json_decode($fileContent, true);
 
         return (empty($content) || !is_array($content)) ? [] : $content;
@@ -1207,7 +1360,10 @@ class ArchiveService
         if (empty($privateFolder)) {
             $privateFolder = $this->getPrivateFolder();
         }
-        file_put_contents("$privateFolder/info.json", json_encode($content));
+
+        if (@file_put_contents("$privateFolder/info.json", json_encode($content)) === false) {
+            throw new Exception('Cannot set archive info to file. Please check file system access rights');
+        }
     }
 
     /**
@@ -1229,8 +1385,12 @@ class ArchiveService
         // create files
         $input = "$privateFolder/input-$uid.log";
         $output = "$privateFolder/output-$uid.log";
-        file_put_contents($input, '');
-        file_put_contents($output, '');
+        if (@file_put_contents($input, '') === false) {
+            throw new Exception('Cannot write to archive input file. Please check file system access rights');
+        }
+        if (@file_put_contents($output, '') === false) {
+            throw new Exception('Cannot write to archive output file. Please check file system access rights');
+        }
 
         $info[$uid] = [
             'input' => realpath($input),
@@ -1285,14 +1445,17 @@ class ArchiveService
         if (!is_file($info['output'])) {
             return false;
         }
-        $output = file_get_contents($info['output']);
+        $output = @file_get_contents($info['output']);
+
+        if ($output === false) {
+            throw new Exception('Cannot read archive output file. Please check file system access rights');
+        }
+
         $running = !empty(trim($output));
-        $finished = !$running ? false : (
-            preg_match("/(END|STOP)\s*$/", $output)
-            ? true
-            : false
-        );
-        $stopped = preg_match("/(STOP)\s*$/", $output);
+        $finished = !$running
+            ? false
+            : (preg_match("/(END|STOP)\s*$/", $output) ? true : false);
+        $stopped = preg_match("/(STOP)\s*$/", $output) ? true : false;
         if ($finished) {
             $running = false;
         }

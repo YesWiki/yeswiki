@@ -16,7 +16,7 @@ export default class {
     this.$container = $(domElement)
 
     // Where to find the 'mode-XXXX' files
-    ace.config.set('basePath', 'tools/aceditor/presentation/javascripts')
+    ace.config.set('basePath', `${wiki.baseUrl.replace(/\?+$/, '')}tools/aceditor/presentation/javascripts`)
 
     this.ace = ace.edit(domElement, {
       printMargin: false,

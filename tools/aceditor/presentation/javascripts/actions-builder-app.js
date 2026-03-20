@@ -2,6 +2,7 @@ import InputHelper from './components/InputHelper.js'
 import InputHidden from './components/InputHidden.js'
 import InputText from './components/InputText.js'
 import InputPageList from './components/InputPageList.js'
+import InputEntryList from './components/InputEntryList.js'
 import InputNavLinks from './components/InputNavLinks.js'
 import InputCheckbox from './components/InputCheckbox.js'
 import InputList from './components/InputList.js'
@@ -25,6 +26,7 @@ import AddonIcon from './components/AddonIcon.js'
 
 const components = {
   InputPageList,
+  InputEntryList,
   InputText,
   InputCheckbox,
   InputList,
@@ -242,7 +244,9 @@ export const app = {
     },
     // prefer methods to computed to prevent cache
     getSelectedFormId() {
-      return (this.selectedFormsIds) ? this.selectedFormsIds.slice(0, 1)[0] : '' // only the first one
+        if (!(this.selectedFormsIds instanceof Array) || this.selectedFormsIds.length == 0) return '';
+        
+        return this.selectedFormsIds.slice(0, 1)[0]  ?? '' // only the first one
     },
     setSelectedFormId() {
       const newValue = this.$refs.formSelection.value

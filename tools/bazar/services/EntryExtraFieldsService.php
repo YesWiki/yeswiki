@@ -10,7 +10,7 @@ use YesWiki\Wiki;
 // Get more data about an entry
 class EntryExtraFieldsService
 {
-    public const EXTRA_FIELDS = ['comments', 'comments_count', 'reactions', 'reactions_count', 'triples'];
+    public const EXTRA_FIELDS = ['comments', 'comments_count', 'reactions', 'reactions_count', 'triples', 'linked_data'];
 
     protected $wiki;
     protected $entryId;
@@ -82,5 +82,49 @@ class EntryExtraFieldsService
     public function getTriples()
     {
         return $this->wiki->services->get(TripleStore::class)->getMatching($this->entryId, null, null, '=');
+    }
+
+    public function getLinkedData(): array
+    {
+        $fields = [];
+        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $formManager = $this->wiki->services->get(FormManager::class);
+
+        $entry = $entryManager->getOne($this->entryId);
+        $entryFields = $formManager->findTypeOfFields($entry['id_typeannonce'], ['SelectEntryField', 'CheckboxEntryField']);
+        foreach ($entryFields as $field) {
+            $prop = $field->getPropertyName();
+            $fields[$prop] = [];
+            if (!empty($entry[$prop])) {
+                $entries = explode(',', $entry[$prop]);
+                if (count($entries) === 1) {
+                    $val = array_pop($entries);
+                    $fields[$prop][$val] = $entryManager->getOne($entry[$prop]);
+                } else {
+                    foreach ($entries as $val) {
+                        $fields[$prop][$val] = $entryManager->getOne($val);
+                    }
+                }
+            }
+        }
+
+        return $fields;
+    }
+
+    public function appendHtmlData(array $linkedData): string
+    {
+        $sep = '_-_';
+        $htmlData = '';
+        foreach ($linkedData as $fieldName => $entries) {
+            foreach ($entries as $entry) {
+                $htmlData .= str_replace(
+                    'data-',
+                    'data-' . $fieldName . $sep . $entry['id_fiche'] . $sep,
+                    $entry['html_data']
+                ) . ' ';
+            }
+        }
+
+        return $htmlData;
     }
 }

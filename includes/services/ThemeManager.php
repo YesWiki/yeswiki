@@ -4,6 +4,7 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Templates\Service\Utils;
@@ -137,7 +138,7 @@ class ThemeManager implements EventSubscriberInterface
 
                         case 'squelette':
                             $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $_REQUEST[$val]));
-                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . 'squelettes/' . $_REQUEST[$val]));
+                            $classicPath = basename(realpath(getcwd() . '/themes/' . $requested['theme'] . '/squelettes/' . $_REQUEST[$val]));
                             $requested[$val] = null;
                             if (!empty($customPath) && file_exists(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $customPath)) {
                                 $requested[$val] = $customPath;
@@ -346,7 +347,7 @@ class ThemeManager implements EventSubscriberInterface
         $templateCut = explode('{WIKINI_PAGE}', $fileContent);
         $this->templateHeader = $templateCut[0] ?? '';
         // ADD flash message just before page content
-        $this->templateHeader .= flash()->display();
+        $this->templateHeader .= \Tamtamchik\SimpleFlash\Flash::display();
         $this->templateFooter = (count($templateCut) > 0) ? $templateCut[1] : '';
 
         return true;

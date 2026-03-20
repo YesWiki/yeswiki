@@ -2,15 +2,14 @@
 
 namespace YesWiki\Bazar\Service;
 
-use Attach;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\EnumField;
 use YesWiki\Wiki;
 
 class BazarListService
 {
-    protected $entryController;
     protected $entryManager;
+    protected $entryExtraFields;
     protected $externalBazarService;
     protected $formManager;
     protected $wiki;
@@ -18,26 +17,27 @@ class BazarListService
     public function __construct(
         Wiki $wiki,
         EntryManager $entryManager,
-        EntryController $entryController,
+        EntryExtraFieldsService $entryExtrafields,
         ExternalBazarService $externalBazarService,
         FormManager $formManager
     ) {
         $this->wiki = $wiki;
         $this->entryManager = $entryManager;
-        $this->entryController = $entryController;
+        $this->entryExtraFields = $entryExtrafields;
         $this->externalBazarService = $externalBazarService;
         $this->formManager = $formManager;
     }
 
-    public function getForms($options): array
+    public function getForms($pOptions = []): array
     {
-        // External mode activated ?
-        if (($options['externalModeActivated'] ?? false) === true) {
-            return $this->externalBazarService
-                ->getFormsForBazarListe($options['externalIds'], $options['refresh']);
-        } else {
-            return $this->formManager->getAll();
-        }
+        $vIDs = $this->getIDs($pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
+
+        $vLocalForms = $this->formManager->getMany($vIDs['locals']);
+        $vExternalForms = $this->externalBazarService->getForms($vIDs['externals'], $pOptions['refresh'] ?? null);
+
+        $vForms = $vLocalForms + $vExternalForms;
+
+        return $vForms;
     }
 
     private function replaceDefaultImage($options, $forms, $entries): array
@@ -45,7 +45,7 @@ class BazarListService
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
         }
-        $attach = new attach($this->wiki);
+        $attach = new \Attach($this->wiki);
         $basePath = $attach->GetUploadPath();
         $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
         $formIds = array_keys($forms) ?? [];
@@ -80,63 +80,99 @@ class BazarListService
         return $entries;
     }
 
-    public function getEntries($options, $forms = null): array
+    public function getEntries($pOptions, $pForms = null): array
     {
-        if (!$forms) {
-            $forms = $this->getForms($options);
+        if (is_array($pOptions)) {
+            $pOptions['queries'] = $pOptions['queries'] ?? $pOptions['query'] ?? null;
         }
 
-        // External mode activated ?
-        // TODO BazarListdynamic test externalmode works
-        if (($options['externalModeActivated'] ?? false) === true) {
-            $entries = $this->externalBazarService->getEntries([
-                'forms' => $forms,
-                'refresh' => $options['refresh'] ?? false,
-                'queries' => $options['query'] ?? '',
-                'correspondance' => $options['correspondance'] ?? '',
-            ]);
+        if ($pForms == null) {
+            $vForms = $this->getForms($pOptions);
         } else {
-            $entries = $this->entryManager->search(
-                [
-                    'regexp' => $options['regexp'] ?? '0',
-                    'queries' => $options['query'] ?? '',
-                    'formsIds' => $options['idtypeannonce'] ?? [],
-                    'keywords' => $_REQUEST['q'] ?? '',
-                    'user' => $options['user'],
-                    'minDate' => $options['dateMin'],
-                    'correspondance' => $options['correspondance'] ?? '',
-                ],
-                true, // filter on read ACL,
-                true // use Guard
-            );
+            $vForms = $pForms;
         }
-        $entries = $this->replaceDefaultImage($options, $forms, $entries);
+
+        $vSelectedID = $pOptions['selectedID'] ?? '';
+        if (trim($vSelectedID) == '') {
+            $vSelectedID = null;
+        }
+
+        $vIDs = $this->getIDs($vSelectedID ?? $pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
+
+        $vLocalIDs = $vIDs['locals'];
+        $vExternalIDs = $vIDs['externals'];
+
+        if (count($vLocalIDs) > 0 || count($vExternalIDs) == 0) {
+            $vSearchManager = $this->wiki->services->get(SearchManager::class);
+
+            $vLocalEntries = $vSearchManager->search(
+                array_merge(
+                    $pOptions,
+                    [
+                        'formsIds' => $vLocalIDs,
+                    ]
+                ),
+                true, // filter on read ACL,
+                    true // use Guard
+            );
+        } else {
+            $vLocalEntries = [];
+        }
+
+        if (count($vExternalIDs) > 0) {
+            $vExternalEntries = $this->externalBazarService->getEntries(
+                array_merge($pOptions, [
+                    'idtypeannonce' => ['locals' => [], 'externals' => $vExternalIDs],
+                    'forms' => $vForms,
+                ])
+            );
+        } else {
+            $vExternalEntries = [];
+        }
+
+        $vEntries = array_merge($vLocalEntries, $vExternalEntries);
 
         // filter entries on datefilter parameter
-        if (!empty($options['datefilter'])) {
-            $entries = $this->entryController->filterEntriesOnDate($entries, $options['datefilter']);
+        if (!empty($pOptions['datefilter'])) {
+            $vEntries = $this->wiki->services->get(EntryController::class)->filterEntriesOnDate($vEntries, $pOptions['datefilter']);
         }
 
         // Sort entries
-        if ($options['random']) {
-            shuffle($entries);
+        if ($pOptions['random'] ?? false) {
+            shuffle($vEntries);
         } else {
-            usort($entries, $this->buildFieldSorter($options['ordre'], $options['champ']));
+            usort($vEntries, $this->buildFieldSorter($pOptions['ordre'] ?? 'asc', $pOptions['champ'] ?? 'bf_titre'));
         }
 
         // Limit entries
-        if ($options['nb'] !== '') {
-            $entries = array_slice($entries, 0, $options['nb']);
+        if ($pOptions['nb'] ?? false) {
+            $vEntries = array_slice($vEntries, 0, $pOptions['nb']);
         }
 
-        return $entries;
+        $vEntries = $this->replaceDefaultImage($pOptions, $vForms, $vEntries);
+
+        // add extra informations (comments, reactions, metadatas)
+        if (($pOptions['extrafields'] ?? false) === true) {
+            foreach ($vEntries as $i => $vEntry) {
+                $this->entryExtraFields->setEntryId($vEntry['id_fiche']);
+                foreach (EntryExtraFieldsService::EXTRA_FIELDS as $vField) {
+                    $vEntries[$i][$vField] = $this->entryExtraFields->get($vField);
+                }
+                // for the linked entries, we need to add some informations to html_data
+                if (!empty($vEntries[$i]['linked_data'])) {
+                    $vEntries[$i]['html_data'] .= $this->entryExtraFields->appendHtmlData($vEntries[$i]['linked_data']);
+                }
+            }
+        }
+
+        return $vEntries;
     }
 
     // Use bazarlist options like groups, titles, groupicons, groupsexpanded
     // To create a filters array to be used by the view
     // Note for [old-non-dynamic-bazarlist] For old bazarlist, most of the calculation happens on the backend
     // But with the new dynamic bazalist, everything is done on the front
-    public function getFilters($options, $entries, $forms): array
+    public function getFilters($options, $entries, $forms, $withIdIndexes = false): array
     {
         // add default options
         $options = array_merge([
@@ -147,7 +183,7 @@ class BazarListService
 
         $formIdsUsed = array_unique(array_column($entries, 'id_typeannonce'));
         $formsUsed = array_map(function ($formId) use ($forms) {
-            return $forms[$formId];
+            return $forms[$formId] ?? null;
         }, $formIdsUsed);
         $allFields = array_merge(...array_column($formsUsed, 'prepared'));
 
@@ -163,7 +199,7 @@ class BazarListService
         }
 
         $filters = [];
-
+        $linkedSep = '_-_';
         foreach ($propNames as $index => $propName) {
             // Create a filter object to be returned to the view
             $filter = [
@@ -174,11 +210,16 @@ class BazarListService
                 'collapsed' => true,
             ];
 
-            // Check if an existing Form Field existing by this propName
-            foreach ($allFields as $aField) {
-                if ($aField->getPropertyName() == $propName) {
-                    $field = $aField;
-                    break;
+            // Check if linked data value
+            if (str_contains($propName, $linkedSep)) {
+                $field = $propName;
+            } else {
+                // Check if an existing Form Field existing by this propName
+                foreach ($allFields as $aField) {
+                    if ($aField->getPropertyName() == $propName) {
+                        $field = $aField;
+                        break;
+                    }
                 }
             }
             // Depending on the propName, get the list of filter nodes
@@ -205,17 +246,53 @@ class BazarListService
                 usort($filter['nodes'], function ($a, $b) {
                     return strcmp($a['label'], $b['label']);
                 });
+            } elseif (str_contains($propName, $linkedSep)) {
+                $idLinkedData = explode($linkedSep, $propName);
+                $linkedField = [];
+                if (!empty($idLinkedData[0]) && !empty($idLinkedData[1])) {
+                    $linkedField = $this->formManager->findFieldWithId($formIdsUsed, $idLinkedData[0]);
+                    if (!empty($linkedField)) {
+                        $linkedFormId = $linkedField->getLinkedObjectName();
+                        $finalField = $this->formManager->findFieldWithId([$linkedFormId], $idLinkedData[1]);
+                        if (!empty($finalField)) {
+                            $filter['title'] = $finalField->getLabel();
+                            if ($finalField instanceof EnumField) {
+                                if (!empty($finalField->getOptionsTree()) && $options['dynamic'] == true) {
+                                    // OptionsTree only supported by bazarlist dynamic
+                                    foreach ($finalField->getOptionsTree() as $node) {
+                                        $filter['nodes'][$node['value']] = $this->recursivelyCreateNode($node);
+                                    }
+                                } else {
+                                    foreach ($finalField->getOptions() as $value => $label) {
+                                        $filter['nodes'][$value] = $this->createFilterNode($value, $label);
+                                    }
+                                }
+                            } else {
+                                // TODO: options?
+                            }
+                        }
+                    }
+                }
             } else {
                 // OTHER PROPNAME (for example a field that is not an Enum)
-                $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
+                $foundField = $this->formManager->findFieldWithId($formIdsUsed, $propName);
+                if (!empty($foundField)) {
+                    $filter['title'] = $foundField->getLabel();
+                } else {
+                    $filter['title'] = $propName == 'owner' ? _t('BAZ_CREATOR') : $propName;
+                }
+
                 // We collect all values
                 $uniqValues = array_unique(array_column($entries, $propName));
-                sort($uniqValues);
+
+                usort($uniqValues, function ($a, $b) {
+                    return strcmp(strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $a)), strtolower(iconv('UTF-8', 'ASCII//TRANSLIT', $b)));
+                });
+
                 foreach ($uniqValues as $value) {
                     $filter['nodes'][] = $this->createFilterNode($value, $value);
                 }
             }
-
             // Filter Icon
             if (!empty($options['groupicons'][$index])) {
                 $filter['icon'] = '<i class="' . $options['groupicons'][$index] . '"></i> ';
@@ -245,8 +322,11 @@ class BazarListService
                 }
                 $filter['nodes'] = $adjustedNodes;
             }
-
-            $filters[] = $filter;
+            if ($withIdIndexes) {
+                $filters[$filter['propName']] = $filter;
+            } else {
+                $filters[] = $filter;
+            }
         }
 
         return $filters;
@@ -327,6 +407,183 @@ class BazarListService
         }
 
         return $array;
+    }
+
+    /* Get the unique ID (local or external) contained in $pIDs as [ "locals" => [...], "externals" => [...] ]
+    or throw an exception if there is less or more than 1
+    */
+
+    public function getTheID($pIDs, $pThrowException = true)
+    {
+        $vIDs = $this->getIDs($pIDs);
+
+        $vLocalIDs = $vIDs['locals'];
+        $vExternalIDs = $vIDs['externals'];
+
+        $vLocalIDsCount = count($vLocalIDs);
+        $vExternalIDsCount = count($vExternalIDs);
+
+        if ($vLocalIDsCount + $vExternalIDsCount != 1) {
+            if ($pThrowException) {
+                throw new \Exception('There should be exactly 1 ID specified instead of ' . ($vLocalIDsCount + $vExternalIDsCount));
+            }
+
+            return null;
+        }
+
+        if ($vLocalIDsCount == 1) {
+            $vID = $vLocalIDs[0];
+            $vKey = $vID;
+            $vIsExternal = false;
+        } else {
+            $vID = $vExternalIDs[0]['id'];
+            $vKey = $this->externalBazarService->getExternalFormIDKey($vExternalIDs[0]);
+            $vIsExternal = true;
+        }
+
+        return ['id' => $vID, 'key' => $vKey, 'isExternal' => $vIsExternal];
+    }
+
+    public function getIDs($pIDs)
+    {
+        if ($pIDs === null) {
+            $vLocalIDs = array_map(function ($pForm) {
+                return $pForm['bn_id_nature'];
+            }, $this->formManager->getAll());
+            $vExternalIDs = [];
+        } else {
+            $vIDs = $this->parseIDs($pIDs);
+
+            $vLocalIDs = $vIDs['locals'];
+            $vExternalIDs = $vIDs['externals'];
+        }
+
+        $vLocalIDs = array_values(array_unique($vLocalIDs));
+
+        $vUniqueExternalIDs = [];
+
+        foreach ($vExternalIDs as $vExternalID) {
+            $vKey = $vExternalID['url'] . '|' . $vExternalID['id'];
+
+            if (isset($vUniqueExternalIDs[$vKey])) {
+                throw new \Exception('The external ID ' . $vExternalID['id'] . ' is requested multiple times for server ' . $vExternalID['url']);
+            } else {
+                $vUniqueExternalIDs[$vKey] = $vExternalID;
+            }
+        }
+
+        $vUniqueExternalIDs = array_values($vUniqueExternalIDs);
+
+        return
+        [
+            'locals' => $vLocalIDs,
+            'externals' => $vUniqueExternalIDs,
+        ];
+    }
+
+    protected function isValidID($pID)
+    {
+        if (!is_string($pID)) {
+            return false;
+        }
+
+        $vID = intval($pID);
+
+        if ($vID < 0) {
+            return false;
+        }
+
+        if (strval($vID) !== $pID) {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function isValidURL($pURL)
+    {
+        return true; // keep it for later : URL extracted by getExternalURLsFromIDs should be correct
+    }
+
+    protected function parseIDs($pIDs)
+    {
+        if (is_array($pIDs)) {
+            if (isset($pIDs['locals'])) {
+                // already parsed
+                return $pIDs;
+            } else { // Ensure it is a string
+                $pIDs = implode(',', $pIDs);
+            } // Ensure $pIDs is a string
+        }
+
+        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', $pIDs);
+
+        $vLines = str_getcsv($pIDs, ',', '"', '\\');
+
+        $vLines = array_filter($vLines, function ($vLine) {
+            return !empty($vLine) && trim($vLine) != '';
+        });
+
+        $vIDs = [];
+
+        foreach ($vLines as $vLine) {
+            if (preg_match('/^[()0-9,\s\->]*$/', $vLine)) {
+                $vPiped = '|' . $vLine;
+            } elseif (!strpos($vLine, '|')) {
+                if (preg_match('/^[()0-9,\s\->]*$/', $vLine)) {
+                    $vPiped = '|' . $vLine;
+                } else {
+                    $vPiped = $vLine . '|';
+                }
+            } else {
+                $vPiped = $vLine;
+            }
+
+            $vExploded = explode('|', $vPiped);
+
+            $vURL = trim($vExploded[0]);
+            $vPostFix = $vExploded[1];
+
+            $vPostFix = preg_replace('/[\s()]*/', '', $vPostFix);
+
+            $vPostFix = explode(',', $vPostFix);
+
+            foreach ($vPostFix as $vID) {
+                $vCorrespondance = preg_split('/\->?/', $vID);
+
+                if (count($vCorrespondance) > 1) {
+                    $vIDs[] = ['url' => $vURL, 'id' => $vCorrespondance[0], 'localFormId' => $vCorrespondance[1]];
+                } else {
+                    $vIDs[] = ['url' => $vURL, 'id' => $vCorrespondance[0], 'localFormId' => ''];
+                }
+            }
+        }
+
+        $vResults = ['locals' => [], 'externals' => []];
+
+        foreach ($vIDs as $vID) {
+            if (trim($vID['url']) == '') {
+                if (!$this->isValidID($vID['id'])) {
+                    throw new \Exception('Invalid ID');
+                }
+
+                array_push($vResults['locals'], $vID['id']);
+            } else {
+                if (!$this->isValidURL($vID['url'])) {
+                    throw new \Exception('Invalid URL ' . $vID['url']);
+                }
+                if (!$this->isValidID($vID['id'])) {
+                    throw new \Exception('Invalid external ID ' . $vID['id'] . print_r($vID, true));
+                }
+                if (isset($vID['localFormId']) && (trim($vID['localFormId']) != '') && !$this->isValidID($vID['localFormId'])) {
+                    throw new Exception('Invalid local ID');
+                }
+
+                array_push($vResults['externals'], $vID);
+            }
+        }
+
+        return $vResults;
     }
 
     private function buildFieldSorter($ordre, $champ): callable

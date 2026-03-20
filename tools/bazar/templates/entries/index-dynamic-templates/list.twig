@@ -1,8 +1,8 @@
 {% extends "@bazar/entries/index-dynamic.twig" %}
 
 {% block display_entries %}
-  {% set imWidth = 170 %}
-  {% set imHeight = 170 %}
+  {% set imWidth = 300 %}
+  {% set imHeight = 300 %}
   {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
   <div class="panel-group no-dblclick" style="opacity: 0;" :class="{ready: ready}" v-if="ready">
     

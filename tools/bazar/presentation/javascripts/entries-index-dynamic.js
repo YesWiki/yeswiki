@@ -6,6 +6,8 @@ import ModalEntry from './components/ModalEntry.js'
 import FilterNode from './components/FilterNode.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
+import { updateExportLinks } from './export.js'
+import { updateHash, parseSearchParams, mergeSearchParams } from './url.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
@@ -40,11 +42,11 @@ const load = (domElement) => {
       pagination: 10,
 
       search: '',
-      currentSort: { field: '', asc: null, label: '' },
+      currentSort: { field: '', order : null, label: '' },
 
       // wether to search for a particular form ID (only used when no
       // form id is defined for the bazar list action)
-      searchFormId: null,
+      searchFormId: '',
       searchTimer: null // use ot debounce user input
     },
     computed: {
@@ -56,6 +58,7 @@ const load = (domElement) => {
             .map((node) => node.value)
           if (checkedValues.length > 0) result[filter.propName] = checkedValues
         })
+
         return result
       },
       filteredEntriesCount() {
@@ -92,16 +95,18 @@ const load = (domElement) => {
         this.currentPage = 0
       },
       search() {
-        clearTimeout(this.searchTimer)
-        this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
-        this.saveFiltersIntoHash()
+      	if (this.ready) {
+	        clearTimeout(this.searchTimer)
+          this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
+	        this.updateHash()
+        }
       },
       searchFormId() {
         this.calculateBaseEntries()
       },
       computedFilters() {
         this.filterEntries()
-        this.saveFiltersIntoHash()
+        this.updateHash()
       },
       currentPage() {
         this.paginateEntries()
@@ -111,7 +116,7 @@ const load = (domElement) => {
       },
       currentSort() {
         this.sortEntries()
-        this.saveFiltersIntoHash()
+        this.updateHash()
       }
     },
     methods: {
@@ -123,8 +128,14 @@ const load = (domElement) => {
             (entry) => entry.id_typeannonce == this.searchFormId
           )
         }
-        if (this.search && this.search.length > 2) {
-          result = this.searchEntries(result, this.search)
+
+        let vSearch = this.params.keywords ?? ''
+        if (this.search) vSearch += (vSearch != '' ? '|' : '') + this.search
+
+        vSearch = vSearch.split('|').filter((pKeyword) => pKeyword.length >= wiki.minSearchKeywordLength).join('|')
+
+        if (vSearch && vSearch.length >= wiki.minSearchKeywordLength) {
+          result = this.searchEntries(result, vSearch)
           if (result == undefined) {
             result = this.entries
           }
@@ -139,7 +150,18 @@ const load = (domElement) => {
             if (!entry[propName] || typeof entry[propName] != 'string') return false
             return entry[propName]
               .split(',')
-              .some((value) => filter.includes(value))
+              .map((str) => str
+                .normalize('NFD')
+				   		.replace(/[\u0300-\u036f]/g, '')
+				   		.toLowerCase()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;'))
+              .some((value) => filter
+              			.map((str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
+              			.includes(value))
           })
         })
         this.filteredEntries = result
@@ -148,7 +170,7 @@ const load = (domElement) => {
       sortEntries() {
         if (!this.currentSort.field) return
 
-        const { field, asc } = this.currentSort
+        const { field, order } = this.currentSort
         const collator = new Intl.Collator()
 
         this.filteredEntries.sort((a, b) => {
@@ -156,12 +178,14 @@ const load = (domElement) => {
           const valueB = deepGet(b, field)
 
           if (typeof valueA === 'number' && typeof valueB === 'number') {
-            return asc ? valueA - valueB : valueB - valueA
+            return order == 'asc' ? valueA - valueB : valueB - valueA
           }
 
-          return asc
-            ? collator.compare(String(valueA).toLowerCase(), String(valueB).toLowerCase())
-            : collator.compare(String(valueB).toLowerCase(), String(valueA).toLowerCase())
+          // Case and accent insensitive sort
+
+          return order == 'asc'
+            ? collator.compare(String(valueA).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(), String(valueB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
+            : collator.compare(String(valueB).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(), String(valueA).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
         })
 
         this.paginateEntries()
@@ -197,7 +221,17 @@ const load = (domElement) => {
               let entryValues = entry[filter.propName]
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
-              return entryValues.some((value) => value == node.value)
+              return entryValues.some((value) =>
+	            	// Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
+              		 (value
+		          		.normalize('NFD')
+				   		.replace(/[\u0300-\u036f]/g, '')
+		          		.toLowerCase()
+		        	  	.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#039;') == node.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()))
             }).length
           })
         })
@@ -210,41 +244,76 @@ const load = (domElement) => {
         })
         this.search = ''
         if (this.sortOptions.length > 0) this.currentSort = this.sortOptions[0]
+        this.updateHash()
       },
-      saveFiltersIntoHash() {
-        if (!this.ready) return
+      initFromHash(pHash) {
+      	const vThis = this
 
-        const hashParams = new URLSearchParams()
-        for (const filterId in this.computedFilters) {
-          hashParams.set(filterId, this.computedFilters[filterId].join(','))
+        const vParams = parseSearchParams(pHash) // Return hash as a structured object
+        let vChamp
+        let vOrdre
+
+        let vSearch = ''
+
+        if (vParams.q !== undefined && vParams.q.trim() !== '') {
+          vSearch = vParams.q
         }
-        if (this.search) hashParams.set('q', this.search)
-        if (this.currentSort.field) {
-          hashParams.set('sort', `${this.currentSort.field}:${this.currentSort.asc}`)
+
+        if (vParams.keywords !== undefined && vParams.keywords.trim() !== '') {
+          vSearch = (vSearch != '' ? `${vSearch}|` : '') + vParams.keywords
         }
-        history.pushState({}, '', `#${hashParams.toString()}`)
-      },
-      initFiltersFromHash(filters, hash) {
-        hash = hash.substring(1) // remove #
-        hash.split('&').forEach((combinaison) => {
-          const hashKey = combinaison.split('=')[0]
-          const hashValue = decodeURIComponent(combinaison.split('=')[1])
-          const filter = filters.find((f) => f.propName == hashKey)
-          if (hashKey == 'q') {
-            this.search = hashValue
-          } else if (hashKey == 'sort') {
-            const [field, order] = hashValue.split(':')
-            const val = this.sortOptions.find((s) => s.field == field && s.asc == (order == 'true'))
-            if (val) this.currentSort = val
-          } else if (hashKey && hashValue && filter) {
-            filter.flattenNodes.forEach((node) => {
-              const filterValues = hashValue.split(',')
-			        if (filterValues.includes(node.value)) node.checked = true
+
+        if (vSearch != '') this.search = vSearch
+
+        if (vParams.champ !== undefined && vParams.champ.trim() !== '') {
+          vChamp = vParams.champ
+        }
+
+        if (vParams.ordre !== undefined && vParams.ordre.trim() !== '') {
+          vChamp = vParams.ordre
+        }
+
+        if (vParams.query !== undefined) {
+          const vQueryEntries = Object.entries(vParams.query)
+
+          if (vQueryEntries.length > 0) {
+            vQueryEntries.forEach(([pKey, pCondition]) => {
+              const cFilter = vThis.filters.find((pF) => pF.propName == pCondition.name)
+
+              if (cFilter) {
+                cFilter.flattenNodes.forEach((pNode) => {
+					    	// Handle values with special chars
+					    	// like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
+					    	// ie : Figuier goutte d&#039;or
+
+                  const cFilterValues = pCondition.values
+                    .map((pString) => pString
+                      .normalize('NFD')
+							   		.replace(/[\u0300-\u036f]/g, '')
+                      .toLowerCase()
+                      .replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#039;'))
+
+                  if (cFilterValues.includes(pNode.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())) pNode.checked = true
+					    })
+              }
             })
           }
-        })
-        return filters
+        }
+
+        const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
+        if (cSort) {
+        	this.currentSort = cSort
+        }
       },
+      updateHash() {
+        if (!this.ready) return
+
+		return updateHash (this.savedHash, this.search, this.currentSort.field, this.currentSort.order, this.computedFilters);
+      },            
       getEntryRender(entry) {
         if (entry.html_render) return
         if (this.isExternalUrl(entry)) {
@@ -258,6 +327,7 @@ const load = (domElement) => {
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+          	...{ isInIframe: this.params.isInIframe },
             ...{ fields: 'html_output' },
             ...(fieldsToExclude.length > 0
               ? { excludeFields: fieldsToExclude }
@@ -346,8 +416,9 @@ const load = (domElement) => {
     },
     mounted() {
       $(this.$el).on('dblclick', (e) => false)
-      const savedHash = document.location.hash // don't know how, but the hash get cleared after
+      this.savedHash = decodeURIComponent(document.location.hash.substring(1)) // Save the hash for later updating
       this.params = JSON.parse(this.$el.dataset.params)
+
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
       // Retrieve data asynchronoulsy
@@ -369,23 +440,27 @@ const load = (domElement) => {
 
         this.params.sortfields.forEach((field, index) => {
           const label = this.params.sortfieldstitles[index]
-          this.sortOptions.push({ field, label, asc: true })
-          this.sortOptions.push({ field, label, asc: false })
+          this.sortOptions.push({ field: field.trim(), label, order: 'asc' })
+          this.sortOptions.push({ field: field.trim(), label, order: 'desc' })
         })
+
         if (this.sortOptions.length > 0) {
           // params "champ" is used to choose default sort (backend sort). If present
           // we do not overwride this backend sort by the front end dynamic sort
           if (this.params.champ) {
             const sort = this.sortOptions
-              .find((o) => o.field === this.params.champ && o.asc === (this.params.ordre === 'asc'))
-            if (sort) this.currentSort = sort
-          } else {
-            this.currentSort = this.sortOptions[0]
+              .find((o) =>	o.field === this.params.champ.trim()
+						   	&& o.order === ((typeof (this.params.ordre) == 'boolean' ? this.params.ordre : (this.params.ordre == '1' || this.params.ordre == 'true' || this.params.ordre == 'asc')) ? 'asc' : 'desc'))
+
+            if (sort) { this.currentSort = sort } else { this.currentSort = this.sortOptions[0] }
           }
         }
 
         // First display filters cause entries can be a bit long to load
-        this.filters = this.initFiltersFromHash(filters, savedHash)
+
+        this.filters = filters
+
+        this.initFromHash(this.savedHash)
 
         // Auto paginate if large numbers
         if (data.entries.length > 50 && !this.pagination) this.pagination = 20
@@ -445,6 +520,7 @@ const load = (domElement) => {
 
           this.calculateBaseEntries()
           this.ready = true
+          this.updateHash()
           const event = new Event('bazar-list-dynamic-ready')
           document.dispatchEvent(event)
         }, 0)

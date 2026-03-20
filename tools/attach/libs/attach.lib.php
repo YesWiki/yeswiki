@@ -723,7 +723,7 @@ if (!class_exists('attach')) {
          */
         public function showUploadForm()
         {
-            $this->file = realpath(filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS));
+            $this->file = basename(filter_input(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS));
             if (!empty($this->file)) {
                 echo '<h3>' . _t('ATTACH_UPLOAD_FORM_FOR_FILE') . ' ' . $this->file . "</h3>\n";
                 echo '<form enctype="multipart/form-data" name="frmUpload" method="POST" action="' . $this->wiki->href('upload', $this->wiki->GetPageTag()) . "\">\n"

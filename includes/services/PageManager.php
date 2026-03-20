@@ -237,7 +237,8 @@ class PageManager
 
         // append request to filter on acls during the request
         if (!$this->wiki->UserIsAdmin()) {
-            $sqlRequest .= $this->aclService->updateRequestWithACL();
+            $aclRequest = $this->aclService->updateRequestWithACL();
+            $sqlRequest .= !empty($aclRequest) ? ' AND ' . $aclRequest : '';
         }
         $pages = $this->dbService->loadAll($sqlRequest);
 
@@ -368,6 +369,11 @@ class PageManager
                 // ...and comment_on, eventualy?
                 if ($comment_on == '') {
                     $comment_on = $oldPage['comment_on'];
+                }
+
+                // don't save if body didn't change
+                if (rtrim($oldPage['body']) == rtrim($body)) {
+                    return 0;
                 }
             }
 

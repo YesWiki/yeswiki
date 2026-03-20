@@ -112,14 +112,6 @@ pdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) }
 #   $mb (Number) - the PDF file size in megabytes
 #   $b (Number) - the PDF file size in bytes
 pdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } MB ({ $b } byte)
-# Variables:
-#   $size_kb (Number) - the PDF file size in kilobytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-kb = { $size_kb } KB ({ $size_b } bytes)
-# Variables:
-#   $size_mb (Number) - the PDF file size in megabytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-mb = { $size_mb } MB ({ $size_b } bytes)
 pdfjs-document-properties-title = Dokumentegenskaper …
 pdfjs-document-properties-author = Forfatter:
 pdfjs-document-properties-subject = Emne:
@@ -129,10 +121,6 @@ pdfjs-document-properties-modification-date = Endret dato:
 # Variables:
 #   $dateObj (Date) - the creation/modification date and time of the PDF file
 pdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: "short", timeStyle: "medium") }
-# Variables:
-#   $date (Date) - the creation/modification date of the PDF file
-#   $time (Time) - the creation/modification time of the PDF file
-pdfjs-document-properties-date-string = { $date }, { $time }
 pdfjs-document-properties-creator = Opprettet av:
 pdfjs-document-properties-producer = PDF-verktøy:
 pdfjs-document-properties-version = PDF-versjon:
@@ -275,10 +263,6 @@ pdfjs-rendering-error = En feil oppstod ved opptegning av siden.
 
 ## Annotations
 
-# Variables:
-#   $date (Date) - the modification date of the annotation
-#   $time (Time) - the modification time of the annotation
-pdfjs-annotation-date-string = { $date }, { $time }
 # .alt: This is used as a tooltip.
 # Variables:
 #   $type (String) - an annotation type from a list defined in the PDF spec
@@ -302,9 +286,13 @@ pdfjs-web-fonts-disabled = Web-fonter er avslått: Kan ikke bruke innbundne PDF-
 
 pdfjs-editor-free-text-button =
     .title = Tekst
+pdfjs-editor-color-picker-free-text-input =
+    .title = Endre tekstfarge
 pdfjs-editor-free-text-button-label = Tekst
 pdfjs-editor-ink-button =
     .title = Tegn
+pdfjs-editor-color-picker-ink-input =
+    .title = Endre tegnefarge
 pdfjs-editor-ink-button-label = Tegn
 pdfjs-editor-stamp-button =
     .title = Legg til eller rediger bilder
@@ -316,9 +304,33 @@ pdfjs-highlight-floating-button1 =
     .title = Markere
     .aria-label = Markere
 pdfjs-highlight-floating-button-label = Markere
+pdfjs-comment-floating-button =
+    .title = Kommenter
+    .aria-label = Kommenter
+pdfjs-comment-floating-button-label = Kommenter
+pdfjs-editor-comment-button =
+    .title = Kommentar
+    .aria-label = Kommentar
+pdfjs-editor-comment-button-label = Kommentar
 pdfjs-editor-signature-button =
     .title = Legg til signatur
 pdfjs-editor-signature-button-label = Legg til signatur
+
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = Redigering av markering
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = Redigering av tegninger
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = Signatur-redigerer: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = Bilderedigerer
 
 ## Remove button for the various kind of editor.
 
@@ -340,7 +352,7 @@ pdfjs-editor-free-text-color-input = Farge
 pdfjs-editor-free-text-size-input = Størrelse
 pdfjs-editor-ink-color-input = Farge
 pdfjs-editor-ink-thickness-input = Tykkelse
-pdfjs-editor-ink-opacity-input = Ugjennomsiktighet
+pdfjs-editor-ink-opacity-input = Opasitet
 pdfjs-editor-stamp-add-image-button =
     .title = Legg til bilde
 pdfjs-editor-stamp-add-image-button-label = Legg til bilde
@@ -348,27 +360,41 @@ pdfjs-editor-stamp-add-image-button-label = Legg til bilde
 pdfjs-editor-free-highlight-thickness-input = Tykkelse
 pdfjs-editor-free-highlight-thickness-title =
     .title = Endre tykkelse når du markerer andre elementer enn tekst
+pdfjs-editor-add-signature-container =
+    .aria-label = Signaturkontroller og lagrede signaturer
 pdfjs-editor-signature-add-signature-button =
     .title = Legg til ny signatur
 pdfjs-editor-signature-add-signature-button-label = Legg til ny signatur
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = Lagret signatur: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = Tekstredigering
     .default-content = Begynn å skrive…
-pdfjs-free-text =
-    .aria-label = Tekstredigering
-pdfjs-free-text-default-content = Begynn å skrive…
-pdfjs-ink =
-    .aria-label = Tegneredigering
-pdfjs-ink-canvas =
-    .aria-label = Brukerskapt bilde
+# Used to show how many comments are present in the pdf file.
+# Variables:
+#   $count (Number) - the number of comments.
+pdfjs-editor-comments-sidebar-title =
+    { $count ->
+        [one] Kommentar
+       *[other] Kommentarer
+    }
+pdfjs-editor-comments-sidebar-close-button =
+    .title = Lukk sidestolpen
+    .aria-label = Lukk sidestolpen
+pdfjs-editor-comments-sidebar-close-button-label = Lukk sidestolpen
+# Instructional copy to add a comment by selecting text or an annotations.
+pdfjs-editor-comments-sidebar-no-comments1 = Ser du noe verdt å merke seg? Marker det og legg igjen en kommentar.
+pdfjs-editor-comments-sidebar-no-comments-link = Les mer
 
 ## Alt-text dialog
 
-pdfjs-editor-alt-text-button-label = Alt-tekst
+pdfjs-editor-alt-text-button-label = Alternativ tekst
 pdfjs-editor-alt-text-edit-button =
-    .aria-label = Rediger alt-tekst
-pdfjs-editor-alt-text-edit-button-label = Rediger alt-tekst tekst
+    .aria-label = Rediger alternativ tekst
 pdfjs-editor-alt-text-dialog-label = Velg et alternativ
 pdfjs-editor-alt-text-dialog-description = Alt-tekst (alternativ tekst) hjelper når folk ikke kan se bildet eller når det ikke lastes inn.
 pdfjs-editor-alt-text-add-description-label = Legg til en beskrivelse
@@ -383,19 +409,11 @@ pdfjs-editor-alt-text-textarea =
     .placeholder = For eksempel, «En ung mann setter seg ved et bord for å spise et måltid»
 # Alternative text (alt text) helps when people can't see the image.
 pdfjs-editor-alt-text-button =
-    .aria-label = Alt-tekst
+    .aria-label = Alternativ tekst
 
 ## Editor resizers
 ## This is used in an aria label to help to understand the role of the resizer.
 
-pdfjs-editor-resizer-label-top-left = Øverste venstre hjørne – endre størrelse
-pdfjs-editor-resizer-label-top-middle = Øverst i midten — endre størrelse
-pdfjs-editor-resizer-label-top-right = Øverste høyre hjørne – endre størrelse
-pdfjs-editor-resizer-label-middle-right = Midt til høyre – endre størrelse
-pdfjs-editor-resizer-label-bottom-right = Nederste høyre hjørne – endre størrelse
-pdfjs-editor-resizer-label-bottom-middle = Nederst i midten — endre størrelse
-pdfjs-editor-resizer-label-bottom-left = Nederste venstre hjørne – endre størrelse
-pdfjs-editor-resizer-label-middle-left = Midt til venstre — endre størrelse
 pdfjs-editor-resizer-top-left =
     .aria-label = Øverste venstre hjørne – endre størrelse
 pdfjs-editor-resizer-top-middle =
@@ -456,21 +474,20 @@ pdfjs-editor-new-alt-text-disclaimer-learn-more-url = Les mer
 pdfjs-editor-new-alt-text-create-automatically-button-label = Lag alternativ tekst automatisk
 pdfjs-editor-new-alt-text-not-now-button = Ikke nå
 pdfjs-editor-new-alt-text-error-title = Kunne ikke opprette alternativ tekst automatisk
-pdfjs-editor-new-alt-text-error-description = Skriv din egen alternativ-tekst eller prøv igjen senere.
+pdfjs-editor-new-alt-text-error-description = Skriv din egen alternativ tekst eller prøv igjen senere.
 pdfjs-editor-new-alt-text-error-close-button = Lukk
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Laster ned alternativ tekst AI-modell ({ $downloadedSize } av { $totalSize } MB)
     .aria-valuetext = Laster ned alternativ tekst AI-modell ({ $downloadedSize } av { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
 pdfjs-editor-new-alt-text-added-button =
-    .aria-label = Alt-tekst lagt til
+    .aria-label = Alternativ tekst lagt til
 pdfjs-editor-new-alt-text-added-button-label = Alternativ tekst lagt til
 # This is a button that users can click to open the alt text editor and add alt text when it is not present.
 pdfjs-editor-new-alt-text-missing-button =
-    .aria-label = Mangler alt-tekst
+    .aria-label = Mangler alternativ tekst
 pdfjs-editor-new-alt-text-missing-button-label = Mangler alternativ tekst
 # This is a button that opens up the alt text modal where users should review the alt text that was automatically generated.
 pdfjs-editor-new-alt-text-to-review-button =
@@ -502,6 +519,14 @@ pdfjs-editor-alt-text-settings-show-dialog-button-label = Vis alternativ tekst-r
 pdfjs-editor-alt-text-settings-show-dialog-description = Hjelper deg å sørge for at alle bildene dine har alternativ tekst.
 pdfjs-editor-alt-text-settings-close-button = Lukk
 
+## Accessibility labels (announced by screen readers) for objects added to the editor.
+
+pdfjs-editor-highlight-added-alert = Utheving lagt til
+pdfjs-editor-freetext-added-alert = Tekst lagt til
+pdfjs-editor-ink-added-alert = Tegning lagt til
+pdfjs-editor-stamp-added-alert = Bilde lagt til
+pdfjs-editor-signature-added-alert = Signatur lagt til
+
 ## "Annotations removed" bar
 
 pdfjs-editor-undo-bar-message-highlight = Markering fjernet
@@ -509,6 +534,14 @@ pdfjs-editor-undo-bar-message-freetext = Tekst fjernet
 pdfjs-editor-undo-bar-message-ink = Tegning fjernet
 pdfjs-editor-undo-bar-message-stamp = Bilde fjernet
 pdfjs-editor-undo-bar-message-signature = Signatur fjernet
+pdfjs-editor-undo-bar-message-comment = Kommentar fjernet
+# Variables:
+#   $count (Number) - the number of removed annotations.
+pdfjs-editor-undo-bar-message-multiple =
+    { $count ->
+        [one] { $count } kommentar fjernet
+       *[other] { $count } kommentarer fjernet
+    }
 pdfjs-editor-undo-bar-undo-button =
     .title = Angre
 pdfjs-editor-undo-bar-undo-button-label = Angre
@@ -563,6 +596,8 @@ pdfjs-editor-add-signature-save-checkbox = Lagre signatur
 pdfjs-editor-add-signature-save-warning-message = Du har nådd grensen på 5 lagrede signaturer. Fjern en for å lagre en ny.
 pdfjs-editor-add-signature-image-upload-error-title = Kunne ikke laste opp bildet
 pdfjs-editor-add-signature-image-upload-error-description = Sjekk nettverkstilkoblingen eller prøv et annet bilde.
+pdfjs-editor-add-signature-image-no-data-error-title = Kan ikke konvertere dette bildet til en signatur
+pdfjs-editor-add-signature-image-no-data-error-description = Prøv å laste opp et annet bilde.
 pdfjs-editor-add-signature-error-close-button = Lukk
 
 ## Dialog buttons
@@ -571,11 +606,112 @@ pdfjs-editor-add-signature-cancel-button = Avbryt
 pdfjs-editor-add-signature-add-button = Legg til
 pdfjs-editor-edit-signature-update-button = Oppdater
 
+## Comment popup
+
+pdfjs-editor-edit-comment-popup-button-label = Rediger kommentar
+pdfjs-editor-edit-comment-popup-button =
+    .title = Rediger kommentar
+pdfjs-editor-delete-comment-popup-button-label = Fjern kommentar
+pdfjs-editor-delete-comment-popup-button =
+    .title = Fjern kommentar
+pdfjs-show-comment-button =
+    .title = Vis kommentar
+
+##  Edit a comment dialog
+
+# An existing comment is edited
+pdfjs-editor-edit-comment-dialog-title-when-editing = Rediger kommentar
+pdfjs-editor-edit-comment-dialog-save-button-when-editing = Oppdater
+# No existing comment
+pdfjs-editor-edit-comment-dialog-title-when-adding = Legg til kommentar
+pdfjs-editor-edit-comment-dialog-save-button-when-adding = Legg til
+pdfjs-editor-edit-comment-dialog-text-input =
+    .placeholder = Begynn å skrive…
+pdfjs-editor-edit-comment-dialog-cancel-button = Avbryt
+
+## Edit a comment button in the editor toolbar
+
+pdfjs-editor-add-comment-button =
+    .title = Legg til kommentar
+
+## The view manager is a sidebar displaying different views:
+##  - thumbnails;
+##  - outline;
+##  - attachments;
+##  - layers.
+## The thumbnails view is used to edit the pdf: remove/insert pages, ...
+
+pdfjs-toggle-views-manager-button =
+    .title = Vis/skjul sidestolpe
+pdfjs-toggle-views-manager-notification-button =
+    .title = Vis/skjul sidestolpe (dokumentet inneholder miniatyrbilder/disposisjon/vedlegg/lag)
+pdfjs-toggle-views-manager-button-label = Vis/skjul sidestolpe
+pdfjs-views-manager-sidebar =
+    .aria-label = Sidestolpe
+pdfjs-views-manager-view-selector-button =
+    .title = Visninger
+pdfjs-views-manager-view-selector-button-label = Visninger
+pdfjs-views-manager-pages-title = Sider
+pdfjs-views-manager-outlines-title = Dokumentdisposisjon
+pdfjs-views-manager-attachments-title = Vedlegg
+pdfjs-views-manager-layers-title = Lag
+pdfjs-views-manager-pages-option-label = Sider
+pdfjs-views-manager-outlines-option-label = Dokumentdisposisjon
+pdfjs-views-manager-attachments-option-label = Vedlegg
+pdfjs-views-manager-layers-option-label = Lag
+pdfjs-views-manager-add-file-button =
+    .title = Legg til fil
+pdfjs-views-manager-add-file-button-label = Legg til fil
+# Variables:
+#   $count (Number) - the number of selected pages.
+pdfjs-views-manager-pages-status-action-label =
+    { $count ->
+        [one] { $count } valgt
+       *[other] { $count } valgt
+    }
+pdfjs-views-manager-pages-status-none-action-label = Velg sider
+pdfjs-views-manager-pages-status-action-button-label = Behandle
+pdfjs-views-manager-pages-status-copy-button-label = Kopier
+pdfjs-views-manager-pages-status-cut-button-label = Klipp ut
+pdfjs-views-manager-pages-status-delete-button-label = Slett
+pdfjs-views-manager-pages-status-save-as-button-label = Lagre som …
+# Variables:
+#   $count (Number) - the number of selected pages to be cut.
+pdfjs-views-manager-status-undo-cut-label =
+    { $count ->
+        [one] 1 side klippet ut
+       *[other] { $count } sider klippet ut
+    }
+# Variables:
+#   $count (Number) - the number of selected pages to be copied.
+pdfjs-views-manager-pages-status-undo-copy-label =
+    { $count ->
+        [one] 1 side kopiert
+       *[other] { $count } sider kopiert
+    }
+# Variables:
+#   $count (Number) - the number of selected pages to be deleted.
+pdfjs-views-manager-pages-status-undo-delete-label =
+    { $count ->
+        [one] 1 side slettet
+       *[other] { $count } sider slettet
+    }
+pdfjs-views-manager-pages-status-waiting-ready-label = Klargjør filen din …
+pdfjs-views-manager-pages-status-waiting-uploading-label = Laster opp filen …
+pdfjs-views-manager-status-warning-cut-label = Kunne ikke klippe ut. Oppdater siden og prøv på nytt.
+pdfjs-views-manager-status-warning-copy-label = Kunne ikke kopiere. Oppdater siden og prøv på nytt.
+pdfjs-views-manager-status-warning-delete-label = Kunne ikke slette. Oppdater siden og prøv på nytt.
+pdfjs-views-manager-status-warning-save-label = Kunne ikke lagre. Oppdater siden og prøv på nytt.
+pdfjs-views-manager-status-undo-button-label = Angre
+pdfjs-views-manager-status-close-button =
+    .title = Lukk
+pdfjs-views-manager-status-close-button-label = Lukk
+
 ## Main menu for adding/removing signatures
 
-pdfjs-editor-delete-signature-button =
-    .title = Fjern signatur
-pdfjs-editor-delete-signature-button-label = Fjern signatur
+pdfjs-editor-delete-signature-button1 =
+    .title = Fjern lagret signatur
+pdfjs-editor-delete-signature-button-label1 = Fjern lagret signatur
 
 ## Editor toolbar
 

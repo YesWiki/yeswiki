@@ -112,14 +112,6 @@ pdfjs-document-properties-size-kb = { NUMBER($kb, maximumSignificantDigits: 3) }
 #   $mb (Number) - the PDF file size in megabytes
 #   $b (Number) - the PDF file size in bytes
 pdfjs-document-properties-size-mb = { NUMBER($mb, maximumSignificantDigits: 3) } م.بايت ({ $b } بايتات)
-# Variables:
-#   $size_kb (Number) - the PDF file size in kilobytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-kb = { $size_kb } ك.بايت ({ $size_b } بايت)
-# Variables:
-#   $size_mb (Number) - the PDF file size in megabytes
-#   $size_b (Number) - the PDF file size in bytes
-pdfjs-document-properties-mb = { $size_mb } م.بايت ({ $size_b } بايت)
 pdfjs-document-properties-title = العنوان:
 pdfjs-document-properties-author = المؤلف:
 pdfjs-document-properties-subject = الموضوع:
@@ -129,10 +121,6 @@ pdfjs-document-properties-modification-date = تاريخ التعديل:
 # Variables:
 #   $dateObj (Date) - the creation/modification date and time of the PDF file
 pdfjs-document-properties-date-time-string = { DATETIME($dateObj, dateStyle: "short", timeStyle: "medium") }
-# Variables:
-#   $date (Date) - the creation/modification date of the PDF file
-#   $time (Time) - the creation/modification time of the PDF file
-pdfjs-document-properties-date-string = { $date }، { $time }
 pdfjs-document-properties-creator = المنشئ:
 pdfjs-document-properties-producer = منتج PDF:
 pdfjs-document-properties-version = إصدارة PDF:
@@ -283,10 +271,6 @@ pdfjs-rendering-error = حدث خطأ أثناء عرض الصفحة.
 
 ## Annotations
 
-# Variables:
-#   $date (Date) - the modification date of the annotation
-#   $time (Time) - the modification time of the annotation
-pdfjs-annotation-date-string = { $date }، { $time }
 # .alt: This is used as a tooltip.
 # Variables:
 #   $type (String) - an annotation type from a list defined in the PDF spec
@@ -324,6 +308,25 @@ pdfjs-highlight-floating-button1 =
     .title = أبرِز
     .aria-label = أبرِز
 pdfjs-highlight-floating-button-label = أبرِز
+pdfjs-editor-signature-button =
+    .title = أضِف توقيع
+pdfjs-editor-signature-button-label = أضِف توقيع
+
+## Default editor aria labels
+
+# “Highlight” is a noun, the string is used on the editor for highlights.
+pdfjs-editor-highlight-editor =
+    .aria-label = محرِّر الإبراز
+# “Drawing” is a noun, the string is used on the editor for drawings.
+pdfjs-editor-ink-editor =
+    .aria-label = محرِّر الرسم
+# Used when a signature editor is selected/hovered.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-signature-editor1 =
+    .aria-description = محرِّر التوقيع: { $description }
+pdfjs-editor-stamp-editor =
+    .aria-label = محرِّر الصور
 
 ## Remove button for the various kind of editor.
 
@@ -353,24 +356,26 @@ pdfjs-editor-stamp-add-image-button-label = أضِف صورة
 pdfjs-editor-free-highlight-thickness-input = السماكة
 pdfjs-editor-free-highlight-thickness-title =
     .title = غيّر السُمك عند إبراز عناصر أُخرى غير النص
+pdfjs-editor-add-signature-container =
+    .aria-label = عناصر التحكم في التوقيع والتوقيعات المحفوظة
+pdfjs-editor-signature-add-signature-button =
+    .title = أضِف توقيع جديد
+pdfjs-editor-signature-add-signature-button-label = أضِف توقيع جديد
+# Used on the button to use an already saved signature.
+# Variables:
+#   $description (String) - a string describing/labeling the signature.
+pdfjs-editor-add-saved-signature-button =
+    .title = التوقيع المحفوظ: { $description }
 # .default-content is used as a placeholder in an empty text editor.
 pdfjs-free-text2 =
     .aria-label = محرِّر النص
     .default-content = ابدأ في كتابة…
-pdfjs-free-text =
-    .aria-label = محرِّر النص
-pdfjs-free-text-default-content = ابدأ الكتابة…
-pdfjs-ink =
-    .aria-label = محرِّر الرسم
-pdfjs-ink-canvas =
-    .aria-label = صورة أنشأها المستخدم
 
 ## Alt-text dialog
 
 pdfjs-editor-alt-text-button-label = نص بديل
 pdfjs-editor-alt-text-edit-button =
     .aria-label = حرّر النص البديل
-pdfjs-editor-alt-text-edit-button-label = تحرير النص البديل
 pdfjs-editor-alt-text-dialog-label = اختر خيار
 pdfjs-editor-alt-text-dialog-description = يساعد النص البديل عندما لا يتمكن الأشخاص من رؤية الصورة أو عندما لا يتم تحميلها.
 pdfjs-editor-alt-text-add-description-label = أضِف وصف
@@ -390,14 +395,6 @@ pdfjs-editor-alt-text-button =
 ## Editor resizers
 ## This is used in an aria label to help to understand the role of the resizer.
 
-pdfjs-editor-resizer-label-top-left = الزاوية اليُسرى العُليا — غيّر الحجم
-pdfjs-editor-resizer-label-top-middle = أعلى الوسط - غيّر الحجم
-pdfjs-editor-resizer-label-top-right = الزاوية اليُمنى العُليا - غيّر الحجم
-pdfjs-editor-resizer-label-middle-right = اليمين الأوسط - غيّر الحجم
-pdfjs-editor-resizer-label-bottom-right = الزاوية اليُمنى السُفلى - غيّر الحجم
-pdfjs-editor-resizer-label-bottom-middle = أسفل الوسط - غيّر الحجم
-pdfjs-editor-resizer-label-bottom-left = الزاوية اليُسرى السُفلية - غيّر الحجم
-pdfjs-editor-resizer-label-middle-left = مُنتصف اليسار - غيّر الحجم
 pdfjs-editor-resizer-top-left =
     .aria-label = الزاوية اليُسرى العُليا — غيّر الحجم
 pdfjs-editor-resizer-top-middle =
@@ -463,7 +460,6 @@ pdfjs-editor-new-alt-text-error-close-button = أغلق
 # Variables:
 #   $totalSize (Number) - the total size (in MB) of the AI model.
 #   $downloadedSize (Number) - the downloaded size (in MB) of the AI model.
-#   $percent (Number) - the percentage of the downloaded size.
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = يُنزّل نموذج الذكاء الاصطناعي للنص البديل ({ $downloadedSize } من { $totalSize } م.بايت)
     .aria-valuetext = يُنزّل نموذج الذكاء الاصطناعي للنص البديل ({ $downloadedSize } من { $totalSize } م.بايت)
 # This is a button that users can click to edit the alt text they have already added.
@@ -582,12 +578,18 @@ pdfjs-editor-add-signature-error-close-button = أغلق
 
 pdfjs-editor-add-signature-cancel-button = ألغِ
 pdfjs-editor-add-signature-add-button = أضِف
+pdfjs-editor-edit-signature-update-button = حدّث
 
 ## Main menu for adding/removing signatures
 
+pdfjs-editor-delete-signature-button1 =
+    .title = أزِل التوقيع المحفوظ
+pdfjs-editor-delete-signature-button-label1 = أزِل التوقيع المحفوظ
 
 ## Editor toolbar
 
+pdfjs-editor-add-signature-edit-button-label = عدّل الوصف
 
 ## Edit signature description dialog
 
+pdfjs-editor-edit-signature-dialog-title = عدّل الوصف

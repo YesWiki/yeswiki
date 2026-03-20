@@ -5,7 +5,7 @@ use YesWiki\Bazar\Service\EntryManager;
 $entryManager = $this->services->get(EntryManager::class);
 
 if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess('read')) {
-    if (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false) {
+    if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
         $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
         $contentType = $semantic ? 'application/ld+json' : 'application/json';
 
@@ -15,6 +15,6 @@ if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess('read')) {
         $fiche = $entryManager->getOne($this->GetPageTag(), $semantic);
         $this->exit(json_encode($fiche));
     } else {
-        $this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+        $this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
     }
 }

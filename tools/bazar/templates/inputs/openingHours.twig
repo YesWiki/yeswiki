@@ -1,0 +1,5 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js', true) }}
+
+{{ include_javascript('tools/bazar/presentation/javascripts/inputs/opening_hours.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/opening_hours.css') }}
+<opening-hours-create data-openingHours="{{ opening_hours }}" data-field="{{ field | json_encode }}"></opening-hours-create>

@@ -15,9 +15,12 @@
     {{ include('@templates/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
   {% endif %}
 
-  {% set imWidth = (nbcol == 4) ? 250 : (nbcol == 5 ? 200 : 300 ) %}
+  {% set imWidth = (nbcol == 4) ? 500 : (nbcol == 5 ? 400 : 700 ) %}
   {% set imHeight = params.style == "square" ? imWidth : (params.style == "horizontal" ? imWidth*23//27 : imWidth*2//3 ) %}
-  {% set firstTokenCrop = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/fit") %}
+  {# Generate appropriate CSRF tokens for both image processing modes #}
+  {% set fitToken = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/fit") %}
+  {% set cropToken = csrfToken("POST api/images/cache/#{imWidth}/#{imHeight}/crop") %}
+
 
   <div class="bazar-cards-container" v-if="ready"
        :class="[{ready: ready}, `style-${params.style || 'vertical'}`, `nbcol-{{nbcol}}`]"
@@ -48,15 +51,23 @@
       {% block area_visual %}
       <template v-if="Object.keys(entry).includes('visual')">
         <template v-if="entry.visual">
-          <img
-            loading="lazy" alt=""
-            :style="{width:((params.style == 'square')? false : '0px'),height:((params.style == 'square')? false : '0px'),'object-fit':params.imgstyle}"
-            class="area visual-area"
-            :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit')"
-            @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'fit',{{ firstTokenCrop|json_encode }})"></img>
-          <div v-if="params.style != 'square'" class="area visual-area"
-            :style="{color:'blue','background-size':params.imgstyle ,'background-image': `url('${urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit')}')`}">
-          </div>
+         {% if params.imgstyle == "contain" %}
+            <img
+              loading="lazy" 
+              alt=""
+              class="area visual-area"
+              :style="{'object-fit': 'contain'}"
+              :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'fit')"
+              @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'fit',{{ fitToken|json_encode }})">
+          {% else %}
+            <img
+              loading="lazy" 
+              alt=""
+              class="area visual-area"
+              :style="{'object-fit': 'cover'}"
+              :src="urlImage(entry,'visual',{{ imWidth }},{{ imHeight }},'crop')"
+              @error="urlImageResizedOnError(entry,'visual',{{ imWidth }},{{ imHeight }},'crop',{{ cropToken|json_encode }})">
+          {% endif %}
 
         </template>
         <div v-else class="area area visual-area placeholder"></div>
@@ -66,7 +77,7 @@
       <div class="content">
         {# TITLE AREA #}
         {% block area_title %}
-        <h4 div class="area title-area" v-if="entry.title">
+        <h4  class="area title-area" v-if="entry.title">
           <span v-show="entry.color" class="pellet" :style="{'background-color': entry.color}"></span>
           <i v-show="entry.icon" :class="entry.icon"></i>
           <entry-field :entry="entry" prop="title" class="title"></entry-field>

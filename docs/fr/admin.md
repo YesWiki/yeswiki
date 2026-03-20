@@ -2,6 +2,7 @@
 
 Dans cette partie, vous trouverez de nombreuses données pour gérer votre site, notamment la gestion des personnes utilisant le wiki et des droits d'accès, la personnalisation graphique, la gestion du contenu indésirable et les options avancées, la sécurisation du site.
 
+
 ## Gestion du site : plan de l'administration
 
 **Accueil de gestion du site**
@@ -524,6 +525,11 @@ Trois options sont possibles :
 - option 1 : nettoyer les pages spéciales puis utiliser l'action {{despam}}
 - option 2 : restaurer la base de donnée à partir d'une sauvegarde. ATTENTION, pour cette option, il faut avoir une sauvegarde et les accès à phpmyadmin
 - option 3 : pour la suppression massive de nouvelles pages : extension `maintenance` (cf paragraphe ci-dessus).
+
+
+#### Pour vérifier quelles pages ont été modifiées par un user suspect
+
+Une action **listpages** permet d'obtenir la liste des pages qui ont été modifiées par un user : {{listpages user="xxx" }} , remplacer xxx par l'identifiant du user suspect.
 
 #### Pour supprimer les utilisateurs non désirables (utilisateurs avancés)
 

@@ -19,24 +19,41 @@
   --message-bar-close-button-color-hover:var(--text-primary-color);
   --message-bar-close-button-border-radius:4px;
   --message-bar-close-button-border:none;
-  --message-bar-close-button-hover-bg-color:rgb(21 20 26 / 0.14);
-  --message-bar-close-button-active-bg-color:rgb(21 20 26 / 0.21);
-  --message-bar-close-button-focus-bg-color:rgb(21 20 26 / 0.07);
+  --csstools-light-dark-toggle--24:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.14);
+  --message-bar-close-button-hover-bg-color:var(--csstools-light-dark-toggle--24, rgb(21 20 26 / 0.14));
+  --csstools-light-dark-toggle--25:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.21);
+  --message-bar-close-button-active-bg-color:var(--csstools-light-dark-toggle--25, rgb(21 20 26 / 0.21));
+  --csstools-light-dark-toggle--26:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.07);
+  --message-bar-close-button-focus-bg-color:var(--csstools-light-dark-toggle--26, rgb(21 20 26 / 0.07));
 }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) .messageBar{
-    --message-bar-close-button-hover-bg-color:rgb(251 251 254 / 0.14);
-    --message-bar-close-button-active-bg-color:rgb(251 251 254 / 0.21);
-    --message-bar-close-button-focus-bg-color:rgb(251 251 254 / 0.07);
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+.messageBar{
+  --message-bar-close-button-hover-bg-color:light-dark(
+    rgb(21 20 26 / 0.14),
+    rgb(251 251 254 / 0.14)
+  );
+  --message-bar-close-button-active-bg-color:light-dark(
+    rgb(21 20 26 / 0.21),
+    rgb(251 251 254 / 0.21)
+  );
+  --message-bar-close-button-focus-bg-color:light-dark(
+    rgb(21 20 26 / 0.07),
+    rgb(251 251 254 / 0.07)
+  );
 }
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.messageBar *{
+  --csstools-light-dark-toggle--24:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.14);
+  --message-bar-close-button-hover-bg-color:var(--csstools-light-dark-toggle--24, rgb(21 20 26 / 0.14));
+  --csstools-light-dark-toggle--25:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.21);
+  --message-bar-close-button-active-bg-color:var(--csstools-light-dark-toggle--25, rgb(21 20 26 / 0.21));
+  --csstools-light-dark-toggle--26:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.07);
+  --message-bar-close-button-focus-bg-color:var(--csstools-light-dark-toggle--26, rgb(21 20 26 / 0.07));
   }
-
-:where(html.is-dark) .messageBar{
-    --message-bar-close-button-hover-bg-color:rgb(251 251 254 / 0.14);
-    --message-bar-close-button-active-bg-color:rgb(251 251 254 / 0.21);
-    --message-bar-close-button-focus-bg-color:rgb(251 251 254 / 0.07);
 }
 
 @media screen and (forced-colors: active){
@@ -148,48 +165,96 @@
     }
 
 #editorUndoBar{
-  --text-primary-color:#15141a;
+  --csstools-light-dark-toggle--27:var(--csstools-color-scheme--light) #fbfbfe;
+  --text-primary-color:var(--csstools-light-dark-toggle--27, #15141a);
 
-  --message-bar-icon:url(images/secondaryToolbarButton-documentProperties.svg);
-  --message-bar-icon-color:#0060df;
-  --message-bar-bg-color:#deeafc;
+  --message-bar-icon:url(images/messageBar_info.svg);
+  --csstools-light-dark-toggle--28:var(--csstools-color-scheme--light) #73a7f3;
+  --message-bar-icon-color:var(--csstools-light-dark-toggle--28, #0060df);
+  --csstools-light-dark-toggle--29:var(--csstools-color-scheme--light) #003070;
+  --message-bar-bg-color:var(--csstools-light-dark-toggle--29, #deeafc);
   --message-bar-fg-color:var(--text-primary-color);
-  --message-bar-border-color:rgb(0 0 0 / 0.08);
+  --csstools-light-dark-toggle--30:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.08);
+  --message-bar-border-color:var(--csstools-light-dark-toggle--30, rgb(0 0 0 / 0.08));
 
-  --undo-button-bg-color:rgb(21 20 26 / 0.07);
-  --undo-button-bg-color-hover:rgb(21 20 26 / 0.14);
-  --undo-button-bg-color-active:rgb(21 20 26 / 0.21);
+  --csstools-light-dark-toggle--31:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.08);
+
+  --undo-button-bg-color:var(--csstools-light-dark-toggle--31, rgb(21 20 26 / 0.07));
+  --csstools-light-dark-toggle--32:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.14);
+  --undo-button-bg-color-hover:var(--csstools-light-dark-toggle--32, rgb(21 20 26 / 0.14));
+  --csstools-light-dark-toggle--33:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.21);
+  --undo-button-bg-color-active:var(--csstools-light-dark-toggle--33, rgb(21 20 26 / 0.21));
+
+  --csstools-light-dark-toggle--34:var(--csstools-color-scheme--light) #0df;
+
+  --undo-button-border:1px solid var(--csstools-light-dark-toggle--34, #0060df);
 
   --undo-button-fg-color:var(--message-bar-fg-color);
   --undo-button-fg-color-hover:var(--undo-button-fg-color);
   --undo-button-fg-color-active:var(--undo-button-fg-color);
 }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) #editorUndoBar{
-    --text-primary-color:#fbfbfe;
-
-    --message-bar-icon-color:#73a7f3;
-    --message-bar-bg-color:#003070;
-    --message-bar-border-color:rgb(255 255 255 / 0.08);
-
-    --undo-button-bg-color:rgb(255 255 255 / 0.08);
-    --undo-button-bg-color-hover:rgb(255 255 255 / 0.14);
-    --undo-button-bg-color-active:rgb(255 255 255 / 0.21);
+@supports (color: light-dark(red, red)){
+#editorUndoBar{
+  --text-primary-color:light-dark(#15141a, #fbfbfe);
+  --message-bar-icon-color:light-dark(#0060df, #73a7f3);
+  --message-bar-bg-color:light-dark(#deeafc, #003070);
 }
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+#editorUndoBar{
+  --message-bar-border-color:light-dark(
+    rgb(0 0 0 / 0.08),
+    rgb(255 255 255 / 0.08)
+  );
+
+  --undo-button-bg-color:light-dark(
+    rgb(21 20 26 / 0.07),
+    rgb(255 255 255 / 0.08)
+  );
+  --undo-button-bg-color-hover:light-dark(
+    rgb(21 20 26 / 0.14),
+    rgb(255 255 255 / 0.14)
+  );
+  --undo-button-bg-color-active:light-dark(
+    rgb(21 20 26 / 0.21),
+    rgb(255 255 255 / 0.21)
+  );
+}
+}
+
+@supports (color: light-dark(red, red)){
+#editorUndoBar{
+
+  --undo-button-border:1px solid light-dark(#0060df, #0df);
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+#editorUndoBar *{
+  --csstools-light-dark-toggle--27:var(--csstools-color-scheme--light) #fbfbfe;
+  --text-primary-color:var(--csstools-light-dark-toggle--27, #15141a);
+  --csstools-light-dark-toggle--28:var(--csstools-color-scheme--light) #73a7f3;
+  --message-bar-icon-color:var(--csstools-light-dark-toggle--28, #0060df);
+  --csstools-light-dark-toggle--29:var(--csstools-color-scheme--light) #003070;
+  --message-bar-bg-color:var(--csstools-light-dark-toggle--29, #deeafc);
+  --csstools-light-dark-toggle--30:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.08);
+  --message-bar-border-color:var(--csstools-light-dark-toggle--30, rgb(0 0 0 / 0.08));
+
+  --csstools-light-dark-toggle--31:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.08);
+
+  --undo-button-bg-color:var(--csstools-light-dark-toggle--31, rgb(21 20 26 / 0.07));
+  --csstools-light-dark-toggle--32:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.14);
+  --undo-button-bg-color-hover:var(--csstools-light-dark-toggle--32, rgb(21 20 26 / 0.14));
+  --csstools-light-dark-toggle--33:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.21);
+  --undo-button-bg-color-active:var(--csstools-light-dark-toggle--33, rgb(21 20 26 / 0.21));
+
+  --csstools-light-dark-toggle--34:var(--csstools-color-scheme--light) #0df;
+
+  --undo-button-border:1px solid var(--csstools-light-dark-toggle--34, #0060df);
   }
-
-:where(html.is-dark) #editorUndoBar{
-    --text-primary-color:#fbfbfe;
-
-    --message-bar-icon-color:#73a7f3;
-    --message-bar-bg-color:#003070;
-    --message-bar-border-color:rgb(255 255 255 / 0.08);
-
-    --undo-button-bg-color:rgb(255 255 255 / 0.08);
-    --undo-button-bg-color-hover:rgb(255 255 255 / 0.14);
-    --undo-button-bg-color-active:rgb(255 255 255 / 0.21);
 }
 
 @media screen and (forced-colors: active){
@@ -208,6 +273,8 @@
     --undo-button-fg-color:ButtonFace;
     --undo-button-fg-color-hover:SelectedItemText;
     --undo-button-fg-color-active:SelectedItemText;
+
+    --undo-button-border:none;
 }
   }
 
@@ -237,7 +304,7 @@
     font-weight:590;
     line-height:19.5px;
     color:var(--undo-button-fg-color);
-    border:none;
+    border:var(--undo-button-border);
     padding:4px 16px;
     margin-inline-start:8px;
     height:32px;
@@ -260,110 +327,201 @@
   }
 
 .dialog{
-  --dialog-bg-color:white;
-  --dialog-border-color:white;
-  --dialog-shadow:0 2px 14px 0 rgb(58 57 68 / 0.2);
-  --text-primary-color:#15141a;
-  --text-secondary-color:#5b5b66;
+  --csstools-light-dark-toggle--35:var(--csstools-color-scheme--light) #1c1b22;
+  --dialog-bg-color:var(--csstools-light-dark-toggle--35, white);
+  --csstools-light-dark-toggle--36:var(--csstools-color-scheme--light) #1c1b22;
+  --dialog-border-color:var(--csstools-light-dark-toggle--36, white);
+  --csstools-light-dark-toggle--37:var(--csstools-color-scheme--light) #15141a;
+  --dialog-shadow:0 2px 14px 0 var(--csstools-light-dark-toggle--37, rgb(58 57 68 / 0.2));
+  --csstools-light-dark-toggle--38:var(--csstools-color-scheme--light) #fbfbfe;
+  --text-primary-color:var(--csstools-light-dark-toggle--38, #15141a);
+  --csstools-light-dark-toggle--39:var(--csstools-color-scheme--light) #cfcfd8;
+  --text-secondary-color:var(--csstools-light-dark-toggle--39, #5b5b66);
   --hover-filter:brightness(0.9);
-  --link-fg-color:#0060df;
-  --link-hover-fg-color:#0250bb;
-  --separator-color:#f0f0f4;
+  --csstools-light-dark-toggle--40:var(--csstools-color-scheme--light) #0df;
+  --link-fg-color:var(--csstools-light-dark-toggle--40, #0060df);
+  --csstools-light-dark-toggle--41:var(--csstools-color-scheme--light) #80ebff;
+  --link-hover-fg-color:var(--csstools-light-dark-toggle--41, #0250bb);
+  --csstools-light-dark-toggle--42:var(--csstools-color-scheme--light) #52525e;
+  --separator-color:var(--csstools-light-dark-toggle--42, #f0f0f4);
 
   --textarea-border-color:#8f8f9d;
-  --textarea-bg-color:white;
+  --csstools-light-dark-toggle--43:var(--csstools-color-scheme--light) #42414d;
+  --textarea-bg-color:var(--csstools-light-dark-toggle--43, white);
   --textarea-fg-color:var(--text-secondary-color);
 
-  --radio-bg-color:#f0f0f4;
-  --radio-checked-bg-color:#fbfbfe;
-  --radio-border-color:#8f8f9d;
-  --radio-checked-border-color:#0060df;
+  --csstools-light-dark-toggle--44:var(--csstools-color-scheme--light) #2b2a33;
 
-  --button-secondary-bg-color:rgb(21 20 26 / 0.07);
+  --radio-bg-color:var(--csstools-light-dark-toggle--44, #f0f0f4);
+  --csstools-light-dark-toggle--45:var(--csstools-color-scheme--light) #15141a;
+  --radio-checked-bg-color:var(--csstools-light-dark-toggle--45, #fbfbfe);
+  --radio-border-color:#8f8f9d;
+  --csstools-light-dark-toggle--46:var(--csstools-color-scheme--light) #0df;
+  --radio-checked-border-color:var(--csstools-light-dark-toggle--46, #0060df);
+
+  --csstools-light-dark-toggle--47:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.07);
+
+  --button-secondary-bg-color:var(--csstools-light-dark-toggle--47, rgb(21 20 26 / 0.07));
   --button-secondary-fg-color:var(--text-primary-color);
   --button-secondary-border-color:var(--button-secondary-bg-color);
-  --button-secondary-active-bg-color:rgb(21 20 26 / 0.21);
+  --csstools-light-dark-toggle--48:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.21);
+  --button-secondary-active-bg-color:var(--csstools-light-dark-toggle--48, rgb(21 20 26 / 0.21));
   --button-secondary-active-fg-color:var(--button-secondary-fg-color);
   --button-secondary-active-border-color:var(--button-secondary-bg-color);
-  --button-secondary-hover-bg-color:rgb(21 20 26 / 0.14);
+  --csstools-light-dark-toggle--49:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.14);
+  --button-secondary-hover-bg-color:var(--csstools-light-dark-toggle--49, rgb(21 20 26 / 0.14));
   --button-secondary-hover-fg-color:var(--button-secondary-fg-color);
   --button-secondary-hover-border-color:var(--button-secondary-hover-bg-color);
+  --button-secondary-disabled-bg-color:var(--button-secondary-bg-color);
+  --button-secondary-disabled-border-color:var(
+    --button-secondary-border-color
+  );
+  --button-secondary-disabled-fg-color:var(--button-secondary-fg-color);
 
-  --button-primary-bg-color:#0060df;
-  --button-primary-fg-color:#fbfbfe;
+  --csstools-light-dark-toggle--50:var(--csstools-color-scheme--light) #0df;
+
+  --button-primary-bg-color:var(--csstools-light-dark-toggle--50, #0060df);
+  --csstools-light-dark-toggle--51:var(--csstools-color-scheme--light) #15141a;
+  --button-primary-fg-color:var(--csstools-light-dark-toggle--51, #fbfbfe);
   --button-primary-border-color:var(--button-primary-bg-color);
-  --button-primary-active-bg-color:#054096;
+  --csstools-light-dark-toggle--52:var(--csstools-color-scheme--light) #aaf2ff;
+  --button-primary-active-bg-color:var(--csstools-light-dark-toggle--52, #054096);
   --button-primary-active-fg-color:var(--button-primary-fg-color);
   --button-primary-active-border-color:var(--button-primary-active-bg-color);
-  --button-primary-hover-bg-color:#0250bb;
+  --csstools-light-dark-toggle--53:var(--csstools-color-scheme--light) #80ebff;
+  --button-primary-hover-bg-color:var(--csstools-light-dark-toggle--53, #0250bb);
   --button-primary-hover-fg-color:var(--button-primary-fg-color);
   --button-primary-hover-border-color:var(--button-primary-hover-bg-color);
+  --button-primary-disabled-bg-color:var(--button-primary-bg-color);
+  --button-primary-disabled-border-color:var(--button-primary-border-color);
+  --button-primary-disabled-fg-color:var(--button-primary-fg-color);
+  --button-disabled-opacity:0.4;
 
-  --button-disabled-bg-color:color-mix(in srgb, currentcolor, transparent 60%);
-  --button-disabled-fg-color:var(--button-disabled-bg-color);
+  --csstools-light-dark-toggle--54:var(--csstools-color-scheme--light) #42414d;
 
-  --input-text-bg-color:white;
+  --input-text-bg-color:var(--csstools-light-dark-toggle--54, white);
   --input-text-fg-color:var(--text-primary-color);
+}
+
+@supports (color: light-dark(red, red)){
+.dialog{
+  --dialog-bg-color:light-dark(white, #1c1b22);
+  --dialog-border-color:light-dark(white, #1c1b22);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+.dialog{
+  --dialog-shadow:0 2px 14px 0 light-dark(rgb(58 57 68 / 0.2), #15141a);
+}
+}
+
+@supports (color: light-dark(red, red)){
+.dialog{
+  --text-primary-color:light-dark(#15141a, #fbfbfe);
+  --text-secondary-color:light-dark(#5b5b66, #cfcfd8);
+  --link-fg-color:light-dark(#0060df, #0df);
+  --link-hover-fg-color:light-dark(#0250bb, #80ebff);
+  --separator-color:light-dark(#f0f0f4, #52525e);
+  --textarea-bg-color:light-dark(white, #42414d);
+
+  --radio-bg-color:light-dark(#f0f0f4, #2b2a33);
+  --radio-checked-bg-color:light-dark(#fbfbfe, #15141a);
+  --radio-checked-border-color:light-dark(#0060df, #0df);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+.dialog{
+
+  --button-secondary-bg-color:light-dark(
+    rgb(21 20 26 / 0.07),
+    rgb(251 251 254 / 0.07)
+  );
+  --button-secondary-active-bg-color:light-dark(
+    rgb(21 20 26 / 0.21),
+    rgb(251 251 254 / 0.21)
+  );
+  --button-secondary-hover-bg-color:light-dark(
+    rgb(21 20 26 / 0.14),
+    rgb(251 251 254 / 0.14)
+  );
+}
+}
+
+@supports (color: light-dark(red, red)){
+.dialog{
+
+  --button-primary-bg-color:light-dark(#0060df, #0df);
+  --button-primary-fg-color:light-dark(#fbfbfe, #15141a);
+  --button-primary-active-bg-color:light-dark(#054096, #aaf2ff);
+  --button-primary-hover-bg-color:light-dark(#0250bb, #80ebff);
+
+  --input-text-bg-color:light-dark(white, #42414d);
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.dialog *{
+  --csstools-light-dark-toggle--35:var(--csstools-color-scheme--light) #1c1b22;
+  --dialog-bg-color:var(--csstools-light-dark-toggle--35, white);
+  --csstools-light-dark-toggle--36:var(--csstools-color-scheme--light) #1c1b22;
+  --dialog-border-color:var(--csstools-light-dark-toggle--36, white);
+  --csstools-light-dark-toggle--37:var(--csstools-color-scheme--light) #15141a;
+  --dialog-shadow:0 2px 14px 0 var(--csstools-light-dark-toggle--37, rgb(58 57 68 / 0.2));
+  --csstools-light-dark-toggle--38:var(--csstools-color-scheme--light) #fbfbfe;
+  --text-primary-color:var(--csstools-light-dark-toggle--38, #15141a);
+  --csstools-light-dark-toggle--39:var(--csstools-color-scheme--light) #cfcfd8;
+  --text-secondary-color:var(--csstools-light-dark-toggle--39, #5b5b66);
+  --csstools-light-dark-toggle--40:var(--csstools-color-scheme--light) #0df;
+  --link-fg-color:var(--csstools-light-dark-toggle--40, #0060df);
+  --csstools-light-dark-toggle--41:var(--csstools-color-scheme--light) #80ebff;
+  --link-hover-fg-color:var(--csstools-light-dark-toggle--41, #0250bb);
+  --csstools-light-dark-toggle--42:var(--csstools-color-scheme--light) #52525e;
+  --separator-color:var(--csstools-light-dark-toggle--42, #f0f0f4);
+  --csstools-light-dark-toggle--43:var(--csstools-color-scheme--light) #42414d;
+  --textarea-bg-color:var(--csstools-light-dark-toggle--43, white);
+
+  --csstools-light-dark-toggle--44:var(--csstools-color-scheme--light) #2b2a33;
+
+  --radio-bg-color:var(--csstools-light-dark-toggle--44, #f0f0f4);
+  --csstools-light-dark-toggle--45:var(--csstools-color-scheme--light) #15141a;
+  --radio-checked-bg-color:var(--csstools-light-dark-toggle--45, #fbfbfe);
+  --csstools-light-dark-toggle--46:var(--csstools-color-scheme--light) #0df;
+  --radio-checked-border-color:var(--csstools-light-dark-toggle--46, #0060df);
+
+  --csstools-light-dark-toggle--47:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.07);
+
+  --button-secondary-bg-color:var(--csstools-light-dark-toggle--47, rgb(21 20 26 / 0.07));
+  --csstools-light-dark-toggle--48:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.21);
+  --button-secondary-active-bg-color:var(--csstools-light-dark-toggle--48, rgb(21 20 26 / 0.21));
+  --csstools-light-dark-toggle--49:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.14);
+  --button-secondary-hover-bg-color:var(--csstools-light-dark-toggle--49, rgb(21 20 26 / 0.14));
+
+  --csstools-light-dark-toggle--50:var(--csstools-color-scheme--light) #0df;
+
+  --button-primary-bg-color:var(--csstools-light-dark-toggle--50, #0060df);
+  --csstools-light-dark-toggle--51:var(--csstools-color-scheme--light) #15141a;
+  --button-primary-fg-color:var(--csstools-light-dark-toggle--51, #fbfbfe);
+  --csstools-light-dark-toggle--52:var(--csstools-color-scheme--light) #aaf2ff;
+  --button-primary-active-bg-color:var(--csstools-light-dark-toggle--52, #054096);
+  --csstools-light-dark-toggle--53:var(--csstools-color-scheme--light) #80ebff;
+  --button-primary-hover-bg-color:var(--csstools-light-dark-toggle--53, #0250bb);
+
+  --csstools-light-dark-toggle--54:var(--csstools-color-scheme--light) #42414d;
+
+  --input-text-bg-color:var(--csstools-light-dark-toggle--54, white);
+  }
 }
 
 @media (prefers-color-scheme: dark){
 
-:where(html:not(.is-light)) .dialog{
-    --dialog-bg-color:#1c1b22;
-    --dialog-border-color:#1c1b22;
-    --dialog-shadow:0 2px 14px 0 #15141a;
-    --text-primary-color:#fbfbfe;
-    --text-secondary-color:#cfcfd8;
+.dialog{
     --hover-filter:brightness(1.4);
-    --link-fg-color:#0df;
-    --link-hover-fg-color:#80ebff;
-    --separator-color:#52525e;
-
-    --textarea-bg-color:#42414d;
-
-    --radio-bg-color:#2b2a33;
-    --radio-checked-bg-color:#15141a;
-    --radio-checked-border-color:#0df;
-
-    --button-secondary-bg-color:rgb(251 251 254 / 0.07);
-    --button-secondary-active-bg-color:rgb(251 251 254 / 0.21);
-    --button-secondary-hover-bg-color:rgb(251 251 254 / 0.14);
-    --button-primary-bg-color:#0df;
-    --button-primary-fg-color:#15141a;
-    --button-primary-active-bg-color:#aaf2ff;
-    --button-primary-hover-bg-color:#80ebff;
-
-    --input-text-bg-color:#42414d;
+    --button-disabled-opacity:0.6;
 }
   }
-
-:where(html.is-dark) .dialog{
-    --dialog-bg-color:#1c1b22;
-    --dialog-border-color:#1c1b22;
-    --dialog-shadow:0 2px 14px 0 #15141a;
-    --text-primary-color:#fbfbfe;
-    --text-secondary-color:#cfcfd8;
-    --hover-filter:brightness(1.4);
-    --link-fg-color:#0df;
-    --link-hover-fg-color:#80ebff;
-    --separator-color:#52525e;
-
-    --textarea-bg-color:#42414d;
-
-    --radio-bg-color:#2b2a33;
-    --radio-checked-bg-color:#15141a;
-    --radio-checked-border-color:#0df;
-
-    --button-secondary-bg-color:rgb(251 251 254 / 0.07);
-    --button-secondary-active-bg-color:rgb(251 251 254 / 0.21);
-    --button-secondary-hover-bg-color:rgb(251 251 254 / 0.14);
-    --button-primary-bg-color:#0df;
-    --button-primary-fg-color:#15141a;
-    --button-primary-active-bg-color:#aaf2ff;
-    --button-primary-hover-bg-color:#80ebff;
-
-    --input-text-bg-color:#42414d;
-}
 
 @media screen and (forced-colors: active){
 
@@ -387,7 +545,7 @@
     --radio-border-color:ButtonText;
     --radio-checked-border-color:ButtonText;
 
-    --button-secondary-bg-color:HighlightText;
+    --button-secondary-bg-color:ButtonFace;
     --button-secondary-fg-color:ButtonText;
     --button-secondary-border-color:ButtonText;
     --button-secondary-active-bg-color:HighlightText;
@@ -396,9 +554,11 @@
     --button-secondary-hover-bg-color:HighlightText;
     --button-secondary-hover-fg-color:SelectedItem;
     --button-secondary-hover-border-color:SelectedItem;
+    --button-secondary-disabled-fg-color:GrayText;
+    --button-secondary-disabled-border-color:GrayText;
 
     --button-primary-bg-color:ButtonText;
-    --button-primary-fg-color:HighlightText;
+    --button-primary-fg-color:ButtonFace;
     --button-primary-border-color:ButtonText;
     --button-primary-active-bg-color:SelectedItem;
     --button-primary-active-fg-color:HighlightText;
@@ -406,11 +566,12 @@
     --button-primary-hover-bg-color:SelectedItem;
     --button-primary-hover-fg-color:HighlightText;
     --button-primary-hover-border-color:SelectedItem;
+    --button-primary-disabled-bg-color:GrayText;
+    --button-primary-disabled-fg-color:ButtonFace;
+    --button-primary-disabled-border-color:GrayText;
+    --button-disabled-opacity:1;
 
-    --button-disabled-bg-color:GrayText;
-    --button-disabled-fg-color:ButtonFace;
-
-    --input-text-bg-color:HighlightText;
+    --input-text-bg-color:Field;
     --input-text-fg-color:FieldText;
 }
   }
@@ -552,6 +713,13 @@
           border-color:var(--button-secondary-active-border-color);
         }
 
+.secondaryButton:is(:is(.dialog .mainContainer) button:not(:is(.toggle-button,.closeButton,.clearInputButton))):disabled{
+          background-color:var(--button-secondary-disabled-bg-color);
+          border-color:var(--button-secondary-disabled-border-color);
+          color:var(--button-secondary-disabled-fg-color);
+          opacity:var(--button-disabled-opacity);
+        }
+
 .primaryButton:is(:is(.dialog .mainContainer) button:not(:is(.toggle-button,.closeButton,.clearInputButton))){
         color:var(--button-primary-fg-color);
         background-color:var(--button-primary-bg-color);
@@ -571,10 +739,14 @@
           border-color:var(--button-primary-active-border-color);
         }
 
+.primaryButton:is(:is(.dialog .mainContainer) button:not(:is(.toggle-button,.closeButton,.clearInputButton))):disabled{
+          background-color:var(--button-primary-disabled-bg-color);
+          border-color:var(--button-primary-disabled-border-color);
+          color:var(--button-primary-disabled-fg-color);
+          opacity:var(--button-disabled-opacity);
+        }
+
 :is(:is(.dialog .mainContainer) button:not(:is(.toggle-button,.closeButton,.clearInputButton))):disabled{
-        color:var(--button-disabled-fg-color) !important;
-        background-color:var(--button-disabled-bg-color);
-        border-color:var(--button-disabled-bg-color);
         pointer-events:none;
       }
 
@@ -614,29 +786,52 @@
     }
 
 :is(.dialog .mainContainer) .messageBar{
-      --message-bar-bg-color:#ffebcd;
-      --message-bar-fg-color:#15141a;
-      --message-bar-border-color:rgb(0 0 0 / 0.08);
+      --csstools-light-dark-toggle--55:var(--csstools-color-scheme--light) #5a3100;
+      --message-bar-bg-color:var(--csstools-light-dark-toggle--55, #ffebcd);
+      --csstools-light-dark-toggle--56:var(--csstools-color-scheme--light) #fbfbfe;
+      --message-bar-fg-color:var(--csstools-light-dark-toggle--56, #15141a);
+      --csstools-light-dark-toggle--57:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.08);
+      --message-bar-border-color:var(--csstools-light-dark-toggle--57, rgb(0 0 0 / 0.08));
       --message-bar-icon:url(images/messageBar_warning.svg);
-      --message-bar-icon-color:#cd411e;
+      --csstools-light-dark-toggle--58:var(--csstools-color-scheme--light) #e49c49;
+      --message-bar-icon-color:var(--csstools-light-dark-toggle--58, #cd411e);
     }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) :is(.dialog .mainContainer) .messageBar{
-        --message-bar-bg-color:#5a3100;
-        --message-bar-fg-color:#fbfbfe;
-        --message-bar-border-color:rgb(255 255 255 / 0.08);
-        --message-bar-icon-color:#e49c49;
+@supports (color: light-dark(red, red)){
+:is(.dialog .mainContainer) .messageBar{
+      --message-bar-bg-color:light-dark(#ffebcd, #5a3100);
+      --message-bar-fg-color:light-dark(#15141a, #fbfbfe);
     }
-      }
+}
 
-:where(html.is-dark) :is(.dialog .mainContainer) .messageBar{
-        --message-bar-bg-color:#5a3100;
-        --message-bar-fg-color:#fbfbfe;
-        --message-bar-border-color:rgb(255 255 255 / 0.08);
-        --message-bar-icon-color:#e49c49;
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+:is(.dialog .mainContainer) .messageBar{
+      --message-bar-border-color:light-dark(
+        rgb(0 0 0 / 0.08),
+        rgb(255 255 255 / 0.08)
+      );
     }
+}
+
+@supports (color: light-dark(red, red)){
+:is(.dialog .mainContainer) .messageBar{
+      --message-bar-icon-color:light-dark(#cd411e, #e49c49);
+    }
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+:is(:is(.dialog .mainContainer) .messageBar) *{
+      --csstools-light-dark-toggle--55:var(--csstools-color-scheme--light) #5a3100;
+      --message-bar-bg-color:var(--csstools-light-dark-toggle--55, #ffebcd);
+      --csstools-light-dark-toggle--56:var(--csstools-color-scheme--light) #fbfbfe;
+      --message-bar-fg-color:var(--csstools-light-dark-toggle--56, #15141a);
+      --csstools-light-dark-toggle--57:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.08);
+      --message-bar-border-color:var(--csstools-light-dark-toggle--57, rgb(0 0 0 / 0.08));
+      --csstools-light-dark-toggle--58:var(--csstools-color-scheme--light) #e49c49;
+      --message-bar-icon-color:var(--csstools-light-dark-toggle--58, #cd411e);
+  }
+}
 
 @media screen and (forced-colors: active){
 
@@ -688,6 +883,9 @@
       }
 
 .textLayer{
+  --csstools-color-scheme--light:initial;
+  color-scheme:only light;
+
   position:absolute;
   text-align:initial;
   inset:0;
@@ -715,13 +913,25 @@
     transform-origin:0% 0%;
   }
 
+.textLayer{
+  --min-font-size:1;
+  --text-scale-factor:calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv:calc(1 / var(--min-font-size));
+}
+
 .textLayer  > :not(.markedContent),.textLayer .markedContent span:not(.markedContent){
     z-index:1;
+
+    --font-height:0;
+    font-size:calc(var(--text-scale-factor) * var(--font-height));
+
+    --scale-x:1;
+    --rotate:0deg;
+    transform:rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
   }
 
-.textLayer span.markedContent{
-    top:0;
-    height:0;
+.textLayer .markedContent{
+    display:contents;
   }
 
 .textLayer span[role="img"]{
@@ -816,6 +1026,9 @@
   }
 
 .annotationLayer{
+  --csstools-color-scheme--light:initial;
+  color-scheme:only light;
+
   --annotation-unfocused-field-background:url("data:image/svg+xml;charset=UTF-8,<svg width='1px' height='1px' xmlns='http://www.w3.org/2000/svg'><rect width='100%' height='100%' style='fill:rgba(0, 54, 255, 0.13);'/></svg>");
   --input-focus-border-color:Highlight;
   --input-focus-outline:1px solid Canvas;
@@ -934,6 +1147,16 @@
         display:none;
       }
 
+:is(.annotationLayer section) .overlaidText{
+      position:absolute;
+      top:0;
+      left:0;
+      width:0;
+      height:0;
+      display:inline-block;
+      overflow:hidden;
+    }
+
 .textLayer.selecting ~ .annotationLayer section{
     pointer-events:none;
   }
@@ -950,7 +1173,6 @@
 .annotationLayer :is(.linkAnnotation,.buttonWidgetAnnotation.pushButton):not(.hasBorder) > a:hover{
     opacity:0.2;
     background-color:rgb(255 255 0);
-    box-shadow:0 2px 10px rgb(255 255 0);
   }
 
 .annotationLayer .linkAnnotation.hasBorder:hover{
@@ -1096,6 +1318,7 @@
 
 .annotationLayer .popup{
     background-color:rgb(255 255 153);
+    color:black;
     box-shadow:0 calc(2px * var(--total-scale-factor)) calc(5px * var(--total-scale-factor)) rgb(136 136 136);
     border-radius:calc(2px * var(--total-scale-factor));
     outline:1.5px solid rgb(255 255 74);
@@ -1122,8 +1345,9 @@
     display:inline-block;
   }
 
-.annotationLayer .popup > .header h1{
+.annotationLayer .popup > .header > .title{
     display:inline;
+    font-weight:bold;
   }
 
 .annotationLayer .popup > .header .popupDate{
@@ -1147,6 +1371,11 @@
 .annotationLayer .popupTriggerArea{
     cursor:pointer;
   }
+
+:is(.annotationLayer .popupTriggerArea):hover{
+      -webkit-backdrop-filter:var(--hcm-highlight-filter);
+              backdrop-filter:var(--hcm-highlight-filter);
+    }
 
 .annotationLayer section svg{
     position:absolute;
@@ -1198,6 +1427,9 @@
 }
 
 .xfaLayer{
+  --csstools-color-scheme--light:initial;
+  color-scheme:only light;
+
   background-color:transparent;
 }
 
@@ -1612,37 +1844,50 @@
     currentColor 21%,
     transparent
   );
-  --color-accent-primary:#0060df;
-  --color-accent-primary-hover:#0250bb;
-  --color-accent-primary-active:#054096;
+  --csstools-light-dark-toggle--59:var(--csstools-color-scheme--light) #0df;
+  --color-accent-primary:var(--csstools-light-dark-toggle--59, #0060df);
+  --csstools-light-dark-toggle--60:var(--csstools-color-scheme--light) #80ebff;
+  --color-accent-primary-hover:var(--csstools-light-dark-toggle--60, #0250bb);
+  --csstools-light-dark-toggle--61:var(--csstools-color-scheme--light) #aaf2ff;
+  --color-accent-primary-active:var(--csstools-light-dark-toggle--61, #054096);
   --border-radius-circle:9999px;
   --border-width:1px;
   --size-item-small:16px;
   --size-item-large:32px;
-  --color-canvas:white;
+  --csstools-light-dark-toggle--62:var(--csstools-color-scheme--light) #1c1b22;
+  --color-canvas:var(--csstools-light-dark-toggle--62, white);
   --background-color-canvas:var(--color-canvas);
-  --border-color-interactive:#8f8f9d;
+  --csstools-light-dark-toggle--63:var(--csstools-color-scheme--light) #f9f9fa;
+  --border-color-interactive:var(--csstools-light-dark-toggle--63, #8f8f9d);
   --border-color-interactive-hover:var(--border-color-interactive);
   --border-color-interactive-active:var(--border-color-interactive);
+  --focus-outline-offset:2px;
 }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) .toggle-button{
-    --color-accent-primary:#0df;
-    --color-accent-primary-hover:#80ebff;
-    --color-accent-primary-active:#aaf2ff;
-    --color-canvas:#1c1b22;
-    --border-color-interactive:#f9f9fa;
+@supports (color: light-dark(red, red)){
+.toggle-button{
+  --color-accent-primary:light-dark(#0060df, #0df);
+  --color-accent-primary-hover:light-dark(#0250bb, #80ebff);
+  --color-accent-primary-active:light-dark(#054096, #aaf2ff);
+  --color-canvas:light-dark(white, #1c1b22);
+  --border-color-interactive:light-dark(#8f8f9d, #f9f9fa);
 }
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.toggle-button *{
+  --csstools-light-dark-toggle--59:var(--csstools-color-scheme--light) #0df;
+  --color-accent-primary:var(--csstools-light-dark-toggle--59, #0060df);
+  --csstools-light-dark-toggle--60:var(--csstools-color-scheme--light) #80ebff;
+  --color-accent-primary-hover:var(--csstools-light-dark-toggle--60, #0250bb);
+  --csstools-light-dark-toggle--61:var(--csstools-color-scheme--light) #aaf2ff;
+  --color-accent-primary-active:var(--csstools-light-dark-toggle--61, #054096);
+  --csstools-light-dark-toggle--62:var(--csstools-color-scheme--light) #1c1b22;
+  --color-canvas:var(--csstools-light-dark-toggle--62, white);
+  --csstools-light-dark-toggle--63:var(--csstools-color-scheme--light) #f9f9fa;
+  --border-color-interactive:var(--csstools-light-dark-toggle--63, #8f8f9d);
   }
-
-:where(html.is-dark) .toggle-button{
-    --color-accent-primary:#0df;
-    --color-accent-primary-hover:#80ebff;
-    --color-accent-primary-active:#aaf2ff;
-    --color-canvas:#1c1b22;
-    --border-color-interactive:#f9f9fa;
 }
 
 @media (forced-colors: active){
@@ -1820,33 +2065,43 @@
 
 :root{
   --clear-signature-button-icon:url(images/editor-toolbar-delete.svg);
-  --signature-bg:#f9f9fb;
-  --signature-hover-bg:#f0f0f4;
+  --csstools-light-dark-toggle--64:var(--csstools-color-scheme--light) #2b2a33;
+  --signature-bg:var(--csstools-light-dark-toggle--64, #f9f9fb);
+  --csstools-light-dark-toggle--65:var(--csstools-color-scheme--light) var(--signature-bg);
+  --signature-hover-bg:var(--csstools-light-dark-toggle--65, #f0f0f4);
   --button-signature-bg:transparent;
   --button-signature-color:var(--main-color);
-  --button-signature-active-bg:#cfcfd8;
+  --csstools-light-dark-toggle--66:var(--csstools-color-scheme--light) #5b5b66;
+  --button-signature-active-bg:var(--csstools-light-dark-toggle--66, #cfcfd8);
   --button-signature-active-border:none;
   --button-signature-active-color:var(--button-signature-color);
   --button-signature-border:none;
-  --button-signature-hover-bg:#e0e0e6;
+  --csstools-light-dark-toggle--67:var(--csstools-color-scheme--light) #52525e;
+  --button-signature-hover-bg:var(--csstools-light-dark-toggle--67, #e0e0e6);
   --button-signature-hover-color:var(--button-signature-color);
 }
 
-@media (prefers-color-scheme: dark){
-
-:root:where(:not(.is-light)){
-    --signature-bg:#2b2a33;
-    --signature-hover-bg:var(--signature-bg);
-    --button-signature-active-bg:#5b5b66;
-    --button-signature-hover-bg:#52525e;
+@supports (color: light-dark(red, red)){
+:root{
+  --signature-bg:light-dark(#f9f9fb, #2b2a33);
+  --signature-hover-bg:light-dark(#f0f0f4, var(--signature-bg));
+  --button-signature-active-bg:light-dark(#cfcfd8, #5b5b66);
+  --button-signature-hover-bg:light-dark(#e0e0e6, #52525e);
 }
-  }
+}
 
-:root:where(.is-dark){
-    --signature-bg:#2b2a33;
-    --signature-hover-bg:var(--signature-bg);
-    --button-signature-active-bg:#5b5b66;
-    --button-signature-hover-bg:#52525e;
+@supports not (color: light-dark(tan, tan)){
+
+:root *{
+  --csstools-light-dark-toggle--64:var(--csstools-color-scheme--light) #2b2a33;
+  --signature-bg:var(--csstools-light-dark-toggle--64, #f9f9fb);
+  --csstools-light-dark-toggle--65:var(--csstools-color-scheme--light) var(--signature-bg);
+  --signature-hover-bg:var(--csstools-light-dark-toggle--65, #f0f0f4);
+  --csstools-light-dark-toggle--66:var(--csstools-color-scheme--light) #5b5b66;
+  --button-signature-active-bg:var(--csstools-light-dark-toggle--66, #cfcfd8);
+  --csstools-light-dark-toggle--67:var(--csstools-color-scheme--light) #52525e;
+  --button-signature-hover-bg:var(--csstools-light-dark-toggle--67, #e0e0e6);
+  }
 }
 
 @media screen and (forced-colors: active){
@@ -1958,6 +2213,8 @@
   --tab-bg-active-color:var(--tab-bg);
   --tab-bg-active-hover-color:var(--bg-hover);
   --tab-bg-hover:var(--bg-hover);
+  --tab-panel-border:none;
+  --tab-panel-border-radius:4px;
   --tab-text-color:var(--primary-color);
   --tab-text-active-color:var(--tab-top-line-active-color);
   --tab-text-active-hover-color:var(--tab-text-hover-color);
@@ -1987,12 +2244,13 @@
   --thickness-bg:var(--dialog-bg-color);
   --thickness-label-color:var(--primary-color);
   --thickness-slider-color:var(--primary-color);
+  --thickness-border:none;
   --draw-cursor:url(images/cursor-editorInk.svg) 0 16, pointer;
 }
 
 @media (prefers-color-scheme: dark){
 
-:where(html:not(.is-light)) #addSignatureDialog{
+#addSignatureDialog{
     --dialog-bg-color:#42414d;
     --bg-hover:#52525e;
     --primary-color:#fbfbfe;
@@ -2009,22 +2267,6 @@
 }
   }
 
-:where(html.is-dark) #addSignatureDialog{
-    --dialog-bg-color:#42414d;
-    --bg-hover:#52525e;
-    --primary-color:#fbfbfe;
-    --secondary-color:#cfcfd8;
-    --tab-top-line-active-color:#0df;
-    --tab-top-line-inactive-color:#8f8f9d;
-    --clear-signature-button-bg-active:#5b5b66;
-    --clear-signature-button-bg-focus:#2b2a33;
-    --clear-signature-button-bg-disabled:color-mix(
-      in srgb,
-      #2b2a33,
-      transparent 40%
-    );
-}
-
 @media screen and (forced-colors: active){
 
 #addSignatureDialog{
@@ -2040,6 +2282,8 @@
     --tab-bg:var(--bg);
     --tab-bg-active-color:SelectedItem;
     --tab-bg-active-hover-color:SelectedItem;
+    --tab-panel-border:1px solid ButtonText;
+    --tab-panel-border-radius:8px;
     --tab-text-color:ButtonText;
     --tab-text-active-color:HighlightText;
     --tab-text-active-hover-color:HighlightText;
@@ -2062,6 +2306,7 @@
     --thickness-bg:Canvas;
     --thickness-label-color:CanvasText;
     --thickness-slider-color:ButtonText;
+    --thickness-border:1px solid var(--border-color);
 }
   }
 
@@ -2156,7 +2401,8 @@
         width:100%;
         height:220px;
         background-color:var(--signature-bg);
-        border-radius:4px;
+        border:var(--tab-panel-border);
+        border-radius:var(--tab-panel-border-radius);
       }
 
 :is(:is(:is(#addSignatureDialog .mainContainer) #addSignatureActionContainer) > [role="tabpanel"])  > svg{
@@ -2181,6 +2427,7 @@
             text-align:center;
             color:var(--signature-color);
             background-color:transparent;
+            border-radius:var(--tab-panel-border-radius);
 
             font-family:"Brush script", "Apple Chancery", "Segoe script", "Freestyle Script", "Palace Script MT", "Brush Script MT", TK, cursive, serif;
             font-size:44px;
@@ -2232,7 +2479,7 @@
           }
 
 #addSignatureDrawContainer:is(:is(:is(#addSignatureDialog .mainContainer) #addSignatureActionContainer) > [role="tabpanel"])  > svg{
-            stroke:var(--primary-color);
+            stroke:var(--signature-color);
             fill:none;
             stroke-opacity:1;
             stroke-linecap:round;
@@ -2265,11 +2512,15 @@
               align-items:center;
               justify-content:center;
               gap:8px;
-              padding:6px 8px;
+              padding:6px 8px 7px;
               margin:0;
               background-color:var(--thickness-bg);
               border-radius:4px 4px 0 0;
+              border-inline:var(--thickness-border);
+              border-top:var(--thickness-border);
               pointer-events:auto;
+              position:relative;
+              top:1px;
             }
 
 :is(:is(#addSignatureDrawContainer:is(:is(:is(#addSignatureDialog .mainContainer) #addSignatureActionContainer) > [role="tabpanel"]) #thickness) > div)  > label{
@@ -2304,7 +2555,7 @@
 #addSignatureImageContainer:is(:is(:is(#addSignatureDialog .mainContainer) #addSignatureActionContainer) > [role="tabpanel"])  > svg{
             stroke:none;
             stroke-width:0;
-            fill:var(--primary-color);
+            fill:var(--signature-color);
             fill-opacity:1;
           }
 
@@ -2369,6 +2620,10 @@
             gap:4px;
             flex:1 0 0;
           }
+
+:is(:is(:is(:is(:is(#addSignatureDialog .mainContainer) #addSignatureActionContainer) #addSignatureControls) #horizontalContainer) #addSignatureDescriptionContainer):has(input:disabled) > label{
+              opacity:0.4;
+            }
 
 :is(:is(:is(:is(:is(#addSignatureDialog .mainContainer) #addSignatureActionContainer) #addSignatureControls) #horizontalContainer) #addSignatureDescriptionContainer)  > label{
               width:auto;
@@ -2593,7 +2848,7 @@
         }
 
 :is(:is(#editorSignatureParamsToolbar #addSignatureDoorHanger) .toolbarAddSignatureButtonContainer) .toolbarAddSignatureButton{
-        width:auto;
+        width:calc(0.8 * var(--editor-toolbar-min-width));
         height:100%;
         min-height:var(--menuitem-height);
         aspect-ratio:unset;
@@ -2681,7 +2936,888 @@
     height:16px !important;
   }
 
+.commentPopup,
+#commentManagerDialog{
+  width:360px;
+  max-width:100%;
+  min-width:200px;
+  position:absolute;
+  padding:8px 16px 16px;
+  margin-left:0;
+  margin-top:0;
+  box-sizing:border-box;
+
+  border-radius:8px;
+}
+
+#commentManagerDialog{
+  --comment-close-button-icon:url(images/comment-closeButton.svg);
+}
+
+#commentManagerDialog .mainContainer{
+    width:100%;
+    height:auto;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+
+:is(#commentManagerDialog .mainContainer) #commentManagerToolbar{
+      width:100%;
+      height:32px;
+      display:flex;
+      justify-content:flex-start;
+      align-items:flex-start;
+      gap:8px;
+      align-self:stretch;
+
+      cursor:move;
+    }
+
+:is(#commentManagerDialog .mainContainer) #commentManagerTextInput{
+      width:100%;
+      min-height:132px;
+      margin-bottom:12px;
+    }
+
+.annotationLayer.disabled :is(.annotationCommentButton){
+  display:none;
+}
+
+:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton{
+    --csstools-color-scheme--light:initial;
+    color-scheme:light dark;
+    --csstools-light-dark-toggle--68:var(--csstools-color-scheme--light) #1c1b22;
+    --comment-button-bg:var(--csstools-light-dark-toggle--68, white);
+    --csstools-light-dark-toggle--69:var(--csstools-color-scheme--light) #fbfbfe;
+    --comment-button-fg:var(--csstools-light-dark-toggle--69, #5b5b66);
+    --csstools-light-dark-toggle--70:var(--csstools-color-scheme--light) #a6ecf4;
+    --comment-button-active-bg:var(--csstools-light-dark-toggle--70, #0041a4);
+    --csstools-light-dark-toggle--71:var(--csstools-color-scheme--light) #15141a;
+    --comment-button-active-fg:var(--csstools-light-dark-toggle--71, white);
+    --csstools-light-dark-toggle--72:var(--csstools-color-scheme--light) #61dce9;
+    --comment-button-hover-bg:var(--csstools-light-dark-toggle--72, #0053cb);
+    --csstools-light-dark-toggle--73:var(--csstools-color-scheme--light) #15141a;
+    --comment-button-hover-fg:var(--csstools-light-dark-toggle--73, white);
+    --csstools-light-dark-toggle--74:var(--csstools-color-scheme--light) #00cadb;
+    --comment-button-selected-bg:var(--csstools-light-dark-toggle--74, #0062fa);
+    --csstools-light-dark-toggle--75:var(--csstools-color-scheme--light) #bfbfc9;
+    --comment-button-border-color:var(--csstools-light-dark-toggle--75, #8f8f9d);
+    --comment-button-active-border-color:var(--comment-button-active-bg);
+    --csstools-light-dark-toggle--76:var(--csstools-color-scheme--light) #3a3944;
+    --comment-button-focus-border-color:var(--csstools-light-dark-toggle--76, #cfcfd8);
+    --comment-button-hover-border-color:var(--comment-button-hover-bg);
+    --comment-button-selected-border-color:var(--comment-button-selected-bg);
+    --csstools-light-dark-toggle--77:var(--csstools-color-scheme--light) #15141a;
+    --comment-button-selected-fg:var(--csstools-light-dark-toggle--77, white);
+    --comment-button-dim:24px;
+    --csstools-light-dark-toggle--78:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+    --csstools-light-dark-toggle--79:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+    --comment-button-box-shadow:0 0.25px 0.75px 0 var(--csstools-light-dark-toggle--78, rgb(0 0 0 / 0.05)), 0 2px 6px 0 var(--csstools-light-dark-toggle--79, rgb(0 0 0 / 0.1));
+    --csstools-light-dark-toggle--80:var(--csstools-color-scheme--light) #00cadb;
+    --comment-button-focus-outline-color:var(--csstools-light-dark-toggle--80, #0062fa);
+  }
+
+@supports (color: light-dark(red, red)){
+:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton{
+    --comment-button-bg:light-dark(white, #1c1b22);
+    --comment-button-fg:light-dark(#5b5b66, #fbfbfe);
+    --comment-button-active-bg:light-dark(#0041a4, #a6ecf4);
+    --comment-button-active-fg:light-dark(white, #15141a);
+    --comment-button-hover-bg:light-dark(#0053cb, #61dce9);
+    --comment-button-hover-fg:light-dark(white, #15141a);
+    --comment-button-selected-bg:light-dark(#0062fa, #00cadb);
+    --comment-button-border-color:light-dark(#8f8f9d, #bfbfc9);
+    --comment-button-focus-border-color:light-dark(#cfcfd8, #3a3944);
+    --comment-button-selected-fg:light-dark(white, #15141a);
+  }
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton{
+    --comment-button-box-shadow:0 0.25px 0.75px 0 light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.2)), 0 2px 6px 0 light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.4));
+  }
+}
+
+@supports (color: light-dark(red, red)){
+:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton{
+    --comment-button-focus-outline-color:light-dark(#0062fa, #00cadb);
+  }
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton) *{
+    --csstools-light-dark-toggle--68:var(--csstools-color-scheme--light) #1c1b22;
+    --comment-button-bg:var(--csstools-light-dark-toggle--68, white);
+    --csstools-light-dark-toggle--69:var(--csstools-color-scheme--light) #fbfbfe;
+    --comment-button-fg:var(--csstools-light-dark-toggle--69, #5b5b66);
+    --csstools-light-dark-toggle--70:var(--csstools-color-scheme--light) #a6ecf4;
+    --comment-button-active-bg:var(--csstools-light-dark-toggle--70, #0041a4);
+    --csstools-light-dark-toggle--71:var(--csstools-color-scheme--light) #15141a;
+    --comment-button-active-fg:var(--csstools-light-dark-toggle--71, white);
+    --csstools-light-dark-toggle--72:var(--csstools-color-scheme--light) #61dce9;
+    --comment-button-hover-bg:var(--csstools-light-dark-toggle--72, #0053cb);
+    --csstools-light-dark-toggle--73:var(--csstools-color-scheme--light) #15141a;
+    --comment-button-hover-fg:var(--csstools-light-dark-toggle--73, white);
+    --csstools-light-dark-toggle--74:var(--csstools-color-scheme--light) #00cadb;
+    --comment-button-selected-bg:var(--csstools-light-dark-toggle--74, #0062fa);
+    --csstools-light-dark-toggle--75:var(--csstools-color-scheme--light) #bfbfc9;
+    --comment-button-border-color:var(--csstools-light-dark-toggle--75, #8f8f9d);
+    --csstools-light-dark-toggle--76:var(--csstools-color-scheme--light) #3a3944;
+    --comment-button-focus-border-color:var(--csstools-light-dark-toggle--76, #cfcfd8);
+    --csstools-light-dark-toggle--77:var(--csstools-color-scheme--light) #15141a;
+    --comment-button-selected-fg:var(--csstools-light-dark-toggle--77, white);
+    --csstools-light-dark-toggle--78:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+    --csstools-light-dark-toggle--79:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+    --comment-button-box-shadow:0 0.25px 0.75px 0 var(--csstools-light-dark-toggle--78, rgb(0 0 0 / 0.05)), 0 2px 6px 0 var(--csstools-light-dark-toggle--79, rgb(0 0 0 / 0.1));
+    --csstools-light-dark-toggle--80:var(--csstools-color-scheme--light) #00cadb;
+    --comment-button-focus-outline-color:var(--csstools-light-dark-toggle--80, #0062fa);
+  }
+}
+
+@media (prefers-color-scheme: dark){
+
+:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton{
+    --csstools-color-scheme--light:;
+  }
+}
+
+@media screen and (forced-colors: active){
+
+:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton{
+      --comment-button-bg:ButtonFace;
+      --comment-button-fg:ButtonText;
+      --comment-button-hover-bg:SelectedItemText;
+      --comment-button-hover-fg:SelectedItem;
+      --comment-button-active-bg:SelectedItemText;
+      --comment-button-active-fg:SelectedItem;
+      --comment-button-border-color:ButtonBorder;
+      --comment-button-active-border-color:ButtonBorder;
+      --comment-button-hover-border-color:SelectedItem;
+      --comment-button-box-shadow:none;
+      --comment-button-focus-outline-color:CanvasText;
+      --comment-button-selected-bg:ButtonBorder;
+      --comment-button-selected-fg:ButtonFace;
+  }
+    }
+
+:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton{
+
+    position:absolute;
+    width:var(--comment-button-dim);
+    height:var(--comment-button-dim);
+    background-color:var(--comment-button-bg);
+    border-radius:6px 6px 6px 0;
+    border:1px solid var(--comment-button-border-color);
+    box-shadow:var(--comment-button-box-shadow);
+    cursor:auto;
+    z-index:1;
+    padding:4px;
+    margin:0;
+    box-sizing:border-box;
+    pointer-events:auto;
+  }
+
+[dir="rtl"] :is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton){
+      border-radius:6px 6px 0;
+    }
+
+:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton)::before{
+      content:"";
+      display:inline-block;
+      width:100%;
+      height:100%;
+      -webkit-mask-repeat:no-repeat;
+              mask-repeat:no-repeat;
+      -webkit-mask-size:cover;
+              mask-size:cover;
+      -webkit-mask-image:var(--comment-edit-button-icon);
+              mask-image:var(--comment-edit-button-icon);
+      background-color:var(--comment-button-fg);
+      margin:0;
+      padding:0;
+      transform:scaleX(var(--dir-factor));
+    }
+
+:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton):focus-visible{
+      outline:2px solid var(--comment-button-focus-outline-color);
+      outline-offset:1px;
+      border-color:var(--comment-button-focus-border-color);
+    }
+
+:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton):hover{
+      background-color:var(--comment-button-hover-bg) !important;
+      border-color:var(--comment-button-hover-border-color);
+    }
+
+:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton):hover::before{
+        background-color:var(--comment-button-hover-fg);
+      }
+
+:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton):active{
+      background-color:var(--comment-button-active-bg) !important;
+      border-color:var(--comment-button-active-border-color);
+    }
+
+:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton):active::before{
+        background-color:var(--comment-button-active-fg);
+      }
+
+.selected:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton){
+      background-color:var(--comment-button-selected-bg) !important;
+      border-color:var(--comment-button-selected-border-color);
+    }
+
+.selected:is(:is(.annotationLayer,.annotationEditorLayer) .annotationCommentButton)::before{
+        background-color:var(--comment-button-selected-fg);
+      }
+
+#editorCommentsSidebar,
+.commentPopup{
+  --comment-close-button-icon:url(images/comment-closeButton.svg);
+  --comment-popup-edit-button-icon:url(images/comment-popup-editButton.svg);
+  --comment-popup-delete-button-icon:url(images/editor-toolbar-delete.svg);
+
+  --csstools-light-dark-toggle--81:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.69);
+
+  --comment-date-fg-color:var(--csstools-light-dark-toggle--81, rgb(21 20 26 / 0.69));
+  --csstools-light-dark-toggle--82:var(--csstools-color-scheme--light) #1c1b22;
+  --comment-bg-color:var(--csstools-light-dark-toggle--82, #f9f9fb);
+  --csstools-light-dark-toggle--83:var(--csstools-color-scheme--light) #2c2b33;
+  --comment-hover-bg-color:var(--csstools-light-dark-toggle--83, #e0e0e6);
+  --csstools-light-dark-toggle--84:var(--csstools-color-scheme--light) #3a3944;
+  --comment-active-bg-color:var(--csstools-light-dark-toggle--84, #d1d1d9);
+  --comment-hover-brightness:0.89;
+  --comment-hover-filter:brightness(var(--comment-hover-brightness));
+  --comment-active-brightness:0.825;
+  --comment-active-filter:brightness(var(--comment-active-brightness));
+  --csstools-light-dark-toggle--85:var(--csstools-color-scheme--light) #52525e;
+  --comment-border-color:var(--csstools-light-dark-toggle--85, #f0f0f4);
+  --csstools-light-dark-toggle--86:var(--csstools-color-scheme--light) #00cadb;
+  --comment-focus-outline-color:var(--csstools-light-dark-toggle--86, #0062fa);
+  --csstools-light-dark-toggle--87:var(--csstools-color-scheme--light) #fbfbfe;
+  --comment-fg-color:var(--csstools-light-dark-toggle--87, #15141a);
+  --csstools-light-dark-toggle--88:var(--csstools-color-scheme--light) #00317e;
+  --comment-count-bg-color:var(--csstools-light-dark-toggle--88, #e2f7ff);
+  --csstools-light-dark-toggle--89:var(--csstools-color-scheme--light) #a6ecf4;
+  --comment-indicator-active-fg-color:var(--csstools-light-dark-toggle--89, #0041a4);
+  --comment-indicator-active-filter:brightness(
+    calc(1 / var(--comment-active-brightness))
+  );
+  --csstools-light-dark-toggle--90:var(--csstools-color-scheme--light) #fbfbfe;
+  --comment-indicator-focus-fg-color:var(--csstools-light-dark-toggle--90, #5b5b66);
+  --csstools-light-dark-toggle--91:var(--csstools-color-scheme--light) #61dce9;
+  --comment-indicator-hover-fg-color:var(--csstools-light-dark-toggle--91, #0053cb);
+  --comment-indicator-hover-filter:brightness(
+    calc(1 / var(--comment-hover-brightness))
+  );
+  --csstools-light-dark-toggle--92:var(--csstools-color-scheme--light) #00cadb;
+  --comment-indicator-selected-fg-color:var(--csstools-light-dark-toggle--92, #0062fa);
+
+  --button-comment-bg:transparent;
+  --button-comment-color:var(--main-color);
+  --csstools-light-dark-toggle--93:var(--csstools-color-scheme--light) #5b5b66;
+  --button-comment-active-bg:var(--csstools-light-dark-toggle--93, #cfcfd8);
+  --button-comment-active-border:none;
+  --button-comment-active-color:var(--button-comment-color);
+  --button-comment-border:none;
+  --csstools-light-dark-toggle--94:var(--csstools-color-scheme--light) #52525e;
+  --button-comment-hover-bg:var(--csstools-light-dark-toggle--94, #e0e0e6);
+  --button-comment-hover-color:var(--button-comment-color);
+
+  --csstools-light-dark-toggle--95:var(--csstools-color-scheme--light) #0df;
+
+  --link-fg-color:var(--csstools-light-dark-toggle--95, #0060df);
+  --csstools-light-dark-toggle--96:var(--csstools-color-scheme--light) #80ebff;
+  --link-hover-fg-color:var(--csstools-light-dark-toggle--96, #0250bb);
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+#editorCommentsSidebar,
+.commentPopup{
+
+  --comment-date-fg-color:light-dark(
+    rgb(21 20 26 / 0.69),
+    rgb(251 251 254 / 0.69)
+  );
+}
+}
+
+@supports (color: light-dark(red, red)){
+#editorCommentsSidebar,
+.commentPopup{
+  --comment-bg-color:light-dark(#f9f9fb, #1c1b22);
+  --comment-hover-bg-color:light-dark(#e0e0e6, #2c2b33);
+  --comment-active-bg-color:light-dark(#d1d1d9, #3a3944);
+  --comment-border-color:light-dark(#f0f0f4, #52525e);
+  --comment-focus-outline-color:light-dark(#0062fa, #00cadb);
+  --comment-fg-color:light-dark(#15141a, #fbfbfe);
+  --comment-count-bg-color:light-dark(#e2f7ff, #00317e);
+  --comment-indicator-active-fg-color:light-dark(#0041a4, #a6ecf4);
+  --comment-indicator-focus-fg-color:light-dark(#5b5b66, #fbfbfe);
+  --comment-indicator-hover-fg-color:light-dark(#0053cb, #61dce9);
+  --comment-indicator-selected-fg-color:light-dark(#0062fa, #00cadb);
+  --button-comment-active-bg:light-dark(#cfcfd8, #5b5b66);
+  --button-comment-hover-bg:light-dark(#e0e0e6, #52525e);
+
+  --link-fg-color:light-dark(#0060df, #0df);
+  --link-hover-fg-color:light-dark(#0250bb, #80ebff);
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+:is(#editorCommentsSidebar,.commentPopup) *{
+
+  --csstools-light-dark-toggle--81:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.69);
+
+  --comment-date-fg-color:var(--csstools-light-dark-toggle--81, rgb(21 20 26 / 0.69));
+  --csstools-light-dark-toggle--82:var(--csstools-color-scheme--light) #1c1b22;
+  --comment-bg-color:var(--csstools-light-dark-toggle--82, #f9f9fb);
+  --csstools-light-dark-toggle--83:var(--csstools-color-scheme--light) #2c2b33;
+  --comment-hover-bg-color:var(--csstools-light-dark-toggle--83, #e0e0e6);
+  --csstools-light-dark-toggle--84:var(--csstools-color-scheme--light) #3a3944;
+  --comment-active-bg-color:var(--csstools-light-dark-toggle--84, #d1d1d9);
+  --csstools-light-dark-toggle--85:var(--csstools-color-scheme--light) #52525e;
+  --comment-border-color:var(--csstools-light-dark-toggle--85, #f0f0f4);
+  --csstools-light-dark-toggle--86:var(--csstools-color-scheme--light) #00cadb;
+  --comment-focus-outline-color:var(--csstools-light-dark-toggle--86, #0062fa);
+  --csstools-light-dark-toggle--87:var(--csstools-color-scheme--light) #fbfbfe;
+  --comment-fg-color:var(--csstools-light-dark-toggle--87, #15141a);
+  --csstools-light-dark-toggle--88:var(--csstools-color-scheme--light) #00317e;
+  --comment-count-bg-color:var(--csstools-light-dark-toggle--88, #e2f7ff);
+  --csstools-light-dark-toggle--89:var(--csstools-color-scheme--light) #a6ecf4;
+  --comment-indicator-active-fg-color:var(--csstools-light-dark-toggle--89, #0041a4);
+  --csstools-light-dark-toggle--90:var(--csstools-color-scheme--light) #fbfbfe;
+  --comment-indicator-focus-fg-color:var(--csstools-light-dark-toggle--90, #5b5b66);
+  --csstools-light-dark-toggle--91:var(--csstools-color-scheme--light) #61dce9;
+  --comment-indicator-hover-fg-color:var(--csstools-light-dark-toggle--91, #0053cb);
+  --csstools-light-dark-toggle--92:var(--csstools-color-scheme--light) #00cadb;
+  --comment-indicator-selected-fg-color:var(--csstools-light-dark-toggle--92, #0062fa);
+  --csstools-light-dark-toggle--93:var(--csstools-color-scheme--light) #5b5b66;
+  --button-comment-active-bg:var(--csstools-light-dark-toggle--93, #cfcfd8);
+  --csstools-light-dark-toggle--94:var(--csstools-color-scheme--light) #52525e;
+  --button-comment-hover-bg:var(--csstools-light-dark-toggle--94, #e0e0e6);
+
+  --csstools-light-dark-toggle--95:var(--csstools-color-scheme--light) #0df;
+
+  --link-fg-color:var(--csstools-light-dark-toggle--95, #0060df);
+  --csstools-light-dark-toggle--96:var(--csstools-color-scheme--light) #80ebff;
+  --link-hover-fg-color:var(--csstools-light-dark-toggle--96, #0250bb);
+  }
+}
+
+@media screen and (forced-colors: active){
+
+#editorCommentsSidebar,
+.commentPopup{
+    --comment-date-fg-color:CanvasText;
+    --comment-bg-color:Canvas;
+    --comment-hover-bg-color:Canvas;
+    --comment-hover-filter:none;
+    --comment-active-bg-color:Canvas;
+    --comment-active-filter:none;
+    --comment-border-color:CanvasText;
+    --comment-fg-color:CanvasText;
+    --comment-count-bg-color:Canvas;
+    --comment-indicator-active-fg-color:SelectedItem;
+    --comment-indicator-focus-fg-color:CanvasText;
+    --comment-indicator-hover-fg-color:CanvasText;
+    --comment-indicator-selected-fg-color:SelectedItem;
+    --button-comment-bg:ButtonFace;
+    --button-comment-color:ButtonText;
+    --button-comment-active-bg:Highlight;
+    --button-comment-active-color:HighlightText;
+    --button-comment-border:1px solid ButtonText;
+    --button-comment-hover-bg:Highlight;
+    --button-comment-hover-color:HighlightText;
+    --link-fg-color:LinkText;
+    --link-hover-fg-color:LinkText;
+}
+  }
+
+#editorCommentsSidebar{
+  display:flex;
+  height:auto;
+  padding-bottom:16px;
+  flex-direction:column;
+  align-items:flex-start;
+  overflow-y:visible;
+}
+
+#editorCommentsSidebar #editorCommentsSidebarHeader{
+    width:100%;
+    box-sizing:border-box;
+    padding:16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+:is(#editorCommentsSidebar #editorCommentsSidebarHeader) .commentCount{
+      display:flex;
+      align-items:baseline;
+      gap:6px;
+      -webkit-user-select:none;
+         -moz-user-select:none;
+              user-select:none;
+    }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) .commentCount) #editorCommentsSidebarTitle{
+        font:menu;
+        font-style:normal;
+        font-weight:590;
+        line-height:normal;
+        font-size:17px;
+        color:var(--comment-fg-color);
+      }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) .commentCount) #editorCommentsSidebarCount{
+        padding:0 4px;
+        border-radius:4px;
+        background-color:var(--comment-count-bg-color);
+
+        color:var(--comment-fg-color);
+        text-align:center;
+
+        font:menu;
+        font-size:13px;
+        font-style:normal;
+        font-weight:400;
+        line-height:normal;
+      }
+
+:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton{
+      width:32px;
+      height:32px;
+      padding:8px;
+      border-radius:4px;
+      border:var(--button-comment-border);
+      background-color:var(--button-comment-bg);
+      cursor:pointer;
+    }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton)::before{
+        content:"";
+        display:inline-block;
+        width:100%;
+        height:100%;
+        -webkit-mask-repeat:no-repeat;
+                mask-repeat:no-repeat;
+        -webkit-mask-position:center;
+                mask-position:center;
+        -webkit-mask-image:var(--comment-close-button-icon);
+                mask-image:var(--comment-close-button-icon);
+        background-color:var(--button-comment-color);
+      }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):hover{
+        background-color:var(--button-comment-hover-bg);
+      }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):hover::before{
+          background-color:var(--button-comment-hover-color);
+        }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):active{
+        border:var(--button-comment-active-border);
+        background-color:var(--button-comment-active-bg);
+      }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):active::before{
+          background-color:var(--button-comment-active-color);
+        }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton):focus-visible{
+        outline:var(--focus-ring-outline);
+      }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarHeader) #editorCommentsSidebarCloseButton)  > span{
+        display:inline-block;
+        width:0;
+        height:0;
+        overflow:hidden;
+      }
+
+#editorCommentsSidebar #editorCommentsSidebarListContainer{
+    overflow:auto;
+    width:100%;
+  }
+
+:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList{
+      display:flex;
+      width:auto;
+      padding:4px 16px;
+      gap:10px;
+      align-items:flex-start;
+      flex-direction:column;
+      list-style-type:none;
+    }
+
+:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment{
+        display:flex;
+        width:auto;
+        padding:8px 16px 16px;
+        flex-direction:column;
+        align-items:flex-start;
+        align-self:stretch;
+        gap:4px;
+
+        border-radius:8px;
+        border:0.5px solid var(--comment-border-color);
+        background-color:var(--comment-bg-color);
+      }
+
+@media screen and (forced-colors: active){
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments):hover{
+              background-color:var(--comment-hover-bg-color);
+          }
+            }
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments):hover{
+            filter:var(--comment-hover-filter);
+          }
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments):hover time::after{
+              display:inline-block;
+              background-color:var(--comment-indicator-hover-fg-color);
+              filter:var(--comment-indicator-hover-filter);
+            }
+
+@media screen and (forced-colors: active){
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments):active{
+              background-color:var(--comment-active-bg-color);
+          }
+            }
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments):active{
+            filter:var(--comment-active-filter);
+          }
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments):active time::after{
+              display:inline-block;
+              background-color:var(--comment-indicator-active-fg-color);
+              filter:var(--comment-indicator-active-filter);
+            }
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments):is(:focus,:focus-visible) time::after{
+            display:inline-block;
+            background-color:var(--comment-indicator-focus-fg-color);
+          }
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments):focus-visible{
+            outline:2px solid var(--comment-focus-outline-color);
+            outline-offset:2px;
+          }
+
+.selected:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments) .sidebarCommentText{
+              max-height:-moz-fit-content;
+              max-height:fit-content;
+              -webkit-line-clamp:unset;
+            }
+
+.selected:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment):not(.noComments) time::after{
+              display:inline-block;
+              background-color:var(--comment-indicator-selected-fg-color);
+            }
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) .sidebarCommentText{
+          font:menu;
+          font-style:normal;
+          font-weight:400;
+          line-height:normal;
+          font-size:15px;
+          width:100%;
+          height:-moz-fit-content;
+          height:fit-content;
+          max-height:80px;
+          display:-webkit-box;
+          -webkit-box-orient:vertical;
+          -webkit-line-clamp:2;
+          overflow:hidden;
+          overflow-wrap:break-word;
+        }
+
+:is(:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) .sidebarCommentText) .richText{
+            --total-scale-factor:1.5;
+          }
+
+.noComments:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) .sidebarCommentText{
+            max-height:-moz-fit-content;
+            max-height:fit-content;
+            -webkit-line-clamp:unset;
+            -webkit-user-select:none;
+               -moz-user-select:none;
+                    user-select:none;
+          }
+
+.noComments:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) a{
+            font:menu;
+            font-style:normal;
+            font-weight:400;
+            line-height:normal;
+            font-size:15px;
+            width:100%;
+            height:auto;
+            overflow-wrap:break-word;
+            margin-block-start:15px;
+            color:var(--link-fg-color);
+          }
+
+:is(.noComments:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) a):focus-visible{
+              outline:var(--focus-ring-outline);
+            }
+
+:is(.noComments:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) a):hover{
+              color:var(--link-hover-fg-color);
+            }
+
+:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) time{
+          width:100%;
+          display:inline-flex;
+          align-items:center;
+          justify-content:space-between;
+
+          font:menu;
+          font-style:normal;
+          font-weight:400;
+          line-height:normal;
+          font-size:13px;
+        }
+
+:is(:is(:is(:is(#editorCommentsSidebar #editorCommentsSidebarListContainer) #editorCommentsSidebarList) .sidebarComment) time)::after{
+            content:"";
+            display:none;
+            width:16px;
+            height:16px;
+            -webkit-mask-repeat:no-repeat;
+                    mask-repeat:no-repeat;
+            -webkit-mask-position:center;
+                    mask-position:center;
+            -webkit-mask-image:var(--comment-edit-button-icon);
+                    mask-image:var(--comment-edit-button-icon);
+            transform:scaleX(var(--dir-factor));
+          }
+
+.commentPopup{
+  --csstools-color-scheme--light:initial;
+  color-scheme:light dark;
+
+  --csstools-light-dark-toggle--97:var(--csstools-color-scheme--light) #3a3944;
+
+  --divider-color:var(--csstools-light-dark-toggle--97, #cfcfd8);
+  --csstools-light-dark-toggle--98:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--99:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --comment-shadow:0 0.5px 2px 0 var(--csstools-light-dark-toggle--98, rgb(0 0 0 / 0.05)), 0 4px 16px 0 var(--csstools-light-dark-toggle--99, rgb(0 0 0 / 0.1));
+}
+
+@supports (color: light-dark(red, red)){
+.commentPopup{
+
+  --divider-color:light-dark(#cfcfd8, #3a3944);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+.commentPopup{
+  --comment-shadow:0 0.5px 2px 0 light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.2)), 0 4px 16px 0 light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.4));
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.commentPopup *{
+
+  --csstools-light-dark-toggle--97:var(--csstools-color-scheme--light) #3a3944;
+
+  --divider-color:var(--csstools-light-dark-toggle--97, #cfcfd8);
+  --csstools-light-dark-toggle--98:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--99:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --comment-shadow:0 0.5px 2px 0 var(--csstools-light-dark-toggle--98, rgb(0 0 0 / 0.05)), 0 4px 16px 0 var(--csstools-light-dark-toggle--99, rgb(0 0 0 / 0.1));
+  }
+}
+
+@media (prefers-color-scheme: dark){
+
+.commentPopup{
+  --csstools-color-scheme--light:;
+}
+}
+
+@media screen and (forced-colors: active){
+
+.commentPopup{
+    --divider-color:CanvasText;
+    --comment-shadow:none;
+}
+  }
+
+.commentPopup{
+
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:12px;
+  z-index:100001;
+  pointer-events:auto;
+  margin-top:2px;
+
+  border:0.5px solid var(--comment-border-color);
+  background:var(--comment-bg-color);
+  box-shadow:var(--comment-shadow);
+}
+
+.commentPopup:focus-visible{
+    outline:none;
+  }
+
+.commentPopup.dragging{
+    cursor:move !important;
+  }
+
+.commentPopup.dragging *{
+      cursor:move !important;
+    }
+
+.commentPopup.dragging button{
+      pointer-events:none !important;
+    }
+
+.commentPopup:not(.selected) .commentPopupButtons{
+    visibility:hidden !important;
+  }
+
+.commentPopup hr{
+    width:100%;
+    height:1px;
+    border:none;
+    border-top:1px solid var(--divider-color);
+    margin:0;
+    padding:0;
+  }
+
+.commentPopup .commentPopupTop{
+    display:flex;
+    width:100%;
+    height:auto;
+    padding-bottom:4px;
+    justify-content:space-between;
+    align-items:center;
+    align-self:stretch;
+    cursor:move;
+    -webkit-user-select:none;
+       -moz-user-select:none;
+            user-select:none;
+  }
+
+:is(.commentPopup .commentPopupTop) .commentPopupTime{
+      font:menu;
+      font-style:normal;
+      font-weight:400;
+      line-height:normal;
+      font-size:13px;
+      color:var(--comment-date-fg-color);
+    }
+
+:is(.commentPopup .commentPopupTop) .commentPopupButtons{
+      display:flex;
+      align-items:center;
+      gap:2px;
+      cursor:default;
+    }
+
+:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons)  > button{
+        width:32px;
+        height:32px;
+        padding:8px;
+        border:var(--button-comment-border);
+        border-radius:4px;
+        background-color:var(--button-comment-bg);
+        color:var(--button-comment-color);
+      }
+
+:is(:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons) > button):hover{
+          background-color:var(--button-comment-hover-bg);
+        }
+
+:is(:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons) > button):hover::before{
+            background-color:var(--button-comment-hover-color);
+          }
+
+:is(:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons) > button):active{
+          border:var(--button-comment-active-border);
+          background-color:var(--button-comment-active-bg);
+          color:var(--button-comment-active-color);
+        }
+
+:is(:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons) > button):active::before{
+            background-color:var(--button-comment-active-color);
+          }
+
+:is(:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons) > button):focus-visible{
+          background-color:var(--button-comment-hover-bg);
+          outline:2px solid var(--comment-focus-outline-color);
+          outline-offset:0;
+        }
+
+:is(:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons) > button)::before{
+          content:"";
+          display:inline-block;
+          width:100%;
+          height:100%;
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+        }
+
+.commentPopupEdit:is(:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons) > button)::before{
+          -webkit-mask-image:var(--comment-popup-edit-button-icon);
+                  mask-image:var(--comment-popup-edit-button-icon);
+        }
+
+.commentPopupDelete:is(:is(:is(.commentPopup .commentPopupTop) .commentPopupButtons) > button)::before{
+          -webkit-mask-image:var(--comment-popup-delete-button-icon);
+                  mask-image:var(--comment-popup-delete-button-icon);
+        }
+
+.commentPopup .commentPopupText{
+    width:100%;
+    height:auto;
+
+    font:menu;
+    font-style:normal;
+    font-weight:400;
+    line-height:normal;
+    font-size:15px;
+    color:var(--comment-fg-color);
+  }
+
+.commentPopupText,
+.sidebarCommentText .richText{
+  margin-block:0;
+}
+
+:is(.commentPopupText,.sidebarCommentText .richText) p:first-of-type{
+    margin-block:0;
+  }
+
+:is(.commentPopupText,.sidebarCommentText .richText)  > *{
+    white-space:pre-wrap;
+    font-size:max(15px, calc(10px * var(--total-scale-factor)));
+    overflow-wrap:break-word;
+  }
+
+:is(.commentPopupText,.sidebarCommentText .richText) span{
+    color:var(--comment-fg-color) !important;
+  }
+
 :root{
+  --editor-toolbar-vert-offset:6px;
   --outline-width:2px;
   --outline-color:#0060df;
   --outline-around-width:1px;
@@ -2708,19 +3844,6 @@
 
   --new-alt-text-warning-image:url(images/altText_warning.svg);
 }
-.visuallyHidden{
-  position:absolute;
-  top:0;
-  left:0;
-  border:0;
-  margin:0;
-  padding:0;
-  width:0;
-  height:0;
-  overflow:hidden;
-  white-space:nowrap;
-  font-size:0;
-}
 
 .textLayer.highlighting{
     cursor:var(--editorFreeHighlight-editing-cursor);
@@ -2737,6 +3860,13 @@
 .textLayer.highlighting.free span{
       cursor:var(--editorFreeHighlight-editing-cursor);
     }
+
+.page:has(.annotationEditorLayer.nonEditing)
+  .annotationLayer
+  .editorAnnotation{
+  position:absolute;
+  pointer-events:none;
+}
 
 :is(#viewerContainer.pdfPresentationMode:fullscreen,.annotationEditorLayer.disabled) .noAltTextBadge{
     display:none !important;
@@ -2787,6 +3917,14 @@
     pointer-events:none !important;
   }
 
+.annotationEditorLayer.getElements{
+    pointer-events:auto !important;
+  }
+
+.annotationEditorLayer.getElements  > div{
+      pointer-events:auto !important;
+    }
+
 .annotationEditorLayer.waiting{
   content:"";
   cursor:wait;
@@ -2799,6 +3937,10 @@
 .annotationEditorLayer.disabled{
   pointer-events:none;
 }
+
+.annotationEditorLayer.disabled.highlightEditing :is(.freeTextEditor,.inkEditor,.stampEditor,.signatureEditor,.commentPopup){
+    pointer-events:auto;
+  }
 
 .annotationEditorLayer.freetextEditing{
   cursor:var(--editorFreeText-editing-cursor);
@@ -2855,45 +3997,58 @@
 
 :is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar{
     --editor-toolbar-delete-image:url(images/editor-toolbar-delete.svg);
-    --editor-toolbar-bg-color:#f0f0f4;
+    --csstools-light-dark-toggle--100:var(--csstools-color-scheme--light) #2b2a33;
+    --editor-toolbar-bg-color:var(--csstools-light-dark-toggle--100, #f0f0f4);
     --editor-toolbar-highlight-image:url(images/toolbarButton-editorHighlight.svg);
-    --editor-toolbar-fg-color:#2e2e56;
+    --csstools-light-dark-toggle--101:var(--csstools-color-scheme--light) #fbfbfe;
+    --editor-toolbar-fg-color:var(--csstools-light-dark-toggle--101, #2e2e56);
     --editor-toolbar-border-color:#8f8f9d;
     --editor-toolbar-hover-border-color:var(--editor-toolbar-border-color);
-    --editor-toolbar-hover-bg-color:#e0e0e6;
+    --csstools-light-dark-toggle--102:var(--csstools-color-scheme--light) #52525e;
+    --editor-toolbar-hover-bg-color:var(--csstools-light-dark-toggle--102, #e0e0e6);
     --editor-toolbar-hover-fg-color:var(--editor-toolbar-fg-color);
     --editor-toolbar-hover-outline:none;
-    --editor-toolbar-focus-outline-color:#0060df;
+    --csstools-light-dark-toggle--103:var(--csstools-color-scheme--light) #0df;
+    --editor-toolbar-focus-outline-color:var(--csstools-light-dark-toggle--103, #0060df);
     --editor-toolbar-shadow:0 2px 6px 0 rgb(58 57 68 / 0.2);
-    --editor-toolbar-vert-offset:6px;
     --editor-toolbar-height:28px;
     --editor-toolbar-padding:2px;
-    --alt-text-done-color:#2ac3a2;
-    --alt-text-warning-color:#0090ed;
+    --csstools-light-dark-toggle--104:var(--csstools-color-scheme--light) #54ffbd;
+    --alt-text-done-color:var(--csstools-light-dark-toggle--104, #2ac3a2);
+    --csstools-light-dark-toggle--105:var(--csstools-color-scheme--light) #80ebff;
+    --alt-text-warning-color:var(--csstools-light-dark-toggle--105, #0090ed);
     --alt-text-hover-done-color:var(--alt-text-done-color);
     --alt-text-hover-warning-color:var(--alt-text-warning-color);
   }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) :is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar{
-      --editor-toolbar-bg-color:#2b2a33;
-      --editor-toolbar-fg-color:#fbfbfe;
-      --editor-toolbar-hover-bg-color:#52525e;
-      --editor-toolbar-focus-outline-color:#0df;
-      --alt-text-done-color:#54ffbd;
-      --alt-text-warning-color:#80ebff;
+@supports (color: light-dark(red, red)){
+:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar{
+    --editor-toolbar-bg-color:light-dark(#f0f0f4, #2b2a33);
+    --editor-toolbar-fg-color:light-dark(#2e2e56, #fbfbfe);
+    --editor-toolbar-hover-bg-color:light-dark(#e0e0e6, #52525e);
+    --editor-toolbar-focus-outline-color:light-dark(#0060df, #0df);
+    --alt-text-done-color:light-dark(#2ac3a2, #54ffbd);
+    --alt-text-warning-color:light-dark(#0090ed, #80ebff);
   }
-    }
+}
 
-:where(html.is-dark) :is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar{
-      --editor-toolbar-bg-color:#2b2a33;
-      --editor-toolbar-fg-color:#fbfbfe;
-      --editor-toolbar-hover-bg-color:#52525e;
-      --editor-toolbar-focus-outline-color:#0df;
-      --alt-text-done-color:#54ffbd;
-      --alt-text-warning-color:#80ebff;
+@supports not (color: light-dark(tan, tan)){
+
+:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) *{
+    --csstools-light-dark-toggle--100:var(--csstools-color-scheme--light) #2b2a33;
+    --editor-toolbar-bg-color:var(--csstools-light-dark-toggle--100, #f0f0f4);
+    --csstools-light-dark-toggle--101:var(--csstools-color-scheme--light) #fbfbfe;
+    --editor-toolbar-fg-color:var(--csstools-light-dark-toggle--101, #2e2e56);
+    --csstools-light-dark-toggle--102:var(--csstools-color-scheme--light) #52525e;
+    --editor-toolbar-hover-bg-color:var(--csstools-light-dark-toggle--102, #e0e0e6);
+    --csstools-light-dark-toggle--103:var(--csstools-color-scheme--light) #0df;
+    --editor-toolbar-focus-outline-color:var(--csstools-light-dark-toggle--103, #0060df);
+    --csstools-light-dark-toggle--104:var(--csstools-color-scheme--light) #54ffbd;
+    --alt-text-done-color:var(--csstools-light-dark-toggle--104, #2ac3a2);
+    --csstools-light-dark-toggle--105:var(--csstools-color-scheme--light) #80ebff;
+    --alt-text-warning-color:var(--csstools-light-dark-toggle--105, #0090ed);
   }
+}
 
 @media screen and (forced-colors: active){
 
@@ -2977,48 +4132,39 @@
         margin-inline:2px;
       }
 
-:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .highlightButton{
+:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .basic{
         width:var(--editor-toolbar-height);
       }
 
-:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .highlightButton)::before{
+:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .basic)::before{
           content:"";
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          display:inline-block;
+          background-color:var(--editor-toolbar-fg-color);
+          width:100%;
+          height:100%;
+        }
+
+:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .basic):hover::before{
+          background-color:var(--editor-toolbar-hover-fg-color);
+        }
+
+.highlightButton:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .basic)::before{
           -webkit-mask-image:var(--editor-toolbar-highlight-image);
                   mask-image:var(--editor-toolbar-highlight-image);
-          -webkit-mask-repeat:no-repeat;
-                  mask-repeat:no-repeat;
-          -webkit-mask-position:center;
-                  mask-position:center;
-          display:inline-block;
-          background-color:var(--editor-toolbar-fg-color);
-          width:100%;
-          height:100%;
         }
 
-:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .highlightButton):hover::before{
-          background-color:var(--editor-toolbar-hover-fg-color);
+.commentButton:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .basic)::before{
+          -webkit-mask-image:var(--comment-edit-button-icon);
+                  mask-image:var(--comment-edit-button-icon);
         }
 
-:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .delete{
-        width:var(--editor-toolbar-height);
-      }
-
-:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .delete)::before{
-          content:"";
+.deleteButton:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .basic)::before{
           -webkit-mask-image:var(--editor-toolbar-delete-image);
                   mask-image:var(--editor-toolbar-delete-image);
-          -webkit-mask-repeat:no-repeat;
-                  mask-repeat:no-repeat;
-          -webkit-mask-position:center;
-                  mask-position:center;
-          display:inline-block;
-          background-color:var(--editor-toolbar-fg-color);
-          width:100%;
-          height:100%;
-        }
-
-:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .delete):hover::before{
-          background-color:var(--editor-toolbar-hover-fg-color);
         }
 
 :is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons)  > *{
@@ -3123,26 +4269,39 @@
         }
 
 .show:is(:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .altText) .tooltip){
-            --alt-text-tooltip-bg:#f0f0f4;
-            --alt-text-tooltip-fg:#15141a;
+            --csstools-light-dark-toggle--106:var(--csstools-color-scheme--light) #1c1b22;
+            --alt-text-tooltip-bg:var(--csstools-light-dark-toggle--106, #f0f0f4);
+            --csstools-light-dark-toggle--107:var(--csstools-color-scheme--light) #fbfbfe;
+            --alt-text-tooltip-fg:var(--csstools-light-dark-toggle--107, #15141a);
             --alt-text-tooltip-border:#8f8f9d;
-            --alt-text-tooltip-shadow:0px 2px 6px 0px rgb(58 57 68 / 0.2);
+            --csstools-light-dark-toggle--108:var(--csstools-color-scheme--light) #15141a;
+            --alt-text-tooltip-shadow:0 2px 6px 0 var(--csstools-light-dark-toggle--108, rgb(58 57 68 / 0.2));
           }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) .show:is(:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .altText) .tooltip){
-              --alt-text-tooltip-bg:#1c1b22;
-              --alt-text-tooltip-fg:#fbfbfe;
-              --alt-text-tooltip-shadow:0px 2px 6px 0px #15141a;
+@supports (color: light-dark(red, red)){
+.show:is(:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .altText) .tooltip){
+            --alt-text-tooltip-bg:light-dark(#f0f0f4, #1c1b22);
+            --alt-text-tooltip-fg:light-dark(#15141a, #fbfbfe);
           }
-            }
+}
 
-:where(html.is-dark) .show:is(:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .altText) .tooltip){
-              --alt-text-tooltip-bg:#1c1b22;
-              --alt-text-tooltip-fg:#fbfbfe;
-              --alt-text-tooltip-shadow:0px 2px 6px 0px #15141a;
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+.show:is(:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .altText) .tooltip){
+            --alt-text-tooltip-shadow:0 2px 6px 0 light-dark(rgb(58 57 68 / 0.2), #15141a);
           }
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.show:is(:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .altText) .tooltip) *{
+            --csstools-light-dark-toggle--106:var(--csstools-color-scheme--light) #1c1b22;
+            --alt-text-tooltip-bg:var(--csstools-light-dark-toggle--106, #f0f0f4);
+            --csstools-light-dark-toggle--107:var(--csstools-color-scheme--light) #fbfbfe;
+            --alt-text-tooltip-fg:var(--csstools-light-dark-toggle--107, #15141a);
+            --csstools-light-dark-toggle--108:var(--csstools-color-scheme--light) #15141a;
+            --alt-text-tooltip-shadow:0 2px 6px 0 var(--csstools-light-dark-toggle--108, rgb(58 57 68 / 0.2));
+  }
+}
 
 @media screen and (forced-colors: active){
 
@@ -3179,6 +4338,24 @@
             pointer-events:none;
           }
 
+:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .comment{
+        width:var(--editor-toolbar-height);
+      }
+
+:is(:is(:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.highlightEditor,.signatureEditor),.textLayer) .editToolbar) .buttons) .comment)::before{
+          content:"";
+          -webkit-mask-image:var(--comment-edit-button-icon);
+                  mask-image:var(--comment-edit-button-icon);
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          display:inline-block;
+          background-color:var(--editor-toolbar-fg-color);
+          width:100%;
+          height:100%;
+        }
+
 .annotationEditorLayer .freeTextEditor{
   padding:calc(var(--freetext-padding) * var(--total-scale-factor));
   width:auto;
@@ -3194,6 +4371,7 @@
   white-space:nowrap;
   font:10px sans-serif;
   line-height:var(--freetext-line-height);
+  text-align:start;
   -webkit-user-select:none;
      -moz-user-select:none;
           user-select:none;
@@ -3256,25 +4434,33 @@
   }
 
 :is(.annotationEditorLayer .stampEditor) .noAltTextBadge{
-    --no-alt-text-badge-border-color:#f0f0f4;
-    --no-alt-text-badge-bg-color:#cfcfd8;
-    --no-alt-text-badge-fg-color:#5b5b66;
+    --csstools-light-dark-toggle--109:var(--csstools-color-scheme--light) #52525e;
+    --no-alt-text-badge-border-color:var(--csstools-light-dark-toggle--109, #f0f0f4);
+    --csstools-light-dark-toggle--110:var(--csstools-color-scheme--light) #fbfbfe;
+    --no-alt-text-badge-bg-color:var(--csstools-light-dark-toggle--110, #cfcfd8);
+    --csstools-light-dark-toggle--111:var(--csstools-color-scheme--light) #15141a;
+    --no-alt-text-badge-fg-color:var(--csstools-light-dark-toggle--111, #5b5b66);
   }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) :is(.annotationEditorLayer .stampEditor) .noAltTextBadge{
-      --no-alt-text-badge-border-color:#52525e;
-      --no-alt-text-badge-bg-color:#fbfbfe;
-      --no-alt-text-badge-fg-color:#15141a;
+@supports (color: light-dark(red, red)){
+:is(.annotationEditorLayer .stampEditor) .noAltTextBadge{
+    --no-alt-text-badge-border-color:light-dark(#f0f0f4, #52525e);
+    --no-alt-text-badge-bg-color:light-dark(#cfcfd8, #fbfbfe);
+    --no-alt-text-badge-fg-color:light-dark(#5b5b66, #15141a);
   }
-    }
+}
 
-:where(html.is-dark) :is(.annotationEditorLayer .stampEditor) .noAltTextBadge{
-      --no-alt-text-badge-border-color:#52525e;
-      --no-alt-text-badge-bg-color:#fbfbfe;
-      --no-alt-text-badge-fg-color:#15141a;
+@supports not (color: light-dark(tan, tan)){
+
+:is(:is(.annotationEditorLayer .stampEditor) .noAltTextBadge) *{
+    --csstools-light-dark-toggle--109:var(--csstools-color-scheme--light) #52525e;
+    --no-alt-text-badge-border-color:var(--csstools-light-dark-toggle--109, #f0f0f4);
+    --csstools-light-dark-toggle--110:var(--csstools-color-scheme--light) #fbfbfe;
+    --no-alt-text-badge-bg-color:var(--csstools-light-dark-toggle--110, #cfcfd8);
+    --csstools-light-dark-toggle--111:var(--csstools-color-scheme--light) #15141a;
+    --no-alt-text-badge-fg-color:var(--csstools-light-dark-toggle--111, #5b5b66);
   }
+}
 
 @media screen and (forced-colors: active){
 
@@ -3319,6 +4505,7 @@
 :is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.signatureEditor)) > .resizers{
       position:absolute;
       inset:0;
+      z-index:1;
     }
 
 .hidden:is(:is(.annotationEditorLayer :is(.freeTextEditor,.inkEditor,.stampEditor,.signatureEditor)) > .resizers){
@@ -3423,7 +4610,7 @@
 :is(.annotationEditorLayer :is([data-main-rotation="0"] [data-editor-rotation="180"],[data-main-rotation="90"] [data-editor-rotation="90"],[data-main-rotation="180"] [data-editor-rotation="0"],[data-main-rotation="270"] [data-editor-rotation="270"])) .editToolbar{
       rotate:180deg;
       inset-inline-end:100%;
-      inset-block-start:calc(0pc - var(--editor-toolbar-vert-offset));
+      inset-block-start:calc(0px - var(--editor-toolbar-vert-offset));
     }
 
 :is(.annotationEditorLayer :is([data-main-rotation="0"] [data-editor-rotation="270"],[data-main-rotation="90"] [data-editor-rotation="180"],[data-main-rotation="180"] [data-editor-rotation="90"],[data-main-rotation="270"] [data-editor-rotation="0"])) .editToolbar{
@@ -3505,19 +4692,23 @@
 .dialog.newAltText{
   --new-alt-text-ai-disclaimer-icon:url(images/altText_disclaimer.svg);
   --new-alt-text-spinner-icon:url(images/altText_spinner.svg);
-  --preview-image-bg-color:#f0f0f4;
+  --csstools-light-dark-toggle--112:var(--csstools-color-scheme--light) #2b2a33;
+  --preview-image-bg-color:var(--csstools-light-dark-toggle--112, #f0f0f4);
   --preview-image-border:none;
 }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) .dialog.newAltText{
-    --preview-image-bg-color:#2b2a33;
+@supports (color: light-dark(red, red)){
+.dialog.newAltText{
+  --preview-image-bg-color:light-dark(#f0f0f4, #2b2a33);
 }
-  }
+}
 
-:where(html.is-dark) .dialog.newAltText{
-    --preview-image-bg-color:#2b2a33;
+@supports not (color: light-dark(tan, tan)){
+
+.dialog.newAltText *{
+  --csstools-light-dark-toggle--112:var(--csstools-color-scheme--light) #2b2a33;
+  --preview-image-bg-color:var(--csstools-light-dark-toggle--112, #f0f0f4);
+  }
 }
 
 @media screen and (forced-colors: active){
@@ -3707,24 +4898,32 @@
         }
 
 .colorPicker{
-  --hover-outline-color:#0250bb;
-  --selected-outline-color:#0060df;
-  --swatch-border-color:#cfcfd8;
+  --csstools-light-dark-toggle--113:var(--csstools-color-scheme--light) #80ebff;
+  --hover-outline-color:var(--csstools-light-dark-toggle--113, #0250bb);
+  --csstools-light-dark-toggle--114:var(--csstools-color-scheme--light) #aaf2ff;
+  --selected-outline-color:var(--csstools-light-dark-toggle--114, #0060df);
+  --csstools-light-dark-toggle--115:var(--csstools-color-scheme--light) #52525e;
+  --swatch-border-color:var(--csstools-light-dark-toggle--115, #cfcfd8);
 }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) .colorPicker{
-    --hover-outline-color:#80ebff;
-    --selected-outline-color:#aaf2ff;
-    --swatch-border-color:#52525e;
+@supports (color: light-dark(red, red)){
+.colorPicker{
+  --hover-outline-color:light-dark(#0250bb, #80ebff);
+  --selected-outline-color:light-dark(#0060df, #aaf2ff);
+  --swatch-border-color:light-dark(#cfcfd8, #52525e);
 }
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.colorPicker *{
+  --csstools-light-dark-toggle--113:var(--csstools-color-scheme--light) #80ebff;
+  --hover-outline-color:var(--csstools-light-dark-toggle--113, #0250bb);
+  --csstools-light-dark-toggle--114:var(--csstools-color-scheme--light) #aaf2ff;
+  --selected-outline-color:var(--csstools-light-dark-toggle--114, #0060df);
+  --csstools-light-dark-toggle--115:var(--csstools-color-scheme--light) #52525e;
+  --swatch-border-color:var(--csstools-light-dark-toggle--115, #cfcfd8);
   }
-
-:where(html.is-dark) .colorPicker{
-    --hover-outline-color:#80ebff;
-    --selected-outline-color:#aaf2ff;
-    --swatch-border-color:#52525e;
 }
 
 @media screen and (forced-colors: active){
@@ -3748,6 +4947,18 @@
 
 .colorPicker button:is(:hover,.selected) > .swatch{
     border:none;
+  }
+
+.basicColorPicker{
+  width:28px;
+}
+
+.basicColorPicker::-moz-color-swatch{
+    border-radius:100%;
+  }
+
+.basicColorPicker::-webkit-color-swatch{
+    border-radius:100%;
   }
 
 .annotationEditorLayer[data-main-rotation="0"] .highlightEditor:not(.free) > .editToolbar{
@@ -3958,19 +5169,27 @@
       align-items:center;
       align-self:stretch;
 
-      --example-color:#bfbfc9;
+      --csstools-light-dark-toggle--116:var(--csstools-color-scheme--light) #80808e;
+
+      --example-color:var(--csstools-light-dark-toggle--116, #bfbfc9);
     }
 
-@media (prefers-color-scheme: dark){
+@supports (color: light-dark(red, red)){
+:is(#highlightParamsToolbarContainer #editorHighlightThickness) .thicknessPicker{
 
-:where(html:not(.is-light)) :is(#highlightParamsToolbarContainer #editorHighlightThickness) .thicknessPicker{
-        --example-color:#80808e;
+      --example-color:light-dark(#bfbfc9, #80808e);
     }
-      }
+}
 
-:where(html.is-dark) :is(#highlightParamsToolbarContainer #editorHighlightThickness) .thicknessPicker{
-        --example-color:#80808e;
-    }
+@supports not (color: light-dark(tan, tan)){
+
+:is(:is(#highlightParamsToolbarContainer #editorHighlightThickness) .thicknessPicker) *{
+
+      --csstools-light-dark-toggle--116:var(--csstools-color-scheme--light) #80808e;
+
+      --example-color:var(--csstools-light-dark-toggle--116, #bfbfc9);
+  }
+}
 
 @media screen and (forced-colors: active){
 
@@ -4010,19 +5229,23 @@
   }
 
 :is(#highlightParamsToolbarContainer #editorHighlightVisibility) .divider{
-      --divider-color:#d7d7db;
+      --csstools-light-dark-toggle--117:var(--csstools-color-scheme--light) #8f8f9d;
+      --divider-color:var(--csstools-light-dark-toggle--117, #d7d7db);
     }
 
-@media (prefers-color-scheme: dark){
-
-:where(html:not(.is-light)) :is(#highlightParamsToolbarContainer #editorHighlightVisibility) .divider{
-        --divider-color:#8f8f9d;
+@supports (color: light-dark(red, red)){
+:is(#highlightParamsToolbarContainer #editorHighlightVisibility) .divider{
+      --divider-color:light-dark(#d7d7db, #8f8f9d);
     }
-      }
+}
 
-:where(html.is-dark) :is(#highlightParamsToolbarContainer #editorHighlightVisibility) .divider{
-        --divider-color:#8f8f9d;
-    }
+@supports not (color: light-dark(tan, tan)){
+
+:is(:is(#highlightParamsToolbarContainer #editorHighlightVisibility) .divider) *{
+      --csstools-light-dark-toggle--117:var(--csstools-color-scheme--light) #8f8f9d;
+      --divider-color:var(--csstools-light-dark-toggle--117, #d7d7db);
+  }
+}
 
 @media screen and (forced-colors: active){
 
@@ -4071,19 +5294,6 @@
       gap:12px;
     }
 
-:is(:is(#altTextSettingsDialog #altTextSettingsContainer) #aiModelSettings) button{
-        width:-moz-fit-content;
-        width:fit-content;
-      }
-
-.download:is(:is(#altTextSettingsDialog #altTextSettingsContainer) #aiModelSettings) #deleteModelButton{
-          display:none;
-        }
-
-:is(:is(#altTextSettingsDialog #altTextSettingsContainer) #aiModelSettings):not(.download) #downloadModelButton{
-          display:none;
-        }
-
 :is(#altTextSettingsDialog #altTextSettingsContainer) #automaticAltText,:is(#altTextSettingsDialog #altTextSettingsContainer) #altTextEditor{
       display:flex;
       flex-direction:column;
@@ -4100,26 +5310,1633 @@
       gap:16px;
     }
 
+button.hasPopupMenu[aria-expanded="true"] + menu{
+    visibility:visible;
+  }
+
+button.hasPopupMenu[aria-expanded="false"] + menu{
+    visibility:hidden;
+  }
+
+.popupMenu{
+  --menuitem-checkmark-icon:url(images/checkmark.svg);
+  --menu-mark-icon-size:0;
+  --menu-icon-size:16px;
+  --menuitem-gap:5px;
+  --menuitem-border-color:transparent;
+  --menuitem-active-bg:color-mix(
+    in srgb,
+    var(--menu-text-color),
+    transparent 79%
+  );
+  --menuitem-text-active-fg:var(--menu-text-color);
+  --menuitem-focus-bg:color-mix(
+    in srgb,
+    var(--menu-text-color),
+    transparent 93%
+  );
+  --csstools-light-dark-toggle--118:var(--csstools-color-scheme--light) #00cadb;
+  --menuitem-focus-outline-color:var(--csstools-light-dark-toggle--118, #0062fa);
+  --csstools-light-dark-toggle--119:var(--csstools-color-scheme--light) black;
+  --menuitem-focus-border-color:var(--csstools-light-dark-toggle--119, white);
+
+  --csstools-light-dark-toggle--120:var(--csstools-color-scheme--light) #23222b;
+
+  --menu-bg:var(--csstools-light-dark-toggle--120, white);
+  --menu-background-blend-mode:normal;
+  --csstools-light-dark-toggle--121:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--122:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --menu-box-shadow:0 0.375px 1.5px 0 var(--csstools-light-dark-toggle--121, rgb(0 0 0 / 0.05)), 0 3px 12px 0 var(--csstools-light-dark-toggle--122, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--123:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
+  --menu-border-color:var(--csstools-light-dark-toggle--123, rgb(21 20 26 / 0.1));
+  --menuitem-border-radius:8px;
+  --menu-backdrop-filter:none;
+  --csstools-light-dark-toggle--124:var(--csstools-color-scheme--light) #fbfbfe;
+  --menu-text-color:var(--csstools-light-dark-toggle--124, #15141a);
+  --menuitem-text-hover-fg:var(--menu-text-color);
+  --menuitem-hover-bg:color-mix(
+    in srgb,
+    var(--menu-text-color),
+    transparent 86%
+  );
+  --menuitem-hover-background-blend-mode:normal;
+}
+
+@supports (color: light-dark(red, red)){
+.popupMenu{
+  --menuitem-focus-outline-color:light-dark(#0062fa, #00cadb);
+  --menuitem-focus-border-color:light-dark(white, black);
+
+  --menu-bg:light-dark(white, #23222b);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+.popupMenu{
+  --menu-box-shadow:0 0.375px 1.5px 0 light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.2)), 0 3px 12px 0 light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.4));
+  --menu-border-color:light-dark(rgb(21 20 26 / 0.1), rgb(251 251 254 / 0.1));
+}
+}
+
+@supports (color: light-dark(red, red)){
+.popupMenu{
+  --menu-text-color:light-dark(#15141a, #fbfbfe);
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.popupMenu *{
+  --csstools-light-dark-toggle--118:var(--csstools-color-scheme--light) #00cadb;
+  --menuitem-focus-outline-color:var(--csstools-light-dark-toggle--118, #0062fa);
+  --csstools-light-dark-toggle--119:var(--csstools-color-scheme--light) black;
+  --menuitem-focus-border-color:var(--csstools-light-dark-toggle--119, white);
+
+  --csstools-light-dark-toggle--120:var(--csstools-color-scheme--light) #23222b;
+
+  --menu-bg:var(--csstools-light-dark-toggle--120, white);
+  --csstools-light-dark-toggle--121:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--122:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --menu-box-shadow:0 0.375px 1.5px 0 var(--csstools-light-dark-toggle--121, rgb(0 0 0 / 0.05)), 0 3px 12px 0 var(--csstools-light-dark-toggle--122, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--123:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
+  --menu-border-color:var(--csstools-light-dark-toggle--123, rgb(21 20 26 / 0.1));
+  --csstools-light-dark-toggle--124:var(--csstools-color-scheme--light) #fbfbfe;
+  --menu-text-color:var(--csstools-light-dark-toggle--124, #15141a);
+  }
+}
+
+@media screen and (forced-colors: active){
+
+.popupMenu{
+    --menu-bg:Canvas;
+    --menu-background-blend-mode:normal;
+    --menu-box-shadow:none;
+    --menu-backdrop-filter:none;
+    --menu-text-color:ButtonText;
+    --menu-border-color:CanvasText;
+    --menuitem-border-color:none;
+    --menuitem-hover-bg:SelectedItemText;
+    --menuitem-text-hover-fg:SelectedItem;
+    --menuitem-active-bg:SelectedItemText;
+    --menuitem-text-active-fg:SelectedItem;
+    --menuitem-focus-outline-color:CanvasText;
+    --menuitem-focus-border-color:none;
+}
+  }
+
+.popupMenu{
+
+  display:flex;
+  flex-direction:column;
+  width:-moz-max-content;
+  width:max-content;
+  height:auto;
+  position:relative;
+  left:0;
+  top:1px;
+  margin:0;
+  padding:5px;
+  box-sizing:border-box;
+
+  background:var(--menu-bg);
+  background-blend-mode:var(--menu-background-blend-mode);
+  box-shadow:var(--menu-box-shadow);
+  border-radius:6px;
+  border:1px solid var(--menu-border-color);
+  -webkit-backdrop-filter:var(--menu-backdrop-filter);
+          backdrop-filter:var(--menu-backdrop-filter);
+}
+
+.popupMenu.withMark{
+    --menu-mark-icon-size:16px;
+  }
+
+.popupMenu  > li{
+    display:flex;
+    align-items:center;
+    list-style:none;
+    width:100%;
+    height:24px;
+    padding-inline:calc(var(--menu-mark-icon-size) + var(--menuitem-gap)) var(--menuitem-gap);
+    gap:var(--menuitem-gap);
+    box-sizing:border-box;
+    border-radius:var(--menuitem-border-radius);
+    border:1px solid var(--menuitem-border-color);
+    background:transparent;
+  }
+
+:is(.popupMenu > li):has(button.selected)::before{
+      content:"";
+      display:inline-block;
+      width:11px;
+      height:11px;
+      -webkit-mask-repeat:no-repeat;
+              mask-repeat:no-repeat;
+      -webkit-mask-position:center;
+              mask-position:center;
+      -webkit-mask-image:var(--menuitem-checkmark-icon);
+              mask-image:var(--menuitem-checkmark-icon);
+      background-color:var(--menu-text-color);
+      position:absolute;
+      margin-inline-start:-16px;
+    }
+
+:is(.popupMenu > li):has(button:disabled){
+      opacity:0.62;
+      pointer-events:none;
+    }
+
+:is(.popupMenu > li):hover{
+      background:var(--menuitem-hover-bg);
+      background-blend-mode:var(--menuitem-hover-background-blend-mode);
+    }
+
+:is(:is(.popupMenu > li):hover > button):not(.noIcon)::before{
+          background-color:var(--menuitem-text-hover-fg);
+        }
+
+:is(:is(.popupMenu > li):hover > button)  > span{
+          color:var(--menuitem-text-hover-fg);
+        }
+
+:is(.popupMenu > li):hover:has(button.selected)::before{
+        background-color:var(--menuitem-text-hover-fg);
+      }
+
+:is(.popupMenu > li):active{
+      background-color:var(--menuitem-active-bg);
+    }
+
+:is(.popupMenu > li):active  > button > span{
+        color:var(--menuitem-text-active-fg);
+      }
+
+:is(.popupMenu > li):has( > button:focus-visible){
+      border-color:var(--menuitem-focus-border-color);
+      background-color:var(--menuitem-focus-bg);
+      outline:2px solid var(--menuitem-focus-outline-color);
+      outline-offset:2px;
+    }
+
+:is(.popupMenu > li)  > button{
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      width:100%;
+      height:auto;
+      padding:var(--menuitem-gap);
+      gap:var(--menuitem-gap);
+      background:transparent;
+      border:none;
+    }
+
+:is(:is(.popupMenu > li) > button):not(.noIcon)::before{
+        display:inline-block;
+        width:var(--menu-icon-size);
+        height:var(--menu-icon-size);
+        content:"";
+        -webkit-mask-size:cover;
+                mask-size:cover;
+        -webkit-mask-position:center;
+                mask-position:center;
+        background-color:var(--menu-text-color);
+      }
+
+:is(:is(.popupMenu > li) > button):focus-visible{
+        outline:none;
+      }
+
+:is(:is(.popupMenu > li) > button)  > span{
+        display:inline-block;
+        width:-moz-max-content;
+        width:max-content;
+        height:auto;
+        text-align:start;
+        color:var(--menu-text-color);
+        -webkit-user-select:none;
+           -moz-user-select:none;
+                user-select:none;
+        padding-inline-start:6px;
+
+        font:menu;
+        font-size:13px;
+        font-style:normal;
+        font-weight:510;
+        line-height:normal;
+      }
+
+.treeView{
+  --csstools-light-dark-toggle--125:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.8);
+  --treeitem-color:var(--csstools-light-dark-toggle--125, rgb(0 0 0 / 0.8));
+  --csstools-light-dark-toggle--126:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.15);
+  --treeitem-bg-color:var(--csstools-light-dark-toggle--126, rgb(0 0 0 / 0.15));
+  --csstools-light-dark-toggle--127:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.9);
+  --treeitem-hover-color:var(--csstools-light-dark-toggle--127, rgb(0 0 0 / 0.9));
+  --csstools-light-dark-toggle--128:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.9);
+  --treeitem-selected-color:var(--csstools-light-dark-toggle--128, rgb(0 0 0 / 0.9));
+  --csstools-light-dark-toggle--129:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.25);
+  --treeitem-selected-bg-color:var(--csstools-light-dark-toggle--129, rgb(0 0 0 / 0.25));
+  --treeitem-expanded-icon:url(images/treeitem-expanded.svg);
+  --treeitem-collapsed-icon:url(images/treeitem-collapsed.svg);
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+.treeView{
+  --treeitem-color:light-dark(rgb(0 0 0 / 0.8), rgb(255 255 255 / 0.8));
+  --treeitem-bg-color:light-dark(rgb(0 0 0 / 0.15), rgb(255 255 255 / 0.15));
+  --treeitem-hover-color:light-dark(rgb(0 0 0 / 0.9), rgb(255 255 255 / 0.9));
+  --treeitem-selected-color:light-dark(
+    rgb(0 0 0 / 0.9),
+    rgb(255 255 255 / 0.9)
+  );
+  --treeitem-selected-bg-color:light-dark(
+    rgb(0 0 0 / 0.25),
+    rgb(255 255 255 / 0.25)
+  );
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.treeView *{
+  --csstools-light-dark-toggle--125:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.8);
+  --treeitem-color:var(--csstools-light-dark-toggle--125, rgb(0 0 0 / 0.8));
+  --csstools-light-dark-toggle--126:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.15);
+  --treeitem-bg-color:var(--csstools-light-dark-toggle--126, rgb(0 0 0 / 0.15));
+  --csstools-light-dark-toggle--127:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.9);
+  --treeitem-hover-color:var(--csstools-light-dark-toggle--127, rgb(0 0 0 / 0.9));
+  --csstools-light-dark-toggle--128:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.9);
+  --treeitem-selected-color:var(--csstools-light-dark-toggle--128, rgb(0 0 0 / 0.9));
+  --csstools-light-dark-toggle--129:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.25);
+  --treeitem-selected-bg-color:var(--csstools-light-dark-toggle--129, rgb(0 0 0 / 0.25));
+  }
+}
+
+:is(.treeView.withNesting .treeItemToggler)::before{
+        position:absolute;
+        display:inline-block;
+        width:16px;
+        height:16px;
+        inset-inline-end:4px;
+
+        content:"";
+        background-color:var(--toolbar-icon-bg-color);
+        -webkit-mask-image:var(--treeitem-expanded-icon);
+                mask-image:var(--treeitem-expanded-icon);
+        -webkit-mask-size:cover;
+                mask-size:cover;
+      }
+
+.treeView.withNesting .treeItemToggler{
+
+      position:relative;
+      float:inline-start;
+      height:0;
+      width:0;
+      color:rgb(255 255 255 / 0.5);
+    }
+
+.treeItemsHidden:is(.treeView.withNesting .treeItemToggler)::before{
+          -webkit-mask-image:var(--treeitem-collapsed-icon);
+                  mask-image:var(--treeitem-collapsed-icon);
+          transform:scaleX(var(--dir-factor));
+        }
+
+.treeItemsHidden:is(.treeView.withNesting .treeItemToggler)  ~ .treeItems{
+          display:none;
+        }
+
+:is(.treeView.withNesting .treeItemToggler):hover + a,:is(.treeView.withNesting .treeItemToggler):hover ~ .treeItems{
+        background-color:var(--treeitem-bg-color);
+        background-clip:padding-box;
+        border-radius:2px;
+        color:var(--treeitem-hover-color);
+      }
+
+.treeView.withNesting  > .treeItem,.treeView.withNesting .treeItem > .treeItems{
+      margin-inline-start:20px;
+    }
+
+:is(#layersView.treeView .treeItem > a) *{
+      cursor:pointer;
+    }
+
+:is(#layersView.treeView .treeItem > a)  > label{
+      display:flex;
+      align-items:center;
+      padding-inline-start:4px;
+    }
+
+:is(:is(#layersView.treeView .treeItem > a) > label)  > input{
+        margin-top:1px;
+      }
+
+:is(.treeView .treeItem)  > a{
+      text-decoration:none;
+      display:inline-block;
+      min-width:calc(100% - 4px);
+      height:auto;
+      margin-bottom:1px;
+      padding:2px 0 5px;
+      padding-inline-start:4px;
+      border-radius:2px;
+      color:var(--treeitem-color);
+      font-size:13px;
+      line-height:15px;
+      -webkit-user-select:none;
+         -moz-user-select:none;
+              user-select:none;
+      white-space:normal;
+      cursor:default;
+    }
+
+:is(:is(.treeView .treeItem) > a):hover{
+        background-color:var(--treeitem-bg-color);
+        background-clip:padding-box;
+        border-radius:2px;
+        color:var(--treeitem-hover-color);
+      }
+
+.selected:is(.treeView .treeItem) > a{
+      background-color:var(--treeitem-selected-bg-color);
+      color:var(--treeitem-selected-color);
+    }
+
+#outerContainer.viewsManagerMoving #viewsManager{
+      visibility:visible;
+    }
+
+#outerContainer.viewsManagerOpen #viewsManager{
+      visibility:visible;
+      inset-inline-start:8px;
+    }
+
+#outerContainer.viewsManagerOpen #viewerContainer:not(.pdfPresentationMode){
+      inset-inline-start:var(--viewsManager-width, 0);
+      transition-property:inset-inline-start;
+    }
+
+#outerContainer.viewsManagerResizing :is(#sidebarContainer,#viewerContainer,#loadingBar){
+    transition-duration:0s;
+  }
+
+#viewsManager{
+  --views-manager-button-icon:url(images/pages_viewButton.svg);
+  --views-manager-button-arrow-icon:url(images/pages_viewArrow.svg);
+  --views-manager-add-file-button-icon:url(images/toolbarButton-zoomIn.svg);
+  --current-outline-button-icon:url(images/toolbarButton-currentOutlineItem.svg);
+  --menuitem-thumbnailsView-icon:url(images/pages_viewButton.svg);
+  --menuitem-outlinesView-icon:url(images/toolbarButton-viewOutline.svg);
+  --menuitem-attachmentsView-icon:url(images/toolbarButton-viewAttachments.svg);
+  --menuitem-layersView-icon:url(images/toolbarButton-viewLayers.svg);
+  --manage-button-icon:url(images/toolbarButton-pageDown.svg);
+  --close-button-icon:url(images/pages_closeButton.svg);
+  --undo-label-icon:url(images/altText_done.svg);
+  --pages-selected-icon:url(images/pages_selected.svg);
+  --spinner-icon:url(images/altText_spinner.svg);
+
+  --csstools-light-dark-toggle--130:var(--csstools-color-scheme--light) rgb(66 65 77 / 0.92);
+
+  --sidebar-bg-color:var(--csstools-light-dark-toggle--130, rgb(255 255 255 / 0.92));
+  --sidebar-backdrop-filter:blur(7px);
+  --sidebar-width:230px;
+  --sidebar-min-width:min-content;
+  --sidebar-max-width:50vw;
+  --sidebar-block-padding:8px;
+
+  --csstools-light-dark-toggle--131:var(--csstools-color-scheme--light) #fbfbfe;
+
+  --text-color:var(--csstools-light-dark-toggle--131, #15141a);
+  --button-fg:var(--text-color);
+  --button-no-bg:transparent;
+  --csstools-light-dark-toggle--132:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.07);
+  --button-bg:var(--csstools-light-dark-toggle--132, rgb(21 20 26 / 0.07));
+  --button-border-color:transparent;
+  --csstools-light-dark-toggle--133:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.14);
+  --button-hover-bg:var(--csstools-light-dark-toggle--133, rgb(21 20 26 / 0.14));
+  --button-hover-fg:var(--text-color);
+  --button-hover-border-color:var(--button-border-color);
+  --csstools-light-dark-toggle--134:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.21);
+  --button-active-bg:var(--csstools-light-dark-toggle--134, rgb(21 20 26 / 0.21));
+  --button-active-fg:var(--text-color);
+  --button-active-border-color:var(--button-border-color);
+  --button-focus-no-bg:color-mix(in srgb, var(--text-color), transparent 93%);
+  --csstools-light-dark-toggle--135:var(--csstools-color-scheme--light) #00cadb;
+  --button-focus-outline-color:var(--csstools-light-dark-toggle--135, #0062fa);
+  --csstools-light-dark-toggle--136:var(--csstools-color-scheme--light) black;
+  --button-focus-border-color:var(--csstools-light-dark-toggle--136, white);
+  --status-border-color:transparent;
+  --csstools-light-dark-toggle--137:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.03);
+  --status-actions-bg:var(--csstools-light-dark-toggle--137, rgb(21 20 26 / 0.03));
+  --csstools-light-dark-toggle--138:var(--csstools-color-scheme--light) rgb(0 202 219 / 0.08);
+  --status-undo-bg:var(--csstools-light-dark-toggle--138, rgb(0 98 250 / 0.08));
+  --status-waiting-bg:var(--status-undo-bg);
+  --csstools-light-dark-toggle--139:var(--csstools-color-scheme--light) #00cadb;
+  --indicator-color:var(--csstools-light-dark-toggle--139, #0062fa);
+  --csstools-light-dark-toggle--140:var(--csstools-color-scheme--light) #6e001f;
+  --status-warning-bg:var(--csstools-light-dark-toggle--140, #ffe8ea);
+  --csstools-light-dark-toggle--141:var(--csstools-color-scheme--light) #ffa0aa;
+  --indicator-warning-color:var(--csstools-light-dark-toggle--141, #b20037);
+  --csstools-light-dark-toggle--142:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--143:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --header-shadow:0 0.25px 0.75px -0.75px var(--csstools-light-dark-toggle--142, rgb(0 0 0 / 0.05)), 0 2px 6px -6px var(--csstools-light-dark-toggle--143, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--144:var(--csstools-color-scheme--light) #42414e;
+  --header-bg:var(--csstools-light-dark-toggle--144, rgb(255 255 255 / 0.92));
+  --image-outline:none;
+  --image-border-width:6px;
+  --csstools-light-dark-toggle--145:var(--csstools-color-scheme--light) #3a3944;
+  --image-border-color:var(--csstools-light-dark-toggle--145, #cfcfd8);
+  --image-hover-border-color:#bfbfc9;
+  --image-current-border-color:var(--button-focus-outline-color);
+  --image-current-focused-outline-color:var(--image-hover-border-color);
+  --csstools-light-dark-toggle--146:var(--csstools-color-scheme--light) #42414d;
+  --image-page-number-bg:var(--csstools-light-dark-toggle--146, #f0f0f4);
+  --image-page-number-fg:var(--text-color);
+  --image-page-number-border-color:transparent;
+  --image-hover-page-number-bg:var(--image-page-number-bg);
+  --image-hover-page-number-fg:var(--image-page-number-fg);
+  --image-current-page-number-bg:var(--image-current-border-color);
+  --csstools-light-dark-toggle--147:var(--csstools-color-scheme--light) #15141a;
+  --image-current-page-number-fg:var(--csstools-light-dark-toggle--147, #fff);
+  --image-current-hover-page-number-bg:var(--image-current-page-number-bg);
+  --image-current-hover-page-number-fg:var(--image-current-page-number-fg);
+  --csstools-light-dark-toggle--148:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--149:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --image-shadow:0 0.375px 1.5px 0 var(--csstools-light-dark-toggle--148, rgb(0 0 0 / 0.05)), 0 0 0 1px var(--image-border-color), 0 3px 12px 0 var(--csstools-light-dark-toggle--149, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--150:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--151:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
+  --csstools-light-dark-toggle--152:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --image-hover-shadow:0 0.375px 1.5px 0 var(--csstools-light-dark-toggle--150, rgb(0 0 0 / 0.05)), 0 0 0 1px var(--csstools-light-dark-toggle--151, rgb(21 20 26 / 0.1)), 0 0 0 var(--image-border-width) var(--image-hover-border-color), 0 3px 12px 0 var(--csstools-light-dark-toggle--152, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--153:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--154:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --image-current-shadow:0 0.375px 1.5px 0 var(--csstools-light-dark-toggle--153, rgb(0 0 0 / 0.05)), 0 0 0 var(--image-border-width) var(--image-current-border-color), 0 3px 12px 0 var(--csstools-light-dark-toggle--154, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--155:var(--csstools-color-scheme--light) rgb(0 202 219 / 0.08);
+  --image-dragging-placeholder-bg:var(--csstools-light-dark-toggle--155, rgb(0 98 250 / 0.08));
+  --multiple-dragging-bg:white;
+  --image-multiple-dragging-shadow:0 0 0 var(--image-border-width) var(--image-current-border-color), var(--image-border-width) var(--image-border-width) 0 calc(var(--image-border-width) / 2) var(--multiple-dragging-bg), var(--image-border-width) var(--image-border-width) 0 calc(3 * var(--image-border-width) / 2) var(--image-current-border-color);
+  --image-dragging-shadow:0 0 0 var(--image-border-width) var(--image-current-border-color);
+  --multiple-dragging-indicator-bg:var(--indicator-color);
+  --csstools-light-dark-toggle--156:var(--csstools-color-scheme--light) #15141a;
+  --multiple-dragging-text-color:var(--csstools-light-dark-toggle--156, #fbfbfe);
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+#viewsManager{
+
+  --sidebar-bg-color:light-dark(rgb(255 255 255 / 0.92), rgb(66 65 77 / 0.92));
+}
+}
+
+@supports (color: light-dark(red, red)){
+#viewsManager{
+
+  --text-color:light-dark(#15141a, #fbfbfe);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+#viewsManager{
+  --button-bg:light-dark(rgb(21 20 26 / 0.07), rgb(251 251 254 / 0.07));
+  --button-hover-bg:light-dark(rgb(21 20 26 / 0.14), rgb(251 251 254 / 0.14));
+  --button-active-bg:light-dark(rgb(21 20 26 / 0.21), rgb(251 251 254 / 0.21));
+}
+}
+
+@supports (color: light-dark(red, red)){
+#viewsManager{
+  --button-focus-outline-color:light-dark(#0062fa, #00cadb);
+  --button-focus-border-color:light-dark(white, black);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+#viewsManager{
+  --status-actions-bg:light-dark(
+    rgb(21 20 26 / 0.03),
+    rgb(251 251 254 / 0.03)
+  );
+  --status-undo-bg:light-dark(rgb(0 98 250 / 0.08), rgb(0 202 219 / 0.08));
+}
+}
+
+@supports (color: light-dark(red, red)){
+#viewsManager{
+  --indicator-color:light-dark(#0062fa, #00cadb);
+  --status-warning-bg:light-dark(#ffe8ea, #6e001f);
+  --indicator-warning-color:light-dark(#b20037, #ffa0aa);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+#viewsManager{
+  --header-shadow:0 0.25px 0.75px -0.75px light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.2)), 0 2px 6px -6px light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.4));
+  --header-bg:light-dark(rgb(255 255 255 / 0.92), #42414e);
+}
+}
+
+@supports (color: light-dark(red, red)){
+#viewsManager{
+  --image-border-color:light-dark(#cfcfd8, #3a3944);
+  --image-page-number-bg:light-dark(#f0f0f4, #42414d);
+  --image-current-page-number-fg:light-dark(#fff, #15141a);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+#viewsManager{
+  --image-shadow:0 0.375px 1.5px 0 light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.2)), 0 0 0 1px var(--image-border-color), 0 3px 12px 0 light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.4));
+  --image-hover-shadow:0 0.375px 1.5px 0 light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.2)), 0 0 0 1px light-dark(rgb(21 20 26 / 0.1), rgb(251 251 254 / 0.1)), 0 0 0 var(--image-border-width) var(--image-hover-border-color), 0 3px 12px 0 light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.4));
+  --image-current-shadow:0 0.375px 1.5px 0 light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.2)), 0 0 0 var(--image-border-width) var(--image-current-border-color), 0 3px 12px 0 light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.4));
+  --image-dragging-placeholder-bg:light-dark(
+    rgb(0 98 250 / 0.08),
+    rgb(0 202 219 / 0.08)
+  );
+}
+}
+
+@supports (color: light-dark(red, red)){
+#viewsManager{
+  --multiple-dragging-text-color:light-dark(#fbfbfe, #15141a);
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+#viewsManager *{
+
+  --csstools-light-dark-toggle--130:var(--csstools-color-scheme--light) rgb(66 65 77 / 0.92);
+
+  --sidebar-bg-color:var(--csstools-light-dark-toggle--130, rgb(255 255 255 / 0.92));
+
+  --csstools-light-dark-toggle--131:var(--csstools-color-scheme--light) #fbfbfe;
+
+  --text-color:var(--csstools-light-dark-toggle--131, #15141a);
+  --csstools-light-dark-toggle--132:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.07);
+  --button-bg:var(--csstools-light-dark-toggle--132, rgb(21 20 26 / 0.07));
+  --csstools-light-dark-toggle--133:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.14);
+  --button-hover-bg:var(--csstools-light-dark-toggle--133, rgb(21 20 26 / 0.14));
+  --csstools-light-dark-toggle--134:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.21);
+  --button-active-bg:var(--csstools-light-dark-toggle--134, rgb(21 20 26 / 0.21));
+  --csstools-light-dark-toggle--135:var(--csstools-color-scheme--light) #00cadb;
+  --button-focus-outline-color:var(--csstools-light-dark-toggle--135, #0062fa);
+  --csstools-light-dark-toggle--136:var(--csstools-color-scheme--light) black;
+  --button-focus-border-color:var(--csstools-light-dark-toggle--136, white);
+  --csstools-light-dark-toggle--137:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.03);
+  --status-actions-bg:var(--csstools-light-dark-toggle--137, rgb(21 20 26 / 0.03));
+  --csstools-light-dark-toggle--138:var(--csstools-color-scheme--light) rgb(0 202 219 / 0.08);
+  --status-undo-bg:var(--csstools-light-dark-toggle--138, rgb(0 98 250 / 0.08));
+  --csstools-light-dark-toggle--139:var(--csstools-color-scheme--light) #00cadb;
+  --indicator-color:var(--csstools-light-dark-toggle--139, #0062fa);
+  --csstools-light-dark-toggle--140:var(--csstools-color-scheme--light) #6e001f;
+  --status-warning-bg:var(--csstools-light-dark-toggle--140, #ffe8ea);
+  --csstools-light-dark-toggle--141:var(--csstools-color-scheme--light) #ffa0aa;
+  --indicator-warning-color:var(--csstools-light-dark-toggle--141, #b20037);
+  --csstools-light-dark-toggle--142:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--143:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --header-shadow:0 0.25px 0.75px -0.75px var(--csstools-light-dark-toggle--142, rgb(0 0 0 / 0.05)), 0 2px 6px -6px var(--csstools-light-dark-toggle--143, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--144:var(--csstools-color-scheme--light) #42414e;
+  --header-bg:var(--csstools-light-dark-toggle--144, rgb(255 255 255 / 0.92));
+  --csstools-light-dark-toggle--145:var(--csstools-color-scheme--light) #3a3944;
+  --image-border-color:var(--csstools-light-dark-toggle--145, #cfcfd8);
+  --csstools-light-dark-toggle--146:var(--csstools-color-scheme--light) #42414d;
+  --image-page-number-bg:var(--csstools-light-dark-toggle--146, #f0f0f4);
+  --csstools-light-dark-toggle--147:var(--csstools-color-scheme--light) #15141a;
+  --image-current-page-number-fg:var(--csstools-light-dark-toggle--147, #fff);
+  --csstools-light-dark-toggle--148:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--149:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --image-shadow:0 0.375px 1.5px 0 var(--csstools-light-dark-toggle--148, rgb(0 0 0 / 0.05)), 0 0 0 1px var(--image-border-color), 0 3px 12px 0 var(--csstools-light-dark-toggle--149, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--150:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--151:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
+  --csstools-light-dark-toggle--152:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --image-hover-shadow:0 0.375px 1.5px 0 var(--csstools-light-dark-toggle--150, rgb(0 0 0 / 0.05)), 0 0 0 1px var(--csstools-light-dark-toggle--151, rgb(21 20 26 / 0.1)), 0 0 0 var(--image-border-width) var(--image-hover-border-color), 0 3px 12px 0 var(--csstools-light-dark-toggle--152, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--153:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--154:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --image-current-shadow:0 0.375px 1.5px 0 var(--csstools-light-dark-toggle--153, rgb(0 0 0 / 0.05)), 0 0 0 var(--image-border-width) var(--image-current-border-color), 0 3px 12px 0 var(--csstools-light-dark-toggle--154, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--155:var(--csstools-color-scheme--light) rgb(0 202 219 / 0.08);
+  --image-dragging-placeholder-bg:var(--csstools-light-dark-toggle--155, rgb(0 98 250 / 0.08));
+  --csstools-light-dark-toggle--156:var(--csstools-color-scheme--light) #15141a;
+  --multiple-dragging-text-color:var(--csstools-light-dark-toggle--156, #fbfbfe);
+  }
+}
+
+@media screen and (forced-colors: active){
+
+#viewsManager{
+    --text-color:CanvasText;
+    --button-fg:ButtonText;
+    --button-bg:ButtonFace;
+    --button-no-bg:ButtonFace;
+    --button-border-color:ButtonText;
+    --button-hover-bg:SelectedItemText;
+    --button-hover-fg:SelectedItem;
+    --button-hover-border-color:SelectedItem;
+    --button-active-bg:SelectedItemText;
+    --button-active-fg:SelectedItem;
+    --button-active-border-color:ButtonText;
+    --button-focus-no-bg:ButtonFace;
+    --button-focus-outline-color:CanvasText;
+    --button-focus-border-color:none;
+    --status-border-color:CanvasText;
+    --status-undo-bg:none;
+    --indicator-color:CanvasText;
+    --status-warning-bg:none;
+    --indicator-warning-color:CanvasText;
+    --header-shadow:none;
+    --image-shadow:none;
+    --image-outline:1px solid ButtonText;
+    --image-focus-outline-color:CanvasText;
+    --image-hover-border-color:SelectedItem;
+    --image-hover-page-number-bg:SelectedItemText;
+    --image-hover-page-number-fg:SelectedItem;
+    --image-current-page-number-bg:ButtonText;
+    --image-current-page-number-fg:ButtonFace;
+    --image-current-border-color:ButtonText;
+    --image-current-focused-outline-color:var(--image-hover-border-color);
+    --image-current-hover-page-number-bg:SelectedItem;
+    --image-current-hover-page-number-fg:SelectedItemText;
+    --image-page-number-bg:ButtonFace;
+    --image-page-number-fg:ButtonText;
+    --image-page-number-border-color:var(--image-page-number-fg);
+    --multiple-dragging-bg:Canvas;
+    --multiple-dragging-indicator-bg:ButtonBorder;
+    --multiple-dragging-text-color:Canvas;
+}
+  }
+
+#viewsManager{
+
+  display:flex;
+  padding-bottom:16px;
+  flex-direction:column;
+  align-items:flex-start;
+  inset-block-start:calc(100% + var(--sidebar-block-padding));
+  height:calc(
+    var(--viewer-container-height) - 2 * var(--sidebar-block-padding)
+  );
+  position:absolute;
+
+  inset-inline-start:calc(
+    -1 * var(--viewsManager-width, --sidebar-width) - 1px
+  );
+  transition-property:inset-inline-start;
+  transition-duration:var(--sidebar-transition-duration);
+  transition-timing-function:var(--sidebar-transition-timing-function);
+}
+
+#viewsManager .sidebarResizer{
+    inset-inline-start:calc(100% + 4px);
+  }
+
+#viewsManager .viewsManagerButton{
+    width:auto;
+    color:var(--button-fg);
+    border-radius:8px;
+    border:1px solid var(--button-border-color);
+    background:var(--button-bg);
+  }
+
+:is(#viewsManager .viewsManagerButton):hover{
+      background-color:var(--button-hover-bg) !important;
+      color:var(--button-hover-fg) !important;
+      border-color:var(--button-hover-border-color) !important;
+    }
+
+:is(#viewsManager .viewsManagerButton):hover::before{
+        background-color:var(--button-hover-fg) !important;
+      }
+
+:is(#viewsManager .viewsManagerButton):active{
+      background:var(--button-active-bg) !important;
+      color:var(--button-active-fg) !important;
+      border-color:var(--button-active-border-color) !important;
+    }
+
+:is(#viewsManager .viewsManagerButton):active::before{
+        background-color:var(--button-active-fg) !important;
+      }
+
+:is(#viewsManager .viewsManagerButton):focus-visible{
+      outline:2px solid var(--button-focus-outline-color);
+      outline-offset:2px;
+      border-color:var(--button-focus-border-color);
+    }
+
+.viewsCloseButton:is(#viewsManager .viewsManagerButton){
+      width:32px;
+      height:32px;
+      padding:4px;
+      border-radius:8px;
+    }
+
+.viewsCloseButton:is(#viewsManager .viewsManagerButton)::before{
+        -webkit-mask-image:var(--close-button-icon);
+                mask-image:var(--close-button-icon);
+      }
+
+#viewsManager #viewsManagerHeader{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    align-self:stretch;
+    width:100%;
+    box-shadow:var(--header-shadow);
+    flex:0 0 auto;
+    background-color:var(--header-bg);
+  }
+
+:is(#viewsManager #viewsManagerHeader) .viewsManagerLabel{
+      flex:0;
+      color:var(--text-color);
+      text-align:center;
+      height:-moz-fit-content;
+      height:fit-content;
+      width:-moz-fit-content;
+      width:fit-content;
+      -webkit-user-select:none;
+         -moz-user-select:none;
+              user-select:none;
+
+      font:menu;
+      font-size:15px;
+      font-style:normal;
+      font-weight:400;
+      line-height:normal;
+    }
+
+:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle{
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      align-self:stretch;
+      justify-content:space-between;
+      width:auto;
+      padding:12px 16px 12px 8px;
+    }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector{
+        width:48px;
+        height:32px;
+        display:block;
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector)  > button{
+          background:var(--button-no-bg);
+          width:100%;
+          height:100%;
+        }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > button):focus-visible{
+            background-color:var(--button-focus-no-bg);
+          }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > button)::before{
+            -webkit-mask-repeat:no-repeat;
+                    mask-repeat:no-repeat;
+            -webkit-mask-image:var(--views-manager-button-icon);
+                    mask-image:var(--views-manager-button-icon);
+            background-color:var(--button-fg);
+          }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > button)::after{
+            content:"";
+            display:inline-block;
+            width:12px;
+            height:12px;
+            margin-left:8px;
+            -webkit-mask-repeat:no-repeat;
+                    mask-repeat:no-repeat;
+            -webkit-mask-position:center;
+                    mask-position:center;
+            -webkit-mask-image:var(--views-manager-button-arrow-icon);
+                    mask-image:var(--views-manager-button-arrow-icon);
+            background-color:var(--button-fg);
+          }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > button):hover::before,:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > button):hover::after{
+              background-color:var(--button-hover-fg) !important;
+            }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > button):active::before,:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > button):active::after{
+              background-color:var(--button-active-fg) !important;
+            }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector)  > .popupMenu{
+          min-width:182px;
+          z-index:1;
+        }
+
+#thumbnailsViewMenu:is(:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > .popupMenu) > li > button)::before{
+              -webkit-mask-image:var(--menuitem-thumbnailsView-icon);
+                      mask-image:var(--menuitem-thumbnailsView-icon);
+            }
+
+#outlinesViewMenu:is(:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > .popupMenu) > li > button)::before{
+              -webkit-mask-image:var(--menuitem-outlinesView-icon);
+                      mask-image:var(--menuitem-outlinesView-icon);
+            }
+
+#attachmentsViewMenu:is(:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > .popupMenu) > li > button)::before{
+              -webkit-mask-image:var(--menuitem-attachmentsView-icon);
+                      mask-image:var(--menuitem-attachmentsView-icon);
+            }
+
+#layersViewMenu:is(:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerSelector) > .popupMenu) > li > button)::before{
+              -webkit-mask-image:var(--menuitem-layersView-icon);
+                      mask-image:var(--menuitem-layersView-icon);
+            }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerAddFileButton{
+        visibility:hidden;
+
+        background:var(--button-no-bg);
+        width:32px;
+        height:32px;
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerAddFileButton):focus-visible{
+          background-color:var(--button-focus-no-bg);
+        }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerAddFileButton)::before{
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-image:var(--views-manager-add-file-button-icon);
+                  mask-image:var(--views-manager-add-file-button-icon);
+        }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerCurrentOutlineButton{
+        background:var(--button-no-bg);
+        width:32px;
+        height:32px;
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerCurrentOutlineButton):focus-visible{
+          background-color:var(--button-focus-no-bg);
+        }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerTitle) #viewsManagerCurrentOutlineButton)::before{
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-image:var(--current-outline-button-icon);
+                  mask-image:var(--current-outline-button-icon);
+        }
+
+:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus{
+      display:flex;
+      align-items:center;
+      align-self:stretch;
+      justify-content:space-between;
+      width:auto;
+      border:1px solid var(--status-border-color);
+    }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus)  > div{
+        min-height:64px;
+        width:100%;
+        padding-inline:16px;
+      }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) .viewsManagerStatusLabel{
+        display:flex;
+        align-items:center;
+        gap:8px;
+
+        font:menu;
+        font-size:13px;
+      }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusAction{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        align-self:stretch;
+        background-color:var(--status-actions-bg);
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusAction)  > span.selected::before{
+          content:"";
+          display:inline-block;
+          width:var(--icon-size);
+          height:var(--icon-size);
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          background-color:var(--indicator-color);
+          -webkit-mask-image:var(--pages-selected-icon);
+                  mask-image:var(--pages-selected-icon);
+        }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusAction) #actionSelector{
+          height:32px;
+          min-width:115px;
+          width:auto;
+          display:block;
+        }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusAction) #actionSelector) #viewsManagerStatusActionButton{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            width:100%;
+            height:100%;
+            padding:4px 16px;
+          }
+
+:is(:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusAction) #actionSelector) #viewsManagerStatusActionButton)::after{
+              content:"";
+              display:inline-block;
+              width:var(--icon-size);
+              height:var(--icon-size);
+              -webkit-mask-repeat:no-repeat;
+                      mask-repeat:no-repeat;
+              -webkit-mask-position:center;
+                      mask-position:center;
+              -webkit-mask-image:var(--manage-button-icon);
+                      mask-image:var(--manage-button-icon);
+              background-color:var(--button-fg);
+            }
+
+:is(:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusAction) #actionSelector) #viewsManagerStatusActionButton):hover::after{
+              background-color:var(--button-hover-fg) !important;
+            }
+
+:is(:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusAction) #actionSelector) #viewsManagerStatusActionButton):active::after{
+              background-color:var(--button-active-fg) !important;
+            }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusAction) #actionSelector)  > .popupMenu{
+            width:100%;
+            min-width:-moz-fit-content;
+            min-width:fit-content;
+            z-index:1;
+          }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusUndo{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        align-self:stretch;
+        background-color:var(--status-undo-bg);
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusUndo)  > span::before{
+          content:"";
+          display:inline-block;
+          width:var(--icon-size);
+          height:var(--icon-size);
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          -webkit-mask-image:var(--undo-label-icon);
+                  mask-image:var(--undo-label-icon);
+          background-color:var(--indicator-color);
+        }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusUndo)  > div{
+          display:flex;
+          align-items:center;
+          gap:8px;
+          width:auto;
+        }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusUndo) > div) #viewsManagerStatusUndoButton{
+            width:auto;
+            min-height:24px;
+            padding:4px 8px;
+          }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusWarning{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        background-color:var(--status-warning-bg);
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusWarning)  > span{
+          align-items:flex-start;
+        }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusWarning) > span)::before{
+            content:"";
+            display:inline-block;
+            width:var(--icon-size);
+            height:var(--icon-size);
+            -webkit-mask-repeat:no-repeat;
+                    mask-repeat:no-repeat;
+            -webkit-mask-position:center;
+                    mask-position:center;
+            background-color:var(--indicator-warning-color);
+            -webkit-mask-image:var(--undo-label-icon);
+                    mask-image:var(--undo-label-icon);
+            flex:0 0 auto;
+          }
+
+:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusWaiting{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        background-color:var(--status-waiting-bg);
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerHeader) #viewsManagerStatus) #viewsManagerStatusWaiting)  > span::before{
+          content:"";
+          display:inline-block;
+          width:var(--icon-size);
+          height:var(--icon-size);
+          -webkit-mask-repeat:no-repeat;
+                  mask-repeat:no-repeat;
+          -webkit-mask-position:center;
+                  mask-position:center;
+          background-color:var(--indicator-color);
+          -webkit-mask-image:var(--spinner-icon);
+                  mask-image:var(--spinner-icon);
+          flex:0 0 auto;
+        }
+
+#viewsManager #viewsManagerContent{
+    width:100%;
+    flex:1 1 0%;
+    overflow:auto;
+  }
+
+:is(#viewsManager #viewsManagerContent):has(#thumbnailsView.isDragging){
+      overflow-x:hidden;
+    }
+
+:is(#viewsManager #viewsManagerContent) #thumbnailsView{
+      --thumbnail-width:126px;
+
+      display:flex;
+      flex-flow:row wrap;
+      align-items:center;
+      justify-content:space-evenly;
+      padding:20px 32px;
+      gap:44px;
+      width:100%;
+      box-sizing:border-box;
+      position:relative;
+    }
+
+.isDragging:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView){
+        cursor:grabbing;
+      }
+
+:is(.isDragging:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail)  > .thumbnailImageContainer:hover{
+            cursor:grabbing;
+          }
+
+:is(:is(.isDragging:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer:hover):not([aria-current="page"]){
+              box-shadow:var(--image-shadow);
+            }
+
+:is(.isDragging:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail)  > input{
+            pointer-events:none;
+          }
+
+.isDragging:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView)  > .dragMarker{
+          position:absolute;
+          top:0;
+          left:0;
+          border:2px solid var(--indicator-color);
+          contain:strict;
+        }
+
+.pasteMode:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView)  > .thumbnail{
+          flex-direction:column;
+        }
+
+:is(.pasteMode:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail)  > input{
+            display:none;
+          }
+
+:is(.pasteMode:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail)  > .thumbnailPasteButton{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            border-radius:16px;
+            min-height:24px;
+            padding:4px 16px;
+
+            font:menu;
+            font-size:13px;
+            font-style:normal;
+            font-weight:400;
+            line-height:normal;
+          }
+
+:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView):not(.pasteMode) > .thumbnail > .thumbnailPasteButton{
+        display:none;
+      }
+
+:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView)  > .thumbnail{
+        --input-dim:16px;
+        --gap-between-input-and-thumbnail:16px;
+
+        display:inline-flex;
+        justify-content:flex-end;
+        align-items:center;
+        flex-direction:row-reverse;
+        gap:var(--gap-between-input-and-thumbnail);
+        width:190px;
+        height:auto;
+        position:relative;
+        scroll-margin-top:20px;
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) .thumbnailPasteButton{
+          padding:8px 0;
+          text-align:center;
+        }
+
+:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail):not(.isDragging) > .thumbnailImageContainer::after{
+          content:attr(page-number);
+          border-radius:8px;
+          border:1px solid var(--image-page-number-border-color);
+          background-color:var(--image-page-number-bg);
+          color:var(--image-page-number-fg);
+          position:absolute;
+          bottom:5px;
+          inset-inline-end:50%;
+          min-width:32px;
+          height:16px;
+          text-align:center;
+          box-sizing:content-box;
+          translate:calc(var(--dir-factor) * 50%);
+
+          font:menu;
+          font-size:12px;
+          font-style:normal;
+          font-weight:400;
+          line-height:normal;
+
+          pointer-events:none;
+          -webkit-user-select:none;
+             -moz-user-select:none;
+                  user-select:none;
+        }
+
+:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail):has([aria-current="page"]):not(.isDragging) > .thumbnailImageContainer::after{
+          background-color:var(--image-current-page-number-bg);
+          color:var(--image-current-page-number-fg);
+          outline:1px solid var(--image-current-border-color);
+        }
+
+.isDragging:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > input{
+          visibility:hidden;
+        }
+
+:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail)  > input{
+          margin:0;
+          width:var(--input-dim);
+          height:var(--input-dim);
+          accent-color:var(--indicator-color);
+        }
+
+:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail)  > .thumbnailImageContainer{
+          --thumbnail-dragging-scale:1.4;
+
+          width:var(--thumbnail-width);
+          border:none;
+          border-radius:8px;
+          box-shadow:var(--image-shadow);
+          box-sizing:content-box;
+          outline:var(--image-outline);
+          -webkit-user-select:none;
+             -moz-user-select:none;
+                  user-select:none;
+          position:relative;
+        }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer) img{
+            width:100%;
+            height:100%;
+            border:none;
+            border-radius:8px;
+            outline:none;
+            -webkit-user-select:none;
+               -moz-user-select:none;
+                    user-select:none;
+            pointer-events:none;
+          }
+
+.missingThumbnailImage:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer){
+            content-visibility:hidden;
+          }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):hover{
+            cursor:pointer;
+            box-shadow:var(--image-hover-shadow);
+          }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):hover::after{
+              background-color:var(--image-hover-page-number-bg);
+              color:var(--image-hover-page-number-fg);
+            }
+
+@media screen and (forced-colors: active){
+
+:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):hover{
+              box-shadow:none;
+              outline:var(--image-border-width) var(--image-hover-border-color) solid;
+          }
+            }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):focus-visible:not([aria-current="page"]){
+              box-shadow:var(--image-hover-shadow);
+              outline:none;
+            }
+
+@media screen and (forced-colors: active){
+
+:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):focus-visible:not([aria-current="page"]){
+                box-shadow:none;
+                outline:var(--image-border-width) var(--image-focus-outline-color) solid;
+            }
+              }
+
+[aria-current="page"]:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):focus-visible{
+              outline:var(--image-border-width) solid var(--image-current-focused-outline-color);
+              outline-offset:var(--image-border-width);
+            }
+
+@media screen and (forced-colors: active){
+
+[aria-current="page"]:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):focus-visible{
+                box-shadow:none;
+                outline:var(--image-border-width) var(--image-current-border-color) solid;
+                outline-offset:0;
+            }
+
+                [aria-current="page"]:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):focus-visible  > img{
+                  outline:var(--image-border-width) var(--image-focus-outline-color) solid;
+                  outline-offset:var(--image-border-width);
+                }
+              }
+
+@media screen and (forced-colors: active){
+
+:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):focus-visible{
+              box-shadow:none;
+              outline:var(--image-border-width) var(--image-current-border-color) solid;
+          }
+
+              :is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):focus-visible:hover > img{
+                outline:var(--image-border-width) var(--image-hover-border-color) solid;
+                outline-offset:var(--image-border-width);
+              }
+            }
+
+[aria-current="page"]:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer){
+            box-shadow:var(--image-current-shadow);
+          }
+
+[aria-current="page"]:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):hover::after{
+              background-color:var(--image-current-hover-page-number-bg);
+              color:var(--image-current-hover-page-number-fg);
+            }
+
+@media screen and (forced-colors: active){
+
+[aria-current="page"]:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer){
+              box-shadow:none;
+              outline:var(--image-border-width) var(--image-current-border-color) solid;
+          }
+
+              [aria-current="page"]:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer):hover > img{
+                outline:var(--image-border-width) var(--image-hover-border-color) solid;
+                outline-offset:var(--image-border-width);
+              }
+            }
+
+.placeholder:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer){
+            background-color:var(--image-dragging-placeholder-bg);
+            box-shadow:none !important;
+          }
+
+.draggingThumbnail:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer){
+            position:absolute;
+            left:0;
+            top:0;
+            z-index:1;
+            transform-origin:0 0 0;
+            scale:calc(1 / var(--thumbnail-dragging-scale));
+            pointer-events:none;
+            box-shadow:var(--image-dragging-shadow);
+          }
+
+.draggingThumbnail.multiple:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer){
+              box-shadow:var(--image-multiple-dragging-shadow);
+            }
+
+@media screen and (forced-colors: active){
+
+.draggingThumbnail.multiple:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer){
+                forced-color-adjust:none;
+                box-shadow:var(--image-multiple-dragging-shadow);
+            }
+              }
+
+.draggingThumbnail.multiple:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer)  > .thumbnailImageContainer{
+                position:absolute;
+                top:0;
+                left:0;
+
+                width:var(--thumbnail-width);
+                border:none;
+                border-radius:8px;
+                box-sizing:content-box;
+                outline:none;
+                -webkit-user-select:none;
+                   -moz-user-select:none;
+                        user-select:none;
+              }
+
+.draggingThumbnail.multiple:is(:is(:is(:is(#viewsManager #viewsManagerContent) #thumbnailsView) > .thumbnail) > .thumbnailImageContainer)::after{
+                content:attr(data-multiple-count);
+                border-radius:calc(8px * var(--thumbnail-dragging-scale));
+                background-color:var(--multiple-dragging-indicator-bg);
+                color:var(--multiple-dragging-text-color);
+                position:absolute;
+                inset-block-end:calc(4px * var(--thumbnail-dragging-scale));
+                inset-inline-start:calc(4px * var(--thumbnail-dragging-scale));
+                min-width:calc(32px * var(--thumbnail-dragging-scale));
+                height:calc(16px * var(--thumbnail-dragging-scale));
+                text-align:center;
+                font:menu;
+                font-size:calc(13px * var(--thumbnail-dragging-scale));
+                font-style:normal;
+                font-weight:400;
+                line-height:normal;
+                contain:strict;
+              }
+
+:is(#viewsManager #viewsManagerContent) #attachmentsView{
+      --csstools-light-dark-toggle--157:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.8);
+      --attachment-color:var(--csstools-light-dark-toggle--157, rgb(0 0 0 / 0.8));
+      --csstools-light-dark-toggle--158:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.15);
+      --attachment-bg-color:var(--csstools-light-dark-toggle--158, rgb(0 0 0 / 0.15));
+      --csstools-light-dark-toggle--159:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.9);
+      --attachment-hover-color:var(--csstools-light-dark-toggle--159, rgb(0 0 0 / 0.9));
+    }
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+:is(#viewsManager #viewsManagerContent) #attachmentsView{
+      --attachment-color:light-dark(rgb(0 0 0 / 0.8), rgb(255 255 255 / 0.8));
+      --attachment-bg-color:light-dark(
+        rgb(0 0 0 / 0.15),
+        rgb(255 255 255 / 0.15)
+      );
+      --attachment-hover-color:light-dark(
+        rgb(0 0 0 / 0.9),
+        rgb(255 255 255 / 0.9)
+      );
+    }
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+:is(:is(#viewsManager #viewsManagerContent) #attachmentsView) *{
+      --csstools-light-dark-toggle--157:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.8);
+      --attachment-color:var(--csstools-light-dark-toggle--157, rgb(0 0 0 / 0.8));
+      --csstools-light-dark-toggle--158:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.15);
+      --attachment-bg-color:var(--csstools-light-dark-toggle--158, rgb(0 0 0 / 0.15));
+      --csstools-light-dark-toggle--159:var(--csstools-color-scheme--light) rgb(255 255 255 / 0.9);
+      --attachment-hover-color:var(--csstools-light-dark-toggle--159, rgb(0 0 0 / 0.9));
+  }
+}
+
+:is(:is(#viewsManager #viewsManagerContent) #attachmentsView)  > ul{
+        list-style-type:none;
+        padding:0;
+      }
+
+:is(:is(:is(#viewsManager #viewsManagerContent) #attachmentsView) > ul)  > li > a{
+          text-decoration:none;
+          display:inline-block;
+          min-width:calc(100% - 4px);
+          height:auto;
+          margin-bottom:1px;
+          padding:2px 0 5px;
+          padding-inline-start:4px;
+          border-radius:2px;
+          color:var(--attachment-color);
+          font-size:13px;
+          line-height:15px;
+          -webkit-user-select:none;
+             -moz-user-select:none;
+                  user-select:none;
+          white-space:normal;
+          cursor:pointer;
+        }
+
+:is(:is(:is(:is(#viewsManager #viewsManagerContent) #attachmentsView) > ul) > li > a):hover{
+            background-color:var(--attachment-bg-color);
+            background-clip:padding-box;
+            border-radius:2px;
+            color:var(--attachment-hover-color);
+          }
+
+.sidebar{
+  --csstools-light-dark-toggle--160:var(--csstools-color-scheme--light) #23222b;
+  --sidebar-bg-color:var(--csstools-light-dark-toggle--160, #fff);
+  --csstools-light-dark-toggle--161:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
+  --sidebar-border-color:var(--csstools-light-dark-toggle--161, rgb(21 20 26 / 0.1));
+  --csstools-light-dark-toggle--162:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--163:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --sidebar-box-shadow:0 0.25px 0.75px var(--csstools-light-dark-toggle--162, rgb(0 0 0 / 0.05)), 0 2px 6px 0 var(--csstools-light-dark-toggle--163, rgb(0 0 0 / 0.1));
+  --sidebar-backdrop-filter:none;
+  --sidebar-border-radius:8px;
+  --sidebar-padding:5px;
+  --sidebar-min-width:180px;
+  --sidebar-max-width:632px;
+  --sidebar-width:239px;
+  --resizer-width:4px;
+  --resizer-shift:calc(0px - var(--resizer-width) - 2px);
+  --csstools-light-dark-toggle--164:var(--csstools-color-scheme--light) #00cadb;
+  --resizer-hover-bg-color:var(--csstools-light-dark-toggle--164, #0062fa);
+}
+
+@supports (color: light-dark(red, red)){
+.sidebar{
+  --sidebar-bg-color:light-dark(#fff, #23222b);
+}
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+.sidebar{
+  --sidebar-border-color:light-dark(
+    rgb(21 20 26 / 0.1),
+    rgb(251 251 254 / 0.1)
+  );
+  --sidebar-box-shadow:0 0.25px 0.75px light-dark(rgb(0 0 0 / 0.05), rgb(0 0 0 / 0.2)), 0 2px 6px 0 light-dark(rgb(0 0 0 / 0.1), rgb(0 0 0 / 0.4));
+}
+}
+
+@supports (color: light-dark(red, red)){
+.sidebar{
+  --resizer-hover-bg-color:light-dark(#0062fa, #00cadb);
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+.sidebar *{
+  --csstools-light-dark-toggle--160:var(--csstools-color-scheme--light) #23222b;
+  --sidebar-bg-color:var(--csstools-light-dark-toggle--160, #fff);
+  --csstools-light-dark-toggle--161:var(--csstools-color-scheme--light) rgb(251 251 254 / 0.1);
+  --sidebar-border-color:var(--csstools-light-dark-toggle--161, rgb(21 20 26 / 0.1));
+  --csstools-light-dark-toggle--162:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.2);
+  --csstools-light-dark-toggle--163:var(--csstools-color-scheme--light) rgb(0 0 0 / 0.4);
+  --sidebar-box-shadow:0 0.25px 0.75px var(--csstools-light-dark-toggle--162, rgb(0 0 0 / 0.05)), 0 2px 6px 0 var(--csstools-light-dark-toggle--163, rgb(0 0 0 / 0.1));
+  --csstools-light-dark-toggle--164:var(--csstools-color-scheme--light) #00cadb;
+  --resizer-hover-bg-color:var(--csstools-light-dark-toggle--164, #0062fa);
+  }
+}
+
+@media screen and (forced-colors: active){
+
+.sidebar{
+    --sidebar-bg-color:Canvas;
+    --sidebar-border-color:CanvasText;
+    --sidebar-box-shadow:none;
+    --resizer-hover-bg-color:CanvasText;
+}
+  }
+
+.sidebar{
+
+  border-radius:var(--sidebar-border-radius);
+  box-shadow:var(--sidebar-box-shadow);
+  border:1px solid var(--sidebar-border-color);
+  background-color:var(--sidebar-bg-color);
+  inset-block-start:calc(100% + var(--doorhanger-height) - 2px);
+  padding-block:var(--sidebar-padding);
+  width:var(--sidebar-width);
+  min-width:var(--sidebar-min-width);
+  max-width:var(--sidebar-max-width);
+  -webkit-backdrop-filter:var(--sidebar-backdrop-filter);
+          backdrop-filter:var(--sidebar-backdrop-filter);
+  box-sizing:border-box;
+  position:relative;
+}
+
+.sidebar .sidebarResizer{
+    width:var(--resizer-width);
+    background-color:transparent;
+    forced-color-adjust:none;
+    cursor:ew-resize;
+    position:absolute;
+    inset-block:0;
+    inset-inline-start:var(--resizer-shift);
+    transition:background-color 0.5s ease-in-out, border-color 0.5s ease-in-out;
+    box-sizing:border-box;
+    border:1px solid transparent;
+    border-block-width:0;
+    background-clip:content-box;
+  }
+
+:is(.sidebar .sidebarResizer):hover{
+      background-color:var(--resizer-hover-bg-color);
+      border-color:white;
+    }
+
+:is(.sidebar .sidebarResizer):focus-visible{
+      background-color:var(--resizer-hover-bg-color);
+      outline:none;
+    }
+
+.sidebar.resizing{
+    cursor:ew-resize;
+    -webkit-user-select:none;
+       -moz-user-select:none;
+            user-select:none;
+  }
+
+.sidebar.resizing :not(.sidebarResizer){
+      pointer-events:none;
+    }
+
+.sidebar.resizing .sidebarResizer{
+      background-color:var(--resizer-hover-bg-color);
+    }
+
 :root{
+  --csstools-color-scheme--light:initial;
+  color-scheme:light dark;
+
   --viewer-container-height:0;
   --pdfViewer-padding-bottom:0;
   --page-margin:1px auto -8px;
   --page-border:9px solid transparent;
   --spreadHorizontalWrapped-margin-LR:-3.5px;
   --loading-icon-delay:400ms;
-  --focus-ring-color:#0060df;
+  --csstools-light-dark-toggle--165:var(--csstools-color-scheme--light) #0df;
+  --focus-ring-color:var(--csstools-light-dark-toggle--165, #0060df);
   --focus-ring-outline:2px solid var(--focus-ring-color);
+}
+
+@supports (color: light-dark(red, red)){
+:root{
+  --focus-ring-color:light-dark(#0060df, #0df);
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+:root *{
+  --csstools-light-dark-toggle--165:var(--csstools-color-scheme--light) #0df;
+  --focus-ring-color:var(--csstools-light-dark-toggle--165, #0060df);
+  }
 }
 
 @media (prefers-color-scheme: dark){
 
-:root:where(:not(.is-light)){
-    --focus-ring-color:#0df;
+:root{
+  --csstools-color-scheme--light:;
 }
-  }
-
-:root:where(.is-dark){
-    --focus-ring-color:#0df;
 }
 
 @media screen and (forced-colors: active){
@@ -4193,6 +7010,10 @@
 
 :is(:is(.pdfViewer .canvasWrapper) canvas) .structTree{
         contain:strict;
+      }
+
+.detailView:is(:is(.pdfViewer .canvasWrapper) canvas){
+        image-rendering:pixelated;
       }
 
 .pdfViewer .page{
@@ -4300,8 +7121,6 @@
 
 :root{
   --dir-factor:1;
-  --inline-start:left;
-  --inline-end:right;
 
   --sidebar-width:200px;
   --sidebar-transition-duration:200ms;
@@ -4316,60 +7135,78 @@
   --doorhanger-icon-opacity:0.9;
   --doorhanger-height:8px;
 
-  --main-color:rgb(12 12 13);
-  --body-bg-color:rgb(212 212 215);
-  --progressBar-color:rgb(10 132 255);
-  --progressBar-bg-color:rgb(221 221 222);
-  --progressBar-blend-color:rgb(116 177 239);
-  --scrollbar-color:auto;
-  --scrollbar-bg-color:auto;
-  --toolbar-icon-bg-color:rgb(0 0 0);
-  --toolbar-icon-hover-bg-color:rgb(0 0 0);
+  --csstools-light-dark-toggle--0:var(--csstools-color-scheme--light) rgb(249 249 250);
 
-  --sidebar-narrow-bg-color:rgb(212 212 215 / 0.9);
-  --sidebar-toolbar-bg-color:rgb(245 246 247);
-  --toolbar-bg-color:rgb(249 249 250);
-  --toolbar-border-color:rgb(184 184 184);
+  --main-color:var(--csstools-light-dark-toggle--0, rgb(12 12 13));
+  --csstools-light-dark-toggle--1:var(--csstools-color-scheme--light) rgb(42 42 46);
+  --body-bg-color:var(--csstools-light-dark-toggle--1, rgb(212 212 215));
+  --csstools-light-dark-toggle--2:var(--csstools-color-scheme--light) rgb(0 96 223);
+  --progressBar-color:var(--csstools-light-dark-toggle--2, rgb(10 132 255));
+  --csstools-light-dark-toggle--3:var(--csstools-color-scheme--light) rgb(40 40 43);
+  --progressBar-bg-color:var(--csstools-light-dark-toggle--3, rgb(221 221 222));
+  --csstools-light-dark-toggle--4:var(--csstools-color-scheme--light) rgb(20 68 133);
+  --progressBar-blend-color:var(--csstools-light-dark-toggle--4, rgb(116 177 239));
+  --csstools-light-dark-toggle--5:var(--csstools-color-scheme--light) rgb(121 121 123);
+  --scrollbar-color:var(--csstools-light-dark-toggle--5, auto);
+  --csstools-light-dark-toggle--6:var(--csstools-color-scheme--light) rgb(35 35 39);
+  --scrollbar-bg-color:var(--csstools-light-dark-toggle--6, auto);
+  --csstools-light-dark-toggle--7:var(--csstools-color-scheme--light) rgb(255 255 255);
+  --toolbar-icon-bg-color:var(--csstools-light-dark-toggle--7, rgb(0 0 0));
+  --csstools-light-dark-toggle--8:var(--csstools-color-scheme--light) rgb(255 255 255);
+  --toolbar-icon-hover-bg-color:var(--csstools-light-dark-toggle--8, rgb(0 0 0));
+
+  --csstools-light-dark-toggle--9:var(--csstools-color-scheme--light) rgb(42 42 46 / 0.9);
+
+  --sidebar-narrow-bg-color:var(--csstools-light-dark-toggle--9, rgb(212 212 215 / 0.9));
+  --csstools-light-dark-toggle--10:var(--csstools-color-scheme--light) rgb(50 50 52);
+  --sidebar-toolbar-bg-color:var(--csstools-light-dark-toggle--10, rgb(245 246 247));
+  --csstools-light-dark-toggle--11:var(--csstools-color-scheme--light) rgb(56 56 61);
+  --toolbar-bg-color:var(--csstools-light-dark-toggle--11, rgb(249 249 250));
+  --csstools-light-dark-toggle--12:var(--csstools-color-scheme--light) rgb(12 12 13);
+  --toolbar-border-color:var(--csstools-light-dark-toggle--12, rgb(184 184 184));
   --toolbar-box-shadow:0 1px 0 var(--toolbar-border-color);
   --toolbar-border-bottom:none;
   --toolbarSidebar-box-shadow:inset calc(-1px * var(--dir-factor)) 0 0 rgb(0 0 0 / 0.25), 0 1px 0 rgb(0 0 0 / 0.15), 0 0 1px rgb(0 0 0 / 0.1);
   --toolbarSidebar-border-bottom:none;
   --button-hover-color:color-mix(in srgb, currentColor 17%, transparent);
-  --toggled-btn-color:rgb(0 0 0);
+  --csstools-light-dark-toggle--13:var(--csstools-color-scheme--light) rgb(255 255 255);
+  --toggled-btn-color:var(--csstools-light-dark-toggle--13, rgb(0 0 0));
   --toggled-btn-bg-color:rgb(0 0 0 / 0.3);
   --toggled-hover-active-btn-color:rgb(0 0 0 / 0.4);
   --toggled-hover-btn-outline:none;
-  --dropdown-btn-bg-color:rgb(215 215 219);
+  --csstools-light-dark-toggle--14:var(--csstools-color-scheme--light) rgb(74 74 79);
+  --dropdown-btn-bg-color:var(--csstools-light-dark-toggle--14, rgb(215 215 219));
   --dropdown-btn-border:none;
   --separator-color:rgb(0 0 0 / 0.3);
-  --field-color:rgb(6 6 6);
-  --field-bg-color:rgb(255 255 255);
-  --field-border-color:rgb(187 187 188);
-  --treeitem-color:rgb(0 0 0 / 0.8);
-  --treeitem-bg-color:rgb(0 0 0 / 0.15);
-  --treeitem-hover-color:rgb(0 0 0 / 0.9);
-  --treeitem-selected-color:rgb(0 0 0 / 0.9);
-  --treeitem-selected-bg-color:rgb(0 0 0 / 0.25);
-  --thumbnail-hover-color:rgb(0 0 0 / 0.1);
-  --thumbnail-selected-color:rgb(0 0 0 / 0.2);
-  --doorhanger-bg-color:rgb(255 255 255);
-  --doorhanger-border-color:rgb(12 12 13 / 0.2);
-  --doorhanger-hover-color:rgb(12 12 13);
-  --doorhanger-separator-color:rgb(222 222 222);
+  --csstools-light-dark-toggle--15:var(--csstools-color-scheme--light) rgb(250 250 250);
+  --field-color:var(--csstools-light-dark-toggle--15, rgb(6 6 6));
+  --csstools-light-dark-toggle--16:var(--csstools-color-scheme--light) rgb(64 64 68);
+  --field-bg-color:var(--csstools-light-dark-toggle--16, rgb(255 255 255));
+  --csstools-light-dark-toggle--17:var(--csstools-color-scheme--light) rgb(115 115 115);
+  --field-border-color:var(--csstools-light-dark-toggle--17, rgb(187 187 188));
+  --csstools-light-dark-toggle--18:var(--csstools-color-scheme--light) #42414d;
+  --doorhanger-bg-color:var(--csstools-light-dark-toggle--18, rgb(255 255 255));
+  --csstools-light-dark-toggle--19:var(--csstools-color-scheme--light) rgb(39 39 43);
+  --doorhanger-border-color:var(--csstools-light-dark-toggle--19, rgb(12 12 13 / 0.2));
+  --csstools-light-dark-toggle--20:var(--csstools-color-scheme--light) rgb(249 249 250);
+  --doorhanger-hover-color:var(--csstools-light-dark-toggle--20, rgb(12 12 13));
+  --csstools-light-dark-toggle--21:var(--csstools-color-scheme--light) rgb(92 92 97);
+  --doorhanger-separator-color:var(--csstools-light-dark-toggle--21, rgb(222 222 222));
   --dialog-button-border:none;
-  --dialog-button-bg-color:rgb(12 12 13 / 0.1);
-  --dialog-button-hover-bg-color:rgb(12 12 13 / 0.3);
+  --csstools-light-dark-toggle--22:var(--csstools-color-scheme--light) rgb(92 92 97);
+  --dialog-button-bg-color:var(--csstools-light-dark-toggle--22, rgb(12 12 13 / 0.1));
+  --csstools-light-dark-toggle--23:var(--csstools-color-scheme--light) rgb(115 115 115);
+  --dialog-button-hover-bg-color:var(--csstools-light-dark-toggle--23, rgb(12 12 13 / 0.3));
 
   --loading-icon:url(images/loading.svg);
-  --treeitem-expanded-icon:url(images/treeitem-expanded.svg);
-  --treeitem-collapsed-icon:url(images/treeitem-collapsed.svg);
+  --toolbarButton-editorComment-icon:url(images/comment-editButton.svg);
   --toolbarButton-editorFreeText-icon:url(images/toolbarButton-editorFreeText.svg);
   --toolbarButton-editorHighlight-icon:url(images/toolbarButton-editorHighlight.svg);
   --toolbarButton-editorInk-icon:url(images/toolbarButton-editorInk.svg);
   --toolbarButton-editorStamp-icon:url(images/toolbarButton-editorStamp.svg);
   --toolbarButton-editorSignature-icon:url(images/toolbarButton-editorSignature.svg);
   --toolbarButton-menuArrow-icon:url(images/toolbarButton-menuArrow.svg);
-  --toolbarButton-sidebarToggle-icon:url(images/toolbarButton-sidebarToggle.svg);
+  --toolbarButton-viewsManagerToggle-icon:url(images/toolbarButton-viewsManagerToggle.svg);
   --toolbarButton-secondaryToolbarToggle-icon:url(images/toolbarButton-secondaryToolbarToggle.svg);
   --toolbarButton-pageUp-icon:url(images/toolbarButton-pageUp.svg);
   --toolbarButton-pageDown-icon:url(images/toolbarButton-pageDown.svg);
@@ -4406,91 +7243,107 @@
   );
   --secondaryToolbarButton-documentProperties-icon:url(images/secondaryToolbarButton-documentProperties.svg);
   --editorParams-stampAddImage-icon:url(images/toolbarButton-zoomIn.svg);
+  --comment-edit-button-icon:url(images/comment-editButton.svg);
+}
+
+@supports (color: light-dark(red, red)) and (color: rgb(0 0 0 / 0)){
+:root{
+
+  --main-color:light-dark(rgb(12 12 13), rgb(249 249 250));
+  --body-bg-color:light-dark(rgb(212 212 215), rgb(42 42 46));
+  --progressBar-color:light-dark(rgb(10 132 255), rgb(0 96 223));
+  --progressBar-bg-color:light-dark(rgb(221 221 222), rgb(40 40 43));
+  --progressBar-blend-color:light-dark(rgb(116 177 239), rgb(20 68 133));
+  --scrollbar-color:light-dark(auto, rgb(121 121 123));
+  --scrollbar-bg-color:light-dark(auto, rgb(35 35 39));
+  --toolbar-icon-bg-color:light-dark(rgb(0 0 0), rgb(255 255 255));
+  --toolbar-icon-hover-bg-color:light-dark(rgb(0 0 0), rgb(255 255 255));
+
+  --sidebar-narrow-bg-color:light-dark(
+    rgb(212 212 215 / 0.9),
+    rgb(42 42 46 / 0.9)
+  );
+  --sidebar-toolbar-bg-color:light-dark(rgb(245 246 247), rgb(50 50 52));
+  --toolbar-bg-color:light-dark(rgb(249 249 250), rgb(56 56 61));
+  --toolbar-border-color:light-dark(rgb(184 184 184), rgb(12 12 13));
+  --toggled-btn-color:light-dark(rgb(0 0 0), rgb(255 255 255));
+  --dropdown-btn-bg-color:light-dark(rgb(215 215 219), rgb(74 74 79));
+  --field-color:light-dark(rgb(6 6 6), rgb(250 250 250));
+  --field-bg-color:light-dark(rgb(255 255 255), rgb(64 64 68));
+  --field-border-color:light-dark(rgb(187 187 188), rgb(115 115 115));
+  --doorhanger-bg-color:light-dark(rgb(255 255 255), #42414d);
+  --doorhanger-border-color:light-dark(rgb(12 12 13 / 0.2), rgb(39 39 43));
+  --doorhanger-hover-color:light-dark(rgb(12 12 13), rgb(249 249 250));
+  --doorhanger-separator-color:light-dark(rgb(222 222 222), rgb(92 92 97));
+  --dialog-button-bg-color:light-dark(rgb(12 12 13 / 0.1), rgb(92 92 97));
+  --dialog-button-hover-bg-color:light-dark(
+    rgb(12 12 13 / 0.3),
+    rgb(115 115 115)
+  );
+}
+}
+
+@supports not (color: light-dark(tan, tan)){
+
+:root *{
+
+  --csstools-light-dark-toggle--0:var(--csstools-color-scheme--light) rgb(249 249 250);
+
+  --main-color:var(--csstools-light-dark-toggle--0, rgb(12 12 13));
+  --csstools-light-dark-toggle--1:var(--csstools-color-scheme--light) rgb(42 42 46);
+  --body-bg-color:var(--csstools-light-dark-toggle--1, rgb(212 212 215));
+  --csstools-light-dark-toggle--2:var(--csstools-color-scheme--light) rgb(0 96 223);
+  --progressBar-color:var(--csstools-light-dark-toggle--2, rgb(10 132 255));
+  --csstools-light-dark-toggle--3:var(--csstools-color-scheme--light) rgb(40 40 43);
+  --progressBar-bg-color:var(--csstools-light-dark-toggle--3, rgb(221 221 222));
+  --csstools-light-dark-toggle--4:var(--csstools-color-scheme--light) rgb(20 68 133);
+  --progressBar-blend-color:var(--csstools-light-dark-toggle--4, rgb(116 177 239));
+  --csstools-light-dark-toggle--5:var(--csstools-color-scheme--light) rgb(121 121 123);
+  --scrollbar-color:var(--csstools-light-dark-toggle--5, auto);
+  --csstools-light-dark-toggle--6:var(--csstools-color-scheme--light) rgb(35 35 39);
+  --scrollbar-bg-color:var(--csstools-light-dark-toggle--6, auto);
+  --csstools-light-dark-toggle--7:var(--csstools-color-scheme--light) rgb(255 255 255);
+  --toolbar-icon-bg-color:var(--csstools-light-dark-toggle--7, rgb(0 0 0));
+  --csstools-light-dark-toggle--8:var(--csstools-color-scheme--light) rgb(255 255 255);
+  --toolbar-icon-hover-bg-color:var(--csstools-light-dark-toggle--8, rgb(0 0 0));
+
+  --csstools-light-dark-toggle--9:var(--csstools-color-scheme--light) rgb(42 42 46 / 0.9);
+
+  --sidebar-narrow-bg-color:var(--csstools-light-dark-toggle--9, rgb(212 212 215 / 0.9));
+  --csstools-light-dark-toggle--10:var(--csstools-color-scheme--light) rgb(50 50 52);
+  --sidebar-toolbar-bg-color:var(--csstools-light-dark-toggle--10, rgb(245 246 247));
+  --csstools-light-dark-toggle--11:var(--csstools-color-scheme--light) rgb(56 56 61);
+  --toolbar-bg-color:var(--csstools-light-dark-toggle--11, rgb(249 249 250));
+  --csstools-light-dark-toggle--12:var(--csstools-color-scheme--light) rgb(12 12 13);
+  --toolbar-border-color:var(--csstools-light-dark-toggle--12, rgb(184 184 184));
+  --csstools-light-dark-toggle--13:var(--csstools-color-scheme--light) rgb(255 255 255);
+  --toggled-btn-color:var(--csstools-light-dark-toggle--13, rgb(0 0 0));
+  --csstools-light-dark-toggle--14:var(--csstools-color-scheme--light) rgb(74 74 79);
+  --dropdown-btn-bg-color:var(--csstools-light-dark-toggle--14, rgb(215 215 219));
+  --csstools-light-dark-toggle--15:var(--csstools-color-scheme--light) rgb(250 250 250);
+  --field-color:var(--csstools-light-dark-toggle--15, rgb(6 6 6));
+  --csstools-light-dark-toggle--16:var(--csstools-color-scheme--light) rgb(64 64 68);
+  --field-bg-color:var(--csstools-light-dark-toggle--16, rgb(255 255 255));
+  --csstools-light-dark-toggle--17:var(--csstools-color-scheme--light) rgb(115 115 115);
+  --field-border-color:var(--csstools-light-dark-toggle--17, rgb(187 187 188));
+  --csstools-light-dark-toggle--18:var(--csstools-color-scheme--light) #42414d;
+  --doorhanger-bg-color:var(--csstools-light-dark-toggle--18, rgb(255 255 255));
+  --csstools-light-dark-toggle--19:var(--csstools-color-scheme--light) rgb(39 39 43);
+  --doorhanger-border-color:var(--csstools-light-dark-toggle--19, rgb(12 12 13 / 0.2));
+  --csstools-light-dark-toggle--20:var(--csstools-color-scheme--light) rgb(249 249 250);
+  --doorhanger-hover-color:var(--csstools-light-dark-toggle--20, rgb(12 12 13));
+  --csstools-light-dark-toggle--21:var(--csstools-color-scheme--light) rgb(92 92 97);
+  --doorhanger-separator-color:var(--csstools-light-dark-toggle--21, rgb(222 222 222));
+  --csstools-light-dark-toggle--22:var(--csstools-color-scheme--light) rgb(92 92 97);
+  --dialog-button-bg-color:var(--csstools-light-dark-toggle--22, rgb(12 12 13 / 0.1));
+  --csstools-light-dark-toggle--23:var(--csstools-color-scheme--light) rgb(115 115 115);
+  --dialog-button-hover-bg-color:var(--csstools-light-dark-toggle--23, rgb(12 12 13 / 0.3));
+  }
 }
 
 [dir="rtl"]:root{
   --dir-factor:-1;
-  --inline-start:right;
-  --inline-end:left;
 }
-
-@media (prefers-color-scheme: dark){
-  :root:where(:not(.is-light)){
-    --main-color:rgb(249 249 250);
-    --body-bg-color:rgb(42 42 46);
-    --progressBar-color:rgb(0 96 223);
-    --progressBar-bg-color:rgb(40 40 43);
-    --progressBar-blend-color:rgb(20 68 133);
-    --scrollbar-color:rgb(121 121 123);
-    --scrollbar-bg-color:rgb(35 35 39);
-    --toolbar-icon-bg-color:rgb(255 255 255);
-    --toolbar-icon-hover-bg-color:rgb(255 255 255);
-
-    --sidebar-narrow-bg-color:rgb(42 42 46 / 0.9);
-    --sidebar-toolbar-bg-color:rgb(50 50 52);
-    --toolbar-bg-color:rgb(56 56 61);
-    --toolbar-border-color:rgb(12 12 13);
-    --toggled-btn-color:rgb(255 255 255);
-    --toggled-btn-bg-color:rgb(0 0 0 / 0.3);
-    --toggled-hover-active-btn-color:rgb(0 0 0 / 0.4);
-    --dropdown-btn-bg-color:rgb(74 74 79);
-    --separator-color:rgb(0 0 0 / 0.3);
-    --field-color:rgb(250 250 250);
-    --field-bg-color:rgb(64 64 68);
-    --field-border-color:rgb(115 115 115);
-    --treeitem-color:rgb(255 255 255 / 0.8);
-    --treeitem-bg-color:rgb(255 255 255 / 0.15);
-    --treeitem-hover-color:rgb(255 255 255 / 0.9);
-    --treeitem-selected-color:rgb(255 255 255 / 0.9);
-    --treeitem-selected-bg-color:rgb(255 255 255 / 0.25);
-    --thumbnail-hover-color:rgb(255 255 255 / 0.1);
-    --thumbnail-selected-color:rgb(255 255 255 / 0.2);
-    --doorhanger-bg-color:#42414d;
-    --doorhanger-border-color:rgb(39 39 43);
-    --doorhanger-hover-color:rgb(249 249 250);
-    --doorhanger-separator-color:rgb(92 92 97);
-    --dialog-button-bg-color:rgb(92 92 97);
-    --dialog-button-hover-bg-color:rgb(115 115 115);
-  }
-}
-
-:root:where(.is-dark){
-    --main-color:rgb(249 249 250);
-    --body-bg-color:rgb(42 42 46);
-    --progressBar-color:rgb(0 96 223);
-    --progressBar-bg-color:rgb(40 40 43);
-    --progressBar-blend-color:rgb(20 68 133);
-    --scrollbar-color:rgb(121 121 123);
-    --scrollbar-bg-color:rgb(35 35 39);
-    --toolbar-icon-bg-color:rgb(255 255 255);
-    --toolbar-icon-hover-bg-color:rgb(255 255 255);
-
-    --sidebar-narrow-bg-color:rgb(42 42 46 / 0.9);
-    --sidebar-toolbar-bg-color:rgb(50 50 52);
-    --toolbar-bg-color:rgb(56 56 61);
-    --toolbar-border-color:rgb(12 12 13);
-    --toggled-btn-color:rgb(255 255 255);
-    --toggled-btn-bg-color:rgb(0 0 0 / 0.3);
-    --toggled-hover-active-btn-color:rgb(0 0 0 / 0.4);
-    --dropdown-btn-bg-color:rgb(74 74 79);
-    --separator-color:rgb(0 0 0 / 0.3);
-    --field-color:rgb(250 250 250);
-    --field-bg-color:rgb(64 64 68);
-    --field-border-color:rgb(115 115 115);
-    --treeitem-color:rgb(255 255 255 / 0.8);
-    --treeitem-bg-color:rgb(255 255 255 / 0.15);
-    --treeitem-hover-color:rgb(255 255 255 / 0.9);
-    --treeitem-selected-color:rgb(255 255 255 / 0.9);
-    --treeitem-selected-bg-color:rgb(255 255 255 / 0.25);
-    --thumbnail-hover-color:rgb(255 255 255 / 0.1);
-    --thumbnail-selected-color:rgb(255 255 255 / 0.2);
-    --doorhanger-bg-color:#42414d;
-    --doorhanger-border-color:rgb(39 39 43);
-    --doorhanger-hover-color:rgb(249 249 250);
-    --doorhanger-separator-color:rgb(92 92 97);
-    --dialog-button-bg-color:rgb(92 92 97);
-    --dialog-button-hover-bg-color:rgb(115 115 115);
-  }
 
 @media screen and (forced-colors: active){
   :root{
@@ -4565,6 +7418,19 @@ body.wait::before{
     z-index:100000;
     cursor:wait;
   }
+.visuallyHidden{
+  position:absolute;
+  top:0;
+  left:0;
+  border:0;
+  margin:0;
+  padding:0;
+  width:0;
+  height:0;
+  overflow:hidden;
+  white-space:nowrap;
+  font-size:0;
+}
 
 .hidden,
 [hidden]{
@@ -4603,29 +7469,6 @@ body.wait::before{
   margin:0;
 }
 
-#sidebarContainer{
-  position:absolute;
-  inset-block:var(--toolbar-height) 0;
-  inset-inline-start:calc(-1 * var(--sidebar-width));
-  width:var(--sidebar-width);
-  visibility:hidden;
-  z-index:1;
-  font:message-box;
-  border-top:1px solid transparent;
-  border-inline-end:var(--doorhanger-border-color-whcm);
-  transition-property:inset-inline-start;
-  transition-duration:var(--sidebar-transition-duration);
-  transition-timing-function:var(--sidebar-transition-timing-function);
-}
-
-#outerContainer:is(.sidebarMoving, .sidebarOpen) #sidebarContainer{
-  visibility:visible;
-}
-
-#outerContainer.sidebarOpen #sidebarContainer{
-  inset-inline-start:0;
-}
-
 #mainContainer{
   position:absolute;
   inset:0;
@@ -4655,11 +7498,6 @@ body.wait::before{
 #viewerContainer:not(.pdfPresentationMode){
   transition-duration:var(--sidebar-transition-duration);
   transition-timing-function:var(--sidebar-transition-timing-function);
-}
-
-#outerContainer.sidebarOpen #viewerContainer:not(.pdfPresentationMode){
-  inset-inline-start:var(--sidebar-width);
-  transition-property:inset-inline-start;
 }
 
 #sidebarContainer :is(input, button, select){
@@ -4711,24 +7549,6 @@ body.wait::before{
     height:100%;
     padding-inline-end:2px;
   }
-
-#sidebarResizer{
-  position:absolute;
-  inset-block:0;
-  inset-inline-end:-6px;
-  width:6px;
-  z-index:200;
-  cursor:ew-resize;
-}
-
-#outerContainer.sidebarOpen #loadingBar{
-  inset-inline-start:var(--sidebar-width);
-}
-
-#outerContainer.sidebarResizing
-  :is(#sidebarContainer, #viewerContainer, #loadingBar){
-  transition-duration:0s;
-}
 
 .doorHanger,
 .doorHangerRight{
@@ -4803,7 +7623,7 @@ body.wait::before{
 }
 
 .splitToolbarButtonSeparator{
-  float:var(--inline-start);
+  float:inline-start;
   width:0;
   height:62%;
   border-left:1px solid var(--separator-color);
@@ -4826,21 +7646,9 @@ body.wait::before{
   box-sizing:border-box;
 }
 
-.treeItemToggler::before{
-  position:absolute;
-  display:inline-block;
-  width:16px;
-  height:16px;
-
-  content:"";
-  background-color:var(--toolbar-icon-bg-color);
-  -webkit-mask-size:cover;
-          mask-size:cover;
-}
-
-#sidebarToggleButton::before{
-  -webkit-mask-image:var(--toolbarButton-sidebarToggle-icon);
-          mask-image:var(--toolbarButton-sidebarToggle-icon);
+#viewsManagerToggleButton::before{
+  -webkit-mask-image:var(--toolbarButton-viewsManagerToggle-icon);
+          mask-image:var(--toolbarButton-viewsManagerToggle-icon);
   transform:scaleX(var(--dir-factor));
 }
 
@@ -4870,9 +7678,10 @@ body.wait::before{
           mask-image:var(--toolbarButton-zoomIn-icon);
 }
 
-#presentationMode::before{
-  -webkit-mask-image:var(--toolbarButton-presentationMode-icon);
-          mask-image:var(--toolbarButton-presentationMode-icon);
+#editorCommentButton::before{
+  -webkit-mask-image:var(--toolbarButton-editorComment-icon);
+          mask-image:var(--toolbarButton-editorComment-icon);
+  transform:scaleX(var(--dir-factor));
 }
 
 #editorFreeTextButton::before{
@@ -4905,19 +7714,9 @@ body.wait::before{
           mask-image:var(--toolbarButton-print-icon);
 }
 
-#secondaryOpenFile::before{
-  -webkit-mask-image:var(--toolbarButton-openFile-icon);
-          mask-image:var(--toolbarButton-openFile-icon);
-}
-
 #downloadButton::before{
   -webkit-mask-image:var(--toolbarButton-download-icon);
           mask-image:var(--toolbarButton-download-icon);
-}
-
-#viewBookmark::before{
-  -webkit-mask-image:var(--toolbarButton-bookmark-icon);
-          mask-image:var(--toolbarButton-bookmark-icon);
 }
 
 #currentOutlineItem::before{
@@ -5049,157 +7848,9 @@ body.wait::before{
 .loadingInput.end::after{
     inset-inline-end:4px;
   }
-
-#thumbnailView,
-#outlineView,
-#attachmentsView,
-#layersView{
-  position:absolute;
-  width:calc(100% - 8px);
-  inset-block:0;
-  padding:4px 4px 0;
-  overflow:auto;
-  -webkit-user-select:none;
-     -moz-user-select:none;
-          user-select:none;
-}
-
-#thumbnailView{
-  width:calc(100% - 60px);
-  padding:10px 30px 0;
-}
-
-#thumbnailView > a:is(:active, :focus){
-  outline:0;
-}
-
-.thumbnail{
-  --thumbnail-width:0;
-  --thumbnail-height:0;
-
-  float:var(--inline-start);
-  width:var(--thumbnail-width);
-  height:var(--thumbnail-height);
-  margin:0 10px 5px;
-  padding:1px;
-  border:7px solid transparent;
-  border-radius:2px;
-}
-
-#thumbnailView > a:last-of-type > .thumbnail{
-  margin-bottom:10px;
-}
-
-a:focus > .thumbnail,
-.thumbnail:hover{
-  border-color:var(--thumbnail-hover-color);
-}
-
-.thumbnail.selected{
-  border-color:var(--thumbnail-selected-color) !important;
-}
-
-.thumbnailImage{
-  width:var(--thumbnail-width);
-  height:var(--thumbnail-height);
-  opacity:0.9;
-}
-
-a:focus > .thumbnail > .thumbnailImage,
-.thumbnail:hover > .thumbnailImage{
-  opacity:0.95;
-}
-
-.thumbnail.selected > .thumbnailImage{
-  opacity:1 !important;
-}
-
-.thumbnail:not([data-loaded]) > .thumbnailImage{
-  width:calc(var(--thumbnail-width) - 2px);
-  height:calc(var(--thumbnail-height) - 2px);
-  border:1px dashed rgb(132 132 132);
-}
-
-.treeWithDeepNesting > .treeItem,
-.treeItem > .treeItems{
-  margin-inline-start:20px;
-}
-
-.treeItem > a{
-  text-decoration:none;
-  display:inline-block;
-  min-width:calc(100% - 4px);
-  height:auto;
-  margin-bottom:1px;
-  padding:2px 0 5px;
-  padding-inline-start:4px;
-  border-radius:2px;
-  color:var(--treeitem-color);
-  font-size:13px;
-  line-height:15px;
-  -webkit-user-select:none;
-     -moz-user-select:none;
-          user-select:none;
-  white-space:normal;
-  cursor:pointer;
-}
-
-#layersView .treeItem > a *{
-  cursor:pointer;
-}
-
-#layersView .treeItem > a > label{
-  padding-inline-start:4px;
-}
-
-#layersView .treeItem > a > label > input{
-  float:var(--inline-start);
-  margin-top:1px;
-}
-
-.treeItemToggler{
-  position:relative;
-  float:var(--inline-start);
-  height:0;
-  width:0;
-  color:rgb(255 255 255 / 0.5);
-}
-
-.treeItemToggler::before{
-  inset-inline-end:4px;
-  -webkit-mask-image:var(--treeitem-expanded-icon);
-          mask-image:var(--treeitem-expanded-icon);
-}
-
-.treeItemToggler.treeItemsHidden::before{
-  -webkit-mask-image:var(--treeitem-collapsed-icon);
-          mask-image:var(--treeitem-collapsed-icon);
-  transform:scaleX(var(--dir-factor));
-}
-
-.treeItemToggler.treeItemsHidden ~ .treeItems{
-  display:none;
-}
-
-.treeItem.selected > a{
-  background-color:var(--treeitem-selected-bg-color);
-  color:var(--treeitem-selected-color);
-}
-
-.treeItemToggler:hover,
-.treeItemToggler:hover + a,
-.treeItemToggler:hover ~ .treeItems,
-.treeItem > a:hover{
-  background-color:var(--treeitem-bg-color);
-  background-clip:padding-box;
-  border-radius:2px;
-  color:var(--treeitem-hover-color);
-}
-
 #outlineOptionsContainer{
   display:none;
 }
-
 #sidebarContainer:has(#outlineView:not(.hidden)) #outlineOptionsContainer{
     display:inline flex;
   }
@@ -5437,7 +8088,6 @@ dialog :link{
   }
 
 .toolbarButtonWithContainer .menuContainer{
-    width:100%;
     height:auto;
     max-height:calc(
       var(--viewer-container-height) - var(--toolbar-height) -
@@ -5450,8 +8100,12 @@ dialog :link{
   }
 
 .toolbarButtonWithContainer .editorParamsToolbar{
+    --editor-toolbar-min-width:220px;
+
     height:auto;
-    width:220px;
+    min-width:var(--editor-toolbar-min-width);
+    width:-moz-max-content;
+    width:max-content;
     position:absolute;
     z-index:30000;
     cursor:default;
@@ -5961,10 +8615,14 @@ dialog :link{
       height:1px;
     }
 
-:is(#toolbarContainer #toolbarViewer) #toolbarViewerLeft #numPages.toolbarLabel{
-      padding-inline-start:3px;
-      flex:none;
+:is(#toolbarContainer #toolbarViewer) #toolbarViewerLeft{
+      margin-inline-start:8px;
     }
+
+:is(:is(#toolbarContainer #toolbarViewer) #toolbarViewerLeft) #numPages.toolbarLabel{
+        padding-inline-start:3px;
+        flex:none;
+      }
 
 #toolbarContainer #loadingBar{
     --progressBar-percent:0%;
@@ -6018,81 +8676,11 @@ dialog :link{
         animation:progressIndeterminate 1s linear infinite;
       }
 
-#secondaryToolbar #firstPage::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-firstPage-icon);
-            mask-image:var(--secondaryToolbarButton-firstPage-icon);
-  }
-
-#secondaryToolbar #lastPage::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-lastPage-icon);
-            mask-image:var(--secondaryToolbarButton-lastPage-icon);
-  }
-
-#secondaryToolbar #pageRotateCcw::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-rotateCcw-icon);
-            mask-image:var(--secondaryToolbarButton-rotateCcw-icon);
-  }
-
-#secondaryToolbar #pageRotateCw::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-rotateCw-icon);
-            mask-image:var(--secondaryToolbarButton-rotateCw-icon);
-  }
-
-#secondaryToolbar #cursorSelectTool::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-selectTool-icon);
-            mask-image:var(--secondaryToolbarButton-selectTool-icon);
-  }
-
-#secondaryToolbar #cursorHandTool::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-handTool-icon);
-            mask-image:var(--secondaryToolbarButton-handTool-icon);
-  }
-
-#secondaryToolbar #scrollPage::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-scrollPage-icon);
-            mask-image:var(--secondaryToolbarButton-scrollPage-icon);
-  }
-
-#secondaryToolbar #scrollVertical::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-scrollVertical-icon);
-            mask-image:var(--secondaryToolbarButton-scrollVertical-icon);
-  }
-
-#secondaryToolbar #scrollHorizontal::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-scrollHorizontal-icon);
-            mask-image:var(--secondaryToolbarButton-scrollHorizontal-icon);
-  }
-
-#secondaryToolbar #scrollWrapped::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-scrollWrapped-icon);
-            mask-image:var(--secondaryToolbarButton-scrollWrapped-icon);
-  }
-
-#secondaryToolbar #spreadNone::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-spreadNone-icon);
-            mask-image:var(--secondaryToolbarButton-spreadNone-icon);
-  }
-
-#secondaryToolbar #spreadOdd::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-spreadOdd-icon);
-            mask-image:var(--secondaryToolbarButton-spreadOdd-icon);
-  }
-
-#secondaryToolbar #spreadEven::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-spreadEven-icon);
-            mask-image:var(--secondaryToolbarButton-spreadEven-icon);
-  }
-
-#secondaryToolbar #documentProperties::before{
-    -webkit-mask-image:var(--secondaryToolbarButton-documentProperties-icon);
-            mask-image:var(--secondaryToolbarButton-documentProperties-icon);
-  }
-
 @media all and (max-width: 840px){
   #sidebarContainer{
     background-color:var(--sidebar-narrow-bg-color);
   }
-  #outerContainer.sidebarOpen #viewerContainer{
+  #outerContainer.viewsManagerOpen #viewerContainer{
     inset-inline-start:0 !important;
   }
 }

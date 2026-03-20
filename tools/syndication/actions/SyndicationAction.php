@@ -3,6 +3,7 @@
 use League\HTMLToMarkdown\HtmlConverter;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
 include_once 'tools/syndication/libs/syndication.lib.php';
@@ -67,8 +68,8 @@ class SyndicationAction extends YesWikiAction
                 return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
             } else {
                 // we load all entries to check if entry were already created from feed
-                $entryManager = $this->getService(EntryManager::class);
-                $entries = $entryManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
+                $vSearchManager = $this->getService(SearchManager::class);
+                $entries = $vSearchManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
             }
         }
         if (!empty($this->arguments['url'])) {

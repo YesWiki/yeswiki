@@ -34,7 +34,7 @@ robots.txt
 # YesWiki stuff
 .env
 .php-version
-wakka.config.php
+*.config.php
 info.php
 cache/*
 !cache/README.md
@@ -128,4 +128,6 @@ docker-compose.local.yml
 .phpintel/
 *.old
 .php-cs-fixer.cache
+.twig-cs-fixer.cache
+.gitconfig
 TODO

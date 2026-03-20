@@ -1,15 +1,15 @@
 <?php
 
 use YesWiki\Bazar\Service\BazarListService;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiHandler;
 
 class __WidgetHandler extends YesWikiHandler
 {
     public function run()
     {
-        $entryManager = $this->getService(EntryManager::class);
+        $vSearchManager = $this->getService(SearchManager::class);
         $formManager = $this->getService(FormManager::class);
         $bazarListService = $this->getService(BazarListService::class);
 
@@ -17,13 +17,13 @@ class __WidgetHandler extends YesWikiHandler
             return null;
         }
 
-        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js');
+        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
 
         ob_start();
         echo '<div class="page">';
         echo '<h1>' . _t('BAZ_WIDGET_HANDLER_TITLE') . '</h1>' . "\n";
 
-        $entries = $entryManager->search(['formsIds' => [!empty($_GET['id']) ? strip_tags($_GET['id']) : null], 'keywords' => (!empty($_GET['q']) ? strip_tags($_GET['q']) : null)], true, true);
+        $entries = $vSearchManager->search(['formsIds' => [!empty($_GET['id']) ? strip_tags($_GET['id']) : null], 'keywords' => (!empty($_GET['q']) ? strip_tags($_GET['q']) : null)], true, true);
         $forms = $formManager->getAll();
         $filters = $bazarListService->getFilters(['groups' => ['all']], $entries, $forms);
 

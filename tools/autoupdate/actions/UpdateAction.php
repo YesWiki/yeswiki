@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\AutoUpdate\Service\AutoUpdateService;
 use YesWiki\AutoUpdate\Service\MigrationService;
 use YesWiki\AutoUpdate\Service\UpdateAdminPagesService;
@@ -18,36 +19,42 @@ class UpdateAction extends YesWikiAction
 
     public function run()
     {
-        $securityController = $this->getService(SecurityController::class);
-        $updateService = $this->getService(AutoUpdateService::class);
+        $vSecurityController = $this->getService(SecurityController::class);
+        $vUpdateService = $this->getService(AutoUpdateService::class);
+        $vMigrationService = $this->getService(MigrationService::class);
+        $vArchiveService = $this->getService(ArchiveService::class);
+        $vUpdateAdminPagesService = $this->getService(UpdateAdminPagesService::class);
 
-        if (!$updateService->initRepository($this->arguments['version'])) {
+        if (!$vUpdateService->initRepository($this->arguments['version'])) {
             return $this->render('@autoupdate/norepo.twig', []);
         }
 
         // At the time we introduced the migration concept in YesWiki, the old code was not redirecting
         // to "post_install" action. So we add this code to detect the first time the code is run
         // after migrations are introduced, and we run them.
-        $migrationService = $this->getService(MigrationService::class);
-        if (count($migrationService->getCompletedMigrations()) === 0) {
-            $messages = $migrationService->run();
-            foreach ($messages as $message) {
+        $vMigrationService = $this->getService(MigrationService::class);
+
+        if (count($vMigrationService->getCompletedMigrations()) === 0) {
+            $vMessages = $vMigrationService->run();
+            foreach ($vMessages as $vMessage) {
                 flash(
-                    $message['text'] . ' : ' . $message['status'],
-                    $message['status'] == _t('AU_OK') ? 'success' : 'error'
+                    $vMessage['text'] . ' : ' . $vMessage['status'],
+                    $vMessage['status'] == _t('AU_OK') ? 'success' : 'error'
                 );
             }
         }
 
-        $action = $securityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
-        if (empty($action) || !$this->wiki->UserIsAdmin() || $this->isWikiHibernated()) {
+        $vIsReadOnly = $vArchiveService->isReadOnly();
+
+        $vAction = $vSecurityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
+        if (empty($vAction) || !$this->wiki->UserIsAdmin() || $vIsReadOnly) {
             // Base action, display current status of software, extension and themes
             return $this->render('@autoupdate/status.twig', [
                 'isAdmin' => $this->wiki->UserIsAdmin(),
-                'isHibernated' => $this->isWikiHibernated(),
-                'core' => $updateService->repository->getCorePackage(),
-                'themes' => $updateService->repository->getThemesPackages(),
-                'tools' => $updateService->repository->getToolsPackages(),
+                'isHibernated' => $vIsReadOnly,
+                'core' => $vUpdateService->repository->getCorePackage(),
+                'themes' => $vUpdateService->repository->getThemesPackages(),
+                'tools' => $vUpdateService->repository->getToolsPackages(),
                 'phpVersion' => PHP_VERSION,
             ]);
         }
@@ -58,53 +65,94 @@ class UpdateAction extends YesWikiAction
 
         // Handle upgrade and delete actions
         // package can be 'yeswiki' for core upgrade, or extension name, or theme name
-        $packageName = $securityController->filterInput(INPUT_GET, 'package', FILTER_DEFAULT, true);
+        $vPackageName = $vSecurityController->filterInput(INPUT_GET, 'package', FILTER_DEFAULT, true);
 
-        switch ($action) {
-            case 'upgrade':
-                // Ensure a backup is made before the upgrade (or force upgrade)
-                $forcedUpdateToken = $securityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_DEFAULT, true);
-                if (!$this->getService(ArchiveService::class)->hasValidatedBackup($forcedUpdateToken)) {
-                    return $this->render('@core/preupdate-backup.twig', [
-                        'packageName' => $packageName,
-                    ]);
-                }
+        $vMessages = new Messages();
 
-                // Perform the upgrade
-                $messages = $updateService->upgrade($packageName);
+        try {
+            switch ($vAction) {
+                case 'upgrade':
+                    $vCanUpgrade = false;
 
-                // Reload the page to perform postInstall operation with the new code
-                $this->wiki->redirect($this->wiki->href('', '', [
-                    'action' => 'post_install',
-                    'messages' => json_encode($messages->toArray()),
-                    'previous_version' => YESWIKI_VERSION,
-                ], false));
-                break;
-            case 'post_install':
-                $rawMessages = $securityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
-                $messages = empty($rawMessages) ? [] : json_decode($rawMessages, true);
-                if (!is_array($messages)) {
-                    $messages = [];
-                }
-                // Run migrations
-                $migrationMessages = $migrationService->run();
-                $messages = array_merge($messages, $migrationMessages->toArray());
-                break;
-            case 'update_admin_pages':
-                $messages = $this->getService(UpdateAdminPagesService::class)->updateAll();
-                break;
-            case 'delete':
-                $messages = $updateService->delete($packageName);
-                break;
-            default:
-                $messages = [];
-                break;
+                    $vArchiveParams = $vArchiveService->getArchiveParams();
+
+                    // Check if the preupdate backup is activated
+                    if (in_array(($vArchiveParams['preupdate_backup_activated'] ?? true), [true, 'true', 1, '1'])) {
+                        // It is so let's go further...
+
+                        $vStatus = $vArchiveService->getArchivingStatus();
+
+                        if ($vStatus['privatePathWritable']) {
+                            // Get the forced update token if it exist
+                            $vForcedUpdateToken = $vSecurityController->filterInput(INPUT_GET, 'forcedUpdateToken', FILTER_DEFAULT, true);
+
+                            // Check if we need to do a backup...
+
+                            if (!$vArchiveService->hasValidatedBackup($vForcedUpdateToken)) {
+                                // ...and, if so, let's the client handle it
+                                return $this->render('@core/preupdate-backup.twig', [
+                                    'packageName' => $vPackageName,
+                                ]);
+                            } else {
+                                // else we can do the upgrade
+                                $vCanUpgrade = true;
+                            }
+                        } else {
+                            $vMessages->add('AU_PRIVATE_PATH_NOT_WRITABLE', 'AU_ERROR');
+                        }
+                    } else {
+                        $vCanUpgrade = true;
+                    }
+
+                   if ($vCanUpgrade) {
+                       // Perform the upgrade
+
+                       $vUpgradeMessages = $vUpdateService->upgrade($vPackageName);
+
+                       $vMessages->add($vUpgradeMessages);
+
+                       // Reload the page to perform postInstall operation with the new code
+                       $this->wiki->redirect($this->wiki->href('', '', [
+                           'action' => 'post_install',
+                           'messages' => json_encode($vMessages->toArray()),
+                           'previous_version' => YESWIKI_VERSION,
+                       ], false));
+                   }
+                    break;
+                case 'post_install':
+                    $vRawMessages = $vSecurityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
+
+                    $vMessages->add(empty($vRawMessages) ? [] : (json_decode($vRawMessages, true) ?? []));
+
+                    // Run migrations
+
+                    $vMigrationMessages = $vMigrationService->run();
+
+                    $vMessages->add($vMigrationMessages);
+                    break;
+                case 'update_admin_pages':
+                    // Update admin pages
+
+                    $vUpdateAdminPagesMessages = vUpdateAdminPagesService->updateAll();
+
+                    $vMessages->add($vUpdateAdminPagesMessages);
+                    break;
+                case 'delete':
+                    // Delete package
+
+                    $vDeleteMessages = $vUpdateService->delete($vPackageName);
+
+                    $vMessages->add($vDeleteMessages);
+                    break;
+            }
+        } catch (Throwable $pThrowable) {
+            $vMessages->add(_t('PERFORMABLE_ERROR') . ' Exception received from file ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine() . ' - "' . $pThrowable->getMessage() . '"', 'AU_ERROR');
         }
 
         // Display result of action, with a list of success/error messages
         return $this->wiki->render('@autoupdate/update-result.twig', [
-            'messages' => $messages,
-            'action' => $action,
+            'messages' => $vMessages->toArray(),
+            'action' => $vAction,
         ]);
     }
 }

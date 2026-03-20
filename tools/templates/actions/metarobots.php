@@ -6,7 +6,8 @@ use YesWiki\Templates\Service\Utils;
  * Action to add usefull metas to html head
  */
 
-if ($this->GetMethod() != 'show') {
+if ($this->GetMethod() != 'show' || empty($this->page)) {
+    // no index if not with 'show' hander or if page is not existing
     echo '<meta name="robots" content="noindex, nofollow">' . "\n";
 } else {
     if (isset($this->config['meta']['robots'])) {
@@ -21,7 +22,7 @@ if ($this->GetMethod() != 'show') {
     echo "\n" . '  <!-- opengraph -->' . "\n";
     echo '  <meta property="og:site_name" content="'
         . $this->config['wakka_name'] . '" />' . "\n";
-    $utils = $this->services->get(\YesWiki\Templates\Service\Utils::class);
+    $utils = $this->services->get(Utils::class);
     $title = $utils->getTitleFromBody($this->page);
     echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['wakka_name']) . '" />' . "\n";
     $desc = htmlspecialchars($utils->getDescriptionFromBody($this->page, $title), ENT_COMPAT | ENT_HTML5);

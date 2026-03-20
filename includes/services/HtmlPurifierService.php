@@ -6,7 +6,6 @@ use enshrined\svgSanitize\Sanitizer;
 use HTMLPurifier;
 use HTMLPurifier_Config;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use voku\helper\AntiXSS;
 use YesWiki\Wiki;
 
 class HtmlPurifierService
@@ -62,22 +61,6 @@ class HtmlPurifierService
     }
 
     /**
-     * load a anti XSS if necessary
-     * search for XSS scripts and clean content.
-     */
-    public function cleanXSS(string $dirtyContent): string
-    {
-        if (!$this->params->get('htmlPurifierActivated')) {
-            return $dirtyContent;
-        }
-        if (is_null($this->antixss)) {
-            $this->antixss = new AntiXSS();
-        }
-
-        return $this->antiXss->xss_clean($dirtyContent);
-    }
-
-    /**
      * @param string $content of svg
      *
      * @return string $content
@@ -95,19 +78,18 @@ class HtmlPurifierService
     }
 
     /**
-     * @param string $content of svg
+     * @param string $filename  path to file
+     * @param string $extension file extension
      *
      * @return mixed false if problem or int of filesize
      */
     public function cleanFile(string $filename, string $extension)
     {
         if (file_exists($filename)) {
-            if (in_array($extension, ['svg', 'xml', 'html', 'htm'])) {
+            if (in_array($extension, ['svg', 'html', 'htm'])) {
                 $content = file_get_contents($filename);
                 if ($extension === 'svg') {
                     return file_put_contents($filename, $this->sanitizeSVG($content));
-                } elseif ($extension === 'xml') {
-                    return file_put_contents($filename, $this->cleanXSS($content));
                 } elseif ($extension === 'html' || $extension === 'htm') {
                     return file_put_contents($filename, $this->cleanHTML($content));
                 }

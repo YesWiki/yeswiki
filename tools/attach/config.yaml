@@ -27,6 +27,8 @@ parameters:
     avi: 'AVI'
     flac: 'Free Lossless Audio Codec'
     flv: 'Flash Video'
+    json: 'Json'
+    geojson: 'GeoJson'
     mid: 'Midi'
     mng: 'MNG'
     mka: 'Matroska Audio'
@@ -98,7 +100,7 @@ parameters:
     xls: 'Excel'
     xlsx: 'Excel'
     xlsm: 'Excel'
-    xml: 'XML'
+    # xml: 'XML' removed by default because no more xss cleaner
     yaml: 'YAML'
     zip: 'Zip'
     scar: 'SCAR'

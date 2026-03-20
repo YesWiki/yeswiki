@@ -12,14 +12,14 @@
 {{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-geolocation-helper.js') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 {{ include_javascript('javascripts/vendor/leaflet-providers/leaflet-providers.js') }}
+{% if mapFieldData.hasGeometries %}
+    {{ include_javascript('javascripts/vendor/leaflet-draw/leaflet.draw.js') }}
+    {{ include_css('styles/vendor/leaflet-draw/leaflet.draw.css') }}
+{% endif %}
 
-<script>
-    var mapFieldData = {{ mapFieldData|json_encode|raw }}
-</script>
+{{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-leaflet.js', false, true) }}
 
-{{ include_javascript('tools/bazar/presentation/javascripts/inputs/map-leaflet.js') }}
-
-<div class="control-group form-group geocode-input {% if field.required %}required{% endif %}" data-field-names="{{ field.autocompleteFieldNames|merge({latitude:field.latitudeField,longitude:field.longitudeField})|json_encode }}">
+<div class="control-group form-group geocode-input {% if field.required %}required{% endif %}" id="{{ field.name }}" name="{{ field.name }}" data-field-names="{{ field.autocompleteFieldNames|json_encode }}" data-map-field-data="{{ mapFieldData|json_encode|e('html_attr') }}">
     <label class="col-sm-3"></label>
     <div class="controls col-sm-9">
         {% if field.geolocate %}
@@ -27,11 +27,17 @@
                 {{ _t('BAZ_GEOLOCATE') }}
             </a>
         {% endif %}
+        {% if 'marker' in mapFieldData.chosenGeometries %}
         <a class="btn btn-primary btn-geolocate-address">
             {{ _t('BAZ_VERIFIER_MON_ADRESSE') }}
         </a>
-        <input type="hidden" value="{{ latitude }}" id="{{ field.latitudeField }}" name="{{ field.latitudeField }}">
-        <input type="hidden" value="{{ longitude }}" id="{{ field.longitudeField }}" name="{{ field.longitudeField }}">
-        <div id="osmmapform" style="margin-top:5px; width:{{ config.baz_map_width }}; height:{{ config.baz_map_height }};"></div>
+        {% endif %}
+        <a class="btn btn-primary btn-move-to-address">
+            {{ _t('BAZ_MOVE_TO_ADDRESS') }}
+        </a>
+        <input type="hidden" id="{{field.name}}_latitude" value="{{ latitude }}" class="yw-latitude-input" name="{{field.name}}[latitude]" />
+        <input type="hidden" id="{{field.name}}_longitude" value="{{ longitude }}" class="yw-longitude-input" name="{{field.name}}[longitude]]" />
+        <input type="hidden" id="{{field.name}}_geometries" value="{{ geometries ? geometries |json_encode : '' }}" class="yw-geometries-input" name="{{field.name}}[geometries]" />
+        <div id="osmmapform" class="yw-geolocation-map" style="margin-top:5px; width:{{ config.baz_map_width }}; height:{{ config.baz_map_height }};"></div>
     </div>
 </div>

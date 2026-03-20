@@ -38,7 +38,7 @@
         {% else %}
           <label>
             <input type="checkbox" name="importfiche[{{ extract.entry.id_fiche ~ (index + 1) }}]"
-              value='{{ extract.base64|raw }}'>{{ extract.entry.bf_titre }}
+              value="{{ extract.json|e }}">{{ extract.entry.bf_titre }}
           </label>
           <a class="btn-mini btn-xs btn btn-default"
             data-target="#collapse{{ extract.entry.id_fiche ~ (index + 1) }}"
@@ -59,9 +59,20 @@
     {{ block('checkboxAll') }}
 
     <input type="hidden" value="{{ id }}" name="id" />
-    <button class="btn btn-primary" type="submit">
+    <button id="btn-bazar-imports" class="btn btn-primary" type="submit">
       {{ _t('BAZ_IMPORT_SELECTION') }}
     </button>
+    {{ include_javascript('tools/bazar/presentation/javascripts/bazar-import.js') }}
+    <div id="import-progress-container" style="display: none; margin-top: 15px;">
+  <p>
+    <span id="import-status">En attente...</span> 
+    (<span id="progress-current">0</span>/<span id="progress-total">0</span>)
+  </p>
+  <div style="border: 1px solid #ccc; background-color: #f3f3f3; padding: 2px;">
+    <div id="progress-bar" style="width: 0%; height: 30px; background-color: #4CAF50; text-align: center; color: white;"></div>
+  </div>
+  <ul id="import-log" style="font-size: 0.9em; max-height: 200px; overflow-y: auto; border: 1px solid #eee; padding: 5px; margin-top: 10px;"></ul>
+</div>
   {% elseif  mode == 'importentries' %}
       <div class="alert alert-success">
         {{ _t('BAZ_NOMBRE_FICHE_IMPORTE') ~ ' '~ importedEntries|length }}
@@ -116,5 +127,5 @@
 
 {% block appendToFormLabel %}{{ _t('BAZ_EXEMPLE_FICHIER_CSV') ~ selectedForm.bn_label_nature}}{% endblock %}
 
-{% block downloadFileName %}export-bazar-modele-{{ id }}.csv{% endblock %}
+{% block downloadFileName %}modele_{{filename}}{% endblock %}
 {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_IMPORT_CSV') -}}{% endblock %}

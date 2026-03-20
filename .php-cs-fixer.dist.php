@@ -5,6 +5,7 @@ $finder = PhpCsFixer\Finder::create()
     ->name('*.php')
     ->exclude('vendor')
     ->exclude('cache')
+    ->exclude('files')
     ->exclude('node_modules');
 
 $rules = [

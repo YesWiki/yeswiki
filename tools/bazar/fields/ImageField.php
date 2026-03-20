@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -47,7 +48,7 @@ class ImageField extends FileField
         if (!empty($entry)) {
             $id = $entry['id_typeannonce'];
         } else {
-            $id = empty($GLOBALS['wiki']->GetParameter('id')) ? $_REQUEST['id'] : $GLOBALS['wiki']->GetParameter('id');
+            $id = $_SESSION['current_form_id'] ?? 'no_id';
         }
         $default_image_filename = "defaultimage{$id}_{$this->name}.jpg";
         if (file_exists($this->getBasePath() . $default_image_filename)) {
@@ -124,6 +125,15 @@ class ImageField extends FileField
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize]);
     }
 
+    /*
+    *	indicates if id_fiche must be set before to format the value
+    */
+
+    public function requireIDFiche()
+    {
+        return true;
+    }
+
     public function formatValuesBeforeSave($entry)
     {
         $params = $this->getService(ParameterBagInterface::class);
@@ -167,10 +177,10 @@ class ImageField extends FileField
                         }
                     }
                 } else {
-                    flash(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')), 'info');
+                    Flash::info(str_replace('{fileName}', $fileName, _t('BAZ_IMAGE_ALREADY_EXISTING')));
                 }
             } else {
-                flash(_t('BAZ_NOT_AUTHORIZED_EXTENSION'), 'error');
+                Flash::error(_t('BAZ_NOT_AUTHORIZED_EXTENSION'));
 
                 return [$this->propertyName => ''];
             }

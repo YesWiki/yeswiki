@@ -4,9 +4,9 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\ExternalBazarService;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Wiki;
 
 abstract class EnumField extends BazarField
@@ -115,25 +115,17 @@ abstract class EnumField extends BazarField
 
     public function loadOptionsFromEntries()
     {
-        $entryManager = $this->getService(EntryManager::class);
+        $vSearchManager = $this->getService(SearchManager::class);
 
-        $tabquery = [];
         if (!empty($this->queries)) {
-            $tableau = [];
-            $tab = explode('|', $this->queries);
-            //découpe la requete autour des |
-            foreach ($tab as $req) {
-                $tabdecoup = explode('=', $req, 2);
-                $tableau[$tabdecoup[0]] = isset($tabdecoup[1]) ? trim($tabdecoup[1]) : '';
-            }
-            $tabquery = array_merge($tabquery, $tableau);
+            $vQueries = $vSearchManager->parseQuery($this->queries);
         } else {
-            $tabquery = '';
+            $vQueries = [];
         }
 
-        $fiches = $entryManager->search(
+        $fiches = $vSearchManager->search(
             [
-                'queries' => $tabquery,
+                'queries' => $vQueries,
                 'formsIds' => $this->getLinkedObjectName(),
                 'keywords' => (!empty($this->keywords)) ? $this->keywords : '',
             ],

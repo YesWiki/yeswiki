@@ -10,7 +10,7 @@
           <span class="result-label">{{ _t('BAZ_FICHE_CORRESPONDANT_FILTRES') }}</span>
           <span class="results-label" style="display: none;">{{ _t('BAZ_FICHES_CORRESPONDANTES_FILTRES') }}</span>
         {% endif %}
-      {% endif %}
+      {% endif %}     
       {% if params.resetfiltersbutton %}
         <span class="btn btn-xs btn-info reset-filters pull-right {{ params.filtercolsize < 4 ? 'btn-block': '' }}">
           {{ _t('BAZ_RESET_FILTERS') }}
@@ -54,11 +54,3 @@
     </div>
   </div>
 </div>
-<style>
-.filter-box button.panel-heading {
-	width: 100%;
-}
-label input.filter-checkbox:focus ~ span {
-	outline: 5px auto;
-}
-</style>

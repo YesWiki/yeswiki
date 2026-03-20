@@ -10,6 +10,8 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Entity\User;
@@ -343,6 +345,47 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         return $this->wiki->services->get(AclService::class)->check(implode("\n", $members), $username, $admincheck, '', '', $formerGroups);
+    }
+
+    /**
+     * get the entry that is linked to the username.
+     */
+    public function getAssociatedEntry($user = '')
+    {
+        if (empty($user)) {
+            $user = $this->wiki->services->get(AuthController::class)->getLoggedUser();
+            if (empty($user['name'])) {
+                return null;
+            } else {
+                $user = $user['name'];
+            }
+        }
+        if (!empty($GLOBALS['user_entries'][$user])) {
+            return $GLOBALS['user_entries'][$user];
+        }
+        $vFormManager = $this->wiki->services->get(FormManager::class);
+        $formsIds = array_keys($vFormManager->getAll());
+        $vSearchManager = $this->wiki->services->get(SearchManager::class);
+        // in case if a username is generated from a bazar entry, nomwiki should be the right id
+        $entry = $vSearchManager->search([
+            'queries' => [
+                [
+                    'name' => 'nomwiki',
+                    'operator' => '==',
+                    'values' => [$user],
+                ],
+            ],
+            'formsIds' => $formsIds,
+        ]);
+        if (empty($entry)) {
+            return null;
+        }
+        $found = array_pop($entry);
+        if (!empty($found['id_fiche'])) {
+            $GLOBALS['user_entries'][$user] = $found;
+
+            return $found;
+        }
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */
