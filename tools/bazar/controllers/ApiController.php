@@ -369,18 +369,22 @@ class ApiController extends YesWikiController
         // Put data inside LDP container
         $form = $this->getService(FormManager::class)->getOne($formId);
 
+        $resources = array_map(function ($entry) use ($form) {
+            return $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry, true);
+        }, array_values($entries));
+
+        $context = !empty($resources) ? ($resources[0]['@context'] ?? null) : null;
+        foreach ($resources as &$resource) {
+            unset($resource['@context']);
+        }
+
         return new ApiResponse(
             [
-                '@context' => (array)json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'],
+                '@context' => $context,
                 '@id' => $this->wiki->Href('fiche/' . $formId, 'api'),
                 '@type' => ['ldp:Container', 'ldp:BasicContainer'],
                 'dcterms:title' => $form['bn_label_nature'],
-                'ldp:contains' => array_map(function ($entry) use ($form) {
-                    $resource = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry, true);
-                    unset($resource['@context']);
-
-                    return $resource;
-                }, array_values($entries)),
+                'ldp:contains' => $resources,
             ],
             Response::HTTP_OK,
             ['Content-Type: application/ld+json; charset=UTF-8']

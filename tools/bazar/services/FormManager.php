@@ -236,7 +236,7 @@ class FormManager
         $this->cacheValidatedForAll = false;
 
         return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
-            . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_context` ,`bn_sem_type` ,`bn_sem_use_template`, `bn_activitypub_enable`, `bn_activitypub_username`, `bn_activitypub_private_key`)'
+            . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_template` ,`bn_sem_reverse_template`, `bn_activitypub_enable`, `bn_activitypub_username`, `bn_activitypub_private_key`)'
             . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
             . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
             . ',`bn_condition`)'
@@ -244,16 +244,15 @@ class FormManager
             . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
             . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
             . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '", "'
-            . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '", "'
-            . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '", '
-            . (isset($data['bn_sem_use_template']) ? '1' : '0') . ', "'
-            . '`bn_activitypub_enable`=' . $activitypubEnabled . ' ,'
-            . '`bn_activitypub_username`="' . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '" ,'
-            . (isset($privateKey) ? '`bn_activitypub_private_key`="' . $privateKey . '" ,' : '')
-            . (isset($publicKey) ? '`bn_activitypub_public_key`="' . $publicKey . '" ,' : '')
-            . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '')
-            . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '')
-            . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
+            . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '", "'
+            . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '", '
+            . $activitypubEnabled . ', "'
+            . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '"'
+            . (isset($privateKey) ? ', "' . $privateKey . '"' : '')
+            . (isset($publicKey) ? ', "' . $publicKey . '"' : '')
+            . ($this->isAvailableOnlyOneEntryOption() ? ', "' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '"' : '')
+            . ($this->isAvailableOnlyOneEntryMessage() ? ', "' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '"' : '')
+            . ', "' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
     }
 
     public function update($data)
@@ -279,9 +278,8 @@ class FormManager
             . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
             . '`bn_template`="' . $template . '" ,'
             . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_context`="' . $this->dbService->escape(_convert($data['bn_sem_context'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_type`="' . $this->dbService->escape(_convert($data['bn_sem_type'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_use_template`=' . (isset($data['bn_sem_use_template']) ? '1' : '0') . ' ,'
+            . '`bn_sem_template`="' . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '" ,'
+            . '`bn_sem_reverse_template`="' . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '" ,'
             . '`bn_activitypub_enable`=' . $activitypubEnabled . ' ,'
             . '`bn_activitypub_username`="' . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '" ,'
             . (isset($privateKey) ? '`bn_activitypub_private_key`="' . $privateKey . '" ,' : '')
