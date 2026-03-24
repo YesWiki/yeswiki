@@ -516,7 +516,7 @@ class BazarListService
             } // Ensure $pIDs is a string
         }
 
-        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', $pIDs);
+        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs));
 
         $vLines = str_getcsv($pIDs, ',', '"', '\\');
 
