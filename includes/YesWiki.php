@@ -88,6 +88,20 @@ class Wiki
         $this->routes = $init->initRoutes($this);
     }
 
+    // Dump exception hidding complete server path
+    
+    public function dumpThrowable ($pThrowable) {
+        return $this->hideServerPath($pThrowable->getMessage()) . ' in <i>.' . $this->hideServerPath ($pThrowable->getFile()) . '</i> on line <i>' . $pThrowable->getLine() . '</i>';
+    }
+
+    // Hide complete server path from exception
+    
+    public function hideServerPath ($pPath) {       
+        $vRootPath = realpath(__DIR__ . '/..'); 
+               
+        return str_replace($vRootPath, '', $pPath);
+    }
+
     // MISC
     public function GetMicroTime()
     {

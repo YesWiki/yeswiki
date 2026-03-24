@@ -146,7 +146,7 @@ class UpdateAction extends YesWikiAction
                     break;
             }
         } catch (Throwable $pThrowable) {
-            $vMessages->add(_t('PERFORMABLE_ERROR') . ' Exception received from file ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine() . ' - "' . $pThrowable->getMessage() . '"', 'AU_ERROR');
+            $vMessages->add(_t('PERFORMABLE_ERROR') . $this->wiki->dumpThrowable ($pThrowable), 'AU_ERROR');
         }
 
         // Display result of action, with a list of success/error messages

@@ -109,7 +109,7 @@ class ArchiveController extends YesWikiController
                         );
                     } catch (\Throwable $pThrowable) {
                         return new ApiResponse(
-                            ['error' => 'A problem occures while starting the backup process. Exception reveived from ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine() . ' : ' . $pThrowable->getMessage()],
+                            ['error' => 'A problem occures while starting the backup process. An exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     }
@@ -161,7 +161,7 @@ class ArchiveController extends YesWikiController
             }
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => 'an exception occures : ' . $pThrowable->getMessage() . ' in file ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine()],
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }

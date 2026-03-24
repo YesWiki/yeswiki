@@ -161,7 +161,7 @@ class DateService implements EventSubscriberInterface
                 }
             }
         } catch (Throwable $th) {
-            $this->triggerNoticeErrorIfPossible("{$th->getMessage()} in file '" . basename($th->getFile()) . "' on line {$th->getLine()}");
+            $this->triggerNoticeErrorIfPossible($this->wiki->dumpThrowable ($th));
         }
     }
 
@@ -375,8 +375,7 @@ class DateService implements EventSubscriberInterface
             $currentStartDate = $this->coreDateService->getDateTimeWithRightTimeZone($entry['bf_date_debut_evenement']);
             $currentEndDate = $this->coreDateService->getDateTimeWithRightTimeZone($entry['bf_date_fin_evenement']);
         } catch (Throwable $th) {
-            $this->triggerNoticeErrorIfPossible("for '{$entry['id_fiche']}', " .
-                "{$th->getMessage()} from {$th->getFile()} on line {$th->getLine()}");
+            $this->triggerNoticeErrorIfPossible("for '{$entry['id_fiche']}', " . $this->wiki->dumpThrowable ($th));
 
             return [];
         }
