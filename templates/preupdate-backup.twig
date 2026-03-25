@@ -23,7 +23,7 @@
         </button>
     {% endif %}
   </div>
-  <div v-if="archiveMessage.length > 0" :class="archiveMessageClass">{{ '{{ archiveMessage }}' }}</div>
+  <div v-if="archiveMessage.length > 0" v-html="archiveMessage" :class="archiveMessageClass"></div>
   <div>
     <a
         v-if="!archiving && showReturn"
