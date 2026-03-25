@@ -821,8 +821,17 @@ $(document).ready(() => {
       e.data.$geometries.show()
       e.data.$entries.parent('.bazar-marker').show()
     }
-    // on compte les résultats visibles
-    const nbresults = e.data.$entries.filter(':visible').length
+    // on compte les résultats visibles (points et geometries confondus)
+    const visibleIds = new Set();
+    e.data.$entries.filter(':visible').each(function() {
+      const id = $(this).attr('data-id_fiche');
+      if (id) visibleIds.add(String(id));
+    });
+    e.data.$geometries.filter(':visible').each(function() {
+      const id = $(this).attr('data-id');
+      if (id) visibleIds.add(String(id));
+    });
+    const nbresults = visibleIds.size;
     e.data.$nbresults.html(nbresults)
     if (nbresults > 1) {
       e.data.$resultlabel.hide()
