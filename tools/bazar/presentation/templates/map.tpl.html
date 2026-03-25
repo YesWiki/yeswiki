@@ -230,7 +230,7 @@ if (count($fiches)>0) :
 											iconAnchor: '.$params['iconAnchor'].',
 											popupAnchor: '.$params['popupAnchor'].',
 											className: "bazar-marker'.$params['smallmarker'].'",
-											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" '.$fiche['html_data'].'>" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
+											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" '.addslashes($fiche['html_data']).'>" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
 									});
 								}
 
