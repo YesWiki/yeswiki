@@ -91,7 +91,7 @@ class Wiki
     // Dump exception hidding complete server path
     
     public function dumpThrowable ($pThrowable) {
-        return $this->hideServerPath($pThrowable->getMessage()) . ' in <i>.' . $this->hideServerPath ($pThrowable->getFile()) . '</i> on line <i>' . $pThrowable->getLine() . '</i>';
+        return htmlspecialchars ($this->hideServerPath($pThrowable->getMessage())) . ' in <i>.' . htmlspecialchars($this->hideServerPath ($pThrowable->getFile())) . '</i> on line <i>' . $pThrowable->getLine() . '</i>';
     }
 
     // Hide complete server path from exception
