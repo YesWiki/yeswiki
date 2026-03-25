@@ -58,6 +58,12 @@ if (count($fiches)>0) :
             $vLatitude = $vGeolocation ['latitude'] ?? '';
             $vLongitude = $vGeolocation ['longitude'] ?? '';
             $vGeometries = $vGeolocation ['geometries'] ?? '';
+            $vGeometries = str_replace(
+                '"type":"FeatureCollection"',
+                '"id":"'.$fiche['id_fiche'].'","type":"FeatureCollection"',
+                $vGeometries
+            );
+
 
             // couleur de marqueur
             $color = getCustomValueForEntry($params['color'], $params['colorfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_color']);
@@ -97,9 +103,9 @@ if (count($fiches)>0) :
                 }
                 $i++;
             }
-            if (!empty($vGeometries)) {
-                $vAllGeometries[$fiche['id_fiche']] = $vGeometries;
-            }
+        if (!empty($vGeometries)) {
+            $vAllGeometries[$fiche['id_fiche']] = $vGeometries;
+        }
     endforeach; ?>
 
 	<?php
@@ -224,7 +230,7 @@ if (count($fiches)>0) :
 											iconAnchor: '.$params['iconAnchor'].',
 											popupAnchor: '.$params['popupAnchor'].',
 											className: "bazar-marker'.$params['smallmarker'].'",
-											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" >" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
+											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" '.$fiche['html_data'].'>" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
 									});
 								}
 
@@ -271,7 +277,7 @@ if (count($fiches)>0) :
          $geometriesModuleJs .= "const geo{$id} = ". $g ."\n";
          $geometriesModuleJs .= 'var popup = \''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $id))).'\''."\n";
 
-         $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup)\n";
+         $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup, '{$id}')\n";
      }
  }
   $GLOBALS['wiki']->AddJavascript(
