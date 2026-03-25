@@ -62,7 +62,7 @@
     </div>
   </div>
   <div v-if="ready && Object.keys(archives).length == 0" class="alert alert-info">{{ _t('ADMIN_NO_BACKUP_FOUND') }}.</div>
-  <div v-if="message.length > 0" v-html="message" :class="messageClass"></div>
+  <div v-if="message.length > 0" :class="messageClass">{{ '{{ message }}' }}</div>
   <div v-if="ready && Object.keys(archives).length > 0">
     <hr/>
     <div 
