@@ -357,45 +357,61 @@ Vue.component('BazarMap', {
       this.center = [this.params.latitude, this.params.longitude]
     },
     entries(newVal, oldVal) {
-      const vThis = this;
-      const newIds = newVal.map((e) => e.id_fiche)
-      const oldIds = oldVal.map((e) => e.id_fiche)
+      if (!this.map) return;
+
+      const newIds = newVal.map((e) => e.id_fiche);
+      const oldIds = oldVal.map((e) => e.id_fiche);
+
       if (!this.arraysEqual(newIds, oldIds)) {
-        this.$nextTick(function() {
-          this.entries.forEach((entry) => {
-            this.createMarker(entry)
+        this.$nextTick(() => {
+          oldVal.forEach((entry) => {
+            if (!newIds.includes(entry.id_fiche)) {
+              if (entry.marker) {
+                entry.marker.remove();
+              }
+              if (entry.geometryGroup) {
+                entry.geometryGroup.remove();
+                entry.geometryGroup = null;
+              }
+            }
+          });
+
+          const currentMarkers = [];
+
+          newVal.forEach((entry) => {
+            this.createMarker(entry);
 
             let lGeolocation = entry[this.params.geolocationfield];
-
-            if (lGeolocation.geometries) {
-              const geojsonGeometries = JSON.parse(lGeolocation.geometries)
-
-              var vDrawnItems = L.featureGroup().addTo(vThis.map)
-
-              drawGeometries(vDrawnItems, geojsonGeometries.features);
-            }
-          })
-          const entries = this.entries.filter((entry) => entry.marker) // remove entries without marker (prob error creating it)
-          if (this.params.cluster) {
-            this.$refs.cluster.addLayers(entries.map((entry) => entry.marker))
-          } else {
-            oldVal
-              .filter((entry) => entry.marker)
-              .forEach((entry) => entry.marker.remove())
-            entries.forEach((entry) => {
+            if (lGeolocation && lGeolocation.geometries && !entry.geometryGroup) {
               try {
-                entry.marker.addTo(vThis.map)
-              } catch (error) {
-                console.error(
-                  `Entry ${entry.id_fiche} has invalid geolocation`,
-                  error,
-                )
+                const geojsonGeometries = JSON.parse(lGeolocation.geometries);
+                entry.geometryGroup = L.featureGroup().addTo(this.map);
+                entry.geometryGroup.on('click', (e) => {
+                  L.DomEvent.stopPropagation(e);
+                  this.selectedEntry = entry;
+                });
+                drawGeometries(entry.geometryGroup, geojsonGeometries.features, '', entry.id_fiche);
+              } catch (e) {
+                console.error(`Error drawing geometry for ${entry.id_fiche}`, e);
               }
-            })
+            }
+
+            if (entry.marker) {
+              currentMarkers.push(entry.marker);
+            }
+          });
+
+          if (this.params.cluster && this.$refs.cluster) {
+            this.$refs.cluster.clearLayers();
+            this.$refs.cluster.addLayers(currentMarkers);
+          } else {
+            currentMarkers.forEach((marker) => {
+              marker.addTo(this.map);
+            });
           }
-        })
+        });
       }
-    },
+    }
   },
   template:
     `

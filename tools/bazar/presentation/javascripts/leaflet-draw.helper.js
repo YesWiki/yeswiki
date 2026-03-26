@@ -1,6 +1,7 @@
 export function drawGeometries(drawnItems, features, popup = '', id = 'unknown') {
   if (features && features.length > 0) {
     features.forEach(function(feature) {
+      let layer;
       if (feature.properties && feature.properties.type === 'circle') {
         var latlng = L.latLng(
           feature.geometry.coordinates[1],
@@ -32,10 +33,9 @@ export function drawGeometries(drawnItems, features, popup = '', id = 'unknown')
         });
 
         circle.feature = feature;
-
-        drawnItems.addLayer(circle);
+        layer = L.circle(latlng, { radius: radius, ...circleOptions });
       } else {
-        L.geoJSON(feature, {
+        layer = L.geoJSON(feature, {
           style:/* function (feature) {
 			    return */{
             color: 'blue',
@@ -70,6 +70,8 @@ export function drawGeometries(drawnItems, features, popup = '', id = 'unknown')
           }
         });
       }
+      layer.id_fiche = id;
+      drawnItems.addLayer(layer);
     })
   }
   return drawnItems
