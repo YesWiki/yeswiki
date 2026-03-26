@@ -28,8 +28,7 @@ Vue.component('BazarMap', {
       const vMe = this
       return this.$root.entriesToDisplay.filter((entry) => {
         const cGeolocation = vMe.getGeolocation(entry)
-        
-        return cGeolocation && cGeolocation.latitude && cGeolocation.longitude
+        return cGeolocation && ((cGeolocation.latitude && cGeolocation.longitude) || cGeolocation.geometries)
       })
     },
     map() {
@@ -53,21 +52,21 @@ Vue.component('BazarMap', {
   },
   methods: {
     getGeolocation(pEntry) {
-    
+
       let lLatitude
       let lLongitude
 
-	  let lGeolocation = pEntry[this.params.geolocationfield];
+      let lGeolocation = pEntry[this.params.geolocationfield];
 
       if (lGeolocation) {
         lLatitude = lGeolocation.latitude ?? null
         lLongitude = lGeolocation.longitude ?? null
       }
 
-	  if (lLatitude && lLongitude)	
-		return { latitude: lLatitude, longitude: lLongitude }
-	  else
-	  	return null
+      if (lGeolocation && ((lLatitude && lLongitude) || lGeolocation.geometries))
+        return lGeolocation
+      else
+        return null
     },
     updateBounds() {
       if (!this.$refs.map) return
@@ -169,59 +168,58 @@ Vue.component('BazarMap', {
       try {
         const cGeolocation = this.getGeolocation(entry)
 
-		if (cGeolocation)
-		{
-		    entry.marker = L.marker(
-		      [cGeolocation.latitude, cGeolocation.longitude],
-		      { riseOnHover: true },
-		    )
-		    const isLink =
-		      this.isModalDisplay() ||
-		      this.isDirectLinkDisplay() ||
-		      this.isNewTabDisplay()
-		    const tagName = isLink ? 'a' : 'div'
-		    const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
-		    const modalData = this.isModalDisplay()
-		      ? 'data-size="modal-lg" data-iframe="1" data-header="false"'
-		      : ''
-		    entry.marker.setIcon(
-		      L.divIcon({
-		        className: `bazar-marker ${this.params.smallmarker}`,
-		        iconSize: JSON.parse(this.params.iconSize),
-		        iconAnchor: JSON.parse(this.params.iconAnchor),
-		        popupAnchor: JSON.parse(this.params.popupAnchor),
-		        html:
-		          `
+        if (cGeolocation) {
+          entry.marker = L.marker(
+            [cGeolocation.latitude, cGeolocation.longitude],
+            { riseOnHover: true },
+          )
+          const isLink =
+            this.isModalDisplay() ||
+            this.isDirectLinkDisplay() ||
+            this.isNewTabDisplay()
+          const tagName = isLink ? 'a' : 'div'
+          const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
+          const modalData = this.isModalDisplay()
+            ? 'data-size="modal-lg" data-iframe="1" data-header="false"'
+            : ''
+          entry.marker.setIcon(
+            L.divIcon({
+              className: `bazar-marker ${this.params.smallmarker}`,
+              iconSize: JSON.parse(this.params.iconSize),
+              iconAnchor: JSON.parse(this.params.iconAnchor),
+              popupAnchor: JSON.parse(this.params.popupAnchor),
+              html:
+                `
 		          <div class="entry-name">
 		            <span style="background-color: ${entry.color}">
 		              ${entry.markerhover || entry.bf_titre}
 		            </span>
 		          </div>
 		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
-		          `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
+                `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
 		            <i class="${entry.icon || 'fa fa-bullseye'}"></i>
 		          </${tagName}>`,
-		      }),
-		    )
-		    if (this.isDirectLinkDisplay()) {
-		      entry.marker.on('click', () => {
-		        event.preventDefault()
-		        window.location =
-		          entry.url + (this.$root.isInIframe() ? '/iframe' : '')
-		      })
-		    } else if (this.isNewTabDisplay()) {
-		      entry.marker.on('click', function () {
-		        event.preventDefault()
-		        window.open(entry.url)
-		        this.selectedEntry = entry
-		      })
-		    } else if (!isLink) {
-		      entry.marker.on('click', (ev) => {
-		        this.selectedEntry = entry
-		      })
-		    }
-		    return entry.marker
-	    }	    
+            }),
+          )
+          if (this.isDirectLinkDisplay()) {
+            entry.marker.on('click', () => {
+              event.preventDefault()
+              window.location =
+                entry.url + (this.$root.isInIframe() ? '/iframe' : '')
+            })
+          } else if (this.isNewTabDisplay()) {
+            entry.marker.on('click', function() {
+              event.preventDefault()
+              window.open(entry.url)
+              this.selectedEntry = entry
+            })
+          } else if (!isLink) {
+            entry.marker.on('click', (ev) => {
+              this.selectedEntry = entry
+            })
+          }
+          return entry.marker
+        }
       } catch (e) {
         entry.marker = null
         console.error(
@@ -289,9 +287,8 @@ Vue.component('BazarMap', {
               `api/entries/html/${entry.id_fiche}`,
             )
             if (excludeFields.length > 0) {
-              url = `${
-                url + (url.match('?') ? '&' : '?')
-              }excludeFields=${excludeFields}`
+              url = `${url + (url.match('?') ? '&' : '?')
+                }excludeFields=${excludeFields}`
             }
           } else {
             url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
@@ -316,9 +313,9 @@ Vue.component('BazarMap', {
       const renderedHtml =
         this.$scopedSlots.popupentrywithhtml != undefined
           ? $(this.$el)
-              .find('.popupentry-container.with-html-render > div')
-              .first()
-              .html()
+            .find('.popupentry-container.with-html-render > div')
+            .first()
+            .html()
           : $(this.$el).find('.popupentry-container > div').first().html()
       if (entry.marker.popup == undefined) {
         if (renderedHtml != undefined && renderedHtml.length != 0) {
@@ -351,7 +348,7 @@ Vue.component('BazarMap', {
           this.openPopup(this.selectedEntry)
         }
 
-        this.$nextTick(function () {
+        this.$nextTick(function() {
           this.selectedEntry.marker._icon.classList.add('selected')
         })
       }
@@ -360,22 +357,22 @@ Vue.component('BazarMap', {
       this.center = [this.params.latitude, this.params.longitude]
     },
     entries(newVal, oldVal) {
-      const vThis = this;    
+      const vThis = this;
       const newIds = newVal.map((e) => e.id_fiche)
       const oldIds = oldVal.map((e) => e.id_fiche)
       if (!this.arraysEqual(newIds, oldIds)) {
-        this.$nextTick(function () {
+        this.$nextTick(function() {
           this.entries.forEach((entry) => {
             this.createMarker(entry)
-            
+
             let lGeolocation = entry[this.params.geolocationfield];
-            
+
             if (lGeolocation.geometries) {
-              const geojsonGeometries = JSON.parse (lGeolocation.geometries)
+              const geojsonGeometries = JSON.parse(lGeolocation.geometries)
 
               var vDrawnItems = L.featureGroup().addTo(vThis.map)
-              
-              drawGeometries (vDrawnItems, geojsonGeometries.features);              
+
+              drawGeometries(vDrawnItems, geojsonGeometries.features);
             }
           })
           const entries = this.entries.filter((entry) => entry.marker) // remove entries without marker (prob error creating it)
