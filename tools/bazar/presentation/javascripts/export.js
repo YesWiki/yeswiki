@@ -21,7 +21,7 @@ export function updateExportLinks(pSearchParams) {
           return
         }
 
-    	 	const vHandler = vNewURL.searchParams.keys().next()
+        const vHandler = vNewURL.searchParams.keys().next()
         let vHandlerValue = vHandler.value
 
         if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
@@ -29,14 +29,18 @@ export function updateExportLinks(pSearchParams) {
 
         const vParams = mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
 
-        pLink.setAttribute(
-			    'href',
-			    `${vNewURL.origin
-			    + vNewURL.pathname
-			    }?${vHandlerValue
-			    }${vParams ? `&${vParams}` : ''
-			    }${vNewURL.hash}`
-        )
+        const finalURL = new URL(vNewURL.href);
+        const searchParams = new URLSearchParams(vParams || "");
+        if (vHandlerValue) {
+          const [key, value] = vHandlerValue.split('=');
+          if (value !== undefined) {
+            searchParams.set(key, value);
+          } else {
+            finalURL.search = vHandlerValue + (vParams ? `&${vParams}` : '');
+          }
+        }
+        finalURL.search = searchParams.toString();
+        pLink.href = finalURL.toString();
       }
     })
 }
