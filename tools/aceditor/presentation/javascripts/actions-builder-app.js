@@ -46,7 +46,9 @@ const components = {
   InputCorrespondance,
   InputColumnsWidth,
   WikiCodeInput,
-  PreviewAction
+  PreviewAction,
+  InputHint,
+  AddonIcon
 }
 
 // actionsBuilderData is defined is AceditorAction
@@ -60,58 +62,70 @@ if (data.extraComponents) {
   })
 }
 
-export function setup() {
-  // Declare this one globally because we use it everywhere
-  Vue.component('input-hint', InputHint)
-  Vue.component('addon-icon', AddonIcon)
-  Vue.component('v-select', VueSelect.VueSelect)
+export function setup(vueApp) {
+  // Vue 3: Register global components on the app instance
+  vueApp.component('input-hint', InputHint)
+  vueApp.component('addon-icon', AddonIcon)
+  vueApp.component('v-select', VueSelect.VueSelect)
 }
 
-export const app = {
-  el: '#actions-builder-app',
+export const appConfig = {
   components,
   mixins: [InputHelper],
-  data: {
-    // Available Actions
-    actionGroups: data.action_groups,
-    currentGroupId: '',
-    selectedActionId: '',
-    // Some Actions require to select a Form (like bazar actions)
-    formIds: data.forms, // list of this YesWiki Forms
-    selectedFormsIds: '',
-    selectedForms: null, // used only when useFormField is present
-    loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
-    loadingForms: [],
-    // Values
-    values: {},
-    actionParams: {},
-    isEditingExistingAction: false,
-    displayAdvancedParams: false,
-    // Current Aceditor in use
-    editor: null
+  data() {
+    return {
+      // Available Actions
+      actionGroups: data.action_groups,
+      currentGroupId: '',
+      selectedActionId: '',
+      // Some Actions require to select a Form (like bazar actions)
+      formIds: data.forms, // list of this YesWiki Forms
+      selectedFormsIds: '',
+      selectedForms: null, // used only when useFormField is present
+      loadedForms: {}, // we retrive Form by ajax, and store it in case we need to get it again
+      loadingForms: [],
+      // Values
+      values: {},
+      actionParams: {},
+      isEditingExistingAction: false,
+      displayAdvancedParams: false,
+      // Current Aceditor in use
+      editor: null
+    }
   },
   computed: {
-    actionGroup() { return this.currentGroupId ? this.actionGroups[this.currentGroupId] : {} },
-    actions() { return this.actionGroup.actions || {} },
+    actionGroup() {
+      if (!this.currentGroupId) return { label: '', actions: {} }
+      return this.actionGroups[this.currentGroupId] || { label: '', actions: {} }
+    },
+    actions() {
+      const actions = this.actionGroup?.actions || {}
+      // Filter out any undefined values that could cause template errors
+      const result = {}
+      Object.entries(actions).forEach(([key, value]) => {
+        if (value) result[key] = value
+      })
+      return result
+    },
     selectedAction() { return this.actions[this.selectedActionId] },
-    needFormField() { return this.actionGroup.needFormField },
+    needFormField() { return this.actionGroup?.needFormField },
     // Some action group (like bazar) have common properties available for each actions
     // so we always display those commons properties in different panels
     configPanels() {
       const result = []
-      if (this.selectedAction.properties
+      if (this.selectedAction?.properties
           && Object.values(this.selectedAction.properties).some((conf) => conf.type)) {
         result.push({ params: this.selectedAction, class: 'specific-action-params' })
       }
       Object.entries(this.actions).forEach(([actionName, params]) => {
-        if (actionName.startsWith('common')) result.push({ params })
+        if (actionName.startsWith('common') && params) result.push({ params })
       })
       return result
     },
     isSomeAdvancedParams() {
       return this.configPanels.some((panel) => {
-        const props = Object.values(panel.params.properties)
-        return props.some((prop) => prop.advanced)
+        const props = Object.values(panel.params?.properties || {})
+        return props.some((prop) => prop?.advanced)
       })
     },
     isBazarListeAction() {
@@ -119,7 +133,9 @@ export const app = {
     },
     selectedActionAllConfigs() {
       let result = {}
-      this.configPanels.forEach((panel) => { result = { ...result, ...panel.params.properties } })
+      this.configPanels.forEach((panel) => {
+        result = { ...result, ...(panel.params?.properties || {}) }
+      })
       return result
     },
     wikiCodeStart() {
@@ -133,23 +149,24 @@ export const app = {
       return result
     },
     wikiCodeDefaultContent() {
-      let content = this.selectedAction.wrappedContentExample
+      const wrappedContent = this.selectedAction?.wrappedContentExample || ''
+      let content = wrappedContent
       if (this.selectedActionId === 'tabs' && this.actionParams.titles) {
         content = this.actionParams.titles.split(',')
-          .map((tabName) => this.selectedAction.wrappedContentExample.replace('{tabName}', tabName))
+          .map((tabName) => wrappedContent.replace('{tabName}', tabName))
           .join('\n')
       }
       if (this.selectedActionId === 'accordion') {
         content = '\n'
         for (let i = 0; i < this.values.nb; i++) {
-          content += `${this.selectedAction.wrappedContentExample}\n`
+          content += `${wrappedContent}\n`
         }
       }
       if (this.selectedActionId === 'grid') {
         content = '\n'
         const size = 12 / this.values.nb
         for (let i = 0; i < this.values.nb; i++) {
-          content += `${this.selectedAction.wrappedContentExample.replace('{size}', size)}\n`
+          content += `${wrappedContent.replace('{size}', size)}\n`
         }
       }
       if (!['label', 'accordion', 'grid'].includes(this.selectedActionId)) content = `\n${content}\n`
@@ -160,7 +177,7 @@ export const app = {
     },
     wikiCode() {
       let result = this.wikiCodeStart
-      if (this.selectedAction.isWrapper && !this.isEditingExistingAction) {
+      if (this.selectedAction?.isWrapper && !this.isEditingExistingAction) {
         result += this.wikiCodeDefaultContent
         result += this.wikiCodeEnd
       }
@@ -168,7 +185,7 @@ export const app = {
     },
     wikiCodeForIframe() {
       let result = this.wikiCodeStart
-      if (this.selectedAction.isWrapper && result) {
+      if (this.selectedAction?.isWrapper && result) {
         result += this.wikiCodeDefaultContent
         result += this.wikiCodeEnd
       }
@@ -193,7 +210,7 @@ export const app = {
         const fakeDom = $(`<${this.currentSelectedAction}/>`)[0]
 
         for (const attribute of fakeDom.attributes) {
-          Vue.set(this.values, attribute.name, attribute.value)
+          this.values[attribute.name] = attribute.value
         }
 
         const newActionId = fakeDom.tagName.toLowerCase()
@@ -226,7 +243,7 @@ export const app = {
         this.selectedFormsIds = null
         this.selectedActionId = ''
         // Bazar dynamic by default
-        if (this.isBazarListeAction) Vue.set(this.values, 'dynamic', true)
+        if (this.isBazarListeAction) this.values.dynamic = true
       }
       this.updateActionParams()
       // If only one action available, select it
@@ -244,9 +261,9 @@ export const app = {
     },
     // prefer methods to computed to prevent cache
     getSelectedFormId() {
-        if (!(this.selectedFormsIds instanceof Array) || this.selectedFormsIds.length == 0) return '';
-        
-        return this.selectedFormsIds.slice(0, 1)[0]  ?? '' // only the first one
+      if (!(this.selectedFormsIds instanceof Array) || this.selectedFormsIds.length == 0) return ''
+
+      return this.selectedFormsIds.slice(0, 1)[0] ?? '' // only the first one
     },
     setSelectedFormId() {
       const newValue = this.$refs.formSelection.value
@@ -323,7 +340,7 @@ export const app = {
       }
     },
     updateValue(propName, value) {
-      Vue.set(this.values, propName, value)
+      this.values[propName] = value
       this.updateActionParams()
     },
     initValuesOnActionSelected() {
@@ -334,7 +351,7 @@ export const app = {
         const configValue = this.isEditingExistingAction
           ? this.selectedAction.properties[propName].default
           : (this.selectedAction.properties[propName].value || this.selectedAction.properties[propName].default)
-        if (configValue && !this.values[propName]) Vue.set(this.values, propName, configValue)
+        if (configValue && !this.values[propName]) this.values[propName] = configValue
       }
       if (this.isBazarListeAction && this.selectedAction.properties && this.selectedAction.properties.template) this.values.template = this.selectedAction.properties.template.value
       setTimeout(() => this.updateActionParams(), 0)

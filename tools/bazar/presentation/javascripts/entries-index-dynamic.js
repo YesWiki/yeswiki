@@ -4,6 +4,7 @@ import PopupEntryField from './components/PopupEntryField.js'
 import SpinnerLoader from './components/SpinnerLoader.js'
 import ModalEntry from './components/ModalEntry.js'
 import FilterNode from './components/FilterNode.js'
+import BazarMap from './components/BazarMap.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
 import { updateExportLinks } from './export.js'
@@ -11,43 +12,51 @@ import { updateHash, parseSearchParams, mergeSearchParams } from './url.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
-Vue.component('FilterNode', FilterNode)
+const { createApp } = Vue
 
 const load = (domElement) => {
-  new Vue({
-    el: domElement,
+  // Capture dataset before mounting (Vue 3 replaces the mount element)
+  const elementDataset = { ...domElement.dataset }
+  const initialParams = elementDataset.params ? JSON.parse(elementDataset.params) : {}
+
+  const app = createApp({
     mixins: [BazarSearch, ImageMixin],
     components: {
       Panel,
       ModalEntry,
       SpinnerLoader,
       EntryField,
-      PopupEntryField
+      PopupEntryField,
+      FilterNode,
+      BazarMap
     },
-    data: {
-      mounted: false, // when vue get initialized
-      ready: false, // when ajax data have been retrieved
-      params: {},
+    data() {
+      return {
+        mounted: false, // when vue get initialized
+        ready: false, // when ajax data have been retrieved
+        params: initialParams,
+        elementDataset, // Store original dataset for reference
 
-      filters: [],
-      sortOptions: [],
-      entries: [],
-      formFields: {},
-      searchedEntries: [],
-      filteredEntries: [],
-      paginatedEntries: [],
-      entriesToDisplay: [],
+        filters: [],
+        sortOptions: [],
+        entries: [],
+        formFields: {},
+        searchedEntries: [],
+        filteredEntries: [],
+        paginatedEntries: [],
+        entriesToDisplay: [],
 
-      currentPage: 0,
-      pagination: 10,
+        currentPage: 0,
+        pagination: 10,
 
-      search: '',
-      currentSort: { field: '', order : null, label: '' },
+        search: '',
+        currentSort: { field: '', order: null, label: '' },
 
-      // wether to search for a particular form ID (only used when no
-      // form id is defined for the bazar list action)
-      searchFormId: '',
-      searchTimer: null // use ot debounce user input
+        // wether to search for a particular form ID (only used when no
+        // form id is defined for the bazar list action)
+        searchFormId: '',
+        searchTimer: null // use ot debounce user input
+      }
     },
     computed: {
       computedFilters() {
@@ -95,10 +104,10 @@ const load = (domElement) => {
         this.currentPage = 0
       },
       search() {
-      	if (this.ready) {
-	        clearTimeout(this.searchTimer)
+        if (this.ready) {
+          clearTimeout(this.searchTimer)
           this.searchTimer = setTimeout(() => this.calculateBaseEntries(), 350)
-	        this.updateHash()
+          this.updateHash()
         }
       },
       searchFormId() {
@@ -152,16 +161,16 @@ const load = (domElement) => {
               .split(',')
               .map((str) => str
                 .normalize('NFD')
-				   		.replace(/[\u0300-\u036f]/g, '')
-				   		.toLowerCase()
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;'))
               .some((value) => filter
-              			.map((str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
-              			.includes(value))
+                .map((str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())
+                .includes(value))
           })
         })
         this.filteredEntries = result
@@ -222,12 +231,12 @@ const load = (domElement) => {
               if (!entryValues || typeof entryValues != 'string') return
               entryValues = entryValues.split(',')
               return entryValues.some((value) =>
-	            	// Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
-              		 (value
-		          		.normalize('NFD')
-				   		.replace(/[\u0300-\u036f]/g, '')
-		          		.toLowerCase()
-		        	  	.replace(/&/g, '&amp;')
+                // Handle values with special chars like "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
+                (value
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .toLowerCase()
+                  .replace(/&/g, '&amp;')
                   .replace(/</g, '&lt;')
                   .replace(/>/g, '&gt;')
                   .replace(/"/g, '&quot;')
@@ -247,7 +256,7 @@ const load = (domElement) => {
         this.updateHash()
       },
       initFromHash(pHash) {
-      	const vThis = this
+        const vThis = this
 
         const vParams = parseSearchParams(pHash) // Return hash as a structured object
         let vChamp
@@ -282,14 +291,14 @@ const load = (domElement) => {
 
               if (cFilter) {
                 cFilter.flattenNodes.forEach((pNode) => {
-					    	// Handle values with special chars
-					    	// like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
-					    	// ie : Figuier goutte d&#039;or
+                  // Handle values with special chars
+                  // like ' in "Figuier goutte d'or" since PHP BazarListService.php store it by calling htmlspecialchars first
+                  // ie : Figuier goutte d&#039;or
 
                   const cFilterValues = pCondition.values
                     .map((pString) => pString
                       .normalize('NFD')
-							   		.replace(/[\u0300-\u036f]/g, '')
+                      .replace(/[\u0300-\u036f]/g, '')
                       .toLowerCase()
                       .replace(/&/g, '&amp;')
                       .replace(/</g, '&lt;')
@@ -298,7 +307,7 @@ const load = (domElement) => {
                       .replace(/'/g, '&#039;'))
 
                   if (cFilterValues.includes(pNode.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase())) pNode.checked = true
-					    })
+                })
               }
             })
           }
@@ -306,14 +315,14 @@ const load = (domElement) => {
 
         const cSort = this.sortOptions.find((s) => s.field == (vChamp ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.field : '') && s.order == (vOrdre ?? (typeof (vThis.currentSort) != 'undefined') ? vThis.currentSort.order : ''))
         if (cSort) {
-        	this.currentSort = cSort
+          this.currentSort = cSort
         }
       },
       updateHash() {
         if (!this.ready) return
 
-		return updateHash (this.savedHash, this.search, this.currentSort.field, this.currentSort.order, this.computedFilters);
-      },            
+        return updateHash(this.savedHash, this.search, this.currentSort.field, this.currentSort.order, this.computedFilters)
+      },
       getEntryRender(entry) {
         if (entry.html_render) return
         if (this.isExternalUrl(entry)) {
@@ -327,7 +336,7 @@ const load = (domElement) => {
             fieldsToExclude = Object.values(this.params.displayfields)
           }
           const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
-          	...{ isInIframe: this.params.isInIframe },
+            ...{ isInIframe: this.params.isInIframe },
             ...{ fields: 'html_output' },
             ...(fieldsToExclude.length > 0
               ? { excludeFields: fieldsToExclude }
@@ -346,7 +355,7 @@ const load = (domElement) => {
         return await this.getJSON(url)
           .then((data) => {
             const html = data?.[entry.id_fiche]?.html_output ?? 'error'
-            Vue.set(entry, 'html_render', html)
+            entry.html_render = html
             return html
           })
           .catch(() => 'error') // in case of error do nothing
@@ -372,7 +381,8 @@ const load = (domElement) => {
             '.bazar-list-dynamic-container:not(.mounted)'
           )
           unmounted.forEach((element) => {
-            if (!('__vue__' in element)) load(element)
+            // Vue 3: check for __vue_app__ instead of __vue__
+            if (!('__vue__' in element) && !('__vue_app__' in element)) load(element)
           })
         }
       },
@@ -397,11 +407,7 @@ const load = (domElement) => {
       },
       getExternalEntry(entry) {
         const url = `${entry.url}/iframe`
-        Vue.set(
-          entry,
-          'html_render',
-          `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`
-        )
+        entry.html_render = `<iframe src="${url}" width="500px" height="600px" style="border:none;"></iframe>`
       },
       colorIconValueFor(entry, field, mapping) {
         if (!entry[field] || typeof entry[field] != 'string') return null
@@ -417,7 +423,7 @@ const load = (domElement) => {
     mounted() {
       $(this.$el).on('dblclick', (e) => false)
       this.savedHash = decodeURIComponent(document.location.hash.substring(1)) // Save the hash for later updating
-      this.params = JSON.parse(this.$el.dataset.params)
+      // params already set from elementDataset in data()
 
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
@@ -449,8 +455,8 @@ const load = (domElement) => {
           // we do not overwride this backend sort by the front end dynamic sort
           if (this.params.champ) {
             const sort = this.sortOptions
-              .find((o) =>	o.field === this.params.champ.trim()
-						   	&& o.order === ((typeof (this.params.ordre) == 'boolean' ? this.params.ordre : (this.params.ordre == '1' || this.params.ordre == 'true' || this.params.ordre == 'asc')) ? 'asc' : 'desc'))
+              .find((o) => o.field === this.params.champ.trim()
+                && o.order === ((typeof (this.params.ordre) == 'boolean' ? this.params.ordre : (this.params.ordre == '1' || this.params.ordre == 'true' || this.params.ordre == 'asc')) ? 'asc' : 'desc'))
 
             if (sort) { this.currentSort = sort } else { this.currentSort = this.sortOptions[0] }
           }
@@ -527,6 +533,11 @@ const load = (domElement) => {
       })
     }
   })
+
+  // Add mounted class to element
+  domElement.classList.add('mounted')
+
+  app.mount(domElement)
 }
 
 // Wait for Dom to be loaded, so we can load some Vue component like BazarpMap in order

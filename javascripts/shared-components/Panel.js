@@ -15,6 +15,7 @@ export default {
       default: true
     }
   },
+  emits: ['update:collapsed', 'opened'],
   components: { CollapseTransition },
   data() {
     return {

@@ -1,26 +1,21 @@
 import LeafletMarkerCluster from './LeafletMarkerCluster.js'
 import SpinnerLoader from './SpinnerLoader.js'
+import LMap from './LMap.js'
 import { drawGeometries } from '../leaflet-draw.helper.js'
 
-// allow usage of wiki in templates
-Vue.prototype.wiki = wiki
-
-Vue.component('BazarMap', {
+const BazarMapComponent = {
   props: ['params'],
   components: {
-    'l-map': window.Vue2Leaflet.LMap,
-    'l-tile-layer': window.Vue2Leaflet.LTileLayer,
-    'l-marker': window.Vue2Leaflet.LMarker,
-    'l-icon': window.Vue2Leaflet.LIcon,
+    'l-map': LMap,
     'l-marker-cluster': LeafletMarkerCluster,
-    'spinner-loader': SpinnerLoader,
+    'spinner-loader': SpinnerLoader
   },
   data() {
     return {
       selectedEntry: null,
       center: null,
       bounds: null,
-      layers: {},
+      layers: {}
     }
   },
   computed: {
@@ -44,29 +39,26 @@ Vue.component('BazarMap', {
           title: _t('BAZ_FULLSCREEN'), // change the title of the button, default Full Screen
           titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'), // change the title of the button when fullscreen is on, default Exit Full Screen
           // content: '<i class="fa fa-expand-alt"></i>', // change the content of the button, can be HTML, default null
-          forceSeparateButton: true, // force seperate button to detach from zoom buttons, default false
+          forceSeparateButton: true // force seperate button to detach from zoom buttons, default false
         },
-        maxZoom: 18,
+        maxZoom: 18
       }
-    },
+    }
   },
   methods: {
     getGeolocation(pEntry) {
-
       let lLatitude
       let lLongitude
 
-      let lGeolocation = pEntry[this.params.geolocationfield];
+      const lGeolocation = pEntry[this.params.geolocationfield]
 
       if (lGeolocation) {
         lLatitude = lGeolocation.latitude ?? null
         lLongitude = lGeolocation.longitude ?? null
       }
 
-      if (lGeolocation && ((lLatitude && lLongitude) || lGeolocation.geometries))
-        return lGeolocation
-      else
-        return null
+      if (lGeolocation && ((lLatitude && lLongitude) || lGeolocation.geometries)) return lGeolocation
+      return null
     },
     updateBounds() {
       if (!this.$refs.map) return
@@ -81,9 +73,7 @@ Vue.component('BazarMap', {
         .provider(this.params.provider, provideOptions)
         .addTo(this.map)
 
-      this.params.layers = this.params.layers.map((layer) =>
-        layer.replace(/visiblebydefault\|?;?/gi, ''),
-      )
+      this.params.layers = this.params.layers.map((layer) => layer.replace(/visiblebydefault\|?;?/gi, ''))
       let displayProviderList = false
       for (const layer of this.params.layers) {
         let [label, type, options, url] = layer.split('|')
@@ -111,16 +101,16 @@ Vue.component('BazarMap', {
                   return {
                     ...{
                       fillColor:
-                        props._umap_options.color ??
-                        wiki.cssVar('--primary-color'),
+                        props._umap_options.color
+                        ?? wiki.cssVar('--primary-color'),
                       fillOpacity: props._umap_options.opacity ?? 0.3,
                       color:
-                        props._umap_options.color ??
-                        wiki.cssVar('--primary-color'),
+                        props._umap_options.color
+                        ?? wiki.cssVar('--primary-color'),
                       opacity: 1,
-                      weight: 3,
+                      weight: 3
                     },
-                    ...props,
+                    ...props
                   }
                 },
                 pointToLayer(feature, latlng) {
@@ -129,14 +119,13 @@ Vue.component('BazarMap', {
                 onEachFeature(feature, layer) {
                   let str = ''
                   for (const prop in feature.properties) {
-                    const content =
-                      prop.toLowerCase() == 'url'
-                        ? `<a href="${feature.properties[prop]}" target="_blank" >${feature.properties[prop]}</a>`
-                        : feature.properties[prop]
+                    const content = prop.toLowerCase() == 'url'
+                      ? `<a href="${feature.properties[prop]}" target="_blank" >${feature.properties[prop]}</a>`
+                      : feature.properties[prop]
                     str += `${prop}: ${content}<br/>`
                   }
                   layer.bindPopup(str)
-                },
+                }
               })
               .addTo(this.map)
             break
@@ -171,12 +160,11 @@ Vue.component('BazarMap', {
         if (cGeolocation) {
           entry.marker = L.marker(
             [cGeolocation.latitude, cGeolocation.longitude],
-            { riseOnHover: true },
+            { riseOnHover: true }
           )
-          const isLink =
-            this.isModalDisplay() ||
-            this.isDirectLinkDisplay() ||
-            this.isNewTabDisplay()
+          const isLink = this.isModalDisplay()
+            || this.isDirectLinkDisplay()
+            || this.isNewTabDisplay()
           const tagName = isLink ? 'a' : 'div'
           const url = entry.url + (this.isModalDisplay() ? '/iframe' : '')
           const modalData = this.isModalDisplay()
@@ -195,17 +183,16 @@ Vue.component('BazarMap', {
 		              ${entry.markerhover || entry.bf_titre}
 		            </span>
 		          </div>
-		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" ` +
-                `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
+		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" `
+                + `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
 		            <i class="${entry.icon || 'fa fa-bullseye'}"></i>
-		          </${tagName}>`,
-            }),
+		          </${tagName}>`
+            })
           )
           if (this.isDirectLinkDisplay()) {
             entry.marker.on('click', () => {
               event.preventDefault()
-              window.location =
-                entry.url + (this.$root.isInIframe() ? '/iframe' : '')
+              window.location = entry.url + (this.$root.isInIframe() ? '/iframe' : '')
             })
           } else if (this.isNewTabDisplay()) {
             entry.marker.on('click', function() {
@@ -225,42 +212,43 @@ Vue.component('BazarMap', {
         console.error(
           `Entry ${entry.id_fiche} has invalid geolocation`,
           entry,
-          e,
+          e
         )
       }
     },
     isModalDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'modal'
+        this.params.entrydisplay != undefined
+        && this.params.entrydisplay == 'modal'
       )
     },
     isNewTabDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'newtab'
+        this.params.entrydisplay != undefined
+        && this.params.entrydisplay == 'newtab'
       )
     },
     isDirectLinkDisplay() {
       return (
-        this.params.entrydisplay != undefined &&
-        this.params.entrydisplay == 'direct'
+        this.params.entrydisplay != undefined
+        && this.params.entrydisplay == 'direct'
       )
     },
     openPopup(entry) {
       if (entry.marker == undefined) {
         return false
       }
-      if (this.$scopedSlots.popupentrywithhtmlrender != undefined) {
+      // Vue 3: use $slots instead of $scopedSlots
+      const slots = this.$slots
+      if (slots.popupentrywithhtmlrender != undefined) {
         if (entry.html_render == undefined) {
           let url = ''
           let excludeFields = ''
           if (
-            this.params.popupselectedfields &&
-            this.params.popupselectedfields.length > 0
+            this.params.popupselectedfields
+            && this.params.popupselectedfields.length > 0
           ) {
-            const necessaryFieldsArray =
-              this.params.popupselectedfields.split(',')
+            const necessaryFieldsArray = this.params.popupselectedfields.split(',')
             const keys = Object.keys(this.$root.formFields)
             for (let index = 0; index < keys.length; index++) {
               const key = keys[index]
@@ -272,28 +260,26 @@ Vue.component('BazarMap', {
                   'color',
                   'icon',
                   'visual',
-                  'marker',
-                ].indexOf(key) == -1 &&
-                necessaryFieldsArray.indexOf(key) == -1
+                  'marker'
+                ].indexOf(key) == -1
+                && necessaryFieldsArray.indexOf(key) == -1
               ) {
-                excludeFields =
-                  excludeFields.length == 0 ? key : `${excludeFields},${key}`
+                excludeFields = excludeFields.length == 0 ? key : `${excludeFields},${key}`
               }
             }
           }
           if (this.$root.isExternalUrl(entry)) {
             url = entry.url.replace(
               new RegExp(`${entry.id_fiche}$`),
-              `api/entries/html/${entry.id_fiche}`,
+              `api/entries/html/${entry.id_fiche}`
             )
             if (excludeFields.length > 0) {
-              url = `${url + (url.match('?') ? '&' : '?')
-                }excludeFields=${excludeFields}`
+              url = `${url + (url.match('?') ? '&' : '?')}excludeFields=${excludeFields}`
             }
           } else {
             url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
               ...{ fields: 'html_output' },
-              ...(excludeFields.length > 0 ? { excludeFields } : {}),
+              ...(excludeFields.length > 0 ? { excludeFields } : {})
             })
           }
           this.$root.setEntryFromUrl(entry, url).then(() => {
@@ -304,19 +290,19 @@ Vue.component('BazarMap', {
           // Triggers when the component is ready
           this.$nextTick(() => this.definePopupContent(entry))
         }
-      } else if (this.$scopedSlots.popupentry != undefined) {
+      } else if (slots.popupentry != undefined) {
         // Triggers when the component is ready
         this.$nextTick(() => this.definePopupContent(entry))
       }
     },
     definePopupContent(entry) {
-      const renderedHtml =
-        this.$scopedSlots.popupentrywithhtml != undefined
-          ? $(this.$el)
-            .find('.popupentry-container.with-html-render > div')
-            .first()
-            .html()
-          : $(this.$el).find('.popupentry-container > div').first().html()
+      const slots = this.$slots
+      const renderedHtml = slots.popupentrywithhtml != undefined
+        ? $(this.$el)
+          .find('.popupentry-container.with-html-render > div')
+          .first()
+          .html()
+        : $(this.$el).find('.popupentry-container > div').first().html()
       if (entry.marker.popup == undefined) {
         if (renderedHtml != undefined && renderedHtml.length != 0) {
           entry.marker
@@ -333,12 +319,11 @@ Vue.component('BazarMap', {
       } else {
         entry.marker.popup.openPopup()
       }
-    },
+    }
   },
   watch: {
     selectedEntry(newVal, oldVal) {
-      if (oldVal && oldVal.marker && oldVal.marker._icon)
-        oldVal.marker._icon.classList.remove('selected')
+      if (oldVal && oldVal.marker && oldVal.marker._icon) oldVal.marker._icon.classList.remove('selected')
       if (this.selectedEntry) {
         if (this.params.entrydisplay == 'newtab') {
           this.$root.openEntry(this.selectedEntry)
@@ -353,63 +338,66 @@ Vue.component('BazarMap', {
         })
       }
     },
-    params() {
-      this.center = [this.params.latitude, this.params.longitude]
+    params: {
+      handler() {
+        this.center = [this.params.latitude, this.params.longitude]
+      },
+      immediate: true
     },
     entries(newVal, oldVal) {
-      if (!this.map) return;
+      if (!this.map) return
 
-      const newIds = newVal.map((e) => e.id_fiche);
-      const oldIds = oldVal.map((e) => e.id_fiche);
+      const newIds = newVal.map((e) => e.id_fiche)
+      const oldIds = oldVal.map((e) => e.id_fiche)
 
       if (!this.arraysEqual(newIds, oldIds)) {
         this.$nextTick(() => {
           oldVal.forEach((entry) => {
             if (!newIds.includes(entry.id_fiche)) {
               if (entry.marker) {
-                entry.marker.remove();
+                entry.marker.remove()
               }
               if (entry.geometryGroup) {
-                entry.geometryGroup.remove();
-                entry.geometryGroup = null;
+                entry.geometryGroup.remove()
+                entry.geometryGroup = null
               }
             }
-          });
+          })
 
-          const currentMarkers = [];
+          const currentMarkers = []
 
           newVal.forEach((entry) => {
-            this.createMarker(entry);
+            this.createMarker(entry)
 
-            let lGeolocation = entry[this.params.geolocationfield];
+            const lGeolocation = entry[this.params.geolocationfield]
             if (lGeolocation && lGeolocation.geometries && !entry.geometryGroup) {
               try {
-                const geojsonGeometries = JSON.parse(lGeolocation.geometries);
-                entry.geometryGroup = L.featureGroup().addTo(this.map);
+                const geojsonGeometries = JSON.parse(lGeolocation.geometries)
+                entry.geometryGroup = L.featureGroup().addTo(this.map)
                 entry.geometryGroup.on('click', (e) => {
-                  L.DomEvent.stopPropagation(e);
-                  this.selectedEntry = entry;
-                });
-                drawGeometries(entry.geometryGroup, geojsonGeometries.features, '', entry.id_fiche);
+                  L.DomEvent.stopPropagation(e)
+                  this.selectedEntry = entry
+                })
+                drawGeometries(entry.geometryGroup, geojsonGeometries.features, '', entry.id_fiche)
               } catch (e) {
-                console.error(`Error drawing geometry for ${entry.id_fiche}`, e);
+                console.error(`Error drawing geometry for ${entry.id_fiche}`, e)
               }
             }
 
             if (entry.marker) {
-              currentMarkers.push(entry.marker);
+              currentMarkers.push(entry.marker)
             }
-          });
+          })
 
           if (this.params.cluster && this.$refs.cluster) {
-            this.$refs.cluster.clearLayers();
-            this.$refs.cluster.addLayers(currentMarkers);
+            this.$refs.cluster.clearLayers()
+            this.$refs.cluster.addLayers(currentMarkers)
           } else {
             currentMarkers.forEach((marker) => {
-              marker.addTo(this.map);
-            });
+              marker.addTo(this.map)
+            })
           }
-        });
+        })
       }
     }
   },
@@ -417,22 +405,22 @@ Vue.component('BazarMap', {
     `
     <div class="bazar-map-container" :style="{height: params.height}"
         :class="{'small-width': $el ? $el.offsetWidth < 800 : true, 'small-height': $el ? $el.offsetHeight < 600 : true }">
-      
+
       <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
              :options="mapOptions"
              @update:center="updateBounds()" @ready="updateBounds(); createTileLayers()"
              @click="selectedEntry = null">
         <l-marker-cluster ref="cluster" ></l-marker-cluster>
       </l-map>
-      
+
 
       <!-- SideNav to display entry -->
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
         <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
         <div v-html="selectedEntry.html_render"></div>
-      </div>` +
+      </div>`
     // popup content
-    `<div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container with-html-render">
+    + `<div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container with-html-render">
         <slot name="popupentrywithhtmlrender" v-bind="{entry:selectedEntry}"></slot>
       </div>
       <div v-if="selectedEntry && this.params.entrydisplay == 'popup'" class="popupentry-container">
@@ -441,5 +429,9 @@ Vue.component('BazarMap', {
 
       <spinner-loader v-if="this.$root.isLoading || !this.$root.ready" class="overlay super-overlay"></spinner-loader>
     </div>
-  `,
-})
+  `
+}
+
+// Register component globally for Vue 3 compatibility
+// This will be done by the app that imports it
+export default BazarMapComponent

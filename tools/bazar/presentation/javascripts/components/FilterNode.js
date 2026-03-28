@@ -21,13 +21,13 @@ export default {
       }
     },
     nodeTitle() {
-        var vLanguage = $('html').attr ('lang')??undefined;
-        var vLabel;
-        
-        if (vLanguage) vLabel = $('<span>' + this.node.label + '<span>').find ('[lang=' + vLanguage + ']').text()
-        else vLabel = this.node.label;
+      const vLanguage = $('html').attr('lang') ?? undefined
+      let vLabel
 
-        return vLabel; 
+      if (vLanguage) vLabel = $(`<span>${this.node.label}<span>`).find(`[lang=${vLanguage}]`).text()
+      else vLabel = this.node.label
+
+      return vLabel
     }
   },
   methods: {

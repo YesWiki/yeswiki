@@ -3,34 +3,34 @@ import { mergeSearchParams } from './url.js'
 /* update all export buttons in a page with the given search parameters */
 
 export function updateExportLinks(pSearchParams) {
-    document
+  document
     .querySelectorAll('.export-links > a')
     .forEach((pLink) => {
-		let vOldHREF = pLink.getAttribute('data-href') // Get the original href
+      const vOldHREF = pLink.getAttribute('data-href') // Get the original href
 
-		let vNewHREF
+      let vNewHREF
 
-		if (vOldHREF.trim() === '') {
-			console.error('Invalid URL provided.')
-		} else {
-			const vNewURL = new URL(vOldHREF)
+      if (vOldHREF.trim() === '') {
+        console.error('Invalid URL provided.')
+      } else {
+        const vNewURL = new URL(vOldHREF)
 
     	 	const vHandler = vNewURL.searchParams.keys().next()
-			let vHandlerValue = vHandler.value
+        let vHandlerValue = vHandler.value
 
-			if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
-			else vHandlerValue = ''
+        if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
+        else vHandlerValue = ''
 
-			const vParams = mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
+        const vParams = mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
 
-			pLink.setAttribute(
+        pLink.setAttribute(
 			    'href',
-			    vNewURL.origin + 
-			    vNewURL.pathname + 
-			    "?" + vHandlerValue + 
-			    (vParams ? "&" + vParams : "") +
-			    vNewURL.hash
-			)
-		}
-	})
+			    `${vNewURL.origin
+			    + vNewURL.pathname
+			    }?${vHandlerValue
+			    }${vParams ? `&${vParams}` : ''
+			    }${vNewURL.hash}`
+        )
+      }
+    })
 }

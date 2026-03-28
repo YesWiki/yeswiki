@@ -1,4 +1,6 @@
-Vue.component('opening-hours-create', {
+const { createApp } = Vue
+
+const createOpeningHoursCreateComponent = (openingHoursData, fieldData, titleData) => ({
   data() {
     return {
       opening_days: [],
@@ -6,13 +8,16 @@ Vue.component('opening-hours-create', {
       title: '',
       locale: new URLSearchParams(document.URL).get('lang') || navigator.language,
       dayNames: [{ key: 'Mo', val: 0 }, { key: 'Tu', val: 1 }, { key: 'We', val: 2 },
-        { key: 'Th', val: 3 }, { key: 'Fr', val: 4 }, { key: 'Sa', val: 5 }, { key: 'Su', val: 6 }]
+        { key: 'Th', val: 3 }, { key: 'Fr', val: 4 }, { key: 'Sa', val: 5 }, { key: 'Su', val: 6 }],
+      openingHoursData,
+      fieldData,
+      titleData
     }
   },
   mounted() {
-    this.opening_days = this.parseHours(this.$el.dataset.openinghours)
-    this.field = JSON.parse(this.$el.dataset.field)
-    this.title = this.$el.dataset.title
+    this.opening_days = this.parseHours(this.openingHoursData)
+    this.field = JSON.parse(this.fieldData)
+    this.title = this.titleData
     this.dayNames = this.dayNames.map((val) => {
       const name = new Date(`2025-03-1${val.val}`)
         .toLocaleDateString(this.locale, { weekday: 'long' })
@@ -120,5 +125,10 @@ Vue.component('opening-hours-create', {
 const elements = document.getElementsByTagName('opening-hours-create')
 const arr = Array.prototype.slice.call(elements)
 arr.forEach((el) => {
-  new Vue({ el })
+  // Capture dataset before mounting (Vue 3 replaces the mount element)
+  const openingHoursData = el.dataset.openinghours || ''
+  const fieldData = el.dataset.field || '{}'
+  const titleData = el.dataset.title || ''
+  const app = createApp(createOpeningHoursCreateComponent(openingHoursData, fieldData, titleData))
+  app.mount(el)
 })

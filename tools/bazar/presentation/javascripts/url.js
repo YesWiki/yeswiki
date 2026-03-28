@@ -13,7 +13,7 @@ import { parseCondition } from './search.js'
  *		any other parameter... : <string>
  *	}
  */
- 
+
 export function parseSearchParams(pParams) // Return params as a structured object
 {
   const vParams = new URLSearchParams(pParams)
@@ -52,7 +52,7 @@ export function parseSearchParams(pParams) // Return params as a structured obje
  *			true = merge values with pParam2's keywords	overriding the complete query of pParam1
  * @return the concatenated URL parameters as <string> or <object>
  */
- 
+
 export function mergeSearchParams(pParams1, pParams2, pOptions = { returnMode: 'string', overrideKeywords: false, overrideQuery: false }) {
   	const vMerged = {}
   let vQuery
@@ -120,7 +120,7 @@ export function mergeSearchParams(pParams1, pParams2, pOptions = { returnMode: '
   if (vKeywords != undefined && vKeywords.trim() != '') {
     // URI encode the keywords
 
-	// Remove duplicates and rebuild the query string
+    // Remove duplicates and rebuild the query string
 
     vKeywords = [...new Set(vKeywords.split('|'))].join('|')
 
@@ -134,49 +134,48 @@ export function mergeSearchParams(pParams1, pParams2, pOptions = { returnMode: '
 /*
  * updateHash with given parameters
  */
- 
-export function updateHash(pSavedHash = "", pKeywords = "", pSortField = "", pSortOrder = "", pFilters = []) {
-    const cCurrentHash = pSavedHash
 
-    const vQuery = []
-    const vCurrentParams = {}
-    let vMergedParams
+export function updateHash(pSavedHash = '', pKeywords = '', pSortField = '', pSortOrder = '', pFilters = []) {
+  const cCurrentHash = pSavedHash
 
-    let vSearch = (pKeywords != undefined)?pKeywords.trim():'';
+  const vQuery = []
+  const vCurrentParams = {}
+  let vMergedParams
 
-    if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
+  let vSearch = (pKeywords != undefined) ? pKeywords.trim() : ''
 
-    if (vSearch != '') vCurrentParams.keywords = vSearch
-    if (pSortField && pSortField != '') vCurrentParams.champ = pSortField
-    if (pSortOrder && pSortOrder != '') vCurrentParams.ordre = pSortOrder
+  if (vSearch.length < wiki.minSearchKeywordLength) vSearch = ''
 
-    let bHasFilter = false
+  if (vSearch != '') vCurrentParams.keywords = vSearch
+  if (pSortField && pSortField != '') vCurrentParams.champ = pSortField
+  if (pSortOrder && pSortOrder != '') vCurrentParams.ordre = pSortOrder
 
-    for (const cFilterId in pFilters) {
-      bHasFilter = true
+  let bHasFilter = false
 
-      vQuery.push({
-        name: cFilterId,
-        operator: '==',
-        values:	pFilters[cFilterId]
-          .map((pString) => pString
-            .replace(/&amp;/g, '&')
-            .replace(/&lt;/g, '<')
-            .replace(/&gt;/g, '>')
-            .replace(/&quot;/g, '"')
-            .replace(/&#039;/g, "'"))
-          .join(',')
-      })
-    }
+  for (const cFilterId in pFilters) {
+    bHasFilter = true
 
-    if (bHasFilter) vCurrentParams.query = vQuery
+    vQuery.push({
+      name: cFilterId,
+      operator: '==',
+      values:	pFilters[cFilterId]
+        .map((pString) => pString
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#039;/g, "'"))
+        .join(',')
+    })
+  }
 
-    vMergedParams = mergeSearchParams(cCurrentHash, vCurrentParams, { returnMode: 'string', overrideKeywords: true, overrideQuery: true })
+  if (bHasFilter) vCurrentParams.query = vQuery
 
-    // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
+  vMergedParams = mergeSearchParams(cCurrentHash, vCurrentParams, { returnMode: 'string', overrideKeywords: true, overrideQuery: true })
 
-    history.pushState({}, '', `#${encodeURIComponent(vMergedParams)}`)
+  // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
 
-    updateExportLinks(vMergedParams) // Export
-}            
+  history.pushState({}, '', `#${encodeURIComponent(vMergedParams)}`)
 
+  updateExportLinks(vMergedParams) // Export
+}

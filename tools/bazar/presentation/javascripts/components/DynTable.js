@@ -142,19 +142,24 @@ export default {
     getTemplateFromSlot(name, params) {
       const key = `${name}-${JSON.stringify(params)}`
       if (!(key in this.templatesForRendering)) {
-        if (name in this.$scopedSlots) {
-          const slot = this.$scopedSlots[name]
-          const constructor = Vue.extend({
-            render(h) {
-              return h('div', {}, slot(params))
+        // Vue 3: $slots contains functions that return VNodes
+        const slots = this.$slots
+        if (slots && name in slots) {
+          const slotFn = slots[name]
+          const { createApp, h } = Vue
+          const tempContainer = document.createElement('div')
+          const app = createApp({
+            render() {
+              return h('div', {}, slotFn(params))
             }
           })
-          const instance = new constructor()
-          instance.$mount()
+          app.mount(tempContainer)
           let outerHtml = ''
-          for (let index = 0; index < instance.$el.childNodes.length; index++) {
-            outerHtml += instance.$el.childNodes[index].outerHTML || instance.$el.childNodes[index].textContent
+          const children = tempContainer.firstChild?.childNodes || []
+          for (let index = 0; index < children.length; index++) {
+            outerHtml += children[index].outerHTML || children[index].textContent
           }
+          app.unmount()
           this.templatesForRendering[key] = outerHtml
         } else {
           this.templatesForRendering[key] = ''

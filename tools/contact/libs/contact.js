@@ -27,7 +27,7 @@ $(document).ready(() => {
 
     // les emails
     form.find('input[type=email]').each(function() {
-      const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
       const address = $(this).val()
       if (reg.test(address) === false && !(address === '' && $(this).attr('required') !== 'required')) {
         atleastonemailfieldnotvalid = true

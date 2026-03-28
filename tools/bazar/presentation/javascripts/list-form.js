@@ -1,18 +1,24 @@
 import ListNode from './list-node.js'
 
-new Vue({
-  el: '.list-form',
+const { createApp } = Vue
+
+// Capture dataset before mounting (Vue 3 replaces the mount element)
+const mountElement = document.querySelector('.list-form')
+const elementDataset = mountElement ? { ...mountElement.dataset } : {}
+const initialList = elementDataset.list ? JSON.parse(elementDataset.list) : { title: '', nodes: [] }
+
+const app = createApp({
   components: { 'list-node': ListNode },
-  data: {
-    title: '',
-    rootNode: { id: '@root@', vueRef: '@root@', children: [] },
-    allIds: [],
-    nodeCreated: 0
+  data() {
+    return {
+      title: initialList.title || '',
+      rootNode: { id: '@root@', vueRef: '@root@', children: [] },
+      allIds: [],
+      nodeCreated: 0
+    }
   },
   mounted() {
-    const list = JSON.parse(this.$el.dataset.list)
-    this.title = list.title
-    const nodes = list.nodes || []
+    const nodes = initialList.nodes || []
     // vueRef is used to give a unique and fixed ID to each node
     nodes.forEach((node) => this.addVueRefProp(node))
     this.rootNode.children = nodes
@@ -58,3 +64,7 @@ new Vue({
     }
   }
 })
+
+if (mountElement) {
+  app.mount('.list-form')
+}
