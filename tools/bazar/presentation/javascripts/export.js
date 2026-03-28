@@ -15,6 +15,12 @@ export function updateExportLinks(pSearchParams) {
       } else {
         const vNewURL = new URL(vOldHREF)
 
+        const vAllowedProtocols = ['http:', 'https:']
+        if (!vAllowedProtocols.includes(vNewURL.protocol)) {
+          console.error('Blocked unsafe URL protocol in data-href:', vNewURL.protocol)
+          return
+        }
+
     	 	const vHandler = vNewURL.searchParams.keys().next()
         let vHandlerValue = vHandler.value
 
