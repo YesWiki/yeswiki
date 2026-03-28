@@ -160,11 +160,11 @@ export function updateHash(pSavedHash = '', pKeywords = '', pSortField = '', pSo
       operator: '==',
       values:	pFilters[cFilterId]
         .map((pString) => pString
-          .replace(/&amp;/g, '&')
           .replace(/&lt;/g, '<')
           .replace(/&gt;/g, '>')
           .replace(/&quot;/g, '"')
-          .replace(/&#039;/g, "'"))
+          .replace(/&#039;/g, "'")
+          .replace(/&amp;/g, '&'))
         .join(',')
     })
   }
