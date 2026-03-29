@@ -347,7 +347,7 @@ class ThemeManager implements EventSubscriberInterface
         $templateCut = explode('{WIKINI_PAGE}', $fileContent);
         $this->templateHeader = $templateCut[0] ?? '';
         // ADD flash message just before page content
-        $this->templateHeader .= \Tamtamchik\SimpleFlash\Flash::display();
+        $this->templateHeader .= Flash::display();
         $this->templateFooter = (count($templateCut) > 0) ? $templateCut[1] : '';
 
         return true;
@@ -362,18 +362,18 @@ class ThemeManager implements EventSubscriberInterface
     {
         if ($this->fileLoaded || $this->loadTheme()) {
             return $this->renderActions($this->templateHeader);
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     public function renderFooter(): string
     {
         if ($this->fileLoaded || $this->loadTheme()) {
             return $this->renderActions($this->templateFooter);
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     public function getTemplates(): array

@@ -2,13 +2,12 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Templates\Service\TabsService;
 
-/**
- * @Field({"listefichesliees", "listefiches"})
- */
+#[\Field(['listefichesliees', 'listefiches'])]
 class LinkedEntryField extends BazarField
 {
     protected $query;
@@ -59,9 +58,9 @@ class LinkedEntryField extends BazarField
                 '@bazar/fields/linked-entry.twig',
                 $this->getTwigOptions($entry)
             );
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     protected function getTwigOptions($entry)
@@ -109,9 +108,9 @@ class LinkedEntryField extends BazarField
                 . $this->otherParams . '}}';
 
             return $action;
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     protected function getQueryForLinkedLabels($entry): ?string

@@ -38,7 +38,7 @@ if (!$paramPhrase) {
 
 if ($phrase) {
     $results = $this->FullTextSearch($phrase);
-    $aclService = $this->services->get(\YesWiki\Core\Service\AclService::class);
+    $aclService = $this->services->get(YesWiki\Core\Service\AclService::class);
     $results = array_filter($results, function ($page) use ($aclService) {
         return $aclService->hasAccess('read', $page['tag']);
     });

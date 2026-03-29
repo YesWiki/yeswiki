@@ -80,9 +80,9 @@ if (!class_exists('attach')) {
             if ($unit) {
                 // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
                 return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
-            } else {
-                return round($size);
             }
+
+            return round($size);
         }
 
         /**
@@ -1184,10 +1184,10 @@ if (!class_exists('attach')) {
             if (!$result) {
                 // in case of error, show error code
                 return $imgTrans->error;
-            // if there were no errors
-            } else {
-                return $imgTrans->target_path;
+                // if there were no errors
             }
+
+            return $imgTrans->target_path;
         }
     }
 }

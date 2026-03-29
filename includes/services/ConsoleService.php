@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Service;
 
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -113,7 +112,7 @@ class ConsoleService
     {
         $executable = $this->findExecutable($executableName, $extraDirsWhereSearch);
         if (empty($executable)) {
-            throw new Exception("Executable \"$executableName\" not found !");
+            throw new \Exception("Executable \"$executableName\" not found !");
         }
 
         return $this->startRawCommandAsync($executable, $args, $subfolder, $newConsole, $timeoutInSec);
@@ -153,12 +152,12 @@ class ConsoleService
     /**
      * @param array $extraDirs wherer search
      *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function findExecutable(string $name, array $extraDirs = []): string
     {
         if (empty($name)) {
-            throw new Exception("'name' should not be empty !");
+            throw new \Exception("'name' should not be empty !");
         }
 
         return $this->executableFinder->find($name, '', $extraDirs);

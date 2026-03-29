@@ -40,7 +40,7 @@ if (!empty($url)) {
                 $regexp = '/<a data-id="' . $champ . '".*href="(.*)".*>\s*<img.*<\/a>/Uis';
             } else {
                 $regexp = '/<div.*data-id="' . $champ . '".*>\s*<span class="BAZ_label.*">.*<\/span>\s*<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
-                //echo '<br><br>'.htmlspecialchars($regexp);
+                // echo '<br><br>'.htmlspecialchars($regexp);
             }
             preg_match_all($regexp, $GLOBALS['externalpage'][$url], $matches);
 

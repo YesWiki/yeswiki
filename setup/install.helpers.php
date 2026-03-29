@@ -7,7 +7,6 @@
  *
  * @param string $text        Label du test
  * @param bool   $condition   Résultat de la condition testée
- * @param string $errortext   Message en cas d'erreur
  * @param string $stopOnError Si positionnée é 1 (par défaut), termine le
  *                            script si la condition n'est pas vérifiée
  *
@@ -20,23 +19,22 @@ function test($text, $condition, $errorText = '', $stopOnError = 1)
         echo '<span class="text-success">' . _t('OK') . "</span><br />\n";
 
         return 0;
-    } else {
-        echo '<span class="text-danger">' . _t('FAIL') . '</span>';
-        if ($errorText) {
-            echo ': ',$errorText;
-        }
-        echo "<br />\n";
-        if ($stopOnError) {
-            echo "<br />\n<div class=\"alert alert-danger alert-error\"><strong>" . _t('END_OF_INSTALLATION_BECAUSE_OF_ERRORS') . ".</strong></div>\n";
-            echo "<script>
+    }
+    echo '<span class="text-danger">' . _t('FAIL') . '</span>';
+    if ($errorText) {
+        echo ': ',$errorText;
+    }
+    echo "<br />\n";
+    if ($stopOnError) {
+        echo "<br />\n<div class=\"alert alert-danger alert-error\"><strong>" . _t('END_OF_INSTALLATION_BECAUSE_OF_ERRORS') . ".</strong></div>\n";
+        echo "<script>
                 document.write('<div class=\"form-actions\"><a class=\"btn btn-large btn-primary revenir\" href=\"javascript:history.go(-1);\">" . _t('GO_BACK') . "</a></div>');
                 </script>\n";
-            echo "</body>\n</html>\n";
-            exit;
-        }
-
-        return 1;
+        echo "</body>\n</html>\n";
+        exit;
     }
+
+    return 1;
 }
 
 function myLocation()
@@ -67,7 +65,6 @@ function querySqlFile($dblink, $sqlFile, $replacements = [])
         }
 
         return true;
-    } else {
-        exit(_t('SQL_FILE_NOT_FOUND') . ' "' . $sqlFile . '".');
     }
+    exit(_t('SQL_FILE_NOT_FOUND') . ' "' . $sqlFile . '".');
 }

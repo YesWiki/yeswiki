@@ -6,7 +6,7 @@ if ($user = $this->GetUser()) {
     $curday = '';
     $last_tag = '';
 
-    if (($bydate = $this->GetParameter('bydate'))) {
+    if ($bydate = $this->GetParameter('bydate')) {
         echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE') . ".</b><br /><br />\n";
 
         if ($pages = $this->LoadAll('SELECT tag, time FROM ' . $this->config['table_prefix'] . "pages WHERE user = '" . mysqli_real_escape_string($this->dblink, $this->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {

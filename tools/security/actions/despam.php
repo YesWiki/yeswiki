@@ -52,13 +52,13 @@ if ($this->UserIsAdmin()) {
         'select *
               from ' . $this->config['table_prefix'] . 'pages
               where
-              time > date_sub(now(), interval ' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($_POST['from']) . " hour)
+              time > date_sub(now(), interval ' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($_POST['from']) . " hour)
               and latest = 'Y'
               order by `time` desc";
             $title =
         '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
         }
-        //echo $requete;
+        // echo $requete;
         $pagesFromSpammer = $this->LoadAll($requete);
         // Affichage des pages pour validation
         echo "<div class=\"action_erasespam\">\n";
@@ -108,10 +108,10 @@ if ($this->UserIsAdmin()) {
             }
             echo "</table>\n";
             unset($revision1);
-            echo //" . . . . ",$this->Format($page["user"]),"</p>\n",
+            echo // " . . . . ",$this->Format($page["user"]),"</p>\n",
       "</td>\n",
-      "</tr>\n",
-      '';
+            "</tr>\n",
+            '';
         }
         echo "</table>\n";
         echo "<p>Commentaire&nbsp;: <input class=\"form-control\" name=\"comment\" style=\"width: 80%;\" /></p>\n";
@@ -124,7 +124,7 @@ if ($this->UserIsAdmin()) {
         echo "</div>\n\n";
     } elseif (isset($_POST['clean'])) {
         if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // -- (3) Nettoyage des pages et affichage de la page de resultats -------
         //
@@ -148,7 +148,7 @@ if ($this->UserIsAdmin()) {
 
         // -- 3.2 Restauration des pages sélectionnées ---
         if (!empty($_POST['rev'])) {
-            //print_r($_POST["rev"]);
+            // print_r($_POST["rev"]);
             foreach ($_POST['rev'] as $rev_id) {
                 echo $rev_id . '<br>';
                 // Selectionne la revision

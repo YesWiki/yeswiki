@@ -33,7 +33,7 @@ class BazarCartoAction extends YesWikiAction
             $this->formatBoolean($arg['navigation'] ?? $this->params->get('baz_show_nav'), true);
         $zoom_molette = (!$dynamic) ?
             ($arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom')) :
-            $this->formatBoolean(($arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom')), false);
+            $this->formatBoolean($arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom'), false);
         $fullscreen = (!$dynamic) ?
             ($arg['fullscreen'] ?? 'true') :
             $this->formatBoolean($arg, true, 'fullscreen');
@@ -114,7 +114,7 @@ class BazarCartoAction extends YesWikiAction
             'fullscreen' => $fullscreen,
             // Fournit une configuration JSON via un URL
             'jsonconfurl' => $arg['jsonconfurl'] ?? null,
-            //template - default value map
+            // template - default value map
             'template' => $template,
 
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',

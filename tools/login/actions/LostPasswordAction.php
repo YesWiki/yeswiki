@@ -2,7 +2,6 @@
 
 namespace YesWiki\Login;
 
-use Exception;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
@@ -37,7 +36,7 @@ class LostPasswordAction extends YesWikiAction
                 $user = $this->manageSubStep(
                     $this->securityController->filterInput(INPUT_POST, 'subStep', FILTER_SANITIZE_NUMBER_INT, false, 'int')
                 );
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 $this->typeOfRendering = 'directDangerMessage';
                 $this->errorType = 'exception';
                 $message = $ex->getMessage();
@@ -108,9 +107,9 @@ class LostPasswordAction extends YesWikiAction
     /**
      * manage subStep.
      *
-     * @throws Exception
-     *
      * @return User|null $user
+     *
+     * @throws \Exception
      */
     private function manageSubStep(int $subStep): ?User
     {
@@ -179,17 +178,16 @@ class LostPasswordAction extends YesWikiAction
      *
      * @param string $userName The user login
      * @param string $key      The password recovery key (sent by email)
-     * @param string $pwd      the new password value
      *
      * @return bool True if OK or false if any problems
      */
     private function resetPassword(string $userName, string $key, string $password)
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if ($this->checkEmailKey($key, $userName) === false) { // The password recovery key does not match
-            throw new Exception(_t('USER_INCORRECT_PASSWORD_KEY') . '.');
+            throw new \Exception(_t('USER_INCORRECT_PASSWORD_KEY') . '.');
         }
 
         $user = $this->userManager->getOneByName($userName);

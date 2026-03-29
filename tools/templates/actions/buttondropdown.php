@@ -49,7 +49,7 @@ if (!isset($GLOBALS['check_' . $pagetag])) {
     $GLOBALS['check_' . $pagetag] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['buttondropdown'])) {
-    $GLOBALS['check_' . $pagetag]['buttondropdown'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('buttondropdown', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_' . $pagetag]['buttondropdown'] = $this->services->get(YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('buttondropdown', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_' . $pagetag]['buttondropdown']) {
     $encodedtitle = htmlentities($title, ENT_COMPAT, YW_CHARSET);

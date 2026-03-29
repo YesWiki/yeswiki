@@ -5,7 +5,7 @@ namespace YesWiki\Bazar\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\CSVManager;
@@ -21,10 +21,8 @@ use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
 {
-    /**
-     * @Route("/api/forms", methods={"GET"},options={"acl":{"public"}})
-     * @Route("/api/forms/", methods={"GET"},options={"acl":{"public"}})
-     */
+    #[Route('/api/forms', methods: ['GET'], options: ['acl' => ['public']])]
+    #[Route('/api/forms/', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllForms()
     {
         $forms = $this->getService(FormManager::class)->getAll();
@@ -32,10 +30,8 @@ class ApiController extends YesWikiController
         return new ApiResponse(empty($forms) ? null : $forms);
     }
 
-    /**
-     * @Route("/api/forms/{formId}", methods={"GET"},options={"acl":{"public"}})
-     * @Route("/api/forms/{formId}/", methods={"GET"},options={"acl":{"public"}})
-     */
+    #[Route('/api/forms/{formId}', methods: ['GET'], options: ['acl' => ['public']])]
+    #[Route('/api/forms/{formId}/', methods: ['GET'], options: ['acl' => ['public']])]
     public function getForm($formId)
     {
         if (strpos($formId, 'b64_') === 0) {
@@ -53,9 +49,7 @@ class ApiController extends YesWikiController
         return new ApiResponse($vForm);
     }
 
-    /**
-     * @Route("/api/forms/{formId}/entries/{output}/{selectedEntries}", methods={"GET"},options={"acl":{"public"}})
-     */
+    #[Route('/api/forms/{formId}/entries/{output}/{selectedEntries}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
         if (strpos($formId, 'b64_') === 0) {
@@ -146,9 +140,7 @@ class ApiController extends YesWikiController
         return new ApiResponse(empty($entries) ? null : $entries);
     }
 
-    /**
-     * @Route("/api/entries/{output}/{selectedEntries}", methods={"GET"}, options={"acl":{"public"}})
-     */
+    #[Route('/api/entries/{output}/{selectedEntries}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllEntries($output = null, $selectedEntries = null)
     {
         // fast access for one entry
@@ -229,9 +221,7 @@ class ApiController extends YesWikiController
         );
     }
 
-    /**
-     * @Route("/api/entry/url/{sourceUrl}")
-     */
+    #[Route('/api/entry/url/{sourceUrl}')]
     public function getEntryUrl($sourceUrl)
     {
         $triples = $this->getService(TripleStore::class)->getMatching(
@@ -252,9 +242,8 @@ class ApiController extends YesWikiController
 
     /**
      * Create or update an entry.
-     *
-     * @Route("/api/entries/{formId}", methods={"POST"}, options={"acl":{"+"}})
      */
+    #[Route('/api/entries/{formId}', methods: ['POST'], options: ['acl' => ['+']])]
     public function createEntry($formId)
     {
         if (strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false) {
@@ -279,9 +268,7 @@ class ApiController extends YesWikiController
         );
     }
 
-    /**
-     * @Route("/api/entries/{formId}/json-ld", methods={"POST"}, options={"acl":{"+"}})
-     */
+    #[Route('/api/entries/{formId}/json-ld', methods: ['POST'], options: ['acl' => ['+']])]
     public function createSemanticEntry($formId)
     {
         $_POST['antispam'] = 1;
@@ -297,15 +284,13 @@ class ApiController extends YesWikiController
         ]);
     }
 
-    /**
-     * @Route("/api/entries/bazarlist", methods={"GET"}, options={"acl":{"public"}},priority=2)
-     */
+    #[Route('/api/entries/bazarlist', methods: ['GET'], options: ['acl' => ['public']], priority: 2)]
     public function getBazarListData()
     {
         $vBazarListService = $this->getService(BazarListService::class);
 
         /* ------------------------------------ */
-        /*             Format Params            */
+        /*             Format Params */
         /* ------------------------------------ */
 
         $formattedGet = array_map(function ($value) {
@@ -323,7 +308,7 @@ class ApiController extends YesWikiController
         $formattedGet['idtypeannonce'] = $_GET['idtypeannonce'] ?? $_GET['id'] ?? null;
 
         /* ------------------------------------ */
-        /*               Get Data               */
+        /*               Get Data */
         /* ------------------------------------ */
         // All forms
         $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1, true, '1', 'true'], true) : false]);
@@ -335,7 +320,7 @@ class ApiController extends YesWikiController
         $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
         /* ------------------------------------ */
-        /*            Transform Data            */
+        /*            Transform Data */
         /* ------------------------------------ */
 
         // Associated Forms

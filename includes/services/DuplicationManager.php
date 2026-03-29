@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Service;
 
-use Exception;
 use YesWiki\Bazar\Field\FileField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Field\TextareaField;
@@ -82,15 +81,14 @@ class DuplicationManager
             $humanSize = $this->humanFilesize($size);
 
             return ['path' => $f, 'size' => $size, 'humanSize' => $humanSize];
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**
      * find files in wiki text.
      *
-     * @param string $wikiTag
      * @param string $wikiText
      *
      * @return array files
@@ -299,12 +297,12 @@ class DuplicationManager
     public function importDistantContent($tag, $request)
     {
         if ($this->wiki->services->get(PageManager::class)->getOne($tag)) {
-            throw new Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
+            throw new \Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
         }
         $req = $request->request->all();
         foreach (['originalContent', 'sourceUrl', 'originalTag', 'type'] as $key) {
             if (empty($req[$key])) {
-                throw new Exception(_t('NOT_FOUND_IN_REQUEST', $key));
+                throw new \Exception(_t('NOT_FOUND_IN_REQUEST', $key));
             }
         }
         foreach ($req['files'] as $fileUrl) {

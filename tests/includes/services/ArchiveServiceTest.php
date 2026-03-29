@@ -11,7 +11,6 @@ use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\ConsoleService;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
-use ZipArchive;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -110,7 +109,7 @@ class ArchiveServiceTest extends YesWikiTestCase
             if (!preg_match("/^.*\.zip$/", $location)) {
                 $data['error'] = "\"\$location\" (\"$location\") is not a zip file !";
             } else {
-                $zip = new ZipArchive();
+                $zip = new \ZipArchive();
                 if ($zip->open($location) !== true) {
                     $data['error'] = "\"\$location\" (\"$location\") is not openable !";
                 } else {
@@ -188,10 +187,6 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @param mixed $contentDefinition
-     * @param mixed $contentToCheck
-     */
     private function checkWakkaContent($contentDefinition, $contentToCheck)
     {
         if (is_array($contentDefinition)) {

@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Templates\Controller\TabsController;
 
-/**
- * @Field({"tabchange"})
- */
+#[\Field(['tabchange'])]
 class TabChangeField extends LabelField
 {
     protected const FIELD_FORM_CHANGE = 1;

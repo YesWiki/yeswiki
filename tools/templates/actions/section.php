@@ -96,7 +96,7 @@ if (!empty($file)) {
         $width = 1920;
     }
 
-    //recuperation des parametres necessaires
+    // recuperation des parametres necessaires
     $att->file = $file;
     $att->desc = 'background image ' . $file;
     $att->height = $height;
@@ -111,20 +111,20 @@ $class = $this->GetParameter('class');
 $id = $this->GetParameter('id');
 
 // container data attributes
-$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
+$data = $this->services->get(YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
 $pagetag = $this->GetPageTag();
 if (!isset($GLOBALS['check_' . $pagetag])) {
     $GLOBALS['check_' . $pagetag] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['section'])) {
-    $GLOBALS['check_' . $pagetag]['section'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('section', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_' . $pagetag]['section'] = $this->services->get(YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('section', $pagetag, $this->page['body'] ?? '');
 }
 if ($GLOBALS['check_' . $pagetag]['section']) {
     // specify the role to be checked ( *, +, %, @admins)
     $role = $this->GetParameter('visibility');
     $role = empty($role) ? $role : str_replace('\\n', "\n", $role);
-    $visible = !$role || ($GLOBALS['wiki']->CheckACL($role, null, false));
+    $visible = !$role || $GLOBALS['wiki']->CheckACL($role, null, false);
     $class = ($backgroundimg ? 'background-image' : '')
      . ($patternId && !$patternborder ? ' with-bg-pattern' : '')
      . ($patternborder ? ' pattern-border' : '')
@@ -152,10 +152,10 @@ if ($GLOBALS['check_' . $pagetag]['section']) {
     } else {
         echo '<div>';
     }
-    //test d'existance du fichier
+    // test d'existance du fichier
     if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
         $att->showFileNotExits();
-        //return;
+        // return;
     }
 } else {
     echo '<div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_SECTION') . '</strong> : '

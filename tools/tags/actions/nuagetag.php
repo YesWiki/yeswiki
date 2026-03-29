@@ -53,7 +53,7 @@ if (is_array($tab_tous_les_tags)) {
     $liste_page = '';
     $tag_precedent = '';
     $tab_tag = [];
-    $tab_tous_les_tags['dummy']['value'] = 'fin'; //on ajoute un element au tableau pour boucler une derniere fois
+    $tab_tous_les_tags['dummy']['value'] = 'fin'; // on ajoute un element au tableau pour boucler une derniere fois
     $tab_tous_les_tags['dummy']['resource'] = 'fin';
     foreach ($tab_tous_les_tags as $tab_les_tags) {
         $tagstripped = _convert(stripslashes($tab_les_tags['value']), 'ISO-8859-1');

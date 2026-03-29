@@ -77,7 +77,7 @@ class UpdateAction extends YesWikiAction
                     $vArchiveParams = $vArchiveService->getArchiveParams();
 
                     // Check if the preupdate backup is activated
-                    if (in_array(($vArchiveParams['preupdate_backup_activated'] ?? true), [true, 'true', 1, '1'])) {
+                    if (in_array($vArchiveParams['preupdate_backup_activated'] ?? true, [true, 'true', 1, '1'])) {
                         // It is so let's go further...
 
                         $vStatus = $vArchiveService->getArchivingStatus();
@@ -93,10 +93,9 @@ class UpdateAction extends YesWikiAction
                                 return $this->render('@core/preupdate-backup.twig', [
                                     'packageName' => $vPackageName,
                                 ]);
-                            } else {
-                                // else we can do the upgrade
-                                $vCanUpgrade = true;
                             }
+                            // else we can do the upgrade
+                            $vCanUpgrade = true;
                         } else {
                             $vMessages->add('AU_PRIVATE_PATH_NOT_WRITABLE', 'AU_ERROR');
                         }
@@ -104,20 +103,20 @@ class UpdateAction extends YesWikiAction
                         $vCanUpgrade = true;
                     }
 
-                   if ($vCanUpgrade) {
-                       // Perform the upgrade
+                    if ($vCanUpgrade) {
+                        // Perform the upgrade
 
-                       $vUpgradeMessages = $vUpdateService->upgrade($vPackageName);
+                        $vUpgradeMessages = $vUpdateService->upgrade($vPackageName);
 
-                       $vMessages->add($vUpgradeMessages);
+                        $vMessages->add($vUpgradeMessages);
 
-                       // Reload the page to perform postInstall operation with the new code
-                       $this->wiki->redirect($this->wiki->href('', '', [
-                           'action' => 'post_install',
-                           'messages' => json_encode($vMessages->toArray()),
-                           'previous_version' => YESWIKI_VERSION,
-                       ], false));
-                   }
+                        // Reload the page to perform postInstall operation with the new code
+                        $this->wiki->redirect($this->wiki->href('', '', [
+                            'action' => 'post_install',
+                            'messages' => json_encode($vMessages->toArray()),
+                            'previous_version' => YESWIKI_VERSION,
+                        ], false));
+                    }
                     break;
                 case 'post_install':
                     $vRawMessages = $vSecurityController->filterInput(INPUT_GET, 'messages', FILTER_UNSAFE_RAW, false, 'string');
@@ -146,7 +145,7 @@ class UpdateAction extends YesWikiAction
                     break;
             }
         } catch (Throwable $pThrowable) {
-            $vMessages->add(_t('PERFORMABLE_ERROR') . $this->wiki->dumpThrowable ($pThrowable), 'AU_ERROR');
+            $vMessages->add(_t('PERFORMABLE_ERROR') . $this->wiki->dumpThrowable($pThrowable), 'AU_ERROR');
         }
 
         // Display result of action, with a list of success/error messages

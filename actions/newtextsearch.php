@@ -198,7 +198,7 @@ if ($phrase) {
             echo '<p>' . _t('SEARCH_RESULT_OF') . ' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
             foreach ($resultat as $i => $line) {
                 if ($this->HasAccess('read', $line['tag'])) {
-                    echo(($i > 0) ? $separator : '') . $this->ComposeLinkToPage($line['tag']);
+                    echo (($i > 0) ? $separator : '') . $this->ComposeLinkToPage($line['tag']);
                 }
             }
             echo '</p>', "\n";

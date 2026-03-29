@@ -30,8 +30,6 @@
     "ext-pcre": "*",
     "ext-zip": "^1.0",
     "caxy/php-htmldiff": "^0.1.13",
-    "doctrine/annotations": "^1.11",
-    "doctrine/cache": "^1.10",
     "enshrined/svg-sanitize": "^0.22.0",
     "ezyang/htmlpurifier": "^4.19",
     "jbroadway/urlify": "^1.2",
@@ -39,18 +37,18 @@
     "oomphinc/composer-installers-extender": "^2.0",
     "phpmailer/phpmailer": "^6.2",
     "stefangabos/zebra_image": "^2.7",
-    "symfony/config": "^5.1",
-    "symfony/console": "^5.2",
-    "symfony/dependency-injection": "^5.1",
-    "symfony/event-dispatcher": "^5.4",
-    "symfony/http-foundation": "^5.1",
-    "symfony/http-kernel": "^5.3.12",
-    "symfony/process": "^5.4",
-    "symfony/routing": "^5.1",
-    "symfony/security-core": "^5.4",
-    "symfony/security-csrf": "^5.0",
-    "symfony/string": "^5.4",
-    "symfony/yaml": "^5.1",
+    "symfony/config": "^7.4",
+    "symfony/console": "^7.4",
+    "symfony/dependency-injection": "^7.4",
+    "symfony/event-dispatcher": "^7.4",
+    "symfony/http-foundation": "^7.4",
+    "symfony/http-kernel": "^7.4",
+    "symfony/process": "^7.4",
+    "symfony/routing": "^7.4",
+    "symfony/security-core": "^7.4",
+    "symfony/security-csrf": "^7.4",
+    "symfony/string": "^7.4",
+    "symfony/yaml": "^7.4",
     "tamtamchik/simple-flash": "^3.0",
     "twig/twig": "^3.0",
     "yeswiki/theme-margot": "^1.0"
@@ -73,7 +71,7 @@
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.4",
     "phpunit/phpunit": "^12",
-    "symfony/var-dumper": "^5.1"
+    "symfony/var-dumper": "^7.4"
   },
   "config": {
     "allow-plugins": {

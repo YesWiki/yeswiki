@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Entity;
 
-use DateTime;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherAwareInterface;
 
 class CookieData implements PasswordHasherAwareInterface
@@ -14,7 +13,7 @@ class CookieData implements PasswordHasherAwareInterface
 
     public function __construct(
         string $userName,
-        DateTime $lastConnectionDate,
+        \DateTime $lastConnectionDate,
         bool $remember,
         string $encryptedData
     ) {
@@ -29,7 +28,7 @@ class CookieData implements PasswordHasherAwareInterface
         return $this->encryptedData;
     }
 
-    public function getLastConnectionDate(): DateTime
+    public function getLastConnectionDate(): \DateTime
     {
         return $this->lastConnectionDate;
     }

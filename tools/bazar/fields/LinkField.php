@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @Field({"lien_internet"})
- */
+#[\Field(['lien_internet'])]
 class LinkField extends BazarField
 {
     protected const FIELD_DISPLAYVIDEO = 3;

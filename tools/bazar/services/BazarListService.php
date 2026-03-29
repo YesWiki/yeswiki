@@ -113,7 +113,7 @@ class BazarListService
                     ]
                 ),
                 true, // filter on read ACL,
-                    true // use Guard
+                true // use Guard
             );
         } else {
             $vLocalEntries = [];
@@ -267,9 +267,8 @@ class BazarListService
                                         $filter['nodes'][$value] = $this->createFilterNode($value, $label);
                                     }
                                 }
-                            } else {
-                                // TODO: options?
                             }
+                            // TODO: options?
                         }
                     }
                 }
@@ -467,9 +466,8 @@ class BazarListService
 
             if (isset($vUniqueExternalIDs[$vKey])) {
                 throw new \Exception('The external ID ' . $vExternalID['id'] . ' is requested multiple times for server ' . $vExternalID['url']);
-            } else {
-                $vUniqueExternalIDs[$vKey] = $vExternalID;
             }
+            $vUniqueExternalIDs[$vKey] = $vExternalID;
         }
 
         $vUniqueExternalIDs = array_values($vUniqueExternalIDs);
@@ -511,9 +509,9 @@ class BazarListService
             if (isset($pIDs['locals'])) {
                 // already parsed
                 return $pIDs;
-            } else { // Ensure it is a string
-                $pIDs = implode(',', $pIDs);
-            } // Ensure $pIDs is a string
+            }   // Ensure it is a string
+            $pIDs = implode(',', $pIDs);
+            // Ensure $pIDs is a string
         }
 
         $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs));
@@ -601,12 +599,12 @@ class BazarListService
                     $this->sanitizeStringForCompare($val2),
                     $this->sanitizeStringForCompare($val1)
                 );
-            } else {
-                return strnatcmp(
-                    $this->sanitizeStringForCompare($val1),
-                    $this->sanitizeStringForCompare($val2)
-                );
             }
+
+            return strnatcmp(
+                $this->sanitizeStringForCompare($val1),
+                $this->sanitizeStringForCompare($val2)
+            );
         };
     }
 

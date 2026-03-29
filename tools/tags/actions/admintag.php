@@ -6,7 +6,7 @@ $isAdmin = $this->UserIsAdmin();
 
 if ($isAdmin && isset($_GET['delete_tag'])) {
     if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-        throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        throw new Exception(_t('WIKI_IN_HIBERNATION'));
     }
     $sql = 'DELETE FROM ' . $this->config['table_prefix'] . 'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" and id IN (' . mysqli_real_escape_string($this->dblink, $_GET['delete_tag']) . ')';
     $this->Query($sql);

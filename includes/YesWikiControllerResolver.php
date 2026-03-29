@@ -20,7 +20,7 @@ class YesWikiControllerResolver extends ControllerResolver
         $this->wiki = $wiki;
     }
 
-    protected function instantiateController(string $class)
+    protected function instantiateController(string $class): object
     {
         return $this->configureController(parent::instantiateController($class), $class);
     }

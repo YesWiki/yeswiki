@@ -6,9 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Tags\Service\TagsManager;
 
-/**
- * @Field({"tags"})
- */
+#[\Field(['tags'])]
 class TagsField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)
@@ -115,9 +113,9 @@ class TagsField extends EnumField
             return $this->render('@bazar/fields/tags.twig', [
                 'value' => join(' ', $tags) ?? '',
             ]);
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     public function getName()

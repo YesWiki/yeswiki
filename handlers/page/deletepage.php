@@ -90,7 +90,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             }
         }
         $msg = '<p><em>' . _t('DELETEPAGE_NOT_ORPHEANED') . "</em></p>\n";
-        $linkedFrom = $this->LoadAll('SELECT DISTINCT from_tag ' . 'FROM ' . $this->config['table_prefix'] . 'links '
+        $linkedFrom = $this->LoadAll('SELECT DISTINCT from_tag FROM ' . $this->config['table_prefix'] . 'links '
             . "WHERE to_tag = '" . $this->GetPageTag() . "'");
         $msg .= '<p>' . str_replace('{tag}', $this->ComposeLinkToPage($this->tag, '', '', 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
         $msg .= "<ul>\n";

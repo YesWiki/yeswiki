@@ -3,6 +3,7 @@
 namespace YesWiki\Core;
 
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Contracts\Service\Attribute\Required;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Wiki;
@@ -13,9 +14,8 @@ abstract class YesWikiController
 
     /**
      * Setter for the wiki property.
-     *
-     * @Required set the auto-injection
      */
+    #[Required]
     public function setWiki(Wiki $wiki): void
     {
         $this->wiki = $wiki;

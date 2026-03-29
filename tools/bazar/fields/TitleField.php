@@ -9,9 +9,8 @@ use YesWiki\Core\Service\HtmlPurifierService;
 /**
  * Generate a title based on other values from the entry
  * titre***{{bf_nom}} - {{bf_prenom}} - {{listeListeOuiNon}} - {{checkboxListePartenaires}}***.
- *
- * @Field({"titre"})
  */
+#[\Field(['titre'])]
 class TitleField extends BazarField
 {
     protected $titleTemplate;
@@ -35,7 +34,7 @@ class TitleField extends BazarField
 
     public function formatValuesBeforeSave($entry)
     {
-        $dirtyHtml = $this->titleTemplate; //$this->getValue($entry);
+        $dirtyHtml = $this->titleTemplate; // $this->getValue($entry);
 
         $value = $this->getService(HtmlPurifierService::class)->cleanHTML($dirtyHtml);
         $formManager = $this->getService(FormManager::class);

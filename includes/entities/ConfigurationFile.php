@@ -7,15 +7,12 @@ use Countable;
 use Iterator;
 use YesWiki\Core\Service\ConfigurationService;
 
-class ConfigurationFile implements ArrayAccess, Iterator, Countable
+class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
 {
     private $_file = '';
     protected $_parameters;
     protected $configurationService;
 
-    /**
-     * @param $file
-     */
     public function __construct($file, ?ConfigurationService $configurationService = null)
     {
         $this->_file = $file;

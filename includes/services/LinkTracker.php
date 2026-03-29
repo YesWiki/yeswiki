@@ -58,9 +58,9 @@ class LinkTracker
             $this->links[] = $tag;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function add($tag)

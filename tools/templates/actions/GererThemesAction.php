@@ -76,40 +76,39 @@ class GererThemesAction extends YesWikiAction
             throw new Exception(_t('ACLS_NO_SELECTED_PAGE'), 1);
         } elseif (!is_array($_POST['selectpage'])) {
             throw new Exception('select page should be an array', 1);
-        } else {
-            $pagesTags = array_filter($_POST['selectpage'], 'is_string');
-            foreach ($pagesTags as $pageTag) {
-                if (!empty($_POST['typemaj']) && $_POST['typemaj'] === 'reinitialiser') {
-                    $this->pageManager->setMetadata($pageTag, [
-                        'theme' => null,
-                        'style' => null,
-                        'squelette' => null,
-                        'favorite_preset' => null,
-                    ]);
-                } else {
-                    $theme = $this->sanitizePost('theme_select');
-                    $style = $this->sanitizePost('style_select');
-                    $squelette = $this->sanitizePost('squelette_select');
-                    $presets = $this->sanitizePost('preset_select');
-                    $themes = $this->themeManager->getTemplates();
-                    if (!isset($themes[$theme]['presets'])) {
-                        $presets = '';
-                    }
-                    if (!empty($presets) && (substr($presets, -4) !== '.css')) {
-                        $presets .= '.css';
-                    }
-                    $this->pageManager->setMetadata($pageTag, [
-                        'theme' => $theme,
-                        'style' => $style . (substr($style, -4) === '.css' ? '' : '.css'),
-                        'squelette' => $squelette . (substr($squelette, -strlen('.tpl.html')) === '.tpl.html' ? '' : '.tpl.html'),
-                    ] + (
-                        !empty($_POST['preset_select'])
+        }
+        $pagesTags = array_filter($_POST['selectpage'], 'is_string');
+        foreach ($pagesTags as $pageTag) {
+            if (!empty($_POST['typemaj']) && $_POST['typemaj'] === 'reinitialiser') {
+                $this->pageManager->setMetadata($pageTag, [
+                    'theme' => null,
+                    'style' => null,
+                    'squelette' => null,
+                    'favorite_preset' => null,
+                ]);
+            } else {
+                $theme = $this->sanitizePost('theme_select');
+                $style = $this->sanitizePost('style_select');
+                $squelette = $this->sanitizePost('squelette_select');
+                $presets = $this->sanitizePost('preset_select');
+                $themes = $this->themeManager->getTemplates();
+                if (!isset($themes[$theme]['presets'])) {
+                    $presets = '';
+                }
+                if (!empty($presets) && (substr($presets, -4) !== '.css')) {
+                    $presets .= '.css';
+                }
+                $this->pageManager->setMetadata($pageTag, [
+                    'theme' => $theme,
+                    'style' => $style . (substr($style, -4) === '.css' ? '' : '.css'),
+                    'squelette' => $squelette . (substr($squelette, -strlen('.tpl.html')) === '.tpl.html' ? '' : '.tpl.html'),
+                ] + (
+                    !empty($_POST['preset_select'])
                 ? [
                     'favorite_preset' => $presets,
                 ]
                 : []
-                    ));
-                }
+                ));
             }
         }
     }

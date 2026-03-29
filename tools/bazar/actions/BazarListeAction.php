@@ -131,9 +131,9 @@ class BazarListeAction extends YesWikiAction
         $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $_REQUEST['q'] ?? null, $_REQUEST['keywords'] ?? null);
 
         return [
-            ////////////////////
+            // //////////////////
             // USER PARAMETERS
-            //////////////////
+            // ////////////////
 
             // SELECTION DES FICHES
 
@@ -255,9 +255,9 @@ class BazarListeAction extends YesWikiAction
             // couleur des marqueurs
             'color' => $color,
 
-            //////////////////////
+            // ////////////////////
             // SYSTEM PARAMETERS
-            ////////////////////
+            // //////////////////
 
             // Iframe ?
             'isInIframe' => testUrlInIframe(),
@@ -315,39 +315,38 @@ class BazarListeAction extends YesWikiAction
                 'forms' => $vForms,
                 'currentUserName' => empty($currentUser['name']) ? '' : $currentUser['name'],
             ]);
-        } else {
-            $entries = $bazarListService->getEntries($this->arguments, $vForms);
-            $filters = $bazarListService->getFilters($this->arguments, $entries, $vForms, true);
-
-            // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
-            // We use a global variable to count the number of bazarliste action run on this page
-            if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
-                $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
-            }
-            $GLOBALS['_BAZAR_']['nbbazarliste']++;
-            $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
-
-            // TODO put in all bazar templates
-
-            $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
-
-            return $this->render('@bazar/entries/index.twig', [
-                'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
-                'filters' => $filters,
-                'entries' => $entries,
-                'renderedEntries' => $this->renderEntries($entries, $filters, $vForms),
-                'numEntries' => count($entries),
-                'param' => $this->arguments,
-                'params' => $this->arguments,
-                // Search form parameters
-                'keywords' => $this->arguments['keywords'],
-                'pageTag' => $this->wiki->getPageTag(),
-                'forms' => $vForms,
-                //'formId' => $this->arguments['idtypeannonce'][0] ?? null,
-                'selectedID' => $this->arguments['selectedID'] ?? null,
-                'facette' => $_GET['facette'] ?? null,
-            ]);
         }
+        $entries = $bazarListService->getEntries($this->arguments, $vForms);
+        $filters = $bazarListService->getFilters($this->arguments, $entries, $vForms, true);
+
+        // To handle multiple bazarlist in a same page, we need a specific ID per bazarlist
+        // We use a global variable to count the number of bazarliste action run on this page
+        if (!isset($GLOBALS['_BAZAR_']['nbbazarliste'])) {
+            $GLOBALS['_BAZAR_']['nbbazarliste'] = 0;
+        }
+        $GLOBALS['_BAZAR_']['nbbazarliste']++;
+        $this->arguments['nbbazarliste'] = $GLOBALS['_BAZAR_']['nbbazarliste'];
+
+        // TODO put in all bazar templates
+
+        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
+
+        return $this->render('@bazar/entries/index.twig', [
+            'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
+            'filters' => $filters,
+            'entries' => $entries,
+            'renderedEntries' => $this->renderEntries($entries, $filters, $vForms),
+            'numEntries' => count($entries),
+            'param' => $this->arguments,
+            'params' => $this->arguments,
+            // Search form parameters
+            'keywords' => $this->arguments['keywords'],
+            'pageTag' => $this->wiki->getPageTag(),
+            'forms' => $vForms,
+            // 'formId' => $this->arguments['idtypeannonce'][0] ?? null,
+            'selectedID' => $this->arguments['selectedID'] ?? null,
+            'facette' => $_GET['facette'] ?? null,
+        ]);
     }
 
     private function renderEntries($entries, $filters = [], $pForms = ''): string

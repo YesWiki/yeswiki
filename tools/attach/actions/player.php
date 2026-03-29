@@ -81,7 +81,7 @@ if (!empty($url)) {
                     </span>
                     <a href="#" class="jp-unmute btn btn-default"><i class="fa fa-volume-off icon-volume-off"></i></a>
                     <a href="#" class="jp-mute btn btn-default" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
-                    <a href="' . $url . '" download rel="download" title="' . _t('ATTACH_DOWNLOAD_THE_FILE') . ' : ' . ($url) . '" class="btn btn-default"><i class="fas fa-download"></i></a>
+                    <a href="' . $url . '" download rel="download" title="' . _t('ATTACH_DOWNLOAD_THE_FILE') . ' : ' . $url . '" class="btn btn-default"><i class="fas fa-download"></i></a>
                 </div>
             </div>
           </div>';
@@ -174,7 +174,7 @@ if (!empty($url)) {
                     <a href="#" class="jp-unmute btn btn-default"><i class="fa fa-volume-off icon-volume-off"></i></a>
                     <a href="#" class="jp-mute btn btn-default" style="display: none;"><i class="fa fa-volume-up icon-volume-up"></i></a>
                     <a href="#" class="jp-full-screen btn btn-default" role="button" tabindex="0"><i class="fas fa-expand-arrows-alt"></i></a>
-                    <a href="' . $url . '" rel="download" title="' . _t('ATTACH_DOWNLOAD_THE_FILE') . ' : ' . ($url) . '" class="btn btn-default"><i class="fas fa-download"></i></a>
+                    <a href="' . $url . '" rel="download" title="' . _t('ATTACH_DOWNLOAD_THE_FILE') . ' : ' . $url . '" class="btn btn-default"><i class="fas fa-download"></i></a>
                 </div>
             </div>
           </div>';

@@ -6,7 +6,7 @@
  * Description : action permettant l'envoi par mail d'une demande de desinscription a une liste de discussion
  */
 
-//recuperation des parametres
+// recuperation des parametres
 $listelements['mail'] = $this->GetParameter('mail');
 if (empty($listelements['mail'])) {
     echo '<div class="alert alert-danger"><strong>' . _t('CONTACT_ACTION_DESABONNEMENT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';

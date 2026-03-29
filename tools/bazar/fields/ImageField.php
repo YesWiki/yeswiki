@@ -8,9 +8,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Security\Controller\SecurityController;
 
-/**
- * @Field({"image"})
- */
+#[\Field(['image'])]
 class ImageField extends FileField
 {
     protected $thumbnailHeight;
@@ -112,14 +110,13 @@ class ImageField extends FileField
                     'isDefaultImage' => empty($value) && !empty($imgDefault),
                     'isAllowedToDeleteFile' => empty($entry) || empty($value) ? false : $this->isAllowedToDeleteFile($entry, $value),
                 ]);
-            } else {
-                $this->updateEntryAfterFileDelete($entry);
-
-                $alertMessage = $this->render('@templates/alert-message.twig', [
-                    'type' => 'danger',
-                    'message' => str_replace('{file}', $value, _t('BAZ_FICHIER_IMAGE_INEXISTANT')),
-                ]);
             }
+            $this->updateEntryAfterFileDelete($entry);
+
+            $alertMessage = $this->render('@templates/alert-message.twig', [
+                'type' => 'danger',
+                'message' => str_replace('{file}', $value, _t('BAZ_FICHIER_IMAGE_INEXISTANT')),
+            ]);
         }
 
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize]);
@@ -237,9 +234,8 @@ class ImageField extends FileField
             if (substr($filename, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                 $attach = $this->getAttach();
                 $attach->fmDelete($filename);
-            } else {
-                // do not delete file if not same entry name (only remove from this entry)
             }
+            // do not delete file if not same entry name (only remove from this entry)
 
             return true;
         }

@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @Field({"inscriptionliste"})
- */
+#[\Field(['inscriptionliste'])]
 class SubscribeField extends BazarField
 {
     protected $mailerEmail;
@@ -70,11 +68,10 @@ class SubscribeField extends BazarField
                 send_mail($entry[$this->emailField], $entry['bf_titre'], $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
 
                 return [$this->propertyName => $subscribeEmail];
-            } else {
-                send_mail($entry[$this->emailField], $entry['bf_titre'], $unsubscribeEmail, 'unsubscribe', 'unsubscribe', 'unsubscribe');
-
-                return [$this->propertyName => $unsubscribeEmail];
             }
+            send_mail($entry[$this->emailField], $entry['bf_titre'], $unsubscribeEmail, 'unsubscribe', 'unsubscribe', 'unsubscribe');
+
+            return [$this->propertyName => $unsubscribeEmail];
         }
     }
 

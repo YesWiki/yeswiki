@@ -48,8 +48,8 @@ class UpdateAdminPagesService
         for ($i = 1; $i < count($defaultSQLSplittedByBlock); $i++) {
             $block = $defaultSQLSplittedByBlock[$i];
             if (
-                substr($block, 0, 1) !== '#' &&
-                substr($defaultSQLSplittedByBlock[$i - 1], 0, strlen('# YesWiki pages')) === '# YesWiki pages'
+                substr($block, 0, 1) !== '#'
+                && substr($defaultSQLSplittedByBlock[$i - 1], 0, strlen('# YesWiki pages')) === '# YesWiki pages'
             ) { // only working for pages
                 $typeBlock = explode('`', substr($block, strlen(' `{{prefix}}')), 2);
                 if ($typeBlock[0] == 'pages') {

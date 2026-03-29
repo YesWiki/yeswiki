@@ -1,4 +1,5 @@
 <?php
+
 /*
 bazarrecordsindex.php
 lists only bazar records.

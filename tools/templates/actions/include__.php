@@ -22,7 +22,7 @@ if (!empty($actif) && $actif == '1') {
     );
 
     // ensuite les liens restants (ceux avec une classe avant ne sont pas pris en compte)
-    $plugin_output_new = $this->services->get(\YesWiki\Templates\Service\Utils::class)->strIreplacement(
+    $plugin_output_new = $this->services->get(YesWiki\Templates\Service\Utils::class)->strIreplacement(
         '<a href="' . $this->config['base_url'] . $page_active . '"',
         '<a class="active-link" href="' . $this->config['base_url'] . $page_active . '"',
         $plugin_output_new
@@ -48,7 +48,7 @@ $plugin_output_new = str_replace('include_', '', $plugin_output_new);
 if (($incPageName == 'PageMenuHaut' || strstr($class, 'topnavpage')) && !strstr($class, 'horizontal-dropdown-menu')) {
     $plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="nav navbar-nav">', $plugin_output_new, 1);
 
-    //TODO: a faire pour toutes les pages ou juste le menu???
+    // TODO: a faire pour toutes les pages ou juste le menu???
     if (YW_CHARSET != 'ISO-8859-1' && YW_CHARSET != 'ISO-8859-15') {
         // tip to replace mb_convert_encoding($plugin_output_new, 'HTML-ENTITIES', 'UTF-8')
         // from https://stackoverflow.com/questions/37215388/what-is-a-replacement-for-mb-convert-encodingstring-utf-8-html-entities
@@ -62,7 +62,7 @@ if (($incPageName == 'PageMenuHaut' || strstr($class, 'topnavpage')) && !strstr(
 
     $dom = new DOMDocument();
     @$dom->loadHTML($plugin_output_new);
-    $xpath = new DOMXpath($dom);
+    $xpath = new DOMXPath($dom);
 
     $dropdowns = $xpath->query('*/div/ul/li/ul');
     if (!is_null($dropdowns)) {
@@ -135,4 +135,4 @@ $plugin_output_new = (!empty($clear) && $clear == '1') ?
     $plugin_output_new . '<div class="clearfix"></div>' . "\n" :
     $plugin_output_new;
 
-$plugin_output_new = $this->services->get(\YesWiki\Templates\Service\Utils::class)->postFormat($plugin_output_new);
+$plugin_output_new = $this->services->get(YesWiki\Templates\Service\Utils::class)->postFormat($plugin_output_new);

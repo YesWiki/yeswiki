@@ -155,16 +155,14 @@ class TemplateEngine
             } elseif (is_array($tokenId)) {
                 if (!isset($tokenId['id'])) {
                     throw new \Exception('When array, `$tokenId` should contain `id` key !');
-                } else {
-                    if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
-                        return $this->csrfTokenManager->refreshToken($tokenId['id'])->getValue();
-                    } else {
-                        return $this->csrfTokenManager->getToken($tokenId['id'])->getValue();
-                    }
                 }
-            } else {
-                throw new \Exception('`$tokenId` should be a string or an array !');
+                if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
+                    return $this->csrfTokenManager->refreshToken($tokenId['id'])->getValue();
+                }
+
+                return $this->csrfTokenManager->getToken($tokenId['id'])->getValue();
             }
+            throw new \Exception('`$tokenId` should be a string or an array !');
         });
         $this->addTwigHelper('urlImage', function ($options) {
             if (!isset($options['fileName'])) {
@@ -196,9 +194,9 @@ class TemplateEngine
                 }
 
                 return $basePath . $image_dest;
-            } else {
-                return $basePath . $image_dest;
             }
+
+            return $basePath . $image_dest;
         });
         $this->addTwigHelper('hasAcl', function ($acl, $tag = '', $adminCheck = true) {
             return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
@@ -217,8 +215,6 @@ class TemplateEngine
             if ($found) {
                 return $form['prepared'][$found]->renderStaticIfPermitted($entry);
             }
-
-            return;
         });
         $this->addTwigHelper('listValues', function ($listId, $parent = null) {
             return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);

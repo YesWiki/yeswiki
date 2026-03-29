@@ -19,7 +19,7 @@ function parseMails($emails)
     $userManager = $GLOBALS['wiki']->services->get(UserManager::class);
     foreach ($emails as $email) {
         if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $mailList[$email] = $email; //using email as key to avoid duplicates
+            $mailList[$email] = $email; // using email as key to avoid duplicates
         } elseif (preg_match('/^@[a-zA-Z0-9]+/m', $email)) {
             $group = substr($email, 1);
             if ($groupManager->groupExists($group)) {
@@ -87,7 +87,7 @@ function getPageTitle($page)
     preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
         $title = _convert(preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]), 'UTF-8');
-    //preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
+    // preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {

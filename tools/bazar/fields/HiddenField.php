@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @Field({"champs_cache"})
- */
+#[\Field(['champs_cache'])]
 class HiddenField extends BazarField
 {
     public function __construct(array $values, ContainerInterface $services)

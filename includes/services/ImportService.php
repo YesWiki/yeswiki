@@ -2,7 +2,6 @@
 
 namespace YesWiki\Core\Service;
 
-use Exception;
 use YesWiki\Core\Exception\CurlTimeoutException;
 
 // use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -13,7 +12,7 @@ class ImportService
     // protected $wiki;
     // protected $params;
 
-    public function __construct(/*Wiki $wiki, ParameterBagInterface $params*/)
+    public function __construct(/* Wiki $wiki, ParameterBagInterface $params */)
     {
         // $this->wiki = $wiki;
         // $this->params = $params;
@@ -81,9 +80,9 @@ class ImportService
         }
         if (empty($baseUrl) || is_null($rewriteModeEnabled) || empty($tag)) {
             return [];
-        } else {
-            return [$baseUrl, $rewriteModeEnabled, $tag];
         }
+
+        return [$baseUrl, $rewriteModeEnabled, $tag];
     }
 
     /**
@@ -124,7 +123,7 @@ class ImportService
      *
      * @return string
      *
-     * @throws Exception
+     * @throws \Exception
      * @throws CurlTimeoutException
      */
     private function getHeaders($url): array
@@ -154,9 +153,8 @@ class ImportService
             $errorStr = curl_strerror($error);
             if (in_array($error, [12, 28])) {
                 throw new CurlTimeoutException("Error getting content from $url ($errorStr)");
-            } else {
-                throw new Exception("Error getting content from $url ($errorStr)");
             }
+            throw new \Exception("Error getting content from $url ($errorStr)");
         }
         $intermediate = empty($content) ? [] : array_filter(array_map('trim', explode("\n", $content)));
         $output = [];

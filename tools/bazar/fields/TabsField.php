@@ -6,9 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Templates\Controller\TabsController;
 
-/**
- * @Field({"tabs"})
- */
+#[\Field(['tabs'])]
 class TabsField extends LabelField
 {
     private $formTitles; // Tabs titles for from separated by coma

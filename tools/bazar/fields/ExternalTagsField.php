@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
-/**
- * @Field({"externaltagsfield"})
- */
+#[\Field(['externaltagsfield'])]
 class ExternalTagsField extends TagsField
 {
     protected $JSONFormAddress;
@@ -66,8 +64,8 @@ class ExternalTagsField extends TagsField
             return $this->render('@bazar/fields/tags.twig', [
                 'value' => join(' ', $tags) ?? '',
             ]);
-        } else {
-            return '';
         }
+
+        return '';
     }
 }

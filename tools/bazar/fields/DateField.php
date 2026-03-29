@@ -2,12 +2,11 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Field;
 use YesWiki\Bazar\Service\DateService;
 use YesWiki\Core\Service\DateService as CoreDateService;
 
-/**
- * @Field({"jour", "listedatedeb", "listedatefin"})
- */
+#[\Field(['jour', 'listedatedeb', 'listedatefin'])]
 class DateField extends BazarField
 {
     public function requireIDFiche()

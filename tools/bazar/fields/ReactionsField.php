@@ -2,14 +2,13 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\ReactionsController;
 use YesWiki\Wiki;
 
-/**
- * @Field({"reactions"})
- */
+#[\Field(['reactions'])]
 class ReactionsField extends BazarField
 {
     protected const FIELD_IDS = 2;
