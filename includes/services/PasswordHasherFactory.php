@@ -16,35 +16,22 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
     public function __construct(DbService $dbService)
     {
         $this->dbService = $dbService;
-        $newModeActivated = $this->newModeIsActivated();
-        if ($newModeActivated) {
-            $params = [
-                'md5' => [
-                    'class' => MD5PasswordHasher::class,
-                    'arguments' => [true],
+        $params = [
+            'md5' => [
+                'class' => MD5PasswordHasher::class,
+                'arguments' => [true],
+            ],
+            User::class => [
+                'algorithm' => 'auto',
+                'migrate_from' => [
+                    'md5', // uses the "md5" hasher configured above
                 ],
-                User::class => [
-                    'algorithm' => 'auto',
-                    'migrate_from' => [
-                        'md5', // uses the "md5" hasher configured above
-                    ],
-                ],
-                'cookie' => [
-                    'algorithm' => 'bcrypt',
-                    'cost' => 9, // default 13, 9 less difficult to be faster
-                ],
-            ];
-        } else {
-            $params = [
-                User::class => [
-                    'class' => MD5PasswordHasher::class,
-                    'arguments' => [false],
-                ],
-                'cookie' => [
-                    'algorithm' => 'auto',
-                ],
-            ];
-        }
+            ],
+            'cookie' => [
+                'algorithm' => 'bcrypt',
+                'cost' => 9, // default 13, 9 less difficult to be faster
+            ],
+        ];
         parent::__construct($params);
     }
 
