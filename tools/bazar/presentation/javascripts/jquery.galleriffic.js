@@ -141,7 +141,7 @@
         const slideUrl = $aThumb.attr('href')
         const title = $aThumb.attr('title')
         const $caption = $li.find('.caption').remove()
-        let hash = $aThumb.attr('name')
+        let hash = $.galleriffic.normalizeHash($aThumb.attr('name') || '')
 
         // Increment the image counter
         imageCounter++
