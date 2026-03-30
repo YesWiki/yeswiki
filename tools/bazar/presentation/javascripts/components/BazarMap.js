@@ -51,6 +51,23 @@ Vue.component('BazarMap', {
     },
   },
   methods: {
+    refreshMarkers() {
+      if (!this.map) return;
+
+      const currentMarkers = [];
+      this.entries.forEach((entry) => {
+        const marker = this.createMarker(entry);
+        if (marker) currentMarkers.push(marker);
+      });
+
+      if (this.params.cluster && this.$refs.cluster?.mapObject) {
+        const cluster = this.$refs.cluster.mapObject;
+        cluster.clearLayers();
+        cluster.addLayers(currentMarkers);
+      } else if (!this.params.cluster) {
+        currentMarkers.forEach(m => m.addTo(this.map));
+      }
+    },
     getGeolocation(pEntry) {
 
       let lLatitude
@@ -402,8 +419,21 @@ Vue.component('BazarMap', {
           });
 
           if (this.params.cluster && this.$refs.cluster) {
-            this.$refs.cluster.clearLayers();
-            this.$refs.cluster.addLayers(currentMarkers);
+            const clusterLayer = this.$refs.cluster.mapObject;
+
+            if (clusterLayer) {
+              clusterLayer.clearLayers();
+              if (currentMarkers.length > 0) {
+                clusterLayer.addLayers(currentMarkers);
+              }
+            } else {
+              this.$nextTick(() => {
+                if (this.$refs.cluster?.mapObject) {
+                  this.$refs.cluster.mapObject.clearLayers();
+                  this.$refs.cluster.mapObject.addLayers(currentMarkers);
+                }
+              });
+            }
           } else {
             currentMarkers.forEach((marker) => {
               marker.addTo(this.map);
@@ -420,9 +450,9 @@ Vue.component('BazarMap', {
       
       <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
              :options="mapOptions"
-             @update:center="updateBounds()" @ready="updateBounds(); createTileLayers()"
+             @update:center="updateBounds()" @ready="updateBounds(); createTileLayers(); refreshMarkers()"
              @click="selectedEntry = null">
-        <l-marker-cluster ref="cluster" ></l-marker-cluster>
+        <l-marker-cluster v-if="params.cluster" ref="cluster" @ready="refreshMarkers()"></l-marker-cluster>
       </l-map>
       
 
