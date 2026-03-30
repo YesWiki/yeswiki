@@ -159,7 +159,14 @@ class LoginAction extends YesWikiAction
             }
         }
 
-        return $this->wiki->getBaseUrl() . '/?' . implode('&', $newQuery);
+        $queryString = implode('&', $newQuery);
+
+        $separator = '';
+        if (!empty($queryString)) {
+            $separator = ($this->wiki->config['rewrite_mode'] ? '?' : '&');
+        }
+
+        return $this->wiki->getBaseUrl() . ($parts['path'] ?? '') . $separator . $queryString;
     }
 
     private function renderForm(string $action): string
