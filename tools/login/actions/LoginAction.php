@@ -126,47 +126,20 @@ class LoginAction extends YesWikiAction
     private function getIncomingUrlFromServer(array $server): string
     {
         $parts = parse_url($server['REQUEST_URI']);
-        $params = [];
-
-        if (isset($parts['query'])) {
+        $queryString = '';
+        $parsedQuery = [];
+        if (!empty($parts['query'])) {
             parse_str($parts['query'], $parsedQuery);
 
-            foreach ($parsedQuery as $key => $value) {
-                // Skip 'context' parameter
-                if ($key === 'context') {
-                    continue;
-                }
+            unset($parsedQuery['context']);
 
-                if (is_array($value)) {
-                    foreach ($value as $val) {
-                        $params[] = ['key' => $key, 'value' => $val];
-                    }
-                } else {
-                    $params[] = ['key' => $key, 'value' => $value];
-                }
+            if (!empty($parsedQuery)) {
+                $separator = ($this->wiki->config['rewrite_mode'] ? '?' : '&');
+                $queryString = $separator . http_build_query($parsedQuery);
             }
         }
 
-        $newQuery = [];
-        foreach ($params as $param) {
-            $key = urlencode($param['key']);
-            $value = $param['value'];
-
-            if (empty($value)) {
-                $newQuery[] = $key;
-            } else {
-                $newQuery[] = $key . '=' . urlencode($value);
-            }
-        }
-
-        $queryString = implode('&', $newQuery);
-
-        $separator = '';
-        if (!empty($queryString)) {
-            $separator = ($this->wiki->config['rewrite_mode'] ? '?' : '&');
-        }
-
-        return $this->wiki->getBaseUrl() . ($parts['path'] ?? '') . $separator . $queryString;
+        return $this->wiki->getBaseUrl() . ($parts['path'] ?? '') . $queryString;
     }
 
     private function renderForm(string $action): string
