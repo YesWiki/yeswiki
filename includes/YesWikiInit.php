@@ -202,6 +202,7 @@ class Init
             'yeswiki_release' => '',
             'charset' => 'UTF-8',
             'debug' => 'no',
+            'db_driver' => 'mysql',
             'db_host' => 'localhost',
             'db_database' => '',
             'db_user' => '',
@@ -249,6 +250,21 @@ class Init
             $yeswikiDefaultConfig['root_page'] = _t('HOMEPAGE_WIKINAME');
             $yeswikiDefaultConfig['wakka_name'] = _t('MY_YESWIKI_SITE');
         }
+
+        // Backwards compatibility: map old mysql_* keys to new db_* keys
+        $legacyKeyMapping = [
+            'mysql_host' => 'db_host',
+            'mysql_database' => 'db_database',
+            'mysql_user' => 'db_user',
+            'mysql_password' => 'db_password',
+            'mysql_port' => 'db_port',
+        ];
+        foreach ($legacyKeyMapping as $oldKey => $newKey) {
+            if (isset($wakkaConfig[$oldKey]) && !isset($wakkaConfig[$newKey])) {
+                $wakkaConfig[$newKey] = $wakkaConfig[$oldKey];
+            }
+        }
+
         $wakkaConfig = $this->array_merge_recursive_distinct($yeswikiDefaultConfig, $wakkaConfig);
 
         // give a default timezone to avoid error

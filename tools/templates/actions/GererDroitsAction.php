@@ -59,7 +59,7 @@ class GererDroitsAction extends YesWikiAction
             ORDER BY $pagesTableName.tag ASC
     SQL);
         $pageEtDroits = [];
-        while ($pages = mysqli_fetch_array($liste_pages)) {
+        while ($pages = $liste_pages->fetch(\PDO::FETCH_ASSOC)) {
             $pageEtDroits[] = $this->utils->recupDroits($pages);
         }
 

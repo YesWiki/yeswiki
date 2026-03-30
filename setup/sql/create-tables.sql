@@ -87,4 +87,4 @@ INSERT INTO `{{prefix}}triples` (`id`, `resource`, `property`, `value`) VALUES
 (1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
 INSERT INTO `{{prefix}}users` (`name`, `password`, `email`, `motto`, `revisioncount`, `changescount`, `doubleclickedit`, `signuptime`, `show_comments`) VALUES
-('{{WikiName}}', md5('{{password}}'), '{{email}}', '', 20, 50, 'Y',  now(), 'N');
+('{{WikiName}}', '{{password}}', '{{email}}', '', 20, 50, 'Y',  now(), 'N');

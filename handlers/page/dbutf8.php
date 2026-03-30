@@ -10,6 +10,7 @@ if (isset($this)) {
     }
     if ($this->userIsAdmin()) {
         include_once 'includes/Encoding.php';
+        $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
         $output = '';
         $result = $this->LoadAll(
             'SHOW TABLES FROM ' . $this->config['db_database']
@@ -56,7 +57,7 @@ if (isset($this)) {
                                 $transform = \ForceUTF8\Encoding::toUTF8($transform);
                             }
                             $transform = \ForceUTF8\Encoding::fixUTF8($transform);
-                            $transform = mysqli_real_escape_string($this->dblink, $transform);
+                            $transform = $dbService->escape($transform);
                             $updateQuery = 'UPDATE ' . $table . ' SET `' . $row['Field'] . '` = "' . $transform . '" WHERE `id`="' . $line['id'] . '";';
                             $output .= '<hr>' . $updateQuery . '<br>';
                             $this->query($updateQuery);
@@ -78,7 +79,7 @@ if (isset($this)) {
                                 $transform = \ForceUTF8\Encoding::toUTF8($transform);
                             }
                             $transform = \ForceUTF8\Encoding::fixUTF8($transform);
-                            $transform = mysqli_real_escape_string($this->dblink, $transform);
+                            $transform = $dbService->escape($transform);
                             $updateQuery = 'UPDATE ' . $table . ' SET `' . $row['Field'] . '` = "' . $transform . '" WHERE `bn_id_nature`="' . $line['bn_id_nature'] . '";';
                             $output .= '<hr>' . $updateQuery . '<br>';
                             $this->query($updateQuery);
@@ -119,48 +120,49 @@ if (php_sapi_name() === 'cli') {
     include_once ConfigurationFileProvider::getConfigFileFromEnv();
     include_once 'includes/Encoding.php';
 
-    $GLOBALS['dblink'] = @mysqli_connect(
-        $wakkaConfig['db_host'],
-        $wakkaConfig['db_user'],
-        $wakkaConfig['db_password'],
-        $wakkaConfig['db_database'],
-        isset($wakkaConfig['db_port']) ? $wakkaConfig['mysql_port'] : ini_get('mysqli.default_port')
-    );
+    $charset = isset($wakkaConfig['db_charset']) ? $wakkaConfig['db_charset'] : 'utf8mb4';
+    $dsn = 'mysql:host=' . $wakkaConfig['db_host'] . ';dbname=' . $wakkaConfig['db_database'] . ';charset=' . $charset;
+    if (isset($wakkaConfig['db_port']) && $wakkaConfig['db_port']) {
+        $dsn .= ';port=' . $wakkaConfig['db_port'];
+    }
 
-    if ($GLOBALS['dblink']) {
-        if (isset($wakkaConfig['db_charset']) and $wakkaConfig['db_charset'] === 'utf8mb4') {
-            // necessaire pour les versions de mysql qui ont un autre encodage par defaut
-            mysqli_set_charset($GLOBALS['dblink'], 'utf8mb4');
-
-            // dans certains cas (ovh), set_charset ne passe pas, il faut faire une requete sql
-            $charset = mysqli_character_set_name($GLOBALS['dblink']);
-            if ($charset != 'utf8mb4') {
-                mysqli_query($GLOBALS['dblink'], 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
-            }
+    try {
+        $GLOBALS['dblink'] = new \PDO(
+            $dsn,
+            $wakkaConfig['db_user'],
+            $wakkaConfig['db_password'],
+            [
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            ]
+        );
+        if ($charset === 'utf8mb4') {
+            $GLOBALS['dblink']->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
         }
+    } catch (\PDOException $e) {
+        exit('Database connection failed: ' . $e->getMessage());
     }
 
     function sqlQuery($query)
     {
-        if (!$result = mysqli_query($GLOBALS['dblink'], $query)) {
-            exit('Query failed: ' . $query . ' (' . mysqli_error($GLOBALS['dblink']) . ')');
+        $result = $GLOBALS['dblink']->query($query);
+        if ($result === false) {
+            $errorInfo = $GLOBALS['dblink']->errorInfo();
+            exit('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
         }
-
         return $result;
     }
 
     function LoadAll($query)
     {
-        $data = [];
-        if ($r = sqlQuery($query)) {
-            while ($row = mysqli_fetch_assoc($r)) {
-                $data[] = $row;
-            }
+        $stmt = sqlQuery($query);
+        return $stmt ? $stmt->fetchAll(\PDO::FETCH_ASSOC) : [];
+    }
 
-            mysqli_free_result($r);
-        }
-
-        return $data;
+    function escapeString($string)
+    {
+        $quoted = $GLOBALS['dblink']->quote($string);
+        return substr($quoted, 1, -1);
     }
 
     $result = LoadAll(
@@ -208,7 +210,7 @@ if (php_sapi_name() === 'cli') {
                             $transform = \ForceUTF8\Encoding::toUTF8($transform);
                         }
                         $transform = \ForceUTF8\Encoding::fixUTF8($transform);
-                        $transform = mysqli_real_escape_string($GLOBALS['dblink'], $transform);
+                        $transform = escapeString($transform);
                         $updateQuery = 'UPDATE ' . $table . ' SET `' . $row['Field'] . '` = "' . $transform . '" WHERE `id`="' . $line['id'] . '";';
                         echo '<hr>' . $updateQuery . '<br>';
                         sqlQuery($updateQuery);
@@ -230,7 +232,7 @@ if (php_sapi_name() === 'cli') {
                             $transform = \ForceUTF8\Encoding::toUTF8($transform);
                         }
                         $transform = \ForceUTF8\Encoding::fixUTF8($transform);
-                        $transform = mysqli_real_escape_string($GLOBALS['dblink'], $transform);
+                        $transform = escapeString($transform);
                         $updateQuery = 'UPDATE ' . $table . ' SET `' . $row['Field'] . '` = "' . $transform . '" WHERE `bn_id_nature`="' . $line['bn_id_nature'] . '";';
                         echo '<hr>' . $updateQuery . '<br>';
                         sqlQuery($updateQuery);

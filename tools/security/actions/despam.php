@@ -67,7 +67,7 @@ if ($this->UserIsAdmin()) {
         echo "<table>\n";
         foreach ($pagesFromSpammer as $i => $page) {
             $req = 'select * from ' . $this->config['table_prefix'] . "pages where tag = '"
-        . mysqli_real_escape_string($this->dblink, $page['tag'])
+        . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($page['tag'])
         . "' order by time desc";
             $revisions = $this->LoadAll($req);
 
@@ -152,8 +152,9 @@ if ($this->UserIsAdmin()) {
             foreach ($_POST['rev'] as $rev_id) {
                 echo $rev_id . '<br>';
                 // Selectionne la revision
+                $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
                 $revision = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '"
-          . mysqli_real_escape_string($this->dblink, $rev_id) . "' limit 1");
+          . $dbService->escape($rev_id) . "' limit 1");
 
                 // Fait de la derniere version de cette revision
                 // une version archivee
@@ -168,12 +169,12 @@ if ($this->UserIsAdmin()) {
 
                 // add new revision
                 $this->Query('insert into ' . $this->config['table_prefix'] . 'pages set ' .
-          "tag = '" . mysqli_real_escape_string($this->dblink, $revision['tag']) . "', " .
+          "tag = '" . $dbService->escape($revision['tag']) . "', " .
           'time = now(), ' .
-          "owner = '" . mysqli_real_escape_string($this->dblink, $revision['owner']) . "', " .
-          "user = '" . mysqli_real_escape_string($this->dblink, 'despam') . "', " .
+          "owner = '" . $dbService->escape($revision['owner']) . "', " .
+          "user = '" . $dbService->escape('despam') . "', " .
           "latest = 'Y', " .
-          "body = '" . mysqli_real_escape_string($this->dblink, chop($revision['body'])) . "'");
+          "body = '" . $dbService->escape(chop($revision['body'])) . "'");
             }
         }
         $restoredPages = trim($restoredPages, ', ');

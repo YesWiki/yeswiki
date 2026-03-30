@@ -39,11 +39,13 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
     {
         try {
             $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('users')} LIKE 'password';");
-            if (@mysqli_num_rows($result) === 0) {
+            if (!$result) {
                 return false;
             }
-            $row = mysqli_fetch_assoc($result);
-            mysqli_free_result($result);
+            $row = $result->fetch(\PDO::FETCH_ASSOC);
+            if ($row === false) {
+                return false;
+            }
 
             return !empty($row['Type']) && $row['Type'] == 'varchar(256)';
         } catch (Throwable $th) {

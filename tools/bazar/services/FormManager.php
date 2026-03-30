@@ -492,7 +492,7 @@ class FormManager
     {
         if (is_null($this->isAvailableOnlyOneEntryOption)) {
             $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('nature')} LIKE 'bn_only_one_entry';");
-            $this->isAvailableOnlyOneEntryOption = (@mysqli_num_rows($result) !== 0);
+            $this->isAvailableOnlyOneEntryOption = ($result && $result->fetch() !== false);
         }
 
         return $this->isAvailableOnlyOneEntryOption;
@@ -505,7 +505,7 @@ class FormManager
     {
         if (is_null($this->isAvailableOnlyOneEntryMessage)) {
             $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('nature')} LIKE 'bn_only_one_entry_message';");
-            $this->isAvailableOnlyOneEntryMessage = (@mysqli_num_rows($result) !== 0);
+            $this->isAvailableOnlyOneEntryMessage = ($result && $result->fetch() !== false);
         }
 
         return $this->isAvailableOnlyOneEntryMessage;

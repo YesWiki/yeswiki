@@ -15,11 +15,13 @@ class DbService
 
     protected $link;
     protected $queryLog;
+    protected $driver;
 
     public function __construct(ParameterBagInterface $params)
     {
         $this->params = $params;
         $this->queryLog = [];
+        $this->driver = $this->params->has('db_driver') ? $this->params->get('db_driver') : 'mysql';
 
         $this->initSqlConnection();
     }
@@ -27,34 +29,118 @@ class DbService
     protected function initSqlConnection()
     {
         try {
-            $dsn = 'mysql:host=' . $this->params->get('db_host') . ';dbname=' . $this->params->get('db_database');
-            //                $this->params->has('db_port') ? $this->params->get('db_port') : ini_get('mysqli.default_port')
+            $dsn = $this->buildDsn();
+            $username = null;
+            $password = null;
+
+            // SQLite doesn't need username/password
+            if ($this->driver !== 'sqlite') {
+                $username = $this->params->get('db_user');
+                $password = $this->params->get('db_password');
+            }
 
             $this->link = new \PDO(
                 $dsn,
-                $this->params->get('db_user'),
-                $this->params->get('db_password')
+                $username,
+                $password,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
+                ]
             );
-            $this->link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             if (!$this->link) {
-                throw new Exception('Not connected to sql');
+                throw new Exception('Not connected to database');
             }
-            /* if ($this->params->has('db_charset') and $this->params->get('db_charset') === 'utf8mb4') { */
-            /*     // necessaire pour les versions de mysql qui ont un autre encodage par defaut */
-            /*     mysqli_set_charset($this->link, 'utf8mb4'); */
 
-            /*     // dans certains cas (ovh), set_charset ne passe pas, il faut faire une requete sql */
-            /*     $charset = mysqli_character_set_name($this->link); */
-            /*     if ($charset != 'utf8mb4') { */
-            /*         mysqli_query($this->link, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci'); */
-            /*     } */
-            /* } */
+            // Driver-specific initialization
+            $this->initDriverSpecific();
         } catch (Throwable $th) {
             if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
-                throw new Exception(_t('DB_CONNECT_FAIL'));
+                throw new Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
             } else {
                 exit(_t('DB_CONNECT_FAIL'));
             }
+        }
+    }
+
+    protected function buildDsn(): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                // SQLite uses a fixed path in the private directory
+                $dbPath = $this->params->has('db_database') && $this->params->get('db_database')
+                    ? $this->params->get('db_database')
+                    : 'private/yeswiki.db';
+                return 'sqlite:' . $dbPath;
+
+            case 'pgsql':
+                $dsn = 'pgsql:host=' . $this->params->get('db_host') . ';dbname=' . $this->params->get('db_database');
+                if ($this->params->has('db_port') && $this->params->get('db_port')) {
+                    $dsn .= ';port=' . $this->params->get('db_port');
+                }
+                return $dsn;
+
+            case 'mysql':
+            default:
+                $dsn = 'mysql:host=' . $this->params->get('db_host') . ';dbname=' . $this->params->get('db_database');
+                if ($this->params->has('db_port') && $this->params->get('db_port')) {
+                    $dsn .= ';port=' . $this->params->get('db_port');
+                }
+                $charset = ($this->params->has('db_charset') && $this->params->get('db_charset'))
+                    ? $this->params->get('db_charset')
+                    : 'utf8mb4';
+                $dsn .= ';charset=' . $charset;
+                return $dsn;
+        }
+    }
+
+    protected function initDriverSpecific(): void
+    {
+        switch ($this->driver) {
+            case 'mysql':
+                $charset = ($this->params->has('db_charset') && $this->params->get('db_charset'))
+                    ? $this->params->get('db_charset')
+                    : 'utf8mb4';
+                if ($charset === 'utf8mb4') {
+                    $this->link->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
+                }
+                break;
+
+            case 'sqlite':
+                // Enable foreign keys for SQLite
+                $this->link->exec('PRAGMA foreign_keys = ON');
+                break;
+
+            case 'pgsql':
+                // Set client encoding for PostgreSQL
+                $this->link->exec("SET client_encoding TO 'UTF8'");
+                break;
+        }
+    }
+
+    public function getDriver(): string
+    {
+        return $this->driver;
+    }
+
+    /**
+     * Returns a SQL expression for "current timestamp minus X days"
+     * This is database-driver agnostic.
+     *
+     * @param int $days Number of days to subtract
+     * @return string SQL expression
+     */
+    public function dateSubDays(int $days): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                return "datetime('now', '-" . intval($days) . " days')";
+            case 'pgsql':
+                return "NOW() - INTERVAL '" . intval($days) . " days'";
+            case 'mysql':
+            default:
+                return "DATE_SUB(NOW(), INTERVAL " . intval($days) . " DAY)";
         }
     }
 
@@ -83,13 +169,14 @@ class DbService
 
     public function escape($string)
     {
-        return mysqli_real_escape_string($this->link, $string);
+        // PDO::quote adds quotes around the string, so we strip them
+        $quoted = $this->link->quote($string);
+        return substr($quoted, 1, -1);
     }
 
-    /*	Should it Returns FALSE on failure? => For the time being dies in case of failure
-        For successful SELECT, SHOW, DESCRIBE or EXPLAIN queries mysqli_query() will return a mysqli_result object.
-        For other successful will return TRUE.
-        In case of failure $this->error contains the error message
+    /*	Returns a PDOStatement on success, throws Exception on failure.
+        For SELECT, SHOW, DESCRIBE or EXPLAIN queries, returns a PDOStatement that can be used to fetch results.
+        For other queries (INSERT, UPDATE, DELETE), returns a PDOStatement (use rowCount() for affected rows).
     */
     public function query($query)
     {
@@ -98,14 +185,12 @@ class DbService
         }
 
         try {
-            if (!$result = mysqli_query($this->link, $query)) {
-                throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+            $result = $this->link->query($query);
+            if ($result === false) {
+                $errorInfo = $this->link->errorInfo();
+                throw new Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
             }
-        }/*
-        catch (Exception $e) {
-            file_put_contents ("log.txt", $query, FILE_APPEND);
-        }*/
-        finally {
+        } finally {
             if ($this->params->get('debug')) {
                 $this->addQueryLog($query, $this->getMicroTime() - $start);
             }
@@ -140,20 +225,20 @@ class DbService
      */
     public function loadAll($query): array
     {
-        $data = [];
-        if ($r = $this->query($query)) {
-            while ($row = mysqli_fetch_assoc($r)) {
-                $data[] = $row;
-            }
-            mysqli_free_result($r);
+        $stmt = $this->query($query);
+        if ($stmt) {
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
-
-        return $data;
+        return [];
     }
 
     public function count($query): int
     {
-        return mysqli_num_rows($this->query($query));
+        $stmt = $this->query($query);
+        if ($stmt) {
+            return count($stmt->fetchAll(PDO::FETCH_ASSOC));
+        }
+        return 0;
     }
 
     public function columnExists($table, $column)
@@ -275,7 +360,7 @@ class DbService
 
                 $createTableResult = $this->query('show create table ' . $tableName);
 
-                while ($creationTable = mysqli_fetch_array($createTableResult)) {
+                while ($creationTable = $createTableResult->fetch(PDO::FETCH_NUM)) {
                     $sql .= $creationTable[1] . ";\n\n";
                 }
 
@@ -294,16 +379,25 @@ class DbService
 
                 $rawData = $this->query('select * from ' . $tableName);
 
+                // Types that need quotes in SQL
+                $stringTypes = ['VAR_STRING', 'STRING', 'BLOB', 'DATE', 'TIME', 'DATETIME', 'TIMESTAMP', 'YEAR', 'NEWDATE'];
+
                 $firstRow = true;
-                while ($row = mysqli_fetch_array($rawData)) {
+                $columnCount = $rawData->columnCount();
+                $columnMeta = [];
+                for ($i = 0; $i < $columnCount; $i++) {
+                    $columnMeta[$i] = $rawData->getColumnMeta($i);
+                }
+
+                while ($row = $rawData->fetch(PDO::FETCH_NUM)) {
                     if ($firstRow) {
                         $sql .= "INSERT INTO `$tableName` ";
                         $sql .= '(';
-                        for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
+                        for ($i = 0; $i < $columnCount; $i++) {
                             if ($i != 0) {
                                 $sql .= ', ';
                             }
-                            $sql .= '`' . mysqli_fetch_field_direct($rawData, $i)->name . '`';
+                            $sql .= '`' . $columnMeta[$i]['name'] . '`';
                         }
                         $sql .= ") VALUES\n";
                         $firstRow = false;
@@ -311,21 +405,13 @@ class DbService
                         $sql .= ",\n";
                     }
                     $sql .= '(';
-                    for ($i = 0; $i < mysqli_num_fields($rawData); $i++) {
+                    for ($i = 0; $i < $columnCount; $i++) {
                         if ($i != 0) {
                             $sql .= ', ';
                         }
                         $strAdd = '';
-                        $field = mysqli_fetch_field_direct($rawData, $i);
-                        if (
-                            $field->type == 252 // text or blob cf https://www.php.net/manual/fr/mysqli-result.fetch-field-direct.php
-                            || $field->type == 253 // varchar
-                            || $field->type == 254 // char
-                            || $field->type == 10 // date
-                            || $field->type == 11 // time
-                            || $field->type == 12 // datetime
-                            || $field->type == 13 // year
-                        ) {
+                        $nativeType = $columnMeta[$i]['native_type'] ?? '';
+                        if (in_array($nativeType, $stringTypes)) {
                             $strAdd = "'";
                         }
                         $sql .= $strAdd . $this->escape($row[$i] ?? '') . $strAdd;

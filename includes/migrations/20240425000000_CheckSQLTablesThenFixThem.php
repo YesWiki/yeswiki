@@ -82,17 +82,20 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
     {
         if ($columnName == 'index') {
             $result = $this->dbService->query("SHOW INDEX FROM {$this->dbService->prefixTable($tableName)};");
-            if (@mysqli_num_rows($result) === 0) {
+            if (!$result) {
+                return [];
+            }
+            $data = $result->fetch(\PDO::FETCH_ASSOC);
+            if ($data === false) {
                 return [];
             }
         } else {
             $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable($tableName)} LIKE '$columnName';");
-            if (@mysqli_num_rows($result) === 0) {
+            $data = $result ? $result->fetch(\PDO::FETCH_ASSOC) : false;
+            if ($data === false) {
                 throw new Exception("tables `$tableName` not verified because error while getting `$columnName` column !", 1);
             }
         }
-        $data = mysqli_fetch_assoc($result);
-        mysqli_free_result($result);
 
         return $data;
     }
