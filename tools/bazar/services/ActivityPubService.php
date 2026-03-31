@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\TripleStore;
 
 class ActivityPubService
@@ -152,15 +153,37 @@ class ActivityPubService
             }
             
             case 'Create': {
-                $activity['object']['antispam'] = 1;
+                $object = $activity['object'];
+                $sourceUrl = $object['id'] ?? null;
                 $entryManager = $this->container->get(EntryManager::class);
-                $entry = $entryManager->create($form['bn_id_nature'], $activity['object'], true/*, $_SERVER['HTTP_SOURCE_URL']*/);
+                $entryManager->create($form['bn_id_nature'], $object, true, $sourceUrl);
+                break;
+            }
 
-                var_dump($entry);
+            case 'Update': {
+                $object = $activity['object'];
+                $sourceUrl = $object['id'] ?? null;
+                if ($sourceUrl) {
+                    $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $sourceUrl, '=', '=', '=');
+                    if (!empty($triples)) {
+                        $tag = $triples[0]['resource'];
+                        $entryManager = $this->container->get(EntryManager::class);
+                        $entryManager->update($tag, $object, true);
+                    }
+                }
+                break;
+            }
 
-                // if (!$entry) {
-                //     throw new BadRequestHttpException();
-                // }
+            case 'Delete': {
+                $objectId = \is_array($activity['object']) ? ($activity['object']['id'] ?? null) : $activity['object'];
+                if ($objectId) {
+                    $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $objectId, '=', '=', '=');
+                    if (!empty($triples)) {
+                        $tag = $triples[0]['resource'];
+                        $entryManager = $this->container->get(EntryManager::class);
+                        $entryManager->delete($tag, true);
+                    }
+                }
                 break;
             }
         }
