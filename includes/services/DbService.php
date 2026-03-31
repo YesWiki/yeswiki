@@ -656,6 +656,187 @@ class DbService
         }
     }
 
+    // ========================================================================
+    // Schema generation helpers for CREATE TABLE statements
+    // ========================================================================
+
+    /**
+     * Returns the SQL data type for a varchar/string column.
+     *
+     * @param int|null $length The max length (null for unlimited text)
+     * @return string SQL type
+     */
+    public function typeVarchar(?int $length = null): string
+    {
+        if ($length === null) {
+            return 'TEXT';
+        }
+
+        switch ($this->driver) {
+            case 'sqlite':
+                return 'TEXT';
+            case 'pgsql':
+            case 'mysql':
+            default:
+                return "VARCHAR($length)";
+        }
+    }
+
+    /**
+     * Returns the SQL data type for an integer column.
+     *
+     * @param bool $unsigned Whether the integer is unsigned (MySQL only)
+     * @return string SQL type
+     */
+    public function typeInt(bool $unsigned = false): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                return 'INTEGER';
+            case 'pgsql':
+                return 'INTEGER';
+            case 'mysql':
+            default:
+                return $unsigned ? 'INT UNSIGNED' : 'INT';
+        }
+    }
+
+    /**
+     * Returns the SQL data type for a small integer (tinyint).
+     *
+     * @return string SQL type
+     */
+    public function typeSmallInt(): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                return 'INTEGER';
+            case 'pgsql':
+                return 'SMALLINT';
+            case 'mysql':
+            default:
+                return 'TINYINT(1)';
+        }
+    }
+
+    /**
+     * Returns the SQL data type for a datetime/timestamp column.
+     *
+     * @return string SQL type
+     */
+    public function typeDatetime(): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                return 'TEXT';
+            case 'pgsql':
+                return 'TIMESTAMP';
+            case 'mysql':
+            default:
+                return 'DATETIME';
+        }
+    }
+
+    /**
+     * Returns the SQL data type for a text/longtext column.
+     *
+     * @param bool $long Whether to use longtext (MySQL only)
+     * @return string SQL type
+     */
+    public function typeText(bool $long = false): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+            case 'pgsql':
+                return 'TEXT';
+            case 'mysql':
+            default:
+                return $long ? 'LONGTEXT' : 'TEXT';
+        }
+    }
+
+    /**
+     * Returns the auto-increment column definition.
+     * Note: For SQLite, AUTOINCREMENT must be part of PRIMARY KEY.
+     *
+     * @param bool $isPrimaryKey Whether this is also the primary key
+     * @return string SQL column definition part
+     */
+    public function autoIncrement(bool $isPrimaryKey = true): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                return $isPrimaryKey ? 'INTEGER PRIMARY KEY AUTOINCREMENT' : 'INTEGER AUTOINCREMENT';
+            case 'pgsql':
+                return $isPrimaryKey ? 'SERIAL PRIMARY KEY' : 'SERIAL';
+            case 'mysql':
+            default:
+                $pk = $isPrimaryKey ? ' PRIMARY KEY' : '';
+                return "INT UNSIGNED NOT NULL AUTO_INCREMENT$pk";
+        }
+    }
+
+    /**
+     * Returns an ENUM type or equivalent CHECK constraint.
+     *
+     * @param string $columnName The column name (needed for CHECK constraint)
+     * @param array $values The allowed values
+     * @return string SQL type definition
+     */
+    public function typeEnum(string $columnName, array $values): string
+    {
+        $quotedValues = array_map(fn($v) => "'$v'", $values);
+        $valuesList = implode(', ', $quotedValues);
+
+        switch ($this->driver) {
+            case 'sqlite':
+                return "TEXT CHECK(" . $this->quoteIdentifier($columnName) . " IN ($valuesList))";
+            case 'pgsql':
+                return "VARCHAR(1) CHECK(" . $this->quoteIdentifier($columnName) . " IN ($valuesList))";
+            case 'mysql':
+            default:
+                return "ENUM($valuesList)";
+        }
+    }
+
+    /**
+     * Returns the table options clause (charset, engine, etc.).
+     *
+     * @return string SQL table options or empty string
+     */
+    public function tableOptions(): string
+    {
+        switch ($this->driver) {
+            case 'mysql':
+                return ' CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB';
+            case 'sqlite':
+            case 'pgsql':
+            default:
+                return '';
+        }
+    }
+
+    /**
+     * Returns whether the database driver requires separate CREATE INDEX statements.
+     * MySQL can have indexes inline, SQLite/PostgreSQL need separate statements.
+     *
+     * @return bool
+     */
+    public function needsSeparateIndexStatements(): bool
+    {
+        return $this->driver !== 'mysql';
+    }
+
+    /**
+     * Returns whether the database supports FULLTEXT indexes.
+     *
+     * @return bool
+     */
+    public function supportsFulltext(): bool
+    {
+        return $this->driver === 'mysql';
+    }
+
     /**
      * get SQL content : backup method ; prefer mysqldump way if available.
      * Note: This method generates MySQL-compatible SQL dumps.

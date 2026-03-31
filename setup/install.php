@@ -238,16 +238,18 @@ $replacements = [
 ];
 
 // Determine which SQL file to use based on driver
+// Prefer Twig templates (.sql.twig) which work for all drivers
 $sqlFileBase = 'setup/sql/create-tables';
 $sqlFile = $sqlFileBase . '.sql';
-if ($dbDriver !== 'mysql' && file_exists($sqlFileBase . '-' . $dbDriver . '.sql')) {
+// For backwards compatibility, check for driver-specific SQL files first (if no Twig template)
+if (!file_exists($sqlFileBase . '.sql.twig') && $dbDriver !== 'mysql' && file_exists($sqlFileBase . '-' . $dbDriver . '.sql')) {
     $sqlFile = $sqlFileBase . '-' . $dbDriver . '.sql';
 }
 
 // tables, admin user and admin group creation
 echo '<br /><b>' . _t('DATABASE_INSTALLATION') . "</b><br>\n";
 $dblink->beginTransaction();
-$result = @querySqlFile($dblink, $sqlFile, $replacements);
+$result = @querySqlFile($dblink, $sqlFile, $replacements, $dbDriver);
 if (!$result) {
     $dblink->rollBack();
 }
@@ -259,13 +261,15 @@ test(
 );
 
 // Default pages content
+// Prefer Twig templates (.sql.twig) which work for all drivers
 $sqlFileBase = 'setup/sql/default-content';
 $sqlFile = $sqlFileBase . '.sql';
-if ($dbDriver !== 'mysql' && file_exists($sqlFileBase . '-' . $dbDriver . '.sql')) {
+// For backwards compatibility, check for driver-specific SQL files first (if no Twig template)
+if (!file_exists($sqlFileBase . '.sql.twig') && $dbDriver !== 'mysql' && file_exists($sqlFileBase . '-' . $dbDriver . '.sql')) {
     $sqlFile = $sqlFileBase . '-' . $dbDriver . '.sql';
 }
 
-$result = @querySqlFile($dblink, $sqlFile, $replacements);
+$result = @querySqlFile($dblink, $sqlFile, $replacements, $dbDriver);
 if (!$result) {
     $dblink->rollBack();
     foreach ($tablesNames as $tableName) {
