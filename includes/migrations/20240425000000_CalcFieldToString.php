@@ -36,16 +36,27 @@ class CalcFieldToString extends YesWikiMigration
                     if (!empty($fieldNames)) {
                         // prepare SQL to select concerned entries (SearchManager->search does not manage int)
                         $fieldsNamesList = implode('|', $fieldNames);
+                        $regexpOp = $this->dbService->regexpOperator();
+
+                        // Quote identifiers for cross-database compatibility
+                        $commentOnCol = $this->dbService->quoteIdentifier('comment_on');
+                        $bodyCol = $this->dbService->quoteIdentifier('body');
+                        $tagCol = $this->dbService->quoteIdentifier('tag');
+                        $resourceCol = $this->dbService->quoteIdentifier('resource');
+                        $valueCol = $this->dbService->quoteIdentifier('value');
+                        $propertyCol = $this->dbService->quoteIdentifier('property');
+                        $idCol = $this->dbService->quoteIdentifier('id');
+
                         $sql = <<<SQL
                             SELECT DISTINCT * FROM {$this->dbService->prefixTable('pages')}
-                            WHERE `comment_on` = ''
-                            AND `body` LIKE '%"id_typeannonce":"{$this->dbService->escape(strval($formId))}"%'
-                            AND `tag` IN (
-                                    SELECT DISTINCT `resource` FROM {$this->dbService->prefixTable('triples')}
-                                    WHERE `value` = "fiche_bazar" AND `property` = "http://outils-reseaux.org/_vocabulary/type"
-                                    ORDER BY `resource` ASC
+                            WHERE $commentOnCol = ''
+                            AND $bodyCol LIKE '%"id_typeannonce":"{$this->dbService->escape(strval($formId))}"%'
+                            AND $tagCol IN (
+                                    SELECT DISTINCT $resourceCol FROM {$this->dbService->prefixTable('triples')}
+                                    WHERE $valueCol = 'fiche_bazar' AND $propertyCol = 'http://outils-reseaux.org/_vocabulary/type'
+                                    ORDER BY $resourceCol ASC
                             )
-                            AND `body` REGEXP '"($fieldsNamesList)":-?[0-9]'
+                            AND $bodyCol $regexpOp '"($fieldsNamesList)":-?[0-9]'
                         SQL;
                         $results = $this->dbService->loadAll($sql);
                         if (!empty($results)) {
@@ -56,9 +67,9 @@ class CalcFieldToString extends YesWikiMigration
                                         $oldValue = $matches[2][$index];
                                         $newValue = strval($oldValue);
                                         $replaceSQL = <<<SQL
-                                            UPDATE {$this->dbService->prefixTable('pages')} 
-                                            SET `body` = replace(`body`,'"$fieldName":$oldValue,','"$fieldName":"$newValue",')
-                                            WHERE `id` = '{$this->dbService->escape($page['id'])}'
+                                            UPDATE {$this->dbService->prefixTable('pages')}
+                                            SET $bodyCol = replace($bodyCol, '"$fieldName":$oldValue,', '"$fieldName":"$newValue",')
+                                            WHERE $idCol = '{$this->dbService->escape($page['id'])}'
                                         SQL;
                                         // replace
                                         $this->dbService->query($replaceSQL);

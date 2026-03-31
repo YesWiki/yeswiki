@@ -38,16 +38,14 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
     public function newModeIsActivated(): bool
     {
         try {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('users')} LIKE 'password';");
-            if (!$result) {
-                return false;
-            }
-            $row = $result->fetch(\PDO::FETCH_ASSOC);
-            if ($row === false) {
+            $columnInfo = $this->dbService->getColumnInfo('users', 'password');
+            if (empty($columnInfo)) {
                 return false;
             }
 
-            return !empty($row['Type']) && $row['Type'] == 'varchar(256)';
+            // Check if the column type is varchar(256) - normalize comparison
+            $type = strtolower($columnInfo['type']);
+            return $type === 'varchar(256)' || $type === 'character varying(256)';
         } catch (Throwable $th) {
             return false;
         }
@@ -55,6 +53,6 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 
     public function activateNewMode(): bool
     {
-        return $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('users')} MODIFY COLUMN `password` varchar(256) NOT NULL;");
+        return $this->dbService->modifyColumn('users', 'password', 'varchar(256)', true);
     }
 }

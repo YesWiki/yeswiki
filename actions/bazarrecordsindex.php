@@ -6,7 +6,7 @@ lists only bazar records.
 @licence: AGPL
 */
 
-if ($pages = $this->LoadAll('SELECT body FROM ' . $this->config['table_prefix'] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' AND body LIKE \'{"%\' AND tag IN (SELECT DISTINCT resource FROM ' . $this->config['table_prefix'] . 'triples WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type")')) {
+if ($pages = $this->LoadAll("SELECT body FROM " . $this->config['table_prefix'] . "pages WHERE latest = 'Y' AND comment_on='' AND body LIKE '{" . '"%' . "' AND tag IN (SELECT DISTINCT resource FROM " . $this->config['table_prefix'] . "triples WHERE value = 'fiche_bazar' AND property = 'http://outils-reseaux.org/_vocabulary/type')")) {
     $pagesarray = [];
     foreach ($pages as $page) {
         $fiche = json_decode($page['body'], true);

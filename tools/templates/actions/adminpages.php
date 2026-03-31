@@ -1,9 +1,9 @@
 <?php
 
 if ($this->UserIsAdmin()) {
-    $sql = 'SELECT tag,time,owner FROM ' . $this->GetConfigValue('table_prefix') . 'pages ' .
-        'WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%"' .
-        'ORDER BY tag';
+    $sql = "SELECT tag,time,owner FROM " . $this->GetConfigValue('table_prefix') . "pages " .
+        "WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%'" .
+        "ORDER BY tag";
     $pages = $this->LoadAll($sql);
 
     echo $this->render('@templates/pages_table.tpl.html', ['pages' => $pages]);

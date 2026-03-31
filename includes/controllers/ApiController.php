@@ -506,8 +506,8 @@ class ApiController extends YesWikiController
         // recuperation des pages wikis
         $sql = <<<SQL
             SELECT * FROM {$dbService->prefixTable('pages')}
-            WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%"
-            AND tag NOT IN (SELECT resource FROM {$dbService->prefixTable('triples')} WHERE property="http://outils-reseaux.org/_vocabulary/type")
+            WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%'
+            AND tag NOT IN (SELECT resource FROM {$dbService->prefixTable('triples')} WHERE property='http://outils-reseaux.org/_vocabulary/type')
             ORDER BY tag ASC
         SQL;
         $pages = _convert($dbService->loadAll($sql), 'ISO-8859-15');

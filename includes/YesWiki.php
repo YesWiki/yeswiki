@@ -371,15 +371,16 @@ class Wiki
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
             $wnPages = $this->GetConfigValue('table_prefix') . 'pages';
-            $daysFormatted = $this->services->get(DbService::class)->escape($days);
+            $dbService = $this->services->get(DbService::class);
+            $dateExpr = $dbService->dateSubDays(intval($days));
             $sql = <<<SQL
             SELECT DISTINCT a.id FROM $wnPages a,$wnPages b
                 WHERE a.latest = 'N'
                     AND b.latest = 'N'
-                    AND a.time < date_sub(now(), INTERVAL '$daysFormatted' DAY)
+                    AND a.time < $dateExpr
                     AND a.tag = b.tag
                     AND a.time < b.time
-                    AND b.time < date_sub(now(), INTERVAL '$daysFormatted' DAY);
+                    AND b.time < $dateExpr;
             SQL;
             $ids = $this->LoadAll($sql);
 
@@ -752,7 +753,7 @@ class Wiki
             }
 
             $dbService = $this->services->get(DbService::class);
-            $this->Query('insert into ' . $this->config['table_prefix'] . 'referrers set ' . "page_tag = '" . $dbService->escape($tag) . "', referrer = '" . $dbService->escape($referrer) . "', " . 'time = now()');
+            $this->Query('INSERT INTO ' . $this->config['table_prefix'] . "referrers (page_tag, referrer, time) VALUES ('" . $dbService->escape($tag) . "', '" . $dbService->escape($referrer) . "', " . $dbService->now() . ')');
         }
     }
 

@@ -558,9 +558,9 @@ class EntryManager
         // not possible to init the Guard in the constructor because of circular reference problem
         if ($this->wiki->services->get(Guard::class)->isAllowed('valider_fiche')) {
             if ($accepted) {
-                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('fiche') . 'SET bf_statut_fiche=1 WHERE bf_id_fiche="' . $this->dbService->escape($entryId) . '"');
+                $this->dbService->query("UPDATE " . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=1 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
             } else {
-                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('fiche') . 'SET bf_statut_fiche=2 WHERE bf_id_fiche="' . $this->dbService->escape($entryId) . '"');
+                $this->dbService->query("UPDATE " . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=2 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
             }
             // TODO envoie mail annonceur
         }

@@ -106,9 +106,9 @@ class AclService
         }
 
         if ($acl) {
-            $this->dbService->query('UPDATE' . $this->dbService->prefixTable('acls') . 'SET list = "' . $this->dbService->escape(trim(str_replace("\r", '', $list))) . '" WHERE page_tag = "' . $this->dbService->escape($tag) . '" AND privilege = "' . $this->dbService->escape($privilege) . '"');
+            $this->dbService->query('UPDATE' . $this->dbService->prefixTable('acls') . "SET list = '" . $this->dbService->escape(trim(str_replace("\r", '', $list))) . "' WHERE page_tag = '" . $this->dbService->escape($tag) . "' AND privilege = '" . $this->dbService->escape($privilege) . "'");
         } else {
-            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('acls') . "SET list = '" . $this->dbService->escape(trim(str_replace("\r", '', $list))) . "', page_tag = '" . $this->dbService->escape($tag) . "', privilege = '" . $this->dbService->escape($privilege) . "'");
+            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('acls') . "(page_tag, privilege, list) VALUES ('" . $this->dbService->escape($tag) . "', '" . $this->dbService->escape($privilege) . "', '" . $this->dbService->escape(trim(str_replace("\r", '', $list))) . "')");
         }
 
         // Update the cache
@@ -382,7 +382,7 @@ class AclService
                 $newRequestStart .= ') OR (';
 
                 $newRequestStart .= '(list LIKE "%\\%%" AND list NOT LIKE "%!\\%%")';
-                $newRequestStart .= ' AND owner = _utf8\'' . $this->dbService->escape($userName) . '\'';
+                $newRequestStart .= " AND owner = '" . $this->dbService->escape($userName) . "'";
             }
         }
 

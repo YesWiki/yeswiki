@@ -31,7 +31,7 @@ if ($last = $this->GetParameter('last')) {
         $sql = 'SELECT name, signuptime FROM ' . $this->config['table_prefix'] . 'users';
 
         if (!empty($dateMin)) {
-            $sql .= ' WHERE signuptime >= "' . $dateMin . '"';
+            $sql .= " WHERE signuptime >= '" . $dateMin . "'";
         }
         $sql .= ' ORDER BY signuptime DESC LIMIT ' . $last;
         $last_users = $this->LoadAll($sql);
@@ -55,7 +55,7 @@ if ($last = $this->GetParameter('last')) {
     $sql = 'SELECT name, signuptime FROM ' . $this->config['table_prefix'] . 'users';
 
     if (!empty($dateMin)) {
-        $sql .= ' WHERE signuptime >= "' . $dateMin . '"';
+        $sql .= " WHERE signuptime >= '" . $dateMin . "'";
     }
     $sql .= ' ORDER BY name ASC';
     $curday = '';

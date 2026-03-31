@@ -110,6 +110,13 @@ class DbService
             case 'sqlite':
                 // Enable foreign keys for SQLite
                 $this->link->exec('PRAGMA foreign_keys = ON');
+                // Add REGEXP function for SQLite (not built-in)
+                $this->link->sqliteCreateFunction('REGEXP', function ($pattern, $value) {
+                    if ($pattern === null || $value === null) {
+                        return false;
+                    }
+                    return preg_match('/' . $pattern . '/iu', $value) === 1;
+                }, 2);
                 break;
 
             case 'pgsql':
@@ -122,6 +129,24 @@ class DbService
     public function getDriver(): string
     {
         return $this->driver;
+    }
+
+    /**
+     * Returns a SQL expression for the current timestamp.
+     * This is database-driver agnostic.
+     *
+     * @return string SQL expression
+     */
+    public function now(): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                return "datetime('now')";
+            case 'pgsql':
+            case 'mysql':
+            default:
+                return 'NOW()';
+        }
     }
 
     /**
@@ -141,6 +166,155 @@ class DbService
             case 'mysql':
             default:
                 return "DATE_SUB(NOW(), INTERVAL " . intval($days) . " DAY)";
+        }
+    }
+
+    /**
+     * Returns a SQL expression for "current timestamp minus X hours"
+     * This is database-driver agnostic.
+     *
+     * @param int $hours Number of hours to subtract
+     * @return string SQL expression
+     */
+    public function dateSubHours(int $hours): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                return "datetime('now', '-" . intval($hours) . " hours')";
+            case 'pgsql':
+                return "NOW() - INTERVAL '" . intval($hours) . " hours'";
+            case 'mysql':
+            default:
+                return "DATE_SUB(NOW(), INTERVAL " . intval($hours) . " HOUR)";
+        }
+    }
+
+    /**
+     * Returns a SQL expression for extracting a value from a JSON column.
+     * This is database-driver agnostic.
+     *
+     * @param string $column The column containing JSON data
+     * @param string $path The JSON path (e.g., '$.fieldname')
+     * @return string SQL expression
+     */
+    public function jsonExtract(string $column, string $path): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                // SQLite's json_extract throws error on non-JSON, so wrap with json_valid check
+                return "(CASE WHEN json_valid($column) THEN json_extract($column, '$path') ELSE NULL END)";
+            case 'pgsql':
+                // PostgreSQL uses ->> operator to extract as text
+                // Convert $.fieldname to just fieldname
+                $field = preg_replace('/^\$\./', '', $path);
+                return "(CASE WHEN $column ~ '^\\s*\\{' THEN ($column::jsonb ->> '$field') ELSE NULL END)";
+            case 'mysql':
+            default:
+                // MySQL needs JSON_UNQUOTE to get unquoted strings
+                return "JSON_UNQUOTE(JSON_EXTRACT($column, '$path'))";
+        }
+    }
+
+    /**
+     * Quotes an identifier (table or column name) for the current database driver.
+     * Use this for reserved keywords like 'user', 'time', 'order', etc.
+     *
+     * @param string $identifier The identifier to quote
+     * @return string The quoted identifier
+     */
+    public function quoteIdentifier(string $identifier): string
+    {
+        switch ($this->driver) {
+            case 'mysql':
+                return '`' . $identifier . '`';
+            case 'sqlite':
+            case 'pgsql':
+            default:
+                return '"' . $identifier . '"';
+        }
+    }
+
+    /**
+     * Returns the collation clause for case-insensitive string comparisons.
+     * This is database-driver agnostic.
+     *
+     * @return string SQL collation clause (empty string for drivers that don't need it)
+     */
+    public function collateClause(): string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                return ' COLLATE NOCASE';
+            case 'pgsql':
+                // PostgreSQL doesn't use COLLATE for case-insensitive; use ILIKE instead
+                return '';
+            case 'mysql':
+            default:
+                return ' COLLATE utf8mb4_unicode_ci';
+        }
+    }
+
+    /**
+     * Returns the REGEXP operator for the current database driver.
+     * This is database-driver agnostic.
+     *
+     * @param bool $not Whether to negate the condition (NOT REGEXP)
+     * @return string The REGEXP operator
+     */
+    public function regexpOperator(bool $not = false): string
+    {
+        $notPrefix = $not ? 'NOT ' : '';
+
+        switch ($this->driver) {
+            case 'pgsql':
+                return $not ? '!~' : '~';
+            case 'sqlite':
+            case 'mysql':
+            default:
+                return $notPrefix . 'REGEXP';
+        }
+    }
+
+    /**
+     * Returns a SQL expression for FIND_IN_SET (checking if a value exists in a comma-separated list).
+     * This is database-driver agnostic.
+     *
+     * @param string $needle The value to search for (should be already escaped/quoted)
+     * @param string $haystack The column or expression containing comma-separated values
+     * @param bool $not Whether to negate the condition (NOT FIND_IN_SET)
+     * @return string SQL expression
+     */
+    public function findInSet(string $needle, string $haystack, bool $not = false): string
+    {
+        $notPrefix = $not ? 'NOT ' : '';
+
+        switch ($this->driver) {
+            case 'sqlite':
+                // SQLite doesn't have FIND_IN_SET, use LIKE with delimiters
+                // We check if the value appears at the start, middle, or end of the list
+                if ($not) {
+                    return "(($haystack NOT LIKE $needle || ',%') AND " .
+                           "($haystack NOT LIKE '%,' || $needle || ',%') AND " .
+                           "($haystack NOT LIKE '%,' || $needle) AND " .
+                           "($haystack != $needle))";
+                } else {
+                    return "(($haystack LIKE $needle || ',%') OR " .
+                           "($haystack LIKE '%,' || $needle || ',%') OR " .
+                           "($haystack LIKE '%,' || $needle) OR " .
+                           "($haystack = $needle))";
+                }
+
+            case 'pgsql':
+                // PostgreSQL: use ANY with string_to_array
+                if ($not) {
+                    return "($needle != ALL(string_to_array($haystack, ',')))";
+                } else {
+                    return "($needle = ANY(string_to_array($haystack, ',')))";
+                }
+
+            case 'mysql':
+            default:
+                return "{$notPrefix}FIND_IN_SET($needle, $haystack)";
         }
     }
 
@@ -241,54 +415,251 @@ class DbService
         return 0;
     }
 
-    public function columnExists($table, $column)
+    public function columnExists($table, $column): bool
     {
-        return $this->count("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$this->escape($column)}';") > 0;
+        $tableName = trim($this->prefixTable($table));
+        $escapedColumn = $this->escape($column);
+
+        switch ($this->driver) {
+            case 'sqlite':
+                $result = $this->loadAll("PRAGMA table_info($tableName)");
+                foreach ($result as $row) {
+                    if (strcasecmp($row['name'], $column) === 0) {
+                        return true;
+                    }
+                }
+                return false;
+
+            case 'pgsql':
+                $result = $this->loadSingle(
+                    "SELECT column_name FROM information_schema.columns " .
+                    "WHERE table_name = '$tableName' AND column_name = '$escapedColumn'"
+                );
+                return !empty($result);
+
+            case 'mysql':
+            default:
+                return $this->count("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$escapedColumn}';") > 0;
+        }
     }
 
     public function dropColumn($table, $column)
     {
         if ($this->columnExists($table, $column)) {
-            $this->query("ALTER TABLE {$this->prefixTable($table)} DROP `{$this->escape($column)}`;");
+            $quotedColumn = $this->quoteIdentifier($this->escape($column));
+            $this->query("ALTER TABLE {$this->prefixTable($table)} DROP COLUMN $quotedColumn;");
+        }
+    }
+
+    /**
+     * Returns information about a column (type, nullable, etc.)
+     *
+     * @param string $table The table name (without prefix)
+     * @param string $column The column name
+     * @return array|null Column info with 'type', 'nullable', 'default' keys or null if not found
+     */
+    public function getColumnInfo($table, $column): ?array
+    {
+        $tableName = trim($this->prefixTable($table));
+        $escapedColumn = $this->escape($column);
+
+        switch ($this->driver) {
+            case 'sqlite':
+                $result = $this->loadAll("PRAGMA table_info($tableName)");
+                foreach ($result as $row) {
+                    if (strcasecmp($row['name'], $column) === 0) {
+                        return [
+                            'type' => strtolower($row['type']),
+                            'nullable' => $row['notnull'] == 0,
+                            'default' => $row['dflt_value'],
+                        ];
+                    }
+                }
+                return null;
+
+            case 'pgsql':
+                $result = $this->loadSingle(
+                    "SELECT data_type, character_maximum_length, is_nullable, column_default " .
+                    "FROM information_schema.columns " .
+                    "WHERE table_name = '$tableName' AND column_name = '$escapedColumn'"
+                );
+                if (empty($result)) {
+                    return null;
+                }
+                $type = $result['data_type'];
+                if (!empty($result['character_maximum_length'])) {
+                    $type .= '(' . $result['character_maximum_length'] . ')';
+                }
+                return [
+                    'type' => strtolower($type),
+                    'nullable' => $result['is_nullable'] === 'YES',
+                    'default' => $result['column_default'],
+                ];
+
+            case 'mysql':
+            default:
+                $result = $this->loadSingle("SHOW COLUMNS FROM {$this->prefixTable($table)} LIKE '{$escapedColumn}';");
+                if (empty($result)) {
+                    return null;
+                }
+                return [
+                    'type' => strtolower($result['Type']),
+                    'nullable' => $result['Null'] === 'YES',
+                    'default' => $result['Default'],
+                ];
+        }
+    }
+
+    /**
+     * Modifies a column type.
+     * Note: SQLite has limited ALTER TABLE support. For SQLite, this method may need
+     * to recreate the table to change column types.
+     *
+     * @param string $table The table name (without prefix)
+     * @param string $column The column name
+     * @param string $newType The new column type (e.g., 'varchar(256)')
+     * @param bool $notNull Whether the column should be NOT NULL
+     * @return bool Success
+     */
+    public function modifyColumn($table, $column, $newType, $notNull = false): bool
+    {
+        $quotedColumn = $this->quoteIdentifier($this->escape($column));
+        $notNullClause = $notNull ? ' NOT NULL' : '';
+
+        switch ($this->driver) {
+            case 'sqlite':
+                // SQLite doesn't support ALTER COLUMN, would need table recreation
+                // For now, we'll skip this for SQLite as it's complex
+                // The column type in SQLite is mostly advisory anyway
+                return true;
+
+            case 'pgsql':
+                $this->query(
+                    "ALTER TABLE {$this->prefixTable($table)} " .
+                    "ALTER COLUMN $quotedColumn TYPE $newType"
+                );
+                if ($notNull) {
+                    $this->query(
+                        "ALTER TABLE {$this->prefixTable($table)} " .
+                        "ALTER COLUMN $quotedColumn SET NOT NULL"
+                    );
+                }
+                return true;
+
+            case 'mysql':
+            default:
+                $this->query(
+                    "ALTER TABLE {$this->prefixTable($table)} " .
+                    "MODIFY COLUMN $quotedColumn $newType$notNullClause;"
+                );
+                return true;
+        }
+    }
+
+    /**
+     * Returns a list of all tables in the database.
+     *
+     * @return array List of table names
+     */
+    public function getTables(): array
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                $result = $this->loadAll("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+                return array_column($result, 'name');
+
+            case 'pgsql':
+                $result = $this->loadAll("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
+                return array_column($result, 'tablename');
+
+            case 'mysql':
+            default:
+                $result = $this->loadAll('SHOW TABLES');
+                return array_map(function ($row) {
+                    return array_values($row)[0];
+                }, $result);
+        }
+    }
+
+    /**
+     * Returns the CREATE TABLE statement for a table.
+     * Note: Only fully supported for MySQL. SQLite returns the original schema.
+     * PostgreSQL support is limited.
+     *
+     * @param string $tableName The table name
+     * @return string|null The CREATE TABLE statement or null if not supported
+     */
+    public function getTableSchema(string $tableName): ?string
+    {
+        switch ($this->driver) {
+            case 'sqlite':
+                $result = $this->loadSingle(
+                    "SELECT sql FROM sqlite_master WHERE type='table' AND name='$tableName'"
+                );
+                return $result['sql'] ?? null;
+
+            case 'pgsql':
+                // PostgreSQL doesn't have a simple SHOW CREATE TABLE equivalent
+                // Return null to indicate this feature is not supported
+                return null;
+
+            case 'mysql':
+            default:
+                $result = $this->loadSingle("SHOW CREATE TABLE $tableName");
+                return $result['Create Table'] ?? null;
         }
     }
 
     public function getDbTimeZone(): ?string
     {
-        $query = 'SELECT @@SESSION.time_zone as timezone;';
-        $result = $this->loadSingle($query);
-        $tz = (!empty($result['timezone']))
-            ? $result['timezone']
-            : null;
-        if ($tz === 'SYSTEM') {
-            $tz = ini_get('date.timezone') ?? null;
-        }
-        if (empty($tz)) {
-            $queryBis = 'SELECT NOW() as time;';
-            $result = $this->loadSingle($queryBis);
-            if (empty($result['time'])) {
-                $tz = null;
-            } else {
-                $diff = (new DateTime())->diff(new DateTime($result['time']));
-                // TODO use Carbon
-                $diffInMinutes = ($diff->invert ? -1 : 1) * ($diff->i + 60 * $diff->h);
-                // convert to UTC
-                $diffInMinutes += intval(floor((new DateTime())->getOffset() / 60));
-                // convert in DateInterval
-                $diff = new DateInterval('PT0S');
-                $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
-                $diff->i = abs($diffInMinutes) % 60;
-                $diff->h = (abs($diffInMinutes) - $diff->i) / 60;
+        switch ($this->driver) {
+            case 'sqlite':
+                // SQLite doesn't have timezone support, use PHP's timezone
+                return ini_get('date.timezone') ?? null;
 
-                $tz = $diff->format('%R%H:%I');
-            }
-        }
+            case 'pgsql':
+                $result = $this->loadSingle("SHOW timezone");
+                return $result['TimeZone'] ?? (ini_get('date.timezone') ?? null);
 
-        return $tz;
+            case 'mysql':
+            default:
+                $query = 'SELECT @@SESSION.time_zone as timezone;';
+                $result = $this->loadSingle($query);
+                $tz = (!empty($result['timezone']))
+                    ? $result['timezone']
+                    : null;
+                if ($tz === 'SYSTEM') {
+                    $tz = ini_get('date.timezone') ?? null;
+                }
+                if (empty($tz)) {
+                    $queryBis = 'SELECT NOW() as time;';
+                    $result = $this->loadSingle($queryBis);
+                    if (empty($result['time'])) {
+                        $tz = null;
+                    } else {
+                        $diff = (new DateTime())->diff(new DateTime($result['time']));
+                        // TODO use Carbon
+                        $diffInMinutes = ($diff->invert ? -1 : 1) * ($diff->i + 60 * $diff->h);
+                        // convert to UTC
+                        $diffInMinutes += intval(floor((new DateTime())->getOffset() / 60));
+                        // convert in DateInterval
+                        $diff = new DateInterval('PT0S');
+                        $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
+                        $diff->i = abs($diffInMinutes) % 60;
+                        $diff->h = (abs($diffInMinutes) - $diff->i) / 60;
+
+                        $tz = $diff->format('%R%H:%I');
+                    }
+                }
+
+                return $tz;
+        }
     }
 
     /**
-     * get SQL content : backup method ; preferer mysqldump way it available.
+     * get SQL content : backup method ; prefer mysqldump way if available.
+     * Note: This method generates MySQL-compatible SQL dumps.
+     * For SQLite, consider using file copy instead.
      *
      * @return array ['sql' => string, 'error' => string]
      */
@@ -299,17 +670,10 @@ class DbService
         try {
             $tablesPrefix = trim($this->prefixTable(''));
             $tablesPostfix = [];
-            // get Tables
-            $tables = $this->loadAll('show tables');
-            if (!is_array($tables)) {
-                throw new Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : 'show tables' sql command did not return an array !");
-            }
+            // get Tables using the driver-agnostic method
+            $tables = $this->getTables();
 
-            foreach ($tables as $tableInfo) {
-                if (!is_array($tableInfo)) {
-                    throw new Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : '\$tableInfo' sql command did not return an array !");
-                }
-                $tableName = array_values($tableInfo)[0];
+            foreach ($tables as $tableName) {
                 if (strpos($tableName, $tablesPrefix) === 0) {
                     $tablesPostfix[] = $tableName;
                 }
@@ -358,10 +722,9 @@ class DbService
                 SQL;
                 // END HEADER
 
-                $createTableResult = $this->query('show create table ' . $tableName);
-
-                while ($creationTable = $createTableResult->fetch(PDO::FETCH_NUM)) {
-                    $sql .= $creationTable[1] . ";\n\n";
+                $tableSchema = $this->getTableSchema($tableName);
+                if ($tableSchema) {
+                    $sql .= $tableSchema . ";\n\n";
                 }
 
                 // DUMP DATA

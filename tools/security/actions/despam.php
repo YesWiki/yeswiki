@@ -48,13 +48,14 @@ if ($this->UserIsAdmin()) {
         // -- (2) Page de resultats et form. de selection des pages a effacer ----
         //
         if (isset($_POST['from']) && isset($_POST['2'])) {
+            $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
             $requete =
         'select *
               from ' . $this->config['table_prefix'] . 'pages
               where
-              time > date_sub(now(), interval ' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($_POST['from']) . " hour)
+              time > ' . $dbService->dateSubHours(intval($_POST['from'])) . "
               and latest = 'Y'
-              order by `time` desc";
+              order by time desc";
             $title =
         '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
         }
@@ -159,22 +160,24 @@ if ($this->UserIsAdmin()) {
                 // Fait de la derniere version de cette revision
                 // une version archivee
                 $requeteUpdate =
-          'update ' . $this->config['table_prefix'] . 'pages ' .
-          "set latest = 'N' " .
-          "where latest = 'Y' " .
-          "and tag = '" . $revision['tag'] . "' " .
-          'limit 1';
+          'UPDATE ' . $this->config['table_prefix'] . 'pages ' .
+          "SET latest = 'N' " .
+          "WHERE latest = 'Y' " .
+          "AND tag = '" . $dbService->escape($revision['tag']) . "'";
                 $this->Query($requeteUpdate);
                 $restoredPages .= $revision['tag'] . ', ';
 
                 // add new revision
-                $this->Query('insert into ' . $this->config['table_prefix'] . 'pages set ' .
-          "tag = '" . $dbService->escape($revision['tag']) . "', " .
-          'time = now(), ' .
-          "owner = '" . $dbService->escape($revision['owner']) . "', " .
-          "user = '" . $dbService->escape('despam') . "', " .
-          "latest = 'Y', " .
-          "body = '" . $dbService->escape(chop($revision['body'])) . "'");
+                $userCol = $dbService->quoteIdentifier('user');
+                $this->Query('INSERT INTO ' . $this->config['table_prefix'] . 'pages ' .
+          "(tag, time, owner, $userCol, latest, body, body_r) VALUES (" .
+          "'" . $dbService->escape($revision['tag']) . "', " .
+          $dbService->now() . ', ' .
+          "'" . $dbService->escape($revision['owner']) . "', " .
+          "'" . $dbService->escape('despam') . "', " .
+          "'Y', " .
+          "'" . $dbService->escape(chop($revision['body'])) . "', " .
+          "'')");
             }
         }
         $restoredPages = trim($restoredPages, ', ');

@@ -8,9 +8,9 @@ if (isset($_GET['jsonp_callback'])) {
 
     if ($this->page && $this->HasAccess('comment', $_POST['initialpage']) && isset($_POST['antispam']) && $_POST['antispam'] == 1) {
         // find number
-        $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
-            . ' FROM ' . $this->GetConfigValue('table_prefix') . 'pages'
-            . ' WHERE comment_on != ""';
+        $sql = "SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id"
+            . " FROM " . $this->GetConfigValue('table_prefix') . "pages"
+            . " WHERE comment_on != ''";
         if ($lastComment = $this->LoadSingle($sql)) {
             $num = $lastComment['comment_id'] + 1;
         } else {
