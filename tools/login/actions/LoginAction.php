@@ -125,21 +125,25 @@ class LoginAction extends YesWikiAction
 
     private function getIncomingUrlFromServer(array $server): string
     {
-        $parts = parse_url($server['REQUEST_URI']);
-        $queryString = '';
-        $parsedQuery = [];
-        if (!empty($parts['query'])) {
-            parse_str($parts['query'], $parsedQuery);
+        $protocol = (!empty($server['HTTPS']) && $server['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $server['HTTP_HOST'];
+        $requestUri = $server['REQUEST_URI'];
 
-            unset($parsedQuery['context']);
+        $urlParts = parse_url($requestUri);
+        $queryParams = [];
 
-            if (!empty($parsedQuery)) {
-                $separator = ($this->wiki->config['rewrite_mode'] ? '?' : '&');
-                $queryString = $separator . http_build_query($parsedQuery);
-            }
+        if (isset($urlParts['query'])) {
+            parse_str($urlParts['query'], $queryParams);
         }
 
-        return $this->wiki->getBaseUrl() . ($parts['path'] ?? '') . $queryString;
+        unset($queryParams['context']);
+
+        $newQuery = http_build_query($queryParams);
+        $clean = ($urlParts['path'] ?? '') . ($newQuery !== '' ? '?' . $newQuery : '');
+
+        $fullUrl = $protocol . '://' . $host . $clean;
+
+        return $fullUrl;
     }
 
     private function renderForm(string $action): string
