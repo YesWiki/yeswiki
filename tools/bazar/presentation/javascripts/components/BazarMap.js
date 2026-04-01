@@ -51,23 +51,6 @@ Vue.component('BazarMap', {
     },
   },
   methods: {
-    refreshMarkers() {
-      if (!this.map) return;
-
-      const currentMarkers = [];
-      this.entries.forEach((entry) => {
-        const marker = this.createMarker(entry);
-        if (marker) currentMarkers.push(marker);
-      });
-
-      if (this.params.cluster && this.$refs.cluster?.mapObject) {
-        const cluster = this.$refs.cluster.mapObject;
-        cluster.clearLayers();
-        cluster.addLayers(currentMarkers);
-      } else if (!this.params.cluster) {
-        currentMarkers.forEach(m => m.addTo(this.map));
-      }
-    },
     getGeolocation(pEntry) {
 
       let lLatitude
@@ -86,7 +69,7 @@ Vue.component('BazarMap', {
         return null
     },
     updateBounds() {
-      if (!this.$refs.map) return
+      if (!this.map) return
       this.bounds = this.map.getBounds()
     },
     createTileLayers() {
@@ -351,6 +334,78 @@ Vue.component('BazarMap', {
         entry.marker.popup.openPopup()
       }
     },
+    loadMapEntries(newEntries, oldEntries) {
+      if (!this.map) return;
+
+      const newIds = newEntries.map((e) => e.id_fiche);
+      const oldIds = oldEntries ? oldEntries.map((e) => e.id_fiche) : [];
+
+      // Remove geometries for entries no longer displayed
+      if (oldEntries) {
+        oldEntries.forEach((entry) => {
+          if (!newIds.includes(entry.id_fiche)) {
+            if (entry.geometryGroup) {
+              entry.geometryGroup.remove();
+              entry.geometryGroup = null;
+            }
+          }
+        });
+      }
+
+      const currentMarkers = [];
+
+      newEntries.forEach((entry) => {
+        this.createMarker(entry);
+
+        // Handle geometries - always added to map directly, not to cluster
+        let lGeolocation = entry[this.params.geolocationfield];
+        if (lGeolocation && lGeolocation.geometries && !entry.geometryGroup) {
+          try {
+            const geojsonGeometries = JSON.parse(lGeolocation.geometries);
+            entry.geometryGroup = L.featureGroup().addTo(this.map);
+            entry.geometryGroup.on('click', (e) => {
+              L.DomEvent.stopPropagation(e);
+              this.selectedEntry = entry;
+            });
+            drawGeometries(entry.geometryGroup, geojsonGeometries.features, '', entry.id_fiche);
+          } catch (e) {
+            console.error(`Error drawing geometry for ${entry.id_fiche}`, e);
+          }
+        }
+
+        if (entry.marker) {
+          currentMarkers.push(entry.marker);
+        }
+      });
+
+      // Handle markers - cluster mode uses clearLayers/addLayers, non-cluster adds to map
+      if (this.params.cluster && this.$refs.cluster) {
+        this.$refs.cluster.clearLayers();
+        this.$refs.cluster.addLayers(currentMarkers);
+      } else {
+        // For non-cluster mode, remove old markers not in new list
+        if (oldEntries) {
+          oldEntries.forEach((entry) => {
+            if (!newIds.includes(entry.id_fiche) && entry.marker) {
+              entry.marker.remove();
+            }
+          });
+        }
+        currentMarkers.forEach((marker) => {
+          if (!marker._map) {
+            marker.addTo(this.map);
+          }
+        });
+      }
+    },
+    onMapReady() {
+      this.updateBounds();
+      this.createTileLayers();
+      // Load initial entries now that map is ready
+      this.$nextTick(() => {
+        this.loadMapEntries(this.entries, null);
+      });
+    },
   },
   watch: {
     selectedEntry(newVal, oldVal) {
@@ -366,7 +421,9 @@ Vue.component('BazarMap', {
         }
 
         this.$nextTick(function() {
-          this.selectedEntry.marker._icon.classList.add('selected')
+          if (this.selectedEntry.marker && this.selectedEntry.marker._icon) {
+            this.selectedEntry.marker._icon.classList.add('selected')
+          }
         })
       }
     },
@@ -377,68 +434,12 @@ Vue.component('BazarMap', {
       if (!this.map) return;
 
       const newIds = newVal.map((e) => e.id_fiche);
-      const oldIds = oldVal.map((e) => e.id_fiche);
+      const oldIds = oldVal ? oldVal.map((e) => e.id_fiche) : [];
 
+      // Only update if arrays differ
       if (!this.arraysEqual(newIds, oldIds)) {
         this.$nextTick(() => {
-          oldVal.forEach((entry) => {
-            if (!newIds.includes(entry.id_fiche)) {
-              if (entry.marker) {
-                entry.marker.remove();
-              }
-              if (entry.geometryGroup) {
-                entry.geometryGroup.remove();
-                entry.geometryGroup = null;
-              }
-            }
-          });
-
-          const currentMarkers = [];
-
-          newVal.forEach((entry) => {
-            this.createMarker(entry);
-
-            let lGeolocation = entry[this.params.geolocationfield];
-            if (lGeolocation && lGeolocation.geometries && !entry.geometryGroup) {
-              try {
-                const geojsonGeometries = JSON.parse(lGeolocation.geometries);
-                entry.geometryGroup = L.featureGroup().addTo(this.map);
-                entry.geometryGroup.on('click', (e) => {
-                  L.DomEvent.stopPropagation(e);
-                  this.selectedEntry = entry;
-                });
-                drawGeometries(entry.geometryGroup, geojsonGeometries.features, '', entry.id_fiche);
-              } catch (e) {
-                console.error(`Error drawing geometry for ${entry.id_fiche}`, e);
-              }
-            }
-
-            if (entry.marker) {
-              currentMarkers.push(entry.marker);
-            }
-          });
-
-          if (this.params.cluster && this.$refs.cluster) {
-            const clusterLayer = this.$refs.cluster.mapObject;
-
-            if (clusterLayer) {
-              clusterLayer.clearLayers();
-              if (currentMarkers.length > 0) {
-                clusterLayer.addLayers(currentMarkers);
-              }
-            } else {
-              this.$nextTick(() => {
-                if (this.$refs.cluster?.mapObject) {
-                  this.$refs.cluster.mapObject.clearLayers();
-                  this.$refs.cluster.mapObject.addLayers(currentMarkers);
-                }
-              });
-            }
-          } else {
-            currentMarkers.forEach((marker) => {
-              marker.addTo(this.map);
-            });
-          }
+          this.loadMapEntries(newVal, oldVal);
         });
       }
     }
@@ -450,9 +451,9 @@ Vue.component('BazarMap', {
       
       <l-map v-if="center" ref="map" :zoom="params.zoom" :center="center"
              :options="mapOptions"
-             @update:center="updateBounds()" @ready="updateBounds(); createTileLayers(); refreshMarkers()"
+             @update:center="updateBounds()" @ready="onMapReady()"
              @click="selectedEntry = null">
-        <l-marker-cluster v-if="params.cluster" ref="cluster" @ready="refreshMarkers()"></l-marker-cluster>
+        <l-marker-cluster ref="cluster" ></l-marker-cluster>
       </l-map>
       
 
@@ -473,3 +474,4 @@ Vue.component('BazarMap', {
     </div>
   `,
 })
+
