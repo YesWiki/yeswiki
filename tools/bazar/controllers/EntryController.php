@@ -21,6 +21,7 @@ use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 
@@ -37,6 +38,7 @@ class EntryController extends YesWikiController
     protected $securityController;
     protected $semanticTransformer;
     protected $templateEngine;
+    protected $tripleStore;
 
     private $parentsEntries;
 
@@ -50,7 +52,8 @@ class EntryController extends YesWikiController
         PageManager $pageManager,
         ParameterBagInterface $config,
         SecurityController $securityController,
-        SemanticTransformer $semanticTransformer
+        SemanticTransformer $semanticTransformer,
+        TripleStore $tripleStore
     ) {
         $this->aclService = $aclService;
         $this->authController = $authController;
@@ -63,6 +66,7 @@ class EntryController extends YesWikiController
         $this->parentsEntries = [];
         $this->securityController = $securityController;
         $this->semanticTransformer = $semanticTransformer;
+        $this->tripleStore = $tripleStore;
     }
 
     /**
@@ -201,6 +205,8 @@ class EntryController extends YesWikiController
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
 
+        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, "", "");
+
         return $this->render('@bazar/entries/view.twig', [
             'form' => $pLocalForm,
             'externalForm' => $pExternalForm,
@@ -216,6 +222,7 @@ class EntryController extends YesWikiController
             'canDelete' => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)),
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
+            'sourceUrl' => $sourceUrl,
             'incomingUrl' => $_GET['incomingurl'] ?? getAbsoluteUrl(),
         ]);
     }
