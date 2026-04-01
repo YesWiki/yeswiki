@@ -415,7 +415,7 @@ class EntryManager
             $this->mailer->notifyAdmins($data, true);
         }
 
-        if ($this->activityPubService->isEnabled($form)) {
+        if ($this->activityPubService->isEnabled($form) && !$sourceUrl) {
              // Notify followers about the new object
              $this->activityPubService->notifyFollowers($form, $data, 'Create');
         }

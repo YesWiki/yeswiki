@@ -2,18 +2,21 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\TemplateEngine;
 
 class SemanticTransformer
 {
     protected $templateEngine;
+    protected $params;
 
-    public function __construct(TemplateEngine $templateEngine)
+    public function __construct(TemplateEngine $templateEngine, ParameterBagInterface $params)
     {
         $this->templateEngine = $templateEngine;
+        $this->params = $params;
     }
 
-    public function convertToSemanticData($form, $data, $isHtmlFormatted = false): array
+    public function convertToSemanticData($form, $data): array
     {
         if (empty($form['bn_sem_template'])) {
             throw new \Exception(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
@@ -21,6 +24,8 @@ class SemanticTransformer
 
         $json = $this->templateEngine->renderFromStringNoEscape($form['bn_sem_template'], $data);
         $semanticData = json_decode($json, true);
+
+        $semanticData['id'] = $this->params->get('base_url') . $data['id_fiche'];
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \Exception('Semantic template produced invalid JSON: ' . json_last_error_msg());
@@ -45,8 +50,7 @@ class SemanticTransformer
         }
 
         return array_merge([
-            'id_fiche' => $data['id_fiche'] ?? '',
-            'antispam' => $data['antispam'] ?? '',
+            'antispam' => 1,
             'id_typeannonce' => $data['id_typeannonce'] ?? '',
         ], $fields);
     }
