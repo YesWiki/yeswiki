@@ -701,7 +701,8 @@ class EntryManager
         }
 
         // Get creation date if it exists, initialize it otherwise
-        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $data['id_fiche'] . "'");
+        $tag = $this->dbService->escape($data['id_fiche']);
+        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $tag . "'");
         $data['date_creation_fiche'] = $data['date_creation_fiche'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
         // Entry status
