@@ -33,7 +33,7 @@ export function drawGeometries(drawnItems, features, popup = '', id = 'unknown')
         });
 
         circle.feature = feature;
-        layer = L.circle(latlng, { radius: radius, ...circleOptions });
+        layer = circle;
       } else {
         layer = L.geoJSON(feature, {
           style:/* function (feature) {
