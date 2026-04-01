@@ -487,8 +487,9 @@ class EntryManager
             $this->mailer->notifyAdmins($data, false);
         }
 
-        if ($this->activityPubService->isEnabled($form)) {
-             // Notify followers about the updated object
+        $isExternalEntry = !empty($this->tripleStore->getMatching($data['id_fiche'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
+        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
+             // Notify followers about the updated object (skip if external)
              $this->activityPubService->notifyFollowers($form, $data, 'Update');
         }
 
@@ -616,7 +617,8 @@ class EntryManager
             'Suppression de la page ->""' . $tag . '""'
         );
 
-        if ($this->activityPubService->isEnabled($form)) {
+        $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
+        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
              // Notify followers about the deleted object
              $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
         }

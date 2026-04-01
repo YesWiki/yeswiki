@@ -223,6 +223,9 @@ class TemplateEngine
         $this->addTwigHelper('listValues', function ($listId, $parent = null) {
             return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);
         });
+        $this->addTwigHelper('fileUrl', function ($fileName) {
+            return $this->wiki->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fileName;
+        });
     }
 
     private function addTwigHelper($name, $callback)
