@@ -80,3 +80,66 @@ const imageinputs = document.getElementsByClassName('yw-image-upload')
 for (let i = 0; i < imageinputs.length; i += 1) {
   imageinputs.item(i).addEventListener('change', handleFileSelect, false)
 }
+
+// Handle image URL preview
+function handleImageUrlInput(evt) {
+  const target = evt.target || evt.srcElement
+  const url = target.value.trim()
+  const previewId = target.id + '-preview'
+  const previewEl = document.getElementById(previewId)
+
+  if (!previewEl) return
+
+  if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+    previewEl.innerHTML = `<img
+      class="img-responsive"
+      src="${url}"
+      alt="Preview"
+      onerror="this.style.display='none'"
+      onload="this.style.display='block'"
+    />`
+  } else {
+    previewEl.innerHTML = ''
+  }
+}
+
+// Handle tab switching to clear required on hidden inputs
+function handleTabSwitch(evt) {
+  const tabPane = document.querySelector(evt.target.getAttribute('href'))
+  if (!tabPane) return
+
+  const tabContent = tabPane.closest('.tab-content')
+  if (!tabContent) return
+
+  // Remove required from inputs in other tabs, add to current tab if needed
+  const allPanes = tabContent.querySelectorAll('.tab-pane')
+  allPanes.forEach((pane) => {
+    const inputs = pane.querySelectorAll('input[type="file"], input[type="url"]')
+    inputs.forEach((input) => {
+      if (pane === tabPane) {
+        // Restore required if it was originally required
+        if (input.dataset.wasRequired === 'true') {
+          input.required = true
+        }
+      } else {
+        // Store and remove required
+        if (input.required) {
+          input.dataset.wasRequired = 'true'
+        }
+        input.required = false
+      }
+    })
+  })
+}
+
+const imageUrlInputs = document.getElementsByClassName('image-url-input')
+for (let i = 0; i < imageUrlInputs.length; i += 1) {
+  imageUrlInputs.item(i).addEventListener('input', handleImageUrlInput, false)
+  imageUrlInputs.item(i).addEventListener('change', handleImageUrlInput, false)
+}
+
+// Handle tab switching for file/url inputs
+document.querySelectorAll('.file-url-tabs .nav-tabs a[data-toggle="tab"]').forEach((tab) => {
+  tab.addEventListener('shown.bs.tab', handleTabSwitch)
+  tab.addEventListener('click', handleTabSwitch)
+})

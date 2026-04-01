@@ -26,6 +26,17 @@ class FileField extends BazarField
     protected $maxSize;
     protected $authorizedExts;
 
+    /**
+     * Check if a value is a URL.
+     */
+    protected function isUrl(?string $value): bool
+    {
+        if (empty($value)) {
+            return false;
+        }
+        return filter_var($value, FILTER_VALIDATE_URL) !== false;
+    }
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
@@ -58,9 +69,10 @@ class FileField extends BazarField
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
         $deletedFile = false;
+        $isUrl = $this->isUrl($value);
         $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/file-field.js');
 
-        if (!empty($value)) {
+        if (!empty($value) && !$isUrl) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
@@ -80,14 +92,43 @@ class FileField extends BazarField
             }
         }
 
+        // Handle URL value
+        if ($isUrl) {
+            // Handle URL deletion
+            if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
+                if ($this->isAllowedToDeleteFile($entry, $value)) {
+                    $this->updateEntryAfterFileDelete($entry);
+                    // Return empty input after deletion
+                    return $this->render('@bazar/inputs/file.twig', [
+                        'maxSize' => $this->maxSize,
+                        'isUrl' => false,
+                    ]);
+                } else {
+                    $alertMessage = '<div class="alert alert-info">' . _t('BAZ_DROIT_INSUFFISANT') . '</div>' . "\n";
+                }
+            }
+
+            return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', [
+                'value' => $value,
+                'maxSize' => $this->maxSize,
+                'isUrl' => true,
+                'fileUrl' => $value,
+                'shortFileName' => basename(parse_url($value, PHP_URL_PATH)) ?: $value,
+                'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
+                'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
+            ]);
+        }
+
         return ($alertMessage ?? '') . $this->render('@bazar/inputs/file.twig', (
             empty($value) || !file_exists($this->getBasePath() . $value) || $deletedFile
             ? [
                 'maxSize' => $this->maxSize,
+                'isUrl' => false,
             ]
             : [
                 'value' => $value,
                 'maxSize' => $this->maxSize,
+                'isUrl' => false,
                 'shortFileName' => $this->getShortFileName($value),
                 'fileUrl' => $this->getBasePath() . $value,
                 'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
@@ -108,6 +149,21 @@ class FileField extends BazarField
     public function formatValuesBeforeSave($entry)
     {
         $value = $this->getValue($entry);
+
+        // Check if a URL was submitted
+        $urlPropertyName = $this->propertyName . '_url';
+        $urlValue = $entry[$urlPropertyName] ?? null;
+        if (!empty($urlValue) && $this->isUrl($urlValue)) {
+            return [
+                $this->propertyName => $urlValue,
+                'fields-to-remove' => [$urlPropertyName],
+            ];
+        }
+
+        // Check if the current value is a URL (keep it if no new file uploaded)
+        if ($this->isUrl($value) && empty($_FILES[$this->propertyName]['name'])) {
+            return [$this->propertyName => $value];
+        }
 
         $params = $this->getService(ParameterBagInterface::class);
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
@@ -148,6 +204,16 @@ class FileField extends BazarField
     {
         $value = $this->getValue($entry);
 
+        // Handle URL value
+        if ($this->isUrl($value)) {
+            return $this->render('@bazar/fields/file.twig', [
+                'value' => $value,
+                'fileUrl' => $value,
+                'shortFileName' => basename(parse_url($value, PHP_URL_PATH)) ?: $value,
+                'isUrl' => true,
+            ]);
+        }
+
         $basePath = $this->getBasePath();
         if (!empty($value) && file_exists($basePath . $value)) {
             $shortFileName = $this->getShortFileName($value);
@@ -158,6 +224,7 @@ class FileField extends BazarField
                     ? $this->getWiki()->getBaseUrl() . '/' . $basePath . $value
                     : $this->getWiki()->Href('download', $entry['id_fiche'] . '_' . $this->getPropertyName(), ['file' => $value], false),
                 'shortFileName' => $shortFileName,
+                'isUrl' => false,
             ]);
         }
 

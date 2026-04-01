@@ -75,3 +75,40 @@
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 }
+
+/* File/URL input tabs */
+.file-url-tabs {
+  width: 100%;
+}
+
+.file-url-tabs .nav-tabs {
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 0;
+}
+
+.file-url-tabs .nav-tabs > li > a {
+  padding: 8px 15px;
+  font-size: 0.9em;
+}
+
+.file-url-tabs .tab-content {
+  padding: 15px 0;
+}
+
+.file-url-tabs .tab-pane input {
+  max-width: 100%;
+}
+
+.url-indicator {
+  color: var(--primary-color);
+  margin-right: 8px;
+}
+
+.image-url-preview {
+  margin-top: 10px;
+}
+
+.image-url-preview img {
+  max-height: 150px;
+  max-width: 100%;
+}
