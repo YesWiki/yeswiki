@@ -154,21 +154,21 @@ class ActivityPubService
             
             case 'Create': {
                 $object = $activity['object'];
-                $sourceUrl = $object['id'] ?? null;
+                $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
                 $entryManager = $this->container->get(EntryManager::class);
-                $entryManager->create($form['bn_id_nature'], $object, true, $sourceUrl);
+                $entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
                 break;
             }
 
             case 'Update': {
                 $object = $activity['object'];
-                $sourceUrl = $object['id'] ?? null;
-                if ($sourceUrl) {
-                    $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $sourceUrl, '=', '=', '=');
+                if ($object['id']) {
+                    $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
                     if (!empty($triples)) {
                         $tag = $triples[0]['resource'];
+                        $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
                         $entryManager = $this->container->get(EntryManager::class);
-                        $entryManager->update($tag, $object, true);
+                        $entryManager->update($tag, $entry, false);
                     }
                 }
                 break;
@@ -218,7 +218,7 @@ class ActivityPubService
     }
 
     public function notifyFollowers($form, $entry, $activityType) {
-        $object = $this->semanticTransformer->convertToSemanticData($form, $entry, true);
+        $object = $this->semanticTransformer->convertToSemanticData($form, $entry);
         unset($object['@context']);
 
         $this->postActivity([
