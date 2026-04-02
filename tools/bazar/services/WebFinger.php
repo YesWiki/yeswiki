@@ -126,6 +126,22 @@ class WebFinger
     }
 
     /**
+     * Get interaction url
+     * 
+     * @return string
+     */
+    public function getInteractionUrl()
+    {
+        foreach ($this->links as $link) {
+            if (isset($link['rel'], $link['template'])) {
+                if ($link['rel'] == 'http://ostatus.org/schema/1.0/subscribe') {
+                    return $link['template'];
+                }
+            }
+        }
+    }
+
+    /**
      * Get WebFinger response as an array
      * 
      * @return array

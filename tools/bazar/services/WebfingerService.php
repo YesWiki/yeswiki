@@ -46,7 +46,7 @@ class WebfingerService
         return ($webfinger->toArray());
     }
 
-    public function getRemoteActor($handle) {
+    protected function getWebfingerObject($handle) {
         $matches = $this->splitHandle($handle);
 
         // Unformat Mastodon handle @user@host => user@host
@@ -70,8 +70,20 @@ class WebfingerService
 
         $json = (array) json_decode($response->getContent(), true);
 
-        $webfinger = new WebFinger($json);
+        return new WebFinger($json);
+    }
+
+    public function getRemoteActor($handle) {
+        $webfinger = $this->getWebfingerObject($handle);
 
         return $webfinger->getProfileId();
+    }
+
+     public function getInteractionUrl($handle, $actorToFollow) {
+        $webfinger = $this->getWebfingerObject($handle);
+
+        $interactionUrl = $webfinger->getInteractionUrl();
+
+        return str_replace('{uri}', urlencode($actorToFollow), $interactionUrl);
     }
 }

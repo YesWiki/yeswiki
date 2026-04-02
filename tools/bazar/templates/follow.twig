@@ -1,0 +1,15 @@
+<strong>{{ _t('BAZ_FOLLOW_FORM_ACTOR')|replace({'{actorName}':form['bn_label_nature']}) }}</strong>
+<form action="" method="post" class="form-horizontal">
+  <input name="form_id" type="hidden" value="{{ form['bn_id_nature'] }}" />
+	<div class="input-prepend input-append input-group">
+		<span class="add-on input-group-addon">
+			<i class="fa fa-link icon-globe"></i>
+		</span>
+		<input name="actor_handle" class="form-control input-xxlarge" placeholder="{{ _t('BAZ_FOLLOW_ACTOR_INFO') }}" />
+		<span class="input-group-btn">
+			<button class="btn btn-primary" type="submit">
+				{{ _t('BAZ_GO') }}&nbsp;!
+			</button>
+		</span>
+	</div>
+</form>
