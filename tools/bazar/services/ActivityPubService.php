@@ -155,6 +155,7 @@ class ActivityPubService
             case 'Create': {
                 $object = $activity['object'];
                 $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                $entry['read-only'] = 1; // Prevent modification from the local interface, as the source of truth is the remote actor
                 $entryManager = $this->container->get(EntryManager::class);
                 $entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
                 break;

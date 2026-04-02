@@ -218,8 +218,8 @@ class EntryController extends YesWikiController
             'currentuser' => $currentuser ?? null,
             'isUserFavorite' => $isUserFavorite ?? false,
             'canShow' => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
-            'canEdit' => !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId),
-            'canDelete' => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)),
+            'canEdit' => !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
+            'canDelete' => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)) && !isset($entry['read-only']),
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
             'sourceUrl' => $sourceUrl,
