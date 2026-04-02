@@ -64,7 +64,7 @@
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>
           {% endif %}
-      {% if isAdmin %}
+        {% if canDuplicate %}
           <span class="dropup">
             <a
               title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ entryId }}"
