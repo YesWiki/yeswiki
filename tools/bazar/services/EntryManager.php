@@ -161,35 +161,19 @@ class EntryManager
                     }
                 }
         */
-        $vAuthorizedFields = [...$pData];
+        $vAuthorizedFields = [...$pData ?? []];
 
         // Add extra fields that doesn't belong to the form definition
+        $extraFields = [
+            'id_fiche', 'id_typeannonce', 'date_creation_fiche',
+            'date_maj_fiche', 'statut_fiche', 'url',
+            '-is-external-', 'external-data',
+        ];
 
-        if (isset($pData['id_fiche'])) {
-            $vAuthorizedFields['id_fiche'] = $pData['id_fiche'];
-        }
-        if (isset($pData['id_typeannonce'])) {
-            $vAuthorizedFields['id_typeannonce'] = $pData['id_typeannonce'];
-        }
-        if (isset($pData['date_creation_fiche'])) {
-            $vAuthorizedFields['date_creation_fiche'] = $pData['date_creation_fiche'];
-        }
-        if (isset($pData['date_maj_fiche'])) {
-            $vAuthorizedFields['date_maj_fiche'] = $pData['date_maj_fiche'];
-        }
-        if (isset($pData['statut_fiche'])) {
-            $vAuthorizedFields['statut_fiche'] = $pData['statut_fiche'];
-        }
-        if (isset($pData['url'])) {
-            $vAuthorizedFields['url'] = $pData['url'];
-        }
-
-        if (isset($pData['-is-external-'])) {
-            $vAuthorizedFields['-is-external-'] = $pData['-is-external-'];
-        }
-
-        if (isset($pData['external-data'])) {
-            $vAuthorizedFields['external-data'] = $pData['external-data'];
+        foreach ($extraFields as $key) {
+            if (isset($pData[$key])) {
+                $vAuthorizedFields[$key] = $pData[$key];
+            }
         }
 
         return $vAuthorizedFields;
@@ -208,9 +192,14 @@ class EntryManager
         if (!empty($page['body'])) {
             $data = $this->decode($page['body']);
 
-            $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
-            // Keep only the fields defined in the form definition
+            // if a wiki page is included in a bazar entry, this could be empty
+            if (empty($data)) {
+                return [];
+            }
 
+            $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
+
+            // Keep only the fields defined in the form definition
             $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
 
             $vRegisteredData = [...$data];
@@ -234,24 +223,15 @@ class EntryManager
                         }
             */
             // Add extra fields that doesn't belong to the form definition
+            $extraFields = [
+                'id_fiche', 'id_typeannonce', 'date_creation_fiche',
+                'date_maj_fiche', 'statut_fiche', 'url',
+            ];
 
-            if (isset($data['id_fiche'])) {
-                $vRegisteredData['id_fiche'] = $data['id_fiche'];
-            }
-            if (isset($data['id_typeannonce'])) {
-                $vRegisteredData['id_typeannonce'] = $data['id_typeannonce'];
-            }
-            if (isset($data['date_creation_fiche'])) {
-                $vRegisteredData['date_creation_fiche'] = $data['date_creation_fiche'];
-            }
-            if (isset($data['date_maj_fiche'])) {
-                $vRegisteredData['date_maj_fiche'] = $data['date_maj_fiche'];
-            }
-            if (isset($data['statut_fiche'])) {
-                $vRegisteredData['statut_fiche'] = $data['statut_fiche'];
-            }
-            if (isset($data['url'])) {
-                $vRegisteredData['url'] = $data['url'];
+            foreach ($extraFields as $key) {
+                if (isset($data[$key])) {
+                    $vRegisteredData[$key] = $data[$key];
+                }
             }
 
             $data = $vRegisteredData;
@@ -721,7 +701,8 @@ class EntryManager
         }
 
         // Get creation date if it exists, initialize it otherwise
-        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $data['id_fiche'] . "'");
+        $tag = $this->dbService->escape($data['id_fiche']);
+        $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $tag . "'");
         $data['date_creation_fiche'] = $data['date_creation_fiche'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
         // Entry status

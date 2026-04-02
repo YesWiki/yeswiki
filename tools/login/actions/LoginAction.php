@@ -125,41 +125,25 @@ class LoginAction extends YesWikiAction
 
     private function getIncomingUrlFromServer(array $server): string
     {
-        $parts = parse_url($server['REQUEST_URI']);
-        $params = [];
+        $protocol = (!empty($server['HTTPS']) && $server['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = $server['HTTP_HOST'];
+        $requestUri = $server['REQUEST_URI'];
 
-        if (isset($parts['query'])) {
-            parse_str($parts['query'], $parsedQuery);
+        $urlParts = parse_url($requestUri);
+        $queryParams = [];
 
-            foreach ($parsedQuery as $key => $value) {
-                // Skip 'context' parameter
-                if ($key === 'context') {
-                    continue;
-                }
-
-                if (is_array($value)) {
-                    foreach ($value as $val) {
-                        $params[] = ['key' => $key, 'value' => $val];
-                    }
-                } else {
-                    $params[] = ['key' => $key, 'value' => $value];
-                }
-            }
+        if (isset($urlParts['query'])) {
+            parse_str($urlParts['query'], $queryParams);
         }
 
-        $newQuery = [];
-        foreach ($params as $param) {
-            $key = urlencode($param['key']);
-            $value = $param['value'];
+        unset($queryParams['context']);
 
-            if (empty($value)) {
-                $newQuery[] = $key;
-            } else {
-                $newQuery[] = $key . '=' . urlencode($value);
-            }
-        }
+        $newQuery = http_build_query($queryParams);
+        $clean = ($urlParts['path'] ?? '') . ($newQuery !== '' ? '?' . $newQuery : '');
 
-        return $this->wiki->getBaseUrl() . '/?' . implode('&', $newQuery);
+        $fullUrl = $protocol . '://' . $host . $clean;
+
+        return $fullUrl;
     }
 
     private function renderForm(string $action): string

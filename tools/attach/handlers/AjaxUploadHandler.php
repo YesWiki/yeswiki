@@ -43,7 +43,7 @@ class AjaxUploadHandler extends YesWikiHandler
             $uploader = new qqFileUploader($allowedExtensions, $sizeLimit, $this->hasTempTag);
             $result = $uploader->handleUpload($att->attachConfig['upload_path']);
         } catch (\Throwable $th) {
-            $errorsMessage .= "{$th->getMessage()} in {$th->getFile()}, line {$th->getLine()}";
+            $errorsMessage .= $this->wiki->dumpThrowable ($th);
         }
         $errorsMessage .= ob_get_contents();
         ob_end_clean();

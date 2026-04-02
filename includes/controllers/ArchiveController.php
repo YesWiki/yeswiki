@@ -24,40 +24,47 @@ class ArchiveController extends YesWikiController
 
     public function getArchive(string $id)
     {
-        $filePath = $this->archiveService->getFilePath($id);
-        if (empty($filePath)) {
-            return new ApiResponse(
-                ['error' => 'Not existing file ' . htmlspecialchars($id)],
-                Response::HTTP_BAD_REQUEST
-            );
-        } else {
-            $zipContent = file_get_contents($filePath);
-            $zipSize = filesize($filePath);
-            // to prevent existing headers because of handlers /show or others
-            $nbObLevels = ob_get_level();
-            for ($i = 1; $i < $nbObLevels; $i++) {
-                ob_end_clean();
-            }
-            for ($i = 1; $i < $nbObLevels; $i++) {
-                ob_start();
-            }
+        try {
+            $filePath = $this->archiveService->getFilePath($id);
+            if (empty($filePath)) {
+                return new ApiResponse(
+                    ['error' => 'Not existing file ' . htmlspecialchars($id)],
+                    Response::HTTP_BAD_REQUEST
+                );
+            } else {
+                $zipContent = file_get_contents($filePath);
+                $zipSize = filesize($filePath);
+                // to prevent existing headers because of handlers /show or others
+                $nbObLevels = ob_get_level();
+                for ($i = 1; $i < $nbObLevels; $i++) {
+                    ob_end_clean();
+                }
+                for ($i = 1; $i < $nbObLevels; $i++) {
+                    ob_start();
+                }
 
-            return new Response(
-                $zipContent, // content
-                Response::HTTP_OK,
-                [   // headers
-                    'Access-Control-Allow-Origin' => '*',
-                    'Access-Control-Allow-Credentials' => 'true',
-                    'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
-                    'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
-                    'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
-                    'Access-Control-Max-Age' => '86400',
-                    // end of part inspired from ApiResponse
-                    //Set the Content-Type, Content-Disposition and Content-Length headers.
-                    'Content-Type' => 'application/zip',
-                    'Content-Disposition' => "attachment; filename=$id",
-                    'Content-Length' => $zipSize,
-                ]
+                return new Response(
+                    $zipContent, // content
+                    Response::HTTP_OK,
+                    [   // headers
+                        'Access-Control-Allow-Origin' => '*',
+                        'Access-Control-Allow-Credentials' => 'true',
+                        'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
+                        'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
+                        'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
+                        'Access-Control-Max-Age' => '86400',
+                        // end of part inspired from ApiResponse
+                        //Set the Content-Type, Content-Disposition and Content-Length headers.
+                        'Content-Type' => 'application/zip',
+                        'Content-Disposition' => "attachment; filename=$id",
+                        'Content-Length' => $zipSize,
+                    ]
+                );
+            }
+        } catch (\Throwable $pThrowable) {
+            return new ApiResponse(
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
     }
@@ -109,7 +116,7 @@ class ArchiveController extends YesWikiController
                         );
                     } catch (\Throwable $pThrowable) {
                         return new ApiResponse(
-                            ['error' => 'A problem occures while starting the backup process. Exception reveived from ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine() . ' : ' . $pThrowable->getMessage()],
+                            ['error' => 'A problem occures while starting the backup process. An exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     }
@@ -161,7 +168,7 @@ class ArchiveController extends YesWikiController
             }
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
-                ['error' => 'an exception occures : ' . $pThrowable->getMessage() . ' in file ' . $pThrowable->getFile() . ' at line ' . $pThrowable->getLine()],
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
                 Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -169,17 +176,24 @@ class ArchiveController extends YesWikiController
 
     public function getArchiveStatus(string $uid, bool $forceStarted)
     {
-        if (empty($uid)) {
+        try {
+            if (empty($uid)) {
+                return new ApiResponse(
+                    ['error' => '$uid should not be empty'],
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+
             return new ApiResponse(
-                ['error' => '$uid should not be empty'],
-                Response::HTTP_BAD_REQUEST
+                $this->archiveService->getUIDStatus($uid, $forceStarted),
+                Response::HTTP_OK
+            );
+        } catch (\Throwable $pThrowable) {
+            return new ApiResponse(
+                ['error' => 'an exception occures : ' . $this->wiki->dumpThrowable ($pThrowable) ],
+                Response::HTTP_INTERNAL_SERVER_ERROR
             );
         }
-
-        return new ApiResponse(
-            $this->archiveService->getUIDStatus($uid, $forceStarted),
-            Response::HTTP_OK
-        );
     }
 
     /**

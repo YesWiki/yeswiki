@@ -14,8 +14,7 @@ class HeaderAction extends YesWikiAction
             // catch errors and exception to avoid a loop with error management in Performer
             $output = '<style>.alert-error-message{border: red solid 4px;background-color: #FE8;padding: 2px;color:gray;}</style>' . "\n";
             $output .= '<div class="alert-error-message alert">' . "\n";
-            $output .= _t('PERFORMABLE_ERROR') . '<br/>' . $t->getMessage() . ' in <i>' . $t->getFile();
-            $output .= '</i> on line <i>' . $t->getLine() . '</i><br/>';
+            $output .= _t('PERFORMABLE_ERROR') . '<br/>' . $this->wiki->dumpThrowable ($t) . '<br/>';
             $output .= '<a href="' . $this->wiki->Href() . '">Return</a>' . "\n";
             $output .= '</div>';
 

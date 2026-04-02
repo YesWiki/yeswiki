@@ -29,10 +29,10 @@ class EventDispatcher extends SymfonyEventDispatcher
             return [];
         } catch (Throwable $th) {
             $errors = ($this->wiki->userIsAdmin()) ? ['exception' => [
-                'message' => $th->getMessage(),
-                'file' => $th->getFile(),
+                'message' => $this->wiki->hideServerPath ($th->getMessage()),
+                'file' => $this->wiki->hideServerPath ($th->getFile()),
                 'line' => $th->getLine(),
-                'trace' => $th->getTraceAsString(),
+                'trace' => $this->wiki->hideServerPath ($th->getTraceAsString())
             ]] : [];
 
             return $errors;

@@ -53,6 +53,12 @@ export default {
       if (!layers) return
       this.mapObject.clearLayers()
       this.mapObject.addLayers(layers)
+    },
+    clearLayers() {
+      this.mapObject.clearLayers()
+    },
+    refreshClusters() {
+      this.mapObject.refreshClusters()
     }
   },
   template: `

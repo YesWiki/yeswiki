@@ -391,11 +391,11 @@ $(document).ready(() => {
       return true
     },
     geocodeChecking(input) {
-      console.log("GEOCODE CHECKING");
+      //console.log("GEOCODE CHECKING");
       const vLatitude = $(input).find('.yw-latitude-input').val();
       const vLongitude = $(input).find('.yw-longitude-input').val();
       const vGeometries = $(input).find('.yw-geometries-input').val();
-      console.log(vLatitude, vLongitude, vGeometries);
+      //console.log(vLatitude, vLongitude, vGeometries);
       if (vLatitude == "" && vLongitude == "" && vGeometries == "") {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'))
         return false
@@ -774,7 +774,6 @@ $(document).ready(() => {
         select += `[${attr}~="${val}"],[${attr}$=",${val}"],[${attr}^="${val},"],[${attr}*=",${val},"]`
       })
       const res = e.data.$entries.filter(select)
-
       if (res.length > 0) {
         tabfilters[i] = res
         i += 1
@@ -798,13 +797,41 @@ $(document).ready(() => {
       e.data.$entries.hide().filter(tabres).show()
       e.data.$entries.parent('.bazar-marker').hide()
       e.data.$entries.filter(tabres).parent('.bazar-marker').show()
+
+      //geometries need the id to be hidden
+      const $toHide = e.data.$entries.not(tabres);
+      const idsToMatch = new Set();
+
+      $toHide.each(function() {
+        const id = $(this).attr('data-id_fiche');
+        if (id) {
+          idsToMatch.add(String(id));
+        }
+      });
+
+      const matchingGeometries = e.data.$geometries.filter(function() {
+        const geoId = $(this).attr('data-id');
+        return idsToMatch.has(String(geoId));
+      });
+
+      matchingGeometries.hide();
     } else {
       // pas de filtres: on affiche tout les résultats
       e.data.$entries.show()
+      e.data.$geometries.show()
       e.data.$entries.parent('.bazar-marker').show()
     }
-    // on compte les résultats visibles
-    const nbresults = e.data.$entries.filter(':visible').length
+    // on compte les résultats visibles (points et geometries confondus)
+    const visibleIds = new Set();
+    e.data.$entries.filter(':visible').each(function() {
+      const id = $(this).attr('data-id_fiche');
+      if (id) visibleIds.add(String(id));
+    });
+    e.data.$geometries.filter(':visible').each(function() {
+      const id = $(this).attr('data-id');
+      if (id) visibleIds.add(String(id));
+    });
+    const nbresults = visibleIds.size;
     e.data.$nbresults.html(nbresults)
     if (nbresults > 1) {
       e.data.$resultlabel.hide()
@@ -847,6 +874,7 @@ $(document).ready(() => {
         $nbresults: $('.nb-results', $container),
         $filterboxes: $('.filter-box', $container),
         $entries: $('.bazar-entry', $container),
+        $geometries: $('.bazar-entry-geometry', $container),
         $resultlabel: $('.result-label', $container),
         $resultslabel: $('.results-label', $container)
       }
@@ -883,6 +911,7 @@ $(document).ready(() => {
           $nbresults: $('.nb-results', $container),
           $filterboxes: $('.filter-box', $container),
           $entries: $('.bazar-entry', $container),
+          $geometries: $('.bazar-entry-geometry', $container),
           $resultlabel: $('.result-label', $container),
           $resultslabel: $('.results-label', $container)
         }

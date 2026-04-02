@@ -46,7 +46,7 @@ if (count($fiches)>0) :
     }
 
     $i = 0;
-    $vAllGeometries = [];
+    $vAllGeometries = $geometriesWithoutMarker = [];
 
     $vGeolocationField = $params['geolocationfield']??'bf_geolocation';
 
@@ -58,6 +58,12 @@ if (count($fiches)>0) :
             $vLatitude = $vGeolocation ['latitude'] ?? '';
             $vLongitude = $vGeolocation ['longitude'] ?? '';
             $vGeometries = $vGeolocation ['geometries'] ?? '';
+            $vGeometries = str_replace(
+                '"type":"FeatureCollection"',
+                '"id":"'.$fiche['id_fiche'].'","type":"FeatureCollection"',
+                $vGeometries
+            );
+
 
             // couleur de marqueur
             $color = getCustomValueForEntry($params['color'], $params['colorfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_color']);
@@ -66,9 +72,9 @@ if (count($fiches)>0) :
             $icon = $params['iconprefix']
                     .getCustomValueForEntry($params['icon'], $params['iconfield'], $fiche, $GLOBALS['wiki']->config['baz_marker_icon']);
 
-            if (is_numeric($vLatitude) && is_numeric($vLongitude)) {
-                // on genere le point marqueur sur la carte
-                $markersjs .= '
+           if (is_numeric($vLatitude) && is_numeric($vLongitude)) {
+               // on genere le point marqueur sur la carte
+               $markersjs .= '
 				i++;
 				var markerLocation = new L.LatLng('.$vLatitude.', '.$vLongitude.');
 				marker[i] = new L.Marker(
@@ -88,19 +94,26 @@ if (count($fiches)>0) :
 						});
 				marker[i].bindPopup(\''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $fiche))).'\');
 				';
-                if ($params['spider'] == 'true' or $params['spider'] == '1') {
-                    $markersjs .= 'map'.$params['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
-                } elseif ($params['cluster'] == 'true' or $params['cluster'] == '1') {
-                    $markersjs .= 'markerscluster.addLayer(marker[i]);'."\n";
-                } else {
-                    $markersjs .= 'map'.$params['nbbazarliste'].'.addLayer(marker[i]);'."\n";
-                }
-                $i++;
-            }
-            if (!empty($vGeometries)) {
-                $vAllGeometries[$fiche['id_fiche']] = $vGeometries;
-            }
-    endforeach; ?>
+               if ($params['spider'] == 'true' or $params['spider'] == '1') {
+                   $markersjs .= 'map'.$params['nbbazarliste'].'.addLayer(marker[i]);'."\n".'oms.addMarker(marker[i]);'."\n";
+               } elseif ($params['cluster'] == 'true' or $params['cluster'] == '1') {
+                   $markersjs .= 'markerscluster.addLayer(marker[i]);'."\n";
+               } else {
+                   $markersjs .= 'map'.$params['nbbazarliste'].'.addLayer(marker[i]);'."\n";
+               }
+               $i++;
+           } elseif (!empty($vGeometries)) {
+               // fake marker for facetted search
+               // TODO: this is way too hacky, need to find a way to search on marker and geometries in a better way
+               $geometriesWithoutMarker[$fiche['id_fiche']] = '<div class="bazar-entry" '.str_replace('\'', '', $fiche['html_data']).'></div>';
+           }
+        if (!empty($vGeometries)) {
+            $vAllGeometries[$fiche['id_fiche']] = $vGeometries;
+        }
+endforeach;
+
+
+?>
 
 	<?php
     if ($params['cluster'] == 'true' or $params['cluster'] == '1') {
@@ -224,7 +237,7 @@ if (count($fiches)>0) :
 											iconAnchor: '.$params['iconAnchor'].',
 											popupAnchor: '.$params['popupAnchor'].',
 											className: "bazar-marker'.$params['smallmarker'].'",
-											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" >" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
+											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" '.addslashes($fiche['html_data']).'>" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
 									});
 								}
 
@@ -271,7 +284,24 @@ if (count($fiches)>0) :
          $geometriesModuleJs .= "const geo{$id} = ". $g ."\n";
          $geometriesModuleJs .= 'var popup = \''.preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $id))).'\''."\n";
 
-         $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup)\n";
+         $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup, '{$id}')\n";
+     }
+     if (!empty($geometriesWithoutMarker)) {
+         $js .= 'L.Control.geometriesPanel = L.Control.extend({
+    onAdd: function(map) {
+        const div = L.DomUtil.create(\'div\', \'info-panel\');
+        div.innerHTML = \''.implode("", $geometriesWithoutMarker).'\';
+        div.style.background = \'transparent\';
+        div.style.padding = \'0\';
+        
+        // Prevent clicks from reaching the map
+        L.DomEvent.disableClickPropagation(div);
+        
+        return div;
+    }
+});
+
+  new L.Control.geometriesPanel({ position: \'topright\' }).addTo(map'.$params['nbbazarliste'].');';
      }
  }
   $GLOBALS['wiki']->AddJavascript(
