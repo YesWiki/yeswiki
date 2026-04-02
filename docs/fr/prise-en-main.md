@@ -352,7 +352,7 @@ YesWiki est capable d'afficher des informations émisent par d'autres sites-web 
 
 Cette option se trouve dans les composants, sélectionner "Syndication / Flux RSS".
 
- - **Adresse du flux RSS :** Permet de spécifier l'URL du flux auquel on souhaite sa'abonner. Il est possible de s'abonne rà plusieurs flux en séparant les différentes URLs par des virgules ",".
+ - **Adresse du flux RSS :** Permet de spécifier l'URL du flux auquel on souhaite s'abonner. Il est possible de s'abonne à plusieurs flux en séparant les différentes URLs par des virgules ",".
  - **Titre des flux :** Lister les noms des fluxs un par un dans le même ordre que les URLs en les séparant par des virgules.
  - **Nb d'infos à afficher :** Limitera le nombre d'éléments affichés au nombre renseigné.
  - **Affiches les dates de publications :** Permet de demander l'affichage des dates des éléments et d'en spécifier le format.
@@ -396,13 +396,34 @@ Permet 3 actions :
 
 #### 8.7.1 Afficher un formulaire de contact
 
-Depuis la version 4.6, il est possible de :
- - Définir plusieurs mails pour réceptionner l'envoi d'un formulaire de contact. Il conviendra alors de séparer chaque mail par une virgule.
+ - Il est possible de définir plusieurs mails pour diriger un envoi de formulaire de contact. Pour cela, rentrer les différentes adresses mails en les séparants par des virgules.
  - Ajouter tous les membres d'un groupe comme par exemple `@admins` (dans ce cas tous les membres du groupe recevront un courriel)
 
-#### 8.7.2 S’abonner à une liste de discussion
+**Exemple : Ce que ca donne en language YesWiki**
+Plusieurs adresses mails :
+```
+{{contact mail="contact@yw.net,hello@yw.net" }}
+```
+Un groupe d'utilisateurices :
+```
+{{contact mail="@admins" }}
+```
 
-Avant cela il conviendra de créer une liste de diffusion tel que par exemple avec [Frama groupe](https://framagroupes.org)
+#### 8.7.2 S’abonner / se désabonner d'une liste de discussion
+
+Une liste de discussion est une adresse mail unique qui renvoi un mail reçu à une lite de mails. C'est très utile pour ne pas oublier des membres lors d'envois de mails groupés. Surtout cela permet aux membres de pouvoir se désinscrire.
+
+Mais avant cela il conviendra de créer une liste de diffusion tel que par exemple avec l'outil [Frama groupe](https://framagroupes.org).
+
+**Ce que ca donne en language YesWiki**
+Abonnement :
+```
+{{abonnement mail="my@mailing.list" }}
+```
+Désabonnement : 
+```
+{{desabonnement mail="my@mailing.list" }}
+```
 
 ### 8.8 Afficher un formulaire de création de fiche
 

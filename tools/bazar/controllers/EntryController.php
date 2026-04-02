@@ -97,7 +97,7 @@ class EntryController extends YesWikiController
      */
     public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = '', $pExternalForm = '')
     {
-        if (is_array($entryId)) {
+        if (is_array($entryId) && !empty($entryId) && isset($entryId['id_fiche'])) {
             // If entry ID is the full entry with all the values
             $entry = $entryId;
             $entryId = $entry['id_fiche'];

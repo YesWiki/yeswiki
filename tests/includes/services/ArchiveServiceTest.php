@@ -2,6 +2,9 @@
 
 namespace YesWiki\Test\Core\Commands;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationService;
@@ -12,13 +15,11 @@ use ZipArchive;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(ArchiveService::class, '__construct')]
+#[CoversMethod(ArchiveService::class, 'archive')]
+#[CoversMethod(ArchiveService::class, 'setWikiStatus')]
 class ArchiveServiceTest extends YesWikiTestCase
 {
-    /**
-     * @covers \ArchiveService::__construct
-     *
-     * @return array ['wiki'=> $wiki,'archiveService' => $archiveService]
-     */
     public function testArchiveServiceExisting(): array
     {
         $wiki = $this->getWiki();
@@ -27,13 +28,8 @@ class ArchiveServiceTest extends YesWikiTestCase
         return ['wiki' => $wiki, 'archiveService' => $wiki->services->get(ArchiveService::class)];
     }
 
-    /**
-     * @depends testArchiveServiceExisting
-     * @dataProvider archiveProvider
-     * @covers \ArchiveService::archive
-     *
-     * @param array $services [$wiki,$archiveService]
-     */
+    #[Depends('testArchiveServiceExisting')]
+    #[DataProvider('archiveProvider')]
     public function testArchive(
         bool $savefiles,
         bool $savedatabase,
@@ -71,7 +67,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    public function archiveProvider()
+    public static function archiveProvider()
     {
         if (!class_exists(ArchiveService::class, false)) {
             include_once 'includes/services/ArchiveService.php';
@@ -81,57 +77,22 @@ class ArchiveServiceTest extends YesWikiTestCase
 
         return [
             'archive only root files' => [
-                'savefiles' => true,
-                'savedatabase' => false,
-                'foldersToInclude' => [],
-                'foldersToExclude' => $defaultFoldersToInclude,
-                'locationSuffix' => 'ARCHIVE_ONLY_FILES_SUFFIX',
-                'nbFiles' => -1,
-                'filesToFind' => ['wakka.config.php'],
-                'wakkaContent' => [
-                    'archive' => [
-                        'foldersToInclude' => $defaultFoldersToInclude,
-                        'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude),
-                    ],
-                ],
+                true, false, [], $defaultFoldersToInclude,
+                'ARCHIVE_ONLY_FILES_SUFFIX', -1,
+                ['wakka.config.php'],
+                ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
             ],
             'archive only root files with database' => [
-                'savefiles' => true,
-                'savedatabase' => true,
-                'foldersToInclude' => [],
-                'foldersToExclude' => $defaultFoldersToInclude,
-                'locationSuffix' => 'ARCHIVE_SUFFIX',
-                'nbFiles' => -1,
-                'filesToFind' => [
-                    'wakka.config.php',
-                    'private',
-                    'private/backups',
-                    'private/backups/.htaccess',
-                    'private/backups/README.md',
-                    'private/backups/content.sql',
-                ],
-                'wakkaContent' => [
-                    'archive' => [
-                        'foldersToInclude' => $defaultFoldersToInclude,
-                        'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude),
-                    ],
-                ],
+                true, true, [], $defaultFoldersToInclude,
+                'ARCHIVE_SUFFIX', -1,
+                ['wakka.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
             ],
             'archive only database' => [
-                'savefiles' => false,
-                'savedatabase' => true,
-                'foldersToInclude' => [],
-                'foldersToExclude' => [],
-                'locationSuffix' => 'ARCHIVE_ONLY_DATABASE_SUFFIX',
-                'nbFiles' => 5,
-                'filesToFind' => [
-                    'private',
-                    'private/backups',
-                    'private/backups/.htaccess',
-                    'private/backups/README.md',
-                    'private/backups/content.sql',
-                ],
-                'wakkaContent' => null,
+                false, true, [], [],
+                'ARCHIVE_ONLY_DATABASE_SUFFIX', 5,
+                ['private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                null,
             ],
         ];
     }
@@ -248,14 +209,9 @@ class ArchiveServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @depends testArchiveServiceExisting
-     * @depends testArchive
-     * @dataProvider notInParallelProvider
-     * @covers \ArchiveService::setWikiStatus
-     *
-     * @param array $services [$wiki,$archiveService]
-     */
+    #[Depends('testArchiveServiceExisting')]
+    #[Depends('testArchive')]
+    #[DataProvider('notInParallelProvider')]
     public function testNotArchiveInParallel(
         string $status,
         array $services
@@ -302,22 +258,18 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configurationService->write($config);
     }
 
-    public function notInParallelProvider()
+    public static function notInParallelProvider()
     {
         return [
-            'archiving' => ['status' => 'archiving'],
-            'hibernate' => ['status' => 'hibernate'],
-            'updating' => ['status' => 'updating'],
+            'archiving' => ['archiving'],
+            'hibernate' => ['hibernate'],
+            'updating' => ['updating'],
         ];
     }
 
-    /**
-     * @depends testArchiveServiceExisting
-     * @depends testArchive
-     * @dataProvider hideConfigValuesProvider
-     *
-     * @param array $services [$wiki,$archiveService]
-     */
+    #[Depends('testArchiveServiceExisting')]
+    #[Depends('testArchive')]
+    #[DataProvider('hideConfigValuesProvider')]
     public function testhideConfigValuesParams(
         bool $paramsFromWakka,
         ?array $hideConfigValuesParam,
@@ -408,82 +360,23 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configurationService->write($config);
     }
 
-    public function hideConfigValuesProvider()
+    public static function hideConfigValuesProvider()
     {
         return [
             'default' => [
-                'paramsFromWakka' => true,
-                'hideConfigValuesParam' => null,
-                'wakkaContent' => [
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
-                    'archive' => [
-                        'hideConfigValues' => [
-                            'mysql_host' => '',
-                            'mysql_database' => '',
-                            'mysql_user' => '',
-                            'mysql_password' => '',
-                            'contact_smtp_host' => '',
-                            'contact_smtp_user' => '',
-                            'contact_smtp_pass' => '',
-                            'api_allowed_keys' => [],
-                        ],
-                    ],
-                ],
+                true,
+                null,
+                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'archive' => ['hideConfigValues' => ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'contact_smtp_host' => '', 'contact_smtp_user' => '', 'contact_smtp_pass' => '', 'api_allowed_keys' => []]]],
             ],
             'specific' => [
-                'paramsFromWakka' => true,
-                'hideConfigValuesParam' => [
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
-                    'custom_key' => '',
-                ],
-                'wakkaContent' => [
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
-                    'archive' => [
-                        'hideConfigValues' => [
-                            'mysql_host' => '',
-                            'mysql_database' => '',
-                            'mysql_user' => '',
-                            'mysql_password' => '',
-                            'custom_key' => '',
-                        ],
-                    ],
-                ],
+                true,
+                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key' => ''],
+                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'archive' => ['hideConfigValues' => ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key' => '']]],
             ],
             'specific via command line' => [
-                'paramsFromWakka' => false,
-                'hideConfigValuesParam' => [
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
-                    'custom_key_2' => '',
-                    'custom_key_3' => '',
-                ],
-                'wakkaContent' => [
-                    'mysql_host' => '',
-                    'mysql_database' => '',
-                    'mysql_user' => '',
-                    'mysql_password' => '',
-                    'archive' => [
-                        'hideConfigValues' => [
-                            'mysql_host' => '',
-                            'mysql_database' => '',
-                            'mysql_user' => '',
-                            'mysql_password' => '',
-                            'custom_key_2' => '',
-                            'custom_key_3' => '',
-                        ],
-                    ],
-                ],
+                false,
+                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key_2' => '', 'custom_key_3' => ''],
+                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'archive' => ['hideConfigValues' => ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key_2' => '', 'custom_key_3' => '']]],
             ],
         ];
     }

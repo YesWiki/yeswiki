@@ -1,4 +1,5 @@
 // This code come from https://github.com/BinarCode/vue2-transitions
+// Updated for Vue 3 compatibility
 
 const BaseTransitionMixin = {
   inheritAttrs: false,
@@ -49,13 +50,15 @@ const BaseTransitionMixin = {
       })
     }
   },
+  emits: ['before-enter', 'after-enter', 'before-leave', 'leave', 'after-leave'],
   computed: {
     componentType() {
       return this.group ? 'transition-group' : 'transition'
     },
     hooks() {
+      // In Vue 3, $listeners is merged into $attrs
       return {
-        ...this.$listeners,
+        ...this.$attrs,
         beforeEnter: this.beforeEnter,
         afterEnter: (el) => {
           this.cleanUpStyles(el)
@@ -210,7 +213,6 @@ export default {
     <component :is="componentType"
             :tag="tag"
             v-bind="$attrs"
-            v-on="$listeners"
             @before-enter="beforeEnter"
             @after-enter="afterEnter"
             @enter="enter"

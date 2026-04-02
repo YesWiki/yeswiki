@@ -4,6 +4,7 @@ import InputCheckbox from './InputCheckbox.js'
 
 export default {
   props: ['name', 'value', 'config', 'selectedForms', 'values'],
+  emits: ['input'],
   components: { InputList, InputCheckbox },
   mixins: [InputHelper],
   data() {

@@ -1,4 +1,4 @@
-import { readConf, writeconf, semanticConf, defaultMapping } from '../../../../../../../../../../tools/bazar/presentation/javascripts/form-edit-template/fields/commons/attributes.js'
+import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
 
 export default {
   field: {

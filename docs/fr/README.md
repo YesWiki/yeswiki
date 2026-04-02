@@ -1,49 +1,32 @@
-# Présentation de YesWiki
+# Documentation YesWiki
 
-## Raison d'être
 
-YesWiki est un logiciel libre né du croisement des discussions et savoir-faire de développeurses et animateurices de **projets coopératifs**.
+## 💡 Où suis-je ?
 
-A l'image d'une page blanche, ses **usages sont quasiment illimités** : ils dépendront de votre créativité !
+Vous êtes sur la page d'accueil de la documentation du [logiciel YesWiki](https://yeswiki.net), sur laquelle vous trouverez des informations pour vous aider à utiliser au mieux les [différentes fonctionnalités du logiciel](https://yeswiki.net/?Presentation).
 
-YesWiki est aujourd'hui **maintenu et amélioré par une communauté de professionnel.les** issu.es d'horizons différents qui prend du plaisir à partager ses rêves, ses créations et ses développements.
+?>[Voir les notes de versions](https://yeswiki.net/?ChangeLog) (ce qui a changé au cours des différentes versions du logiciel)
 
-## Fonctionnalités
 
-YesWiki se présente comme un outil de création de sites web conçu pour **faciliter la coopération**. La modification des pages s'opère par un simple double-clic.
 
-YesWiki étant un **logiciel interopérable**: il permet d'intégrer d'autres logiciels ou services Internet comme un pad, un agenda en ligne, une vidéo ou encore une autre page web (iframe). Yeswiki facilite grandement l'intégration dynamique de contenus en provenance d'autres yeswikis. L'import et l'export de données sont aussi possibles en différents formats (csv, json, ical...)
+## 🔎 Comment naviguer dans cette documentation?
 
-YesWiki permet de **créer des bases de données coopératives** pour collecter des informations à l'aide de formulaires, qui peuvent **ensuite être restituées** sous forme d'agenda, carte, annuaire, fil d'actualités, album photos, tableaux...
+Pour trouver l'aide dont vous avez besoin, plusieurs possibilités s'offrent à vous : 
+ - utiliser le menu du haut :arrow_up: en fonction de votre besoin et de là où vous en êtes
+ - utiliser la barre de recherche dans le menu sur la gauche :arrow_left: ![](https://md.yeswiki.net/uploads/12034dc3-c4fb-4755-917b-1753ca94190e.png)
 
-La gestion **des droits d'accès** peut être réalisée au niveau de chaque page ou de manière globale, en lecture et écriture, et ce par utilisateurice ou par groupe.
+ - dans tous les cas, n'hésitez pas à user et abuser du `ctrl+f`(touche ctrl + touche f) qui permet de rechercher dans n'importe quelle page web 
 
-Le système d'historique des pages permet de **restaurer une version antérieure** en un clic, et facilite la comparaison avec la version actuelle.
 
-YesWiki dispose de **nombreux "thèmes"** permettant d'agir sur le graphisme général du wiki. Il vous sera possible de les personnaliser, notamment en changeant les couleurs et les polices d'écriture.
+## 📚 Trouver de l'aide ou d'autres informations
 
-**Des extensions** (tools) permettent d'utiliser YesWiki en plateforme de formation en ligne LMS, de générer les pages en pdf pour la publication, d'ajouter un générateur de livres ou de fanzines, de créer une ferme à wikis, de se connecter via les protocoles LDAP ou SSO.
+En plus de cette documentation et si vous ne trouvez pas de réponses (après avoir cherché quand même, hein :wink: ) vous pouvez consulter les sources suivantes :
 
-## Obtenir un YesWiki
+- [Le forum ](https://forum.yeswiki.net/) qui **est LE lieu** pour poser des questions de dépannage et trouver des solutions
+- [Le tchat dédié](https://framateam.org/signup_user_complete/?id=iwtotxo7rpgsudhq63wxytaeoo) **Mattermost** qui permet d'échanger avec la communauté YesWiki et de s'organiser pour la vie associative et les projets
+- [Les tutoriels](https://yeswiki.net/?CommentFairePour) aussi appelés le "Comment faire pour ?", ils expliquent des trucs et astuces [Les formations](https://yeswiki.net/?SeFormer) pour se faire accompagner par des super pédagogues qui vous permettront d'être autonomes avec votre YesWiki.
 
-Yeswiki peut s'installer sur [un serveur web classique ou en local](webmaster.md)
-
-Des "fermes à wikis" offrent aussi la possibilité d'obtenir un wiki de test. [Un exemple de ferme de wiki](https://ferme.yeswiki.net/?PagePrincipale) pour tester gratuitement, sans engagement de maintenance.
-
-## Trouver de l'aide ou d'autres informations
-
-- [Un forum ](https://forum.yeswiki.net/) pour répondre aux questions fréquemment posées
-- [Un tchat dédié](https://framateam.org/signup_user_complete/?id=iwtotxo7rpgsudhq63wxytaeoo) **Mattermost** qui permet d'échanger des informations rapidement en fonction des sujets parfois plus spécifiques
-- [Des tutoriels](https://yeswiki.net/?CommentFairePour) "Comment faire pour" qui expliquent des trucs et astuces
-- [Une chaine vidéo](https://video.coop.tools/video-channels/yeswiki/videos)
-- [Des formations](https://yeswiki.net/?SeFormer) pour se faire accompagner par des super pédagogues qui vous permettront d'être autonomes avec votre YesWiki.
-
-## Contribuer à la documentation de YesWiki
-
-Vous trouverez en bas de chaque page un bouton "Modifier cette page sur Github" vous permettant d'éditer la page courante de cette documentation. Il va vous falloir créer un compte sur github ou vous identifier pour faire des modifications.  
-Toutes les indications détaillées (tonalité, mise en page, grandes lignes) sont présentes sur la doc de la doc, [voir la documentation exhaustive sur comment contribuer à cette doc](documentation.md).
-
-## Copyleft
+## ✔️ Copyleft
 
 Cette documentation est publiée sous licence Creative Commons CCbySA qui permet à qui le souhaite de :
 
@@ -56,8 +39,13 @@ Cette documentation est publiée sous licence Creative Commons CCbySA qui permet
 Tout ça, dans le but de créer des communs de la connaissance que nous améliorons collectivement.
 ![image](images/Creative_Commons_by-sa_small.svg.png)
 
-## Merci
+## ✏️ Contribuer à la documentation de YesWiki
+
+Vous trouverez en bas de chaque page un bouton "Modifier cette page sur Github" vous permettant d'éditer la page courante de cette documentation. Il va vous falloir créer un compte sur github ou vous identifier pour faire des modifications.  
+Toutes les indications détaillées (tonalité, mise en page, grandes lignes) sont présentes sur la doc de la doc, [voir la documentation exhaustive sur comment contribuer à cette doc](documentation.md).
+
+## 🙏 Merci
 
 **Aux personnes ayant rédigé cette documentation :**
 
-Audrey Auriault, Gatien Bataille, Stève Bizolier, Sylvain Boyer, Sebastian Castro, Adrien Cheype, Adrien Devos, Louise Didier, Magalie Dréano, Jérémy Dufraisse, Frédérique Dumont, Floriane Hamon, Laurent Marseault, Mélanie Michel, Mose, Florian Schmitt
+Audrey Auriault, Gatien Bataille, Stève Bizolier, Sylvain Boyer, Sebastian Castro, Adrien Cheype, Adrien Devos, Louise Didier, Magalie Dréano, Jérémy Dufraisse, Frédérique Dumont, Floriane Hamon, Laurent Marseault, Mélanie Michel, Mose, Florian Schmitt, Guillaume Leguen

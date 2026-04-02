@@ -285,12 +285,12 @@ Les choix possibles seront présentés sous forme d'un groupe de boutons radio :
 Ce champ est un outil qui permet de transformer une adresse saisie en un jeu de coordonnées (longitude et latitude).  
 Son comportement est donc un peu différent de ce qu'on trouve dans les autres champs.
 
-Notamment, pour trouver les coordonnées d'une adresse, il faut à YesWiki des informations sur celle-ci. Votre formulaire doit donc obligatoirement contenir au moins un des champs suivants (une bonne pratique étant d'en avoir plusieurs, voire tous).
+Afin que YesWiki puisse définir les coordonnées géographiques d'un point, votre formulaire doit obligatoirement contenir au moins un des champs suivants :
 
-- un champ dont l'identifiant unique est « bf_adresse ». S'il n'existe pas, il est d'ailleurs inséré automatiquement lors de la création du champ « géolocalisation de l'adresse » ;
-- un champ dont l'identifiant unique est « bf_ville » ;
-- un champ dont l'identifiant unique est « bf_codepostal » ;
-- un champ dont l'identifiant unique est « bf_pays ».
+- **« bf_adresse »** : Une adresse, numéro et nom de rue (Il est inséré automatiquement lors de la création du champ « géolocalisation de l'adresse ») ;
+- **« bf_ville » :** Nom de la ville ;
+- **« bf_codepostal » :** Code postal ;
+- **« bf_pays » :** Nom du pays.
 
 Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous souhaitez afficher vos résultats sous forme de carte.
 
@@ -305,21 +305,51 @@ Il est indispensable d'avoir un champ de ce type dans votre formulaire si vous s
 
 - Possibilité d'activer l'affichage d'une carte de localisation dans la fiche
 
+#### Type d'objets
+Depuis la version Doryphore 4.6, il est désormais possible en mode édition de fiche, de placer des objets différents que de simples points. 
+Pour y parvenir il faut : 
+
+ - En mode édition du formulaire dans les paramètres avancés dans le paramètre "Formes autorisées" renseigner les formes que l'on va mettre à disposition de la personne qui va compléter la fiche. Ecrire les formes autorisés (parmi : marker, line, polygon, rectangle, circle) en les séparants par des virgules.
+
+Il est maintenant possible de placer sur les cartes : 
+
+ - **Des points (marker)**
+ - **Des lignes (line) :** Une ligne peut être un simple segment (2 points) comme une suite de segments (plusieurs points).
+ - **Des polygones (polygon) :** Suite de segments fermés. On placera l'un après l'autre les points qui formeront les sommets du polygone. Pour fermer la polygone cliquer sur la premier point.
+ - **Des rectangles (rectangle)**
+ - **Des cercles (circle)**
+
+!>Par défaut seul les points (marker) sont actifs.
+
+?>**Exemple :** Pour utiliser les polygones et les points, renseigner dans les paramètres avancés de la géolocalisation en mode édition de formulaire les aramètres suivants : `marker,polygon`
+
+!>Si vous n'entrez que `polygon` il sera impossible en édition de fiche de placer un simple point.
+
 ### 1.2.13. Mots clés
 
 Possibilité d'ajouter des mots clés en les séparant par un clic sur la touche entrée
 
-### 1.2.14. Custom HTML
+### 1.2.14. Custom HTML/Wiki
 
-Le champ custom html permet d'insérer un texte, un titre, un lien, ou tout autre contenu au format HTML.
-Il se décline en deux options :
+Le champ custom html/Wiki permet d'insérer un texte, un titre, un lien, ou tout autre contenu qui ne sera pas éditable en mode édition de fiche mais seulement en mode édition de formulaire.
+
+Il est destiné à compléter les intitulé des champs à informer l'utilisateurice, à ajouter des informations.
+
+Le menu déroulant (mode édition de formulaire) intitulé : "Utiliser la syntaxe wiki plutot que du HTML" permet de choisir la synthaxe d'écriture.
+
+?> Depuis la version 4.6 de Doryphore il est possible de renseigner cela en wiki et plus uniquement en HTML.
+
+
+Deux champs permettent de renseigner du texte :
 
 - le contenu qui sera affiché lors de la saisie (cela peut être une information destinée à expliquer à l'utilisateur ce qu'on attend comme élément )
 - le contenu affiché lors de la consultation d'une fiche
 
-Pour formater le code en HTML, c'est possible d'utiliser le site https://editorhtmlonline.com/fr/
+?>Pour avoir le même contenu à l'édition et à la consultation d'une fiche, renseigner le même contenu dans les deux champs.
 
-Voici quelques exemples de fonctionnalités avancées : 
+#### Quelques exemples (en HTML) de fonctionnalités avancées : 
+
+?> Le plus simple maintenant est d'écrire cela avec la synthaxe habituel de YesWiki (voir la documentation de prise en main)
 
 **Ajout d'un encadré dans un formulaire**
 ```<div style="border: 1px solid #EE784B;padding:0px 20px 5px 20px;">Texte à l'intérieur du cadre</div>```
@@ -479,8 +509,6 @@ L'affichage sous forme de bloc est le plus souple d'utilisation. Son paramétrag
 
 #### 3.1.2. Carte
 
-#### Tips
-
 - **Cluster et facettes** Les options affichage en cluster et filtre par facette ne sont compatibles qu'en activant le rendu dynamique
 - **Afficher les contours de département** (à completer)
 
@@ -491,7 +519,9 @@ Les facettes permettent d'afficher des filtres à coté de vos données, l'utili
 Les filtres peuvent être configurés via l'interface composant **Afficher les données d'un formulaire**
 
 #### 3.2.2. Tri dynamique des fiches
-L'option "tri dynamique" permet à l'utilisateur de trier les fiches par n'importe quel champ (titre, date,...) 
+Accessible en mode avancé lors du paramétrage du composant "Afficher les données d'un formulaire". L'option "tri dynamique" permet à l'utilisateurice de trier les fiches par n'importe quel champ (titre, date,...). 
+
+Il conviendra lors du paramètrage de l'affichage du composant de spécifier quels champs peuvent servir à l'utilisateurice à trier.
 
 #### 3.2.3. Afficher une partie des données (query)
 

@@ -261,7 +261,7 @@ class BazarAction extends YesWikiAction
                     default:
                         $this->arguments['search'] = true;
 
-                        return $this->callAction('bazarliste', $this->arguments);
+                        return $this->callAction('bazarliste', array_merge($this->arguments, ['idtypeannonce' => $this->arguments['idtypeannonce']['locals']]));
                 }
         }
     }

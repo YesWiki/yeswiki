@@ -72,9 +72,18 @@ abstract class PackageExt extends Package
     public function deletePackage()
     {
         $desPath = $this->localPath();
+
         if (is_dir($desPath)) {
-            $this->delete($desPath);
+            $vDeleteStatus = $this->delete($desPath);
+
+            if ($vDeleteStatus === true) {
+                return true;
+            } else {
+                return $vDeleteStatus;
+            }
         }
+
+        return true;
     }
 
     protected function getInfos()

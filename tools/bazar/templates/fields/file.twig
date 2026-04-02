@@ -3,12 +3,20 @@
 {% block label %}{{ field.readLabel|replace({'{filename}':shortFileName}) }}{% endblock %}
 
 {% block value %}
-    <a class="btn btn-primary" 
-            href="{{ fileUrl }}" 
-            title="{{ _t('BAZ_DOWNLOAD_FILE') ~ ' ' ~ shortFileName}}" 
-            data-toggle="tooltip" 
+    <a class="btn btn-primary"
+            href="{{ fileUrl }}"
+            title="{{ _t('BAZ_DOWNLOAD_FILE') ~ ' ' ~ shortFileName}}"
+            data-toggle="tooltip"
             data-placement="right"
-            download{{ shortFileName ? '='~ shortFileName  : ''}}>
-        {{ _t('TAGS_DOWNLOAD') }}
+            {% if isUrl|default(false) %}
+                target="_blank"
+            {% else %}
+                download{{ shortFileName ? '='~ shortFileName  : ''}}
+            {% endif %}>
+        {% if isUrl|default(false) %}
+            <i class="fa fa-external-link-alt"></i> {{ _t('BAZ_OPEN_LINK') }}
+        {% else %}
+            {{ _t('TAGS_DOWNLOAD') }}
+        {% endif %}
     </a>
 {% endblock %}

@@ -11,12 +11,14 @@ use Throwable;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\DateService as CoreDateService;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Wiki;
 
 class DateService implements EventSubscriberInterface
 {
     protected const DEFAULT_MAXIMUM_REPETITION = 600;
     protected const PREFIX_ERROR = 'RecurentEvents: ';
 
+    protected $wiki;
     protected $coreDateService;
     protected $entryManager;
     protected $formManager;
@@ -35,22 +37,26 @@ class DateService implements EventSubscriberInterface
     }
 
     public function __construct(
+        Wiki $wiki,
         CoreDateService $coreDateService,
         EntryManager $entryManager,
         FormManager $formManager,
         PageManager $pageManager,
         ParameterBagInterface $params
     ) {
+        $this->wiki = $wiki;
         $this->coreDateService = $coreDateService;
         $this->entryManager = $entryManager;
         $this->followedIds = [];
         $this->formManager = $formManager;
         $this->pageManager = $pageManager;
         $this->params = $params;
-        $this->triggerError = (
-            $this->params->has('debug')
-            && $this->params->get('debug') === 'yes'
-        );
+
+        $vDebugEnabled = $this->params->get('debug') ?? '';
+        $vDebugEnabled = trim($vDebugEnabled);
+        $vDebugEnabled = $vDebugEnabled !== '' && $vDebugEnabled !== 'false' && $vDebugEnabled !== '0';
+
+        $this->triggerError = $vDebugEnabled;
     }
 
     /**
@@ -155,7 +161,7 @@ class DateService implements EventSubscriberInterface
                 }
             }
         } catch (Throwable $th) {
-            $this->triggerNoticeErrorIfPossible("{$th->getMessage()} in file '" . basename($th->getFile()) . "' on line {$th->getLine()}");
+            $this->triggerNoticeErrorIfPossible($this->wiki->dumpThrowable ($th));
         }
     }
 
@@ -369,8 +375,7 @@ class DateService implements EventSubscriberInterface
             $currentStartDate = $this->coreDateService->getDateTimeWithRightTimeZone($entry['bf_date_debut_evenement']);
             $currentEndDate = $this->coreDateService->getDateTimeWithRightTimeZone($entry['bf_date_fin_evenement']);
         } catch (Throwable $th) {
-            $this->triggerNoticeErrorIfPossible("for '{$entry['id_fiche']}', " .
-                "{$th->getMessage()} from {$th->getFile()} on line {$th->getLine()}");
+            $this->triggerNoticeErrorIfPossible("for '{$entry['id_fiche']}', " . $this->wiki->dumpThrowable ($th));
 
             return [];
         }
@@ -532,11 +537,12 @@ class DateService implements EventSubscriberInterface
      */
     protected function deleteLinkedEntries(array $entry)
     {
-        $vSearchManager = $this->getService(SearchManager::class);
+        $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
         $entryId = $entry['id_fiche'];
         $formId = $entry['id_typeannonce'];
         $hasEndDateField = isset($entry['bf_date_fin_evenement']);
+
         if ($hasEndDateField && !empty($entryId) && !empty($formId)) {
             $entriesToDelete = $vSearchManager->search(
                 [

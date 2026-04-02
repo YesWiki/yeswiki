@@ -1,8 +1,10 @@
 export default {
-  data: {
-    tokenForImages: null,
-    imagesToProcess: [],
-    processingImage: false
+  data() {
+    return {
+      tokenForImages: null,
+      imagesToProcess: [],
+      processingImage: false
+    }
   },
   methods: {
     urlImageResizedOnError(entry, fieldName, width, height, mode, token) {

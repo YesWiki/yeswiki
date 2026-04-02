@@ -202,7 +202,7 @@ class Performer
             } catch (Throwable $t) {
                 // catch all errors and exceptions thrown by the execution of the performable
                 $message = _t('PERFORMABLE_ERROR');
-                $message .= "<br/>{$t->getMessage()} in <i>{$t->getFile()}</i> on line <i>{$t->getLine()}</i>";
+                $message .= "<br/>" . $this->wiki->dumpThrowable ($t);
 
                 return $this->renderError($message, $objectType);
             }

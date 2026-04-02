@@ -41,6 +41,70 @@ window.$docsify = {
   },
   plugins: [
     function(hook, vm) {
+      hook.ready(() => {
+        // Original code by @rizdaprasetya and further improved with the assistance of ChatGPT, an AI language model by OpenAI
+        // true = show debug log
+        const dd = false
+        const TARGET_QUERY = 'id'
+        const SCROLL_DELAY = 750 // in milliseconds
+        const EXCLUDED_PARENT_CLASS = 'cover' // Class of parent to exclude
+        const { location } = window
+
+        dd && console.log('custom scroll plugin called!')
+
+        // Build the current URL without the hash
+        const currentUrlWithoutHash = new URL(
+          location.origin + location.pathname
+          + location.search
+        )
+
+        // Get the search parameters from the URL (before the hash)
+        const urlQueryParam = currentUrlWithoutHash.searchParams
+        const isUrlHasIdQuery = urlQueryParam.has(TARGET_QUERY)
+
+        // Handle the case where the 'id' is in the fragment (hash) part
+        const hashParams = new URLSearchParams(location.hash.split('?')[1]) // Get the query params after `#`
+        const isHashHasIdQuery = hashParams.has(TARGET_QUERY)
+
+        // Check if the URL contains the 'id' query parameter in either search or hash
+        if (isUrlHasIdQuery || isHashHasIdQuery) {
+          dd && console.log('url or hash has id, will scroll to element')
+
+          // Get the 'id' from either search or hash
+          const urlId = isUrlHasIdQuery ? urlQueryParam.get(TARGET_QUERY) : hashParams.get(TARGET_QUERY)
+
+          // Delay the scrolling to ensure everything is loaded
+          setTimeout(() => {
+            dd && console.log('will scroll now!')
+            try {
+              const targetElement = document.getElementById(urlId) // Use `getElementById` to directly reference the element
+              dd && console.log('Target element ID:', urlId)
+              if (targetElement) {
+                // Check if the target element is within an excluded parent
+                const excludedParent = targetElement.closest(`.${EXCLUDED_PARENT_CLASS}`)
+
+                if (!excludedParent) {
+                  // Use requestAnimationFrame for immediate scroll to the element
+                  requestAnimationFrame(() => {
+                    // Scroll smoothly to the element's top position
+                    window.scrollTo({
+                      top: (targetElement.offsetTop + targetElement.offsetParent?.offsetTop || 0) - 60,
+                      behavior: 'smooth'
+                    })
+                  })
+                } else {
+                  dd && console.log('Target is within an excluded parent:', excludedParent)
+                }
+              } else {
+                dd && console.log('Element not found')
+              }
+            } catch (e) {
+              dd && console.log('custom scroll failed', e)
+            }
+          }, SCROLL_DELAY)
+        }
+      })
+
       hook.afterEach((html) => {
         // Lazy load images and iframes
         html = html.replace(/<img src=([^\s]*)/g, '<img class="lazyload" data-src=$1')

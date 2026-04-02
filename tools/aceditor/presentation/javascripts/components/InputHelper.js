@@ -3,6 +3,7 @@
 export default {
   methods: {
     componentIdFrom(config) {
+      if (!config) return 'input-hidden'
       return `input-${['text', 'number', 'range', 'url', 'email'].includes(config.type) ? 'text' : (config.type || 'hidden')}`
     },
     // Whether or not display this field (and include it's key/value in the action params)
@@ -32,9 +33,11 @@ export default {
       return !hideIf
     },
     checkVisibility(config) {
+      if (!config) return false
       return this.checkConfigDisplay(config) && (!config.advanced || this.$root.displayAdvancedParams)
     },
     refFrom(config) {
+      if (!config) return ''
       return config.subproperties || config.type == 'geo' ? 'specialInput' : ''
     },
     getFieldsFormSelectedForms(selectedForms, extraFields = []) {

@@ -25,8 +25,8 @@ vendor
 
 # Node modules
 node_modules
-!javascripts/vendor
-!styles/vendor
+javascripts/vendor/
+styles/vendor/
 
 # SEO
 robots.txt
@@ -126,7 +126,9 @@ docker-compose.local.yml
 
 # Other
 .phpintel/
+CLAUDE.md
 *.old
 .php-cs-fixer.cache
 .twig-cs-fixer.cache
+.gitconfig
 TODO

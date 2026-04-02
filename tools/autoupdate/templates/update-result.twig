@@ -13,7 +13,7 @@
     {% endif %}
     <li class="list-group-item">
         <span class="pull-right label label-{{ label }}">{{ message.status }}</span>
-        {{ message.text }}
+        {{ message.text | replace({'\\n': "\n"}) | nl2br }}
     </li>
 {% endfor %}
 </ul>
