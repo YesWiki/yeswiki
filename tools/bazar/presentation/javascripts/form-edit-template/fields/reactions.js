@@ -1,5 +1,5 @@
 import renderHelper from './commons/render-helper.js'
-import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {
   field: {
@@ -33,7 +33,6 @@ export default {
     },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
   disabledAttributes: [
     'label', 'required'

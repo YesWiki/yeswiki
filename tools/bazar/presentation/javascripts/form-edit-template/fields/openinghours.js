@@ -1,4 +1,4 @@
-import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {
   field: {
@@ -12,9 +12,8 @@ export default {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic'],
+  advancedAttributes: ['read', 'write'],
   renderInput(fieldData) {
     return { field: '<input type="date"/>' }
   }

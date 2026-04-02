@@ -65,12 +65,6 @@ export const searchableConf = {
   options: { '': _t('NO'), 1: _t('YES') }
 }
 
-export const semanticConf = {
-  label: _t('BAZ_FORM_EDIT_SEMANTIC_LABEL'),
-  value: '',
-  placeholder: 'Ex: https://schema.org/name'
-}
-
 export const selectConf = {
   subtype2: {
     label: _t('BAZ_FORM_EDIT_SELECT_SUBTYPE2_LABEL'),
@@ -94,8 +88,7 @@ export const selectConf = {
   },
   hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
   read: readConf,
-  write: writeconf,
-  semantic: semanticConf
+  write: writeconf
 }
 
 // Mapping betwwen yes wiki syntax and FormBuilder json syntax

@@ -1,4 +1,4 @@
-import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {
   field: {
@@ -29,9 +29,8 @@ export default {
     maxsize: { label: _t('BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL'), value: '' },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'thumb_height', 'thumb_width', 'resize_height', 'resize_width', 'maxsize'],
+  advancedAttributes: ['read', 'write', 'thumb_height', 'thumb_width', 'resize_height', 'resize_width', 'maxsize'],
   // disabledAttributes: [],
   attributesMapping: {
     ...defaultMapping,

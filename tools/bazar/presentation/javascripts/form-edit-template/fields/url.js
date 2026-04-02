@@ -1,7 +1,6 @@
 import {
   readConf,
   writeconf,
-  semanticConf,
   defaultMapping
 } from './commons/attributes.js'
 import renderHelper from './commons/render-helper.js'
@@ -140,7 +139,6 @@ export default {
     },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
   attributesMapping: {
     ...defaultMapping,
@@ -150,7 +148,7 @@ export default {
       7: 'class'
     }
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'hint', 'ratio', 'maxwidth', 'maxheight', 'options', 'class'],
+  advancedAttributes: ['read', 'write', 'hint', 'ratio', 'maxwidth', 'maxheight', 'options', 'class'],
   // disabledAttributes: [],
   renderInput(field) {
     return {

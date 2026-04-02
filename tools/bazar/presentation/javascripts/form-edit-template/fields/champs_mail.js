@@ -1,5 +1,5 @@
 import renderHelper from './commons/render-helper.js'
-import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {
   field: {
@@ -26,9 +26,8 @@ export default {
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'pattern', 'defaultIdentifier', 'name', 'seeEmailAcls', 'readWhenForm'],
+  advancedAttributes: ['read', 'write', 'pattern', 'defaultIdentifier', 'name', 'seeEmailAcls', 'readWhenForm'],
   // disabledAttributes: [],
   attributesMapping: {
     ...defaultMapping,
