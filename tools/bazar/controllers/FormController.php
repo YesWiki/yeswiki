@@ -204,12 +204,24 @@ class FormController extends YesWikiController
         $followers = $this->activityPubService->getFollowers($form);
         $following = $this->activityPubService->getFollowing($form);
 
+        $domain = parse_url($this->wiki->GetBaseURL(), PHP_URL_HOST);
+
         return $this->render('@bazar/forms/abonnements.twig', [
             'message' => isset($_GET['msg']) ? $_GET['msg'] : null,
             'form' => $form,
+            'domain' => $domain,
             'followers' => $followers,
             'following' => $following,
         ]);
+    }
+
+    public function addFollowing($id, $actorUri)
+    {
+        $form = $this->formManager->getOne($id);
+
+        $this->activityPubService->postActivity(["type" => "Follow", "object" => $actorUri, "to" => $actorUri], $form);
+
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_ADDED', 'idformulaire' => $id], false));
     }
 
     public function removeFollowing($id, $actorUri)

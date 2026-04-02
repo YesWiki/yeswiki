@@ -45,6 +45,7 @@ class BazarAction extends YesWikiAction
 
     // Abonnements
     public const ACTION_ABONNEMENT_LIST = 'list';
+    public const ACTION_ABONNEMENT_ADD = 'add';
     public const ACTION_ABONNEMENT_REMOVE = 'remove';
 
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
@@ -212,6 +213,10 @@ class BazarAction extends YesWikiAction
                 switch ($action) {
                     case self::ACTION_ABONNEMENT_LIST:
                         return $formController->manageAbonnements($_GET['idformulaire']);
+                    case self::ACTION_ABONNEMENT_ADD:
+                        if ($_GET['type'] === 'following') {
+                            return $formController->addFollowing($_GET['idformulaire'], $_GET['actor']);
+                        }
                     case self::ACTION_ABONNEMENT_REMOVE:
                         if ($_GET['type'] === 'followers') {
                             return $formController->removeFollower($_GET['idformulaire'], $_GET['actor']);

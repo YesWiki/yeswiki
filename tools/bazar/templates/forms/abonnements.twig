@@ -5,6 +5,10 @@
 </div>
 {% endif %}
 
+<div class="alert alert-info">
+<strong>{{ _t('BAZ_FORM_ACTOR_ID') }}</strong>: @{{ form['bn_activitypub_username'] }}@{{ domain }}
+</div>
+
 <strong>{{ _t('BAZ_FOLLOW_ACTOR') }}</strong>
 <form action="" method="post" class="form-horizontal">
 	<div class="input-prepend input-append input-group">
@@ -61,6 +65,15 @@
 				<a href="{{ actorUri }}" target="_blank">{{ actorUri }}</a>
 			</td>
 			<td>
+				{% if actorUri not in following %}
+				<a
+					class="btn btn-default btn-mini btn-xs"
+					href="{{ url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+					title="{{ _t('BAZ_FOLLOW_BACK') }}"
+				>
+					<i class="fa fa-user-plus icon-white"></i>
+				</a>
+				{% endif %}
 				<a
 					class="btn btn-danger btn-xs"
 					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }}) }}"
