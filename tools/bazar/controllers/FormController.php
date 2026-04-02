@@ -245,6 +245,21 @@ class FormController extends YesWikiController
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_REMOVED', 'idformulaire' => $id], false));
     }
 
+    public function syncActorPosts($id, $actorUri)
+    {
+        $form = $this->formManager->getOne($id);
+        $stats = $this->activityPubService->syncActorPosts($actorUri, $form);
+
+        Flash::success(sprintf(
+            _t('BAZ_SYNC_COMPLETE'),
+            $stats['created'],
+            $stats['updated'],
+            $stats['deleted']
+        ));
+
+        return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'idformulaire' => $id], false));
+    }
+
     public function removeFollower($id, $actorUri)
     {
         $form = $this->formManager->getOne($id);

@@ -228,4 +228,130 @@ class ActivityPubService
             'to' => $this->getFormCollectionUri($form, 'followers'),
         ], $form);
     }
+
+    public function syncActorPosts(string $actorUri, array $form): array
+    {
+        $stats = ['created' => 0, 'updated' => 0, 'deleted' => 0];
+        $entryManager = $this->container->get(EntryManager::class);
+
+        // Fetch actor profile to get its outbox URL
+        $response = $this->httpClient->request('GET', $actorUri, [
+            'headers' => ['Accept' => 'application/activity+json']
+        ]);
+        $actor = json_decode($response->getContent(), true);
+
+        if (empty($actor['outbox'])) {
+            return $stats;
+        }
+
+        $remoteItems = $this->fetchAllOutboxItems($actor['outbox']);
+
+        // Collect all remote object IDs so we can detect deletions afterwards
+        $remoteObjectIds = [];
+
+        foreach ($remoteItems as $item) {
+            $type = $item['type'] ?? null;
+            $object = $item['object'] ?? null;
+
+            if ($type === 'Delete') {
+                // object may be a string (the ID itself) or an array with a Tombstone
+                $objectId = is_array($object) ? ($object['id'] ?? null) : $object;
+                if ($objectId) {
+                    $existingTriples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $objectId, '=', '=', '=');
+                    if (!empty($existingTriples)) {
+                        $entryManager->delete($existingTriples[0]['resource'], true);
+                        $stats['deleted']++;
+                    }
+                }
+                continue;
+            }
+
+            if (!$object || !isset($object['id'])) {
+                continue;
+            }
+
+            $remoteObjectIds[] = $object['id'];
+
+            $existingTriples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
+
+            if ($type === 'Create') {
+                if (empty($existingTriples)) {
+                    $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                    $entry['read-only'] = 1;
+                    // var_dump($entry);
+                    // var_dump($object);
+                    // exit();
+                    $entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+                    $stats['created']++;
+                } else {
+                    $tag = $existingTriples[0]['resource'];
+                    $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                    $entryManager->update($tag, $entry, false);
+                    $stats['updated']++;
+                }
+            } elseif ($type === 'Update' && !empty($existingTriples)) {
+                $tag = $existingTriples[0]['resource'];
+                $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                $entryManager->update($tag, $entry, false);
+                $stats['updated']++;
+            }
+        }
+
+        // Detect objects deleted on the remote side (no longer in the outbox):
+        // any local entry whose sourceUrl comes from the same host as the actor
+        // but is absent from the current outbox should be removed.
+        $actorHost = parse_url($actorUri, PHP_URL_HOST);
+        $localEntries = $entryManager->search(['idtypeannonce' => $form['bn_id_nature']]);
+
+        foreach ($localEntries as $entry) {
+            $tag = $entry['id_fiche'];
+            $sourceTriples = $this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', '');
+
+            if (!empty($sourceTriples)) {
+                $sourceUrl = $sourceTriples[0]['value'];
+                if (parse_url($sourceUrl, PHP_URL_HOST) === $actorHost && !in_array($sourceUrl, $remoteObjectIds)) {
+                    $entryManager->delete($tag, true);
+                    $stats['deleted']++;
+                }
+            }
+        }
+
+        return $stats;
+    }
+
+    private function fetchAllOutboxItems(string $outboxUrl): array
+    {
+        $items = [];
+        $url = $outboxUrl;
+        $maxPages = 20; // Safety limit to avoid infinite loops
+
+        for ($page = 0; $url && $page < $maxPages; $page++) {
+            $response = $this->httpClient->request('GET', $url, [
+                'headers' => ['Accept' => 'application/activity+json']
+            ]);
+            $data = json_decode($response->getContent(), true);
+            $type = $data['type'] ?? null;
+
+            // Paginated collection: follow `first` before collecting items
+            if ($type === 'OrderedCollection' && isset($data['first']) && !isset($data['orderedItems'])) {
+                $url = is_string($data['first']) ? $data['first'] : ($data['first']['id'] ?? null);
+                continue;
+            }
+
+            if (isset($data['orderedItems'])) {
+                $items = array_merge($items, $data['orderedItems']);
+            } elseif (isset($data['items'])) {
+                $items = array_merge($items, $data['items']);
+            }
+
+            // Follow the next page, if any
+            if (isset($data['next'])) {
+                $url = is_string($data['next']) ? $data['next'] : ($data['next']['id'] ?? null);
+            } else {
+                break;
+            }
+        }
+
+        return $items;
+    }
 }

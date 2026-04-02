@@ -47,6 +47,7 @@ class BazarAction extends YesWikiAction
     public const ACTION_ABONNEMENT_LIST = 'list';
     public const ACTION_ABONNEMENT_ADD = 'add';
     public const ACTION_ABONNEMENT_REMOVE = 'remove';
+    public const ACTION_ABONNEMENT_SYNC = 'sync';
 
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
     public const ACTION_PAS_PUBLIER = 'pas_publier'; // Invalider la fiche
@@ -223,7 +224,8 @@ class BazarAction extends YesWikiAction
                         } else {
                             return $formController->removeFollowing($_GET['idformulaire'], $_GET['actor']);
                         }
-                        
+                    case self::ACTION_ABONNEMENT_SYNC:
+                        return $formController->syncActorPosts($_GET['idformulaire'], $_GET['actor']);
                     default:
                         return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
                 }

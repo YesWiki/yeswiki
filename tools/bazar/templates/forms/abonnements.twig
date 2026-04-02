@@ -39,6 +39,13 @@
 			</td>
 			<td>
 				<a
+					class="btn btn-default btn-xs"
+					href="{{ url({ params: { vue: 'abonnements', action: 'sync', actor: actorUri, idformulaire: form.bn_id_nature }}) }}"
+					title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
+				>
+					<i class="fa fa-retweet icon-white"></i>
+				</a>
+				<a
 					class="btn btn-danger btn-xs"
 					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
 					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
