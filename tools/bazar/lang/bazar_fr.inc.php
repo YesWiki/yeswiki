@@ -32,7 +32,7 @@ return [
     'BAZ_ABONNES' => 'Abonnés',
     'BAZ_FORM_ACTOR_ID' => 'Identifiant de l\'acteur ActivityPub',
     'BAZ_FOLLOW_FORM_ACTOR' => "S'abonner aux nouveautés de {actorName} avec un compte ActivityPub (Mastodon, etc.)",
-    'BAZ_FOLLOW_ACTOR' => 'Suivre un nouvel acteur pour se synchroniser',
+    'BAZ_FOLLOW_ACTOR' => "S'abonner à un nouvel acteur pour se synchroniser",
     'BAZ_FOLLOW_ACTOR_INFO' => 'Entrez un identifiant de type @user@domain.com',
     'BAZ_IMPORT_LISTS_FROM_URL' => 'Importer les listes d\'un autre yeswiki',
     'BAZ_IMPORT_FORMS_FROM_URL' => 'Importer les formulaires d\'un autre yeswiki',

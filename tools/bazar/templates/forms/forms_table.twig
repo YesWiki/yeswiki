@@ -67,7 +67,7 @@
               </a>
             {% endif %}
             {% if form.isActivityPubEnabled %}
-              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_ACTIVITYPUB_ACTOR') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/actor'}) }}" data-toggle="tooltip" data-placement="bottom">
+              <a class="btn btn-default btn-mini btn-xs" target="_blank" title="{{ _t('BAZ_ACTIVITYPUB_ACTOR') }}" href="/actors/{{ key }}" data-toggle="tooltip" data-placement="bottom">
                 AP
               </a>
             {% endif %}
