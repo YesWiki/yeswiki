@@ -134,7 +134,7 @@ class ApiController extends YesWikiController
         if ($activityPubService->isEnabled($form)) {
             $activity = json_decode($request->getContent(), true);
 
-            // $httpSignatureService->verifySignature($request);
+            $httpSignatureService->verifySignature($request);
             $activityPubService->processActivity($activity, $form);
 
             return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);

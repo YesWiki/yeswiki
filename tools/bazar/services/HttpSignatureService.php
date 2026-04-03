@@ -112,10 +112,13 @@ class HttpSignatureService
             throw new Exception('Malformed public key');
         }
 
+        // We cannot use getRequestUri() because it returns the real URI, eg. /?api/forms/2/actor
+        $requestUri = $request->getScriptName();
+
         $sigParts = [];
         foreach (explode(' ', $sigConf['headers']) as $headerKey) {
             if ($headerKey === '(request-target)') {
-                $sigParts[] = sprintf('%s: %s %s', $headerKey, strtolower($request->getMethod()), $request->getRequestUri());
+                $sigParts[] = sprintf('%s: %s %s', $headerKey, strtolower($request->getMethod()), $requestUri);
             } else {
                 if (!$request->headers->has($headerKey)) {
                     throw new Exception('Missing signature part: ' . $headerKey);
@@ -129,8 +132,6 @@ class HttpSignatureService
         }
 
         if ($request->headers->get('Digest') !== $this->getDigest($request->getContent())) {
-            var_dump('DIGEST1', $request->headers->get($headerKey));
-            var_dump('DIGEST2', $this->getDigest($request->getContent()));
             throw new Exception('Digest mismatch');
         }
     }
