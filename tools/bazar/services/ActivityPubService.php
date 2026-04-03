@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Exception;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -37,11 +38,13 @@ class ActivityPubService
     }
     
     public function getFormActorUri($form) {
-        return $this->params->get('base_url') . "api/forms/" . $form['bn_id_nature'] . "/actor";
+        $parsed = parse_url($this->params->get('base_url'));
+        return $parsed['scheme'] . '://' . $parsed['host'] . "/actors/" . $form['bn_id_nature'];
     }
 
     public function getFormCollectionUri($form, $collectionType) {
-        return $this->params->get('base_url') . "api/forms/" . $form['bn_id_nature'] . "/actor" . "/" . $collectionType;
+        $parsed = parse_url($this->params->get('base_url'));
+        return $parsed['scheme'] . '://' . $parsed['host'] . "/actors/" . $form['bn_id_nature'] . "/" . $collectionType;
     }
 
     public function getActor($form) {
@@ -113,12 +116,18 @@ class ActivityPubService
 
             $signatureHeaders = $this->httpSignatureService->generateSignature($activity, $inboxUri, $form);
 
-            $fullHeaders = array_merge($signatureHeaders, [ 'Content-Type' => 'application/activity+json']);
-
-            $this->httpClient->request('POST', $inboxUri, [
+            $response = $this->httpClient->request('POST', $inboxUri, [
                 'body' => json_encode($activity, JSON_UNESCAPED_SLASHES),
-                'headers' => $fullHeaders
+                'headers' => $signatureHeaders
             ]);
+
+            $body = $response->getContent(false); // The real error message is on the body
+            $statusCode = $response->getStatusCode();
+
+            if ($statusCode < 200 || $statusCode >= 300) {
+                throw new Exception("Failed to send activity to $inboxUri (HTTP $statusCode): $body");
+            }
+            
         }
     }
 

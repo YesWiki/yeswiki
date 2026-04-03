@@ -40,7 +40,8 @@ class HttpSignatureService
         $message = json_encode($activity, JSON_UNESCAPED_SLASHES);
         $digest = $this->getDigest($message);
 
-        $date = date("D, d M Y H:i:s \G\M\T");
+        $date = gmdate("D, d M Y H:i:s \G\M\T");
+        $contentType = 'application/activity+json'; // TODO allow to pass custom headers. This only works for POST requests.
 
         $urlParts = parse_url($url);
 
@@ -49,7 +50,7 @@ class HttpSignatureService
             'host' => $urlParts['host'],
             'date' => $date,
             'digest' => $digest,
-            'content-type' => 'application/activity+json',
+            'content-type' => $contentType,
         ];
 
         $sigSrc = join("\n", array_map(
@@ -69,6 +70,7 @@ class HttpSignatureService
 
         return [
             'Date' => $date,
+            'Content-Type' => $contentType,
             'Digest' => $digest,
             'Signature' => join(',', array_map(
                     fn($k, $v) => "{$k}=\"{$v}\"",
