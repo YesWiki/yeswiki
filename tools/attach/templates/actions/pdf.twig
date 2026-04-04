@@ -1,12 +1,19 @@
 {% extends "@attach/actions/commons-pdf-video.twig" %}
 
 {% block main %}
-  <span class="throbber pdf-block-loading"></span>
-  <iframe
-    src="javascripts/vendor/pdfjs-dist/web/pdf-viewer.php?file={{ url|e('url') }}"
-    class="embed-responsive-item" frameborder="0" allowfullscreen
-    onload="event.target.parentNode.querySelector('.pdf-block-loading').style.display='none';"
-    >
-    </iframe>
+<div class="pdf-wrapper" data-pdf="{{ url|e('url') }}"></div>
+
+<style>
+    .pdf-wrapper {
+        width: 100%;
+        height: 80vh;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f9f9f9;
+    }
+</style>
+{{ include_javascript('tools/attach/presentation/javascripts/pdf-object.js') }}
 {% endblock %}
-  
