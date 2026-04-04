@@ -1,7 +1,8 @@
 import SpinnerLoader from '../../tools/bazar/presentation/javascripts/components/SpinnerLoader.js'
 
-new Vue({
-  el: '.admin-backups',
+const { createApp } = Vue
+
+const app = createApp({
   components: { SpinnerLoader },
   data() {
     return {
@@ -53,7 +54,7 @@ new Vue({
           this.selectedArchivesToDelete = this.selectedArchivesToDelete.filter((e) => archiveNames.includes(e))
         }, (pError) => {
           // on error
-          this.message = _t('ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST' + (pError.message.trim () != '' ? ' : ' + pError : ''))
+          this.message = _t(`ADMIN_BACKUPS_NOT_POSSIBLE_TO_LOAD_LIST${pError.message.trim() != '' ? ` : ${pError}` : ''}`)
           this.messageClass = { alert: true, 'alert-danger': true }
           this.selectedArchivesToDelete = []
           return Promise.resolve()
@@ -86,7 +87,7 @@ new Vue({
           return this.loadArchives()
         })
         .catch((pError) => {
-            console.log (pError);
+          console.log(pError)
         })
     },
     async deleteSelectedArchives() {
@@ -133,24 +134,22 @@ new Vue({
             return this.loadArchives()
           })
           .catch((pError) => {
-            console.log (pError);
+            console.log(pError)
           })
       }
-    },    
+    },
     async fetch(url, options = {}) {
-        const cThis = this;
-    
-        return await fetch(url, options)
-        .then (async (pResponse) => {
-            if (!pResponse.ok) {
-                const cJSON = await pResponse.json();
+      const cThis = this
 
-                throw new Error(_t('ERROR_CONTACT_ADMIN') + ` ${pResponse.statusText} (${pResponse.status}) - "` + cJSON['error'] + '"')
-            }
-            else
-                return pResponse.json();
-        });
-    },    
+      return await fetch(url, options)
+        .then(async(pResponse) => {
+          if (!pResponse.ok) {
+            const cJSON = await pResponse.json()
+
+            throw new Error(`${_t('ERROR_CONTACT_ADMIN')} ${pResponse.statusText} (${pResponse.status}) - "${cJSON.error}"`)
+          } else return pResponse.json()
+        })
+    },
     async fetchPost(url, formObject, options = {}) {
       const internalOptions = { ...options }
       const formData = new FormData()
@@ -221,8 +220,7 @@ new Vue({
             this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_START_BACKUP_NOT_ENOUGH_SPACE', 'warning')
           } else if (data.hasOwnProperty('canArchive') && !data.canArchive) {
             this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_CANNOT_ARCHIVE', 'danger')
-          }          
-          else {
+          } else {
             this.endStartingUpdateError()
           }
         }, (pError) => {
@@ -230,7 +228,7 @@ new Vue({
           this.endStartingUpdateError(pError)
         })
         .catch((pError) => {
-          console.log (pError);
+          console.log(pError)
         })
     },
     async startArchiveNextStep() {
@@ -273,8 +271,9 @@ new Vue({
           }
           this.currentArchiveUid = data.uid
           setTimeout(this.updateStatus, 2000)
-        }, (pError) => {console.log (pError);
-          this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR') + (pError.message.trim() != '' ? ' : ' + pError : ''));
+        }, (pError) => {
+          console.log(pError)
+          this.endStartingUpdateError(_t('ADMIN_BACKUPS_START_BACKUP_ERROR') + (pError.message.trim() != '' ? ` : ${pError}` : ''))
         })
     },
     endStartingUpdateError(message = '', className = 'danger') {
@@ -334,12 +333,12 @@ new Vue({
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
           setTimeout(this.checkStopped, 500)
         }, (pError) => {
-          this.archiveMessage = _t('ADMIN_BACKUPS_STOP_BACKUP_ERROR' + (pError.message.trim () != '' ? ' : ' + pError : ''))
+          this.archiveMessage = _t(`ADMIN_BACKUPS_STOP_BACKUP_ERROR${pError.message.trim() != '' ? ` : ${pError}` : ''}`)
           this.archiveMessageClass = { alert: true, 'alert-danger': true }
           this.stoppingArchive = false
         })
         .catch((pError) => {
-            console.log (pError);
+          console.log(pError)
         })
     },
     async checkStopped() {
@@ -368,7 +367,7 @@ new Vue({
             setTimeout(this.checkStopped, 1000)
           })
           .catch((pError) => {
-            console.log (pError);
+            console.log(pError)
           })
       }
     },
@@ -417,11 +416,11 @@ new Vue({
               setTimeout(this.updateStatus, 1000)
             }
           }, (pError) => {
-            this.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR') + (pError.message.trim () != '' ? ' : ' + pError : ''), 'danger')
+            this.endUpdatingStatus(_t('ADMIN_BACKUPS_UPDATE_UID_STATUS_ERROR') + (pError.message.trim() != '' ? ` : ${pError}` : ''), 'danger')
             setTimeout(this.loadArchives, 3000)
           })
           .catch((pError) => {
-            console.log (pError);
+            console.log(pError)
           })
       }
       this.endUpdatingStatus()
@@ -485,11 +484,11 @@ new Vue({
             })
           }
         }, (pError) => {
-          this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE' + (pError.message.trim () != '' ? ' : ' + pError : ''))
+          this.endStartingUpdateErrorWithT(`ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE${pError.message.trim() != '' ? ` : ${pError}` : ''}`)
           this.canForceUpdate = false
         })
         .catch((pError) => {
-          console.log (pError);
+          console.log(pError)
         })
     },
     async bypassArchive() {
@@ -523,3 +522,5 @@ new Vue({
     }
   }
 })
+
+app.mount('.admin-backups')

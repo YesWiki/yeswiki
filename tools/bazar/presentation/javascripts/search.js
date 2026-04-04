@@ -6,36 +6,36 @@
  * @return <object> : an object in the form { name : <string>, operator : <string>, values : [ string, ... ] }
  */
 
-export function parseCondition (pValue) {
-	// Extraire nom, opérateur et valeurs
-	const regex = /\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/
-	const matches = pValue.match(regex)
+export function parseCondition(pValue) {
+  // Extraire nom, opérateur et valeurs
+  const regex = /\s*([^=!<>]*)\s*(==|!=|<=|>=|=|<|>)(.*)/
+  const matches = pValue.match(regex)
 
-	if (!matches) return null
+  if (!matches) return null
 
-	const vName = matches[1].trim()
-	let vOperator = matches[2].trim()
-	const rawValues = matches[3].trim()
+  const vName = matches[1].trim()
+  let vOperator = matches[2].trim()
+  const rawValues = matches[3].trim()
 
-	// Convertir l'opérateur "=" en "=="
-	if (vOperator === '=') vOperator = '=='
+  // Convertir l'opérateur "=" en "=="
+  if (vOperator === '=') vOperator = '=='
 
-	// Transformer la liste en tableau avec valeurs uniques
-	const vUniqueValues = Array.from(
-		new Set(
+  // Transformer la liste en tableau avec valeurs uniques
+  const vUniqueValues = Array.from(
+    new Set(
 		    rawValues.split(',').map((v) => v.trim()).filter((v) => v !== '')
-		)
-	)
+    )
+  )
 
-	// Retourner la structure
+  // Retourner la structure
 
-	const vResult = {
-		name: vName,
-		operator: vOperator,
-		values: vUniqueValues
-	}
+  const vResult = {
+    name: vName,
+    operator: vOperator,
+    values: vUniqueValues
+  }
 
-	return vResult
+  return vResult
 }
 
 /**
@@ -57,7 +57,7 @@ export function parseCondition (pValue) {
  *			(ie : an AND-array of OR-arrays)
  *	- excludeds = <array> an array of excluded tokens
  */
- 
+
 export function parseKeywords(pKeywords) {
   const _t = (key) => 'BAZ_MOT_CLE' // Remplace ça par ton système de traduction si besoin
 
@@ -107,9 +107,9 @@ export function parseKeywords(pKeywords) {
  * @pString <string> : the string to test
  * @return <boolean> : true if the string represent a regexp, false otherwise
  */
- 
+
 export function isRegExp(str) {
-    return (typeof str === 'string' && (str.includes('.*') || (str.startsWith('/') && str.endsWith('/'))))
+  return (typeof str === 'string' && (str.includes('.*') || (str.startsWith('/') && str.endsWith('/'))))
 }
 
 export function removeDiacritics(str) {
@@ -162,7 +162,7 @@ export function toLowerCaseWithoutAccent(str) {
  *
  * @return <string> : the transformed regexp string
  */
- 
+
 export function extractRegExp(pString, accentInsensitive = true) {
   let vString
 
@@ -187,5 +187,3 @@ export function extractRegExp(pString, accentInsensitive = true) {
 
   return vString
 }
-
-

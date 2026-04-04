@@ -136,7 +136,7 @@ $(document).ready(() => {
 
       // Loop through the comment list
       $(this).parents('.export-table-container').find('.list-group-item').not('.empty-list')
-        .each(function () {
+        .each(function() {
           // If the list item does not contain the text phrase fade it out
           if ($(this).text().search(new RegExp(filter.value, 'i')) < 0) {
             $(this).hide()

@@ -5,9 +5,12 @@ $.extend(datas, widgetdata)
 // $.extend( datas, facetteval );
 $.extend(datas, facettetext)
 
-const widgetapp = new Vue({
-  el: '#widgetapp',
-  data: datas,
+const { createApp } = Vue
+
+const widgetapp = createApp({
+  data() {
+    return datas
+  },
   computed: {
     newiframeurl() {
       const facettelabel = []
@@ -60,3 +63,5 @@ const widgetapp = new Vue({
     }
   }
 })
+
+widgetapp.mount('#widgetapp')

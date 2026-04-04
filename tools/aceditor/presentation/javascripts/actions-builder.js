@@ -1,4 +1,6 @@
-import { setup, app } from './actions-builder-app.js'
+import { setup, appConfig } from './actions-builder-app.js'
+
+const { createApp } = Vue
 
 const ACTIONS_BACKWARD_COMPATIBILITY = {
   calendrier: 'bazarcalendar',
@@ -13,8 +15,9 @@ export default class {
     if (window.actionBuilderApp) {
       this.app = window.actionBuilderApp
     } else {
-      setup()
-      this.app = new Vue(app)
+      const vueApp = createApp(appConfig)
+      setup(vueApp)
+      this.app = vueApp.mount('#actions-builder-app')
       window.actionBuilderApp = this.app
     }
   }

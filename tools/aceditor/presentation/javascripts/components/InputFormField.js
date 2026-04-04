@@ -3,6 +3,7 @@ import InputHelper from './InputHelper.js'
 // Text/Number/Color/slider
 export default {
   props: ['value', 'config', 'selectedForms'],
+  emits: ['input'],
   mixins: [InputHelper],
   data() {
     return { fields: [] }

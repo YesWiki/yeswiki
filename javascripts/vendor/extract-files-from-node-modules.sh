@@ -16,14 +16,13 @@ mkdir -p styles/vendor/bootstrap/css &&
 	cp -f node_modules/bootstrap/dist/css/bootstrap.min.css.map styles/vendor/bootstrap/css
 mkdir -p styles/vendor/bootstrap && cp -f -r node_modules/bootstrap/dist/fonts styles/vendor/bootstrap
 
-#  Vue
-mkdir -p javascripts/vendor/vue && cp -f node_modules/vue/dist/{vue.js,vue.min.js} javascripts/vendor/vue
+#  Vue 3 (global build for browser usage)
+mkdir -p javascripts/vendor/vue && cp -f node_modules/vue/dist/vue.global.js javascripts/vendor/vue/vue.js
+cp -f node_modules/vue/dist/vue.global.prod.js javascripts/vendor/vue/vue.min.js
 # Vue Select
 mkdir -p javascripts/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.js javascripts/vendor/vue-select/vue-select.min.js
 mkdir -p styles/vendor/vue-select && cp -f node_modules/vue-select/dist/vue-select.css styles/vendor/vue-select
-# Vue Leaflet
-mkdir -p javascripts/vendor/vue2-leaflet && cp -f node_modules/vue2-leaflet/dist/vue2-leaflet.min.js javascripts/vendor/vue2-leaflet/vue2-leaflet.js
-# Vue draggable
+# Vue draggable v4 (Vue 3 compatible)
 mkdir -p javascripts/vendor/sortablejs && cp -f node_modules/sortablejs/Sortable.min.js javascripts/vendor/sortablejs/sortable.js
 mkdir -p javascripts/vendor/vuedraggable && cp -f node_modules/vuedraggable/dist/vuedraggable.umd.js javascripts/vendor/vuedraggable/vuedraggable.js
 
