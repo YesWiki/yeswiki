@@ -69,47 +69,48 @@ const BazarMapComponent = {
       const provideOptions = this.params.provider_credentials
         ? JSON.parse(this.params.provider_credentials)
         : {}
-      const provider = L.tileLayer
-        .provider(this.params.provider, provideOptions)
-        .addTo(this.map)
 
-      this.params.layers = this.params.layers.map((layer) => layer.replace(/visiblebydefault\|?;?/gi, ''))
-      let displayProviderList = false
-      for (const layer of this.params.layers) {
-        let [label, type, options, url] = layer.split('|')
+      const baseLayers = {}
+      const providers = this.params.providers || []
+      if (providers.length > 0) {
+        providers.forEach((p) => { baseLayers[p] = L.tileLayer.provider(p) })
+      } else {
+        baseLayers[this.params.provider] = L.tileLayer.provider(this.params.provider, provideOptions)
+      }
+      const defaultProvider = baseLayers[this.params.provider] || Object.values(baseLayers)[0]
+      defaultProvider.addTo(this.map)
+
+      const rawLayers = (this.params.layers || [])
+      for (const rawLayer of rawLayers) {
+        let [label, type, options, url] = rawLayer.split('|')
         if (!url) {
           url = options
           options = ''
         }
+        const visibleByDefault = /visiblebydefault/i.test(options || '')
+        options = (options || '').replace(/visiblebydefault\s*;?/gi, '').trim()
         switch (type.toLowerCase()) {
           case 'tiles':
-            this.layers[label] = L.tileLayer(url).addTo(this.map)
+            this.layers[label] = L.tileLayer(url)
+            if (visibleByDefault) this.layers[label].addTo(this.map)
             break
           case 'geojson':
-            displayProviderList = true
             this.layers[label] = L.geoJson
               .ajax(url, {
                 style(feature, latlng) {
                   if (feature.geometry.type == 'Point') return
                   const props = feature.properties || {}
-                  // convert options string "color: blue; fill: red" to object
                   options.split(';').forEach((o) => {
-                    if (!0) return
+                    if (!o.trim()) return
                     const [key, value] = o.split(':')
-                    props[key.trim()] = value.trim().replaceAll("'", '')
+                    if (key && value) props[key.trim()] = value.trim().replaceAll("'", '')
                   })
                   return {
-                    ...{
-                      fillColor:
-                        props._umap_options.color
-                        ?? wiki.cssVar('--primary-color'),
-                      fillOpacity: props._umap_options.opacity ?? 0.3,
-                      color:
-                        props._umap_options.color
-                        ?? wiki.cssVar('--primary-color'),
-                      opacity: 1,
-                      weight: 3
-                    },
+                    fillColor: props._umap_options?.color ?? wiki.cssVar('--primary-color'),
+                    fillOpacity: props._umap_options?.opacity ?? 0.3,
+                    color: props._umap_options?.color ?? wiki.cssVar('--primary-color'),
+                    opacity: 1,
+                    weight: 3,
                     ...props
                   }
                 },
@@ -120,24 +121,24 @@ const BazarMapComponent = {
                   let str = ''
                   for (const prop in feature.properties) {
                     const content = prop.toLowerCase() == 'url'
-                      ? `<a href="${feature.properties[prop]}" target="_blank" >${feature.properties[prop]}</a>`
+                      ? `<a href="${feature.properties[prop]}" target="_blank">${feature.properties[prop]}</a>`
                       : feature.properties[prop]
                     str += `${prop}: ${content}<br/>`
                   }
                   layer.bindPopup(str)
                 }
               })
-              .addTo(this.map)
+            if (visibleByDefault) this.layers[label].addTo(this.map)
             break
           default:
-            alert(`Error in Layers parameter: type ${type} is unknown`)
+            console.warn(`BazarMap: unknown layer type "${type}"`)
             break
         }
       }
-      if (displayProviderList) {
-        L.control
-          .layers({ [this.params.provider]: provider }, this.layers)
-          .addTo(this.map)
+
+      // Add layer control only if multiple layers are there
+      if (Object.keys(baseLayers).length > 1 || Object.keys(this.layers).length > 0) {
+        L.control.layers(baseLayers, this.layers).addTo(this.map)
       }
     },
     arraysEqual(a, b) {
