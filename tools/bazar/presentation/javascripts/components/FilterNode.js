@@ -1,6 +1,7 @@
 import CollapseTransition from '../../../../../javascripts/shared-components/CollapseTransition.js'
 
-export default {
+const FilterNode = {
+  name: 'FilterNode',
   props: ['node'],
   components: { CollapseTransition },
   data: () => ({ expanded: false }),
@@ -82,3 +83,5 @@ export default {
     </div>
   `
 }
+FilterNode.components.FilterNode = FilterNode
+export default FilterNode

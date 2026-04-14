@@ -35,6 +35,7 @@ return [
     'SUNDAY' => 'Dimanche',
     'THURSDAY' => 'Jeudi',
     'TUESDAY' => 'Mardi',
+    'URL' => 'URL',
     'WEDNESDAY' => 'Mercredi',
     'YES' => 'Oui',
     'ADMIN_BACKUPS_LOADING_LIST' => 'Chargement de la liste des sauvegardes',

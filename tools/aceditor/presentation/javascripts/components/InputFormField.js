@@ -42,9 +42,9 @@ export default {
       
       <select v-else :value="value" v-on:input="$emit('input', $event.target.value)" class="form-control">
         <option value=""></option>
-        <option v-for="field in fieldOptions" v-if="field.label" :value="field.id">
-          <span v-html="field.label"></span> - {{ field.id }}
-        </option>
+        <template v-for="field in fieldOptions" :key="field.id">
+          <option v-if="field.label" :value="field.id">{{ field.label }} - {{ field.id }}</option>
+        </template>
       </select>
       
       <input-hint :config="config"></input-hint>

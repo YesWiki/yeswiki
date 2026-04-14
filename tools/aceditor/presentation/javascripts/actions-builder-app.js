@@ -66,7 +66,7 @@ export function setup(vueApp) {
   // Vue 3: Register global components on the app instance
   vueApp.component('input-hint', InputHint)
   vueApp.component('addon-icon', AddonIcon)
-  vueApp.component('v-select', VueSelect.VueSelect)
+  vueApp.component('v-select', window['vue-select'])
 }
 
 export const appConfig = {

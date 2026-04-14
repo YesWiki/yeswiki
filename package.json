@@ -10,7 +10,7 @@
   "scripts": {
     "lint-js": "eslint --fix --ext .js,.ts .",
     "lint-other": "node_modules/.bin/prettier --write '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
-    "postinstall": "./javascripts/vendor/extract-files-from-node-modules.sh"
+    "postinstall": "./includes/extract-files-from-node-modules.sh"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
@@ -41,7 +41,7 @@
     "sortablejs": "^1.15.2",
     "spectrum-colorpicker2": "^2.0.8",
     "vue": "^3.2.47",
-    "vue-select": "^3.13.0",
+    "vue-select": "4.0.0-beta.6",
     "vuedraggable": "^4.1.0"
   },
   "devDependencies": {

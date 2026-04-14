@@ -44,15 +44,16 @@ export default {
   },
   watch: {
     elements: {
-      handler(val) { this.$emit('input', val) },
+      handler() { this.$emit('input', null) },
       deep: true
     }
   },
   template: `
     <div class="multi-input-container" :class="name">
-      <div class="inline-form" v-for="element in elements">
-        <template v-for="(property, propName) in config.subproperties">
-          <component :is="componentIdFrom(property)" v-model="element[propName]"
+      <div class="inline-form" v-for="(element, elementIndex) in elements" :key="elementIndex">
+        <template v-for="(property, propName) in config.subproperties" :key="propName">
+          <component :is="componentIdFrom(property)" :value="element[propName]"
+                     @input="element[propName] = $event"
                      v-show="checkVisibility(property)" :name="propName" :values="values"
                      :config="property" :selected-forms="selectedForms">
           </component>

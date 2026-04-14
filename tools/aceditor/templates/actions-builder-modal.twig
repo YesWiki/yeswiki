@@ -42,9 +42,9 @@
                  :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
               <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS') }}'"></h3>
               <div class="config-panel-content">
-                <template v-for="(config, propName) in panel.params.properties">
+                <template v-for="(config, propName) in panel.params.properties" :key="propName">
                   <div v-html="config.intro" v-show="checkVisibility(config)"></div>
-                  <component :is="componentIdFrom(config)" :key="propName" :ref="refFrom(config)"
+                  <component :is="componentIdFrom(config)" :ref="refFrom(config)"
                              :value="values[propName]" v-on:input="updateValue(propName, $event)"
                              v-show="checkVisibility(config)"
                              :name="propName" :values="values"
@@ -56,7 +56,7 @@
           </div>
 
           <!-- Advanced Params Checkbox -->
-          <input-checkbox v-if="isSomeAdvancedParams" v-model="displayAdvancedParams" 
+          <input-checkbox v-if="isSomeAdvancedParams" :value="displayAdvancedParams" @input="displayAdvancedParams = $event"
                           :config="{label: '{{ _t('ACTION_BUILDER_ADVANCED_PARAMETERS') }}'}"
                           class="advanced-params">
           </input-checkbox>
@@ -86,7 +86,7 @@
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 
-{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+{{ include_javascript(config.debug == 'yes' ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
 
 {{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
 {{ include_css('styles/vendor/vue-select/vue-select.css') }}
