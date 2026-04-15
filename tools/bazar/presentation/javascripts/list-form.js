@@ -66,5 +66,6 @@ const app = createApp({
 })
 
 if (mountElement) {
+  app.component('draggable', window.vuedraggable)
   app.mount('.list-form')
 }

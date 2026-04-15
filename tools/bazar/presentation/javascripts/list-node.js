@@ -57,10 +57,11 @@ export default {
       </div>
       <div v-show="depth == 0 || expanded" class="list-node-children" 
            :class="{root: depth == 0, first: depth == 0 && node.children.length == 0}">
-        <draggable v-model="node.children" group="nodes">
-          <list-node v-for="(childNode, index) in node.children" :key="childNode.vueRef" 
-                     :node="childNode" @delete="deleteChildNode" :depth="depth + 1" 
-                     :index="index"></list-node>
+        <draggable v-model="node.children" group="nodes" item-key="vueRef">
+          <template #item="{ element: childNode, index }">
+            <list-node :node="childNode" :key="childNode.vueRef" @delete="deleteChildNode"
+                       :depth="depth + 1" :index="index"></list-node>
+          </template>
         </draggable>
         <div class="list-new-node input-group input-prepend">
           <button type="button" @click="addChildNode" 

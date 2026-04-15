@@ -8,7 +8,7 @@
   "license": "AGPL-3.0",
   "homepage": "https://yeswiki.net",
   "scripts": {
-    "lint-js": "eslint --fix --ext .js,.ts .",
+    "lint-js": "eslint --fix .",
     "lint-other": "node_modules/.bin/prettier --write '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
     "postinstall": "./includes/extract-files-from-node-modules.sh"
   },

@@ -29,18 +29,18 @@ export function updateExportLinks(pSearchParams) {
 
         const vParams = mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
 
-        const finalURL = new URL(vNewURL.href);
-        const searchParams = new URLSearchParams(vParams || "");
+        const finalURL = new URL(vNewURL.href)
+        const searchParams = new URLSearchParams(vParams || '')
         if (vHandlerValue) {
-          const [key, value] = vHandlerValue.split('=');
+          const [key, value] = vHandlerValue.split('=')
           if (value !== undefined) {
-            searchParams.set(key, value);
+            searchParams.set(key, value)
           } else {
-            finalURL.search = vHandlerValue + (vParams ? `&${vParams}` : '');
+            finalURL.search = vHandlerValue + (vParams ? `&${vParams}` : '')
           }
         }
-        finalURL.search = searchParams.toString();
-        pLink.href = finalURL.toString();
+        finalURL.search = searchParams.toString()
+        pLink.href = finalURL.toString()
       }
     })
 }
