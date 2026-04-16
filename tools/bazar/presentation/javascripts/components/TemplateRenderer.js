@@ -23,11 +23,23 @@ const getTemplateFromSlot = (id, base, name, params = {}) => {
           return h('div', {}, slotFn(params))
         }
       })
+      app.config.globalProperties.wiki = window.wiki
+      app.config.globalProperties._t = window._t
+      const root = base.$root
+      if (root?.urlImage) {
+        app.config.globalProperties.urlImage = root.urlImage.bind(root)
+      }
+      if (root?.urlImageResizedOnError) {
+        app.config.globalProperties.urlImageResizedOnError = root.urlImageResizedOnError.bind(root)
+      }
       app.mount(tempContainer)
       let outerHtml = ''
       const children = tempContainer.firstChild?.childNodes || []
       for (let index = 0; index < children.length; index++) {
-        outerHtml += children[index].outerHTML || children[index].textContent
+        const child = children[index]
+        if (child.nodeType !== Node.COMMENT_NODE) {
+          outerHtml += child.outerHTML || child.textContent
+        }
       }
       app.unmount()
       templatesForRendering[id][key] = outerHtml

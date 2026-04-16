@@ -539,6 +539,10 @@ const load = (domElement) => {
     app.component(name, component)
   })
 
+  // Expose YesWiki globals to all Vue templates in this app
+  app.config.globalProperties.wiki = window.wiki
+  app.config.globalProperties._t = window._t
+
   // Add mounted class to element
   domElement.classList.add('mounted')
 

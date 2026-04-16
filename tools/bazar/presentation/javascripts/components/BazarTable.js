@@ -81,7 +81,7 @@ const componentParams = {
             formattedData[key] = entry[key] || ''
           }
         })
-        this.$set(this.rows, entry.id_fiche, formattedData)
+        this.rows[entry.id_fiche] = formattedData
       })
     },
     arraysEqual(a, b) {
@@ -91,7 +91,7 @@ const componentParams = {
 
       a.sort()
       b.sort()
-      return a.every((val, idx) => a[idx] !== b[idx])
+      return a.every((val, idx) => a[idx] === b[idx])
     },
     deleteAllSelected(event) {
       const uuid = this.getUuid()
@@ -410,7 +410,7 @@ const componentParams = {
       const entryIdsToRemove = Object.keys(this.rows).filter((id) => !newIds.includes(id))
       entryIdsToRemove.forEach((id) => {
         if (id in this.rows) {
-          this.$delete(this.rows, id)
+          delete this.rows[id]
         }
       })
     },
@@ -632,6 +632,7 @@ const componentParams = {
   },
   mounted() {
     $(this.$el.parentNode).on('dblclick', (e) => false)
+    Waiter.resolve('params')
     this.updateFieldsFromRoot()
     window.urlImageResizedOnError = this.$root.urlImageResizedOnError
     this.$root.$watch('isLoading', (isLoading) => {

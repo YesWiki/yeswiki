@@ -1,7 +1,5 @@
 import Waiter from '../Waiter.js'
 
-const isVueJS3 = (typeof Vue.createApp == 'function')
-
 export default {
   props: {
     columns: {
@@ -39,7 +37,7 @@ export default {
   },
   computed: {
     element() {
-      return isVueJS3 ? this.$el.parentNode : this.$el
+      return this.$el.parentNode
     },
     showFooter() {
       return this.forceDisplayTotal || this.columns.some((col) => col?.class?.match(/sum-activated/))
@@ -157,7 +155,10 @@ export default {
           let outerHtml = ''
           const children = tempContainer.firstChild?.childNodes || []
           for (let index = 0; index < children.length; index++) {
-            outerHtml += children[index].outerHTML || children[index].textContent
+            const child = children[index]
+            if (child.nodeType !== Node.COMMENT_NODE) {
+              outerHtml += child.outerHTML || child.textContent
+            }
           }
           app.unmount()
           this.templatesForRendering[key] = outerHtml
@@ -203,7 +204,7 @@ export default {
       const entryIdsToRemove = Object.keys(this.displayedRows).filter((id) => !newIds.includes(id))
       entryIdsToRemove.forEach((id) => {
         if (id in this.displayedRows) {
-          this.$delete(this.displayedRows, id)
+          delete this.displayedRows[id]
         }
       })
       dataTable.rows((idx, data, node) => data?.id === undefined || entryIdsToRemove.includes(data?.id)).remove()
