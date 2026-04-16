@@ -534,6 +534,11 @@ const load = (domElement) => {
     }
   })
 
+  // Register any components added by external scripts (e.g. BazarCalendar)
+  Object.entries(window._bazarDynamicComponents || {}).forEach(([name, component]) => {
+    app.component(name, component)
+  })
+
   // Add mounted class to element
   domElement.classList.add('mounted')
 
