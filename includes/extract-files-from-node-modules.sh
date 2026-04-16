@@ -111,23 +111,22 @@ mkdir -p javascripts/vendor/moment &&
 	cp -f node_modules/moment/min/moment-with-locales.min.js.map javascripts/vendor/moment
 
 # Docsify
-# Sept 2022: Docsify have vulnerability warnings, so we remove it from our dependency
-# so the github warning disappear. Please include it back in package.json when issue is fixed
-# mkdir -p javascripts/vendor/docsify && \
-#   cp -f node_modules/docsify/lib/docsify.min.js javascripts/vendor/docsify && \
-#   cp -f node_modules/docsify/LICENSE javascripts/vendor/docsify && \
-#   cp -f node_modules/docsify/README.md javascripts/vendor/docsify
-mkdir -p javascripts/vendor/docsify/plugins &&
-	# cp -f node_modules/docsify/lib/plugins/*.min.js javascripts/vendor/docsify/plugins && \
-	for f in node_modules/docsify-copy-code/dist/*.min.js; do
-		copy_js "$f" "javascripts/vendor/docsify/plugins/$(basename "$f")"
-	done
+mkdir -p javascripts/vendor/docsify && \
+  copy_js node_modules/docsify/lib/docsify.min.js javascripts/vendor/docsify/docsify.min.js && \
+  cp -f node_modules/docsify/LICENSE javascripts/vendor/docsify && \
+  cp -f node_modules/docsify/README.md javascripts/vendor/docsify
+mkdir -p javascripts/vendor/docsify/plugins && \
+  copy_js node_modules/docsify/lib/plugins/search.min.js javascripts/vendor/docsify/plugins/search.js && \
+  copy_js node_modules/docsify/lib/plugins/zoom-image.min.js javascripts/vendor/docsify/plugins/zoom-image.min.js && \
+  for f in node_modules/docsify-copy-code/dist/*.min.js; do
+    copy_js "$f" "javascripts/vendor/docsify/plugins/$(basename "$f")"
+  done
 cp -f node_modules/docsify-copy-code/LICENSE javascripts/vendor/docsify/plugins/LICENSE-docisfy-copy-code
-# mkdir -p styles/vendor/docsify && \
-#   cat node_modules/docsify/lib/themes/vue.css \
-#     | sed -E "s|(@import url\(\"https://fonts.googleapis.com)|/*  \n  This file has been modified just to remove google font import on first line\n  It's based on Vue theme maintained by docsify\n  https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css\n */\n/* \1|g" \
-#     | sed -E 's|("\);)(\*\{-webkit)|\1 */\n\2|g' \
-#     > styles/vendor/docsify/vue-theme-modified.min.css
+mkdir -p styles/vendor/docsify && \
+  cat node_modules/docsify/lib/themes/vue.css \
+    | sed -E "s|(@import url\(\"https://fonts.googleapis.com)|/*  \n  This file has been modified just to remove google font import on first line\n  It's based on Vue theme maintained by docsify\n  https://cdn.jsdelivr.net/npm/docsify/lib/themes/vue.css\n */\n/* \1|g" \
+    | sed -E 's|("\);)(\*\{-webkit)|\1 */\n\2|g' \
+    > styles/vendor/docsify/vue-theme-modified.min.css
 
 # Lazysizes
 mkdir -p javascripts/vendor/lazysizes &&
