@@ -1071,6 +1071,9 @@ class Wiki
     {
         static $cache = [];
 
+        if ($user === null) {
+            $user = $this->getUserName();
+        }
         if (!array_key_exists($user, $cache)) {
             $cache[$user] = $this->services->get(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
         }
