@@ -5,9 +5,11 @@ import { parseSearchParams, mergeSearchParams } from '../url.js'
 const wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
 export default {
-  data: {
-    isLoading: false,
-    pendingRequest: null
+  data() {
+    return {
+      isLoading: false,
+      pendingRequest: null
+    }
   },
   methods:
   {
