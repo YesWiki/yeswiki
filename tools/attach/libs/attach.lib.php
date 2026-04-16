@@ -602,8 +602,7 @@ if (!class_exists('attach')) {
         public function showAsPDF($fullFilename)
         {
             // Defines parameters for pdf action
-            // Use /download handler to avoid issues with .pdf_ filename extension
-            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . $this->file);
+            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . $this->file, false);
             $this->wiki->setParameter('url', $url);
             if (empty($this->wiki->GetParameter('hauteurmax')) && empty($this->wiki->GetParameter('largeurmax'))) {
                 $this->wiki->setParameter('hauteurmax', $this->wiki->GetParameter('height'));
