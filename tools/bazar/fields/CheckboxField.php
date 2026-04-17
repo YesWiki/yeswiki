@@ -64,6 +64,7 @@ abstract class CheckboxField extends EnumField
                         'data' => $this->optionsTree,
                         'values' => $this->getValues($entry),
                         'displaySelectAllLimit' => $this->displaySelectAllLimit,
+                        'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),
                     ]);
                 }
 
@@ -95,9 +96,13 @@ abstract class CheckboxField extends EnumField
 
     public function formatValuesBeforeSave($entry)
     {
-        // Get the value
-
-        $checkboxField = $this->getValue($entry);
+        // We check if the field was emptied on purpose, so there is not merge of previous value
+        $fromFormKey = $this->propertyName . self::FROM_FORM_ID;
+        if (isset($_REQUEST[$fromFormKey])) {
+            $checkboxField = $_REQUEST[$this->propertyName] ?? [];
+        } else {
+            $checkboxField = $this->getValue($entry);
+        }
 
         if ($checkboxField === null) {
             return [];
