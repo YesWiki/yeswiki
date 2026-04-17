@@ -64,25 +64,37 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Configures and starts Apache
+      - name: Configure and start Nginx + PHP-FPM
         run: |
-          echo "<VirtualHost *:80>
-            ServerName localhost
-            DocumentRoot ${{ github.workspace }}
-
-            <Directory "${{ github.workspace }}">
-              Options FollowSymLinks MultiViews ExecCGI
-              AllowOverride All
-              Require all granted
-            </Directory>
-          </VirtualHost>" | sudo tee /etc/apache2/sites-enabled/000-default.conf
-          sudo chown www-data:www-data -R ${{ github.workspace }}
           sudo apt update
-          sudo apt install --no-install-recommends --assume-yes libapache2-mod-php${{ matrix.php-version }}
-          sudo a2dismod mpm_event || true
-          sudo a2enmod mpm_prefork
-          sudo a2enmod php${{ matrix.php-version }}
-          sudo /etc/init.d/apache2 start
+          sudo apt install --no-install-recommends --assume-yes nginx php${{ matrix.php-version }}-fpm
+          printf 'server {\n\
+              listen 80;\n\
+              root %s;\n\
+              index index.php index.html;\n\
+              client_max_body_size 512M;\n\
+              location / {\n\
+                  try_files $uri $uri/ /index.php$is_args$args;\n\
+              }\n\
+              location ~* /(.*/)?private/ {\n\
+                  deny all;\n\
+                  return 403;\n\
+              }\n\
+              location ~ [^/]\\.php(/|$) {\n\
+                  fastcgi_split_path_info ^(.+?\\.php)(/.*)$;\n\
+                  include fastcgi_params;\n\
+                  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
+                  fastcgi_param PATH_INFO $fastcgi_path_info;\n\
+                  fastcgi_pass unix:/run/php/php%s-fpm.sock;\n\
+                  fastcgi_intercept_errors on;\n\
+                  fastcgi_request_buffering off;\n\
+                  fastcgi_read_timeout 600;\n\
+              }\n\
+          }\n' "${{ github.workspace }}" "${{ matrix.php-version }}" \
+            | sudo tee /etc/nginx/sites-enabled/default
+          sudo chown www-data:www-data -R ${{ github.workspace }}
+          sudo /etc/init.d/php${{ matrix.php-version }}-fpm start
+          sudo /etc/init.d/nginx start
 
       - name: Append current user in www-data group
         run: sudo usermod -aG www-data $USER
