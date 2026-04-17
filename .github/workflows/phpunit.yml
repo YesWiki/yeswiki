@@ -1,43 +1,62 @@
-name: Tests on php 7.3
+name: Tests
 
 on:
   workflow_dispatch:
     inputs:
       logLevel:
-        description: "Log level"
+        description: 'Log level'
         required: true
-        default: "warning"
+        default: 'warning'
       tags:
-        description: "Tags"
+        description: 'Tags'
   push:
     branches: [doryphore, ectoplasme]
     paths:
-      - "composer.lock"
-      - "*.php"
-      - ".github/workflows/*.yml"
+      - 'composer.lock'
+      - '*.php'
+      - '.github/workflows/*.yml'
   pull_request:
     branches: [doryphore, doryphore-dev, ectoplasme]
     paths:
-      - "composer.lock"
-      - "*.php"
-      - ".github/workflows/*.yml"
+      - 'composer.lock'
+      - '*.php'
+      - '.github/workflows/*.yml'
 
 env:
   DB_NAME: yeswiki_test
+  DB_USER: root
+  DB_PASSWORD: root
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+
+    strategy:
+      matrix:
+        php-version: ['8.2', '8.3', '8.4', '8.5']
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ env.DB_PASSWORD }}
+          MYSQL_DATABASE: ${{ env.DB_NAME }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "7.3"
+          php-version: ${{ matrix.php-version }}
           extensions: mysqli
           tools: composer:v2
-        env:
-          fail-fast: true
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
@@ -59,30 +78,23 @@ jobs:
           </VirtualHost>" | sudo tee /etc/apache2/sites-enabled/000-default.conf
           sudo chown www-data:www-data -R ${{ github.workspace }}
           sudo apt update
-          sudo apt install --no-install-recommends --assume-yes libapache2-mod-php7.3
-          sudo a2enmod php7.3
+          sudo apt install --no-install-recommends --assume-yes libapache2-mod-php${{ matrix.php-version }}
+          sudo a2enmod php${{ matrix.php-version }}
           sudo /etc/init.d/apache2 start
 
-      - name: Set up MySQL
-        run: |
-          sudo /etc/init.d/mysql start
-          mysql -e 'CREATE DATABASE ${{ env.DB_NAME }};' -uroot -proot
-
       - name: Append current user in www-data group
-        run: |
-          sudo usermod -aG www-data $USER
+        run: sudo usermod -aG www-data $USER
 
       - name: Set cache folder writable
         run: |
           sudo mkdir -p ${{ github.workspace }}/cache
           sudo chmod -R 0777 ${{ github.workspace }}/cache
 
-      - name: Set private folder for archive (and clean previous files)
+      - name: Set private folder for archive
         run: |
           sudo mkdir -p ${{ github.workspace }}/private/archives
           sudo chown www-data:www-data -R ${{ github.workspace }}/private/archives
           sudo chmod -R 0777 ${{ github.workspace }}/private/archives
-          sudo ls ${{ github.workspace }}/private/archives/* && sudo rm ${{ github.workspace }}/private/archives/* || true
 
       - run: curl http://localhost
 
@@ -93,10 +105,10 @@ jobs:
             -F "config[wakka_name]=MyTestWiki" \
             -F "config[root_page]=PagePrincipale" \
             -F "config[base_url]=http://localhost/?" \
-            -F "config[mysql_host]=localhost" \
+            -F "config[mysql_host]=127.0.0.1" \
             -F "config[mysql_database]=${{ env.DB_NAME }}" \
-            -F "config[mysql_user]=root" \
-            -F "config[mysql_password]=root" \
+            -F "config[mysql_user]=${{ env.DB_USER }}" \
+            -F "config[mysql_password]=${{ env.DB_PASSWORD }}" \
             -F "config[table_prefix]=yeswiki_" \
             -F "config[allow_raw_html]=1" \
             -F "config[archive][privatePath]=${{ github.workspace }}/private/archives" \
