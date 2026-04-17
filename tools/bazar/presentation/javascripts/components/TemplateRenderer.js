@@ -1,3 +1,9 @@
+/**
+ * Vue 3 Template Renderer utility
+ * Renders slot content to HTML strings for use in non-Vue contexts (like DataTables)
+ */
+const { createApp, h } = Vue
+
 const templatesForRendering = {}
 
 const getTemplateFromSlot = (id, base, name, params = {}) => {
@@ -6,19 +12,36 @@ const getTemplateFromSlot = (id, base, name, params = {}) => {
     templatesForRendering[id] = {}
   }
   if (!(key in templatesForRendering[id])) {
-    if (name in base.$scopedSlots) {
-      const slot = base.$scopedSlots[name]
-      const constructor = Vue.extend({
-        render(h) {
-          return h('div', {}, slot(params))
+    // Vue 3: $slots contains functions that return VNodes
+    const slots = base.$slots
+    if (slots && name in slots) {
+      const slotFn = slots[name]
+      // Create a temporary app to render the slot to HTML
+      const tempContainer = document.createElement('div')
+      const app = createApp({
+        render() {
+          return h('div', {}, slotFn(params))
         }
       })
-      const instance = new constructor()
-      instance.$mount()
-      let outerHtml = ''
-      for (let index = 0; index < instance.$el.childNodes.length; index++) {
-        outerHtml += instance.$el.childNodes[index].outerHTML || instance.$el.childNodes[index].textContent
+      app.config.globalProperties.wiki = window.wiki
+      app.config.globalProperties._t = window._t
+      const root = base.$root
+      if (root?.urlImage) {
+        app.config.globalProperties.urlImage = root.urlImage.bind(root)
       }
+      if (root?.urlImageResizedOnError) {
+        app.config.globalProperties.urlImageResizedOnError = root.urlImageResizedOnError.bind(root)
+      }
+      app.mount(tempContainer)
+      let outerHtml = ''
+      const children = tempContainer.firstChild?.childNodes || []
+      for (let index = 0; index < children.length; index++) {
+        const child = children[index]
+        if (child.nodeType !== Node.COMMENT_NODE) {
+          outerHtml += child.outerHTML || child.textContent
+        }
+      }
+      app.unmount()
       templatesForRendering[id][key] = outerHtml
     } else {
       templatesForRendering[id][key] = ''
@@ -29,8 +52,8 @@ const getTemplateFromSlot = (id, base, name, params = {}) => {
 
 const render = (id, base, name, params = {}, replacement = []) => {
   let output = getTemplateFromSlot(id, base, name, params)
-  replacement.forEach(([anchor, replacement]) => {
-    output = output.replace(anchor, replacement)
+  replacement.forEach(([anchor, rep]) => {
+    output = output.replace(anchor, rep)
   })
   return output
 }

@@ -75,35 +75,34 @@ function toastMessage(
 }
 // polyfill placeholder
 (function($) {
-
-  $("input[type=password]")
+  $('input[type=password]')
     .each(function() {
-      var vMe = $(this);
+      const vMe = $(this)
 
-      $("<div>")
-        .addClass("far fa-eye")
-        .attr("title", _t('SHOW_PASSWORD'))
+      $('<div>')
+        .addClass('far fa-eye')
+        .attr('title', _t('SHOW_PASSWORD'))
         .css(
           {
-            position: "absolute",
-            right: "0%",
-            top: "50%",
-            transform: "translate(0px, -50%)",
-            paddingRight: "1em",
-            fontSize: "1em"
-          })
-        .on("click", function() {
-          if (vMe.attr("type") == "password") {
-            vMe.attr("type", "text");
-            $(this).removeClass("fa-eye").attr("title", _t('HIDE_PASSWORD')).addClass("fa-eye-slash");
+            position: 'absolute',
+            right: '0%',
+            top: '50%',
+            transform: 'translate(0px, -50%)',
+            paddingRight: '1em',
+            fontSize: '1em'
           }
-          else {
-            vMe.attr("type", "password");
-            $(this).addClass("fa-eye").removeClass("fa-eye-slash").attr("title", _t('SHOW_PASSWORD'));
+        )
+        .on('click', function() {
+          if (vMe.attr('type') == 'password') {
+            vMe.attr('type', 'text')
+            $(this).removeClass('fa-eye').attr('title', _t('HIDE_PASSWORD')).addClass('fa-eye-slash')
+          } else {
+            vMe.attr('type', 'password')
+            $(this).addClass('fa-eye').removeClass('fa-eye-slash').attr('title', _t('SHOW_PASSWORD'))
           }
         })
-        .insertAfter($(this));
-    });
+        .insertAfter($(this))
+    })
 
   // gestion des classes actives pour les menus
   $('a.active-link')
@@ -728,7 +727,7 @@ function toastMessage(
       }
     }
     const { url, data, nb, nbInit } = extractData(this)
-    const deleteUserReaction = async (url, data, nb, nbInit, link) => {
+    const deleteUserReaction = async(url, data, nb, nbInit, link) => {
       const p = new Promise((resolve, reject) => {
         let currentReactionId = data.reactionid
         if ('oldId' in data && (data.oldId === true || data.oldId === 'true')) {

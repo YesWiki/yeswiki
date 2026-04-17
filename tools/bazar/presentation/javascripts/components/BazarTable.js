@@ -4,7 +4,6 @@ import TemplateRenderer from './TemplateRenderer.js'
 import Waiter from '../Waiter.js'
 
 const componentName = 'BazarTable'
-const isVueJS3 = (typeof Vue.createApp == 'function')
 
 const componentParams = {
   props: ['currentusername', 'params', 'entries', 'ready', 'root', 'isadmin'],
@@ -40,11 +39,9 @@ const componentParams = {
                             && (isadmin || (currentusername.length > 0 && entry.owner == currentusername))
           } else if (['==adminsbuttons=='].includes(col.data)) {
             formattedData[col.data] = ''
-          } 
-          else if (col.data == "geolocation") {
+          } else if (col.data == 'geolocation') {
             formattedData[col.geolocationfield] = entry[col.geolocationfield]
-          } 
-          else if ('firstlevel' in col && typeof col.firstlevel === 'string' && col.firstlevel.length > 0) {          
+          } else if ('firstlevel' in col && typeof col.firstlevel === 'string' && col.firstlevel.length > 0) {
             formattedData[col.data] = (
               col.firstlevel in entry
                             && (typeof entry[col.firstlevel] === 'object')
@@ -84,7 +81,7 @@ const componentParams = {
             formattedData[key] = entry[key] || ''
           }
         })
-        this.$set(this.rows, entry.id_fiche, formattedData)
+        this.rows[entry.id_fiche] = formattedData
       })
     },
     arraysEqual(a, b) {
@@ -94,7 +91,7 @@ const componentParams = {
 
       a.sort()
       b.sort()
-      return a.every((val, idx) => a[idx] !== b[idx])
+      return a.every((val, idx) => a[idx] === b[idx])
     },
     deleteAllSelected(event) {
       const uuid = this.getUuid()
@@ -300,12 +297,12 @@ const componentParams = {
               data: 'geolocation',
               title: field.label,
               geolocationfield: field.propertyname,
-              render: this.renderCell({ fieldtype : field.type, fieldName : field.propertyname, addLink, idx: titleIdx }),
+              render: this.renderCell({ fieldtype: field.type, fieldName: field.propertyname, addLink, idx: titleIdx }),
               footer: '',
               visible
             },
             ...width
-          })    
+          })
         } else if (checkboxfieldsincolumns
                     && typeof field.type === 'string'
                     && ['checkboxfiche', 'checkbox'].includes(field.type)
@@ -413,7 +410,7 @@ const componentParams = {
       const entryIdsToRemove = Object.keys(this.rows).filter((id) => !newIds.includes(id))
       entryIdsToRemove.forEach((id) => {
         if (id in this.rows) {
-          this.$delete(this.rows, id)
+          delete this.rows[id]
         }
       })
     },
@@ -490,21 +487,20 @@ const componentParams = {
                 )
             }
           }).trim()).join(',\n')
-        }
-        else if (fieldtype === 'map')
-        {
-			anchorData = row[fieldName]??{};
-			return TemplateRenderer.render(
-				'BazarTable',
-				this,
-				'rendercell',
-				{
-		            fieldtype,        
+        } else if (fieldtype === 'map') {
+          anchorData = row[fieldName] ?? {}
+          return TemplateRenderer.render(
+            'BazarTable',
+            this,
+            'rendercell',
+            {
+		            fieldtype,
 		            fieldName,
 		            anchorData
-		        });
+		        }
+          )
         }
-        
+
         return TemplateRenderer.render(
           'BazarTable',
           this,
@@ -635,7 +631,8 @@ const componentParams = {
     }
   },
   mounted() {
-    $(isVueJS3 ? this.$el.parentNode : this.$el).on('dblclick', (e) => false)
+    $(this.$el.parentNode).on('dblclick', (e) => false)
+    Waiter.resolve('params')
     this.updateFieldsFromRoot()
     window.urlImageResizedOnError = this.$root.urlImageResizedOnError
     this.$root.$watch('isLoading', (isLoading) => {
@@ -702,22 +699,5 @@ const componentParams = {
   `
 }
 
-if (isVueJS3) {
-  if (window.hasOwnProperty('bazarVueApp')) { // bazarVueApp must be defined into bazar-list-dynamic
-    if (!bazarVueApp.config.globalProperties.hasOwnProperty('wiki')) {
-      bazarVueApp.config.globalProperties.wiki = wiki
-    }
-    if (!bazarVueApp.config.globalProperties.hasOwnProperty('_t')) {
-      bazarVueApp.config.globalProperties._t = _t
-    }
-    window.bazarVueApp.component(componentName, componentParams)
-  }
-} else {
-  if (!Vue.prototype.hasOwnProperty('wiki')) {
-    Vue.prototype.wiki = wiki
-  }
-  if (!Vue.prototype.hasOwnProperty('_t')) {
-    Vue.prototype._t = _t
-  }
-  Vue.component(componentName, componentParams)
-}
+if (!window._bazarDynamicComponents) window._bazarDynamicComponents = {}
+window._bazarDynamicComponents[componentName] = componentParams

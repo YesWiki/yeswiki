@@ -602,9 +602,7 @@ if (!class_exists('attach')) {
         public function showAsPDF($fullFilename)
         {
             // Defines parameters for pdf action
-            // remove '?' and following
-            $base_url = explode('?', $this->wiki->config['base_url'])[0];
-            $url = $base_url . $fullFilename;
+            $url = $this->wiki->href('download', $this->wiki->GetPageTag(), 'file=' . $this->file, false);
             $this->wiki->setParameter('url', $url);
             if (empty($this->wiki->GetParameter('hauteurmax')) && empty($this->wiki->GetParameter('largeurmax'))) {
                 $this->wiki->setParameter('hauteurmax', $this->wiki->GetParameter('height'));
@@ -820,10 +818,12 @@ if (!class_exists('attach')) {
                 header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
                 header('Cache-Control: no-store, no-cache, must-revalidate'); // HTTP/1.1
                 header('Cache-Control: pre-check=0, post-check=0, max-age=0'); // HTTP/1.1
+                header("Content-Security-Policy: frame-ancestors 'self'");
+                header('X-Frame-Options: SAMEORIGIN', true);
                 header('Content-Transfer-Encoding: none');
                 header('Content-Type: application/octet-stream; name="' . $dlFilename . '"'); // This should work for the rest
                 header('Content-Type: application/octetstream; name="' . $dlFilename . '"'); // This should work for IE & Opera
-                if (in_array(preg_replace("/^.*\.([^.]+$)/", '$1', $dlFilename), ['txt', 'md', 'png', 'svg', 'jpeg', 'jpg', 'mp3'])) {
+                if (in_array(preg_replace("/^.*\.([^.]+$)/", '$1', $dlFilename), ['pdf', 'txt', 'md', 'png', 'svg', 'jpeg', 'jpg', 'mp3'])) {
                     header('Content-Type: ' . mime_content_type($fullFilename) . '; name="' . $dlFilename . '"');
                 }
                 header('Content-Disposition: attachment; filename="' . $dlFilename . '"');

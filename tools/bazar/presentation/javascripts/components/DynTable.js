@@ -1,7 +1,5 @@
 import Waiter from '../Waiter.js'
 
-const isVueJS3 = (typeof Vue.createApp == 'function')
-
 export default {
   props: {
     columns: {
@@ -39,7 +37,7 @@ export default {
   },
   computed: {
     element() {
-      return isVueJS3 ? this.$el.parentNode : this.$el
+      return this.$el.parentNode
     },
     showFooter() {
       return this.forceDisplayTotal || this.columns.some((col) => col?.class?.match(/sum-activated/))
@@ -142,19 +140,27 @@ export default {
     getTemplateFromSlot(name, params) {
       const key = `${name}-${JSON.stringify(params)}`
       if (!(key in this.templatesForRendering)) {
-        if (name in this.$scopedSlots) {
-          const slot = this.$scopedSlots[name]
-          const constructor = Vue.extend({
-            render(h) {
-              return h('div', {}, slot(params))
+        // Vue 3: $slots contains functions that return VNodes
+        const slots = this.$slots
+        if (slots && name in slots) {
+          const slotFn = slots[name]
+          const { createApp, h } = Vue
+          const tempContainer = document.createElement('div')
+          const app = createApp({
+            render() {
+              return h('div', {}, slotFn(params))
             }
           })
-          const instance = new constructor()
-          instance.$mount()
+          app.mount(tempContainer)
           let outerHtml = ''
-          for (let index = 0; index < instance.$el.childNodes.length; index++) {
-            outerHtml += instance.$el.childNodes[index].outerHTML || instance.$el.childNodes[index].textContent
+          const children = tempContainer.firstChild?.childNodes || []
+          for (let index = 0; index < children.length; index++) {
+            const child = children[index]
+            if (child.nodeType !== Node.COMMENT_NODE) {
+              outerHtml += child.outerHTML || child.textContent
+            }
           }
+          app.unmount()
           this.templatesForRendering[key] = outerHtml
         } else {
           this.templatesForRendering[key] = ''
@@ -198,7 +204,7 @@ export default {
       const entryIdsToRemove = Object.keys(this.displayedRows).filter((id) => !newIds.includes(id))
       entryIdsToRemove.forEach((id) => {
         if (id in this.displayedRows) {
-          this.$delete(this.displayedRows, id)
+          delete this.displayedRows[id]
         }
       })
       dataTable.rows((idx, data, node) => data?.id === undefined || entryIdsToRemove.includes(data?.id)).remove()

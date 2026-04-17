@@ -23,4 +23,3 @@ export function deepGet(obj, path) {
   if (path.length === 0) return obj
   return deepGet(obj[path[0]], path.slice(1))
 }
-

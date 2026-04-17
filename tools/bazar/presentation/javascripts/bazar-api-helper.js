@@ -2,19 +2,19 @@ const BASE_URL = `${wiki.baseUrl.replace(/\?+$/, '')}`
 
 function addCommaSeparatedString(mainString, stringToAdd) {
   if (!stringToAdd) {
-    return mainString; // Return mainString if stringToAdd is empty
+    return mainString // Return mainString if stringToAdd is empty
   }
 
-  const mainArray = mainString ? mainString.split(',').map(item => item.trim()) : [];
-  const addArray = stringToAdd.split(',').map(item => item.trim());
+  const mainArray = mainString ? mainString.split(',').map((item) => item.trim()) : []
+  const addArray = stringToAdd.split(',').map((item) => item.trim())
 
-  addArray.forEach(item => {
+  addArray.forEach((item) => {
     if (!mainArray.includes(item)) {
-      mainArray.push(item);
+      mainArray.push(item)
     }
-  });
+  })
 
-  return mainArray.join(',');
+  return mainArray.join(',')
 }
 
 /**
@@ -129,26 +129,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (clicked) {
       validateDataTargets(clicked, {
         execute: true,
-        onValid: async (targetEl, valueEl, action) => { 
+        onValid: async(targetEl, valueEl, action) => {
           event.preventDefault()
           event.stopPropagation()
-          
+
           const entryId = targetEl.value
           const fieldId = clicked.dataset.targetField
-          const onSuccess = clicked.dataset.onSuccess 
+          const { onSuccess } = clicked.dataset
           const val = valueEl.value
 
-          if (action === 'add' && val.length > 0) { 
+          if (action === 'add' && val.length > 0) {
             try {
-              let entry = await loadEntry(entryId)
-              entry.antispam = 1 
-              
-              const currentFieldValue = entry[fieldId] || ''; 
+              const entry = await loadEntry(entryId)
+              entry.antispam = 1
+
+              const currentFieldValue = entry[fieldId] || ''
               entry[fieldId] = addCommaSeparatedString(currentFieldValue, val)
-              
+
               const response = await modifyEntry(entry)
               console.log('Entry modified:', response)
-              
+
               if (onSuccess === 'refresh') {
                 window.location.reload()
               }

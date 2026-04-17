@@ -8,9 +8,9 @@
   "license": "AGPL-3.0",
   "homepage": "https://yeswiki.net",
   "scripts": {
-    "lint-js": "eslint --fix --ext .js,.ts .",
+    "lint-js": "eslint --fix .",
     "lint-other": "node_modules/.bin/prettier --write '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
-    "postinstall": "./javascripts/vendor/extract-files-from-node-modules.sh"
+    "postinstall": "./includes/extract-files-from-node-modules.sh"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
@@ -20,6 +20,7 @@
     "datatables.net-buttons-bs": "^2.2.1",
     "datatables.net-fixedheader-bs": "^3.2.1",
     "datatables.net-responsive-bs": "^2.2.9",
+    "docsify": "^4.13.1",
     "docsify-copy-code": "^2.1.1",
     "formBuilder": "3.7.3",
     "formbuilder-languages": "^1.1.0",
@@ -29,7 +30,7 @@
     "jquery": "^3.5.1",
     "jquery-ui-sortable": "^1.0.0",
     "lazysizes": "^5.3.2",
-    "leaflet": "^1.8",
+    "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "leaflet-providers": "^1.13",
     "leaflet.fullscreen": "^2.4",
@@ -40,10 +41,9 @@
     "node-fetch": "^2.6.7",
     "sortablejs": "^1.15.2",
     "spectrum-colorpicker2": "^2.0.8",
-    "vue": "^2.6.14",
-    "vue-select": "^3.13.0",
-    "vue2-leaflet": "^2.7.1",
-    "vuedraggable": "^2.24.3"
+    "vue": "^3.2.47",
+    "vue-select": "4.0.0-beta.6",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",

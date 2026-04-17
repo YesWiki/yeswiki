@@ -1,10 +1,13 @@
-Vue.component('opening-hours', {
+const { createApp } = Vue
+
+const createOpeningHoursComponent = (openingHoursData) => ({
   data() {
     return {
       intervals: [],
       today: [],
       locale: new URLSearchParams(document.URL).get('lang') || navigator.language,
-      todayName: new Date().toLocaleDateString(this.locale, { weekday: 'long' })
+      todayName: '',
+      openingHoursData
     }
   },
   mounted() {
@@ -12,11 +15,11 @@ Vue.component('opening-hours', {
     const currentDay = new Date(now.toDateString())
     const endWeek = new Date(currentDay)
     endWeek.setDate(currentDay.getDate() + 7)
-    const oh = new opening_hours(this.$el.dataset.openinghours, {}, { locale: this.locale })
+    const oh = new opening_hours(this.openingHoursData, {}, { locale: this.locale })
     this.intervals = this.groupBy(oh.getOpenIntervals(currentDay, endWeek))
     this.todayName = new Date().toLocaleDateString(this.locale, { weekday: 'long' })
     this.today = this.intervals[now.getDay()] || []
-    if (this.intervals[0][0].day_id === 0) {
+    if (this.intervals[0] && this.intervals[0][0] && this.intervals[0][0].day_id === 0) {
       this.intervals.push(this.intervals.shift())
     }
   },
@@ -76,5 +79,8 @@ Vue.component('opening-hours', {
 const elements = document.getElementsByTagName('opening-hours')
 const arr = Array.prototype.slice.call(elements)
 arr.forEach((el) => {
-  new Vue({ el })
+  // Capture dataset before mounting (Vue 3 replaces the mount element)
+  const openingHoursData = el.dataset.openinghours || ''
+  const app = createApp(createOpeningHoursComponent(openingHoursData))
+  app.mount(el)
 })

@@ -1,0 +1,30 @@
+document.addEventListener('DOMContentLoaded', () => {
+  const pdfContainers = document.querySelectorAll('.pdf-wrapper')
+  const isPdfSupported = navigator.pdfViewerEnabled
+  pdfContainers.forEach((container) => {
+    const pdfUrl = container.getAttribute('data-pdf')
+
+    if (!pdfUrl) return
+
+    const fallback = document.createElement('div')
+    fallback.className = 'pdf-fallback'
+    const link = document.createElement('a')
+    link.href = pdfUrl
+    link.className = 'btn btn-primary'
+    link.download = ''
+    link.textContent = 'Download PDF'
+    fallback.appendChild(link)
+
+    if (isPdfSupported) {
+      const obj = document.createElement('object')
+      obj.data = pdfUrl
+      obj.type = 'application/pdf'
+      obj.width = '100%'
+      obj.height = '100%'
+      obj.appendChild(fallback)
+      container.appendChild(obj)
+    } else {
+      container.appendChild(fallback)
+    }
+  })
+})

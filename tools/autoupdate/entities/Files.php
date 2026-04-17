@@ -97,7 +97,9 @@ class Files
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
         curl_exec($ch);
-        curl_close($ch);
+        if (version_compare(PHP_VERSION, '8.0.0', '<')) {
+            curl_close($ch);
+        }
         fclose($fp);
 
         return $destPath;

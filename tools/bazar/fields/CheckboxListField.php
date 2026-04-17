@@ -29,7 +29,7 @@ class CheckboxListField extends CheckboxField
         $keys = $this->getValues($entry);
         $values = [];
 
-        if (count($values) > 0) {
+        if (empty($keys)) {
             return '';
         }
 

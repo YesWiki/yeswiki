@@ -1,6 +1,7 @@
 // ext/Number/Color/slider
 export default {
   props: ['value', 'config', 'values'],
+  emits: ['input'],
   data() {
     return {
       defaultLatitude: 46.22763,
@@ -10,13 +11,13 @@ export default {
     }
   },
   mounted() {
-    this.map = L.map('center-position-map', {
-	    center: new L.LatLng(this.defaultLatitude, this.defaultLongitude),
-	    zoom: this.defaultZoom,
-	    zoomControl: true,
-	    scrollWheelZoom: false,
+    this.map = L.map(this.$refs.mapContainer, {
+      center: new L.LatLng(this.defaultLatitude, this.defaultLongitude),
+      zoom: this.defaultZoom,
+      zoomControl: true,
+      scrollWheelZoom: false,
       layers: [L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' })]
-	  })
+    })
 
     this.map.on('load moveend', () => {
       this.$emit('input', this.getValues())
@@ -44,7 +45,7 @@ export default {
   template: `
     <div class="form-group" :class="config.type" :title="config.hint" >
       <label class="text-center">{{ config.label }}</label>
-      <div id="center-position-map"></div>
+      <div ref="mapContainer"></div>
       <input-hint :config="config"></input-hint>
     </div>
     `
