@@ -114,6 +114,9 @@ class ArchiveService
     ) {
         $vStatus = $this->getArchivingStatus();
 
+        $inputFile = '';
+        $outputFile = '';
+
         if (!$vStatus['canArchive']) {
             // if we cannot archive, we need to stop the process and inform the user so that he can handle the problem
             $vMessages = $this->getCannotArchiveDetails($vStatus);
@@ -123,9 +126,6 @@ class ArchiveService
 
             throw new Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
         }
-
-        $inputFile = '';
-        $outputFile = '';
         $privatePath = $this->getPrivateFolder();
 
         if (!empty($uid)) {

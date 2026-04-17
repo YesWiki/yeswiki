@@ -68,47 +68,47 @@ jobs:
         run: |
           sudo apt update
           sudo apt install --no-install-recommends --assume-yes nginx php${{ matrix.php-version }}-fpm
-          printf 'server {\n\
-              listen 80;\n\
-              root %s;\n\
-              index index.php index.html;\n\
-              client_max_body_size 512M;\n\
-              location / {\n\
-                  try_files $uri $uri/ /index.php$is_args$args;\n\
-              }\n\
-              location ~* /(.*/)?private/ {\n\
-                  deny all;\n\
-                  return 403;\n\
-              }\n\
-              location ~ [^/]\\.php(/|$) {\n\
-                  fastcgi_split_path_info ^(.+?\\.php)(/.*)$;\n\
-                  include fastcgi_params;\n\
-                  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n\
-                  fastcgi_param PATH_INFO $fastcgi_path_info;\n\
-                  fastcgi_pass unix:/run/php/php%s-fpm.sock;\n\
-                  fastcgi_intercept_errors on;\n\
-                  fastcgi_request_buffering off;\n\
-                  fastcgi_read_timeout 600;\n\
-              }\n\
-          }\n' "${{ github.workspace }}" "${{ matrix.php-version }}" \
-            | sudo tee /etc/nginx/sites-enabled/default
-          sudo chown www-data:www-data -R ${{ github.workspace }}
-          sudo /etc/init.d/php${{ matrix.php-version }}-fpm start
-          sudo /etc/init.d/nginx start
 
-      - name: Append current user in www-data group
-        run: sudo usermod -aG www-data $USER
+          # Run nginx and PHP-FPM as the runner user to avoid workspace traversal permission issues
+          sudo sed -i 's/^user www-data;/user runner;/' /etc/nginx/nginx.conf
+          sudo sed -i \
+            -e 's/^user = www-data$/user = runner/' \
+            -e 's/^group = www-data$/group = runner/' \
+            -e 's/^listen\.owner = www-data$/listen.owner = runner/' \
+            -e 's/^listen\.group = www-data$/listen.group = runner/' \
+            /etc/php/${{ matrix.php-version }}/fpm/pool.d/www.conf
 
-      - name: Set cache folder writable
-        run: |
-          sudo mkdir -p ${{ github.workspace }}/cache
-          sudo chmod -R 0777 ${{ github.workspace }}/cache
+          cat << 'EOF' > /tmp/nginx-yeswiki.conf
+          server {
+              listen 80;
+              root __WORKSPACE__;
+              index index.php index.html;
+              client_max_body_size 512M;
+              location / {
+                  try_files $uri $uri/ /index.php$is_args$args;
+              }
+              location ~* /(.*/)?private/ {
+                  deny all;
+                  return 403;
+              }
+              location ~ [^/]\.php(/|$) {
+                  fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+                  include fastcgi_params;
+                  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                  fastcgi_param PATH_INFO $fastcgi_path_info;
+                  fastcgi_pass unix:/run/php/php__PHPVER__-fpm.sock;
+                  fastcgi_intercept_errors on;
+                  fastcgi_request_buffering off;
+                  fastcgi_read_timeout 600;
+              }
+          }
+          EOF
+          sed -i 's|__WORKSPACE__|${{ github.workspace }}|; s|__PHPVER__|${{ matrix.php-version }}|' /tmp/nginx-yeswiki.conf
+          sudo cp /tmp/nginx-yeswiki.conf /etc/nginx/sites-enabled/default
 
-      - name: Set private folder for archive
-        run: |
-          sudo mkdir -p ${{ github.workspace }}/private/archives
-          sudo chown www-data:www-data -R ${{ github.workspace }}/private/archives
-          sudo chmod -R 0777 ${{ github.workspace }}/private/archives
+          mkdir -p ${{ github.workspace }}/cache ${{ github.workspace }}/private/backups
+          sudo /etc/init.d/php${{ matrix.php-version }}-fpm restart
+          sudo /etc/init.d/nginx restart
 
       - run: curl http://localhost
 
@@ -125,18 +125,13 @@ jobs:
             -F "config[mysql_password]=${{ env.DB_PASSWORD }}" \
             -F "config[table_prefix]=yeswiki_" \
             -F "config[allow_raw_html]=1" \
-            -F "config[archive][privatePath]=${{ github.workspace }}/private/archives" \
+            -F "config[archive][privatePath]=${{ github.workspace }}/private/backups" \
             -F "admin_name=ActionTest" \
             -F "admin_password=ActionTestPassword" \
             -F "admin_password_conf=ActionTestPassword" \
             -F "admin_email=test@example.com" \
             -F "submit=Continue" \
             "http://localhost/?PagePrincipale&installAction=install"
-
-      - name: Set wakka.config.php writable
-        run: |
-          sudo chown www-data:www-data ${{ github.workspace }}/wakka.config.php
-          sudo chmod 0777 ${{ github.workspace }}/wakka.config.php
 
       - name: Run test suite
         run: composer test
