@@ -66,7 +66,7 @@ class GroupManager
      */
     public function getMembers(string $group_name): array
     {
-        $members = $this->tripleStore->getOne($group_name, WIKINI_VOC_ACLS, GROUP_PREFIX);
+        $members = $this->tripleStore->getOne($group_name, WIKINI_VOC_ACLS, GROUP_PREFIX) ?? '';
 
         return explode("\n", $members);
     }

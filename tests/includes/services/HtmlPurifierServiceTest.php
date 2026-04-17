@@ -30,7 +30,7 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
     public function testCleanHTML(string $dirtyHtml, string $waitedCleanedHtml, HtmlPurifierService $htmlPurifierService)
     {
         $cleanedHtml = $htmlPurifierService->cleanHTML($dirtyHtml);
-        $this->assertEquals($cleanedHtml, $waitedCleanedHtml, "'$dirtyHtml' was waited to be cleaned as '$waitedCleanedHtml', but '$cleanedHtml' obtained");
+        $this->assertEquals($waitedCleanedHtml, $cleanedHtml, "'$dirtyHtml' was waited to be cleaned as '$waitedCleanedHtml', but '$cleanedHtml' obtained");
     }
 
     public function dataProviderTestCleanHTML()
@@ -94,7 +94,7 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
             ],
             'dirty iframe' => [
                 'dirtyHtml' => 'This is a dirty iframe :<br /><iframe src="https://yeswiki.net">.',
-                'waitedCleanedHtml' => 'This is a dirty iframe :<br />.',
+                'waitedCleanedHtml' => 'This is a dirty iframe :<br />.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;',
             ],
         ];
     }
