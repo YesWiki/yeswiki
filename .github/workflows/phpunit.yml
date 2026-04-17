@@ -68,6 +68,16 @@ jobs:
         run: |
           sudo apt update
           sudo apt install --no-install-recommends --assume-yes nginx php${{ matrix.php-version }}-fpm
+
+          # Run nginx and PHP-FPM as the runner user to avoid workspace traversal permission issues
+          sudo sed -i 's/^user www-data;/user runner;/' /etc/nginx/nginx.conf
+          sudo sed -i \
+            -e 's/^user = www-data$/user = runner/' \
+            -e 's/^group = www-data$/group = runner/' \
+            -e 's/^listen\.owner = www-data$/listen.owner = runner/' \
+            -e 's/^listen\.group = www-data$/listen.group = runner/' \
+            /etc/php/${{ matrix.php-version }}/fpm/pool.d/www.conf
+
           cat << 'EOF' > /tmp/nginx-yeswiki.conf
           server {
               listen 80;
@@ -95,23 +105,10 @@ jobs:
           EOF
           sed -i 's|__WORKSPACE__|${{ github.workspace }}|; s|__PHPVER__|${{ matrix.php-version }}|' /tmp/nginx-yeswiki.conf
           sudo cp /tmp/nginx-yeswiki.conf /etc/nginx/sites-enabled/default
-          sudo chown www-data:www-data -R ${{ github.workspace }}
+
+          sudo mkdir -p ${{ github.workspace }}/cache ${{ github.workspace }}/private/archives
           sudo /etc/init.d/php${{ matrix.php-version }}-fpm restart
           sudo /etc/init.d/nginx restart
-
-      - name: Append current user in www-data group
-        run: sudo usermod -aG www-data $USER
-
-      - name: Set cache folder writable
-        run: |
-          sudo mkdir -p ${{ github.workspace }}/cache
-          sudo chmod -R 0777 ${{ github.workspace }}/cache
-
-      - name: Set private folder for archive
-        run: |
-          sudo mkdir -p ${{ github.workspace }}/private/archives
-          sudo chown www-data:www-data -R ${{ github.workspace }}/private/archives
-          sudo chmod -R 0777 ${{ github.workspace }}/private/archives
 
       - run: curl http://localhost
 
@@ -135,11 +132,6 @@ jobs:
             -F "admin_email=test@example.com" \
             -F "submit=Continue" \
             "http://localhost/?PagePrincipale&installAction=install"
-
-      - name: Set wakka.config.php writable
-        run: |
-          sudo chown www-data:www-data ${{ github.workspace }}/wakka.config.php
-          sudo chmod 0777 ${{ github.workspace }}/wakka.config.php
 
       - name: Run test suite
         run: composer test
