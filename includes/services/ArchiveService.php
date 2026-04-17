@@ -412,7 +412,7 @@ class ArchiveService
                 $result = $results[array_key_first($results)];
                 if (
                     empty($result['stderr']) && !empty($result['stdout']) &&
-                    preg_match("/^Hello !(?:\r|\n)+/", $result['stdout'])
+                    preg_match("/Hello !(?:\r|\n)+/", $result['stdout'])
                 ) {
                     $canExec = true;
                 }
