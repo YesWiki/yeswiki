@@ -106,7 +106,7 @@ jobs:
           sed -i 's|__WORKSPACE__|${{ github.workspace }}|; s|__PHPVER__|${{ matrix.php-version }}|' /tmp/nginx-yeswiki.conf
           sudo cp /tmp/nginx-yeswiki.conf /etc/nginx/sites-enabled/default
 
-          sudo mkdir -p ${{ github.workspace }}/cache ${{ github.workspace }}/private/archives
+          mkdir -p ${{ github.workspace }}/cache ${{ github.workspace }}/private/backups
           sudo /etc/init.d/php${{ matrix.php-version }}-fpm restart
           sudo /etc/init.d/nginx restart
 
@@ -125,7 +125,7 @@ jobs:
             -F "config[mysql_password]=${{ env.DB_PASSWORD }}" \
             -F "config[table_prefix]=yeswiki_" \
             -F "config[allow_raw_html]=1" \
-            -F "config[archive][privatePath]=${{ github.workspace }}/private/archives" \
+            -F "config[archive][privatePath]=${{ github.workspace }}/private/backups" \
             -F "admin_name=ActionTest" \
             -F "admin_password=ActionTestPassword" \
             -F "admin_password_conf=ActionTestPassword" \

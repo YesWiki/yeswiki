@@ -27,7 +27,7 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
      * @covers \HtmlPurifierService::cleanHTML
      * @dataProvider dataProviderTestCleanHTML
      */
-    public function testCleanHTML(string $dirtyHtml, string $waitedCleanedHtml, HtmlPurifierService $htmlPurifierService)
+    public function testCleanHTML(string $dirtyHtml, string $waitedCleanedHtml, bool $exactMatch, HtmlPurifierService $htmlPurifierService)
     {
         $cleanedHtml = $htmlPurifierService->cleanHTML($dirtyHtml);
         $this->assertEquals($waitedCleanedHtml, $cleanedHtml, "'$dirtyHtml' was waited to be cleaned as '$waitedCleanedHtml', but '$cleanedHtml' obtained");
@@ -39,62 +39,80 @@ class HtmlPurifierServiceTest extends YesWikiTestCase
             'Only text' => [
                 'dirtyHtml' => 'This is a test.',
                 'waitedCleanedHtml' => 'This is a test.',
+                'exactMatch' => true,
             ],
             'Text with link' => [
                 'dirtyHtml' => 'This is a <a href="https://example.com" class="btn btn-primary modalbox">link</a>.',
                 'waitedCleanedHtml' => 'This is a <a href="https://example.com" class="btn btn-primary modalbox">link</a>.',
+                'exactMatch' => true,
             ],
             'Text with link with data' => [
                 'dirtyHtml' => 'This is a <a href="https://example.com" class="btn btn-primary modalbox" data-iframe="1" data-size="modal-lg">link</a>.',
                 'waitedCleanedHtml' => 'This is a <a href="https://example.com" class="btn btn-primary modalbox">link</a>.',
+                'exactMatch' => true,
             ],
             'Text with link with target' => [
                 'dirtyHtml' => 'This is a <a href="https://example.com" class="btn btn-primary modalbox" target="_blank">link</a>.',
                 'waitedCleanedHtml' => 'This is a <a href="https://example.com" class="btn btn-primary modalbox" target="_blank" rel="noreferrer noopener">link</a>.',
+                'exactMatch' => true,
             ],
             'Text with link with not authorized target' => [
                 'dirtyHtml' => 'This is a <a href="https://example.com" class="btn btn-primary modalbox" target="blank">link</a>.',
                 'waitedCleanedHtml' => 'This is a <a href="https://example.com" class="btn btn-primary modalbox">link</a>.',
+                'exactMatch' => true,
             ],
             'Span' => [
                 'dirtyHtml' => 'This is a <span>word</span>.',
                 'waitedCleanedHtml' => 'This is a <span>word</span>.',
+                'exactMatch' => true,
             ],
             'Span with style : color red' => [
                 'dirtyHtml' => 'This is a <span style="color:red;">word</span>.',
                 'waitedCleanedHtml' => 'This is a <span style="color:#FF0000;">word</span>.',
+                'exactMatch' => true,
             ],
             'Span with style : color red and font size' => [
                 'dirtyHtml' => 'This is a <span style="color:red;font-size:16px;">word</span>.',
                 'waitedCleanedHtml' => 'This is a <span style="color:#FF0000;font-size:16px;">word</span>.',
+                'exactMatch' => true,
             ],
             'Span with style : color red and lang' => [
                 'dirtyHtml' => 'This is a <span style="color:red;" lang="fr">word</span>.',
                 'waitedCleanedHtml' => 'This is a <span style="color:#FF0000;" lang="fr" xml:lang="fr">word</span>.',
+                'exactMatch' => true,
             ],
             'Span with style : color red and data' => [
                 'dirtyHtml' => 'This is a <span style="color:red;" data-lang="fr">word</span>.',
                 'waitedCleanedHtml' => 'This is a <span style="color:#FF0000;">word</span>.',
+                'exactMatch' => true,
             ],
             'bold, italic, break line' => [
                 'dirtyHtml' => 'This is <b>a <br /><i>word</i></b>.',
                 'waitedCleanedHtml' => 'This is <b>a <br /><i>word</i></b>.',
+                'exactMatch' => true,
             ],
             'XSS via img' => [
                 'dirtyHtml' => 'This is an attack <img src="x" onerror="alert(\'Test !\');"/>.',
                 'waitedCleanedHtml' => 'This is an attack <img src="x" alt="x" />.',
+                'exactMatch' => true,
             ],
             'XSS via img injection' => [
                 'dirtyHtml' => 'This is an attack ><img src="x" onerror="alert(\'Test !\');"/>.',
                 'waitedCleanedHtml' => 'This is an attack &gt;<img src="x" alt="x" />.',
+                'exactMatch' => true,
             ],
             'iframe' => [
                 'dirtyHtml' => 'This is an iframe :<br /><iframe src="https://yeswiki.net"></iframe>',
                 'waitedCleanedHtml' => 'This is an iframe :<br />',
+                'exactMatch' => true,
             ],
             'dirty iframe' => [
+                // PHP >= 8.5 DOMDocument serializes unclosed tags differently, appending escaped closing tags
                 'dirtyHtml' => 'This is a dirty iframe :<br /><iframe src="https://yeswiki.net">.',
-                'waitedCleanedHtml' => 'This is a dirty iframe :<br />.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;',
+                'waitedCleanedHtml' => version_compare(PHP_VERSION, '8.5.0', '>=')
+                    ? 'This is a dirty iframe :<br />.&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;'
+                    : 'This is a dirty iframe :<br />.',
+                'exactMatch' => true,
             ],
         ];
     }
