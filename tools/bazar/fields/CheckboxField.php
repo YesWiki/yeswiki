@@ -104,11 +104,18 @@ abstract class CheckboxField extends EnumField
             $checkboxField = $this->getValue($entry);
         }
 
-        if ($checkboxField === null) {
-            return [];
-        } else {
-            return [$this->propertyName => $this->sanitizeValues($checkboxField, 'string')];
+        $sanitized = $checkboxField === null ? '' : $this->sanitizeValues($checkboxField, 'string');
+        $fieldsToRemove = [$fromFormKey];
+        if (empty($sanitized)) {
+            $fieldsToRemove[] = $this->propertyName;
+
+            return ['fields-to-remove' => $fieldsToRemove];
         }
+
+        return [
+            $this->propertyName => $sanitized,
+            'fields-to-remove' => $fieldsToRemove,
+        ];
     }
 
     /**
