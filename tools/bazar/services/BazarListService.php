@@ -92,7 +92,12 @@ class BazarListService
             $vForms = $pForms;
         }
 
-        $vIDs = $this->getIDs($pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
+        $vSelectedID = $pOptions['selectedID'] ?? '';
+        if (trim($vSelectedID) == '') {
+            $vSelectedID = null;
+        }
+
+        $vIDs = $this->getIDs($vSelectedID ?? $pOptions['idtypeannonce'] ?? $pOptions['id'] ?? '');
 
         $vLocalIDs = $vIDs['locals'];
         $vExternalIDs = $vIDs['externals'];
@@ -488,7 +493,7 @@ class BazarListService
             return false;
         }
 
-        if (strval($vID) != $pID) {
+        if (strval($vID) !== $pID) {
             return false;
         }
 
@@ -511,7 +516,7 @@ class BazarListService
             } // Ensure $pIDs is a string
         }
 
-        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', $pIDs);
+        $pIDs = preg_replace('/[^,\s]*\s*\|(?:\s*(?:\([\s,0-9\->]*\))|(?:[0-9\->]*))/', '"\\0"', strip_tags($pIDs));
 
         $vLines = str_getcsv($pIDs, ',', '"', '\\');
 
@@ -556,7 +561,7 @@ class BazarListService
 
         $vResults = ['locals' => [], 'externals' => []];
 
-        foreach ($vIDs as &$vID) {
+        foreach ($vIDs as $vID) {
             if (trim($vID['url']) == '') {
                 if (!$this->isValidID($vID['id'])) {
                     throw new \Exception('Invalid ID');
@@ -571,7 +576,7 @@ class BazarListService
                     throw new \Exception('Invalid external ID ' . $vID['id'] . print_r($vID, true));
                 }
                 if (isset($vID['localFormId']) && (trim($vID['localFormId']) != '') && !$this->isValidID($vID['localFormId'])) {
-                    throw new Exception('Invalid external ID');
+                    throw new Exception('Invalid local ID');
                 }
 
                 array_push($vResults['externals'], $vID);

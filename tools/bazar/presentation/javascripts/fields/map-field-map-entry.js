@@ -7,38 +7,35 @@ export function initEntryMap(newMap) {
   // Init leaflet entry map
   const map = new L.Map(newMap, {
     scrollWheelZoom: mapData.bazWheelZoom,
-    zoomControl: mapData.bazShowNav,
+    zoomControl: mapData.bazShowNav
   })
   const provider = L.tileLayer.provider(
     mapData.mapProvider,
-    mapData.mapProviderCredentials,
+    mapData.mapProviderCredentials
   )
   map.addLayer(provider)
   map.setView(
     [mapData.bazMapCenterLat, mapData.bazMapCenterLon],
-    mapData.bazMapZoom || 13,
+    mapData.bazMapZoom || 13
   )
 
-  var drawnFeatures = new L.FeatureGroup()
+  let drawnFeatures = new L.FeatureGroup()
   map.addLayer(drawnFeatures)
 
   if (mapData.latitude && mapData.longitude) {
     const point = new L.LatLng(mapData.latitude, mapData.longitude)
-    var marker = L.marker(point)
+    const marker = L.marker(point)
     drawnFeatures.addLayer(marker)
     map.setView(point, mapData.bazMapZoom || 13)
   }
 
-  if (mapData.geometries)
-  {
+  if (mapData.geometries) {
     drawnFeatures = drawGeometries(drawnFeatures, mapData.geometries.features)
-	map.whenReady(function () {
-		var bounds = drawnFeatures.getBounds()
-		if (bounds.isValid()) {
-		  map.fitBounds(bounds, {
-		    padding: [30, 30],
-		  })
-		}
+    map.whenReady(() => {
+      const bounds = drawnFeatures.getBounds()
+      if (bounds.isValid()) {
+		  map.fitBounds(bounds, { padding: [30, 30] })
+      }
 	  })
   }
 
@@ -64,7 +61,7 @@ function addMapObserver() {
   const observer = new IntersectionObserver(lazyloadMaps, {
     root: document.body,
     rootMargin: '20px',
-    threshold: 0,
+    threshold: 0
   })
   document.querySelectorAll('.map-entry:not(.initialized)').forEach((map) => {
     observer.observe(map)

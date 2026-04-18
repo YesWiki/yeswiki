@@ -284,10 +284,7 @@ class Init
             }
         }
 
-        // Afficher les erreurs en mode debug
-        if (isset($_GET['debug'])) {
-            $wakkaConfig['debug'] = 'yes';
-        }
+        // Display all errors if in debug mode
         if (strtolower($wakkaConfig['debug']) == 'yes') {
             ini_set('display_errors', 1);
             error_reporting(E_ALL);

@@ -10,7 +10,6 @@
   <div class="bazar-radio-rows bazar-radio{{ field.required ? ' radio_required' : ''}}"
     {% if displayFilter %}style="overflow:auto;max-height:{{ displayFilterLimit * 30 }}px;"{% endif %}>
     {% for key, option in options %}
-      {% if value == key %}
         {% block radioInput %}
           <div class="radio">
             <label for="{{ field.propertyName ~ '_' ~ key }}">
@@ -21,12 +20,6 @@
             </label>
           </div>
         {% endblock %}
-      {% endif %}
-    {% endfor %}
-    {% for key, option in options %}
-      {% if value != key %}
-        {{ block('radioInput') }}
-      {% endif %}
     {% endfor %}
   </div>
 {% endblock %}

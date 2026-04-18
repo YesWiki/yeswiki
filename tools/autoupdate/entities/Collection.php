@@ -67,6 +67,9 @@ class Collection implements \ArrayAccess, \Iterator, \Countable
     #[\ReturnTypeWillChange]
     public function valid()
     {
+        if ($this->key() === null) {
+            return false;
+        }
         return isset($this->list[$this->key()]);
     }
 

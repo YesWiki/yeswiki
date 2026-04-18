@@ -1,15 +1,18 @@
 // TODO better list and translatable
+import { parseCondition, parseKeywords, removeDiacritics, extractRegExp } from '../search.js'
+import { parseSearchParams, mergeSearchParams } from '../url.js'
+
 const wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
-import { parseCondition, parseKeywords, parseSearchParams, mergeSearchParams, removeDiacritics, extractRegExp } from '../utils.js'
-
 export default {
-  data: {
-    isLoading: false,
-    pendingRequest: null
+  data() {
+    return {
+      isLoading: false,
+      pendingRequest: null
+    }
   },
   methods:
-  {  	     
+  {
     searchEntries(entries, search) {
       switch (this.params.search) {
         case 'dynamic':
@@ -152,6 +155,6 @@ export default {
 
       vResult = vResult.sort((a, b) => ((a.searchScore > b.searchScore) ? -1 : 1))
       return vResult
-    }    
+    }
   }
 }

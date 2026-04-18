@@ -21,6 +21,13 @@ input[type='range'] {
   box-shadow: none !important;
 }
 
+/* ACTION BUILDER APP */
+
+#actions-builder-app
+{
+	overflow : hidden !important;
+}
+
 #actions-builder-app .form-group .control-label {
   left: 0.9rem !important;
 }

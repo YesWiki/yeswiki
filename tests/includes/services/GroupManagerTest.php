@@ -2,21 +2,18 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Core\Entity\Group;
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Core\Service\GroupManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(GroupManager::class, '__construct')]
 class GroupManagerTest extends YesWikiTestCase
 {
     public const CHARS_FOR_GROUP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-    /**
-     * @covers \GroupManager::__construct
-     *
-     * @return GroupManager $groupManager
-     */
     public function testGroupManagerExisting(): GroupManager
     {
         $wiki = $this->getWiki();
@@ -25,12 +22,7 @@ class GroupManagerTest extends YesWikiTestCase
         return $wiki->services->get(GroupManager::class);
     }
 
-    /**
-     * @depends testGroupManagerExisting
-     * @cover GroupManager::create
-     *
-     * @param GroupManager groupmanager
-     */
+    #[Depends('testGroupManagerExisting')]
     public function testCreate(GroupManager $groupManager)
     {
         $group_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
@@ -40,14 +32,8 @@ class GroupManagerTest extends YesWikiTestCase
         return $group_name;
     }
 
-    /**
-     * @depends testGroupManagerExisting
-     * @depends testCreate
-     * @cover GroupManager::add
-     *
-     * @param GroupManager groupmanager
-     * @param string group_name
-     */
+    #[Depends('testGroupManagerExisting')]
+    #[Depends('testCreate')]
     public function testaddMember(GroupManager $groupManager, string $group_name)
     {
         $user_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
@@ -60,28 +46,16 @@ class GroupManagerTest extends YesWikiTestCase
         return $user_name;
     }
 
-    /**
-     * @depends testGroupManagerExisting
-     * @depends testCreate
-     * @depends testaddMember
-     * @cover GroupManager::removeMembers
-     *
-     * @param GroupManager groupmanager
-     * @param string group_name
-     */
+    #[Depends('testGroupManagerExisting')]
+    #[Depends('testCreate')]
+    #[Depends('testaddMember')]
     public function testDeleteMember(GroupManager $groupManager, string $group_name, string $user_name)
     {
         $groupManager->removeMembers($group_name, [$user_name]);
         $this->assertNotContains($user_name, $groupManager->getMembers($group_name));
     }
 
-    /**
-     * @depends testGroupManagerExisting
-     * @cover GroupManager::updateMembers
-     *
-     * @param GroupManager groupmanager
-     * @param string group_name
-     */
+    #[Depends('testGroupManagerExisting')]
     public function testUpdateMember(GroupManager $groupManager)
     {
         $group_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);

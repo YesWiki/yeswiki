@@ -289,6 +289,9 @@ return [
     'BAZ_NOT_AUTHORIZED_FILE' => 'fichier non autorise',
     'BAZ_FILEFIELD_FILE' => 'Fichier : {filename}',
     'BAZ_FILEFIELD_TOO_LARGE_FILE' => 'Le fichier est trop volumineux, maximum %{fileMaxSize} octets',
+    'BAZ_UPLOAD_FILE' => 'Téléverser',
+    'BAZ_URL' => 'URL',
+    'BAZ_OPEN_LINK' => 'Ouvrir le lien',
     'BAZ_IMAGE_ALREADY_EXISTING' => 'L\'image {fileName} existait déja, elle n\'a pas été remplacée.',
     'BAZ_NOT_AUTHORIZED_EXTENSION' => 'Extension non autorisé.',
     'BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM' => 'éléments disponibles',
@@ -393,4 +396,5 @@ return [
     'BAZ_WIDGET_INSTRUCTION2' => 'Code action wiki a copier coller dans une page de ce site',
     'BAZ_CORRESPONDANCE_ERROR' => 'action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"',
     'BAZ_CORRESPONDANCE_ERROR2' => "action bazarliste : le paramètre correspondance est mal rempli.\nIl doit être de la forme correspondance=\"identifiant_1=identifiant_2\" ou correspondance=\"identifiant_1=identifiant_2, identifiant_3=identifiant_4\"",
+    'BAZ_FORM_EDIT_GEO_LABEL' => 'Géolocalisation de l\'adresse',
 ];

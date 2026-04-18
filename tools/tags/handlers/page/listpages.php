@@ -8,14 +8,15 @@ include_once 'tools/tags/libs/tags.functions.php';
 $tagsManager = $this->services->get(TagsManager::class);
 
 // recuperation de tous les parametres
-$tags = (isset($_GET['tags'])) ? $_GET['tags'] : '';
-$type = (isset($_GET['type'])) ? $_GET['type'] : '';
-$lienedit = (isset($_GET['lienedit'])) ? $_GET['lienedit'] : '';
-$class = (isset($_GET['class'])) ? $_GET['class'] : 'liste';
-$nb = (isset($_GET['nb'])) ? $_GET['nb'] : '';
-$tri = (isset($_GET['tri'])) ? $_GET['tri'] : '';
+$tags = filter_input(INPUT_GET, 'tags', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
+$type = filter_input(INPUT_GET, 'type', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
+$lienedit = filter_input(INPUT_GET, 'lienedit', FILTER_SANITIZE_URL) ?: '';
+$get_class = filter_input(INPUT_GET, 'class', FILTER_SANITIZE_SPECIAL_CHARS);
+$class = !empty($get_class) ? $get_class : 'liste';
+$nb = filter_input(INPUT_GET, 'nb', FILTER_SANITIZE_NUMBER_INT) ?: '';
+$tri = filter_input(INPUT_GET, 'tri', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
+$template = basename(filter_input(INPUT_GET, 'template', FILTER_SANITIZE_SPECIAL_CHARS) ?? 'pages_accordion.tpl.html');
 $nbcartrunc = 200;
-$template = (isset($_GET['template'])) ? $_GET['template'] : 'pages_accordion.tpl.html';
 $valtemplate = [];
 
 $output = '';
@@ -51,7 +52,7 @@ $text = '';
 // affiche le resultat de la recherche
 $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri, $template, $class, $lienedit);
 if ($resultat) {
-    $aclService = $this->services->get(\YesWiki\Core\Service\AclService::class);
+    $aclService = $this->services->get(YesWiki\Core\Service\AclService::class);
     $element = [];
     foreach ($resultat as $page) {
         if ($aclService->hasAccess('read', $page['tag'])) {

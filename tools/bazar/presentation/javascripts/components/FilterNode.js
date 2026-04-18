@@ -1,6 +1,7 @@
 import CollapseTransition from '../../../../../javascripts/shared-components/CollapseTransition.js'
 
-export default {
+const FilterNode = {
+  name: 'FilterNode',
   props: ['node'],
   components: { CollapseTransition },
   data: () => ({ expanded: false }),
@@ -21,7 +22,13 @@ export default {
       }
     },
     nodeTitle() {
-      return this.node.label.length > 8 ? this.node.label : null
+      const vLanguage = $('html').attr('lang') ?? undefined
+      let vLabel
+
+      if (vLanguage) vLabel = $(`<span>${this.node.label}<span>`).find(`[lang=${vLanguage}]`).text()
+      else vLabel = this.node.label
+
+      return vLabel
     }
   },
   methods: {
@@ -76,3 +83,5 @@ export default {
     </div>
   `
 }
+FilterNode.components.FilterNode = FilterNode
+export default FilterNode

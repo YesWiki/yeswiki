@@ -34,6 +34,8 @@ use YesWiki\Core\Exception\InvalidInputException;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Core\Service\ConfigurationFileProvider;
+use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
@@ -86,6 +88,22 @@ class Wiki
         $this->loadExtensions();
 
         $this->routes = $init->initRoutes($this);
+    }
+
+    // Dump exception hidding complete server path
+
+    public function dumpThrowable($pThrowable)
+    {
+        return htmlspecialchars($this->hideServerPath($pThrowable->getMessage())) . ' in <i>.' . htmlspecialchars($this->hideServerPath($pThrowable->getFile())) . '</i> on line <i>' . $pThrowable->getLine() . '</i>';
+    }
+
+    // Hide complete server path from exception
+
+    public function hideServerPath($pPath)
+    {
+        $vRootPath = realpath(__DIR__ . '/..');
+
+        return str_replace($vRootPath, '', $pPath);
     }
 
     // MISC
@@ -1053,6 +1071,9 @@ class Wiki
     {
         static $cache = [];
 
+        if ($user === null) {
+            $user = $this->getUserName();
+        }
         if (!array_key_exists($user, $cache)) {
             $cache[$user] = $this->services->get(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
         }
@@ -1063,38 +1084,23 @@ class Wiki
     /**
      * Loads the module (handlers) ACL for a certain module.
      *
-     * Database example row :
-     *  resource = http://www.wikini.net/_vocabulary/handler/addcomment
-     *  property = 'http://www.wikini.net/_vocabulary/acls'
-     *  value = +
-     *
-     * @param string $module
-     *                            The name of the module
-     * @param string $module_type
-     *                            The type of module: 'action' or 'handler'
+     * @param string $module     The name of the module
+     * @param string $moduleType The type of module: 'action' or 'handler'
      *
      * @return string the ACL string  for the given module or "*" if not found
      */
-    public function GetModuleACL($module, $module_type)
+    public function GetModuleACL($module, $moduleType)
     {
         $module = strtolower($module);
-        switch ($module_type) {
-            case 'action':
-                if (array_key_exists($module, $this->_actionsAclsCache)) {
-                    $acl = $this->_actionsAclsCache[$module];
-                    break;
-                }
-                $acl = $this->GetTripleValue($module, WIKINI_VOC_ACLS, WIKINI_VOC_ACTIONS_PREFIX);
-                $this->_actionsAclsCache[$module] = $acl;
-                break;
-            case 'handler':
-                $acl = $this->GetTripleValue($module, WIKINI_VOC_ACLS, WIKINI_VOC_HANDLERS_PREFIX);
-                break;
-            default:
-                return null; // TODO error msg ?
+        $moduleType = strtolower($moduleType);
+        $moduleKey = $moduleType . '_' . $module;
+        if (array_key_exists($moduleKey, $this->_actionsAclsCache)) {
+            return $this->_actionsAclsCache[$moduleKey];
         }
+        $acl = empty($this->config['permissions'][$moduleType][$module]) ? '*' : $this->config['permissions'][$moduleType][$module];
+        $this->_actionsAclsCache[$moduleKey] = $acl;
 
-        return $acl === null ? '*' : $acl;
+        return $acl;
     }
 
     /**
@@ -1107,25 +1113,49 @@ class Wiki
      * @param string $acl
      *                            The new ACL for that module
      *
-     * @return 0 on success, > 0 on error (see InsertTriple and UpdateTriple)
+     * @return 0 on success, > 0 on error
      */
     public function SetModuleACL($module, $module_type, $acl)
     {
         $module = strtolower($module);
-        $voc_prefix = $module_type == 'action' ? WIKINI_VOC_ACTIONS_PREFIX : WIKINI_VOC_HANDLERS_PREFIX;
-        $old = $this->GetTripleValue($module, WIKINI_VOC_ACLS, $voc_prefix);
+        $module_type = strtolower($module_type);
+        $moduleKey = $module_type . '_' . $module;
 
-        if ($module_type == 'action') {
-            $this->_actionsAclsCache[$module] = $acl;
-        }
-
-        if ($old === null) {
-            return $this->InsertTriple($module, WIKINI_VOC_ACLS, $acl, $voc_prefix);
-        } elseif ($old === $acl) {
+        // Check if value has changed
+        $old = $this->GetModuleACL($module, $module_type);
+        if ($old === $acl) {
             return 0; // nothing has changed
-        } else {
-            return $this->UpdateTriple($module, WIKINI_VOC_ACLS, $old, $acl, $voc_prefix);
         }
+
+        // Update the cache
+        $this->_actionsAclsCache[$moduleKey] = $acl;
+
+        // Update the in-memory config
+        if (!isset($this->config['permissions'])) {
+            $this->config['permissions'] = [];
+        }
+        if (!isset($this->config['permissions'][$module_type])) {
+            $this->config['permissions'][$module_type] = [];
+        }
+        $this->config['permissions'][$module_type][$module] = $acl;
+
+        // Write to the config file
+        $configurationService = $this->services->get(ConfigurationService::class);
+        $config = $configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
+        $config->load();
+
+        // Update the permissions in the config file
+        if (!isset($config->permissions)) {
+            $config->permissions = [];
+        }
+        $permissions = $config->permissions;
+        if (!isset($permissions[$module_type])) {
+            $permissions[$module_type] = [];
+        }
+        $permissions[$module_type][$module] = $acl;
+        $config->permissions = $permissions;
+
+        return $config->write() ? 0 : 1;
     }
 
     /**

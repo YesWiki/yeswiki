@@ -2,11 +2,16 @@
 
 namespace YesWiki\Test\Core\Commands;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Core\Service\ConsoleService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(ConsoleService::class, 'startConsoleAsync')]
+#[CoversMethod(ConsoleService::class, 'startConsoleSync')]
 class ConsoleServiceTest extends YesWikiTestCase
 {
     public function testConsoleServiceExisting(): ConsoleService
@@ -17,11 +22,8 @@ class ConsoleServiceTest extends YesWikiTestCase
         return $wiki->services->get(ConsoleService::class);
     }
 
-    /**
-     * @depends testConsoleServiceExisting
-     * @dataProvider checkStartConsole
-     * @covers \ConsoleService::startConsoleAsync
-     */
+    #[Depends('testConsoleServiceExisting')]
+    #[DataProvider('checkStartConsole')]
     public function testStartConsoleAsync(
         string $command,
         array $args,
@@ -50,11 +52,8 @@ class ConsoleServiceTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @depends testConsoleServiceExisting
-     * @dataProvider checkStartConsole
-     * @covers \ConsoleService::startConsoleSync
-     */
+    #[Depends('testConsoleServiceExisting')]
+    #[DataProvider('checkStartConsole')]
     public function testStartConsoleSync(
         string $command,
         array $args,
@@ -80,36 +79,16 @@ class ConsoleServiceTest extends YesWikiTestCase
         }
     }
 
-    public function checkStartConsole()
+    public static function checkStartConsole()
     {
         return [
-            'hello command ok' => [
-                'command' => 'helloworld:hello',
-                'args' => [],
-                'processIsNull' => false,
-                'stdout' => "/^Hello !(?:\r|\n)+/",
-                'stderr' => null,
-            ],
-            'hello command with args ok' => [
-                'command' => 'helloworld:hello',
-                'args' => ['John Smith'],
-                'processIsNull' => false,
-                'stdout' => "/^Hello John Smith !(?:\r|\n)+/",
-                'stderr' => null,
-            ],
-            'not existing command' => [
-                'command' => 'nocommand:nocommand',
-                'args' => [''],
-                'processIsNull' => false,
-                'stdout' => null,
-                'stderr' => '/There are no commands defined in the "nocommand" namespace\\./',
-            ],
+            'hello command ok' => ['helloworld:hello', [], false, "/^Hello !(?:\r|\n)+/", null],
+            'hello command with args ok' => ['helloworld:hello', ['John Smith'], false, "/^Hello John Smith !(?:\r|\n)+/", null],
+            'not existing command' => ['nocommand:nocommand', [''], false, null, '/There are no commands defined in the "nocommand" namespace\./'],
         ];
     }
 
-    /**
-     * @depends testConsoleServiceExisting
-     */
+    #[Depends('testConsoleServiceExisting')]
     public function testAsync(ConsoleService $consoleService)
     {
         $tmp_path = tempnam('cache', 'tmp_test_results_');

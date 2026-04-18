@@ -282,7 +282,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         return $GLOBALS['wiki']->services->get(TemplateEngine::class)
             ->render('@templates/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('PERFORMABLE_ERROR') . "<br/>{$t->getMessage()} in <i>{$t->getFile()}</i> on line <i>{$t->getLine()}</i>",
+                'message' => _t('PERFORMABLE_ERROR') . "<br/>" . $GLOBALS['wiki']->dumpThrowable ($t)
             ]);
     }
 

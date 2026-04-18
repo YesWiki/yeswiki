@@ -2,6 +2,8 @@
 
 namespace YesWiki\Test\Helloworld\Commands;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -10,12 +12,10 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(HelloCommand::class, 'execute')]
 class HelloCommandTest extends YesWikiTestCase
 {
-    /**
-     * @covers \HelloCommand::execute
-     * @dataProvider providerTestExecute
-     */
+    #[DataProvider('providerTestExecute')]
     public function testExecute(?string $username, bool $uppercase, int $statusCode, string $waitedOutput)
     {
         $wiki = $this->getWiki();
@@ -32,47 +32,18 @@ class HelloCommandTest extends YesWikiTestCase
         if ($uppercase) {
             $params['--uppercase'] = '1';
         }
-        // pass arguments to the helper
-        // [
-        //'username' => 'Wouter',
-
-        // prefix the key with two dashes when passing options,
-        // e.g: '--some-option' => 'option_value',
-        //]
         $commandTester->execute($params);
-        // $commandTester->assertCommandIsSuccessful();
         $this->assertEquals($statusCode, $commandTester->getStatusCode());
-        // the output of the command in the console
         $this->assertMatchesRegularExpression($waitedOutput, $commandTester->getDisplay());
     }
 
-    public function providerTestExecute()
+    public static function providerTestExecute()
     {
         return [
-            'no arg, no option' => [
-                'username' => null,
-                'uppercase' => false,
-                'statusCode' => Command::SUCCESS,
-                'output' => "/^Hello !(?:\r|\n)+$/",
-            ],
-            'with username' => [
-                'username' => 'John Smith',
-                'uppercase' => false,
-                'statusCode' => Command::SUCCESS,
-                'output' => "/^Hello John Smith !(?:\r|\n)+$/",
-            ],
-            'with username uppercase' => [
-                'username' => 'John Smith',
-                'uppercase' => true,
-                'statusCode' => Command::SUCCESS,
-                'output' => "/^HELLO JOHN SMITH !(?:\r|\n)+$/",
-            ],
-            'uppercase no username ' => [
-                'username' => null,
-                'uppercase' => true,
-                'statusCode' => Command::SUCCESS,
-                'output' => "/^HELLO !(?:\r|\n)+$/",
-            ],
+            'no arg, no option' => [null, false, Command::SUCCESS, "/^Hello !(?:\r|\n)+$/"],
+            'with username' => ['John Smith', false, Command::SUCCESS, "/^Hello John Smith !(?:\r|\n)+$/"],
+            'with username uppercase' => ['John Smith', true, Command::SUCCESS, "/^HELLO JOHN SMITH !(?:\r|\n)+$/"],
+            'uppercase no username' => [null, true, Command::SUCCESS, "/^HELLO !(?:\r|\n)+$/"],
         ];
     }
 }

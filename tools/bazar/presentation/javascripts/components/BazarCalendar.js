@@ -1,6 +1,6 @@
 import ButtonIcs from './BazarCalendar_ButtonICS.js'
 
-Vue.component('BazarCalendar', {
+const BazarCalendar = {
   props: ['params'],
   components: { ButtonIcs },
   data() {
@@ -292,6 +292,9 @@ Vue.component('BazarCalendar', {
       return this.calendar ? this.calendar.getEvents() : []
     }
   },
+  mounted() {
+    this.mountCalendar()
+  },
   watch: {
     selectedEntry(newVal, oldVal) {
       if (this.selectedEntry) {
@@ -323,4 +326,7 @@ Vue.component('BazarCalendar', {
       <ButtonIcs v-if="this.params.showicalbutton" :bazarcalendar="this"/> 
     </div>
   `
-})
+}
+
+if (!window._bazarDynamicComponents) window._bazarDynamicComponents = {}
+window._bazarDynamicComponents['BazarCalendar'] = BazarCalendar

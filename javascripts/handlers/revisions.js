@@ -1,21 +1,27 @@
 import SpinnerLoader from '../../tools/bazar/presentation/javascripts/components/SpinnerLoader.js'
 
-Vue.prototype.window = window
+const { createApp } = Vue
 
-new Vue({
-  el: '.revisions-container',
+// Capture dataset before mounting (Vue 3 replaces the mount element)
+const mountElement = document.querySelector('.revisions-container')
+const elementDataset = mountElement ? { ...mountElement.dataset } : {}
+
+const app = createApp({
   components: { SpinnerLoader },
-  data: {
-    isEntry: false,
-    revisions: [],
-    selectedRevision: null,
-    viewTypes: {
-      current: _t('REVISIONS_PREVIEW'),
-      commit_diff: _t('REVISIONS_COMMIT_DIFF'),
-      diff: _t('REVISIONS_DIFF')
-    },
-    displayWikiCode: false,
-    selectedViewType: 'current'
+  data() {
+    return {
+      isEntry: false,
+      revisions: [],
+      selectedRevision: null,
+      viewTypes: {
+        current: _t('REVISIONS_PREVIEW'),
+        commit_diff: _t('REVISIONS_COMMIT_DIFF'),
+        diff: _t('REVISIONS_DIFF')
+      },
+      displayWikiCode: false,
+      selectedViewType: 'current',
+      revisionsCount: parseInt(elementDataset.revisionsCount, 10) || 0
+    }
   },
   computed: {
     firstRevision() { return this.revisions[this.revisions.length - 1] },
@@ -24,8 +30,8 @@ new Vue({
     previewUrl() { return wiki.url(`${wiki.pageTag}/iframe`, { time: this.selectedRevision.phpTime, iframelinks: 0 }) }
   },
   mounted() {
-    this.isEntry = this.$el.dataset.isEntry == '1'
-    this.revisions = JSON.parse(this.$el.dataset.revisions).map((rev) => {
+    this.isEntry = elementDataset.isEntry == '1'
+    this.revisions = JSON.parse(elementDataset.revisions || '[]').map((rev) => {
       rev.id = parseInt(rev.id)
       rev.phpTime = rev.time
       rev.time = new Date(rev.time)
@@ -84,11 +90,10 @@ new Vue({
       if (newRevision) this.selectedRevision = newRevision
     },
     calculateRevisionsPlaceInTimeLine() {
-      const revisionsCount = parseInt(this.$el.dataset.revisionsCount)
       const timelineLength = this.lastRevision.timestamp - this.firstRevision.timestamp
       let prevRevision
       this.revisions.forEach((rev, index) => {
-        rev.number = revisionsCount - index
+        rev.number = this.revisionsCount - index
         rev.placeInTimeLine = (rev.timestamp - this.firstRevision.timestamp) / timelineLength * 100
         if (prevRevision) {
           // At least 1% gap between each, otherwise we don't see anything in the UI
@@ -118,3 +123,10 @@ new Vue({
     }
   }
 })
+
+// Vue 3: Use app.config.globalProperties instead of Vue.prototype
+app.config.globalProperties.window = window
+
+if (mountElement) {
+  app.mount('.revisions-container')
+}

@@ -2,6 +2,8 @@
 
 namespace YesWiki\AutoUpdate\Entity;
 
+use Throwable;
+
 class Files
 {
     protected function tmpdir()
@@ -20,15 +22,17 @@ class Files
     protected function delete($path)
     {
         if (empty($path)) {
-            return false;
+            return true;
         }
-        if (is_file($path)) {
-            if (unlink($path)) {
-                return true;
-            }
 
-            return false;
+        if (is_file($path)) {
+            if (@unlink($path)) {
+                return true;
+            } else {
+                return [$path];
+            }
         }
+
         if (is_dir($path)) {
             return $this->deleteFolder($path);
         }
@@ -55,22 +59,30 @@ class Files
 
     protected function isWritable($path)
     {
-        // la destination n'existe pas et droits d'écriture sur le repertoire
-        // de destination
-        if (!file_exists($path) and is_writable(dirname($path))) {
-            return true;
-        }
+        try {
+            // la destination n'existe pas et droits d'écriture sur le repertoire
+            // de destination
+            if (!@file_exists($path) and @is_writable(dirname($path))) {
+                return true;
+            }
 
-        if (is_file($path)) {
-            return is_writable($path);
-        }
+            if (@is_file($path)) {
+                if (@is_writable($path)) {
+                    return true;
+                } else {
+                    return [$path];
+                }
+            }
 
-        if (is_dir($path)) {
-            return $this->isWritableFolder($path);
-        }
+            if (@is_dir($path)) {
+                return $this->isWritableFolder($path);
+            }
 
-        // TODO Gérer les liens
-        return false;
+            // TODO Gérer les liens
+            return [$path];
+        } catch (Throwable $pThrowable) {
+            return [$path];
+        }
     }
 
     public function download($sourceUrl, $destPath = null, $timeoutInSec = 5)
@@ -85,7 +97,9 @@ class Files
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeoutInSec);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeoutInSec);
         curl_exec($ch);
-        curl_close($ch);
+        if (version_compare(PHP_VERSION, '8.0.0', '<')) {
+            curl_close($ch);
+        }
         fclose($fp);
 
         return $destPath;
@@ -94,40 +108,74 @@ class Files
     private function isWritableFolder($path)
     {
         $file2ignore = ['.', '..', '.git'];
-        if ($res = opendir($path)) {
-            while (($file = readdir($res)) !== false) {
-                if (!in_array($file, $file2ignore)) {
-                    if (!$this->isWritable($path . '/' . $file)) {
-                        // TODO remonter les fichiers/dossier qui posent
-                        // problèmes
-                        return false;
+
+        $vNotWritables = [];
+
+        if (@is_dir($path)) {
+            if (@is_writable($path) !== true) {
+                $vNotWritables[] = $path;
+            }
+
+            if ($res = @opendir($path)) {
+                while (($file = @readdir($res)) !== false) {
+                    if (!in_array($file, $file2ignore)) {
+                        $vIsWritable = $this->isWritable($path . '/' . $file);
+
+                        if ($vIsWritable !== true) {
+                            $vNotWritables = array_merge($vNotWritables, $vIsWritable);
+                        }
                     }
                 }
+                @closedir($res);
+            } else {
+                $vNotWritables[] = $path;
             }
-            closedir($res);
+        } else {
+            $vNotWritables[] = $path;
         }
 
-        return true;
+        if (count($vNotWritables) == 0) {
+            return true;
+        } else {
+            return $vNotWritables;
+        }
     }
 
     private function deleteFolder($path)
     {
         $file2ignore = ['.', '..'];
         if (is_link($path)) {
-            unlink($path);
+            if (@unlink($path)) {
+                return true;
+            } else {
+                return [$path];
+            }
         } else {
+            $vNotDeleteds = [];
+
             if ($res = opendir($path)) {
                 while (($file = readdir($res)) !== false) {
                     if (!in_array($file, $file2ignore)) {
-                        $this->delete($path . '/' . $file);
+                        $vDeleteStatus = $this->delete(rtrim($path, '/') . '/' . $file);
+
+                        if ($vDeleteStatus !== true) {
+                            $vNotDeleteds = array_merge($vNotDeleteds, $vDeleteStatus);
+                        }
                     }
                 }
                 closedir($res);
             }
-            rmdir($path);
+
+            if (!@rmdir($path)) {
+                $vNotDeleteds[] = $path;
+            }
         }
 
-        return true;
+        if (count($vNotDeleteds) == 0) {
+            return true;
+        } else {
+            return $vNotDeleteds;
+        }
     }
 
     private function copyFolder($srcPath, $desPath)
@@ -136,7 +184,7 @@ class Files
         if ($res = opendir($srcPath)) {
             while (($file = readdir($res)) !== false) {
                 if (!in_array($file, $file2ignore)) {
-                    $this->copy($srcPath . '/' . $file, $desPath . '/' . $file);
+                    $this->copy(rtrim($srcPath, '/') . '/' . $file, rtrim($desPath, '/') . '/' . $file);
                 }
             }
             closedir($res);

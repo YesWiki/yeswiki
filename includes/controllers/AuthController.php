@@ -53,6 +53,7 @@ class AuthController extends YesWikiController
     protected $passwordHasherFactory;
     protected $securityController;
     protected $userManager;
+    private $loggedUserCache = null;
 
     public function __construct(
         ParameterBagInterface $params,
@@ -177,18 +178,16 @@ class AuthController extends YesWikiController
         }
 
         // Else, if user is logged, store the user in a cache
-        static $cache = null;
-
-        if ($cache == null) {
+        if ($this->loggedUserCache === null || (is_array($this->loggedUserCache) && $this->loggedUserCache['name'] !== $_SESSION['user']['name'])) {
             $user = $this->userManager->getOneByName($_SESSION['user']['name']);
             if (!empty($user)) {
-                $cache = $user->getArrayCopy();
+                $this->loggedUserCache = $user->getArrayCopy();
             } else {
-                $cache = '';
+                $this->loggedUserCache = '';
             }
         }
 
-        return $cache;
+        return $this->loggedUserCache;
     }
 
     public function getLoggedUserName()
@@ -449,6 +448,7 @@ class AuthController extends YesWikiController
         if (isset($_SESSION['user'])) {
             unset($_SESSION['user']);
         }
+        $this->loggedUserCache = null;
     }
 
     /**

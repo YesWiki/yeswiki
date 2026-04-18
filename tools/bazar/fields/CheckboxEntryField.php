@@ -21,15 +21,16 @@ class CheckboxEntryField extends CheckboxField
 
         // load options only when needed but not at construct to prevent infinite loops
 
-        $this->displayFilterLimit = $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
-        $this->displaySelectAllLimit = empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
+        $wiki = $this->services->get(Wiki::class);
+        $this->displayFilterLimit = $wiki->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
+        $this->displaySelectAllLimit = empty($wiki->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
             $this->displayFilterLimit :
-            $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
+            $wiki->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
         $this->formName = null;
         $this->normalDisplayMode = (in_array(
-            $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
+            $wiki->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
             array_keys(self::CHECKBOX_TWIG_LIST)
-        )) ? $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
+        )) ? $wiki->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
             self::CHECKBOX_DISPLAY_MODE_LIST;
         $this->dragAndDropDisplayMode = '@bazar/inputs/checkbox_drag_and_drop_entry.twig';
 

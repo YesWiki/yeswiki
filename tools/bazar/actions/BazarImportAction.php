@@ -91,13 +91,14 @@ class BazarImportAction extends YesWikiAction
                     $vForm
                 )) {
                     // append displayData
-                    $extracted = array_map(function ($extract) {
-                        $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0, $vForm);
+                    $extracted = array_map(function ($extract) use ($vForm) {
+                        $extract['displayData'] = $this->entryController->view($extract['entry'], '', 0, null, $vForm);
                         $extract['json'] = json_encode($extract['entry']);
 
                         return $extract;
                     }, $extracted);
                 }
+
                 break;
 
             case 'importentries':
@@ -125,11 +126,16 @@ class BazarImportAction extends YesWikiAction
                 break;
         }
 
+        if (!empty($vID)) {
+            $vFilename = $this->CSVManager->buildExportFilename($vID);
+        }
+
         return $this->render('@bazar/bazar-import.twig', [
-            'id' => $vID['id'],
+            'id' => $vID['id'] ?? '',
             'server' => $this->arguments['server'],
             'forms' => $vForms,
             'params' => $this->arguments['params'],
+            'filename' => $vFilename ?? '',
             'csv' => isset($csv_template) ? $this->CSVManager->arrayToCSVToDisplay($csv_template) : null,
             'selectedForm' => $vForm ?? null,
             'importedEntries' => $importedEntries ?? null,

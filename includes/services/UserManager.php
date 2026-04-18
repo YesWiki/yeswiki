@@ -161,7 +161,16 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new Exception("'password' parameter of UserManager->create should not be empty!");
         }
 
+        // clear both the trimmed name and any untrimmed variant stored in cache
         unset($this->getOneByNameCacheResults[$wikiName]);
+        if (is_string($wikiNameOrUser) && $wikiNameOrUser !== $wikiName) {
+            unset($this->getOneByNameCacheResults[$wikiNameOrUser]);
+        } elseif (is_array($wikiNameOrUser)) {
+            $originalName = $wikiNameOrUser['name'] ?? '';
+            if ($originalName !== $wikiName) {
+                unset($this->getOneByNameCacheResults[$originalName]);
+            }
+        }
         $user = $this->arrayToUser($userAsArray);
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $hashedPassword = $passwordHasher->hash($plainPassword);

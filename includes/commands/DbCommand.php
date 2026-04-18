@@ -204,7 +204,7 @@ class DbCommand extends Command
                 return Command::SUCCESS;
             }
         } catch (Throwable $ex) {
-            $output->writeln("System error when testing mysqldump : {$ex->getMessage()} in {$ex->getFile()}, line {$ex->getLine()}");
+            $output->writeln("System error when testing mysqldump : " . $this->wiki->dumpThrowable ($ex));
         }
         $output->writeln('NOK');
 

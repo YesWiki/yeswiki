@@ -1,4 +1,4 @@
-Vue.component('BazarTableEntrySelector', {
+const BazarTableEntrySelector = {
   props: ['params', 'entries'],
   data() {
     return {}
@@ -23,4 +23,7 @@ Vue.component('BazarTableEntrySelector', {
         <slot name="bazarlist" v-bind="{entriesToDisplay:entriesToDisplay}"/>
       </div>
     `
-})
+}
+
+if (!window._bazarDynamicComponents) window._bazarDynamicComponents = {}
+window._bazarDynamicComponents['BazarTableEntrySelector'] = BazarTableEntrySelector

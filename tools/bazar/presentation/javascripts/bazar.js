@@ -4,13 +4,13 @@
  *
  * */
 
-import { updateHash, parseCondition } from './utils.js'
+import { updateHash } from './url.js'
+import { parseCondition } from './search.js'
 
-var gSavedHash;
+let gSavedHash
 
 $(document).ready(() => {
-
-  gSavedHash = decodeURIComponent(document.location.hash.substring(1));
+  gSavedHash = decodeURIComponent(document.location.hash.substring(1))
 
   // accordeon pour bazarliste
   $('.titre_accordeon').on('click', function() {
@@ -47,11 +47,10 @@ $(document).ready(() => {
       $(this)
         .parent('div.BAZ_cadre_fiche')
         .prev('ul.css-tabs')
-        .append(`<li class='liste${i}'><a href="#">${
-          $(this).find('legend:first').hide().html()}</a></li>`)
+        .append(`<li class='liste${i}'><a href="#">${$(this).find('legend:first').hide().html()}</a></li>`)
     })
 
-    $('ul.css-tabs').tabs('fieldset.tab', { onClick() {} })
+    $('ul.css-tabs').tabs('fieldset.tab', { onClick() { } })
   })
 
   // initialise les tooltips pour l'aide et pour les cartes leaflet
@@ -242,7 +241,7 @@ $(document).ready(() => {
         if ($(this).parentsUntil(':visible')
           .filter(function() {
             return $(this).css('display') == 'none'
-                && $(this).attr('role') != 'tabpanel'
+              && $(this).attr('role') != 'tabpanel'
           }).length == 0) {
           return true
         }
@@ -390,12 +389,13 @@ $(document).ready(() => {
       $(bootstrapBaseDiv).removeClass('invalid')
       return true
     },
-    geocodeChecking(input) {console.log ("GEOCODE CHECKING");
-    	const vLatitude = $(input).find('.yw-latitude-input').val();
-    	const vLongitude = $(input).find('.yw-longitude-input').val();    	
-    	const vGeometries = $(input).find('.yw-geometries-input').val();    	
-    	console.log (vLatitude, vLongitude, vGeometries);
-		if (vLatitude == "" && vLongitude == "" && vGeometries == "") {
+    geocodeChecking(input) {
+      // console.log("GEOCODE CHECKING");
+      const vLatitude = $(input).find('.yw-latitude-input').val()
+      const vLongitude = $(input).find('.yw-longitude-input').val()
+      const vGeometries = $(input).find('.yw-geometries-input').val()
+      // console.log(vLatitude, vLongitude, vGeometries);
+      if (vLatitude == '' && vLongitude == '' && vGeometries == '') {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'))
         return false
       }
@@ -672,7 +672,7 @@ $(document).ready(() => {
         .replace(/\+/g, '%20')
     ) || null
   }
-  
+
   // modifier un parametre de l'url pour les modifier dynamiquement
   function changeURLParameter(name, value) {
     if (getURLParameter(name) == null) {
@@ -733,14 +733,12 @@ $(document).ready(() => {
     }
   }
 
-  
   // activer les filtres des facettes
   function updateFilters(e) {
     const tabfilters = []
     let i = 0
     let newquery = ''
     let select
-
     // on filtre les resultat par boite de filtre pour faire l'intersection apres
     e.data.$filterboxes.each(function() {
       select = ''
@@ -758,13 +756,11 @@ $(document).ready(() => {
           }
           newquery += `${name}=${val}`
           first = false
-          
-          
         } else {
           newquery += `,${val}`
           select += ','
         }
-        
+
         // La requete de selection prend pour les champs non multiples :
         // - exactement la valeur de l'attribut html
         // Pour les champs multiples :
@@ -774,7 +770,6 @@ $(document).ready(() => {
         select += `[${attr}~="${val}"],[${attr}$=",${val}"],[${attr}^="${val},"],[${attr}*=",${val},"]`
       })
       const res = e.data.$entries.filter(select)
-
       if (res.length > 0) {
         tabfilters[i] = res
         i += 1
@@ -798,14 +793,41 @@ $(document).ready(() => {
       e.data.$entries.hide().filter(tabres).show()
       e.data.$entries.parent('.bazar-marker').hide()
       e.data.$entries.filter(tabres).parent('.bazar-marker').show()
+
+      // geometries need the id to be hidden
+      const $toHide = e.data.$entries.not(tabres)
+      const idsToMatch = new Set()
+
+      $toHide.each(function() {
+        const id = $(this).attr('data-id_fiche')
+        if (id) {
+          idsToMatch.add(String(id))
+        }
+      })
+
+      const matchingGeometries = e.data.$geometries.filter(function() {
+        const geoId = $(this).attr('data-id')
+        return idsToMatch.has(String(geoId))
+      })
+
+      matchingGeometries.hide()
     } else {
       // pas de filtres: on affiche tout les résultats
       e.data.$entries.show()
+      e.data.$geometries.show()
       e.data.$entries.parent('.bazar-marker').show()
     }
-
-    // on compte les résultats visibles
-    const nbresults = e.data.$entries.filter(':visible').length
+    // on compte les résultats visibles (points et geometries confondus)
+    const visibleIds = new Set()
+    e.data.$entries.filter(':visible').each(function() {
+      const id = $(this).attr('data-id_fiche')
+      if (id) visibleIds.add(String(id))
+    })
+    e.data.$geometries.filter(':visible').each(function() {
+      const id = $(this).attr('data-id')
+      if (id) visibleIds.add(String(id))
+    })
+    const nbresults = visibleIds.size
     e.data.$nbresults.html(nbresults)
     if (nbresults > 1) {
       e.data.$resultlabel.hide()
@@ -816,48 +838,47 @@ $(document).ready(() => {
     }
 
     $('body').trigger('updatedfilters', (!tabres.length) ? [] : [tabres])
-    
-    let vParam = new URLSearchParams(document.location.search);
-	let vKeywords = vParam.get("keywords"); 
-	let vSortField = vParam.get("champ");
-	let vSortOrder = vParam.get("ordre");  
 
-	var vFacette = getURLParameter('facette');
-	var vQueries;
-	var vFilters = [];
-	if (vFacette)
-	{
-		vQueries = getURLParameter('facette')
-		.split ("|")
-		.map (parseCondition)
-		.forEach (function (pCondition)
-		{
-			vFilters [pCondition.name] = pCondition.values;
-		})		
-	}
-	else
-		vFilters = [];
-	
-	updateHash(gSavedHash, vKeywords, vSortField, vSortOrder, vFilters);
+    const vParam = new URLSearchParams(document.location.search)
+    const vKeywords = vParam.get('keywords')
+    const vSortField = vParam.get('champ')
+    const vSortOrder = vParam.get('ordre')
+
+    const vFacette = getURLParameter('facette')
+    let vQueries
+    let vFilters = []
+    if (vFacette) {
+      vQueries = getURLParameter('facette')
+        .split('|')
+        .map(parseCondition)
+        .forEach((pCondition) => {
+          vFilters[pCondition.name] = pCondition.values
+        })
+    } else vFilters = []
+
+    updateHash(gSavedHash, vKeywords, vSortField, vSortOrder, vFilters)
   }
 
   // process changes on visible entries according to filters
-  $('.facette-container:not(.dynamic)').each(function() {
-    const $container = $(this)
-    const $filters = $('.filter-checkbox', $container)
-    const data = {
-      $nbresults: $('.nb-results', $container),
-      $filterboxes: $('.filter-box', $container),
-      $entries: $('.bazar-entry', $container),
-      $resultlabel: $('.result-label', $container),
-      $resultslabel: $('.results-label', $container)
-    }
-    $filters.on('click', data, updateFilters)
-    jQuery(window).ready((e) => {
-      e.data = data
-      updateFilters(e)
+  setTimeout(() => {
+    $('.facette-container:not(.dynamic)').each(function() {
+      const $container = $(this)
+      const $filters = $('.filter-checkbox', $container)
+      const data = {
+        $nbresults: $('.nb-results', $container),
+        $filterboxes: $('.filter-box', $container),
+        $entries: $('.bazar-entry', $container),
+        $geometries: $('.bazar-entry-geometry', $container),
+        $resultlabel: $('.result-label', $container),
+        $resultslabel: $('.results-label', $container)
+      }
+      $filters.on('click', data, updateFilters)
+      jQuery(window).ready((e) => {
+        e.data = data
+        updateFilters(e)
+      })
     })
-  })
+  }, 500)
 
   // gestion de l'historique : on reapplique les filtres
   window.onpopstate = function(e) {
@@ -866,7 +887,7 @@ $(document).ready(() => {
         const $this = $(this)
         $(this).find('input:checkbox').prop('checked', false)
         const urlparamfacette = getURLParameter('facette')
-        
+
         const tabfacette = urlparamfacette.split('|')
         for (let i = 0; i < tabfacette.length; i++) {
           const tabfilter = tabfacette[i].split('=')
@@ -884,6 +905,7 @@ $(document).ready(() => {
           $nbresults: $('.nb-results', $container),
           $filterboxes: $('.filter-box', $container),
           $entries: $('.bazar-entry', $container),
+          $geometries: $('.bazar-entry-geometry', $container),
           $resultlabel: $('.result-label', $container),
           $resultslabel: $('.results-label', $container)
         }
@@ -905,7 +927,7 @@ $(document).ready(() => {
     })
   })
 
-  $.extend($.fn.typeahead.Constructor.prototype, { val() {} })
+  $.extend($.fn.typeahead.Constructor.prototype, { val() { } })
 
   // on envoie la valeur au submit
   $('#formulaire').on('submit', function() {

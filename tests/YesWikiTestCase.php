@@ -8,7 +8,7 @@ use YesWiki\Wiki;
 
 class YesWikiTestCase extends TestCase
 {
-    protected function getWiki(): Wiki
+    protected static function getWiki(): Wiki
     {
         require_once 'includes/YesWikiLoader.php';
         $wiki = YesWikiLoader::getWiki(true);

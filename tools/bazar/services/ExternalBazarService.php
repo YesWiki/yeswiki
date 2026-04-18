@@ -381,13 +381,9 @@ class ExternalBazarService
 
         if (!empty($vEntries)) {
             return $vEntries;
-        } elseif ($this->debug) {
-            trigger_error(get_class($this) . '::getEntries: ' . _t('BAZ_EXTERNAL_SERVICE_BAD_RECEIVED_ENTRIES'));
-
+        } else {
             return [];
         }
-
-        return [];
     }
 
     /**

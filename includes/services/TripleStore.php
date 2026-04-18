@@ -11,6 +11,7 @@ class TripleStore
     protected $securityController;
 
     protected $cacheByResource;
+    protected array $matchingCache = [];
 
     public const TYPE_URI = 'http://outils-reseaux.org/_vocabulary/type';
     public const SOURCE_URL_URI = 'http://outils-reseaux.org/_vocabulary/sourceUrl';
@@ -103,20 +104,16 @@ class TripleStore
             $sql .= ' WHERE ' . implode(' AND ', $where);
         }
 
-        // Add a local in function cache
+        // Add a local in instance cache
         // TODO This cache should be shared with "$this->cacheByResource[$res][$prop]"
         //      - but $res in this cache can be with a $re_prefix
         //      - but $prop in this cache can be with $prop_prefix
         //      - $re_prefix and $prop_prefix are not parameters of the getMatching function
-        // TODO This cache is not invalidated if the object is deleted or updated (like $this->cacheByResource)
-        //
-        static $cache = [];
-
-        if (!array_key_exists($sql, $cache)) {
-            $cache[$sql] = $this->dbService->loadAll($sql);
+        if (!array_key_exists($sql, $this->matchingCache)) {
+            $this->matchingCache[$sql] = $this->dbService->loadAll($sql);
         }
 
-        return $cache[$sql];
+        return $this->matchingCache[$sql];
     }
 
     /**
@@ -223,10 +220,11 @@ class TripleStore
             return 3;
         }
 
-        // invalidate the cache
+        // invalidate the caches
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
         }
+        $this->matchingCache = [];
 
         $sql = 'INSERT INTO ' . $this->dbService->prefixTable('triples') . ' (resource, property, value)' . 'VALUES ("' . $this->dbService->escape($res) . '", "' . $this->dbService->escape($prop_prefix . $property) . '", "' . $this->dbService->escape($value) . '")';
 
@@ -269,10 +267,11 @@ class TripleStore
             return 3;
         }
 
-        // invalidate the cache
+        // invalidate the caches
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
         }
+        $this->matchingCache = [];
 
         $sql = 'UPDATE ' . $this->dbService->prefixTable('triples') . ' SET value = "' . $this->dbService->escape($newvalue) . '" ' . 'WHERE id = ' . $id;
 
@@ -316,10 +315,11 @@ class TripleStore
         } else {
             $extraSQLQuery = '';
         }
-        // invalidate the cache
+        // invalidate the caches
         if (isset($this->cacheByResource[$res])) {
             unset($this->cacheByResource[$res]);
         }
+        $this->matchingCache = [];
 
         try {
             if ($this->dbService->query($sql) === false) {

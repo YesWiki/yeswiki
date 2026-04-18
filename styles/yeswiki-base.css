@@ -310,6 +310,46 @@ body > :not(#YesWikiModal) .current-revision-text {
   display: none;
 }
 
+#yw-topnav > .container {
+  display: flex;
+  flex-direction: row;
+  row-gap: 1em;
+  column-gap: 1em;
+  align-items: center;
+}
+
+#yw-topnav > .container > .btn-menu {
+  width: max-content;
+  min-width: max-content;
+  max-width: max-content;
+  height: max-content;
+}
+
+#yw-topnav > .container > .navbar-header {
+  width: max-content;
+  margin-right: 1em;
+}
+
+#yw-topnav > .container > .topnavpage {
+  flex: 1;
+  margin-right: 1em;
+}
+
+#yw-topnav > .container > .yw-topnav-fast-access {
+  margin-left: auto;
+  width: max-content;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: end;
+}
+
+#yw-topnav > .container > .yw-topnav-fast-access > * {
+  display: block;
+  width: max-content;
+}
+
 /* menu du haut fixe */
 #yw-topnav.fixable {
   position: sticky;
@@ -639,7 +679,7 @@ body {
   transform: translate(0, 0) scale(1, 1);
   opacity: 1;
   z-index: 10000;
-  width: 100%;
+  width: 100% !important;
   height: 100%;
   display: block !important;
 }

@@ -5,7 +5,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        <h2 class="modal-title" v-text="actionGroup.label"></h2>
+        <h2 class="modal-title" v-text="actionGroup ? actionGroup.label : ''"></h2>
       </div>
 
       <!-- Modal Body -->
@@ -23,7 +23,9 @@
         <div class="form-group" v-show="Object.keys(this.actions).length > 1">
           <label class="control-label" v-text="isBazarListeAction ? '{{ _t('ACTION_BUILDER_CHOOSE_TEMPLATE') }}' : '{{ _t('ACTION_BUILDER_CHOOSE_ACTION') }}'"></label>
           <select v-model="selectedActionId" required class="form-control">
-            <option v-for="(action, actionId) in actions" v-if="action.label" :value="actionId" v-html="action.label"></option>
+            <template v-for="(action, actionId) in actions">
+              <option v-if="action && action.label" :key="actionId" :value="actionId" v-html="action.label"></option>
+            </template>
           </select>
         </div>
 
@@ -33,16 +35,16 @@
           <div v-if="selectedAction.hint" class="alert alert-info" v-html="selectedAction.hint"></div>
 
           <!-- Iframe Preview -->
-          <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup.previewHeight"></preview-action>
+          <preview-action :wiki-code="wikiCodeForIframe" :height="actionGroup ? actionGroup.previewHeight : null"></preview-action>
 
           <div class="panels-config-container">
             <div v-for="panel in configPanels" class="config-panel" :class="panel.params.class" 
                  :style="{width: panel.params.width || (configPanels.length == 1 ? '50%' : '33%')}" v-show="checkVisibility(panel.params)">
               <h3 v-text="panel.params.title || '{{ _t('ACTION_BUILDER_PARAMETERS') }}'"></h3>
               <div class="config-panel-content">
-                <template v-for="(config, propName) in panel.params.properties">
+                <template v-for="(config, propName) in panel.params.properties" :key="propName">
                   <div v-html="config.intro" v-show="checkVisibility(config)"></div>
-                  <component :is="componentIdFrom(config)" :key="propName" :ref="refFrom(config)"
+                  <component :is="componentIdFrom(config)" :ref="refFrom(config)"
                              :value="values[propName]" v-on:input="updateValue(propName, $event)"
                              v-show="checkVisibility(config)"
                              :name="propName" :values="values"
@@ -54,7 +56,7 @@
           </div>
 
           <!-- Advanced Params Checkbox -->
-          <input-checkbox v-if="isSomeAdvancedParams" v-model="displayAdvancedParams" 
+          <input-checkbox v-if="isSomeAdvancedParams" :value="displayAdvancedParams" @input="displayAdvancedParams = $event"
                           :config="{label: '{{ _t('ACTION_BUILDER_ADVANCED_PARAMETERS') }}'}"
                           class="advanced-params">
           </input-checkbox>
@@ -84,7 +86,7 @@
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 
-{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+{{ include_javascript(config.debug == 'yes' ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
 
 {{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
 {{ include_css('styles/vendor/vue-select/vue-select.css') }}
