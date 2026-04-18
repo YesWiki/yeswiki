@@ -2,6 +2,9 @@
 
 namespace YesWiki\Test\Core\Controller;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Throwable;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\UserController;
@@ -13,17 +16,17 @@ use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(UserController::class, '__construct')]
+#[CoversMethod(UserController::class, 'getFirstAdmin')]
+#[CoversMethod(UserController::class, 'delete')]
+#[CoversMethod(UserController::class, 'create')]
+#[CoversMethod(UserController::class, 'sanitizeName')]
 class UserControllerTest extends YesWikiTestCase
 {
     public const CHARS_FOR_EMAIL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     public const CHARS_FOR_PASSWORD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_';
     public const UPPER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    /**
-     * @covers \UserController::__construct
-     *
-     * @return Wiki $wiki
-     */
     public function testUserControllerExisting(): Wiki
     {
         $wiki = $this->getWiki();
@@ -33,12 +36,7 @@ class UserControllerTest extends YesWikiTestCase
         return $wiki;
     }
 
-    /**
-     * @depends testUserControllerExisting
-     * @covers \UserController::getFirstAdmin
-     *
-     * @return string $firstAdmin
-     */
+    #[Depends('testUserControllerExisting')]
     public function testGetFirstAdmin(Wiki $wiki): string
     {
         $userController = $wiki->services->get(UserController::class);
@@ -48,12 +46,9 @@ class UserControllerTest extends YesWikiTestCase
         return $firstAdmin;
     }
 
-    /**
-     * @depends testUserControllerExisting
-     * @depends testGetFirstAdmin
-     * @covers \UserController::delete
-     * @dataProvider dataProviderTestDelete
-     */
+    #[Depends('testUserControllerExisting')]
+    #[Depends('testGetFirstAdmin')]
+    #[DataProvider('dataProviderTestDelete')]
     public function testDelete(string $connexionMode, bool $expectedResult, Wiki $wiki, string $firstAdmin)
     {
         $authController = $wiki->services->get(AuthController::class);
@@ -78,10 +73,6 @@ class UserControllerTest extends YesWikiTestCase
             case '!@admins':
                 $authController->login($user);
                 break;
-                // case '%':
-                // not currently covered
-                //     $authController->login($user);
-                //     break;
             case '@admins':
                 $adminUser = $userManager->getOneByName($firstAdmin);
                 $authController->login($adminUser);
@@ -117,18 +108,17 @@ class UserControllerTest extends YesWikiTestCase
         }
     }
 
-    public function dataProviderTestDelete()
+    public static function dataProviderTestDelete()
     {
         // mode , mode, expected result
         return [
             'not connected' => ['!+', false],
             'not admin' => ['!@admins', false],
             'admin not current user' => ['@admins', true],
-            // 'admin current user' => ['%',false], // not currently covered
         ];
     }
 
-    public function dataProviderTestCreate()
+    public static function dataProviderTestCreate()
     {
         // name, email, newValues, UserNameExist, EmailExist, Other Exception
         return [
@@ -141,11 +131,8 @@ class UserControllerTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * @depends testUserControllerExisting
-     * @covers \UserController::create
-     * @dataProvider dataProviderTestCreate
-     */
+    #[Depends('testUserControllerExisting')]
+    #[DataProvider('dataProviderTestCreate')]
     public function testCreate(
         string $name,
         string $email,
@@ -239,7 +226,7 @@ class UserControllerTest extends YesWikiTestCase
         }
     }
 
-    public function dataProviderTestSanitizeName()
+    public static function dataProviderTestSanitizeName()
     {
         // name,char,length,Other Exception
         return [
@@ -259,15 +246,10 @@ class UserControllerTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * @depends testUserControllerExisting
-     * @depends testCreate
-     * @depends testDelete
-     * @covers \UserController::sanitizeName
-     * @dataProvider dataProviderTestSanitizeName
-     *
-     * @param mixed $name
-     */
+    #[Depends('testUserControllerExisting')]
+    #[Depends('testCreate')]
+    #[Depends('testDelete')]
+    #[DataProvider('dataProviderTestSanitizeName')]
     public function testSanitizeName($name, string $char, int $length, bool $otherException, Wiki $wiki)
     {
         $userController = $wiki->services->get(UserController::class);

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Core\Service\StringUtilService;
 
@@ -9,9 +10,7 @@ require_once 'includes/services/StringUtilService.php';
 
 class StringUtilServiceTest extends TestCase
 {
-    /**
-     * @dataProvider folderToNamespaceProvider
-     */
+    #[DataProvider('folderToNamespaceProvider')]
     public function testFolderToNamespace(string $input, string $expected)
     {
         $this->assertEquals(
@@ -21,7 +20,7 @@ class StringUtilServiceTest extends TestCase
         );
     }
 
-    public function folderToNamespaceProvider()
+    public static function folderToNamespaceProvider()
     {
         return [
             ['', ''],

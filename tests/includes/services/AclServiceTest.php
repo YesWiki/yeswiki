@@ -2,11 +2,15 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(AclService::class, 'check')]
 class AclServiceTest extends YesWikiTestCase
 {
     public function testACLServiceExisting(): AclService
@@ -17,17 +21,14 @@ class AclServiceTest extends YesWikiTestCase
         return $wiki->services->get(AclService::class);
     }
 
-    /**
-     * @depends testACLServiceExisting
-     * @dataProvider checkAclProvider
-     * @covers \AclService::check
-     */
+    #[Depends('testACLServiceExisting')]
+    #[DataProvider('checkAclProvider')]
     public function testCheckAcl(string $acl, $expected, AclService $aclService)
     {
         $this->assertSame($expected, $aclService->check($acl));
     }
 
-    public function checkAclProvider()
+    public static function checkAclProvider()
     {
         // acl , expected
         return [
