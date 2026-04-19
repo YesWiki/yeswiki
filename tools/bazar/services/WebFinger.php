@@ -6,7 +6,7 @@ use Exception;
 
 /**
  * A simple WebFinger container of data.
- */ 
+ */
 class WebFinger
 {
     /**
@@ -26,10 +26,10 @@ class WebFinger
 
     /**
      * Construct WebFinger instance
-     * 
+     *
      * @param array $data A WebFinger response
      */
-    public function __construct(array $data = null)
+    public function __construct(?array $data = null)
     {
         if (isset($data)) {
             foreach (['subject', 'aliases', 'links'] as $key) {
@@ -42,14 +42,14 @@ class WebFinger
 
     /**
      * Set subject property
-     * 
+     *
      * @param string $subject
      */
     public function setSubject($subject)
     {
         if (!is_string($subject)) {
             throw new Exception(
-                "WebFinger subject must be a string"
+                "WebFinger subject must be a string",
             );
         }
 
@@ -58,7 +58,7 @@ class WebFinger
 
     /**
      * Set aliases property
-     * 
+     *
      * @param array $aliases
      */
     public function setAliases(array $aliases)
@@ -66,7 +66,7 @@ class WebFinger
         foreach ($aliases as $alias) {
             if (!is_string($alias)) {
                 throw new Exception(
-                    "WebFinger aliases must be an array of strings"
+                    "WebFinger aliases must be an array of strings",
                 );
             }
 
@@ -76,7 +76,7 @@ class WebFinger
 
     /**
      * Set links property
-     * 
+     *
      * @param array $links
      */
     public function setLinks(array $links)
@@ -84,19 +84,19 @@ class WebFinger
         foreach ($links as $link) {
             if (!is_array($link)) {
                 throw new Exception(
-                    "WebFinger links must be an array of objects"
+                    "WebFinger links must be an array of objects",
                 );
             }
 
             if (!isset($link['rel'])) {
                 throw new Exception(
-                    "WebFinger links object must contain 'rel' property"
+                    "WebFinger links object must contain 'rel' property",
                 );
             }
-            
+
             $tmp = [];
             $tmp['rel'] = $link['rel'];
-            
+
             foreach (['type', 'href', 'template'] as $key) {
                 if (isset($link[$key]) && is_string($link[$key])) {
                     $tmp[$key] = $link[$key];
@@ -109,14 +109,14 @@ class WebFinger
 
     /**
      * Get ActivityPhp profile id URL
-     * 
+     *
      * @return string
      */
     public function getProfileId()
     {
         foreach ($this->links as $link) {
             if (isset($link['rel'], $link['type'], $link['href'])) {
-                if ($link['rel'] == 'self' 
+                if ($link['rel'] == 'self'
                     && $link['type'] == 'application/activity+json'
                 ) {
                     return $link['href'];
@@ -127,7 +127,7 @@ class WebFinger
 
     /**
      * Get interaction url
-     * 
+     *
      * @return string
      */
     public function getInteractionUrl()
@@ -143,7 +143,7 @@ class WebFinger
 
     /**
      * Get WebFinger response as an array
-     * 
+     *
      * @return array
      */
     public function toArray()
@@ -151,13 +151,13 @@ class WebFinger
         return [
             'subject' => $this->subject,
             'aliases' => $this->aliases,
-            'links'   => $this->links
+            'links'   => $this->links,
         ];
     }
 
     /**
      * Get aliases
-     * 
+     *
      * @return array
      */
     public function getAliases()
@@ -167,7 +167,7 @@ class WebFinger
 
     /**
      * Get links
-     * 
+     *
      * @return array
      */
     public function getLinks()
@@ -177,7 +177,7 @@ class WebFinger
 
     /**
      * Get subject fetched from profile
-     * 
+     *
      * @return null|string Subject
      */
     public function getSubject()
@@ -187,7 +187,7 @@ class WebFinger
 
     /**
      * Get subject handle fetched from profile
-     * 
+     *
      * @return null|string
      */
     public function getHandle()
