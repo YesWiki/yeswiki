@@ -1,20 +1,32 @@
 # Activer la compatibilité ActivityPub
 
-Les fiches Bazar étant structurées, il est possible de les rendre compatible ActivityPub. Chaque formulaire devient un acteur ActivityPub que l'on peut suivre, et qui envoie des activités `Create`, `Update` et `Delete`. Le formulaire lui-même peut suivre d'autres acteurs, et les fiches qu'il reçoit vont être ajoutées automatiquement dans la liste.
+Les fiches Bazar étant structurées, il est possible de les rendre compatible
+ActivityPub. Chaque formulaire devient un acteur ActivityPub que l'on peut
+suivre, et qui envoie des activités `Create`, `Update` et `Delete`. Le
+formulaire lui-même peut suivre d'autres acteurs, et les fiches qu'il reçoit
+vont être ajoutées automatiquement dans la liste.
 
-Cela peut permettre de synchroniser deux instances YesWiki, ou alors de permettre à n'importe quel utilisateur Mastodon d'être averti lorsqu'il y a des nouveaux éléments qui sont postés. D'autres usages seront possible dans le futur.
+Cela peut permettre de synchroniser deux instances YesWiki, ou alors de
+permettre à n'importe quel utilisateur Mastodon d'être averti lorsqu'il y a des
+nouveaux éléments qui sont postés. D'autres usages seront possible dans le
+futur.
 
 ## Activer ActivityPub sur un formulaire Bazar
 
-- Editer le formulaire et cliquez sur le bouton "Configuration avancée" tout en bas.
+- Editer le formulaire et cliquez sur le bouton "Configuration avancée" tout en
+  bas.
 - Cochez la case "Activer ActivityPub pour ce formulaire"
 - Entrez un nom pour d'utilisateur ActivityPub (par exemple "agenda" ou "blog")
-- Entrez une template sémantique (utilisée pour convertir les données YesWiki en données ActivityPub - voir ci-dessous)
-- Entrez une template sémantique inverse (utilisée pour convertir les données ActivityPub en YesWiki - voir ci-dessous)
+- Entrez une template sémantique (utilisée pour convertir les données YesWiki en
+  données ActivityPub - voir ci-dessous)
+- Entrez une template sémantique inverse (utilisée pour convertir les données
+  ActivityPub en YesWiki - voir ci-dessous)
 
-Après avoir validé la modification, il devrait y avoir deux nouveaux éléments dans la liste des formulaires:
+Après avoir validé la modification, il devrait y avoir deux nouveaux éléments
+dans la liste des formulaires:
 
-- Dans la colonne "Format de données", un bouton "AP" qui renvoie vers l'acteur ActivityPub du formulaire
+- Dans la colonne "Format de données", un bouton "AP" qui renvoie vers l'acteur
+  ActivityPub du formulaire
 - Dans les actions, un bouton "Gestion des abonnements"
 
 Depuis la page "Gestion des abonnements", plusieurs choses sont possibles:
@@ -26,15 +38,20 @@ Depuis la page "Gestion des abonnements", plusieurs choses sont possibles:
 
 ## Exemples de templates
 
-Voilà ci-dessous deux exemples de template. A noter que, si l'on veut que ActivityPub soit utilisé pour synchroniser deux instances YesWiki, il est important que tous les champs soient inclus, sinon des données seront perdues.
+Voilà ci-dessous deux exemples de template. A noter que, si l'on veut que
+ActivityPub soit utilisé pour synchroniser deux instances YesWiki, il est
+important que tous les champs soient inclus, sinon des données seront perdues.
 
 ### Agenda
 
-Note: Avec la template ci-dessous, Mastodon affiche le nom de l'événement, l'image et un lien vers la page. La compatibilité Mobilizon n'est pas encore possible car Mobilizon attend deux activités (`Announce` et `Create`) - cela devrait être réglé dans une future version.
+Note: Avec la template ci-dessous, Mastodon affiche le nom de l'événement,
+l'image et un lien vers la page. La compatibilité Mobilizon n'est pas encore
+possible car Mobilizon attend deux activités (`Announce` et `Create`) - cela
+devrait être réglé dans une future version.
 
-#### Template
+#### Template de l'agenda
 
-```
+```json
 {
   "@context": "https://www.w3.org/ns/activitystreams",
   "type": "Event",
@@ -70,9 +87,9 @@ Note: Avec la template ci-dessous, Mastodon affiche le nom de l'événement, l'i
 }
 ```
 
-#### Template inverse
+#### Template inverse de l'agenda
 
-```
+```json
 {
   "bf_titre": {{ name | json_encode }},
   "bf_description": {{ content | default("") | json_encode }},
@@ -92,11 +109,16 @@ Note: Avec la template ci-dessous, Mastodon affiche le nom de l'événement, l'i
 
 ### Blog
 
-Note: Nous n'utilisons pas la propriété `summary` car Mastodon l'interprête comme s'il fallait cacher le contenu du texte. Le titre n'est pas afficher par Mastodon. Il serait possible d'améliorer ça en agrégeant le titre, le chapeau et le contenu dans la propriété `content`, mais il faudrait prévoir de les séparer dans la template inverse (ce qui est possible avec Twig, mais peut demander un peu de travail)
+Note: Nous n'utilisons pas la propriété `summary` car Mastodon l'interprête
+comme s'il fallait cacher le contenu du texte. Le titre n'est pas afficher par
+Mastodon. Il serait possible d'améliorer ça en agrégeant le titre, le chapeau et
+le contenu dans la propriété `content`, mais il faudrait prévoir de les séparer
+dans la template inverse (ce qui est possible avec Twig, mais peut demander un
+peu de travail)
 
-#### Template
+#### Template du blog
 
-```
+```json
 {
   "@context": "https://www.w3.org/ns/activitystreams",
   "type": "Note",
@@ -116,9 +138,9 @@ Note: Nous n'utilisons pas la propriété `summary` car Mastodon l'interprête c
 }
 ```
 
-### Template inverse
+### Template inverse du blog
 
-```
+```json
 {
   "bf_titre": {{ name | json_encode }},
   "bf_chapeau": {{ preview | default("") | json_encode }},
@@ -131,16 +153,19 @@ Note: Nous n'utilisons pas la propriété `summary` car Mastodon l'interprête c
 
 ### `bazarfollow`
 
-Si vous avez activés ActivityPub pour un formulaire Bazar, vous pouvez utiliser cette action pour permettre à n'importe qui de suivre l'acteur avec un compte ActivityPub (par exemple Mastodon).
+Si vous avez activés ActivityPub pour un formulaire Bazar, vous pouvez utiliser
+cette action pour permettre à n'importe qui de suivre l'acteur avec un compte
+ActivityPub (par exemple Mastodon).
 
 Elle prend comme unique paramètre l'ID du formulaire:
 
-```
+```text
 {{bazarfollow id="3"}}
 ```
 
 Cela affiche un champ comme ça:
 
-![](images/follow-actor.png)
+![interface de follow](images/follow-actor.png)
 
-Lorsque l'utilisateur entre son identifiant ActivityPub, cela le redirige vers la page de l'acteur formulaire sur sa propre instance.
+Lorsque l'utilisateur entre son identifiant ActivityPub, cela le redirige vers
+la page de l'acteur formulaire sur sa propre instance.
