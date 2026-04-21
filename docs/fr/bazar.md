@@ -901,6 +901,8 @@ champ et la valeur qu'il contient.
 - `query="listeListeGenre=M|listeListeDep=26"` : On peut aussi filtrer selon
   plusieurs champs. Ici la fche sera affiché si les deux conditions sont vraies.
 
+Vous pouvez voir d'autres exemples dans le paragraphe "[affichage conditionnel]([url](https://yeswiki.net/?doc#/docs/fr/bazar?id=_1217-affichage-conditionnel))" (la syntaxe est la même).
+
 #### 3.2.4. Ordre et champ
 
 - **ordre** Permet d'afficher la liste par ordre croissant ou décroissant. Par
