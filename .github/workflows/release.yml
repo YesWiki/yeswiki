@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v4.4.0)'
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli
+          tools: composer:v2
+
+      - name: Install PHP dependencies
+        run: composer install --no-dev --prefer-dist --no-progress --optimize-autoloader
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install JS dependencies
+        run: yarn install
+
+      - name: Create release archive
+        run: |
+          TAG="${{ github.event.inputs.tag || github.event.release.tag_name }}"
+          ARCHIVE_NAME="yeswiki-${TAG}.zip"
+          mkdir -p /tmp/release/yeswiki
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='.env' \
+            --exclude='*.config.php' \
+            --exclude='.php-cs-fixer.cache' \
+            --exclude='.twig-cs-fixer.cache' \
+            --exclude='.DS_Store' \
+            . /tmp/release/yeswiki/
+          cd /tmp/release
+          zip -r "$GITHUB_WORKSPACE/$ARCHIVE_NAME" yeswiki/
+          echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+          files: ${{ env.ARCHIVE_NAME }}
