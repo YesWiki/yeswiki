@@ -146,39 +146,54 @@
               </textarea>
             </div>
           </div>
+          <div class="controls checkbox">
+            <label>
+              <input type="checkbox" name="bn_activitypub_enable" value="1" {% if form.bn_activitypub_enable %}checked{% endif %}>
+              {{ _t('BAZ_ACTIVITYPUB_ENABLE') }}
+            </label>
+          </div>
+          <div class="control-group form-group">
+            <label class="control-label col-sm-3">
+              {{ _t('BAZ_ACTIVITYPUB_USERNAME') }}
+            </label>
+            <div class="controls col-sm-9">
+              <input
+                class="form-control input-xxlarge"
+                name="bn_activitypub_username"
+                type="text"
+                value="{{ form.bn_activitypub_username }}"
+              />
+            </div>
+          </div>
           <div class="control-group form-group">
             <label class="control-label col-sm-3"
-              >{{ _t('BAZ_SEM_CONTEXT') }}</label
+              >{{ _t('BAZ_SEM_TEMPLATE') }}</label
             >
             <div class="controls col-sm-9">
               <textarea
                 class="form-control input-xxlarge"
                 cols="20"
-                rows="3"
-                name="bn_sem_context"
+                rows="6"
+                name="bn_sem_template"
               >
-                {{- form.bn_sem_context -}}
+                {{- form.bn_sem_template -}}
               </textarea>
             </div>
           </div>
           <div class="control-group form-group">
             <label class="control-label col-sm-3">
-              {{ _t('BAZ_SEM_TYPE') }}
+              {{ _t('BAZ_SEM_REVERSE_TEMPLATE') }}
             </label>
             <div class="controls col-sm-9">
-              <input
+              <textarea
                 class="form-control input-xxlarge"
-                name="bn_sem_type"
-                type="text"
-                value="{{ form.bn_sem_type }}"
-              />
+                cols="20"
+                rows="6"
+                name="bn_sem_reverse_template"
+              >
+                {{- form.bn_sem_reverse_template -}}
+              </textarea>
             </div>
-          </div>
-          <div class="controls checkbox">
-            <label>
-              <input type="checkbox" name="bn_sem_use_template" value="1" {% if form.bn_sem_use_template %}checked{% endif %}>
-              {{ _t('BAZ_SEM_USE_TEMPLATE_DESC') }}
-            </label>
           </div>
         </div>
       </div>

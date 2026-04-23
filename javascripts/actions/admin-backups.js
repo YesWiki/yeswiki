@@ -142,7 +142,7 @@ const app = createApp({
       const cThis = this
 
       return await fetch(url, options)
-        .then(async(pResponse) => {
+        .then(async (pResponse) => {
           if (!pResponse.ok) {
             const cJSON = await pResponse.json()
 
@@ -469,11 +469,11 @@ const app = createApp({
         .then((data) => {
           if (
             typeof this.packageName != 'string'
-                        || this.packageName.length == 0
-                        || typeof data != 'object'
-                        || !data.hasOwnProperty('token')
-                        || typeof data.token != 'string'
-                        || data.token.length == 0) {
+            || this.packageName.length == 0
+            || typeof data != 'object'
+            || !data.hasOwnProperty('token')
+            || typeof data.token != 'string'
+            || data.token.length == 0) {
             this.endStartingUpdateErrorWithT('ADMIN_BACKUPS_FORCED_UPDATE_NOT_POSSIBLE')
             this.canForceUpdate = false
           } else {
@@ -507,14 +507,12 @@ const app = createApp({
     }
   },
   mounted() {
-    this.isPreupdate = $(this.$el).hasClass('preupdate-backups-container')
+    const container = this.$el.parentElement || this.$el
+    this.isPreupdate = container.classList.contains('preupdate-backups-container')
     if (this.isPreupdate) {
-      this.packageName = $(this.$el).data('package')
+      this.packageName = container.dataset.package || ''
     }
-    $(this.$el).on(
-      'dblclick',
-      (e) => false
-    )
+    container.addEventListener('dblclick', (e) => false)
     if (this.isPreupdate) {
       this.startArchive()
     } else {

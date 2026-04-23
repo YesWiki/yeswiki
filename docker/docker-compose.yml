@@ -2,9 +2,6 @@ volumes:
   yeswiki-db:
     name: yeswiki-db
 
-networks:
-  yeswiki:
-
 services:
     yeswiki-app:
         build:
@@ -21,8 +18,6 @@ services:
         env_file: ./yeswiki.secrets
         user: "${UID}:${UID}"
         command: /var/www/html/docker/entrypoint.sh
-        networks:
-          - yeswiki
 
     yeswiki-db:
         image: mysql:latest
@@ -30,8 +25,6 @@ services:
         volumes:
           - yeswiki-db:/var/lib/mysql
         env_file: ./yeswiki.secrets
-        networks:
-          - yeswiki
 
     yeswiki-web:
         image: nginx:alpine
@@ -44,8 +37,6 @@ services:
         depends_on:
           - yeswiki-app
           - myadmin
-        networks:
-          - yeswiki
 
     myadmin:
       image: phpmyadmin:latest
@@ -56,13 +47,9 @@ services:
         PMA_PORT: 3306
       ports:
         - "8086:80"
-      networks:
-        - yeswiki
 
     mail:
       image: maildev/maildev
       container_name: mail
       ports:
         - "1080:1080"
-      networks:
-        - yeswiki

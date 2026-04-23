@@ -2,9 +2,23 @@
 :root {
   --nav-height: 55px;
   --menu-width: 350px;
+  --theme-color: #1a89a0;
+  --scroll-padding-top: calc(var(--nav-height) + 25px);
+  --color-mono-2: #eaebeb;
+  --color-mono-6: #555;
+  --font-size-s: 12px;
+}
+
+html {
+  scroll-padding-top: var(--scroll-padding-top);
+}
+
+#skip-to-content {
+  display: none;
 }
 
 body {
+  margin: 0;
   font-family:
     system-ui,
     -apple-system,
@@ -21,8 +35,8 @@ body {
     'Noto Color Emoji';
 }
 
-.content {
-  padding-top: var(--nav-height);
+main > .content {
+  padding-top: var(--scroll-padding-top);
   padding-left: calc(var(--menu-width) + 14px);
   position: relative;
   left: 0;
@@ -68,6 +82,7 @@ body {
   padding: 20px;
   border-radius: 4px;
   background-color: #f8f8f8;
+  max-width: 100%;
 }
 
 .markdown-section pre {
@@ -104,7 +119,7 @@ pre .docsify-copy-code-button.success .success {
 
 /* Navbar */
 nav.app-nav {
-  position: fixed;
+  position: sticky;
   padding: 0 1rem;
   height: var(--nav-height);
   top: 0;
@@ -115,6 +130,7 @@ nav.app-nav {
   border-bottom: 1px solid #e6e6e6;
   background: white;
   white-space: nowrap;
+  z-index: 1;
 }
 
 .app-nav a#title {
@@ -252,7 +268,39 @@ aside.sidebar {
 }
 
 /* Search */
+
+/* Clamp utility classes from docsify v5 core (not included in the vue theme) */
+[class*='clamp-'] {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[class*='clamp-']:not(.clamp-1) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.clamp-1 {
+  white-space: nowrap;
+}
+
+.clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.clamp-3 {
+  -webkit-line-clamp: 3;
+}
+
 .sidebar .search {
+  --plugin-search-input-bg: white;
+  --plugin-search-input-border-color: #eaebeb;
+  --plugin-search-input-border-radius: 4px;
+  --plugin-search-input-color: inherit;
+  --plugin-search-reset-color: #999;
+  --plugin-search-reset-bg: transparent;
+  --plugin-search-reset-border: none;
+  --plugin-search-reset-border-radius: 0;
   padding: 0;
   border: none;
 }
@@ -261,15 +309,26 @@ aside.sidebar {
   background: white;
   border: 1px solid #eaebeb;
   border-radius: 4px;
-  padding: 0 0.8rem;
+  padding: 0.75rem 2.2rem 0.75rem 0.8rem;
   font-family: inherit;
-
-  /* font-weight: bold; */
   color: inherit;
 }
 
 .sidebar .search input::placeholder {
   color: #787878;
+}
+
+.search .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.search .kbd-group {
+  display: none;
 }
 
 .search .results-panel {
@@ -279,27 +338,115 @@ aside.sidebar {
   border-radius: 0 3px 3px;
 }
 
-.search .matching-post,
+/* Override plugin-injected CSS (higher specificity needed as plugin CSS loads after) */
+.sidebar .search .matching-post {
+  padding: 0.4rem 0.8rem !important;
+  border-bottom: 1px solid #eaebeb;
+}
+
+.sidebar .search .matching-post a {
+  text-decoration: none;
+}
+
+.sidebar .search .matching-post .title {
+  margin: 0 0 0.15rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--theme-color);
+  line-height: 1.3 !important;
+}
+
+.sidebar .search .matching-post .content {
+  position: static;
+  padding-top: 0;
+  left: auto;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .search p.empty {
   padding: 0.8rem;
-}
-
-.search .matching-post h2 {
-  margin: 0 0 0.5rem;
-  font-size: 14px;
-}
-
-.search p {
   margin: 0;
+  color: #787878;
+  font-size: 13px;
 }
 
-.search .clear-button.show svg {
-  transform: scale(0.8);
+.search .results-status {
+  display: none;
 }
 
 /* Footer */
 footer {
   text-align: center;
+}
+
+/* Back to top */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--theme-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.3s,
+    visibility 0.3s;
+  z-index: 10;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-to-top:hover {
+  filter: brightness(1.15);
+}
+
+/* Arrow up icon */
+.gg-arrow-up {
+  box-sizing: border-box;
+  position: relative;
+  display: block;
+  transform: scale(var(--ggs, 1));
+  width: 22px;
+  height: 22px;
+}
+
+.gg-arrow-up::after,
+.gg-arrow-up::before {
+  content: '';
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+}
+
+.gg-arrow-up::before {
+  width: 8px;
+  height: 8px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+  transform: rotate(45deg);
+  left: 7px;
+  top: 4px;
+}
+
+.gg-arrow-up::after {
+  width: 2px;
+  height: 14px;
+  background: currentcolor;
+  left: 10px;
+  top: 6px;
 }
 
 /* Responsivness */

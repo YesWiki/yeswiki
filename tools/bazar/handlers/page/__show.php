@@ -1,6 +1,8 @@
 <?php
 
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Bazar\Service\SemanticTransformer;
+use YesWiki\Bazar\Service\FormManager;
 
 $entryManager = $this->services->get(EntryManager::class);
 
@@ -12,8 +14,15 @@ if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess('read')) {
         header("Content-type: $contentType; charset=UTF-8");
         header('Access-Control-Allow-Origin: *');
 
-        $fiche = $entryManager->getOne($this->GetPageTag(), $semantic);
-        $this->exit(json_encode($fiche));
+        $fiche = $entryManager->getOne($this->GetPageTag());
+
+        if ($semantic) {
+            $form = $this->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+            $semanticFiche = $this->services->get(SemanticTransformer::class)->convertToSemanticData($form, $fiche);
+            $this->exit(json_encode($semanticFiche));
+        } else {
+            $this->exit(json_encode($fiche));
+        }
     } else {
         $this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
     }

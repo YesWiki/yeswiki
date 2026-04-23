@@ -18,9 +18,12 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}nature` (
   `bn_label_nature` varchar(255) DEFAULT NULL,
   `bn_description` text  DEFAULT NULL,
   `bn_condition` text DEFAULT NULL,
-  `bn_sem_context` text DEFAULT NULL,
-  `bn_sem_type` varchar(255) DEFAULT NULL,
-  `bn_sem_use_template` tinyint(1) NOT NULL DEFAULT 1,
+  `bn_sem_template` text DEFAULT NULL,
+  `bn_sem_reverse_template` text DEFAULT NULL,
+  `bn_activitypub_enable` tinyint(1) NOT NULL DEFAULT 0,
+  `bn_activitypub_username` varchar(255) DEFAULT NULL,
+  `bn_activitypub_private_key` text DEFAULT NULL,
+  `bn_activitypub_public_key` text DEFAULT NULL,
   `bn_template` text NOT NULL,
   `bn_ce_i18n` varchar(5) NOT NULL,
   `bn_only_one_entry` enum('Y','N') NOT NULL DEFAULT 'N',
@@ -87,4 +90,4 @@ INSERT INTO `{{prefix}}triples` (`id`, `resource`, `property`, `value`) VALUES
 (1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
 INSERT INTO `{{prefix}}users` (`name`, `password`, `email`, `motto`, `revisioncount`, `changescount`, `doubleclickedit`, `signuptime`, `show_comments`) VALUES
-('{{WikiName}}', md5('{{password}}'), '{{email}}', '', 20, 50, 'Y',  now(), 'N');
+('{{WikiName}}', '{{hashedpassword}}', '{{email}}', '', 20, 50, 'Y',  now(), 'N');

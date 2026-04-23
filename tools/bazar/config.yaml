@@ -133,6 +133,8 @@ services:
 
   YesWiki\Bazar\Service\:
     resource: 'services/*'
+  YesWiki\Bazar\Service\WebFinger:
+    autowire: false
   YesWiki\Bazar\Service\DateService:
     tags:
       - { name: yeswiki.event_subscriber }

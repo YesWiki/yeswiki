@@ -30,6 +30,7 @@ class EntryManager
     protected $dbService;
     protected $semanticTransformer;
     protected $securityController;
+    protected $activityPubService;
     protected $params;
     protected $searchManager;
 
@@ -54,7 +55,8 @@ class EntryManager
         SemanticTransformer $semanticTransformer,
         ParameterBagInterface $params,
         SearchManager $searchManager,
-        SecurityController $securityController
+        SecurityController $securityController,
+        ActivityPubService $activityPubService,
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
@@ -68,6 +70,7 @@ class EntryManager
         $this->params = $params;
         $this->searchManager = $searchManager;
         $this->securityController = $securityController;
+        $this->activityPubService = $activityPubService;
         $this->cachedEntriestags = [];
     }
 
@@ -404,6 +407,11 @@ class EntryManager
             $this->mailer->notifyAdmins($data, true);
         }
 
+        if ($this->activityPubService->isEnabled($form) && !$sourceUrl) {
+             // Notify followers about the new object
+             $this->activityPubService->notifyFollowers($form, $data, 'Create');
+        }
+
         return $data;
     }
 
@@ -469,6 +477,12 @@ class EntryManager
         if ($this->params->get('BAZ_ENVOI_MAIL_ADMIN')) {
             // Envoi d'un mail aux administrateurs
             $this->mailer->notifyAdmins($data, false);
+        }
+
+        $isExternalEntry = !empty($this->tripleStore->getMatching($data['id_fiche'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
+        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
+             // Notify followers about the updated object (skip if external)
+             $this->activityPubService->notifyFollowers($form, $data, 'Update');
         }
 
         return $data;
@@ -585,6 +599,8 @@ class EntryManager
             throw new \Exception("Not existing entry : $tag");
         }
 
+        $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+
         $this->pageManager->deleteOrphaned($tag);
         $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
         $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
@@ -592,6 +608,12 @@ class EntryManager
             $this->authController->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
+
+        $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
+        if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
+             // Notify followers about the deleted object
+             $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
+        }
 
         unset($this->cachedEntriestags[$tag]);
     }

@@ -2,18 +2,22 @@
 
 namespace YesWiki\Bazar\Controller;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use YesWiki\Bazar\Field\TextareaField;
+use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\CSVManager;
 use YesWiki\Bazar\Service\EntryExtraFieldsService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Bazar\Service\HttpSignatureService;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
+use YesWiki\Bazar\Service\WebfingerService;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TripleStore;
@@ -51,6 +55,160 @@ class ApiController extends YesWikiController
         }
 
         return new ApiResponse($vForm);
+    }
+
+    /**
+     * @Route("/api/forms/{formId}/actor", methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getFormActor($formId)
+    {
+        $activityPubService = $this->getService(ActivityPubService::class);
+
+        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
+
+        if ($activityPubService->isEnabled($form)) {
+            $actor = $activityPubService->getActor($form);
+
+            return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
+        } else {
+            throw new NotFoundHttpException();
+        }
+    }
+
+    /**
+     * @Route("/api/forms/{formId}/actor/followers", methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getFormActorFollowers($formId, Request $request)
+    {
+        $activityPubService = $this->getService(ActivityPubService::class);
+
+        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
+
+        if ($activityPubService->isEnabled($form)) {
+            $followers = $activityPubService->getFollowers($form);
+
+            return new ApiResponse([
+                '@context' => "https://www.w3.org/ns/activitystreams",
+                'type' => 'Collection',
+                'id' => $activityPubService->getFormCollectionUri($form, 'followers'),
+                'items' => $followers,
+            ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
+        } else {
+            throw new NotFoundHttpException();
+        }
+    }
+
+        /**
+     * @Route("/api/forms/{formId}/actor/following", methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getFormActorFollowing($formId, Request $request)
+    {
+        $activityPubService = $this->getService(ActivityPubService::class);
+
+        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
+
+        if ($activityPubService->isEnabled($form)) {
+            $following = $activityPubService->getFollowing($form);
+
+            return new ApiResponse([
+                '@context' => "https://www.w3.org/ns/activitystreams",
+                'type' => 'Collection',
+                'id' => $activityPubService->getFormCollectionUri($form, 'following'),
+                'items' => $following,
+            ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
+        } else {
+            throw new NotFoundHttpException();
+        }
+    }
+
+    /**
+     * @Route("/api/forms/{formId}/actor/inbox", methods={"POST"}, options={"acl":{"public"}})
+     */
+    public function postFormActorInbox($formId, Request $request)
+    {
+        $activityPubService = $this->getService(ActivityPubService::class);
+        $httpSignatureService = $this->getService(HttpSignatureService::class);
+
+        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
+
+        if ($activityPubService->isEnabled($form)) {
+            $activity = json_decode($request->getContent(), true);
+
+            $httpSignatureService->verifySignature($request);
+            $activityPubService->processActivity($activity, $form);
+
+            return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
+        } else {
+            throw new NotFoundHttpException();
+        }
+    }
+
+    /**
+     * @Route("/api/forms/{formId}/actor/outbox", methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getFormActorOutbox($formId, Request $request)
+    {
+        $activityPubService = $this->getService(ActivityPubService::class);
+        $bazarListService = $this->getService(BazarListService::class);
+
+        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
+
+        if ($activityPubService->isEnabled($form)) {
+            $entries = $bazarListService->getEntries([
+                'idtypeannonce' => $formId,
+                'ordre' => 'asc',
+                'queries' => '',
+                // TODO Handle pagination
+                // 'nb' => 100 
+            ]);
+
+            return new ApiResponse([
+                '@context' => "https://www.w3.org/ns/activitystreams",
+                'type' => 'OrderedCollection',
+                'id' => $activityPubService->getFormCollectionUri($form, 'following'),
+                'totalItems' => count($entries),
+                'orderedItems' => array_map(function ($entry) use ($form, $activityPubService) {
+                    $object = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
+                    unset($object['@context']);
+                    $published = new \DateTime($entry['date_creation_fiche']);
+                    return [
+                        'type' => 'Create',
+                        'actor' => $activityPubService->getFormActorUri($form),
+                        'published' => $published->format(\DateTime::ISO8601),
+                        'object' => $object,
+                        'to' => [$activityPubService->getFormCollectionUri($form, 'followers'), 'https://www.w3.org/ns/activitystreams#Public'],
+                    ];
+                }, array_values($entries)),
+            ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
+
+            return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
+        } else {
+            throw new NotFoundHttpException();
+        }
+    }
+
+    /**
+     * @Route("/api/webfinger", methods={"GET"}, options={"acl":{"public"}})
+     */
+    public function getWebfinger(Request $request)
+    {
+        $webfingerService = $this->getService(WebfingerService::class);
+        $activityPubService = $this->getService(ActivityPubService::class);
+
+        $handle = substr($request->query->get('resource'), 5); // Remove 'acct:' prefix
+
+        $matches = $webfingerService->splitHandle($handle);
+
+        $form = $this->getService(FormManager::class)->findByActivityPubUsername($matches['user']);
+
+        if ($form) {
+            $actorUri = $activityPubService->getFormActorUri($form);
+            $actor = $webfingerService->formatLocalActor($handle, $actorUri);
+
+            return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/json']);
+        } else {
+            throw new NotFoundHttpException();
+        }
     }
 
     /**
@@ -211,18 +369,22 @@ class ApiController extends YesWikiController
         // Put data inside LDP container
         $form = $this->getService(FormManager::class)->getOne($formId);
 
+        $resources = array_map(function ($entry) use ($form) {
+            return $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry, true);
+        }, array_values($entries));
+
+        $context = !empty($resources) ? ($resources[0]['@context'] ?? null) : null;
+        foreach ($resources as &$resource) {
+            unset($resource['@context']);
+        }
+
         return new ApiResponse(
             [
-                '@context' => (array)json_decode($form['bn_sem_context']) ?: $form['bn_sem_context'],
+                '@context' => $context,
                 '@id' => $this->wiki->Href('fiche/' . $formId, 'api'),
                 '@type' => ['ldp:Container', 'ldp:BasicContainer'],
                 'dcterms:title' => $form['bn_label_nature'],
-                'ldp:contains' => array_map(function ($entry) use ($form) {
-                    $resource = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry, true);
-                    unset($resource['@context']);
-
-                    return $resource;
-                }, array_values($entries)),
+                'ldp:contains' => $resources,
             ],
             Response::HTTP_OK,
             ['Content-Type: application/ld+json; charset=UTF-8']

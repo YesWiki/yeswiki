@@ -22,8 +22,6 @@ abstract class BazarField implements \JsonSerializable
     protected $hint;         // 10
     protected $readAccess;   // 11
     protected $writeAccess;  // 12
-    protected $semanticPredicate; // 14
-
     // How the field is identified in the Bazar entry
     protected $propertyName;
 
@@ -39,7 +37,6 @@ abstract class BazarField implements \JsonSerializable
     protected const FIELD_HINT = 10;
     protected const FIELD_READ_ACCESS = 11;
     protected const FIELD_WRITE_ACCESS = 12;
-    protected const FIELD_SEMANTIC_PREDICATE = 14;
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -56,10 +53,6 @@ abstract class BazarField implements \JsonSerializable
         $this->hint = $values[self::FIELD_HINT];
         $this->readAccess = str_replace(',', "\n", $values[self::FIELD_READ_ACCESS]);
         $this->writeAccess = str_replace(',', "\n", $values[self::FIELD_WRITE_ACCESS]);
-        $this->semanticPredicate = $values[self::FIELD_SEMANTIC_PREDICATE];
-        $this->semanticPredicate = strpos($this->semanticPredicate, ',')
-                ? array_map('trim', explode(',', $this->semanticPredicate))
-            : $this->semanticPredicate;
 
         // By default, the entry ID is the field name
         $this->propertyName = $values[self::FIELD_NAME];
@@ -303,11 +296,6 @@ abstract class BazarField implements \JsonSerializable
         return $this->writeAccess;
     }
 
-    public function getSemanticPredicate()
-    {
-        return $this->semanticPredicate;
-    }
-
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
@@ -323,7 +311,6 @@ abstract class BazarField implements \JsonSerializable
             'helper' => $this->getHint(),
             'read_acl' => $this->getReadAccess(),
             'write_acl' => $this->getWriteAccess(),
-            'sem_type' => $this->getSemanticPredicate(),
         ];
     }
 

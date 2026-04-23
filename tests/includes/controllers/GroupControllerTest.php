@@ -2,6 +2,9 @@
 
 namespace YesWiki\Test\Core\Controller;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
@@ -13,14 +16,18 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(GroupController::class, '__construct')]
+#[CoversMethod(GroupController::class, 'create')]
+#[CoversMethod(GroupController::class, 'getMembers')]
+#[CoversMethod(GroupController::class, 'delete')]
+#[CoversMethod(GroupController::class, 'add')]
+#[CoversMethod(GroupController::class, 'update')]
+#[CoversMethod(GroupController::class, 'removeMembers')]
 class GroupControllerTest extends YesWikiTestCase
 {
     public const INVALID_CHAR = '+-_*=.:,?';
     public const CHARS_FOR_GROUP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-    /**
-     * @covers \GroupController::__construct
-     */
     public function testGroupControllerExisting(): GroupController
     {
         $wiki = $this->getWiki();
@@ -29,19 +36,16 @@ class GroupControllerTest extends YesWikiTestCase
         return $wiki->services->get(GroupController::class);
     }
 
-    public function dataProviderTestCreate()
+    public static function dataProviderTestCreate()
     {
-        $wiki = $this->getWiki();
+        $wiki = static::getWiki();
         $invalid_group_name = $wiki->generateRandomString(5, self::INVALID_CHAR) . $wiki->generateRandomString(10);
         $valid_group_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $new_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $included_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
 
         $userController = $wiki->services->get(UserController::class);
         $user_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $userController->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
-
-        $groupController = $wiki->services->get(GroupController::class);
 
         // groupname, error type, members
         return [
@@ -52,11 +56,8 @@ class GroupControllerTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * @depends testGroupControllerExisting
-     * @covers \GroupController::create
-     * @dataProvider dataProviderTestCreate
-     */
+    #[Depends('testGroupControllerExisting')]
+    #[DataProvider('dataProviderTestCreate')]
     public function testCreate(
         string $groupname,
         int $result_type,
@@ -78,12 +79,9 @@ class GroupControllerTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @depends testGroupControllerExisting
-     * @depends testCreate
-     * @covers \GroupController::getMembers
-     * @dataProvider dataProviderTestCreate
-     */
+    #[Depends('testGroupControllerExisting')]
+    #[Depends('testCreate')]
+    #[DataProvider('dataProviderTestCreate')]
     public function testGetMembers(string $groupname, int $result_type, array $members, GroupController $groupcontroller)
     {
         if ($result_type == 0) {
@@ -102,12 +100,9 @@ class GroupControllerTest extends YesWikiTestCase
         }
     }
 
-    /**
-     * @depends testGroupControllerExisting
-     * @depends testCreate
-     * @covers \GroupController::delete
-     * @dataProvider dataProviderTestCreate
-     */
+    #[Depends('testGroupControllerExisting')]
+    #[Depends('testCreate')]
+    #[DataProvider('dataProviderTestCreate')]
     public function testDelete(string $groupname, int $result_type, array $members, GroupController $groupcontroller)
     {
         if ($result_type == 0) {
@@ -129,9 +124,9 @@ class GroupControllerTest extends YesWikiTestCase
         }
     }
 
-    public function dataProviderTestAdd()
+    public static function dataProviderTestAdd()
     {
-        $wiki = $this->getWiki();
+        $wiki = static::getWiki();
         $valid_group_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $new_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $third_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
@@ -162,13 +157,9 @@ class GroupControllerTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * @depends testGroupControllerExisting
-     * @depends testCreate
-     * @covers \GroupController::add
-     * @covers \GroupController::update
-     * @dataProvider dataProviderTestAdd
-     */
+    #[Depends('testGroupControllerExisting')]
+    #[Depends('testCreate')]
+    #[DataProvider('dataProviderTestAdd')]
     public function testAdd(string $groupname, int $result_type, array $members, GroupController $groupcontroller)
     {
         if ($result_type == 0) {
@@ -188,9 +179,9 @@ class GroupControllerTest extends YesWikiTestCase
         }
     }
 
-    public function dataProviderTestRemoveMembers()
+    public static function dataProviderTestRemoveMembers()
     {
-        $wiki = $this->getWiki();
+        $wiki = static::getWiki();
         $valid_group_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $new_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $not_existing_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
@@ -215,12 +206,9 @@ class GroupControllerTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * @depends testGroupControllerExisting
-     * @depends testCreate
-     * @covers \GroupController::removeMembers
-     * @dataProvider dataProviderTestRemoveMembers
-     */
+    #[Depends('testGroupControllerExisting')]
+    #[Depends('testCreate')]
+    #[DataProvider('dataProviderTestRemoveMembers')]
     public function testRemoveMembers(string $groupname, int $result_type, array $members, GroupController $groupcontroller)
     {
         if ($result_type == 0) {

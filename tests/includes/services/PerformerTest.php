@@ -2,18 +2,18 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(Performer::class, '__construct')]
+#[CoversMethod(Performer::class, 'list')]
 class PerformerTest extends YesWikiTestCase
 {
-    /**
-     * @covers \Performer::__construct
-     *
-     * @return Performer $performer
-     */
     public function testPerformerExisting(): Performer
     {
         $wiki = $this->getWiki();
@@ -22,11 +22,8 @@ class PerformerTest extends YesWikiTestCase
         return $wiki->services->get(Performer::class);
     }
 
-    /**
-     * @depends testPerformerExisting
-     * @dataProvider listProvider
-     * @covers \Performer::list
-     */
+    #[Depends('testPerformerExisting')]
+    #[DataProvider('listProvider')]
     public function testList(string $objectType, Performer $performer)
     {
         $list = $performer->list($objectType);
@@ -37,7 +34,7 @@ class PerformerTest extends YesWikiTestCase
         }
     }
 
-    public function listProvider()
+    public static function listProvider()
     {
         // objectType
         return [

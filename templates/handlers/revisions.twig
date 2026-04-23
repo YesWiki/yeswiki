@@ -20,10 +20,10 @@
 
     {# Timeline #}
     <div class="timeline-container">
-      <template v-for="revision in revisions">
-        <div class="timeline-item" :key="revision.id"
+      <template v-for="revision in revisions" :key="revision.id">
+        <div class="timeline-item"
             :style="timelineItemStyle(revision)"
-            :class="{active: selectedRevision == revision}"
+            :class="{active: selectedRevision.id === revision.id}"
             @click="selectedRevision = revision">
         </div>
         <span class="timeline-item-text" :style="timelineItemStyle(revision, false)">
@@ -35,7 +35,7 @@
 
     {# Selected Revision Title with buttons #}
     <div class="revision-title-container">
-      <i class="fa fa-chevron-left fa-4x" @click="moveRevision(true)" :disabled="selectedRevision == firstRevision"></i>
+      <i class="fa fa-chevron-left fa-4x" @click="moveRevision(true)" :disabled="isFirstRevision || null"></i>
       <div class="text-center revision-title">
         <h3 class="text-secondary-1">
           {{ _t('REVISION_VERSION') ~ "{{selectedRevision.number }}" }}
@@ -43,11 +43,11 @@
           {{ _t('REVISION_BY') ~ " {{ selectedRevision.user }}" }}
         </h3>        
          <a :href="restoreUrl" class="btn btn-success btn-restore"
-            :disabled="selectedRevision == lastRevision"
-            v-text="selectedRevision == lastRevision ? '{{ _t('CURRENT_VERSION') }}' : '{{ _t('RESTORE_REVISION') }}'">
+            :class="{ disabled: isLastRevision }"
+            v-text="isLastRevision ? '{{ _t('CURRENT_VERSION') }}' : '{{ _t('RESTORE_REVISION') }}'">
         </a>
       </div>
-      <i class="fa fa-chevron-right fa-4x" @click="moveRevision(false)" :disabled="selectedRevision == lastRevision"></i>
+      <i class="fa fa-chevron-right fa-4x" @click="moveRevision(false)" :disabled="isLastRevision || null"></i>
     </div>
     
     {# View Types Selector #}
@@ -55,7 +55,7 @@
       <li v-for="label, type in viewTypes" role="presentation"
           :class="{active: selectedViewType == type}"
           @click="selectedViewType = type"
-          v-show="type != 'diff' || selectedRevision != lastRevision">
+          v-show="type != 'diff' || !isLastRevision">
           <a v-text="label"></a>
       </li>
       <label class="code-or-preview"> 

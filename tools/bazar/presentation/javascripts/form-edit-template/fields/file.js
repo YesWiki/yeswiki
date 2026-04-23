@@ -1,5 +1,5 @@
 import renderHelper from './commons/render-helper.js'
-import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {
   attributes: {
@@ -17,9 +17,8 @@ export default {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'maxsize', 'authorizedExts'],
+  advancedAttributes: ['read', 'write', 'maxsize', 'authorizedExts'],
   // disabledAttributes: [],
   attributesMapping: { ...defaultMapping, ...{ 14: 'maxsize', 6: 'readlabel', 7: 'authorizedExts' } }
   // renderInput(field) {

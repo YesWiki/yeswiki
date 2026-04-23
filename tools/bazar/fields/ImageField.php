@@ -63,10 +63,44 @@ class ImageField extends FileField
         $output = '';
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
+        $isUrl = $this->isUrl($value);
         // javascript pour gerer la previsualisation
         // si une taille maximale est indiquée, on teste
         $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/image-field.js');
         $imgDefault = $this->getDefaultImageName($entry);
+
+        // Handle URL value
+        if ($isUrl) {
+            // Handle URL deletion
+            if (isset($_GET['suppr_image']) && urldecode($_GET['suppr_image']) === $value) {
+                if ($this->isAllowedToDeleteFile($entry, $value)) {
+                    $this->updateEntryAfterFileDelete($entry);
+                    $output = $this->render('@templates/alert-message.twig', [
+                        'type' => 'info',
+                        'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
+                    ]);
+                    // Return empty input after deletion
+                    return $output . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
+                } else {
+                    $output = $this->render('@templates/alert-message.twig', [
+                        'type' => 'info',
+                        'message' => _t('BAZ_DROIT_INSUFFISANT'),
+                    ]) . "\n";
+                }
+            }
+
+            return $output . $this->render('@bazar/inputs/image.twig', [
+                'value' => $value,
+                'isUrl' => true,
+                'downloadUrl' => $value,
+                'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . urlencode($value), false),
+                'image' => '<img src="' . htmlspecialchars($value) . '" class="img-responsive" alt="" />',
+                'isDefaultImage' => false,
+                'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
+                'maxSize' => $this->maxSize,
+            ]);
+        }
+
         if (
             !empty($value)
             || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
@@ -96,6 +130,7 @@ class ImageField extends FileField
 
                 return $output . ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', [
                     'value' => $img,
+                    'isUrl' => false,
                     'downloadUrl' => $this->getBasePath() . $img,
                     'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $img, false),
                     'image' => $this->getWiki()->render('@attach/display-image.twig', [
@@ -111,6 +146,7 @@ class ImageField extends FileField
                     ]),
                     'isDefaultImage' => empty($value) && !empty($imgDefault),
                     'isAllowedToDeleteFile' => empty($entry) || empty($value) ? false : $this->isAllowedToDeleteFile($entry, $value),
+                    'maxSize' => $this->maxSize,
                 ]);
             } else {
                 $this->updateEntryAfterFileDelete($entry);
@@ -122,7 +158,7 @@ class ImageField extends FileField
             }
         }
 
-        return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize]);
+        return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
     }
 
     /*
@@ -138,6 +174,25 @@ class ImageField extends FileField
     {
         $params = $this->getService(ParameterBagInterface::class);
         $value = $this->getValue($entry);
+
+        // Check if a URL was submitted
+        $urlPropertyName = $this->propertyName . '_url';
+        $urlValue = $entry[$urlPropertyName] ?? null;
+        if (!empty($urlValue) && $this->isUrl($urlValue)) {
+            return [
+                $this->propertyName => $urlValue,
+                'fields-to-remove' => [$urlPropertyName, 'oldimage_' . $this->propertyName],
+            ];
+        }
+
+        // Check if the current value is a URL (keep it if no new file uploaded)
+        if ($this->isUrl($value) && empty($_FILES[$this->propertyName]['name'])) {
+            return [
+                $this->propertyName => $value,
+                'fields-to-remove' => ['oldimage_' . $this->propertyName],
+            ];
+        }
+
         if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
             $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
             $rawFileName = in_array($rawFileName, [false, null], true) ? '' : htmlspecialchars(strip_tags($rawFileName));
@@ -154,8 +209,8 @@ class ImageField extends FileField
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
 
-                    if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '') {
-                        // delete previous files only if authorized (owner)
+                    if (isset($entry['oldimage_' . $this->propertyName]) && $entry['oldimage_' . $this->propertyName] != '' && !$this->isUrl($entry['oldimage_' . $this->propertyName])) {
+                        // delete previous files only if authorized (owner) and not a URL
                         $previousFileName = $entry['oldimage_' . $this->propertyName];
                         $this->securedDeleteImageAndCache($entry, $previousFileName);
                     }
@@ -207,6 +262,12 @@ class ImageField extends FileField
         if (!isset($value) || $value == '') {
             $value = $this->getDefaultImageName($entry);
         }
+
+        // Handle URL value - display image directly without resize
+        if ($this->isUrl($value)) {
+            return '<img src="' . htmlspecialchars($value) . '" class="' . htmlspecialchars($this->imageClass ?? '') . '" alt="" loading="lazy" />';
+        }
+
         if (isset($value) && $value != '' && file_exists($this->getBasePath() . $value)) {
             return $this->getWiki()->render('@attach/display-image.twig', [
                 'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',

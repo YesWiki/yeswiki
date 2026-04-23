@@ -26,6 +26,14 @@ const app = createApp({
   computed: {
     firstRevision() { return this.revisions[this.revisions.length - 1] },
     lastRevision() { return this.revisions[0] },
+    isFirstRevision() {
+      return this.selectedRevision && this.firstRevision &&
+        Vue.toRaw(this.selectedRevision) === Vue.toRaw(this.firstRevision)
+    },
+    isLastRevision() {
+      return this.selectedRevision && this.lastRevision &&
+        Vue.toRaw(this.selectedRevision) === Vue.toRaw(this.lastRevision)
+    },
     restoreUrl() { return wiki.url(`${wiki.pageTag}/revisions`, { restoreRevisionId: this.selectedRevision.id }) },
     previewUrl() { return wiki.url(`${wiki.pageTag}/iframe`, { time: this.selectedRevision.phpTime, iframelinks: 0 }) }
   },

@@ -2,6 +2,9 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Throwable;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
@@ -11,13 +14,15 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(UserManager::class, '__construct')]
+#[CoversMethod(UserManager::class, 'getAll')]
+#[CoversMethod(UserManager::class, 'getOneByName')]
+#[CoversMethod(UserManager::class, 'getOneByEmail')]
+#[CoversMethod(UserManager::class, 'create')]
+#[CoversMethod(UserManager::class, 'delete')]
+#[CoversMethod(UserManager::class, 'update')]
 class UserManagerTest extends YesWikiTestCase
 {
-    /**
-     * @covers \UserManager::__construct
-     *
-     * @return UserManager $userManager
-     */
     public function testUserManagerExisting(): UserManager
     {
         $wiki = $this->getWiki();
@@ -26,12 +31,7 @@ class UserManagerTest extends YesWikiTestCase
         return $wiki->services->get(UserManager::class);
     }
 
-    /**
-     * @depends testUserManagerExisting
-     * @covers \UserManager::getAll
-     *
-     * @return array $users
-     */
+    #[Depends('testUserManagerExisting')]
     public function testGetAll(UserManager $userManager): array
     {
         $users = $userManager->getAll();
@@ -41,11 +41,8 @@ class UserManagerTest extends YesWikiTestCase
         return $users;
     }
 
-    /**
-     * @depends testUserManagerExisting
-     * @depends testGetAll
-     * @covers \UserManager::getOneByName
-     */
+    #[Depends('testUserManagerExisting')]
+    #[Depends('testGetAll')]
     public function testGetOneByName(UserManager $userManager, array $users)
     {
         $firstUser = $users[array_key_first($users)];
@@ -55,11 +52,8 @@ class UserManagerTest extends YesWikiTestCase
         $this->assertSame($user['email'], $firstUser['email']);
     }
 
-    /**
-     * @depends testUserManagerExisting
-     * @depends testGetAll
-     * @covers \UserManager::getOneByEmail
-     */
+    #[Depends('testUserManagerExisting')]
+    #[Depends('testGetAll')]
     public function testGetOneByEmail(UserManager $userManager, array $users)
     {
         $firstUser = $users[array_key_first($users)];
@@ -69,7 +63,7 @@ class UserManagerTest extends YesWikiTestCase
         $this->assertSame($user['email'], $firstUser['email']);
     }
 
-    public function dataProviderTestCreate()
+    public static function dataProviderTestCreate()
     {
         // name, email, UserNameExist, EmailExist, Other Exception
         return [
@@ -82,13 +76,10 @@ class UserManagerTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * @covers \UserManager::create
-     * @depends testUserManagerExisting
-     * @depends testGetOneByName
-     * @depends testGetOneByEmail
-     * @dataProvider dataProviderTestCreate
-     */
+    #[Depends('testUserManagerExisting')]
+    #[Depends('testGetOneByName')]
+    #[Depends('testGetOneByEmail')]
+    #[DataProvider('dataProviderTestCreate')]
     public function testCreate(
         string $name,
         string $email,
@@ -182,11 +173,8 @@ class UserManagerTest extends YesWikiTestCase
         return $user;
     }
 
-    /**
-     * @depends testUserManagerExisting
-     * @depends testCreate
-     * @covers \UserManager::delete
-     */
+    #[Depends('testUserManagerExisting')]
+    #[Depends('testCreate')]
     public function testDelete(UserManager $userManager)
     {
         $user = $this->createRandomUser($userManager);
@@ -203,12 +191,12 @@ class UserManagerTest extends YesWikiTestCase
         $this->assertNull($createdUser);
     }
 
-    public function dataProviderTestUpdate()
+    public static function dataProviderTestUpdate()
     {
         // newValues, email, UserNameExist, EmailExist, Other Exception
         return [
             'motto update ok' => [[
-                'motto' => $this->randomString(50),
+                'motto' => self::randomString(50),
             ], '', false, false, false],
             'revisioncount update ok' => [[
                 'revisioncount' => rand(1, 60),
@@ -239,7 +227,7 @@ class UserManagerTest extends YesWikiTestCase
             'email update empty' => [[], 'empty', false, false, true],
             'email update existing' => [[], 'firstUser', false, true, false],
             'update all ok' => [[
-                'motto' => $this->randomString(50),
+                'motto' => self::randomString(50),
                 'revisioncount' => rand(1, 60),
                 'changescount' => rand(1, 60),
                 'show_comments' => 'Y',
@@ -248,13 +236,10 @@ class UserManagerTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * @depends testUserManagerExisting
-     * @depends testCreate
-     * @depends testDelete
-     * @dataProvider dataProviderTestUpdate
-     * @covers \UserManager::update
-     */
+    #[Depends('testUserManagerExisting')]
+    #[Depends('testCreate')]
+    #[Depends('testDelete')]
+    #[DataProvider('dataProviderTestUpdate')]
     public function testUpdate(
         array $newValues,
         string $email,
@@ -339,7 +324,7 @@ class UserManagerTest extends YesWikiTestCase
      *
      * @param string $charset optional list of chars
      */
-    private function randomString(
+    private static function randomString(
         int $length,
         string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     ): string {

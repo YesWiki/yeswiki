@@ -1,4 +1,4 @@
-import { readConf, writeconf, semanticConf } from './commons/attributes.js'
+import { readConf, writeconf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -11,7 +11,6 @@ export default {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
   // disabledAttributes: [],
   renderInput(fieldData) {

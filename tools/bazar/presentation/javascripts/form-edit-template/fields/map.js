@@ -1,4 +1,4 @@
-import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 import renderHelper from './commons/render-helper.js'
 
 export default {
@@ -30,9 +30,8 @@ export default {
     max_geometries: { label: _t('BAZ_FORM_EDIT_MAP_MAX_GEOMETRIES'), value: '' },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'geolocate', 'autocomplete_other', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view', 'geometries', 'max_geometries'],
+  advancedAttributes: ['read', 'write', 'geolocate', 'autocomplete_other', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view', 'geometries', 'max_geometries'],
   // disabledAttributes: [],
   attributesMapping: {
   	...defaultMapping,

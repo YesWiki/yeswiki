@@ -2,15 +2,14 @@
 
 namespace YesWiki\Test\Core;
 
+use PHPUnit\Framework\Attributes\CoversMethod;
 use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
 
+#[CoversMethod(Wiki::class, '__construct')]
 class YesWikiTest extends YesWikiTestCase
 {
-    /**
-     * @covers \Wiki::__construct
-     */
     public function testInitWiki(): Wiki
     {
         $wiki = $this->getWiki();

@@ -17,7 +17,7 @@
     ]
   },
   "require": {
-    "php": "^7.3 || ^8.0",
+    "php": "^8.3",
     "ext-ctype": "*",
     "ext-curl": "*",
     "ext-fileinfo": "*",
@@ -43,6 +43,7 @@
     "symfony/console": "^5.2",
     "symfony/dependency-injection": "^5.1",
     "symfony/event-dispatcher": "^5.4",
+    "symfony/http-client": "^5.4",
     "symfony/http-foundation": "^5.1",
     "symfony/http-kernel": "^5.3.12",
     "symfony/process": "^5.4",
@@ -72,7 +73,7 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.4",
-    "phpunit/phpunit": "^9",
+    "phpunit/phpunit": "^12",
     "symfony/var-dumper": "^5.1"
   },
   "config": {
@@ -82,7 +83,7 @@
     },
     "optimize-autoloader": true,
     "platform": {
-      "php": "7.3.0"
+      "php": "8.3.0"
     },
     "platform-check": true,
     "sort-packages": true

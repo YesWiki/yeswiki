@@ -4,11 +4,9 @@ const FALLBACK_LOCALE = 'fr'// do not change it
 if (!AVAILABLE_LOCALES.includes(locale)) locale = FALLBACK_LOCALE
 
 window.$docsify = {
-  themeColor: '#1a89a0',
   loadSidebar: true,
   loadNavbar: true,
   subMaxLevel: 3,
-  topMargin: 70,
   relativePath: true,
   auto2top: true,
   alias: {
@@ -17,16 +15,25 @@ window.$docsify = {
   },
   search: {
     // maxAge: 0, // when developing, override cache by setting maxAge to 0. Also you need to clear your localStorage
-    placeholder: {
-      '/docs/fr/': 'Rechercher...',
-      '/': 'Search...' // default to English
-    },
-    noData: {
-      '/docs/fr/': 'Pas de résultats',
-      '/': 'No results' // default to English
-    },
+    placeholder: locale === 'fr' ? 'Rechercher...' : 'Search...',
+    noData: locale === 'fr' ? 'Pas de résultats' : 'No results',
     namespace: 'yeswiki-doc',
-    depth: 3 // which parent title to display in the search result
+    depth: 3, // which parent title to display in the search result
+    paths: [
+      `/docs/${locale}/README`,
+      `/docs/${locale}/webmaster`,
+      `/docs/${locale}/prise-en-main`,
+      `/docs/${locale}/bazar`,
+      `/docs/${locale}/admin`,
+      `/docs/${locale}/communaute`,
+      `/docs/${locale}/documentation`,
+      `/docs/${locale}/dev`,
+      `/docs/${locale}/activitypub`,
+      `/docs/${locale}/asso-finances`,
+      `/docs/${locale}/semantic`,
+      `/docs/${locale}/usage-avance`,
+      ...extensions.map(ext => `/${ext.docPath}`)
+    ]
   },
   copyCode: {
     buttonText: {
@@ -41,6 +48,29 @@ window.$docsify = {
   },
   plugins: [
     function(hook, vm) {
+      // In docsify v5, the active sidebar link detection changed from prefix matching to
+      // exact URL matching. The dummy [Doc](/) link no longer matches any page except the
+      // root, so the heading-based sub-sidebar is never generated.
+      // Fix: capture it in afterEach (before resetToc() is called) and inject in doneEach.
+      let pendingSubSidebar = null
+      hook.afterEach((html) => {
+        if (vm.config.subMaxLevel > 0) {
+          const subHtml = vm.compiler.subSidebar(vm.config.subMaxLevel) || ''
+          pendingSubSidebar = subHtml.includes('<li>') ? subHtml : null
+        }
+        return html
+      })
+
+      hook.doneEach(() => {
+        if (pendingSubSidebar) {
+          const firstLi = document.querySelector('.sidebar-nav > ul > li')
+          if (firstLi && !firstLi.querySelector('.app-sub-sidebar')) {
+            firstLi.innerHTML += pendingSubSidebar
+          }
+          pendingSubSidebar = null
+        }
+      })
+
       hook.ready(() => {
         // Original code by @rizdaprasetya and further improved with the assistance of ChatGPT, an AI language model by OpenAI
         // true = show debug log
@@ -88,7 +118,7 @@ window.$docsify = {
                   requestAnimationFrame(() => {
                     // Scroll smoothly to the element's top position
                     window.scrollTo({
-                      top: (targetElement.offsetTop + targetElement.offsetParent?.offsetTop || 0) - 60,
+                      top: (targetElement.offsetTop + targetElement.offsetParent?.offsetTop || 0) - 160,
                       behavior: 'smooth'
                     })
                   })
@@ -163,6 +193,17 @@ window.$docsify = {
           document.querySelector('aside').classList.remove('open')
         })
         document.querySelector('main').appendChild(backdrop)
+
+        // Back to top button
+        const backToTop = document.createElement('button')
+        backToTop.classList = 'back-to-top'
+        backToTop.setAttribute('aria-label', locale === 'fr' ? 'Retour en haut' : 'Back to top')
+        backToTop.innerHTML = '<i class="gg-arrow-up"></i>'
+        backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }))
+        document.querySelector('main').appendChild(backToTop)
+        window.addEventListener('scroll', () => {
+          backToTop.classList.toggle('visible', window.scrollY > 300)
+        })
       })
     }
   ]

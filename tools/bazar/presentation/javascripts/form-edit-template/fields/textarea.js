@@ -1,4 +1,4 @@
-import { readConf, writeconf, semanticConf, defaultMapping } from './commons/attributes.js'
+import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {
   field: {
@@ -26,9 +26,8 @@ export default {
     },
     read: readConf,
     write: writeconf,
-    semantic: semanticConf
   },
-  advancedAttributes: ['read', 'write', 'semantic', 'pattern', 'syntax', 'rows'],
+  advancedAttributes: ['read', 'write', 'pattern', 'syntax', 'rows'],
   // disabledAttributes: [],
   attributesMapping: { ...defaultMapping, ...{ 4: 'rows', 7: 'syntax' } }
   // renderInput(fieldData) {},

@@ -25,6 +25,7 @@
           {{ _t('BAZ_ECRITE') }}
           {{ owner|raw }}
           <span class="category"> ({{form.bn_label_nature ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.bn_label_nature:'') }})
+          {% if sourceUrl %}- <a href="{{ sourceUrl }}" target="_blank">Source</a>{% endif %}
           <br />          
           <span class="date_creation">
             {{ _t('BAZ_DATE_CREATION')|capitalize }}
@@ -63,7 +64,7 @@
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>
           {% endif %}
-      {% if isAdmin %}
+        {% if canDuplicate %}
           <span class="dropup">
             <a
               title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ entryId }}"

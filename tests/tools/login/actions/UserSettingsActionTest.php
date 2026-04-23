@@ -2,6 +2,8 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
@@ -22,11 +24,8 @@ class UserSettingsActionTest extends YesWikiTestCase
         return $wiki->services->get(Wiki::class);
     }
 
-    /**
-     * @depends testWikiExisting
-     * @covers \UserSettingsAction::displayForm
-     * @dataProvider displayFormProvider
-     */
+    #[Depends('testWikiExisting')]
+    #[DataProvider('displayFormProvider')]
     public function testDisplayForm($mode, Wiki $wiki)
     {
         switch ($mode) {
@@ -40,13 +39,12 @@ class UserSettingsActionTest extends YesWikiTestCase
         }
     }
 
-    public function displayFormProvider()
+    public static function displayFormProvider()
     {
         // acl , expected
         return [
             'not connected' => ['not connected'],
             'connected' => ['connected'],
-            // 'admin' => ['admin'],
         ];
     }
 
@@ -119,11 +117,8 @@ class UserSettingsActionTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression($rexExpStr, $output, '`oldpass` input badly set in usersettings.twig !');
     }
 
-    /**
-     * @depends testWikiExisting
-     * @depends testDisplayForm
-     * @covers \UserSettingsAction::displayForm
-     */
+    #[Depends('testWikiExisting')]
+    #[Depends('testDisplayForm')]
     public function testDisplayFormNotConnectedWithPostData(Wiki $wiki)
     {
         $email = strtolower($this->randomString(10)) . '@example.com';
@@ -160,7 +155,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         unset($_POST['name']);
     }
 
-    public function dataProvidertestSignup()
+    public static function dataProvidertestSignup()
     {
         // mode , suffix, expected result
         return [
@@ -169,15 +164,9 @@ class UserSettingsActionTest extends YesWikiTestCase
         ];
     }
 
-    /**
-     * @depends testWikiExisting
-     * @depends testDisplayForm
-     * @dataProvider dataProvidertestSignup
-     * @covers \UserSettingsAction::signup
-     *
-     * @param string $suffix
-     * @param bool   $expectedResult
-     */
+    #[Depends('testWikiExisting')]
+    #[Depends('testDisplayForm')]
+    #[DataProvider('dataProvidertestSignup')]
     public function testSignup($suffix, $expectedResult, Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
