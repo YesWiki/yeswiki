@@ -54,12 +54,12 @@ export function parseSearchParams(pParams) // Return params as a structured obje
  */
 
 export function mergeSearchParams(pParams1, pParams2, pOptions = { returnMode: 'string', overrideKeywords: false, overrideQuery: false }) {
-  	const vMerged = {}
+  const vMerged = {}
   let vQuery
   let vKeywords
 
-  const vParamsObject1 =	typeof (pParams1) == 'string' ? parseSearchParams(pParams1) : pParams1
-  const vParamsObject2 =	typeof (pParams2) == 'string' ? parseSearchParams(pParams2) : pParams2
+  const vParamsObject1 = typeof (pParams1) == 'string' ? parseSearchParams(pParams1) : pParams1
+  const vParamsObject2 = typeof (pParams2) == 'string' ? parseSearchParams(pParams2) : pParams2
 
   $.extend(true, vMerged, vParamsObject1, vParamsObject2)
 
@@ -98,9 +98,12 @@ export function mergeSearchParams(pParams1, pParams2, pOptions = { returnMode: '
       }
 
   if (vQuery !== undefined) {
-	    // Remove duplicates and rebuild the query string
-
-    vQuery = [...new Set(vQuery.map(({ name, operator, values }) => name + operator + values))].join('|')
+    // Remove duplicates and rebuild the query string
+    if (typeof vQuery === 'string') {
+      vQuery = [...new Set(vQuery.split('|'))].join('|')
+    } else {
+      vQuery = [...new Set(vQuery.map(({ name, operator, values }) => name + operator + values))].join('|')
+    }
 
     if (vQuery.trim() != '') vMerged.query = vQuery
   }
@@ -158,7 +161,7 @@ export function updateHash(pSavedHash = '', pKeywords = '', pSortField = '', pSo
     vQuery.push({
       name: cFilterId,
       operator: '==',
-      values:	pFilters[cFilterId]
+      values: pFilters[cFilterId]
         .map((pString) => pString
           .replace(/&lt;/g, '<')
           .replace(/&gt;/g, '>')
