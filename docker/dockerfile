@@ -1,6 +1,6 @@
 
 # Yeswiki dev image
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 RUN apt-get update && \
     apt-get install -y libfreetype-dev libjpeg-dev libpng-dev libwebp-dev libzlcore-dev libzip-dev git unzip mariadb-client && \
