@@ -16,7 +16,7 @@ services:
         depends_on:
           - yeswiki-db
         env_file: ./yeswiki.secrets
-        user: "${UID}:${UID}"
+        user: "${UID:-1000}:${UID:-1000}"
         command: /var/www/html/docker/entrypoint.sh
 
     yeswiki-db:
