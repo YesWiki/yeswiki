@@ -87,9 +87,10 @@ class FormController extends YesWikiController
                 if ($this->formIsValid($form)) {
                     $this->formManager->create($_POST);
 
-                    if ($this->activityPubService->isEnabled($form)) {
-                        $this->activityPubService->postCreateActivity($form);
-                    }
+                    /* mrflos : i think this is not used*/
+                    /* if ($this->activityPubService->isEnabled($form)) { */
+                    /*     $this->activityPubService->postCreateActivity($form); */
+                    /* } */
 
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
                 }
@@ -232,14 +233,14 @@ class FormController extends YesWikiController
         $this->activityPubService->removeFollowing($form, $actorUri);
 
         $this->activityPubService->postActivity([
-            "type" => "Undo", 
+            "type" => "Undo",
             "object" => [
-                "type" => "Follow", 
+                "type" => "Follow",
                 "actor" => $formActorUri,
-                "object" => $actorUri, 
-                "to" => $actorUri
-            ], 
-            "to" => $actorUri
+                "object" => $actorUri,
+                "to" => $actorUri,
+            ],
+            "to" => $actorUri,
         ], $form);
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWING_REMOVED', 'idformulaire' => $id], false));
@@ -254,7 +255,7 @@ class FormController extends YesWikiController
             _t('BAZ_SYNC_COMPLETE'),
             $stats['created'],
             $stats['updated'],
-            $stats['deleted']
+            $stats['deleted'],
         ));
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'idformulaire' => $id], false));
@@ -268,19 +269,19 @@ class FormController extends YesWikiController
         $this->activityPubService->removeFollower($form, $actorUri);
 
         $this->activityPubService->postActivity([
-            "type" => "Undo", 
+            "type" => "Undo",
             "object" => [
-                "type" => "Accept", 
+                "type" => "Accept",
                 "actor" => $formActorUri,
                 "object" => [
-                    "type" => "Follow", 
+                    "type" => "Follow",
                     "actor" => $formActorUri,
                     "object" => $actorUri,
                     "to" => $actorUri,
                 ],
-                "to" => $actorUri
-            ], 
-            "to" => $actorUri
+                "to" => $actorUri,
+            ],
+            "to" => $actorUri,
         ], $form);
 
         return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_FOLLOWER_REMOVED', 'idformulaire' => $id], false));
