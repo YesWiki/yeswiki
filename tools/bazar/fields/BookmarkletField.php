@@ -16,6 +16,7 @@ class BookmarkletField extends BazarField
     protected const FIELD_URL_FIELD = 3;
     protected const FIELD_DESCRIPTION_FIELD = 4;
     protected const FIELD_TEXT_FIELD = 5;
+    private const FIELD_CLASS_TYPE = 'BookmarkletField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -67,6 +68,18 @@ class BookmarkletField extends BazarField
         return $this->text;
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_URL_FIELD] = $fieldProps['urlField'];
+        $new[self::FIELD_DESCRIPTION_FIELD] = $fieldProps['descriptionField'];
+        $new[self::FIELD_TEXT_FIELD] = $fieldProps['text'];
+        ksort($new);
+        return $new;
+    }
+
+
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -74,6 +87,7 @@ class BookmarkletField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'urlField' => $this->getUrlField(),
                 'descriptionField' => $this->getDescriptionField(),
                 'text' => $this->getText(),

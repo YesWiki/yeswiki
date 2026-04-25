@@ -13,6 +13,7 @@ class CheckboxEntryField extends CheckboxField
 {
     public $isDistantJson;
     protected $baseUrl;
+    private const FIELD_CLASS_TYPE = 'CheckboxEntryField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -21,16 +22,15 @@ class CheckboxEntryField extends CheckboxField
 
         // load options only when needed but not at construct to prevent infinite loops
 
-        $wiki = $this->services->get(Wiki::class);
-        $this->displayFilterLimit = $wiki->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
-        $this->displaySelectAllLimit = empty($wiki->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
+        $this->displayFilterLimit = $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
+        $this->displaySelectAllLimit = empty($GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
             $this->displayFilterLimit :
-            $wiki->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
+            $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
         $this->formName = null;
         $this->normalDisplayMode = (in_array(
-            $wiki->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
+            $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
             array_keys(self::CHECKBOX_TWIG_LIST)
-        )) ? $wiki->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
+        )) ? $GLOBALS['wiki']->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
             self::CHECKBOX_DISPLAY_MODE_LIST;
         $this->dragAndDropDisplayMode = '@bazar/inputs/checkbox_drag_and_drop_entry.twig';
 
@@ -43,6 +43,18 @@ class CheckboxEntryField extends CheckboxField
             $this->baseUrl = null;
         }
     }
+
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize()
+        {
+            return array_merge(
+                parent::jsonSerialize(),
+                [
+                    'field_type' => self::FIELD_CLASS_TYPE,
+                ]
+            );
+        }
 
     protected function renderStatic($entry)
     {

@@ -21,6 +21,7 @@ class FileField extends BazarField
     protected const FIELD_MAX_SIZE = 14;
     protected const FIELD_READ_LABEL = 6;
     protected const FIELD_AUTHORIZED_EXTS_LABEL = 7;
+    private const FIELD_CLASS_TYPE = 'FileField';
 
     protected $attach;
     protected $maxSize;
@@ -69,7 +70,6 @@ class FileField extends BazarField
         $wiki = $this->getWiki();
         $value = $this->getValue($entry);
         $deletedFile = false;
-        $isUrl = $this->isUrl($value);
         $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/file-field.js');
 
         if (!empty($value) && !$isUrl) {
@@ -286,6 +286,15 @@ class FileField extends BazarField
         return $this->authorizedExts;
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_READ_LABEL] = $fieldProps['readLabel'] ?? '';
+        $new[self::FIELD_AUTHORIZED_EXTS_LABEL] = $fieldProps['authorizedExts'] ? implode(',',$fieldProps['authorizedExts']) : '';
+        ksort($new);
+        return $new;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -293,6 +302,7 @@ class FileField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'readLabel' => $this->getReadLabel(),
                 'authorizedExts' => $this->getAuthorizedExts(),
             ]

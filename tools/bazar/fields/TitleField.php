@@ -17,6 +17,7 @@ class TitleField extends BazarField
     protected $titleTemplate;
 
     protected const FIELD_TITLE_TEMPLATE = 1;
+    private const FIELD_CLASS_TYPE = 'TitleField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -103,5 +104,26 @@ class TitleField extends BazarField
         return $this->render('@bazar/fields/title.twig', [
             'value' => $this->getValue($entry),
         ]);
+    }
+
+    public static function mapToFieldArray($fieldProps): array
+        {
+           $new = parent::mapToFieldArray($fieldProps);
+           $new[self::FIELD_TITLE_TEMPLATE] = $fieldProps['titleTemplate'] ?? '';
+           ksort($new);
+           return $new;
+        }
+
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+                'field_type' => self::FIELD_CLASS_TYPE,
+                'titleTemplate' => $this->titleTemplate,
+            ]
+        );
     }
 }

@@ -22,6 +22,8 @@ abstract class BazarField implements \JsonSerializable
     protected $hint;         // 10
     protected $readAccess;   // 11
     protected $writeAccess;  // 12
+    protected $semanticPredicate; // 14
+
     // How the field is identified in the Bazar entry
     protected $propertyName;
 
@@ -37,9 +39,14 @@ abstract class BazarField implements \JsonSerializable
     protected const FIELD_HINT = 10;
     protected const FIELD_READ_ACCESS = 11;
     protected const FIELD_WRITE_ACCESS = 12;
+    protected const FIELD_SEMANTIC_PREDICATE = 14;
+    private const FIELD_CLASS_TYPE = 'BazarField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
+
+
+
         $this->services = $services;
 
         $this->type = $values[self::FIELD_TYPE];
@@ -53,6 +60,10 @@ abstract class BazarField implements \JsonSerializable
         $this->hint = $values[self::FIELD_HINT];
         $this->readAccess = str_replace(',', "\n", $values[self::FIELD_READ_ACCESS]);
         $this->writeAccess = str_replace(',', "\n", $values[self::FIELD_WRITE_ACCESS]);
+        $this->semanticPredicate = $values[self::FIELD_SEMANTIC_PREDICATE];
+        $this->semanticPredicate = strpos($this->semanticPredicate, ',')
+                ? array_map('trim', explode(',', $this->semanticPredicate))
+            : $this->semanticPredicate;
 
         // By default, the entry ID is the field name
         $this->propertyName = $values[self::FIELD_NAME];
@@ -86,6 +97,29 @@ abstract class BazarField implements \JsonSerializable
     public function getValueStructure()
     {
         return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
+    }
+
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = [];
+        $new[self::FIELD_TYPE] = $fieldProps['type'] ?? '';
+        $new[self::FIELD_NAME] = $fieldProps['name'] ?? '';
+        $new[self::FIELD_LABEL] = $fieldProps['label'] ?? '';
+        $new[self::FIELD_SIZE] = $fieldProps['size'] ?? '';
+        $new[self::FIELD_MAX_CHARS] = $fieldProps['maxChars'] ?? '';
+        $new[self::FIELD_DEFAULT] = $fieldProps['default'] ?? '';
+        $new[6] = '';
+        $new[7] = '';
+        $new[self::FIELD_REQUIRED] = $fieldProps['required'] ?? '';
+        $new[self::FIELD_SEARCHABLE] = $fieldProps['searchable'] ?? '';
+        $new[self::FIELD_HINT] = $fieldProps['helper'] ?? '';
+        $new[self::FIELD_READ_ACCESS] = $fieldProps['read_acl'] ?? '';
+        $new[self::FIELD_WRITE_ACCESS] = $fieldProps['write_acl'] ?? '';
+        $new[13] = '';
+        $new[self::FIELD_SEMANTIC_PREDICATE] = $fieldProps['sem_type'] ?? '';
+        $new[15] = '';
+        $new[16] = '';
+        return $new;
     }
 
     /*
@@ -296,6 +330,11 @@ abstract class BazarField implements \JsonSerializable
         return $this->writeAccess;
     }
 
+    public function getSemanticPredicate()
+    {
+        return $this->semanticPredicate;
+    }
+
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
@@ -311,6 +350,8 @@ abstract class BazarField implements \JsonSerializable
             'helper' => $this->getHint(),
             'read_acl' => $this->getReadAccess(),
             'write_acl' => $this->getWriteAccess(),
+            'sem_type' => $this->getSemanticPredicate(),
+            'field_type' => self::FIELD_CLASS_TYPE,
         ];
     }
 

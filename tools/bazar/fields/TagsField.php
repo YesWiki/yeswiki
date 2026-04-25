@@ -11,6 +11,8 @@ use YesWiki\Tags\Service\TagsManager;
  */
 class TagsField extends EnumField
 {
+    private const FIELD_CLASS_TYPE = 'TagsField';
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);

@@ -23,6 +23,7 @@ class TabsField extends LabelField
     protected const FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB = 5;
     protected const FIELD_BTN_COLOR = 7;
     protected const FIELD_BTN_SIZE = 9;
+    private const FIELD_CLASS_TYPE = 'TabsField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -92,6 +93,19 @@ class TabsField extends LabelField
         return $this->btnClass;
     }
 
+    // LANG_FIXME not sure about this function
+    public static function mapToFieldArray($fieldProps): array
+    {
+       $new = parent::mapToFieldArray($fieldProps);
+       $new[self::FIELD_FORM_TITLES] = implode(',', $fieldProps['formTitles']);
+       $new[self::FIELD_VIEW_TITLES] = implode(',', $fieldProps['viewTitles']);
+       $new[self::FIELD_BTN_COLOR] = $fieldProps['btnClass'];
+       $new[self::FIELD_BTN_SIZE] =  $fieldProps['btnClass'];
+       $new[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] = $fieldProps['moveSubmitButtonToLastTab'];
+       ksort($new);
+       return $new;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -99,6 +113,7 @@ class TabsField extends LabelField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'formTitles' => $this->getFormTitles(),
                 'viewTitles' => $this->getViewTitles(),
                 'moveSubmitButtonToLastTab' => $this->getMoveSubmitButtonToLastTab(),

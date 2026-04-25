@@ -16,6 +16,7 @@ class SelectEntryField extends EnumField
     protected $baseUrl;
 
     protected const FIELD_DISPLAY_METHOD = 3;
+    private const FIELD_CLASS_TYPE = 'SelectEntryField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -67,6 +68,7 @@ class SelectEntryField extends EnumField
             $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
+        $entryUrl = explode('&', $entryUrl);
         return $this->render('@bazar/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value],
@@ -85,5 +87,27 @@ class SelectEntryField extends EnumField
     public function isEnumEntryField(): bool
     {
         return true;
+    }
+
+    // LANG_FIXME not sure about this function
+    public static function mapToFieldArray($fieldProps): array
+    {
+       $new = parent::mapToFieldArray($fieldProps);
+       $new[self::FIELD_DISPLAY_METHOD] = $fieldProps['displayMethod'];
+       ksort($new);
+       return $new;
+    }
+
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+                'field_type' => self::FIELD_CLASS_TYPE,
+                'displayMethod' => $this->displayMethod,
+            ]
+        );
     }
 }

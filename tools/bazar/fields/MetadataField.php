@@ -90,6 +90,18 @@ class MetadataField extends BazarField
         return $this->favorite_preset;
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_THEME] = $fieldProps['theme'];
+        $new[self::FIELD_TEMPLATE] = $fieldProps['template'];
+        $new[self::FIELD_STYLE] = $fieldProps['style'];
+        $new[self::FIELD_BG_IMAGE] = $fieldProps['bgImage'];
+        $new[self::FIELD_CSS_PRESET] = $fieldProps['favorite_preset'];
+        ksort($new);
+        return $new;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()

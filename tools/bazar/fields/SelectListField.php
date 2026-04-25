@@ -9,6 +9,8 @@ use Psr\Container\ContainerInterface;
  */
 class SelectListField extends EnumField
 {
+    private const FIELD_CLASS_TYPE = 'SelectListField';
+
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);

@@ -15,6 +15,7 @@ class TextField extends BazarField
 
     protected const FIELD_PATTERN = 6;
     protected const FIELD_SUB_TYPE = 7;
+    private const FIELD_CLASS_TYPE = 'TextField';
 
     protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number', 'color'];
 
@@ -95,6 +96,15 @@ class TextField extends BazarField
         return $this->subType;
     }
 
+    public static function mapToFieldArray($fieldProps): array
+        {
+           $new = parent::mapToFieldArray($fieldProps);
+           $new[self::FIELD_PATTERN] = $fieldProps['pattern'];
+           $new[self::FIELD_SUB_TYPE] = $fieldProps['subType'];
+           ksort($new);
+           return $new;
+        }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -102,6 +112,7 @@ class TextField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'maxChars' => $this->getMaxChars(),
                 'size' => $this->getSize(),
                 'subType' => $this->getSubType(),
