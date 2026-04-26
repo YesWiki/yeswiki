@@ -50,6 +50,8 @@ class ReactionsField extends BazarField
     public const DEFAULT_OK_KEY = 'oui';
     public const MAX_REACTIONS = 1;
 
+    private const FIELD_CLASS_TYPE = 'ReactionsField';
+
     protected $ids;
     protected $labels;
     protected $images;
@@ -86,7 +88,6 @@ class ReactionsField extends BazarField
         $this->size = null;
         $this->maxChars = null;
 
-        $this->ids = trim($values[self::FIELD_IDS]);
         $this->ids = empty($this->ids) ? [] : explode(',', $this->ids);
         $this->ids = array_map('trim', $this->ids);
 
@@ -192,7 +193,7 @@ class ReactionsField extends BazarField
     public static function mapToFieldArray($fieldProps): array
     {
        $new = parent::mapToFieldArray($fieldProps);
-       $new[self::FIELD_IDS] = $fieldProps['ids'];
+       $new[self::FIELD_IDS] = join(',', $fieldProps['ids']);
        $new[self::FIELD_LABELS] = $fieldProps['labels'];
        $new[self::FIELD_IMAGES] = $fieldProps['images'];
        ksort($new);
