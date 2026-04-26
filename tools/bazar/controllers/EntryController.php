@@ -777,7 +777,7 @@ class EntryController extends YesWikiController
                 if (!empty($entries)) {
                     $firstEntry = $entries[array_keys($entries)[0]];
                     $message = !empty($form['bn_only_one_entry_message']) ? $form['bn_only_one_entry_message'] : _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM');
-                    $message = str_replace('{formName}', $form['bn_label_nature'], $message);
+                    $message = str_replace('{formName}', $form['title'], $message);
                     $results['output'] = $this->render('@templates/alert-message.twig', [
                         'type' => 'info',
                         'message' => $message,
