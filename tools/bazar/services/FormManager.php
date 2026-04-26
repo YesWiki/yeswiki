@@ -232,7 +232,7 @@ class FormManager
 
             list($template_list, $modify) = $this->prepare_with_special_parameters($form);
         } else {
-            list($template_list, $modify) = $this->prepare_with_special_parameter_old_form_format($form);
+            list($template_list, $modify) = $this->prepare_with_special_parameters_old_format($form);
         }
         $form['template'] = $template_list;
         $form['prepared'] = $this->prepareData($form);
@@ -255,10 +255,10 @@ class FormManager
                     $this->cachedForms[$form_prepared['body']['id']] = $form_prepared;
                 }
             }
+
+
             $this->cacheValidatedForAll = true;
         }
-
-
 
         // QUESTION : À quoi sert ce array_filter ?
         // return array_filter(
