@@ -38,7 +38,7 @@ class FormController extends YesWikiController
         if (isset($_POST['imported-form'])) {
             foreach ($_POST['imported-form'] as $id => $value) {
                 $value = json_decode($value, true);
-                $existingForms = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature']);
+                $existingForms = multiArraySearch($forms, 'title', $value['title']);
                 // If a form with the same name exist, replace it
                 if (count($existingForms) > 0) {
                     // Replace with ID of existing formulaire

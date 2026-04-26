@@ -229,6 +229,7 @@ class FormManager
             $form['bn_only_one_entry'] = $form['body']['only_one_entry'] ?? '';
             $form['bn_only_one_entry_message'] = $form['body']['one_entry_message'] ?? '';
             $form['bn_id_nature'] = $form['body']['id'];
+            $form['bn_label_nature'] = $form['body']['title'];
 
             list($template_list, $modify) = $this->prepare_with_special_parameters($form);
         } else {
