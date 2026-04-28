@@ -509,7 +509,7 @@ class EntryController extends YesWikiController
             }
         }
 
-        if ($form['bn_sem_type']) {
+        if (!empty($form['bn_sem_type'])) {
             $html['id_fiche'] = $entry['id_fiche'];
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
