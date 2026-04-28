@@ -249,7 +249,6 @@ class FormManager
         if (!$this->cacheValidatedForAll) {
             $forms =  $forms = $this->pageManager->getManyFromTriple('form');
             foreach ($forms as $form) {
-                dump($form);
                 if (!empty($form['id'])) {
                     // save only not empty formId
                     $form_prepared = $this->getFromRawData($form);
@@ -303,6 +302,19 @@ class FormManager
         }
 
         return $results;
+    }
+
+    /**
+     * get all entries for specified form.
+     * @param $formId page name of the formulaire
+     */
+    public function getEntries($formId, $columns = '*')
+    {
+        return $this->dbService->loadAll(<<<SQL
+        SELECT {$columns} from {$this->pageManager->pageTableName}
+        WHERE tag in (select resource from {$this->dbService->prefixTable('triples')} where value = 'fiche_bazar') and
+         JSON_VALUE(body, '$.id_typeannonce') = (SELECT  JSON_VALUE(body, '$.id') from {$this->pageManager->pageTableName} where tag = '{$formId}' and latest = 'Y')
+        SQL);
     }
 
     // TODO Pass a Form object instead of a raw array
@@ -419,13 +431,20 @@ class FormManager
                 $id = $this->getPageTagFromId($id);
         }
 
-        $this->clear($id);
 
-        $this->pageManager->deleteOrphaned($id);
+
+
+        $entries = $this->getEntries($id);
+        dump($entries);
+        $entries[] = $id;
+        $this->pageManager->deleteManyOrphaned($entries);
+
+
         // reset cache
         $this->cacheValidatedForAll = false;
 
-        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
+
+        return true;
     }
 
     public function clear($id)
@@ -548,7 +567,7 @@ class FormManager
                 } elseif ($value == '*') {
                     $new_line .= ' * ';
                 } else {
-                    $new_line .= $value;
+                    $new_line .= is_array($value) ? join(',', $value): $value;
                 }
                 $new_line .= '***';
             }

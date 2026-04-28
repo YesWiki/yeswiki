@@ -323,7 +323,6 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='http://outils-reseaux.org/_vocabulary/metadata'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
@@ -331,6 +330,40 @@ class PageManager
         $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
             'id' => $tag,
         ]);
+    }
+
+    /**
+     * Delete database entries depending on $tags
+     * @param array $tags : array of pages
+     */
+    public function deleteManyOrphaned($tags)
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+
+        $keys = array_flip($tags);
+        $escaped = array_map(function ($tag) { return $this->dbService->escape($tag); }, $tags);
+
+        $escaped = implode('\', \'', $escaped);
+        $escaped = "'" .$escaped. "'";
+
+        array_diff_key($this->ownersCache, $keys);
+        array_diff_key($this->pageCache, $keys);
+
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag in ({$escaped}) OR comment_on in ({$escaped})");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag in ({$escaped}) ");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag in ({$escaped}) ");
+        // Question : pourquoi fair des limite
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource` in ({$escaped})");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag in ({$escaped}) ");
+        // $this->tagsManager->deleteAll($tags);
+
+        foreach ($tags as $tag) {
+            $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
+            'id' => $tag,
+            ]);
+        }
     }
 
     /**
