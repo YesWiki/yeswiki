@@ -34,7 +34,7 @@ class FormManager
         ParameterBagInterface $params,
         SecurityController $securityController,
         ActivityPubService $activityPubService,
-        HttpSignatureService $httpSignatureService
+        HttpSignatureService $httpSignatureService,
     ) {
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
@@ -195,7 +195,7 @@ class FormManager
             function ($pKey) {
                 return intval($pKey) . '' === $pKey . '';
             },
-            ARRAY_FILTER_USE_KEY
+            ARRAY_FILTER_USE_KEY,
         );
     }
 
@@ -228,7 +228,7 @@ class FormManager
             $data['bn_id_nature'] = $this->findNewId();
         }
 
-        $activitypubEnabled = $this->activityPubService->isEnabled($data);
+        $activitypubEnabled = (int) $this->activityPubService->isEnabled($data);
 
         if ($activitypubEnabled) {
             $keyPair = $this->httpSignatureService->generateKeyPair();
@@ -239,24 +239,25 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
 
-        return $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('nature')
-            . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_template` ,`bn_sem_reverse_template`, `bn_activitypub_enable`, `bn_activitypub_username`, `bn_activitypub_private_key`)'
-            . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
-            . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
-            . ',`bn_condition`)'
-            . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
-            . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '","'
-            . $this->dbService->escape(_convert($data['bn_template'], YW_CHARSET, true)) . '", "'
-            . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '", "'
-            . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '", "'
-            . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '", '
-            . $activitypubEnabled . ', "'
-            . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '"'
-            . (isset($privateKey) ? ', "' . $privateKey . '"' : '')
-            . (isset($publicKey) ? ', "' . $publicKey . '"' : '')
-            . ($this->isAvailableOnlyOneEntryOption() ? ', "' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '"' : '')
-            . ($this->isAvailableOnlyOneEntryMessage() ? ', "' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '"' : '')
-            . ', "' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")');
+        $query = 'INSERT INTO ' . $this->dbService->prefixTable('nature')
+                    . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_template` ,`bn_sem_reverse_template`, `bn_activitypub_enable`, `bn_activitypub_username`, `bn_activitypub_private_key`, `bn_activitypub_public_key`'
+                    . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
+                    . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
+                    . ',`bn_condition`)'
+                    . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
+                    . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '", "'
+                    . $activitypubEnabled . '", "'
+                    . $this->dbService->escape(_convert($data['bn_activitypub_username'] ?? '', YW_CHARSET, true)) . '", "'
+                    . (isset($privateKey) ? $privateKey . '", "' : '", "')
+                    . (isset($publicKey) ? $publicKey . '", "' : '", "')
+                    . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '", "')
+                    . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '", "')
+            . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")';
+        return $this->dbService->query($query);
     }
 
     public function update($data)
@@ -270,9 +271,9 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
 
-        $activitypubEnabled = $this->activityPubService->isEnabled($data);
+        $activitypubEnabled = (int) $this->activityPubService->isEnabled($data);
 
-        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === NULL) {
+        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
             $keyPair = $this->httpSignatureService->generateKeyPair();
             $privateKey = $keyPair[0];
             $publicKey = $keyPair[1];
@@ -333,24 +334,24 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('acls') .
-                'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-                'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );'
+            'DELETE FROM' . $this->dbService->prefixTable('acls')
+                . 'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
+                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
+                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );',
         );
 
         // TODO use PageManager
         $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('pages') .
-                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-                'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';'
+            'DELETE FROM' . $this->dbService->prefixTable('pages')
+                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
+                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';',
         );
 
         // TODO use TripleStore
         $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('triples') .
-                'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-                'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";'
+            'DELETE FROM' . $this->dbService->prefixTable('triples')
+                . 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
+                . 'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";',
         );
     }
 
@@ -358,7 +359,9 @@ class FormManager
     {
         $vArrayKeys = array_keys($this->cachedForms);
 
-        $vArrayKeys = array_map(function ($Key) { return intval($Key); }, array_filter($vArrayKeys, function ($vKey) {
+        $vArrayKeys = array_map(function ($Key) {
+            return intval($Key);
+        }, array_filter($vArrayKeys, function ($vKey) {
             return intval($vKey) . '' === $vKey . '';
         }));
 

@@ -1,6 +1,6 @@
 
 # Yeswiki dev image
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 RUN apt-get update && \
     apt-get install -y libfreetype-dev libjpeg-dev libpng-dev libwebp-dev libzlcore-dev libzip-dev git unzip mariadb-client && \
@@ -26,6 +26,6 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | ba
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
   echo 'export NVM_DIR="/home/yeswiki/.nvm"' >> $HOME/.bashrc && \
   echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> $HOME/.bashrc && \
-  nvm install 20 && \
-  nvm alias default 20 && \
+  nvm install 22 && \
+  nvm alias default 22 && \
   corepack enable
