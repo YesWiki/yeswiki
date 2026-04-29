@@ -3,7 +3,9 @@
 namespace YesWiki\Core\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiController;
@@ -32,8 +34,6 @@ class ArchiveController extends YesWikiController
                     Response::HTTP_BAD_REQUEST
                 );
             } else {
-                $zipContent = file_get_contents($filePath);
-                $zipSize = filesize($filePath);
                 // to prevent existing headers because of handlers /show or others
                 $nbObLevels = ob_get_level();
                 for ($i = 1; $i < $nbObLevels; $i++) {
@@ -43,23 +43,17 @@ class ArchiveController extends YesWikiController
                     ob_start();
                 }
 
-                return new Response(
-                    $zipContent, // content
-                    Response::HTTP_OK,
-                    [   // headers
-                        'Access-Control-Allow-Origin' => '*',
-                        'Access-Control-Allow-Credentials' => 'true',
-                        'Access-Control-Allow-Headers' => 'X-Requested-With, Location, Slug, Accept, Content-Type',
-                        'Access-Control-Expose-Headers' => 'Location, Slug, Accept, Content-Type',
-                        'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
-                        'Access-Control-Max-Age' => '86400',
-                        // end of part inspired from ApiResponse
-                        //Set the Content-Type, Content-Disposition and Content-Length headers.
-                        'Content-Type' => 'application/zip',
-                        'Content-Disposition' => "attachment; filename=$id",
-                        'Content-Length' => $zipSize,
-                    ]
-                );
+                $response = new BinaryFileResponse($filePath);
+                $response->setContentDisposition(ResponseHeaderBag::DISPOSITION_ATTACHMENT, $id);
+                $response->headers->set('Content-Type', 'application/zip');
+                $response->headers->set('Access-Control-Allow-Origin', '*');
+                $response->headers->set('Access-Control-Allow-Credentials', 'true');
+                $response->headers->set('Access-Control-Allow-Headers', 'X-Requested-With, Location, Slug, Accept, Content-Type');
+                $response->headers->set('Access-Control-Expose-Headers', 'Location, Slug, Accept, Content-Type');
+                $response->headers->set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS, DELETE, PUT, PATCH');
+                $response->headers->set('Access-Control-Max-Age', '86400');
+
+                return $response;
             }
         } catch (\Throwable $pThrowable) {
             return new ApiResponse(
