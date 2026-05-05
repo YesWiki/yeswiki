@@ -3,7 +3,7 @@
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FieldFactory;
 use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
@@ -55,6 +55,7 @@ class ConvertTableNature2Pages extends YesWikiMigration
     {
         $pageManager = $this->getService(PageManager::class);
         $tripleStore = $this->getService(TripleStore::class);
+        $aclService = $this->getService(AclService::class);
         $formManager = new MigrationFormManager(
             $this->wiki,
             $this->dbService,
@@ -63,8 +64,12 @@ class ConvertTableNature2Pages extends YesWikiMigration
             $this->params,
             $this->getService(SecurityController::class),
             $this->getService(ActivityPubService::class),
-            $this->getService(HttpSignatureService::class)
+            $this->getService(HttpSignatureService::class),
+            $pageManager,
+            $tripleStore,
+            $this->getService(AclService::class),
         );
+
         $forms = $this->dbService->loadAll(
             "SELECT * FROM {$this->dbService->prefixTable(
                 'nature',
@@ -77,26 +82,24 @@ class ConvertTableNature2Pages extends YesWikiMigration
             foreach ($form['prepared'] as $i => $fields) {
                 $classType = get_class($fields);
                 $fields = json_decode(json_encode($fields), true);
+                $fields["order"] = $counter;
 
                 if (
                     (!isset($fields['name']) || $fields['name'] == '') &&
                     isset($fields['linkedObjectName'])
                 ) {
-                    $fields['name'] =
-                        $fields['type'] . $fields['linkedObjectName'];
+                    $id = $fields['type'] . $fields['linkedObjectName'];
                 }
-                $fields['name'] =
-                    $fields['name'] ?? $fields['type'] . '__' . $counter;
-                $counter++;
+                $id = $id ?? $fields['name'] ?? $fields['type'] . '__' . $counter;
                 if (isset($fields['options'])) {
                     unset($fields['options']);
                 }
                 $fieldExploded = explode('\\', $classType);
                 $fields['field_type'] = array_pop($fieldExploded);
-                $form_array[] = $fields;
+                $form_array[$id] = $fields;
                 $counter++;
             }
-            $id = 'form_' . genere_nom_wiki($form['bn_label_nature']);
+            $slug = getAvailableSlug($form['bn_label_nature']); //TODO changer pour slug et ajouter mettre les droits d'admin.
             $newform = [
                 'id' => $form['bn_id_nature'],
                 'title' => $form['bn_label_nature'],
@@ -112,14 +115,19 @@ class ConvertTableNature2Pages extends YesWikiMigration
                 'fields' => $form_array,
             ];
             $saved = $pageManager->save(
-                $id,
+                $slug,
                 json_encode($newform, JSON_FORCE_OBJECT),
                 '',
                 true,
             );
+
+            // give access only to admins
+            $this->aclService->save($slug, 'read', '@admins');
+            $this->aclService->save($slug, 'write', '@admins');
+
             if ($saved == 0) {
                 $tripleStore->create(
-                    $id,
+                    $slug,
                     TripleStore::TYPE_URI,
                     'form',
                     '',

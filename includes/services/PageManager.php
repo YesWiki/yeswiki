@@ -354,7 +354,6 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag in ({$escaped}) OR comment_on in ({$escaped})");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag in ({$escaped}) ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag in ({$escaped}) ");
-        // Question : pourquoi fair des limite
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource` in ({$escaped})");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag in ({$escaped}) ");
         // $this->tagsManager->deleteAll($tags);

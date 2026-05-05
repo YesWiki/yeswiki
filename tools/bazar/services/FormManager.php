@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\PageManager;
@@ -29,6 +30,7 @@ class FormManager
     protected $attach;
     protected $pageManager;
     protected $tripleStore;
+    protected $aclService;
 
     public function __construct(
         Wiki $wiki,
@@ -41,6 +43,7 @@ class FormManager
         HttpSignatureService $httpSignatureService,
         PageManager $pageManager,
         TripleStore $tripleStore,
+        AclService $aclService,
     ) {
         if (!class_exists('attach')) {
             include 'tools/attach/libs/attach.lib.php';
@@ -54,6 +57,7 @@ class FormManager
         $this->params = $params;
         $this->pageManager = $pageManager;
         $this->tripleStore = $tripleStore;
+        $this->aclService = $aclService;
 
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
@@ -155,12 +159,14 @@ class FormManager
         if (isset($form['bn_template'])) {
             $template_list = $this->parseTemplate($form['bn_template']);
         } else {
-            $template_list = $form['body'];
+            $template_list = $form;
         }
 
         $prepared = [];
         $modify = false;
-        foreach($template_list['fields'] as $key => $field) {
+
+        $fields = $template_list['fields'];
+        foreach($fields as $key => $field) {
             $cname = "YesWiki\\Bazar\\Field\\".$field['field_type'];
             $wikifield = $cname::mapToFieldArray($field);
 
@@ -218,18 +224,18 @@ class FormManager
             $form[$key] = _convert($value, 'ISO-8859-15');
         }
         if (isset($form['body'])) {
-            $form['body'] = json_decode($form['body'], true);
-            $form['description'] = $form['body']['description'];
-            $form['title'] = $form['body']['title'];
-            $form['bn_condition'] = $form['body']['condition'];
-            $form['bn_sem_context'] = $form['body']['semantic']['context'] ?? '';
-            $form['bn_sem_type'] = $form['body']['semantic']['type'] ?? '';
-            $form['bn_sem_use_template'] = $form['body']['semantic']['use_template'] ?? '' ;
-            $form['bn_condition'] = $form['body']['condition'] ?? '';
-            $form['bn_only_one_entry'] = $form['body']['only_one_entry'] ?? '';
-            $form['bn_only_one_entry_message'] = $form['body']['one_entry_message'] ?? '';
-            $form['bn_id_nature'] = $form['body']['id'];
-            $form['bn_label_nature'] = $form['body']['title'];
+            $form = json_decode($form['body'], true);
+            $form['bn_condition'] = $form['condition'];
+            $form['bn_sem_context'] = $form['semantic']['context'] ?? '';
+            $form['bn_sem_type'] = $form['semantic']['type'] ?? '';
+            $form['bn_sem_use_template'] = $form['semantic']['use_template'] ?? '' ;
+            $form['bn_condition'] = $form['condition'] ?? '';
+            $form['bn_only_one_entry'] = $form['only_one_entry'] ?? '';
+            $form['bn_only_one_entry_message'] = $form['one_entry_message'] ?? '';
+            $form['bn_id_nature'] = $form['id'];
+            $form['bn_label_nature'] = $form['title'];
+
+            uasort($form['fields'], function ($a, $b) { return $a['order'] - $b['order'] ; });
 
             list($template_list, $modify) = $this->prepare_with_special_parameters($form);
         } else {
@@ -252,7 +258,7 @@ class FormManager
                 if (!empty($form['id'])) {
                     // save only not empty formId
                     $form_prepared = $this->getFromRawData($form);
-                    $this->cachedForms[$form_prepared['body']['id']] = $form_prepared;
+                    $this->cachedForms[$form_prepared['id']] = $form_prepared;
                 }
             }
 
@@ -260,15 +266,7 @@ class FormManager
             $this->cacheValidatedForAll = true;
         }
 
-        // QUESTION : À quoi sert ce array_filter ?
-        // return array_filter(
-        //     $this->cachedForms,
-        //     function ($pKey) {
-        //         return intval($pKey) . '' === $pKey . '';
-        //     },
-        //     ARRAY_FILTER_USE_KEY,
-        // );
-        //
+
         return $this->cachedForms;
     }
 
@@ -343,11 +341,15 @@ class FormManager
         $this->cacheValidatedForAll = false;
 
         $form = $this->getFromRawData($data);
-        $id = genere_nom_wiki($form['bn_label_nature']);
-        $saved = $this->__createOrUpdate($form, $id);
+        $tag = getAvailableSlug($form['bn_label_nature']);
+        $saved = $this->__createOrUpdate($form, $tag);
         if ($saved == 0) {
+
+            $this->aclService->save($tag, 'write', '@admins');
+            $this->aclService->save($tag, 'read', '@admins');
+
             $this->tripleStore->create(
-                $id,
+                $tag,
                 TripleStore::TYPE_URI,
                 'form',
                 '',
@@ -402,6 +404,12 @@ class FormManager
 
         $activitypubEnabled = (int) $this->activityPubService->isEnabled($data);
 
+        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
+                 $keyPair = $this->httpSignatureService->generateKeyPair();
+                 $privateKey = $keyPair[0];
+                 $publicKey = $keyPair[1];
+             }
+
         $form = $this->getFromRawData($data);
         $this->__createOrUpdate($form, $tag);
 
@@ -435,7 +443,6 @@ class FormManager
 
 
         $entries = $this->getEntries($id);
-        dump($entries);
         $entries[] = $id;
         $this->pageManager->deleteManyOrphaned($entries);
 
@@ -445,35 +452,6 @@ class FormManager
 
 
         return true;
-    }
-
-    public function clear($id)
-    {
-        if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-
-        // Remove acls for all bazar entries
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('acls')
-                . 'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
-                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
-                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND JSON_VALUE(body, \'$.id_typeannonce\') = ' . $this->dbService->escape($id) . ' );',
-        );
-
-        // TODO use PageManager
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('pages')
-                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
-                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';',
-        );
-
-        // TODO use TripleStore
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('triples')
-                . 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
-                . 'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";',
-        );
     }
 
     public function findNewId()

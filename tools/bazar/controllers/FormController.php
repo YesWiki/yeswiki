@@ -56,16 +56,15 @@ class FormController extends YesWikiController
         $values = [];
         if (is_array($forms)) {
             foreach ($forms as $form) {
-                $body = $form['body'];
-                $values[$body['id']]['title'] = $body['title'];
-                $values[$body['id']]['description'] = $body['description'];
-                $values[$body['id']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$body['id']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
-                $values[$body['id']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== '';
-                $values[$body['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
+                $values[$form['id']]['title'] = $form['title'];
+                $values[$form['id']]['description'] = $form['description'];
+                $values[$form['id']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+                $values[$form['id']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
+                $values[$form['id']]['isSemantic'] = isset($form['bn_sem_type']) && $form['bn_sem_type'] !== '';
+                $values[$form['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return $field instanceof MapField;
                 }));
-                $values[$body['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
+                $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
             }
         }
 
