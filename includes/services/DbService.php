@@ -14,6 +14,7 @@ class DbService
 
     protected $link;
     protected $queryLog;
+    protected $collation;
 
     public function __construct(ParameterBagInterface $params)
     {
@@ -46,6 +47,9 @@ class DbService
                     mysqli_query($this->link, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
                 }
             }
+            $this->collation = (mysqli_character_set_name($this->link) === 'utf8mb4')
+                ? 'utf8mb4_unicode_ci'
+                : 'utf8_unicode_ci';
         } catch (Throwable $th) {
             if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
                 throw new Exception(_t('DB_CONNECT_FAIL'));
@@ -58,6 +62,11 @@ class DbService
     public function getLink()
     {
         return $this->link;
+    }
+
+    public function getCollation(): string
+    {
+        return $this->collation;
     }
 
     public function getQueryLog()
