@@ -15,6 +15,7 @@ class DbService
     protected $link;
     protected $queryLog;
     protected $collation;
+    protected $readCache = [];
 
     public function __construct(ParameterBagInterface $params)
     {
@@ -99,6 +100,10 @@ class DbService
     */
     public function query($query)
     {
+        if (!preg_match('/^\s*SELECT\b/i', $query)) {
+            $this->readCache = [];
+        }
+
         if ($this->params->get('debug')) {
             $start = $this->getMicroTime();
         }
@@ -146,6 +151,10 @@ class DbService
      */
     public function loadAll($query): array
     {
+        if (isset($this->readCache[$query])) {
+            return $this->readCache[$query];
+        }
+
         $data = [];
         if ($r = $this->query($query)) {
             while ($row = mysqli_fetch_assoc($r)) {
@@ -154,7 +163,7 @@ class DbService
             mysqli_free_result($r);
         }
 
-        return $data;
+        return $this->readCache[$query] = $data;
     }
 
     public function count($query): int

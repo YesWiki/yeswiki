@@ -906,6 +906,10 @@ class SearchManager
 
         $vQueriesConditions = trim($this->buildQueriesConditions($vQueries, $vFields));
 
+        if (str_contains($vQueriesConditions, '((FALSE))')) {
+            return '';
+        }
+
         if ($vQueriesConditions != '') {
             $vWhereRequest .= ($vWhereRequest != '' ? ' AND ' : '') . $vQueriesConditions;
         }
@@ -1022,6 +1026,9 @@ class SearchManager
         $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
 
         $searchResults = [];
+        if ($requete === '') {
+            return $searchResults;
+        }
         $results = $this->dbService->loadAll($requete);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
 

@@ -36,6 +36,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $tripleStore;
 
     private $getOneByNameCacheResults;
+    private array $associatedEntryCache = [];
 
     public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
 
@@ -111,7 +112,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function create($wikiNameOrUser, string $email = '', string $plainPassword = '')
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         if (is_array($wikiNameOrUser)) {
@@ -142,23 +143,23 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 'signuptime' => '',
             ];
         } else {
-            throw new Exception('First parameter of UserManager->create should be string or array!');
+            throw new \Exception('First parameter of UserManager->create should be string or array!');
         }
 
         if (empty($wikiName)) {
-            throw new Exception("'Name' parameter of UserManager->create should not be empty!");
+            throw new \Exception("'Name' parameter of UserManager->create should not be empty!");
         }
         if (!empty($this->getOneByName($wikiName))) {
             throw new UserNameAlreadyUsedException();
         }
         if (empty($email)) {
-            throw new Exception("'email' parameter of UserManager->create should not be empty!");
+            throw new \Exception("'email' parameter of UserManager->create should not be empty!");
         }
         if (!empty($this->getOneByEmail($email))) {
             throw new UserEmailAlreadyUsedException();
         }
         if (empty($plainPassword)) {
-            throw new Exception("'password' parameter of UserManager->create should not be empty!");
+            throw new \Exception("'password' parameter of UserManager->create should not be empty!");
         }
 
         // clear both the trimmed name and any untrimmed variant stored in cache
@@ -248,7 +249,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function update(User $user, array $newValues): bool
     {
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $newKeys = array_keys($newValues);
         $authorizedKeys = array_filter($newKeys, function ($key) {
@@ -365,16 +366,15 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $user = $this->wiki->services->get(AuthController::class)->getLoggedUser();
             if (empty($user['name'])) {
                 return null;
-            } else {
-                $user = $user['name'];
             }
+            $user = $user['name'];
         }
-        if (!empty($GLOBALS['user_entries'][$user])) {
-            return $GLOBALS['user_entries'][$user];
+        if (array_key_exists($user, $this->associatedEntryCache)) {
+            return $this->associatedEntryCache[$user];
         }
         $vFormManager = $this->wiki->services->get(FormManager::class);
-        $formsIds = array_keys($vFormManager->getAll());
         $vSearchManager = $this->wiki->services->get(SearchManager::class);
+        $formsIds = array_keys($vFormManager->getAll());
         // in case if a username is generated from a bazar entry, nomwiki should be the right id
         $entry = $vSearchManager->search([
             'queries' => [
@@ -386,15 +386,16 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             ],
             'formsIds' => $formsIds,
         ]);
-        if (empty($entry)) {
-            return null;
+        $found = null;
+        if (!empty($entry)) {
+            $candidate = array_pop($entry);
+            if (!empty($candidate['id_fiche'])) {
+                $found = $candidate;
+            }
         }
-        $found = array_pop($entry);
-        if (!empty($found['id_fiche'])) {
-            $GLOBALS['user_entries'][$user] = $found;
+        $this->associatedEntryCache[$user] = $found;
 
-            return $found;
-        }
+        return $found;
     }
 
     /* ~~~~~~~~~~~~~~~~~~ implements  PasswordUpgraderInterface ~~~~~~~~~~~~~~~~~~ */

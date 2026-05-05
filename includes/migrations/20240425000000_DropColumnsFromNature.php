@@ -21,18 +21,18 @@ class DropColumnsFromNature extends YesWikiMigration
 
         // add semantic bazar fields
         if (!$this->dbService->columnExists('nature', 'bn_sem_context')) {
-            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN bn_sem_context text COLLATE utf8mb4_unicode_ci AFTER bn_condition");
-            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN bn_sem_type varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL AFTER bn_sem_context");
+            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN bn_sem_context text COLLATE " . $this->dbService->getCollation() . " AFTER bn_condition");
+            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN bn_sem_type varchar(255) COLLATE " . $this->dbService->getCollation() . " DEFAULT NULL AFTER bn_sem_context");
             $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN bn_sem_use_template tinyint(1) NOT NULL DEFAULT 1 AFTER bn_sem_type");
         }
 
         // TODO: What is this??? seems sooo weird
         $formManager = $this->wiki->services->get(FormManager::class);
         if (!$formManager->isAvailableOnlyOneEntryOption()) {
-            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN `bn_only_one_entry` enum('Y','N') NOT NULL DEFAULT 'N' COLLATE utf8mb4_unicode_ci;");
+            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN `bn_only_one_entry` enum('Y','N') NOT NULL DEFAULT 'N' COLLATE " . $this->dbService->getCollation() . ";");
         }
         if (!$formManager->isAvailableOnlyOneEntryMessage()) {
-            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN `bn_only_one_entry_message` text DEFAULT NULL COLLATE utf8mb4_unicode_ci;");
+            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable('nature')} ADD COLUMN `bn_only_one_entry_message` text DEFAULT NULL COLLATE " . $this->dbService->getCollation() . ";");
         }
     }
 }

@@ -199,6 +199,17 @@ class FormManager
         );
     }
 
+    public function getAllIds(): array
+    {
+        if ($this->cacheValidatedForAll) {
+            return array_keys($this->getAll());
+        }
+
+        $rows = $this->dbService->loadAll("SELECT bn_id_nature FROM {$this->dbService->prefixTable('nature')}");
+
+        return array_column($rows, 'bn_id_nature');
+    }
+
     public function getMany($formsIds): array
     {
         if (count($formsIds) == 0) {
