@@ -16,6 +16,7 @@ export default {
       zoom: this.defaultZoom,
       zoomControl: true,
       scrollWheelZoom: false,
+      referrerPolicy: 'strict-origin-when-cross-origin',
       layers: [L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' })]
     })
 
