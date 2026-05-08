@@ -365,7 +365,7 @@ class FormManager
             $classType = get_class($fields);
             $fields = json_decode(json_encode($fields), true);
             $fields['name'] = $fields['name'] ?? $fields['type'] . '__' . $counter;
-            $counter++;
+            $fields['order'] = $counter++;
             if (isset($fields['options'])) {
                 unset($fields['options']);
             }
