@@ -237,7 +237,7 @@ class ApiController extends YesWikiController
         $vDateFilter = isset($_GET['datefilter']) ? urldecode($_GET['datefilter']) : null;
         $vOrdre = $_GET['ordre'] ?? 'asc';
         $vChamp = $_GET['champ'] ?? 'bf_titre';
-        $vNb = intval($_GET['nbitem'] ?? $_GET['nb'] ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? null);
+        $vNb = intval($_GET['nbitem'] ?? $_GET['nb'] ?? null);
         $vMinDate = urldecode($_GET['dateMin'] ?? $_GET['minDate'] ?? $_GET['period'] ?? '');
 
         if ($output == 'csv') { // Search is done in the CSV Manager
