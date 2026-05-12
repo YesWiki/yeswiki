@@ -216,7 +216,7 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
-        if (strpos($formId, 'b64_') === 0) {
+        if (!is_array($formId) && strpos($formId, 'b64_') === 0) {
             $vFormID = base64_decode(urldecode(substr($formId, 4)), true);
         } else {
             $vFormID = $formId;
