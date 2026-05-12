@@ -255,7 +255,7 @@ class FormManager
                     . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
                     . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
                     . ',`bn_condition`)'
-                    . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
+                    . ' VALUES (' . intval($data['bn_id_nature']) . ', "fr-FR", "'
                     . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . '", "'
                     . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . '", "'
                     . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . '", "'
