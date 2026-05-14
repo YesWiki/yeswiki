@@ -14,7 +14,8 @@ use YesWiki\Core\YesWikiController;
 
 class AdminContentController extends YesWikiController
 {
-    private const ALLOWED_SORTS    = ['tag', 'time', 'owner'];
+    private const ALLOWED_SORTS    = ['tag', 'time', 'owner', 'type'];
+    private const SORT_COLUMNS     = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'tp.value'];
     private const ALLOWED_PERPAGES = [50, 100, 150, 200, 500];
     private const ALLOWED_TYPES    = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
     private const TAG_PROPERTY     = 'http://outils-reseaux.org/_vocabulary/tag';
@@ -33,13 +34,13 @@ class AdminContentController extends YesWikiController
 
         $dbService = $this->getService(DbService::class);
 
-        [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter]
+        [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter, $aclFilter]
             = $this->extractListParams($request);
 
-        [$whereClause, $having] = $this->buildWhere($dbService, $search, $type, $ownerFilter, $tagFilter);
+        [$whereClause, $having] = $this->buildWhere($dbService, $search, $type, $ownerFilter, $tagFilter, $aclFilter);
 
         $offset    = ($page - 1) * $perpage;
-        $sortCol   = "p.{$sort}";
+        $sortCol   = self::SORT_COLUMNS[$sort] ?? 'p.tag';
         $dirSql    = $dir === 'desc' ? 'DESC' : 'ASC';
 
         $pT       = $dbService->prefixTable('pages');
@@ -80,10 +81,13 @@ class AdminContentController extends YesWikiController
 
         $rows  = $dbService->loadAll($sql) ?? [];
 
-        // Count query (separate, simpler)
+        // Count query – includes ACL joins so aclFilter conditions work
         $countSql = <<<SQL
             SELECT COUNT(DISTINCT p.tag) AS total
             FROM {$pT} p
+            LEFT JOIN {$aT} a_r ON a_r.page_tag = p.tag AND a_r.privilege = 'read'
+            LEFT JOIN {$aT} a_w ON a_w.page_tag = p.tag AND a_w.privilege = 'write'
+            LEFT JOIN {$aT} a_c ON a_c.page_tag = p.tag AND a_c.privilege = 'comment'
             WHERE {$whereClause}
         SQL;
         $total = (int) ($dbService->loadSingle($countSql)['total'] ?? 0);
@@ -125,6 +129,7 @@ class AdminContentController extends YesWikiController
             'type'        => $type,
             'ownerFilter' => $ownerFilter,
             'tagFilter'   => $tagFilter,
+            'aclFilter'   => $aclFilter,
             'apiUrl'      => $this->wiki->Href('', 'api/admin/pages'),
         ]);
 
@@ -311,11 +316,12 @@ class AdminContentController extends YesWikiController
             ? $typeRaw : 'all';
         $ownerFilter = trim((string) $request->query->get('owner', ''));
         $tagFilter   = trim((string) $request->query->get('tag_filter', ''));
+        $aclFilter   = trim((string) $request->query->get('acl_filter', ''));
 
-        return [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter];
+        return [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter, $aclFilter];
     }
 
-    private function buildWhere(DbService $db, string $search, string $type, string $ownerFilter, string $tagFilter): array
+    private function buildWhere(DbService $db, string $search, string $type, string $ownerFilter, string $tagFilter, string $aclFilter = ''): array
     {
         $conditions = ["p.latest = 'Y'", $type === 'comments' ? "p.comment_on != ''" : "p.comment_on = ''"];
         $having = '';
@@ -372,12 +378,38 @@ class AdminContentController extends YesWikiController
             $having  = "HAVING GROUP_CONCAT(DISTINCT tg.value ORDER BY tg.value SEPARATOR ',') LIKE '%{$escaped}%'";
         }
 
+        $aclCondition = $this->buildAclFilterCondition($db, $aclFilter);
+        if ($aclCondition !== null) {
+            $conditions[] = $aclCondition;
+        }
+
         return [implode(' AND ', $conditions), $having];
     }
 
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
+
+    private function buildAclFilterCondition(DbService $db, string $aclFilter): ?string
+    {
+        if ($aclFilter === '') {
+            return null;
+        }
+        $parts = explode('|', $aclFilter, 2);
+        if (count($parts) !== 2) {
+            return null;
+        }
+        [$privilege, $value] = $parts;
+        $aclCols = ['read' => 'a_r.list', 'write' => 'a_w.list', 'comment' => 'a_c.list'];
+        if (!isset($aclCols[$privilege])) {
+            return null;
+        }
+        $col = $aclCols[$privilege];
+        // Escape MySQL REGEXP metacharacters, then escape for SQL
+        $regexpEscaped = $db->escape(preg_replace('/([.+*?\\[\\]^$(){}|\\\\])/', '\\\\$1', $value));
+        // Match value as a complete line within the ACL text
+        return "({$col} REGEXP '(^|\\n|\\r){$regexpEscaped}(\\n|\\r|$)')";
+    }
 
     private function filterCommentAcl(string $list): string
     {

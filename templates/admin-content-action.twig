@@ -140,6 +140,10 @@
 /* Checkbox column */
 .col-cb { width: 36px; text-align: center; }
 
+/* Clicking anywhere on a row toggles the checkbox */
+#admin-content-table-container tbody tr { cursor: pointer; }
+#admin-content-table-container tbody tr a { cursor: auto; }
+
 /* ACL column line height */
 .table-condensed > tbody > tr > td {
   line-height: 1.1rem;
@@ -189,14 +193,14 @@
                 <label for="acf-type">Type</label>
                 <select id="acf-type" name="type" class="form-control">
                     <option value="all">— {{ _t('GROUP_SELECTION') }} —</option>
-                    <option value="pages">{{ _t('ACLS_SELECT_PAGES_FILTER_ON_PAGES') }}</option>
-                    <option value="bazar">Toutes les fiches bazar</option>
+                    <option value="pages">{{ _t('ADMIN_CONTENT_TYPE_PAGES') }}</option>
+                    <option value="bazar">{{ _t('ADMIN_CONTENT_TYPE_ALL_FORMS') }}</option>
                     {% for id, form in forms %}
-                    <option value="{{ id }}">{{ _t('ACLS_SELECT_PAGES_FILTER_FORM')|replace({'{name}': form.bn_label_nature, '{id}': id}) }}</option>
+                    <option value="{{ id }}">{{ _t('ADMIN_CONTENT_TYPE_FORM')|replace({'{name}': form.bn_label_nature}) }}</option>
                     {% endfor %}
-                    <option value="lists">{{ _t('ACLS_SELECT_PAGES_FILTER_ON_LISTS') }}</option>
-                    <option value="special">{{ _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES') }}</option>
-                    <option value="comments">Commentaires</option>
+                    <option value="lists">{{ _t('ADMIN_CONTENT_TYPE_LISTS') }}</option>
+                    <option value="special">{{ _t('ADMIN_CONTENT_TYPE_SPECIAL_PAGES') }}</option>
+                    <option value="comments">{{ _t('COMMENTS') }}</option>
                 </select>
             </div>
 
@@ -211,13 +215,45 @@
             </div>
 
             <div class="form-group">
-                <label for="acf-tag">Mots clés</label>
+                <label for="acf-acl">{{ _t('ADMIN_CONTENT_ACL_LABEL') }}</label>
+                <select id="acf-acl" name="acl_filter" class="form-control">
+                    <option value="">— {{ _t('GROUP_SELECTION') }} —</option>
+                    <optgroup label="{{ _t('YW_ACLS_READ') }}">
+                        <option value="read|*">{{ _t('YW_ACLS_READ') }} : {{ _t('ACLS_EVERYBODY') }}</option>
+                        <option value="read|+">{{ _t('YW_ACLS_READ') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
+                        <option value="read|%">{{ _t('YW_ACLS_READ') }} : {{ _t('ACLS_OWNER') }}</option>
+                        {% for group in groups %}
+                        <option value="read|@{{ group }}">{{ _t('YW_ACLS_READ') }} : @{{ group }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="{{ _t('YW_ACLS_WRITE') }}">
+                        <option value="write|*">{{ _t('YW_ACLS_WRITE') }} : {{ _t('ACLS_EVERYBODY') }}</option>
+                        <option value="write|+">{{ _t('YW_ACLS_WRITE') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
+                        <option value="write|%">{{ _t('YW_ACLS_WRITE') }} : {{ _t('ACLS_OWNER') }}</option>
+                        {% for group in groups %}
+                        <option value="write|@{{ group }}">{{ _t('YW_ACLS_WRITE') }} : @{{ group }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    <optgroup label="{{ _t('YW_ACLS_COMMENT') }}">
+                        <option value="comment|*">{{ _t('YW_ACLS_COMMENT') }} : {{ _t('ACLS_EVERYBODY') }}</option>
+                        <option value="comment|+">{{ _t('YW_ACLS_COMMENT') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
+                        <option value="comment|%">{{ _t('YW_ACLS_COMMENT') }} : {{ _t('ACLS_OWNER') }}</option>
+                        <option value="comment|comments-closed">{{ _t('YW_ACLS_COMMENT') }} : {{ _t('ACLS_COMMENTS_CLOSED') }}</option>
+                        {% for group in groups %}
+                        <option value="comment|@{{ group }}">{{ _t('YW_ACLS_COMMENT') }} : @{{ group }}</option>
+                        {% endfor %}
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="acf-tag">{{ _t('ADMIN_CONTENT_KEYWORDS_LABEL') }}</label>
                 <input id="acf-tag" type="text" name="tag_filter" class="form-control"
                        placeholder="{{ _t('ACLS_SELECT_PAGES_FILTER') }}">
             </div>
 
             <div class="form-group">
-                <label for="acf-perpage">Par page</label>
+                <label for="acf-perpage">{{ _t('ADMIN_CONTENT_PER_PAGE_LABEL') }}</label>
                 <select id="acf-perpage" name="perpage" class="form-control">
                     <option value="50" selected>50</option>
                     <option value="100">100</option>
@@ -267,14 +303,14 @@
                 data-toggle="modal" data-target="#modal-acls"
                 id="btn-bulk-acls"
                 onclick="adminContent.populateModal('acls')">
-            <i class="fa fa-lock"></i> Droits d'accès
+            <i class="fa fa-lock"></i> {{ _t('ADMIN_CONTENT_ACL_LABEL') }}
         </button>
 
         <button type="button" class="btn btn-info btn-sm"
                 data-toggle="modal" data-target="#modal-theme"
                 id="btn-bulk-theme"
                 onclick="adminContent.populateModal('theme')">
-            <i class="fa fa-paint-brush"></i> Thème
+            <i class="fa fa-paint-brush"></i> {{ _t('ADMIN_CONTENT_BULK_THEME') }}
         </button>
         {% endif %}
 
@@ -311,10 +347,10 @@
                     <div class="modal-body">
                         <div class="alert alert-danger">
                             <i class="fa fa-exclamation-triangle"></i>
-                            <strong>Action irréversible</strong> —
-                            Cette action supprime définitivement toutes les pages sélectionnées.
+                            <strong>{{ _t('ADMIN_CONTENT_IRREVERSIBLE_ACTION') }}</strong> —
+                            {{ _t('ADMIN_CONTENT_DELETE_WARNING') }}
                         </div>
-                        <p>Sélectionnées : <strong id="delete-count-label">0</strong> page(s)</p>
+                        <p>{{ _t('ADMIN_CONTENT_SELECTED_LABEL') }} <strong id="delete-count-label">0</strong> page(s)</p>
                         <div id="delete-pages-list" class="well well-sm" style="max-height:150px;overflow-y:auto;font-size:12px;"></div>
                         <input type="hidden" name="bulk_action" value="delete">
                         <input type="hidden" name="csrf-token"
@@ -339,7 +375,7 @@
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">
-                        <i class="fa fa-lock text-warning"></i> Modifier les droits d'accès
+                        <i class="fa fa-lock text-warning"></i> {{ _t('ADMIN_CONTENT_EDIT_ACL_TITLE') }}
                     </h4>
                 </div>
                 <form hx-post="{{ bulkApiUrl }}"
@@ -348,16 +384,14 @@
                       id="form-acls">
                     <div class="modal-body">
 
-                        <p>
-                            Sélectionnées : <strong id="acls-count-label">0</strong> page(s)
-                        </p>
+                        <p>{{ _t('ADMIN_CONTENT_SELECTED_LABEL') }} <strong id="acls-count-label">0</strong> page(s)</p>
                         <div id="acls-pages-inputs"></div>
                         <input type="hidden" name="bulk_action" value="change-acls">
                         <input type="hidden" name="csrf-token"
                                value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
 
                         <div class="form-group">
-                            <label>Mode d'application</label>
+                            <label>{{ _t('ADMIN_CONTENT_ACL_MODE_LABEL') }}</label>
                             <div>
                                 <label class="radio-inline">
                                     <input type="radio" name="acl_mode" value="replace" checked>
@@ -365,7 +399,7 @@
                                 </label>
                                 <label class="radio-inline">
                                     <input type="radio" name="acl_mode" value="append">
-                                    Ajouter aux droits existants
+                                    {{ _t('ADMIN_CONTENT_ACL_MODE_APPEND') }}
                                 </label>
                                 <label class="radio-inline">
                                     <input type="radio" name="acl_mode" value="default">
@@ -437,7 +471,7 @@
                       id="form-theme">
                     <div class="modal-body">
 
-                        <p>Sélectionnées : <strong id="theme-count-label">0</strong> page(s)</p>
+                        <p>{{ _t('ADMIN_CONTENT_SELECTED_LABEL') }} <strong id="theme-count-label">0</strong> page(s)</p>
                         <div id="theme-pages-inputs"></div>
                         <input type="hidden" name="bulk_action" value="change-theme">
                         <input type="hidden" name="csrf-token"
@@ -454,7 +488,7 @@
                             <div class="row">
                                 <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label>Theme</label>
+                                        <label>{{ _t('ADMIN_CONTENT_THEME_THEME') }}</label>
                                         <select name="theme" id="theme-select" class="form-control">
                                             <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
                                             {% for key, tpl in templates %}
@@ -465,7 +499,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label>Squelette</label>
+                                        <label>{{ _t('ADMIN_CONTENT_THEME_SQUELETTE') }}</label>
                                         <select name="squelette" id="squelette-select" class="form-control">
                                             <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
                                         </select>
@@ -473,7 +507,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label>Style</label>
+                                        <label>{{ _t('ADMIN_CONTENT_THEME_STYLE') }}</label>
                                         <select name="style" id="style-select" class="form-control">
                                             <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
                                         </select>
@@ -481,7 +515,7 @@
                                 </div>
                                 <div class="col-sm-6">
                                     <div class="form-group">
-                                        <label>Preset</label>
+                                        <label>{{ _t('ADMIN_CONTENT_THEME_PRESET') }}</label>
                                         <select name="preset" id="preset-select" class="form-control">
                                             <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
                                         </select>
@@ -517,13 +551,14 @@
     // Translated UI strings
     var I18N = {
         noChange:    '— {{ _t('ACLS_NO_CHANGE')|e('js') }} —',
-        selectedFmt: 'Sélectionnées\u00a0: %d page(s)',
+        selectedFmt: '{{ _t('ADMIN_CONTENT_SELECTED_N_PAGES')|e('js') }}',
     };
 
     // -----------------------------------------------------------------------
     // State
     // -----------------------------------------------------------------------
     var selectedPages = new Set();   // page tags currently selected
+    var lastCheckedIndex = -1;       // for shift+click range selection
 
     // -----------------------------------------------------------------------
     // Core object
@@ -669,7 +704,7 @@
     // -----------------------------------------------------------------------
     // URL sync helpers
     // -----------------------------------------------------------------------
-    var DEFAULTS = { search: '', type: 'all', owner: '', tag_filter: '', perpage: '50', sort: 'tag', dir: 'asc', page: '1' };
+    var DEFAULTS = { search: '', type: 'all', owner: '', tag_filter: '', acl_filter: '', perpage: '50', sort: 'tag', dir: 'asc', page: '1' };
 
     // The YesWiki page tag is always the first query segment (e.g. "?GererSite&…").
     // Extract it once so we can preserve it when rewriting the query string.
@@ -695,7 +730,7 @@
 
     function restoreFromUrl() {
         var params = new URLSearchParams(location.search);
-        ['search', 'type', 'owner', 'tag_filter', 'perpage'].forEach(function (name) {
+        ['search', 'type', 'owner', 'tag_filter', 'acl_filter', 'perpage'].forEach(function (name) {
             var el = filterForm.querySelector('[name="' + name + '"]');
             if (el && params.has(name)) el.value = params.get(name);
         });
@@ -750,7 +785,50 @@
     document.body.addEventListener('htmx:afterSwap', function (e) {
         if (e.detail.target.id === 'admin-content-table-container') {
             adminContent.restoreChecks();
+            lastCheckedIndex = -1;
         }
+    });
+
+    // -----------------------------------------------------------------------
+    // Row click → toggle checkbox (with shift+click range support)
+    // Clicks on <a> links pass through normally.
+    // Clicks on the label prevent the browser's built-in toggle so we
+    // handle it ourselves (avoiding the focus-scroll side-effect).
+    // -----------------------------------------------------------------------
+    var tableContainer = document.getElementById('admin-content-table-container');
+
+    tableContainer.addEventListener('click', function (e) {
+        // Let links work normally
+        if (e.target.closest('a')) return;
+
+        // Only act on body rows that have a page-checkbox
+        var row = e.target.closest('tbody tr');
+        if (!row) return;
+        var cb = row.querySelector('input.page-checkbox');
+        if (!cb) return;
+
+        // Prevent browser's built-in label→input toggle (we do it manually)
+        // This also prevents the focus-scroll side-effect
+        if (e.target.closest('label')) e.preventDefault();
+
+        var all = Array.from(tableContainer.querySelectorAll('.page-checkbox'));
+        var idx = all.indexOf(cb);
+
+        if (e.shiftKey && lastCheckedIndex >= 0 && idx !== lastCheckedIndex) {
+            var newState = !cb.checked;
+            var from = Math.min(idx, lastCheckedIndex);
+            var to   = Math.max(idx, lastCheckedIndex);
+            for (var i = from; i <= to; i++) {
+                all[i].checked = newState;
+                adminContent.togglePage(all[i].dataset.tag, newState);
+            }
+        } else {
+            cb.checked = !cb.checked;
+            adminContent.togglePage(cb.dataset.tag, cb.checked);
+        }
+
+        cb.focus({ preventScroll: true });
+        lastCheckedIndex = idx;
     });
 
     // -----------------------------------------------------------------------

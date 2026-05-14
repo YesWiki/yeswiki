@@ -50,9 +50,9 @@
 <div class="admin-content-pager" style="margin-bottom:6px;">
     <small class="text-muted">
         {% if total > 0 %}
-            {{ offset + 1 }}–{{ rangeEnd }} sur {{ total }} page(s)
+            {{ _t('ADMIN_CONTENT_PAGER_RANGE')|replace({'{start}': offset + 1, '{end}': rangeEnd, '{total}': total}) }}
         {% else %}
-            Aucune page trouvée.
+            {{ _t('ADMIN_CONTENT_NO_PAGE_FOUND') }}
         {% endif %}
     </small>
     <div>
@@ -76,17 +76,17 @@
                 </label>
             </th>
             <th>{{ _self.sortHeader(_t('ACLS_PAGE'), 'tag', sort, dir, apiUrl) }}</th>
-            <th>Type</th>
+            <th>{{ _self.sortHeader('Type', 'type', sort, dir, apiUrl) }}</th>
             <th>{{ _self.sortHeader(_t('LAST_CHANGE')|capitalize, 'time', sort, dir, apiUrl) }}</th>
-            <th>Droits d'accès</th>
-            <th>Mots clés</th>
+            <th>{{ _t('ADMIN_CONTENT_ACL_LABEL') }}</th>
+            <th>{{ _t('ADMIN_CONTENT_KEYWORDS_LABEL') }}</th>
         </tr>
     </thead>
     <tbody>
     {% if pages is empty %}
         <tr>
             <td colspan="6" class="text-center text-muted" style="padding:32px 0;">
-                <i class="fa fa-search"></i> Aucune page ne correspond aux filtres sélectionnés.
+                <i class="fa fa-search"></i> {{ _t('ADMIN_CONTENT_NO_RESULTS') }}
             </td>
         </tr>
     {% else %}
@@ -105,19 +105,18 @@
                 </label>
             </td>
             <td>
-                <a href="{{ url({tag: page.tag}) }}" title="{{ page.tag }}">
-                    {{ page.tag }}
-                </a>
+                {{ page.tag }}
+                <br><small><a href="{{ url({tag: page.tag}) }}">{{ _t('ADMIN_CONTENT_VIEW') }}</a></small>
             </td>
             <td style="font-size:12px;white-space:nowrap;">
                 {%- if page.comment_on is not empty -%}
-                    Commentaire
+                    {{- _t('ADMIN_CONTENT_TYPE_COMMENT') -}}
                 {%- elseif page.page_type == 'fiche_bazar' -%}
-                    {{- forms[page.form_id].bn_label_nature ?? ('Bazar #' ~ page.form_id) -}}
+                    {{- forms[page.form_id].bn_label_nature ?? _t('ADMIN_CONTENT_TYPE_BAZAR_ID')|replace({'{id}': page.form_id}) -}}
                 {%- elseif page.page_type == 'liste' -%}
-                    Liste
+                    {{- _t('ADMIN_CONTENT_TYPE_LIST') -}}
                 {%- else -%}
-                    Page
+                    {{- _t('ADMIN_CONTENT_TYPE_PAGE') -}}
                 {%- endif -%}
             </td>
             <td style="white-space:nowrap;font-size:12px;">
@@ -127,7 +126,7 @@
                 {% endif %}
             </td>
             <td style="font-size:12px;vertical-align:middle;">
-                <div><strong>{{ _t('TEMPLATE_OWNER') }}: {{ page.owner ? page.owner|e : 'pas de propriétaire' }}</strong></div>
+                <div><strong>{{ _t('TEMPLATE_OWNER') }}: {{ page.owner ? page.owner|e : _t('ADMIN_CONTENT_NO_OWNER') }}</strong></div>
                 <div title="{{ _t('ACLS_READ') }}"><i class="fa fa-eye text-muted"></i> {{ _self.aclText(page.acl_read) }}</div>
                 <div title="{{ _t('ACLS_WRITE') }}"><i class="fa fa-pencil-alt text-muted"></i> {{ _self.aclText(page.acl_write) }}</div>
                 <div title="{{ _t('COMMENTS') }}"><i class="fa fa-comment text-muted"></i> {{ _self.aclText(page.acl_comment) }}</div>
@@ -150,7 +149,7 @@
 {% if totalPages > 1 %}
 <div class="admin-content-pager">
     <small class="text-muted">
-        Page {{ currentPage }} / {{ totalPages }} — {{ total }} page(s) au total
+        {{ _t('ADMIN_CONTENT_PAGER_INFO')|replace({'{current}': currentPage, '{totalPages}': totalPages, '{total}': total}) }}
     </small>
     {{ _self.pagerLinks(currentPage, totalPages) }}
 </div>
