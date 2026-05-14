@@ -218,29 +218,29 @@
                 <label for="acf-acl">{{ _t('ADMIN_CONTENT_ACL_LABEL') }}</label>
                 <select id="acf-acl" name="acl_filter" class="form-control">
                     <option value="">— {{ _t('GROUP_SELECTION') }} —</option>
-                    <optgroup label="{{ _t('YW_ACLS_READ') }}">
-                        <option value="read|*">{{ _t('YW_ACLS_READ') }} : {{ _t('ACLS_EVERYBODY') }}</option>
-                        <option value="read|+">{{ _t('YW_ACLS_READ') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
-                        <option value="read|%">{{ _t('YW_ACLS_READ') }} : {{ _t('ACLS_OWNER') }}</option>
+                    <optgroup label="{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }}">
+                        <option value="read|*">{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }} : {{ _t('ACLS_EVERYBODY') }}</option>
+                        <option value="read|+">{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
+                        <option value="read|%">{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }} : {{ _t('ACLS_OWNER') }}</option>
                         {% for group in groups %}
-                        <option value="read|@{{ group }}">{{ _t('YW_ACLS_READ') }} : @{{ group }}</option>
+                        <option value="read|@{{ group }}">{{ _t('ADMIN_CONTENT_ACL_READ_LABEL') }} : @{{ group }}</option>
                         {% endfor %}
                     </optgroup>
-                    <optgroup label="{{ _t('YW_ACLS_WRITE') }}">
-                        <option value="write|*">{{ _t('YW_ACLS_WRITE') }} : {{ _t('ACLS_EVERYBODY') }}</option>
-                        <option value="write|+">{{ _t('YW_ACLS_WRITE') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
-                        <option value="write|%">{{ _t('YW_ACLS_WRITE') }} : {{ _t('ACLS_OWNER') }}</option>
+                    <optgroup label="{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }}">
+                        <option value="write|*">{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }} : {{ _t('ACLS_EVERYBODY') }}</option>
+                        <option value="write|+">{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
+                        <option value="write|%">{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }} : {{ _t('ACLS_OWNER') }}</option>
                         {% for group in groups %}
-                        <option value="write|@{{ group }}">{{ _t('YW_ACLS_WRITE') }} : @{{ group }}</option>
+                        <option value="write|@{{ group }}">{{ _t('ADMIN_CONTENT_ACL_WRITE_LABEL') }} : @{{ group }}</option>
                         {% endfor %}
                     </optgroup>
-                    <optgroup label="{{ _t('YW_ACLS_COMMENT') }}">
-                        <option value="comment|*">{{ _t('YW_ACLS_COMMENT') }} : {{ _t('ACLS_EVERYBODY') }}</option>
-                        <option value="comment|+">{{ _t('YW_ACLS_COMMENT') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
-                        <option value="comment|%">{{ _t('YW_ACLS_COMMENT') }} : {{ _t('ACLS_OWNER') }}</option>
-                        <option value="comment|comments-closed">{{ _t('YW_ACLS_COMMENT') }} : {{ _t('ACLS_COMMENTS_CLOSED') }}</option>
+                    <optgroup label="{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }}">
+                        <option value="comment|*">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : {{ _t('ACLS_EVERYBODY') }}</option>
+                        <option value="comment|+">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : {{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
+                        <option value="comment|%">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : {{ _t('ACLS_OWNER') }}</option>
+                        <option value="comment|comments-closed">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : {{ _t('ACLS_COMMENTS_CLOSED') }}</option>
                         {% for group in groups %}
-                        <option value="comment|@{{ group }}">{{ _t('YW_ACLS_COMMENT') }} : @{{ group }}</option>
+                        <option value="comment|@{{ group }}">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : @{{ group }}</option>
                         {% endfor %}
                     </optgroup>
                 </select>

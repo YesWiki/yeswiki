@@ -20,6 +20,13 @@ class AdminContentController extends YesWikiController
     private const ALLOWED_TYPES    = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
     private const TAG_PROPERTY     = 'http://outils-reseaux.org/_vocabulary/tag';
     private const TYPE_PROPERTY    = 'http://outils-reseaux.org/_vocabulary/type';
+    private const SPECIAL_PAGES    = [
+        'BazaR','GererSite','GererDroits','GererThemes','GererMisesAJour',
+        'GererUtilisateurs','GererDroitsActions','GererDroitsHandlers','TableauDeBord',
+        'PageTitre','PageMenuHaut','PageRapideHaut','PageHeader','PageFooter',
+        'PageCSS','PageMenu','PageColonneDroite','MotDePassePerdu',
+        'ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki',
+    ];
 
     // -------------------------------------------------------------------------
     // GET /api/admin/pages  –  returns an HTML fragment (table + pagination)
@@ -111,6 +118,7 @@ class AdminContentController extends YesWikiController
                 'page_type'  => $r['page_type']   ?? '',
                 'form_id'    => $r['form_id']      ?? '',
                 'tags'       => !empty($r['page_tags']) ? explode(',', $r['page_tags']) : [],
+                'is_special' => in_array($r['tag'], self::SPECIAL_PAGES, true),
             ];
         }, $rows);
 
@@ -354,13 +362,7 @@ class AdminContentController extends YesWikiController
                 $conditions[] = "p.tag IN (SELECT DISTINCT resource FROM {$trT} WHERE value = 'liste' AND property = '{$typeProp}')";
                 break;
             case 'special':
-                $sp = implode("','", [
-                    'BazaR','GererSite','GererDroits','GererThemes','GererMisesAJour',
-                    'GererUtilisateurs','GererDroitsActions','GererDroitsHandlers','TableauDeBord',
-                    'PageTitre','PageMenuHaut','PageRapideHaut','PageHeader','PageFooter',
-                    'PageCSS','PageMenu','PageColonneDroite','MotDePassePerdu',
-                    'ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki',
-                ]);
+                $sp = implode("','", self::SPECIAL_PAGES);
                 $conditions[] = "p.tag IN ('{$sp}')";
                 break;
             default:

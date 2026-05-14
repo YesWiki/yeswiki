@@ -594,6 +594,9 @@ return [
     'DISTANT_LOGIN' => 'Log in to the remote YesWiki',
     'VERIFY_PAGE_AVAILABILITY' => 'Check the availability of the page',
     'ADMIN_CONTENT_ACL_LABEL' => 'Access rights',
+    'ADMIN_CONTENT_ACL_READ_LABEL' => 'Read',
+    'ADMIN_CONTENT_ACL_WRITE_LABEL' => 'Write',
+    'ADMIN_CONTENT_ACL_COMMENT_LABEL' => 'Comments',
     'ADMIN_CONTENT_VIEW' => 'view',
     'ADMIN_CONTENT_ACL_MODE_APPEND' => 'Append to existing rights',
     'ADMIN_CONTENT_ACL_MODE_LABEL' => 'Application mode',
@@ -622,5 +625,6 @@ return [
     'ADMIN_CONTENT_TYPE_LISTS' => 'Lists',
     'ADMIN_CONTENT_TYPE_PAGE' => 'Page',
     'ADMIN_CONTENT_TYPE_PAGES' => 'Pages',
+    'ADMIN_CONTENT_TYPE_SPECIAL_PAGE' => 'Special page',
     'ADMIN_CONTENT_TYPE_SPECIAL_PAGES' => 'Special pages',
 ];

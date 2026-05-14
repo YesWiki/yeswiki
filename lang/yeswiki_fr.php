@@ -595,6 +595,9 @@ return [
     'DISTANT_LOGIN' => 'S\'identifier sur le YesWiki distant',
     'LOGS_ARE_FOR_ADMINS_ONLY' => 'Les logs SQL ne sont visibles qu\'aux administrateurs',
     'ADMIN_CONTENT_ACL_LABEL' => 'Droits d\'accès',
+    'ADMIN_CONTENT_ACL_READ_LABEL' => 'Lecture',
+    'ADMIN_CONTENT_ACL_WRITE_LABEL' => 'Écriture',
+    'ADMIN_CONTENT_ACL_COMMENT_LABEL' => 'Commentaires',
     'ADMIN_CONTENT_VIEW' => 'voir',
     'ADMIN_CONTENT_ACL_MODE_APPEND' => 'Ajouter aux droits existants',
     'ADMIN_CONTENT_ACL_MODE_LABEL' => 'Mode d\'application',
@@ -623,5 +626,6 @@ return [
     'ADMIN_CONTENT_TYPE_LISTS' => 'Listes',
     'ADMIN_CONTENT_TYPE_PAGE' => 'Page',
     'ADMIN_CONTENT_TYPE_PAGES' => 'Pages',
+    'ADMIN_CONTENT_TYPE_SPECIAL_PAGE' => 'Page spéciale',
     'ADMIN_CONTENT_TYPE_SPECIAL_PAGES' => 'Pages spéciales',
 ];

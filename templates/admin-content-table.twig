@@ -115,6 +115,8 @@
                     {{- forms[page.form_id].bn_label_nature ?? _t('ADMIN_CONTENT_TYPE_BAZAR_ID')|replace({'{id}': page.form_id}) -}}
                 {%- elseif page.page_type == 'liste' -%}
                     {{- _t('ADMIN_CONTENT_TYPE_LIST') -}}
+                {%- elseif page.is_special -%}
+                    {{- _t('ADMIN_CONTENT_TYPE_SPECIAL_PAGE') -}}
                 {%- else -%}
                     {{- _t('ADMIN_CONTENT_TYPE_PAGE') -}}
                 {%- endif -%}
