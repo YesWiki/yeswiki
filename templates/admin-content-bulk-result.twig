@@ -1,0 +1,37 @@
+{# ============================================================
+   AdminContent – bulk action result partial
+   Variables: action, success (array), errors (array)
+   ============================================================ #}
+
+{% if errors is not empty %}
+<div class="alert alert-warning alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <strong><i class="fa fa-exclamation-triangle"></i> Partial failure</strong>
+    {% if success is not empty %}
+     — {{ success|length }} page(s) updated, {{ errors|length }} failed:
+    {% else %}
+     — {{ errors|length }} error(s):
+    {% endif %}
+    <ul class="margin-top-xs" style="margin-top:6px;margin-bottom:0;padding-left:18px;">
+        {% for e in errors %}
+        <li>{{ e }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if success is not empty %}
+<div class="alert alert-success alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    <i class="fa fa-check-circle"></i>
+    {% if action == 'delete' %}
+        {{ success|length }} page(s) deleted successfully.
+    {% elseif action == 'change-acls' %}
+        ACLs updated on {{ success|length }} page(s).
+    {% elseif action == 'change-theme' %}
+        Theme applied to {{ success|length }} page(s).
+    {% else %}
+        {{ success|length }} page(s) updated.
+    {% endif %}
+</div>
+{% endif %}

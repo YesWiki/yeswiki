@@ -26,6 +26,7 @@
     "formbuilder-languages": "^1.1.0",
     "fullcalendar": "^5.10.2",
     "gogocarto-js": "^1.7.11",
+    "htmx.org": "^2.0.4",
     "iframe-resizer": "^4.3.6",
     "jquery": "^3.5.1",
     "jquery-ui-sortable": "^1.0.0",

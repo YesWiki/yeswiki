@@ -1,0 +1,850 @@
+{# ============================================================
+   AdminContent action – main shell template
+   Loaded once; the inner table is swapped by HTMX.
+   ============================================================ #}
+
+{{ include_javascript('javascripts/vendor/htmx/htmx.min.js') }}
+
+<style>
+/* ------------------------------------------------------------------
+   AdminContent – scoped styles
+   ------------------------------------------------------------------ */
+.admin-content-wrapper {
+    position: relative;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+.admin-content-filter-bar {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+}
+/* Filter bar: flex row, each group stacks label above control */
+.admin-content-filter-bar form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 8px 12px;
+}
+.admin-content-filter-bar .form-group {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+.admin-content-filter-bar .form-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 2px;
+    white-space: nowrap;
+}
+.admin-content-filter-bar .form-control {
+    height: 30px;
+    font-size: 13px;
+    padding: 4px 8px;
+}
+.admin-content-filter-bar input[type="search"],
+.admin-content-filter-bar input[type="text"] {
+    width: 160px;
+}
+.admin-content-filter-bar select {
+    width: auto;
+    min-width: 120px;
+}
+
+/* Bulk panel – sticky at bottom of viewport */
+.admin-bulk-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background: #2c3e50;
+    color: #fff;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,.25);
+    transition: transform .25s ease;
+    transform: translateY(100%);
+}
+.admin-bulk-panel.visible {
+    transform: translateY(0);
+}
+.admin-bulk-panel .bulk-count {
+    font-size: 14px;
+    font-weight: 600;
+    flex: 1;
+}
+.admin-bulk-panel .btn {
+    font-size: 13px;
+}
+
+/* Table loading indicator */
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: block; }
+.htmx-request.htmx-indicator { display: block; }
+
+/* ACL badges */
+.acl-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    margin: 1px 0;
+}
+.acl-badge-success  { background: #5cb85c; color:#fff; }
+.acl-badge-warning  { background: #f0ad4e; color:#fff; }
+.acl-badge-danger   { background: #d9534f; color:#fff; }
+.acl-badge-primary  { background: #337ab7; color:#fff; }
+.acl-badge-default  { background: #e0e0e0; color:#333; }
+
+/* Sortable column header */
+.sort-link {
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.sort-link:hover { text-decoration: underline; }
+.sort-icon { color: #999; margin-left: 4px; font-size: 10px; }
+.sort-icon.active { color: #337ab7; }
+
+/* Pagination inside the table partial */
+.admin-content-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Tag pills */
+.tag-pill {
+    display: inline-block;
+    background: #eef;
+    border: 1px solid #cce;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    color: #336;
+    margin: 1px;
+}
+
+/* Checkbox column */
+.col-cb { width: 36px; text-align: center; }
+
+/* ACL column line height */
+.table-condensed > tbody > tr > td {
+  line-height: 1.1rem;
+}
+
+/* Consistent bold headers */
+.table > thead > tr > th {
+    font-weight: 600;
+}
+
+/* Scrollable table container with sticky header */
+#admin-content-table-container {
+    max-height: calc(100vh - 260px);
+    overflow-x: auto;
+    overflow-y: auto;
+}
+#admin-content-table-container .table > thead > tr > th {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 3;
+    box-shadow: 0 1px 2px rgba(0,0,0,.1);
+}
+</style>
+
+<div class="full-width no-dblclick">
+<div class="admin-content-wrapper" id="admin-content-wrapper">
+
+    {# --------------------------------------------------------
+       Flash / bulk-action result area
+       -------------------------------------------------------- #}
+    <div id="admin-bulk-result" aria-live="polite"></div>
+
+    {# --------------------------------------------------------
+       Filter bar  (values are included in every HTMX request)
+       -------------------------------------------------------- #}
+    <div class="admin-content-filter-bar">
+        <form id="admin-content-filter-form" autocomplete="off">
+
+            <div class="form-group">
+                <label for="acf-search">{{ _t('TEMPLATE_SEARCH') }}</label>
+                <input id="acf-search" type="search" name="search" class="form-control"
+                       placeholder="{{ _t('TEMPLATE_SEARCH_PLACEHOLDER') }}">
+            </div>
+
+            <div class="form-group">
+                <label for="acf-type">Type</label>
+                <select id="acf-type" name="type" class="form-control">
+                    <option value="all">— {{ _t('GROUP_SELECTION') }} —</option>
+                    <option value="pages">{{ _t('ACLS_SELECT_PAGES_FILTER_ON_PAGES') }}</option>
+                    <option value="bazar">Toutes les fiches bazar</option>
+                    {% for id, form in forms %}
+                    <option value="{{ id }}">{{ _t('ACLS_SELECT_PAGES_FILTER_FORM')|replace({'{name}': form.bn_label_nature, '{id}': id}) }}</option>
+                    {% endfor %}
+                    <option value="lists">{{ _t('ACLS_SELECT_PAGES_FILTER_ON_LISTS') }}</option>
+                    <option value="special">{{ _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES') }}</option>
+                    <option value="comments">Commentaires</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="acf-owner">{{ _t('TEMPLATE_OWNER') }}</label>
+                <select id="acf-owner" name="owner" class="form-control">
+                    <option value="">— {{ _t('GROUP_SELECTION') }} —</option>
+                    {% for owner in owners %}
+                    <option value="{{ owner|e('html_attr') }}">{{ owner|e }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="acf-tag">Mots clés</label>
+                <input id="acf-tag" type="text" name="tag_filter" class="form-control"
+                       placeholder="{{ _t('ACLS_SELECT_PAGES_FILTER') }}">
+            </div>
+
+            <div class="form-group">
+                <label for="acf-perpage">Par page</label>
+                <select id="acf-perpage" name="perpage" class="form-control">
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                    <option value="150">150</option>
+                    <option value="200">200</option>
+                    <option value="500">500</option>
+                </select>
+            </div>
+
+            {# Hidden state fields (updated by JS) #}
+            <input type="hidden" id="acf-sort" name="sort" value="tag">
+            <input type="hidden" id="acf-dir"  name="dir"  value="asc">
+            <input type="hidden" id="acf-page" name="page" value="1">
+
+            <div class="form-group">
+                <button type="button" id="acf-reset" class="btn btn-default btn-sm">
+                    <i class="fa fa-times"></i> {{ _t('YW_CANCEL') }}
+                </button>
+            </div>
+
+        </form>
+    </div>{# /.admin-content-filter-bar #}
+
+    {# --------------------------------------------------------
+       Table container – HTMX target
+       -------------------------------------------------------- #}
+    <div id="table-spinner" class="text-center htmx-indicator" style="padding:40px 0;">
+        <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
+    </div>
+
+    <div id="admin-content-table-container"
+         hx-get="{{ apiUrl }}"
+         hx-trigger="refreshTable from:body"
+         hx-include="#admin-content-filter-form"
+         hx-indicator="#table-spinner"
+         hx-swap="innerHTML">
+    </div>
+
+    {# --------------------------------------------------------
+       Bulk action sticky panel
+       -------------------------------------------------------- #}
+    <div class="admin-bulk-panel" id="admin-bulk-panel" aria-live="polite">
+        <span class="bulk-count" id="bulk-count-label">0 {{ _t('PAGES') }}</span>
+
+        {% if not isHibernated %}
+        <button type="button" class="btn btn-warning btn-sm"
+                data-toggle="modal" data-target="#modal-acls"
+                id="btn-bulk-acls"
+                onclick="adminContent.populateModal('acls')">
+            <i class="fa fa-lock"></i> Droits d'accès
+        </button>
+
+        <button type="button" class="btn btn-info btn-sm"
+                data-toggle="modal" data-target="#modal-theme"
+                id="btn-bulk-theme"
+                onclick="adminContent.populateModal('theme')">
+            <i class="fa fa-paint-brush"></i> Thème
+        </button>
+        {% endif %}
+
+        <button type="button" class="btn btn-danger btn-sm"
+                data-toggle="modal" data-target="#modal-delete"
+                id="btn-bulk-delete"
+                onclick="adminContent.populateModal('delete')">
+            <i class="fa fa-trash"></i> {{ _t('DELETE') }}
+        </button>
+
+        <button type="button" class="btn btn-default btn-sm" onclick="adminContent.clearSelection()">
+            <i class="fa fa-times-circle"></i> {{ _t('YW_CANCEL') }}
+        </button>
+    </div>
+
+    {# ============================================================
+       MODALS
+       ============================================================ #}
+
+    {# ---- DELETE modal ---- #}
+    <div class="modal fade" id="modal-delete" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">
+                        <i class="fa fa-trash text-danger"></i> {{ _t('DELETE') }}
+                    </h4>
+                </div>
+                <form hx-post="{{ bulkApiUrl }}"
+                      hx-target="#admin-bulk-result"
+                      hx-swap="innerHTML"
+                      id="form-delete">
+                    <div class="modal-body">
+                        <div class="alert alert-danger">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <strong>Action irréversible</strong> —
+                            Cette action supprime définitivement toutes les pages sélectionnées.
+                        </div>
+                        <p>Sélectionnées : <strong id="delete-count-label">0</strong> page(s)</p>
+                        <div id="delete-pages-list" class="well well-sm" style="max-height:150px;overflow-y:auto;font-size:12px;"></div>
+                        <input type="hidden" name="bulk_action" value="delete">
+                        <input type="hidden" name="csrf-token"
+                               value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+                        <div id="delete-pages-inputs"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fa fa-trash"></i> {{ _t('DELETE') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# ---- ACLs modal ---- #}
+    <div class="modal fade" id="modal-acls" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">
+                        <i class="fa fa-lock text-warning"></i> Modifier les droits d'accès
+                    </h4>
+                </div>
+                <form hx-post="{{ bulkApiUrl }}"
+                      hx-target="#admin-bulk-result"
+                      hx-swap="innerHTML"
+                      id="form-acls">
+                    <div class="modal-body">
+
+                        <p>
+                            Sélectionnées : <strong id="acls-count-label">0</strong> page(s)
+                        </p>
+                        <div id="acls-pages-inputs"></div>
+                        <input type="hidden" name="bulk_action" value="change-acls">
+                        <input type="hidden" name="csrf-token"
+                               value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+
+                        <div class="form-group">
+                            <label>Mode d'application</label>
+                            <div>
+                                <label class="radio-inline">
+                                    <input type="radio" name="acl_mode" value="replace" checked>
+                                    {{ _t('ACLS_REPLACE_SELECTED_PAGES') }}
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="acl_mode" value="append">
+                                    Ajouter aux droits existants
+                                </label>
+                                <label class="radio-inline">
+                                    <input type="radio" name="acl_mode" value="default">
+                                    {{ _t('ACLS_RESET_SELECTED_PAGES') }}
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info" style="font-size:12px;">
+                            {{ _t('ACLS_HELPER')|raw }}
+                        </div>
+
+                        <div class="row">
+                            {% for role in ['read','write','comment'] %}
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label>
+                                        {% if role == 'read' %}{{ _t('YW_ACLS_READ') }}
+                                        {% elseif role == 'write' %}{{ _t('YW_ACLS_WRITE') }}
+                                        {% else %}{{ _t('YW_ACLS_COMMENT') }}
+                                        {% endif %}
+                                    </label>
+                                    <select name="acl_{{ role }}" class="form-control acl-select">
+                                        <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
+                                        {% if role == 'comment' %}
+                                        <option value="comments-closed">{{ _t('ACLS_COMMENTS_CLOSED') }}</option>
+                                        {% else %}
+                                        <option value="*">{{ _t('ACLS_EVERYBODY') }}</option>
+                                        {% endif %}
+                                        <option value="+">{{ _t('ACLS_AUTHENTIFICATED_USERS') }}</option>
+                                        <option value="%">{{ _t('ACLS_OWNER') }}</option>
+                                        {% for group in groups %}
+                                        <option value="@{{ group }}">@{{ group }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input type="text" name="acl_{{ role }}_custom"
+                                           class="form-control" style="margin-top:4px;"
+                                           placeholder="{{ _t('ACLS_LIST_OF_ACLS') }}">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fa fa-save"></i> {{ _t('ACLS_UPDATE') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {# ---- Theme modal ---- #}
+    <div class="modal fade" id="modal-theme" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">
+                        <i class="fa fa-paint-brush text-info"></i> {{ _t('GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES') }}
+                    </h4>
+                </div>
+                <form hx-post="{{ bulkApiUrl }}"
+                      hx-target="#admin-bulk-result"
+                      hx-swap="innerHTML"
+                      id="form-theme">
+                    <div class="modal-body">
+
+                        <p>Sélectionnées : <strong id="theme-count-label">0</strong> page(s)</p>
+                        <div id="theme-pages-inputs"></div>
+                        <input type="hidden" name="bulk_action" value="change-theme">
+                        <input type="hidden" name="csrf-token"
+                               value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
+
+                        <div class="form-group">
+                            <label class="checkbox">
+                                <input type="checkbox" name="reset_theme" value="1" id="chk-reset-theme">
+                                {{ _t('GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES') }}
+                            </label>
+                        </div>
+
+                        <div id="theme-fields">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Theme</label>
+                                        <select name="theme" id="theme-select" class="form-control">
+                                            <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
+                                            {% for key, tpl in templates %}
+                                            <option value="{{ key }}">{{ tpl.name ?? key }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Squelette</label>
+                                        <select name="squelette" id="squelette-select" class="form-control">
+                                            <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Style</label>
+                                        <select name="style" id="style-select" class="form-control">
+                                            <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label>Preset</label>
+                                        <select name="preset" id="preset-select" class="form-control">
+                                            <option value="">— {{ _t('ACLS_NO_CHANGE') }} —</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fa fa-save"></i> {{ _t('ACLS_UPDATE') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>{# /.admin-content-wrapper #}
+</div>{# /.full-width #}
+
+<script>
+(function () {
+    'use strict';
+
+    // -----------------------------------------------------------------------
+    // Templates data (PHP → JS) for dynamic squelette/style/preset selects
+    // -----------------------------------------------------------------------
+    var TEMPLATES = {{ templates|json_encode|raw }};
+
+    // Translated UI strings
+    var I18N = {
+        noChange:    '— {{ _t('ACLS_NO_CHANGE')|e('js') }} —',
+        selectedFmt: 'Sélectionnées\u00a0: %d page(s)',
+    };
+
+    // -----------------------------------------------------------------------
+    // State
+    // -----------------------------------------------------------------------
+    var selectedPages = new Set();   // page tags currently selected
+
+    // -----------------------------------------------------------------------
+    // Core object
+    // -----------------------------------------------------------------------
+    var adminContent = {
+
+        // -- Selection management ------------------------------------------
+        togglePage: function (tag, checked) {
+            if (checked) {
+                selectedPages.add(tag);
+            } else {
+                selectedPages.delete(tag);
+            }
+            adminContent.updateBulkPanel();
+        },
+
+        toggleCurrentPage: function (checked) {
+            document.querySelectorAll('#admin-content-table-container .page-checkbox')
+                .forEach(function (cb) {
+                    cb.checked = checked;
+                    adminContent.togglePage(cb.dataset.tag, checked);
+                });
+        },
+
+        clearSelection: function () {
+            selectedPages.clear();
+            document.querySelectorAll('.page-checkbox').forEach(function (cb) {
+                cb.checked = false;
+            });
+            var sa = document.getElementById('select-all-current');
+            if (sa) sa.checked = false;
+            adminContent.updateBulkPanel();
+        },
+
+        // Re-check boxes for already-selected pages after an HTMX swap
+        restoreChecks: function () {
+            document.querySelectorAll('#admin-content-table-container .page-checkbox')
+                .forEach(function (cb) {
+                    cb.checked = selectedPages.has(cb.dataset.tag);
+                });
+        },
+
+        // -- Bulk panel UI --------------------------------------------------
+        updateBulkPanel: function () {
+            var panel = document.getElementById('admin-bulk-panel');
+            var label = document.getElementById('bulk-count-label');
+            var n     = selectedPages.size;
+            label.textContent = I18N.selectedFmt.replace('%d', n);
+            if (n > 0) {
+                panel.classList.add('visible');
+            } else {
+                panel.classList.remove('visible');
+            }
+        },
+
+        // -- Modal population -----------------------------------------------
+        populateModal: function (type) {
+            var pages  = Array.from(selectedPages);
+            var inputs = '';
+            pages.forEach(function (tag) {
+                inputs += '<input type="hidden" name="pages[]" value="' + adminContent.esc(tag) + '">';
+            });
+
+            var countEl, listEl, inputEl;
+
+            if (type === 'delete') {
+                document.getElementById('delete-count-label').textContent = pages.length;
+                document.getElementById('delete-pages-list').textContent  = pages.join(', ');
+                document.getElementById('delete-pages-inputs').innerHTML   = inputs;
+
+            } else if (type === 'acls') {
+                document.getElementById('acls-count-label').textContent = pages.length;
+                document.getElementById('acls-pages-inputs').innerHTML   = inputs;
+
+            } else if (type === 'theme') {
+                document.getElementById('theme-count-label').textContent = pages.length;
+                document.getElementById('theme-pages-inputs').innerHTML   = inputs;
+            }
+        },
+
+        // -- Sorting --------------------------------------------------------
+        setSort: function (col) {
+            var sortEl = document.getElementById('acf-sort');
+            var dirEl  = document.getElementById('acf-dir');
+            var cur    = sortEl.value;
+            var curDir = dirEl.value;
+
+            if (cur === col) {
+                dirEl.value = curDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortEl.value = col;
+                dirEl.value  = 'asc';
+            }
+            // Reset to page 1
+            document.getElementById('acf-page').value = 1;
+            pushState();
+            adminContent.loadTable();
+        },
+
+        // -- Pagination -----------------------------------------------------
+        goToPage: function (p) {
+            document.getElementById('acf-page').value = p;
+            pushState();
+            adminContent.loadTable();
+        },
+
+        // -- Load table via HTMX -------------------------------------------
+        loadTable: function () {
+            var params = new URLSearchParams(
+                new FormData(document.getElementById('admin-content-filter-form'))
+            );
+            htmx.ajax('GET', '{{ apiUrl }}?' + params.toString(), {
+                target:  '#admin-content-table-container',
+                swap:    'innerHTML',
+                indicator: '#table-spinner'
+            });
+        },
+
+        // -- Escaping helper -----------------------------------------------
+        esc: function (str) {
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        },
+    };
+
+    // Make accessible globally (called from inline event attrs)
+    window.adminContent = adminContent;
+
+    // -----------------------------------------------------------------------
+    // Debounce utility
+    // -----------------------------------------------------------------------
+    function debounce(fn, ms) {
+        var t;
+        return function () {
+            clearTimeout(t);
+            t = setTimeout(fn, ms);
+        };
+    }
+
+    // -----------------------------------------------------------------------
+    // URL sync helpers
+    // -----------------------------------------------------------------------
+    var DEFAULTS = { search: '', type: 'all', owner: '', tag_filter: '', perpage: '50', sort: 'tag', dir: 'asc', page: '1' };
+
+    // The YesWiki page tag is always the first query segment (e.g. "?GererSite&…").
+    // Extract it once so we can preserve it when rewriting the query string.
+    var PAGE_TAG_SEGMENT = (function () {
+        var raw = location.search.slice(1); // drop leading '?'
+        var first = raw.split('&')[0];
+        // It's the page tag if it contains no '=' or its value is empty
+        return (first && first.indexOf('=') === -1) ? first : '';
+    }());
+
+    function pushState() {
+        var params = new URLSearchParams();
+        var data   = new FormData(filterForm);
+        data.forEach(function (val, key) {
+            if (val !== '' && val !== DEFAULTS[key]) {
+                params.set(key, val);
+            }
+        });
+        var qs = params.toString();
+        var url = '?' + PAGE_TAG_SEGMENT + (qs ? ('&' + qs) : '');
+        history.replaceState(null, '', url);
+    }
+
+    function restoreFromUrl() {
+        var params = new URLSearchParams(location.search);
+        ['search', 'type', 'owner', 'tag_filter', 'perpage'].forEach(function (name) {
+            var el = filterForm.querySelector('[name="' + name + '"]');
+            if (el && params.has(name)) el.value = params.get(name);
+        });
+        ['sort', 'dir', 'page'].forEach(function (name) {
+            var el = document.getElementById('acf-' + name);
+            if (el && params.has(name)) el.value = params.get(name);
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // Filter form events
+    // -----------------------------------------------------------------------
+    var filterForm = document.getElementById('admin-content-filter-form');
+    var debouncedLoad = debounce(function () {
+        document.getElementById('acf-page').value = 1;
+        pushState();
+        adminContent.loadTable();
+    }, 350);
+
+    filterForm.addEventListener('input',  function (e) {
+        if (e.target.type === 'search' || e.target.type === 'text') {
+            debouncedLoad();
+        }
+    });
+    filterForm.addEventListener('change', function (e) {
+        if (e.target.tagName === 'SELECT') {
+            document.getElementById('acf-page').value = 1;
+            pushState();
+            adminContent.loadTable();
+        }
+    });
+
+    document.getElementById('acf-reset').addEventListener('click', function () {
+        filterForm.reset();
+        document.getElementById('acf-sort').value = 'tag';
+        document.getElementById('acf-dir').value  = 'asc';
+        document.getElementById('acf-page').value = '1';
+        pushState();
+        adminContent.loadTable();
+    });
+
+    // Restore filter state from URL, then fire initial table load.
+    document.addEventListener('DOMContentLoaded', function () {
+        restoreFromUrl();
+        pushState();
+        adminContent.loadTable();
+    });
+
+    // -----------------------------------------------------------------------
+    // HTMX: restore checkbox state after table swap
+    // -----------------------------------------------------------------------
+    document.body.addEventListener('htmx:afterSwap', function (e) {
+        if (e.detail.target.id === 'admin-content-table-container') {
+            adminContent.restoreChecks();
+        }
+    });
+
+    // -----------------------------------------------------------------------
+    // After bulk form submission: close the modal that triggered it
+    // -----------------------------------------------------------------------
+    ['form-delete','form-acls','form-theme'].forEach(function (id) {
+        var form = document.getElementById(id);
+        if (!form) return;
+        form.addEventListener('htmx:afterRequest', function (e) {
+            if (e.detail.successful) {
+                // close Bootstrap modal
+                jQuery(form).closest('.modal').modal('hide');
+                adminContent.clearSelection();
+            }
+        });
+    });
+
+    // -----------------------------------------------------------------------
+    // Theme modal: dynamic squelette / style / preset selects
+    // -----------------------------------------------------------------------
+    var themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+        themeSelect.addEventListener('change', function () {
+            adminContent.updateThemeOptions(this.value);
+        });
+    }
+
+    adminContent.updateThemeOptions = function (themeKey) {
+        var sqEl   = document.getElementById('squelette-select');
+        var stEl   = document.getElementById('style-select');
+        var prEl   = document.getElementById('preset-select');
+        var tpl    = TEMPLATES[themeKey] || {};
+        var blank  = '<option value="">' + adminContent.esc(I18N.noChange) + '</option>';
+
+        [sqEl, stEl, prEl].forEach(function (el) {
+            el.innerHTML = blank;
+        });
+
+        (tpl.squelette || []).forEach(function (v) {
+            sqEl.innerHTML += '<option value="' + adminContent.esc(v) + '">' + adminContent.esc(v) + '</option>';
+        });
+        (tpl.style || []).forEach(function (v) {
+            stEl.innerHTML += '<option value="' + adminContent.esc(v) + '">' + adminContent.esc(v) + '</option>';
+        });
+        var presets = tpl.presets ? Object.keys(tpl.presets) : [];
+        presets.forEach(function (v) {
+            prEl.innerHTML += '<option value="' + adminContent.esc(v) + '">' + adminContent.esc(v) + '</option>';
+        });
+    };
+
+    // Toggle reset mode: disable individual selects when reset is checked
+    var chkReset = document.getElementById('chk-reset-theme');
+    if (chkReset) {
+        chkReset.addEventListener('change', function () {
+            var disabled = this.checked;
+            ['theme-select','squelette-select','style-select','preset-select'].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.disabled = disabled;
+            });
+        });
+    }
+
+    // -----------------------------------------------------------------------
+    // ACLs modal: custom text input overrides the select
+    // -----------------------------------------------------------------------
+    document.querySelectorAll('.acl-select').forEach(function (sel) {
+        var customInput = sel.nextElementSibling;
+        sel.addEventListener('change', function () {
+            if (this.value) {
+                customInput.value = '';
+            }
+        });
+        customInput.addEventListener('input', function () {
+            if (this.value) {
+                sel.value = '';
+            }
+        });
+    });
+    // Before submitting acls form, copy custom values to the select name
+    document.getElementById('form-acls').addEventListener('htmx:configRequest', function (e) {
+        ['read','write','comment'].forEach(function (r) {
+            var sel  = document.querySelector('#form-acls [name="acl_' + r + '"]');
+            var cust = document.querySelector('#form-acls [name="acl_' + r + '_custom"]');
+            if (cust && cust.value.trim()) {
+                // rename the select so only the custom value gets submitted
+                sel.disabled = true;
+                var hidden = document.createElement('input');
+                hidden.type  = 'hidden';
+                hidden.name  = 'acl_' + r;
+                hidden.value = cust.value.trim();
+                cust.parentNode.appendChild(hidden);
+            }
+        });
+    });
+
+}());
+</script>

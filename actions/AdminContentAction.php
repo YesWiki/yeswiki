@@ -1,0 +1,56 @@
+<?php
+
+use YesWiki\Core\Controller\GroupController;
+use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Security\Controller\SecurityController;
+
+class AdminContentAction extends YesWikiAction
+{
+    public function run()
+    {
+        if (!$this->wiki->UserIsAdmin()) {
+            return $this->render('@templates/alert-message.twig', [
+                'type' => 'danger',
+                'message' => _t('ACLS_RESERVED_FOR_ADMINS'),
+            ]);
+        }
+
+        $dbService = $this->getService(DbService::class);
+        $groupController = $this->getService(GroupController::class);
+        $themeManager = $this->getService(ThemeManager::class);
+        $securityController = $this->getService(SecurityController::class);
+
+        // Forms for the type filter dropdown (bazar may not be installed)
+        $forms = [];
+        try {
+            $forms = $this->getService(\YesWiki\Bazar\Service\FormManager::class)->getAll();
+        } catch (\Throwable $e) {
+            // bazar not available
+        }
+
+        // Distinct owners for the filter dropdown
+        $ownersRows = $dbService->loadAll(
+            "SELECT DISTINCT owner FROM {$dbService->prefixTable('pages')}"
+            . " WHERE latest='Y' AND comment_on='' AND owner != '' ORDER BY owner ASC"
+        );
+        $owners = array_column($ownersRows ?? [], 'owner');
+
+        // Groups for ACL selectors
+        $groups = $groupController->getAll();
+
+        // Templates for the theme bulk-action modal
+        $templates = $themeManager->getTemplates();
+
+        return $this->render('@core/admin-content-action.twig', [
+            'owners'      => $owners,
+            'groups'      => $groups,
+            'forms'       => $forms,
+            'templates'   => $templates,
+            'isHibernated'=> $securityController->isWikiHibernated(),
+            'apiUrl'      => $this->wiki->Href('', 'api/admin/pages'),
+            'bulkApiUrl'  => $this->wiki->Href('', 'api/admin/pages/bulk'),
+        ]);
+    }
+}
