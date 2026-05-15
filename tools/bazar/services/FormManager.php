@@ -303,7 +303,7 @@ class FormManager
             . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '",' : '')
             . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
             . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
-            . ' WHERE `bn_id_nature`=' . $this->dbService->escape($data['bn_id_nature']));
+            . ' WHERE `bn_id_nature`=' . intval($data['bn_id_nature']));
     }
 
     public function clone($id)
