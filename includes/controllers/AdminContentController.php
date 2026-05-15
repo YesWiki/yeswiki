@@ -6,7 +6,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ThemeManager;
@@ -14,18 +13,19 @@ use YesWiki\Core\YesWikiController;
 
 class AdminContentController extends YesWikiController
 {
-    private const ALLOWED_SORTS    = ['tag', 'time', 'owner', 'type'];
-    private const SORT_COLUMNS     = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'tp.value'];
+    private const ALLOWED_SORTS = ['tag', 'time', 'owner', 'type'];
+    private const SORT_COLUMNS = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'tp.value'];
     private const ALLOWED_PERPAGES = [50, 100, 150, 200, 500];
-    private const ALLOWED_TYPES    = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
-    private const TAG_PROPERTY     = 'http://outils-reseaux.org/_vocabulary/tag';
-    private const TYPE_PROPERTY    = 'http://outils-reseaux.org/_vocabulary/type';
-    private const SPECIAL_PAGES    = [
-        'BazaR','GererSite','GererDroits','GererThemes','GererMisesAJour',
-        'GererUtilisateurs','GererDroitsActions','GererDroitsHandlers','TableauDeBord',
-        'PageTitre','PageMenuHaut','PageRapideHaut','PageHeader','PageFooter',
-        'PageCSS','PageMenu','PageColonneDroite','MotDePassePerdu',
-        'ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki',
+    private const ALLOWED_TYPES = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
+    private const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
+    private const TYPE_PROPERTY = 'http://outils-reseaux.org/_vocabulary/type';
+    private const METADATA_PROPERTY = 'http://outils-reseaux.org/_vocabulary/metadata';
+    private const SPECIAL_PAGES = [
+        'BazaR', 'GererSite', 'GererDroits', 'GererThemes', 'GererMisesAJour',
+        'GererUtilisateurs', 'GererDroitsActions', 'GererDroitsHandlers', 'TableauDeBord',
+        'PageTitre', 'PageMenuHaut', 'PageRapideHaut', 'PageHeader', 'PageFooter',
+        'PageCSS', 'PageMenu', 'PageColonneDroite', 'MotDePassePerdu',
+        'ParametresUtilisateur', 'GererConfig', 'ActuYeswiki', 'LookWiki',
     ];
 
     // -------------------------------------------------------------------------
@@ -41,20 +41,21 @@ class AdminContentController extends YesWikiController
 
         $dbService = $this->getService(DbService::class);
 
-        [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter, $aclFilter]
+        [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter, $aclFilter, $themeFilter]
             = $this->extractListParams($request);
 
-        [$whereClause, $having] = $this->buildWhere($dbService, $search, $type, $ownerFilter, $tagFilter, $aclFilter);
+        [$whereClause, $having] = $this->buildWhere($dbService, $search, $type, $ownerFilter, $tagFilter, $aclFilter, $themeFilter);
 
-        $offset    = ($page - 1) * $perpage;
-        $sortCol   = self::SORT_COLUMNS[$sort] ?? 'p.tag';
-        $dirSql    = $dir === 'desc' ? 'DESC' : 'ASC';
+        $offset = ($page - 1) * $perpage;
+        $sortCol = self::SORT_COLUMNS[$sort] ?? 'p.tag';
+        $dirSql = $dir === 'desc' ? 'DESC' : 'ASC';
 
-        $pT       = $dbService->prefixTable('pages');
-        $aT       = $dbService->prefixTable('acls');
-        $trT      = $dbService->prefixTable('triples');
-        $tagProp  = self::TAG_PROPERTY;
+        $pT = $dbService->prefixTable('pages');
+        $aT = $dbService->prefixTable('acls');
+        $trT = $dbService->prefixTable('triples');
+        $tagProp = self::TAG_PROPERTY;
         $typeProp = self::TYPE_PROPERTY;
+        $metaProp = self::METADATA_PROPERTY;
 
         $sql = <<<SQL
             SELECT
@@ -72,13 +73,15 @@ class AdminContentController extends YesWikiController
                         SUBSTRING_INDEX(SUBSTRING(p.body, LOCATE('"id_typeannonce":"', p.body) + 18), '"', 1)
                     ELSE NULL
                 END) AS form_id,
-                GROUP_CONCAT(DISTINCT tg.value ORDER BY tg.value SEPARATOR ',') AS page_tags
+                GROUP_CONCAT(DISTINCT tg.value ORDER BY tg.value SEPARATOR ',') AS page_tags,
+                MAX(tm.value) AS page_metadata
             FROM {$pT} p
             LEFT JOIN {$aT} a_r ON a_r.page_tag = p.tag AND a_r.privilege = 'read'
             LEFT JOIN {$aT} a_w ON a_w.page_tag = p.tag AND a_w.privilege = 'write'
             LEFT JOIN {$aT} a_c ON a_c.page_tag = p.tag AND a_c.privilege = 'comment'
             LEFT JOIN {$trT} tg ON tg.resource = p.tag AND tg.property = '{$tagProp}'
             LEFT JOIN {$trT} tp ON tp.resource = p.tag AND tp.property = '{$typeProp}'
+            LEFT JOIN {$trT} tm ON tm.resource = p.tag AND tm.property = '{$metaProp}'
             WHERE {$whereClause}
             GROUP BY p.tag, p.time, p.owner, p.comment_on, p.user, a_r.list, a_w.list, a_c.list, tp.value
             {$having}
@@ -86,7 +89,7 @@ class AdminContentController extends YesWikiController
             LIMIT {$perpage} OFFSET {$offset}
         SQL;
 
-        $rows  = $dbService->loadAll($sql) ?? [];
+        $rows = $dbService->loadAll($sql) ?? [];
 
         // Count query – includes ACL joins so aclFilter conditions work
         $countSql = <<<SQL
@@ -97,48 +100,60 @@ class AdminContentController extends YesWikiController
             LEFT JOIN {$aT} a_c ON a_c.page_tag = p.tag AND a_c.privilege = 'comment'
             WHERE {$whereClause}
         SQL;
-        $total = (int) ($dbService->loadSingle($countSql)['total'] ?? 0);
+        $total = (int)($dbService->loadSingle($countSql)['total'] ?? 0);
 
-        $totalPages = max(1, (int) ceil($total / $perpage));
+        $totalPages = max(1, (int)ceil($total / $perpage));
 
-        $defaultRead    = $this->wiki->config['default_read_acl']    ?? '*';
-        $defaultWrite   = $this->wiki->config['default_write_acl']   ?? '*';
+        $defaultRead = $this->wiki->config['default_read_acl'] ?? '*';
+        $defaultWrite = $this->wiki->config['default_write_acl'] ?? '*';
         $defaultComment = $this->wiki->config['default_comment_acl'] ?? '*';
 
         $pages = array_map(function ($r) use ($defaultRead, $defaultWrite, $defaultComment) {
+            $metadata = !empty($r['page_metadata']) ? (json_decode($r['page_metadata'], true) ?? []) : [];
             return [
-                'tag'        => $r['tag'],
-                'time'       => $r['time'],
-                'owner'      => $r['owner'] ?? '',
-                'last_editor'=> $r['last_editor'] ?? '',
-                'acl_read'   => $r['acl_read']    ?? $defaultRead,
-                'acl_write'  => $r['acl_write']   ?? $defaultWrite,
-                'acl_comment'=> $r['acl_comment'] ?? $defaultComment,
-                'comment_on' => $r['comment_on']  ?? '',
-                'page_type'  => $r['page_type']   ?? '',
-                'form_id'    => $r['form_id']      ?? '',
-                'tags'       => !empty($r['page_tags']) ? explode(',', $r['page_tags']) : [],
+                'tag' => $r['tag'],
+                'time' => $r['time'],
+                'owner' => $r['owner'] ?? '',
+                'last_editor' => $r['last_editor'] ?? '',
+                'acl_read' => $r['acl_read'] ?? $defaultRead,
+                'acl_write' => $r['acl_write'] ?? $defaultWrite,
+                'acl_comment' => $r['acl_comment'] ?? $defaultComment,
+                'comment_on' => $r['comment_on'] ?? '',
+                'page_type' => $r['page_type'] ?? '',
+                'form_id' => $r['form_id'] ?? '',
+                'tags' => !empty($r['page_tags']) ? explode(',', $r['page_tags']) : [],
                 'is_special' => in_array($r['tag'], self::SPECIAL_PAGES, true),
+                'theme' => $metadata['theme'] ?? '',
+                'squelette' => $metadata['squelette'] ?? '',
+                'style' => $metadata['style'] ?? '',
+                'preset' => $metadata['favorite_preset'] ?? '',
             ];
         }, $rows);
 
         $forms = $this->getForms();
+        $themeManager = $this->getService(ThemeManager::class);
 
         $html = $this->render('@core/admin-content-table.twig', [
-            'pages'       => $pages,
-            'forms'       => $forms,
+            'pages' => $pages,
+            'forms' => $forms,
             'currentPage' => $page,
-            'perpage'     => $perpage,
-            'totalPages'  => $totalPages,
-            'total'       => $total,
-            'sort'        => $sort,
-            'dir'         => $dir,
-            'search'      => $search,
-            'type'        => $type,
+            'perpage' => $perpage,
+            'totalPages' => $totalPages,
+            'total' => $total,
+            'sort' => $sort,
+            'dir' => $dir,
+            'search' => $search,
+            'type' => $type,
             'ownerFilter' => $ownerFilter,
-            'tagFilter'   => $tagFilter,
-            'aclFilter'   => $aclFilter,
-            'apiUrl'      => $this->wiki->Href('', 'api/admin/pages'),
+            'tagFilter' => $tagFilter,
+            'aclFilter' => $aclFilter,
+            'themeFilter' => $themeFilter,
+            'themes' => array_keys($themeManager->getTemplates()),
+            'defaultTheme' => $themeManager->getFavoriteTheme(),
+            'defaultSquelette' => $themeManager->getFavoriteSquelette(),
+            'defaultStyle' => $themeManager->getFavoriteStyle(),
+            'defaultPreset' => $themeManager->getFavoritePreset(),
+            'apiUrl' => $this->wiki->Href('', 'api/admin/pages'),
         ]);
 
         return new Response($html, 200, ['Content-Type' => 'text/html; charset=utf-8']);
@@ -166,7 +181,7 @@ class AdminContentController extends YesWikiController
             );
         }
 
-        $action   = $request->request->get('bulk_action', '');
+        $action = $request->request->get('bulk_action', '');
         $rawPages = $request->request->all()['pages'] ?? [];
 
         if (!is_array($rawPages) || empty($rawPages)) {
@@ -177,8 +192,8 @@ class AdminContentController extends YesWikiController
         }
 
         $pageTags = array_values(array_filter($rawPages, 'is_string'));
-        $success  = [];
-        $errors   = [];
+        $success = [];
+        $errors = [];
 
         switch ($action) {
             case 'delete':
@@ -202,7 +217,7 @@ class AdminContentController extends YesWikiController
         // Tell HTMX on the client to also refresh the table
         return new Response($html, 200, [
             'Content-Type' => 'text/html; charset=utf-8',
-            'HX-Trigger'   => 'refreshTable',
+            'HX-Trigger' => 'refreshTable',
         ]);
     }
 
@@ -212,9 +227,9 @@ class AdminContentController extends YesWikiController
 
     private function bulkDelete(array $pageTags, array &$success, array &$errors): void
     {
-        $pageManager    = $this->getService(PageManager::class);
+        $pageManager = $this->getService(PageManager::class);
         $pageController = $this->getService(PageController::class);
-        $dbService      = $this->getService(DbService::class);
+        $dbService = $this->getService(DbService::class);
 
         foreach ($pageTags as $tag) {
             try {
@@ -239,10 +254,10 @@ class AdminContentController extends YesWikiController
 
     private function bulkChangeAcls(Request $request, array $pageTags, array &$success, array &$errors): void
     {
-        $mode      = $request->request->get('acl_mode', 'replace');
+        $mode = $request->request->get('acl_mode', 'replace');
         $appendAcl = ($mode === 'append');
-        $newRead    = $request->request->get('acl_read', '');
-        $newWrite   = $request->request->get('acl_write', '');
+        $newRead = $request->request->get('acl_read', '');
+        $newWrite = $request->request->get('acl_write', '');
         $newComment = $request->request->get('acl_comment', '');
 
         foreach ($pageTags as $tag) {
@@ -270,10 +285,10 @@ class AdminContentController extends YesWikiController
     private function bulkChangeTheme(Request $request, array $pageTags, array &$success, array &$errors): void
     {
         $pageManager = $this->getService(PageManager::class);
-        $theme       = $request->request->get('theme', '');
-        $style       = $request->request->get('style', '');
-        $squelette   = $request->request->get('squelette', '');
-        $preset      = $request->request->get('preset', '');
+        $theme = $request->request->get('theme', '');
+        $squelette = $request->request->get('squelette', '');
+        $style = $request->request->get('style', '');
+        $preset = $request->request->get('preset', '');
 
         $metadata = [];
         if (!empty($theme)) {
@@ -312,39 +327,40 @@ class AdminContentController extends YesWikiController
 
     private function extractListParams(Request $request): array
     {
-        $page   = max(1, (int) $request->query->get('page', 1));
-        $pp     = (int) $request->query->get('perpage', 50);
+        $page = max(1, (int)$request->query->get('page', 1));
+        $pp = (int)$request->query->get('perpage', 50);
         $perpage = in_array($pp, self::ALLOWED_PERPAGES, true) ? $pp : 50;
         $sortRaw = $request->query->get('sort', 'tag');
-        $sort    = in_array($sortRaw, self::ALLOWED_SORTS, true) ? $sortRaw : 'tag';
-        $dir     = $request->query->get('dir', 'asc') === 'desc' ? 'desc' : 'asc';
-        $search  = trim((string) $request->query->get('search', ''));
+        $sort = in_array($sortRaw, self::ALLOWED_SORTS, true) ? $sortRaw : 'tag';
+        $dir = $request->query->get('dir', 'asc') === 'desc' ? 'desc' : 'asc';
+        $search = trim((string)$request->query->get('search', ''));
         $typeRaw = $request->query->get('type', 'all');
-        $type    = (in_array($typeRaw, self::ALLOWED_TYPES, true) || (ctype_digit((string) $typeRaw) && (int) $typeRaw > 0))
+        $type = (in_array($typeRaw, self::ALLOWED_TYPES, true) || (ctype_digit((string)$typeRaw) && (int)$typeRaw > 0))
             ? $typeRaw : 'all';
-        $ownerFilter = trim((string) $request->query->get('owner', ''));
-        $tagFilter   = trim((string) $request->query->get('tag_filter', ''));
-        $aclFilter   = trim((string) $request->query->get('acl_filter', ''));
+        $ownerFilter = trim((string)$request->query->get('owner', ''));
+        $tagFilter = trim((string)$request->query->get('tag_filter', ''));
+        $aclFilter = trim((string)$request->query->get('acl_filter', ''));
+        $themeFilter = trim((string)$request->query->get('theme_filter', ''));
 
-        return [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter, $aclFilter];
+        return [$page, $perpage, $sort, $dir, $search, $type, $ownerFilter, $tagFilter, $aclFilter, $themeFilter];
     }
 
-    private function buildWhere(DbService $db, string $search, string $type, string $ownerFilter, string $tagFilter, string $aclFilter = ''): array
+    private function buildWhere(DbService $db, string $search, string $type, string $ownerFilter, string $tagFilter, string $aclFilter = '', string $themeFilter = ''): array
     {
         $conditions = ["p.latest = 'Y'", $type === 'comments' ? "p.comment_on != ''" : "p.comment_on = ''"];
         $having = '';
 
         if ($search !== '') {
-            $escaped      = $db->escape($search);
-            $conditions[] = "p.tag LIKE '%{$escaped}%'";
+            $escaped = $db->escape($search);
+            $conditions[] = "(p.tag LIKE '%{$escaped}%' OR p.body LIKE '%{$escaped}%')";
         }
 
         if ($ownerFilter !== '') {
-            $escaped      = $db->escape($ownerFilter);
+            $escaped = $db->escape($ownerFilter);
             $conditions[] = "p.owner = '{$escaped}'";
         }
 
-        $trT      = $db->prefixTable('triples');
+        $trT = $db->prefixTable('triples');
         $typeProp = self::TYPE_PROPERTY;
 
         switch ($type) {
@@ -366,8 +382,8 @@ class AdminContentController extends YesWikiController
                 $conditions[] = "p.tag IN ('{$sp}')";
                 break;
             default:
-                if (ctype_digit((string) $type) && (int) $type > 0) {
-                    $escaped      = $db->escape($type);
+                if (ctype_digit((string)$type) && (int)$type > 0) {
+                    $escaped = $db->escape($type);
                     $conditions[] = "p.tag IN (SELECT DISTINCT resource FROM {$trT} WHERE value = 'fiche_bazar' AND property = '{$typeProp}')";
                     $conditions[] = "p.body LIKE '%\"id_typeannonce\":\"{$escaped}\"%'";
                 }
@@ -377,12 +393,27 @@ class AdminContentController extends YesWikiController
         if ($tagFilter !== '') {
             $escaped = $db->escape($tagFilter);
             // tag filter uses the already-joined tg alias, so use HAVING
-            $having  = "HAVING GROUP_CONCAT(DISTINCT tg.value ORDER BY tg.value SEPARATOR ',') LIKE '%{$escaped}%'";
+            $having = "HAVING GROUP_CONCAT(DISTINCT tg.value ORDER BY tg.value SEPARATOR ',') LIKE '%{$escaped}%'";
         }
 
         $aclCondition = $this->buildAclFilterCondition($db, $aclFilter);
         if ($aclCondition !== null) {
             $conditions[] = $aclCondition;
+        }
+
+        if ($themeFilter !== '') {
+            $escaped = $db->escape($themeFilter);
+            $metaProp = self::METADATA_PROPERTY;
+            $trT = $db->prefixTable('triples');
+            $themeManager = $this->getService(ThemeManager::class);
+            $explicitMatch = "EXISTS (SELECT 1 FROM {$trT} tm2 WHERE tm2.resource = p.tag AND tm2.property = '{$metaProp}' AND tm2.value LIKE '%\"theme\":\"{$escaped}\"%')";
+            if ($themeFilter === $themeManager->getFavoriteTheme()) {
+                // Also include pages that have no theme stored (they inherit the wiki default)
+                $noThemeStored = "NOT EXISTS (SELECT 1 FROM {$trT} tm2 WHERE tm2.resource = p.tag AND tm2.property = '{$metaProp}' AND tm2.value LIKE '%\"theme\":\"%')";
+                $conditions[] = "({$explicitMatch} OR {$noThemeStored})";
+            } else {
+                $conditions[] = $explicitMatch;
+            }
         }
 
         return [implode(' AND ', $conditions), $having];
@@ -409,6 +440,7 @@ class AdminContentController extends YesWikiController
         $col = $aclCols[$privilege];
         // Escape MySQL REGEXP metacharacters, then escape for SQL
         $regexpEscaped = $db->escape(preg_replace('/([.+*?\\[\\]^$(){}|\\\\])/', '\\\\$1', $value));
+
         // Match value as a complete line within the ACL text
         return "({$col} REGEXP '(^|\\n|\\r){$regexpEscaped}(\\n|\\r|$)')";
     }

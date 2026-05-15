@@ -22,11 +22,11 @@ class AdminContentAction extends YesWikiAction
         $themeManager = $this->getService(ThemeManager::class);
         $securityController = $this->getService(SecurityController::class);
 
-        // Forms for the type filter dropdown (bazar may not be installed)
+        // Forms for the type filter dropdown
         $forms = [];
         try {
-            $forms = $this->getService(\YesWiki\Bazar\Service\FormManager::class)->getAll();
-        } catch (\Throwable $e) {
+            $forms = $this->getService(YesWiki\Bazar\Service\FormManager::class)->getAll();
+        } catch (Throwable $e) {
             // bazar not available
         }
 
@@ -44,13 +44,13 @@ class AdminContentAction extends YesWikiAction
         $templates = $themeManager->getTemplates();
 
         return $this->render('@core/admin-content-action.twig', [
-            'owners'      => $owners,
-            'groups'      => $groups,
-            'forms'       => $forms,
-            'templates'   => $templates,
-            'isHibernated'=> $securityController->isWikiHibernated(),
-            'apiUrl'      => $this->wiki->Href('', 'api/admin/pages'),
-            'bulkApiUrl'  => $this->wiki->Href('', 'api/admin/pages/bulk'),
+            'owners' => $owners,
+            'groups' => $groups,
+            'forms' => $forms,
+            'templates' => $templates,
+            'isHibernated' => $securityController->isWikiHibernated(),
+            'apiUrl' => $this->wiki->Href('', 'api/admin/pages'),
+            'bulkApiUrl' => $this->wiki->Href('', 'api/admin/pages/bulk'),
         ]);
     }
 }

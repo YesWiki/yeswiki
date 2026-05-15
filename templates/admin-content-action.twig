@@ -4,170 +4,7 @@
    ============================================================ #}
 
 {{ include_javascript('javascripts/vendor/htmx/htmx.min.js') }}
-
-<style>
-/* ------------------------------------------------------------------
-   AdminContent – scoped styles
-   ------------------------------------------------------------------ */
-.admin-content-wrapper {
-    position: relative;
-    padding-left: 1em;
-    padding-right: 1em;
-}
-.admin-content-filter-bar {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    padding: 10px 14px;
-    margin-bottom: 12px;
-}
-/* Filter bar: flex row, each group stacks label above control */
-.admin-content-filter-bar form {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 8px 12px;
-}
-.admin-content-filter-bar .form-group {
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-}
-.admin-content-filter-bar .form-group label {
-    font-size: 11px;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 2px;
-    white-space: nowrap;
-}
-.admin-content-filter-bar .form-control {
-    height: 30px;
-    font-size: 13px;
-    padding: 4px 8px;
-}
-.admin-content-filter-bar input[type="search"],
-.admin-content-filter-bar input[type="text"] {
-    width: 160px;
-}
-.admin-content-filter-bar select {
-    width: auto;
-    min-width: 120px;
-}
-
-/* Bulk panel – sticky at bottom of viewport */
-.admin-bulk-panel {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 1050;
-    background: #2c3e50;
-    color: #fff;
-    padding: 10px 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 -2px 8px rgba(0,0,0,.25);
-    transition: transform .25s ease;
-    transform: translateY(100%);
-}
-.admin-bulk-panel.visible {
-    transform: translateY(0);
-}
-.admin-bulk-panel .bulk-count {
-    font-size: 14px;
-    font-weight: 600;
-    flex: 1;
-}
-.admin-bulk-panel .btn {
-    font-size: 13px;
-}
-
-/* Table loading indicator */
-.htmx-indicator { display: none; }
-.htmx-request .htmx-indicator { display: block; }
-.htmx-request.htmx-indicator { display: block; }
-
-/* ACL badges */
-.acl-badge {
-    display: inline-block;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-    margin: 1px 0;
-}
-.acl-badge-success  { background: #5cb85c; color:#fff; }
-.acl-badge-warning  { background: #f0ad4e; color:#fff; }
-.acl-badge-danger   { background: #d9534f; color:#fff; }
-.acl-badge-primary  { background: #337ab7; color:#fff; }
-.acl-badge-default  { background: #e0e0e0; color:#333; }
-
-/* Sortable column header */
-.sort-link {
-    color: inherit;
-    text-decoration: none;
-    cursor: pointer;
-    white-space: nowrap;
-}
-.sort-link:hover { text-decoration: underline; }
-.sort-icon { color: #999; margin-left: 4px; font-size: 10px; }
-.sort-icon.active { color: #337ab7; }
-
-/* Pagination inside the table partial */
-.admin-content-pager {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 8px;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-/* Tag pills */
-.tag-pill {
-    display: inline-block;
-    background: #eef;
-    border: 1px solid #cce;
-    border-radius: 10px;
-    padding: 1px 7px;
-    font-size: 11px;
-    color: #336;
-    margin: 1px;
-}
-
-/* Checkbox column */
-.col-cb { width: 36px; text-align: center; }
-
-/* Clicking anywhere on a row toggles the checkbox */
-#admin-content-table-container tbody tr { cursor: pointer; }
-#admin-content-table-container tbody tr a { cursor: auto; }
-
-/* ACL column line height */
-.table-condensed > tbody > tr > td {
-  line-height: 1.1rem;
-}
-
-/* Consistent bold headers */
-.table > thead > tr > th {
-    font-weight: 600;
-}
-
-/* Scrollable table container with sticky header */
-#admin-content-table-container {
-    max-height: calc(100vh - 260px);
-    overflow-x: auto;
-    overflow-y: auto;
-}
-#admin-content-table-container .table > thead > tr > th {
-    position: sticky;
-    top: 0;
-    background: #fff;
-    z-index: 3;
-    box-shadow: 0 1px 2px rgba(0,0,0,.1);
-}
-</style>
+{{ include_css('styles/actions/admin-content.css') }}
 
 <div class="full-width no-dblclick">
 <div class="admin-content-wrapper" id="admin-content-wrapper">
@@ -243,6 +80,16 @@
                         <option value="comment|@{{ group }}">{{ _t('ADMIN_CONTENT_ACL_COMMENT_LABEL') }} : @{{ group }}</option>
                         {% endfor %}
                     </optgroup>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="acf-theme">{{ _t('ADMIN_CONTENT_THEME_THEME') }}</label>
+                <select id="acf-theme" name="theme_filter" class="form-control">
+                    <option value="">— {{ _t('GROUP_SELECTION') }} —</option>
+                    {% for key, tpl in templates %}
+                    <option value="{{ key|e('html_attr') }}">{{ (tpl.name ?? key)|e }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -670,7 +517,9 @@
             var params = new URLSearchParams(
                 new FormData(document.getElementById('admin-content-filter-form'))
             );
-            htmx.ajax('GET', '{{ apiUrl }}?' + params.toString(), {
+            var apiBase = '{{ apiUrl }}';
+            var sep = apiBase.indexOf('?') >= 0 ? '&' : '?';
+            htmx.ajax('GET', apiBase + sep + params.toString(), {
                 target:  '#admin-content-table-container',
                 swap:    'innerHTML',
                 indicator: '#table-spinner'
@@ -704,7 +553,7 @@
     // -----------------------------------------------------------------------
     // URL sync helpers
     // -----------------------------------------------------------------------
-    var DEFAULTS = { search: '', type: 'all', owner: '', tag_filter: '', acl_filter: '', perpage: '50', sort: 'tag', dir: 'asc', page: '1' };
+    var DEFAULTS = { search: '', type: 'all', owner: '', tag_filter: '', acl_filter: '', theme_filter: '', perpage: '50', sort: 'tag', dir: 'asc', page: '1' };
 
     // The YesWiki page tag is always the first query segment (e.g. "?GererSite&…").
     // Extract it once so we can preserve it when rewriting the query string.
@@ -730,7 +579,7 @@
 
     function restoreFromUrl() {
         var params = new URLSearchParams(location.search);
-        ['search', 'type', 'owner', 'tag_filter', 'acl_filter', 'perpage'].forEach(function (name) {
+        ['search', 'type', 'owner', 'tag_filter', 'acl_filter', 'theme_filter', 'perpage'].forEach(function (name) {
             var el = filterForm.querySelector('[name="' + name + '"]');
             if (el && params.has(name)) el.value = params.get(name);
         });
@@ -846,9 +695,7 @@
         });
     });
 
-    // -----------------------------------------------------------------------
-    // Theme modal: dynamic squelette / style / preset selects
-    // -----------------------------------------------------------------------
+    // Theme modal: populate squelette / style / preset when theme changes
     var themeSelect = document.getElementById('theme-select');
     if (themeSelect) {
         themeSelect.addEventListener('change', function () {
@@ -857,34 +704,33 @@
     }
 
     adminContent.updateThemeOptions = function (themeKey) {
-        var sqEl   = document.getElementById('squelette-select');
-        var stEl   = document.getElementById('style-select');
-        var prEl   = document.getElementById('preset-select');
-        var tpl    = TEMPLATES[themeKey] || {};
-        var blank  = '<option value="">' + adminContent.esc(I18N.noChange) + '</option>';
+        var sqEl  = document.getElementById('squelette-select');
+        var stEl  = document.getElementById('style-select');
+        var prEl  = document.getElementById('preset-select');
+        var tpl   = TEMPLATES[themeKey] || {};
+        var blank = '<option value="">' + adminContent.esc(I18N.noChange) + '</option>';
 
-        [sqEl, stEl, prEl].forEach(function (el) {
-            el.innerHTML = blank;
-        });
+        [sqEl, stEl, prEl].forEach(function (el) { el.innerHTML = blank; });
 
-        (tpl.squelette || []).forEach(function (v) {
-            sqEl.innerHTML += '<option value="' + adminContent.esc(v) + '">' + adminContent.esc(v) + '</option>';
+        var squelettes = tpl.squelette || {};
+        Object.keys(squelettes).forEach(function (filename) {
+            sqEl.innerHTML += '<option value="' + adminContent.esc(filename) + '">' + adminContent.esc(squelettes[filename]) + '</option>';
         });
-        (tpl.style || []).forEach(function (v) {
-            stEl.innerHTML += '<option value="' + adminContent.esc(v) + '">' + adminContent.esc(v) + '</option>';
+        var styles = tpl.style || {};
+        Object.keys(styles).forEach(function (filename) {
+            stEl.innerHTML += '<option value="' + adminContent.esc(filename) + '">' + adminContent.esc(styles[filename]) + '</option>';
         });
-        var presets = tpl.presets ? Object.keys(tpl.presets) : [];
-        presets.forEach(function (v) {
-            prEl.innerHTML += '<option value="' + adminContent.esc(v) + '">' + adminContent.esc(v) + '</option>';
+        Object.keys(tpl.presets || {}).forEach(function (filename) {
+            prEl.innerHTML += '<option value="' + adminContent.esc(filename) + '">' + adminContent.esc(filename) + '</option>';
         });
     };
 
-    // Toggle reset mode: disable individual selects when reset is checked
+    // Toggle reset mode: disable all selects when reset is checked
     var chkReset = document.getElementById('chk-reset-theme');
     if (chkReset) {
         chkReset.addEventListener('change', function () {
             var disabled = this.checked;
-            ['theme-select','squelette-select','style-select','preset-select'].forEach(function (id) {
+            ['theme-select', 'squelette-select', 'style-select', 'preset-select'].forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.disabled = disabled;
             });

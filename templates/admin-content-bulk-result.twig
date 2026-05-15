@@ -6,13 +6,13 @@
 {% if errors is not empty %}
 <div class="alert alert-warning alert-dismissible" role="alert">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
-    <strong><i class="fa fa-exclamation-triangle"></i> Partial failure</strong>
+    <strong><i class="fa fa-exclamation-triangle"></i> {{ _t('ADMIN_CONTENT_BULK_RESULT_PARTIAL_FAILURE') }}</strong>
     {% if success is not empty %}
-     — {{ success|length }} page(s) updated, {{ errors|length }} failed:
+     — {{ _t('ADMIN_CONTENT_BULK_RESULT_PARTIAL_UPDATED')|replace({'{success}': success|length, '{errors}': errors|length}) }}
     {% else %}
-     — {{ errors|length }} error(s):
+     — {{ _t('ADMIN_CONTENT_BULK_RESULT_ERRORS')|replace({'{errors}': errors|length}) }}
     {% endif %}
-    <ul class="margin-top-xs" style="margin-top:6px;margin-bottom:0;padding-left:18px;">
+    <ul style="margin-top:6px;margin-bottom:0;padding-left:18px;">
         {% for e in errors %}
         <li>{{ e }}</li>
         {% endfor %}
@@ -25,13 +25,13 @@
     <button type="button" class="close" data-dismiss="alert">&times;</button>
     <i class="fa fa-check-circle"></i>
     {% if action == 'delete' %}
-        {{ success|length }} page(s) deleted successfully.
+        {{ _t('ADMIN_CONTENT_BULK_RESULT_DELETED')|replace({'{success}': success|length}) }}
     {% elseif action == 'change-acls' %}
-        ACLs updated on {{ success|length }} page(s).
+        {{ _t('ADMIN_CONTENT_BULK_RESULT_ACLS')|replace({'{success}': success|length}) }}
     {% elseif action == 'change-theme' %}
-        Theme applied to {{ success|length }} page(s).
+        {{ _t('ADMIN_CONTENT_BULK_RESULT_THEME')|replace({'{success}': success|length}) }}
     {% else %}
-        {{ success|length }} page(s) updated.
+        {{ _t('ADMIN_CONTENT_BULK_RESULT_UPDATED')|replace({'{success}': success|length}) }}
     {% endif %}
 </div>
 {% endif %}
