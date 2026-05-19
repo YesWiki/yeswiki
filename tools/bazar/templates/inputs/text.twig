@@ -16,7 +16,7 @@
               {%- if field.size != '' %}size="{{ field.size }}"{% endif -%}
             {% endif %}
             {% if field.pattern %}pattern="{{ field.pattern }}"{% endif %}
-            placeholder="{{ field.placeholder | default(field.label | raw('html') | striptags) }}"
+              placeholder="{{ field.placeholder|default(field.label)|striptags|trim }}"
             {% if field.required %}required{% endif %}
         />
     </div>

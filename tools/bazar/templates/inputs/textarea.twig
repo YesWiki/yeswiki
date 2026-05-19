@@ -1,6 +1,6 @@
 {% extends "@bazar/layouts/input.twig" %}
 
-{% set placeholder = field.placeholder | default(field.label | raw('html') | striptags) %}
+{% set placeholder = field.placeholder|default(field.label)|striptags|trim %}
 
 {% block groupClass %}
 	{{ field.syntax }}
