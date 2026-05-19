@@ -6,6 +6,7 @@ class ColAction extends YesWikiAction
 {
     public function run()
    {
+       ob_start();
        $size = $this->arguments['size'];
        if (empty($size)) {
            echo '<div><div class="alert alert-danger"><strong>' . _t('TEMPLATE_ACTION_COL') . '</strong> : '
@@ -18,7 +19,11 @@ class ColAction extends YesWikiAction
            echo '<!-- start of col -->' . "\n" .
            '<div class="span' . $size . ' col-md-' . $size . (isset($class) ? ' ' . $class : '')
                . '"';
+
        }
+       $col = ob_get_contents();
+       ob_end_clean();
+       return $col;
    }
 
 

@@ -24,9 +24,6 @@ if (empty($elem)) {
 
     if ($GLOBALS['check_' . $pagetag][$elem] || in_array($elem, ['tab', 'tabs'], true)) {
         switch ($elem) {
-            case 'col':
-                echo "\n</div> <!-- end of col -->\n";
-                break;
             case 'label':
                 echo '</span>';
                 break;
