@@ -127,9 +127,10 @@
     {# --------------------------------------------------------
        Table container – HTMX target
        -------------------------------------------------------- #}
-    <div id="table-spinner" class="text-center htmx-indicator" style="padding:40px 0;">
-        <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
-    </div>
+    <div class="admin-content-table-wrap">
+        <div id="table-spinner" class="htmx-indicator admin-content-spinner">
+            <i class="fa fa-spinner fa-spin fa-2x text-muted"></i>
+        </div>
 
     <div id="admin-content-table-container"
          hx-get="{{ apiUrl }}"
@@ -138,6 +139,7 @@
          hx-indicator="#table-spinner"
          hx-swap="innerHTML">
     </div>
+    </div>{# /.admin-content-table-wrap #}
 
     {# --------------------------------------------------------
        Bulk action sticky panel

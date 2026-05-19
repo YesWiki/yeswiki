@@ -75,10 +75,21 @@
     font-size: 13px;
 }
 
-/* Table loading indicator */
-.htmx-indicator { display: none; }
-.htmx-request .htmx-indicator { display: block; }
-.htmx-request.htmx-indicator { display: block; }
+/* Table loading indicator – overlay, no layout shift */
+.admin-content-table-wrap {
+    position: relative;
+}
+.admin-content-spinner {
+    display: none;
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+.htmx-request .admin-content-spinner {
+    display: block;
+}
 
 /* ACL badges */
 .acl-badge {
