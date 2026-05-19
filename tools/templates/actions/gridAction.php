@@ -9,7 +9,7 @@ class GridAction extends YesWikiAction
        $class = $this->arguments['class'] ?? '';
        $class = 'row-fluid row' . ((!empty($class)) ? ' ' . $class : '');
        if ($this->check_end_elem('grid')) {
-           echo '<!-- start of grid -->' . '\n' .
+           echo '<!-- start of grid -->' . "\n" .
            '<div' . ' class="' . $class .'">';
        }
    }
