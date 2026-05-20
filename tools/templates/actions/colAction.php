@@ -18,7 +18,7 @@ class ColAction extends YesWikiAction
        if ($this->check_end_elem('col')) {
            echo '<!-- start of col -->' . "\n" .
            '<div class="span' . $size . ' col-md-' . $size . (isset($class) ? ' ' . $class : '')
-               . '"';
+               . '">';
 
        }
        $col = ob_get_contents();
