@@ -15,12 +15,12 @@ class ColAction extends YesWikiAction
        }
 
        $class = $this->arguments['class'] ?? '';
-       if ($this->check_end_elem('col')) {
+        if ($this->check_end_elem('col')) {
            echo '<!-- start of col -->' . "\n" .
            '<div class="span' . $size . ' col-md-' . $size . (isset($class) ? ' ' . $class : '')
                . '">';
 
-       }
+        }
        $col = ob_get_contents();
        ob_end_clean();
        return $col;
