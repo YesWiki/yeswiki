@@ -13,6 +13,7 @@ use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Controller\GroupController;
 
 class UserController extends YesWikiController
 {
@@ -39,6 +40,7 @@ class UserController extends YesWikiController
 
     protected $authController;
     protected $dbService;
+    protected $groupController;
     protected $pageManager;
     protected $params;
     protected $securityController;
@@ -48,6 +50,7 @@ class UserController extends YesWikiController
     public function __construct(
         AuthController $authController,
         DbService $dbService,
+        GroupController $groupController,
         PageManager $pageManager,
         ParameterBagInterface $params,
         SecurityController $securityController,
@@ -56,6 +59,7 @@ class UserController extends YesWikiController
     ) {
         $this->authController = $authController;
         $this->dbService = $dbService;
+        $this->groupController = $groupController;
         $this->pageManager = $pageManager;
         $this->params = $params;
         $this->securityController = $securityController;
@@ -192,7 +196,7 @@ class UserController extends YesWikiController
         if ($this->isRunner($user)) {
             throw new DeleteUserException(_t('USER_CANT_DELETE_ONESELF') . '.');
         }
-        $this->checkIfUserIsNotAloneInEachGroup($user);
+        $this->deleteGroupsWhereUserIsAlone($user);
         $this->deleteUserFromEveryGroup($user);
         $this->removeOwnership($user);
         $this->userManager->delete($user);
@@ -241,11 +245,12 @@ class UserController extends YesWikiController
     }
 
     /**
-     * check if user is not alone in each group.
+     * Delete groups where user is the sole member (unless it's the admins group).
+     * For the admins group, still throws to prevent accidental lockout.
      *
      * @throws DeleteUserException
      */
-    private function checkIfUserIsNotAloneInEachGroup(User $user)
+    private function deleteGroupsWhereUserIsAlone(User $user)
     {
         $grouptab = $this->userManager->groupsWhereIsMember($user, false);
         foreach ($grouptab as $group) {
@@ -253,8 +258,11 @@ class UserController extends YesWikiController
             $groupmembers = str_replace(["\r\n", "\r"], "\n", $groupmembers);
             $groupmembers = explode("\n", $groupmembers);
             $groupmembers = array_unique(array_filter(array_map('trim', $groupmembers)));
-            if (count($groupmembers) == 1) { // Only one user in (this user then)
-                throw new DeleteUserException(_t('USER_DELETE_LONE_MEMBER_OF_GROUP') . " ($group).");
+            if (count($groupmembers) == 1) {
+                if (strtolower($group) === ADMIN_GROUP) {
+                    throw new DeleteUserException(_t('USER_DELETE_LONE_MEMBER_OF_GROUP') . " ($group).");
+                }
+                $this->groupController->delete($group);
             }
         }
     }
@@ -279,21 +287,26 @@ class UserController extends YesWikiController
         $error = false;
         if (is_array($groups)) {
             $pregQuoteSearchValue = preg_quote($searchedValue, '/');
+            $prefixLen = strlen(GROUP_PREFIX);
             foreach ($groups as $group) {
                 $newValue = $group['value'];
                 $newValue = preg_replace("/(?<=^|\\n|\\r)$pregQuoteSearchValue(?:\\r\\n|\\n|\\r|$)/", '', $newValue);
-                if (
-                    $newValue != $group['value']
-                    && !in_array($this->tripleStore->update(
+                if ($newValue != $group['value']) {
+                    // Check if the group is now empty after removing the user
+                    $groupName = substr($group['resource'], $prefixLen);
+                    $remainingMembers = array_filter(array_map('trim', preg_split("/[\\r\\n]+/", $newValue)));
+                    if (empty($remainingMembers) && strtolower($groupName) !== ADMIN_GROUP) {
+                        $this->groupController->delete($groupName);
+                    } elseif (!in_array($this->tripleStore->update(
                         $group['resource'],
                         $group['property'],
                         $group['value'],
                         $newValue,
                         '',
                         ''
-                    ), [0, 3])
-                ) {
-                    $error = true;
+                    ), [0, 3])) {
+                        $error = true;
+                    }
                 }
             }
         }
