@@ -36,6 +36,9 @@ class FormController extends YesWikiController
 
         // If there are forms to import
         if (isset($_POST['imported-form'])) {
+            if (!$this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
+            }
             foreach ($_POST['imported-form'] as $id => $value) {
                 $value = json_decode($value, true);
                 $existingForms = multiArraySearch($forms, 'title', $value['title']);

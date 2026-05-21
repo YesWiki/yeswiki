@@ -197,6 +197,7 @@ return [
     'BAZ_FORM_EDIT_TEXT_MAX_LENGTH' => 'Max length',
     'BAZ_FORM_EDIT_TEXT_SIZE' => 'Nb visible characters',
     'BAZ_FORM_EDIT_TEXT_PATTERN' => 'Pattern',
+    'BAZ_FORM_EDIT_PLACEHOLDER' => 'Input placeholder',
     'BAZ_FORM_EDIT_CUSTOM_LABEL' => 'Custom',
     'BAZ_FORM_EDIT_FILLING_MODE_DRAG_AND_DROP' => 'Drag & drop',
     'BAZ_FORM_EDIT_TEXTAREA_SYNTAX_LABEL' => 'Writing format',

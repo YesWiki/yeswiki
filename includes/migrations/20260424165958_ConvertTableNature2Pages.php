@@ -122,8 +122,8 @@ class ConvertTableNature2Pages extends YesWikiMigration
             );
 
             // give access only to admins
-            $this->aclService->save($slug, 'read', '@admins');
-            $this->aclService->save($slug, 'write', '@admins');
+            $aclService->save($slug, 'read', '@admins');
+            $aclService->save($slug, 'write', '@admins');
 
             if ($saved == 0) {
                 $tripleStore->create(

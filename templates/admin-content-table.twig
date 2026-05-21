@@ -1,0 +1,246 @@
+{# ============================================================
+   AdminContent – HTMX table partial
+   Returned by GET /api/admin/pages and swapped into
+   #admin-content-table-container.
+   Variables: pages, currentPage, totalPages, total,
+              perpage, sort, dir, search, type, ownerFilter,
+              tagFilter, apiUrl
+============================================================ #}
+{% macro aclText(list) %}
+    {%- set map = {
+        "*": "ACLS_EVERYBODY",
+        "+": "ACLS_AUTHENTIFICATED_USERS",
+        "%": "ACLS_OWNER",
+        "comments-closed": "ACLS_COMMENTS_CLOSED"
+    } -%}
+    {%- for line in list|split("\n") -%}
+        {%- set t = line|trim -%}
+        {%- if t is not empty -%}
+            {{- t in map|keys ? _t(map[t]) : t -}}
+        {%- endif -%}
+    {%- endfor -%}
+{% endmacro %}
+{# Helper macro: sortable column header link #}
+{% macro sortHeader(label, col, currentSort, currentDir, apiUrl) %}
+    {%- set nextDir = (currentSort == col and currentDir == 'asc') ? 'desc' : 'asc' -%}
+    {%- set isActive = (currentSort == col) -%}
+    <a class="sort-link"
+       href="#"
+       onclick="event.preventDefault(); adminContent.setSort('{{ col }}'); return false;">
+        {{ label }}
+        <span class="sort-icon{% if isActive %} active{% endif %}">
+            {%- if isActive -%}
+                {%- if currentDir == 'asc' -%}<i class="fa fa-sort-up"></i>
+                {%- else -%}<i class="fa fa-sort-down"></i>
+            {%- endif -%}
+        {%- else -%}
+            <i class="fa fa-sort text-muted"></i>
+        {%- endif -%}
+    </span>
+</a>
+{% endmacro %}
+{# -----------------------------------------------------------------------
+   Summary bar
+   ----------------------------------------------------------------------- #}
+{% set offset = (currentPage - 1) * perpage %}
+{% set rangeEnd = (offset + perpage < total) ? (offset + perpage) : total %}
+<div class="admin-content-pager admin-content-pager-top">
+    <small class="text-muted">
+        {% if total > 0 %}
+            {{ _t("ADMIN_CONTENT_PAGER_RANGE") |replace({'{start}': offset + 1, '{end}': rangeEnd, '{total}': total}) }}
+        {% else %}
+            {{ _t("ADMIN_CONTENT_NO_PAGE_FOUND") }}
+        {% endif %}
+    </small>
+    <div>
+        {# Pagination top – compact #}
+        {{ _self.pagerLinks(currentPage, totalPages) }}
+    </div>
+</div>
+{# -----------------------------------------------------------------------
+   Table
+   ----------------------------------------------------------------------- #}
+<div class="admin-content-table-wrapper">
+    <table class="table table-striped table-condensed table-hover admin-content-table">
+        <thead>
+            <tr>
+                <th class="col-cb">
+                    <label class="check-all-container" for="select-all-current">
+                        <input type="checkbox"
+                               id="select-all-current"
+                               title="Select all on this page"
+                               onchange="adminContent.toggleCurrentPage(this.checked)">
+                        <span></span>
+                    </label>
+                </th>
+                <th>{{ _self.sortHeader(_t('ACLS_PAGE') , 'tag', sort, dir, apiUrl) }}</th>
+                <th>{{ _self.sortHeader('Type', 'type', sort, dir, apiUrl) }}</th>
+                <th>{{ _self.sortHeader(_t('LAST_CHANGE') |capitalize, 'time', sort, dir, apiUrl) }}</th>
+                <th>{{ _t("ADMIN_CONTENT_ACL_LABEL") }}</th>
+                <th>{{ _t("ADMIN_CONTENT_THEME_THEME") }}</th>
+                <th>{{ _t("ADMIN_CONTENT_KEYWORDS_LABEL") }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if pages is empty %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted admin-content-no-results">
+                        <i class="fa fa-search"></i> {{ _t("ADMIN_CONTENT_NO_RESULTS") }}
+                    </td>
+                </tr>
+            {% else %}
+                {% for page in pages %}
+                    <tr>
+                        <td class="col-cb">
+                            {% set cbId = "admin-content-cb-" ~ page.tag|e('html_attr') %}
+                            <label for="{{ cbId }}">
+                                <input type="checkbox"
+                                       id="{{ cbId }}"
+                                       class="page-checkbox"
+                                       data-tag="{{ page.tag|e("html_attr") }}"
+                                       value="{{ page.tag|e("html_attr") }}"
+                                       onchange="adminContent.togglePage('{{ page.tag|e("js") }}', this.checked)">
+                                <span></span>
+                            </label>
+                        </td>
+                        <td>
+                            {{ page.tag }}
+                            <br>
+                            <small>
+                                <a class="modalbox"
+                                   data-size="modal-lg"
+                                   href="{{ url({tag: page.tag, handler: 'iframe'}) }}">
+                                    {{ _t("ADMIN_CONTENT_VIEW") }}
+                                </a>
+                            </small>
+                        </td>
+                        <td class="col-type">
+                            {%- if page.comment_on is not empty -%}
+                                {{- _t("ADMIN_CONTENT_TYPE_COMMENT") -}}
+                            {%- elseif page.page_type == 'fiche_bazar' -%}
+                                {{- forms[page.form_id].bn_label_nature ?? _t("ADMIN_CONTENT_TYPE_BAZAR_ID") |replace({'{id}': page.form_id}) -}}
+                            {%- elseif page.page_type == 'liste' -%}
+                                {{- _t("ADMIN_CONTENT_TYPE_LIST") -}}
+                            {%- elseif page.is_special -%}
+                                {{- _t("ADMIN_CONTENT_TYPE_SPECIAL_PAGE") -}}
+                            {%- else -%}
+                                {{- _t("ADMIN_CONTENT_TYPE_PAGE") -}}
+                            {%- endif -%}
+                        </td>
+                        <td class="col-time">
+                            {{ page.time|slice(0, 16) }}
+                            {% if page.last_editor %}
+                                <br>
+                                <small class="text-muted">{{ page.last_editor }}</small>
+                            {% endif %}
+                        </td>
+                        <td class="col-acl">
+                            <div>
+                                <strong>{{ _t("TEMPLATE_OWNER") }}: {{ page.owner ? page.owner|e : _t("ADMIN_CONTENT_NO_OWNER") }}</strong>
+                            </div>
+                            <div title="{{ _t("ACLS_READ") }}">
+                                <i class="fa fa-eye text-muted"></i> {{ _self.aclText(page.acl_read) }}
+                            </div>
+                            <div title="{{ _t("ACLS_WRITE") }}">
+                                <i class="fa fa-pencil-alt text-muted"></i> {{ _self.aclText(page.acl_write) }}
+                            </div>
+                            <div title="{{ _t("COMMENTS") }}">
+                                <i class="fa fa-comment text-muted"></i> {{ _self.aclText(page.acl_comment) }}
+                            </div>
+                        </td>
+                        <td class="col-theme">
+                            {%- set effectiveTheme = page.theme     is not empty ? page.theme     : defaultTheme -%}
+                            {%- set effectiveSquelette = page.squelette is not empty ? page.squelette : defaultSquelette -%}
+                            {%- set effectiveStyle = page.style     is not empty ? page.style     : defaultStyle -%}
+                            {%- set effectivePreset = page.preset    is not empty ? page.preset    : defaultPreset -%}
+                            <strong>{{ effectiveTheme }}
+                                {% if page.theme is empty %}<em class="text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
+                            </strong>
+                            <br>
+                            {{ effectiveSquelette }}
+                            {% if page.squelette is empty %}<em class="text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
+                            <br>
+                            {{ effectiveStyle }}
+                            {% if page.style is empty %}<em class="text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
+                            {% if effectivePreset is not empty %}
+                                <br>
+                                {{ effectivePreset }}
+                                {% if page.preset is empty %}<em class="text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
+                            {% endif %}
+                        </td>
+                        <td class="col-tags">
+                            {% for tag in page.tags %}<span class="tag-pill">{{ tag }}</span>{% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{# -----------------------------------------------------------------------
+   Pagination bottom
+   ----------------------------------------------------------------------- #}
+{% if totalPages > 1 %}
+    <div class="admin-content-pager">
+        <small class="text-muted">
+            {{ _t("ADMIN_CONTENT_PAGER_INFO") |replace({'{current}': currentPage, '{totalPages}': totalPages, '{total}': total}) }}
+        </small>
+        {{ _self.pagerLinks(currentPage, totalPages) }}
+    </div>
+{% endif %}
+{# -----------------------------------------------------------------------
+   Pagination macro (reused top + bottom)
+   ----------------------------------------------------------------------- #}
+{% macro pagerLinks(currentPage, totalPages) %}
+    {% if totalPages > 1 %}
+        <ul class="pagination pagination-sm">
+            {# Previous #}
+            <li class="{{ currentPage <= 1 ? 'disabled' : '' }}">
+                <a href="#"
+                   {% if currentPage > 1 %}onclick="event.preventDefault(); adminContent.goToPage({{ currentPage - 1 }})"{% else %}tabindex="-1"{% endif %}>
+                    &laquo;
+                </a>
+            </li>
+            {# Page numbers: show window around current page #}
+            {% set windowSize = 4 %}
+            {% set start = (currentPage - windowSize > 1) ? (currentPage - windowSize) : 1 %}
+            {% set end = (currentPage + windowSize < totalPages) ? (currentPage + windowSize) : totalPages %}
+            {% if start > 1 %}
+                <li>
+                    <a href="#" onclick="event.preventDefault(); adminContent.goToPage(1)">1</a>
+                </li>
+                {% if start > 2 %}
+                    <li class="disabled">
+                        <a href="#">…</a>
+                    </li>
+                {% endif %}
+            {% endif %}
+            {% for p in start..end %}
+                <li class="{{ p == currentPage ? 'active' : '' }}">
+                    <a href="#"
+                       onclick="event.preventDefault(); {% if p != currentPage %}adminContent.goToPage({{ p }}){% endif %}">
+                        {{ p }}
+                    </a>
+                </li>
+            {% endfor %}
+            {% if end < totalPages %}
+                {% if end < totalPages - 1 %}
+                    <li class="disabled">
+                        <a href="#">…</a>
+                    </li>
+                {% endif %}
+                <li>
+                    <a href="#"
+                       onclick="event.preventDefault(); adminContent.goToPage({{ totalPages }})">{{ totalPages }}</a>
+                </li>
+            {% endif %}
+            {# Next #}
+            <li class="{{ currentPage >= totalPages ? 'disabled' : '' }}">
+                <a href="#"
+                   {% if currentPage < totalPages %}onclick="event.preventDefault(); adminContent.goToPage({{ currentPage + 1 }})"{% else %}tabindex="-1"{% endif %}>
+                    &raquo;
+                </a>
+            </li>
+        </ul>
+    {% endif %}
+{% endmacro %}

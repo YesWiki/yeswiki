@@ -220,9 +220,9 @@ class SearchManager
                                 // Add a field condition adapted to a regexp or not
 
                                 if ($vIsRegExp) {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vOR)) . '\'';
+                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vOR)) . '\'';
                                 } else {
-                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\'';
+                                    $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\'';
                                 }
 
                             break;
@@ -233,9 +233,9 @@ class SearchManager
                                 // Add a field condition adapted to a regexp or not
 
                                 if ($vIsRegExp) {
-                                    $vORRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci REGEXP \'^' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vOR)) . '$\')';
+                                    $vORRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' REGEXP \'^' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vOR)) . '$\')';
                                 } else {
-                                    $vORRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\')';
+                                    $vORRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\')';
                                 }
 
                             break;
@@ -285,9 +285,9 @@ class SearchManager
                             // Add a field condition adapted to a regexp or not
 
                             if ($vIsRegExp) {
-                                $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vExcluded)) . '\'';
+                                $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT REGEXP \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vExcluded)) . '\'';
                             } else {
-                                $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\'';
+                                $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\'';
                             }
 
                         break;
@@ -298,9 +298,9 @@ class SearchManager
                             // Add a field condition adapted to a regexp or not
 
                             if ($vIsRegExp) {
-                                $vExcludedRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT REGEXP \'^' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vExcluded)) . '$\')';
+                                $vExcludedRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' NOT REGEXP \'^' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vExcluded)) . '$\')';
                             } else {
-                                $vExcludedRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\')';
+                                $vExcludedRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\')';
                             }
 
                         break;
@@ -427,7 +427,7 @@ class SearchManager
                             // It the value is a regexp, let's build a condition that match (or NOT) the regexp
 
                             if ($vIsRegExp) {
-                                $vValueConditions[] = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\'';
+                                $vValueConditions[] = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\'';
                             }
 
                             // else let's just compare using the appropriated comparison operator
@@ -437,10 +437,10 @@ class SearchManager
                                     if (isset($vValue) && trim($vValue) !== '') {
                                         $vValueConditions[] = 'CAST(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' AS DOUBLE) ' . $vComparisonOperator . ' ' . mysqli_real_escape_string($this->wiki->dblink, $vValue);
                                     } else {
-                                        $vValueConditions[] = '(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci ' . $vComparisonOperator . ' \'\' )';
+                                        $vValueConditions[] = '(' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'\' )';
                                     }
                                 } else {
-                                    $vValueConditions[] = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
+                                    $vValueConditions[] = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' ' . $vComparisonOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\'';
                                 }
                             }
 
@@ -452,9 +452,9 @@ class SearchManager
                             // It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
 
                             if ($vIsRegExp) {
-                                $vValueConditions[] = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE utf8mb4_unicode_ci ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\')';
+                                $vValueConditions[] = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' ' . $vRegExpOperator . ' \'' . mysqli_real_escape_string($this->wiki->dblink, $this->extractRegExp($vValue)) . '\')';
                             } else { // else let's just check in the value belongs (or NOT) to the set of values
-                                $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE utf8mb4_unicode_ci, ' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE utf8mb4_unicode_ci)';
+                                $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE ' . $this->dbService->getCollation() . ', ' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ')';
                             }
 
                         break;
@@ -906,6 +906,10 @@ class SearchManager
 
         $vQueriesConditions = trim($this->buildQueriesConditions($vQueries, $vFields));
 
+        if (str_contains($vQueriesConditions, '((FALSE))')) {
+            return '';
+        }
+
         if ($vQueriesConditions != '') {
             $vWhereRequest .= ($vWhereRequest != '' ? ' AND ' : '') . $vQueriesConditions;
         }
@@ -1022,6 +1026,9 @@ class SearchManager
         $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
 
         $searchResults = [];
+        if ($requete === '') {
+            return $searchResults;
+        }
         $results = $this->dbService->loadAll($requete);
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
 

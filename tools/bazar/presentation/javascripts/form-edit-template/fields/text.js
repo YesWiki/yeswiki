@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {
   field: {
@@ -24,6 +24,7 @@ export default {
         color: _t('BAZ_FORM_EDIT_TEXT_TYPE_COLOR')
       }
     },
+    placeholder: { label: _t('BAZ_FORM_EDIT_PLACEHOLDER'), value: '' },
     read: readConf,
     write: writeconf,
     pattern: {
@@ -32,8 +33,9 @@ export default {
       placeholder: `${_t('BAZ_FORM_EDIT_ADVANCED_MODE')} Ex: [0-9]+ ou [A-Za-z]{3}, ...`
     }
   },
-  advancedAttributes: ['read', 'write', 'pattern'],
+  advancedAttributes: ['placeholder', 'read', 'write', 'semantic', 'pattern'],
   // disabledAttributes: [],
+  attributesMapping: { ...defaultMapping, ...{ 15: 'placeholder' } },
   renderInput(fieldData) {
     let string = `<input type="${fieldData.subtype}"`
     if (fieldData.subtype == 'url') {

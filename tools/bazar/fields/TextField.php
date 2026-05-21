@@ -12,10 +12,13 @@ class TextField extends BazarField
 {
     protected $pattern;
     protected $subType;
+    protected $placeholder;
 
     protected const FIELD_PATTERN = 6;
     protected const FIELD_SUB_TYPE = 7;
     private const FIELD_CLASS_TYPE = 'TextField';
+    protected const FIELD_PLACEHOLDER = 15;
+
 
     protected const ALLOWED_SUB_TYPES = ['text', 'date', 'email', 'url', 'range', 'password', 'number', 'color'];
 
@@ -32,6 +35,7 @@ class TextField extends BazarField
             $this->type = 'text';
         }
 
+        $this->placeholder = $values[self::FIELD_PLACEHOLDER];
         $this->maxChars = $this->maxChars ?? 255;
 
         if ($this->type === 'range') {
@@ -105,6 +109,11 @@ class TextField extends BazarField
            return $new;
         }
 
+    public function getPlaceholder()
+    {
+        return $this->placeholder;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -117,6 +126,7 @@ class TextField extends BazarField
                 'size' => $this->getSize(),
                 'subType' => $this->getSubType(),
                 'pattern' => $this->getPattern(),
+                'placeholder' => $this->getPlaceholder(),
             ]
         );
     }

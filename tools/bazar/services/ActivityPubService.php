@@ -34,7 +34,7 @@ class ActivityPubService
 
     public function isEnabled($form)
     {
-        return $form['bn_activitypub_enable'] === '1';
+        return isset($form['bn_activitypub_enable']) && $form['bn_activitypub_enable'] === '1';
     }
     
     public function getFormActorUri($form) {

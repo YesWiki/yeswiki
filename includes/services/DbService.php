@@ -4,9 +4,7 @@ namespace YesWiki\Core\Service;
 
 use DateInterval;
 use DateTime;
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Throwable;
 
 class DbService
 {
@@ -14,6 +12,8 @@ class DbService
 
     protected $link;
     protected $queryLog;
+    protected $collation;
+    protected $readCache = [];
 
     public function __construct(ParameterBagInterface $params)
     {
@@ -34,7 +34,7 @@ class DbService
                 $this->params->has('mysql_port') ? $this->params->get('mysql_port') : ini_get('mysqli.default_port')
             );
             if (!$this->link) {
-                throw new Exception('Not connected to sql');
+                throw new \Exception('Not connected to sql');
             }
             if ($this->params->has('db_charset') and $this->params->get('db_charset') === 'utf8mb4') {
                 // necessaire pour les versions de mysql qui ont un autre encodage par defaut
@@ -46,18 +46,25 @@ class DbService
                     mysqli_query($this->link, 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
                 }
             }
-        } catch (Throwable $th) {
+            $this->collation = (mysqli_character_set_name($this->link) === 'utf8mb4')
+                ? 'utf8mb4_unicode_ci'
+                : 'utf8_unicode_ci';
+        } catch (\Throwable $th) {
             if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
-                throw new Exception(_t('DB_CONNECT_FAIL'));
-            } else {
-                exit(_t('DB_CONNECT_FAIL'));
+                throw new \Exception(_t('DB_CONNECT_FAIL'));
             }
+            exit(_t('DB_CONNECT_FAIL'));
         }
     }
 
     public function getLink()
     {
         return $this->link;
+    }
+
+    public function getCollation(): string
+    {
+        return $this->collation;
     }
 
     public function getQueryLog()
@@ -90,19 +97,21 @@ class DbService
     */
     public function query($query)
     {
+        if (!preg_match('/^\s*SELECT\b/i', $query)) {
+            $this->readCache = [];
+        }
+
         if ($this->params->get('debug')) {
             $start = $this->getMicroTime();
         }
 
         try {
             if (!$result = mysqli_query($this->link, $query)) {
-                throw new Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
+                throw new \Exception('Query failed: ' . $query . ' (' . mysqli_error($this->link) . ')');
             }
-        }/*
-        catch (Exception $e) {
-            file_put_contents ("log.txt", $query, FILE_APPEND);
-        }*/
-        finally {
+        } catch (\Exception $e) {
+            $this->addQueryLog('ERROR IN QUERY : ' . $query, $this->getMicroTime() - $start);
+        } finally {
             if ($this->params->get('debug')) {
                 $this->addQueryLog($query, $this->getMicroTime() - $start);
             }
@@ -137,6 +146,10 @@ class DbService
      */
     public function loadAll($query): array
     {
+        if (isset($this->readCache[$query])) {
+            return $this->readCache[$query];
+        }
+
         $data = [];
         if ($r = $this->query($query)) {
             while ($row = mysqli_fetch_assoc($r)) {
@@ -145,7 +158,7 @@ class DbService
             mysqli_free_result($r);
         }
 
-        return $data;
+        return $this->readCache[$query] = $data;
     }
 
     public function count($query): int
@@ -181,13 +194,13 @@ class DbService
             if (empty($result['time'])) {
                 $tz = null;
             } else {
-                $diff = (new DateTime())->diff(new DateTime($result['time']));
+                $diff = (new \DateTime())->diff(new \DateTime($result['time']));
                 // TODO use Carbon
                 $diffInMinutes = ($diff->invert ? -1 : 1) * ($diff->i + 60 * $diff->h);
                 // convert to UTC
-                $diffInMinutes += intval(floor((new DateTime())->getOffset() / 60));
+                $diffInMinutes += intval(floor((new \DateTime())->getOffset() / 60));
                 // convert in DateInterval
-                $diff = new DateInterval('PT0S');
+                $diff = new \DateInterval('PT0S');
                 $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
                 $diff->i = abs($diffInMinutes) % 60;
                 $diff->h = (abs($diffInMinutes) - $diff->i) / 60;
@@ -214,12 +227,12 @@ class DbService
             // get Tables
             $tables = $this->loadAll('show tables');
             if (!is_array($tables)) {
-                throw new Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : 'show tables' sql command did not return an array !");
+                throw new \Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : 'show tables' sql command did not return an array !");
             }
 
             foreach ($tables as $tableInfo) {
                 if (!is_array($tableInfo)) {
-                    throw new Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : '\$tableInfo' sql command did not return an array !");
+                    throw new \Exception("Error in '" . __METHOD__ . "' (line " . __LINE__ . ") : '\$tableInfo' sql command did not return an array !");
                 }
                 $tableName = array_values($tableInfo)[0];
                 if (strpos($tableName, $tablesPrefix) === 0) {
@@ -349,7 +362,7 @@ class DbService
             /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
             SQL;
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $error = $th->getMessage();
         }
 

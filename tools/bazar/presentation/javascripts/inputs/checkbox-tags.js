@@ -115,5 +115,5 @@ $(document).ready(() => {
   const bazarTagsInputService = new BazarTagsInputService()
   bazarTagsInputService.init()
 
-  BazarTagsInputRefresh.init(bazarTagsInputService, bazarlistTagsInputsData ?? {})
+  BazarTagsInputRefresh.init(bazarTagsInputService, typeof bazarlistTagsInputsData !== 'undefined' ? bazarlistTagsInputsData : {})
 })

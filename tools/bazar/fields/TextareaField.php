@@ -15,11 +15,13 @@ class TextareaField extends BazarField
 {
     protected $numRows;
     protected $syntax;
+    protected $placeholder;
 
     protected const FIELD_NUM_ROWS = 4;
     protected const FIELD_MAX_CHARS = 6;
     protected const FIELD_SYNTAX = 7;
     private const FIELD_CLASS_TYPE = 'TextareaField';
+    protected const FIELD_PLACEHOLDER = 15;
 
     protected const ACCEPTED_TAGS = '<h1><h2><h3><h4><h5><h6><hr><hr/><br><br/><span><blockquote><i><u><b><strong><ol><ul><li><small><div><p><a><table><tr><th><td><img><figure><caption><iframe>';
 
@@ -34,6 +36,7 @@ class TextareaField extends BazarField
         $this->numRows = empty($values[self::FIELD_NUM_ROWS]) ? 3 : $values[self::FIELD_NUM_ROWS];
         $this->syntax = $values[self::FIELD_SYNTAX] ?? self::SYNTAX_WIKI;
 
+        $this->placeholder = $values[self::FIELD_PLACEHOLDER];
         // For this field, max chars are defined in the 6th column, instead of the already-used 4th
         $this->maxChars = $values[self::FIELD_MAX_CHARS];
 
@@ -68,6 +71,7 @@ class TextareaField extends BazarField
                 minHeight: 100, // set minimum height of editor
                 maxHeight: 350,                // set maximum height of editor
                 focus: false,                   // set focus to editable area after initializing summernote
+                inheritPlaceholder: true,
                 toolbar: [
                     //[groupname, [button list]]
                     //[\'style\', [\'style\', \'well\']],
@@ -174,6 +178,11 @@ class TextareaField extends BazarField
     public function getNumRows()
     {
         return $this->numRows;
+    }
+
+    public function getPlaceholder()
+    {
+        return $this->placeholder;
     }
 
     public function getSyntax()

@@ -7,3 +7,19 @@
   top: 0.6em !important;
   margin-top: -0.5em !important;
 }
+
+.form-group.summernote .note-editor {
+  margin-top: 3px;
+}
+
+.form-group.summernote .controls .note-editor .note-placeholder {
+  padding: 1rem !important;
+}
+
+.form-group.wiki-textarea .controls .ace_placeholder {
+  font-family: monospace;
+  color: gray;
+  font-size: 1rem;
+  margin-left: 5px;
+  margin-right: 5px;
+}

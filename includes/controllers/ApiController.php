@@ -72,6 +72,9 @@ class ApiController extends YesWikiController
         $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
         $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s comments</p>';
 
+        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}');
+        $output .= '<p><code>POST ' . $urlPages . '</code><br>Save body content into indicated page (requires write access), params: body=…</p>';
+
         $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/duplicate');
         $output .= '<p><code>POST ' . $urlPages . '</code><br>Duplicate an external page into this YesWiki pageTag</p>';
 
@@ -560,6 +563,26 @@ class ApiController extends YesWikiController
         }
 
         return new ApiResponse($page);
+    }
+
+    /**
+     * @Route("/api/pages/{tag}",methods={"POST"},options={"acl":{"+"}})
+     */
+    public function savePage(Request $request, $tag)
+    {
+        $this->denyAccessUnlessGranted('write', $tag);
+
+        $body = $request->request->get('body');
+        if ($body === null) {
+            return new ApiResponse(['error' => "'body' should not be empty"], Response::HTTP_BAD_REQUEST);
+        }
+
+        $pageManager = $this->getService(PageManager::class);
+        $pageManager->save($tag, $body);
+
+        $page = $pageManager->getOne($tag);
+
+        return new ApiResponse($page, Response::HTTP_OK);
     }
 
     /**
