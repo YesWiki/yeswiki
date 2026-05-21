@@ -24,11 +24,12 @@ export default {
       type: 'number',
       placeholder: _t('BAZ_FORM_EDIT_TEXTAREA_ROWS_PLACEHOLDER')
     },
+    placeholder: { label: _t('BAZ_FORM_EDIT_PLACEHOLDER'), value: '' },
     read: readConf,
     write: writeconf,
   },
-  advancedAttributes: ['read', 'write', 'pattern', 'syntax', 'rows'],
+  advancedAttributes: ['placeholder', 'read', 'write', 'semantic', 'pattern', 'syntax', 'rows'],
   // disabledAttributes: [],
-  attributesMapping: { ...defaultMapping, ...{ 4: 'rows', 7: 'syntax' } }
+  attributesMapping: { ...defaultMapping, ...{ 4: 'rows', 7: 'syntax', 15: 'placeholder' } }
   // renderInput(fieldData) {},
 }
