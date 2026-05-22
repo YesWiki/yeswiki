@@ -171,7 +171,13 @@ window.$docsify = {
             url += url.includes('?') ? '&' : '?'
             url += `content=${encodeURIComponent(code)}`
             const preview = document.createElement('div')
-            preview.innerHTML = `<iframe class="code-preview" src="${url}" width="100%" height="${height}" frameborder="0"></iframe>`
+            const iframe = document.createElement('iframe')
+            iframe.className = 'code-preview'
+            iframe.src = url
+            iframe.width = '100%'
+            iframe.height = String(parseInt(height, 10) || 200)
+            iframe.setAttribute('frameborder', '0')
+            preview.appendChild(iframe)
             insertAfter(preDom, preview.firstChild)
           }
         })

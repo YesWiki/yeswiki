@@ -59,9 +59,13 @@ function toastMessage(
   duration = 3000,
   toastClass = 'alert alert-secondary-1'
 ) {
-  const $toast = $(
-    `<div class="toast-message"><div class="${toastClass}">${message}</div></div>`
-  )
+  const innerEl = document.createElement('div')
+  innerEl.className = toastClass
+  innerEl.textContent = message
+  const toastEl = document.createElement('div')
+  toastEl.className = 'toast-message'
+  toastEl.appendChild(innerEl)
+  const $toast = $(toastEl)
   $('body').after($toast)
   $toast.css('top', `${$('#yw-topnav').outerHeight(true) + 20}px`)
   $toast.css('opacity', 1)
@@ -130,14 +134,9 @@ function toastMessage(
     e.stopPropagation()
     e.preventDefault()
     const $this = $(this)
-    let text = $this.attr('title') || ''
+    const titleText = $this.attr('title') || ''
     const size = ` ${$this.data('size')}`
     const iframe = $this.data('iframe')
-    if (text.length > 0) {
-      text = `<h3>${$.trim(text)}</h3>`
-    } else {
-      text = '<h3></h3>'
-    }
 
     let $modal = $('#YesWikiModal')
     const yesWikiModalHtml = `
@@ -145,7 +144,7 @@ function toastMessage(
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal">&times;</button>
-            ${text}
+            <h3></h3>
           </div>
           <div class="modal-body"></div>
           <button type="button" class="no-header-btn-close" data-dismiss="modal">&times;</button>
@@ -160,6 +159,9 @@ function toastMessage(
     } else {
       $modal.html(yesWikiModalHtml)
     }
+    if (titleText.length > 0) {
+      $modal.find('.modal-header h3').text($.trim(titleText))
+    }
 
     let link = $this.attr('href')
     if (/\.(gif|jpg|jpeg|tiff|png)$/i.test(link)) {
@@ -171,11 +173,8 @@ function toastMessage(
     } else if (iframe === 1) {
       const modalTitle = $modal.find('.modal-header h3')
       if (modalTitle.length > 0) {
-        if (modalTitle[0].innerText === 0) {
-          modalTitle[0].innerHTML = `<a href="${link}">${link.substr(0, 128)}</a>`
-        } else {
-          modalTitle[0].innerHTML = `<a href="${link}">${modalTitle[0].innerText}</a>`
-        }
+        const anchorText = modalTitle[0].innerText === 0 ? link.substr(0, 128) : modalTitle[0].innerText
+        $(modalTitle[0]).empty().append($('<a>').attr('href', link).text(anchorText))
       }
       link = addIframeHandlerTo(link)
       $modal

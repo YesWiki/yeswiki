@@ -99,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
       .fail((jqXHR) => {
         toastMessage(jqXHR.responseJSON.error, 3000, 'alert alert-danger')
         if (jqXHR.status === 401) {
-          $('#login-message').html(
-            `<div class="text-danger">${_t('NOT_CONNECTED')}</div>`
+          $('#login-message').empty().append(
+            $('<div>').addClass('text-danger').text(_t('NOT_CONNECTED'))
           )
           $('.login-fields').removeClass('hide')
         }

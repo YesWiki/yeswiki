@@ -67,7 +67,9 @@ $(document).ready(() => {
         resultforms.html(`<div class="alert alert-danger">${formtranslations.noanswers}.</div>`)
       })
     } else {
-      resultforms.html(`<div class="alert alert-danger">${formtranslations.notvalidurl} : ${url}</div>`)
+      resultforms.empty().append(
+        $('<div>').addClass('alert alert-danger').text(`${formtranslations.notvalidurl} : ${url}`)
+      )
     }
   })
 })

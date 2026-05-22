@@ -90,9 +90,9 @@ $(document).ready(() => {
         resultimportlist.html(`<div class="alert alert-danger">${listtranslations.noanswers}.</div>`)
       })
     } else {
-      resultimportlist.html(`<div class="alert alert-danger">
-        ${listtranslations.notvalidurl} : ${url}
-      </div>`)
+      resultimportlist.empty().append(
+        $('<div>').addClass('alert alert-danger').text(`${listtranslations.notvalidurl} : ${url}`)
+      )
     }
   })
 })

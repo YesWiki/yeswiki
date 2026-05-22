@@ -139,7 +139,7 @@ export default class {
   }
 
   getParameterByName(querystring, name) {
-    name = name.replace(/[\[]/, '\\\[').replace(/[\]]/, '\\\]')
+    name = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`[\\?&]${name}=([^&#]*)`)
     const results = regex.exec(`?${querystring}`)
     return results == null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '))
