@@ -29,7 +29,7 @@
                           class="pellet"
                           :style="{'background-color': entry.color}"></span>
                     <i v-show="entry.icon" :class="entry.icon"></i>
-                    <entry-field :entry="entry" prop="title" class="title"></entry-field>
+                    <entry-field :entry="entry" prop="title" fallback-prop="bf_titre" class="title"></entry-field>
                 </h4>
             {% endblock %}
             {# FLOATING AREA #}

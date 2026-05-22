@@ -1,7 +1,7 @@
 <ul class="filter-results grid-elements">
 <?php foreach ($elements as $tag => $element) : ?>
 	<li class="filtered-element gradient-grid-box <?php echo $element["tagnames"]; ?>">
-		<a href="<?php echo $GLOBALS['wiki']->href('', $tag) ?>" target="_blank">
+		<a href="<?php echo $GLOBALS['wiki']->href('', $tag) ?>" target="_blank" rel="noopener noreferrer">
 			<h3 class="filtered-title"><?php echo $element["title"]; ?></h3>
     	</a>
     </li> <!-- /.filtered-element -->

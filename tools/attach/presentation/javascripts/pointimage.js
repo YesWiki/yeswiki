@@ -1,12 +1,13 @@
 $(document).ready(() => {
   const labelcancel = $('.modal-pointimage .btn-close').text()
   const labeladdpoint = $('.modal-pointimage .modal-title').text()
+  const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
   const $pointimagecontainers = $('.pointimage-container')
   const $popovers = $('.img-marker')
 
   $pointimagecontainers.each(function(index) {
     if ($(this).data('readonly') === false) {
-      $(this).find('.pointimage-image').append(`<a class="btn btn-xs btn-primary btn-add-point" href="#"><i class="fa fa-plus icon-plus"></i> ${labeladdpoint}</a><a class="pull-right btn btn-xs btn-default btn-edit-points" href="${$(this).data('pagetag')}/edit"><i class="fa fa-pencil-alt icon-edit"></i></a>`)
+      $(this).find('.pointimage-image').append(`<a class="btn btn-xs btn-primary btn-add-point" href="#"><i class="fa fa-plus icon-plus"></i> ${escHtml(labeladdpoint)}</a><a class="pull-right btn btn-xs btn-default btn-edit-points" href="${escHtml($(this).data('pagetag'))}/edit"><i class="fa fa-pencil-alt icon-edit"></i></a>`)
     }
   })
 
@@ -72,7 +73,7 @@ $(document).ready(() => {
         $formpointimage.append(`<input type="hidden" name="image_x" value="${relX}" /><input type="hidden" name="image_y" value="${relY}" /><input type="hidden" name="pagetag" value="${data.pagetag}" />`)
         $this.find('.btn-cancel').removeClass('btn-cancel').removeClass('btn-danger').addClass('btn-add-point')
           .addClass('btn-primary')
-          .html(`<i class="fa fa-plus icon-plus"></i> ${labeladdpoint}</a>`)
+          .html(`<i class="fa fa-plus icon-plus"></i> ${escHtml(labeladdpoint)}</a>`)
         $this.css('cursor', 'default')
         $('.modal-pointimage').modal('show')
         return false

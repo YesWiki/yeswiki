@@ -14,6 +14,8 @@ env:
 
 jobs:
   build:
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
 
     steps:
