@@ -156,9 +156,9 @@ class FormManager
             $form = $this->getFromRawData($form);
         }
 
-        $this->cachedForms[$formId] = $form;
+        $this->cachedForms[$formId] = $form ?? [];
 
-        return $form;
+        return $form ?? [];
     }
 
     public function getFromRawData($form)
@@ -197,6 +197,17 @@ class FormManager
             },
             ARRAY_FILTER_USE_KEY,
         );
+    }
+
+    public function getAllIds(): array
+    {
+        if ($this->cacheValidatedForAll) {
+            return array_keys($this->getAll());
+        }
+
+        $rows = $this->dbService->loadAll("SELECT bn_id_nature FROM {$this->dbService->prefixTable('nature')}");
+
+        return array_column($rows, 'bn_id_nature');
     }
 
     public function getMany($formsIds): array
@@ -244,7 +255,7 @@ class FormManager
                     . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
                     . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
                     . ',`bn_condition`)'
-                    . ' VALUES (' . $data['bn_id_nature'] . ', "fr-FR", "'
+                    . ' VALUES (' . intval($data['bn_id_nature']) . ', "fr-FR", "'
                     . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . '", "'
                     . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . '", "'
                     . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . '", "'
@@ -292,7 +303,7 @@ class FormManager
             . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '",' : '')
             . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
             . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
-            . ' WHERE `bn_id_nature`=' . $this->dbService->escape($data['bn_id_nature']));
+            . ' WHERE `bn_id_nature`=' . intval($data['bn_id_nature']));
     }
 
     public function clone($id)

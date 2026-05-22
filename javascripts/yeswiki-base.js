@@ -221,8 +221,15 @@ function toastMessage(
               var selection = document.querySelectorAll(`script[src="${src}"]`)
               if (!selection || selection.length == 0) {
                 // append script and load it only if not present
-                document.body.appendChild(document.importNode(res[i]))
-                $.getScript(src)
+                if (res[i].type === 'module') {
+                  const newScript = document.createElement('script')
+                  newScript.type = 'module'
+                  newScript.src = src
+                  document.body.appendChild(newScript)
+                } else {
+                  document.body.appendChild(document.importNode(res[i]))
+                  $.getScript(src)
+                }
               }
             } else {
               const script = res[i].innerHTML

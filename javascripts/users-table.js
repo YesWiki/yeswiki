@@ -63,7 +63,7 @@ const usersTableService = {
 
         $.ajax({
           method: 'post',
-          url: wiki.url(`api/users/${name}/delete`),
+          url: wiki.url(`api/users/${encodeURIComponent(name)}/delete`),
           data: { csrfToken },
           timeout: 30000, // 30 seconds
           error(e) {

@@ -1,46 +1,44 @@
 import { mergeSearchParams } from './url.js'
 
-/* update all export buttons in a page with the given search parameters */
-
 export function updateExportLinks(pSearchParams) {
   document
     .querySelectorAll('.export-links > a')
     .forEach((pLink) => {
-      const vOldHREF = pLink.getAttribute('data-href') // Get the original href
+      const vOldHREF = pLink.getAttribute('data-href')
 
-      let vNewHREF
-
-      if (vOldHREF.trim() === '') {
+      if (!vOldHREF || vOldHREF.trim() === '') {
         console.error('Invalid URL provided.')
-      } else {
-        const vNewURL = new URL(vOldHREF)
+        return
+      }
 
+      try {
+        const vURL = new URL(vOldHREF)
         const vAllowedProtocols = ['http:', 'https:']
-        if (!vAllowedProtocols.includes(vNewURL.protocol)) {
-          console.error('Blocked unsafe URL protocol in data-href:', vNewURL.protocol)
+        if (!vAllowedProtocols.includes(vURL.protocol)) {
+          console.error('Blocked unsafe URL protocol:', vURL.protocol)
           return
         }
 
-        const vHandler = vNewURL.searchParams.keys().next()
-        let vHandlerValue = vHandler.value
+        const vRawSearch = vURL.search.substring(1)
+        const vSegments = vRawSearch.split('&')
+        const vHandler = vSegments[0]
+        const vExistingParamsStr = vSegments.slice(1).join('&')
+        const vMergedParams = mergeSearchParams(
+          vExistingParamsStr,
+          pSearchParams,
+          { returnMode: 'string', overrideKeywords: false, overrideQuery: false }
+        )
 
-        if (vHandler) vNewURL.searchParams.delete(vHandlerValue)
-        else vHandlerValue = ''
-
-        const vParams = mergeSearchParams(vNewURL.searchParams.toString(), pSearchParams, { returnMode: 'string', overrideKeywords: false, overrideQuery: false })
-
-        const finalURL = new URL(vNewURL.href)
-        const searchParams = new URLSearchParams(vParams || '')
-        if (vHandlerValue) {
-          const [key, value] = vHandlerValue.split('=')
-          if (value !== undefined) {
-            searchParams.set(key, value)
-          } else {
-            finalURL.search = vHandlerValue + (vParams ? `&${vParams}` : '')
-          }
+        let vNewSearch = `?${vHandler}`
+        if (vMergedParams) {
+          vNewSearch += `&${vMergedParams}`
         }
-        finalURL.search = searchParams.toString()
-        pLink.href = finalURL.toString()
+
+        vURL.search = vNewSearch
+        pLink.href = vURL.toString()
+
+      } catch (e) {
+        console.error('Error processing URL:', e)
       }
     })
 }

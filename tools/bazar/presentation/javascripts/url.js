@@ -178,7 +178,7 @@ export function updateHash(pSavedHash = '', pKeywords = '', pSortField = '', pSo
 
   // Encode the hash to avoid confusion between &-separated hash parameters and &-separated search parameters
 
-  history.pushState({}, '', `#${encodeURIComponent(vMergedParams)}`)
+  history.pushState({}, '', vMergedParams ? `#${encodeURIComponent(vMergedParams)}` : location.pathname + location.search)
 
   updateExportLinks(vMergedParams) // Export
 }

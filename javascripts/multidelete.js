@@ -77,7 +77,7 @@ const multiDeleteService = {
       return
     }
     this.localFetchJson(
-      wiki.url(`?api/${type}/${itemId}/delete`),
+      wiki.url(`?api/${type}/${encodeURIComponent(itemId)}/delete`),
       {
         method: 'POST',
         timeout: 30000, // 30 seconds,
@@ -141,11 +141,18 @@ const multiDeleteService = {
       internalOptions.headers = (new Headers()).append('Content-Type', 'application/x-www-form-urlencoded')
     }
     return await fetch(url, internalOptions)
-      .then((response) => {
+      .then(async (response) => {
         if (response.ok) {
           return response.json()
         }
-        throw new Error(`Response is not ok (code ${response.code})`)
+        let errorDetail = ''
+        try {
+          const body = await response.json()
+          if (body && body.error) {
+            errorDetail = ': ' + body.error
+          }
+        } catch (e) { /* ignore parse errors */ }
+        throw new Error(`Response is not ok (code ${response.status})${errorDetail}`)
       })
       .finally(() => {
         if (resetTimeoutId !== null) {
@@ -195,3 +202,4 @@ $('.modal.multidelete').on('shown.bs.modal', function() {
 $('.modal.multidelete').on('hidden.bs.modal', function() {
   multiDeleteService.modalClosing($(this))
 })
+

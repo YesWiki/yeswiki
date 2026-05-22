@@ -159,6 +159,9 @@ mkdir -p javascripts/vendor/opening_hours &&
 		| sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' \
 		> javascripts/vendor/opening_hours/opening_hours.js
 
+# htmx
+mkdir -p javascripts/vendor/htmx && copy_js node_modules/htmx.org/dist/htmx.min.js javascripts/vendor/htmx/htmx.min.js
+
 # mermaid
 mkdir -p javascripts/vendor/mermaid/chunks/mermaid.esm.min &&
 	copy_js node_modules/mermaid/dist/mermaid.esm.min.mjs javascripts/vendor/mermaid/mermaid.esm.min.mjs

@@ -53,7 +53,7 @@ class EntryController extends YesWikiController
         ParameterBagInterface $config,
         SecurityController $securityController,
         SemanticTransformer $semanticTransformer,
-        TripleStore $tripleStore
+        TripleStore $tripleStore,
     ) {
         $this->aclService = $aclService;
         $this->authController = $authController;
@@ -170,7 +170,7 @@ class EntryController extends YesWikiController
                         [
                             'type' => 'info',
                             'message' => str_replace('{{nb}}', $entry['id_typeannonce'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')),
-                        ]
+                        ],
                     );
                 }
             }
@@ -287,7 +287,7 @@ class EntryController extends YesWikiController
                                     'id_fiche' => $entry['id_fiche'],
                                     'message' => 'ajout_ok',
                                 ],
-                                false
+                                false,
                             )
                         );
                     header('Location: ' . $redirectUrl);
@@ -519,12 +519,14 @@ class EntryController extends YesWikiController
         $values['form'] = $form;
 
         // Transform some data so it's easier to use
-        // Rename some varaibel (we keep old one for backward compatibility)
+        // Rename some variable (we keep old one for backward compatibility)
         $values['entry'] = $entry;
         $values['renderedFields'] = $html;
         $values['formFields'] = [];
         foreach ($values['form']['prepared'] as $config) {
-            $values['formFields'][$config->getName()] = $config;
+            if (!empty($config->getName())) {
+                $values['formFields'][$config->getName()] = $config;
+            }
         }
 
         return $values;
@@ -653,7 +655,7 @@ class EntryController extends YesWikiController
             'P'
                     . (!empty($nbYears) ? $nbYears . 'Y' : '')
                     . (!empty($nbMonth) ? $nbMonth . 'M' : '')
-                    . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : ''))
+                    . (!empty($nbDays) ? $nbDays . 'D' : (empty($nbYears) && empty($nbMonth) && empty($nbDays) ? '0D' : '')),
         );
         $vDateInterval->invert = ($pSign == '-') ? 1 : 0;
 
@@ -734,7 +736,7 @@ class EntryController extends YesWikiController
                 [
                     'type' => 'info',
                     'message' => _t('BAZ_IL_Y_A') . ' 0 ' . _t('BAZ_FICHE'),
-                ]
+                ],
             );
         }
 

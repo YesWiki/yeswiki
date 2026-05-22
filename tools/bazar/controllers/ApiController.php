@@ -216,7 +216,7 @@ class ApiController extends YesWikiController
      */
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
-        if (strpos($formId, 'b64_') === 0) {
+        if (!is_array($formId) && strpos($formId, 'b64_') === 0) {
             $vFormID = base64_decode(urldecode(substr($formId, 4)), true);
         } else {
             $vFormID = $formId;
@@ -237,7 +237,7 @@ class ApiController extends YesWikiController
         $vDateFilter = isset($_GET['datefilter']) ? urldecode($_GET['datefilter']) : null;
         $vOrdre = $_GET['ordre'] ?? 'asc';
         $vChamp = $_GET['champ'] ?? 'bf_titre';
-        $vNb = intval($_GET['nbitem'] ?? $_GET['nb'] ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? null);
+        $vNb = intval($_GET['nbitem'] ?? $_GET['nb'] ?? null);
         $vMinDate = urldecode($_GET['dateMin'] ?? $_GET['minDate'] ?? $_GET['period'] ?? '');
 
         if ($output == 'csv') { // Search is done in the CSV Manager

@@ -81,11 +81,28 @@ abstract class YesWikiPerformable
 
         // add some addition globals
         $vUserManager = $this->wiki->services->get(UserManager::class);
-        $userEntry = $vUserManager->getAssociatedEntry();
-        $this->twig->addGlobal('user', [
-            'entry' => $userEntry ?? [],
-            'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
-        ]);
+        $userName = (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'];
+        $this->twig->addGlobal('user', new class ($vUserManager, $userName) {
+            public string $name;
+            private UserManager $userManager;
+            private bool $entryResolved = false;
+            private ?array $entry = null;
+
+            public function __construct(UserManager $userManager, string $name)
+            {
+                $this->userManager = $userManager;
+                $this->name = $name;
+            }
+
+            public function getEntry(): array
+            {
+                if (!$this->entryResolved) {
+                    $this->entry = $this->userManager->getAssociatedEntry() ?? [];
+                    $this->entryResolved = true;
+                }
+                return $this->entry;
+            }
+        });
 
         return $this->twig->$method($templatePath, $data);
     }
