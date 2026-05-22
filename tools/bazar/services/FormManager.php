@@ -156,9 +156,9 @@ class FormManager
             $form = $this->getFromRawData($form);
         }
 
-        $this->cachedForms[$formId] = $form;
+        $this->cachedForms[$formId] = $form ?? [];
 
-        return $form;
+        return $form ?? [];
     }
 
     public function getFromRawData($form)
