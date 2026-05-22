@@ -1,77 +1,85 @@
 {% extends "@bazar/layouts/input.twig" %}
-
 {% block input %}
-    { include_css('tools/bazar/presentation/styles/inputs/file.css') }}
+    {{ include_css("tools/bazar/presentation/styles/inputs/file.css") }}
     {% if value %}
         <div class="bazar-entry-edit-image">
-            {% if isUrl|default(false) %}
-                <span class="url-indicator"><i class="fa fa-link"></i></span>
-            {% endif %}
+            {% if isUrl|default(false) %}<span class="url-indicator"><i class="fa fa-link"></i></span>{% endif %}
             <output id="img-{{ field.propertyName }}">{{ image|raw }}</output>
             <div class="image-actions">
                 <label class="btn btn-sm btn-default">
                     <i class="fa fa-pencil-alt"></i>
-                    {{ _t('BAZ_MODIFIER_IMAGE') }}
-                    <input
-                        type="file"
-                        style="display: none;"
-                        class="yw-image-upload"
-                        id="{{ field.propertyName }}"
-                        name="{{ field.propertyName }}"
-                        accept=".webp, .svg, .avif, .jpeg, .jpg, .gif, .png"
-                    >
+                    {{ _t("BAZ_MODIFIER_IMAGE") }}
+                    <input type="file"
+                           style="display: none"
+                           class="yw-image-upload"
+                           id="{{ field.propertyName }}"
+                           name="{{ field.propertyName }}"
+                           accept=".webp, .svg, .avif, .jpeg, .jpg, .gif, .png">
                 </label>
                 {% if isAllowedToDeleteFile and not isDefaultImage %}
-                    <a class="btn btn-sm btn-danger" href="{{ deleteUrl }}" onclick="javascript:return confirm('{{ _t('BAZ_CONFIRMATION_SUPPRESSION_IMAGE') }}');">
+                    <a class="btn btn-sm btn-danger"
+                       href="{{ deleteUrl }}"
+                       onclick="javascript:return confirm('{{ _t("BAZ_CONFIRMATION_SUPPRESSION_IMAGE") }}');">
                         <i class="fa fa-trash"></i>
-                        {{ _t('BAZ_SUPPRIMER_IMAGE') }}
+                        {{ _t("BAZ_SUPPRIMER_IMAGE") }}
                     </a>
                 {% elseif not isDefaultImage %}
-                    <button class="btn btn-sm btn-danger" disabled="disabled"
-                        data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
+                    <button class="btn btn-sm btn-danger"
+                            disabled="disabled"
+                            data-toggle="tooltip"
+                            data-placement="bottom"
+                            title="{{ _t("BAZ_DROIT_INSUFFISANT") }}">
                         <i class="fa fa-trash"></i>
-                        {{ _t('BAZ_SUPPRIMER_IMAGE') }}
+                        {{ _t("BAZ_SUPPRIMER_IMAGE") }}
                     </button>
                 {% endif %}
             </div>
         </div>
-        <input type="hidden" id="oldimage_{{ field.propertyName }}" name="oldimage_{{ field.propertyName }}" value="{{ value }}" />
+        <input type="hidden"
+               id="oldimage_{{ field.propertyName }}"
+               name="oldimage_{{ field.propertyName }}"
+               value="{{ value }}" />
     {% else %}
         <div class="file-url-tabs">
             <ul class="nav nav-tabs" role="tablist">
                 <li role="presentation" class="active">
-                    <a href="#{{ field.propertyName }}-upload" aria-controls="{{ field.propertyName }}-upload" role="tab" data-toggle="tab">
-                        <i class="fa fa-upload"></i> {{ _t('BAZ_UPLOAD_FILE') }}
+                    <a href="#{{ field.propertyName }}-upload"
+                       aria-controls="{{ field.propertyName }}-upload"
+                       role="tab"
+                       data-toggle="tab">
+                        <i class="fa fa-upload"></i> {{ _t("BAZ_UPLOAD_FILE") }}
                     </a>
                 </li>
                 <li role="presentation">
-                    <a href="#{{ field.propertyName }}-url" aria-controls="{{ field.propertyName }}-url" role="tab" data-toggle="tab">
-                        <i class="fa fa-link"></i> {{ _t('BAZ_URL') }}
+                    <a href="#{{ field.propertyName }}-url"
+                       aria-controls="{{ field.propertyName }}-url"
+                       role="tab"
+                       data-toggle="tab">
+                        <i class="fa fa-link"></i> {{ _t("BAZ_URL") }}
                     </a>
                 </li>
             </ul>
             <div class="tab-content">
-                <div role="tabpanel" class="tab-pane active" id="{{ field.propertyName }}-upload">
-                    <input
-                        data-max-size="{{ maxSize}}"
-                        type="file"
-                        class="yw-image-upload form-control"
-                        id="{{ field.propertyName }}"
-                        name="{{ field.propertyName }}"
-                        accept=".webp, .jpeg, .jpg, .gif, .png"
-                        {% if field.required %}required{% endif %}
-                    >
+                <div role="tabpanel"
+                     class="tab-pane active"
+                     id="{{ field.propertyName }}-upload">
+                    <input data-max-size="{{ maxSize }}"
+                           type="file"
+                           class="yw-image-upload form-control"
+                           id="{{ field.propertyName }}"
+                           name="{{ field.propertyName }}"
+                           accept=".webp, .jpeg, .jpg, .gif, .png"
+                           {% if field.required %}required{% endif %}>
                     <output id="img-{{ field.propertyName }}" class="col-xs-9"></output>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="{{ field.propertyName }}-url">
-                    <input
-                        type="url"
-                        id="{{ field.propertyName }}_url"
-                        name="{{ field.propertyName }}_url"
-                        class="form-control image-url-input"
-                        placeholder="https://..."
-                    />
-                    <output id="img-{{ field.propertyName }}-url-preview" class="col-xs-9 image-url-preview"></output>
+                    <input type="url"
+                           id="{{ field.propertyName }}_url"
+                           name="{{ field.propertyName }}_url"
+                           class="form-control image-url-input"
+                           placeholder="https://..." />
+                    <output id="img-{{ field.propertyName }}-url-preview"
+                            class="col-xs-9 image-url-preview"></output>
                 </div>
             </div>
         </div>

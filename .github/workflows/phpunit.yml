@@ -29,6 +29,8 @@ env:
 
 jobs:
   build:
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
 
     strategy:

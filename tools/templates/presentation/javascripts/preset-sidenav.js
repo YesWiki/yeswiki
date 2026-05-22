@@ -315,14 +315,14 @@ function saveTheme(event, url) {
   const preset = getActivePreset()
   const errorMessage = themeSelectorTranslation.TEMPLATE_THEME_NOT_SAVE
   if (theme && squelette && style) {
-    $('body').append(`<form id="templateFormSubmit" method="post" action="${url}" enctype="multipart/form-data">`
-            + '<input type="hidden" name="action" value="setTemplate"/>'
-            + `<input type="hidden" name="theme_select" value="${theme}"/>`
-            + `<input type="hidden" name="squelette_select" value="${squelette}"/>`
-            + `<input type="hidden" name="style_select" value="${style}"/>`
-            + `<input type="hidden" name="preset_select" value="${preset}"/>`
-            + '</form>')
-    $('#templateFormSubmit').submit()
+    const $form = $('<form>').attr({ id: 'templateFormSubmit', method: 'post', action: url, enctype: 'multipart/form-data' })
+      .append($('<input>').attr({ type: 'hidden', name: 'action', value: 'setTemplate' }))
+      .append($('<input>').attr({ type: 'hidden', name: 'theme_select', value: theme }))
+      .append($('<input>').attr({ type: 'hidden', name: 'squelette_select', value: squelette }))
+      .append($('<input>').attr({ type: 'hidden', name: 'style_select', value: style }))
+      .append($('<input>').attr({ type: 'hidden', name: 'preset_select', value: preset }))
+    $('body').append($form)
+    $form.submit()
   } else if (typeof toastMessage == 'function') {
     toastMessage(errorMessage, 3000, 'alert alert-warning')
   } else {

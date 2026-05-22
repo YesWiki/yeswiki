@@ -303,7 +303,8 @@ const app = createApp({
           this.archiving = false
           this.canForceDelete = false
           this.askConfirmationToDelete = true
-          this.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE', { files: data.files.join('<br>') }).replace('\n', '<br>')
+          const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+          this.archiveMessage = _t('ADMIN_BACKUPS_CONFIRMATION_TO_DELETE', { files: data.files.map(escHtml).join('<br>') }).replace('\n', '<br>')
           this.archiveMessageClass = { alert: true, 'alert-warning': true }
         }, (error) => {
           // if error

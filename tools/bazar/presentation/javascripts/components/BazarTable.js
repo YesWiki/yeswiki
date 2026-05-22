@@ -262,7 +262,9 @@ const componentParams = {
     },
     getUuid() {
       if (this.uuid === null) {
-        this.uuid = `${Date.now()}-${Math.round(Math.random() * 10000)}`
+        this.uuid = typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `${Date.now()}-${crypto.getRandomValues(new Uint32Array(1))[0]}`
       }
       return this.uuid
     },

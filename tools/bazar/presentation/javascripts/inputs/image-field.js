@@ -91,15 +91,15 @@ function handleImageUrlInput(evt) {
   if (!previewEl) return
 
   if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-    previewEl.innerHTML = `<img
-      class="img-responsive"
-      src="${url}"
-      alt="Preview"
-      onerror="this.style.display='none'"
-      onload="this.style.display='block'"
-    />`
+    const img = document.createElement('img')
+    img.className = 'img-responsive'
+    img.src = url
+    img.alt = 'Preview'
+    img.addEventListener('error', () => { img.style.display = 'none' })
+    img.addEventListener('load', () => { img.style.display = 'block' })
+    previewEl.replaceChildren(img)
   } else {
-    previewEl.innerHTML = ''
+    previewEl.replaceChildren()
   }
 }
 

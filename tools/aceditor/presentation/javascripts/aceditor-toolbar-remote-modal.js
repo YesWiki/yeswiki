@@ -5,7 +5,7 @@ export default function(title, url) {
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h2>${title}</h2>
+            <h2></h2>
           </div>
           <div class="modal-body" style="min-height:500px">
             <span id="yw-modal-loading" class="throbber"></span>
@@ -14,6 +14,7 @@ export default function(title, url) {
       </div>
     </div>
   `)
+  $modal.find('h2').text(title)
 
   $('body').append($modal)
   $modal.find('.modal-body').load(`${url} .page`, () => false)

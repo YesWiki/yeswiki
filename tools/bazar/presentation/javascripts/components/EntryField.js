@@ -1,11 +1,12 @@
 export default {
-  props: ['entry', 'prop'],
+  props: ['entry', 'prop', 'fallbackProp'],
   data() {
     return { isDateTime: false }
   },
   computed: {
     value() {
-      const value = this.entry[this.prop] || ''
+      const raw = this.entry[this.prop]
+      const value = (raw !== undefined && raw !== null ? raw : (this.fallbackProp ? (this.entry[this.fallbackProp] ?? '') : ''))
       switch (this.type) {
         case 'listedatedeb':
           if (!value) return ''
@@ -29,7 +30,9 @@ export default {
       }
     },
     field() {
-      return this.$root.fieldInfo(this.prop)
+      const f = this.$root.fieldInfo(this.prop)
+      if (!f.id && this.fallbackProp) return this.$root.fieldInfo(this.fallbackProp)
+      return f
     },
     type() {
       return this.field.type

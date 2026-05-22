@@ -209,7 +209,7 @@ class FormManager
 
         $this->cachedForms[$formId] = $form;
 
-        return $form;
+        return $form ?? [];
     }
 
     public function getPageTagFromId($id) {
