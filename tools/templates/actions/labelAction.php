@@ -14,7 +14,8 @@ class LabelAction extends YesWikiAction
            echo '<!-- start of label -->' . "\n" .
            '<span' . (!empty($id) ? ' id="' . $id . '"' : '') . ' class="label ' . $class
                . '">';
-
+        } else {
+            echo $this->generate_error_msg('label');
         }
        $label = ob_get_contents();
        ob_end_clean();

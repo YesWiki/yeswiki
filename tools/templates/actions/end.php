@@ -24,10 +24,6 @@ if (empty($elem)) {
 
     if ($GLOBALS['check_' . $pagetag][$elem] || in_array($elem, ['tab', 'tabs'], true)) {
         switch ($elem) {
-            case 'accordion':
-                echo "\n</div> <!-- end of accordion -->\n";
-                unset($GLOBALS['check_' . $pagetag]['accordion_uniqueID']);
-                break;
             case 'panel':
                 echo "\t\t\n</div>\t\n</div>\n</div> <!-- end of panel -->\n";
                 break;

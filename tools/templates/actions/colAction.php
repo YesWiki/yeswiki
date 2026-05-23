@@ -20,6 +20,8 @@ class ColAction extends YesWikiAction
            '<div class="span' . $size . ' col-md-' . $size . (isset($class) ? ' ' . $class : '')
                . '">';
 
+        } else {
+            echo $this->generate_error_msg('col');
         }
        $col = ob_get_contents();
        ob_end_clean();

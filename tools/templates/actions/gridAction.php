@@ -13,6 +13,8 @@ class GridAction extends YesWikiAction
        if ($this->check_end_elem('grid')) {
            echo '<!-- start of grid -->' . "\n" .
            '<div' . ' class="' . $class .'">';
+       } else {
+           echo $this->generate_error_msg('grid');
        }
        $col = ob_get_contents();
        ob_end_clean();
