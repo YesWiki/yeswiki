@@ -59,6 +59,7 @@
     {{ block('checkboxAll') }}
 
     <input type="hidden" value="{{ id }}" name="id" />
+    <input type="hidden" name="csrf-token" value="{{ csrfToken({id:'main',refresh:false})|e('html_attr') }}">
     <button id="btn-bazar-imports" class="btn btn-primary" type="submit">
       {{ _t('BAZ_IMPORT_SELECTION') }}
     </button>
