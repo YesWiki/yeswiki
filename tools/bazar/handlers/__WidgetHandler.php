@@ -48,7 +48,7 @@ class __WidgetHandler extends YesWikiHandler
             'height' => $this->params->get('baz_map_height'),
         ];
 
-        $urlParams = 'id=' . strip_tags($_GET['id']) . (isset($_GET['query']) ? '&query=' . strip_tags($_GET['query']) : '') . (!empty($q) ? '&q=' . $q : '');
+        $urlParams = 'id=' . urlencode(strip_tags($_GET['id'])) . (isset($_GET['query']) ? '&query=' . urlencode(strip_tags($_GET['query'])) : '') . (!empty($q) ? '&q=' . urlencode($q) : '');
 
         echo $this->render('@bazar/widget.tpl.html', [
             'facettes' => $facettes,
