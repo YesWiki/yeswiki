@@ -72,7 +72,9 @@ function copyUrlToLocalFile($url, $localPath)
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $imgcontent = curl_exec($ch);
         $error = curl_error($ch);
-        curl_close($ch);
+        if (PHP_VERSION_ID < 80500) {
+            curl_close($ch);
+        }
         $file = fopen($localPath, 'w+');
         fputs($file, $imgcontent);
         fclose($file);
