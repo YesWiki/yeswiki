@@ -24,9 +24,6 @@ if (empty($elem)) {
 
     if ($GLOBALS['check_' . $pagetag][$elem] || in_array($elem, ['tab', 'tabs'], true)) {
         switch ($elem) {
-            case 'buttondropdown':
-                echo "\n</div> <!-- end of buttondropdown -->\n";
-                break;
             case 'tab':
                 echo $this->services->get(TabsController::class)->closeATab();
                 break;
