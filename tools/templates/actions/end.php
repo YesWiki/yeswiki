@@ -22,17 +22,5 @@ if (empty($elem)) {
         $GLOBALS['check_' . $pagetag][$elem] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements($elem, $pagetag, $body);
     }
 
-    if ($GLOBALS['check_' . $pagetag][$elem] || in_array($elem, ['tab', 'tabs'], true)) {
-        switch ($elem) {
-            case 'tab':
-                echo $this->services->get(TabsController::class)->closeATab();
-                break;
-            case 'tabs':
-                echo $this->services->get(TabsController::class)->closeTabs();
-                break;
-            default:
-                echo $this->services->get(Performer::class)->run($elem, 'action', [], true);
-                break;
-        }
-    }
+    echo $this->services->get(Performer::class)->run($elem, 'action', [], true);
 }

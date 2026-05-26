@@ -30,4 +30,9 @@ class TabsAction extends YesWikiAction
             ['btnClass' => $this->arguments['btncolor'] . ' ' . $this->arguments['btnsize']]
         ));
     }
+
+    public function end(): string
+    {
+        return $this->getService(TabsController::class)->closeTabs();
+    }
 }
