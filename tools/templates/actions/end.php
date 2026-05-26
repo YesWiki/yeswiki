@@ -24,9 +24,6 @@ if (empty($elem)) {
 
     if ($GLOBALS['check_' . $pagetag][$elem] || in_array($elem, ['tab', 'tabs'], true)) {
         switch ($elem) {
-            case 'panel':
-                echo "\t\t\n</div>\t\n</div>\n</div> <!-- end of panel -->\n";
-                break;
             case 'buttondropdown':
                 echo "\n</div> <!-- end of buttondropdown -->\n";
                 break;
