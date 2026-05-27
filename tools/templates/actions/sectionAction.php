@@ -115,7 +115,7 @@ class SectionAction extends YesWikiAction
         $id = $this->arguments['id'] ?? '';
 
         // container data attributes
-        $data = $this->wiki->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
+        $data = $this->getService(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
 
         $pagetag = $this->wiki->GetPageTag();
 
