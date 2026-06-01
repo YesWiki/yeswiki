@@ -177,7 +177,7 @@ class HttpSignatureService
             }
         }
 
-        if (!openssl_verify(join("\n", $sigParts), base64_decode($sigConf['signature']), $actorPublicKey, strtoupper($sigConf['algorithm']))) {
+        if (openssl_verify(join("\n", $sigParts), base64_decode($sigConf['signature']), $actorPublicKey, strtoupper($sigConf['algorithm'])) !== 1) {
             throw new Exception('Signature verification failed');
         }
 
