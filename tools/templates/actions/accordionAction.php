@@ -9,7 +9,6 @@ class AccordionAction extends YesWikiAction
     {
        ob_start();
        $class = $this->arguments['class'] ?? '';
-       $data = $this->wiki->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
        $pagetag = $this->wiki->GetPageTag();
 
        if ($this->check_end_elem('accordion')) {
@@ -17,15 +16,9 @@ class AccordionAction extends YesWikiAction
                $accordionID = uniqid('accordion_');
                $GLOBALS['check_' . $pagetag]['accordion_uniqueID'] = $accordionID;
 
-               $data = '';
-               if (is_array($data)) {
-                   foreach ($data as $key => $value) {
-                       $data .= ' data-' . $key . '="' . $value . '"';
-                   }
-               }
            }
            echo '<!-- start of accordion -->' . "\n" .
-           "<div class=\"panel-group $class \" role=\"tablist\" aria-multiselectable=\"true\" id=\"$accordionID\" $data>";
+           "<div class=\"panel-group $class \" role=\"tablist\" aria-multiselectable=\"true\" id=\"$accordionID\">";
        } else {
            echo $this->generate_error_msg('accordion');
        }
@@ -37,6 +30,7 @@ class AccordionAction extends YesWikiAction
 
     public function end(): string {
        return "\n</div> <!-- end of accordion -->\n";
+       $pagetag = $this->wiki->GetPageTag();
        unset($GLOBALS['check_' . $pagetag]['accordion_uniqueID']);
     }
 }
