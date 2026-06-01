@@ -80,6 +80,54 @@ class HttpSignatureService
         ];
     }
 
+    /**
+     * Validate that a keyId URL is safe to fetch: must be HTTPS and must not
+     * resolve to a private, loopback, reserved, or link-local address (SSRF guard).
+     */
+    private function validateKeyIdUrl(string $url): void
+    {
+        $parts = parse_url($url);
+        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
+            throw new Exception('Invalid keyId URL');
+        }
+        if ($parts['scheme'] !== 'https') {
+            throw new Exception('keyId URL must use HTTPS');
+        }
+
+        // Strip IPv6 brackets (e.g. [::1] → ::1)
+        $host = trim($parts['host'], '[]');
+
+        // Collect all IPs the host resolves to so every address family is checked.
+        if (filter_var($host, FILTER_VALIDATE_IP)) {
+            $ips = [$host];
+        } else {
+            $ips = [];
+            $ipv4 = gethostbyname($host);
+            if ($ipv4 !== $host) {
+                $ips[] = $ipv4;
+            }
+            foreach (dns_get_record($host, DNS_AAAA) ?: [] as $record) {
+                if (!empty($record['ipv6'])) {
+                    $ips[] = $record['ipv6'];
+                }
+            }
+            if (empty($ips)) {
+                throw new Exception('Cannot resolve keyId hostname');
+            }
+        }
+
+        foreach ($ips as $ip) {
+            // Rejects 127.x, 10.x, 172.16–31.x, 192.168.x, 169.254.x, 0.x, 240.x, ::1, fc00::/7
+            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+                throw new Exception('keyId URL resolves to a private or reserved address');
+            }
+            // fe80::/10 (IPv6 link-local) is not blocked by FILTER_FLAG_NO_RES_RANGE in all PHP versions
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && stripos($ip, 'fe80') === 0) {
+                throw new Exception('keyId URL resolves to a private or reserved address');
+            }
+        }
+    }
+
     public function verifySignature(Request $request) {
         if (!$request->headers->has('Signature')) {
             throw new Exception('No signature');
@@ -92,6 +140,8 @@ class HttpSignatureService
         if (!isset($sigConf['keyId'],$sigConf['algorithm'],$sigConf['headers'],$sigConf['signature'])) {
             throw new Exception('Malformed signature');
         }
+
+        $this->validateKeyIdUrl($sigConf['keyId']);
 
         $response = $this->httpClient->request('GET', $sigConf['keyId'], [
             'headers' => [ 'Accept' => 'application/ld+json']
