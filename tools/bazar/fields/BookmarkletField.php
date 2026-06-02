@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Service\HtmlPurifierService;
 
 /**
  * @Field({"bookmarklet"})
@@ -26,7 +27,7 @@ class BookmarkletField extends BazarField
         $this->size = null;
         $this->maxChars = null;
         $this->default = '';
-        $this->text = $values[self::FIELD_TEXT_FIELD];
+        $this->text = $this->services->get(HtmlPurifierService::class)->cleanHTML($values[self::FIELD_TEXT_FIELD] ?? '');
     }
 
     protected function renderInput($entry)

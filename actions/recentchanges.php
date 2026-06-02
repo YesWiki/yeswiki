@@ -14,8 +14,10 @@ if ($max = $this->GetParameter('max')) {
 }
 
 // si une date est indiquée
-if (isset($_GET['period']) && in_array($_GET['period'], ['day', 'week', 'month'])) {
-    switch ($_GET['period']) {
+$period = isset($_GET['period']) ? $_GET['period'] : $this->GetParameter('period');
+$dateMin = '';
+if (in_array($period, ['day', 'week', 'month'], true)) {
+    switch ($period) {
         case 'day':
             $d = strtotime('-1 day');
             $dateMin = date('Y-m-d H:i:s', $d);
@@ -29,8 +31,6 @@ if (isset($_GET['period']) && in_array($_GET['period'], ['day', 'week', 'month']
             $dateMin = date('Y-m-d H:i:s', $d);
             break;
     }
-} else {
-    $dateMin = $this->GetParameter('period');
 }
 
 // Show recently changed pages

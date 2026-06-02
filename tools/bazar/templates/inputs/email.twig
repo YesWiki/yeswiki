@@ -10,7 +10,7 @@
             class="form-control"
             maxlength="{{ field.maxChars }}"
             size="{{ field.maxChars }}"
-            placeholder="{{ field.label|raw('html')|striptags }}"
+            placeholder="{{ field.label|striptags|trim }}"
             {% if field.required %}required{% endif %}
         />
     </div>

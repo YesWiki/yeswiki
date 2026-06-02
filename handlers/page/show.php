@@ -46,7 +46,7 @@ if ($HasAccessRead = $this->HasAccess('read')) {
                 <?php
                 $time = isset($_GET['time']) ? $_GET['time'] : '';
                 echo $this->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get'); ?>
-                <input type="hidden" name="time" value="<?php echo $time; ?>" />
+                <input type="hidden" name="time" value="<?php echo htmlspecialchars($time, ENT_QUOTES, YW_CHARSET); ?>" />
                 <input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
                 <?php echo $this->FormClose(); ?>
 <?php

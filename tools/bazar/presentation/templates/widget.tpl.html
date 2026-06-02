@@ -2,10 +2,10 @@
   var facettetext = <?php echo json_encode(array('facettetext' => $facettestext, 'show_tooltip' => $showtooltip)); ?>;
 </script>
 <div id="widgetapp" v-cloak
-  data-formid="<?php echo strip_tags($_GET['id']); ?>"
+  data-formid="<?php echo htmlspecialchars(strip_tags($_GET['id']), ENT_QUOTES, 'UTF-8'); ?>"
   data-templatemodel="<?php echo $params['template']; ?>"
   data-providermodel="<?php echo $params['provider']; ?>"
-  data-iframeUrl="<?php echo $GLOBALS['wiki']->href('bazariframe', '', $urlparams, false); ?>"
+  data-iframeUrl="<?php echo htmlspecialchars($GLOBALS['wiki']->href('bazariframe', '', $urlparams, false), ENT_QUOTES, 'UTF-8'); ?>"
   data-checkedFacette="<?php echo '[]'; ?>"
   data-markerfieldmodel="<?php echo _t('BAZ_CHOISIR'); ?>"
   data-colorfieldmodel="<?php echo _t('BAZ_CHOISIR'); ?>"

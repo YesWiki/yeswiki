@@ -155,16 +155,14 @@ class TemplateEngine
             } elseif (is_array($tokenId)) {
                 if (!isset($tokenId['id'])) {
                     throw new \Exception('When array, `$tokenId` should contain `id` key !');
-                } else {
-                    if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
-                        return $this->csrfTokenManager->refreshToken($tokenId['id'])->getValue();
-                    } else {
-                        return $this->csrfTokenManager->getToken($tokenId['id'])->getValue();
-                    }
                 }
-            } else {
-                throw new \Exception('`$tokenId` should be a string or an array !');
+                if (isset($tokenId['refresh']) && $tokenId['refresh'] === true) {
+                    return $this->csrfTokenManager->refreshToken($tokenId['id'])->getValue();
+                }
+
+                return $this->csrfTokenManager->getToken($tokenId['id'])->getValue();
             }
+            throw new \Exception('`$tokenId` should be a string or an array !');
         });
         $this->addTwigHelper('urlImage', function ($options) {
             if (!isset($options['fileName'])) {
@@ -196,9 +194,9 @@ class TemplateEngine
                 }
 
                 return $basePath . $image_dest;
-            } else {
-                return $basePath . $image_dest;
             }
+
+            return $basePath . $image_dest;
         });
         $this->addTwigHelper('hasAcl', function ($acl, $tag = '', $adminCheck = true) {
             return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
@@ -217,8 +215,6 @@ class TemplateEngine
             if ($found) {
                 return $form['prepared'][$found]->renderStaticIfPermitted($entry);
             }
-
-            return;
         });
         $this->addTwigHelper('listValues', function ($listId, $parent = null) {
             return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);
@@ -247,7 +243,49 @@ class TemplateEngine
     public function renderFromStringNoEscape(string $templateString, array $data = []): string
     {
         $wrapped = '{% autoescape false %}' . $templateString . '{% endautoescape %}';
+
         return $this->twig->createTemplate($wrapped)->render($data);
+    }
+
+    /**
+     * Render an untrusted Twig string in a locked-down sandbox environment.
+     *
+     * A fresh Twig instance is created with no globals, no custom functions,
+     * and a strict SecurityPolicy so that administrator-supplied template strings
+     * cannot call PHP functions or access server internals.
+     */
+    public function renderSandboxedFromStringNoEscape(string $templateString, array $data = []): string
+    {
+        $loader = new \Twig\Loader\ArrayLoader(['__sem__' => $templateString]);
+        $twig = new \Twig\Environment($loader, ['autoescape' => false]);
+
+        $policy = new \Twig\Sandbox\SecurityPolicy(
+            // allowed control-flow tags only
+            ['if', 'for', 'set'],
+            // safe data-manipulation and formatting filters
+            [
+                'abs', 'batch', 'capitalize', 'date', 'default',
+                'e', 'escape', 'filter', 'first', 'format',
+                'join', 'json_encode', 'keys', 'last', 'length', 'lower',
+                'map', 'merge', 'nl2br', 'number_format', 'raw',
+                'reduce', 'replace', 'reverse', 'round', 'slice',
+                'sort', 'split', 'striptags', 'title', 'trim', 'upper',
+            ],
+            // no method calls on objects
+            [],
+            // no property access on objects
+            [],
+            ['date', 'fileUrl', 'max', 'min', 'random', 'range']
+        );
+        $twig->addExtension(new \Twig\Extension\SandboxExtension($policy, true));
+
+        $baseUrl = $this->wiki->getBaseUrl();
+        $uploadPath = BAZ_CHEMIN_UPLOAD;
+        $twig->addFunction(new \Twig\TwigFunction('fileUrl', function (string $fileName) use ($baseUrl, $uploadPath): string {
+            return $baseUrl . '/' . $uploadPath . $fileName;
+        }));
+
+        return $twig->render('__sem__', $data);
     }
 
     public function renderInSquelette($templatePath, $data = [])

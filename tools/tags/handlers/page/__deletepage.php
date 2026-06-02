@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\DbService;
 
 if (($this->UserIsOwner() || $this->UserIsAdmin())
     && isset($_GET['eraselink'])
@@ -11,7 +12,8 @@ if (($this->UserIsOwner() || $this->UserIsAdmin())
     try {
         if ($this->services->get(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token', false)) {
             $tag = $this->GetPageTag();
-            $this->Query("DELETE FROM {$this->config['table_prefix']}links WHERE to_tag = '$tag'");
+            $dbService = $this->services->get(DbService::class);
+            $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '" . $dbService->escape($tag) . "'");
         }
     } catch (Throwable $th) {
         // do nothing
