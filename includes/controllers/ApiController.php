@@ -623,7 +623,7 @@ class ApiController extends YesWikiController
                 $result['notDeleted'] = [$tag];
                 if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
                     if (!$pageManager->isOrphaned($tag)) {
-                        $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '$tag'");
+                        $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '{$dbService->escape($tag)}'");
                     }
                     $done = $pageController->delete($tag);
                     if (!$done || !empty($pageManager->getOne($tag, null, false))) {

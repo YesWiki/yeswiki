@@ -16,7 +16,7 @@
             max="{{ field.maxChars }}"
             data-default="{{ defaultValue }}"
             {% if field.pattern %}pattern="{{ field.pattern }}"{% endif %}
-            placeholder="{{ field.label|raw('html')|striptags }}"
+            placeholder="{{ field.label|striptags|trim }}"
             {% if field.required %}required{% endif %}
         />
         <output class="range-output">{{ value is empty ? defaultValue : value }}</output>

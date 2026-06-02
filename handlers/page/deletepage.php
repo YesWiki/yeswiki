@@ -4,6 +4,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Controller\CsrfTokenController;
 use YesWiki\Core\Controller\PageController;
+use YesWiki\Core\Service\DbService;
 
 // get services
 $csrfTokenManager = $this->services->get(CsrfTokenManager::class);
@@ -90,8 +91,9 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             }
         }
         $msg = '<p><em>' . _t('DELETEPAGE_NOT_ORPHEANED') . "</em></p>\n";
-        $linkedFrom = $this->LoadAll('SELECT DISTINCT from_tag ' . 'FROM ' . $this->config['table_prefix'] . 'links '
-            . "WHERE to_tag = '" . $this->GetPageTag() . "'");
+        $dbService = $this->services->get(DbService::class);
+        $linkedFrom = $dbService->loadAll('SELECT DISTINCT from_tag FROM ' . $dbService->prefixTable('links')
+            . " WHERE to_tag = '" . $dbService->escape($this->GetPageTag()) . "'");
         $msg .= '<p>' . str_replace('{tag}', $this->ComposeLinkToPage($this->tag, '', '', 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
         $msg .= "<ul>\n";
         foreach ($linkedFrom as $page) {

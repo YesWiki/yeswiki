@@ -196,7 +196,7 @@ class PageManager
     public function getRecentlyChanged($limit = 50, $minDate = ''): ?array
     {
         if (!empty($minDate)) {
-            if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
+            if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '" . $this->dbService->escape($minDate) . "' order by time desc")) {
                 //foreach ($pages as $page) {
                 //    $this->cache($page);
                 //}

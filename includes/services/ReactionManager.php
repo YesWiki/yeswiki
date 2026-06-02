@@ -353,7 +353,7 @@ class ReactionManager
                     "(`value` NOT LIKE '%\"date\":\"%')"
             );
         } else {
-            return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $user . '","idReaction":"' . $reactionId . '","id":"' . $id . '"%\'');
+            return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $this->dbService->escape($user) . '","idReaction":"' . $this->dbService->escape($reactionId) . '","id":"' . $this->dbService->escape($id) . '"%\'');
         }
     }
 }

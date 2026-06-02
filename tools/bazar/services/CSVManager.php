@@ -376,7 +376,7 @@ class CSVManager
             $GLOBALS['_BAZAR_']['provenance'] = 'import';
             $createdEntries = [];
             foreach ($importedEntries as $entry) {
-                $entry = unserialize(base64_decode($entry));
+                $entry = unserialize(base64_decode($entry), ['allowed_classes' => false]);
                 $entry = array_map('strval', $entry);
 
                 $entry['antispam'] = 1;

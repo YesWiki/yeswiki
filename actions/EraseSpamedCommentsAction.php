@@ -26,6 +26,14 @@ class EraseSpamedCommentsAction extends YesWikiAction
     public function run()
     {
         $wiki = &$this->wiki;
+
+        if (!$wiki->UserIsAdmin()) {
+            return $this->render('@templates/alert-message.twig', [
+                'type' => 'danger',
+                'message' => get_class($this) . ' : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),
+            ]);
+        }
+
         ob_start();
         echo "\n<!-- == Action erasespamedcomments v 0.7 ============================= -->\n";
 
@@ -50,8 +58,8 @@ class EraseSpamedCommentsAction extends YesWikiAction
                     }
 
                     // echo entry
-                    echo '<li><input name="suppr[]" value="' . $comment['tag'] . '" type="checkbox" /> [' . htmlspecialchars(_t('DEL')) . '!] ' .
-                        $comment['tag'] .
+                    echo '<li><input name="suppr[]" value="' . htmlspecialchars($comment['tag'], ENT_QUOTES, YW_CHARSET) . '" type="checkbox" /> [' . htmlspecialchars(_t('DEL')) . '!] ' .
+                        htmlspecialchars($comment['tag'], ENT_COMPAT, YW_CHARSET) .
                         ' (',$comment['time'],') <code>' .
                         htmlspecialchars(substr($comment['body'], 0, 25), ENT_COMPAT, YW_CHARSET) . '</code> ' .
                         '<a href="',$wiki->href('', $comment['comment_on'], 'show_comments=1') . '#' . $comment['tag'] . '">' .
@@ -75,10 +83,13 @@ class EraseSpamedCommentsAction extends YesWikiAction
             // Pour chaque page sélectionnée
             if (!empty($_POST['suppr'])) {
                 foreach ($_POST['suppr'] as $page) {
-                    // Effacement de la page en utilisant la méthode adéquate
-                    // (si DeleteOrphanedPage ne convient pas, soit on créé
-                    // une autre, soit on la modifie
-                    echo 'Effacement de : ' . $page . "<br />\n";
+                    // Only delete pages that are actual comments to prevent
+                    // arbitrary page deletion via a crafted suppr[] payload.
+                    $pageData = $wiki->LoadPage($page);
+                    if (empty($pageData) || empty($pageData['comment_on'])) {
+                        continue;
+                    }
+                    echo 'Effacement de : ' . htmlspecialchars($page) . "<br />\n";
                     if ($wiki->services->get(PageController::class)->delete($page)) {
                         $deletedPages .= $page . ', ';
                     }
