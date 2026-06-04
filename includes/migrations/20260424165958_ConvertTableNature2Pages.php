@@ -78,26 +78,28 @@ class ConvertTableNature2Pages extends YesWikiMigration
         foreach ($forms as $form) {
             $form = $formManager->getFromRawData($form);
             $form_array = [];
-            $counter = 0;
-            foreach ($form['prepared'] as $i => $fields) {
-                $classType = get_class($fields);
-                $fields = json_decode(json_encode($fields), true);
-                $fields["order"] = $counter;
+            foreach ($form['prepared'] as $i => $element) {
+                error_log(json_encode($element));
+                error_log("field number : $i");
+                $classType = get_class($element);
+                $field = json_decode(json_encode($element), true);
+                $field["order"] = $i;
 
                 if (
-                    (!isset($fields['name']) || $fields['name'] == '') &&
-                    isset($fields['linkedObjectName'])
+                    (!isset($field['name']) || $field['name'] == '') &&
+                    isset($field['linkedObjectName'])
                 ) {
-                    $id = $fields['type'] . $fields['linkedObjectName'];
+                    $id = $field['type'] . $field['linkedObjectName'];
+                } else {
+                    $id = $field['name'] ?? $field['type'] . '__' . $i;
                 }
-                $id = $id ?? $fields['name'] ?? $fields['type'] . '__' . $counter;
-                if (isset($fields['options'])) {
-                    unset($fields['options']);
+                if (isset($field['options'])) {
+                    unset($field['options']);
                 }
                 $fieldExploded = explode('\\', $classType);
-                $fields['field_type'] = array_pop($fieldExploded);
-                $form_array[$id] = $fields;
-                $counter++;
+                $field['field_type'] = array_pop($fieldExploded);
+                $form_array[$id] = $field;
+                error_log(json_encode($form_array));
             }
             $slug = getAvailableSlug($form['bn_label_nature']); //TODO changer pour slug et ajouter mettre les droits d'admin.
             $newform = [
