@@ -21,35 +21,32 @@ class RssHandler extends YesWikiHandler
             $vBazarListService = $this->getService(BazarListService::class);
             $securityController = $this->getService(SecurityController::class);
 
-            $vIDs = $vBazarListService->getIDs($_GET['id'] ?? $_GET['id_typeannonce'] ?? $_GET['idtypeannonce'] ?? []);
+            $get = $this->getRequest()->query;
+            $vIDs = $vBazarListService->getIDs($get->get('id') ?? $get->get('id_typeannonce') ?? $get->get('idtypeannonce') ?? []);
 
-            $vItemCount = intval($_GET['nbitem'] ?? $_GET['nb'] ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
+            $vItemCount = intval($get->get('nbitem') ?? $get->get('nb') ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
 
-            if (isset($_GET['utilisateur'])) {
-                $utilisateur = $_GET['utilisateur'];
-            } else {
-                $utilisateur = '';
-            }
+            $utilisateur = $get->get('utilisateur', '');
 
             // chaine de recherche
 
             $vKeywords = $vSearchManager->aggregateKeywords(
-                isset($_GET['q']) ? urldecode($_GET['q']) : null,
-                isset($_GET['keywords']) ? urldecode($_GET['keywords']) : null
+                $get->has('q') ? urldecode($get->get('q')) : null,
+                $get->has('keywords') ? urldecode($get->get('keywords')) : null
             );
 
-            $vSearchFields = isset($_GET['searchfields']) ? urldecode($_GET['searchfields']) : null;
+            $vSearchFields = $get->has('searchfields') ? urldecode($get->get('searchfields')) : null;
 
-            $vQuery = $_GET['query'] ?? '';
+            $vQuery = $get->get('query', '');
             $vQuery = $vSearchManager->parseQuery(urldecode($vQuery));
 
             // correspondance
 
-            $vCorrespondance = isset($_GET['correspondance']) ? urldecode($_GET['correspondance']) : null;
+            $vCorrespondance = $get->has('correspondance') ? urldecode($get->get('correspondance')) : null;
 
             // datefilter
 
-            $vDateFilter = isset($_GET['datefilter']) ? urldecode($_GET['datefilter']) : null;
+            $vDateFilter = $get->has('datefilter') ? urldecode($get->get('datefilter')) : null;
 
             $vRSSEntries = $vBazarListService->getEntries(
                 [
@@ -63,7 +60,7 @@ class RssHandler extends YesWikiHandler
                     'ordre' => 'desc',
                     'champ' => 'date_creation_fiche',
                     'nb' => $vItemCount,
-                    'minDate' => $_GET['dateMin'] ?? $_GET['minDate'] ?? $_GET['period'] ?? '',
+                    'minDate' => $get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '',
                 ]
             );
 
@@ -164,7 +161,7 @@ class RssHandler extends YesWikiHandler
             return str_replace(
                 '</image>',
                 '</image>' . "\n"
-            . '    <atom:link href="' . htmlentities((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'])
+            . '    <atom:link href="' . htmlentities($this->getRequest()->getSchemeAndHttpHost() . $this->getRequest()->getRequestUri())
             . '" rel="self" type="application/rss+xml" />',
                 $this->sanitize($xml, ENT_QUOTES, 'UTF-8')
             );

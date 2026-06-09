@@ -13,7 +13,8 @@ class __WidgetHandler extends YesWikiHandler
         $formManager = $this->getService(FormManager::class);
         $bazarListService = $this->getService(BazarListService::class);
 
-        if (!isset($_GET['id'])) {
+        $query = $this->getRequest()->query;
+        if (!$query->has('id')) {
             return null;
         }
 
@@ -23,7 +24,9 @@ class __WidgetHandler extends YesWikiHandler
         echo '<div class="page">';
         echo '<h1>' . _t('BAZ_WIDGET_HANDLER_TITLE') . '</h1>' . "\n";
 
-        $entries = $vSearchManager->search(['formsIds' => [!empty($_GET['id']) ? strip_tags($_GET['id']) : null], 'keywords' => (!empty($_GET['q']) ? strip_tags($_GET['q']) : null)], true, true);
+        $id = $query->get('id');
+        $q = $query->get('q');
+        $entries = $vSearchManager->search(['formsIds' => [!empty($id) ? strip_tags($id) : null], 'keywords' => (!empty($q) ? strip_tags($q) : null)], true, true);
         $forms = $formManager->getAll();
         $filters = $bazarListService->getFilters(['groups' => ['all']], $entries, $forms);
 
@@ -48,7 +51,7 @@ class __WidgetHandler extends YesWikiHandler
             'height' => $this->params->get('baz_map_height'),
         ];
 
-        $urlParams = 'id=' . urlencode(strip_tags($_GET['id'])) . (isset($_GET['query']) ? '&query=' . urlencode(strip_tags($_GET['query'])) : '') . (!empty($q) ? '&q=' . urlencode($q) : '');
+        $urlParams = 'id=' . urlencode(strip_tags($id)) . ($query->has('query') ? '&query=' . urlencode(strip_tags($query->get('query'))) : '') . (!empty($q) ? '&q=' . urlencode($q) : '');
 
         echo $this->render('@bazar/widget.tpl.html', [
             'facettes' => $facettes,

@@ -61,8 +61,9 @@ class TitleField extends BazarField
                         // get value instead of key
                         $replacement = $field->getOptions()[$fieldValue] ?? '';
                     } elseif ($field instanceof ImageField) {
-                        if (!empty($_POST['filename-' . $field->getPropertyName()])) {
-                            $replacement = sanitizeFilename($_POST['filename-' . $field->getPropertyName()]);
+                        $filenameKey = 'filename-' . $field->getPropertyName();
+                        if (!empty($this->getRequest()->request->get($filenameKey))) {
+                            $replacement = sanitizeFilename($this->getRequest()->request->get($filenameKey));
                             if (empty($replacement)) {
                                 $replacement = 'image';
                             }

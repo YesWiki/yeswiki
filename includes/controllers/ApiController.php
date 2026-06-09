@@ -194,12 +194,15 @@ class ApiController extends YesWikiController
         $userController = $this->getService(UserController::class);
         $userManager = $this->getService(UserManager::class);
 
-        if (empty($_POST['name'])) {
+        $post = $this->getRequest()->request;
+        $postName = strval($post->get('name', ''));
+        $postEmail = strval($post->get('email', ''));
+        if (empty($postName)) {
             $code = Response::HTTP_BAD_REQUEST;
             $result = [
                 'error' => "\$_POST['name'] should not be empty",
             ];
-        } elseif (empty($_POST['email'])) {
+        } elseif (empty($postEmail)) {
             $code = Response::HTTP_BAD_REQUEST;
             $result = [
                 'error' => "\$_POST['email'] should not be empty",
@@ -207,8 +210,8 @@ class ApiController extends YesWikiController
         } else {
             try {
                 $user = $userController->create([
-                    'name' => strval($_POST['name']),
-                    'email' => strval($_POST['email']),
+                    'name' => $postName,
+                    'email' => $postEmail,
                     'password' => $this->wiki->generateRandomString(30),
                 ]);
                 $link = $userManager->sendPasswordRecoveryEmail($user);
@@ -225,27 +228,27 @@ class ApiController extends YesWikiController
             } catch (UserNameAlreadyUsedException $th) {
                 $code = Response::HTTP_BAD_REQUEST;
                 $result = [
-                    'notCreated' => [strval($_POST['name'])],
-                    'error' => str_replace('{currentName}', strval($_POST['name']), _t('USERSETTINGS_NAME_ALREADY_USED')),
+                    'notCreated' => [$postName],
+                    'error' => str_replace('{currentName}', $postName, _t('USERSETTINGS_NAME_ALREADY_USED')),
                 ];
             } catch (UserEmailAlreadyUsedException $th) {
                 $code = Response::HTTP_BAD_REQUEST;
                 $result = [
-                    'notCreated' => [strval($_POST['name'])],
-                    'error' => str_replace('{email}', strval($_POST['email']), _t('USERSETTINGS_EMAIL_ALREADY_USED')),
+                    'notCreated' => [$postName],
+                    'error' => str_replace('{email}', $postEmail, _t('USERSETTINGS_EMAIL_ALREADY_USED')),
                 ];
             } catch (ExitException $th) {
                 throw $th;
             } catch (\Exception $th) {
                 $code = Response::HTTP_BAD_REQUEST;
                 $result = [
-                    'notCreated' => [strval($_POST['name'])],
+                    'notCreated' => [$postName],
                     'error' => $th->getMessage(),
                 ];
             } catch (\Throwable $th) {
                 $code = Response::HTTP_INTERNAL_SERVER_ERROR;
                 $result = [
-                    'notCreated' => [strval($_POST['name'])],
+                    'notCreated' => [$postName],
                     'error' => $th->getMessage(),
                 ];
             }
@@ -316,18 +319,18 @@ class ApiController extends YesWikiController
         $this->denyAccessUnlessAdmin();
         $groupController = $this->getService(GroupController::class);
 
-        error_log('create group');
-
-        if (empty($_POST['name'])) {
+        $post = $this->getRequest()->request;
+        $postName = $post->get('name', '');
+        if (empty($postName)) {
             $code = Response::HTTP_BAD_REQUEST;
             $result = [
                 'name' => '',
-                'error' => $_POST['name'] . 'should not be empty',
+                'error' => $postName . 'should not be empty',
             ];
         } else {
             try {
-                $group_name = $_POST['name'];
-                $users = empty($_POST['users']) ? [] : $_POST['users'];
+                $group_name = $postName;
+                $users = $post->has('users') ? $post->all('users') : [];
                 $result = $groupController->create($group_name, $users);
                 $code = Response::HTTP_OK;
             } catch (GroupNameAlreadyUsedException $th) {
@@ -376,9 +379,9 @@ class ApiController extends YesWikiController
         $this->denyAccessUnlessAdmin();
         $groupController = $this->getService(GroupController::class);
 
+        $post = $this->getRequest()->request;
         try {
-            $group_name = $group_name;
-            $users = empty($_POST['users']) ? [] : $_POST['users'];
+            $users = $post->has('users') ? $post->all('users') : [];
             $result = $groupController->update($group_name, $users);
             $code = Response::HTTP_OK;
         } catch (InvalidGroupNameException $th) {
@@ -459,7 +462,7 @@ class ApiController extends YesWikiController
     public function postComment()
     {
         $commentService = $this->getService(CommentService::class);
-        $result = $commentService->addCommentIfAuthorized($_POST);
+        $result = $commentService->addCommentIfAuthorized($this->getRequest()->request->all());
 
         return new ApiResponse($result, $result['code']);
     }
@@ -470,7 +473,7 @@ class ApiController extends YesWikiController
     public function editComment($tag)
     {
         $commentService = $this->getService(CommentService::class);
-        $result = $commentService->addCommentIfAuthorized($_POST, $tag);
+        $result = $commentService->addCommentIfAuthorized($this->getRequest()->request->all(), $tag);
 
         return new ApiResponse($result, $result['code']);
     }
@@ -773,16 +776,20 @@ class ApiController extends YesWikiController
      */
     public function addReactionFromUser()
     {
+        $post = $this->getRequest()->request;
         if ($user = $this->wiki->getUser()) {
-            if ($_POST['username'] == $user['name'] || $this->wiki->UserIsAdmin()) {
-                if ($_POST['reactionid']) {
-                    if ($_POST['pagetag']) { // save the reaction
+            if ($post->get('username') == $user['name'] || $this->wiki->UserIsAdmin()) {
+                $reactionid = $post->get('reactionid');
+                $pagetag = $post->get('pagetag');
+                $reactionIdValue = $post->get('id');
+                if ($reactionid) {
+                    if ($pagetag) { // save the reaction
                         // get reactions from user for this page
-                        $userReactions = $this->getService(ReactionManager::class)->getReactions($_POST['pagetag'], [$_POST['reactionid']], $user['name']);
-                        $params = $this->getService(ReactionManager::class)->getActionParameters($_POST['pagetag']);
-                        if (!empty($params[$_POST['reactionid']])) {
+                        $userReactions = $this->getService(ReactionManager::class)->getReactions($pagetag, [$reactionid], $user['name']);
+                        $params = $this->getService(ReactionManager::class)->getActionParameters($pagetag);
+                        if (!empty($params[$reactionid])) {
                             // un choix de vote est fait
-                            if ($_POST['id']) {
+                            if ($reactionIdValue) {
                                 // test if limits wherer put
                                 if (!empty($params['maxreaction']) && count($userReactions) >= $params['maxreaction']) {
                                     return new ApiResponse(
@@ -792,12 +799,12 @@ class ApiController extends YesWikiController
                                 } else {
                                     $reactionValues = [
                                         'userName' => $user['name'],
-                                        'reactionId' => $_POST['reactionid'],
-                                        'id' => $_POST['id'],
+                                        'reactionId' => $reactionid,
+                                        'id' => $reactionIdValue,
                                         'date' => date('Y-m-d H:i:s'),
                                     ];
                                     $this->getService(ReactionManager::class)->addUserReaction(
-                                        $_POST['pagetag'],
+                                        $pagetag,
                                         $reactionValues
                                     );
 
@@ -816,7 +823,7 @@ class ApiController extends YesWikiController
                         }
 
                         return new ApiResponse(
-                            ['error' => "'" . strval($_POST['reactionid']) . "' n'est pas une réaction déclarée sur la page '" . strval($_POST['pagetag']) . "'"],
+                            ['error' => "'" . strval($reactionid) . "' n'est pas une réaction déclarée sur la page '" . strval($pagetag) . "'"],
                             Response::HTTP_INTERNAL_SERVER_ERROR
                         );
                     } else {
@@ -913,7 +920,7 @@ class ApiController extends YesWikiController
         if (empty($username)) {
             $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
         }
-        $value = $_POST['value'] ?? [];
+        $value = $this->getRequest()->request->get('value', []);
         if (is_array($value)) {
             $rawValue = array_filter($value, function ($elem) {
                 return is_scalar($elem);
@@ -958,7 +965,7 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         }
-        $rawFilters = $_POST['filters'] ?? [];
+        $rawFilters = $this->getRequest()->request->get('filters', []);
         if (is_array($rawFilters)) {
             $rawFilters = array_filter($rawFilters, function ($elem) {
                 return is_scalar($elem);
@@ -1040,14 +1047,15 @@ class ApiController extends YesWikiController
                 Response::HTTP_BAD_REQUEST
             );
         } else {
-            $property = filter_input($method, 'property', FILTER_UNSAFE_RAW);
-            $property = in_array($property, [false, null], true) ? '' : htmlspecialchars(strip_tags($property));
+            $bag = ($method === INPUT_POST) ? $this->getRequest()->request : $this->getRequest()->query;
+            $rawProperty = $bag->get('property');
+            $property = (empty($rawProperty) || !is_string($rawProperty)) ? '' : htmlspecialchars(strip_tags($rawProperty));
             if (empty($property)) {
                 $property = null;
             }
 
-            $username = filter_input($method, 'user', FILTER_UNSAFE_RAW);
-            $username = in_array($username, [false, null], true) ? '' : htmlspecialchars(strip_tags($username));
+            $rawUsername = $bag->get('user');
+            $username = (empty($rawUsername) || !is_string($rawUsername)) ? '' : htmlspecialchars(strip_tags($rawUsername));
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
                     $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
@@ -1080,9 +1088,10 @@ class ApiController extends YesWikiController
      */
     public function getArchiveStatus($uid)
     {
+        $forceStarted = $this->getRequest()->query->get('forceStarted');
         return $this->getService(ArchiveController::class)->getArchiveStatus(
             $uid,
-            empty($_GET['forceStarted']) ? false : in_array($_GET['forceStarted'], [1, true, '1', 'true'], true)
+            !empty($forceStarted) && in_array($forceStarted, [1, true, '1', 'true'], true)
         );
     }
 

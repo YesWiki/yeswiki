@@ -647,7 +647,7 @@ class EntryManager
     {
         // Let's set the value of id_typeannonce
 
-        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
+        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $this->wiki->request->get('id_typeannonce');
 
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);

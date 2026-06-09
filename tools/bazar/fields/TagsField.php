@@ -60,8 +60,8 @@ class TagsField extends EnumField
         $GLOBALS['wiki']->AddJavascript($script);
 
         if (!isset($value)) {
-            if (isset($_GET[$this->propertyName])) {
-                $value = stripslashes($_GET[$this->propertyName]);
+            if ($this->getRequest()->query->has($this->propertyName)) {
+                $value = stripslashes($this->getRequest()->query->get($this->propertyName));
             } else {
                 $value = stripslashes($this->default);
             }

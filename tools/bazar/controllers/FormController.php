@@ -34,12 +34,13 @@ class FormController extends YesWikiController
     {
         $forms = $this->formManager->getAll();
 
+        $post = $this->getRequest()->request;
         // If there are forms to import
-        if (isset($_POST['imported-form'])) {
+        if ($post->has('imported-form')) {
             if (!$this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
                 return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
             }
-            foreach ($_POST['imported-form'] as $id => $value) {
+            foreach ($post->all('imported-form') as $id => $value) {
                 $value = json_decode($value, true);
                 $existingForms = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature']);
                 // If a form with the same name exist, replace it
@@ -84,11 +85,11 @@ class FormController extends YesWikiController
     {
         if ($this->wiki->UserIsAdmin()) {
             $form = null;
-
-            if (isset($_POST['valider'])) {
-                $form = $this->formManager->getFromRawData($_POST);
+            $post = $this->getRequest()->request;
+            if ($post->has('valider')) {
+                $form = $this->formManager->getFromRawData($post->all());
                 if ($this->formIsValid($form)) {
-                    $this->formManager->create($_POST);
+                    $this->formManager->create($post->all());
 
                     /* mrflos : i think this is not used*/
                     /* if ($this->activityPubService->isEnabled($form)) { */
@@ -114,11 +115,11 @@ class FormController extends YesWikiController
     {
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             $form = $this->formManager->getOne($id);
-
-            if (isset($_POST['valider'])) {
-                $form = $this->formManager->getFromRawData($_POST);
+            $post = $this->getRequest()->request;
+            if ($post->has('valider')) {
+                $form = $this->formManager->getFromRawData($post->all());
                 if ($this->formIsValid($form)) {
-                    $this->formManager->update($_POST);
+                    $this->formManager->update($post->all());
 
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
                 }
@@ -197,8 +198,10 @@ class FormController extends YesWikiController
     {
         $form = $this->formManager->getOne($id);
 
-        if (isset($_POST['actor_handle'])) {
-            $recipientUri = str_starts_with($_POST['actor_handle'], 'http') ? $_POST['actor_handle'] : $this->webfingerService->getRemoteActor($_POST['actor_handle']);
+        $post = $this->getRequest()->request;
+        if ($post->has('actor_handle')) {
+            $actorHandle = $post->get('actor_handle');
+            $recipientUri = str_starts_with($actorHandle, 'http') ? $actorHandle : $this->webfingerService->getRemoteActor($actorHandle);
 
             $this->activityPubService->postActivity(["type" => "Follow", "object" => $recipientUri, "to" => $recipientUri], $form);
 
@@ -211,7 +214,7 @@ class FormController extends YesWikiController
         $domain = parse_url($this->wiki->GetBaseURL(), PHP_URL_HOST);
 
         return $this->render('@bazar/forms/abonnements.twig', [
-            'message' => isset($_GET['msg']) ? $_GET['msg'] : null,
+            'message' => $this->getRequest()->query->get('msg'),
             'form' => $form,
             'domain' => $domain,
             'followers' => $followers,

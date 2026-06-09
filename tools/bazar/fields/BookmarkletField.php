@@ -38,7 +38,10 @@ class BookmarkletField extends BazarField
                 'urlParams' => [
                     'vue' => BAZ_VOIR_SAISIR,
                     'action' => BAZ_ACTION_NOUVEAU,
-                    'id' => $entry['id_typeannonce'] ?? ((!empty($_GET['id']) && is_scalar($_GET['id']) && strval($_GET['id']) == strval(intval($_GET['id']))) ? strval($_GET['id']) : ''),
+                    'id' => $entry['id_typeannonce'] ?? (function () {
+                        $id = $this->getRequest()->query->get('id');
+                        return (!empty($id) && is_scalar($id) && strval($id) == strval(intval($id))) ? strval($id) : '';
+                    })(),
                 ],
             ]);
         }

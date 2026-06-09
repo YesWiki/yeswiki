@@ -1011,7 +1011,7 @@ class SearchManager
 
         // debug
 
-        if (isset($_GET['showreq'])) {
+        if ($this->wiki->request->query->has('showreq')) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }
 

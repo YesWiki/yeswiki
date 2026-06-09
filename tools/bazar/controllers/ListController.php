@@ -34,8 +34,9 @@ class ListController extends YesWikiController
 
     public function displayAll()
     {
-        if (isset($_POST['imported-list'])) {
-            foreach ($_POST['imported-list'] as $listRaw) {
+        $post = $this->getRequest()->request;
+        if ($post->has('imported-list')) {
+            foreach ($post->all('imported-list') as $listRaw) {
                 $list = json_decode($listRaw, true);
                 $this->listManager->create($list['title'], $list['nodes']);
             }
@@ -62,12 +63,14 @@ class ListController extends YesWikiController
 
     public function create()
     {
-        if (isset($_POST['submit'])) {
-            $listeId = $this->listManager->create($_POST['title'], json_decode($_POST['nodes'], true));
+        $post = $this->getRequest()->request;
+        if ($post->has('submit')) {
+            $title = $post->get('title');
+            $listeId = $this->listManager->create($title, json_decode($post->get('nodes'), true));
 
             if ($this->shouldPostMessageOnSubmit()) {
                 return $this->render('@core/iframe_result.twig', [
-                    'data' => ['msg' => 'list_created', 'id' => $listeId, 'title' => $_POST['title']],
+                    'data' => ['msg' => 'list_created', 'id' => $listeId, 'title' => $title],
                 ]);
             }
 
@@ -83,20 +86,21 @@ class ListController extends YesWikiController
 
     private function shouldPostMessageOnSubmit()
     {
-        return isset($_GET['onsubmit']) && $_GET['onsubmit'] === 'postmessage';
+        return $this->getRequest()->query->get('onsubmit') === 'postmessage';
     }
 
     public function update($id)
     {
         $list = $this->listManager->getOne($id);
-
-        if (isset($_POST['submit'])) {
+        $post = $this->getRequest()->request;
+        if ($post->has('submit')) {
             if ($this->aclService->hasAccess('write', $id)) {
-                $this->listManager->update($id, $_POST['title'], json_decode($_POST['nodes'], true));
+                $title = $post->get('title');
+                $this->listManager->update($id, $title, json_decode($post->get('nodes'), true));
 
                 if ($this->shouldPostMessageOnSubmit()) {
                     return $this->render('@core/iframe_result.twig', [
-                        'data' => ['msg' => 'list_updated', 'id' => $id, 'title' => $_POST['title']],
+                        'data' => ['msg' => 'list_updated', 'id' => $id, 'title' => $title],
                     ]);
                 }
 

@@ -337,11 +337,12 @@ class BazarListService
     // => ['field1' => ['3', '4'], 'field2' => ['web']]
     private function parseCheckedFiltersInURLForNonDynamic()
     {
-        if (empty($_GET['facette'])) {
+        $facette = $this->wiki->request->query->get('facette');
+        if (empty($facette)) {
             return [];
         }
         $result = [];
-        foreach (explode('|', $_GET['facette']) as $field) {
+        foreach (explode('|', $facette) as $field) {
             list($key, $values) = explode('=', $field);
             $result[$key] = explode(',', trim($values));
         }

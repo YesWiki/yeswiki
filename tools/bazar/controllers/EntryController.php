@@ -124,11 +124,11 @@ class EntryController extends YesWikiController
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
         $renderedEntry = null;
-        $message = $_GET['message'] ?? '';
+        $message = $this->getRequest()->query->get('message', '');
         // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{bazarliste}}
         unset($_GET['message']);
         // to synchronize with const in BazarAction (but do not include it here otherwise include shunts Performer job)
-        $isUpdatingEntry = (isset($_GET['vue']) && $_GET['vue'] === 'consulter');
+        $isUpdatingEntry = ($this->getRequest()->query->get('vue') === 'consulter');
         if ($isUpdatingEntry) {
             unset($_GET['vue']);
         }
@@ -224,13 +224,14 @@ class EntryController extends YesWikiController
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
             'sourceUrl' => $sourceUrl,
-            'incomingUrl' => $_GET['incomingurl'] ?? getAbsoluteUrl(),
+            'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
         ]);
     }
 
     private function fieldsToExclude()
     {
-        return isset($_GET['excludeFields']) ? explode(',', $_GET['excludeFields']) : [];
+        $excludeFields = $this->getRequest()->query->get('excludeFields');
+        return $excludeFields ? explode(',', $excludeFields) : [];
     }
 
     public function publish($entryId, $accepted)
@@ -265,9 +266,10 @@ class EntryController extends YesWikiController
             return $results['output'];
         } elseif (empty($results['error'])) {
             list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
+            $post = $this->getRequest()->request;
             try {
-                if ($state && isset($_POST['bf_titre'])) {
-                    $entry = $this->entryManager->create($formId, $_POST);
+                if ($state && $post->has('bf_titre')) {
+                    $entry = $this->entryManager->create($formId, $post->all());
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
                         'id' => $entry['id_fiche'],
                         'data' => $entry,
@@ -308,8 +310,8 @@ class EntryController extends YesWikiController
         return $this->render('@bazar/entries/form.twig', [
             'form' => $form,
             'renderedInputs' => $renderedInputs,
-            'showConditions' => $form['bn_condition'] !== '' && !isset($_POST['accept_condition']),
-            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
+            'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
+            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
@@ -329,9 +331,10 @@ class EntryController extends YesWikiController
 
         list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
         $incomingUrl = $this->getIncomingUrl();
+        $post = $this->getRequest()->request;
         try {
-            if ($state && isset($_POST['bf_titre'])) {
-                $entry = $this->entryManager->update($entryId, $_POST);
+            if ($state && $post->has('bf_titre')) {
+                $entry = $this->entryManager->update($entryId, $post->all());
                 $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
                     'id' => $entry['id_fiche'],
                     'data' => $entry,
@@ -365,7 +368,7 @@ class EntryController extends YesWikiController
             'entryId' => $entryId,
             'renderedInputs' => $renderedInputs,
             'showConditions' => false,
-            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
+            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
@@ -796,13 +799,8 @@ class EntryController extends YesWikiController
 
     public function getIncomingUrl(): string
     {
-        $incomingUrl = (isset($_GET['incomingurl']) && is_string($_GET['incomingurl']))
-            ? $_GET['incomingurl']
-            : (
-                (isset($_POST['incomingurl']) && is_string($_POST['incomingurl']))
-                ? $_POST['incomingurl']
-                : ''
-            );
+        $request = $this->getRequest();
+        $incomingUrl = $request->query->get('incomingurl') ?? $request->request->get('incomingurl') ?? '';
         if (!empty($incomingUrl)) {
             $incomingUrl = urldecode($incomingUrl);
             $incomingUrl = filter_var($incomingUrl, FILTER_VALIDATE_URL);

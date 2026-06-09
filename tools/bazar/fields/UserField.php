@@ -96,7 +96,7 @@ class UserField extends BazarField
             'userName' => $loggedUser['name'] ?? null,
             'userEmail' => $loggedUser['email'] ?? null,
             'forceLabel' => $this->propertyName . self::FORCE_LABEL,
-            'forceLabelChecked' => $_POST[$this->propertyName . self::FORCE_LABEL] ?? false,
+            'forceLabelChecked' => $this->getRequest()->request->get($this->propertyName . self::FORCE_LABEL, false),
         ]);
     }
 
@@ -113,7 +113,7 @@ class UserField extends BazarField
 
         if (
             $this->getWiki()->UserIsAdmin()
-            && in_array($_POST[$this->propertyName . self::FORCE_LABEL] ?? false, [true, 'true', 1, '1'], true)
+            && in_array($this->getRequest()->request->get($this->propertyName . self::FORCE_LABEL, false), [true, 'true', 1, '1'], true)
         ) {
             // force entry creation but do not create user if existing for this email
             $userManager = $this->getService(UserManager::class);
@@ -145,8 +145,8 @@ class UserField extends BazarField
                 if (
                     !$isImport
                     && (
-                        !isset($_POST[$this->propertyName . self::CONFIRM_NAME_SUFFIX])
-                        || !in_array($_POST[$this->propertyName . self::CONFIRM_NAME_SUFFIX], [true, 1, '1'], true)
+                        !$this->getRequest()->request->has($this->propertyName . self::CONFIRM_NAME_SUFFIX)
+                        || !in_array($this->getRequest()->request->get($this->propertyName . self::CONFIRM_NAME_SUFFIX), [true, 1, '1'], true)
                     )
                 ) {
                     throw new UserFieldException($this->render('@bazar/inputs/user-confirm.twig', ['confirmName' => $this->propertyName . self::CONFIRM_NAME_SUFFIX, 'wikiName' => $currentWikiName, 'newWikiName' => $wikiName]));
