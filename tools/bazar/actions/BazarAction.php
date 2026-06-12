@@ -121,6 +121,7 @@ class BazarAction extends YesWikiAction
 
     public function run()
     {
+        $req = $this->getRequest();
         $listController = $this->getService(ListController::class);
         $formController = $this->getService(FormController::class);
         $entryController = $this->getService(EntryController::class);
@@ -222,12 +223,14 @@ class BazarAction extends YesWikiAction
                         if ($req->query->get('type') === 'following') {
                             return $formController->addFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
                         }
+                        // no break
                     case self::ACTION_ABONNEMENT_REMOVE:
                         if ($req->query->get('type') === 'followers') {
                             return $formController->removeFollower($req->query->get('idformulaire'), $req->query->get('actor'));
                         } else {
                             return $formController->removeFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
                         }
+                        // no break
                     case self::ACTION_ABONNEMENT_SYNC:
                         return $formController->syncActorPosts($req->query->get('idformulaire'), $req->query->get('actor'));
                     default:
