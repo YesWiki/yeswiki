@@ -1,5 +1,8 @@
 <?php
 
+require_once 'includes/YesWikiPerformable.php';
+
+use YesWiki\Core\Service\Performer;
 use YesWiki\Templates\Controller\TabsController;
 
 // classe css supplémentaire
@@ -19,38 +22,5 @@ if (empty($elem)) {
         $GLOBALS['check_' . $pagetag][$elem] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements($elem, $pagetag, $body);
     }
 
-    if ($GLOBALS['check_' . $pagetag][$elem] || in_array($elem, ['tab', 'tabs'], true)) {
-        switch ($elem) {
-            case 'grid':
-                echo "\n</div> <!-- end of grid -->\n";
-                break;
-            case 'col':
-                echo "\n</div> <!-- end of col -->\n";
-                break;
-            case 'section':
-                echo "\n</div>\n</section> <!-- end of section -->\n";
-                break;
-            case 'label':
-                echo '</span>';
-                break;
-            case 'accordion':
-                echo "\n</div> <!-- end of accordion -->\n";
-                unset($GLOBALS['check_' . $pagetag]['accordion_uniqueID']);
-                break;
-            case 'panel':
-                echo "\t\t\n</div>\t\n</div>\n</div> <!-- end of panel -->\n";
-                break;
-            case 'buttondropdown':
-                echo "\n</div> <!-- end of buttondropdown -->\n";
-                break;
-            case 'tab':
-                echo $this->services->get(TabsController::class)->closeATab();
-                break;
-            case 'tabs':
-                echo $this->services->get(TabsController::class)->closeTabs();
-                break;
-            default:
-                break;
-        }
-    }
+    echo $this->services->get(Performer::class)->run($elem, 'action', [], true);
 }

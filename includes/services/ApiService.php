@@ -3,8 +3,10 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouteCollection;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Wiki;
 
 class ApiService
 {
@@ -12,13 +14,15 @@ class ApiService
     protected $params;
     protected $aclService;
     protected $userManager;
+    protected $wiki;
 
-    public function __construct(AuthController $authController, ParameterBagInterface $params, AclService $aclService, UserManager $userManager)
+    public function __construct(AuthController $authController, ParameterBagInterface $params, AclService $aclService, UserManager $userManager, Wiki $wiki)
     {
         $this->authController = $authController;
         $this->aclService = $aclService;
         $this->params = $params;
         $this->userManager = $userManager;
+        $this->wiki = $wiki;
     }
 
     public function isAuthorized(array $requestParams, RouteCollection $routes)
@@ -57,20 +61,9 @@ class ApiService
      * */
     private function getAuthorizationHeader()
     {
-        $headers = null;
-        if (isset($_SERVER['Authorization'])) {
-            $headers = trim($_SERVER['Authorization']);
-        } elseif (isset($_SERVER['HTTP_AUTHORIZATION'])) { // Nginx or fast CGI
-            $headers = trim($_SERVER['HTTP_AUTHORIZATION']);
-        } elseif (function_exists('apache_request_headers')) {
-            $requestHeaders = apache_request_headers();
-            // Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
-            $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-            // print_r($requestHeaders);
-            if (isset($requestHeaders['Authorization'])) {
-                $headers = trim($requestHeaders['Authorization']);
-            }
-        }
+        $headers = $this->wiki->request->headers->get('authorization')
+            ? trim($this->wiki->request->headers->get('authorization'))
+            : null;
 
         return $headers;
     }

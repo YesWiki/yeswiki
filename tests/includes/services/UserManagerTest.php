@@ -92,8 +92,8 @@ class UserManagerTest extends YesWikiTestCase
         $firstUser = $users[array_key_first($users)];
         if ($name == 'newRandom') {
             do {
-                $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                    . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+                $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                    . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
             } while (!empty($userManager->getOneByName($name)));
         } elseif ($name == 'empty') {
             $name = '';
@@ -162,8 +162,8 @@ class UserManagerTest extends YesWikiTestCase
             $email = strtolower($this->randomString(10)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+            $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
         } while (!empty($userManager->getOneByName($name)));
 
         $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');

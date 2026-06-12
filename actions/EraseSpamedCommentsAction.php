@@ -38,7 +38,8 @@ class EraseSpamedCommentsAction extends YesWikiAction
         echo "\n<!-- == Action erasespamedcomments v 0.7 ============================= -->\n";
 
         // -- 2. Affichage du formulaire ---
-        if (!isset($_POST['clean'])) {
+        $post = $this->getRequest()->request;
+        if (!$post->has('clean')) {
             $limit = isset($this->arguments['max']) && $this->arguments['max'] > 0 ? (int)$this->arguments['max'] : 0;
             if ($comments = $wiki->LoadRecentComments($limit)) {
                 // Formulaire listant les commentaires
@@ -75,14 +76,14 @@ class EraseSpamedCommentsAction extends YesWikiAction
         }
 
         // -- 3. Traitement du formulaire ---
-        elseif (isset($_POST['clean'])) {
+        elseif ($post->has('clean')) {
             $deletedPages = '';
 
             // -- 3.1 Si des pages ont été sélectionnées : effacement ---
             // On efface chaque élément du tableau suppr[]
             // Pour chaque page sélectionnée
-            if (!empty($_POST['suppr'])) {
-                foreach ($_POST['suppr'] as $page) {
+            if (!empty($post->all('suppr'))) {
+                foreach ($post->all('suppr') as $page) {
                     // Only delete pages that are actual comments to prevent
                     // arbitrary page deletion via a crafted suppr[] payload.
                     $pageData = $wiki->LoadPage($page);

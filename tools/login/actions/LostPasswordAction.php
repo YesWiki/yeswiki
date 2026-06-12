@@ -32,7 +32,8 @@ class LostPasswordAction extends YesWikiAction
         $this->errorType = null;
         $this->typeOfRendering = 'emailForm';
 
-        if (isset($_POST['subStep']) && !isset($_GET['a'])) {
+        $request = $this->getRequest();
+        if ($request->request->has('subStep') && !$request->query->has('a')) {
             try {
                 $user = $this->manageSubStep(
                     $this->securityController->filterInput(INPUT_POST, 'subStep', FILTER_SANITIZE_NUMBER_INT, false, 'int')
@@ -42,7 +43,7 @@ class LostPasswordAction extends YesWikiAction
                 $this->errorType = 'exception';
                 $message = $ex->getMessage();
             }
-        } elseif (isset($_GET['a']) && $_GET['a'] === 'recover' && !empty($_GET['email'])) {
+        } elseif ($request->query->get('a') === 'recover' && !empty($request->query->get('email'))) {
             $this->typeOfRendering = 'directDangerMessage';
             $message = _t('LOGIN_INVALID_KEY');
             $hash = $this->securityController->filterInput(INPUT_GET, 'email', FILTER_DEFAULT, true);
@@ -134,13 +135,14 @@ class LostPasswordAction extends YesWikiAction
                 break;
             case 2:
                 // we are submitting a new password (only for encrypted)
-                if (empty($_POST['userID']) || empty($_POST['key'])) {
+                $post = $this->getRequest()->request;
+                if (empty($post->get('userID')) || empty($post->get('key'))) {
                     $this->wiki->Redirect($this->wiki->Href('', $this->params->get('root_page')));
                 }
                 $userName = $this->securityController->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
                 $user = $this->userManager->getOneByName($userName);
                 $this->typeOfRendering = 'recoverForm';
-                if (empty($_POST['pw0']) || empty($_POST['pw1']) || (strcmp($_POST['pw0'], $_POST['pw1']) != 0) || (trim($_POST['pw0']) == '')) {
+                if (empty($post->get('pw0')) || empty($post->get('pw1')) || (strcmp($post->get('pw0'), $post->get('pw1')) != 0) || (trim($post->get('pw0')) == '')) {
                     // No pw0 or different pwd
                     $this->errorType = 'differentPasswords';
                 } else {

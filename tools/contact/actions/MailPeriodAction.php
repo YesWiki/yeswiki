@@ -28,13 +28,14 @@ class MailPeriodAction extends YesWikiAction
         $messages = [];
 
         if ($user && !empty($userName)) {
-            if (isset($_REQUEST['subscribe'])) {
-                $period = $_REQUEST['subscribe'];
+            $request = $this->getRequest();
+            if ($request->query->has('subscribe') || $request->request->has('subscribe')) {
+                $period = $request->get('subscribe');
                 $group = $periods[$period]['group'];
                 $this->unsubscribUserFromAllGroups($userName, $periods);
                 $this->subscribeUserToGroup($userName, $group);
                 $messages['success'] = _t('CONTACT_SUCCESS_SUBSCRIBE') . $periods[$period]['label'];
-            } elseif (isset($_REQUEST['unsubscribe'])) {
+            } elseif ($request->query->has('unsubscribe') || $request->request->has('unsubscribe')) {
                 $this->unsubscribUserFromAllGroups($userName, $periods);
                 $messages['info'] = _t('CONTACT_SUCCESS_UNSUBSCRIBE');
             }

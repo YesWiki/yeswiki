@@ -84,6 +84,7 @@ class Wiki
         $this->tag = $init->page;
         $this->method = $init->method;
 
+        $this->request = Request::createFromGlobals();
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
 
@@ -1213,8 +1214,6 @@ class Wiki
         }
 
         $this->services->get(AuthController::class)->connectUser();
-
-        $this->request = Request::createFromGlobals();
 
         // Is this a special page ?
         if (in_array($tag, ['api', 'doc'])) {

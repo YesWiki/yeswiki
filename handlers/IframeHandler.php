@@ -67,7 +67,7 @@ class IframeHandler extends YesWikiHandler
         $output .= '</div><!-- end .page-widget -->' . "\n";
 
         // on affiche la barre de modification, si on ajoute &edit=1 à l'url de l'iframe
-        if (isset($_GET['edit']) && $_GET['edit'] == '1') {
+        if ($this->getRequest()->query->get('edit') == '1') {
             $output .= $this->wiki->Format('{{barreredaction}}');
         }
         $output .= '</div><!-- end .container -->' . "\n";
@@ -141,7 +141,7 @@ class IframeHandler extends YesWikiHandler
             HTML;
         }
         // on ajoute un bouton de partage, si &share=1 est présent dans l'url
-        if (isset($_GET['share']) && $_GET['share'] == '1') {
+        if ($this->getRequest()->query->get('share') == '1') {
             $output .= '<a class="btn btn-sm btn-default link-share modalbox pull-right" href="'
                 . $this->wiki->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
                 . $this->wiki->GetPageTag() . '"><i class="fa fa-share-alt"></i>' . _t('TEMPLATE_SHARE')
@@ -161,7 +161,7 @@ class IframeHandler extends YesWikiHandler
      */
     private function replaceLinksWithIframeIfNeeded(string $input): string
     {
-        if (isset($_GET['iframelinks']) && $_GET['iframelinks'] == '0') {
+        if ($this->getRequest()->query->get('iframelinks') == '0') {
             // pas de modification des urls
             return $input;
         } else {

@@ -14,7 +14,9 @@ class BazarExportAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
-        $vIDs = $_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $arg['idtypeannonce'] ?? $arg['id'] ?? '';
+        $request = $this->getRequest();
+        $get = $request->query;
+        $vIDs = $request->get('id_typeannonce') ?? $request->get('id') ?? $arg['idtypeannonce'] ?? $arg['id'] ?? '';
 
         // get services
         if (!$this->bazarListService) {
@@ -25,12 +27,12 @@ class BazarExportAction extends YesWikiAction
 
         return [
             'id' => $vIDs ?? null,
-            'keywords' => $this->getService(SearchManager::class)->aggregateKeywords($_GET['q'] ?? null, $_GET['keywords'] ?? null), // chaine de recherche
-            'query' => $_GET['query'] ?? null,
-            'bazar-export-option-keys-instead-of-values' => $this->formatBoolean($_REQUEST, false, 'bazar-export-option-keys-instead-of-values'),
+            'keywords' => $this->getService(SearchManager::class)->aggregateKeywords($get->get('q'), $get->get('keywords')),
+            'query' => $get->get('query'),
+            'bazar-export-option-keys-instead-of-values' => $this->formatBoolean($get->all() + $request->request->all(), false, 'bazar-export-option-keys-instead-of-values'),
             'params' => array_merge(
                 [BAZ_VARIABLE_VOIR => BAZ_VOIR_EXPORTER],
-                isset($_GET['debug']) ? ['debug' => 'yes'] : []
+                $get->has('debug') ? ['debug' => 'yes'] : []
             ),
         ];
     }
@@ -59,7 +61,7 @@ class BazarExportAction extends YesWikiAction
         if ($vTheID) {
             $vID = $vTheID['id'];
 
-            $vRefresh = $this->arguments['refresh'] ?? $_GET['refresh'] ?? 'false';
+            $vRefresh = $this->arguments['refresh'] ?? $this->getRequest()->query->get('refresh', 'false');
             $vRefresh = ($vRefresh == 'true' || $vRefresh == '1') ? true : false;
 
             $vSelectedForm = $vForms[$vID];

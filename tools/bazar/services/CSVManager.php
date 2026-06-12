@@ -173,8 +173,9 @@ class CSVManager
         if (!$vFakeMode) {
             $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
-            $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $_GET);
-            $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $_REQUEST['q'] ?? null, $_REQUEST['keywords'] ?? null);
+            $request = $this->wiki->request;
+            $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $request->query->all());
+            $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $request->get('q'), $request->get('keywords'));
 
             // get lines for each entry
             $vEntries = $vBazarListService->getEntries(array_merge($pParams, [

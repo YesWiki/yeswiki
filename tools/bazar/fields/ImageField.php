@@ -73,7 +73,7 @@ class ImageField extends FileField
         // Handle URL value
         if ($isUrl) {
             // Handle URL deletion
-            if (isset($_GET['suppr_image']) && urldecode($_GET['suppr_image']) === $value) {
+            if ($this->getRequest()->query->has('suppr_image') && urldecode($this->getRequest()->query->get('suppr_image')) === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
                     $output = $this->render('@templates/alert-message.twig', [
@@ -106,7 +106,7 @@ class ImageField extends FileField
             !empty($value)
             || (!empty($imgDefault) && file_exists($this->getBasePath() . $imgDefault))
         ) {
-            if (isset($_GET['suppr_image']) && $_GET['suppr_image'] === $value) {
+            if ($this->getRequest()->query->has('suppr_image') && $this->getRequest()->query->get('suppr_image') === $value) {
                 if ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 

@@ -264,8 +264,9 @@ class SyndicationAction extends YesWikiAction
 
     protected function addToBazar(): void
     {
-        if (!empty($_GET['mapping'])) {
-            $data = json_decode(urldecode($_GET['mapping']), true);
+        $mapping = $this->getRequest()->query->get('mapping');
+        if (!empty($mapping)) {
+            $data = json_decode(urldecode($mapping), true);
             if (!empty($data)) {
                 $data['antispam'] = 1;
                 $entryManager = $this->getService(EntryManager::class);

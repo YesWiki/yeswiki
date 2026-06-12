@@ -81,7 +81,7 @@ class Mailer
         $text = $this->templateEngine->render(
             '@contact/notify-admins-list-deleted-email-text.twig',
             [
-                'ip' => $this->wiki->isCli() ? '' : $_SERVER['REMOTE_ADDR'],
+                'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
                 'userName' => $this->wiki->GetUserName(),
             ]
         );
@@ -89,7 +89,7 @@ class Mailer
             '@contact/notify-admins-list-deleted-email-html.twig',
             [
                 'style' => file_get_contents('tools/bazar/presentation/styles/bazar.css'),
-                'ip' => $this->wiki->isCli() ? '' : $_SERVER['REMOTE_ADDR'],
+                'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
                 'userName' => $this->wiki->GetUserName(),
                 'baseUrl' => $baseUrl,
             ]

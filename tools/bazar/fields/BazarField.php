@@ -3,6 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\TemplateEngine;
@@ -364,5 +365,10 @@ abstract class BazarField implements \JsonSerializable
     protected function getWiki(): Wiki
     {
         return $this->getService(Wiki::class);
+    }
+
+    protected function getRequest(): Request
+    {
+        return $this->getWiki()->request;
     }
 }

@@ -45,9 +45,9 @@ class EditConfigAction extends YesWikiAction
     public function formatArguments($arg)
     {
         return [
-            'saving' => $this->formatBoolean($_POST, false, self::SAVE_NAME),
-            'saved' => $this->formatBoolean($_GET, false, self::SAVED_NAME),
-            'post' => $_POST,
+            'saving' => $this->formatBoolean($this->getRequest()->request->all(), false, self::SAVE_NAME),
+            'saved' => $this->formatBoolean($this->getRequest()->query->all(), false, self::SAVED_NAME),
+            'post' => $this->getRequest()->request->all(),
         ];
     }
 
