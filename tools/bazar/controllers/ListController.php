@@ -47,7 +47,8 @@ class ListController extends YesWikiController
         $lists = $this->listManager->getAll();
 
         foreach ($lists as $key => $list) {
-            $lists[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
+
+            $lists[$key]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $key);
             $lists[$key]['canDelete'] = !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
             // Small trick : create a fake SelectListField so we can reuse the code to compute the options
             $field = $this->fieldFactory->create(['liste', $list['id'], '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
