@@ -2,15 +2,22 @@
 
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Service\TripleStore;
+
+function convertDataStructure($json) {
+    if (isset($json['titre_liste'])) {
+        $newJson = ['title' => $json['titre_liste'], 'nodes' =>[]];
+        foreach($json['label'] as $id => $label) {
+            $newJson['nodes'][] = ['id' => $id, 'label' => $label];
+        }
+    }
+}
 
 class MigrateListFormat extends YesWikiMigration
 {
     public function run()
     {
         $tripleStore = $this->getService(TripleStore::class);
-        $listManager = $this->getService(ListManager::class);
         $dbService = $this->getService(DbService::class);
 
         $table_page_name = trim($this->dbService->prefixTable('pages'));
@@ -22,7 +29,7 @@ class MigrateListFormat extends YesWikiMigration
             $list = json_decode($list['body'], true);
             $nodes = [];
             if (!isset($list['nodes'])) {
-                $list = $listManager->convertDataStructure($list);
+                $list = convertDataStructure($list);
             }
             foreach ($list['nodes'] as $index => $node) {
                 $children = [];
