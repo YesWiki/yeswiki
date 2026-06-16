@@ -635,4 +635,5 @@ return [
     'ADMIN_CONTENT_TYPE_PAGES' => 'Pages',
     'ADMIN_CONTENT_TYPE_SPECIAL_PAGE' => 'Special page',
     'ADMIN_CONTENT_TYPE_SPECIAL_PAGES' => 'Special pages',
+    'PERFORM_MIGRATIONS' => 'Perfom migrations',
 ];

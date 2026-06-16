@@ -636,4 +636,5 @@ return [
     'ADMIN_CONTENT_TYPE_PAGES' => 'Pages',
     'ADMIN_CONTENT_TYPE_SPECIAL_PAGE' => 'Page spéciale',
     'ADMIN_CONTENT_TYPE_SPECIAL_PAGES' => 'Pages spéciales',
+    'PERFORM_MIGRATIONS' => 'Éxecution des migrations',
 ];

@@ -48,7 +48,9 @@ if ($fp) {
     fclose($fp);
 
     echo "<br />\n<div class=\"alert alert-success\"><strong>" . _t('FINISHED_CONGRATULATIONS') . ' !</strong><br />' . _t('IT_IS_RECOMMANDED_TO_REMOVE_WRITE_ACCESS_TO_CONFIG_FILE') . ' <tt>wakka.config.php</tt> (' . _t('THIS_COULD_BE_UNSECURE') . ').</div>';
-    echo "<div class=\"form-actions\">\n<a class=\"btn btn-lg btn-primary\" href=\"", $config['base_url'] . $config['root_page'], '">' . _t('GO_TO_YOUR_NEW_YESWIKI_WEBSITE') . "</a>\n</div>\n";
+    echo '<h2>' . _t('PERFORM_MIGRATIONS').'</h2>';
+
+    require_once 'setup/runmigrations.php';
 //header('Location: '.$config['base_url'].$config['root_page']);
 } else {
     // complain
