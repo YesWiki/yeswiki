@@ -11,6 +11,7 @@ function convertDataStructure($json) {
             $newJson['nodes'][] = ['id' => $id, 'label' => $label];
         }
     }
+    return $newJson;
 }
 
 class MigrateListFormat extends YesWikiMigration
@@ -23,6 +24,7 @@ class MigrateListFormat extends YesWikiMigration
         $table_page_name = trim($this->dbService->prefixTable('pages'));
 
         $lists = $dbService->loadAll('Select * from '.$table_page_name.' where tag in (SELECT resource FROM '.$this->dbService->prefixTable('triples').' WHERE value = \'liste\')');
+        $new_lists = [];
 
         foreach($lists as $list) {
             $id = $list['id'];
@@ -30,23 +32,24 @@ class MigrateListFormat extends YesWikiMigration
             $nodes = [];
             if (!isset($list['nodes'])) {
                 $list = convertDataStructure($list);
-            }
-            foreach ($list['nodes'] as $index => $node) {
-                $children = [];
-                if (isset($node['children'])) {
-                    foreach ($node['children'] as $i => $child) {
-                        $children[$i] = [
-                            'id' => $child['id'],
-                            'label' => $child['label'],
-                            'children' => [],
-                        ];
+
+                foreach ($list['nodes'] as $index => $node) {
+                    $children = [];
+                    if (isset($node['children'])) {
+                        foreach ($node['children'] as $i => $child) {
+                            $children[$i] = [
+                                'id' => $child['id'],
+                                'label' => $child['label'],
+                                'children' => [],
+                            ];
+                        }
                     }
+                    $nodes[$index] = [
+                        'id' => $node['id'],
+                        'label' => $node['label'],
+                        'children' => $children,
+                    ];
                 }
-                $nodes[$index] = [
-                    'id' => $node['id'],
-                    'label' => $node['label'],
-                    'children' => $children,
-                ];
             }
             $new_lists[$id] = [
                 'id' => $id,

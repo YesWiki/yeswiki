@@ -107,15 +107,17 @@ class ConvertTableNature2Pages extends YesWikiMigration
                 'title' => $form['bn_label_nature'],
                 'description' => $form['bn_description'],
                 'condition' => $form['bn_condition'],
-                'semantic' => [
-                    'context' => $form['bn_sem_context'],
-                    'type' => $form['bn_sem_type'],
-                    'use_template' => $form['bn_sem_use_template'],
-                ],
                 'only_one_entry' => $form['bn_only_one_entry'],
                 'only_one_entry_message' => $form['bn_only_one_entry_message'],
                 'fields' => $form_array,
             ];
+            if (isset($form['bn_sem_context']) || isset($form['bn_sem_type']) || isset($form['bn_sem_use_template'])) {
+                $semantic = [];
+                $form['bn_sem_context'] ?? $semantic['context'] = $form['bn_sem_context'];
+                $form['bn_sem_type'] ?? $semantic['type'] = $form['type'];
+                $form['bn_sem_use_template'] ?? $semantic['use_template'] = $form['bn_sem_use_template'];
+                $newform['semantic'] = $semantic;
+            }
             $saved = $pageManager->save(
                 $slug,
                 json_encode($newform, JSON_FORCE_OBJECT),
