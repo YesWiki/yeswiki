@@ -43,16 +43,17 @@ class ConsoleService
 
     public function getProcessOut(Process $process): array
     {
-        $results = [];
+        $stdout = '';
+        $stderr = '';
         foreach ($process as $type => $data) {
             if ($process::OUT === $type) {
-                $results[] = ['stdout' => $data];
+                $stdout .= $data;
             } else { // $process::ERR === $type
-                $results[] = ['stderr' => $data];
+                $stderr .= $data;
             }
         }
 
-        return $results;
+        return [['stdout' => $stdout, 'stderr' => $stderr]];
     }
 
     /**

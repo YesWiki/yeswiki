@@ -141,11 +141,18 @@ class ArchiveController extends YesWikiController
                             Response::HTTP_BAD_REQUEST
                         );
                     }
-                    // TODO update code here when restore will work
-                    return new ApiResponse(
-                        ['error' => 'action not defined'],
-                        Response::HTTP_BAD_REQUEST
-                    );
+                    try {
+                        $post = $this->getRequest()->request;
+                        $restoreFiles = !$post->has('restoreFiles') || in_array($post->get('restoreFiles'), [1, true, 'true', '1'], true);
+                        $restoreDatabase = !$post->has('restoreDatabase') || in_array($post->get('restoreDatabase'), [1, true, 'true', '1'], true);
+                        $this->archiveService->restoreArchive($id, $restoreFiles, $restoreDatabase);
+                        return new ApiResponse(['success' => true], Response::HTTP_OK);
+                    } catch (\Throwable $th) {
+                        return new ApiResponse(
+                            ['error' => 'Restore failed: ' . $this->wiki->dumpThrowable($th)],
+                            Response::HTTP_INTERNAL_SERVER_ERROR
+                        );
+                    }
                     break;
 
                 case 'futureDeletedArchives':
