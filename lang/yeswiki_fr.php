@@ -233,6 +233,7 @@ return [
     'FAVORITES_NOT_CONNECTED' => 'L\'usage des favoris n\'est possible que pour les personnes connectées.',
     'FAVORITES_TITLE' => 'Titre',
     'FAVORITES_LINK' => 'Lien',
+    'ADMIN_BACKUPS_RESTORE' => 'Restaurer cette sauvegarde',
     'ADMIN_BACKUPS_CREATING' => 'Création d\'une sauvegarde',
     'ADMIN_BACKUPS_FORCE_UPDATE' => 'Forcer une mise à jour sans sauvegarde',
     'ADMIN_BACKUPS_BY_PASS' => 'Mettre à jour sans sauvegarde',

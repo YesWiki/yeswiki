@@ -342,7 +342,9 @@ class DbService
                     }
                     $sql .= ')';
                 }
-                $sql .= ";\n";
+                if (!$firstRow) {
+                    $sql .= ";\n";
+                }
                 $sql .=
                     <<<SQL
 
