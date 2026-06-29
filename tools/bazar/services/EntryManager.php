@@ -79,6 +79,9 @@ class EntryManager
      */
     public function isEntry($tag): bool
     {
+        if (empty($tag)) {
+            return false;
+        }
         if (!isset($this->cachedEntriestags[$tag])) {
             $this->cachedEntriestags[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
         }

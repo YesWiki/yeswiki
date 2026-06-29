@@ -1217,7 +1217,7 @@ class ArchiveService
     protected function testDb(): bool
     {
         try {
-            $results = $this->consoleService->startConsoleSync('archive:exportdb', [
+            $results = $this->consoleService->startConsoleSync('core:exportdb', [
                 '--test',
             ]);
             if (empty($results) || !is_array($results)) {

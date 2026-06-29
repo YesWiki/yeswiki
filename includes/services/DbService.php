@@ -117,7 +117,7 @@ class DbService
             }
         }
 
-        return $result;
+        return $result ?? null;
     }
 
     protected function getMicroTime()
@@ -223,6 +223,9 @@ class DbService
         $error = '';
         try {
             $tablesPrefix = trim($this->prefixTable(''));
+            if (empty($tablesPrefix)) {
+                throw new \Exception("'table_prefix' is empty in wakka.config.php — cannot determine which tables to back up");
+            }
             $tablesPostfix = [];
             // get Tables
             $tables = $this->loadAll('show tables');
