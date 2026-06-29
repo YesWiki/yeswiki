@@ -2,7 +2,7 @@ import { readConf, writeconf, defaultMapping } from './commons/attributes.js'
 
 export default {
   field: {
-    label: "horaires d'ouverture",
+    label: "Horaires d'ouverture",
     name: 'openinghours',
     attrs: { type: 'openinghours' },
     icon: '<i class="far fa-calendar-alt"></i>'
