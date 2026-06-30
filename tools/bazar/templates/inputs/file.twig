@@ -7,7 +7,7 @@
             {% if isUrl %}
                 <span class="url-indicator"><i class="fa fa-link"></i></span>
             {% endif %}
-            <a href="{{ fileUrl }}" target="_blank" {% if not isUrl %}download="{{ shortFileName }}"{% endif %}>{{ shortFileName }}</a>
+            <a href="{{ fileUrl }}" data-id="{{ field.name }}" target="_blank" {% if not isUrl %}download="{{ shortFileName }}"{% endif %}>{{ shortFileName }}</a>
             &nbsp;-&nbsp;
             <label class="btn btn-sm btn-default">
                 <i class="fa fa-pencil-alt"></i>
