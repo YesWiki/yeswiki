@@ -66,7 +66,10 @@ function handleFileSelect(evt) {
             src="${e.target.result}"
             title="${escape(theFile.name)}"
           />`
-          document.getElementById(`img-${id}`).innerHTML = span.innerHTML
+          const outputEl = document.getElementById(`img-${id}`)
+          outputEl.innerHTML = span.innerHTML
+          // Trigger change event so ConditionsChecking re-evaluates conditions
+          $(outputEl).trigger('change')
         })
       }
     }(f))
