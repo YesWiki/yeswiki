@@ -430,6 +430,12 @@ class ApiController extends YesWikiController
         }
 
         $postData = $request->request->all();
+        if (empty($postData) && strpos($request->headers->get('content-type', ''), 'application/json') !== false) {
+            $jsonData = json_decode($request->getContent(), true);
+            if (is_array($jsonData)) {
+                $postData = $jsonData;
+            }
+        }
         $postData['antispam'] = 1;
 
         if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
