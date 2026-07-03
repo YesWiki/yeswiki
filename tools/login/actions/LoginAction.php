@@ -1,6 +1,5 @@
 <?php
 
-
 namespace YesWiki\Login;
 
 use Tamtamchik\SimpleFlash\Flash;
@@ -25,7 +24,8 @@ class LoginAction extends YesWikiAction
         $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0') || $this->wiki->GetConfigValue('noSignupButton', false);
         $incomingurl = !empty($arg['incomingurl'])
             ? $this->wiki->generateLink($arg['incomingurl'])
-            : $this->getIncomingUrlFromRequest();
+        : $this->getIncomingUrlFromRequest();
+        dump(!empty($arg['incomingurl']), $incomingurl);
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
@@ -73,9 +73,9 @@ class LoginAction extends YesWikiAction
             'class' => !empty($arg['class']) ? $arg['class'] : '',
             'btnclass' => !empty($arg['btnclass']) ? $arg['btnclass'] : '',
             'nobtn' => $this->formatBoolean($arg, false, 'nobtn'),
-            'template' => (empty($arg['template']) ||
-                empty(basename($arg['template'])) ||
-                !$this->templateEngine->hasTemplate('@login/' . basename($arg['template'])))
+            'template' => (empty($arg['template'])
+                || empty(basename($arg['template']))
+                || !$this->templateEngine->hasTemplate('@login/' . basename($arg['template'])))
                 ? 'default.twig'
                 : basename($arg['template']),
         ];
@@ -111,6 +111,21 @@ class LoginAction extends YesWikiAction
         return null;
     }
 
+    private function normalizePathSegment(string $input): string
+    {
+        $ampersandPos = strpos($input, '&');
+
+        if ($ampersandPos === false) {
+            return rawurldecode($input);
+        }
+
+        $pathPart = substr($input, 0, $ampersandPos);
+        $queryPart = substr($input, $ampersandPos);
+        $decodedPath = rawurldecode(rtrim($pathPart, '='));
+
+        return $decodedPath . $queryPart;
+    }
+
     private function getIncomingUrlFromRequest(): string
     {
         $request = $this->getRequest();
@@ -126,6 +141,7 @@ class LoginAction extends YesWikiAction
 
         $newQuery = http_build_query($queryParams);
         $clean = ($urlParts['path'] ?? '') . ($newQuery !== '' ? '?' . $newQuery : '');
+        $clean = $this->normalizePathSegment(rtrim($clean, '='));
 
         return $request->getScheme() . '://' . $request->getHttpHost() . $clean;
     }
