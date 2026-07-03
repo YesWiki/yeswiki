@@ -608,7 +608,6 @@ class ExternalBazarService
 
         $vError = curl_errno($vCurl);
 
-        curl_close($vCurl);
         fclose($vFile);
 
         if (!$vError && file_exists($vDestPath)) {

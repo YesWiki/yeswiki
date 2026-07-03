@@ -22,7 +22,7 @@ class SearchManager
     public function __construct(
         Wiki $wiki,
         DbService $dbService,
-        AclService $aclService
+        AclService $aclService,
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -121,7 +121,7 @@ class SearchManager
         $needle = str_replace(
             ['à', 'á', 'â', 'ã', 'ä', 'ç', 'è', 'è', 'é', 'ê', 'ë', 'ì', 'í', 'î', 'ï', 'ñ', 'ò', 'ó', 'ô', 'õ', 'ö', 'ù', 'ú', 'û', 'ü', 'ý', 'ÿ', 'À', 'Á', 'Â', 'Ã', 'Ä', 'Ç', 'È', 'É', 'Ê', 'Ë', 'Ì', 'Í', 'Î', 'Ï', 'Ñ', 'Ò', 'Ó', 'Ô', 'Õ', 'Ö', 'Ù', 'Ú', 'Û', 'Ü', 'Ý'],
             ['a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y', 'y', 'a', 'a', 'a', 'a', 'a', 'c', 'e', 'e', 'e', 'e', 'i', 'i', 'i', 'i', 'n', 'o', 'o', 'o', 'o', 'o', 'u', 'u', 'u', 'u', 'y'],
-            $needle
+            $needle,
         );
 
         // add for regexp
@@ -146,7 +146,7 @@ class SearchManager
                 '(u|ù|ú|û|ü|U|Ù|Ú|Û|Ü)',
                 '(y|ý|ÿ|Y|Ý)',
             ],
-            $needle
+            $needle,
         );
 
         return $needle;
@@ -225,9 +225,9 @@ class SearchManager
                                     $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' COLLATE ' . $this->dbService->getCollation() . ' LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\'';
                                 }
 
-                            break;
+                                break;
 
-                            // If this field instance is intended to store multiple values separated by comma...
+                                // If this field instance is intended to store multiple values separated by comma...
 
                             case 'multiple':
                                 // Add a field condition adapted to a regexp or not
@@ -238,7 +238,7 @@ class SearchManager
                                     $vORRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vOR) . '%\')';
                                 }
 
-                            break;
+                                break;
                         }
 
                         // If the field can have multiple structures, we need to specify the form IDs to which the condition apply
@@ -290,9 +290,9 @@ class SearchManager
                                 $vExcludedRequest = mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ' NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\'';
                             }
 
-                        break;
+                            break;
 
-                        // If this field instance is intended to store multiple values separated by comma...
+                            // If this field instance is intended to store multiple values separated by comma...
 
                         case 'multiple':
                             // Add a field condition adapted to a regexp or not
@@ -303,7 +303,7 @@ class SearchManager
                                 $vExcludedRequest = '(s.champ = \'' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt COLLATE ' . $this->dbService->getCollation() . ' NOT LIKE \'%' . mysqli_real_escape_string($this->wiki->dblink, $vExcluded) . '%\')';
                             }
 
-                        break;
+                            break;
                     }
 
                     // If the field can have multiple structures, we need to specify the form IDs to which the condition apply
@@ -325,7 +325,7 @@ class SearchManager
 
         return implode(
             ' AND ',
-            array_unique($vANDs)
+            array_unique($vANDs),
         );
     }
 
@@ -373,32 +373,32 @@ class SearchManager
                     $vRegExpOperator = 'REGEXP';
                     $vComparisonOperator = '=';
                     $vFindInSetOperator = 'FIND_IN_SET';
-                break;
+                    break;
                 case '!=':
                     $vRegExpOperator = 'NOT REGEXP';
                     $vComparisonOperator = '!=';
                     $vFindInSetOperator = 'NOT FIND_IN_SET';
-                break;
+                    break;
                 case '<':
                     $vRegExpOperator = 'REGEXP'; // Should not be used or not yet implemented
                     $vComparisonOperator = '<';
                     $vFindInSetOperator = 'FIND_IN_SET'; // Should not be used or not yet implemented
-                break;
+                    break;
                 case '>':
                     $vRegExpOperator = 'REGEXP'; // Should not be used or not yet implemented
                     $vComparisonOperator = '>';
                     $vFindInSetOperator = 'FIND_IN_SET'; // Should not be used or not yet implemented
-                break;
+                    break;
                 case '<=':
                     $vRegExpOperator = 'REGEXP'; // Should not be used or not yet implemented
                     $vComparisonOperator = '<=';
                     $vFindInSetOperator = 'FIND_IN_SET'; // Should not be used or not yet implemented
-                break;
+                    break;
                 case '>=':
                     $vRegExpOperator = 'REGEXP'; // Should not be used or not yet implemented
                     $vComparisonOperator = '>=';
                     $vFindInSetOperator = 'FIND_IN_SET'; // Should not be used or not yet implemented
-                break;
+                    break;
                 default:
                     throw new Exception($vOperator . ' is not recognized');
 
@@ -448,9 +448,9 @@ class SearchManager
                                 }
                             }
 
-                        break;
+                            break;
 
-                        // If the field is intended to store multiple values separated by comma...
+                            // If the field is intended to store multiple values separated by comma...
 
                         case 'multiple':
                             // It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
@@ -461,9 +461,9 @@ class SearchManager
                                 $vValueConditions[] = $vFindInSetOperator . ' (\'' . mysqli_real_escape_string($this->wiki->dblink, $vValue) . '\' COLLATE ' . $this->dbService->getCollation() . ', ' . mysqli_real_escape_string($this->wiki->dblink, $this->renameJSONPathVariable($vFieldName)) . ' COLLATE ' . $this->dbService->getCollation() . ')';
                             }
 
-                        break;
+                            break;
 
-                        // The field is missing : we need to add a specific condition
+                            // The field is missing : we need to add a specific condition
 
                         case self::MISSING_FIELD:
                         case self::MISSING_PROPERTY:
@@ -471,7 +471,7 @@ class SearchManager
                             // satisfy the condition (they can't have the excluded value)
                             $vValueConditions[] = ($vComparisonOperator === '!=') ? 'TRUE' : 'FALSE';
 
-                        break;
+                            break;
                     }
                 }
 
@@ -531,7 +531,7 @@ class SearchManager
                 'minDate' => '', // Date minimale des fiches
                 'correspondance' => '',
             ],
-            $params
+            $params,
         );
 
         // Get Keywords
@@ -574,14 +574,14 @@ class SearchManager
 
                     return null;
                 },
-                $vFormIDs
+                $vFormIDs,
             );
 
             $vFormIDs = array_filter(
                 $vFormIDs,
                 function ($pID) {
                     return $pID !== null;
-                }
+                },
             );
 
             $vIDsRequest .= 'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) IN (' . join(',', array_map(function ($pFormID) {
@@ -639,8 +639,8 @@ class SearchManager
 
         $vHash = $this->buildFieldDescriptorHash($vFieldDescriptor);
 
-        $vFields['id_fiche'] =
-        [
+        $vFields['id_fiche']
+        = [
             'needSplit' => false,
             'hasMultipleStructures' => false,
             'isExtracted' => false,
@@ -790,8 +790,8 @@ class SearchManager
 
         // - Retrieves all columns and extract id_typeannonce
 
-        $vSelectRequest =
-        [
+        $vSelectRequest
+        = [
             'p.*',
             'JSON_UNQUOTE(JSON_EXTRACT(body, \'$.id_typeannonce\')) AS `' . $this->renameJSONPathVariable('id_typeannonce') . '`',
         ];
@@ -842,30 +842,30 @@ class SearchManager
 
             $vSplitteds[] = 'SELECT id, champ, elt FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple';
 
-            $vSplittedsRequest .=
-                        ', ' . $this->renameJSONPathVariable($vFieldName) . '_multiple AS ' .
-                        '( ' .
-                            'SELECT ' .
-                                'id, ' .
-                                '\'' . $this->renameJSONPathVariable($vFieldName) . '\' AS champ, ' .
-                                'TRIM(SUBSTRING_INDEX(' . $vFieldName . ', \',\', 1)) AS elt, ' .
-                                'CASE ' .
-                                    'WHEN INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') = 0 THEN \'\' ' .
-                                    'ELSE SUBSTR(' . $this->renameJSONPathVariable($vFieldName) . ', INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') + 1) ' .
-                                'END AS rest ' .
-                            'FROM filteredPages ' .
-                            'UNION ALL ' .
-                            'SELECT ' .
-                                'id, ' .
-                                'champ, ' .
-                                'TRIM(SUBSTRING_INDEX(rest, \',\', 1)) AS elt, ' .
-                                'CASE ' .
-                                    'WHEN INSTR(rest, \',\') = 0 THEN \'\' ' .
-                                    'ELSE SUBSTR(rest, INSTR(rest, \',\') + 1) ' .
-                                'END AS rest ' .
-                            'FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple ' .
-                            'WHERE rest <> \'\'' .
-                        ')';
+            $vSplittedsRequest
+                        .= ', ' . $this->renameJSONPathVariable($vFieldName) . '_multiple AS '
+                        . '( '
+                            . 'SELECT '
+                                . 'id, '
+                                . '\'' . $this->renameJSONPathVariable($vFieldName) . '\' AS champ, '
+                                . 'TRIM(SUBSTRING_INDEX(' . $vFieldName . ', \',\', 1)) AS elt, '
+                                . 'CASE '
+                                    . 'WHEN INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') = 0 THEN \'\' '
+                                    . 'ELSE SUBSTR(' . $this->renameJSONPathVariable($vFieldName) . ', INSTR(' . $this->renameJSONPathVariable($vFieldName) . ', \',\') + 1) '
+                                . 'END AS rest '
+                            . 'FROM filteredPages '
+                            . 'UNION ALL '
+                            . 'SELECT '
+                                . 'id, '
+                                . 'champ, '
+                                . 'TRIM(SUBSTRING_INDEX(rest, \',\', 1)) AS elt, '
+                                . 'CASE '
+                                    . 'WHEN INSTR(rest, \',\') = 0 THEN \'\' '
+                                    . 'ELSE SUBSTR(rest, INSTR(rest, \',\') + 1) '
+                                . 'END AS rest '
+                            . 'FROM ' . $this->renameJSONPathVariable($vFieldName) . '_multiple '
+                            . 'WHERE rest <> \'\''
+                        . ')';
 
             // And we remember it has been done
 
@@ -877,11 +877,11 @@ class SearchManager
         $vSplittedsCount = count($vSplitteds);
 
         if ($vSplittedsCount > 0) {
-            $vSplittedsRequest .=
-                        ', all_multiples AS ' .
-                        '( ' .
-                            implode(' UNION ALL ', $vSplitteds) .
-                        ') ';
+            $vSplittedsRequest
+                        .= ', all_multiples AS '
+                        . '( '
+                            . implode(' UNION ALL ', $vSplitteds)
+                        . ') ';
         }
 
         // Construct WHERE part with queries and keywords conditions
@@ -902,9 +902,9 @@ class SearchManager
                 function ($vFieldName) use ($vKeywordsFields) {
                     return in_array($vFieldName, $vKeywordsFields);
                 },
-                ARRAY_FILTER_USE_KEY
+                ARRAY_FILTER_USE_KEY,
             ),
-            $vMinSearchKeywordLength
+            $vMinSearchKeywordLength,
         );
 
         $vWhereRequest .= $vKeywordsConditions;
@@ -929,28 +929,28 @@ class SearchManager
 
         // Construct full request
 
-        $vCompleteRequest = 'WITH RECURSIVE ' .
-                                'filteredPages AS ' .
-                                '( ' .
-                                    'SELECT ' .
-                                        $vSelectRequest . ' ' .
-                                    'FROM ' . $this->dbService->prefixTable('pages') . ' p ' .
-                                    'JOIN ' . $this->dbService->prefixTable('triples') . ' t ON ' .
-                                        't.resource = p.tag AND ' .
-                                        't.value = \'' . $this->wiki->services->get(EntryManager::class)::TRIPLES_ENTRY_ID . '\' AND ' .
-                                        't.property = \'http://outils-reseaux.org/_vocabulary/type\' ' .
-                                    'WHERE ' .
-                                        ($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ') .
-                                        'p.comment_on = \'\'' .
-                                        ($vUserRequest !== '' ? ' AND ' . $vUserRequest : '') .
-                                        ($vPeriodRequest !== '' ? ' AND ' . $vPeriodRequest : '') .
-                                        ($vIDsRequest !== '' ? ' AND ' . $vIDsRequest : '') .
-                                ')' .
-                                ($vSplittedsRequest != '' ? $vSplittedsRequest . ' ' : ' ') .
-                                'SELECT DISTINCT f.* ' .
-                                'FROM filteredPages f ' .
-                                ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '') .
-                                ($vWhereRequest != '' ? 'WHERE ' . $vWhereRequest : '');
+        $vCompleteRequest = 'WITH RECURSIVE '
+                                . 'filteredPages AS '
+                                . '( '
+                                    . 'SELECT '
+                                        . $vSelectRequest . ' '
+                                    . 'FROM ' . $this->dbService->prefixTable('pages') . ' p '
+                                    . 'JOIN ' . $this->dbService->prefixTable('triples') . ' t ON '
+                                        . 't.resource = p.tag AND '
+                                        . 't.value = \'' . $this->wiki->services->get(EntryManager::class)::TRIPLES_ENTRY_ID . '\' AND '
+                                        . 't.property = \'http://outils-reseaux.org/_vocabulary/type\' '
+                                    . 'WHERE '
+                                        . ($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ')
+                                        . 'p.comment_on = \'\''
+                                        . ($vUserRequest !== '' ? ' AND ' . $vUserRequest : '')
+                                        . ($vPeriodRequest !== '' ? ' AND ' . $vPeriodRequest : '')
+                                        . ($vIDsRequest !== '' ? ' AND ' . $vIDsRequest : '')
+                                . ')'
+                                . ($vSplittedsRequest != '' ? $vSplittedsRequest . ' ' : ' ')
+                                . 'SELECT DISTINCT f.* '
+                                . 'FROM filteredPages f '
+                                . ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '')
+                                . ($vWhereRequest != '' ? 'WHERE ' . $vWhereRequest : '');
         /*
                 // requete de jointure : reprend la requete precedente et ajoute des criteres
                 if (isset($_GET['joinquery'])) {
@@ -1105,12 +1105,12 @@ class SearchManager
             // Extract tokens
 
             preg_match_all(
-                '/(-)?("(?:\\\\.|[^"\\\\])*"|' .	// double quoted with optional backslash escapes
-                '\'(?:\\\\.|[^\'\\\\])*\'|' .   	// single quoted
-                '\S+)/u',                      	  	// or unquoted token
-                 $vAND,
+                '/(-)?("(?:\\\\.|[^"\\\\])*"|'	// double quoted with optional backslash escapes
+                . '\'(?:\\\\.|[^\'\\\\])*\'|'   	// single quoted
+                . '\S+)/u',                      	  	// or unquoted token
+                $vAND,
                 $vTokens,
-                PREG_SET_ORDER
+                PREG_SET_ORDER,
             );
 
             // Update the CNF and the excludeds token
@@ -1156,7 +1156,7 @@ class SearchManager
             $vQuery = $pQuery;
         }
 
-        if (trim($vQuery) == '') {
+        if (trim($vQuery ?? '') == '') {
             return [];
         }
 
@@ -1187,17 +1187,17 @@ class SearchManager
                             // TODO: make it a service that could be used for any params
                             if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
                                 switch ($matches[1]) {
-                                case 'user.name':
-                                    $vValue = $this->wiki->getUserName();
-                                    break;
-                                case 'user.entry.id_fiche':
-                                    $vUserManager = $this->wiki->services->get(UserManager::class);
-                                    $entry = $vUserManager->getAssociatedEntry();
-                                    if (!empty($entry)) {
-                                        $vValue = $entry['id_fiche'];
-                                    }
-                                    break;
-                            }
+                                    case 'user.name':
+                                        $vValue = $this->wiki->getUserName();
+                                        break;
+                                    case 'user.entry.id_fiche':
+                                        $vUserManager = $this->wiki->services->get(UserManager::class);
+                                        $entry = $vUserManager->getAssociatedEntry();
+                                        if (!empty($entry)) {
+                                            $vValue = $entry['id_fiche'];
+                                        }
+                                        break;
+                                }
                             }
                             if (!in_array($vValue, $vUniqueValues, true)) {
                                 $vUniqueValues[] = $vValue;
@@ -1221,15 +1221,15 @@ class SearchManager
                     array_unique(explode('|', $vQuery)),
                     function ($pValue) {
                         return trim($pValue) != '';
-                    }
-                )
+                    },
+                ),
             ),
 
             // Remove query with no parameter name
 
             function ($pValue) {
                 return isset($pValue['name']) && trim($pValue['name']) != '';
-            }
+            },
         );
     }
 
@@ -1355,8 +1355,8 @@ class SearchManager
                             return $pKey . '=' . $pQuery[$pKey];
                         }
                     },
-                    array_keys($pQuery)
-                )
+                    array_keys($pQuery),
+                ),
             );
         } elseif (is_string($pQuery)) {
             // old format : bf_field=toto1|bf_field2!=tata
@@ -1421,9 +1421,9 @@ class SearchManager
                     explode('|', implode('|', $vKeywords)),
                     function ($vValue) use ($vMinSearchKeywordLength) {
                         return trim($vValue) != '' && strlen($vValue) >= $vMinSearchKeywordLength;
-                    }
-                )
-            )
+                    },
+                ),
+            ),
         );
 
         if (isset($vResult)) {
@@ -1469,9 +1469,9 @@ class SearchManager
                     $vQueries,
                     function ($vValue) {
                         return trim($vValue) != '';
-                    }
-                )
-            )
+                    },
+                ),
+            ),
         );
 
         if (isset($vResult)) {
@@ -1573,16 +1573,16 @@ class SearchManager
 
         switch ($this->isRegExp($pString)) {
             case 0:
-                 throw new Exception($pString . ' is not a regexp');
+                throw new Exception($pString . ' is not a regexp');
 
-                 return '';
-            break;
+                return '';
+                break;
             case 1:
-                 $vString = '^' . $pString . '$';
-            break;
+                $vString = '^' . $pString . '$';
+                break;
             case 2:
-                 $vString = mb_substr($pString, 1, mb_strlen($pString) - 2);
-            break;
+                $vString = mb_substr($pString, 1, mb_strlen($pString) - 2);
+                break;
         }
 
         if ($pAccentInsensitive) {
@@ -1609,7 +1609,7 @@ class SearchManager
                     '(u|ù|ú|û|ü|U|Ù|Ú|Û|Ü)',
                     '(y|ý|ÿ|Y|Ý)',
                 ],
-                $vString
+                $vString,
             );
         }
 
