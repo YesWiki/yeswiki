@@ -25,7 +25,6 @@ class LoginAction extends YesWikiAction
         $incomingurl = !empty($arg['incomingurl'])
             ? $this->wiki->generateLink($arg['incomingurl'])
         : $this->getIncomingUrlFromRequest();
-        dump(!empty($arg['incomingurl']), $incomingurl);
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
         return [
