@@ -467,7 +467,9 @@ class SearchManager
 
                         case self::MISSING_FIELD:
                         case self::MISSING_PROPERTY:
-                            $vValueConditions[] = 'FALSE';
+                            // For negative operators (!=), entries without this field trivially
+                            // satisfy the condition (they can't have the excluded value)
+                            $vValueConditions[] = ($vComparisonOperator === '!=') ? 'TRUE' : 'FALSE';
 
                         break;
                     }
@@ -475,10 +477,11 @@ class SearchManager
 
                 $vDescriptorCondition = '';
 
-                // Merge all value conditions with a logical OR and add it to the descripted field condition
+                // Merge all value conditions: OR for positive matches (==), AND for negative (!=)
+                // For !=: "field NOT IN (A,B,C)" = "!=A AND !=B AND !=C", not OR which would always be true
 
                 if (count($vValueConditions) > 0) {
-                    $vDescriptorCondition = implode(' OR ', $vValueConditions);
+                    $vDescriptorCondition = implode($vComparisonOperator === '!=' ? ' AND ' : ' OR ', $vValueConditions);
 
                     // if we had remembered that this field can have multiple structures
                     // we need to specify the form IDs that use this structure in the condition request
@@ -948,7 +951,6 @@ class SearchManager
                                 'FROM filteredPages f ' .
                                 ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '') .
                                 ($vWhereRequest != '' ? 'WHERE ' . $vWhereRequest : '');
-
         /*
                 // requete de jointure : reprend la requete precedente et ajoute des criteres
                 if (isset($_GET['joinquery'])) {
@@ -1011,7 +1013,7 @@ class SearchManager
 
         // debug
 
-        if ($this->wiki->request->query->has('showreq')) {
+        if (isset($_GET['showreq'])) {
             echo '<hr><code style="width:100%;height:100px;">' . $vCompleteRequest . '</code><hr>';
         }
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Yeswiki initialization class file.
  */
@@ -57,7 +58,7 @@ class Init
         /* @todo : compare versions, start installer for update if necessary */
         if (!file_exists($this->configFile)) {
             $this->doInstall();
-            exit();
+            exit;
         }
     }
 
@@ -78,11 +79,11 @@ class Init
         $uri = explode('&', $uri);
         $uri = explode('?', $uri[0]);
         $args = explode('/', rawurldecode($uri[0]));
-        if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
+        if (!empty($args[0]) or !empty($_GET['wiki'])) {
             // if old school wiki url
-            if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
+            if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_GET['wiki'])) {
                 // remove leading slash
-                $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_REQUEST['wiki']));
+                $wiki = empty($_GET['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_GET['wiki']));
             } else {
                 $a = explode('=', $args[0]);
                 $wiki = urldecode($a[0]);
@@ -92,8 +93,16 @@ class Init
             } elseif (preg_match('`^api`', $wiki)) {
                 // for api split into api/end of route, checking wiki name & method name (XSS proof)
                 $this->page = 'api';
-                array_shift($args); // remove api from the args
-                $this->method = rtrim(implode('/', $args), '=');
+                if (strpos($wiki, '/') !== false) {
+                    // $wiki already contains the full path (e.g. 'api/ferme/wikis/upgrade' from $_REQUEST['wiki'])
+                    $wikiParts = explode('/', $wiki);
+                    array_shift($wikiParts); // remove 'api'
+                    $this->method = rtrim(implode('/', $wikiParts), '=');
+                } else {
+                    // $wiki is just 'api', extract method from URL path segments
+                    array_shift($args); // remove api from the args
+                    $this->method = rtrim(implode('/', $args), '=');
+                }
             } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
                 // split into page/method, checking wiki name & method name (XSS proof)
                 list(, $this->page, $this->method) = $matches;
@@ -109,7 +118,7 @@ class Init
             } else {
                 // invalid WikiPageName
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
-                exit();
+                exit;
             }
 
             // TODO refactor this
@@ -280,7 +289,7 @@ class Init
                 header('WWW-Authenticate: Basic realm="' . $wakkaConfig['wakka_name'] . ' Install/Upgrade Interface"');
                 header('HTTP/1.0 401 Unauthorized');
                 echo _t('SITE_BEING_UPDATED');
-                exit();
+                exit;
             }
         }
 

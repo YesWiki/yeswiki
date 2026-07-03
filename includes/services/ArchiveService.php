@@ -2,17 +2,12 @@
 
 namespace YesWiki\Core\Service;
 
-use DateInterval;
-use DateTime;
-use Exception;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Process;
-use Throwable;
 use YesWiki\Core\Exception\StopArchiveException;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
-use ZipArchive;
 
 class ArchiveService
 {
@@ -101,7 +96,7 @@ class ArchiveService
      *
      * @param string|OutputInterface &$output
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function archive(
         &$output,
@@ -124,7 +119,7 @@ class ArchiveService
             $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
-            throw new Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
+            throw new \Exception(_t('AU_CANNOT_ARCHIVE') . implode(', ', $vMessages));
         }
         $privatePath = $this->getPrivateFolder();
 
@@ -137,13 +132,13 @@ class ArchiveService
         }
         if (!empty($outputFile)) {
             if (@file_put_contents($outputFile, '') === false) {
-                throw new Exception('Cannot write to archive output file. Please check file system access rights');
+                throw new \Exception('Cannot write to archive output file. Please check file system access rights');
             }
         }
 
         // checking folder not available on the internet
         if (@file_put_contents("$privatePath/tmpTestFile000.txt", 'test') === false) {
-            throw new Exception('Cannot write to test file. Please check file system access rights');
+            throw new \Exception('Cannot write to test file. Please check file system access rights');
         }
         $error = !$this->localPrivateFolderNotAvailableOnInternet($privatePath, 'tmpTestFile000.txt');
         if (file_exists("$privatePath/tmpTestFile000.txt")) {
@@ -161,7 +156,7 @@ class ArchiveService
         $blacklistedRootFolders = $this->generateListRootFolders('black', $foldersToExclude);
         try {
             $this->assertEnoughtSpace($blacklistedRootFolders);
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $this->writeOutput($output, 'There is not enough free space.', true, $outputFile);
             $this->writeOutput($output, "=> {$th->getMessage()}", true, $outputFile);
             $this->unsetWikiStatus();
@@ -179,7 +174,7 @@ class ArchiveService
         $onlyDb = false;
         // check options and prepare file suffix
         if (!$savefiles && !$savedatabase) {
-            throw new Exception("Invalid options : It is not possible to use 'savefiles = false' and 'savedatabase = false' options in same time.");
+            throw new \Exception("Invalid options : It is not possible to use 'savefiles = false' and 'savedatabase = false' options in same time.");
         } elseif (!$savefiles) {
             $fileSuffix = self::ARCHIVE_ONLY_DATABASE_SUFFIX;
             $onlyDb = true;
@@ -197,16 +192,16 @@ class ArchiveService
         }
         // prepare location of zip file
 
-        $archiveFileName = (new DateTime())->format('Y-m-d\\TH-i-s') . "$fileSuffix.zip";
+        $archiveFileName = (new \DateTime())->format('Y-m-d\\TH-i-s') . "$fileSuffix.zip";
         $location = $privatePath . DIRECTORY_SEPARATOR . $archiveFileName;
         if (file_exists($location)) {
-            throw new Exception('Zip file already existing !');
+            throw new \Exception('Zip file already existing !');
         }
         if (file_exists($location)) {
-            throw new Exception('Zip file already existing !');
+            throw new \Exception('Zip file already existing !');
         }
         if ($this->securityController->isWikiHibernated()) {
-            throw new Exception(_t('WIKI_IN_HIBERNATION'));
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         try {
@@ -242,7 +237,7 @@ class ArchiveService
             $this->writeOutput($output, 'STOP', true, $outputFile);
 
             return '';
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             @unlink($location);
             $this->unsetWikiStatus();
             $this->writeOutput($output, 'STOP', true, $outputFile);
@@ -293,9 +288,9 @@ class ArchiveService
 
         if (trim($vConfig['wiki_status'] ?? '') == '') {
             return 'running';
-        } else {
-            return trim($vConfig['wiki_status']);
         }
+
+        return trim($vConfig['wiki_status']);
     }
 
     /**
@@ -312,8 +307,6 @@ class ArchiveService
 
     /**
      * check if a recent and valided backup is present.
-     *
-     * @param mixed $token
      */
     public function hasValidatedBackup($token): bool
     {
@@ -366,7 +359,7 @@ class ArchiveService
         }
         try {
             $privatePath = $this->getPrivateFolder();
-        } catch (Exception $th) {
+        } catch (\Exception $th) {
             $privatePathWritable = false;
             $privatePath = '';
         }
@@ -380,23 +373,23 @@ class ArchiveService
                 }
                 try {
                     if (@file_put_contents($tmpFileName, 'test') === false) {
-                        throw new Exception('Cannot write to tmp file. Please check file system access rights');
+                        throw new \Exception('Cannot write to tmp file. Please check file system access rights');
                     }
                     if (!file_exists($tmpFileName)) {
-                        throw new Exception('Not writable folder');
+                        throw new \Exception('Not writable folder');
                     }
                     $content = @file_get_contents($tmpFileName);
 
                     if ($content === false) {
-                        throw new Exception('Cannot read tmp file. Please check file system access rights');
+                        throw new \Exception('Cannot read tmp file. Please check file system access rights');
                     }
 
                     if ($content != 'test') {
-                        throw new Exception('Bad content');
+                        throw new \Exception('Bad content');
                     }
                     $notAvailableOnTheInternet = $this->localPrivateFolderNotAvailableOnInternet($privatePath, basename($tmpFileName));
                     unlink($tmpFileName);
-                } catch (Throwable $th) {
+                } catch (\Throwable $th) {
                     $privatePathWritable = false;
                     if (file_exists($tmpFileName)) {
                         unlink($tmpFileName);
@@ -411,13 +404,13 @@ class ArchiveService
             if (!empty($results)) {
                 $result = $results[array_key_first($results)];
                 if (
-                    empty($result['stderr']) && !empty($result['stdout']) &&
-                    preg_match("/Hello !(?:\r|\n)+/", $result['stdout'])
+                    !empty($result['stdout'])
+                    && preg_match("/Hello !(?:\r|\n)+/", $result['stdout'])
                 ) {
                     $canExec = true;
                 }
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $canExec = false;
         }
 
@@ -428,20 +421,20 @@ class ArchiveService
         // free space
         try {
             $this->assertEnoughtSpace();
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $enoughSpace = false;
         }
 
         $canArchive = (
-            !$archiving &&
-            !$hibernated &&
-            $privatePathWritable &&
-            $notAvailableOnTheInternet &&
-            (
-                !$callAsync ||
-                $canExec
-            ) &&
-            $enoughSpace
+            !$archiving
+            && !$hibernated
+            && $privatePathWritable
+            && $notAvailableOnTheInternet
+            && (
+                !$callAsync
+                || $canExec
+            )
+            && $enoughSpace
         );
 
         return compact(['canArchive', 'archiving', 'hibernated', 'privatePathWritable', 'canExec', 'callAsync', 'notAvailableOnTheInternet', 'enoughSpace', 'dB']);
@@ -510,22 +503,20 @@ class ArchiveService
                 $this->updatePIDForUID($process->getPid(), $uidData['uid'], $privatePath);
 
                 return $uidData['uid'];
-            } else {
-                $this->cleanUID($uidData['uid'], $privatePath);
-
-                return '';
             }
-        } else {
-            $output = '';
-            $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid']);
-            if (empty($location)) {
-                $this->cleanUID($uidData['uid'], $privatePath);
+            $this->cleanUID($uidData['uid'], $privatePath);
 
-                return '';
-            } else {
-                return $uidData['uid'];
-            }
+            return '';
         }
+        $output = '';
+        $location = $this->archive($output, $savefiles, $savedatabase, $foldersToInclude, $foldersToExclude, null, $uidData['uid']);
+        if (empty($location)) {
+            $this->cleanUID($uidData['uid'], $privatePath);
+
+            return '';
+        }
+
+        return $uidData['uid'];
     }
 
     /**
@@ -580,9 +571,128 @@ class ArchiveService
     }
 
     /**
-     * delete archives.
+     * Restore a backup archive (database and/or files).
      *
-     * @param array $filesname
+     * @throws \Exception
+     */
+    public function restoreArchive(string $filename, bool $restoreFiles = true, bool $restoreDatabase = true): void
+    {
+        $filePath = $this->getFilePath($filename);
+        if (empty($filePath)) {
+            throw new \Exception("Archive not found: $filename");
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            throw new \Exception("Cannot open archive: $filename");
+        }
+
+        try {
+            $onlyFiles = str_ends_with($filename, '_archive_only_files.zip');
+            $onlyDb = str_ends_with($filename, '_archive_only_db.zip');
+
+            if ($restoreDatabase && !$onlyFiles) {
+                $sqlContent = $zip->getFromName(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+                if ($sqlContent === false) {
+                    throw new \Exception('SQL file not found in archive');
+                }
+                $this->restoreDatabase($sqlContent);
+            }
+
+            if ($restoreFiles && !$onlyDb) {
+                $this->restoreFilesFromZip($zip);
+            }
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /**
+     * Drop prefixed tables and re-import SQL dump via a dedicated connection.
+     *
+     * @throws \Exception
+     */
+    protected function restoreDatabase(string $sqlContent): void
+    {
+        $tablesPrefix = trim($this->dbService->prefixTable(''));
+        if (empty($tablesPrefix)) {
+            throw new \Exception('Table prefix is empty — refusing to drop all tables');
+        }
+
+        $this->dbService->query('SET FOREIGN_KEY_CHECKS=0');
+        $tables = $this->dbService->loadAll('show tables');
+        if (is_array($tables)) {
+            foreach ($tables as $tableInfo) {
+                $tableName = array_values($tableInfo)[0];
+                if (strpos($tableName, $tablesPrefix) === 0) {
+                    $this->dbService->query('DROP TABLE IF EXISTS `' . $tableName . '`');
+                }
+            }
+        }
+        $this->dbService->query('SET FOREIGN_KEY_CHECKS=1');
+
+        // Dedicated connection for multi_query to avoid leaving the shared DbService
+        // link with unread result sets.
+        $conn = mysqli_connect(
+            $this->params->get('mysql_host'),
+            $this->params->get('mysql_user'),
+            $this->params->get('mysql_password'),
+            $this->params->get('mysql_database')
+        );
+        if (!$conn) {
+            throw new \Exception('Cannot open database connection for restore');
+        }
+        mysqli_set_charset($conn, 'utf8mb4');
+
+        // Strip bare semicolons (empty statements from empty tables in old backups).
+        $sqlContent = preg_replace('/^\s*;\s*$/m', '', $sqlContent);
+        $sqlContent = trim($sqlContent);
+
+        try {
+            if (!mysqli_multi_query($conn, $sqlContent)) {
+                throw new \Exception('SQL restore failed: ' . mysqli_error($conn));
+            }
+            do {
+                if ($r = mysqli_store_result($conn)) {
+                    mysqli_free_result($r);
+                }
+            } while (mysqli_more_results($conn) && mysqli_next_result($conn));
+
+            if ($errno = mysqli_errno($conn)) {
+                throw new \Exception("SQL restore error (errno $errno): " . mysqli_error($conn));
+            }
+        } finally {
+            mysqli_close($conn);
+        }
+    }
+
+    /**
+     * Extract wiki files from zip, skipping private/backups/ and wakka.config.php.
+     */
+    protected function restoreFilesFromZip(\ZipArchive $zip): void
+    {
+        $wikiRoot = realpath(getcwd());
+        $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
+        $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (strpos($name, $skipPrefix) === 0 || $name === $skipFile || strpos($name, '..') !== false) {
+                continue;
+            }
+            if (str_ends_with($name, '/')) {
+                $dir = $wikiRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $name);
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                continue;
+            }
+            $zip->extractTo($wikiRoot, $name);
+        }
+    }
+
+    /**
+     * delete archives.
      *
      * @return array $results = ['filename' => bool]
      */
@@ -668,14 +778,14 @@ class ArchiveService
         }
         $info = $this->getInfoFromFile();
         if (
-            !isset($info[$uid]) ||
-            empty($info[$uid]['input']) ||
-            !is_file($info[$uid]['input'])
+            !isset($info[$uid])
+            || empty($info[$uid]['input'])
+            || !is_file($info[$uid]['input'])
         ) {
             return false;
         }
         if (@file_put_contents($info[$uid]['input'], 'STOP') === false) {
-            throw new Exception('Cannot write to archive info file. Please check file system access rights');
+            throw new \Exception('Cannot write to archive info file. Please check file system access rights');
         }
 
         return true;
@@ -692,7 +802,7 @@ class ArchiveService
         $content = @file_get_contents($inputFile);
 
         if ($content === false) {
-            throw new Exception('Cannot read archive input file. Please check file system access rights');
+            throw new \Exception('Cannot read archive input file. Please check file system access rights');
         }
 
         if (empty($content)) {
@@ -721,7 +831,7 @@ class ArchiveService
         string $outputFile = ''
     ) {
         if (!file_exists('index.php') || !file_exists(ConfigurationFileProvider::getConfigFileFromEnv()) || !file_exists('composer.json') || !file_exists('composer.lock')) {
-            throw new Exception('Can only be started from main directory');
+            throw new \Exception('Can only be started from main directory');
         }
         $pathToArchive = getcwd();
 
@@ -732,11 +842,11 @@ class ArchiveService
         $whitelistedRootFolders = $this->generateListRootFolders('white', $foldersToInclude);
 
         // open file
-        $zip = new ZipArchive();
+        $zip = new \ZipArchive();
 
         $vCanceled = false;
 
-        $resource = $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        $resource = $zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
         if ($resource !== true) {
             return;
         }
@@ -750,9 +860,9 @@ class ArchiveService
                     $vCanceled = true;
 
                     return -1;
-                } else {
-                    return 0;
                 }
+
+                return 0;
             });
         }
 
@@ -878,8 +988,8 @@ class ArchiveService
         array $blacklistedRootFolders
     ): bool {
         if (
-            in_array($relativeFolderName, $blacklistedRootFolders) ||
-            in_array(basename($relativeFolderName), $blacklistedRootFolders)
+            in_array($relativeFolderName, $blacklistedRootFolders)
+            || in_array(basename($relativeFolderName), $blacklistedRootFolders)
         ) {
             return false;
         }
@@ -914,8 +1024,8 @@ class ArchiveService
         $archiveParams = $this->getArchiveParams();
 
         $folderPath = (
-            empty($archiveParams[self::KEY_FOR_PRIVATE_FOLDER]) ||
-            !is_string($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])
+            empty($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])
+            || !is_string($archiveParams[self::KEY_FOR_PRIVATE_FOLDER])
         )
             ? self::PRIVATE_FOLDER_NAME_IN_ZIP
             : $archiveParams[self::KEY_FOR_PRIVATE_FOLDER];
@@ -925,9 +1035,8 @@ class ArchiveService
                 is_dir($folderPath)
             ) {
                 return preg_replace("/(\/|\\\\)$/", '', $folderPath);
-            } else {
-                throw new Exception(self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . ']' . ' is not a directory.');
             }
+            throw new \Exception(self::PARAMS_KEY_IN_WAKKA . '[' . self::KEY_FOR_PRIVATE_FOLDER . '] is not a directory.');
         } else {
             $sanitizeWebsiteName = preg_replace(
                 '/-+$/',
@@ -954,7 +1063,7 @@ class ArchiveService
     private function createFolder(string $basePath, string $path)
     {
         if (file_exists($basePath . $path) && !is_dir($basePath . $path)) {
-            throw new Exception("Folder \"$path\" in \"$basePath\" should be a directory !");
+            throw new \Exception("Folder \"$path\" in \"$basePath\" should be a directory !");
         } elseif (!file_exists($basePath . $path)) {
             mkdir($basePath . $path);
         }
@@ -977,12 +1086,11 @@ class ArchiveService
     private function localPrivateFolderNotAvailableOnInternet(string $localPath, string $testFileName): bool
     {
         $isAbsolutePath = (
-            in_array(substr($localPath, 0, 1), ['/', DIRECTORY_SEPARATOR]) ||
-            (
-                DIRECTORY_SEPARATOR == '\\' &&
-                (
-                    preg_match('/^[A-Za-z]:.*$/', $localPath)
-                )
+            in_array(substr($localPath, 0, 1), ['/', DIRECTORY_SEPARATOR])
+            || (
+                DIRECTORY_SEPARATOR == '\\'
+
+                    && preg_match('/^[A-Za-z]:.*$/', $localPath)
             )
         );
         $basePath = realpath(getcwd());
@@ -995,7 +1103,7 @@ class ArchiveService
             return true;
         }
         if (!file_exists("$localPath/$testFileName")) {
-            throw new Exception("\"$localPath/$testFileName\" must exist for tests !");
+            throw new \Exception("\"$localPath/$testFileName\" must exist for tests !");
         }
         $url = preg_replace("/\??$/", '', $this->params->get('base_url'));
         $url .= str_replace(DIRECTORY_SEPARATOR, '/', "$localPath/$testFileName");
@@ -1022,7 +1130,7 @@ class ArchiveService
     {
         if (!empty($outputFile) && is_file($outputFile)) {
             if (@file_put_contents($outputFile, $text . ($newline ? "\n" : ''), FILE_APPEND) === false) {
-                throw new Exception('Cannot write to output file. Please check file system access rights');
+                throw new \Exception('Cannot write to output file. Please check file system access rights');
             }
         }
         if ($output instanceof OutputInterface) {
@@ -1030,7 +1138,7 @@ class ArchiveService
         } elseif (is_string($output)) {
             $output .= $text . ($newline ? "\n" : '');
         } else {
-            throw new Exception('"$output" should be string or OutputInterface !');
+            throw new \Exception('"$output" should be string or OutputInterface !');
         }
     }
 
@@ -1043,8 +1151,8 @@ class ArchiveService
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         if (
-            !isset($config[self::PARAMS_KEY_IN_WAKKA]) ||
-            !is_array($config[self::PARAMS_KEY_IN_WAKKA])
+            !isset($config[self::PARAMS_KEY_IN_WAKKA])
+            || !is_array($config[self::PARAMS_KEY_IN_WAKKA])
         ) {
             $data = [];
         } else {
@@ -1105,13 +1213,11 @@ class ArchiveService
 
     /**
      * test db export connection.
-     *
-     * @param string $privatePath
      */
     protected function testDb(): bool
     {
         try {
-            $results = $this->consoleService->startConsoleSync('archive:exportdb', [
+            $results = $this->consoleService->startConsoleSync('core:exportdb', [
                 '--test',
             ]);
             if (empty($results) || !is_array($results)) {
@@ -1119,8 +1225,8 @@ class ArchiveService
             }
             $result = $results[array_key_first($results)];
 
-            return empty($result['stderr']) && !empty($result['stdout']) && preg_match("/^OK\s*$/i", $result['stdout']);
-        } catch (Throwable $th) {
+            return !empty($result['stdout']) && preg_match("/^OK\s*$/i", $result['stdout']);
+        } catch (\Throwable $th) {
         }
 
         return false;
@@ -1131,8 +1237,8 @@ class ArchiveService
      *
      * @return string $sqlContent
      *
-     * @throws Exception
-     * @throws Throwable
+     * @throws \Exception
+     * @throws \Throwable
      */
     protected function getSQLContent(string $privatePath): string
     {
@@ -1149,7 +1255,7 @@ class ArchiveService
                     $sqlContent = @file_get_contents($resultFile);
 
                     if ($sqlContent === false) {
-                        throw new Exception('Cannot read sql content file. Please check file system access rights');
+                        throw new \Exception('Cannot read sql content file. Please check file system access rights');
                     }
 
                     @unlink($resultFile);
@@ -1169,11 +1275,11 @@ class ArchiveService
             // backup
             $results = $this->dbService->getSQLContentBackupMethod();
             if (empty($results['sql'])) {
-                throw new Exception($errorMessage . (empty($results['error']) ? 'SQL not exported via BackupMethod' : $results['error']));
-            } else {
-                return $results['sql'];
+                throw new \Exception($errorMessage . (empty($results['error']) ? 'SQL not exported via BackupMethod' : $results['error']));
             }
-        } catch (Throwable $th) {
+
+            return $results['sql'];
+        } catch (\Throwable $th) {
             if (file_exists($resultFile)) {
                 unlink($resultFile);
             }
@@ -1184,7 +1290,7 @@ class ArchiveService
     /**
      * check if there is enought free space before archive (size of files + custom + 300 Mo).
      *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function assertEnoughtSpace(array $blacklistedRootFolders = [])
     {
@@ -1202,7 +1308,7 @@ class ArchiveService
 
         $freeSpace = disk_free_space(realpath(getcwd()));
         if ($freeSpace < $estimateZipSize) {
-            throw new Exception('Not enough free space for a new archive!');
+            throw new \Exception('Not enough free space for a new archive!');
         }
     }
 
@@ -1243,9 +1349,9 @@ class ArchiveService
     {
         $archiveParams = $this->getArchiveParams();
 
-        return (empty($archiveParams['max_nb_files']) ||
-            !is_scalar($archiveParams['max_nb_files']) ||
-            intval($archiveParams['max_nb_files']) < 3)
+        return (empty($archiveParams['max_nb_files'])
+            || !is_scalar($archiveParams['max_nb_files'])
+            || intval($archiveParams['max_nb_files']) < 3)
             ? 10
             : intval($archiveParams['max_nb_files']);
     }
@@ -1308,10 +1414,10 @@ class ArchiveService
             return [];
         }
         $indexes = [];
-        $nowMinusXDays = (new DateTime())->sub(new DateInterval("P{$days}D"));
+        $nowMinusXDays = (new \DateTime())->sub(new \DateInterval("P{$days}D"));
         foreach ($archives as $key => $archive) {
             // check the the last file is aged more than x days
-            $fileDateTime = (new DateTime())
+            $fileDateTime = (new \DateTime())
                 ->setDate($archive['year'], $archive['month'], $archive['day'])
                 ->setTime($archive['hours'], $archive['minutes'], $archive['seconds'], 0);
             if (
@@ -1326,8 +1432,6 @@ class ArchiveService
 
     /**
      * get content of info.json file from privatePath.
-     *
-     * @return mixed
      */
     private function getInfoFromFile(string $privateFolder = '')
     {
@@ -1336,13 +1440,13 @@ class ArchiveService
         }
         if (!file_exists("$privateFolder/info.json")) {
             if (@file_put_contents("$privateFolder/info.json", '{}') === false) {
-                throw new Exception('Cannot write to archive info file. Please check file system access rights');
+                throw new \Exception('Cannot write to archive info file. Please check file system access rights');
             }
         }
         $fileContent = @file_get_contents("$privateFolder/info.json");
 
         if ($fileContent === false) {
-            throw new Exception('Cannot read archive info file. Please check file system access rights');
+            throw new \Exception('Cannot read archive info file. Please check file system access rights');
         }
 
         $content = json_decode($fileContent, true);
@@ -1352,8 +1456,6 @@ class ArchiveService
 
     /**
      * set content to info.json file from privatePath.
-     *
-     * @param mixed $content
      */
     private function setInfoToFile($content, string $privateFolder = '')
     {
@@ -1362,7 +1464,7 @@ class ArchiveService
         }
 
         if (@file_put_contents("$privateFolder/info.json", json_encode($content)) === false) {
-            throw new Exception('Cannot set archive info to file. Please check file system access rights');
+            throw new \Exception('Cannot set archive info to file. Please check file system access rights');
         }
     }
 
@@ -1386,10 +1488,10 @@ class ArchiveService
         $input = "$privateFolder/input-$uid.log";
         $output = "$privateFolder/output-$uid.log";
         if (@file_put_contents($input, '') === false) {
-            throw new Exception('Cannot write to archive input file. Please check file system access rights');
+            throw new \Exception('Cannot write to archive input file. Please check file system access rights');
         }
         if (@file_put_contents($output, '') === false) {
-            throw new Exception('Cannot write to archive output file. Please check file system access rights');
+            throw new \Exception('Cannot write to archive output file. Please check file system access rights');
         }
 
         $info[$uid] = [
@@ -1448,7 +1550,7 @@ class ArchiveService
         $output = @file_get_contents($info['output']);
 
         if ($output === false) {
-            throw new Exception('Cannot read archive output file. Please check file system access rights');
+            throw new \Exception('Cannot read archive output file. Please check file system access rights');
         }
 
         $running = !empty(trim($output));
@@ -1480,8 +1582,8 @@ class ArchiveService
         $archiveParams = $this->getArchiveParams();
         $key = ($type == 'white') ? self::KEY_FOR_FOLDERS_TO_INCLUDE : self::KEY_FOR_FOLDERS_TO_EXCLUDE;
         if (
-            !empty($archiveParams[$key]) &&
-            is_array($archiveParams[$key])
+            !empty($archiveParams[$key])
+            && is_array($archiveParams[$key])
         ) {
             foreach ($this->sanitizeFileList($archiveParams[$key]) as $path) {
                 if (!in_array($path, $list)) {

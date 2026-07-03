@@ -79,6 +79,9 @@ class EntryManager
      */
     public function isEntry($tag): bool
     {
+        if (empty($tag)) {
+            return false;
+        }
         if (!isset($this->cachedEntriestags[$tag])) {
             $this->cachedEntriestags[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
         }
@@ -288,7 +291,7 @@ class EntryManager
         }
 
         if ($pFlags & self::VALIDATE_FLAG_BF_TITRE) {
-            if (!isset($data['bf_titre'])) {
+            if (empty($data['bf_titre'] ?? null)) {
                 throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
             }
         }
@@ -692,9 +695,12 @@ class EntryManager
         // Let's generate fiche id if necessary
 
         if (!isset($data['id_fiche'])) {
+            if (empty($data['bf_titre'] ?? null)) {
+                throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
+            }
             // Generate the ID from the title
             if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
-                throw new Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
+                throw new Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] (value: "' . $data['bf_titre'] . '") !');
             }
             // TODO see if we can remove this
             //$_POST['id_fiche'] = $data['id_fiche'];

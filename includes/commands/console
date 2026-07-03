@@ -16,7 +16,7 @@ $_SERVER['REQUEST_URI'] = $wakkaConfig['base_url'].$wakkaConfig['root_page'];
 $_SERVER['HTTP_HOST'] = parse_url($wakkaConfig['base_url'], PHP_URL_HOST);
 $_SERVER['REQUEST_METHOD'] = 'GET';
 // fake wiki page
-$_REQUEST['wiki'] = $wakkaConfig['root_page'];
+$_GET['wiki'] = $wakkaConfig['root_page'];
 
 // Load YesWiki
 require_once 'includes/YesWikiLoader.php';

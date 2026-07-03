@@ -111,10 +111,9 @@
               :disabled="updating">
             <i class="fa fa-trash"></i>
           </button>
-          {# TODO uncomment folowwing lines when restore will work #}
-          {# <button class="btn btn-xs btn-secondary-1" @click="restoreArchive(archive)" data-tooltip="toggle" title="{{ _t('RESTORE') }}">
-            <i class="fas fa-upload"></i>
-          </button> #}
+          <button class="btn btn-xs btn-warning" @click="restoreArchive(archive)" data-tooltip="toggle" :title="{{ _t('ADMIN_BACKUPS_RESTORE')|json_encode }}" :disabled="updating">
+            <i class="fas fa-undo-alt"></i>
+          </button>
         </div>
         <div class="archive-item" @click="toggleSelectedArchive(archive.filename)">
           <input 

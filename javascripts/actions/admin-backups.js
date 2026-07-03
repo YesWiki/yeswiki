@@ -175,16 +175,18 @@ const app = createApp({
       }
     },
     async restoreArchive(archive) {
-      // TODO update this part then restore will work
+      if (!confirm(_t('ADMIN_BACKUPS_RESTORE_CONFIRM', { filename: archive.filename }))) { return }
       this.updating = true
       this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE', { filename: archive.filename })
       this.messageClass = { alert: true, 'alert-info': true }
-      return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`), { action: 'restore', filename: archive.filename })
-        .then((data) => {
-          this.message = ''
-          return this.loadArchives()
+      return await this.fetchPost(wiki.url(`?api/archives/${archive.filename}`), { action: 'restore' })
+        .then(() => {
+          this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', { filename: archive.filename })
+          this.messageClass = { alert: true, 'alert-success': true }
+          toastMessage(_t('ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS', { filename: archive.filename }), 3000, 'alert alert-success')
+          setTimeout(() => { window.location.href = wiki.url(wiki.pageTag) }, 2000)
         })
-        .catch((pError) => {
+        .catch(() => {
           this.message = _t('ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR', { filename: archive.filename })
           this.messageClass = { alert: true, 'alert-danger': true }
           this.updating = false
