@@ -489,16 +489,18 @@ listes._
 2. si ça ne fonctionne pas :
    1. se rendre dans l'interface de gestion de base de données du serveur
       concerné (`phpmyadmin`)
-   2. ouvrir en même temps le fichier `setup/sql/create-tables.sql` depuis votre
-      wiki ([fichier à télécharger](setup/sql/create-tables.sql ':ignore'))
+   2. ouvrir en même temps le fichier `setup/sql/create-tables.sql.twig` depuis
+      votre wiki
+      ([fichier à télécharger](setup/sql/create-tables.sql.twig ':ignore'), la
+      partie du fichier propre à MySQL est celle du bloc `<% else %>`)
    3. vérifier dans la structure de chaque table de votre serveur (`phpmyadmin`)
       que chaque colonne est correctement définie.
    4. puis, dans cette ordre, modifier la colonne qui doit être en
       `AUTOINCREMENT` pour avoir `A.I.` cochée. Normalement, ceci corrige les
       soucis d'index pour la table concernée et définie la colonne comme
       primaire.
-   5. puis, pour les index (`KEY` dans le fichier `create-tables.sql`), définir
-      manuellement chaque index pour la table concernée
+   5. puis, pour les index (`KEY` dans le fichier `create-tables.sql.twig`),
+      définir manuellement chaque index pour la table concernée
    6. vérifier que l'affichage et la modification des fiches fonctionnes à
       nouveau
 

@@ -15,6 +15,7 @@ class DbService
     protected $link;
     protected $queryLog;
     protected $driver;
+    protected $readCache = [];
 
     public function __construct(ParameterBagInterface $params)
     {
@@ -38,16 +39,17 @@ class DbService
                 $password = $this->params->get('db_password');
             }
 
-            $this->link = new \PDO(
-                $dsn,
-                $username,
-                $password,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                ]
-            );
+            $options = [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ];
+            // PDO::connect() (PHP >= 8.4) returns a driver-specific subclass (e.g.
+            // Pdo\Sqlite), needed to call createFunction() without a deprecation
+            // notice. The minimum supported PHP version (8.3) doesn't have it.
+            $this->link = method_exists(PDO::class, 'connect')
+                ? PDO::connect($dsn, $username, $password, $options)
+                : new \PDO($dsn, $username, $password, $options);
             if (!$this->link) {
                 throw new Exception('Not connected to database');
             }
@@ -111,12 +113,20 @@ class DbService
                 // Enable foreign keys for SQLite
                 $this->link->exec('PRAGMA foreign_keys = ON');
                 // Add REGEXP function for SQLite (not built-in)
-                $this->link->sqliteCreateFunction('REGEXP', function ($pattern, $value) {
+                $regexp = function ($pattern, $value) {
                     if ($pattern === null || $value === null) {
                         return false;
                     }
                     return preg_match('/' . $pattern . '/iu', $value) === 1;
-                }, 2);
+                };
+                // PDO::sqliteCreateFunction() is deprecated since PHP 8.5 in favor of
+                // Pdo\Sqlite::createFunction() (available since PHP 8.4), but the minimum
+                // supported PHP version (8.3) only has the former.
+                if (method_exists($this->link, 'createFunction')) {
+                    $this->link->createFunction('REGEXP', $regexp, 2);
+                } else {
+                    $this->link->sqliteCreateFunction('REGEXP', $regexp, 2);
+                }
                 break;
 
             case 'pgsql':
@@ -212,6 +222,32 @@ class DbService
             default:
                 // MySQL needs JSON_UNQUOTE to get unquoted strings
                 return "JSON_UNQUOTE(JSON_EXTRACT($column, '$path'))";
+        }
+    }
+
+    /**
+     * Returns a SQL expression aggregating the distinct values of a column
+     * into a single comma-separated string, ordered by $orderBy.
+     * This is database-driver agnostic.
+     *
+     * @param string $column The column whose distinct values are aggregated
+     * @param string|null $orderBy The column to order values by (defaults to $column)
+     * @return string SQL expression
+     */
+    public function groupConcat(string $column, ?string $orderBy = null): string
+    {
+        $orderBy = $orderBy ?? $column;
+        switch ($this->driver) {
+            case 'pgsql':
+                return "STRING_AGG(DISTINCT $column, ',' ORDER BY $orderBy)";
+            case 'sqlite':
+                // SQLite's GROUP_CONCAT doesn't support ORDER BY, and DISTINCT
+                // cannot be combined with an explicit separator; it already
+                // defaults to ',' so the default separator is used here.
+                return "GROUP_CONCAT(DISTINCT $column)";
+            case 'mysql':
+            default:
+                return "GROUP_CONCAT(DISTINCT $column ORDER BY $orderBy SEPARATOR ',')";
         }
     }
 

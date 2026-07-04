@@ -25,7 +25,7 @@ class MigrateCommand extends Command
             ->setDescription('Run all pending migrations (after an upgrade)');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Starting migrations');
 

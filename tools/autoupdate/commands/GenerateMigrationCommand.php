@@ -28,7 +28,7 @@ class GenerateMigrationCommand extends Command
             ->addOption('tool', 't', InputOption::VALUE_REQUIRED, 'The name of the tool (otherwise migration created in root folder)');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $tool = $input->getOption('tool');
         $className = (!empty($tool) ? ucwords(strtolower($tool)) : '') . $input->getArgument('className');

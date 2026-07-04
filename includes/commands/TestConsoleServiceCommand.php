@@ -37,7 +37,7 @@ class TestConsoleServiceCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $file = $input->getOption('file');
         if (!empty($file)) {

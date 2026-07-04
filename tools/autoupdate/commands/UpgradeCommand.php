@@ -27,7 +27,7 @@ class UpgradeCommand extends Command
             ->setDescription('Upgrade the wiki, or a specific extension if package name is provided');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $package = $input->getArgument('package');
 

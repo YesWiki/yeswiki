@@ -41,7 +41,7 @@ class DbCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $isTest = $input->getOption('test');
         $filepath = $input->getOption('filepath');

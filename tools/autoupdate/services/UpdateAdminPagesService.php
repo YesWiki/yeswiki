@@ -42,7 +42,8 @@ class UpdateAdminPagesService
     public function update(array $adminPagesToUpdate): Messages
     {
         $messages = new Messages();
-        $defaultSQL = file_get_contents('setup/sql/default-content.sql');
+        require_once 'setup/install.helpers.php';
+        $defaultSQL = ltrim(renderSqlTwigTemplate('setup/sql/default-content.sql.twig', ['driver' => 'mysql']));
         $defaultSQLSplittedByBlock = explode('INSERT INTO', $defaultSQL);
         $blocks = [];
         for ($i = 1; $i < count($defaultSQLSplittedByBlock); $i++) {

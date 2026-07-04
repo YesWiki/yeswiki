@@ -11,7 +11,6 @@ use YesWiki\Wiki;
 
 class ImageOptimizerCommand extends Command
 {
-    protected static $defaultName = 'core:image-optimize';
     protected $wiki;
 
     public function __construct(Wiki &$wiki)
@@ -23,12 +22,13 @@ class ImageOptimizerCommand extends Command
     protected function configure()
     {
         $this
+            ->setName('core:image-optimize')
             ->setDescription('Optimise all images.')
             ->setHelp('Convert all the image files to some decent size and format.')
             ->addOption('forcewebp', 'f', InputOption::VALUE_NONE, 'Convert to webp format');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $optimizerChain = OptimizerChainFactory::create();
         $toWebp = $input->getOption('forcewebp');

@@ -47,6 +47,10 @@ function myLocation()
 /**
  * Render a Twig SQL template file.
  *
+ * YesWiki's own template syntax ({{ }} and {# #}) is used verbatim inside the
+ * SQL content (default page content), so Twig is configured with different
+ * delimiters ([[ ]] / <% %> / <# #>) to avoid parsing that content as Twig.
+ *
  * @param string $templateFile Path to the .sql.twig template file
  * @param array  $variables    Variables to pass to the template
  * @return string The rendered SQL content
@@ -62,36 +66,87 @@ function renderSqlTwigTemplate($templateFile, $variables = [])
     $twig = new \Twig\Environment($loader, [
         'autoescape' => false, // SQL templates should not be HTML-escaped
     ]);
+    $twig->setLexer(new \Twig\Lexer($twig, [
+        'tag_comment' => ['<#', '#>'],
+        'tag_block' => ['<%', '%>'],
+        'tag_variable' => ['[[', ']]'],
+        'interpolation' => ['#{', '}'],
+    ]));
 
     return $twig->render($templateName, $variables);
 }
 
 /**
- * Execute a SQL file (plain or Twig template) on the database.
+ * Split a SQL script into individual statements, respecting single-quoted
+ * string literals (including '' escaped quotes) so that semicolons inside
+ * string values are not mistaken for statement separators.
+ *
+ * @param string $sql
+ * @return string[]
+ */
+function splitSqlStatements($sql)
+{
+    $statements = [];
+    $current = '';
+    $inString = false;
+    $length = strlen($sql);
+    for ($i = 0; $i < $length; $i++) {
+        $char = $sql[$i];
+        $current .= $char;
+        if ($char === "'") {
+            if ($inString && ($sql[$i + 1] ?? '') === "'") {
+                $current .= "'";
+                ++$i;
+                continue;
+            }
+            $inString = !$inString;
+            continue;
+        }
+        if ($char === ';' && !$inString) {
+            $statements[] = $current;
+            $current = '';
+        }
+    }
+    if (trim($current) !== '') {
+        $statements[] = $current;
+    }
+
+    return array_values(array_filter(array_map('trim', $statements), function ($statement) {
+        return $statement !== '';
+    }));
+}
+
+/**
+ * Render a .sql.twig template for the given driver, substitute the
+ * {{keyword}} placeholders (prefix, WikiName, password, email, rootPage,
+ * url...) and execute the resulting statements on the database.
  *
  * @param PDO    $dblink       Database connection
- * @param string $sqlFile      Path to .sql or .sql.twig file
- * @param array  $replacements Variables/replacements for the template
+ * @param string $sqlFile      Path to the .sql.twig file
+ * @param array  $replacements Values for the {{keyword}} placeholders
  * @param string $driver       Database driver ('mysql', 'sqlite', 'pgsql')
  * @return bool Success status
  */
 function querySqlFile($dblink, $sqlFile, $replacements = [], $driver = 'mysql')
 {
-    // Check if a Twig template version exists
-    $twigFile = $sqlFile . '.twig';
-    if (file_exists($twigFile)) {
-        // Use Twig template
-        $variables = array_merge($replacements, ['driver' => $driver]);
-
-        // Escape values for SQL (but not for Twig processing)
-        foreach ($variables as $key => $value) {
-            if (is_string($value) && $key !== 'driver') {
-                $quoted = $dblink->quote($value);
-                $variables[$key] = substr($quoted, 1, -1); // Remove surrounding quotes
-            }
-        }
-
-        return true;
+    if (!file_exists($sqlFile)) {
+        exit(_t('SQL_FILE_NOT_FOUND') . ' "' . $sqlFile . '".');
     }
-    exit(_t('SQL_FILE_NOT_FOUND') . ' "' . $sqlFile . '".');
+
+    $sql = renderSqlTwigTemplate($sqlFile, ['driver' => $driver]);
+
+    foreach ($replacements as $keyword => $value) {
+        $quoted = $dblink->quote((string) $value);
+        $sql = str_replace('{{' . $keyword . '}}', substr($quoted, 1, -1), $sql);
+    }
+
+    try {
+        foreach (splitSqlStatements($sql) as $statement) {
+            $dblink->exec($statement);
+        }
+    } catch (\PDOException $e) {
+        return false;
+    }
+
+    return true;
 }

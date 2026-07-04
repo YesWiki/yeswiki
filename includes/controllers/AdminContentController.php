@@ -4,7 +4,7 @@ namespace YesWiki\Core\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
@@ -32,9 +32,7 @@ class AdminContentController extends YesWikiController
     // GET /api/admin/pages  –  returns an HTML fragment (table + pagination)
     // -------------------------------------------------------------------------
 
-    /**
-     * @Route("/api/admin/pages", methods={"GET"}, options={"acl":{"@admins"}})
-     */
+    #[Route('/api/admin/pages', methods: ['GET'], options: ['acl' => ['@admins']])]
     public function getPages(Request $request): Response
     {
         $this->denyAccessUnlessAdmin();
@@ -55,6 +53,8 @@ class AdminContentController extends YesWikiController
         $trT = $dbService->prefixTable('triples');
         $tagProp = self::TAG_PROPERTY;
         $typeProp = self::TYPE_PROPERTY;
+        $idTypeAnnonceExpr = $dbService->jsonExtract('p.body', '$.id_typeannonce');
+        $tagsAggExpr = $dbService->groupConcat('tg.value');
         $metaProp = self::METADATA_PROPERTY;
 
         $sql = <<<SQL
@@ -70,10 +70,10 @@ class AdminContentController extends YesWikiController
                 tp.value AS page_type,
                 MIN(CASE
                     WHEN tp.value = 'fiche_bazar' THEN
-                        SUBSTRING_INDEX(SUBSTRING(p.body, LOCATE('"id_typeannonce":"', p.body) + 18), '"', 1)
+                        {$idTypeAnnonceExpr}
                     ELSE NULL
                 END) AS form_id,
-                GROUP_CONCAT(DISTINCT tg.value ORDER BY tg.value SEPARATOR ',') AS page_tags,
+                {$tagsAggExpr} AS page_tags,
                 MAX(tm.value) AS page_metadata
             FROM {$pT} p
             LEFT JOIN {$aT} a_r ON a_r.page_tag = p.tag AND a_r.privilege = 'read'
@@ -163,9 +163,7 @@ class AdminContentController extends YesWikiController
     // POST /api/admin/pages/bulk  –  execute a bulk operation
     // -------------------------------------------------------------------------
 
-    /**
-     * @Route("/api/admin/pages/bulk", methods={"POST"}, options={"acl":{"@admins"}})
-     */
+    #[Route('/api/admin/pages/bulk', methods: ['POST'], options: ['acl' => ['@admins']])]
     public function bulkAction(Request $request): Response
     {
         $this->denyAccessUnlessAdmin();
@@ -393,7 +391,7 @@ class AdminContentController extends YesWikiController
         if ($tagFilter !== '') {
             $escaped = $db->escape($tagFilter);
             // tag filter uses the already-joined tg alias, so use HAVING
-            $having = "HAVING GROUP_CONCAT(DISTINCT tg.value ORDER BY tg.value SEPARATOR ',') LIKE '%{$escaped}%'";
+            $having = "HAVING {$db->groupConcat('tg.value')} LIKE '%{$escaped}%'";
         }
 
         $aclCondition = $this->buildAclFilterCondition($db, $aclFilter);
@@ -438,11 +436,12 @@ class AdminContentController extends YesWikiController
             return null;
         }
         $col = $aclCols[$privilege];
-        // Escape MySQL REGEXP metacharacters, then escape for SQL
+        // Escape REGEXP metacharacters, then escape for SQL
         $regexpEscaped = $db->escape(preg_replace('/([.+*?\\[\\]^$(){}|\\\\])/', '\\\\$1', $value));
+        $regexpOperator = $db->regexpOperator();
 
         // Match value as a complete line within the ACL text
-        return "({$col} REGEXP '(^|\\n|\\r){$regexpEscaped}(\\n|\\r|$)')";
+        return "({$col} {$regexpOperator} '(^|\\n|\\r){$regexpEscaped}(\\n|\\r|$)')";
     }
 
     private function filterCommentAcl(string $list): string

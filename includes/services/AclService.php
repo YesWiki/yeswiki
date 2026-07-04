@@ -71,7 +71,7 @@ class AclService
             $this->cache[$tag] = [];
         }
 
-        $res = $this->dbService->loadAll('SELECT * FROM' . $this->dbService->prefixTable('acls') . 'WHERE page_tag = "' . $this->dbService->escape($tag) . '"');
+        $res = $this->dbService->loadAll('SELECT * FROM' . $this->dbService->prefixTable('acls') . "WHERE page_tag = '" . $this->dbService->escape($tag) . "'");
 
         foreach ($res as $acl) {
             $this->cache[$tag][$acl['privilege']] = $acl;
@@ -132,15 +132,15 @@ class AclService
             $privileges = [$privileges];
         }
 
-        // Add '"' at begin and end of each escaped privileges elements.
+        // Add "'" at begin and end of each escaped privileges elements.
         for ($i = 0; $i < count($privileges); $i++) {
-            $privileges[$i] = '"' . $this->dbService->escape($privileges[$i]) . '"';
+            $privileges[$i] = "'" . $this->dbService->escape($privileges[$i]) . "'";
         }
 
         // Construct a CSV string with privileges elements
         $privileges = implode(',', $privileges);
 
-        $this->dbService->query('DELETE FROM' . $this->dbService->prefixTable('acls') . ' WHERE page_tag = "' . $this->dbService->escape($tag) . '" AND privilege IN (' . $privileges . ')');
+        $this->dbService->query('DELETE FROM' . $this->dbService->prefixTable('acls') . " WHERE page_tag = '" . $this->dbService->escape($tag) . "' AND privilege IN (" . $privileges . ')');
 
         if (isset($this->cache[$tag])) {
             unset($this->cache[$tag]);
@@ -343,14 +343,14 @@ class AclService
             $newRequestEnd = ')' . $newRequestEnd;
 
             $newRequestStart .= 'tag NOT IN (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
-            'WHERE privilege="read")';
+            "WHERE privilege='read')";
 
             $newRequestStart .= ' OR (';
             $newRequestEnd = ')' . $newRequestEnd;
         }
         // construct new request when acl
         $newRequestStart .= 'tag in (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
-            'WHERE privilege="read"';
+            "WHERE privilege='read'";
         $newRequestEnd = ')' . $newRequestEnd;
 
         // needed ACL

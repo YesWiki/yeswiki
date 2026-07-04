@@ -1,39 +1,43 @@
-{# Unified SQL template for creating YesWiki tables #}
-{# Works with MySQL, SQLite, and PostgreSQL #}
-{# Variable 'driver' must be one of: 'mysql', 'sqlite', 'pgsql' #}
+<# Unified SQL template for creating YesWiki tables. #>
+<# Works with MySQL, SQLite, and PostgreSQL. #>
+<# Variable driver must be one of: mysql, sqlite, pgsql. #>
+<# Custom Twig delimiters are used here, matching default-content.sql.twig, #>
+<# because that other template embeds YesWiki own templating syntax verbatim. #>
+<% set q = driver == 'mysql' ? '`' : '"' %>
+<% set now = driver == 'sqlite' ? "datetime('now')" : 'NOW()' %>
 
-{# Table: acls #}
-CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}acls`{% else %}"{{ prefix }}acls"{% endif %} (
-  {% if driver == 'mysql' %}`page_tag`{% else %}"page_tag"{% endif %} {% if driver == 'sqlite' %}TEXT{% else %}VARCHAR(191){% endif %} NOT NULL,
-  {% if driver == 'mysql' %}`privilege`{% else %}"privilege"{% endif %} {% if driver == 'sqlite' %}TEXT{% else %}VARCHAR(20){% endif %} NOT NULL,
-  {% if driver == 'mysql' %}`list`{% else %}"list"{% endif %} TEXT NOT NULL,
-  PRIMARY KEY ({% if driver == 'mysql' %}`page_tag`, `privilege`{% else %}"page_tag", "privilege"{% endif %})
-){% if driver == 'mysql' %} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB{% endif %};
+<# Table: acls #>
+CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}acls[[ q ]] (
+  [[ q ]]page_tag[[ q ]] <% if driver == 'sqlite' %>TEXT<% else %>VARCHAR(191)<% endif %> NOT NULL,
+  [[ q ]]privilege[[ q ]] <% if driver == 'sqlite' %>TEXT<% else %>VARCHAR(20)<% endif %> NOT NULL,
+  [[ q ]]list[[ q ]] TEXT NOT NULL,
+  PRIMARY KEY ([[ q ]]page_tag[[ q ]], [[ q ]]privilege[[ q ]])
+)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 
-{# Table: links #}
-CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}links`{% else %}"{{ prefix }}links"{% endif %} (
-{% if driver == 'sqlite' %}
+<# Table: links #>
+CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}links[[ q ]] (
+<% if driver == 'sqlite' %>
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "from_tag" TEXT NOT NULL,
   "to_tag" TEXT NOT NULL,
   UNIQUE ("from_tag", "to_tag")
-{% elseif driver == 'pgsql' %}
+<% elseif driver == 'pgsql' %>
   "id" SERIAL PRIMARY KEY,
   "from_tag" VARCHAR(191) NOT NULL,
   "to_tag" VARCHAR(191) NOT NULL,
   UNIQUE ("from_tag", "to_tag")
-{% else %}
+<% else %>
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `from_tag` VARCHAR(191) NOT NULL,
   `to_tag` VARCHAR(191) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `from_tag` (`from_tag`, `to_tag`)
-{% endif %}
-){% if driver == 'mysql' %} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB{% endif %};
+<% endif %>
+)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 
-{# Table: nature (forms) #}
-CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}nature`{% else %}"{{ prefix }}nature"{% endif %} (
-{% if driver == 'sqlite' %}
+<# Table: nature (forms) #>
+CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}nature[[ q ]] (
+<% if driver == 'sqlite' %>
   "bn_id_nature" INTEGER PRIMARY KEY AUTOINCREMENT,
   "bn_label_nature" TEXT DEFAULT NULL,
   "bn_description" TEXT DEFAULT NULL,
@@ -45,7 +49,7 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}nature`{% else
   "bn_ce_i18n" TEXT NOT NULL,
   "bn_only_one_entry" TEXT NOT NULL DEFAULT 'N' CHECK("bn_only_one_entry" IN ('Y', 'N')),
   "bn_only_one_entry_message" TEXT DEFAULT NULL
-{% elseif driver == 'pgsql' %}
+<% elseif driver == 'pgsql' %>
   "bn_id_nature" SERIAL PRIMARY KEY,
   "bn_label_nature" VARCHAR(255) DEFAULT NULL,
   "bn_description" TEXT DEFAULT NULL,
@@ -57,7 +61,7 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}nature`{% else
   "bn_ce_i18n" VARCHAR(5) NOT NULL,
   "bn_only_one_entry" VARCHAR(1) NOT NULL DEFAULT 'N' CHECK("bn_only_one_entry" IN ('Y', 'N')),
   "bn_only_one_entry_message" TEXT DEFAULT NULL
-{% else %}
+<% else %>
   `bn_id_nature` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `bn_label_nature` VARCHAR(255) DEFAULT NULL,
   `bn_description` TEXT DEFAULT NULL,
@@ -70,12 +74,12 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}nature`{% else
   `bn_only_one_entry` ENUM('Y','N') NOT NULL DEFAULT 'N',
   `bn_only_one_entry_message` TEXT DEFAULT NULL,
   PRIMARY KEY (`bn_id_nature`)
-{% endif %}
-){% if driver == 'mysql' %} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB{% endif %};
+<% endif %>
+)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 
-{# Table: pages #}
-CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}pages`{% else %}"{{ prefix }}pages"{% endif %} (
-{% if driver == 'sqlite' %}
+<# Table: pages #>
+CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
+<% if driver == 'sqlite' %>
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "tag" TEXT NOT NULL,
   "time" TEXT NOT NULL,
@@ -86,7 +90,7 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}pages`{% else 
   "latest" TEXT NOT NULL DEFAULT 'N' CHECK("latest" IN ('Y', 'N')),
   "handler" TEXT NOT NULL DEFAULT 'page',
   "comment_on" TEXT NOT NULL DEFAULT ''
-{% elseif driver == 'pgsql' %}
+<% elseif driver == 'pgsql' %>
   "id" SERIAL PRIMARY KEY,
   "tag" VARCHAR(191) NOT NULL,
   "time" TIMESTAMP NOT NULL,
@@ -97,7 +101,7 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}pages`{% else 
   "latest" VARCHAR(1) NOT NULL DEFAULT 'N' CHECK("latest" IN ('Y', 'N')),
   "handler" VARCHAR(30) NOT NULL DEFAULT 'page',
   "comment_on" VARCHAR(191) NOT NULL DEFAULT ''
-{% else %}
+<% else %>
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `tag` VARCHAR(191) NOT NULL,
   `time` DATETIME NOT NULL,
@@ -114,29 +118,29 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}pages`{% else 
   KEY `idx_latest` (`latest`),
   KEY `idx_comment_on` (`comment_on`),
   FULLTEXT KEY `tag` (`tag`, `body`)
-{% endif %}
-){% if driver == 'mysql' %} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB{% endif %};
+<% endif %>
+)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 
-{% if driver != 'mysql' %}
-CREATE INDEX IF NOT EXISTS "{{ prefix }}pages_idx_tag" ON "{{ prefix }}pages" ("tag");
-CREATE INDEX IF NOT EXISTS "{{ prefix }}pages_idx_time" ON "{{ prefix }}pages" ("time");
-CREATE INDEX IF NOT EXISTS "{{ prefix }}pages_idx_latest" ON "{{ prefix }}pages" ("latest");
-CREATE INDEX IF NOT EXISTS "{{ prefix }}pages_idx_comment_on" ON "{{ prefix }}pages" ("comment_on");
-{% endif %}
+<% if driver != 'mysql' %>
+CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_tag" ON "{{prefix}}pages" ("tag");
+CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_time" ON "{{prefix}}pages" ("time");
+CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_latest" ON "{{prefix}}pages" ("latest");
+CREATE INDEX IF NOT EXISTS "{{prefix}}pages_idx_comment_on" ON "{{prefix}}pages" ("comment_on");
+<% endif %>
 
-{# Table: referrers #}
-CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}referrers`{% else %}"{{ prefix }}referrers"{% endif %} (
-{% if driver == 'sqlite' %}
+<# Table: referrers #>
+CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}referrers[[ q ]] (
+<% if driver == 'sqlite' %>
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "page_tag" TEXT NOT NULL,
   "referrer" TEXT NOT NULL,
   "time" TEXT NOT NULL
-{% elseif driver == 'pgsql' %}
+<% elseif driver == 'pgsql' %>
   "id" SERIAL PRIMARY KEY,
   "page_tag" VARCHAR(191) NOT NULL,
   "referrer" TEXT NOT NULL,
   "time" TIMESTAMP NOT NULL
-{% else %}
+<% else %>
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `page_tag` VARCHAR(191) NOT NULL,
   `referrer` TEXT NOT NULL,
@@ -144,27 +148,27 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}referrers`{% e
   PRIMARY KEY (`id`),
   KEY `idx_page_tag` (`page_tag`),
   KEY `idx_time` (`time`)
-{% endif %}
-){% if driver == 'mysql' %} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB{% endif %};
+<% endif %>
+)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 
-{% if driver != 'mysql' %}
-CREATE INDEX IF NOT EXISTS "{{ prefix }}referrers_idx_page_tag" ON "{{ prefix }}referrers" ("page_tag");
-CREATE INDEX IF NOT EXISTS "{{ prefix }}referrers_idx_time" ON "{{ prefix }}referrers" ("time");
-{% endif %}
+<% if driver != 'mysql' %>
+CREATE INDEX IF NOT EXISTS "{{prefix}}referrers_idx_page_tag" ON "{{prefix}}referrers" ("page_tag");
+CREATE INDEX IF NOT EXISTS "{{prefix}}referrers_idx_time" ON "{{prefix}}referrers" ("time");
+<% endif %>
 
-{# Table: triples #}
-CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}triples`{% else %}"{{ prefix }}triples"{% endif %} (
-{% if driver == 'sqlite' %}
+<# Table: triples #>
+CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}triples[[ q ]] (
+<% if driver == 'sqlite' %>
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "resource" TEXT NOT NULL,
   "property" TEXT NOT NULL,
   "value" TEXT NOT NULL
-{% elseif driver == 'pgsql' %}
+<% elseif driver == 'pgsql' %>
   "id" SERIAL PRIMARY KEY,
   "resource" VARCHAR(255) NOT NULL,
   "property" VARCHAR(255) NOT NULL,
   "value" TEXT NOT NULL
-{% else %}
+<% else %>
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `resource` VARCHAR(255) NOT NULL,
   `property` VARCHAR(255) NOT NULL,
@@ -172,17 +176,17 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}triples`{% els
   PRIMARY KEY (`id`),
   KEY `resource` (`resource`),
   KEY `property` (`property`)
-{% endif %}
-){% if driver == 'mysql' %} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB{% endif %};
+<% endif %>
+)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 
-{% if driver != 'mysql' %}
-CREATE INDEX IF NOT EXISTS "{{ prefix }}triples_idx_resource" ON "{{ prefix }}triples" ("resource");
-CREATE INDEX IF NOT EXISTS "{{ prefix }}triples_idx_property" ON "{{ prefix }}triples" ("property");
-{% endif %}
+<% if driver != 'mysql' %>
+CREATE INDEX IF NOT EXISTS "{{prefix}}triples_idx_resource" ON "{{prefix}}triples" ("resource");
+CREATE INDEX IF NOT EXISTS "{{prefix}}triples_idx_property" ON "{{prefix}}triples" ("property");
+<% endif %>
 
-{# Table: users #}
-CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}users`{% else %}"{{ prefix }}users"{% endif %} (
-{% if driver == 'sqlite' %}
+<# Table: users #>
+CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}users[[ q ]] (
+<% if driver == 'sqlite' %>
   "name" TEXT NOT NULL PRIMARY KEY,
   "password" TEXT NOT NULL,
   "email" TEXT NOT NULL,
@@ -192,7 +196,7 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}users`{% else 
   "doubleclickedit" TEXT NOT NULL DEFAULT 'Y' CHECK("doubleclickedit" IN ('Y', 'N')),
   "signuptime" TEXT NOT NULL,
   "show_comments" TEXT NOT NULL DEFAULT 'N' CHECK("show_comments" IN ('Y', 'N'))
-{% elseif driver == 'pgsql' %}
+<% elseif driver == 'pgsql' %>
   "name" VARCHAR(80) NOT NULL PRIMARY KEY,
   "password" VARCHAR(256) NOT NULL,
   "email" VARCHAR(191) NOT NULL,
@@ -202,7 +206,7 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}users`{% else 
   "doubleclickedit" VARCHAR(1) NOT NULL DEFAULT 'Y' CHECK("doubleclickedit" IN ('Y', 'N')),
   "signuptime" TIMESTAMP NOT NULL,
   "show_comments" VARCHAR(1) NOT NULL DEFAULT 'N' CHECK("show_comments" IN ('Y', 'N'))
-{% else %}
+<% else %>
   `name` VARCHAR(80) NOT NULL,
   `password` VARCHAR(256) NOT NULL,
   `email` VARCHAR(191) NOT NULL,
@@ -215,25 +219,25 @@ CREATE TABLE IF NOT EXISTS {% if driver == 'mysql' %}`{{ prefix }}users`{% else 
   PRIMARY KEY (`name`),
   KEY `idx_name` (`name`),
   KEY `idx_signuptime` (`signuptime`)
-{% endif %}
-){% if driver == 'mysql' %} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB{% endif %};
+<% endif %>
+)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 
-{% if driver != 'mysql' %}
-CREATE INDEX IF NOT EXISTS "{{ prefix }}users_idx_name" ON "{{ prefix }}users" ("name");
-CREATE INDEX IF NOT EXISTS "{{ prefix }}users_idx_signuptime" ON "{{ prefix }}users" ("signuptime");
-{% endif %}
+<% if driver != 'mysql' %>
+CREATE INDEX IF NOT EXISTS "{{prefix}}users_idx_name" ON "{{prefix}}users" ("name");
+CREATE INDEX IF NOT EXISTS "{{prefix}}users_idx_signuptime" ON "{{prefix}}users" ("signuptime");
+<% endif %>
 
-{# Insert admin group and user #}
-{% if driver == 'mysql' %}
-INSERT INTO `{{ prefix }}triples` (`id`, `resource`, `property`, `value`) VALUES
-(1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{ WikiName }}');
+<# Insert admin group and user #>
+<% if driver == 'mysql' %>
+INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]id[[ q ]], [[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
+(1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
-INSERT INTO `{{ prefix }}users` (`name`, `password`, `email`, `motto`, `revisioncount`, `changescount`, `doubleclickedit`, `signuptime`, `show_comments`) VALUES
-('{{ WikiName }}', '{{ password }}', '{{ email }}', '', 20, 50, 'Y', NOW(), 'N');
-{% else %}
-INSERT INTO "{{ prefix }}triples" ("resource", "property", "value") VALUES
-('ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{ WikiName }}');
+INSERT INTO [[ q ]]{{prefix}}users[[ q ]] ([[ q ]]name[[ q ]], [[ q ]]password[[ q ]], [[ q ]]email[[ q ]], [[ q ]]motto[[ q ]], [[ q ]]revisioncount[[ q ]], [[ q ]]changescount[[ q ]], [[ q ]]doubleclickedit[[ q ]], [[ q ]]signuptime[[ q ]], [[ q ]]show_comments[[ q ]]) VALUES
+('{{WikiName}}', '{{password}}', '{{email}}', '', 20, 50, 'Y', [[ now ]], 'N');
+<% else %>
+INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
+('ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
-INSERT INTO "{{ prefix }}users" ("name", "password", "email", "motto", "revisioncount", "changescount", "doubleclickedit", "signuptime", "show_comments") VALUES
-('{{ WikiName }}', '{{ password }}', '{{ email }}', '', 20, 50, 'Y', {% if driver == 'sqlite' %}datetime('now'){% else %}NOW(){% endif %}, 'N');
-{% endif %}
+INSERT INTO [[ q ]]{{prefix}}users[[ q ]] ([[ q ]]name[[ q ]], [[ q ]]password[[ q ]], [[ q ]]email[[ q ]], [[ q ]]motto[[ q ]], [[ q ]]revisioncount[[ q ]], [[ q ]]changescount[[ q ]], [[ q ]]doubleclickedit[[ q ]], [[ q ]]signuptime[[ q ]], [[ q ]]show_comments[[ q ]]) VALUES
+('{{WikiName}}', '{{password}}', '{{email}}', '', 20, 50, 'Y', [[ now ]], 'N');
+<% endif %>

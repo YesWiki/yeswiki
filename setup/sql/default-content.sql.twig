@@ -1,9 +1,20 @@
--- YesWiki pages
-INSERT INTO "{{prefix}}pages" ("tag", "time", "body", "body_r", "owner", "user", "latest", "handler", "comment_on") VALUES
-('AnnuaireAlpha',  datetime('now'), '{{nav links="TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire" titles="Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S''inscrire dans l''annuaire"}}
+<# Unified SQL template for default YesWiki content (pages, forms, demo entries). #>
+<# Works with MySQL, SQLite, and PostgreSQL. #>
+<# Variable driver must be one of: mysql, sqlite, pgsql. #>
+<# Custom Twig delimiters are used here because YesWiki own templating syntax is #>
+<# embedded verbatim in the page content below and must not be parsed by Twig. #>
+<# The double curly brace placeholders below, prefix, WikiName, rootPage, url and #>
+<# so on, are resolved afterwards by querySqlFile through plain string replacement. #>
+<% set q = driver == 'mysql' ? '`' : '"' %>
+<% set now = driver == 'sqlite' ? "datetime('now')" : 'now()' %>
+<% set cmt = driver == 'mysql' ? '#' : '--' %>
+
+[[ cmt ]] YesWiki pages
+INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]body_r[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]handler[[ q ]], [[ q ]]comment_on[[ q ]]) VALUES
+('AnnuaireAlpha',  [[ now ]], '{{nav links="TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire" titles="Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S''inscrire dans l''annuaire"}}
 
 {{bazarliste id="1" template="annuaire_alphabetique"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('BacASable',  datetime('now'), '# Bac à sable
+('BacASable',  [[ now ]], '# Bac à sable
 ## Premiers défis à réaliser
 1) premier défi => **écrire dans cette page**
   - cliquez sur "éditer la page" (en bas) ou double cliquez dans la page,
@@ -47,12 +58,12 @@ INSERT INTO "{{prefix}}pages" ("tag", "time", "body", "body_r", "owner", "user",
   - ensuite transformer "retour vers la page d''accueil" en un lien cliquable vers cette page
 
 Une aide simple est aisément accessible en cliquant sur l''icone "?" lorsque vous êtes en mode édition.', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('BazaR',  datetime('now'), '{{bazar showexportbuttons="1"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('CartoAnnuaire',  datetime('now'), '{{nav links="TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire" titles="Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S''inscrire dans l''annuaire"}}
+('BazaR',  [[ now ]], '{{bazar showexportbuttons="1"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('CartoAnnuaire',  [[ now ]], '{{nav links="TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire" titles="Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S''inscrire dans l''annuaire"}}
 
 {{bazarliste id="1" template="map" markersize="small" height="800px" zoom="6"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('DerniersChangementsRSS',  datetime('now'), '{{recentchangesrss}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('ExempleFormulaire',  datetime('now'), '# Exemples de formulaires à adapter (ou à jeter)
+('DerniersChangementsRSS',  [[ now ]], '{{recentchangesrss}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('ExempleFormulaire',  [[ now ]], '# Exemples de formulaires à adapter (ou à jeter)
 Les formulaires qui vous sont proposés dans ce menu sont souvent demandés par les collectifs.
 Ils sont fournis pour inspiration et __sont bien sûr adaptables (ou supprimables)__ via la page BazaR.
 Vous pouvez aussi renommer-réorganiser-enlever les pages de ce menu selon vos besoins. 
@@ -62,37 +73,37 @@ Vous trouverez un formulaire permettant
  - un [agenda](VueActivite) pour présenter les activités __à venir__ ou une vue globale en calendrier
  - une [ressourcerie](FacetteRessource) pour collecter, filtrer et partager des ressources
  - un [blog](VoirBlog) permettant d''afficher l''actualité du collectif', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('FacetteRessource',  datetime('now'), '{{nav links="FacetteRessource, SaisirRessource" titles="Les ressources, Déposer une ressource"}}
+('FacetteRessource',  [[ now ]], '{{nav links="FacetteRessource, SaisirRessource" titles="Les ressources, Déposer une ressource"}}
 
 {{bazarliste id="4" template="liste_accordeon" correspondance="soustitre=bf_description" groups="bf_type" titles="Tri par type" voirmenu="0" vue="recherche" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererConfig',  datetime('now'), '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
+('GererConfig',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
 {{editconfig}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererDroits',  datetime('now'), '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
+('GererDroits',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
 {{button class="btn-primary btn-xs pull-right" hideifnoaccess="true" icon="fas fa-arrow-right" link="GererDroitsActions" text="Droits des actions/handlers" }}
 #### Gérer les droits des pages
 {{gererdroits}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererDroitsActions',  datetime('now'), '//Droits d''accès//
+('GererDroitsActions',  [[ now ]], '//Droits d''accès//
 {{nav class="nav nav-tabs" hideifnoaccess="true" links="GererDroitsActions, GererDroitsHandlers, GererDroits" titles="Actions, Handlers, Pages" }}
 
 #### Droits d''accès aux actions
 
 {{editactionsacls}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererDroitsHandlers',  datetime('now'), '//Droits d''accès//
+('GererDroitsHandlers',  [[ now ]], '//Droits d''accès//
 {{nav class="nav nav-tabs" hideifnoaccess="true" links="GererDroitsActions, GererDroitsHandlers, GererDroits" titles="Actions, Handlers, Pages" }}
 
 #### Droits d''accès aux handlers
 
 {{edithandlersacls}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererMisesAJour',  datetime('now'), '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
+('GererMisesAJour',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
 #### Mises à jour / extensions
 {{update}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererSauvegardes',  datetime('now'), '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
+('GererSauvegardes',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
 {{adminbackups}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererSite',  datetime('now'), '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
+('GererSite',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
 {{attach file="modele.jpg" desc="image Dessin_sans_titre.jpg (66.9kB)" size="big" class="right" nofullimagelink="1"}}
 #### Gérer les menus et pages spéciales de ce wiki
@@ -108,7 +119,7 @@ Vous trouverez un formulaire permettant
 ""<div class="clearfix"></div>""
 #### Gestion des mots clés 
 {{admintag}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererThemes',  datetime('now'), '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
+('GererThemes',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
 {{button class="btn-info" link="LookWiki" text="Personnaliser le look de ce wiki (couleurs, police...)" }}
 {{button class="btn-info pull-right" link="PageCss" text="Ajouter du code CSS (zone sensible)" title="Cette page ne peut contenir QUE du Css / voir le document" }}
@@ -120,14 +131,14 @@ Vous trouverez un formulaire permettant
 -----
 #### Gérer le thème par défaut du wiki
 {{setwikidefaulttheme}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('GererUtilisateurs',  datetime('now'), '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
+('GererUtilisateurs',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
 #### Gérer les groupes d''utilisateurices
 {{editgroups}}
 
 #### Gérer les utilisateurices
 {{userstable}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('LookWiki',  datetime('now'), '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
+('LookWiki',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
 {{button class="btn-info btn-block" link="LookWiki" text="Personnaliser le thème de ce wiki (couleurs, police...)" }}
 {{button class="btn-default btn-block" link="PageCss" text="Ajouter du code CSS (zone sensible)" title="Cette page ne peut contenir QUE du Css / voir le document" }}
@@ -221,7 +232,7 @@ Contenu panel-warning
 Contenu panel-danger
 {{end elem="panel"}}
 {{end elem="accordion"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('MesContenus',  datetime('now'), '# Mes contenus
+('MesContenus',  [[ now ]], '# Mes contenus
 {{accordion }}
 {{panel title="Mes paramètres"}}
 {{UserSettings}}
@@ -248,9 +259,9 @@ Contenu panel-danger
 {{usercomments}}
 {{end elem="panel"}}
 {{end elem="accordion"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('MotDePassePerdu',  datetime('now'), '{{lostpassword}}
+('MotDePassePerdu',  [[ now ]], '{{lostpassword}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageColonneDroite',  datetime('now'), 'Double cliquer sur ce texte pour éditer cette colonne.
+('PageColonneDroite',  [[ now ]], 'Double cliquer sur ce texte pour éditer cette colonne.
 
 
 
@@ -264,7 +275,7 @@ Contenu panel-danger
 
 """"
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageCss',  datetime('now'), '/*
+('PageCss',  [[ now ]], '/*
 Voici un exemple de css custom pour le theme margot, il agit sur les variables css non personnalisables dans le theme et permet de faire des css sur mesure.
 Chaque ligne ci-dessous est à décommenter pour etre utilisée
 Pour en savoir plus, <a href="?doc#/docs/fr/admin?id=ajouter-du-code-css-personnalis%c3%a9">voyez la documentation à ce sujet</a>.
@@ -339,10 +350,10 @@ Pour en savoir plus, <a href="?doc#/docs/fr/admin?id=ajouter-du-code-css-personn
 /* --checkbox-color: var(--primary-color); */
 
 /* } */', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageFooter',  datetime('now'), '{{section class="text-center"}}
+('PageFooter',  [[ now ]], '{{section class="text-center"}}
 {{yeswikiversion}}
 {{end elem="section"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageHeader',  datetime('now'), '{# Si vous activez ce code, une page header (bandeau du haut) apparaitra dans TOUTES les pages de votre site :
+('PageHeader',  [[ now ]], '{# Si vous activez ce code, une page header (bandeau du haut) apparaitra dans TOUTES les pages de votre site :
 
 {{section bgcolor="var(--neutral-color)" class="white text-center cover" file="bandeau.webp" }}
 # Titre de ce bandeau
@@ -355,8 +366,8 @@ Aplat de couleur : supprimer file="bandeau.webp", cliquez sur section, cliquez s
  - changer la tonalité du texte
  - le caler à droite, le centrer
  - faire varier la hauteur du bandeau...#}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageLogin',  datetime('now'), '{{login context="login-page" signupurl="0"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageMenu',  datetime('now'), ' - [Accueil]({{rootPage}})
+('PageLogin',  [[ now ]], '{{login context="login-page" signupurl="0"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('PageMenu',  [[ now ]], ' - [Accueil]({{rootPage}})
  - [Test du look](LookWiki)
 
 ---- 
@@ -374,7 +385,7 @@ Double cliquer sur ce texte pour éditer cette colonne.
 
 
 """"', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageMenuHaut',  datetime('now'), ' - [Bac à sable](BacASable)
+('PageMenuHaut',  [[ now ]], ' - [Bac à sable](BacASable)
  - Menu exemple
   - [Exemple annuaire](TrombiAnnuaire)
   - [Exemple agenda](VueActivite)
@@ -383,7 +394,7 @@ Double cliquer sur ce texte pour éditer cette colonne.
 {#INFO CACHÉE
 Vous êtes dans la page qui se nomme PageMenuHaut qui sert à modifier le menu du haut. Pour faire évoluer le menu, inspirez vous du menu exemple.
 #}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('{{rootPage}}',  datetime('now'), '{{section bgcolor="#eeeeee" class="cover full-width text-left" file=""}}
+('{{rootPage}}',  [[ now ]], '{{section bgcolor="#eeeeee" class="cover full-width text-left" file=""}}
 # Félicitations, votre wiki est installé !
 **Pour modifier ce bandeau, éditez cette page.**
 {{end elem="section"}}
@@ -416,7 +427,7 @@ Pour nous rejoindre ou avoir une vision sur les chantiers actuellement en cours,
 Si vous souhaitez simplement être tenu·e informé·e des nouveautés de l''outil et de ses améliorations, [💌 abonnez-vous à notre newsletter](https://landing.mailerlite.com/webforms/landing/c0j7n7 "abonnez-vous à notre newsletter"){.newtab} 
 
 Yeswiki repose sur le bénévolat et le don. [En contribuant (même juste un peu)](https://www.helloasso.com/associations/yeswiki/formulaires/1) vous permettez de maintenir les serveurs et de développer de nouvelles fonctionnalités. Merci', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageRapideHaut',  datetime('now'), '{{moteurrecherche template="moteurrecherche_button.tpl.html"}}
+('PageRapideHaut',  [[ now ]], '{{moteurrecherche template="moteurrecherche_button.tpl.html"}}
 {{buttondropdown icon="cog" caret="0" title="Gestion du site"}}
  - {{button nobtn="1" icon="fa fa-tachometer-alt" text="Tableau de bord" link="TableauDeBord"}}
  - {{button nobtn="1" icon="fa fa-question" text="Documentation" link="doc"}}
@@ -426,12 +437,12 @@ Yeswiki repose sur le bénévolat et le don. [En contribuant (même juste un peu
  - {{button nobtn="1" icon="fa fa-briefcase" text="Formulaires" link="BazaR"}}
 {{end elem="buttondropdown"}}
 {{login template="modal.twig"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('PageTitre',  datetime('now'), '{{configuration param="wakka_name" }}
+('PageTitre',  [[ now ]], '{{configuration param="wakka_name" }}
 
 {#Astuce, vous pouvez remplacer le code précédent par ce que vous souhaitez afficher comme titre en haut à gauche #}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('ParametresUtilisateur',  datetime('now'), '{{UserSettings}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('RechercheTexte',  datetime('now'), '{{newtextsearch}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('ReglesDeFormatage',  datetime('now'), 'N''hésitez pas à personnaliser cette page d''aide (code utile, astuce...) en cliquant sur [ReglesDeFormatage](ReglesDeFormatage/edit){.newtab}
+('ParametresUtilisateur',  [[ now ]], '{{UserSettings}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('RechercheTexte',  [[ now ]], '{{newtextsearch}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('ReglesDeFormatage',  [[ now ]], 'N''hésitez pas à personnaliser cette page d''aide (code utile, astuce...) en cliquant sur [ReglesDeFormatage](ReglesDeFormatage/edit){.newtab}
 {#Placez votre aide personnalisée entre ici#}
 
 {#et ici#}
@@ -491,19 +502,19 @@ Il est possible de copier des icônes dans des sites sources puis de les coller 
 
 {{end elem="col"}}
 {{end elem="grid"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('SaisirAgenda',  datetime('now'), '{{nav links="VueActivite, VueAgenda, SaisirAgenda" titles="Voir les prochaines activités, Voir l''agenda, Proposer une activité"}}
+('SaisirAgenda',  [[ now ]], '{{nav links="VueActivite, VueAgenda, SaisirAgenda" titles="Voir les prochaines activités, Voir l''agenda, Proposer une activité"}}
 
 {{bazar voirmenu="0" vue="saisir" id="2"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('SaisirAnnuaire',  datetime('now'), '{{nav links="TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire" titles="Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S''inscrire dans l''annuaire"}}
+('SaisirAnnuaire',  [[ now ]], '{{nav links="TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire" titles="Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S''inscrire dans l''annuaire"}}
 
 {{bazar voirmenu="0" vue="saisir" id="1"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('SaisirBlog',  datetime('now'), '{{nav links="VoirBlog, VoirBlogSimple, SaisirBlog" titles="Le blog avec Une, Le blog sans Une, Déposer une actu"}}
+('SaisirBlog',  [[ now ]], '{{nav links="VoirBlog, VoirBlogSimple, SaisirBlog" titles="Le blog avec Une, Le blog sans Une, Déposer une actu"}}
 
 {{bazar vue="saisir" voirmenu="0" id="3"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('SaisirRessource',  datetime('now'), '{{nav links="FacetteRessource, SaisirRessource" titles="Les ressources, Déposer une ressource"}}
+('SaisirRessource',  [[ now ]], '{{nav links="FacetteRessource, SaisirRessource" titles="Les ressources, Déposer une ressource"}}
 
 {{bazar voirmenu="0" vue="saisir" id="4"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('TableauDeBord',  datetime('now'), '# Tableau de bord
+('TableauDeBord',  [[ now ]], '# Tableau de bord
 {{accordion }}
 
 {{panel title="Dernières modifications sur le wiki" type="collapsible" }}
@@ -535,55 +546,55 @@ Il est possible de copier des icônes dans des sites sources puis de les coller 
 {{end elem="grid"}}
 {{end elem="panel"}}
 {{end elem="accordion" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('TrombiAnnuaire',  datetime('now'), '{{nav links="TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire" titles="Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S''inscrire dans l''annuaire"}}
+('TrombiAnnuaire',  [[ now ]], '{{nav links="TrombiAnnuaire, AnnuaireAlpha, CartoAnnuaire, SaisirAnnuaire" titles="Trombinoscope, Annuaire alphabétique, Annuaire cartographique, S''inscrire dans l''annuaire"}}
 
 {{bazarliste id="1" template="card"  displayfields="visual=imagebf_image,title=bf_titre" imgstyle="contain" nbcol="3" style="square" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('VoirBlog',  datetime('now'), '{{nav links="VoirBlog, VoirBlogSimple, SaisirBlog" titles="Le blog avec Une, Le blog sans Une, Déposer une actu"}}
+('VoirBlog',  [[ now ]], '{{nav links="VoirBlog, VoirBlogSimple, SaisirBlog" titles="Le blog avec Une, Le blog sans Une, Déposer une actu"}}
 
 {{bazarliste id="3" template="blog"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('VoirBlogSimple',  datetime('now'), '{{nav links="VoirBlog, VoirBlogSimple, SaisirBlog" titles="Le blog avec Une, Le blog sans Une, Déposer une actu"}}
+('VoirBlogSimple',  [[ now ]], '{{nav links="VoirBlog, VoirBlogSimple, SaisirBlog" titles="Le blog avec Une, Le blog sans Une, Déposer une actu"}}
 
 {{bazarliste id="3" template="blog" header="no"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('VueActivite',  datetime('now'), '{{nav links="VueActivite, VueAgenda, SaisirAgenda" titles="Voir les prochaines activités, Voir l''agenda, Proposer une activité"}}
+('VueActivite',  [[ now ]], '{{nav links="VueActivite, VueAgenda, SaisirAgenda" titles="Voir les prochaines activités, Voir l''agenda, Proposer une activité"}}
 
 {{bazarliste template="agenda" id="2" ordre="desc" champ="bf_date_debut_evenement" agenda="futur" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('VueAgenda',  datetime('now'), '{{nav links="VueActivite, VueAgenda, SaisirAgenda" titles="Voir les prochaines activités, Voir l''agenda, Proposer une activité"}}
+('VueAgenda',  [[ now ]], '{{nav links="VueActivite, VueAgenda, SaisirAgenda" titles="Voir les prochaines activités, Voir l''agenda, Proposer une activité"}}
 
 {{bazarliste id="2" template="calendar" }}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('WikiAdmin',  datetime('now'), '{{redirect page="GererSite"}}
+('WikiAdmin',  [[ now ]], '{{redirect page="GererSite"}}
 ', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('YesWiki',  datetime('now'), 'YesWiki', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
--- end YesWiki pages
+('YesWiki',  [[ now ]], 'YesWiki', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+[[ cmt ]] end YesWiki pages
 
--- Bazar forms
-INSERT INTO "{{prefix}}nature" ("bn_id_nature", "bn_label_nature", "bn_description", "bn_condition", "bn_sem_context", "bn_sem_type", "bn_sem_use_template", "bn_template", "bn_ce_i18n", "bn_only_one_entry", "bn_only_one_entry_message") VALUES
+[[ cmt ]] Bazar forms
+INSERT INTO [[ q ]]{{prefix}}nature[[ q ]] ([[ q ]]bn_id_nature[[ q ]], [[ q ]]bn_label_nature[[ q ]], [[ q ]]bn_description[[ q ]], [[ q ]]bn_condition[[ q ]], [[ q ]]bn_sem_context[[ q ]], [[ q ]]bn_sem_type[[ q ]], [[ q ]]bn_sem_use_template[[ q ]], [[ q ]]bn_template[[ q ]], [[ q ]]bn_ce_i18n[[ q ]], [[ q ]]bn_only_one_entry[[ q ]], [[ q ]]bn_only_one_entry_message[[ q ]]) VALUES
 ('2', 'Agenda', '', '', 'https://www.w3.org/ns/activitystreams', 'Event', '1', 'texte***bf_titre***Nom de l''événement***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Description***40*** *** *** ***wiki***0*** *** *** * *** * *** *** *** ***\r\nlistedatedeb***bf_date_debut_evenement***Début de l''événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***\r\nlistedatefin***bf_date_fin_evenement***Fin de l''événement*** *** ***today*** *** ***1*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_site_internet***Adresse url*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image (facultatif)***140***140***600***600***right***0*** ***Votre image doit être au format .jpg ou .gif ou .png*** * *** * *** *** *** ***\r\nfichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nmap***bf_latitude***bf_longitude*** *** *** *** *** ***0***\r\nlabelhtml***<h3>Il ne vous reste plus qu''à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', ''),
 ('1', 'Annuaire', '', '', '', '', '1', 'titre***{{bf_nom}} {{bf_prenom}}***Titre Automatique***\r\ntexte***bf_nom***Nom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntexte***bf_prenom***Prénom***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image de présentation (facultatif mais c''est plus sympa)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_fonction***Mon métier, ma fonction***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_projet***Ma présentation***5***5*** *** ***html***0*** *** *** * *** * *** *** *** ***\r\nchamps_mail***bf_mail***Email (n''apparaitra pas sur le web)*** *** *** ***form*** ***1***0*** *** * *** * *** *** *** ***\r\ntexte***bf_structure***Nom de la structure***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_site_internet***Site Internet*** *** *** *** *** ***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_adresse***Adresse***50***50*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_code_postal***Code postal***8***8*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_ville***Ville***50***80*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nmap***bf_latitude***bf_longitude*** *** ***\r\nlabelhtml***<h3>Il ne vous reste plus qu''à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', ''),
 ('3', 'Blog-actu', '', '', '', '', '1', 'image***bf_image***Image***400***300***1200***900***right***1*** *** *** * *** * *** *** *** ***\r\ntexte***bf_titre***Titre***80***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_chapeau***Résumé***40***3*** *** ***wiki***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Billet***40***9*** *** ***wiki***1*** *** *** * *** * *** *** *** ***\r\n', 'fr-FR', 'N', ''),
 ('4', 'Ressources', 'Un formulaire pour créer un espace de ressources partagées. ', '', '', '', '1', 'texte***bf_titre***Nom de la ressource***60***255*** *** ***text***1*** *** *** * *** * *** *** *** ***\r\nlien_internet***bf_url***Site web***40***255*** *** ***url***0*** *** *** * *** * *** *** *** ***\r\ncheckbox***ListeType***Type de ressource*** *** *** *** bf_type *** ***1*** *** *** * *** * *** *** *** ***\r\ntextelong***bf_description***Description***5***5*** *** ***wiki***0*** *** *** * *** * *** *** *** ***\r\ntexte***bf_auteur***Auteur***60***255*** *** ***text***0*** *** *** * *** * *** *** *** ***\r\nimage***bf_image***Image de présentation (facultatif)***140***140***600***600***right***0*** *** *** * *** * *** *** *** ***\r\nfichier***fichier***Documents***20000000*** *** *** ***file***0*** *** *** * *** * *** *** *** ***\r\nlabelhtml***<h3>Il ne vous reste plus qu''à valider ! </h3>*** *** ***\r\n', 'fr-FR', 'N', '');
--- end Bazar forms
+[[ cmt ]] end Bazar forms
 
--- Bazar lists
-INSERT INTO "{{prefix}}pages" ("tag", "time", "body", "body_r", "owner", "user", "latest", "handler", "comment_on") VALUES
-('ListeType',  datetime('now'), '{"label":{"1":"Site web ressource","2":"Exp\\u00e9rience inspirante","3":"Partenaire ressource","4":"M\\u00e9thodologie \\/ guide"},"titre_liste":"Type"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
-INSERT INTO "{{prefix}}triples" ("resource", "property", "value") VALUES
+[[ cmt ]] Bazar lists
+INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]body_r[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]handler[[ q ]], [[ q ]]comment_on[[ q ]]) VALUES
+('ListeType',  [[ now ]], '{"label":{"1":"Site web ressource","2":"Exp\\u00e9rience inspirante","3":"Partenaire ressource","4":"M\\u00e9thodologie \\/ guide"},"titre_liste":"Type"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 ('ListeType', 'http://outils-reseaux.org/_vocabulary/type', 'liste');
--- end Bazar lists
+[[ cmt ]] end Bazar lists
 
--- Bazar entries
-INSERT INTO "{{prefix}}pages" ("tag", "time", "body", "body_r", "owner", "user", "latest", "handler", "comment_on") VALUES
-('Bordeaux',  datetime('now'), '{"bf_titre":"Super \\u00e9v\\u00e9nement \\u00e0 Bordeaux","bf_description":"Un \\u00e9v\\u00e9nement autour du vin, c''est pour cela qu''il est \\u00e0 Bordeaux...","bf_date_debut_evenement":"2024-04-10","bf_date_fin_evenement":"2024-04-12","bf_site_internet":"","bf_adresse":"","bf_code_postal":"","bf_ville":"Bordeaux","bf_latitude":"44.841225","bf_longitude":"-0.5800364","id_typeannonce":"2","id_fiche":"Bordeaux","fichierfichier":"","geolocation":{"bf_latitude":"44.841225","bf_longitude":"-0.5800364"},"date_creation_fiche":"2021-06-21 19:33:56","statut_fiche":"1","imagebf_image":"","date_maj_fiche":"2024-04-02 16:17:09"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('YeswikiLeSiteOfficiel',  datetime('now'), '{"bf_titre":"Yeswiki : le site officiel","bf_url":"https:\\/\\/yeswiki.net","bf_description":"Tout ce qu''il y a \\u00e0 savoir sur Yeswiki ","bf_auteur":"","id_typeannonce":"4","id_fiche":"YeswikiLeSiteOfficiel","fichierfichier":"","date_creation_fiche":"2020-02-12 11:10:01","statut_fiche":"1","bf_type":"1","imagebf_image":null,"date_maj_fiche":"2021-09-07 12:10:10"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('FramasofT',  datetime('now'), '{"bf_titre":"Framasoft","bf_url":"https:\\/\\/framasoft.org\\/fr\\/","bf_description":"Framasoft, c\\u2019est une association d\\u2019\\u00e9ducation populaire, un groupe d\\u2019ami\\u00b7es convaincu\\u00b7es qu\\u2019un monde num\\u00e9rique \\u00e9mancipateur est possible, persuad\\u00e9\\u00b7es qu\\u2019il adviendra gr\\u00e2ce \\u00e0 des actions concr\\u00e8tes sur le terrain et en ligne avec vous et pour vous !","bf_auteur":"","id_typeannonce":"4","id_fiche":"FramasofT","fichierfichier":"","date_creation_fiche":"2020-02-12 14:12:58","statut_fiche":"1","bf_type":"3","imagebf_image":null,"date_maj_fiche":"2021-09-07 12:07:38"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('UnBeauLogoPourYeswiki',  datetime('now'), '{"bf_titre":"Un beau logo pour Yeswiki","bf_chapeau":"Il fallait le rafraichir, nous l''avons fait ! ","bf_description":"Apr\\u00e8s multiples discussions, tests et essais, un logo plus actuel a \\u00e9t\\u00e9 cr\\u00e9\\u00e9 pour Yeswiki\\r\\nNous esp\\u00e9rons que vous l''aimerez ;-) ","id_typeannonce":"3","id_fiche":"UnBeauLogoPourYeswiki","date_creation_fiche":"2020-02-12 13:16:06","statut_fiche":"1","imagebf_image":"UnBeauLogoPourYeswiki_yeswiki-logo.png","date_maj_fiche":"2021-09-05 13:23:52"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('UnNouveauThemePourYeswiki',  datetime('now'), '{"bf_titre":"Un nouveau th\\u00e8me pour Yeswiki","bf_chapeau":"Margot, voil\\u00e0 le nom du nouveau th\\u00e8me qui sera distribu\\u00e9 avec la prochaine version de Yeswiki\\t","bf_description":"Plus moderne, mieux pens\\u00e9, plus graphiqu.\\r\\nMargot permettra d''unifier les rendus graphiques des wikis.","id_typeannonce":"3","id_fiche":"UnNouveauThemePourYeswiki","date_creation_fiche":"2020-02-12 12:17:49","statut_fiche":"1","imagebf_image":"UnNouveauThemePourYeswiki_capture-de\\u0301cran-2020-02-12-a\\u0300-13.16.33.png","date_maj_fiche":"2020-02-12 12:17:50"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('ElizabethJFeinler',  datetime('now'), '{"bf_titre":"JFeinler Elizabeth","bf_nom":"JFeinler","bf_prenom":"Elizabeth","bf_fonction":"informaticienne, pionni\\u00e8re de l''internet","bf_projet":"En 1974, j''ai cr\\u00e9\\u00e9 le nouveau Network Information Center (NIC) de l''ARPANET.  ","bf_mail":"","bf_structure":"Stanford Research Institute et NASA ","bf_site_internet":"https:\\/\\/fr.wikipedia.org\\/wiki\\/Elizabeth_J._Feinler","bf_adresse":"","bf_code_postal":"","bf_ville":"Paris","bf_latitude":"48.8566969","bf_longitude":"2.3514616","id_typeannonce":"1","id_fiche":"ElizabethJFeinler","imagebf_image":"ElizabethJFeinler_elizabethfeinler-2011.jpg","geolocation":{"bf_latitude":"48.8566969","bf_longitude":"2.3514616"},"date_creation_fiche":"2021-05-24 22:07:17","statut_fiche":"1","date_maj_fiche":"2021-08-06 10:31:00"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('TesT2',  datetime('now'), '{"bf_titre":"Sortie Culturelle","bf_description":"La culture, moins on en a, plus on l''\\u00e9tale!","bf_date_debut_evenement":"2024-05-30T18:00:00+02:00","bf_date_fin_evenement":"2024-05-30T20:00:00+02:00","bf_site_internet":"https:\\/\\/www.yeswiki.net","bf_adresse":"Avenue des Champs Elys\\u00e9es","bf_code_postal":"75000","bf_ville":"Paris","bf_latitude":"48.8659085","bf_longitude":"2.3197651","id_typeannonce":"2","id_fiche":"TesT2","imagebf_image":"TesT2_presence-photo.png","fichierfichier":"","geolocation":{"bf_latitude":"48.8659085","bf_longitude":"2.3197651"},"date_creation_fiche":"2024-04-02 16:25:51","statut_fiche":"1","date_maj_fiche":"2024-04-02 16:48:20"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
-('LovelaceAda',  datetime('now'), '{"bf_titre":"Lovelace Ada","bf_nom":"Lovelace","bf_prenom":"Ada","bf_fonction":"Pionni\\u00e8re de la science informatique ","bf_projet":"<p>J''ai r\\u00e9alis\\u00e9 le premier v\\u00e9ritable programme informatique, lors de mon travail sur un anc\\u00eatre de l''ordinateur : la machine analytique de Charles Babbage. <br><\\/p>","bf_mail":"","bf_structure":"Universit\\u00e9 de Cambridge ","bf_site_internet":"https:\\/\\/fr.wikipedia.org\\/wiki\\/Ada_Lovelace","bf_adresse":"","bf_code_postal":"","bf_ville":"Londres ","bf_latitude":"51.5073219","bf_longitude":"-0.1276474","id_typeannonce":"1","id_fiche":"LovelaceAda","geolocation":{"bf_latitude":"51.5073219","bf_longitude":"-0.1276474"},"date_creation_fiche":"2021-05-25 11:00:19","statut_fiche":"1","imagebf_image":"LovelaceAda_lovelace.png","date_maj_fiche":"2021-05-25 11:01:13"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
--- end Bazar entries
+[[ cmt ]] Bazar entries
+INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]body_r[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]handler[[ q ]], [[ q ]]comment_on[[ q ]]) VALUES
+('Bordeaux',  [[ now ]], '{"bf_titre":"Super \\u00e9v\\u00e9nement \\u00e0 Bordeaux","bf_description":"Un \\u00e9v\\u00e9nement autour du vin, c''est pour cela qu''il est \\u00e0 Bordeaux...","bf_date_debut_evenement":"2024-04-10","bf_date_fin_evenement":"2024-04-12","bf_site_internet":"","bf_adresse":"","bf_code_postal":"","bf_ville":"Bordeaux","bf_latitude":"44.841225","bf_longitude":"-0.5800364","id_typeannonce":"2","id_fiche":"Bordeaux","fichierfichier":"","geolocation":{"bf_latitude":"44.841225","bf_longitude":"-0.5800364"},"date_creation_fiche":"2021-06-21 19:33:56","statut_fiche":"1","imagebf_image":"","date_maj_fiche":"2024-04-02 16:17:09"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('YeswikiLeSiteOfficiel',  [[ now ]], '{"bf_titre":"Yeswiki : le site officiel","bf_url":"https:\\/\\/yeswiki.net","bf_description":"Tout ce qu''il y a \\u00e0 savoir sur Yeswiki ","bf_auteur":"","id_typeannonce":"4","id_fiche":"YeswikiLeSiteOfficiel","fichierfichier":"","date_creation_fiche":"2020-02-12 11:10:01","statut_fiche":"1","bf_type":"1","imagebf_image":null,"date_maj_fiche":"2021-09-07 12:10:10"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('FramasofT',  [[ now ]], '{"bf_titre":"Framasoft","bf_url":"https:\\/\\/framasoft.org\\/fr\\/","bf_description":"Framasoft, c\\u2019est une association d\\u2019\\u00e9ducation populaire, un groupe d\\u2019ami\\u00b7es convaincu\\u00b7es qu\\u2019un monde num\\u00e9rique \\u00e9mancipateur est possible, persuad\\u00e9\\u00b7es qu\\u2019il adviendra gr\\u00e2ce \\u00e0 des actions concr\\u00e8tes sur le terrain et en ligne avec vous et pour vous !","bf_auteur":"","id_typeannonce":"4","id_fiche":"FramasofT","fichierfichier":"","date_creation_fiche":"2020-02-12 14:12:58","statut_fiche":"1","bf_type":"3","imagebf_image":null,"date_maj_fiche":"2021-09-07 12:07:38"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('UnBeauLogoPourYeswiki',  [[ now ]], '{"bf_titre":"Un beau logo pour Yeswiki","bf_chapeau":"Il fallait le rafraichir, nous l''avons fait ! ","bf_description":"Apr\\u00e8s multiples discussions, tests et essais, un logo plus actuel a \\u00e9t\\u00e9 cr\\u00e9\\u00e9 pour Yeswiki\\r\\nNous esp\\u00e9rons que vous l''aimerez ;-) ","id_typeannonce":"3","id_fiche":"UnBeauLogoPourYeswiki","date_creation_fiche":"2020-02-12 13:16:06","statut_fiche":"1","imagebf_image":"UnBeauLogoPourYeswiki_yeswiki-logo.png","date_maj_fiche":"2021-09-05 13:23:52"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('UnNouveauThemePourYeswiki',  [[ now ]], '{"bf_titre":"Un nouveau th\\u00e8me pour Yeswiki","bf_chapeau":"Margot, voil\\u00e0 le nom du nouveau th\\u00e8me qui sera distribu\\u00e9 avec la prochaine version de Yeswiki\\t","bf_description":"Plus moderne, mieux pens\\u00e9, plus graphiqu.\\r\\nMargot permettra d''unifier les rendus graphiques des wikis.","id_typeannonce":"3","id_fiche":"UnNouveauThemePourYeswiki","date_creation_fiche":"2020-02-12 12:17:49","statut_fiche":"1","imagebf_image":"UnNouveauThemePourYeswiki_capture-de\\u0301cran-2020-02-12-a\\u0300-13.16.33.png","date_maj_fiche":"2020-02-12 12:17:50"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('ElizabethJFeinler',  [[ now ]], '{"bf_titre":"JFeinler Elizabeth","bf_nom":"JFeinler","bf_prenom":"Elizabeth","bf_fonction":"informaticienne, pionni\\u00e8re de l''internet","bf_projet":"En 1974, j''ai cr\\u00e9\\u00e9 le nouveau Network Information Center (NIC) de l''ARPANET.  ","bf_mail":"","bf_structure":"Stanford Research Institute et NASA ","bf_site_internet":"https:\\/\\/fr.wikipedia.org\\/wiki\\/Elizabeth_J._Feinler","bf_adresse":"","bf_code_postal":"","bf_ville":"Paris","bf_latitude":"48.8566969","bf_longitude":"2.3514616","id_typeannonce":"1","id_fiche":"ElizabethJFeinler","imagebf_image":"ElizabethJFeinler_elizabethfeinler-2011.jpg","geolocation":{"bf_latitude":"48.8566969","bf_longitude":"2.3514616"},"date_creation_fiche":"2021-05-24 22:07:17","statut_fiche":"1","date_maj_fiche":"2021-08-06 10:31:00"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('TesT2',  [[ now ]], '{"bf_titre":"Sortie Culturelle","bf_description":"La culture, moins on en a, plus on l''\\u00e9tale!","bf_date_debut_evenement":"2024-05-30T18:00:00+02:00","bf_date_fin_evenement":"2024-05-30T20:00:00+02:00","bf_site_internet":"https:\\/\\/www.yeswiki.net","bf_adresse":"Avenue des Champs Elys\\u00e9es","bf_code_postal":"75000","bf_ville":"Paris","bf_latitude":"48.8659085","bf_longitude":"2.3197651","id_typeannonce":"2","id_fiche":"TesT2","imagebf_image":"TesT2_presence-photo.png","fichierfichier":"","geolocation":{"bf_latitude":"48.8659085","bf_longitude":"2.3197651"},"date_creation_fiche":"2024-04-02 16:25:51","statut_fiche":"1","date_maj_fiche":"2024-04-02 16:48:20"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
+('LovelaceAda',  [[ now ]], '{"bf_titre":"Lovelace Ada","bf_nom":"Lovelace","bf_prenom":"Ada","bf_fonction":"Pionni\\u00e8re de la science informatique ","bf_projet":"<p>J''ai r\\u00e9alis\\u00e9 le premier v\\u00e9ritable programme informatique, lors de mon travail sur un anc\\u00eatre de l''ordinateur : la machine analytique de Charles Babbage. <br><\\/p>","bf_mail":"","bf_structure":"Universit\\u00e9 de Cambridge ","bf_site_internet":"https:\\/\\/fr.wikipedia.org\\/wiki\\/Ada_Lovelace","bf_adresse":"","bf_code_postal":"","bf_ville":"Londres ","bf_latitude":"51.5073219","bf_longitude":"-0.1276474","id_typeannonce":"1","id_fiche":"LovelaceAda","geolocation":{"bf_latitude":"51.5073219","bf_longitude":"-0.1276474"},"date_creation_fiche":"2021-05-25 11:00:19","statut_fiche":"1","imagebf_image":"LovelaceAda_lovelace.png","date_maj_fiche":"2021-05-25 11:01:13"}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '');
+[[ cmt ]] end Bazar entries
 
--- triples
-INSERT INTO "{{prefix}}triples" ("resource", "property", "value") VALUES
+[[ cmt ]] triples
+INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 ('Bordeaux', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('YeswikiLeSiteOfficiel', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('FramasofT', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
@@ -593,8 +604,8 @@ INSERT INTO "{{prefix}}triples" ("resource", "property", "value") VALUES
 ('TesT2', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar'),
 ('LovelaceAda', 'http://outils-reseaux.org/_vocabulary/type', 'fiche_bazar');
 
--- if fresh install, we can add the past migrations so they are not re-run
-INSERT INTO "{{prefix}}triples" ("resource", "property", "value") VALUES
+[[ cmt ]] if fresh install, we can add the past migrations so they are not re-run
+INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 ('0000000000000_DemoMigration', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20240425000000_AddYeswikiReleaseConf', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20240425000000_CalcFieldToString', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
@@ -610,4 +621,4 @@ INSERT INTO "{{prefix}}triples" ("resource", "property", "value") VALUES
 ('20240502083251_RefactorListStruture', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20240621202127_RefactorEnumFieldPropertyName', 'http://outils-reseaux.org/_vocabulary/type', 'migration'),
 ('20250730162434_AddContextToPageLogin', 'http://outils-reseaux.org/_vocabulary/type', 'migration');
--- end triples
+[[ cmt ]] end triples

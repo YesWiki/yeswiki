@@ -301,14 +301,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
                 ', ',
                 array_map(
                     function ($key) use ($newValues) {
-                        return "`$key` = \"{$this->dbService->escape($newValues[$key])}\" ";
+                        return $this->dbService->quoteIdentifier($key) . " = '{$this->dbService->escape($newValues[$key])}' ";
                     },
                     $authorizedKeys
                 )
             );
-            $query .= "WHERE `name` = \"{$this->dbService->escape($user['name'])}\" ";
-            $query .= "AND `email` = \"{$this->dbService->escape($user['email'])}\" ";
-            $query .= "AND `password` = \"{$this->dbService->escape($user['password'])}\" ";
+            $query .= "WHERE {$this->dbService->quoteIdentifier('name')} = '{$this->dbService->escape($user['name'])}' ";
+            $query .= "AND {$this->dbService->quoteIdentifier('email')} = '{$this->dbService->escape($user['email'])}' ";
+            $query .= "AND {$this->dbService->quoteIdentifier('password')} = '{$this->dbService->escape($user['password'])}' ";
             $this->dbService->query($query);
         }
 
@@ -330,7 +330,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
         unset($this->getOneByNameCacheResults[$user['name']]);
         $query = "DELETE FROM {$this->dbService->prefixTable('users')} " .
-            " WHERE `name` = \"{$this->dbService->escape($user['name'])}\";";
+            " WHERE {$this->dbService->quoteIdentifier('name')} = '{$this->dbService->escape($user['name'])}';";
         try {
             if (!$this->dbService->query($query)) {
                 throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
@@ -441,10 +441,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $user->setPassword($newHashedPassword);
             $query =
                 'UPDATE ' . $this->dbService->prefixTable('users') . 'SET ' .
-                'password = "' . $this->dbService->escape($newHashedPassword) . '"' .
-                ' WHERE name = "' . $this->dbService->escape($user['name']) . '" ' .
-                'AND email= "' . $this->dbService->escape($user['email']) . '" ' .
-                'AND password= "' . $this->dbService->escape($previousPassword) . '";';
+                "password = '" . $this->dbService->escape($newHashedPassword) . "'" .
+                " WHERE name = '" . $this->dbService->escape($user['name']) . "' " .
+                "AND email= '" . $this->dbService->escape($user['email']) . "' " .
+                "AND password= '" . $this->dbService->escape($previousPassword) . "';";
             $this->dbService->query($query);
         } catch (\Throwable $th) {
             // only throw error in debug mode

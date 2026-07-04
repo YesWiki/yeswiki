@@ -136,12 +136,12 @@ class TagsManager
         if (!empty($taglist)) {
             $sql .= ' INNER JOIN ' . $this->dbService->prefixTable('triples') . ' as tags ON tag=tags.resource';
         }
-        $sql .= ' WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
+        $sql .= " WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
 
         if ($type == 'wiki') {
-            $sql .= ' AND tag NOT IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . 'WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
+            $sql .= " AND tag NOT IN (SELECT resource FROM " . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type') ";
         } elseif ($type == 'bazar') {
-            $sql .= ' AND tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")';
+            $sql .= " AND tag IN (SELECT resource FROM " . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar')";
         }
 
         $sql .= ' ORDER BY tag ASC';

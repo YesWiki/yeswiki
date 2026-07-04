@@ -250,24 +250,38 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
 
+        $columns = ['bn_id_nature', 'bn_ce_i18n', 'bn_label_nature', 'bn_template', 'bn_description', 'bn_sem_template', 'bn_sem_reverse_template', 'bn_activitypub_enable', 'bn_activitypub_username', 'bn_activitypub_private_key', 'bn_activitypub_public_key'];
+        $values = [
+            intval($data['bn_id_nature']),
+            "'fr-FR'",
+            "'" . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . "'",
+            "'" . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . "'",
+            "'" . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . "'",
+            "'" . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . "'",
+            "'" . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . "'",
+            $activitypubEnabled,
+            "'" . $this->dbService->escape(_convert($data['bn_activitypub_username'] ?? '', YW_CHARSET, true)) . "'",
+            isset($privateKey) ? "'" . $privateKey . "'" : "''",
+            isset($publicKey) ? "'" . $publicKey . "'" : "''",
+        ];
+
+        if ($this->isAvailableOnlyOneEntryOption()) {
+            $columns[] = 'bn_only_one_entry';
+            $values[] = "'" . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . "'";
+        }
+        if ($this->isAvailableOnlyOneEntryMessage()) {
+            $columns[] = 'bn_only_one_entry_message';
+            $values[] = "'" . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . "'";
+        }
+        $columns[] = 'bn_condition';
+        $values[] = "'" . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . "'";
+
+        $quotedColumns = array_map([$this->dbService, 'quoteIdentifier'], $columns);
+
         $query = 'INSERT INTO ' . $this->dbService->prefixTable('nature')
-                    . '(`bn_id_nature` ,`bn_ce_i18n` ,`bn_label_nature` ,`bn_template` ,`bn_description` ,`bn_sem_template` ,`bn_sem_reverse_template`, `bn_activitypub_enable`, `bn_activitypub_username`, `bn_activitypub_private_key`, `bn_activitypub_public_key`'
-                    . ($this->isAvailableOnlyOneEntryOption() ? ',`bn_only_one_entry`' : '')
-                    . ($this->isAvailableOnlyOneEntryMessage() ? ',`bn_only_one_entry_message`' : '')
-                    . ',`bn_condition`)'
-                    . ' VALUES (' . intval($data['bn_id_nature']) . ', "fr-FR", "'
-                    . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '", "'
-                    . $activitypubEnabled . '", "'
-                    . $this->dbService->escape(_convert($data['bn_activitypub_username'] ?? '', YW_CHARSET, true)) . '", "'
-                    . (isset($privateKey) ? $privateKey . '", "' : '", "')
-                    . (isset($publicKey) ? $publicKey . '", "' : '", "')
-                    . ($this->isAvailableOnlyOneEntryOption() ? ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '", "' : '", "')
-                    . ($this->isAvailableOnlyOneEntryMessage() ? (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '", "' : '", "')
-            . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '")';
+            . '(' . implode(', ', $quotedColumns) . ')'
+            . ' VALUES (' . implode(', ', $values) . ')';
+
         return $this->dbService->query($query);
     }
 
@@ -290,20 +304,37 @@ class FormManager
             $publicKey = $keyPair[1];
         }
 
+        $assignments = [
+            'bn_label_nature' => "'" . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . "'",
+            'bn_template' => "'" . $template . "'",
+            'bn_description' => "'" . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . "'",
+            'bn_sem_template' => "'" . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . "'",
+            'bn_sem_reverse_template' => "'" . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . "'",
+            'bn_activitypub_enable' => $activitypubEnabled,
+            'bn_activitypub_username' => "'" . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . "'",
+        ];
+        if (isset($privateKey)) {
+            $assignments['bn_activitypub_private_key'] = "'" . $privateKey . "'";
+        }
+        if (isset($publicKey)) {
+            $assignments['bn_activitypub_public_key'] = "'" . $publicKey . "'";
+        }
+        if ($this->isAvailableOnlyOneEntryOption()) {
+            $assignments['bn_only_one_entry'] = "'" . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . "'";
+        }
+        if ($this->isAvailableOnlyOneEntryMessage()) {
+            $assignments['bn_only_one_entry_message'] = "'" . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . "'";
+        }
+        $assignments['bn_condition'] = "'" . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . "'";
+
+        $setClause = [];
+        foreach ($assignments as $column => $value) {
+            $setClause[] = $this->dbService->quoteIdentifier($column) . '=' . $value;
+        }
+
         return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
-            . '`bn_label_nature`="' . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . '" ,'
-            . '`bn_template`="' . $template . '" ,'
-            . '`bn_description`="' . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_template`="' . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . '" ,'
-            . '`bn_sem_reverse_template`="' . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . '" ,'
-            . '`bn_activitypub_enable`=' . $activitypubEnabled . ' ,'
-            . '`bn_activitypub_username`="' . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . '" ,'
-            . (isset($privateKey) ? '`bn_activitypub_private_key`="' . $privateKey . '" ,' : '')
-            . (isset($publicKey) ? '`bn_activitypub_public_key`="' . $publicKey . '" ,' : '')
-            . ($this->isAvailableOnlyOneEntryOption() ? '`bn_only_one_entry`="' . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . '",' : '')
-            . ($this->isAvailableOnlyOneEntryMessage() ? '`bn_only_one_entry_message`="' . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . '",' : '')
-            . '`bn_condition`="' . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . '"'
-            . ' WHERE `bn_id_nature`=' . intval($data['bn_id_nature']));
+            . implode(', ', $setClause)
+            . ' WHERE ' . $this->dbService->quoteIdentifier('bn_id_nature') . '=' . intval($data['bn_id_nature']));
     }
 
     public function clone($id)

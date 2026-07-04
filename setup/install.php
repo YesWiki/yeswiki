@@ -51,11 +51,11 @@ if ($dbDriver === 'sqlite') {
     }
     $dsn = 'sqlite:' . $dbPath;
     try {
-        $dblink = new \PDO($dsn, null, null, [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        $dblink = new PDO($dsn, null, null, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]);
         $connectionSuccess = true;
-    } catch (\PDOException $e) {
+    } catch (PDOException $e) {
         $connectionSuccess = false;
     }
     test(_t('TEST_DATABASE_CONNECTION') . ' ...', $connectionSuccess);
@@ -74,11 +74,11 @@ if ($dbDriver === 'sqlite') {
     }
 
     try {
-        $dblink = new \PDO($dsnWithoutDb, $config['db_user'], $config['db_password'], [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        $dblink = new PDO($dsnWithoutDb, $config['db_user'], $config['db_password'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]);
         $connectionSuccess = true;
-    } catch (\PDOException $e) {
+    } catch (PDOException $e) {
         $connectionSuccess = false;
     }
     test(_t('TEST_DATABASE_CONNECTION') . ' ...', $connectionSuccess);
@@ -88,9 +88,9 @@ if ($dbDriver === 'sqlite') {
     if ($dbDriver === 'pgsql') {
         // PostgreSQL: check if database exists
         try {
-            $stmt = $dblink->query("SELECT 1 FROM pg_database WHERE datname = " . $dblink->quote($config['db_database']));
+            $stmt = $dblink->query('SELECT 1 FROM pg_database WHERE datname = ' . $dblink->quote($config['db_database']));
             $dbExists = $stmt->fetchColumn() !== false;
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             $dbExists = false;
         }
     } else {
@@ -98,7 +98,7 @@ if ($dbDriver === 'sqlite') {
         try {
             $dblink->exec('USE `' . $config['db_database'] . '`');
             $dbExists = true;
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             $dbExists = false;
         }
     }
@@ -119,7 +119,7 @@ if ($dbDriver === 'sqlite') {
                 $dblink->exec('CREATE DATABASE `' . $config['db_database'] . '`');
             }
             $createSuccess = true;
-        } catch (\PDOException $e) {
+        } catch (PDOException $e) {
             $createSuccess = false;
         }
         test(
@@ -142,10 +142,10 @@ if ($dbDriver === 'sqlite') {
                 $dsnWithDb .= ';port=' . $config['db_port'];
             }
         }
-        $dblink = new \PDO($dsnWithDb, $config['db_user'], $config['db_password'], [
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        $dblink = new PDO($dsnWithDb, $config['db_user'], $config['db_password'], [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         ]);
-    } catch (\PDOException $e) {
+    } catch (PDOException $e) {
         test(
             _t('SEARCH_FOR_DATABASE') . ' ...',
             false,
@@ -168,8 +168,8 @@ if ($dbDriver === 'sqlite') {
 $existingTables = [];
 try {
     $stmt = $dblink->query($tableCheckQuery);
-    $existingTables = $stmt->fetchAll(\PDO::FETCH_COLUMN);
-} catch (\PDOException $e) {
+    $existingTables = $stmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (PDOException $e) {
     $existingTables = [];
 }
 
@@ -237,14 +237,7 @@ $replacements = [
     'url' => $config['base_url'],
 ];
 
-// Determine which SQL file to use based on driver
-// Prefer Twig templates (.sql.twig) which work for all drivers
-$sqlFileBase = 'setup/sql/create-tables';
-$sqlFile = $sqlFileBase . '.sql';
-// For backwards compatibility, check for driver-specific SQL files first (if no Twig template)
-if (!file_exists($sqlFileBase . '.sql.twig') && $dbDriver !== 'mysql' && file_exists($sqlFileBase . '-' . $dbDriver . '.sql')) {
-    $sqlFile = $sqlFileBase . '-' . $dbDriver . '.sql';
-}
+$sqlFile = 'setup/sql/create-tables.sql.twig';
 
 // tables, admin user and admin group creation
 echo '<br /><b>' . _t('DATABASE_INSTALLATION') . "</b><br>\n";
@@ -260,14 +253,7 @@ test(
     1
 );
 
-// Default pages content
-// Prefer Twig templates (.sql.twig) which work for all drivers
-$sqlFileBase = 'setup/sql/default-content';
-$sqlFile = $sqlFileBase . '.sql';
-// For backwards compatibility, check for driver-specific SQL files first (if no Twig template)
-if (!file_exists($sqlFileBase . '.sql.twig') && $dbDriver !== 'mysql' && file_exists($sqlFileBase . '-' . $dbDriver . '.sql')) {
-    $sqlFile = $sqlFileBase . '-' . $dbDriver . '.sql';
-}
+$sqlFile = 'setup/sql/default-content.sql.twig';
 
 $result = @querySqlFile($dblink, $sqlFile, $replacements, $dbDriver);
 if (!$result) {
@@ -289,9 +275,9 @@ if (!$result) {
             }
 
             if ($tableExists) {
-                $countStmt = $dblink->query("SELECT COUNT(*) FROM " . ($dbDriver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\""));
+                $countStmt = $dblink->query('SELECT COUNT(*) FROM ' . ($dbDriver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\""));
                 if ($countStmt->fetchColumn() === 0) { /* empty table */
-                    $dblink->exec("DROP TABLE IF EXISTS " . ($dbDriver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\""));
+                    $dblink->exec('DROP TABLE IF EXISTS ' . ($dbDriver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\""));
                 }
             }
         } catch (Throwable $th) {

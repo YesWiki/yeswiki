@@ -17,6 +17,11 @@ services:
   YesWiki\Wiki:
     synthetic: true
 
+  # Allow autowiring services that need the container itself (e.g. to fetch a
+  # service lazily and break a circular dependency), matching Symfony's own
+  # convention of aliasing the PSR container interface to service_container.
+  Psr\Container\ContainerInterface: '@service_container'
+
   YesWiki\Core\Service\:
     resource: 'services/*'
 

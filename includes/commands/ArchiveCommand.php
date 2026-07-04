@@ -43,7 +43,7 @@ class ArchiveCommand extends Command
         ;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         ob_start(); // This code is necessary because Symfony stop the process if a response is sent back.
 

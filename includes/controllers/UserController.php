@@ -323,9 +323,9 @@ class UserController extends YesWikiController
     private function removeOwnership(User $user)
     {
         $pagesWhereOwner = $this->dbService->loadAll("
-            SELECT `tag` FROM {$this->dbService->prefixTable('pages')} 
-            WHERE `owner` = \"{$this->dbService->escape($user['name'])}\"
-            AND `latest` = \"Y\" ;
+            SELECT `tag` FROM {$this->dbService->prefixTable('pages')}
+            WHERE `owner` = '{$this->dbService->escape($user['name'])}'
+            AND `latest` = 'Y' ;
         ");
         $pagesWhereOwner = array_map(function ($page) {
             return $page['tag'];

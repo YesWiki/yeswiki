@@ -185,7 +185,7 @@ class TripleStore
      */
     public function exist($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX): ?int
     {
-        $sql = 'SELECT id FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($re_prefix . $resource) . '" AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" AND value = "' . $this->dbService->escape($value) . '"';
+        $sql = "SELECT id FROM " . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($re_prefix . $resource) . "' AND property = '" . $this->dbService->escape($prop_prefix . $property) . "' AND value = '" . $this->dbService->escape($value) . "'";
         $triple = $this->dbService->loadSingle($sql);
 
         return !is_null($triple) ?
@@ -226,7 +226,7 @@ class TripleStore
         }
         $this->matchingCache = [];
 
-        $sql = 'INSERT INTO ' . $this->dbService->prefixTable('triples') . ' (resource, property, value)VALUES ("' . $this->dbService->escape($res) . '", "' . $this->dbService->escape($prop_prefix . $property) . '", "' . $this->dbService->escape($value) . '")';
+        $sql = 'INSERT INTO ' . $this->dbService->prefixTable('triples') . " (resource, property, value)VALUES ('" . $this->dbService->escape($res) . "', '" . $this->dbService->escape($prop_prefix . $property) . "', '" . $this->dbService->escape($value) . "')";
 
         return $this->dbService->query($sql) ? 0 : 1;
     }
@@ -273,7 +273,7 @@ class TripleStore
         }
         $this->matchingCache = [];
 
-        $sql = 'UPDATE ' . $this->dbService->prefixTable('triples') . ' SET value = "' . $this->dbService->escape($newvalue) . '" WHERE id = ' . $id;
+        $sql = 'UPDATE ' . $this->dbService->prefixTable('triples') . " SET value = '" . $this->dbService->escape($newvalue) . "' WHERE id = " . $id;
 
         return $this->dbService->query($sql) ? 0 : 1;
     }
@@ -302,7 +302,7 @@ class TripleStore
         }
         $res = $re_prefix . $resource;
 
-        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($res) . '" AND property = "' . $this->dbService->escape($prop_prefix . $property) . '" ';
+        $sql = "DELETE FROM " . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($res) . "' AND property = '" . $this->dbService->escape($prop_prefix . $property) . "' ";
         if ($value !== null) {
             $valueQuery = "AND value = '" . $this->dbService->escape($value) . "'";
             $sql .= $valueQuery;

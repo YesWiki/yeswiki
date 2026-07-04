@@ -78,7 +78,7 @@ class CommentService implements EventSubscriberInterface
                 // find number
                 $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
                     . ' FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'pages'
-                    . ' WHERE comment_on != ""';
+                    . " WHERE comment_on != ''";
                 if ($lastComment = $this->wiki->LoadSingle($sql)) {
                     $num = $lastComment['comment_id'] + 1;
                 } else {
