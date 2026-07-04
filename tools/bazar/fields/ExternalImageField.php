@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @Field({"externalimagefield"})
- */
+#[\Field(['externalimagefield'])]
 class ExternalImageField extends ImageField
 {
     protected $JSONFormAddress;

@@ -1,4 +1,5 @@
 <?php
+
 /*
 pageonlyindex.php
 lists all the pages of the wiki BUT bazar records.

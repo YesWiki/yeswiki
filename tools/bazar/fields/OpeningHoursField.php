@@ -2,9 +2,9 @@
 
 namespace YesWiki\Bazar\Field;
 
-/**
- * @Field({"openinghours"})
- */
+use Field;
+
+#[\Field(['openinghours'])]
 class OpeningHoursField extends BazarField
 {
     protected function renderInput($entry)

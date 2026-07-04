@@ -37,8 +37,6 @@ class TagsManager
                 $this->tripleStore->delete($page, 'http://outils-reseaux.org/_vocabulary/tag', $tab['value'], '', '');
             }
         }
-
-        return;
     }
 
     public function save($page, $liste_tags)
@@ -77,8 +75,6 @@ class TagsManager
                 $this->tripleStore->delete($page, 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
             }
         }
-
-        return;
     }
 
     public function getAll($page = '')
@@ -88,9 +84,9 @@ class TagsManager
             $sql = "SELECT DISTINCT value FROM" . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/tag'";
 
             return $this->dbService->loadAll($sql);
-        } else {
-            return $this->tripleStore->getAll($this->wiki->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         }
+
+        return $this->tripleStore->getAll($this->wiki->GetPageTag(), 'http://outils-reseaux.org/_vocabulary/tag', '', '');
     }
 
     public function getPagesByTags($tags = '', $type = '', $nb = '', $tri = '')
@@ -135,5 +131,21 @@ class TagsManager
 
             return $this->dbService->loadAll($sql);
         }
+        // recuperation des pages wikis
+        $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
+        if (!empty($taglist)) {
+            $sql .= ' INNER JOIN ' . $this->dbService->prefixTable('triples') . ' as tags ON tag=tags.resource';
+        }
+        $sql .= ' WHERE latest="Y" AND comment_on="" AND tag NOT LIKE "LogDesActionsAdministratives%" ';
+
+        if ($type == 'wiki') {
+            $sql .= ' AND tag NOT IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . 'WHERE property="http://outils-reseaux.org/_vocabulary/type") ';
+        } elseif ($type == 'bazar') {
+            $sql .= ' AND tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar")';
+        }
+
+        $sql .= ' ORDER BY tag ASC';
+
+        return $this->dbService->loadAll($sql);
     }
 }

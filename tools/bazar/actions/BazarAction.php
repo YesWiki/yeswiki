@@ -157,12 +157,12 @@ class BazarAction extends YesWikiAction
                         if (!empty($this->arguments['idtypeannonce']['locals'])) {
                             if (count($this->arguments['idtypeannonce']['locals']) > 1) {
                                 return $entryController->selectForm($this->arguments['idtypeannonce']['locals']);
-                            } else {
-                                return $entryController->create($this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
                             }
-                        } else {
-                            return $entryController->selectForm();
+
+                            return $entryController->create($this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
                         }
+
+                        return $entryController->selectForm();
                 }
                 // no break
             case self::VOIR_FORMULAIRE:

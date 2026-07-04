@@ -64,35 +64,32 @@ function _convert($text, $fromencoding, $database = false)
         }
 
         return $arraytext;
-    } else {
-        if ($database) {
-            if ($fromencoding != 'ISO-8859-1' && $fromencoding != 'ISO-8859-15') {
-                return mb_convert_encoding(
-                    $text,
-                    YW_CHARSET,
-                    mb_detect_encoding($text, 'UTF-8, ISO-8859-1, ISO-8859-15', true)
-                );
-            // return \ForceUTF8\Encoding::toLatin1($text);
-            } else {
-                return $text;
-            }
-        } else {
-            if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
-                $text = ForceUTF8\Encoding::toUTF8($text);
-
-                return ForceUTF8\Encoding::fixUTF8($text);
-            } else {
-                // return $text;
-                // if (strstr($text, 'disposition selon'))  {
-                //   var_dump(strip_tags($text), \ForceUTF8\Encoding::fixUTF8(strip_tags($text)));
-                //   exit;
-                //
-                // }
-
-                return ForceUTF8\Encoding::fixUTF8($text);
-            }
-        }
     }
+    if ($database) {
+        if ($fromencoding != 'ISO-8859-1' && $fromencoding != 'ISO-8859-15') {
+            return mb_convert_encoding(
+                $text,
+                YW_CHARSET,
+                mb_detect_encoding($text, 'UTF-8, ISO-8859-1, ISO-8859-15', true)
+            );
+            // return \ForceUTF8\Encoding::toLatin1($text);
+        }
+
+        return $text;
+    }
+    if (@iconv('utf-8', 'utf-8//IGNORE', $text) != $text) {
+        $text = ForceUTF8\Encoding::toUTF8($text);
+
+        return ForceUTF8\Encoding::fixUTF8($text);
+    }
+    // return $text;
+    // if (strstr($text, 'disposition selon'))  {
+    //   var_dump(strip_tags($text), \ForceUTF8\Encoding::fixUTF8(strip_tags($text)));
+    //   exit;
+    //
+    // }
+
+    return ForceUTF8\Encoding::fixUTF8($text);
 }
 
 /**
@@ -161,12 +158,12 @@ function detectPreferedLanguage($wiki, $available_languages, $http_accept_langua
                     function ($matches) use ($allowed_classes) {
                         if (is_array($allowed_classes) && in_array($matches[2], $allowed_classes)) {
                             return $matches[0];
-                        } else {
-                            return $matches[1] . ':22:"__PHP_Incomplete_Class":' .
-                                ($matches[3] + 1) .
-                                ':{s:27:"__PHP_Incomplete_Class_Name";' .
-                                serialize($matches[2]);
                         }
+
+                        return $matches[1] . ':22:"__PHP_Incomplete_Class":' .
+                            ($matches[3] + 1) .
+                            ':{s:27:"__PHP_Incomplete_Class_Name";' .
+                            serialize($matches[2]);
                     },
                     $_POST['config']
                 );
@@ -281,8 +278,6 @@ function initI18n()
     $GLOBALS['available_languages'] = detectAvailableLanguages();
     $wiki = isset($GLOBALS['wiki']) ? $GLOBALS['wiki'] : '';
     $GLOBALS['prefered_language'] = detectPreferedLanguage($wiki, $GLOBALS['available_languages']);
-
-    return;
 }
 
 /**
@@ -304,8 +299,6 @@ function loadpreferredI18n($wiki, $page = '')
         $returnedArray = include_once 'lang/yeswikijs_' . $GLOBALS['prefered_language'] . '.php';
         load_translations($returnedArray, true);
     }
-
-    return;
 }
 
 function load_translations($returnedArray, bool $jsmode = false)

@@ -119,7 +119,6 @@ class CSVManager
     /**
      * get CSV of all entries from form.
      *
-     * @param $pFormId : the form ID for SearchManager::search
      * @param <array> $pParams : parameters for SearchManager::search
      *	        	[
      *					"query" => <string>|<array> the query
@@ -272,7 +271,6 @@ class CSVManager
     /**
      * getLabelsFromEnumFieldOptions.
      *
-     * @param mixed               $value
      * @param BazarEnumFieldField $field
      *
      * @return mixed array|string|null
@@ -350,7 +348,7 @@ class CSVManager
                 $options = $header['field']->getOptions();
                 $index = rand(1, count($options)) - 1;
                 $line[] = trim($this->arrayToCSV([ // emulate CSV
-                    [ //emulate a line
+                    [ // emulate a line
                         'ligne ' . $lineNumber . ' - champ ' . $columnNumber .
                             (empty($options) ? '' : ' - ex: ' . $options[array_keys($options)[$index]]),
                     ],
@@ -415,7 +413,7 @@ class CSVManager
 
             // import file
             if (!empty($filesData) && ($filesData['error'] == 0)) {
-                //Check if the file is csv
+                // Check if the file is csv
                 $filename = basename($filesData['name']);
                 $ext = substr($filename, strrpos($filename, '.') + 1);
                 if ($ext == 'csv') {
@@ -494,8 +492,6 @@ class CSVManager
 
     /**
      * splice array from key.
-     *
-     * @param array &$line
      */
     private function array_splice_from_key(array &$line, string $key)
     {
@@ -784,11 +780,11 @@ class CSVManager
                 // search if $option is a correct value then take assoiacted index
                 return $flippedOptions[$option];
             } elseif (isset($options[$option])) {
-                //search if $option is an index
+                // search if $option is an index
                 return $option;
-            } else {
-                return null;
             }
+
+            return null;
         }, $values);
 
         return implode(',', $indexes);
@@ -812,7 +808,7 @@ class CSVManager
             $value = $nomimage;
         } elseif (file_exists(BAZ_CHEMIN_UPLOAD . $imageorig)) {
             if (preg_match('/(gif|jpeg|png|jpg)$/i', $nomimage)) {
-                //on enleve les accents sur les noms de fichiers, et les espaces
+                // on enleve les accents sur les noms de fichiers, et les espaces
                 $nomimage = preg_replace(
                     '/&([a-z])[a-z]+;/i',
                     '$1',
@@ -822,7 +818,7 @@ class CSVManager
                 $value = $nomimage;
                 $chemin_destination = BAZ_CHEMIN_UPLOAD . $nomimage;
 
-                //verification de la presence de ce fichier
+                // verification de la presence de ce fichier
                 if (!file_exists($chemin_destination)) {
                     rename(
                         BAZ_CHEMIN_UPLOAD .
@@ -863,7 +859,7 @@ class CSVManager
         } elseif (file_exists(BAZ_CHEMIN_UPLOAD . $fileUrl)) {
             $value = $file;
             $chemin_destination = BAZ_CHEMIN_UPLOAD . $file;
-            //verification de la presence de ce fichier
+            // verification de la presence de ce fichier
             if (!file_exists($chemin_destination)) {
                 rename(
                     BAZ_CHEMIN_UPLOAD . $fileUrl,

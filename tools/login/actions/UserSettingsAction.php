@@ -164,24 +164,23 @@ class UserSettingsAction extends YesWikiAction
                 'user' => $user,
                 'userLoggedIn' => $this->userLoggedIn,
             ]);
-        } else {
-            $captcha = $this->securityController->renderCaptchaField();
-            $captcha = preg_replace('/(' .
-                preg_quote('<div class="media-body">', '/') .
-                "\s*" .
-                preg_quote('<strong>', '/') .
-                ')[^<]*(' .
-                preg_quote('</strong>', '/') .
-                ')/', '$1' . _t('USERSETTINGS_CAPTCHA_USER_CREATION') . '$2', $captcha);
-
-            return $this->render('@login/user-signup-form.twig', [
-                'error' => $this->error,
-                'name' => $this->wantedUserName,
-                'email' => $this->wantedEmail,
-                'captcha' => $captcha,
-                'regexUserName' => UserController::PATTERN_USER_NAME,
-            ]);
         }
+        $captcha = $this->securityController->renderCaptchaField();
+        $captcha = preg_replace('/(' .
+            preg_quote('<div class="media-body">', '/') .
+            "\s*" .
+            preg_quote('<strong>', '/') .
+            ')[^<]*(' .
+            preg_quote('</strong>', '/') .
+            ')/', '$1' . _t('USERSETTINGS_CAPTCHA_USER_CREATION') . '$2', $captcha);
+
+        return $this->render('@login/user-signup-form.twig', [
+            'error' => $this->error,
+            'name' => $this->wantedUserName,
+            'email' => $this->wantedEmail,
+            'captcha' => $captcha,
+            'regexUserName' => UserController::PATTERN_USER_NAME,
+        ]);
     }
 
     private function logout()

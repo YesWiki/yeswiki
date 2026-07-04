@@ -8,7 +8,7 @@ if ($user = $this->GetUser()) {
     $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
     $userCol = $dbService->quoteIdentifier('user');
 
-    if (($bydate = $this->GetParameter('bydate'))) {
+    if ($bydate = $this->GetParameter('bydate')) {
         echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE') . ".</b><br /><br />\n";
 
         if ($pages = $this->LoadAll("SELECT tag, time FROM " . $this->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {

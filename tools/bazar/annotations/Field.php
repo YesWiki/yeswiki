@@ -1,10 +1,12 @@
 <?php
 
-/**
- * @Annotation
- */
+#[Attribute(Attribute::TARGET_CLASS)]
 final class Field
 {
-    /** @array */
-    public $keywords;
+    public array $keywords;
+
+    public function __construct(array $keywords = [])
+    {
+        $this->keywords = $keywords;
+    }
 }

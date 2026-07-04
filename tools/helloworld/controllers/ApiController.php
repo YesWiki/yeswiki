@@ -4,15 +4,13 @@ namespace YesWiki\HelloWorld\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
 {
-    /**
-     * @Route("/api/hello/{name}", options={"acl":{"public"}})
-     */
+    #[Route('/api/hello/{name}', options: ['acl' => ['public']])]
     public function sayHello(Request $request, $name)
     {
         $action = $request->get('action') ?? 'hello';
@@ -20,9 +18,7 @@ class ApiController extends YesWikiController
         return new ApiResponse([$action => $name]);
     }
 
-    /**
-     * @Route("/api/hello", options={"acl":{"public"}})
-     */
+    #[Route('/api/hello', options: ['acl' => ['public']])]
     public function onlineDoc()
     {
         $output = $this->getDocumentation();

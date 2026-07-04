@@ -6,7 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Service\BazarListService;
@@ -25,10 +25,8 @@ use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
 {
-    /**
-     * @Route("/api/forms", methods={"GET"},options={"acl":{"public"}})
-     * @Route("/api/forms/", methods={"GET"},options={"acl":{"public"}})
-     */
+    #[Route('/api/forms', methods: ['GET'], options: ['acl' => ['public']])]
+    #[Route('/api/forms/', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllForms()
     {
         $forms = $this->getService(FormManager::class)->getAll();
@@ -36,10 +34,8 @@ class ApiController extends YesWikiController
         return new ApiResponse(empty($forms) ? null : $forms);
     }
 
-    /**
-     * @Route("/api/forms/{formId}", methods={"GET"},options={"acl":{"public"}})
-     * @Route("/api/forms/{formId}/", methods={"GET"},options={"acl":{"public"}})
-     */
+    #[Route('/api/forms/{formId}', methods: ['GET'], options: ['acl' => ['public']])]
+    #[Route('/api/forms/{formId}/', methods: ['GET'], options: ['acl' => ['public']])]
     public function getForm($formId)
     {
         if (strpos($formId, 'b64_') === 0) {
@@ -57,163 +53,7 @@ class ApiController extends YesWikiController
         return new ApiResponse($vForm);
     }
 
-    /**
-     * @Route("/api/forms/{formId}/actor", methods={"GET"}, options={"acl":{"public"}})
-     */
-    public function getFormActor($formId)
-    {
-        $activityPubService = $this->getService(ActivityPubService::class);
-
-        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
-
-        if ($activityPubService->isEnabled($form)) {
-            $actor = $activityPubService->getActor($form);
-
-            return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
-        }
-    }
-
-    /**
-     * @Route("/api/forms/{formId}/actor/followers", methods={"GET"}, options={"acl":{"public"}})
-     */
-    public function getFormActorFollowers($formId, Request $request)
-    {
-        $activityPubService = $this->getService(ActivityPubService::class);
-
-        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
-
-        if ($activityPubService->isEnabled($form)) {
-            $followers = $activityPubService->getFollowers($form);
-
-            return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
-                'type' => 'Collection',
-                'id' => $activityPubService->getFormCollectionUri($form, 'followers'),
-                'items' => $followers,
-            ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
-        }
-    }
-
-        /**
-     * @Route("/api/forms/{formId}/actor/following", methods={"GET"}, options={"acl":{"public"}})
-     */
-    public function getFormActorFollowing($formId, Request $request)
-    {
-        $activityPubService = $this->getService(ActivityPubService::class);
-
-        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
-
-        if ($activityPubService->isEnabled($form)) {
-            $following = $activityPubService->getFollowing($form);
-
-            return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
-                'type' => 'Collection',
-                'id' => $activityPubService->getFormCollectionUri($form, 'following'),
-                'items' => $following,
-            ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
-        }
-    }
-
-    /**
-     * @Route("/api/forms/{formId}/actor/inbox", methods={"POST"}, options={"acl":{"public"}})
-     */
-    public function postFormActorInbox($formId, Request $request)
-    {
-        $activityPubService = $this->getService(ActivityPubService::class);
-        $httpSignatureService = $this->getService(HttpSignatureService::class);
-
-        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
-
-        if ($activityPubService->isEnabled($form)) {
-            $activity = json_decode($request->getContent(), true);
-
-            $httpSignatureService->verifySignature($request);
-            $activityPubService->processActivity($activity, $form);
-
-            return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
-        }
-    }
-
-    /**
-     * @Route("/api/forms/{formId}/actor/outbox", methods={"GET"}, options={"acl":{"public"}})
-     */
-    public function getFormActorOutbox($formId, Request $request)
-    {
-        $activityPubService = $this->getService(ActivityPubService::class);
-        $bazarListService = $this->getService(BazarListService::class);
-
-        $form = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $formId])[$formId];
-
-        if ($activityPubService->isEnabled($form)) {
-            $entries = $bazarListService->getEntries([
-                'idtypeannonce' => $formId,
-                'ordre' => 'asc',
-                'queries' => '',
-                // TODO Handle pagination
-                // 'nb' => 100 
-            ]);
-
-            return new ApiResponse([
-                '@context' => "https://www.w3.org/ns/activitystreams",
-                'type' => 'OrderedCollection',
-                'id' => $activityPubService->getFormCollectionUri($form, 'following'),
-                'totalItems' => count($entries),
-                'orderedItems' => array_map(function ($entry) use ($form, $activityPubService) {
-                    $object = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
-                    unset($object['@context']);
-                    $published = new \DateTime($entry['date_creation_fiche']);
-                    return [
-                        'type' => 'Create',
-                        'actor' => $activityPubService->getFormActorUri($form),
-                        'published' => $published->format(\DateTime::ISO8601),
-                        'object' => $object,
-                        'to' => [$activityPubService->getFormCollectionUri($form, 'followers'), 'https://www.w3.org/ns/activitystreams#Public'],
-                    ];
-                }, array_values($entries)),
-            ], Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-
-            return new ApiResponse(null, Response::HTTP_OK, ['Content-Type' => 'application/activity+json']);
-        } else {
-            throw new NotFoundHttpException();
-        }
-    }
-
-    /**
-     * @Route("/api/webfinger", methods={"GET"}, options={"acl":{"public"}})
-     */
-    public function getWebfinger(Request $request)
-    {
-        $webfingerService = $this->getService(WebfingerService::class);
-        $activityPubService = $this->getService(ActivityPubService::class);
-
-        $handle = substr($request->query->get('resource'), 5); // Remove 'acct:' prefix
-
-        $matches = $webfingerService->splitHandle($handle);
-
-        $form = $this->getService(FormManager::class)->findByActivityPubUsername($matches['user']);
-
-        if ($form) {
-            $actorUri = $activityPubService->getFormActorUri($form);
-            $actor = $webfingerService->formatLocalActor($handle, $actorUri);
-
-            return new ApiResponse($actor, Response::HTTP_OK, ['Content-Type' => 'application/json']);
-        } else {
-            throw new NotFoundHttpException();
-        }
-    }
-
-    /**
-     * @Route("/api/forms/{formId}/entries/{output}/{selectedEntries}", methods={"GET"},options={"acl":{"public"}})
-     */
+    #[Route('/api/forms/{formId}/entries/{output}/{selectedEntries}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllFormEntries($formId, $output = null, $selectedEntries = null)
     {
         if (!is_array($formId) && strpos($formId, 'b64_') === 0) {
@@ -304,9 +144,7 @@ class ApiController extends YesWikiController
         return new ApiResponse(empty($entries) ? null : $entries);
     }
 
-    /**
-     * @Route("/api/entries/{output}/{selectedEntries}", methods={"GET"}, options={"acl":{"public"}})
-     */
+    #[Route('/api/entries/{output}/{selectedEntries}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllEntries($output = null, $selectedEntries = null)
     {
         // fast access for one entry
@@ -391,9 +229,7 @@ class ApiController extends YesWikiController
         );
     }
 
-    /**
-     * @Route("/api/entry/url/{sourceUrl}")
-     */
+    #[Route('/api/entry/url/{sourceUrl}')]
     public function getEntryUrl($sourceUrl)
     {
         $triples = $this->getService(TripleStore::class)->getMatching(
@@ -414,9 +250,8 @@ class ApiController extends YesWikiController
 
     /**
      * Create or update an entry.
-     *
-     * @Route("/api/entries/{formId}", methods={"POST"}, options={"acl":{"+"}})
      */
+    #[Route('/api/entries/{formId}', methods: ['POST'], options: ['acl' => ['+']])]
     public function createEntry($formId)
     {
         if (strpos($_SERVER['CONTENT_TYPE'], 'application/ld+json') !== false) {
@@ -441,9 +276,7 @@ class ApiController extends YesWikiController
         );
     }
 
-    /**
-     * @Route("/api/entries/{formId}/json-ld", methods={"POST"}, options={"acl":{"+"}})
-     */
+    #[Route('/api/entries/{formId}/json-ld', methods: ['POST'], options: ['acl' => ['+']])]
     public function createSemanticEntry($formId)
     {
         $_POST['antispam'] = 1;
@@ -459,15 +292,13 @@ class ApiController extends YesWikiController
         ]);
     }
 
-    /**
-     * @Route("/api/entries/bazarlist", methods={"GET"}, options={"acl":{"public"}},priority=2)
-     */
+    #[Route('/api/entries/bazarlist', methods: ['GET'], options: ['acl' => ['public']], priority: 2)]
     public function getBazarListData()
     {
         $vBazarListService = $this->getService(BazarListService::class);
 
         /* ------------------------------------ */
-        /*             Format Params            */
+        /*             Format Params */
         /* ------------------------------------ */
 
         $formattedGet = array_map(function ($value) {
@@ -485,7 +316,7 @@ class ApiController extends YesWikiController
         $formattedGet['idtypeannonce'] = $_GET['idtypeannonce'] ?? $_GET['id'] ?? null;
 
         /* ------------------------------------ */
-        /*               Get Data               */
+        /*               Get Data */
         /* ------------------------------------ */
         // All forms
         $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($_GET['refresh']) ? in_array($_GET['refresh'], [1, true, '1', 'true'], true) : false]);
@@ -497,7 +328,7 @@ class ApiController extends YesWikiController
         $filters = $vBazarListService->getFilters($formattedGet, $entries, $forms);
 
         /* ------------------------------------ */
-        /*            Transform Data            */
+        /*            Transform Data */
         /* ------------------------------------ */
 
         // Associated Forms

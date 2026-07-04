@@ -9,5 +9,5 @@ if (
     // if not redirected by setwikidefaulttheme : redirect
     $this->Redirect($this->href('', $this->tag));
 } else {
-    echo $this->services->get(\YesWiki\Templates\Controller\ThemeController::class)->showFormThemeSelector('selector', $class);
+    echo $this->services->get(YesWiki\Templates\Controller\ThemeController::class)->showFormThemeSelector('selector', $class);
 }

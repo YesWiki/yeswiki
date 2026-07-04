@@ -2,13 +2,12 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Controller\ApiController as BazarApiController;
 use YesWiki\Core\Service\AclService;
 
-/**
- * @Field({"champs_mail"})
- */
+#[\Field(['champs_mail'])]
 class EmailField extends BazarField
 {
     protected $seeEmailAcls;

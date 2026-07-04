@@ -47,10 +47,9 @@ class GenerateMigrationCommand extends Command
             $output->writeln("Migration file created successfully: $filePath");
 
             return Command::SUCCESS;
-        } else {
-            $output->writeln("Error: Migration file already exists: $filePath");
-
-            return Command::FAILURE;
         }
+        $output->writeln("Error: Migration file already exists: $filePath");
+
+        return Command::FAILURE;
     }
 }

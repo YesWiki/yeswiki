@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\HtmlPurifierService;
 
-/**
- * @Field({"bookmarklet"})
- */
+#[\Field(['bookmarklet'])]
 class BookmarkletField extends BazarField
 {
     protected $urlField;

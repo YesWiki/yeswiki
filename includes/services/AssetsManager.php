@@ -50,8 +50,6 @@ class AssetsManager
         if (!empty($style) && !strpos($GLOBALS['css'], '<style>' . "\n" . $style . '</style>')) {
             $GLOBALS['css'] .= '  <style>' . "\n" . $style . '</style>' . "\n";
         }
-
-        return;
     }
 
     public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
@@ -65,8 +63,6 @@ class AssetsManager
         if ($code && !strpos($GLOBALS['css'], $code)) {
             $GLOBALS['css'] .= $code;
         }
-
-        return;
     }
 
     // this one can be used to directly include a css file within HTML with "echo $this->LinkCSSFile()"
@@ -85,9 +81,9 @@ class AssetsManager
                 <link rel="stylesheet" href="{$href}?v={$revision}" $attrs>
                 $conditionend
             HTML;
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     public function AddJavascript($script, $module = false)
@@ -98,8 +94,6 @@ class AssetsManager
         if (!empty($script) && !strpos($GLOBALS['js'], $script . '</script>')) {
             $GLOBALS['js'] .= '  <script' . ($module ? ' type="module"' : '') . '>' . "\n" . $script . '</script>' . "\n";
         }
-
-        return;
     }
 
     public function AddJavascriptFile($file, $first = false, $module = false)
@@ -138,8 +132,6 @@ class AssetsManager
                 $GLOBALS['js'] .= $code . "\n";
             }
         }
-
-        return;
     }
 
     private function mapFilePath($file)

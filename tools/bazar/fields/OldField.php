@@ -2,14 +2,14 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\TemplateEngine;
 
 /**
  * Ensure backwardompatibility with old format field.
- *
- * @Field({"old"})
  */
+#[\Field(['old'])]
 class OldField extends BazarField
 {
     protected $functionName;

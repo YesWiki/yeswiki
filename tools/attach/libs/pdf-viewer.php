@@ -18,5 +18,5 @@ if (file_exists(VIEWER_PATH)) {
         </body>
     </html>
     HTML;
-    exit();
+    exit;
 }

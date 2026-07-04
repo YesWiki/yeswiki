@@ -2,13 +2,11 @@
 
 namespace YesWiki\Core\Commands;
 
-use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Throwable;
 use YesWiki\Core\Service\ConsoleService;
 use YesWiki\Wiki;
 
@@ -72,7 +70,7 @@ class DbCommand extends Command
      *               'password' => string
      *               ]
      *
-     * @throws Exception
+     * @throws \Exception
      */
     private function getDbParams(): array
     {
@@ -107,8 +105,8 @@ class DbCommand extends Command
      *
      * @return int Command:code
      *
-     * @throws Exception
-     * @throws Throwable
+     * @throws \Exception
+     * @throws \Throwable
      */
     private function export(OutputInterface $output, string $filepath): int
     {
@@ -140,7 +138,7 @@ class DbCommand extends Command
             $err = $this->getErr($results);
             try {
                 $fileContent = file_get_contents($realFilePath);
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 $fileContent = '';
             }
             if (!empty($fileContent)) {
@@ -148,7 +146,7 @@ class DbCommand extends Command
             } elseif (!empty($err)) {
                 $output->writeln($err);
             }
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $output->writeln("System error when testing mysqldump : {$ex->getMessage()}");
         }
 
@@ -160,7 +158,7 @@ class DbCommand extends Command
      *
      * @return int Command:code
      *
-     * @throws Throwable
+     * @throws \Throwable
      */
     private function test(OutputInterface $output): int
     {
@@ -197,14 +195,14 @@ class DbCommand extends Command
                 );
                 $outputResult = $this->getOutput($results);
                 if (empty($outputResult)) {
-                    throw new Exception('output should not be empty during test to connect to database via mysql');
+                    throw new \Exception('output should not be empty during test to connect to database via mysql');
                 }
                 $output->writeln('OK');
 
                 return Command::SUCCESS;
             }
-        } catch (Throwable $ex) {
-            $output->writeln("System error when testing mysqldump : " . $this->wiki->dumpThrowable ($ex));
+        } catch (\Throwable $ex) {
+            $output->writeln('System error when testing mysqldump : ' . $this->wiki->dumpThrowable($ex));
         }
         $output->writeln('NOK');
 
@@ -231,14 +229,12 @@ class DbCommand extends Command
     /**
      * assert param is a not empty string.
      *
-     * @param mixed $param
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function assertParamIsNotEmptyString(string $name, $param)
     {
         if (empty($param)) {
-            throw new Exception("'$name' should not be empty in 'wakka.config.php'");
+            throw new \Exception("'$name' should not be empty in 'wakka.config.php'");
         }
         $this->assertParamIsString($name, $param);
     }
@@ -246,14 +242,12 @@ class DbCommand extends Command
     /**
      * assert param is a string.
      *
-     * @param mixed $param
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function assertParamIsString(string $name, $param)
     {
         if (!is_string($param)) {
-            throw new Exception("'$name' should be a string in 'wakka.config.php'");
+            throw new \Exception("'$name' should be a string in 'wakka.config.php'");
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace YesWiki\Bazar\Field;
 
-use Exception;
+use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Service\FormManager;
@@ -12,9 +12,7 @@ use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\UserManager;
 
-/**
- * @Field({"yeswiki_user", "utilisateur_wikini"})
- */
+#[\Field(['yeswiki_user', 'utilisateur_wikini'])]
 class UserField extends BazarField
 {
     protected $nameField;
@@ -153,11 +151,11 @@ class UserField extends BazarField
                 }
             }
             if (!isset($entry[$this->emailField])) {
-                throw new Exception("\$entry[{$this->emailField}] should be set in UserField->formatValuesBeforeSave(\$entry)");
+                throw new \Exception("\$entry[{$this->emailField}] should be set in UserField->formatValuesBeforeSave(\$entry)");
             }
             if (!$isImport) {
                 if (!isset($entry['mot_de_passe_repete_wikini'])) {
-                    throw new Exception("\$entry['mot_de_passe_repete_wikini'] should be set in UserField->formatValuesBeforeSave(\$entry)");
+                    throw new \Exception("\$entry['mot_de_passe_repete_wikini'] should be set in UserField->formatValuesBeforeSave(\$entry)");
                 }
                 if ($entry['mot_de_passe_wikini'] !== $entry['mot_de_passe_repete_wikini']) {
                     throw new UserFieldException(_t('USER_PASSWORDS_NOT_IDENTICAL'));
@@ -172,7 +170,7 @@ class UserField extends BazarField
                 ]);
             } catch (UserNameAlreadyUsedException $ex) {
                 throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
-            } catch (Exception $ex) {
+            } catch (\Exception $ex) {
                 throw new UserFieldException($ex->getMessage() . ' User: ' . $wikiName . ' - Email: ' . $entry[$this->emailField], $ex->getCode(), $ex);
             }
 
@@ -307,7 +305,7 @@ class UserField extends BazarField
                     $userController->update($user, ['email' => $email]);
                 } catch (UserNameAlreadyUsedException $ex) {
                     throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
-                } catch (Exception $ex) {
+                } catch (\Exception $ex) {
                     throw new UserFieldException($ex->getMessage(), $ex->getCode(), $ex);
                 }
             }
@@ -326,7 +324,7 @@ class UserField extends BazarField
             foreach ($groups as $group) {
                 $group = trim($group);
                 $forceGroupCreation = (substr($group, 0, 1) === '+');
-                $groupName = substr($group, ($forceGroupCreation ? 1 : 0));
+                $groupName = substr($group, $forceGroupCreation ? 1 : 0);
                 if (substr($groupName, 0, 1) !== '@') {
                     // field name
                     $field = $formManager->findFieldFromNameOrPropertyName($groupName, $entry['id_typeannonce']);

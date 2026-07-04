@@ -15,7 +15,7 @@ class FooterAction extends YesWikiAction
             // catch errors and exception to avoid a loop with error management in Performer
             $output = '<style>.alert-error-message{border: red solid 4px;background-color: #FE8;padding: 2px;color:gray;}</style>' . "\n";
             $output .= '<div class="alert-error-message alert">' . "\n";
-            $output .= _t('PERFORMABLE_ERROR') . '<br/>' . $this->wiki->dumpThrowable ($t) . '<br/>';
+            $output .= _t('PERFORMABLE_ERROR') . '<br/>' . $this->wiki->dumpThrowable($t) . '<br/>';
             $output .= '<a href="' . $this->wiki->Href() . '">Return</a>' . "\n";
             $output .= '</div>';
 
@@ -43,7 +43,7 @@ class FooterAction extends YesWikiAction
                 $end = microtime(true);
                 $debug_log = "<div class=\"debug\">\n<h4>Query log</h4>\n";
                 $debug_log .= '<strong>' . round($end - T_START, 4) . " s total time<br />\n";
-                $debug_log .= round($T_SQL, 4) . ' s total SQL time</strong> (' . round((($T_SQL / ($end - T_START)) * 100), 2) . "% of total time)<br />\n";
+                $debug_log .= round($T_SQL, 4) . ' s total SQL time</strong> (' . round(($T_SQL / ($end - T_START)) * 100, 2) . "% of total time)<br />\n";
                 $debug_log .= '<strong>' . count($queryLog) . " queries :</strong><br />\n";
                 $debug_log .= $debug_log_sql_queries;
                 $debug_log .= "</div>\n";

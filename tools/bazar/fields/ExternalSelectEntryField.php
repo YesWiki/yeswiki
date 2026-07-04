@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
-/**
- * @Field({"externalselectentryfield"})
- */
+#[\Field(['externalselectentryfield'])]
 class ExternalSelectEntryField extends SelectEntryField
 {
     protected $JSONFormAddress;

@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @Field({"liste"})
- */
+#[\Field(['liste'])]
 class SelectListField extends EnumField
 {
     public function __construct(array $values, ContainerInterface $services)

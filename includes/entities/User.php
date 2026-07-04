@@ -3,13 +3,12 @@
 namespace YesWiki\Core\Entity;
 
 use ArrayAccess;
-use Exception;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use YesWiki\Core\Exception\UserNotAuthorizedToSetOffset;
 use YesWiki\Core\Exception\UserNotExistingOffset;
 
-class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAccess
+class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayAccess
 {
     // Obviously needs a group or ACLS class. In the meantime, use of $this->wiki->GetGroupACL and so on
 
@@ -33,7 +32,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     {
         foreach (self::PROPS_LIST as $key) {
             if (!array_key_exists($key, $properties)) {
-                throw new Exception("\$properties[$key] should be set to construct an User!");
+                throw new \Exception("\$properties[$key] should be set to construct an User!");
             }
             $this->properties[$key] = $properties[$key];
         }
@@ -80,9 +79,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
         return in_array($offset, self::PROPS_LIST);
     }
 
-    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
-    #[\ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         if (!$this->offsetExists($offset)) {
             throw new UserNotExistingOffset("Not existing $offset in User!");
@@ -109,35 +106,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
     /**
      * Returns the roles granted to the user.
      *
-     *     public function getRoles()
-     *     {
-     *         return ['ROLE_USER'];
-     *     }
-     *
-     * Alternatively, the roles might be stored in a ``roles`` property,
-     * and populated in any number of different ways when the user object
-     * is created.
-     *
      * @return string[]
      */
-    public function getRoles()
+    public function getRoles(): array
     {
         // currently not used
         return [];
-    }
-
-    /**
-     * Returns the salt that was originally used to hash the password.
-     *
-     * This can return null if the password was not hashed using a salt.
-     *
-     * This method is deprecated since Symfony 5.3, implement it from {@link LegacyPasswordAuthenticatedUserInterface} instead.
-     *
-     * @return string|null
-     */
-    public function getSalt()
-    {
-        return null;
     }
 
     /**
@@ -146,27 +120,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, ArrayAc
      * This is important if, at any given point, sensitive information like
      * the plain-text password is stored on this object.
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         // not currently used
-    }
-
-    /**
-     * @return string
-     *
-     * @deprecated since Symfony 5.3, use getUserIdentifier() instead
-     */
-    public function getUsername()
-    {
-        return $this->getUserIdentifier();
     }
 
     /* ~~~~~~~~~~~~~~~~~~ end of implements ~~~~~~~~~~~~~~~~~~ */
 
     /**
-     * @return string
+     * Returns a string representation that uniquely identifies this user.
      */
-    public function getUserIdentifier()
+    public function getUserIdentifier(): string
     {
         return $this->getName();
     }

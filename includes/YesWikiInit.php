@@ -1,17 +1,17 @@
 <?php
+
 /**
  * Yeswiki initialization class file.
  */
 
 namespace YesWiki;
 
-use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use Symfony\Component\Routing\Loader\AnnotationClassLoader;
-use Symfony\Component\Routing\Loader\AnnotationDirectoryLoader;
+use Symfony\Component\Routing\Loader\AttributeClassLoader;
+use Symfony\Component\Routing\Loader\AttributeDirectoryLoader;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
@@ -19,11 +19,9 @@ use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\YesWikiEventCompilerPass;
 
-// TODO put elsewhere
-// https://github.com/sensiolabs/SensioFrameworkExtraBundle/blob/master/src/Routing/AnnotatedRouteControllerLoader.php
-class AnnotatedRouteControllerLoader extends AnnotationClassLoader
+class AttributeRouteControllerLoader extends AttributeClassLoader
 {
-    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, $annot)
+    protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $attr): void
     {
         $route->setDefault('_controller', $class->getName() . '::' . $method->getName());
     }
@@ -57,7 +55,7 @@ class Init
         /* @todo : compare versions, start installer for update if necessary */
         if (!file_exists($this->configFile)) {
             $this->doInstall();
-            exit();
+            exit;
         }
     }
 
@@ -109,7 +107,7 @@ class Init
             } else {
                 // invalid WikiPageName
                 echo '<p>', _t('INCORRECT_PAGENAME'), '</p>';
-                exit();
+                exit;
             }
 
             // TODO refactor this
@@ -296,7 +294,7 @@ class Init
                 header('WWW-Authenticate: Basic realm="' . $wakkaConfig['wakka_name'] . ' Install/Upgrade Interface"');
                 header('HTTP/1.0 401 Unauthorized');
                 echo _t('SITE_BEING_UPDATED');
-                exit();
+                exit;
             }
         }
 
@@ -334,10 +332,7 @@ class Init
         // register the compiler Pass to activate events
         $containerBuilder->addCompilerPass(new YesWikiEventCompilerPass());
 
-        // Set main YesWiki object as a parameter
-        // TODO remove this when the refactoring will be done
-        $containerBuilder->setParameter('wiki', $wiki);
-
+        // Register main YesWiki object as a service
         $containerBuilder->set(Wiki::class, $wiki);
         $containerBuilder->set(ParameterBagInterface::class, $containerBuilder->getParameterBag());
         $containerBuilder->set(CsrfTokenManager::class, new CsrfTokenManager());
@@ -358,11 +353,9 @@ class Init
     {
         $routes = new RouteCollection();
 
-        $loader = new AnnotationDirectoryLoader(
+        $loader = new AttributeDirectoryLoader(
             new FileLocator(__DIR__ . '/../'),
-            new AnnotatedRouteControllerLoader(
-                new AnnotationReader()
-            )
+            new AttributeRouteControllerLoader()
         );
         // Core controllers
         $routes->addCollection($loader->load('includes/controllers'));

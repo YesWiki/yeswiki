@@ -66,11 +66,10 @@ class SyndicationAction extends YesWikiAction
             $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {
                 return '<div class="alert alert-danger">' . _t('ERROR') . ' ' . _t('SYNDICATION_MAPPING_ID_REQUIRED') . ', ex: id=1400,title=bf_titre,url=bf_url,description=bf_description,image=imagebf_image,categories=bf_tags.</div>';
-            } else {
-                // we load all entries to check if entry were already created from feed
-                $vSearchManager = $this->getService(SearchManager::class);
-                $entries = $vSearchManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
             }
+            // we load all entries to check if entry were already created from feed
+            $vSearchManager = $this->getService(SearchManager::class);
+            $entries = $vSearchManager->search(['formsIds' => [$this->arguments['mapping']['id']]]);
         }
         if (!empty($this->arguments['url'])) {
             $nburl = 0;
@@ -170,26 +169,26 @@ class SyndicationAction extends YesWikiAction
                                     $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
                                     foreach ($this->arguments['mapping'] as $key => $val) {
                                         switch ($key) {
-                                        case 'id':
-                                            $entry['id_typeannonce'] = $val;
-                                            break;
+                                            case 'id':
+                                                $entry['id_typeannonce'] = $val;
+                                                break;
 
-                                        case 'categories':
-                                            $entry[$val] = implode(',', $feedItem[$key]);
-                                            break;
+                                            case 'categories':
+                                                $entry[$val] = implode(',', $feedItem[$key]);
+                                                break;
 
-                                        case 'description':
-                                            $entry[$val] = $converter->convert($feedItem[$key] ?? '');
-                                            break;
+                                            case 'description':
+                                                $entry[$val] = $converter->convert($feedItem[$key] ?? '');
+                                                break;
 
-                                        case 'image':
-                                            $entry[$val] = $this->downloadFile($feedItem[$key] ?? '');
-                                            break;
+                                            case 'image':
+                                                $entry[$val] = $this->downloadFile($feedItem[$key] ?? '');
+                                                break;
 
-                                        default:
-                                            $entry[$val] = $feedItem[$key];
-                                            break;
-                                    }
+                                            default:
+                                                $entry[$val] = $feedItem[$key];
+                                                break;
+                                        }
                                     }
                                     $entry['date_creation_fiche'] = $item->get_date('Y-m-d H:i:s');
                                     $feedItem['mappingInput'] = json_encode($entry);
@@ -222,10 +221,10 @@ class SyndicationAction extends YesWikiAction
                     'ext' => $this->arguments['nouvellefenetre'],
                 ]) . "\n" .
             '</div>' . "\n";
-        } else {
-            return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
-        . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
         }
+
+        return '<div class="alert alert-danger"><strong>' . _t('SYNDICATION_ACTION_SYNDICATION') . '</strong> : '
+        . _t('SYNDICATION_PARAM_URL_REQUIRED') . '.</div>' . "\n";
     }
 
     protected function downloadFile($sourceUrl, $noSSLCheck = false, $timeoutInSec = 10, $replaceExisting = false)

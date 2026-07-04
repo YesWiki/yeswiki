@@ -294,7 +294,7 @@ if (!$result) {
                     $dblink->exec("DROP TABLE IF EXISTS " . ($dbDriver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\""));
                 }
             }
-        } catch (\Throwable $th) {
+        } catch (Throwable $th) {
         }
     }
 } else {

@@ -2,12 +2,8 @@
 
 namespace YesWiki\Bazar\Service;
 
-use DateInterval;
-use DateTimeImmutable;
-use DateTimeInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Throwable;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Core\Service\DateService as CoreDateService;
 use YesWiki\Core\Service\PageManager;
@@ -147,10 +143,10 @@ class DateService implements EventSubscriberInterface
                     $step,
                     $data
                 );
-                if (!empty($calculateNewStartDate) && $calculateNewStartDate->diff(new DateTimeImmutable('1970-01-01'))->invert === 1) {
+                if (!empty($calculateNewStartDate) && $calculateNewStartDate->diff(new \DateTimeImmutable('1970-01-01'))->invert === 1) {
                     $delta = $newStartDate->diff($calculateNewStartDate);
                     if ($delta->invert === 1) {
-                        throw new Exception('Error : calculated delta is negative for ' . "newStartDate:{$newStartDate->format('c')} and " . "calculateNewStartDate:{$calculateNewStartDate->format('c')}");
+                        throw new Exception('Error : calculated delta is negative for ' . "newStartDate:{$newStartDate->format('c')} and calculateNewStartDate:{$calculateNewStartDate->format('c')}");
                     }
                     $newStartDate = $calculateNewStartDate;
                     $newEndDate = $newEndDate->add($delta);
@@ -160,27 +156,25 @@ class DateService implements EventSubscriberInterface
                     }
                 }
             }
-        } catch (Throwable $th) {
-            $this->triggerNoticeErrorIfPossible($this->wiki->dumpThrowable ($th));
+        } catch (\Throwable $th) {
+            $this->triggerNoticeErrorIfPossible($this->wiki->dumpThrowable($th));
         }
     }
 
     /**
      * create new entry if limit not reached.
-     *
-     * @param bool $limitDateIsReached
      */
     protected function createEntryIfPossible(
         array $data,
-        DateTimeInterface $newStartDate,
-        DateTimeInterface $newEndDate,
+        \DateTimeInterface $newStartDate,
+        \DateTimeInterface $newEndDate,
         array $entry
     ): bool {
         if (
             !empty($data['limitdate'])
             && (
-                ($data['limitdate'])->diff($newEndDate)->invert == 0
-                || ($data['limitdate'])->diff($newStartDate)->invert == 0
+                $data['limitdate']->diff($newEndDate)->invert == 0
+                || $data['limitdate']->diff($newStartDate)->invert == 0
             )
         ) {
             return true;
@@ -229,15 +223,15 @@ class DateService implements EventSubscriberInterface
     /**
      * get calculateNewStartDate.
      *
-     * @return DateTimeInterface $calculateNewStartDate
+     * @return \DateTimeInterface $calculateNewStartDate
      */
     protected function calculateNextDate(
-        DateTimeInterface $newStartDate,
+        \DateTimeInterface $newStartDate,
         int $selectedMonth,
         array $days,
         int $step,
         array $data
-    ): DateTimeInterface {
+    ): \DateTimeInterface {
         switch ($data['repetition']) {
             case 'y':
                 $currentStartYear = intval($newStartDate->format('Y'));
@@ -274,7 +268,7 @@ class DateService implements EventSubscriberInterface
                 $currentStartDay = intval($newStartDate->format('N'));
                 if (!in_array($currentStartDay, $days) || $currentStartDay === max($days)) {
                     $nextWantedDay = min($days);
-                    $tmpDate = $newStartDate->add(new DateInterval('P' . strval(7 * $step) . 'D'));
+                    $tmpDate = $newStartDate->add(new \DateInterval('P' . strval(7 * $step) . 'D'));
                     $currentStartYear = intval($tmpDate->format('o')); // ISO 8601 year
                     $nextStartWeek = intval($tmpDate->format('W')); // ISO 8601 week
                 } else {
@@ -292,7 +286,7 @@ class DateService implements EventSubscriberInterface
                 break;
             case 'd':
             default:
-                $calculateNewStartDate = $newStartDate->add(new DateInterval("P{$step}D"));
+                $calculateNewStartDate = $newStartDate->add(new \DateInterval("P{$step}D"));
                 break;
         }
 
@@ -309,13 +303,13 @@ class DateService implements EventSubscriberInterface
     }
 
     protected function findNextStartDate(
-        DateTimeImmutable $newStartDate,
+        \DateTimeImmutable $newStartDate,
         array $data,
         array $days,
         int $currentStartYear,
         int $nextStartMonth,
         $callback
-    ): DateTimeImmutable {
+    ): \DateTimeImmutable {
         $calculateNewStartDate = $newStartDate;
         if ($data['whenInMonth'] === 'nthOfMonth') {
             $nth = intval($data['nth']);
@@ -354,7 +348,7 @@ class DateService implements EventSubscriberInterface
     protected function getNbDaysInMonth(int $year, int $month): int
     {
         return intval(
-            (new DateTimeImmutable())->setDate($year, $month, 1)->format('t')
+            (new \DateTimeImmutable())->setDate($year, $month, 1)->format('t')
         );
     }
 
@@ -374,8 +368,8 @@ class DateService implements EventSubscriberInterface
         try {
             $currentStartDate = $this->coreDateService->getDateTimeWithRightTimeZone($entry['bf_date_debut_evenement']);
             $currentEndDate = $this->coreDateService->getDateTimeWithRightTimeZone($entry['bf_date_fin_evenement']);
-        } catch (Throwable $th) {
-            $this->triggerNoticeErrorIfPossible("for '{$entry['id_fiche']}', " . $this->wiki->dumpThrowable ($th));
+        } catch (\Throwable $th) {
+            $this->triggerNoticeErrorIfPossible("for '{$entry['id_fiche']}', " . $this->wiki->dumpThrowable($th));
 
             return [];
         }
@@ -425,7 +419,7 @@ class DateService implements EventSubscriberInterface
 
                 return [];
             }
-            $dateTimeObj = new DateTimeImmutable($data['limitdate']);
+            $dateTimeObj = new \DateTimeImmutable($data['limitdate']);
             if (!$dateTimeObj) {
                 $this->triggerCheckDataErrorIfPossible($entry, 'limitdate');
 
@@ -443,7 +437,7 @@ class DateService implements EventSubscriberInterface
             $data['except'] = array_map(
                 function ($value) {
                     return is_string($value)
-                        ? new DateTimeImmutable($value)
+                        ? new \DateTimeImmutable($value)
                         : null;
                 },
                 $data['except']
@@ -565,7 +559,7 @@ class DateService implements EventSubscriberInterface
                 foreach ($entriesToDelete as $entryToDelete) {
                     try {
                         $this->entryManager->delete($entryToDelete['id_fiche'], true); // $forceEvenIfNotOwner = true
-                    } catch (Throwable $th) {
+                    } catch (\Throwable $th) {
                         // do nothing
                     }
                 }

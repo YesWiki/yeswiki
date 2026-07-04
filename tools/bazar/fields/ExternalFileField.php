@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
-/**
- * @Field({"externalfilefield"})
- */
+#[\Field(['externalfilefield'])]
 class ExternalFileField extends FileField
 {
     protected $JSONFormAddress;

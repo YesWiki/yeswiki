@@ -6,9 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Wiki;
 
-/**
- * @Field({"checkboxfiche"})
- */
+#[\Field(['checkboxfiche'])]
 class CheckboxEntryField extends CheckboxField
 {
     public $isDistantJson;

@@ -3,7 +3,7 @@
 namespace YesWiki\Login\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\UserManager;
@@ -15,9 +15,8 @@ class ApiController extends YesWikiController
      * Attempt to login user.
      *
      * @return string json
-     *
-     * @Route("/api/login",methods={"POST"}, options={"acl":{"public"}})
      */
+    #[Route('/api/login', methods: ['POST'], options: ['acl' => ['public']])]
     public function login()
     {
         // Try login by user name
@@ -49,20 +48,19 @@ class ApiController extends YesWikiController
      * Return basic information if user is authenticated.
      *
      * @return string json
-     *
-     * @Route("/api/auth/me", options={"acl":{"public"}})
      */
+    #[Route('/api/auth/me', options: ['acl' => ['public']])]
     public function getMyAuth()
     {
         $loggedUser = $this->wiki->services->get(AuthController::class)->getLoggedUser();
         if (!$loggedUser) {
             return new ApiResponse(['error' => _t('LOGIN_NO_CONNECTED_USER')], Response::HTTP_UNAUTHORIZED);
-        } else {
-            return new ApiResponse([
-                'user' => $loggedUser['name'],
-                'isAdmin' => $this->wiki->UserIsAdmin(),
-            ]);
         }
+
+        return new ApiResponse([
+            'user' => $loggedUser['name'],
+            'isAdmin' => $this->wiki->UserIsAdmin(),
+        ]);
     }
 
     /**
@@ -71,9 +69,8 @@ class ApiController extends YesWikiController
      * @param string $username specify username
      *
      * @return string json
-     *
-     * @Route("/api/auth/{username}",options={"acl":{"public"}})
      */
+    #[Route('/api/auth/{username}', options: ['acl' => ['public']])]
     public function getAuth($username = '')
     {
         $this->denyAccessUnlessAdmin();
@@ -97,9 +94,7 @@ class ApiController extends YesWikiController
         return new ApiResponse($response);
     }
 
-    /**
-     * @Route("/api/auth/",options={"acl":{"public"}})
-     */
+    #[Route('/api/auth/', options: ['acl' => ['public']])]
     public function getAuthAll()
     {
         $this->denyAccessUnlessAdmin();

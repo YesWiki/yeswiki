@@ -6,7 +6,7 @@ use YesWiki\Security\Controller\SecurityController;
 
 if (isset($this)) {
     if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
-        throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        throw new Exception(_t('WIKI_IN_HIBERNATION'));
     }
     if ($this->userIsAdmin()) {
         include_once 'includes/Encoding.php';
@@ -42,7 +42,7 @@ if (isset($this)) {
             $output .= '<hr>' . $queryConvert . '<br>';
             $this->query($queryConvert);
 
-            //Change Field
+            // Change Field
             if ($table == $this->config['table_prefix'] . 'pages') {
                 $cols = $this->LoadAll('SHOW COLUMNS FROM ' . $table);
                 $dataQuery = 'SELECT * FROM ' . $table;
@@ -51,10 +51,10 @@ if (isset($this)) {
                     if ($row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == 'blob') {
                         // Printing results in HTML
                         foreach ($data as $line) {
-                            //Convert TO String
+                            // Convert TO String
                             $transform = $line[$row['Field']];
                             if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
-                                $transform = \ForceUTF8\Encoding::toUTF8($transform);
+                                $transform = ForceUTF8\Encoding::toUTF8($transform);
                             }
                             $transform = \ForceUTF8\Encoding::fixUTF8($transform);
                             $transform = $dbService->escape($transform);
@@ -73,10 +73,10 @@ if (isset($this)) {
                     if (strstr($row['Type'], 'varchar') or $row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == 'blob') {
                         // Printing results in HTML
                         foreach ($data as $line) {
-                            //Convert TO String
+                            // Convert TO String
                             $transform = $line[$row['Field']];
                             if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
-                                $transform = \ForceUTF8\Encoding::toUTF8($transform);
+                                $transform = ForceUTF8\Encoding::toUTF8($transform);
                             }
                             $transform = \ForceUTF8\Encoding::fixUTF8($transform);
                             $transform = $dbService->escape($transform);
@@ -195,7 +195,7 @@ if (php_sapi_name() === 'cli') {
         echo '<hr>' . $queryConvert . '<br>';
         sqlQuery($queryConvert);
 
-        //Change Field
+        // Change Field
         if ($table == $wakkaConfig['table_prefix'] . 'pages') {
             $cols = loadAll('SHOW COLUMNS FROM ' . $table);
             $dataQuery = 'SELECT * FROM ' . $table;
@@ -204,10 +204,10 @@ if (php_sapi_name() === 'cli') {
                 if ($row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == 'blob') {
                     // Printing results in HTML
                     foreach ($data as $line) {
-                        //Convert TO String
+                        // Convert TO String
                         $transform = $line[$row['Field']];
                         if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
-                            $transform = \ForceUTF8\Encoding::toUTF8($transform);
+                            $transform = ForceUTF8\Encoding::toUTF8($transform);
                         }
                         $transform = \ForceUTF8\Encoding::fixUTF8($transform);
                         $transform = escapeString($transform);
@@ -226,10 +226,10 @@ if (php_sapi_name() === 'cli') {
                 if (strstr($row['Type'], 'varchar') or $row['Type'] == 'mediumtext' or $row['Type'] == 'text' or $row['Type'] == 'longtext' or $row['Type'] == 'blob') {
                     // Printing results in HTML
                     foreach ($data as $line) {
-                        //Convert TO String
+                        // Convert TO String
                         $transform = $line[$row['Field']];
                         if (@iconv('utf-8', 'utf-8//IGNORE', $transform) != $transform) {
-                            $transform = \ForceUTF8\Encoding::toUTF8($transform);
+                            $transform = ForceUTF8\Encoding::toUTF8($transform);
                         }
                         $transform = \ForceUTF8\Encoding::fixUTF8($transform);
                         $transform = escapeString($transform);

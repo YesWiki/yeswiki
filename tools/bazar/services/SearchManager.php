@@ -225,9 +225,9 @@ class SearchManager
                                     $vORRequest = $this->renameJSONPathVariable($vFieldName) . ' ' . $this->dbService->collateClause() . ' LIKE \'%' . $this->dbService->escape( $vOR) . '%\'';
                                 }
 
-                            break;
+                                break;
 
-                            // If this field instance is intended to store multiple values separated by comma...
+                                // If this field instance is intended to store multiple values separated by comma...
 
                             case 'multiple':
                                 // Add a field condition adapted to a regexp or not
@@ -238,7 +238,7 @@ class SearchManager
                                     $vORRequest = '(s.champ = \'' . $this->dbService->escape( $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' LIKE \'%' . $this->dbService->escape( $vOR) . '%\')';
                                 }
 
-                            break;
+                                break;
                         }
 
                         // If the field can have multiple structures, we need to specify the form IDs to which the condition apply
@@ -290,9 +290,9 @@ class SearchManager
                                 $vExcludedRequest = $this->dbService->escape( $this->renameJSONPathVariable($vFieldName)) . ' ' . $this->dbService->collateClause() . ' NOT LIKE \'%' . $this->dbService->escape( $vExcluded) . '%\'';
                             }
 
-                        break;
+                            break;
 
-                        // If this field instance is intended to store multiple values separated by comma...
+                            // If this field instance is intended to store multiple values separated by comma...
 
                         case 'multiple':
                             // Add a field condition adapted to a regexp or not
@@ -303,7 +303,7 @@ class SearchManager
                                 $vExcludedRequest = '(s.champ = \'' . $this->dbService->escape( $this->renameJSONPathVariable($vFieldName)) . '\' AND s.elt ' . $this->dbService->collateClause() . ' NOT LIKE \'%' . $this->dbService->escape( $vExcluded) . '%\')';
                             }
 
-                        break;
+                            break;
                     }
 
                     // If the field can have multiple structures, we need to specify the form IDs to which the condition apply
@@ -333,7 +333,7 @@ class SearchManager
      * Build the SQL fields conditions for queries.
      *
      * @param $pQueries : <array> of <query>
-     *			   <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
+     *                  <query> = [ "name" => <string>, "operator" => <string>, "values" => <array of strings> ]
      *
      * @return = <string> fields conditions for queries
      */
@@ -444,9 +444,9 @@ class SearchManager
                                 }
                             }
 
-                        break;
+                            break;
 
-                        // If the field is intended to store multiple values separated by comma...
+                            // If the field is intended to store multiple values separated by comma...
 
                         case 'multiple':
                             // It the value is a regexp, let's build a condition that match (or NOT) the regexp in the list of values extracted in temporary tables earlier
@@ -459,15 +459,15 @@ class SearchManager
                                 $vValueConditions[] = $this->dbService->findInSet($needle, $haystack, $vFindInSetNot);
                             }
 
-                        break;
+                            break;
 
-                        // The field is missing : we need to add a specific condition
+                            // The field is missing : we need to add a specific condition
 
                         case self::MISSING_FIELD:
                         case self::MISSING_PROPERTY:
                             $vValueConditions[] = 'FALSE';
 
-                        break;
+                            break;
                     }
                 }
 
@@ -562,9 +562,9 @@ class SearchManager
 
                         if (strval($vID) == strval($vIntValue)) {
                             return $vIntValue;
-                        } else {
-                            return null;
                         }
+
+                        return null;
                     }
 
                     return null;
@@ -1104,7 +1104,7 @@ class SearchManager
                 '/(-)?("(?:\\\\.|[^"\\\\])*"|' .	// double quoted with optional backslash escapes
                 '\'(?:\\\\.|[^\'\\\\])*\'|' .   	// single quoted
                 '\S+)/u',                      	  	// or unquoted token
-                 $vAND,
+                $vAND,
                 $vTokens,
                 PREG_SET_ORDER
             );
@@ -1135,14 +1135,14 @@ class SearchManager
      * Parse a query string.
      *
      * @param $pQuery
-     *		<string> : the query string
-     *		<array> : the already parsed array
+     *                <string> : the query string
+     *                <array> : the already parsed array
      *
      * @return <array> of [
-                            "name" => <string>,
-                            "operator" => <string>,
-                            "values" => [ <string> ... ]
-                        ];
+     * "name" => <string>,
+     * "operator" => <string>,
+     * "values" => [ <string> ... ]
+     * ];
      */
     public function parseQuery($pQuery)
     {
@@ -1183,17 +1183,17 @@ class SearchManager
                             // TODO: make it a service that could be used for any params
                             if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
                                 switch ($matches[1]) {
-                                case 'user.name':
-                                    $vValue = $this->wiki->getUserName();
-                                    break;
-                                case 'user.entry.id_fiche':
-                                    $vUserManager = $this->wiki->services->get(UserManager::class);
-                                    $entry = $vUserManager->getAssociatedEntry();
-                                    if (!empty($entry)) {
-                                        $vValue = $entry['id_fiche'];
-                                    }
-                                    break;
-                            }
+                                    case 'user.name':
+                                        $vValue = $this->wiki->getUserName();
+                                        break;
+                                    case 'user.entry.id_fiche':
+                                        $vUserManager = $this->wiki->services->get(UserManager::class);
+                                        $entry = $vUserManager->getAssociatedEntry();
+                                        if (!empty($entry)) {
+                                            $vValue = $entry['id_fiche'];
+                                        }
+                                        break;
+                                }
                             }
                             if (!in_array($vValue, $vUniqueValues, true)) {
                                 $vUniqueValues[] = $vValue;
@@ -1316,13 +1316,13 @@ class SearchManager
      * Transform a query to a string.
      *
      * @param $pQuery array|string|null the query in different format :
-     * 		new array format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ]
-     *			OR
-     *   	old array format : [ "bf_field" => "toto", "bf_field2!" => "tata" ]
-     *			OR
-     *		new string format : bf_field == toto1 | bf_field2 <= tata
-     *			OR
-     *		old string format bf_field=toto1|bf_field2!=tata
+     *                new array format [ [ "name" => "bf_field", "operator" => "==" , values [ "toto", ... ] ], ... ]
+     *                OR
+     *                old array format : [ "bf_field" => "toto", "bf_field2!" => "tata" ]
+     *                OR
+     *                new string format : bf_field == toto1 | bf_field2 <= tata
+     *                OR
+     *                old string format bf_field=toto1|bf_field2!=tata
      *
      * @return the string representing the query
      */
@@ -1345,11 +1345,10 @@ class SearchManager
                             // format [ [ "name" => "bf_field", "operator" => "==" , values => "toto, tata" ] ]
 
                             return $pQuery[$pKey]['name'] . $pQuery[$pKey]['operator'] . (is_array($pQuery[$pKey]['values']) ? implode(',', $pQuery[$pKey]['values']) : $pQuery[$pKey]['values']);
-                        } else {
-                            // format [ "bf_field" => "toto", "bf_field2!" => "tata" ]
-
-                            return $pKey . '=' . $pQuery[$pKey];
                         }
+                        // format [ "bf_field" => "toto", "bf_field2!" => "tata" ]
+
+                        return $pKey . '=' . $pQuery[$pKey];
                     },
                     array_keys($pQuery)
                 )
@@ -1391,10 +1390,10 @@ class SearchManager
      * Aggregate keywords.
      *
      * @param $pArguments : list of <argument>
-     *		<argument> as
-     *     		<string> keywords specification
-     *				OR
-     *			null
+     *                    <argument> as
+     *                    <string> keywords specification
+     *                    OR
+     *                    null
      *
      * @return <string> aggregated keywords
      */
@@ -1424,19 +1423,19 @@ class SearchManager
 
         if (isset($vResult)) {
             return $vResult;
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     /**
      * Aggregate queries.
      *
      * @param $pArguments : list of <argument>
-     *		<argument> as
-     *			<array> argument array containing "query"
-     *			<string> a query string
-     *			null
+     *                    <argument> as
+     *                    <array> argument array containing "query"
+     *                    <string> a query string
+     *                    null
      *
      * @return <string> aggregated queries
      */
@@ -1472,9 +1471,9 @@ class SearchManager
 
         if (isset($vResult)) {
             return $vResult;
-        } else {
-            return '';
         }
+
+        return '';
     }
 
     /**
@@ -1544,13 +1543,13 @@ class SearchManager
      */
     private function isRegExp($pString) // return true is $pString is a regular expression
     {
-        if ((mb_substr($pString, 0, 1) == '/' && mb_substr($pString, -1, 1) == '/')) {
+        if (mb_substr($pString, 0, 1) == '/' && mb_substr($pString, -1, 1) == '/') {
             return 2;
         } elseif (preg_match('/\.\*/', $pString) == 1) {
             return 1;
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     /**
@@ -1569,16 +1568,16 @@ class SearchManager
 
         switch ($this->isRegExp($pString)) {
             case 0:
-                 throw new Exception($pString . ' is not a regexp');
+                throw new Exception($pString . ' is not a regexp');
 
-                 return '';
-            break;
+                return '';
+                break;
             case 1:
-                 $vString = '^' . $pString . '$';
-            break;
+                $vString = '^' . $pString . '$';
+                break;
             case 2:
-                 $vString = mb_substr($pString, 1, mb_strlen($pString) - 2);
-            break;
+                $vString = mb_substr($pString, 1, mb_strlen($pString) - 2);
+                break;
         }
 
         if ($pAccentInsensitive) {
@@ -1618,12 +1617,13 @@ class SearchManager
      *
      * @param pStructure <array> : the structure as
      * 	[
-         ]
+     * ]
+     *
      * @return <string> : the hash
      */
     private function buildFieldDescriptorHash($pStructure)
     {
-        return $pStructure['_mode_'] ?? '#' . '|' . $pStructure['_type_'] ?? '#';
+        return $pStructure['_mode_'] ?? '#|' . $pStructure['_type_'] ?? '#';
     }
 
     /**

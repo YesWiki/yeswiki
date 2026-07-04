@@ -99,7 +99,7 @@ if ($tree) {
             $links[$tree] = [];
     } // switch
     if ($sort != 'tag') {
-        $sql .= " WHERE a.tag = '" . $dbService->escape($tree) . "' AND a.latest = 'Y' LIMIT 1";
+        $sql .= ' WHERE a.tag = "' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($tree) . '" AND a.latest = "Y" LIMIT 1';
         if (!$rootData = $this->LoadSingle($sql)) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' ListPages</strong> : ' . _('THE_PAGE') . ' ' . htmlspecialchars($tree, ENT_COMPAT, YW_CHARSET) . ' ' . _t('DOESNT_EXIST') . ' !</div>';
 
@@ -117,9 +117,9 @@ if ($tree) {
 
     // to avoid many loops and computing several time the lists needed for the request,
     // we store them into variables
-    $from = "'" . $dbService->escape($tree) . "'";
-    $exclude[] = $dbService->escape($tree);
-    $exclude_str = "'" . implode("', '", $exclude) . "'";
+    $from = '"' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($tree) . '"';
+    $exclude[] = $this->services->get(YesWiki\Core\Service\DbService::class)->escape($tree);
+    $exclude_str = '"' . implode('", "', $exclude) . '"';
     for ($i = 1; $i <= $levels; $i++) {
         if ($from) {
             if ($owner) {
@@ -136,8 +136,8 @@ if ($tree) {
                 $sql .= ' WHERE from_tag IN (' . $from . ')'
                     . ' AND to_tag NOT IN (' . $from . ')'
                     . ' AND to_tag = a.tag'
-                    . " AND a.owner = '" . $dbService->escape($owner) . "'"
-                    . " AND a.latest = 'Y'";
+                    . ' AND a.owner = "' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($owner) . '"'
+                    . ' AND a.latest = "Y"';
             } else {
                 $sql = 'SELECT from_tag, to_tag, a.tag IS NOT NULL page_exists';
                 switch ($sort) {
@@ -193,7 +193,7 @@ if ($tree) {
             $from = '';
             $newworkingon = [];
             foreach ($pages as $page) {
-                $to_tag = "'" . $dbService->escape($page['to_tag']) . "'";
+                $to_tag = '"' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($page['to_tag']) . '"';
                 $workingon[$page['from_tag']][$page['to_tag']] = ['page_exists' => $page['page_exists'], 'haslinksto' => []];
                 if ($sort != 'tag') {
                     $workingon[$page['from_tag']][$page['to_tag']][$sort] = $page[$sort];
@@ -235,7 +235,7 @@ if ($tree) {
             if ($tree) {
                 $indentStr = str_repeat("\t", $indent);
                 $retour = "$indentStr<ul>\n";
-                $aclService = $wiki->services->get(\YesWiki\Core\Service\AclService::class);
+                $aclService = $wiki->services->get(YesWiki\Core\Service\AclService::class);
                 foreach ($tree as $pageName => $pageData) {
                     if ($aclService->hasAccess('read', $pageName)) {
                         $retour .= "$indentStr\t<li>";
@@ -302,13 +302,13 @@ if ($tree) {
         $sql = "SELECT a.tag, b.time,
             b.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage"
             . ($owner ? '' : ', b.owner, owner_page.tag IS NOT NULL owner_has_ownpage')
-            . ' FROM ' . $prefix . 'pages a, ' . $prefix . "pages b
-            LEFT JOIN " . $prefix . "users ON b.$userCol = name
-            LEFT JOIN " . $prefix . "pages user_page ON name = user_page.tag AND user_page.latest = 'Y'"
-            . ($owner ? '' : " LEFT JOIN " . $prefix . "pages owner_page ON b.owner = owner_page.tag AND owner_page.latest = 'Y'")
-            . " WHERE a.$userCol = '" . $dbService->escape($user) . "'"
-            . " AND a.tag = b.tag AND b.latest = 'Y'"
-            . ($owner ? " AND b.owner = '" . $dbService->escape($owner) . "'" : '');
+            . ' FROM ' . $prefix . 'pages a, ' . $prefix . 'pages b
+            LEFT JOIN ' . $prefix . 'users ON b.user = name
+            LEFT JOIN ' . $prefix . 'pages user_page ON name = user_page.tag AND user_page.latest = "Y"'
+            . ($owner ? '' : ' LEFT JOIN ' . $prefix . 'pages owner_page ON b.owner = owner_page.tag AND owner_page.latest = "Y"')
+            . ' WHERE a.user = "' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($user) . '"'
+            . ' AND a.tag = b.tag AND b.latest = "Y"'
+            . ($owner ? ' AND b.owner = "' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($owner) . '"' : '');
     } elseif ($owner) {
         if ($sort == 'user') {
             $sql = "SELECT a.tag, a.time,
@@ -319,7 +319,7 @@ if ($tree) {
         } else {
             $sql = 'SELECT tag, time FROM ' . $prefix . 'pages a';
         }
-        $sql .= " WHERE a.owner = '" . $dbService->escape($owner) . "' AND a.latest = 'Y'";
+        $sql .= ' WHERE a.owner = "' . $this->services->get(YesWiki\Core\Service\DbService::class)->escape($owner) . '" AND a.latest = "Y"';
     } else {
         if ($sort == 'user') {
             $sql = "SELECT a.tag, a.owner,
@@ -394,7 +394,7 @@ if ($tree) {
 
     // Display the list itself
     echo "<ul>\n";
-    $aclService = $this->services->get(\YesWiki\Core\Service\AclService::class);
+    $aclService = $this->services->get(YesWiki\Core\Service\AclService::class);
     foreach ($pages as $page) {
         if ($aclService->hasAccess('read', $page['tag'])) {
             echo "\t<li>" . $this->ComposeLinkToPage($page['tag'], false, false, false);

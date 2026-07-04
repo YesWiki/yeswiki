@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @Field({"labelhtml"})
- */
+#[\Field(['labelhtml'])]
 class LabelField extends BazarField
 {
     // Text to display on the edit/create pages

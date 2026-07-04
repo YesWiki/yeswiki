@@ -198,7 +198,7 @@ class PageManager
             if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
                 //foreach ($pages as $page) {
                 //    $this->cache($page);
-                //}
+                // }
                 return $pages;
             }
         } else {
@@ -207,7 +207,7 @@ class PageManager
             if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
                 //foreach ($pages as $page) {
                 //    $this->cache($page);
-                //}
+                // }
                 return $pages;
             }
         }
@@ -350,13 +350,13 @@ class PageManager
                 $defaultComment = $this->aclService->load($tag, 'comment', true)['list'];
 
                 // create default write acl. store empty write ACL for comments.
-                $this->aclService->save($tag, 'write', ($comment_on ? $user : $defaultWrite));
+                $this->aclService->save($tag, 'write', $comment_on ? $user : $defaultWrite);
 
                 // create default read acl
                 $this->aclService->save($tag, 'read', $defaultRead);
 
                 // create default comment acl.
-                $this->aclService->save($tag, 'comment', ($comment_on ? '' : $defaultComment));
+                $this->aclService->save($tag, 'comment', $comment_on ? '' : $defaultComment);
 
                 // current user is owner; if user is logged in! otherwise, no owner.
                 if ($this->authController->getLoggedUser()) {
@@ -421,9 +421,9 @@ class PageManager
             ]);
 
             return 0;
-        } else {
-            return 1;
         }
+
+        return 1;
     }
 
     public function getOwner($tag = '', $time = '')
@@ -530,8 +530,8 @@ class PageManager
             return $pages;
         }
         $pages = array_map(function ($page) use ($guard, $allEntriesTags, $userNameForCheckingACL) {
-            return (isset($page['tag']) &&
-                in_array($page['tag'], $allEntriesTags)
+            return (isset($page['tag'])
+                && in_array($page['tag'], $allEntriesTags)
             ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
                 : $page;
         }, $pages);

@@ -425,12 +425,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * Because you don't want your users not being able to log in, this method should be opportunistic:
      * it's fine if it does nothing or if it fails without throwing any exception.
      *
-     * @param PasswordAuthenticatedUserInterface|UserInterface $user
-     *
      * @throws UnsupportedUserException if the user is not supported
      * @throws \Exception               if wiki is in hibernation
      */
-    public function upgradePassword($user, string $newHashedPassword)
+    public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -466,12 +464,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * object can just be merged into some internal array of users / identity
      * map.
      *
-     * @return User
-     *
      * @throws UnsupportedUserException if the user is not supported
      * @throws UserNotFoundException    if the user is not found
      */
-    public function refreshUser(UserInterface $user)
+    public function refreshUser(UserInterface $user): UserInterface
     {
         if (!$this->supportsClass(get_class($user))) {
             throw new UnsupportedUserException();
@@ -483,10 +479,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     /**
      * Whether this provider supports the given user class.
-     *
-     * @return bool
      */
-    public function supportsClass(string $class)
+    public function supportsClass(string $class): bool
     {
         if (!class_exists($class)) {
             // prevent calling autoloader via 'is_a'
@@ -496,27 +490,13 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         return is_a($class, User::class, true);
     }
 
-    /**
-     * @return User
-     *
-     * @throws UserNotFoundException
-     *
-     * @deprecated since Symfony 5.3, use loadUserByIdentifier() instead
-     */
-    public function loadUserByUsername(string $username)
-    {
-        return $this->loadUserByIdentifier($username);
-    }
-
     /* ~~~~~~~~~~~~~~~~~~ end of implements ~~~~~~~~~~~~~~~~~~ */
     /**
-     * @return User
-     *
      * @throws UserNotFoundException
      */
-    public function loadUserByIdentifier(string $username)
+    public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        return $this->getOneByName($username);
+        return $this->getOneByName($identifier);
     }
 
     /* ~~~~~~~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~~~~~ */

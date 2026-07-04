@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @Field({"radio"})
- */
+#[\Field(['radio'])]
 class RadioListField extends RadioField
 {
     public function __construct(array $values, ContainerInterface $services)

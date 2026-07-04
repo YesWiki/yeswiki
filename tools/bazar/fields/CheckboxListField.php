@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Wiki;
 
-/**
- * @Field({"checkbox"})
- */
+#[\Field(['checkbox'])]
 class CheckboxListField extends CheckboxField
 {
     public function __construct(array $values, ContainerInterface $services)

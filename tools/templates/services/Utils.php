@@ -256,94 +256,91 @@ class Utils
             return '<div class="alert alert-danger">'
                 . _t('TEMPLATE_NO_ACCESS_TO_PAGE') . '</div>'
                 . $this->wiki->Format('{{login template="minimal.tpl.html"}}');
-        } else {
-            // On teste si la page existe
-            if (!$page = $this->wiki->LoadPage($pagetag)) {
-                return '<div class="alert alert-danger">' . _t('TEMPLATE_PAGE_DOESNT_EXIST') . ' (' . $pagetag . ').</div>';
-            } else {
-                // $body_f = $this->wiki->Format($page["body"], 'wakka', $pagetag);
-                // on regarde si on gere la 2d pour reveal
-                // preg_match_all('/<h1>.*<\/h1>/m', $body_f, $titles);
-                preg_match_all('/======.*======/Um', $page['body'], $titles);
-                $istwodimensions = count($titles[0]) > 1;
-                $first = true;
-                // on decoupe pour chaque titre de niveau 1 ou 2, ou chaque fois que background-image est utilisée
-                // $body = preg_split(
-                //     '/(.*<h[12]>.*<\/h[12]>)'
-                //     .'|(.*<div class="background-image.*">.*<\!-- \/\.background-image -->)/m',
-                //     $body_f,
-                //     -1,
-                //     PREG_SPLIT_DELIM_CAPTURE
-                // );
-                $body = preg_split(
-                    '/(\======.*======)'
-                    . '|(=====.*=====)'
-                    . '|(\{\{backgroundimage.*\}\}\s*.*\s*\{\{endbackgroundimage\}\})/Um',
-                    $page['body'],
-                    -1,
-                    PREG_SPLIT_DELIM_CAPTURE
-                );
-                // var_dump($body);break;
-                if (!$body) {
-                    return '<div class="=alert alert-danger">'
-                        . _t('TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW') . ' (' . $pagetag . ').</div>';
-                } else {
-                    // preparation des tableaux pour le squelette -------------------------
-                    $i = 0;
-                    $slides = [];
-                    $titles = [];
-                    $previousistitle = false;
-                    foreach ($body as $slide) {
-                        $slide = $this->wiki->Format($slide);
-                        // var_dump($slide);
-                        // s'il a des titres de niveau 1 ou 2 il s'agit des separateurs de diapo
-                        if (preg_match('/<h[12]>.*<\/h[12]>/', $slide)) {
-                            // s'il y a un titre de niveau 1 qui commence la diapositive, on la deplace en titre
-                            // et on gere l'aspect multidimentionnel
-                            if (preg_match('/<h1>.*<\/h1>/', $slide)) {
-                                if ($istwodimensions) {
-                                    if ($first) {
-                                        $first = false;
-                                    } else {
-                                        $slides[$i]['closesection'] = true;
-                                    }
-                                    $slides[$i]['opensection'] = true;
-                                }
-                            }
-                            // pour les titres de niveau 2, on les transforme en titre 1
-                            $titles[$i] = str_replace('<h2', '<h1', $slide);
-                            if ($previousistitle) {
-                                $slides[$i]['html'] = '';
-                                $i++;
-                            }
-                            $previousistitle = true;
-                        } elseif (!empty($slide) || $previousistitle) {
-                            $previousistitle = false;
-                            $slides[$i]['html'] = $slide;
-                            $slides[$i]['title'] = ((isset($titles[$i])) ? strip_tags($titles[$i]) : '');
-                            $i++;
+        }
+        // On teste si la page existe
+        if (!$page = $this->wiki->LoadPage($pagetag)) {
+            return '<div class="alert alert-danger">' . _t('TEMPLATE_PAGE_DOESNT_EXIST') . ' (' . $pagetag . ').</div>';
+        }
+        // $body_f = $this->wiki->Format($page["body"], 'wakka', $pagetag);
+        // on regarde si on gere la 2d pour reveal
+        // preg_match_all('/<h1>.*<\/h1>/m', $body_f, $titles);
+        preg_match_all('/======.*======/Um', $page['body'], $titles);
+        $istwodimensions = count($titles[0]) > 1;
+        $first = true;
+        // on decoupe pour chaque titre de niveau 1 ou 2, ou chaque fois que background-image est utilisée
+        // $body = preg_split(
+        //     '/(.*<h[12]>.*<\/h[12]>)'
+        //     .'|(.*<div class="background-image.*">.*<\!-- \/\.background-image -->)/m',
+        //     $body_f,
+        //     -1,
+        //     PREG_SPLIT_DELIM_CAPTURE
+        // );
+        $body = preg_split(
+            '/(\======.*======)'
+            . '|(=====.*=====)'
+            . '|(\{\{backgroundimage.*\}\}\s*.*\s*\{\{endbackgroundimage\}\})/Um',
+            $page['body'],
+            -1,
+            PREG_SPLIT_DELIM_CAPTURE
+        );
+        // var_dump($body);break;
+        if (!$body) {
+            return '<div class="=alert alert-danger">'
+                . _t('TEMPLATE_PAGE_CANNOT_BE_SLIDESHOW') . ' (' . $pagetag . ').</div>';
+        }
+        // preparation des tableaux pour le squelette -------------------------
+        $i = 0;
+        $slides = [];
+        $titles = [];
+        $previousistitle = false;
+        foreach ($body as $slide) {
+            $slide = $this->wiki->Format($slide);
+            // var_dump($slide);
+            // s'il a des titres de niveau 1 ou 2 il s'agit des separateurs de diapo
+            if (preg_match('/<h[12]>.*<\/h[12]>/', $slide)) {
+                // s'il y a un titre de niveau 1 qui commence la diapositive, on la deplace en titre
+                // et on gere l'aspect multidimentionnel
+                if (preg_match('/<h1>.*<\/h1>/', $slide)) {
+                    if ($istwodimensions) {
+                        if ($first) {
+                            $first = false;
+                        } else {
+                            $slides[$i]['closesection'] = true;
                         }
+                        $slides[$i]['opensection'] = true;
                     }
                 }
+                // pour les titres de niveau 2, on les transforme en titre 1
+                $titles[$i] = str_replace('<h2', '<h1', $slide);
+                if ($previousistitle) {
+                    $slides[$i]['html'] = '';
+                    $i++;
+                }
+                $previousistitle = true;
+            } elseif (!empty($slide) || $previousistitle) {
+                $previousistitle = false;
+                $slides[$i]['html'] = $slide;
+                $slides[$i]['title'] = ((isset($titles[$i])) ? strip_tags($titles[$i]) : '');
+                $i++;
             }
-
-            $buttons = '';
-            // si la fonction est appelee par le handler diaporama, on ajoute les liens d'edition et de retour
-            if ($this->wiki->GetMethod() == 'diaporama') {
-                $buttons .= '<a class="btn" href="' . $this->wiki->href('', $pagetag) . '">&times;</a>' . "\n";
-            }
-
-            // on affiche le template
-            $output = $this->wiki->render("@templates/$template", [
-                'pagetag' => $pagetag,
-                'slides' => $slides,
-                'titles' => $titles,
-                'buttons' => $buttons,
-                'class' => $class,
-            ]);
-
-            return $output;
         }
+
+        $buttons = '';
+        // si la fonction est appelee par le handler diaporama, on ajoute les liens d'edition et de retour
+        if ($this->wiki->GetMethod() == 'diaporama') {
+            $buttons .= '<a class="btn" href="' . $this->wiki->href('', $pagetag) . '">&times;</a>' . "\n";
+        }
+
+        // on affiche le template
+        $output = $this->wiki->render("@templates/$template", [
+            'pagetag' => $pagetag,
+            'slides' => $slides,
+            'titles' => $titles,
+            'buttons' => $buttons,
+            'class' => $class,
+        ]);
+
+        return $output;
     }
 
     /**
@@ -365,12 +362,12 @@ class Utils
             }
             if (is_array($datas)) {
                 return $datas;
-            } else {
-                return null;
             }
-        } else {
+
             return null;
         }
+
+        return null;
     }
 
     public function postFormat($output)
@@ -491,9 +488,9 @@ class Utils
             if ($desc == '') {
                 $desc = $this->wiki->services->get(EntryController::class)->view($entry, '', 0);
             }
-        } else {
-            // $desc = $this->wiki->Format($page['body'], 'wakka', $page["tag"]);
         }
+        // $desc = $this->wiki->Format($page['body'], 'wakka', $page["tag"]);
+
         // no javascript
         $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);
 

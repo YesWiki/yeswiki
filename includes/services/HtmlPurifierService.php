@@ -4,7 +4,6 @@ namespace YesWiki\Core\Service;
 
 use enshrined\svgSanitize\Sanitizer;
 use HTMLPurifier;
-use HTMLPurifier_Config;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
 
@@ -38,9 +37,9 @@ class HtmlPurifierService
             return $dirty_html;
         }
         if (is_null($this->purifier)) {
-            $config = HTMLPurifier_Config::createDefault();
+            $config = \HTMLPurifier_Config::createDefault();
 
-            //add extra attributes for links in new tab
+            // add extra attributes for links in new tab
             $config->set('Attr.AllowedFrameTargets', [
                 '_blank',
                 '_parent',
@@ -54,7 +53,7 @@ class HtmlPurifierService
             }
             $config->set('Cache.SerializerPath', realpath(self::HTMLPURIFIER_CACHE_FOLDER));
 
-            $this->purifier = new HTMLPurifier($config);
+            $this->purifier = new \HTMLPurifier($config);
         }
 
         return $this->purifier->purify($dirty_html);
@@ -97,7 +96,7 @@ class HtmlPurifierService
                 return true; // the file type doesn't need to be cleaned
             }
         } else {
-            return false; //TODO : maybe raise an explicit error in case of non-existing file
+            return false; // TODO : maybe raise an explicit error in case of non-existing file
         }
     }
 }

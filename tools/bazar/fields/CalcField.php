@@ -2,13 +2,11 @@
 
 namespace YesWiki\Bazar\Field;
 
+use Field;
 use Psr\Container\ContainerInterface;
-use Throwable;
 use YesWiki\Bazar\Service\FormManager;
 
-/**
- * @Field({"calc"})
- */
+#[\Field(['calc'])]
 class CalcField extends BazarField
 {
     protected const FIELD_DISPLAY_TEXT = 4;

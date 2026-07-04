@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\HtmlPurifierService;
 
-/**
- * @Field({"texte"})
- */
+#[\Field(['texte'])]
 class TextField extends BazarField
 {
     protected $pattern;
@@ -47,9 +45,9 @@ class TextField extends BazarField
     {
         if ($this->type == 'number' || $this->type == 'range') {
             return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'number']];
-        } else {
-            return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
         }
+
+        return [$this->propertyName => ['_mode_' => 'single', '_type_' => 'string']];
     }
 
     protected function renderInput($entry)
@@ -71,11 +69,11 @@ class TextField extends BazarField
             return $this->render('@bazar/fields/title.twig', [
                 'value' => $value,
             ]);
-        } else {
-            return $this->render('@bazar/fields/text.twig', [
-                'value' => $value,
-            ]);
         }
+
+        return $this->render('@bazar/fields/text.twig', [
+            'value' => $value,
+        ]);
     }
 
     public function formatValuesBeforeSave($entry)

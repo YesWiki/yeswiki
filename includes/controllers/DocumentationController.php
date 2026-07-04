@@ -3,14 +3,12 @@
 namespace YesWiki\Core\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\YesWikiController;
 
 class DocumentationController extends YesWikiController
 {
-    /**
-     * @Route("/doc",options={"acl":{"public"}})
-     */
+    #[Route('/doc', options: ['acl' => ['public']])]
     public function show()
     {
         return new Response($this->render('@core/documentation.twig', [

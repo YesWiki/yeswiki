@@ -161,18 +161,18 @@ abstract class YesWikiPerformable
             return false;
         } elseif (empty($param)) {
             return $default;
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     protected function formatArray($param)
     {
         if (is_array($param)) {
             return $param;
-        } else {
-            return !empty($param) ? array_map('trim', explode(',', $param)) : [];
         }
+
+        return !empty($param) ? array_map('trim', explode(',', $param)) : [];
     }
 
     /**

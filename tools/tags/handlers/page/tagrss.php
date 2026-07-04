@@ -11,9 +11,9 @@ $req_from = '';
 $req_group = '';
 $textetitre = _t('LATEST_CHANGES_ON') . ' ' . $this->config['wakka_name'];
 
-//on fait les tableaux pour les tags, puis on met des virgules et des guillemets
+// on fait les tableaux pour les tags, puis on met des virgules et des guillemets
 if (!empty($tags)) {
-    //texte utilisé pour la description du flux RSS
+    // texte utilisé pour la description du flux RSS
     $textetitre .= ', contenant les tags ' . $tags;
 
     $results = $this->PageList($tags, $type, 20, 'date');
@@ -47,7 +47,7 @@ if (!empty($tags)) {
             $items .= '<description><![CDATA[';
 
             if ($readAcl) {
-                //on enleve les actions recentchangesrssplus pour eviter les boucles infinies
+                // on enleve les actions recentchangesrssplus pour eviter les boucles infinies
                 $page['body'] = preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', $page['body']);
                 $page['body'] = preg_replace("/\{\{rss(.*?)\}\}/s", '', $page['body']);
                 $texteformat = $this->Format($page['body'], 'wakka', $page['tag']);

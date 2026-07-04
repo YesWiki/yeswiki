@@ -68,9 +68,9 @@ class SecurityController extends YesWikiController
      */
     private function isPasswordForEditingModeActivated(): bool
     {
-        return $this->params->has('password_for_editing') &&
-            !empty($this->params->get('password_for_editing')) &&
-            !$this->getService(AuthController::class)->getLoggedUser(); // AuthController not loaded in construct to prevent circular references
+        return $this->params->has('password_for_editing')
+            && !empty($this->params->get('password_for_editing'))
+            && !$this->getService(AuthController::class)->getLoggedUser(); // AuthController not loaded in construct to prevent circular references
     }
 
     /**
@@ -78,8 +78,8 @@ class SecurityController extends YesWikiController
      */
     private function hasRightPasswordForExisting(): bool
     {
-        return isset($_POST['password_for_editing']) &&
-             $_POST['password_for_editing'] == $this->params->get('password_for_editing');
+        return isset($_POST['password_for_editing'])
+             && $_POST['password_for_editing'] == $this->params->get('password_for_editing');
     }
 
     /**
@@ -91,8 +91,8 @@ class SecurityController extends YesWikiController
             '@security/wrong-password-for-editing.twig',
             [
                 'wrongPassword' => isset($_POST['password_for_editing']),
-                'passwordForEditingMessage' => ($this->params->has('password_for_editing_message') &&
-                    !empty($this->params->get('password_for_editing_message')))
+                'passwordForEditingMessage' => ($this->params->has('password_for_editing_message')
+                    && !empty($this->params->get('password_for_editing_message')))
                     ? $this->params->get('password_for_editing_message') : null,
                 'time' => $_REQUEST['time'] ?? null,
                 'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
@@ -141,8 +141,6 @@ class SecurityController extends YesWikiController
 
     /**
      * render captcha if needed.
-     *
-     * @param string &$output
      */
     public function renderCaptcha(string &$output)
     {
@@ -187,15 +185,13 @@ class SecurityController extends YesWikiController
      * Sanitize raw input values.
      *
      * @$pRawInputFiltered : the original value returned by PHP filter input
+     *
      * @$pSanitizedFormat : the format to check
      * supported format string, int, bool
      * if the format is not specified, the function return the original $pRawInputFiltered
      */
     private function sanitize($pRawInputFiltered, $pSanitizedFormat, $pEmulateFilterSanitizeString)
     {
-        /**
-         * @var mixed $result
-         */
         $result = null;
         switch ($pSanitizedFormat) {
             case 'string':
@@ -242,8 +238,6 @@ class SecurityController extends YesWikiController
      * @param int       $filter  same as filter_input
      * @param string    $format  'string', 'int', 'bool', 'array', '' (empty = not formatted)
      * @param array|int $options same as filter_input
-     *
-     * @return mixed
      */
     public function filterInput(
         int $type,
@@ -262,9 +256,6 @@ class SecurityController extends YesWikiController
          */
         $sanitizedFormat = $emulateFilterSanitizeString ? 'string' : $format;
 
-        /**
-         * @var mixed $rawInputFiltered
-         */
         $rawInputFiltered = filter_input($type, $varName, $filter, $options);
 
         if (is_array($options) && ($options['flags'] & FILTER_REQUIRE_ARRAY || $options['flags'] & FILTER_FORCE_ARRAY)) {
@@ -279,8 +270,8 @@ class SecurityController extends YesWikiController
             }
 
             return $vSanitizedArray;
-        } else {
-            return $this->sanitize($rawInputFiltered, $sanitizedFormat, $emulateFilterSanitizeString);
         }
+
+        return $this->sanitize($rawInputFiltered, $sanitizedFormat, $emulateFilterSanitizeString);
     }
 }

@@ -4,7 +4,7 @@
 $class = $this->GetParameter('class');
 $class = 'row-fluid row' . ((!empty($class)) ? ' ' . $class : '');
 // data attributes
-$data = $this->services->get(\YesWiki\Templates\Service\Utils::class)->getDataParameter();
+$data = $this->services->get(YesWiki\Templates\Service\Utils::class)->getDataParameter();
 $pagetag = $this->GetPageTag();
 
 // teste s'il y a bien un element de fermeture associé avant d'ouvrir une balise
@@ -12,7 +12,7 @@ if (!isset($GLOBALS['check_' . $pagetag])) {
     $GLOBALS['check_' . $pagetag] = [];
 }
 if (!isset($GLOBALS['check_' . $pagetag]['grid'])) {
-    $GLOBALS['check_' . $pagetag]['grid'] = $this->services->get(\YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('grid', $pagetag, $this->page['body'] ?? '');
+    $GLOBALS['check_' . $pagetag]['grid'] = $this->services->get(YesWiki\Templates\Service\Utils::class)->checkGraphicalElements('grid', $pagetag, $this->page['body'] ?? '');
 }
 
 if ($GLOBALS['check_' . $pagetag]['grid']) {

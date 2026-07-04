@@ -314,10 +314,10 @@ class FormManager
             $data['bn_label_nature'] = $data['bn_label_nature'] . ' (' . _t('BAZ_DUPLICATE') . ')';
 
             return $this->create($data);
-        } else {
-            // raise error?
-            return false;
         }
+
+        // raise error?
+        return false;
     }
 
     public function delete($id)

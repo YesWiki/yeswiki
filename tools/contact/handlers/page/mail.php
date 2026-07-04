@@ -22,7 +22,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     // entête de mail qd le champ $_GET['field'] est spécifié
     $infomsg = '';
 
-    //initialisation de variables passees en POST
+    // initialisation de variables passees en POST
     $mail_sender = (isset($_POST['email'])) ? trim($_POST['email']) : false;
     $hasReadAccess = true;
     if (!empty($_GET['field'])) {
@@ -46,7 +46,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
     if (!$mail_receiver) {
         $hasReadAccess = $aclService->hasAccess('read');
         if ($hasReadAccess) {
-            //on prend le squelette du theme qui pourrait contenir des actions avec des mails
+            // on prend le squelette du theme qui pourrait contenir des actions avec des mails
             $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
             if (file_exists($chemin)) {
                 $file_content = file_get_contents($chemin);
@@ -187,9 +187,9 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             <input type="hidden" name="mail" value="' . htmlspecialchars($_GET['field']) . '">
         </form>';
     } elseif ($aclService->hasAccess('read') && $this->GetUser()) {
-        //sinon on affiche le formulaire d'envoi de mail
-        //si on est identifie
-        //on verifie si l'on est bien identifie comme admin, pour eviter le spam
+        // sinon on affiche le formulaire d'envoi de mail
+        // si on est identifie
+        // on verifie si l'on est bien identifie comme admin, pour eviter le spam
         $output .= '<h1>Envoyer la page par mail</h1>
         <form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail') . '">
           <div class="form-group">
@@ -216,7 +216,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
           <input type="hidden" name="type" value="mail" />
         </form>';
     } else {
-        //on affiche le formulaire d'identification sinon
+        // on affiche le formulaire d'identification sinon
         $output .= $this->render('@templates/alert-message.twig', [
             'type' => 'danger',
             'message' => ($this->GetUser())
@@ -227,7 +227,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         $output .= $this->Format('{{login}}') . "\n";
     }
 
-    //affichage a l'ecran
+    // affichage a l'ecran
     echo $this->Header();
     echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
     echo $this->Footer();

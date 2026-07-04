@@ -1,4 +1,5 @@
 <?php
+
 /*
 Une simple action pour tester le fonctionnement des triplets
 */
@@ -14,7 +15,6 @@ if (!function_exists('test')) {
      *
      * @param string $text        Label du test
      * @param bool   $condition   Résultat de la condition testée
-     * @param string $errortext   Message en cas d'erreur
      * @param string $stopOnError Si positionnée é 1 (par défaut), termine le
      *                            script si la condition n'est pas vérifiée
      *
@@ -27,20 +27,19 @@ if (!function_exists('test')) {
             echo '<span class="ok">' . _t('OK') . "</span><br />\n";
 
             return 0;
-        } else {
-            echo '<span class="failed">' . _t('FAIL') . '</span>';
-            if ($errorText) {
-                echo ': ',$errorText;
-            }
-            echo "<br />\n";
-            if ($stopOnError) {
-                echo _t('END_OF_EXEC') . ".<br />\n";
-                echo "</body>\n</html>\n";
-                exit;
-            }
-
-            return 1;
         }
+        echo '<span class="failed">' . _t('FAIL') . '</span>';
+        if ($errorText) {
+            echo ': ',$errorText;
+        }
+        echo "<br />\n";
+        if ($stopOnError) {
+            echo _t('END_OF_EXEC') . ".<br />\n";
+            echo "</body>\n</html>\n";
+            exit;
+        }
+
+        return 1;
     }
 }
 

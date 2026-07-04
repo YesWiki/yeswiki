@@ -2,16 +2,14 @@
 
 namespace YesWiki\Templates\Controller;
 
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
 
 class ApiController extends YesWikiController
 {
-    /**
-     * @Route("/api/templates/custom-presets/{presetFilename}", methods={"DELETE"},options={"acl":{"@admins"}})
-     */
+    #[Route('/api/templates/custom-presets/{presetFilename}', methods: ['DELETE'], options: ['acl' => ['@admins']])]
     public function deleteCustomCSSPreset($presetFilename)
     {
         $result = $this->getService(ThemeManager::class)->deleteCustomCSSPreset($presetFilename);
@@ -22,9 +20,7 @@ class ApiController extends YesWikiController
         return new ApiResponse(['code' => $code, 'message' => $result['message']], $code);
     }
 
-    /**
-     * @Route("/api/templates/custom-presets/{presetFilename}", methods={"POST"},options={"acl":{"+"}})
-     */
+    #[Route('/api/templates/custom-presets/{presetFilename}', methods: ['POST'], options: ['acl' => ['+']])]
     public function addCustomCSSPreset($presetFilename)
     {
         $fileParts = pathinfo($presetFilename);

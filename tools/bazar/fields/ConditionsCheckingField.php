@@ -4,9 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 
-/**
- * @Field({"conditionschecking"})
- */
+#[\Field(['conditionschecking'])]
 class ConditionsCheckingField extends LabelField
 {
     private $condition;

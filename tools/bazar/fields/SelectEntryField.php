@@ -6,9 +6,7 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Wiki;
 
-/**
- * @Field({"listefiche"})
- */
+#[\Field(['listefiche'])]
 class SelectEntryField extends EnumField
 {
     public $isDistantJson;
@@ -51,10 +49,10 @@ class SelectEntryField extends EnumField
             if ($this->isDistantJson) {
                 // TODO display the entry in an iframe ?
                 return '';
-            } else {
-                // TODO add documentation
-                return $this->getService(EntryController::class)->view($value);
             }
+
+            // TODO add documentation
+            return $this->getService(EntryController::class)->view($value);
         }
 
         if ($this->isDistantJson) {

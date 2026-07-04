@@ -6,7 +6,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
-use Zebra_Image;
 
 class ThemeController extends YesWikiController
 {
@@ -127,7 +126,7 @@ class ThemeController extends YesWikiController
             'class' => $formclass,
             'bgselector' => $bgselector,
             'listWikinames' => $listWikinames,
-            'showAdminActions' => ($this->wiki->UserIsAdmin()),
+            'showAdminActions' => $this->wiki->UserIsAdmin(),
             'themeSelectorTranslation' => array_map('_t', $ts),
             'customCSSPresetsPath' => ThemeManager::CUSTOM_CSS_PRESETS_PATH,
             'customCSSPresetsPrefix' => ThemeManager::CUSTOM_CSS_PRESETS_PREFIX,
@@ -154,7 +153,7 @@ class ThemeController extends YesWikiController
             // les jpg sont les fonds d'ecrans, ils doivent etre mis en miniature
             if ($imgextension == '.jpg') {
                 if (!is_file($backgroundsdir . '/thumbs/' . $file)) {
-                    $imgTrans = new Zebra_Image();
+                    $imgTrans = new \Zebra_Image();
                     $imgTrans->auto_handle_exif_orientation = true;
                     $imgTrans->preserve_aspect_ratio = true;
                     $imgTrans->enlarge_smaller_images = true;

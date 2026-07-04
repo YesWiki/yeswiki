@@ -125,14 +125,14 @@ class UserManagerTest extends YesWikiTestCase
             $userNameAlreadyExist = true;
         } catch (UserEmailAlreadyUsedException $ex) {
             $emailAlreadyExist = true;
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exceptionThrown = true;
         }
         try {
             if (!empty($user)) {
                 $userManager->delete($user);
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         if ($userNameExist) {
@@ -182,7 +182,7 @@ class UserManagerTest extends YesWikiTestCase
         try {
             $userManager->delete($user);
             $createdUser = $userManager->getOneByName($user['name']);
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             $exceptionThrown = true;
         }
 
@@ -280,7 +280,7 @@ class UserManagerTest extends YesWikiTestCase
             $userNameAlreadyExist = true;
         } catch (UserEmailAlreadyUsedException $ex) {
             $emailAlreadyExist = true;
-        } catch (Throwable $ex) {
+        } catch (\Throwable $ex) {
             $exceptionThrown = true;
             $exceptionMessage = $ex->getMessage();
         }
@@ -288,7 +288,7 @@ class UserManagerTest extends YesWikiTestCase
             if (!empty($user)) {
                 $userManager->delete($user);
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
 
         if ($userNameExist) {
@@ -331,7 +331,7 @@ class UserManagerTest extends YesWikiTestCase
         $output = '';
         $maxIndex = strlen($charset) - 1;
 
-        for ($i = 0; $i < (max(1, $length)); $i++) {
+        for ($i = 0; $i < max(1, $length); $i++) {
             $output .= substr($charset, rand(0, $maxIndex), 1);
         }
 

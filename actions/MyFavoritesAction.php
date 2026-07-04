@@ -105,34 +105,31 @@ class MyFavoritesAction extends YesWikiAction
             preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
 
             return $this->getFileName($page, $attachimg[1][0]);
-        } else {
-            preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
-            if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                $imagefile = mb_convert_encoding(
-                    preg_replace_callback(
-                        '/\\\\u([a-f0-9]{4})/',
-                        'encodingFromUTF8',
-                        $image[1][0]
-                    ),
-                    'ISO-8859-1',
-                    'UTF-8'
-                );
-
-                return $imagefile;
-            } else {
-                preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
-                if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                    return $image[1][0];
-                } else {
-                    preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
-                    if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                        return $image[1][0];
-                    } else {
-                        return '';
-                    }
-                }
-            }
         }
+        preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
+        if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
+            $imagefile = mb_convert_encoding(
+                preg_replace_callback(
+                    '/\\\\u([a-f0-9]{4})/',
+                    'encodingFromUTF8',
+                    $image[1][0]
+                ),
+                'ISO-8859-1',
+                'UTF-8'
+            );
+
+            return $imagefile;
+        }
+        preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
+        if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
+            return $image[1][0];
+        }
+        preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
+        if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
+            return $image[1][0];
+        }
+
+        return '';
 
         return '';
     }

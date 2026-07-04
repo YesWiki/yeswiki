@@ -106,9 +106,9 @@ class Mailer
         $admins = [];
         foreach (explode("\n", $adminsAcl) as $line) {
             $line = trim($line);
-            if (!empty($line) &&
-                substr($line, 0, 1) != '#' &&
-                substr($line, 0, 1) != '@') {
+            if (!empty($line)
+                && substr($line, 0, 1) != '#'
+                && substr($line, 0, 1) != '@') {
                 $adminUser = $this->wiki->LoadUser($line);
                 if (!empty($adminUser)) {
                     $admins[] = $adminUser;

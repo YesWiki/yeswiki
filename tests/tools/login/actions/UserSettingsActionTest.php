@@ -208,7 +208,7 @@ class UserSettingsActionTest extends YesWikiTestCase
             unset($_REQUEST['usersettings_action']);
             $user = $userManager->getOneByName($name);
             $connectedUser = $authController->getLoggedUser();
-            //clean user before tests
+            // clean user before tests
             if (!empty($user['name'])) {
                 $userManager->delete($user);
             }
@@ -263,7 +263,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         $output = '';
         $maxIndex = strlen($charset) - 1;
 
-        for ($i = 0; $i < (max(1, $length)); $i++) {
+        for ($i = 0; $i < max(1, $length); $i++) {
             $output .= substr($charset, rand(0, $maxIndex), 1);
         }
 

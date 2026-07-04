@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Bazar\Service\ExternalBazarService;
 
-/**
- * @Field({"externalcheckboxentryfield"})
- */
+#[\Field(['externalcheckboxentryfield'])]
 class ExternalCheckboxEntryField extends CheckboxEntryField
 {
     protected $JSONFormAddress;

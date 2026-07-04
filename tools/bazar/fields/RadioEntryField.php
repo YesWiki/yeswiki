@@ -5,9 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Wiki;
 
-/**
- * @Field({"radiofiche"})
- */
+#[\Field(['radiofiche'])]
 class RadioEntryField extends RadioField
 {
     public $isDistantJson;

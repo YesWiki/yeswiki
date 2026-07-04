@@ -177,8 +177,8 @@ class AclService
         if ($acl === null) {
             return false;
         } elseif (isset($acl['list']) && (
-            $acl['list'] === 'comments-closed' ||
-                (
+            $acl['list'] === 'comments-closed'
+                || (
                     $acl['list'] === '*' && $privilege === 'comment' && empty($user)
                 )
         )) {

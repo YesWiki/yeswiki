@@ -194,22 +194,21 @@ class ComposerScriptsHelper
         $file2ignore = ['.', '..'];
         if (is_link($path)) {
             return unlink($path) !== false;
-        } else {
-            if ($res = opendir($path)) {
-                $continue = true;
-                while (($file = readdir($res)) !== false && $continue) {
-                    if (!in_array($file, $file2ignore)) {
-                        $continue = self::delete($path . '/' . $file);
-                    }
-                }
-                closedir($res);
-            }
-            if ($continue) {
-                return rmdir($path) !== false;
-            } else {
-                return false;
-            }
         }
+        if ($res = opendir($path)) {
+            $continue = true;
+            while (($file = readdir($res)) !== false && $continue) {
+                if (!in_array($file, $file2ignore)) {
+                    $continue = self::delete($path . '/' . $file);
+                }
+            }
+            closedir($res);
+        }
+        if ($continue) {
+            return rmdir($path) !== false;
+        }
+
+        return false;
 
         return false;
     }

@@ -5,7 +5,6 @@ namespace YesWiki\Core\Service;
 require_once 'includes/objects/MD5PasswordHasher.php'; // TODO use autoload
 
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPasswordHasherFactory;
-use Throwable;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\MD5PasswordHasher;
 

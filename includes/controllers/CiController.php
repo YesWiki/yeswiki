@@ -2,7 +2,7 @@
 
 namespace YesWiki\Core\Controller;
 
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Entity\ConfigurationFile;
 use YesWiki\Core\Service\ConfigurationFileProvider;
@@ -11,9 +11,7 @@ use YesWiki\Core\YesWikiController;
 
 class CiController extends YesWikiController
 {
-    /**
-     * @Route("/api/ci/update_config", methods={"POST"}, options={"acl":{"@admins"}})
-     */
+    #[Route('/api/ci/update_config', methods: ['POST'], options: ['acl' => ['@admins']])]
     public function updateConfig()
     {
         $configurationService = $this->getService(ConfigurationService::class);

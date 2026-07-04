@@ -28,8 +28,8 @@ abstract class YesWikiAction extends YesWikiPerformable
                 'type' => 'danger',
                 'message' => "Action $actionName : " . _t('NOT_AUTORIZED') . '.',
             ]);
-        } else {
-            return null;
         }
+
+        return null;
     }
 }

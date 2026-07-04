@@ -13,7 +13,7 @@ abstract class EnumField extends BazarField
 {
     protected $options;
     protected $optionsUrls; // only for loadOptionsFromJson
-    protected $optionsTree = null; // only for list with multi levels
+    protected $optionsTree; // only for list with multi levels
 
     protected $linkedObjectName;
     protected $keywords;

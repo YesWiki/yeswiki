@@ -90,9 +90,9 @@ class ExternalBazarService
         return true;
         if ($pRefresh == null || !$pRefresh || !$this->wiki->UserIsAdmin()) {
             return false;
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     /**
@@ -229,12 +229,11 @@ class ExternalBazarService
 
                 if (empty($vExternalForm)) {
                     throw new ExternalBazarServiceException('External form ID ' . $vExternalFormID . " doesn't exist on server : " . $vURL);
-                } else {
-                    $vExternalForm = $this->prepareExtForm($vLocalFormID, $vURL, $vExternalForm);
-
-                    $this->formManager->cacheForm($vLocalFormID, $vExternalForm);
-                    $this->formManager->cacheForm($vExternalFormIDKey, $vExternalForm);
                 }
+                $vExternalForm = $this->prepareExtForm($vLocalFormID, $vURL, $vExternalForm);
+
+                $this->formManager->cacheForm($vLocalFormID, $vExternalForm);
+                $this->formManager->cacheForm($vExternalFormIDKey, $vExternalForm);
 
                 if (!empty($vExternalForm)) {
                     $vForms[$vExternalFormIDKey] = $vExternalForm;
@@ -252,8 +251,6 @@ class ExternalBazarService
 
     /**
      * get Entries linked to forms.
-     *
-     * @param array $params
      *
      * @return array|null $entries
      */
@@ -354,21 +351,20 @@ class ExternalBazarService
                     foreach ($vBatchEntries as $vEntry) {
                         if (is_string($vEntry)) {
                             throw new ExternalBazarServiceException('Entry should not be a string : ' . $vEntry);
-                        } else {
-                            $vEntry['-is-external-'] = '1';
-                            // save external data with key 'external-data' because '-' is not used for name
-                            $vEntry['external-data'] = [
-                                'baseUrl' => $vURL,
-                                'externalFormID' => $vExternalFormID,
-                                'externalFormLabel' => $vExternalFormLabel,
-                                'localFormID' => $vLocalFormID,
-                                'formIDKey' => $vExternalFormIDKey,
-                            ];
-                            $vEntry['url'] = $vURL . '?' . $vEntry['id_fiche'];
-                            $vEntry['id_typeannonce'] = $vLocalFormID;
-
-                            $vEntries[] = $vEntry;
                         }
+                        $vEntry['-is-external-'] = '1';
+                        // save external data with key 'external-data' because '-' is not used for name
+                        $vEntry['external-data'] = [
+                            'baseUrl' => $vURL,
+                            'externalFormID' => $vExternalFormID,
+                            'externalFormLabel' => $vExternalFormLabel,
+                            'localFormID' => $vLocalFormID,
+                            'formIDKey' => $vExternalFormIDKey,
+                        ];
+                        $vEntry['url'] = $vURL . '?' . $vEntry['id_fiche'];
+                        $vEntry['id_typeannonce'] = $vLocalFormID;
+
+                        $vEntries[] = $vEntry;
                     }
                 }
             }
@@ -381,9 +377,9 @@ class ExternalBazarService
 
         if (!empty($vEntries)) {
             return $vEntries;
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**
@@ -391,7 +387,6 @@ class ExternalBazarService
      *
      * @param string $pURL      : url to get with  cache
      * @param int    $pCacheTTL : duration of the cache in second
-     * @param string $mode      'standard' or 'entries'
      *
      * @return string file content from cache
      */
@@ -491,9 +486,7 @@ class ExternalBazarService
     /**
      * refrech cache with only most recent entries.
      *
-     * @param string $url        : url to get with  cache
-     * @param int    $cache_life : duration of the cache in second
-     * @param string $dir        : base dirname where save the cache
+     * @param string $dir : base dirname where save the cache
      *
      * @return string location of cached file
      */
@@ -553,9 +546,7 @@ class ExternalBazarService
      * Cache given URL content or load it before to cache it
      * create a temp file to indicate to other php session that the file is updating.
      *
-     * @param string $pContent   used if url if empty
-     * @param string $cache_file
-     * @param string $content
+     * @param string $pContent used if url if empty
      */
     private function cacheURLContent(string $pURL, string $pContent, string $pCacheFile, bool $pForceRefresh = false)
     {
@@ -666,9 +657,8 @@ class ExternalBazarService
 
         if (in_array($urlToCheckDeletion, $this->aAlreadyCheckingDeletionsURLs)) {
             return null;
-        } else {
-            $this->aAlreadyCheckingDeletionsURLs[] = $urlToCheckDeletion;
         }
+        $this->aAlreadyCheckingDeletionsURLs[] = $urlToCheckDeletion;
 
         $vJSON = file_get_contents($cache_file);
         $vJSON = $this->extractErrors($vJSON, $cache_file);
@@ -728,8 +718,8 @@ class ExternalBazarService
                 if (
                     !empty($entry['date_maj_fiche'])
                     && (
-                        is_null($maxUpdatedDate) ||
-                        ($entry['date_maj_fiche'] > $maxUpdatedDate)
+                        is_null($maxUpdatedDate)
+                        || ($entry['date_maj_fiche'] > $maxUpdatedDate)
                     )
                 ) {
                     $maxUpdatedDate = $entry['date_maj_fiche'];
@@ -924,7 +914,7 @@ class ExternalBazarService
         return $urlDetails[0] . '/' . ($urlDetails[2] ? '' : '?') . $urlDetails[1] .
             str_replace(
                 ['{pageTag}', '{firstSeparator}', '{formId}'],
-                [$urlDetails[1], ($urlDetails[2] ? '?' : '&'), $distantFormId],
+                [$urlDetails[1], $urlDetails[2] ? '?' : '&', $distantFormId],
                 self::JSON_ENTRIES_OLD_BASE_URL
             ) .
             (empty($querystring) ? '' : ($urlDetails[2] ? '?' : '&') . $querystring);

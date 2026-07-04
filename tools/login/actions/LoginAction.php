@@ -85,9 +85,9 @@ class LoginAction extends YesWikiAction
             'class' => !empty($arg['class']) ? $arg['class'] : '',
             'btnclass' => !empty($arg['btnclass']) ? $arg['btnclass'] : '',
             'nobtn' => $this->formatBoolean($arg, false, 'nobtn'),
-            'template' => (empty($arg['template']) ||
-                empty(basename($arg['template'])) ||
-                !$this->templateEngine->hasTemplate('@login/' . basename($arg['template'])))
+            'template' => (empty($arg['template'])
+                || empty(basename($arg['template']))
+                || !$this->templateEngine->hasTemplate('@login/' . basename($arg['template'])))
                 ? 'default.twig'
                 : basename($arg['template']),
         ];
