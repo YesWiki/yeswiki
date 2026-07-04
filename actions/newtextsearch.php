@@ -155,8 +155,8 @@ if ($phrase) {
 
     $aclRequest = $aclService->updateRequestWithACL();
 
-    $requestfull = "SELECT body, tag FROM {$dbService->prefixTable('pages')} WHERE latest = \"Y\" " . (!empty($aclRequest) ? ' AND ' . $aclRequest : '') .
-        "AND (body LIKE \"%{$phraseFormatted}%\"{$requeteSQLForList}) ORDER BY tag LIMIT 100";
+    $requestfull = "SELECT body, tag FROM {$dbService->prefixTable('pages')} WHERE latest = 'Y' " . (!empty($aclRequest) ? ' AND ' . $aclRequest : '') .
+        " AND (body LIKE '%{$phraseFormatted}%'{$requeteSQLForList}) ORDER BY tag LIMIT 100";
 
     // exécution de la requete
     if ($resultat = $dbService->loadAll($requestfull)) {

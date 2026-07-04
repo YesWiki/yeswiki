@@ -5,11 +5,13 @@ if ($user = $this->GetUser()) {
     $curChar = '';
     $curday = '';
     $last_tag = '';
+    $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
+    $userCol = $dbService->quoteIdentifier('user');
 
     if (($bydate = $this->GetParameter('bydate'))) {
         echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE') . ".</b><br /><br />\n";
 
-        if ($pages = $this->LoadAll('SELECT tag, time FROM ' . $this->config['table_prefix'] . "pages WHERE user = '" . mysqli_real_escape_string($this->dblink, $this->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {
+        if ($pages = $this->LoadAll("SELECT tag, time FROM " . $this->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {
             foreach ($pages as $page) {
                 $edited_pages[$page['tag']] = $page['time'];
             }
@@ -42,7 +44,7 @@ if ($user = $this->GetUser()) {
     } else {
         echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_NAME') . ".</b><br /><br />\n";
 
-        if ($pages = $this->LoadAll('SELECT tag, time FROM ' . $this->config['table_prefix'] . "pages WHERE user = '" . mysqli_real_escape_string($this->dblink, $this->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC")) {
+        if ($pages = $this->LoadAll("SELECT tag, time FROM " . $this->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC")) {
             foreach ($pages as $page) {
                 if ($last_tag != $page['tag']) {
                     $last_tag = $page['tag'];

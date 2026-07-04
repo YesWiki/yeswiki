@@ -15,7 +15,7 @@ if (!empty($tags)) {
     $tags = trim($tags);
     $tab_tags = explode(' ', $tags);
     $tags = implode(',', array_filter($tab_tags, 'trim'));
-    $tags = '"' . str_replace(',', '","', $tags) . '"';
+    $tags = "'" . str_replace(',', "','", $tags) . "'";
     $selectiontags = ' AND value IN (' . $tags . ')';
 }
 
@@ -26,7 +26,7 @@ if (empty($nb_taille_tag)) {
 }
 
 // on récupère le nb maximum et le nb minimum d'occurences
-$sql = 'SELECT COUNT(value) AS nb FROM ' . $this->config['table_prefix'] . 'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" ' . $selectiontags . ' GROUP BY value';
+$sql = "SELECT COUNT(value) AS nb FROM " . $this->config['table_prefix'] . "triples WHERE property='http://outils-reseaux.org/_vocabulary/tag' " . $selectiontags . " GROUP BY value";
 $min_max = $this->LoadAll($sql);
 $min = 100000000;
 $max = 0;
@@ -44,7 +44,7 @@ if ($mult < 1) {
 }
 
 // on récupère tous les tags existants
-$sql = 'SELECT value, resource FROM ' . $this->config['table_prefix'] . 'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" ' . $selectiontags . ' ORDER BY value ASC, resource ASC';
+$sql = "SELECT value, resource FROM " . $this->config['table_prefix'] . "triples WHERE property='http://outils-reseaux.org/_vocabulary/tag' " . $selectiontags . " ORDER BY value ASC, resource ASC";
 $tab_tous_les_tags = $this->LoadAll($sql);
 
 if (is_array($tab_tous_les_tags)) {

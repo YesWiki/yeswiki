@@ -89,24 +89,43 @@
         <?php echo _t('DATABASE_CONFIGURATION'); ?>
       </h3>
 
+      <?php
+      // Check available database drivers
+      $availableDrivers = [];
+      if (extension_loaded('pdo_mysql')) {
+          $availableDrivers['mysql'] = 'MySQL / MariaDB';
+      }
+      if (extension_loaded('pdo_sqlite')) {
+          $availableDrivers['sqlite'] = 'SQLite';
+      }
+      if (extension_loaded('pdo_pgsql')) {
+          $availableDrivers['pgsql'] = 'PostgreSQL';
+      }
+      $defaultDriver = $wakkaConfig['db_driver'] ?? 'mysql';
+      ?>
+
       <div class="accordion" id="accordion2">
         <div class="accordion-group">
           <div id="collapseTwo" class="accordion-body collapse">
             <div class="accordion-inner">
               <dl>
-                <dt><?php echo _t('MYSQL_SERVER'); ?> </dt>
-                <dd><?php echo _t('MYSQL_SERVER_INFOS'); ?></dd>
+                <dt><?php echo _t('DATABASE_DRIVER'); ?></dt>
+                <dd><?php echo _t('DATABASE_DRIVER_INFOS'); ?></dd>
+              </dl>
+              <dl class="db-server-info">
+                <dt><?php echo _t('DATABASE_SERVER'); ?></dt>
+                <dd><?php echo _t('DATABASE_SERVER_INFOS'); ?></dd>
               </dl>
               <dl>
-                <dt><?php echo _t('MYSQL_DATABASE'); ?> </dt>
-                <dd><?php echo _t('MYSQL_DATABASE_INFOS'); ?></dd>
+                <dt><?php echo _t('DATABASE_NAME'); ?></dt>
+                <dd><?php echo _t('DATABASE_NAME_INFOS'); ?></dd>
+              </dl>
+              <dl class="db-server-info">
+                <dt><?php echo _t('DATABASE_USERNAME'); ?></dt>
+                <dd><?php echo _t('DATABASE_USERNAME_INFOS'); ?></dd>
               </dl>
               <dl>
-                <dt><?php echo _t('MYSQL_USERNAME'); ?> </dt>
-                <dd><?php echo _t('MYSQL_USERNAME_INFOS'); ?></dd>
-              </dl>
-              <dl>
-                <dt><?php echo _t('TABLE_PREFIX'); ?> </dt>
+                <dt><?php echo _t('TABLE_PREFIX'); ?></dt>
                 <dd><?php echo _t('TABLE_PREFIX_INFOS'); ?></dd>
               </dl>
             </div>
@@ -115,30 +134,46 @@
       </div>
 
       <div class="form-group">
-        <label class="col-sm-3 control-label"><?php echo _t('MYSQL_SERVER'); ?></label>
+        <label class="col-sm-3 control-label"><?php echo _t('DATABASE_DRIVER'); ?></label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[mysql_host]" value="<?php echo $wakkaConfig['mysql_host']; ?>" />
+          <select class="form-control" name="config[db_driver]" id="db_driver_select">
+            <?php foreach ($availableDrivers as $driver => $label): ?>
+              <option value="<?php echo $driver; ?>"<?php echo ($driver === $defaultDriver) ? ' selected' : ''; ?>><?php echo $label; ?></option>
+            <?php endforeach; ?>
+          </select>
+          <?php if (count($availableDrivers) === 0): ?>
+            <p class="text-danger"><?php echo _t('NO_DATABASE_DRIVER_AVAILABLE'); ?></p>
+          <?php elseif (count($availableDrivers) < 3): ?>
+            <p class="help-block text-muted"><?php echo _t('INSTALL_MORE_DB_DRIVERS'); ?></p>
+          <?php endif; ?>
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label"><?php echo _t('MYSQL_DATABASE'); ?></label>
+      <div class="form-group db-server-field">
+        <label class="col-sm-3 control-label"><?php echo _t('DATABASE_SERVER'); ?></label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[mysql_database]" value="" />
+          <input type="text" class="form-control" name="config[db_host]" id="db_host" value="<?php echo $wakkaConfig['db_host'] ?? $wakkaConfig['mysql_host'] ?? 'localhost'; ?>" />
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label"><?php echo _t('MYSQL_USERNAME'); ?></label>
+      <div class="form-group db-server-field">
+        <label class="col-sm-3 control-label" id="db_database_label"><?php echo _t('DATABASE_NAME'); ?></label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[mysql_user]" value="" />
+          <input type="text" class="form-control" name="config[db_database]" id="db_database" value="" />
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label"><?php echo _t('MYSQL_PASSWORD'); ?></label>
+      <div class="form-group db-server-field">
+        <label class="col-sm-3 control-label"><?php echo _t('DATABASE_USERNAME'); ?></label>
         <div class="col-sm-9">
-          <input type="password" class="form-control" name="config[mysql_password]" value="" />
+          <input type="text" class="form-control" name="config[db_user]" id="db_user" value="" />
+        </div>
+      </div>
+
+      <div class="form-group db-server-field">
+        <label class="col-sm-3 control-label"><?php echo _t('DATABASE_PASSWORD'); ?></label>
+        <div class="col-sm-9">
+          <input type="password" class="form-control" name="config[db_password]" id="db_password" value="" />
         </div>
       </div>
 
@@ -148,6 +183,39 @@
           <input type="text" required class="form-control" name="config[table_prefix]" value="<?php echo $wakkaConfig['table_prefix']; ?>" />
         </div>
       </div>
+
+      <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var driverSelect = document.getElementById('db_driver_select');
+        var serverFields = document.querySelectorAll('.db-server-field');
+        var serverInfos = document.querySelectorAll('.db-server-info');
+        var dbHost = document.getElementById('db_host');
+        var dbUser = document.getElementById('db_user');
+        var dbDatabase = document.getElementById('db_database');
+
+        function updateFieldsVisibility() {
+          var driver = driverSelect.value;
+          var isSqlite = (driver === 'sqlite');
+
+          serverFields.forEach(function(field) {
+            field.style.display = isSqlite ? 'none' : '';
+          });
+          serverInfos.forEach(function(info) {
+            info.style.display = isSqlite ? 'none' : '';
+          });
+
+          // Update required attributes
+          if (dbHost) dbHost.required = !isSqlite;
+          if (dbUser) dbUser.required = !isSqlite;
+          if (dbDatabase) dbDatabase.required = !isSqlite;
+        }
+
+        if (driverSelect) {
+          driverSelect.addEventListener('change', updateFieldsVisibility);
+          updateFieldsVisibility();
+        }
+      });
+      </script>
     </div>
     <div class="col-md-4">
       <h3>

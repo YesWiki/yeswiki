@@ -47,10 +47,10 @@ class ArchiveService
     ];
 
     public const DEFAULT_PARAMS_TO_ANONYMIZE = [
-        'mysql_host' => '',
-        'mysql_database' => '',
-        'mysql_user' => '',
-        'mysql_password' => '',
+        'db_host' => '',
+        'db_database' => '',
+        'db_user' => '',
+        'db_password' => '',
         'contact_smtp_host' => '',
         'contact_smtp_user' => '',
         'contact_smtp_pass' => '',

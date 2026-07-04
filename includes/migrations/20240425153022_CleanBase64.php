@@ -17,9 +17,9 @@ class CleanBase64 extends YesWikiMigration
     {
         $anchor = '%src=\\\\\\\\\\"data:image\\\\\\\\/%;base64,%';
         $select_entries_filter =
-            'SELECT DISTINCT resource FROM ' . $this->dbService->prefixTable('triples') .
-            'WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" ' .
-            'ORDER BY resource ASC';
+            "SELECT DISTINCT resource FROM " . $this->dbService->prefixTable('triples') .
+            " WHERE value = 'fiche_bazar' AND property = 'http://outils-reseaux.org/_vocabulary/type' " .
+            "ORDER BY resource ASC";
 
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . ' ' .
             "WHERE body LIKE '{$anchor}' " .

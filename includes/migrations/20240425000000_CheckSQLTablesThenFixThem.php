@@ -6,6 +6,12 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
 {
     public function run()
     {
+        // This migration fixes MySQL-specific schema issues (AUTO_INCREMENT, PRIMARY KEY)
+        // Skip for non-MySQL databases as they have different approaches
+        if ($this->dbService->getDriver() !== 'mysql') {
+            return;
+        }
+
         foreach ([['pages', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['links', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['nature', 'bn_id_nature', 'int(10) UNSIGNED NOT NULL AUTO_INCREMENT'], ['referrers', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT'], ['triples', 'id', 'int(10) unsigned NOT NULL AUTO_INCREMENT']] as $data) {
             $this->checkThenUpdateColumnAutoincrement($data[0], $data[1], $data[2]);
         }
@@ -28,6 +34,7 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
             $data = [];
         }
         if (empty($data['Extra']) || (is_string($data['Extra']) && strstr($data['Extra'], 'auto_increment') === false)) {
+            $quotedColumn = $this->dbService->quoteIdentifier($columnName);
             if (empty($data)) {
                 $dataIndex = $this->getColumnInfo($tableName, 'index');
                 if (
@@ -37,9 +44,9 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
                 ) {
                     $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable($tableName)} DROP PRIMARY KEY;");
                 }
-                $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable($tableName)} ADD COLUMN `$columnName` $SQL_columnDef FIRST, ADD PRIMARY KEY(`$columnName`);");
+                $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable($tableName)} ADD COLUMN $quotedColumn $SQL_columnDef FIRST, ADD PRIMARY KEY($quotedColumn);");
             }
-            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable($tableName)} MODIFY COLUMN `$columnName` $SQL_columnDef;");
+            $this->dbService->query("ALTER TABLE {$this->dbService->prefixTable($tableName)} MODIFY COLUMN $quotedColumn $SQL_columnDef;");
             $data = $this->getColumnInfo($tableName, $columnName);
             if (empty($data['Extra']) || (is_string($data['Extra']) && strstr($data['Extra'], 'auto_increment') === false)) {
                 throw new Exception("tables `$tableName`, column `$columnName` not updated !", 1);
@@ -55,7 +62,7 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
                 ',',
                 array_map(
                     function ($key) {
-                        return "`{$this->dbService->escape($key)}`";
+                        return $this->dbService->quoteIdentifier($this->dbService->escape($key));
                     },
                     array_filter($newKeys)
                 )
@@ -82,17 +89,21 @@ class CheckSQLTablesThenFixThem extends YesWikiMigration
     {
         if ($columnName == 'index') {
             $result = $this->dbService->query("SHOW INDEX FROM {$this->dbService->prefixTable($tableName)};");
-            if (@mysqli_num_rows($result) === 0) {
+            if (!$result) {
                 return [];
             }
+            $data = $result->fetchAll(\PDO::FETCH_ASSOC);
+            if ($data === false) {
+                return [];
+            }
+            return $data;
         } else {
             $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable($tableName)} LIKE '$columnName';");
-            if (@mysqli_num_rows($result) === 0) {
+            $data = $result ? $result->fetch(\PDO::FETCH_ASSOC) : false;
+            if ($data === false) {
                 throw new Exception("tables `$tableName` not verified because error while getting `$columnName` column !", 1);
             }
         }
-        $data = mysqli_fetch_assoc($result);
-        mysqli_free_result($result);
 
         return $data;
     }

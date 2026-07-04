@@ -46,28 +46,89 @@ function myLocation()
     return $url;
 }
 
-function querySqlFile($dblink, $sqlFile, $replacements = [])
+/**
+ * Render a Twig SQL template file.
+ *
+ * @param string $templateFile Path to the .sql.twig template file
+ * @param array  $variables    Variables to pass to the template
+ * @return string The rendered SQL content
+ */
+function renderSqlTwigTemplate($templateFile, $variables = [])
 {
-    if ($sql = file_get_contents($sqlFile)) {
-        foreach ($replacements as $keyword => $replace) {
-            $sql = str_replace(
-                '{{' . $keyword . '}}',
-                mysqli_real_escape_string($dblink, $replace),
-                $sql
-            );
-        }
-        // echo '<hr><pre>';var_dump($sql);echo '</pre><hr>'; # DEBUG SQL
-        if (!mysqli_multi_query($dblink, $sql)) {
-            return false;
-        }
-        while (mysqli_more_results($dblink)) {
-            if (!mysqli_next_result($dblink)) {
-                return false;
+    require_once 'vendor/autoload.php';
+
+    $templateDir = dirname($templateFile);
+    $templateName = basename($templateFile);
+
+    $loader = new \Twig\Loader\FilesystemLoader($templateDir);
+    $twig = new \Twig\Environment($loader, [
+        'autoescape' => false, // SQL templates should not be HTML-escaped
+    ]);
+
+    return $twig->render($templateName, $variables);
+}
+
+/**
+ * Execute a SQL file (plain or Twig template) on the database.
+ *
+ * @param PDO    $dblink       Database connection
+ * @param string $sqlFile      Path to .sql or .sql.twig file
+ * @param array  $replacements Variables/replacements for the template
+ * @param string $driver       Database driver ('mysql', 'sqlite', 'pgsql')
+ * @return bool Success status
+ */
+function querySqlFile($dblink, $sqlFile, $replacements = [], $driver = 'mysql')
+{
+    // Check if a Twig template version exists
+    $twigFile = $sqlFile . '.twig';
+    if (file_exists($twigFile)) {
+        // Use Twig template
+        $variables = array_merge($replacements, ['driver' => $driver]);
+
+        // Escape values for SQL (but not for Twig processing)
+        foreach ($variables as $key => $value) {
+            if (is_string($value) && $key !== 'driver') {
+                $quoted = $dblink->quote($value);
+                $variables[$key] = substr($quoted, 1, -1); // Remove surrounding quotes
             }
         }
 
-        return true;
+        $sql = renderSqlTwigTemplate($twigFile, $variables);
+    } elseif (file_exists($sqlFile)) {
+        // Use plain SQL file with simple replacement
+        $sql = file_get_contents($sqlFile);
+        foreach ($replacements as $keyword => $replace) {
+            // PDO::quote adds quotes around the string, so we strip them
+            $quoted = $dblink->quote($replace);
+            $escaped = substr($quoted, 1, -1);
+            $sql = str_replace(
+                '{{' . $keyword . '}}',
+                $escaped,
+                $sql
+            );
+        }
     } else {
         exit(_t('SQL_FILE_NOT_FOUND') . ' "' . $sqlFile . '".');
     }
+
+    // echo '<hr><pre>';var_dump($sql);echo '</pre><hr>'; # DEBUG SQL
+
+    // Split SQL file by semicolons (being careful about semicolons in strings)
+    // Using regex to split on ; that are not inside quotes
+    $statements = preg_split('/;(?=(?:[^\']*\'[^\']*\')*[^\']*$)/', $sql);
+
+    foreach ($statements as $statement) {
+        $statement = trim($statement);
+        if (!empty($statement)) {
+            try {
+                $dblink->exec($statement);
+            } catch (\PDOException $e) {
+                // Uncomment for debugging:
+                // echo '<pre>SQL Error: ' . htmlspecialchars($e->getMessage()) . "\nStatement: " . htmlspecialchars(substr($statement, 0, 200)) . '</pre>';
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

@@ -48,13 +48,14 @@ if ($this->UserIsAdmin()) {
         // -- (2) Page de resultats et form. de selection des pages a effacer ----
         //
         if (isset($_POST['from']) && isset($_POST['2'])) {
+            $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
             $requete =
         'select *
               from ' . $this->config['table_prefix'] . 'pages
               where
-              time > date_sub(now(), interval ' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($_POST['from']) . " hour)
+              time > ' . $dbService->dateSubHours(intval($_POST['from'])) . "
               and latest = 'Y'
-              order by `time` desc";
+              order by time desc";
             $title =
         '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
         }
@@ -67,7 +68,7 @@ if ($this->UserIsAdmin()) {
         echo "<table>\n";
         foreach ($pagesFromSpammer as $i => $page) {
             $req = 'select * from ' . $this->config['table_prefix'] . "pages where tag = '"
-        . mysqli_real_escape_string($this->dblink, $page['tag'])
+        . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($page['tag'])
         . "' order by time desc";
             $revisions = $this->LoadAll($req);
 
@@ -152,28 +153,31 @@ if ($this->UserIsAdmin()) {
             foreach ($_POST['rev'] as $rev_id) {
                 echo $rev_id . '<br>';
                 // Selectionne la revision
+                $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
                 $revision = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '"
-          . mysqli_real_escape_string($this->dblink, $rev_id) . "' limit 1");
+          . $dbService->escape($rev_id) . "' limit 1");
 
                 // Fait de la derniere version de cette revision
                 // une version archivee
                 $requeteUpdate =
-          'update ' . $this->config['table_prefix'] . 'pages ' .
-          "set latest = 'N' " .
-          "where latest = 'Y' " .
-          "and tag = '" . $revision['tag'] . "' " .
-          'limit 1';
+          'UPDATE ' . $this->config['table_prefix'] . 'pages ' .
+          "SET latest = 'N' " .
+          "WHERE latest = 'Y' " .
+          "AND tag = '" . $dbService->escape($revision['tag']) . "'";
                 $this->Query($requeteUpdate);
                 $restoredPages .= $revision['tag'] . ', ';
 
                 // add new revision
-                $this->Query('insert into ' . $this->config['table_prefix'] . 'pages set ' .
-          "tag = '" . mysqli_real_escape_string($this->dblink, $revision['tag']) . "', " .
-          'time = now(), ' .
-          "owner = '" . mysqli_real_escape_string($this->dblink, $revision['owner']) . "', " .
-          "user = '" . mysqli_real_escape_string($this->dblink, 'despam') . "', " .
-          "latest = 'Y', " .
-          "body = '" . mysqli_real_escape_string($this->dblink, chop($revision['body'])) . "'");
+                $userCol = $dbService->quoteIdentifier('user');
+                $this->Query('INSERT INTO ' . $this->config['table_prefix'] . 'pages ' .
+          "(tag, time, owner, $userCol, latest, body, body_r) VALUES (" .
+          "'" . $dbService->escape($revision['tag']) . "', " .
+          $dbService->now() . ', ' .
+          "'" . $dbService->escape($revision['owner']) . "', " .
+          "'" . $dbService->escape('despam') . "', " .
+          "'Y', " .
+          "'" . $dbService->escape(chop($revision['body'])) . "', " .
+          "'')");
             }
         }
         $restoredPages = trim($restoredPages, ', ');

@@ -44,22 +44,22 @@ class GererDroitsAction extends YesWikiAction
         $pagesTableName = trim($this->dbService->prefixTable('pages'));
         $aclsTableName = trim($this->dbService->prefixTable('acls'));
         $liste_pages = $this->wiki->Query(<<<SQL
-    SELECT tag, 
+    SELECT tag,
     (SELECT list
      FROM $aclsTableName
-     WHERE privilege ="read" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_read,
+     WHERE privilege ='read' AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_read,
     (SELECT list
      FROM $aclsTableName
-     WHERE privilege ="write" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_write,
+     WHERE privilege ='write' AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_write,
     (SELECT list
      FROM $aclsTableName
-     WHERE privilege ="comment" AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_comment
+     WHERE privilege ='comment' AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_comment
     FROM $pagesTableName
         WHERE latest='Y' $search
             ORDER BY $pagesTableName.tag ASC
     SQL);
         $pageEtDroits = [];
-        while ($pages = mysqli_fetch_array($liste_pages)) {
+        while ($pages = $liste_pages->fetch(\PDO::FETCH_ASSOC)) {
             $pageEtDroits[] = $this->utils->recupDroits($pages);
         }
 
@@ -149,20 +149,20 @@ class GererDroitsAction extends YesWikiAction
                 $search = <<<SQL
               AND tag NOT IN (
               SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')}
-              WHERE value = "fiche_bazar"
+              WHERE value = 'fiche_bazar'
             )
             SQL;
             } elseif ($filter === 'specialpages') {
                 $search = <<<SQL
-               AND tag IN ("BazaR","GererSite","GererDroits","GererThemes","GererMisesAJour","GererUtilisateurs",
-                "GererDroitsActions","GererDroitsHandlers","TableauDeBord",
-                "PageTitre","PageMenuHaut","PageRapideHaut","PageHeader","PageFooter","PageCSS","PageMenu",
-                "PageColonneDroite","MotDePassePerdu","ParametresUtilisateur","GererConfig","ActuYeswiki","LookWiki")
+               AND tag IN ('BazaR','GererSite','GererDroits','GererThemes','GererMisesAJour','GererUtilisateurs',
+                'GererDroitsActions','GererDroitsHandlers','TableauDeBord',
+                'PageTitre','PageMenuHaut','PageRapideHaut','PageHeader','PageFooter','PageCSS','PageMenu',
+                'PageColonneDroite','MotDePassePerdu','ParametresUtilisateur','GererConfig','ActuYeswiki','LookWiki')
               SQL;
             } elseif ($filter === strval(intval($filter))) {
                 $requete_pages_wiki_bazar_fiches = <<<SQL
               SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')}
-              WHERE value = "fiche_bazar" AND property = "http://outils-reseaux.org/_vocabulary/type" 
+              WHERE value = 'fiche_bazar' AND property = 'http://outils-reseaux.org/_vocabulary/type'
               ORDER BY resource ASC
             SQL;
 
@@ -172,8 +172,8 @@ class GererDroitsAction extends YesWikiAction
             SQL;
             } elseif ($filter === 'lists') {
                 $requete_pages_wiki_listes = <<<SQL
-                SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')} 
-                WHERE value = "liste" AND property = "http://outils-reseaux.org/_vocabulary/type" 
+                SELECT DISTINCT resource FROM {$this->dbService->prefixTable('triples')}
+                WHERE value = 'liste' AND property = 'http://outils-reseaux.org/_vocabulary/type'
                 ORDER BY resource ASC
               SQL;
                 $search = <<<SQL

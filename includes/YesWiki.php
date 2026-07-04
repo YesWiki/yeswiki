@@ -371,15 +371,16 @@ class Wiki
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
             $wnPages = $this->GetConfigValue('table_prefix') . 'pages';
-            $daysFormatted = mysqli_real_escape_string($this->dblink, $days);
+            $dbService = $this->services->get(DbService::class);
+            $dateExpr = $dbService->dateSubDays(intval($days));
             $sql = <<<SQL
             SELECT DISTINCT a.id FROM $wnPages a,$wnPages b
                 WHERE a.latest = 'N'
                     AND b.latest = 'N'
-                    AND a.time < date_sub(now(), INTERVAL '$daysFormatted' DAY)
+                    AND a.time < $dateExpr
                     AND a.tag = b.tag
                     AND a.time < b.time
-                    AND b.time < date_sub(now(), INTERVAL '$daysFormatted' DAY);
+                    AND b.time < $dateExpr;
             SQL;
             $ids = $this->LoadAll($sql);
 
@@ -751,19 +752,25 @@ class Wiki
                 return;
             }
 
-            $this->Query('insert into ' . $this->config['table_prefix'] . 'referrers set ' . "page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "', referrer = '" . mysqli_real_escape_string($this->dblink, $referrer) . "', " . 'time = now()');
+            $dbService = $this->services->get(DbService::class);
+            $this->Query('INSERT INTO ' . $this->config['table_prefix'] . "referrers (page_tag, referrer, time) VALUES ('" . $dbService->escape($tag) . "', '" . $dbService->escape($referrer) . "', " . $dbService->now() . ')');
         }
     }
 
     public function LoadReferrers($tag = '')
     {
-        return $this->LoadAll('select referrer, count(referrer) as num from ' . $this->config['table_prefix'] . 'referrers ' . ($tag = trim($tag) ? "where page_tag = '" . mysqli_real_escape_string($this->dblink, $tag) . "'" : '') . ' group by referrer order by num desc');
+        $whereClause = '';
+        if ($tag = trim($tag)) {
+            $whereClause = "where page_tag = '" . $this->services->get(DbService::class)->escape($tag) . "'";
+        }
+        return $this->LoadAll('select referrer, count(referrer) as num from ' . $this->config['table_prefix'] . 'referrers ' . $whereClause . ' group by referrer order by num desc');
     }
 
     public function PurgeReferrers()
     {
         if (($days = $this->GetConfigValue('referrers_purge_time')) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
-            $this->Query('delete from ' . $this->config['table_prefix'] . "referrers where time < date_sub(now(), interval '" . mysqli_real_escape_string($this->dblink, $days) . "' day)");
+            $dbService = $this->services->get(DbService::class);
+            $this->Query('delete from ' . $this->config['table_prefix'] . 'referrers where time < ' . $dbService->dateSubDays(intval($days)));
         }
     }
 

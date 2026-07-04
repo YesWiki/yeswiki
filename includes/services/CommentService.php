@@ -208,19 +208,17 @@ class CommentService implements EventSubscriberInterface
     {
         $query = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages ' . 'WHERE ';
         if (empty($tag)) {
-            $query .= 'comment_on != "" ';
+            $query .= "comment_on != '' ";
         } else {
-            $query .= "comment_on = \"{$this->dbService->escape($tag)}\" ";
+            $query .= "comment_on = '{$this->dbService->escape($tag)}' ";
         }
         if (!empty($username)) {
-            $query .=
-                <<<SQL
-            AND (`user` = '{$this->dbService->escape($username)}' OR `owner` = '{$this->dbService->escape($username)}')
-            SQL;
+            $userCol = $this->dbService->quoteIdentifier('user');
+            $query .= "AND ($userCol = '{$this->dbService->escape($username)}' OR owner = '{$this->dbService->escape($username)}') ";
         }
         // remove current comment to prevent infinite loop
-        $query .= " AND `tag` != '{$this->dbService->escape($tag)}' ";
-        $query .= 'AND latest = "Y" ' . 'ORDER BY substring(tag, 8) + 0';
+        $query .= "AND tag != '{$this->dbService->escape($tag)}' ";
+        $query .= "AND latest = 'Y' " . 'ORDER BY substring(tag, 8) + 0';
         $comments = array_filter($this->wiki->LoadAll($query), function ($comment) {
             return !empty($comment['tag']);
         });

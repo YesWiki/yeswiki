@@ -159,9 +159,10 @@ class PageManager
 
     public function getRevisions($pageTag, $limit = 10000)
     {
+        $userCol = $this->dbService->quoteIdentifier('user');
         return $this->checkEntriesACL($this->dbService->loadAll("
-            SELECT id, time, user FROM {$this->dbService->prefixTable('pages')} 
-            WHERE tag = '{$this->dbService->escape($pageTag)}' 
+            SELECT id, time, $userCol AS user FROM {$this->dbService->prefixTable('pages')}
+            WHERE tag = '{$this->dbService->escape($pageTag)}'
             ORDER BY time DESC
             LIMIT {$limit}
         "), $pageTag);
@@ -192,8 +193,9 @@ class PageManager
 
     public function getRecentlyChanged($limit = 50, $minDate = ''): ?array
     {
+        $userCol = $this->dbService->quoteIdentifier('user');
         if (!empty($minDate)) {
-            if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '" . $this->dbService->escape($minDate) . "' order by time desc")) {
+            if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
                 //foreach ($pages as $page) {
                 //    $this->cache($page);
                 //}
@@ -202,7 +204,7 @@ class PageManager
         } else {
             $limit = (int)$limit;
             $limit = ($limit < 1) ? 50 : $limit;
-            if ($pages = $this->dbService->loadAll('select id, tag, time, user, owner from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
+            if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
                 //foreach ($pages as $page) {
                 //    $this->cache($page);
                 //}
@@ -252,10 +254,10 @@ class PageManager
 
     public function getCreateTime($pageTag)
     {
-        $sql = 'SELECT time FROM' . $this->dbService->prefixTable('pages')
-            . ' WHERE tag = "' . $this->dbService->escape($pageTag) . '"'
-            . ' AND comment_on = ""'
-            . ' ORDER BY `time` ASC LIMIT 1';
+        $sql = "SELECT time FROM " . $this->dbService->prefixTable('pages')
+            . " WHERE tag = '" . $this->dbService->escape($pageTag) . "'"
+            . " AND comment_on = ''"
+            . " ORDER BY `time` ASC LIMIT 1";
         $page = $this->dbService->loadSingle($sql);
         if ($page) {
             return $page['time'];
@@ -380,14 +382,29 @@ class PageManager
             // set all other revisions to old
             $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
-            // use forcedDate is present
-            $time = 'now()';
+            // use forcedDate if present
+            $time = $this->dbService->now();
             if (!empty($forcedDate)) {
-                $time = '"' . $forcedDate . '"';
+                $time = "'" . $this->dbService->escape($forcedDate) . "'";
             }
 
             // add new revision
-            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . "SET tag = '" . $this->dbService->escape($tag) . "', " . ($comment_on ? "comment_on = '" . $this->dbService->escape($comment_on) . "', " : '') . 'time = ' . $time . ', ' . "owner = '" . $this->dbService->escape($owner) . "', " . "user = '" . $this->dbService->escape($user) . "', " . "latest = 'Y', " . "body = '" . $this->dbService->escape(chop($body)) . "', " . "body_r = ''");
+            $userCol = $this->dbService->quoteIdentifier('user');
+            $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', 'body_r'];
+            $values = [
+                "'" . $this->dbService->escape($tag) . "'",
+                $time,
+                "'" . $this->dbService->escape($owner) . "'",
+                "'" . $this->dbService->escape($user) . "'",
+                "'Y'",
+                "'" . $this->dbService->escape(chop($body)) . "'",
+                "''",
+            ];
+            if ($comment_on) {
+                $columns[] = 'comment_on';
+                $values[] = "'" . $this->dbService->escape($comment_on) . "'";
+            }
+            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
 
             unset($this->pageCache[$tag]);
             $this->ownersCache[$tag] = $owner;
@@ -441,7 +458,7 @@ class PageManager
             return;
         }
 
-        $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . "SET owner = '" . $this->dbService->escape($user) . "' WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y' LIMIT 1");
+        $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('pages') . "SET owner = '" . $this->dbService->escape($user) . "' WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'");
         $this->ownersCache[$tag] = $user;
     }
 

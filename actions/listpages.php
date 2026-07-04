@@ -61,6 +61,9 @@ if ($user == 'user') {
 $prefix = $this->GetConfigValue('table_prefix');
 
 // treatment
+$dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
+$userCol = $dbService->quoteIdentifier('user');
+
 if ($tree) {
     // tree display
     /* first step: retrieve every pages of the tree:
@@ -80,13 +83,13 @@ if ($tree) {
         case 'owner':
             $sql = 'SELECT a.owner, b.tag IS NOT NULL owner_has_ownpage'
                 . ' FROM ' . $prefix . 'pages a'
-                . ' LEFT JOIN ' . $prefix . 'pages b ON a.owner = b.tag AND b.latest = "Y"';
+                . " LEFT JOIN " . $prefix . "pages b ON a.owner = b.tag AND b.latest = 'Y'";
             break;
         case 'user':
-            $sql = 'SELECT a.user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage'
+            $sql = "SELECT a.$userCol AS user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage"
                 . ' FROM ' . $prefix . 'pages a'
-                . ' LEFT JOIN ' . $prefix . 'users u ON a.user = u.name'
-                . ' LEFT JOIN ' . $prefix . 'pages b ON u.name = b.tag AND b.latest = "Y"';
+                . " LEFT JOIN " . $prefix . "users u ON a.$userCol = u.name"
+                . " LEFT JOIN " . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
             break;
         case 'time':
             $sql = 'SELECT a.time'
@@ -96,7 +99,7 @@ if ($tree) {
             $links[$tree] = [];
     } // switch
     if ($sort != 'tag') {
-        $sql .= ' WHERE a.tag = "' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($tree) . '" AND a.latest = "Y" LIMIT 1';
+        $sql .= " WHERE a.tag = '" . $dbService->escape($tree) . "' AND a.latest = 'Y' LIMIT 1";
         if (!$rootData = $this->LoadSingle($sql)) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' ListPages</strong> : ' . _('THE_PAGE') . ' ' . htmlspecialchars($tree, ENT_COMPAT, YW_CHARSET) . ' ' . _t('DOESNT_EXIST') . ' !</div>';
 
@@ -114,49 +117,49 @@ if ($tree) {
 
     // to avoid many loops and computing several time the lists needed for the request,
     // we store them into variables
-    $from = '"' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($tree) . '"';
-    $exclude[] = $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($tree);
-    $exclude_str = '"' . implode('", "', $exclude) . '"';
+    $from = "'" . $dbService->escape($tree) . "'";
+    $exclude[] = $dbService->escape($tree);
+    $exclude_str = "'" . implode("', '", $exclude) . "'";
     for ($i = 1; $i <= $levels; $i++) {
         if ($from) {
             if ($owner) {
                 $sql = 'SELECT from_tag, to_tag, a.tag IS NOT NULL page_exists'
                     . ($sort == 'time' ? ', a.time' : '');
                 if ($sort == 'user') {
-                    $sql .= ', a.user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage'
+                    $sql .= ", a.$userCol AS user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage"
                         . ' FROM ' . $prefix . 'links, ' . $prefix . 'pages a'
-                        . ' LEFT JOIN ' . $prefix . 'users u ON a.user = u.name'
-                        . ' LEFT JOIN ' . $prefix . 'pages b ON u.name = b.tag AND b.latest = "Y"';
+                        . " LEFT JOIN " . $prefix . "users u ON a.$userCol = u.name"
+                        . " LEFT JOIN " . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
                 } else {
                     $sql .= ' FROM ' . $prefix . 'links, ' . $prefix . 'pages a';
                 }
                 $sql .= ' WHERE from_tag IN (' . $from . ')'
                     . ' AND to_tag NOT IN (' . $from . ')'
                     . ' AND to_tag = a.tag'
-                    . ' AND a.owner = "' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($owner) . '"'
-                    . ' AND a.latest = "Y"';
+                    . " AND a.owner = '" . $dbService->escape($owner) . "'"
+                    . " AND a.latest = 'Y'";
             } else {
                 $sql = 'SELECT from_tag, to_tag, a.tag IS NOT NULL page_exists';
                 switch ($sort) {
                     case 'owner':
                         $sql .= ', a.owner, b.tag IS NOT NULL owner_has_ownpage'
                             . ' FROM ' . $prefix . 'links'
-                            . ' LEFT JOIN ' . $prefix . 'pages a ON to_tag = a.tag AND a.latest = "Y"'
-                            . ' LEFT JOIN ' . $prefix . 'pages b ON a.owner = b.tag AND b.latest = "Y"';
+                            . " LEFT JOIN " . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'"
+                            . " LEFT JOIN " . $prefix . "pages b ON a.owner = b.tag AND b.latest = 'Y'";
                         break;
                     case 'user':
-                        $sql .= ', a.user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage'
+                        $sql .= ", a.$userCol AS user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage"
                             . ' FROM ' . $prefix . 'links'
-                            . ' LEFT JOIN ' . $prefix . 'pages a ON to_tag = a.tag AND a.latest = "Y"'
-                            . ' LEFT JOIN ' . $prefix . 'users u ON a.user = u.name'
-                            . ' LEFT JOIN ' . $prefix . 'pages b ON u.name = b.tag AND b.latest = "Y"';
+                            . " LEFT JOIN " . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'"
+                            . " LEFT JOIN " . $prefix . "users u ON a.$userCol = u.name"
+                            . " LEFT JOIN " . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
                         break;
                     case 'time':
                         $sql .= ', a.time';
                         // no break
                     default:
                         $sql .= ' FROM ' . $prefix . 'links'
-                            . ' LEFT JOIN ' . $prefix . 'pages a ON to_tag = a.tag AND a.latest = "Y"';
+                            . " LEFT JOIN " . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'";
                 } // switch
                 $sql .= ' WHERE from_tag IN (' . $from . ')'
                     . ' AND to_tag NOT IN (' . $exclude_str . ')';
@@ -182,7 +185,7 @@ if ($tree) {
             case 'user':
                 // 1) existing pages, sorted by last editor
                 // 2) non-existent pages
-                $sql .= 'a.user IS NULL, a.user';
+                $sql .= "a.$userCol IS NULL, a.$userCol";
                 break;
         } // switch
 
@@ -190,7 +193,7 @@ if ($tree) {
             $from = '';
             $newworkingon = [];
             foreach ($pages as $page) {
-                $to_tag = '"' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($page['to_tag']) . '"';
+                $to_tag = "'" . $dbService->escape($page['to_tag']) . "'";
                 $workingon[$page['from_tag']][$page['to_tag']] = ['page_exists' => $page['page_exists'], 'haslinksto' => []];
                 if ($sort != 'tag') {
                     $workingon[$page['from_tag']][$page['to_tag']][$sort] = $page[$sort];
@@ -296,46 +299,46 @@ if ($tree) {
     // has_ownpage and user_is_registered avoid us to make requests to know
     // whether the personnal pages of owners and users exist
     if ($user) {
-        $sql = 'SELECT a.tag, b.time,
-            b.user, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage'
+        $sql = "SELECT a.tag, b.time,
+            b.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage"
             . ($owner ? '' : ', b.owner, owner_page.tag IS NOT NULL owner_has_ownpage')
-            . ' FROM ' . $prefix . 'pages a, ' . $prefix . 'pages b
-            LEFT JOIN ' . $prefix . 'users ON b.user = name
-            LEFT JOIN ' . $prefix . 'pages user_page ON name = user_page.tag AND user_page.latest = "Y"'
-            . ($owner ? '' : ' LEFT JOIN ' . $prefix . 'pages owner_page ON b.owner = owner_page.tag AND owner_page.latest = "Y"')
-            . ' WHERE a.user = "' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($user) . '"'
-            . ' AND a.tag = b.tag AND b.latest = "Y"'
-            . ($owner ? ' AND b.owner = "' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($owner) . '"' : '');
+            . ' FROM ' . $prefix . 'pages a, ' . $prefix . "pages b
+            LEFT JOIN " . $prefix . "users ON b.$userCol = name
+            LEFT JOIN " . $prefix . "pages user_page ON name = user_page.tag AND user_page.latest = 'Y'"
+            . ($owner ? '' : " LEFT JOIN " . $prefix . "pages owner_page ON b.owner = owner_page.tag AND owner_page.latest = 'Y'")
+            . " WHERE a.$userCol = '" . $dbService->escape($user) . "'"
+            . " AND a.tag = b.tag AND b.latest = 'Y'"
+            . ($owner ? " AND b.owner = '" . $dbService->escape($owner) . "'" : '');
     } elseif ($owner) {
         if ($sort == 'user') {
-            $sql = 'SELECT a.tag, a.time,
-                a.user, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage
-                FROM ' . $prefix . 'pages a
-                LEFT JOIN ' . $prefix . 'users ON a.user = name
-                LEFT JOIN ' . $prefix . 'pages user_page ON name = user_page.tag AND user_page.latest = "Y"';
+            $sql = "SELECT a.tag, a.time,
+                a.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage
+                FROM " . $prefix . "pages a
+                LEFT JOIN " . $prefix . "users ON a.$userCol = name
+                LEFT JOIN " . $prefix . "pages user_page ON name = user_page.tag AND user_page.latest = 'Y'";
         } else {
             $sql = 'SELECT tag, time FROM ' . $prefix . 'pages a';
         }
-        $sql .= ' WHERE a.owner = "' . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($owner) . '" AND a.latest = "Y"';
+        $sql .= " WHERE a.owner = '" . $dbService->escape($owner) . "' AND a.latest = 'Y'";
     } else {
         if ($sort == 'user') {
-            $sql = 'SELECT a.tag, a.owner,
+            $sql = "SELECT a.tag, a.owner,
                 owner_page.tag IS NOT NULL owner_has_ownpage,
-                a.user, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage
-                FROM ' . $prefix . 'pages a
-                LEFT JOIN ' . $prefix . 'users ON a.user = name
-		LEFT JOIN ' . $prefix . 'pages user_page ON name = user_page.tag AND user_page.latest = "Y"
-		LEFT JOIN ' . $prefix . 'pages owner_page ON a.owner = owner_page.tag AND owner_page.latest = "Y"';
+                a.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage
+                FROM " . $prefix . "pages a
+                LEFT JOIN " . $prefix . "users ON a.$userCol = name
+		LEFT JOIN " . $prefix . "pages user_page ON name = user_page.tag AND user_page.latest = 'Y'
+		LEFT JOIN " . $prefix . "pages owner_page ON a.owner = owner_page.tag AND owner_page.latest = 'Y'";
         } else {
             $sql = 'SELECT a.tag, a.owner, a.time, b.tag IS NOT NULL owner_has_ownpage
                 FROM ' . $prefix . 'pages a
-                LEFT JOIN ' . $prefix . 'pages b ON a.owner = b.tag AND b.latest = \'Y\'';
+                LEFT JOIN ' . $prefix . "pages b ON a.owner = b.tag AND b.latest = 'Y'";
         }
-        $sql .= ' WHERE a.latest = "Y"';
+        $sql .= " WHERE a.latest = 'Y'";
     }
-    $sql .= ' AND a.comment_on = ""';
+    $sql .= " AND a.comment_on = ''";
     if ($exclude) {
-        $sql .= ' AND a.tag NOT IN ("' . implode('", "', $exclude) . '")';
+        $sql .= " AND a.tag NOT IN ('" . implode("', '", $exclude) . "')";
     }
     if ($user) {
         $sql .= ' GROUP BY tag';

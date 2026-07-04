@@ -30,9 +30,11 @@ $taglist = _convert($params['tags'], YW_CHARSET, true);
 unset($params['tags']);
 
 // requete avec toutes les pages contenants les mots cles
-$req = 'SELECT DISTINCT tag, time, user, owner, body 
-FROM ' . $this->config['table_prefix'] . 'pages, ' . $this->config['table_prefix'] . "triples tags
-WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (" . $taglist . ') AND tags.property = "http://outils-reseaux.org/_vocabulary/tag" AND tags.resource = tag AND tag NOT IN ("' . implode('","', $this->GetAllInclusions()) . '") ORDER BY tag ASC';
+$dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
+$userCol = $dbService->quoteIdentifier('user');
+$req = "SELECT DISTINCT tag, time, $userCol, owner, body
+FROM " . $this->config['table_prefix'] . 'pages, ' . $this->config['table_prefix'] . "triples tags
+WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (" . $taglist . ") AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag' AND tags.resource = tag AND tag NOT IN ('" . implode("','", $this->GetAllInclusions()) . "') ORDER BY tag ASC";
 $pages = $this->LoadAll($req);
 
 echo '<div class="well well-sm no-dblclick controls">' . "\n" . '<div class="pull-right muted"><span class="nbfilteredelements">' . count($pages) . '</span> ' . _t('TAGS_RESULTS') . '</div>';

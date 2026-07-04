@@ -176,17 +176,36 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
         $hashedPassword = $passwordHasher->hash($plainPassword);
 
+        // Build columns and values arrays for cross-database compatibility
+        $columns = ['signuptime', 'name', 'motto', 'email', 'password'];
+        $values = [
+            $this->dbService->now(),
+            "'" . $this->dbService->escape($user['name']) . "'",
+            "'" . (empty($user['motto']) ? '' : $this->dbService->escape($user['motto'])) . "'",
+            "'" . $this->dbService->escape($user['email']) . "'",
+            "'" . $this->dbService->escape($hashedPassword) . "'",
+        ];
+
+        if (!empty($user['changescount'])) {
+            $columns[] = 'changescount';
+            $values[] = "'" . $this->dbService->escape($user['changescount']) . "'";
+        }
+        if (!empty($user['doubleclickedit'])) {
+            $columns[] = 'doubleclickedit';
+            $values[] = "'" . $this->dbService->escape($user['doubleclickedit']) . "'";
+        }
+        if (!empty($user['revisioncount'])) {
+            $columns[] = 'revisioncount';
+            $values[] = "'" . $this->dbService->escape($user['revisioncount']) . "'";
+        }
+        if (!empty($user['show_comments'])) {
+            $columns[] = 'show_comments';
+            $values[] = "'" . $this->dbService->escape($user['show_comments']) . "'";
+        }
+
         return $this->dbService->query(
-            'INSERT INTO ' . $this->dbService->prefixTable('users') . 'SET ' .
-                'signuptime = now(), ' .
-                "name = '" . $this->dbService->escape($user['name']) . "', " .
-                "motto = '" . (empty($user['motto']) ? '' : $this->dbService->escape($user['motto'])) . "', " .
-                (empty($user['changescount']) ? '' : "changescount = '" . $this->dbService->escape($user['changescount']) . "', ") .
-                (empty($user['doubleclickedit']) ? '' : "doubleclickedit = '" . $this->dbService->escape($user['doubleclickedit']) . "', ") .
-                (empty($user['revisioncount']) ? '' : "revisioncount = '" . $this->dbService->escape($user['revisioncount']) . "', ") .
-                (empty($user['show_comments']) ? '' : "show_comments = '" . $this->dbService->escape($user['show_comments']) . "', ") .
-                "email = '" . $this->dbService->escape($user['email']) . "', " .
-                "password = '" . $this->dbService->escape($hashedPassword) . "'"
+            'INSERT INTO ' . $this->dbService->prefixTable('users') .
+            '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')'
         );
     }
 

@@ -100,7 +100,7 @@ class ThemeController extends YesWikiController
 
         // page list
         $tablistWikinames = $this->wiki->LoadAll(
-            'SELECT DISTINCT tag FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'pages WHERE latest="Y"'
+            "SELECT DISTINCT tag FROM " . $this->wiki->GetConfigValue('table_prefix') . "pages WHERE latest='Y'"
         );
         $listWikinames = [];
         foreach ($tablistWikinames as $tag) {

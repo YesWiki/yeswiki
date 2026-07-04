@@ -89,7 +89,7 @@ class LinkTracker
             $written = [];
             foreach ($tags as $toTag) {
                 if (!isset($written[strtolower($toTag)])) {
-                    $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('links') . "SET from_tag = '" . $this->dbService->escape($fromTag) . "', to_tag = '" . $this->dbService->escape($toTag) . "'");
+                    $this->dbService->query('INSERT INTO ' . $this->dbService->prefixTable('links') . "(from_tag, to_tag) VALUES ('" . $this->dbService->escape($fromTag) . "', '" . $this->dbService->escape($toTag) . "')");
                     $written[strtolower($toTag)] = 1;
                 }
             }

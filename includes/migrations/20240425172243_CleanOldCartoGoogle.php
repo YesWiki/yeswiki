@@ -121,17 +121,19 @@ class CleanOldCartoGoogle extends YesWikiMigration
         $user = $oldPage['user'] ?? '';
 
         // set all other revisions to old
-        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET `latest` = 'N' WHERE `tag` = '{$this->dbService->escape($data['id_fiche'])}'");
+        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET latest = 'N' WHERE tag = '{$this->dbService->escape($data['id_fiche'])}'");
 
         // add new revision
-        $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} SET " .
-            "`tag` = '{$this->dbService->escape($data['id_fiche'])}', " .
-            "`time` = '{$this->dbService->escape($data['date_maj_fiche'])}', " .
-            "`owner` = '{$this->dbService->escape($owner)}', " .
-            "`user` = '{$this->dbService->escape($user)}', " .
-            "`latest` = 'Y', " .
-            "`body` = '" . $this->dbService->escape(json_encode($data)) . "', " .
-            "`body_r` = ''");
+        $userCol = $this->dbService->quoteIdentifier('user');
+        $this->dbService->query("INSERT INTO {$this->dbService->prefixTable('pages')} " .
+            "(tag, time, owner, $userCol, latest, body, body_r) VALUES (" .
+            "'{$this->dbService->escape($data['id_fiche'])}', " .
+            "'{$this->dbService->escape($data['date_maj_fiche'])}', " .
+            "'{$this->dbService->escape($owner)}', " .
+            "'{$this->dbService->escape($user)}', " .
+            "'Y', " .
+            "'" . $this->dbService->escape(json_encode($data)) . "', " .
+            "'')");
     }
 
     private function getMapFieldValue($field, $entry)

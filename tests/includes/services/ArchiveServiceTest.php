@@ -364,19 +364,78 @@ class ArchiveServiceTest extends YesWikiTestCase
     {
         return [
             'default' => [
-                true,
-                null,
-                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'archive' => ['hideConfigValues' => ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'contact_smtp_host' => '', 'contact_smtp_user' => '', 'contact_smtp_pass' => '', 'api_allowed_keys' => []]]],
+                'paramsFromWakka' => true,
+                'hideConfigValuesParam' => null,
+                'wakkaContent' => [
+                    'db_host' => '',
+                    'db_database' => '',
+                    'db_user' => '',
+                    'db_password' => '',
+                    'archive' => [
+                        'hideConfigValues' => [
+                            'db_host' => '',
+                            'db_database' => '',
+                            'db_user' => '',
+                            'db_password' => '',
+                            'contact_smtp_host' => '',
+                            'contact_smtp_user' => '',
+                            'contact_smtp_pass' => '',
+                            'api_allowed_keys' => [],
+                        ],
+                    ],
+                ],
             ],
             'specific' => [
-                true,
-                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key' => ''],
-                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'archive' => ['hideConfigValues' => ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key' => '']]],
+                'paramsFromWakka' => true,
+                'hideConfigValuesParam' => [
+                    'db_host' => '',
+                    'db_database' => '',
+                    'db_user' => '',
+                    'db_password' => '',
+                    'custom_key' => '',
+                ],
+                'wakkaContent' => [
+                    'db_host' => '',
+                    'db_database' => '',
+                    'db_user' => '',
+                    'db_password' => '',
+                    'archive' => [
+                        'hideConfigValues' => [
+                            'db_host' => '',
+                            'db_database' => '',
+                            'db_user' => '',
+                            'db_password' => '',
+                            'custom_key' => '',
+                        ],
+                    ],
+                ],
             ],
             'specific via command line' => [
-                false,
-                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key_2' => '', 'custom_key_3' => ''],
-                ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'archive' => ['hideConfigValues' => ['mysql_host' => '', 'mysql_database' => '', 'mysql_user' => '', 'mysql_password' => '', 'custom_key_2' => '', 'custom_key_3' => '']]],
+                'paramsFromWakka' => false,
+                'hideConfigValuesParam' => [
+                    'db_host' => '',
+                    'db_database' => '',
+                    'db_user' => '',
+                    'db_password' => '',
+                    'custom_key_2' => '',
+                    'custom_key_3' => '',
+                ],
+                'wakkaContent' => [
+                    'db_host' => '',
+                    'db_database' => '',
+                    'db_user' => '',
+                    'db_password' => '',
+                    'archive' => [
+                        'hideConfigValues' => [
+                            'db_host' => '',
+                            'db_database' => '',
+                            'db_user' => '',
+                            'db_password' => '',
+                            'custom_key_2' => '',
+                            'custom_key_3' => '',
+                        ],
+                    ],
+                ],
             ],
         ];
     }

@@ -345,24 +345,24 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('acls')
-                . 'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
-                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
-                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\' );',
+            'DELETE FROM' . $this->dbService->prefixTable('acls') .
+                'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
+                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
+                "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar') AND body LIKE '%\"id_typeannonce\":\"" . $this->dbService->escape($id) . "\"%\' );"
         );
 
         // TODO use PageManager
         $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('pages')
-                . 'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples')
-                . 'WHERE property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar") AND body LIKE \'%"id_typeannonce":"' . $this->dbService->escape($id) . '"%\';',
+            'DELETE FROM' . $this->dbService->prefixTable('pages') .
+                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
+                "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar') AND body LIKE '%\"id_typeannonce\":\"" . $this->dbService->escape($id) . "\"%\';"
         );
 
         // TODO use TripleStore
         $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('triples')
-                . 'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages')
-                . 'WHERE 1) AND property="http://outils-reseaux.org/_vocabulary/type" AND value="fiche_bazar";',
+            'DELETE FROM' . $this->dbService->prefixTable('triples') .
+                'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
+                "WHERE 1) AND property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar';"
         );
     }
 
@@ -534,8 +534,7 @@ class FormManager
     public function isAvailableOnlyOneEntryOption(): bool
     {
         if (is_null($this->isAvailableOnlyOneEntryOption)) {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('nature')} LIKE 'bn_only_one_entry';");
-            $this->isAvailableOnlyOneEntryOption = (@mysqli_num_rows($result) !== 0);
+            $this->isAvailableOnlyOneEntryOption = $this->dbService->columnExists('nature', 'bn_only_one_entry');
         }
 
         return $this->isAvailableOnlyOneEntryOption;
@@ -547,8 +546,7 @@ class FormManager
     public function isAvailableOnlyOneEntryMessage(): bool
     {
         if (is_null($this->isAvailableOnlyOneEntryMessage)) {
-            $result = $this->dbService->query("SHOW COLUMNS FROM {$this->dbService->prefixTable('nature')} LIKE 'bn_only_one_entry_message';");
-            $this->isAvailableOnlyOneEntryMessage = (@mysqli_num_rows($result) !== 0);
+            $this->isAvailableOnlyOneEntryMessage = $this->dbService->columnExists('nature', 'bn_only_one_entry_message');
         }
 
         return $this->isAvailableOnlyOneEntryMessage;

@@ -24,10 +24,10 @@ $output = '';
 // creation de la liste des mots cles a filtrer
 $this->AddJavascriptFile('tools/tags/libs/tag.js');
 $tab_selected_tags = explode(',', $tags);
-$selectiontags = ' AND value IN ("' . implode(',', $tab_selected_tags) . '")';
+$selectiontags = " AND value IN ('" . implode("','", $tab_selected_tags) . "')";
 
 // on recupere tous les tags existants
-$sql = 'SELECT DISTINCT value FROM ' . $this->config['table_prefix'] . 'triples WHERE property="http://outils-reseaux.org/_vocabulary/tag" ORDER BY value ASC';
+$sql = "SELECT DISTINCT value FROM " . $this->config['table_prefix'] . "triples WHERE property='http://outils-reseaux.org/_vocabulary/tag' ORDER BY value ASC";
 $tab_tous_les_tags = $this->LoadAll($sql);
 $tab_tag = [];
 if (is_array($tab_tous_les_tags)) {

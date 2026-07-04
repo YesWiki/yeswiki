@@ -29,43 +29,153 @@ if (!$version = trim($wakkaConfig['wikini_version'])) {
 }
 
 if ($version) {
-    test(_t('VERIFY_MYSQL_PASSWORD') . ' ...', isset($config2['mysql_password']) && $wakkaConfig['mysql_password'] === $config2['mysql_password'], _t('INCORRECT_MYSQL_PASSWORD') . ' !');
+    $existingPassword = $wakkaConfig['db_password'] ?? $wakkaConfig['mysql_password'] ?? '';
+    $newPassword = $config2['db_password'] ?? $config2['mysql_password'] ?? '';
+    test(_t('VERIFY_MYSQL_PASSWORD') . ' ...', $existingPassword === $newPassword, _t('INCORRECT_MYSQL_PASSWORD') . ' !');
 }
 
-// As of PHP 8.1.0, the default setting is MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT.
-// Previously, it was MYSQLI_REPORT_OFF.
-// https://www.php.net/manual/en/mysqli-driver.report-mode.php
-//
-// So mysqli_connect() will return an exception instead of 'false'.
-// To let tests in this script work, come back to MYSQLI_REPORT_OFF
-mysqli_report(MYSQLI_REPORT_OFF);
+// Get database driver
+$dbDriver = $config['db_driver'] ?? 'mysql';
 
-test(_t('TEST_MYSQL_CONNECTION') . ' ...', $dblink = @mysqli_connect($config['mysql_host'], $config['mysql_user'], $config['mysql_password']));
+$dblink = null;
+$connectionSuccess = false;
 
-$testdb = test(
-    _t('SEARCH_FOR_DATABASE') . ' ...',
-    @mysqli_select_db($dblink, $config['mysql_database']),
-    _t('NO_DATABASE_FOUND_TRY_TO_CREATE') . '.',
-    0
-);
-if ($testdb == 1) {
-    test(
-        _t('TRYING_TO_CREATE_DATABASE') . ' ...',
-        @mysqli_query($dblink, 'CREATE DATABASE ' . $config['mysql_database']),
-        _t('DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY') . ' !'
-    );
-    test(
+// Handle connection based on driver type
+if ($dbDriver === 'sqlite') {
+    // SQLite: use fixed path in private directory
+    $dbPath = 'private/yeswiki.db';
+    $config['db_database'] = $dbPath;
+    // Ensure private directory exists
+    if (!is_dir('private')) {
+        @mkdir('private', 0755, true);
+    }
+    $dsn = 'sqlite:' . $dbPath;
+    try {
+        $dblink = new \PDO($dsn, null, null, [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        ]);
+        $connectionSuccess = true;
+    } catch (\PDOException $e) {
+        $connectionSuccess = false;
+    }
+    test(_t('TEST_DATABASE_CONNECTION') . ' ...', $connectionSuccess);
+} else {
+    // MySQL or PostgreSQL: connect to server first
+    if ($dbDriver === 'pgsql') {
+        $dsnWithoutDb = 'pgsql:host=' . $config['db_host'];
+        if (!empty($config['db_port'])) {
+            $dsnWithoutDb .= ';port=' . $config['db_port'];
+        }
+    } else {
+        $dsnWithoutDb = 'mysql:host=' . $config['db_host'];
+        if (!empty($config['db_port'])) {
+            $dsnWithoutDb .= ';port=' . $config['db_port'];
+        }
+    }
+
+    try {
+        $dblink = new \PDO($dsnWithoutDb, $config['db_user'], $config['db_password'], [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        ]);
+        $connectionSuccess = true;
+    } catch (\PDOException $e) {
+        $connectionSuccess = false;
+    }
+    test(_t('TEST_DATABASE_CONNECTION') . ' ...', $connectionSuccess);
+
+    // Try to select/create database
+    $dbExists = false;
+    if ($dbDriver === 'pgsql') {
+        // PostgreSQL: check if database exists
+        try {
+            $stmt = $dblink->query("SELECT 1 FROM pg_database WHERE datname = " . $dblink->quote($config['db_database']));
+            $dbExists = $stmt->fetchColumn() !== false;
+        } catch (\PDOException $e) {
+            $dbExists = false;
+        }
+    } else {
+        // MySQL: try to USE the database
+        try {
+            $dblink->exec('USE `' . $config['db_database'] . '`');
+            $dbExists = true;
+        } catch (\PDOException $e) {
+            $dbExists = false;
+        }
+    }
+
+    $testdb = test(
         _t('SEARCH_FOR_DATABASE') . ' ...',
-        @mysqli_select_db($dblink, $config['mysql_database']),
-        _t('DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT') . ' !',
-        1
+        $dbExists,
+        _t('NO_DATABASE_FOUND_TRY_TO_CREATE') . '.',
+        0
     );
+
+    if ($testdb == 1) {
+        $createSuccess = false;
+        try {
+            if ($dbDriver === 'pgsql') {
+                $dblink->exec('CREATE DATABASE ' . $config['db_database']);
+            } else {
+                $dblink->exec('CREATE DATABASE `' . $config['db_database'] . '`');
+            }
+            $createSuccess = true;
+        } catch (\PDOException $e) {
+            $createSuccess = false;
+        }
+        test(
+            _t('TRYING_TO_CREATE_DATABASE') . ' ...',
+            $createSuccess,
+            _t('DATABASE_COULD_NOT_BE_CREATED_YOU_MUST_CREATE_IT_MANUALLY') . ' !'
+        );
+    }
+
+    // Reconnect with database selected
+    try {
+        if ($dbDriver === 'pgsql') {
+            $dsnWithDb = 'pgsql:host=' . $config['db_host'] . ';dbname=' . $config['db_database'];
+            if (!empty($config['db_port'])) {
+                $dsnWithDb .= ';port=' . $config['db_port'];
+            }
+        } else {
+            $dsnWithDb = 'mysql:host=' . $config['db_host'] . ';dbname=' . $config['db_database'];
+            if (!empty($config['db_port'])) {
+                $dsnWithDb .= ';port=' . $config['db_port'];
+            }
+        }
+        $dblink = new \PDO($dsnWithDb, $config['db_user'], $config['db_password'], [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        ]);
+    } catch (\PDOException $e) {
+        test(
+            _t('SEARCH_FOR_DATABASE') . ' ...',
+            false,
+            _t('DATABASE_DOESNT_EXIST_YOU_MUST_CREATE_IT') . ' !',
+            1
+        );
+    }
 }
+
+// Check for existing tables with the same prefix
+$tableCheckQuery = '';
+if ($dbDriver === 'sqlite') {
+    $tableCheckQuery = "SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '{$config['table_prefix']}%'";
+} elseif ($dbDriver === 'pgsql') {
+    $tableCheckQuery = "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename LIKE '{$config['table_prefix']}%'";
+} else {
+    $tableCheckQuery = "SHOW TABLES LIKE '{$config['table_prefix']}%'";
+}
+
+$existingTables = [];
+try {
+    $stmt = $dblink->query($tableCheckQuery);
+    $existingTables = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+} catch (\PDOException $e) {
+    $existingTables = [];
+}
+
 test(
     _t('CHECK_EXISTING_TABLE_PREFIX') . ' ...',
-    empty(array_filter($tablesNames, function ($tableName) use ($dblink, $config) {
-        return mysqli_num_rows(@mysqli_query($dblink, "SHOW TABLES LIKE \"{$config['table_prefix']}$tableName\"")) !== 0;
-    })),
+    empty($existingTables),
     _t('TABLE_PREFIX_ALREADY_USED') . ' !',
     1
 );
@@ -108,26 +218,40 @@ test(
     1
 );
 
-// all in utf8mb4
-mysqli_set_charset($dblink, 'utf8mb4');
-mysqli_query($dblink, 'SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
+// Set charset based on driver
+if ($dbDriver === 'mysql') {
+    $dblink->exec('SET NAMES utf8mb4 COLLATE utf8mb4_general_ci');
+} elseif ($dbDriver === 'pgsql') {
+    $dblink->exec("SET client_encoding TO 'UTF8'");
+} elseif ($dbDriver === 'sqlite') {
+    $dblink->exec('PRAGMA foreign_keys = ON');
+}
+
 $replacements = [
     'prefix' => $config['table_prefix'],
     'siteTitle' => $config['wakka_name'],
     'WikiName' => $admin_name,
-    'hashedpassword' => md5($admin_password),
+    'password' => md5($admin_password),  // Hash password in PHP for all database types
     'email' => $admin_email,
     'rootPage' => $config['root_page'],
     'url' => $config['base_url'],
 ];
 
+// Determine which SQL file to use based on driver
+// Prefer Twig templates (.sql.twig) which work for all drivers
+$sqlFileBase = 'setup/sql/create-tables';
+$sqlFile = $sqlFileBase . '.sql';
+// For backwards compatibility, check for driver-specific SQL files first (if no Twig template)
+if (!file_exists($sqlFileBase . '.sql.twig') && $dbDriver !== 'mysql' && file_exists($sqlFileBase . '-' . $dbDriver . '.sql')) {
+    $sqlFile = $sqlFileBase . '-' . $dbDriver . '.sql';
+}
+
 // tables, admin user and admin group creation
 echo '<br /><b>' . _t('DATABASE_INSTALLATION') . "</b><br>\n";
-mysqli_begin_transaction($dblink);
-mysqli_autocommit($dblink, false);
-$result = @querySqlFile($dblink, 'setup/sql/create-tables.sql', $replacements);
+$dblink->beginTransaction();
+$result = @querySqlFile($dblink, $sqlFile, $replacements, $dbDriver);
 if (!$result) {
-    mysqli_rollback($dblink);
+    $dblink->rollBack();
 }
 test(
     _t('CREATION_OF_TABLES') . ' ...',
@@ -137,22 +261,44 @@ test(
 );
 
 // Default pages content
-$result = @querySqlFile($dblink, 'setup/sql/default-content.sql', $replacements);
+// Prefer Twig templates (.sql.twig) which work for all drivers
+$sqlFileBase = 'setup/sql/default-content';
+$sqlFile = $sqlFileBase . '.sql';
+// For backwards compatibility, check for driver-specific SQL files first (if no Twig template)
+if (!file_exists($sqlFileBase . '.sql.twig') && $dbDriver !== 'mysql' && file_exists($sqlFileBase . '-' . $dbDriver . '.sql')) {
+    $sqlFile = $sqlFileBase . '-' . $dbDriver . '.sql';
+}
+
+$result = @querySqlFile($dblink, $sqlFile, $replacements, $dbDriver);
 if (!$result) {
-    mysqli_rollback($dblink);
+    $dblink->rollBack();
     foreach ($tablesNames as $tableName) {
         try {
-            if (
-                mysqli_num_rows(mysqli_query($dblink, "SHOW TABLES LIKE \"{$config['table_prefix']}$tableName\";")) !== 0 // existing table
-                && mysqli_num_rows(mysqli_query($dblink, "SELECT * FROM `{$config['table_prefix']}$tableName`;")) === 0
-            ) { /* empty table */
-                mysqli_query($dblink, "DROP TABLE IF EXISTS `{$config['table_prefix']}$tableName`;");
+            // Check if table exists (driver-specific)
+            $tableExists = false;
+            $fullTableName = $config['table_prefix'] . $tableName;
+            if ($dbDriver === 'sqlite') {
+                $stmt = $dblink->query("SELECT name FROM sqlite_master WHERE type='table' AND name='$fullTableName'");
+                $tableExists = $stmt->fetchColumn() !== false;
+            } elseif ($dbDriver === 'pgsql') {
+                $stmt = $dblink->query("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='$fullTableName'");
+                $tableExists = $stmt->fetchColumn() !== false;
+            } else {
+                $stmt = $dblink->query("SHOW TABLES LIKE '$fullTableName'");
+                $tableExists = $stmt->rowCount() !== 0;
+            }
+
+            if ($tableExists) {
+                $countStmt = $dblink->query("SELECT COUNT(*) FROM " . ($dbDriver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\""));
+                if ($countStmt->fetchColumn() === 0) { /* empty table */
+                    $dblink->exec("DROP TABLE IF EXISTS " . ($dbDriver === 'mysql' ? "`$fullTableName`" : "\"$fullTableName\""));
+                }
             }
         } catch (\Throwable $th) {
         }
     }
 } else {
-    mysqli_commit($dblink);
+    $dblink->commit();
 }
 test(
     _t('INSERTION_OF_PAGES') . ' ...',
@@ -160,7 +306,6 @@ test(
     _t('ALREADY_CREATED') . ' ?',
     1
 );
-mysqli_autocommit($dblink, true);
 
 // Config indexation by robots
 if (!isset($config['allow_robots']) || $config['allow_robots'] != '1') {
