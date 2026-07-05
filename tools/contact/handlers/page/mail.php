@@ -164,8 +164,9 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
 } else {
     // affichage des formulaire et chargement du js necessaire
     $this->addJavascriptFile('tools/contact/libs/contact.js');
-    if ($aclService->hasAccess('read') && isset($_GET['field']) and !empty($_GET['field'])) {
-        $output .= '<form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail', '', 'field=' . $_GET['field']) . '">
+    $field = !empty($_GET['field']) ? htmlentities($_GET['field']) : '';
+    if ($aclService->hasAccess('read') && isset($field) and !empty($field)) {
+        $output .= '<form id="ajax-mail-form-handler" class="ajax-mail-form" action="' . $this->href('mail', '', 'field=' . $field) . '">
             <div class="form-group">
               <div class="input-group">
                 <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
@@ -184,7 +185,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
               <i class="fa fa-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
             </button>
-            <input type="hidden" name="mail" value="' . htmlspecialchars($_GET['field']) . '">
+            <input type="hidden" name="mail" value="' . $field . '">
         </form>';
     } elseif ($aclService->hasAccess('read') && $this->GetUser()) {
         // sinon on affiche le formulaire d'envoi de mail
