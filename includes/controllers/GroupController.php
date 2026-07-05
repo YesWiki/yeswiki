@@ -178,8 +178,11 @@ class GroupController extends YesWikiController
      */
     private function CheckGroupRecursive($groupName, $origin, $checked = []): bool
     {
-        $groupName = strtolower(trim($groupName));
-        if ($groupName === $origin) {
+        // group names are stored case-preserved and looked up with '=', so only normalize
+        // case for comparisons, never for lookups (MySQL's ci collations hid this, but e.g.
+        // SQLite compares case-sensitively)
+        $groupName = trim($groupName);
+        if (strtolower($groupName) === $origin) {
             return true;
         }
         $recursive_members = $this->getMembers($groupName);
@@ -198,14 +201,14 @@ class GroupController extends YesWikiController
 
             if ($line[0] == '@') {
                 $line = substr($line, 1);
-                if (!in_array($line, $checked)) {
+                if (!in_array(strtolower($line), $checked)) {
                     if ($this->CheckGroupRecursive($line, $origin, $checked)) {
                         return true;
                     }
                 }
             }
         }
-        $checked[] = $groupName;
+        $checked[] = strtolower($groupName);
 
         return false;
     }

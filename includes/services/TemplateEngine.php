@@ -27,9 +27,10 @@ class TemplateEngine
         $this->wiki = $wiki;
         $this->assetsManager = $assetsManager;
         $this->csrfTokenManager = $csrfTokenManager;
-        // Default path (main namespace) is the root of the project. There are no templates
-        // there, but it's needed to call relative path like render('tools/bazar/templates/...')
-        $this->twigLoader = new \Twig\Loader\FilesystemLoader('./');
+        // Default paths (main namespace): the instance dir then the source tree. There are no
+        // templates at either root, but it's needed to call relative path like
+        // render('tools/bazar/templates/...') - resolved instance-first so custom overrides win
+        $this->twigLoader = new \Twig\Loader\FilesystemLoader(['./', YESWIKI_SOURCE_DIR]);
 
         // Custom Extension, so we can create action and handlers inside custom folder
         if (file_exists('custom/templates/')) {
@@ -46,27 +47,27 @@ class TemplateEngine
 
             $paths[] = "custom/tools/$extensionName/templates";
 
-            $paths[] = 'templates/' . $extensionName . '/templates/';
-            $paths[] = 'templates/' . $extensionName . '/';
+            $paths[] = YESWIKI_SOURCE_DIR . '/templates/' . $extensionName . '/templates/';
+            $paths[] = YESWIKI_SOURCE_DIR . '/templates/' . $extensionName . '/';
 
-            $paths[] = 'themes/tools/' . $extensionName . '/templates/';
-            $paths[] = 'themes/tools/' . $extensionName . '/';
+            $paths[] = YESWIKI_SOURCE_DIR . '/themes/tools/' . $extensionName . '/templates/';
+            $paths[] = YESWIKI_SOURCE_DIR . '/themes/tools/' . $extensionName . '/';
 
             $vFavoriteTheme = $config->get('favorite_theme');
 
-            $paths[] = "themes/{$vFavoriteTheme}/tools/" . $extensionName . '/templates/';
-            $paths[] = "themes/{$vFavoriteTheme}/tools/" . $extensionName . '/';
+            $paths[] = YESWIKI_SOURCE_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/templates/';
+            $paths[] = YESWIKI_SOURCE_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/';
 
             // Ability to override an extension template from another extension
-            foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
+            foreach ($this->wiki->extensions as $otherExtensionName => $otherExtensionPath) {
                 $paths[] = "custom/tools/$otherExtensionName/templates/$extensionName/";
-                $paths[] = "tools/$otherExtensionName/templates/$extensionName/";
+                $paths[] = $otherExtensionPath . "templates/$extensionName/";
             }
             // Standard path for an extension template
-            $paths[] = "tools/$extensionName/templates/";
+            $paths[] = YESWIKI_SOURCE_DIR . "/tools/$extensionName/templates/";
             // Legacy directories, should not be used anymore for new templates. Maybe
             // of them are not used by anybody, but just in case we keep them for backward compatibility
-            $paths[] = "tools/$extensionName/presentation/templates/";
+            $paths[] = YESWIKI_SOURCE_DIR . "/tools/$extensionName/presentation/templates/";
 
             foreach ($paths as $path) {
                 if (file_exists($path)) {

@@ -1,6 +1,8 @@
 <?php
 
 spl_autoload_register(function ($className) {
+    // code lives in the (possibly shared) source tree; custom/ belongs to the instance (cwd)
+    $sourceDir = defined('YESWIKI_SOURCE_DIR') ? YESWIKI_SOURCE_DIR : \dirname(__DIR__);
     // Autoload services
     if (preg_match('/^YesWiki\\\\([^\\\\]+)(?:\\\\([^\\\\]+))?(?:\\\\([^\\\\]+))?$/', $className, $matches)) {
         if (empty($matches[2])) {
@@ -8,8 +10,8 @@ spl_autoload_register(function ($className) {
         } elseif (empty($matches[3])) {
             switch ($matches[1]) {
                 case 'Core':
-                    if (file_exists('includes/' . $matches[2] . '.php')) {
-                        require 'includes/' . $matches[2] . '.php';
+                    if (file_exists($sourceDir . '/includes/' . $matches[2] . '.php')) {
+                        require $sourceDir . '/includes/' . $matches[2] . '.php';
                     }
                     break;
                 default:
@@ -20,7 +22,7 @@ spl_autoload_register(function ($className) {
             // basePath
             switch ($matches[1]) {
                 case 'Core':
-                    $basePath = 'includes';
+                    $basePath = $sourceDir . '/includes';
                     break;
                 case 'Custom':
                     $basePath = 'custom';
@@ -31,7 +33,7 @@ spl_autoload_register(function ($className) {
                     if (is_dir("custom/tools/{$extension}")) {
                         $basePath = "custom/tools/{$extension}";
                     } else {
-                        $basePath = "tools/{$extension}";
+                        $basePath = $sourceDir . "/tools/{$extension}";
                     }
                     break;
             }

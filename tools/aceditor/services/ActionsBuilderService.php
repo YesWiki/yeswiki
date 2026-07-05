@@ -107,7 +107,7 @@ class ActionsBuilderService
         $extraComponents = [];
         $files = [];
         foreach ($this->wiki->extensions as $pluginName => $pluginPath) {
-            $files = glob("tools/$pluginName/javascripts/components/actions-builder/*.js");
+            $files = glob($pluginPath . 'javascripts/components/actions-builder/*.js');
             foreach ($files as $filePath) {
                 $filename = pathinfo($filePath)['filename'];
                 $extraComponents[$filename] = "../../../$pluginName/javascripts/components/actions-builder/$filename.js";

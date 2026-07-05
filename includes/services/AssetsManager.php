@@ -72,6 +72,20 @@ class AssetsManager
         $file = $this->mapFilePath($file);
         $isUrl = strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0;
 
+        if (!$isUrl && $this->publishToCache()) {
+            $published = AssetPublisher::publishedUrl($file, $this->assetsVersion());
+            if ($published === null) {
+                return '';
+            }
+
+            // no ?v= : the published path already embeds the version
+            return <<<HTML
+                $conditionstart
+                <link rel="stylesheet" href="{$this->wiki->getBaseUrl()}/{$published}" $attrs>
+                $conditionend
+            HTML;
+        }
+
         if ($isUrl || !empty($file) && file_exists($file)) {
             $href = $isUrl ? $file : "{$this->wiki->getBaseUrl()}/{$file}";
             $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
@@ -108,9 +122,22 @@ class AssetsManager
 
         $file = $this->mapFilePath($file);
 
-        if (!empty($file) && file_exists($file)) {
+        $isUrl = strpos($file, 'http://') === 0 || strpos($file, 'https://') === 0;
+        $publishedSrc = null;
+        if (!$isUrl && $this->publishToCache()) {
+            $published = AssetPublisher::publishedUrl($file, $this->assetsVersion());
+            if ($published === null) {
+                return;
+            }
+            // no ?v= : the published path already embeds the version
+            $publishedSrc = "{$this->wiki->getBaseUrl()}/$published";
+        }
+
+        if ($publishedSrc !== null || (!empty($file) && file_exists($file))) {
             // include local files
-            $code = "<script src='{$this->wiki->getBaseUrl()}/$file$rev'";
+            $code = $publishedSrc !== null
+                ? "<script src='$publishedSrc'"
+                : "<script src='{$this->wiki->getBaseUrl()}/$file$rev'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
                 if (!$first) {
                     $code .= ' defer';
@@ -132,6 +159,23 @@ class AssetsManager
                 $GLOBALS['js'] .= $code . "\n";
             }
         }
+    }
+
+    /**
+     * When 'assets_cache' is enabled, css/js files are published into the instance's
+     * cache/assets/{version}/ folder and referenced from there, so a farm instance needs no
+     * symlinks/aliases to the shared YesWiki sources (see AssetPublisher).
+     */
+    private function publishToCache(): bool
+    {
+        return in_array($this->wiki->GetConfigValue('assets_cache'), ['1', 'yes', 'true'], true);
+    }
+
+    private function assetsVersion(): string
+    {
+        $release = $this->wiki->GetConfigValue('yeswiki_release');
+
+        return AssetPublisher::sanitizeVersion($release !== '' ? $release : 'dev');
     }
 
     private function mapFilePath($file)

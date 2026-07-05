@@ -54,7 +54,7 @@ function _t($textkey, $params = [])
  */
 function _convert($text, $fromencoding, $database = false)
 {
-    include_once 'includes/Encoding.php';
+    include_once __DIR__ . '/Encoding.php';
     if (isset($GLOBALS['wiki']->config['db_charset']) and $GLOBALS['wiki']->config['db_charset'] == 'utf8mb4') {
         return $text;
     } elseif (is_array($text)) {
@@ -101,7 +101,7 @@ function _convert($text, $fromencoding, $database = false)
 function detectAvailableLanguages()
 {
     $available_languages = [];
-    if ($d = @opendir('lang')) {
+    if ($d = @opendir(dirname(__DIR__) . '/lang')) {
         while (($f = readdir($d)) !== false) {
             if (preg_match(',^yeswiki_([a-z_]+)\.php[3]?$,', $f, $regs)) {
                 if (in_array($regs[1], SUPPORTED_LANGS)) {
@@ -265,13 +265,13 @@ function initI18n()
     define('SUPPORTED_LANGS', ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro']);
 
     // get the language list
-    require_once 'lang/languages_list.php';
+    require_once dirname(__DIR__) . '/lang/languages_list.php';
 
     // we initialise with french language, because it is the most beautiful ;) or maybe just the most updated because we are a french dev team
-    $returnedArray = require_once 'lang/yeswiki_fr.php';
+    $returnedArray = require_once dirname(__DIR__) . '/lang/yeswiki_fr.php';
     load_translations($returnedArray);
-    if (file_exists('lang/yeswikijs_fr.php')) {
-        $returnedArray = require_once 'lang/yeswikijs_fr.php';
+    if (file_exists(dirname(__DIR__) . '/lang/yeswikijs_fr.php')) {
+        $returnedArray = require_once dirname(__DIR__) . '/lang/yeswikijs_fr.php';
         load_translations($returnedArray, true);
     }
 
@@ -290,13 +290,13 @@ function loadpreferredI18n($wiki, $page = '')
 {
     $GLOBALS['prefered_language'] = detectPreferedLanguage($wiki, $GLOBALS['available_languages'], 'auto', $page);
 
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswiki_' . $GLOBALS['prefered_language'] . '.php')) {
+    if ($GLOBALS['prefered_language'] != 'fr' && file_exists(dirname(__DIR__) . '/lang/yeswiki_' . $GLOBALS['prefered_language'] . '.php')) {
         // this will overwrite the values of $GLOBALS['translations'] in the selected language
-        $returnedArray = include_once 'lang/yeswiki_' . $GLOBALS['prefered_language'] . '.php';
+        $returnedArray = include_once dirname(__DIR__) . '/lang/yeswiki_' . $GLOBALS['prefered_language'] . '.php';
         load_translations($returnedArray);
     }
-    if ($GLOBALS['prefered_language'] != 'fr' && file_exists('lang/yeswikijs_' . $GLOBALS['prefered_language'] . '.php')) {
-        $returnedArray = include_once 'lang/yeswikijs_' . $GLOBALS['prefered_language'] . '.php';
+    if ($GLOBALS['prefered_language'] != 'fr' && file_exists(dirname(__DIR__) . '/lang/yeswikijs_' . $GLOBALS['prefered_language'] . '.php')) {
+        $returnedArray = include_once dirname(__DIR__) . '/lang/yeswikijs_' . $GLOBALS['prefered_language'] . '.php';
         load_translations($returnedArray, true);
     }
 }

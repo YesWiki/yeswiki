@@ -359,9 +359,9 @@ class ArchiveServiceTest extends YesWikiTestCase
     {
         return [
             'default' => [
-                'paramsFromWakka' => true,
-                'hideConfigValuesParam' => null,
-                'wakkaContent' => [
+                true,
+                null,
+                [
                     'db_host' => '',
                     'db_database' => '',
                     'db_user' => '',
@@ -381,15 +381,15 @@ class ArchiveServiceTest extends YesWikiTestCase
                 ],
             ],
             'specific' => [
-                'paramsFromWakka' => true,
-                'hideConfigValuesParam' => [
+                true,
+                [
                     'db_host' => '',
                     'db_database' => '',
                     'db_user' => '',
                     'db_password' => '',
                     'custom_key' => '',
                 ],
-                'wakkaContent' => [
+                [
                     'db_host' => '',
                     'db_database' => '',
                     'db_user' => '',
@@ -406,8 +406,8 @@ class ArchiveServiceTest extends YesWikiTestCase
                 ],
             ],
             'specific via command line' => [
-                'paramsFromWakka' => false,
-                'hideConfigValuesParam' => [
+                false,
+                [
                     'db_host' => '',
                     'db_database' => '',
                     'db_user' => '',
@@ -415,7 +415,7 @@ class ArchiveServiceTest extends YesWikiTestCase
                     'custom_key_2' => '',
                     'custom_key_3' => '',
                 ],
-                'wakkaContent' => [
+                [
                     'db_host' => '',
                     'db_database' => '',
                     'db_user' => '',

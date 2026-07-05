@@ -162,8 +162,10 @@ class UserManagerTest extends YesWikiTestCase
             $email = strtolower($this->randomString(10)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+            // trim: UserManager::create() trims the name, so a random name with a trailing
+            // space would be stored trimmed and no longer be found by getOneByName()
+            $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
         } while (!empty($userManager->getOneByName($name)));
 
         $password = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');

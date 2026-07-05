@@ -46,7 +46,7 @@ class MigrationService
 
         // Get all Php files in migrations folder (in root or in any tools)
         // Run the file if it was not already run in the past
-        $folders = array_merge(['includes/'], $this->wiki->extensions); // root folder + extensions folders
+        $folders = array_merge([YESWIKI_SOURCE_DIR . '/includes/'], $this->wiki->extensions); // root folder + extensions folders
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {

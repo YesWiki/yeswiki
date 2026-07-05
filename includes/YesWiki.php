@@ -2,30 +2,41 @@
 
 namespace YesWiki;
 
-require_once 'includes/constants.php';
-require_once 'includes/urlutils.inc.php';
-require_once 'includes/email.inc.php';
-require_once 'includes/i18n.inc.php';
-require_once 'includes/YesWikiInit.php';
-require_once 'includes/YesWikiPerformable.php';
-require_once 'includes/objects/YesWikiAction.php';
-require_once 'includes/objects/YesWikiHandler.php';
-require_once 'includes/objects/YesWikiFormatter.php';
+require_once __DIR__ . '/bootstrap_paths.php';
+require_once __DIR__ . '/constants.php';
+require_once __DIR__ . '/urlutils.inc.php';
+require_once __DIR__ . '/email.inc.php';
+require_once __DIR__ . '/i18n.inc.php';
+require_once __DIR__ . '/YesWikiInit.php';
+require_once __DIR__ . '/YesWikiKernel.php';
+require_once __DIR__ . '/YesWikiPerformable.php';
+require_once __DIR__ . '/objects/YesWikiAction.php';
+require_once __DIR__ . '/objects/YesWikiHandler.php';
+require_once __DIR__ . '/objects/YesWikiFormatter.php';
 
+use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolver;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\HttpKernel;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Routing\Loader\AttributeDirectoryLoader;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Throwable;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\LegacyPageController;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
@@ -37,6 +48,7 @@ use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\Performer;
@@ -65,6 +77,7 @@ class Wiki
     public $CookiePath = '/';
     public $inclusions = [];
     public $extensions = [];
+    // lazily populated RouteCollection - always read it through getRoutes()
     public $routes = [];
     public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     public $services;
@@ -72,6 +85,9 @@ class Wiki
     public $pageCacheFormatted = [];
     public $_groupsCache = [];
     public $_actionsAclsCache = [];
+
+    private $environment;
+    private $httpKernel;
 
     /**
      * Constructor.
@@ -84,10 +100,18 @@ class Wiki
         $this->tag = $init->page;
         $this->method = $init->method;
 
-        $this->services = $init->initCoreServices($this);
-        $this->loadExtensions();
+        // single source of truth for every environment-keyed cache
+        // (compiled container, see boot(); route collection, see getRoutes())
+        $this->environment = defined('PHPUNIT_COMPOSER_INSTALL')
+            ? 'test'
+            : (strtolower($this->GetConfigValue('debug')) === 'yes' ? 'dev' : 'prod');
 
-        $this->routes = $init->initRoutes($this);
+        $this->loadExtensions();
+    }
+
+    public function getEnvironment(): string
+    {
+        return $this->environment;
     }
 
     // Dump exception hidding complete server path
@@ -160,7 +184,9 @@ class Wiki
 
     public function isCli(): bool
     {
-        return in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true);
+        // NB: 'cli-server' (php -S) is deliberately NOT considered CLI: it serves real web
+        // requests with cookies, REMOTE_ADDR and sendable headers
+        return in_array(php_sapi_name(), ['cli', 'phpdbg'], true);
     }
 
     // inclusions
@@ -435,10 +461,12 @@ class Wiki
 
     public function exit(string $message = '')
     {
-        if ($this->isCli()) {
-            throw new ExitException($message);
-        }
-        exit($message);
+        // Always throw rather than calling PHP's exit()/die(): a real process exit mid-request
+        // would skip kernel.response/kernel.terminate once dispatch goes through a real
+        // Symfony\Component\HttpKernel\HttpKernel (see Wiki::handleWithHttpKernel()). Every
+        // caller of Wiki::exit()/Wiki::Redirect() gets this for free; Run()'s catch(ExitException)
+        // is what decides what to do with it for each dispatch path.
+        throw new ExitException($message);
     }
 
     // returns just PageName[/method].
@@ -1198,6 +1226,22 @@ class Wiki
     // THE BIG EVIL NASTY ONE!
     public function Run($tag = '', $method = '')
     {
+        try {
+            $this->doRun($tag, $method);
+        } catch (ExitException $th) {
+            // Wiki::exit()/Redirect() unwinding outside of the HttpKernel dispatch (e.g. the
+            // empty-tag redirect below, or RunSpecialPages' early exits): reproduce the
+            // historical exit($message) behavior for web requests, keep throwing under CLI
+            // where tests/console rely on catching it
+            if ($this->isCli()) {
+                throw $th;
+            }
+            echo $th->getMessage();
+        }
+    }
+
+    private function doRun($tag, $method)
+    {
         if (!(intval($this->GetMicroTime()) % 9)) {
             $this->Maintenance();
         }
@@ -1225,21 +1269,11 @@ class Wiki
         if (in_array($tag, ['api', 'doc'])) {
             $this->RunSpecialPages();
         } else {
-            $this->SetPage($this->LoadPage($tag, isset($_REQUEST['time']) ? $_REQUEST['time'] : ''));
-            $this->LogReferrer();
+            $this->request->attributes->set('_controller', LegacyPageController::class);
+            $this->request->attributes->set('_tag', $this->tag);
+            $this->request->attributes->set('_method', $this->method);
 
-            try {
-                echo $this->Method($this->method);
-            } catch (ExitException $th) {
-                if (!$this->isCli()) {
-                    // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
-                    if (!empty($_SESSION['redirects'])) {
-                        unset($_SESSION['redirects']);
-                    }
-                    // do nothing except and script with message
-                    exit($th->getMessage());
-                }
-            }
+            $this->handleWithHttpKernel($this->request)->send();
 
             // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
             if (!empty($_SESSION['redirects'])) {
@@ -1285,40 +1319,23 @@ class Wiki
         $context->setPathInfo('/' . $_GET['wiki']);
         $context->setQueryString($newQuerystring ?? $_GET['wiki']);
 
-        $matcher = new UrlMatcher($this->routes, $context);
+        $matcher = new UrlMatcher($this->getRoutes(), $context);
 
-        $controllerResolver = new YesWikiControllerResolver($this);
-        $argumentResolver = new ArgumentResolver();
         // start buffer to prevent bad formatting response
         ob_start();
         try {
             // TODO put this elsewhere ?
             $attributes = $matcher->match($context->getPathInfo());
-            if ($this->services->get(ApiService::class)->isAuthorized($attributes, $this->routes)) {
+            if ($this->services->get(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
                 $this->request->attributes->add($attributes);
-
-                $controller = $controllerResolver->getController($this->request);
-                $arguments = $argumentResolver->getArguments($this->request, $controller);
-
-                $response = call_user_func_array($controller, $arguments);
+                $response = $this->handleWithHttpKernel($this->request);
             } else {
                 $response = new Response('Not enough access rights', Response::HTTP_UNAUTHORIZED);
             }
         } catch (ResourceNotFoundException $exception) {
             $response = new Response('', Response::HTTP_NOT_FOUND);
-        } catch (HttpException $exception) {
-            $response = new Response($exception->getMessage(), $exception->getStatusCode(), $exception->getHeaders());
         } catch (MethodNotAllowedException $exception) {
             $response = new Response('', Response::HTTP_METHOD_NOT_ALLOWED);
-        } catch (\Throwable $th) {
-            if (isset($response) && $response instanceof JsonResponse) {
-                $previousContent = json_decode($response->getContent(), true);
-                $newContent = ['exceptionMessage' => $th->__toString()] + $previousContent;
-                $response->setData($newContent);
-                $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
-            } else {
-                $response = new ApiResponse(['exceptionMessage' => $th->__toString()], Response::HTTP_INTERNAL_SERVER_ERROR);
-            }
         }
         $rawOutput = ob_get_contents();
         ob_end_clean();
@@ -1340,6 +1357,127 @@ class Wiki
             }
         }
         $response->send();
+    }
+
+    /**
+     * The attribute routes of every controller (core + extensions), loaded lazily: only api/doc
+     * requests ever match against them (see RunSpecialPages()), so ordinary page views no longer
+     * pay for reflecting over every controller class on every request. The built collection is
+     * cached (serialized, per environment like the compiled container) and freshness-checked
+     * against the resources the attribute loaders register (controller file edits/additions)
+     * plus the extension set itself (see YesWikiKernel::extensionSetResources()).
+     */
+    public function getRoutes(): RouteCollection
+    {
+        if ($this->routes instanceof RouteCollection) {
+            return $this->routes;
+        }
+
+        // instance cache dir (cwd), same reasoning as YesWikiKernel::getCacheDir()
+        $cache = new ConfigCache(getcwd() . '/cache/routes/' . $this->environment . '.php', true);
+
+        if ($cache->isFresh()) {
+            $routes = unserialize(require $cache->getPath());
+            if ($routes instanceof RouteCollection) {
+                return $this->routes = $routes;
+            }
+        }
+
+        [$routes, $resources] = $this->buildRouteCollection();
+        $cache->write('<?php return ' . var_export(serialize($routes), true) . ';', $resources);
+
+        return $this->routes = $routes;
+    }
+
+    /**
+     * @return array{0: RouteCollection, 1: FileResource[]} the collection plus the freshness
+     *                                                       resources to guard its cache with
+     *
+     * The freshness resources are built by hand instead of taking $routes->getResources(): the
+     * attribute loaders register ReflectionClassResources, whose isFresh() answer depends on the
+     * content hash stored in each cache's meta file. SelfCheckingResourceChecker memoizes answers
+     * process-wide keyed only on "resource:timestamp", so when two caches (compiled container +
+     * this one) hold different stored hashes for the same class and happen to share an mtime
+     * second, one cache's answer poisons the other's and a stale route cache is served as fresh.
+     * Plain FileResources are fully determined by (path, timestamp), immune to that: one per
+     * controller file catches edits, one per controllers directory catches added/removed files.
+     */
+    private function buildRouteCollection(): array
+    {
+        $routes = new RouteCollection();
+        $resources = YesWikiKernel::extensionSetResources(\dirname(__DIR__));
+
+        $loader = new AttributeDirectoryLoader(
+            new FileLocator(__DIR__ . '/../'),
+            new AttributeRouteControllerLoader()
+        );
+
+        $controllersDirs = [__DIR__ . '/controllers'];
+        foreach ($this->extensions as $extensionPath) {
+            $controllersDir = $extensionPath . 'controllers';
+            if (is_dir($controllersDir)) {
+                $controllersDirs[] = $controllersDir;
+            }
+        }
+
+        foreach ($controllersDirs as $dir) {
+            $routes->addCollection($loader->load($dir));
+            $resources[] = new FileResource($dir);
+            foreach (glob($dir . '/*.php') ?: [] as $controllerFile) {
+                $resources[] = new FileResource($controllerFile);
+            }
+        }
+
+        return [$routes, $resources];
+    }
+
+    /**
+     * Resolve/invoke $request's _controller through a real Symfony\Component\HttpKernel\HttpKernel,
+     * so every request (api/doc's attribute-routed controllers via RunSpecialPages(), and ordinary
+     * wiki tag/method pages via LegacyPageController) goes through the standard
+     * kernel.controller/kernel.view/kernel.response/kernel.exception event flow instead of a
+     * hand-rolled controller-resolution + try/catch.
+     *
+     * Routing itself (matching $request's attributes) stays manual: for api/doc it's YesWiki's own
+     * ?wiki=Tag/method querystring scheme being translated to a path (see RunSpecialPages()), not
+     * something a standard Symfony\Component\HttpKernel\EventListener\RouterListener could do
+     * as-is; for ordinary pages there's no routing at all (see Run()). Either way $request already
+     * carries its route attributes by the time this is called, so there's no kernel.request listener.
+     */
+    private function handleWithHttpKernel(Request $request): Response
+    {
+        if (!$this->httpKernel instanceof HttpKernel) {
+            $eventDispatcher = $this->services->get(EventDispatcher::class);
+            $eventDispatcher->addListener(KernelEvents::EXCEPTION, [$this, 'onDispatchException']);
+
+            $this->httpKernel = new HttpKernel(
+                $eventDispatcher,
+                new YesWikiControllerResolver($this),
+                null,
+                new ArgumentResolver()
+            );
+        }
+
+        return $this->httpKernel->handle($request);
+    }
+
+    /**
+     * kernel.exception listener for handleWithHttpKernel(): maps a controller-thrown exception to
+     * a Response the same way RunSpecialPages()'s try/catch used to for api/doc. For ordinary
+     * pages this is only reached for bugs outside of Performer::run()'s own scope - that already
+     * catches and renders exceptions from within actions/handlers/formatters as an inline "danger"
+     * alert (see Performer::run()) - so today's behavior for those is an uncaught PHP fatal error;
+     * this is a strict improvement (a real response instead of a blank/fatal error page), even
+     * though the JSON shape below is written with the api/doc case in mind.
+     */
+    public function onDispatchException(ExceptionEvent $event): void
+    {
+        $th = $event->getThrowable();
+        if ($th instanceof HttpException) {
+            $event->setResponse(new Response($th->getMessage(), $th->getStatusCode(), $th->getHeaders()));
+        } else {
+            $event->setResponse(new ApiResponse(['exceptionMessage' => $th->__toString()], Response::HTTP_INTERNAL_SERVER_ERROR));
+        }
     }
 
     /**
@@ -1436,7 +1574,7 @@ class Wiki
      */
     private function loadExtensionsFromDir($pPluginsRoot)
     {
-        include_once 'includes/YesWikiPlugins.php';
+        include_once __DIR__ . '/YesWikiPlugins.php';
         $objPlugins = new Plugins($pPluginsRoot);
         $objPlugins->getPlugins(true);
         $vExtensions = $objPlugins->getPluginsList();
@@ -1455,24 +1593,31 @@ class Wiki
      */
     private function loadExtensions() // make it private since once services are compiled, they cannot be modified - @YvesGufflet : contact@yvesgufflet.fr
     {
-        $this->loadExtensionsFromDir('tools/');
-        $this->loadExtensionsFromDir('custom/tools/');
+        // absolute paths: shared tools/docs come from the source tree, custom/ belongs to the
+        // instance - everything downstream ($pluginBase . 'file' concatenations) works unchanged
+        $this->loadExtensionsFromDir(YESWIKI_SOURCE_DIR . '/tools/');
+        $this->loadExtensionsFromDir(YESWIKI_INSTANCE_DIR . '/custom/tools/');
         // TODO refactor as custom and actionsbuilder are not extensions
-        $this->extensions['custom'] = 'custom/'; // Will load custom/actions, custom/handlers etc...
-        $this->extensions['actionsbuilder'] = 'docs/actions/'; // Will load langs inside docs/actions/lang
+        $this->extensions['custom'] = YESWIKI_INSTANCE_DIR . '/custom/'; // Will load custom/actions, custom/handlers etc...
+        $this->extensions['actionsbuilder'] = YESWIKI_SOURCE_DIR . '/docs/actions/'; // Will load langs inside docs/actions/lang
 
-        $this->loadServices();
-        $this->compileServices();
+        $this->includeExtensionsBootstrapFiles();
+        $this->boot();
         $this->loadLanguages();
         $this->loadTemplates();
     }
 
     /**
-     * Load extensions's services.
+     * Include each extension's wiki.php/vendor/autoload.php/libs/{key}.api.php.
+     *
+     * These establish global constants/functions used by legacy procedural code
+     * (actions/handlers/formatters, Performer) - unlike service/parameter registration
+     * (see YesWikiKernel::build()), they have to run on every request even when the
+     * compiled container is served from cache, since build() is skipped on a cache hit.
      *
      * @return void
      */
-    private function loadServices()
+    private function includeExtensionsBootstrapFiles()
     {
         // This is necessary for retrocompatibility reasons, as these variables are used by the extensions
         // TODO refactor all extensions to use the correct variable name
@@ -1481,10 +1626,7 @@ class Wiki
         $page = $this->tag;
         $wakkaConfig = &$this->config;
 
-        // Load all services
         foreach ($this->extensions as $k => $pluginBase) {
-            $loader = new YamlFileLoader($this->services, new FileLocator($pluginBase));
-
             // Load the initialization file (constants and includes)
             if (file_exists($pluginBase . 'wiki.php')) {
                 include $pluginBase . 'wiki.php';
@@ -1494,41 +1636,30 @@ class Wiki
                 include $pluginBase . 'vendor/autoload.php';
             }
 
-            // TODO load the user-defined configs after this loop
-            if (file_exists($pluginBase . 'config.yaml')) {
-                $loader->load('config.yaml');
-            }
-
             // api functions
             if (file_exists($pluginBase . 'libs/' . $k . '.api.php')) {
                 include $pluginBase . 'libs/' . $k . '.api.php';
             }
         }
-
-        // merge the config between the wakka.config.php and the config.yaml of each tool
-        // the priority is given for the wakka.config.php settings for scalar values and indexed arrays
-        // but it's different for associative arrays, the result array is the merge between the array of the two settings
-        $config = array_replace_recursive($this->services->getParameterBag()->all(), $this->config);
-        $this->replaceRecursivelyIndexedArrays($config, $this->config);
-        // set all wakka configs as container's parameters
-        foreach ($config as $key => $value) {
-            $this->services->setParameter($key, $value);
-        }
     }
 
     /**
-     * Compile services.
+     * Build (or reuse the compiled/cached) DI container via YesWikiKernel, then wire in the
+     * synthetic services it can't dump (see includes/services.yaml).
      *
      * @return void
      */
-    private function compileServices()
+    private function boot()
     {
-        // Now we have loaded all the services, compile them
-        // See https://symfony.com/doc/current/components/dependency_injection/compilation.html
-        $this->services->compile();
+        $kernel = new YesWikiKernel($this, $this->environment);
+        $kernel->boot();
+        $this->services = $kernel->getContainer();
 
-        // set to wakka config the same parameters than the merged service's parameter bag
-        // need to be executed after $this->services->compile() because the %paramName% are resolved there
+        $this->services->set(ParameterBagInterface::class, $this->services->getParameterBag());
+        $this->services->set(CsrfTokenManager::class, new CsrfTokenManager());
+        $this->services->set(Wiki::class, $this);
+
+        // need to be executed after the container is compiled because the %paramName% are resolved there
         $this->config = $this->services->getParameterBag()->all();
         $this->dblink = $this->services->get(DbService::class)->getLink();
     }

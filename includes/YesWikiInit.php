@@ -6,18 +6,10 @@
 
 namespace YesWiki;
 
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\Loader\AttributeClassLoader;
-use Symfony\Component\Routing\Loader\AttributeDirectoryLoader;
 use Symfony\Component\Routing\Route;
-use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\YesWikiEventCompilerPass;
 
 class AttributeRouteControllerLoader extends AttributeClassLoader
 {
@@ -230,6 +222,9 @@ class Init
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
             'favorites_activated' => true,
+            // publish css/js into cache/assets/ and serve them from there - lets a farm
+            // instance run without symlinks/aliases to the YesWiki sources (see AssetPublisher)
+            'assets_cache' => false,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
                 'authorize_bypass_preupdate_backup' => false,
@@ -319,55 +314,6 @@ class Init
         }
 
         return $wakkaConfig;
-    }
-
-    /**
-     * Initialize YesWiki core services
-     * Extensions services will be loaded in the YesWiki::loadExtensions method.
-     */
-    public function initCoreServices($wiki)
-    {
-        $containerBuilder = new ContainerBuilder();
-
-        // register the compiler Pass to activate events
-        $containerBuilder->addCompilerPass(new YesWikiEventCompilerPass());
-
-        // Register main YesWiki object as a service
-        $containerBuilder->set(Wiki::class, $wiki);
-        $containerBuilder->set(ParameterBagInterface::class, $containerBuilder->getParameterBag());
-        $containerBuilder->set(CsrfTokenManager::class, new CsrfTokenManager());
-
-        $loader = new YamlFileLoader($containerBuilder, new FileLocator(__DIR__));
-        $loader->load('services.yaml');
-
-        // "TODO put elsewhere" - old comment in YesWiki::LoadExtensions -> PUT IN YesWikiInit::initCoreServices - @YvesGufflet
-        $fullDomain = parse_url($wiki->Href());
-        $containerBuilder->setParameter('host', $fullDomain['host']);
-        $containerBuilder->setParameter('mail_domain', $wiki->config['mail_domain']);
-        $containerBuilder->setParameter('max-upload-size', $wiki->file_upload_max_size());
-
-        return $containerBuilder;
-    }
-
-    public function initRoutes($wiki)
-    {
-        $routes = new RouteCollection();
-
-        $loader = new AttributeDirectoryLoader(
-            new FileLocator(__DIR__ . '/../'),
-            new AttributeRouteControllerLoader()
-        );
-        // Core controllers
-        $routes->addCollection($loader->load('includes/controllers'));
-
-        foreach ($wiki->extensions as $extensionKey => $extensionPath) {
-            $controllersDir = \getcwd() . '/' . $extensionPath . 'controllers';
-            if (is_dir($controllersDir)) {
-                $routes->addCollection($loader->load($controllersDir));
-            }
-        }
-
-        return $routes;
     }
 
     /**

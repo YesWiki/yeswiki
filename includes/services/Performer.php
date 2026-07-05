@@ -45,7 +45,8 @@ class Performer
         $this->twig = $twig;
 
         // get the list of all existing objects (actions, handlers, formatters...)
-        $folders = array_merge([''], $wiki->extensions); // root folder + extensions folders
+        // source root (core actions/, handlers/, formatters/) + extensions folders
+        $folders = array_merge([YESWIKI_SOURCE_DIR . '/'], $wiki->extensions);
         foreach (Performer::TYPES as $type) {
             $this->objectList[$type] = [];
             foreach ($folders as $folder) {

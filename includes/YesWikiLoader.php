@@ -33,19 +33,20 @@ class YesWikiLoader
     public static function getWiki(bool $test = false): Wiki
     {
         if (is_null(self::$wiki)) {
-            require_once 'includes/autoload.inc.php';
+            require_once __DIR__ . '/bootstrap_paths.php';
+            require_once __DIR__ . '/autoload.inc.php';
             try {
-                if (!file_exists('vendor/autoload.php')) {
+                if (!file_exists(YESWIKI_SOURCE_DIR . '/vendor/autoload.php')) {
                     throw new \Exception('ERROR ! : Folder `vendor/` seems not to be entirely copied ! (Maybe a YesWiki update aborted before its end !)<br/><strong>Could you manually copy the folder `vendor/` on your server by ftp ?</strong><br/>');
                 }
-                $loader = require_once 'vendor/autoload.php';
+                $loader = require_once YESWIKI_SOURCE_DIR . '/vendor/autoload.php';
             } catch (\Throwable $th) {
                 $message = $th->getMessage();
                 // echo message directly because TemplateEngine not ready here
                 echo "<div style=\"border:1px red solid;background-color: #FFCCCC;margin:3px;padding:5px;border-radius:5px;\">$message</div>";
                 exit;
             }
-            $loadedWiki = require_once 'includes/YesWiki.php';
+            $loadedWiki = require_once __DIR__ . '/YesWiki.php';
             if ($loadedWiki !== true || is_null(self::$wiki)) {
                 // params to succeed to instanciate wiki for tests
                 if ($test) {
