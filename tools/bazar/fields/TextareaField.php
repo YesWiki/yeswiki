@@ -193,7 +193,7 @@ class TextareaField extends BazarField
 
         if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
             if (!class_exists('attach')) {
-                include 'tools/attach/libs/attach.lib.php';
+                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
             }
             $entryCreationTime = $this->getEntryCreationTime($entry);
             foreach ($matches[0] as $key => $value) {
@@ -242,7 +242,7 @@ class TextareaField extends BazarField
         $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"\s*[^>]*(?>(?<=data-filename=")[^"]*")?[^>]*>';
         if (preg_match_all("/$regExpSearch/", $text, $matches)) {
             if (!class_exists('attach')) {
-                include 'tools/attach/libs/attach.lib.php';
+                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
             }
             $entryCreationTime = $this->getEntryCreationTime($entry);
             $previousTag = $wiki->tag;

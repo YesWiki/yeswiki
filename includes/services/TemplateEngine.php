@@ -80,10 +80,10 @@ class TemplateEngine
         $corePaths = [];
         $corePaths[] = 'custom/templates/core/';
         // Ability to override an extension template from another extensioncore
-        foreach ($this->wiki->extensions as $otherExtensionName => $pluginInfo) {
-            $corePaths[] = "tools/$otherExtensionName/templates/core/";
+        foreach ($this->wiki->extensions as $otherExtensionName => $otherExtensionPath) {
+            $corePaths[] = $otherExtensionPath . 'templates/core/';
         }
-        $corePaths[] = 'templates/';
+        $corePaths[] = YESWIKI_SOURCE_DIR . '/templates/';
         foreach ($corePaths as $path) {
             if (file_exists($path)) {
                 $this->twigLoader->addPath($path, 'core');
@@ -178,7 +178,7 @@ class TemplateEngine
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
 
             if (!class_exists('attach')) {
-                include 'tools/attach/libs/attach.lib.php';
+                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
             }
             $basePath = $this->wiki->getBaseUrl() . '/';
             $attach = new \attach($this->wiki);

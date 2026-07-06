@@ -92,8 +92,10 @@ class UserManagerTest extends YesWikiTestCase
         $firstUser = $users[array_key_first($users)];
         if ($name == 'newRandom') {
             do {
-                $name = $this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                    . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
+                // trim: UserManager::create() trims the name, so a random name with a trailing
+                // space would be stored trimmed and no longer be found by getOneByName()
+                $name = trim($this->randomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                    . $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_'));
             } while (!empty($userManager->getOneByName($name)));
         } elseif ($name == 'empty') {
             $name = '';

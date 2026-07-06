@@ -30,7 +30,7 @@ class ActionsBuilderService
         $data = baz_forms_and_lists_ids();
         // Loads various Yaml file
         $docFiles = glob('docs/actions/*.yaml');
-        $extensionDocFiles = glob('tools/*/actions/documentation.yaml');
+        $extensionDocFiles = glob(YESWIKI_SOURCE_DIR . '/tools/*/actions/documentation.yaml');
         $customDocFiles = glob('custom/actions/documentation.yaml');
         $docFiles = array_merge($docFiles, $extensionDocFiles);
         $docFiles = array_merge($docFiles, $customDocFiles);

@@ -132,7 +132,7 @@ class Utils
     protected function getAttach()
     {
         if (!class_exists('attach')) {
-            include_once 'tools/attach/libs/attach.lib.php';
+            include_once YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
         }
 
         return new \Attach($this->wiki);

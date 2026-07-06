@@ -10,7 +10,7 @@ ob_start();
     <?php
 
     if (!class_exists('attach')) {
-        include 'tools/attach/libs/attach.lib.php';
+        include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
     }
 $att = new attach($this);
 $att->doUpload();

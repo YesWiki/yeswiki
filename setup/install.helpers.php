@@ -57,7 +57,7 @@ function myLocation()
  */
 function renderSqlTwigTemplate($templateFile, $variables = [])
 {
-    require_once 'vendor/autoload.php';
+    require_once YESWIKI_SOURCE_DIR . '/vendor/autoload.php';
 
     $templateDir = dirname($templateFile);
     $templateName = basename($templateFile);

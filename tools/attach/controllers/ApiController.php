@@ -119,7 +119,7 @@ class ApiController extends YesWikiController
     private function getCacheFileName(string $filename, int $width, int $height, string $mode): string
     {
         if (!class_exists('attach')) {
-            include 'tools/attach/libs/attach.lib.php';
+            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
         }
         $attach = new \Attach($this->wiki);
         $newFileName = $attach->getResizedFilename("files/$filename", $width, $height, $mode);

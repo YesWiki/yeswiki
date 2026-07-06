@@ -8,7 +8,7 @@
 define('THEME_PAR_DEFAUT', 'margot');
 
 // Style par défaut
-$style = file_exists('themes/margot/styles/light.css') ? 'light.css' : 'margot.css';
+$style = file_exists(YESWIKI_SOURCE_DIR . '/themes/margot/styles/light.css') ? 'light.css' : 'margot.css';
 define('CSS_PAR_DEFAUT', $style);
 
 // Squelette par défaut

@@ -90,14 +90,14 @@ class ReactionsController extends YesWikiController
                                 file_exists("files/{$rawImages[$k]}")
                                 ? "$baseUrl/files/{$rawImages[$k]}"
                                 : (
-                                    file_exists("styles/images/{$rawImages[$k]}")
+                                    file_exists(YESWIKI_SOURCE_DIR . "/styles/images/{$rawImages[$k]}")
                                     ? "$baseUrl/styles/images/{$rawImages[$k]}"
                                     : '' // error
                                 )
                             )
                         )
                         : (
-                            file_exists("styles/images/mikone-{$rawImages[$k]}.svg")
+                            file_exists(YESWIKI_SOURCE_DIR . "/styles/images/mikone-{$rawImages[$k]}.svg")
                             ? "$baseUrl/styles/mikone-{$rawImages[$k]}.svg"
                             : $rawImages[$k]
                         )

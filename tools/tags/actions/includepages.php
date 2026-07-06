@@ -1,6 +1,6 @@
 <?php
 
-include_once 'tools/tags/libs/tags.functions.php';
+include_once YESWIKI_SOURCE_DIR . '/tools/tags/libs/tags.functions.php';
 $nbcartrunc = 200;
 $output = '';
 $class = $this->GetParameter('class');

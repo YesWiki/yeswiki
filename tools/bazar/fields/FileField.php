@@ -326,7 +326,7 @@ class FileField extends BazarField
     {
         if (is_null($this->attach)) {
             if (!class_exists('attach')) {
-                include 'tools/attach/libs/attach.lib.php';
+                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
             }
 
             $wiki = $this->getWiki();

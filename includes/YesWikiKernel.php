@@ -115,7 +115,12 @@ class YesWikiKernel extends Kernel
      */
     private function addInvalidationResources(ContainerBuilder $container): void
     {
-        $container->addResource(new FileResource(ConfigurationFileProvider::getConfigFileFromEnv()));
+        // content-hashed, NOT a plain FileResource: wakka.config.php is written
+        // programmatically in rapid succession (e.g. ArchiveService toggling wiki_status
+        // around spawning a subprocess), and two writes within the same mtime second would
+        // let the second one serve a stale container - parameters like wiki_status must be
+        // picked up immediately
+        $container->addResource(new ConfigFileHashResource(ConfigurationFileProvider::getConfigFileFromEnv()));
 
         foreach (self::extensionSetResources($this->getProjectDir()) as $resource) {
             $container->addResource($resource);
@@ -148,5 +153,35 @@ class YesWikiKernel extends Kernel
         }
 
         return $resources;
+    }
+}
+
+/**
+ * Freshness by content hash instead of mtime, for files rewritten programmatically in rapid
+ * succession (mtime has 1-second granularity, so a FileResource can miss the second of two
+ * same-second writes). The hash is part of __toString() on purpose: SelfCheckingResourceChecker
+ * memoizes isFresh() answers process-wide keyed on "resource:timestamp", and unlike
+ * ReflectionClassResource (see Wiki::buildRouteCollection()) this keeps the answer fully
+ * determined by the key even when several caches hold different snapshots of the same file.
+ */
+class ConfigFileHashResource implements \Symfony\Component\Config\Resource\SelfCheckingResourceInterface
+{
+    private string $file;
+    private string $hash;
+
+    public function __construct(string $file)
+    {
+        $this->file = $file;
+        $this->hash = (string)@md5_file($file);
+    }
+
+    public function isFresh(int $timestamp): bool
+    {
+        return (string)@md5_file($this->file) === $this->hash;
+    }
+
+    public function __toString(): string
+    {
+        return 'confighash.' . $this->file . '.' . $this->hash;
     }
 }

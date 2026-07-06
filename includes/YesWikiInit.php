@@ -222,9 +222,6 @@ class Init
             'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
             'favorites_activated' => true,
-            // publish css/js into cache/assets/ and serve them from there - lets a farm
-            // instance run without symlinks/aliases to the YesWiki sources (see AssetPublisher)
-            'assets_cache' => false,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
                 'authorize_bypass_preupdate_backup' => false,
@@ -380,13 +377,13 @@ class Init
         loadpreferredI18n('');
         $wakkaConfig = $this->config;
         $wakkaConfigLocation = $this->configFile;
-        include_once 'setup/install.helpers.php';
-        include_once 'setup/header.php';
-        if (file_exists('setup/' . $installAction . '.php')) {
-            include_once 'setup/' . $installAction . '.php';
+        include_once YESWIKI_SOURCE_DIR . '/setup/install.helpers.php';
+        include_once YESWIKI_SOURCE_DIR . '/setup/header.php';
+        if (file_exists(YESWIKI_SOURCE_DIR . '/setup/' . $installAction . '.php')) {
+            include_once YESWIKI_SOURCE_DIR . '/setup/' . $installAction . '.php';
         } else {
             echo '<em>', _t('INVALID_ACTION'), '</em>';
         }
-        include_once 'setup/footer.php';
+        include_once YESWIKI_SOURCE_DIR . '/setup/footer.php';
     }
 }

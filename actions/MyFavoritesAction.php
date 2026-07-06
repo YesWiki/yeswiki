@@ -36,7 +36,7 @@ class MyFavoritesAction extends YesWikiAction
         $this->pageManager = $this->getService(PageManager::class);
         $this->templateEngine = $this->getService(TemplateEngine::class);
         if (!class_exists('attach')) {
-            include 'tools/attach/libs/attach.lib.php';
+            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
         }
         $this->attach = new attach($this->wiki);
 
@@ -83,7 +83,7 @@ class MyFavoritesAction extends YesWikiAction
             } else {
                 $page = $this->pageManager->getOne($favorite['resource']);
                 if (!empty($page)) {
-                    include_once 'tools/tags/libs/tags.functions.php';
+                    include_once YESWIKI_SOURCE_DIR . '/tools/tags/libs/tags.functions.php';
                     $title = get_title_from_body($page);
                     if (!empty($title)) {
                         $favorites[$key]['title'] = $title;

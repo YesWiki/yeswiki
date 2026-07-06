@@ -4,7 +4,7 @@ use YesWiki\Tags\Service\TagsManager;
 
 $tagsManager = $this->services->get(TagsManager::class);
 
-include_once 'tools/tags/libs/tags.functions.php';
+include_once YESWIKI_SOURCE_DIR . '/tools/tags/libs/tags.functions.php';
 $nbcartrunc = 200;
 $tags = $this->GetParameter('tags');
 $type = $this->GetParameter('type');

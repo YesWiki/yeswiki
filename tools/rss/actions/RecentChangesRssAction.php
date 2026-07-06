@@ -21,7 +21,7 @@ class RecentChangesRssAction extends YesWikiAction
             return _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ' .
                 $this->wiki->Link($this->wiki->getPageTag(), 'xml', null, $this->wiki->Href('xml'));
         }
-        require_once 'tools/rss/libs/rssdiff.function.php';
+        require_once YESWIKI_SOURCE_DIR . '/tools/rss/libs/rssdiff.function.php';
         $max = 50;
         if ($user = $this->wiki->GetUser()) {
             $max = $user['changescount'];

@@ -15,7 +15,7 @@ class HashCashService
 
     public function getJavascriptCode($formId = 'ACEditor')
     {
-        require_once 'tools/security/secret/wp-hashcash.lib';
+        require_once YESWIKI_SOURCE_DIR . '/tools/security/secret/wp-hashcash.lib';
         if (!file_exists(HASHCASH_SECRET_FILE)) {
             $handle = fopen(HASHCASH_SECRET_FILE, 'w');
             fclose($handle);

@@ -27,7 +27,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
     $wiki = $GLOBALS['wiki'];
     if (file_exists($image_src)) {
         if (!class_exists('attach')) {
-            include 'tools/attach/libs/attach.lib.php';
+            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
         }
         $attach = new attach($wiki);
 
@@ -131,7 +131,7 @@ function afficher_image(
     $ext = pathinfo($nom_image)['extension'];
 
     if (!class_exists('attach')) {
-        include 'tools/attach/libs/attach.lib.php';
+        include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
     }
     $attach = new attach($wiki);
     $imagePath = $attach->GetUploadPath() . '/' . $nom_image;

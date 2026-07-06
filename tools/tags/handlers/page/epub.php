@@ -20,8 +20,8 @@ if (isset($metadatas['ebook-title']) && isset($metadatas['ebook-description']) &
 
     $bookEnd = "</body>\n</html>\n";
 
-    include_once 'tools/tags/libs/tags.functions.php';
-    include_once 'tools/tags/libs/vendor/PHPePub/EPub.php';
+    include_once YESWIKI_SOURCE_DIR . '/tools/tags/libs/tags.functions.php';
+    include_once YESWIKI_SOURCE_DIR . '/tools/tags/libs/vendor/PHPePub/EPub.php';
 
     $book = new EPub();
 

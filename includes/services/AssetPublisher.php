@@ -10,8 +10,8 @@ namespace YesWiki\Core\Service;
  *
  * Two cooperating mechanisms:
  *  - AssetsManager emits versioned URLs (cache/assets/{version}/{original path}) for every
- *    registered css/js file when the 'assets_cache' config flag is on, eagerly copying the
- *    file on first emission (see publishedUrl()).
+ *    registered css/js file when running as a farm instance, eagerly copying the file on
+ *    first emission (see publishedUrl()).
  *  - interceptAssetRequest() runs from index.php BEFORE the wiki boots (no DB, no session):
  *    the standard rewrite fallback (Apache rewrite mode / nginx try_files) sends any missing
  *    static file through index.php, and this materializes it from the source tree and streams
@@ -88,11 +88,47 @@ class AssetPublisher
             $uriPath = substr($uriPath, strlen('index.php/'));
         }
 
+        // farm fallback: a docroot-wide rewrite (e.g. Caddy's php_server, Apache fallback in
+        // the farm root) sends a missing /instance/asset to this shared index.php instead of
+        // the instance's own one. Walk into the deepest instance dir the path traverses so
+        // the asset is materialized into and served from that instance's cache/assets.
+        $instanceDir = null;
+        while (!str_starts_with($uriPath, self::PUBLISHED_PREFIX) && !self::isServablePath($uriPath)) {
+            $slashPos = strpos($uriPath, '/');
+            if ($slashPos === false) {
+                break;
+            }
+            $segment = substr($uriPath, 0, $slashPos);
+            if ($segment === '' || $segment[0] === '.' || str_contains($segment, '\\') || str_contains($segment, "\0")) {
+                break;
+            }
+            $candidate = ($instanceDir ?? getcwd()) . '/' . $segment;
+            if (!is_file($candidate . '/index.php')) {
+                break;
+            }
+            $instanceDir = $candidate;
+            $uriPath = substr($uriPath, $slashPos + 1);
+        }
+        if ($instanceDir !== null) {
+            if (!str_starts_with($uriPath, self::PUBLISHED_PREFIX) && !self::isServablePath($uriPath)) {
+                // instance page URL (not an asset): nothing to serve statically here
+                return;
+            }
+            // serve on the instance's behalf: materialize() targets and custom/ overrides
+            // resolve through getcwd()
+            chdir($instanceDir);
+        }
+
         if (str_starts_with($uriPath, self::PUBLISHED_PREFIX)) {
             // cache/assets/{version}/{relPath} : materialize from sources, serve immutable
             $rest = substr($uriPath, strlen(self::PUBLISHED_PREFIX));
             $parts = explode('/', $rest, 2);
             if (count($parts) !== 2 || !self::isValidVersion($parts[0]) || !self::isServablePath($parts[1])) {
+                if ($instanceDir !== null) {
+                    // never fall through to booting the shared root wiki with a changed cwd
+                    self::notFound();
+                }
+
                 return;
             }
             $target = self::materialize($parts[0], $parts[1]);

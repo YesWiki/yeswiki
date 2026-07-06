@@ -2,7 +2,7 @@
 
 if (isset($_POST['action']) && $_POST['action'] == 'addcomment') {
     if ($this->config['use_hashcash']) {
-        require_once 'tools/security/secret/wp-hashcash.lib';
+        require_once YESWIKI_SOURCE_DIR . '/tools/security/secret/wp-hashcash.lib';
         if (!isset($_POST['hashcash_value']) || ($_POST['hashcash_value'] != hashcash_field_value())) {
             $this->SetMessage(_t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'));
             $this->redirect($this->href());

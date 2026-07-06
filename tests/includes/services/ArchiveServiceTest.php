@@ -310,7 +310,7 @@ class ArchiveServiceTest extends YesWikiTestCase
             }
         }
 
-        $this->assertNotEmpty($location, 'Bad format of stdout');
+        $this->assertNotEmpty($location, 'Bad format of stdout; results: ' . json_encode($results));
         $this->assertTrue(is_file($location), 'Extracted location is not a file !');
         $data = $this->getDataFromLocation($location, $services['wiki']);
         $error = $data['error'] ?? '';

@@ -366,7 +366,7 @@ class BazarListeAction extends YesWikiAction
         $data['forms'] = $pForms;
 
         if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {
-            require_once 'tools/bazar/libs/vendor/Pager/Pager.php';
+            require_once YESWIKI_SOURCE_DIR . '/tools/bazar/libs/vendor/Pager/Pager.php';
             $tab = $_GET;
             unset($tab['wiki']);
             $pager = &Pager::factory([

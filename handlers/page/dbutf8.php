@@ -9,7 +9,7 @@ if (isset($this)) {
         throw new Exception(_t('WIKI_IN_HIBERNATION'));
     }
     if ($this->userIsAdmin()) {
-        include_once 'includes/Encoding.php';
+        include_once YESWIKI_SOURCE_DIR . '/includes/Encoding.php';
         $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
         $output = '';
         $result = $this->LoadAll(
@@ -118,7 +118,7 @@ if (php_sapi_name() === 'cli') {
     $cwd = str_replace(DIRECTORY_SEPARATOR . 'git', '', $cwd);
     set_include_path($cwd);
     include_once ConfigurationFileProvider::getConfigFileFromEnv();
-    include_once 'includes/Encoding.php';
+    include_once YESWIKI_SOURCE_DIR . '/includes/Encoding.php';
 
     $charset = isset($wakkaConfig['db_charset']) ? $wakkaConfig['db_charset'] : 'utf8mb4';
     $dsn = 'mysql:host=' . $wakkaConfig['db_host'] . ';dbname=' . $wakkaConfig['db_database'] . ';charset=' . $charset;

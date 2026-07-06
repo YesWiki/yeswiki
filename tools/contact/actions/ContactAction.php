@@ -4,7 +4,7 @@ namespace YesWiki\Contact;
 
 use YesWiki\Core\YesWikiAction;
 
-include_once 'tools/contact/libs/contact.functions.php';
+include_once YESWIKI_SOURCE_DIR . '/tools/contact/libs/contact.functions.php';
 
 class ContactAction extends YesWikiAction
 {

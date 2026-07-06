@@ -22,10 +22,10 @@ class AjaxUploadHandler extends YesWikiHandler
         }
 
         // load classes
-        require_once 'tools/attach/libs/qq.lib.php';
+        require_once YESWIKI_SOURCE_DIR . '/tools/attach/libs/qq.lib.php';
 
         if (!class_exists('attach')) {
-            include_once 'tools/attach/libs/attach.lib.php';
+            include_once YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
         }
         $errorsMessage = '';
         ob_start();

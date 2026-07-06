@@ -9,5 +9,6 @@ if (!file_exists('wakka.config.php')) {
 } else {
     // backward compatibility for extension ferme
     // TODO delete this file
-    include 'includes/commands/console';
+    // this script lives in the source tree: <source>/tools/autoupdate/commands/console
+    include dirname(__DIR__, 3) . '/includes/commands/console';
 }

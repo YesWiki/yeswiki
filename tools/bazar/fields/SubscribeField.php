@@ -49,7 +49,7 @@ class SubscribeField extends BazarField
 
         // TODO use the Mailer service
         if (!class_exists('Mail')) {
-            include_once 'tools/contact/libs/contact.functions.php';
+            include_once YESWIKI_SOURCE_DIR . '/tools/contact/libs/contact.functions.php';
         }
 
         // TODO improve import detection

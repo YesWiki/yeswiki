@@ -5,7 +5,7 @@
  *
  * Description : action permettant d'inscrire ou d?sinscrire massivement des mails a une newsletter
  */
-include_once 'includes/email.inc.php';
+include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
 
 // recuperation des parametres
 $list = $this->GetParameter('list');
@@ -18,8 +18,8 @@ if (empty($list)) {
     if (isset($_POST['mails'])) {
         if (is_array($_POST['mails'])) {
             // inclusion de la bibliotheque de fonctions pour l'envoi des mails
-            include_once 'includes/email.inc.php';
-            include_once 'tools/contact/libs/contact.functions.php';
+            include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
+            include_once YESWIKI_SOURCE_DIR . '/tools/contact/libs/contact.functions.php';
 
             $tab_listadress = explode('@', $list);
 

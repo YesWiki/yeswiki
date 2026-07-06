@@ -742,7 +742,7 @@ class Wiki
     // INTERWIKI STUFF
     public function ReadInterWikiConfig()
     {
-        if ($lines = file('interwiki.conf')) {
+        if ($lines = file(YESWIKI_SOURCE_DIR . '/interwiki.conf')) {
             foreach ($lines as $line) {
                 if ($line = trim($line)) {
                     list($wikiName, $wikiUrl) = explode(' ', trim($line));

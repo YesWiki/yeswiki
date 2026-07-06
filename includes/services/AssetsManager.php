@@ -86,7 +86,9 @@ class AssetsManager
             HTML;
         }
 
-        if ($isUrl || !empty($file) && file_exists($file)) {
+        // NB: the source-tree check covers files absent from the instance docroot - the
+        // URL still works there thanks to AssetPublisher's direct-path interception
+        if ($isUrl || !empty($file) && (file_exists($file) || file_exists(YESWIKI_SOURCE_DIR . '/' . $file))) {
             $href = $isUrl ? $file : "{$this->wiki->getBaseUrl()}/{$file}";
             $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
 
@@ -162,13 +164,15 @@ class AssetsManager
     }
 
     /**
-     * When 'assets_cache' is enabled, css/js files are published into the instance's
-     * cache/assets/{version}/ folder and referenced from there, so a farm instance needs no
-     * symlinks/aliases to the shared YesWiki sources (see AssetPublisher).
+     * Farm instances (shared sources outside the instance docroot) get their css/js published
+     * into the instance's cache/assets/{version}/ folder and referenced from there, so they
+     * need no symlinks/aliases to the YesWiki sources (see AssetPublisher). Standalone
+     * installs serve the source files directly.
      */
     private function publishToCache(): bool
     {
-        return in_array($this->wiki->GetConfigValue('assets_cache'), ['1', 'yes', 'true'], true);
+        return defined('YESWIKI_SOURCE_DIR') && defined('YESWIKI_INSTANCE_DIR')
+            && YESWIKI_SOURCE_DIR !== YESWIKI_INSTANCE_DIR;
     }
 
     private function assetsVersion(): string

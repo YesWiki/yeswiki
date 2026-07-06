@@ -18,8 +18,9 @@ $_SERVER['REQUEST_METHOD'] = 'GET';
 // fake wiki page
 $_REQUEST['wiki'] = $wakkaConfig['root_page'];
 
-// Load YesWiki
-require_once 'includes/YesWikiLoader.php';
+// Load YesWiki (this script lives in the source tree: <source>/includes/commands/console)
+require_once dirname(__DIR__) . '/bootstrap_paths.php';
+require_once dirname(__DIR__) . '/YesWikiLoader.php';
 $wiki = YesWikiLoader::getWiki();
 
 // create Application
@@ -27,9 +28,9 @@ $application = new Application();
 
 // ... register commands
 foreach ([
-        'core' => 'includes/commands/*.php',
-        'custom' => 'custom/commands/*.php',
-        'tools' => 'tools/*/commands/*.php',
+        'core' => YESWIKI_SOURCE_DIR . '/includes/commands/*.php',
+        'custom' => YESWIKI_INSTANCE_DIR . '/custom/commands/*.php',
+        'tools' => YESWIKI_SOURCE_DIR . '/tools/*/commands/*.php',
     ] as $type => $search) {
     $files = glob($search);
     foreach ($files as $filePath) {

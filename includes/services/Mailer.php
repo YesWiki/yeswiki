@@ -56,7 +56,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@contact/notify-admins-email-html.twig',
             [
-                'style' => file_get_contents('tools/bazar/presentation/styles/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
                 'entry' => $data,
                 'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['id_fiche'], '', true, $userName),
                 'baseUrl' => $baseUrl,
@@ -88,7 +88,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@contact/notify-admins-list-deleted-email-html.twig',
             [
-                'style' => file_get_contents('tools/bazar/presentation/styles/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
                 'ip' => $this->wiki->isCli() ? '' : $_SERVER['REMOTE_ADDR'],
                 'userName' => $this->wiki->GetUserName(),
                 'baseUrl' => $baseUrl,
@@ -121,7 +121,7 @@ class Mailer
 
     public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = '')
     {
-        include_once 'includes/email.inc.php';
+        include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
         send_mail(
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
@@ -171,7 +171,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@contact/notify-email-html.twig',
             [
-                'style' => file_get_contents('tools/bazar/presentation/styles/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
                 'entry' => $data,
                 'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['id_fiche'], '', true, $userName),
                 'baseUrl' => $baseUrl,
@@ -208,7 +208,7 @@ class Mailer
 
     public function subscribeToMailingList($email, $mailingList)
     {
-        include_once 'includes/email.inc.php';
+        include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
         send_mail(
             $email,
             $email,

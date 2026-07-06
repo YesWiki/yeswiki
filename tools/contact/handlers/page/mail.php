@@ -6,8 +6,8 @@ use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ThemeManager;
 
 // inclusion de la bibliotheque de fonctions pour l'envoi des mails
-include_once 'includes/email.inc.php';
-include_once 'tools/contact/libs/contact.functions.php';
+include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
+include_once YESWIKI_SOURCE_DIR . '/tools/contact/libs/contact.functions.php';
 
 $aclService = $this->services->get(AclService::class);
 $entryManager = $this->services->get(EntryManager::class);
@@ -50,8 +50,8 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
             if (file_exists($chemin)) {
                 $file_content = file_get_contents($chemin);
-            } elseif (file_exists('tools/templates/' . $chemin)) {
-                $file_content = file_get_contents('tools/templates/' . $chemin);
+            } elseif (file_exists(YESWIKI_SOURCE_DIR . '/tools/templates/' . $chemin)) {
+                $file_content = file_get_contents(YESWIKI_SOURCE_DIR . '/tools/templates/' . $chemin);
             } else {
                 $file_content = '{WIKINI_PAGE}';
             }

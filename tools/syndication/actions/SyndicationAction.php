@@ -6,7 +6,7 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
-include_once 'tools/syndication/libs/syndication.lib.php';
+include_once YESWIKI_SOURCE_DIR . '/tools/syndication/libs/syndication.lib.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 class SyndicationAction extends YesWikiAction

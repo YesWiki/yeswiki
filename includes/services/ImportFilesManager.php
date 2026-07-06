@@ -240,7 +240,7 @@ class ImportFilesManager
     public function downloadHiddenAttachment($remoteUrl, $pageTag, $lastPageUpdate, $filename, $overwrite = false)
     {
         if (!class_exists('attach')) {
-            require_once 'tools/attach/libs/attach.lib.php';
+            require_once YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
         }
 
         $this->wiki->tag = $pageTag;

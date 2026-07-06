@@ -3,7 +3,7 @@
 use YesWiki\Tags\Service\TagsManager;
 
 // fonctions a inclure
-include_once 'tools/tags/libs/tags.functions.php';
+include_once YESWIKI_SOURCE_DIR . '/tools/tags/libs/tags.functions.php';
 
 $tagsManager = $this->services->get(TagsManager::class);
 

@@ -43,7 +43,7 @@ class BazarListService
     private function replaceDefaultImage($options, $forms, $entries): array
     {
         if (!class_exists('attach')) {
-            include 'tools/attach/libs/attach.lib.php';
+            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
         }
         $attach = new \Attach($this->wiki);
         $basePath = $attach->GetUploadPath();

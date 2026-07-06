@@ -23,7 +23,7 @@ use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 if (!function_exists('send_mail')) {
-    require_once 'includes/email.inc.php';
+    require_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
 }
 
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface

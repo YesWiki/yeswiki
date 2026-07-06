@@ -37,7 +37,7 @@ class FormManager
         HttpSignatureService $httpSignatureService,
     ) {
         if (!class_exists('attach')) {
-            include 'tools/attach/libs/attach.lib.php';
+            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
         }
         $this->wiki = $wiki;
         $this->dbService = $dbService;

@@ -237,7 +237,7 @@ $replacements = [
     'url' => $config['base_url'],
 ];
 
-$sqlFile = 'setup/sql/create-tables.sql.twig';
+$sqlFile = YESWIKI_SOURCE_DIR . '/setup/sql/create-tables.sql.twig';
 
 // tables, admin user and admin group creation
 echo '<br /><b>' . _t('DATABASE_INSTALLATION') . "</b><br>\n";
@@ -253,7 +253,7 @@ test(
     1
 );
 
-$sqlFile = 'setup/sql/default-content.sql.twig';
+$sqlFile = YESWIKI_SOURCE_DIR . '/setup/sql/default-content.sql.twig';
 
 $result = @querySqlFile($dblink, $sqlFile, $replacements, $dbDriver);
 if (!$result) {
@@ -371,4 +371,4 @@ foreach (['allow_raw_html', 'rewrite_mode'] as $name) {
 </div>
 <?php
 $_POST['config'] = json_encode($config);
-require_once 'setup/writeconfig.php';
+require_once YESWIKI_SOURCE_DIR . '/setup/writeconfig.php';
