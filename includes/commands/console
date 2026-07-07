@@ -4,23 +4,36 @@
 namespace YesWiki\Core\Commands;
 
 use Symfony\Component\Console\Application;
+use YesWiki\Core\Service\ConfigurationFileProvider;
+use YesWiki\Core\Service\EnvironmentConfiguration;
 use YesWiki\Core\YesWikiLoader;
 
-if (!file_exists('wakka.config.php')) {
-    exit("\e[31mThe command should be launched from your YesWiki root directory\e[0m");
+// boot paths, autoloaders and private/.env before touching the config file, so a
+// WAKKA_CONFIG_FILE set in the instance environment is honored by the pre-read below
+// (this script lives in the source tree: <source>/includes/commands/console)
+require_once dirname(__DIR__) . '/bootstrap_paths.php';
+require_once dirname(__DIR__) . '/autoload.inc.php';
+require_once YESWIKI_SOURCE_DIR . '/vendor/autoload.php';
+require_once dirname(__DIR__) . '/YesWikiLoader.php';
+YesWikiLoader::loadEnv();
+
+$configFile = ConfigurationFileProvider::getConfigFileFromEnv();
+if (!file_exists($configFile)) {
+    exit("\e[31mConfiguration file not found ($configFile). The command should be launched from your YesWiki root directory\e[0m");
 }
 
-include_once('wakka.config.php');
+include_once $configFile;
+// config files written before the rename define $wakkaConfig instead
+$yeswikiConfig = (isset($yeswikiConfig) && is_array($yeswikiConfig)) ? $yeswikiConfig : ($wakkaConfig ?? []);
+// environment overrides (BASE_URL, ROOT_PAGE...) apply to this pre-read like everywhere else
+$yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
 // fake $_SERVER vars
-$_SERVER['REQUEST_URI'] = $wakkaConfig['base_url'].$wakkaConfig['root_page'];
-$_SERVER['HTTP_HOST'] = parse_url($wakkaConfig['base_url'], PHP_URL_HOST);
+$_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'].$yeswikiConfig['root_page'];
+$_SERVER['HTTP_HOST'] = parse_url($yeswikiConfig['base_url'], PHP_URL_HOST);
 $_SERVER['REQUEST_METHOD'] = 'GET';
 // fake wiki page
-$_REQUEST['wiki'] = $wakkaConfig['root_page'];
+$_REQUEST['wiki'] = $yeswikiConfig['root_page'];
 
-// Load YesWiki (this script lives in the source tree: <source>/includes/commands/console)
-require_once dirname(__DIR__) . '/bootstrap_paths.php';
-require_once dirname(__DIR__) . '/YesWikiLoader.php';
 $wiki = YesWikiLoader::getWiki();
 
 // create Application

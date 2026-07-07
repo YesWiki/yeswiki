@@ -26,11 +26,11 @@ if (!is_array($params) && strstr($params, 'alert-danger')) {
 
     return;
 }
-$taglist = _convert($params['tags'], YW_CHARSET, true);
+$taglist = $params['tags'];
 unset($params['tags']);
 
 // requete avec toutes les pages contenants les mots cles
-$dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
+$dbService = $this->services->get(YesWiki\Core\Service\DbService::class);
 $userCol = $dbService->quoteIdentifier('user');
 $req = "SELECT DISTINCT tag, time, $userCol, owner, body
 FROM " . $this->config['table_prefix'] . 'pages, ' . $this->config['table_prefix'] . "triples tags
@@ -44,7 +44,7 @@ foreach ($params as $param) {
         if ($tagname == 'alaligne') {
             echo '<br />' . "\n";
         } else {
-            echo '<button type="button" class="btn btn-default filter" data-filter="' . sanitizeEntity(_convert($tagname, YW_CHARSET, true)) . '">' . $tagname . '</button>' . "\n";
+            echo '<button type="button" class="btn btn-default filter" data-filter="' . sanitizeEntity($tagname) . '">' . $tagname . '</button>' . "\n";
         }
     }
     echo '</div>' . "\n" . '</div>' . "\n";
@@ -69,7 +69,7 @@ foreach ($pages as $page) {
         $this->UnregisterLastInclusion();
         $pagetags = $this->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         foreach ($pagetags as $tag) {
-            $tag['value'] = _convert(stripslashes($tag['value']), 'ISO-8859-1');
+            $tag['value'] = stripslashes($tag['value']);
             $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
             $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . $tag['value'] . '</span>&nbsp;';
         }

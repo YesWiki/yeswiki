@@ -9,6 +9,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\Kernel;
 use YesWiki\Core\Service\ConfigurationFileProvider;
+use YesWiki\Core\Service\EnvironmentConfiguration;
 use YesWiki\Core\YesWikiEventCompilerPass;
 
 /**
@@ -30,7 +31,7 @@ class YesWikiKernel extends Kernel
         // rebuilt via an explicit deploy/cache-clear step. YesWiki has no such step: site
         // settings, tool install/enable/disable all happen live through the admin UI, so the
         // cache must always be freshness-checked. $debug is therefore always true here;
-        // $environment (derived from the wakka config's own debug flag) only segregates the
+        // $environment (derived from the config's own debug flag) only segregates the
         // cache directory and enables/disables Kernel's other debug-only behaviors
         // (deprecation collection during a rebuild, verbose dumped container code).
         parent::__construct($environment, true);
@@ -90,9 +91,12 @@ class YesWikiKernel extends Kernel
             }
         }
 
-        // wakka.config.php takes priority over extensions' own parameter defaults
+        // yeswiki.config.php takes priority over extensions' own parameter defaults
         $config = array_replace_recursive($container->getParameterBag()->all(), $this->wiki->config);
         $this->wiki->replaceRecursivelyIndexedArrays($config, $this->wiki->config);
+        // environment overrides re-applied here (Init::getConfig() already applied them)
+        // so they also cover extension parameters, whose defaults only exist at this point
+        $config = EnvironmentConfiguration::apply($config);
         foreach ($config as $key => $value) {
             $container->setParameter($key, $value);
         }
@@ -101,7 +105,7 @@ class YesWikiKernel extends Kernel
     }
 
     /**
-     * Invalidate the compiled container cache when: an admin setting is saved (wakka.config.php
+     * Invalidate the compiled container cache when: an admin setting is saved (yeswiki.config.php
      * is rewritten), a tool is installed/removed (tools/ or custom/ itself gains or loses an
      * entry), or a tool is enabled/disabled/reconfigured (its desc.xml/config.yaml is rewritten).
      *
@@ -115,12 +119,29 @@ class YesWikiKernel extends Kernel
      */
     private function addInvalidationResources(ContainerBuilder $container): void
     {
-        // content-hashed, NOT a plain FileResource: wakka.config.php is written
+        // content-hashed, NOT a plain FileResource: yeswiki.config.php is written
         // programmatically in rapid succession (e.g. ArchiveService toggling wiki_status
         // around spawning a subprocess), and two writes within the same mtime second would
         // let the second one serve a stale container - parameters like wiki_status must be
         // picked up immediately
         $container->addResource(new ConfigFileHashResource(ConfigurationFileProvider::getConfigFileFromEnv()));
+
+        // private/.env participates in the effective configuration exactly like
+        // yeswiki.config.php (see EnvironmentConfiguration), so it needs the same guard;
+        // md5_file() on a missing file hashes to '', so creating or deleting the file
+        // invalidates too
+        $container->addResource(new ConfigFileHashResource(YESWIKI_INSTANCE_DIR . '/private/.env'));
+
+        // the known variables can also come from the real environment (Docker/vhost/CLI)
+        // without any file changing: hash their current values so a container built under
+        // one environment is not served under another (e.g. a CLI run with DB_PASSWORD set
+        // must not poison the cache used by web requests). YESWIKI_CONFIG_FILE is watched
+        // too: repointing it swaps the whole effective config while the previously hashed
+        // file stays untouched
+        $container->addResource(new EnvValuesHashResource(array_merge(
+            ['YESWIKI_CONFIG_FILE'],
+            array_keys(EnvironmentConfiguration::knownEnvNames())
+        )));
 
         foreach (self::extensionSetResources($this->getProjectDir()) as $resource) {
             $container->addResource($resource);
@@ -183,5 +204,49 @@ class ConfigFileHashResource implements \Symfony\Component\Config\Resource\SelfC
     public function __toString(): string
     {
         return 'confighash.' . $this->file . '.' . $this->hash;
+    }
+}
+
+/**
+ * Freshness by hash of a fixed set of environment variables' current values, for the
+ * config overrides honored from the real environment (see EnvironmentConfiguration:
+ * private/.env changes are already covered by a ConfigFileHashResource, but injected
+ * variables can change with no file changing at all). isFresh() runs every request:
+ * getenv() over a few dozen names is cheap. The hash is part of __toString() for the
+ * same SelfCheckingResourceChecker-memoization reason as ConfigFileHashResource.
+ */
+class EnvValuesHashResource implements \Symfony\Component\Config\Resource\SelfCheckingResourceInterface
+{
+    /** @var string[] */
+    private array $names;
+    private string $hash;
+
+    /**
+     * @param string[] $names environment variable names to watch
+     */
+    public function __construct(array $names)
+    {
+        $this->names = $names;
+        $this->hash = self::valuesHash($names);
+    }
+
+    public function isFresh(int $timestamp): bool
+    {
+        return self::valuesHash($this->names) === $this->hash;
+    }
+
+    public function __toString(): string
+    {
+        return 'envvalueshash.' . md5(implode("\0", $this->names)) . '.' . $this->hash;
+    }
+
+    private static function valuesHash(array $names): string
+    {
+        $values = [];
+        foreach ($names as $name) {
+            $values[$name] = getenv($name);
+        }
+
+        return md5(serialize($values));
     }
 }

@@ -87,7 +87,7 @@ $wikiprops = [
     'timezone' => date_default_timezone_get(),
     'baseUrl' => $this->config['base_url'],
     'pageTag' => $this->getPageTag(),
-    'isDebugEnabled' => ($this->GetConfigValue('debug') == 'yes' ? 'true' : 'false'),
+    'isDebugEnabled' => ($this->GetConfigValue('debug') ? 'true' : 'false'),
     'antiCsrfToken' => $this->services->get(CsrfTokenManager::class)->getToken('main')->getValue(),
 ];
 

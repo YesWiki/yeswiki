@@ -39,7 +39,7 @@ class BazarImportAction extends YesWikiAction
                 [BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
                 isset($_GET['debug']) ? ['debug' => 'yes'] : []
             ),
-            'debug' => ($this->wiki->GetConfigValue('debug') == 'yes'),
+            'debug' => (bool)$this->wiki->GetConfigValue('debug'),
         ];
     }
 

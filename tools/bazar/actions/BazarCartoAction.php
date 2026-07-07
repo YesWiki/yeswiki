@@ -74,8 +74,8 @@ class BazarCartoAction extends YesWikiAction
             /*
              * Une liste de layers (couches).
              * Exemple avec 1 layer tiles, 1 layer geojson:
-             * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|wakka.php?wiki=geojsonCUCS2014/raw"
-             * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|color:'red';opacity:0.3|wakka.php?wiki=geojsonCUCS2014/raw"
+             * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|?wiki=geojsonCUCS2014/raw"
+             * layers="BD Carthage|Tiles|//a.tile.openstreetmap.fr/route500hydro/{z}/{x}/{y}.png,CUCS 2014|GeoJson|color:'red';opacity:0.3|?wiki=geojsonCUCS2014/raw"
              *
              * format pour chaque layer : NOM|TYPE|URL ou NOM|TYPE|OPTIONS|URL
              * - OPTIONS: facultatif ex: "color:red; opacity:0.3"

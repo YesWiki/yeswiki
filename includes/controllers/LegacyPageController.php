@@ -33,9 +33,28 @@ class LegacyPageController extends YesWikiController
             // matches Wiki::Run()'s old behavior: under CLI (tests), $wiki->exit() only had to
             // unwind the call stack without ending the process, so nothing was ever printed;
             // otherwise the exit message was the entire response body.
-            return new Response($this->wiki->isCli() ? '' : $th->getMessage());
+            return $this->toResponse($this->wiki->isCli() ? '' : $th->getMessage());
         }
 
-        return new Response(ob_get_clean());
+        return $this->toResponse(ob_get_clean());
+    }
+
+    /**
+     * Actions/handlers (Wiki::Redirect(), and many others) still redirect the old way: a raw
+     * header('Location: ...') call. PHP itself would treat that as an implicit 302, but
+     * Response::send() always writes its own status line afterwards, defaulting to 200 and
+     * silently turning the redirect into a blank page (the Location header is sent, but
+     * browsers only act on it for a 3xx status). Reflect any such already-sent header here so
+     * the response we hand back actually is the redirect that already (in part) happened.
+     */
+    private function toResponse(string $content): Response
+    {
+        foreach (headers_list() as $header) {
+            if (stripos($header, 'Location:') === 0) {
+                return new Response('', Response::HTTP_FOUND, ['Location' => trim(substr($header, \strlen('Location:')))]);
+            }
+        }
+
+        return new Response($content);
     }
 }

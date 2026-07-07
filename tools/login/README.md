@@ -4,7 +4,7 @@ Pour gérer la connexion au yeswiki
 
 ## Configuration
 
-Options disponibles à rajouter un fichier de configuration `wakka.config.php`.
+Options disponibles à rajouter un fichier de configuration `yeswiki.config.php`.
 
 ## Interdire globalement la création de compte par chacun
 

@@ -18,7 +18,7 @@ class ContactAction extends YesWikiAction
         return [
             'correspondance' => $arg['correspondance'] ?? null,
             'mail' => $mailList,
-            'entete' => $arg['entete'] ?? $this->wiki->config['wakka_name'],
+            'entete' => $arg['entete'] ?? $this->wiki->config['yeswiki_name'],
             'template' => $arg['template'] ?? 'complete-contact-form.twig',
             'class' => (!empty($arg['class']) ? 'form-contact ' . $arg['class'] : 'form-contact'),
         ];

@@ -3,6 +3,7 @@
 namespace YesWiki\AutoUpdate\Entity;
 
 use YesWiki\AutoUpdate\Service\AutoUpdateService;
+use YesWiki\Core\Service\ConfigurationFileProvider;
 
 class PackageCore extends Package
 {
@@ -16,7 +17,8 @@ class PackageCore extends Package
         'cache',
         'themes',
         'robots.txt',
-        'wakka.config.php',
+        'yeswiki.config.php',
+        'wakka.config.php', // pre-rename instances
         'private',
     ];
 
@@ -144,7 +146,7 @@ class PackageCore extends Package
 
     public function upgradeInfos()
     {
-        $configuration = new Configuration('wakka.config.php');
+        $configuration = new Configuration(ConfigurationFileProvider::getConfigFileFromEnv());
         $configuration->load();
         $configuration['yeswiki_release'] = $this->release;
         $configuration['yeswiki_version'] = $this->requestedVersion();
@@ -159,7 +161,7 @@ class PackageCore extends Package
 
     public function localVersion()
     {
-        $configuration = new Configuration('wakka.config.php');
+        $configuration = new Configuration(ConfigurationFileProvider::getConfigFileFromEnv());
         $configuration->load();
 
         $version = AutoUpdateService::DEFAULT_VERS;
@@ -172,7 +174,7 @@ class PackageCore extends Package
 
     public function requestedVersion()
     {
-        $configuration = new Configuration('wakka.config.php');
+        $configuration = new Configuration(ConfigurationFileProvider::getConfigFileFromEnv());
         $configuration->load();
 
         $version = AutoUpdateService::DEFAULT_VERS;
@@ -205,7 +207,7 @@ class PackageCore extends Package
 
     protected function localRelease()
     {
-        $configuration = new Configuration('wakka.config.php');
+        $configuration = new Configuration(ConfigurationFileProvider::getConfigFileFromEnv());
         $configuration->load();
 
         $release = Release::UNKNOW_RELEASE;

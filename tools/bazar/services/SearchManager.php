@@ -1032,7 +1032,7 @@ class SearchManager
             return $searchResults;
         }
         $results = $this->dbService->loadAll($requete);
-        $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+        $debug = (bool)$this->wiki->GetConfigValue('debug');
 
         $vPageManager = $this->wiki->services->get(PageManager::class);
         $vEntryManager = $this->wiki->services->get(EntryManager::class);

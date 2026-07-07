@@ -32,7 +32,7 @@ class CSVManager
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
         $this->wiki = $wiki;
-        $this->debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+        $this->debug = (bool)$this->wiki->GetConfigValue('debug');
         $this->importdone = false;
         $this->errormsg = [];
     }

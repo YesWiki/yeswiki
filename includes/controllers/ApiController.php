@@ -481,7 +481,7 @@ class ApiController extends YesWikiController
             AND tag NOT IN (SELECT resource FROM {$dbService->prefixTable('triples')} WHERE property='http://outils-reseaux.org/_vocabulary/type')
             ORDER BY tag ASC
         SQL;
-        $pages = _convert($dbService->loadAll($sql), 'ISO-8859-15');
+        $pages = $dbService->loadAll($sql);
         $pages = array_filter($pages, function ($page) use ($aclService) {
             return $aclService->hasAccess('read', $page['tag']);
         });

@@ -13,7 +13,7 @@ $separator = $this->GetParameter('separator', false);
 
 // se souvenir si c'était :
 // -- un paramétre de l'action : {{textsearch phrase="Test"}}
-// -- ou du CGI http://example.org/wakka.php?wiki=RechercheTexte&phrase=Test
+// -- ou du CGI http://example.org/?wiki=RechercheTexte&phrase=Test
 //
 // récupérer le paramétre de l'action
 $paramPhrase = htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET);

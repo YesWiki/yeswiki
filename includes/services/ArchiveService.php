@@ -25,7 +25,6 @@ class ArchiveService
         'javascripts',
         'lang',
         'private',
-        'setup',
         'styles',
         'templates',
         'tests',
@@ -404,8 +403,8 @@ class ArchiveService
             if (!empty($results)) {
                 $result = $results[array_key_first($results)];
                 if (
-                    empty($result['stderr']) && !empty($result['stdout']) &&
-                    preg_match("/Hello !(?:\r|\n)+/", $result['stdout'])
+                    empty($result['stderr']) && !empty($result['stdout'])
+                    && preg_match("/Hello !(?:\r|\n)+/", $result['stdout'])
                 ) {
                     $canExec = true;
                 }
@@ -1022,11 +1021,11 @@ class ArchiveService
     }
 
     /**
-     * sanitize wakka.config.php before saving it.
+     * sanitize yeswiki.config.php before saving it.
      */
     private function getWakkaConfigSanitized(array $foldersToInclude, array $foldersToExclude, ?array $hideConfigValuesParams = null): string
     {
-        // get wakka.config.php content
+        // get yeswiki.config.php content
         $config = $this->configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         if (
@@ -1445,7 +1444,7 @@ class ArchiveService
     }
 
     /**
-     * generate ---ListedRootFolder from DEFAULT, params and wakka.config.
+     * generate ---ListedRootFolder from DEFAULT, params and yeswiki.config.
      *
      * @param string $type "white"|"black"
      */
@@ -1457,7 +1456,7 @@ class ArchiveService
                 $list[] = $folderName;
             }
         }
-        // merge `foldersToInclude` or `foldersToExclude` from wakka.config.php
+        // merge `foldersToInclude` or `foldersToExclude` from yeswiki.config.php
         $archiveParams = $this->getArchiveParams();
         $key = ($type == 'white') ? self::KEY_FOR_FOLDERS_TO_INCLUDE : self::KEY_FOR_FOLDERS_TO_EXCLUDE;
         if (

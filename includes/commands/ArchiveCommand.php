@@ -38,7 +38,7 @@ class ArchiveCommand extends Command
             ->addOption('files-only', 'f', InputOption::VALUE_NONE, 'Save only the files of the YesWiki')
             ->addOption('foldersToInclude', 'i', InputOption::VALUE_REQUIRED, 'Folders to include, path relative to root, coma separated')
             ->addOption('foldersToExclude', 'x', InputOption::VALUE_REQUIRED, 'Folders to exclude, path relative to root, coma separated')
-            ->addOption('hideConfigValues', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in wakka.config.php, json_encoded')
+            ->addOption('hideConfigValues', 'a', InputOption::VALUE_REQUIRED, 'Params to anonymize in yeswiki.config.php, json_encoded')
             ->addOption('uid', 'u', InputOption::VALUE_REQUIRED, 'uid to retrive input and ouput files')
         ;
     }

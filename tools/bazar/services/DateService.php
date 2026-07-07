@@ -48,11 +48,7 @@ class DateService implements EventSubscriberInterface
         $this->pageManager = $pageManager;
         $this->params = $params;
 
-        $vDebugEnabled = $this->params->get('debug') ?? '';
-        $vDebugEnabled = trim($vDebugEnabled);
-        $vDebugEnabled = $vDebugEnabled !== '' && $vDebugEnabled !== 'false' && $vDebugEnabled !== '0';
-
-        $this->triggerError = $vDebugEnabled;
+        $this->triggerError = (bool)$this->params->get('debug');
     }
 
     /**

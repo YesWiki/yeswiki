@@ -286,7 +286,6 @@ return [
     'AB_advanced_action_listpages_exclude_label' => 'Excludeți paginile și descendenții lor',
     'AB_advanced_action_listpages_exclude_hint' => "Separați fiecare etichetă după ';' ',' '|' altfel '/'|' altfel '/'",
     'AB_advanced_action_bazarrecordsindex_label' => 'Listează doar cărțile junk',
-    'AB_advanced_action_interwikilist_label' => 'Vizualizați lista interwiki',
     'AB_advanced_action_listusers_label' => 'Lista utilizatori',
     'AB_advanced_action_listusers_last_label' => 'Listați numai ultimele conturi create',
     'AB_advanced_action_listusers_last_hint' => 'Numărul de conturi de afișat',

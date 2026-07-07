@@ -21,10 +21,10 @@ if ($this->GetMethod() != 'show' || empty($this->page)) {
     // opengraph
     echo "\n" . '  <!-- opengraph -->' . "\n";
     echo '  <meta property="og:site_name" content="'
-        . $this->config['wakka_name'] . '" />' . "\n";
+        . $this->config['yeswiki_name'] . '" />' . "\n";
     $utils = $this->services->get(Utils::class);
     $title = $utils->getTitleFromBody($this->page);
-    echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['wakka_name']) . '" />' . "\n";
+    echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['yeswiki_name']) . '" />' . "\n";
     $desc = htmlspecialchars($utils->getDescriptionFromBody($this->page, $title), ENT_COMPAT | ENT_HTML5);
     if ($desc) {
         echo '  <meta property="og:description" content="' . $desc . '" />' . "\n";

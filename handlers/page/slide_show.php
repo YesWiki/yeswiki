@@ -128,10 +128,10 @@ if (!isset($_REQUEST['slide']) or $_REQUEST['slide'] == '1') {
 echo "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n";
 echo "<html>\n\n\n",
 "<head>\n",
-'<title>', $this->GetWakkaName(), ':', $this->GetPageTag(), "</title>\n",
+'<title>', $this->GetYesWikiName(), ':', $this->GetPageTag(), "</title>\n",
 "<meta name=\"robots\" content=\"noindex, nofollow\" />\n",
 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=iso-8859-1\" />\n";
-echo "<style type=\"text/css\" media=\"all\"> @import \"wakka.css\";</style>\n";
+echo "<style type=\"text/css\" media=\"all\"> @import \"styles/yeswiki-base.css\";</style>\n";
 // Teste s'il existe une feuille de style externe, sinon utilise des styles par défaut
 if (!file_exists('slideshow.css')) {
     echo "<style type=\"text/css\">\n",

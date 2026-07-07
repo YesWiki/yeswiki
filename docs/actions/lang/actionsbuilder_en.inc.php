@@ -265,7 +265,6 @@ return [
     'AB_management_despam_hint' => 'List the latest versions of the recently created pages to be able to choose the ones to delete',
     'AB_advanced_action_listpages_sort_label' => 'Sort',
     'AB_advanced_action_listpages_levels_label' => 'Number of levels',
-    'AB_advanced_action_interwikilist_label' => 'Show interwiki list',
     'AB_advanced_action_mychanges_label' => 'Show me my changes',
     'AB_advanced_action_textsearch_label_label' => 'label to be displayed in front of the input area',
     'AB_advanced_action_login_signupurl_label' => 'Registration Url',

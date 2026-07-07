@@ -16,10 +16,10 @@ if (!($link = $this->GetParameter('link'))) {
     $link = $this->GetConfigValue('root_page');
 }
 
-$title = _t('LATEST_COMMENTS_ON') . ' ' . $this->GetConfigValue('wakka_name');
+$title = _t('LATEST_COMMENTS_ON') . ' ' . $this->GetConfigValue('yeswiki_name');
 $rssLink = $this->Href('', $link);
 $rssDescription = _t('LATEST_COMMENTS_ON') . ' '
-    . $this->GetConfigValue('wakka_name');
+    . $this->GetConfigValue('yeswiki_name');
 
 $output = "<rss version=\"2.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">
     <channel>

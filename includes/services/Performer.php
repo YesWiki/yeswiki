@@ -38,7 +38,7 @@ class Performer
     // list of all existing object
     protected $objectList;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig)
+    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig, MarkdownFormatterService $markdownFormatter)
     {
         $this->wiki = $wiki;
         $this->params = $params;
@@ -55,6 +55,16 @@ class Performer
                 }
             }
         }
+
+        // the markdown/action formatter is a real service, not a file under formatters/;
+        // register it as the 'wakka' formatter's main step, keeping whatever before/after
+        // callbacks extensions contributed as formatters/*wakka* files (found just above)
+        $wakka = $this->objectList[self::TYPES['formatter']]['wakka'] ?? [];
+        $this->objectList[self::TYPES['formatter']]['wakka'] = array_merge(
+            ['before_callbacks' => [], 'after_callbacks' => []],
+            $wakka,
+            ['service' => fn (array $vars): string => $markdownFormatter->format((string)($vars['text'] ?? ''))]
+        );
     }
 
     /**
@@ -182,7 +192,9 @@ class Performer
         $files = array_merge($object['before_callbacks'], [$object], $object['after_callbacks']);
         foreach ($files as $file) {
             try {
-                if ($file['isDefinedAsClass']) {
+                if (!empty($file['service'])) {
+                    $output .= ($file['service'])($vars);
+                } elseif ($file['isDefinedAsClass']) {
                     $performable = $this->createPerformable($file, $vars, $output);
                     try {
                         $output .= $performable->run();

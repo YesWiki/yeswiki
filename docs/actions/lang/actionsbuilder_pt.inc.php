@@ -77,7 +77,6 @@ return [
     'AB_advanced_action_listpages_exclude_label' => 'Excluir páginas e seus descendentes',
     'AB_advanced_action_listpages_exclude_hint' => "Separe cada tag por ';' ',' '|' o '/'",
     'AB_advanced_action_bazarrecordsindex_label' => 'Listar apenas os arquivos bazar',
-    'AB_advanced_action_interwikilist_label' => 'Mostrar a lista interwiki',
     'AB_advanced_action_listusers_label' => 'Listar os usuário',
     'AB_advanced_action_listusers_last_label' => 'Listar apenas as últimas contas criadas',
     'AB_advanced_action_listusers_last_hint' => 'Número de contas para exibir',

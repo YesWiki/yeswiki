@@ -10,7 +10,7 @@ class EditConfigAction extends YesWikiAction
     private const SAVED_NAME = 'saved_config';
     private const CONFIG_POSTFIX = '_editable_config_params';
     private const AUTHORIZED_KEYS = [
-        'wakka_name' => 'core',
+        'yeswiki_name' => 'core',
         'root_page' => 'core',
         'default_language' => 'core',
         'favicon' => 'core',
@@ -202,7 +202,7 @@ class EditConfigAction extends YesWikiAction
     }
 
     /**
-     * save data to wakka.config.php.
+     * save data to yeswiki.config.php.
      *
      * @return bool true if successfull
      */

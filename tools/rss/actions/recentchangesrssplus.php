@@ -25,9 +25,9 @@ if ($pages = $this->LoadAll("select tag, time, $userCol, owner, $bodyExpr as bod
     $output .= "<rss version=\"0.91\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n";
 
     $output .= "<channel>\n";
-    $output .= '<title> ' . _t('LATEST_CHANGES_ON') . ' ' . $this->config['wakka_name'] . "</title>\n";
+    $output .= '<title> ' . _t('LATEST_CHANGES_ON') . ' ' . $this->config['yeswiki_name'] . "</title>\n";
     $output .= '<link>' . $this->config['base_url'] . $link . "</link>\n";
-    $output .= '<description> ' . _t('LATEST_CHANGES_ON') . ' ' . $this->config['wakka_name'] . " </description>\n";
+    $output .= '<description> ' . _t('LATEST_CHANGES_ON') . ' ' . $this->config['yeswiki_name'] . " </description>\n";
 
     $items = '';
     foreach ($pages as $i => $page) {

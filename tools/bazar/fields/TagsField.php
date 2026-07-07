@@ -32,7 +32,7 @@ class TagsField extends EnumField
         if (is_array($allTags)) {
             foreach ($allTags as $tag) {
                 // TODO why ISO-8859-15 ? fix the encoding ???
-                $response[] = _convert(str_replace('\'', '&#39;', $tag['value']), 'ISO-8859-15');
+                $response[] = str_replace('\'', '&#39;', $tag['value']);
             }
         }
         if (isset($response)) {
@@ -91,7 +91,7 @@ class TagsField extends EnumField
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
-                $tripleStore->create($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', _convert($tag, YW_CHARSET, true), '', '');
+                $tripleStore->create($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
             }
         }
 

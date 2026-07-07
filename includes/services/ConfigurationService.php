@@ -20,7 +20,7 @@ class ConfigurationService
      *
      * @return bool
      */
-    public function write(ConfigurationFile $config, ?string $file = null, string $arrayName = 'wakkaConfig')
+    public function write(ConfigurationFile $config, ?string $file = null, string $arrayName = 'yeswikiConfig')
     {
         if (is_null($file)) {
             $file = $config->_file;
@@ -33,7 +33,7 @@ class ConfigurationService
     /**
      * extract content to write tto config file.
      */
-    public function getContentToWrite(ConfigurationFile $config, string $arrayName = 'wakkaConfig'): string
+    public function getContentToWrite(ConfigurationFile $config, string $arrayName = 'yeswikiConfig'): string
     {
         $content = "<?php\n\n\$$arrayName = ";
 

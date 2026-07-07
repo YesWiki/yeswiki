@@ -43,7 +43,7 @@ function getAbsoluteUrl()
  */
 function computeBaseURL($rewrite_mode = false)
 {
-    $scriptlocation = str_replace(['/index.php', '/wakka.php'], '', $_SERVER['SCRIPT_NAME']);
+    $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
 
     return getRootUrl()
         . $scriptlocation
@@ -59,13 +59,13 @@ function computeBaseURL($rewrite_mode = false)
 function detectRewriteMode()
 {
     $pieces = parse_url($_SERVER['REQUEST_URI']);
-    $scriptlocation = str_replace(['/index.php', '/wakka.php'], '', $_SERVER['SCRIPT_NAME']);
+    $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
     $path = preg_replace('/\/$/', '', $pieces['path']);
-    if ($path == $scriptlocation or $pieces['path'] == '/' or $pieces['path'] == '/index.php' or $pieces['path'] == '/wakka.php') {
+    if ($path == $scriptlocation or $pieces['path'] == '/' or $pieces['path'] == '/index.php') {
         return false;
     }
 
-    return substr($pieces['path'], -strlen(WAKKA_ENGINE)) != WAKKA_ENGINE;
+    return true;
 }
 
 /**

@@ -59,7 +59,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                 $this->Redirect($this->href(testUrlInIframe()));
             } else {
                 // l'encodage de la base est en iso-8859-1, voir s'il faut convertir
-                $body = _convert($body, YW_CHARSET, true);
+                $body = $body;
 
                 // add page (revisions)
                 $this->SavePage($this->tag, $body, !empty($this->page['comment_on']) ? $this->page['comment_on'] : '');

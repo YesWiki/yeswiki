@@ -9,11 +9,17 @@ class ConfigurationFileProvider
 {
     public static function getConfigFileFromEnv(): string
     {
-        $wakkaConfigFile = getenv('WAKKA_CONFIG_FILE');
-        if ($wakkaConfigFile === false) {
+        $configFile = getenv('YESWIKI_CONFIG_FILE');
+        if ($configFile !== false) {
+            return $configFile;
+        }
+
+        // instances installed before the wakka.config.php -> yeswiki.config.php rename
+        // keep working until an update renames their file
+        if (!is_file('yeswiki.config.php') && is_file('wakka.config.php')) {
             return 'wakka.config.php';
         }
 
-        return $wakkaConfigFile;
+        return 'yeswiki.config.php';
     }
 }

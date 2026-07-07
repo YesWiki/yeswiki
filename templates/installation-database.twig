@@ -1,0 +1,36 @@
+<h2>{{ _t('VERIFICATION_OF_DATAS_AND_DATABASE_INSTALLATION') }}</h2>
+
+{% if messages or error %}
+  <ul class="list-group">
+    {% for message in messages %}
+      <li class="list-group-item">
+        <span class="pull-right label label-{{ message.result }}">
+          {%- if message.result == 'success' %}{{ _t('OK') }}{% endif %}
+          {%- if message.result == 'warning' %}{{ _t('WARNING') }}{% endif -%}
+        </span>
+        {{ message.output|raw }}
+      </li>
+    {% endfor %}
+    {% if error %}
+      <li class="list-group-item list-group-item-danger">
+        <span class="pull-right label label-danger">{{ _t('FAIL') }}</span>
+        {{ error|raw }}
+      </li>
+    {% endif %}
+  </ul>
+{% endif %}
+
+{% if error %}
+  <form id="form-actions" action="{{ baseUrl }}?PagePrincipale&installAction=install" method="POST">
+    <input type="hidden" name="config" value="{{ configPosted }}">
+    <input type="hidden" name="contentSQL" value="{{ contentSQL }}">
+    <input type="hidden" name="admin_name" value="{{ adminName }}">
+    <input type="hidden" name="admin_email" value="{{ adminEmail }}">
+    <input type="hidden" name="admin_password" value="{{ adminPassword }}">
+    <input type="hidden" name="admin_password_conf" value="{{ adminPasswordConf }}">
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary pull-right">{{ _t('TRY_AGAIN') }}</button>
+      <button type="submit" onclick="$('#form-actions').attr('action', $('#form-actions').attr('action').replace('=install', '=default'));" class="btn btn-primary">{{ _t('GO_BACK') }}</button>
+    </div>
+  </form>
+{% endif %}

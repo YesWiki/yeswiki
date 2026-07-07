@@ -278,7 +278,6 @@ return [
     'AB_advanced_action_listpages_exclude_label' => 'Escludere le pagine e i loro discendenti',
     'AB_advanced_action_listpages_exclude_hint' => 'Separare ogni tag con \';\' \',\' \'||\' o\'',
     'AB_advanced_action_bazarrecordsindex_label' => 'Elenca solo i fogli di bazar',
-    'AB_advanced_action_interwikilist_label' => 'Mostra elenco interwiki',
     'AB_advanced_action_listusers_label' => 'Elenca utenti, utenti',
     'AB_advanced_action_listusers_last_label' => 'Elenca solo gli ultimi account creati',
     'AB_advanced_action_listusers_last_hint' => 'Numero di conti da mostrare',

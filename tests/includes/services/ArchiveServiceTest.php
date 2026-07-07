@@ -78,13 +78,13 @@ class ArchiveServiceTest extends YesWikiTestCase
             'archive only root files' => [
                 true, false, [], $defaultFoldersToInclude,
                 'ARCHIVE_ONLY_FILES_SUFFIX', -1,
-                ['wakka.config.php'],
+                ['yeswiki.config.php'],
                 ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
             ],
             'archive only root files with database' => [
                 true, true, [], $defaultFoldersToInclude,
                 'ARCHIVE_SUFFIX', -1,
-                ['wakka.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
+                ['yeswiki.config.php', 'private', 'private/backups', 'private/backups/.htaccess', 'private/backups/README.md', 'private/backups/content.sql'],
                 ['archive' => ['foldersToInclude' => $defaultFoldersToInclude, 'foldersToExclude' => array_merge($defaultFoldersToExclude, $defaultFoldersToInclude)]],
             ],
             'archive only database' => [
@@ -150,9 +150,9 @@ class ArchiveServiceTest extends YesWikiTestCase
                         $data['files'] = $files;
 
                         // wakka content
-                        if (file_exists("cache/$tmpFolderName/wakka.config.php") && is_file("cache/$tmpFolderName/wakka.config.php")) {
+                        if (file_exists("cache/$tmpFolderName/yeswiki.config.php") && is_file("cache/$tmpFolderName/yeswiki.config.php")) {
                             $configurationService = $wiki->services->get(ConfigurationService::class);
-                            $config = $configurationService->getConfiguration("cache/$tmpFolderName/wakka.config.php");
+                            $config = $configurationService->getConfiguration("cache/$tmpFolderName/yeswiki.config.php");
                             $config->load();
                             $data['wakkaContent'] = $config->_parameters;
                             unset($config);
@@ -239,7 +239,7 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     protected function setWikiStatus(ConfigurationService $configurationService, string $status = 'archiving')
     {
-        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
         $config['wiki_status'] = $status;
         $configurationService->write($config);
@@ -247,7 +247,7 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     protected function unsetWikiStatus(ConfigurationService $configurationService)
     {
-        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
         unset($config['wiki_status']);
         $configurationService->write($config);
@@ -322,7 +322,7 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     protected function getHideConfigValuesParam(ConfigurationService $configurationService): ?array
     {
-        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
         $archiveParams = $config['archive'] ?? [];
 
@@ -331,7 +331,7 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     protected function setHideConfigValuesParam(ConfigurationService $configurationService, array $hideConfigValuesParam)
     {
-        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
         $archiveParams = $config['archive'] ?? [];
         $archiveParams['hideConfigValues'] = $hideConfigValuesParam;
@@ -341,7 +341,7 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     protected function unsetHideConfigValuesParam(ConfigurationService $configurationService)
     {
-        $config = $configurationService->getConfiguration('wakka.config.php');
+        $config = $configurationService->getConfiguration('yeswiki.config.php');
         $config->load();
         if (isset($config['archive'])) {
             $archiveParams = $config['archive'];

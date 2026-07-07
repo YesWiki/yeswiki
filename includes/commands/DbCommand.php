@@ -234,7 +234,7 @@ class DbCommand extends Command
     protected function assertParamIsNotEmptyString(string $name, $param)
     {
         if (empty($param)) {
-            throw new \Exception("'$name' should not be empty in 'wakka.config.php'");
+            throw new \Exception("'$name' should not be empty in 'yeswiki.config.php'");
         }
         $this->assertParamIsString($name, $param);
     }
@@ -247,7 +247,7 @@ class DbCommand extends Command
     protected function assertParamIsString(string $name, $param)
     {
         if (!is_string($param)) {
-            throw new \Exception("'$name' should be a string in 'wakka.config.php'");
+            throw new \Exception("'$name' should be a string in 'yeswiki.config.php'");
         }
     }
 }

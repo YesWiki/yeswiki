@@ -21,7 +21,7 @@ $(document).ready(() => {
     if (rgHttpUrl.test(url)) {
       // on formate l url pour acceder au service json de yeswiki
       const taburl = url.split('wakka.php')
-      url = `${taburl[0].replace(/\/+$/g, '')}/wakka.php?wiki=BazaR/json&demand=lists`
+      url = `${taburl[0].replace(/\/+$/g, '')}/?wiki=BazaR/json&demand=lists`
       resultimportlist.html(`<div class="alert alert-info">
         <span class="throbber">${listtranslations.loading}...</span> 
         ${listtranslations.recuperation} ${url}

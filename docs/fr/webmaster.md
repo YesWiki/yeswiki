@@ -118,7 +118,7 @@ Editez ce fichier et remplacez
 `User-Agent: \*     Disallow: /`
 
 ATTENTION - Pour une efficacité réelle (étant donné que google ne respecte plus
-trop le robot.txt, il convient de rajouter dans wakka.config.php, cette ligne :
+trop le robot.txt, il convient de rajouter dans yeswiki.config.php, cette ligne :
 
 `'meta' => array('robots' => 'noindex, nofollow'),`
 
@@ -179,7 +179,7 @@ Cette interface d'administration permet :
 ### Le fichier de configuration
 
 Une fois le YesWiki créé / installé, on peut aller éditer le fichier
-**wakka.config.php**, se trouvant à la racine du dossier du YesWiki, accessible
+**yeswiki.config.php**, se trouvant à la racine du dossier du YesWiki, accessible
 par FTP. Le fichier de configuration déclare un tableau avec des valeurs pour
 chaque élément de configuration.
 
@@ -188,11 +188,10 @@ commentaires en fin de ligne pour le détail de chaque élément de configuratio
 
 ```php
 <?php
-// wakka.config.php créée Fri Jun  8 20:58:37 2012
+// yeswiki.config.php créée Fri Jun  8 20:58:37 2012
 // ne changez pas la wikini_version manuellement!
 
-$wakkaConfig = array ( // tableau de configuration
-  'wakka_version' => '0.1.1', // Ne pas toucher, version originale du code de wakka, ancêtre de wikini
+$yeswikiConfig = array ( // tableau de configuration
   'wikini_version' => '0.5.0', // Ne pas toucher, version originale du code de wikini, ancêtre de YesWiki
   'debug' => 'no', // active le mode de débogage si passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs) astuce : on peut aussi passer &debug dans l'url pour debugguer
   'mysql_host' => 'localhost',
@@ -201,7 +200,7 @@ $wakkaConfig = array ( // tableau de configuration
   'mysql_password' => '#######',
   'table_prefix' => 'yeswiki_',
   'root_page' => 'PagePrincipale',
-  'wakka_name' => 'YesWiki de présentation', // titre du YesWiki
+  'yeswiki_name' => 'YesWiki de présentation', // titre du YesWiki
   'base_url' => 'http://localhost/?', // url d'accès au site
   'rewrite_mode' => '0',
   'meta_keywords' => 'yeswiki, wiki, gpl, php, super', // mot clé pour le référencement (séparés par des virgules, par plus de 20-30)
@@ -243,7 +242,7 @@ Mon wiki se trouve à l'adresse suivante
 qu'il se nomme maintenant
 [http://site-coop.net/Mathieu](http://site-coop.net/Mathieu)  
 \- Via ftp, il faut changer le nom du dossier Louise en le nommant Mathieu  
-\- dans le fichier wakka.config.php, il faut changer la ligne
+\- dans le fichier yeswiki.config.php, il faut changer la ligne
 
     'base_url' => 'http://site-coop.net/Louise/?"
 
@@ -261,7 +260,7 @@ Pour tous les détails sur les droits d'accès :
 
 On peut enlever le `?` des urls à condition de faire les bonnes règles de
 re-écriture dans votre serveur web (configuration d'Apache, Caddy, Nginx ou
-autre). Ensuite, dans le fichier `wakka.config.php`, on peut enlever le `?` dans
+autre). Ensuite, dans le fichier `yeswiki.config.php`, on peut enlever le `?` dans
 le paramètre `base_url`, et passer `rewrite_mode`à `1`. Attention : mettre le
 paramètre `rewrite_mode` à `1` sans faire de re-écriture d'url, ni enlever le
 `?` de `base_url`, pourrait entrainer un dysfonctionnement de YesWiki, il suffit
@@ -287,7 +286,7 @@ de remettre `rewrite_mode` à `0` pour corriger le problème.
 
 Par défaut les cartes sont centrées sur le centre de la France et affiche
 l'intégralité de la France. On peut forcer le centre ailleurs en configurant
-dans `wakka.config.php` :
+dans `yeswiki.config.php` :
 
 ```php
 'baz_map_center_lat' => '50.725777', //permet de caler les cartes utilisées dans le wiki sur cette latitude
@@ -317,7 +316,7 @@ du port privé
 ##### Opengraph : choisir l'image utilisée pour le partage sur Facebook
 
 Pour ouvrir une image par défaut : il faut mettre un lien vers l'image dans le
-wakka.config.php  
+yeswiki.config.php  
 Idéalement, l'image doit faire 1200x630 selon les specs imposées par
 facedebouc  
 Par défaut il prend cette image, et si une image est présente dans la page (mise
@@ -360,7 +359,7 @@ nouvelle version d'un thème ou d'une extension existe.
 
 Sur certains hébergements, l'envoi de mail par défaut ne marche pas , il faut
 créer un compte smtp  
-et donc rajouter dans le fichier `wakka.config.php` les paramètres suivants :
+et donc rajouter dans le fichier `yeswiki.config.php` les paramètres suivants :
 
 ```php
 'contact_mail_func' => 'smtp',
@@ -454,10 +453,10 @@ Connectez-vous à votre espace personnel par FTP (filezilla par exemple)
 Glissez et déposez vos fichiers wiki (reçu des gestionnaires) dans le dossier
 www ou web (le plus souvent) de votre hébergement
 
-#### Mettre à jour le wakka config
+#### Mettre à jour le yeswiki config
 
 Une fois tous les fichiers et dossiers arrivés sur votre hébergement, cherchez
-le fichier nommé wakka config et ouvrez-le.
+le fichier nommé yeswiki config et ouvrez-le.
 
 Il va falloir adapter quelques points puis sauver
 
@@ -489,9 +488,9 @@ listes._
 2. si ça ne fonctionne pas :
    1. se rendre dans l'interface de gestion de base de données du serveur
       concerné (`phpmyadmin`)
-   2. ouvrir en même temps le fichier `setup/sql/create-tables.sql.twig` depuis
+   2. ouvrir en même temps le fichier `templates/installation-create-tables.sql.twig` depuis
       votre wiki
-      ([fichier à télécharger](setup/sql/create-tables.sql.twig ':ignore'), la
+      ([fichier à télécharger](templates/installation-create-tables.sql.twig ':ignore'), la
       partie du fichier propre à MySQL est celle du bloc `<% else %>`)
    3. vérifier dans la structure de chaque table de votre serveur (`phpmyadmin`)
       que chaque colonne est correctement définie.

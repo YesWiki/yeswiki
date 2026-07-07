@@ -1,4 +1,4 @@
-{{ include_javascript(config.debug == 'yes' ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
+{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
 {{ include_javascript('javascripts/handlers/revisions.js', false, true) }}
 {{ include_css('styles/handlers/revisions.css') }}
 

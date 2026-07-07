@@ -20,7 +20,7 @@ parameters:
   # Valeurs liees aux flux RSS
 
   # Nom du site indique dans les flux rss
-  BAZ_RSS_NOMSITE: '%wakka_name%'
+  BAZ_RSS_NOMSITE: '%yeswiki_name%'
   # Adresse Internet du site indique dans les flux rss
   BAZ_RSS_ADRESSESITE: '%base_url%'
   # Description du site indiquee dans les flux rss

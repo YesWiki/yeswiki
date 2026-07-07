@@ -1,7 +1,7 @@
 <?php
 
 // Cette action permet de sélectionner une feuille de stye CSS
-// alternative é la feuille "wakka.css".
+// alternative à la feuille de style par défaut.
 //
 // Le nom de la feuille de style (spécifié dans le paramétre "link")
 // peut contenir des lettres et des chiffres, mais pas de point. Il

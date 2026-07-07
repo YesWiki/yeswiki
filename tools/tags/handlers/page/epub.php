@@ -57,7 +57,7 @@ if (isset($metadatas['ebook-title']) && isset($metadatas['ebook-description']) &
     preg_match_all('/{{include.*page="(.*)".*class="(.*)".*}}/U', $this->page['body'], $matches);
     foreach ($matches[1] as $nb => $pageWiki) {
         $page = $this->LoadPage($pageWiki);
-        $url = explode('wakka.php', $this->config['base_url']);
+        $url = [$this->config['base_url']];
         if (YW_CHARSET != 'UTF-8') {
             $contentpage = mb_convert_encoding($content_start . str_replace('<img loading="lazy" src="' . $url[0], '<img loading="lazy" src="', $this->Format('{{include page="' . $pageWiki . '" class="' . $matches[2][$nb] . '"}}')) . $bookEnd, 'UTF-8', 'ISO-8859-1');
         } else {

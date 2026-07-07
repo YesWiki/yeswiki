@@ -27,12 +27,12 @@ $tab_selected_tags = explode(',', $tags);
 $selectiontags = " AND value IN ('" . implode("','", $tab_selected_tags) . "')";
 
 // on recupere tous les tags existants
-$sql = "SELECT DISTINCT value FROM " . $this->config['table_prefix'] . "triples WHERE property='http://outils-reseaux.org/_vocabulary/tag' ORDER BY value ASC";
+$sql = 'SELECT DISTINCT value FROM ' . $this->config['table_prefix'] . "triples WHERE property='http://outils-reseaux.org/_vocabulary/tag' ORDER BY value ASC";
 $tab_tous_les_tags = $this->LoadAll($sql);
 $tab_tag = [];
 if (is_array($tab_tous_les_tags)) {
     foreach ($tab_tous_les_tags as $tag) {
-        $tag['value'] = _convert(stripslashes($tag['value']), 'ISO-8859-1');
+        $tag['value'] = stripslashes($tag['value']);
         if (in_array($tag['value'], $tab_selected_tags)) {
             $tab_tag[] = '&nbsp;<a class="tag-label label label-primary label-active" href="' . $this->href('listpages', $this->GetPageTag(), 'tags=' . urlencode($tag['value'])) . '">' . $tag['value'] . '</a>' . "\n";
         } else {

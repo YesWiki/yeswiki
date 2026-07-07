@@ -28,7 +28,7 @@ class UserController extends YesWikiController
      * - do not contains "<", ">", "\", "/" anywhere ;
      * - strictly more than 2 chars.
      *
-     * Be careful to update the regex in `setup/install.php` if there is changes here.
+     * Be careful to update the regex in `includes/controllers/InstallationController.php` (validateAdminAccount) if there is changes here.
      *
      * Be careful, the pattern need to be escaped for PHP ("\"). Real pattern is : "^[^!#@<>\\\/][^<>\\\/]{2,}$".
      *

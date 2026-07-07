@@ -10,7 +10,7 @@ The dev docker-compose contain the following images :
 - yeswiki-db : a mysql (mariadb seems to not work properly currently) accessible from yeswiki with domaine name `yeswiki-db`
 - yeswiki-web : a nginx reverse-proxy. configuration can be found on nginx.conf file. Accessible on `localhost:8085`
 - myadmin : phpmyadmin accessible on `localhost:8086`
-- mail : container to intercept email send by yeswiki. Webmail is accessible on `localhost:1080`.You have to set the following in `wakka.config.php`
+- mail : container to intercept email send by yeswiki. Webmail is accessible on `localhost:1080`.You have to set the following in `yeswiki.config.php`
 
 ```
 'contact_mail_func' => 'smtp',
@@ -56,7 +56,7 @@ Once on the install page, use the following values :
 - **MYSQL password** : password (can be found in yeswiki.secret)
 
 > [!]tips
-> if you have a previous developpement installation you may need to change value accordingly in the wakka.config.php
+> if you have a previous developpement installation you may need to change value accordingly in the yeswiki.config.php
 
 ## reinitialize yeswiki repo from dev
 
@@ -64,11 +64,11 @@ docker create and populates the following folders files :
 
 - vendor (for php dependencies)
 - node_modules (for yarn dependencies)
-- wakka.config.php
+- yeswiki.config.php
 - cache
 - tools/bazar/vendor/
 
-It should be enough to remove the `wakka.config.php` file
+It should be enough to remove the `yeswiki.config.php` file
 
 ## Remove database
 

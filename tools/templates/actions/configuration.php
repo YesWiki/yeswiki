@@ -6,13 +6,16 @@ $themeManager = $this->services->get(ThemeManager::class);
 
 $param = $this->GetParameter('param');
 if (!empty($param)) {
+    // pages of wikis installed before the rename still contain {{configuration param="wakka_name"}}
+    if ($param === 'wakka_name') {
+        $param = 'yeswiki_name';
+    }
     switch ($param) {
-        case 'wakka_version':
         case 'wikini_version':
         case 'yeswiki_version':
         case 'yeswiki_release':
         case 'root_page':
-        case 'wakka_name':
+        case 'yeswiki_name':
         case 'base_url':
         case 'navigation_links':
         case 'meta_keywords':

@@ -1,4 +1,4 @@
-{{ include_javascript(config.debug == 'yes' ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js', true) }}
+{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js', true) }}
 
 {{ include_javascript('tools/bazar/presentation/javascripts/inputs/opening_hours.js', false, true) }}
 {{ include_css('tools/bazar/presentation/styles/opening_hours.css') }}

@@ -9,7 +9,7 @@ $type = (isset($_GET['type'])) ? $_GET['type'] : '';
 $req = '';
 $req_from = '';
 $req_group = '';
-$textetitre = _t('LATEST_CHANGES_ON') . ' ' . $this->config['wakka_name'];
+$textetitre = _t('LATEST_CHANGES_ON') . ' ' . $this->config['yeswiki_name'];
 
 // on fait les tableaux pour les tags, puis on met des virgules et des guillemets
 if (!empty($tags)) {

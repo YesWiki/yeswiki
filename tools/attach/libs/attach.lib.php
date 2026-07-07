@@ -43,7 +43,7 @@ if (!class_exists('attach')) {
             $this->attachConfig = $this->params->get('attach_config');
 
             if (!is_array($this->attachConfig)) {
-                throw new Exception('attach_config should be an array in wakka.config.php');
+                throw new Exception('attach_config should be an array in yeswiki.config.php');
             }
 
             if (empty($this->attachConfig['max_file_size'])) {

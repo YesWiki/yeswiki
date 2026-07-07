@@ -19,7 +19,7 @@ L'action {{attach}} prend les paramétres suivants :
  - delete ou attachdelete: Si ce paramétre est non vide alors le fichier sera
    effacé sur le serveur.
  - link ou attachlink: URL de lien pour une image sensible. le lien peut étre
-   un nom de page WikiNi, un lien interwiki ou une adresse http
+   un nom de page Wiki ou une adresse http
  - class: indique le nom de la ou les classes de style é utiliser pour afficher
    l'image. les noms des classes sont séparés par un espace.
 
@@ -49,11 +49,11 @@ L'action {{attach}} prend les paramétres suivants :
 7) Créez le répertoire racine des uploads sur le site du wiki. Si le SAFE_MODE
     de PHP est activé, vous devez créer vous méme ce répertoire et autoriser
     l'écriture dans ce répertoire pour l'utilisateur et le groupe.
-8) Ouvrez le fichier wakka.config.php et ajoutez la configuration de l'action.
+8) Ouvrez le fichier yeswiki.config.php et ajoutez la configuration de l'action.
     Tous les paramétres de configuration ont une valeur par défaut.
     Le configuration par défaut est:
 
-    $wakkaConfig["attach_config"] = array(
+    $yeswikiConfig["attach_config"] = array(
             "upload_path" => 'files',				//repertoire racine des uploads
             "ext_images" => 'gif|jpeg|png|jpg',	//extension des fichiers images
             "ext_script" => 'php|php3|asp|asx|vb|vbs|js',	//extension des script(non utilisé)
@@ -63,7 +63,7 @@ L'action {{attach}} prend les paramétres suivants :
             "fmRestore_symbole" => 'Rest',		//symbole a afficher pour le lien "restaurer" dans le gestionnaire de fichier
             "fmTrash_symbole" => 'Poubelle')		//symbole a afficher pour le lien "Poubelle" dans le gestionnaire de fichier
 
-9) Ajoutez les classes de style au fichier wakka.css. Exemple de style :
+9) Ajoutez les classes de style à votre feuille de style personnalisée (custom/). Exemple de style :
 .attach_margin05em { margin: 0.5em;}
 .attach_margin1em { margin: 1em;}
 .attach_left {float: left;}

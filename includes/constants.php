@@ -1,8 +1,6 @@
 <?php
 
 // do not change this line, you fool. In fact, don't change anything! Ever!
-define('WAKKA_VERSION', '0.1.1');
-define('WIKINI_VERSION', '0.5.0');
 define('YESWIKI_VERSION', 'doryphore');
 define('YESWIKI_RELEASE', '2020-01-22-1');
 define('T_START', microtime(true));
@@ -12,10 +10,9 @@ define('T_START', microtime(true));
 define('MINIMUM_PHP_VERSION_FOR_CORE', '8.2.0');
 
 // operational constants
-define('WAKKA_ENGINE', 'wakka.php');
 
 // YesWiki Charset
-// YW_CHARSET définie dans includes/i18n.inc.php:initI18n()
+// YW_CHARSET définie dans LanguageController::initialize()
 
 // constant for parsing rules
 define('WN_UPPER', '[A-Z]'); // \xC0-\xD6\xD8-\xDE]");
@@ -33,8 +30,6 @@ define('WN_CAMEL_CASE_EVOLVED_WITH_SLASH', '[\p{L}\-_.0-9\/]+');
 define('RFC3986_URI_CHARS', '[\p{L}0-9-._~:\/?#[\]@!$&\'()*+,;=%]*');
 // to check tag links with param which use camel case evolved characters
 define('WN_CAMEL_CASE_EVOLVED_WITH_SLASH_AND_PARAMS', WN_CAMEL_CASE_EVOLVED_WITH_SLASH . '(?:[?&]' . RFC3986_URI_CHARS . ')?');
-/* the regexp that matches automatic wiki links in a text */
-define('WN_WIKI_LINK', WN_CAMEL_CASE); // this might evolve to handle the page groups and subpages syntax
 /* the regexp that checks if a word is a valid page tag */
 // define('WN_PAGE_TAG', WN_CHAR . '+');
 define('WN_PAGE_TAG', WN_CAMEL_CASE_EVOLVED);

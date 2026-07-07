@@ -3,7 +3,6 @@
 namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\ActivityPubService;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Core\Service\DbService;
@@ -76,7 +75,7 @@ class FormManager
 
     protected function convertWithSpecialParameters($template, $id_nature)
     {
-        $template = _convert($template, YW_CHARSET, true);
+        $template = $template;
         $template_list = $this->parseTemplate($template);
         $modify = false;
         for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
@@ -164,7 +163,7 @@ class FormManager
     public function getFromRawData($form)
     {
         foreach ($form as $key => $value) {
-            $form[$key] = _convert($value, 'ISO-8859-15');
+            $form[$key] = $value;
         }
         list($template_list, $modify) = $this->prepare_with_special_parameters($form);
         $form['template'] = $template_list;
@@ -239,7 +238,7 @@ class FormManager
             $data['bn_id_nature'] = $this->findNewId();
         }
 
-        $activitypubEnabled = (int) $this->activityPubService->isEnabled($data);
+        $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
 
         if ($activitypubEnabled) {
             $keyPair = $this->httpSignatureService->generateKeyPair();
@@ -254,13 +253,13 @@ class FormManager
         $values = [
             intval($data['bn_id_nature']),
             "'fr-FR'",
-            "'" . $this->dbService->escape(_convert($data['bn_label_nature'] ?? '', YW_CHARSET, true)) . "'",
-            "'" . $this->dbService->escape(_convert($data['bn_template'] ?? '', YW_CHARSET, true)) . "'",
-            "'" . $this->dbService->escape(_convert($data['bn_description'] ?? '', YW_CHARSET, true)) . "'",
-            "'" . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . "'",
-            "'" . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . "'",
+            "'" . $this->dbService->escape($data['bn_label_nature'] ?? '') . "'",
+            "'" . $this->dbService->escape($data['bn_template'] ?? '') . "'",
+            "'" . $this->dbService->escape($data['bn_description'] ?? '') . "'",
+            "'" . $this->dbService->escape($data['bn_sem_template'] ?? '') . "'",
+            "'" . $this->dbService->escape($data['bn_sem_reverse_template'] ?? '') . "'",
             $activitypubEnabled,
-            "'" . $this->dbService->escape(_convert($data['bn_activitypub_username'] ?? '', YW_CHARSET, true)) . "'",
+            "'" . $this->dbService->escape($data['bn_activitypub_username'] ?? '') . "'",
             isset($privateKey) ? "'" . $privateKey . "'" : "''",
             isset($publicKey) ? "'" . $publicKey . "'" : "''",
         ];
@@ -271,10 +270,10 @@ class FormManager
         }
         if ($this->isAvailableOnlyOneEntryMessage()) {
             $columns[] = 'bn_only_one_entry_message';
-            $values[] = "'" . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . "'";
+            $values[] = "'" . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape($data['bn_only_one_entry_message'])) . "'";
         }
         $columns[] = 'bn_condition';
-        $values[] = "'" . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . "'";
+        $values[] = "'" . $this->dbService->escape($data['bn_condition']) . "'";
 
         $quotedColumns = array_map([$this->dbService, 'quoteIdentifier'], $columns);
 
@@ -296,7 +295,7 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
 
-        $activitypubEnabled = (int) $this->activityPubService->isEnabled($data);
+        $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
 
         if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
             $keyPair = $this->httpSignatureService->generateKeyPair();
@@ -305,13 +304,13 @@ class FormManager
         }
 
         $assignments = [
-            'bn_label_nature' => "'" . $this->dbService->escape(_convert($data['bn_label_nature'], YW_CHARSET, true)) . "'",
+            'bn_label_nature' => "'" . $this->dbService->escape($data['bn_label_nature']) . "'",
             'bn_template' => "'" . $template . "'",
-            'bn_description' => "'" . $this->dbService->escape(_convert($data['bn_description'], YW_CHARSET, true)) . "'",
-            'bn_sem_template' => "'" . $this->dbService->escape(_convert($data['bn_sem_template'] ?? '', YW_CHARSET, true)) . "'",
-            'bn_sem_reverse_template' => "'" . $this->dbService->escape(_convert($data['bn_sem_reverse_template'] ?? '', YW_CHARSET, true)) . "'",
+            'bn_description' => "'" . $this->dbService->escape($data['bn_description']) . "'",
+            'bn_sem_template' => "'" . $this->dbService->escape($data['bn_sem_template'] ?? '') . "'",
+            'bn_sem_reverse_template' => "'" . $this->dbService->escape($data['bn_sem_reverse_template'] ?? '') . "'",
             'bn_activitypub_enable' => $activitypubEnabled,
-            'bn_activitypub_username' => "'" . $this->dbService->escape(_convert($data['bn_activitypub_username'], YW_CHARSET, true)) . "'",
+            'bn_activitypub_username' => "'" . $this->dbService->escape($data['bn_activitypub_username']) . "'",
         ];
         if (isset($privateKey)) {
             $assignments['bn_activitypub_private_key'] = "'" . $privateKey . "'";
@@ -323,9 +322,9 @@ class FormManager
             $assignments['bn_only_one_entry'] = "'" . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . "'";
         }
         if ($this->isAvailableOnlyOneEntryMessage()) {
-            $assignments['bn_only_one_entry_message'] = "'" . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape(_convert($data['bn_only_one_entry_message'], YW_CHARSET, true))) . "'";
+            $assignments['bn_only_one_entry_message'] = "'" . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape($data['bn_only_one_entry_message'])) . "'";
         }
-        $assignments['bn_condition'] = "'" . $this->dbService->escape(_convert($data['bn_condition'], YW_CHARSET, true)) . "'";
+        $assignments['bn_condition'] = "'" . $this->dbService->escape($data['bn_condition']) . "'";
 
         $setClause = [];
         foreach ($assignments as $column => $value) {
@@ -504,7 +503,7 @@ class FormManager
         $i = 0;
         $prepared = $result = [];
 
-        $form['template'] = _convert($form['template'], 'ISO-8859-15');
+        $form['template'] = $form['template'];
 
         foreach ($form['template'] as $field) {
             $classField = $this->fieldFactory->create($field);

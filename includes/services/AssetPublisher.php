@@ -5,7 +5,7 @@ namespace YesWiki\Core\Service;
 /**
  * Publishes static assets (css/js/fonts/images...) from the YesWiki source tree into the
  * instance's own cache/assets/{version}/ folder, so that an instance whose docroot only
- * contains index.php + its data folders (wakka.config.php, files/, custom/, cache/, private/)
+ * contains index.php + its data folders (yeswiki.config.php, files/, custom/, cache/, private/)
  * needs no symlinks or webserver aliases to the shared YesWiki sources.
  *
  * Two cooperating mechanisms:
@@ -78,7 +78,7 @@ class AssetPublisher
         // strip the instance base path (subdirectory installs) - only inferable when
         // SCRIPT_NAME really points at the entry script (some SAPIs, e.g. the built-in
         // server with a router, put the requested path in SCRIPT_NAME instead)
-        if (preg_match('~^(.+)/(index|wakka)\.php$~', $_SERVER['SCRIPT_NAME'] ?? '', $m)
+        if (preg_match('~^(.+)/index\.php$~', $_SERVER['SCRIPT_NAME'] ?? '', $m)
             && str_starts_with($uriPath, $m[1] . '/')) {
             $uriPath = substr($uriPath, strlen($m[1]));
         }

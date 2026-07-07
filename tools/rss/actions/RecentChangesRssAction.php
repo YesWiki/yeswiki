@@ -61,8 +61,8 @@ class RecentChangesRssAction extends YesWikiAction
         }
         $link = $this->wiki->Href(false, $this->arguments['link'], $langParam, false);
         $xmlUrl = $this->wiki->Href('xml', '', $langParam, false);
-        $wakkaName = htmlspecialchars(
-            $this->params->get('wakka_name'),
+        $yeswikiName = htmlspecialchars(
+            $this->params->get('yeswiki_name'),
             ENT_COMPAT,
             YW_CHARSET
         );
@@ -109,11 +109,11 @@ class RecentChangesRssAction extends YesWikiAction
 
         $yesWikiRevision = "{$this->params->get('yeswiki_version')} {$this->params->get('yeswiki_release')}";
         $description = $this->params->has('meta_description') ? $this->params->get('meta_description') : '';
-        $description = empty($decription) ? $wakkaName : $description;
+        $description = empty($decription) ? $yeswikiName : $description;
 
         return $this->render(
             '@rss/recent-changes-rss.twig',
-            compact(['xmlUrl', 'wakkaName', 'link', 'items', 'yesWikiRevision', 'description'])
+            compact(['xmlUrl', 'yeswikiName', 'link', 'items', 'yesWikiRevision', 'description'])
         );
     }
 }

@@ -6,7 +6,9 @@ require_once __DIR__ . '/bootstrap_paths.php';
 require_once __DIR__ . '/constants.php';
 require_once __DIR__ . '/urlutils.inc.php';
 require_once __DIR__ . '/email.inc.php';
-require_once __DIR__ . '/i18n.inc.php';
+// defines LanguageController and the global _t() translation function; loaded
+// explicitly because the autoloader may not be registered yet at this point
+require_once __DIR__ . '/controllers/LanguageController.php';
 require_once __DIR__ . '/YesWikiInit.php';
 require_once __DIR__ . '/YesWikiKernel.php';
 require_once __DIR__ . '/YesWikiPerformable.php';
@@ -36,8 +38,9 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Throwable;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\LegacyPageController;
 use YesWiki\Core\Controller\GroupController;
+use YesWiki\Core\Controller\LanguageController;
+use YesWiki\Core\Controller\LegacyPageController;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\InvalidGroupNameException;
@@ -60,6 +63,10 @@ use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Tags\Service\TagsManager;
 
+// base translations and language detection (also defines YW_CHARSET); runs at load
+// time, before anything (Init, the installer, error paths) calls _t()
+LanguageController::getInstance()->initialize();
+
 class Wiki
 {
     public $config;
@@ -72,7 +79,6 @@ class Wiki
     public $request;
     // current output used for actions/handlers/formatters
     public $output;
-    public $interWiki = [];
     public $VERSION;
     public $CookiePath = '/';
     public $inclusions = [];
@@ -104,7 +110,7 @@ class Wiki
         // (compiled container, see boot(); route collection, see getRoutes())
         $this->environment = defined('PHPUNIT_COMPOSER_INSTALL')
             ? 'test'
-            : (strtolower($this->GetConfigValue('debug')) === 'yes' ? 'dev' : 'prod');
+            : ($this->GetConfigValue('debug') ? 'dev' : 'prod');
 
         $this->loadExtensions();
     }
@@ -167,14 +173,9 @@ class Wiki
             : ($default != null ? $default : '');
     }
 
-    public function GetWakkaName()
+    public function GetYesWikiName()
     {
-        return $this->GetConfigValue('wakka_name');
-    }
-
-    public function GetWakkaVersion()
-    {
-        return $this->config['wakka_version'];
+        return $this->GetConfigValue('yeswiki_name');
     }
 
     public function GetWikiNiVersion()
@@ -446,8 +447,7 @@ class Wiki
 
     public function getBaseUrl()
     {
-        $url = explode('wakka.php', $this->config['base_url']);
-        $url = explode('index.php', $url[0]);
+        $url = explode('index.php', $this->config['base_url']);
         $url = preg_replace(['/\/\?$/', '/\/$/'], '', $url[0]);
 
         return $url;
@@ -610,6 +610,10 @@ class Wiki
             $text = $link;
         }
 
+        // when true, $text is already-safe HTML (e.g. rendered Markdown) and must not be escaped
+        $textIsHtml = !empty($options['html']);
+        unset($options['html']);
+
         // YesWiki pages links, like "HomePage" or "HomePage/xml"
         if ($wikiLink = $this->extractLinkParts($link)) {
             $tag = $wikiLink['tag'];
@@ -675,7 +679,7 @@ class Wiki
 
         // Block script schemes (see RFC 3986 about schemes)
         $link = htmlspecialchars($link, ENT_COMPAT, YW_CHARSET);
-        $text = htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
+        $text = $textIsHtml ? $text : htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
 
         // Generate HTML
         return <<<HTML
@@ -739,24 +743,6 @@ class Wiki
         return "</form>\n";
     }
 
-    // INTERWIKI STUFF
-    public function ReadInterWikiConfig()
-    {
-        if ($lines = file(YESWIKI_SOURCE_DIR . '/interwiki.conf')) {
-            foreach ($lines as $line) {
-                if ($line = trim($line)) {
-                    list($wikiName, $wikiUrl) = explode(' ', trim($line));
-                    $this->AddInterWiki($wikiName, $wikiUrl);
-                }
-            }
-        }
-    }
-
-    public function AddInterWiki($name, $url)
-    {
-        $this->interWiki[strtolower($name)] = $url;
-    }
-
     // REFERRERS
     public function LogReferrer($tag = '', $referrer = '')
     {
@@ -789,6 +775,7 @@ class Wiki
         if ($tag = trim($tag)) {
             $whereClause = "where page_tag = '" . $this->services->get(DbService::class)->escape($tag) . "'";
         }
+
         return $this->LoadAll('select referrer, count(referrer) as num from ' . $this->config['table_prefix'] . 'referrers ' . $whereClause . ' group by referrer order by num desc');
     }
 
@@ -1246,8 +1233,6 @@ class Wiki
             $this->Maintenance();
         }
 
-        $this->ReadInterWikiConfig();
-
         // do our stuff!
         if ($tag == '') {
             $tag = $this->tag;
@@ -1391,7 +1376,7 @@ class Wiki
 
     /**
      * @return array{0: RouteCollection, 1: FileResource[]} the collection plus the freshness
-     *                                                       resources to guard its cache with
+     *                                                      resources to guard its cache with
      *
      * The freshness resources are built by hand instead of taking $routes->getResources(): the
      * attribute loaders register ReflectionClassResources, whose isFresh() answer depends on the
@@ -1554,7 +1539,7 @@ class Wiki
     }
 
     // Returns a file size limit in bytes based on the PHP upload_max_filesize,
-    // post_max_size and wakka config max_file_size
+    // post_max_size and config max_file_size
     public function file_upload_max_size()
     {
         $conf_max_file_size = $this->GetConfigValue('max_file_size') ? $this->parse_size($this->GetConfigValue('max_file_size')) : 0;
@@ -1624,7 +1609,7 @@ class Wiki
         // TODO remove this when the retrocompatibility is no longer necessary
         $wiki = $this;
         $page = $this->tag;
-        $wakkaConfig = &$this->config;
+        $yeswikiConfig = &$this->config;
 
         foreach ($this->extensions as $k => $pluginBase) {
             // Load the initialization file (constants and includes)
@@ -1672,26 +1657,27 @@ class Wiki
     private function loadLanguages()
     {
         // This must be done after service initialization, as it uses services
-        loadpreferredI18n($this, $this->tag);
+        $languageController = $this->services->get(LanguageController::class);
+        $languageController->loadPreferredLanguage($this, $this->tag);
 
         // translations
         foreach ($this->extensions as $k => $pluginBase) {
             // language files : first default language, then preferred language
             if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
                 $returnedArray = include $pluginBase . 'lang/' . $k . '_fr.inc.php';
-                load_translations($returnedArray);
+                $languageController->loadTranslations($returnedArray);
             }
             if (file_exists($pluginBase . 'lang/' . $k . 'js_fr.inc.php')) {
                 $returnedArray = include $pluginBase . 'lang/' . $k . 'js_fr.inc.php';
-                load_translations($returnedArray, true);
+                $languageController->loadTranslations($returnedArray, true);
             }
             if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
                 $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
-                load_translations($returnedArray);
+                $languageController->loadTranslations($returnedArray);
             }
             if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php')) {
                 $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php';
-                load_translations($returnedArray, true);
+                $languageController->loadTranslations($returnedArray, true);
             }
         }
     }

@@ -72,7 +72,7 @@ class ExternalBazarService
         $this->formManager = $formManager;
         $this->importService = $importService;
         $this->entryManager = $entryManager;
-        $this->debug = ($this->params->has('debug') && $this->params->get('debug') == 'yes');
+        $this->debug = ($this->params->has('debug') && $this->params->get('debug'));
         $externalBazarServiceParameters = $this->params->get('baz_external_service');
         $this->timeCacheToCheckChanges = (int)($externalBazarServiceParameters['cache_time_to_check_changes'] ?? 90); // seconds
         $this->timeCacheToCheckDeletion = (int)($externalBazarServiceParameters['cache_time_to_check_deletion'] ?? 86400); // seconds

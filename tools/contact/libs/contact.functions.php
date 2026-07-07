@@ -89,16 +89,16 @@ function getPageTitle($page)
     // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2, on met la PageWiki sinon
     preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-        $title = _convert(preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]), 'UTF-8');
+        $title = preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]);
     // preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-            $title = $GLOBALS['wiki']->Format(_convert(trim($titles[1][0]), 'ISO-8859-15'));
+            $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
         } else {
             preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
             if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                $title = $GLOBALS['wiki']->Format(_convert(trim($titles[1][0]), 'ISO-8859-15'));
+                $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
             } else {
                 $title = $page['tag'];
             }
@@ -153,7 +153,7 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         $groupmembers = explode("\n", $groupmembers);
         $groupmembers = array_map('trim', $groupmembers);
 
-        $mailheader = '[' . str_replace(['/wakka.php?wiki=', 'http://', 'https://', '/?'], '', $GLOBALS['wiki']->config['base_url']) . ']';
+        $mailheader = '[' . str_replace(['http://', 'https://', '/?'], '', $GLOBALS['wiki']->config['base_url']) . ']';
         if (empty($subject)) {
             $subject = $mailheader . ' ' . getPageTitle($page) . ' (' . $sub . ' ' . date('d.m.Y') . ')';
         }

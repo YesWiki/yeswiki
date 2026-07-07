@@ -25,7 +25,7 @@ $(document).ready(() => {
       } else {
         var taburl = url.split('?')
       }
-      url = `${taburl[0].replace(/\/+$/g, '')}/wakka.php?wiki=BazaR/json&demand=forms`
+      url = `${taburl[0].replace(/\/+$/g, '')}/?wiki=BazaR/json&demand=forms`
       resultforms.html(`<div class="alert alert-info"><span class="throbber">${formtranslations.loading}...</span> ${formtranslations.recuperation} ${url}</div>`)
       $.ajax({
         method: 'GET',

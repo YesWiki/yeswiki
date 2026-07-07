@@ -191,7 +191,7 @@ class Mailer
             '@contact/notify-newuser-email-subject.twig',
             [
                 'baseUrl' => $baseUrl,
-                'wakkaName' => $this->params->get('wakka_name'),
+                'yeswikiName' => $this->params->get('yeswiki_name'),
             ]
         );
         $messagemail = $this->templateEngine->render(
@@ -221,7 +221,7 @@ class Mailer
     // TODO when PR #967 merged, refactor this part with YesWiki::getBaseUrl
     public function getBaseUrl(): string
     {
-        return preg_replace('/(\\/wakka\\.php\\?wiki=|\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url'));
+        return preg_replace('/(\\/\\?wiki=|\\/\\?|\\/)$/m', '', $this->params->get('base_url'));
     }
 
     /**

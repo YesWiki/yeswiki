@@ -3,10 +3,9 @@
 ## La racine
 
 La racine du dépot contient deux dossiers par branche de YesWiki supporté et un
-pour la version en cours de developpement.
-Les noms des branches sont écrit en minuscule.
-Les branches \*-test sont destinée à recevoir les pré-version des corrections de
-bug/faille.
+pour la version en cours de developpement. Les noms des branches sont écrit en
+minuscule. Les branches \*-test sont destinée à recevoir les pré-version des
+corrections de bug/faille.
 
 Des liens symboliques peuvent être ajouté. Par exemple :
 
@@ -81,18 +80,17 @@ Il y a trois types de paquet :
 - Le paquet pour un thème, préfixé par 'theme-' et dont les fichiers seront
   placé dans le dossier /themes après avoir effacer le fichiers/dossiers présent
   dans l'archive et dans le dossier themes.
-- Le paquet pour un thème, préfixé par 'tool-' et dont les fichiers seront
-  placé dans le dossier /tools après avoir effacer le fichiers/dossiers présent
-  dans l'archive et dans le dossier tools.
+- Le paquet pour un thème, préfixé par 'tool-' et dont les fichiers seront placé
+  dans le dossier /tools après avoir effacer le fichiers/dossiers présent dans
+  l'archive et dans le dossier tools.
 - la paquet du coeur de YesWiki dont les fichiers sont placé à la racine du
   wiki. il efface tous les fichiers/dossiers présent à la racine de l'archive et
   a la racine du site (a l'exception des dossiers themes, cache et files qui ne
   seront jamais supprimer/remplacé). Le dossier tools reçoit un traitement
-  particulier et seul les tools present dans l'archive sont effacer du wiki avant
-  d'etre remplacer par les nouvelles versions. (Mettre un dossier vide au nom du
-  tools permet de le supprimer).
-  u
-  Exemple pour tool-monTool-2016-01-01-1.zip :
+  particulier et seul les tools present dans l'archive sont effacer du wiki
+  avant d'etre remplacer par les nouvelles versions. (Mettre un dossier vide au
+  nom du tools permet de le supprimer). u Exemple pour
+  tool-monTool-2016-01-01-1.zip :
 
 ```bash
 /
@@ -103,27 +101,19 @@ Il y a trois types de paquet :
 └── desc.xml
 ```
 
-Exemple pour yeswiki-2016-01-01-1.zip :
+Exemple :
 
 ```bash
 /
 ├── actions
-├── COPYING
-├── formatters
 ├── handlers
 ├── includes
 ├── index.php
 ├── INSTALL
-├── interwiki.conf
 ├── lang
 ├── LICENSE
 ├── README.md
 ├── robots.txt
-├── setup
 ├── tools
-├── tools.php
-├── wakka.basic.css
-├── wakka.config.php
-├── wakka.css
-└── wakka.php
+├── yeswiki.config.php
 ```

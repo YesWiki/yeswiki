@@ -482,7 +482,7 @@ class Utils
             $entry = $entryManager->getOne($page['tag']);
             foreach (['description', 'bf_description', 'content', 'bf_content', 'soustitre'] as $prop) {
                 if (isset($entry[$prop])) {
-                    $desc = _convert($entry[$prop], 'UTF-8');
+                    $desc = $entry[$prop];
                 }
             }
             if ($desc == '') {

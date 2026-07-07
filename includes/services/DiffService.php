@@ -44,8 +44,8 @@ class DiffService
                 $textA = $this->formatPageWithOnlySimpleActions($pageA);
                 $textB = $this->formatPageWithOnlySimpleActions($pageB);
             } else {
-                $textA = _convert($pageA['body'], 'ISO-8859-15');
-                $textB = _convert($pageB['body'], 'ISO-8859-15');
+                $textA = $pageA['body'];
+                $textB = $pageB['body'];
             }
         }
 

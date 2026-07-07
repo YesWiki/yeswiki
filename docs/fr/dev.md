@@ -231,7 +231,7 @@ Pré-requis : Authoriser les headers d'authentification dans
 
 Pour se connecter à une route api avec un `bearer`, il faut:
 
-1.  ajouter le paramètre suivant dans le fichier wakka.config.php
+1.  ajouter le paramètre suivant dans le fichier yeswiki.config.php
 
 ```php
    'api_allowed_keys' => [

@@ -4,6 +4,7 @@ namespace YesWiki\AutoUpdate\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\AutoUpdate\Entity\Messages;
+use YesWiki\Core\Controller\InstallationController;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Wiki;
@@ -42,8 +43,10 @@ class UpdateAdminPagesService
     public function update(array $adminPagesToUpdate): Messages
     {
         $messages = new Messages();
-        require_once 'setup/install.helpers.php';
-        $defaultSQL = ltrim(renderSqlTwigTemplate('setup/sql/default-content.sql.twig', ['driver' => 'mysql']));
+        $defaultSQL = ltrim(InstallationController::renderSqlTemplate(
+            YESWIKI_SOURCE_DIR . '/templates/installation-default-content.sql.twig',
+            ['driver' => 'mysql']
+        ));
         $defaultSQLSplittedByBlock = explode('INSERT INTO', $defaultSQL);
         $blocks = [];
         for ($i = 1; $i < count($defaultSQLSplittedByBlock); $i++) {

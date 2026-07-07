@@ -288,7 +288,6 @@ return [
 Bereizi etiketa bakoitza ';' ',' ' ren arabera|Hainbat
 ' edo '/'",
     'AB_advanced_action_bazarrecordsindex_label' => 'Zerrendatu bazar-fitxak bakarrik',
-    'AB_advanced_action_interwikilist_label' => 'Erakutsi wiki arteko zerrenda',
     'AB_advanced_action_listusers_label' => 'Erabiltzaileak zerrendatzea',
     'AB_advanced_action_listusers_last_label' => 'Zerrendatu sortutako azken kontuak bakarrik',
     'AB_advanced_action_listusers_last_hint' => 'Erakutsi beharreko kontu-kopurua',

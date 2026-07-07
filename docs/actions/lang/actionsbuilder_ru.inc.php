@@ -282,7 +282,6 @@ return [
     'AB_advanced_action_listpages_exclude_label' => 'Цвет плотины',
     'AB_advanced_action_listpages_exclude_hint' => '',
     'AB_advanced_action_bazarrecordsindex_label' => 'Список только базарных листов',
-    'AB_advanced_action_interwikilist_label' => 'Показать список interwiki',
     'AB_advanced_action_listusers_label' => 'Список пользователей, пользователей',
     'AB_advanced_action_listusers_last_label' => 'Список только последних созданных учетных записей',
     'AB_advanced_action_listusers_last_hint' => 'Число счетов',

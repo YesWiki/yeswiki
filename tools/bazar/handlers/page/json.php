@@ -110,7 +110,7 @@ if (isset($_REQUEST['demand'])) {
                         if ($tableau[$i][0] == 'titre' || $nom_champ == 'bf_titre') {
                             $res .= '<h2 class="entry-title">{{{bf_titre}}}</h2>' . "\n\n";
                         } elseif ($tableau[$i][0] == 'image') {
-                            $url = str_replace('wakka.php?wiki=', '', $this->config['base_url']);
+                            $url = $this->config['base_url'];
                             $res .= '{{#if ' . $nom_champ . '}}' . "\n" .
                                 '<img loading="lazy" class="img-responsive img-centered" src="' . $url . 'cache/vignette_{{' . $nom_champ .
                                 '}}" alt="{{' . $nom_champ . '}}">' . "\n" . '{{/if}}' . "\n\n";
@@ -211,7 +211,7 @@ if (isset($_REQUEST['demand'])) {
 
                     return ($a['bn_label_nature'] < $b['bn_label_nature']) ? -1 : 1;
                 });
-                $forms = _convert($forms, 'UTF-8');
+                $forms = $forms;
                 echo json_encode($forms);
             }
             break;

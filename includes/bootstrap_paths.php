@@ -4,9 +4,9 @@
  * Source dir vs instance dir separation, for wiki farms sharing one YesWiki source tree.
  *
  * - YESWIKI_SOURCE_DIR: where the YesWiki code lives (includes/, tools/, themes/, lang/,
- *   templates/, setup/, vendor/...). A farm instance's index.php defines it before requiring
+ *   templates/, vendor/...). A farm instance's index.php defines it before requiring
  *   the shared index.php; standalone installs fall back to this file's own tree.
- * - YESWIKI_INSTANCE_DIR: where this wiki's data lives (wakka.config.php, files/, custom/,
+ * - YESWIKI_INSTANCE_DIR: where this wiki's data lives (yeswiki.config.php, files/, custom/,
  *   cache/, private/). Always the current working directory - PHP sets cwd to the directory
  *   of the executed script, i.e. the instance's index.php location; the whole codebase
  *   already relies on that convention for data paths.
@@ -24,7 +24,7 @@ if (!defined('YESWIKI_INSTANCE_DIR')) {
 }
 
 // Auto-provision the instance data folders, so a folder containing only index.php
-// (+ wakka.config.php) can become a wiki.
+// (+ yeswiki.config.php) can become a wiki.
 foreach (['cache', 'custom', 'files', 'private'] as $yeswikiDataFolder) {
     $yeswikiDataDir = YESWIKI_INSTANCE_DIR . '/' . $yeswikiDataFolder;
     if (!is_dir($yeswikiDataDir)) {

@@ -24,9 +24,17 @@ services:
 
   YesWiki\Core\Service\:
     resource: 'services/*'
+    # implementation details of MarkdownFormatterService, not services themselves
+    exclude: 'services/MarkdownFormatter/*'
 
   YesWiki\Core\Controller\:
     resource: 'controllers/*'
+    # the web installer runs before the container exists (no config file, no database)
+    exclude: 'controllers/InstallationController.php'
+
+  # the bootstrap initializes languages before the container exists; serve that same instance
+  YesWiki\Core\Controller\LanguageController:
+    factory: [null, 'getInstance']
 
   YesWiki\Core\Service\CommentService:
     tags:

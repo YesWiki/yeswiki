@@ -268,7 +268,7 @@ class BazarListeAction extends YesWikiAction
 
     public function run()
     {
-        $this->debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+        $this->debug = (bool)$this->wiki->GetConfigValue('debug');
 
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops

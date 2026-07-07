@@ -151,7 +151,7 @@ actions:
           - navigation_links
           - meta_keywords
           - meta_description
-          - wakka_name
+          - yeswiki_name
           - yeswiki_release
           - yeswiki_version
           - favorite_theme
@@ -270,5 +270,3 @@ actions:
         uncheckedvalue: 'false'
         showif:
           template: modal\.(?:twig|tpl\.html)
-  # interwikilist:
-  #   label: _t(AB_advanced_action_interwikilist_label)

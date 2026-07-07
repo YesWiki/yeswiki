@@ -283,7 +283,6 @@ return [
     'AB_advanced_action_listpages_exclude_label' => 'டெச் பக்கங்கள் மற்றும் லியர்ச் வம்சாவளியை விலக்கு',
     'AB_advanced_action_listpages_exclude_hint' => "செபரர் சாக் டேக் பார் ';' ',' '|'ou'/'",
     'AB_advanced_action_bazarrecordsindex_label' => 'லிச்டர் சியுலேமென்ட் லெச் ஃபிடச் கடைவீதி',
-    'AB_advanced_action_interwikilist_label' => 'Afficher la liste interwiki',
     'AB_advanced_action_listusers_label' => 'லிச்டர் லெச் பயன்பாட்டாளர்கள், பயன்பாட்டு செயல்கள்',
     'AB_advanced_action_listusers_last_label' => 'லிச்டர் தனித்துவம் லெச் டெர்னியர்ச் காம்ப்டெச் க்ரீச்',
     'AB_advanced_action_listusers_last_hint' => 'நோம்ப்ரே டி காம்ப்டெச் à அஃப்சர்',

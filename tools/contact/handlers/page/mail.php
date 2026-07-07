@@ -36,7 +36,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $form = baz_valeurs_formulaire($val['id_typeannonce']);
             $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->href('', $val['id_fiche']) . '">'
                 . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['bn_label_nature'] . ' » '
-                . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->config['wakka_name'] . ' ». ' .
+                . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->config['yeswiki_name'] . ' ». ' .
                 ($mail_sender ? _t('CONTACT_REPLY') . ' <strong>' . $mail_sender . '</strong> '
                     . _t('CONTACT_REPLY2') : '') . '.</em><br><br>';
         }
@@ -82,16 +82,16 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             } else {
                 $renderedPage = $this->Format($this->page['body'], 'wakka', $this->GetPageTag());
             }
-            $message_html = html_entity_decode(_convert($renderedPage, YW_CHARSET));
-            $message_txt = strip_tags(_convert($message_html, YW_CHARSET));
+            $message_html = html_entity_decode($renderedPage);
+            $message_txt = strip_tags($message_html);
         }
     } elseif ($type == 'abonnement' or $type == 'desabonnement') {
         $message_html = $message_txt = 'Mailinglist : ' . $type;
     } else {
         // pour un envoi de mail classique, le message en txt
         $subject = ((isset($_POST['entete'])) ? '[' . trim($_POST['entete']) . '] ' : '') .
-            ((isset($_POST['subject'])) ? stripslashes(_convert($_POST['subject'], YW_CHARSET)) : false);
-        $message = (isset($_POST['message'])) ? stripslashes(_convert(strip_tags($_POST['message']), YW_CHARSET)) : '';
+            ((isset($_POST['subject'])) ? stripslashes($_POST['subject']) : false);
+        $message = (isset($_POST['message'])) ? stripslashes(strip_tags($_POST['message'])) : '';
         $message_txt = trim(strip_tags($message));
         // euro symbol is not replaced by htmlspecialchar
         $message_html = trim(nl2br(str_replace('€', '&euro;', htmlspecialchars($message, ENT_COMPAT, YW_CHARSET))));

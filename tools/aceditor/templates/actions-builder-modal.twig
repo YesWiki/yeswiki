@@ -86,7 +86,7 @@
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}
 
-{{ include_javascript(config.debug == 'yes' ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
+{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
 
 {{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
 {{ include_css('styles/vendor/vue-select/vue-select.css') }}

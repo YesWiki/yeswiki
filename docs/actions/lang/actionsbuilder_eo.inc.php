@@ -286,7 +286,6 @@ return [
     'AB_advanced_action_listpages_exclude_label' => '',
     'AB_advanced_action_listpages_exclude_hint' => '',
     'AB_advanced_action_bazarrecordsindex_label' => '',
-    'AB_advanced_action_interwikilist_label' => '',
     'AB_advanced_action_listusers_label' => '',
     'AB_advanced_action_listusers_last_label' => '',
     'AB_advanced_action_listusers_last_hint' => '',

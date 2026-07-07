@@ -9,7 +9,7 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiAction;
 
-class MyFavoritesAction extends YesWikiAction
+class UserFavoritesAction extends YesWikiAction
 {
     protected $attach;
     protected $authController;

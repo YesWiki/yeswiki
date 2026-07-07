@@ -441,7 +441,7 @@ utiliser cette méthode pour sélectionner un preset pour une page seulement)
 Pour **changer le thème graphiques sur l'ensemble du site**, reportez-vous à la
 rubrique "Gérer le thème par défaut du wiki" en bas de la page
 [Look](/?GererThemes) Ce changement aura pour effet de mettre à jour le fichier
-de configuration wakka.config.php et rajouter les valeurs:
+de configuration yeswiki.config.php et rajouter les valeurs:
 
 'favorite_theme' => 'nom du thème correspondant au nom du sous-répertoire thème
 correspondant à ce thème personnalisé', 'favorite_squelette' => 'nom du
@@ -613,15 +613,15 @@ la page n'existe pas encore, alors il faut tenter :
 https://www.example.com/?PageLogin/editiframe pour simuler la création de la
 page ce qui fera apparaître la page de connexion.
 
-#### Utiliser les paramètres de contrôle d'accès via le wakka config ou la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès)
+#### Utiliser les paramètres de contrôle d'accès via le yeswiki config ou la page ["Fichier de conf"](/docs/fr/admin?id=droit-d39accès)
 
-1. A partir du fichier wakka.config.php accessible via FTP, il est possible :
+1. A partir du fichier yeswiki.config.php accessible via FTP, il est possible :
 
 - d'ajouter un capcha en mode édition
 - d'ajouter un champ (mot de passe) en entrée du mode édition (+ un message
   informatif sur ce mot de passe)
 
-Les paramètres ajoutables au wakkaconfig
+Les paramètres ajoutables au yeswiki config
 
     'password\_for\_editing' => 'votremotdepasse',
     'password\_for\_editing\_message' => 'un message qui apparait au dessus du champ mot de passe',
@@ -733,8 +733,8 @@ Pour découvrir l'ensemble des stratégies possibles face au spam =>
 ## Fichier de configuration
 
 Cette page permet de modifier la configuration de son Yeswiki sans passer par le
-fichier wakka.config.php. Dans les versions précédentes de Yeswiki, ces éléments
-n'étaient accessibles que par FTP, en éditant le fichier wakka.config.php, se
+fichier yeswiki.config.php. Dans les versions précédentes de Yeswiki, ces éléments
+n'étaient accessibles que par FTP, en éditant le fichier yeswiki.config.php, se
 trouvant à la racine du dossier du YesWiki. Tous les administrateurices de
 Yeswiki n'ayant pas accès au serveur, cette page de configuration contourne ce
 problème. Il faut être identifié comme administrateurice pour visionner et
@@ -742,7 +742,7 @@ modifier les informations de cet espace.
 
 ### Paramètres principaux
 
-- **Titre de votre wiki - wakka_name** : c'est le titre donné à la création de
+- **Titre de votre wiki - yeswiki_name** : c'est le titre donné à la création de
   votre wiki et qui s'affiche, de base, dans la page "PageTitre" et apparaît en
   haut à gauche sur la page d'accueil. Ce titre sera aussi utilisé par les
   moteurs de recherche comme titre de votre site. Il peut être modifié à tout

@@ -286,7 +286,6 @@ return [
     'AB_advanced_action_listpages_exclude_label' => 'Excluir páginas y sus descendientes',
     'AB_advanced_action_listpages_exclude_hint' => "Separe cada etiqueta con ';' ',' '|' O '/'|",
     'AB_advanced_action_bazarrecordsindex_label' => 'Listado solo de tarjetas de bazar',
-    'AB_advanced_action_interwikilist_label' => 'Mostrar lista interwiki',
     'AB_advanced_action_listusers_label' => 'Lista de usuarios',
     'AB_advanced_action_listusers_last_label' => 'Enumere solo las últimas cuentas creadas',
     'AB_advanced_action_listusers_last_hint' => 'Número de cuentas a mostrar',

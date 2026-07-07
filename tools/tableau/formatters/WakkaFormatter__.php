@@ -26,6 +26,10 @@ class WakkaFormatter__ extends YesWikiFormatter
                     $replacement = $this->wakka2callbacktableaux([$value, $matches[1][$key]]);
                     $newOutput = str_replace($matches[1][$key], $replacement, $newOutput);
                 }
+                // the markdown formatter wraps a [|...|] block in a <p> since it doesn't
+                // know it will become a <table>; unwrap it when the table is the paragraph's
+                // only content, since <table> is not valid content for a <p>
+                $newOutput = preg_replace('/<p>\s*(<table\b.*?<\/table>)\s*<\/p>/s', '$1', $newOutput);
                 $this->output = $newOutput;
             }
         }

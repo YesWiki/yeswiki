@@ -14,4 +14,4 @@ Cette action accepte un paramètre `version` qui permet de spécifier lorsqu'on 
 
 Par défaut, le dépot est _<https://repository.yeswiki.net>_ il est possible d'en
 définir un autre en spécifiant le paramètre **`yeswiki_repository`** dans le
-fichier `wakka.config.php` du Wiki.
+fichier `yeswiki.config.php` du Wiki.

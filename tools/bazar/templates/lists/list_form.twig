@@ -1,4 +1,4 @@
-{{ include_javascript(config.debug == 'yes' ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
+{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js') }}
 
 {{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
 {{ include_javascript('javascripts/vendor/vuedraggable/vuedraggable.js') }}

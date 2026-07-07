@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\PageManager;
@@ -9,7 +10,7 @@ class FixDefaultCommentsAcls extends YesWikiMigration
 {
     public function run()
     {
-        $config = $this->wiki->services->get(ConfigurationService::class)->getConfiguration('wakka.config.php');
+        $config = $this->wiki->services->get(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         if (empty($config['default_comment_acl'])) {
             $config['default_comment_acl'] = 'comments-closed';

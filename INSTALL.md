@@ -15,10 +15,6 @@ If your site <https://mysite.com> is mapped to the directory `/home/jdoe/www`,
 and you place the YesWiki files into `/home/jdoe/www/wiki`, you should go to  
 <https://mysite.com/wiki>.
 
-**Important:**  
-For installing or upgrading YesWiki, do NOT access any of the files contained  
-in the `setup/` folder, you should just access the YesWiki root folder.
-
 Detailed instructions are available [in the official doc](https://yeswiki.net/?doc#/docs/fr/webmaster?id=installation).
 
 ## Installation through Docker

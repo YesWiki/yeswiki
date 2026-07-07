@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Loader\AttributeClassLoader;
 use Symfony\Component\Routing\Route;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\ConfigurationFileProvider;
+use YesWiki\Core\Service\EnvironmentConfiguration;
 
 class AttributeRouteControllerLoader extends AttributeClassLoader
 {
@@ -62,7 +63,7 @@ class Init
         if (!empty($_SERVER['HTTPS'])) {
             $protocol = 'https://';
         }
-        $scriptlocation = str_replace(['/index.php', '/wakka.php'], '', $_SERVER['SCRIPT_NAME']);
+        $scriptlocation = str_replace('/index.php', '', $_SERVER['SCRIPT_NAME']);
         $uri = str_replace($scriptlocation, '', $_SERVER['REQUEST_URI']);
         $uri = preg_replace('~^/\??~', '', $uri);
         $uri = explode('&', $uri);
@@ -70,7 +71,7 @@ class Init
         $args = explode('/', rawurldecode($uri[0]));
         if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
             // if old school wiki url
-            if ($args[0] == 'index.php' or $args[0] == 'wakka.php' or !empty($_REQUEST['wiki'])) {
+            if ($args[0] == 'index.php' or !empty($_REQUEST['wiki'])) {
                 // remove leading slash
                 $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_REQUEST['wiki']));
             } else {
@@ -178,20 +179,19 @@ class Init
     /**
      * Check in the config file exists and provide default configuration.
      *
-     * @param array $wakkaConfig initial config array (empty by default)
+     * @param array $yeswikiConfig initial config array (empty by default)
      *
      * @return array the configuration
      */
-    public function getConfig($wakkaConfig = [])
+    public function getConfig($yeswikiConfig = [])
     {
         $_rewrite_mode = detectRewriteMode();
         $yeswikiDefaultConfig = [
-            'wakka_version' => '',
             'wikini_version' => '',
             'yeswiki_version' => '',
             'yeswiki_release' => '',
             'charset' => 'UTF-8',
-            'debug' => 'no',
+            'debug' => false,
             'db_driver' => 'mysql',
             'db_host' => 'localhost',
             'db_database' => '',
@@ -214,12 +214,11 @@ class Init
             'comments_handler' => 'yeswiki',
             'preview_before_save' => false,
             'allow_raw_html' => true,
-            'disable_wiki_links' => false,
             'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'bazariframe', 'render'],
             'revisionscount' => 30,
-            'timezone' => 'Europe/Paris', // Only used if not set in wakka.config.php nor in php.ini
-            'root_page' => 'PagePrincipale', // backup root_page if deleted from wakka.config.php
-            'wakka_name' => '', // backup wakka_name if deleted from wakka.config.php
+            'timezone' => 'Europe/Paris', // Only used if not set in yeswiki.config.php nor in php.ini
+            'root_page' => 'PagePrincipale', // backup root_page if deleted from yeswiki.config.php
+            'yeswiki_name' => '', // backup yeswiki_name if deleted from yeswiki.config.php
             'htmlPurifierActivated' => false, // TODO ectoplasme set to true
             'favorites_activated' => true,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
@@ -235,31 +234,51 @@ class Init
 
         if (file_exists($this->configFile)) {
             include $this->configFile;
+            // config files written before the rename define $wakkaConfig instead
+            if (isset($wakkaConfig) && is_array($wakkaConfig)) {
+                $yeswikiConfig = $wakkaConfig;
+            }
         } else {
             // we must init language file without loading the page's settings.. to translate some default config settings
             $yeswikiDefaultConfig['root_page'] = _t('HOMEPAGE_WIKINAME');
-            $yeswikiDefaultConfig['wakka_name'] = _t('MY_YESWIKI_SITE');
+            $yeswikiDefaultConfig['yeswiki_name'] = _t('MY_YESWIKI_SITE');
         }
 
-        // Backwards compatibility: map old mysql_* keys to new db_* keys
+        // Backwards compatibility: map keys of pre-ectoplasme config files to their new names
         $legacyKeyMapping = [
             'mysql_host' => 'db_host',
             'mysql_database' => 'db_database',
             'mysql_user' => 'db_user',
             'mysql_password' => 'db_password',
             'mysql_port' => 'db_port',
+            'wakka_name' => 'yeswiki_name',
         ];
         foreach ($legacyKeyMapping as $oldKey => $newKey) {
-            if (isset($wakkaConfig[$oldKey]) && !isset($wakkaConfig[$newKey])) {
-                $wakkaConfig[$newKey] = $wakkaConfig[$oldKey];
+            if (isset($yeswikiConfig[$oldKey]) && !isset($yeswikiConfig[$newKey])) {
+                $yeswikiConfig[$newKey] = $yeswikiConfig[$oldKey];
             }
+            unset($yeswikiConfig[$oldKey]);
+        }
+        // dropped keys and the removed wakka.php entry script, from pre-ectoplasme config files
+        unset($yeswikiConfig['wakka_version']);
+        if (!empty($yeswikiConfig['base_url'])) {
+            $yeswikiConfig['base_url'] = str_replace('/wakka.php?wiki=', '/?', $yeswikiConfig['base_url']);
         }
 
-        $wakkaConfig = $this->array_merge_recursive_distinct($yeswikiDefaultConfig, $wakkaConfig);
+        $yeswikiConfig = $this->array_merge_recursive_distinct($yeswikiDefaultConfig, $yeswikiConfig);
+
+        // debug is a boolean now; existing config files may still carry the
+        // historical 'yes'/'no' strings
+        $yeswikiConfig['debug'] = filter_var($yeswikiConfig['debug'], FILTER_VALIDATE_BOOLEAN);
+
+        // environment overrides (private/.env or real environment variables) win over
+        // yeswiki.config.php; applied before the timezone/debug values are consumed below.
+        // YesWikiKernel::build() applies the same overrides to extension parameters.
+        $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
 
         // give a default timezone to avoid error
-        if (!empty($wakkaConfig['timezone'])) {
-            date_default_timezone_set($wakkaConfig['timezone']);
+        if (!empty($yeswikiConfig['timezone'])) {
+            date_default_timezone_set($yeswikiConfig['timezone']);
         } elseif (!empty($yeswikiDefaultConfig['timezone'])) {
             date_default_timezone_set($yeswikiDefaultConfig['timezone']);
         } elseif (!ini_get('date.timezone')) {
@@ -283,7 +302,7 @@ class Init
             }
 
             if ($ask) {
-                header('WWW-Authenticate: Basic realm="' . $wakkaConfig['wakka_name'] . ' Install/Upgrade Interface"');
+                header('WWW-Authenticate: Basic realm="' . $yeswikiConfig['yeswiki_name'] . ' Install/Upgrade Interface"');
                 header('HTTP/1.0 401 Unauthorized');
                 echo _t('SITE_BEING_UPDATED');
                 exit;
@@ -291,26 +310,22 @@ class Init
         }
 
         // Display all errors if in debug mode
-        if (strtolower($wakkaConfig['debug']) == 'yes') {
+        if ($yeswikiConfig['debug']) {
             ini_set('display_errors', 1);
             error_reporting(E_ALL);
         }
 
-        if ($wakkaConfig['wakka_version'] && (!$wakkaConfig['wikini_version'])) {
-            $wakkaConfig['wikini_version'] = $wakkaConfig['wakka_version'];
+        if (empty($yeswikiConfig['mail_domain'] ?? null)) {
+            $yeswikiConfig['mail_domain'] = \getMailDomain(parse_url($yeswikiConfig['base_url'])['host']);
         }
 
-        if (empty($wakkaConfig['mail_domain'] ?? null)) {
-            $wakkaConfig['mail_domain'] = \getMailDomain(parse_url($wakkaConfig['base_url'])['host']);
-        }
-
-        if (!empty($wakkaConfig['extra_headers'])) {
-            foreach ($wakkaConfig['extra_headers'] as $header) {
+        if (!empty($yeswikiConfig['extra_headers'])) {
+            foreach ($yeswikiConfig['extra_headers'] as $header) {
                 header($header);
             }
         }
 
-        return $wakkaConfig;
+        return $yeswikiConfig;
     }
 
     /**
@@ -328,8 +343,7 @@ class Init
         // Fixe la gestion des cookie sous les OS utilisant le \ comme separateur de chemin
         $CookiePath = str_replace('\\', '/', $CookiePath);
 
-        // retire wakka.php dans path
-        foreach (['wakka.php', 'index.php'] as $anchor) {
+        foreach (['index.php'] as $anchor) {
             if (substr($CookiePath, -strlen($anchor)) == $anchor) {
                 $CookiePath = substr($CookiePath, 0, strlen($CookiePath) - strlen($anchor));
             }
@@ -369,21 +383,7 @@ class Init
      */
     public function doInstall()
     {
-        // start installer
-        if (!isset($_REQUEST['installAction']) or !$installAction = trim($_REQUEST['installAction'])) {
-            $installAction = 'default';
-        }
-        // default lang
-        loadpreferredI18n('');
-        $wakkaConfig = $this->config;
-        $wakkaConfigLocation = $this->configFile;
-        include_once YESWIKI_SOURCE_DIR . '/setup/install.helpers.php';
-        include_once YESWIKI_SOURCE_DIR . '/setup/header.php';
-        if (file_exists(YESWIKI_SOURCE_DIR . '/setup/' . $installAction . '.php')) {
-            include_once YESWIKI_SOURCE_DIR . '/setup/' . $installAction . '.php';
-        } else {
-            echo '<em>', _t('INVALID_ACTION'), '</em>';
-        }
-        include_once YESWIKI_SOURCE_DIR . '/setup/footer.php';
+        $controller = new Core\Controller\InstallationController($this->config, $this->configFile);
+        $controller->run();
     }
 }

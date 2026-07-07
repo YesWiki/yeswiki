@@ -448,7 +448,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $this->dbService->query($query);
         } catch (\Throwable $th) {
             // only throw error in debug mode
-            if ($this->wiki->GetConfigValue('debug') == 'yes') {
+            if ($this->wiki->GetConfigValue('debug')) {
                 throw $th;
             }
         }

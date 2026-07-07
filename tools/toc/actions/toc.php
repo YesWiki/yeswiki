@@ -20,70 +20,40 @@ echo '<div class="toc-title accordion-trigger" data-toggle="collapse" data-targe
 <div class=\"toc-menu\">
 <div id=\"toc-menu" . $tag . '" class="collapse' . ($closed == 1 ? '' : ' in') . "\">\n";
 
-global $wiki;
-$wiki = $this;
-
 if (!function_exists('translate2toc')) {
+    /**
+     * Parses $text with the same CommonMark engine the wakka formatter uses, and builds
+     * the <li> list of headings. Each heading gets the same "TOC_{level}_{n}" id that
+     * tools/toc/formatters/wakka__.php assigns to the matching rendered <hN> tag.
+     */
     function translate2toc($text)
     {
-        global $wiki;
-        $cur_text = $text;
-        $l1 = 0;
-        $l2 = 0;
-        $l3 = 0;
-        $l4 = 0;
-        $l5 = 0;
+        $environment = new League\CommonMark\Environment\Environment();
+        $environment->addExtension(new League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension());
+        $environment->addExtension(new League\CommonMark\Extension\GithubFlavoredMarkdownExtension());
+        $document = (new League\CommonMark\Parser\MarkdownParser($environment))->parse($text);
+
         $output = '';
+        $counters = [];
+        foreach ($document->iterator() as $node) {
+            if (!$node instanceof League\CommonMark\Extension\CommonMark\Node\Block\Heading) {
+                continue;
+            }
+            $level = $node->getLevel();
+            $counters[$level] = ($counters[$level] ?? 0) + 1;
+            $toc = 'TOC_' . $level . '_' . $counters[$level];
 
-        while ($cur_text) {
-            if (!preg_match("/(?:(={2,6})|^(?!\\\\)(\#{1,5}) (?=[^\\n\#]*\\n))(.*)/ms", $cur_text, $matches)) {
-                break;
+            $title = '';
+            foreach ($node->iterator() as $inline) {
+                if ($inline instanceof League\CommonMark\Node\StringContainerInterface) {
+                    $title .= $inline->getLiteral();
+                } elseif ($inline instanceof League\CommonMark\Node\Inline\Newline) {
+                    $title .= ' ';
+                }
             }
 
-            $cur_text = $matches[3];
-            $class = '';
-            $endmatch = '';
-            if ($matches[1] == '======' || $matches[2] == '#') {
-                $l1++;
-                $class = 'toc1';
-                $toc = 'TOC_1_' . (2 * $l1 - 1);
-                $l1++;
-                $endmatch = empty($matches[2]) ? '/(.*)======(.*?)/msU' : "/(.*)\n(.*?)/msU";
-            } elseif ($matches[1] == '=====' || $matches[2] == '##') {
-                $l2++;
-                $class = 'toc2';
-                $toc = 'TOC_2_' . (2 * $l2 - 1);
-                $l2++;
-                $endmatch = empty($matches[2]) ? '/(.*)=====(.*?)/msU' : "/(.*)\n(.*?)/msU";
-            } elseif ($matches[1] == '====' || $matches[2] == '###') {
-                $l3++;
-                $class = 'toc3';
-                $toc = 'TOC_3_' . (2 * $l3 - 1);
-                $l3++;
-                $endmatch = empty($matches[2]) ? '/(.*)====(.*?)/msU' : "/(.*)\n(.*?)/msU";
-            } elseif ($matches[1] == '===' || $matches[2] == '####') {
-                $l4++;
-                $class = 'toc4';
-                $toc = 'TOC_4_' . (2 * $l4 - 1);
-                $l4++;
-                $endmatch = empty($matches[2]) ? '/(.*)===(.*?)/msU' : "/(.*)\n(.*?)/msU";
-            } elseif ($matches[1] == '==' || $matches[2] == '#####') {
-                $l5++;
-                $class = 'toc5';
-                $toc = 'TOC_5_' . (2 * $l5 - 1);
-                $l5++;
-                $endmatch = empty($matches[2]) ? '/(.*)==(.*?)/msU' : "/(.*)\n(.*?)/msU";
-            } else {
-                $output .= "????\n";
-            }
-
-            if (!preg_match($endmatch, $cur_text, $matches)) {
-                break;
-            }
-
-            $output .= "<li class=\"$class\"><a href=\"#$toc\">"
-                . trim($matches[1]) . "</a></li>\n";
-            $cur_text = $matches[2];
+            $output .= '<li class="toc' . $level . '"><a href="#' . $toc . '">'
+                . htmlspecialchars(trim($title), ENT_COMPAT, YW_CHARSET) . "</a></li>\n";
         }
 
         return $output;
@@ -132,10 +102,9 @@ $script = "$(document).ready(function(){
 $this->AddJavascript($script);
 
 // on vérifie qu'il y est au moins un titre pour faire la liste
-if (preg_match("/(={2,6})(.*)|^(?!\\\\)\#{1,5} [^\\n\#]*\\n/ms", $toc_body, $matches)) {
-    echo "<ul class=\"unstyled\">\n" .
-        translate2toc(preg_replace('/"".*?""/ms', '', $toc_body)) .
-        "</ul>\n";
+$tocList = translate2toc($toc_body);
+if ($tocList !== '') {
+    echo "<ul class=\"unstyled\">\n" . $tocList . "</ul>\n";
 }
 
 // on ferme les divs ouvertes par l'action toc

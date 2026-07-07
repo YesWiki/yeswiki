@@ -25,7 +25,7 @@ class FooterAction extends YesWikiAction
         if ($themeLoaded) {
             $output = $themeManager->renderFooter();
             // on affiche les requetes SQL et le temps de chargement en mode debug
-            if ($this->wiki->GetConfigValue('debug') == 'yes') {
+            if ($this->wiki->GetConfigValue('debug')) {
                 $debug_log_sql_queries = '';
                 $T_SQL = 0;
 

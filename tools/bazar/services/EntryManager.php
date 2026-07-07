@@ -125,7 +125,7 @@ class EntryManager
         }
 
         $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
-        $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
+        $debug = (bool)$this->wiki->GetConfigValue('debug');
         //  $debug = $this->wiki->isDebugEnabled ();
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
@@ -408,8 +408,8 @@ class EntryManager
         }
 
         if ($this->activityPubService->isEnabled($form) && !$sourceUrl) {
-             // Notify followers about the new object
-             $this->activityPubService->notifyFollowers($form, $data, 'Create');
+            // Notify followers about the new object
+            $this->activityPubService->notifyFollowers($form, $data, 'Create');
         }
 
         return $data;
@@ -481,8 +481,8 @@ class EntryManager
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($data['id_fiche'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
-             // Notify followers about the updated object (skip if external)
-             $this->activityPubService->notifyFollowers($form, $data, 'Update');
+            // Notify followers about the updated object (skip if external)
+            $this->activityPubService->notifyFollowers($form, $data, 'Update');
         }
 
         return $data;
@@ -572,9 +572,9 @@ class EntryManager
         // not possible to init the Guard in the constructor because of circular reference problem
         if ($this->wiki->services->get(Guard::class)->isAllowed('valider_fiche')) {
             if ($accepted) {
-                $this->dbService->query("UPDATE " . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=1 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
+                $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=1 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
             } else {
-                $this->dbService->query("UPDATE " . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=2 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
+                $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=2 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
             }
             // TODO envoie mail annonceur
         }
@@ -611,8 +611,8 @@ class EntryManager
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
-             // Notify followers about the deleted object
-             $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
+            // Notify followers about the deleted object
+            $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
         }
 
         unset($this->cachedEntriestags[$tag]);
@@ -626,7 +626,7 @@ class EntryManager
         $data = json_decode($body, true);
         if (is_iterable($data)) {
             foreach ($data as $key => $value) {
-                $data[$key] = _convert($value, 'UTF-8');
+                $data[$key] = $value;
             }
         }
 

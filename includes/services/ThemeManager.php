@@ -49,7 +49,6 @@ class ThemeManager implements EventSubscriberInterface
     protected $fileLoaded;
     protected $pageManager;
     protected $params;
-    protected $performer;
     protected $securityController;
     protected $squelette;
     protected $templateFooter;
@@ -73,7 +72,6 @@ class ThemeManager implements EventSubscriberInterface
         TemplateEngine $twig,
         PageManager $pageManager,
         ParameterBagInterface $params,
-        Performer $performer,
         SecurityController $securityController,
         Utils $utils
     ) {
@@ -91,7 +89,6 @@ class ThemeManager implements EventSubscriberInterface
         $this->fileLoaded = false;
         $this->pageManager = $pageManager;
         $this->params = $params;
-        $this->performer = $performer;
         $this->securityController = $securityController;
         $this->squelette = null;
         $this->templateFooter = '';
@@ -435,7 +432,7 @@ class ThemeManager implements EventSubscriberInterface
                 foreach ($valeur as $val) {
                     if (isset($matches[2][$j]) && $matches[2][$j] != '') {
                         $action = $matches[2][$j];
-                        $text = str_replace('{{' . $action . '}}', $this->performer->run('action', 'formatter', ['text' => '{{' . $action . '}}']), $text);
+                        $text = str_replace('{{' . $action . '}}', $this->wiki->Action($action), $text);
                     }
                     $j++;
                 }

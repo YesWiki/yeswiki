@@ -54,15 +54,16 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
         unset($this->_parameters[$name]);
     }
 
-    public function load($arrayName = 'wakkaConfig')
+    public function load($arrayName = 'yeswikiConfig')
     {
         if (!is_file($this->_file)) {
             return;
         }
 
-        // little hack to avoid php caching while require config file : we rename the variable and eval
+        // little hack to avoid php caching while require config file : we rename the variable and eval.
+        // 'wakkaConfig' is always accepted too: config files written before ectoplasme define it
         $yeswikiConfig = [];
-        $content = str_replace([$arrayName, '<?php', '?>'], ['yeswikiConfig', '', ''], file_get_contents($this->_file));
+        $content = str_replace([$arrayName, 'wakkaConfig', '<?php', '?>'], ['yeswikiConfig', 'yeswikiConfig', '', ''], file_get_contents($this->_file));
         eval($content);
         if (!empty($yeswikiConfig)) {
             $this->_parameters = $yeswikiConfig;
@@ -77,7 +78,7 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
      *
      * @return bool
      */
-    public function write($file = null, $arrayName = 'wakkaConfig')
+    public function write($file = null, $arrayName = 'yeswikiConfig')
     {
         return $this->configurationService->write($this, $file, $arrayName);
     }

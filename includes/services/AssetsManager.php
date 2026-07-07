@@ -190,7 +190,7 @@ class AssetsManager
         }
 
         // Handle production environement
-        if ($this->wiki->GetConfigValue('debug') != 'yes') {
+        if (!$this->wiki->GetConfigValue('debug')) {
             if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) {
                 $file = self::PRODUCTION_PATH_MAPPING[$file];
             }

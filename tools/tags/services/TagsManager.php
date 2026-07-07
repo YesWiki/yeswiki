@@ -45,7 +45,7 @@ class TagsManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // TODO check if we need to escape here, or if we can do that in the tripleStore methods
-        $tags = explode(',', $this->dbService->escape(_convert($liste_tags, YW_CHARSET, true)));
+        $tags = explode(',', $this->dbService->escape($liste_tags));
 
         // on recupere les anciens tags de la page courante
         $tabtagsexistants = $this->tripleStore->getAll($page, 'http://outils-reseaux.org/_vocabulary/tag', '', '');
@@ -81,7 +81,7 @@ class TagsManager
     {
         if ($page == '') {
             // TODO use tripleStore service
-            $sql = "SELECT DISTINCT value FROM" . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/tag'";
+            $sql = 'SELECT DISTINCT value FROM' . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/tag'";
 
             return $this->dbService->loadAll($sql);
         }
@@ -97,7 +97,7 @@ class TagsManager
             $tab_tags = explode(',', $tags);
             $nbdetags = count($tab_tags);
             $tags = implode(',', $tab_tags);
-            $tags = "'" . str_replace(',', "','", _convert($this->dbService->escape(addslashes($tags)), YW_CHARSET, true)) . "'";
+            $tags = "'" . str_replace(',', "','", $this->dbService->escape(addslashes($tags))) . "'";
             $req .= ' AND value IN (' . $tags . ') ';
             $req .= " AND property='http://outils-reseaux.org/_vocabulary/tag'";
             $req .= ' GROUP BY resource ';
@@ -113,23 +113,6 @@ class TagsManager
             $requete = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . " WHERE latest = 'Y' and comment_on = '' " . $req;
 
             return $this->dbService->loadAll($requete);
-        } else {
-            // recuperation des pages wikis
-            $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
-            if (!empty($taglist)) {
-                $sql .= ' INNER JOIN ' . $this->dbService->prefixTable('triples') . ' as tags ON tag=tags.resource';
-            }
-            $sql .= " WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
-
-            if ($type == 'wiki') {
-                $sql .= " AND tag NOT IN (SELECT resource FROM " . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type') ";
-            } elseif ($type == 'bazar') {
-                $sql .= " AND tag IN (SELECT resource FROM " . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar')";
-            }
-
-            $sql .= ' ORDER BY tag ASC';
-
-            return $this->dbService->loadAll($sql);
         }
         // recuperation des pages wikis
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
@@ -139,9 +122,26 @@ class TagsManager
         $sql .= " WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
 
         if ($type == 'wiki') {
-            $sql .= " AND tag NOT IN (SELECT resource FROM " . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type') ";
+            $sql .= ' AND tag NOT IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type') ";
         } elseif ($type == 'bazar') {
-            $sql .= " AND tag IN (SELECT resource FROM " . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar')";
+            $sql .= ' AND tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar')";
+        }
+
+        $sql .= ' ORDER BY tag ASC';
+
+        return $this->dbService->loadAll($sql);
+
+        // recuperation des pages wikis
+        $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
+        if (!empty($taglist)) {
+            $sql .= ' INNER JOIN ' . $this->dbService->prefixTable('triples') . ' as tags ON tag=tags.resource';
+        }
+        $sql .= " WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
+
+        if ($type == 'wiki') {
+            $sql .= ' AND tag NOT IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type') ";
+        } elseif ($type == 'bazar') {
+            $sql .= ' AND tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') . "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar')";
         }
 
         $sql .= ' ORDER BY tag ASC';

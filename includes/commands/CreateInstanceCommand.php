@@ -32,7 +32,7 @@ class CreateInstanceCommand extends Command
                 "- index.php loading YesWiki from this source tree\n" .
                 "- the instance data folders (cache/, custom/, files/, private/)\n\n" .
                 "Point a vhost docroot at the folder (with the standard rewrite fallback\n" .
-                "to index.php) and visit it: the installer creates wakka.config.php and\n" .
+                "to index.php) and visit it: the installer creates yeswiki.config.php and\n" .
                 "the database there. No symlink to the sources is needed.\n")
             ->addArgument('path', InputArgument::REQUIRED, 'Folder to create, relative or absolute path')
         ;
@@ -73,7 +73,7 @@ class CreateInstanceCommand extends Command
             <?php
 
             define('YESWIKI_SOURCE_DIR', $sourceDir);
-            putenv('WAKKA_CONFIG_FILE=' . __DIR__ . '/wakka.config.php');
+            putenv('YESWIKI_CONFIG_FILE=' . __DIR__ . '/yeswiki.config.php');
             require YESWIKI_SOURCE_DIR . '/index.php';
 
             PHP;
@@ -100,7 +100,7 @@ class CreateInstanceCommand extends Command
         $output->writeln(" - point a vhost docroot at $path, with the rewrite fallback to index.php");
         $output->writeln('   (nginx: `try_files $uri /index.php$is_args$args;` - apache: standard YesWiki rewrite)');
         $output->writeln(' - deny web access to private/ (nginx setups; apache is covered by private/.htaccess)');
-        $output->writeln(' - visit the site: the installer will create wakka.config.php and the database');
+        $output->writeln(' - visit the site: the installer will create yeswiki.config.php and the database');
 
         return Command::SUCCESS;
     }
