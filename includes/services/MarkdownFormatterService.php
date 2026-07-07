@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use League\CommonMark\Environment\Environment;
+use League\CommonMark\Environment\EnvironmentInterface;
 use League\CommonMark\Extension\Attributes\AttributesExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
@@ -22,7 +23,7 @@ require_once __DIR__ . '/MarkdownFormatter/CommentExtension.php';
 class MarkdownFormatterService
 {
     private Wiki $wiki;
-    private ?MarkdownConverter $converter = null;
+    private ?EnvironmentInterface $environment = null;
 
     public function __construct(Wiki $wiki)
     {
@@ -31,7 +32,12 @@ class MarkdownFormatterService
 
     public function format(string $text): string
     {
-        return (string)$this->getConverter()->convert($text);
+        // a fresh MarkdownConverter (cheap: just a parser/renderer pair wrapping the shared,
+        // expensive-to-build Environment) per call, since actions rendered while parsing
+        // (e.g. recentchanges/listusers, which format() page excerpts themselves) can
+        // re-enter format() - the parser holds per-conversion state that a shared instance
+        // would corrupt, breaking the outer, still-in-progress parse
+        return (string)(new MarkdownConverter($this->getEnvironment()))->convert($text);
     }
 
     /**
@@ -56,9 +62,9 @@ class MarkdownFormatterService
         );
     }
 
-    private function getConverter(): MarkdownConverter
+    private function getEnvironment(): EnvironmentInterface
     {
-        if ($this->converter === null) {
+        if ($this->environment === null) {
             $wiki = $this->wiki;
 
             $environment = new Environment([
@@ -84,9 +90,9 @@ class MarkdownFormatterService
                 }
             ));
 
-            $this->converter = new MarkdownConverter($environment);
+            $this->environment = $environment;
         }
 
-        return $this->converter;
+        return $this->environment;
     }
 }
