@@ -1630,7 +1630,7 @@ class Wiki
 
     /**
      * Build (or reuse the compiled/cached) DI container via YesWikiKernel, then wire in the
-     * synthetic services it can't dump (see includes/services.yaml).
+     * synthetic services it can't dump (see src/services.yaml).
      *
      * @return void
      */

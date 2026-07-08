@@ -69,7 +69,7 @@ class ArchiveServiceTest extends YesWikiTestCase
     public static function archiveProvider()
     {
         if (!class_exists(ArchiveService::class, false)) {
-            include_once 'includes/services/ArchiveService.php';
+            include_once 'src/services/ArchiveService.php';
         }
         $defaultFoldersToInclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
         $defaultFoldersToExclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_EXCLUDE');

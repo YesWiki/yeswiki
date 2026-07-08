@@ -6,7 +6,7 @@ use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ThemeManager;
 
 // inclusion de la bibliotheque de fonctions pour l'envoi des mails
-include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
+include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
 include_once YESWIKI_SOURCE_DIR . '/tools/contact/libs/contact.functions.php';
 
 $aclService = $this->services->get(AclService::class);

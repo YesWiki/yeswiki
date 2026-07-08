@@ -2,7 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
-require_once YESWIKI_SOURCE_DIR . '/includes/objects/MD5PasswordHasher.php'; // TODO use autoload
+require_once YESWIKI_SOURCE_DIR . '/src/objects/MD5PasswordHasher.php'; // TODO use autoload
 
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPasswordHasherFactory;
 use YesWiki\Core\Entity\User;
@@ -44,6 +44,7 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 
             // Check if the column type is varchar(256) - normalize comparison
             $type = strtolower($columnInfo['type']);
+
             return $type === 'varchar(256)' || $type === 'character varying(256)';
         } catch (Throwable $th) {
             return false;

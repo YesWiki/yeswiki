@@ -6,12 +6,11 @@
 !custom/
 !docs/
 !files/
-!formatters/
 !handlers/
-!includes/
 !javascripts/
 !lang/
 !private/
+!src/
 !styles/
 !templates/
 !tests/

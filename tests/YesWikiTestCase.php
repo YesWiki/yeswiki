@@ -10,7 +10,7 @@ class YesWikiTestCase extends TestCase
 {
     protected static function getWiki(): Wiki
     {
-        require_once 'includes/YesWikiLoader.php';
+        require_once 'src/YesWikiLoader.php';
         $wiki = YesWikiLoader::getWiki(true);
 
         return $wiki;

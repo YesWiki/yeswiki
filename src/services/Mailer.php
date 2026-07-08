@@ -121,7 +121,7 @@ class Mailer
 
     public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = '')
     {
-        include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
         send_mail(
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
@@ -208,7 +208,7 @@ class Mailer
 
     public function subscribeToMailingList($email, $mailingList)
     {
-        include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
         send_mail(
             $email,
             $email,

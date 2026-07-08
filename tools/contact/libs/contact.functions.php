@@ -3,7 +3,7 @@
 use YesWiki\Core\Service\GroupManager;
 use YesWiki\Core\Service\UserManager;
 
-include_once YESWIKI_SOURCE_DIR . '/includes/email.inc.php';
+include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
 
 function FindMailFromWikiPage($wikipage, $nbactionmail)
 {

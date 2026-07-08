@@ -13,7 +13,6 @@ use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
-use YesWiki\Core\Controller\GroupController;
 
 class UserController extends YesWikiController
 {
@@ -28,7 +27,7 @@ class UserController extends YesWikiController
      * - do not contains "<", ">", "\", "/" anywhere ;
      * - strictly more than 2 chars.
      *
-     * Be careful to update the regex in `includes/controllers/InstallationController.php` (validateAdminAccount) if there is changes here.
+     * Be careful to update the regex in `src/controllers/InstallationController.php` (validateAdminAccount) if there is changes here.
      *
      * Be careful, the pattern need to be escaped for PHP ("\"). Real pattern is : "^[^!#@<>\\\/][^<>\\\/]{2,}$".
      *
@@ -294,7 +293,7 @@ class UserController extends YesWikiController
                 if ($newValue != $group['value']) {
                     // Check if the group is now empty after removing the user
                     $groupName = substr($group['resource'], $prefixLen);
-                    $remainingMembers = array_filter(array_map('trim', preg_split("/[\\r\\n]+/", $newValue)));
+                    $remainingMembers = array_filter(array_map('trim', preg_split('/[\\r\\n]+/', $newValue)));
                     if (empty($remainingMembers) && strtolower($groupName) !== ADMIN_GROUP) {
                         $this->groupController->delete($groupName);
                     } elseif (!in_array($this->tripleStore->update(

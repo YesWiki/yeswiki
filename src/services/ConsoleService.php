@@ -10,7 +10,7 @@ use YesWiki\Wiki;
 
 class ConsoleService
 {
-    protected const CONSOLE_BIN = 'includes/commands/console';
+    protected const CONSOLE_BIN = 'src/commands/console';
 
     protected $wiki;
     protected $params;

@@ -3,7 +3,7 @@
 /**
  * Source dir vs instance dir separation, for wiki farms sharing one YesWiki source tree.
  *
- * - YESWIKI_SOURCE_DIR: where the YesWiki code lives (includes/, tools/, themes/, lang/,
+ * - YESWIKI_SOURCE_DIR: where the YesWiki code lives (src/, tools/, themes/, lang/,
  *   templates/, vendor/...). A farm instance's index.php defines it before requiring
  *   the shared index.php; standalone installs fall back to this file's own tree.
  * - YESWIKI_INSTANCE_DIR: where this wiki's data lives (yeswiki.config.php, files/, custom/,

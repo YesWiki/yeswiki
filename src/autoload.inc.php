@@ -10,8 +10,8 @@ spl_autoload_register(function ($className) {
         } elseif (empty($matches[3])) {
             switch ($matches[1]) {
                 case 'Core':
-                    if (file_exists($sourceDir . '/includes/' . $matches[2] . '.php')) {
-                        require $sourceDir . '/includes/' . $matches[2] . '.php';
+                    if (file_exists($sourceDir . '/src/' . $matches[2] . '.php')) {
+                        require $sourceDir . '/src/' . $matches[2] . '.php';
                     }
                     break;
                 default:
@@ -22,7 +22,7 @@ spl_autoload_register(function ($className) {
             // basePath
             switch ($matches[1]) {
                 case 'Core':
-                    $basePath = $sourceDir . '/includes';
+                    $basePath = $sourceDir . '/src';
                     break;
                 case 'Custom':
                     $basePath = 'custom';

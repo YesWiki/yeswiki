@@ -6,7 +6,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Core\Service\StringUtilService;
 
-require_once 'includes/services/StringUtilService.php';
+require_once 'src/services/StringUtilService.php';
 
 class StringUtilServiceTest extends TestCase
 {

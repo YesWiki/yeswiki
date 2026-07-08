@@ -93,7 +93,7 @@
   ],
   "autoload": {
     "classmap": [
-      "includes/ComposerScriptsHelper.php"
+      "src/ComposerScriptsHelper.php"
     ]
   }
 }

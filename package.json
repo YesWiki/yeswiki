@@ -10,7 +10,7 @@
   "scripts": {
     "lint-js": "eslint --fix .",
     "lint-other": "node_modules/.bin/prettier --write '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
-    "postinstall": "./includes/extract-files-from-node-modules.sh"
+    "postinstall": "./src/extract-files-from-node-modules.sh"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",

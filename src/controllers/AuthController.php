@@ -14,7 +14,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
-// this trait should be into includes/traits/LimitationsTrait folder
+// this trait should be into src/traits/LimitationsTrait folder
 // with namespace namespace YesWiki\Core\Trait; but it is not working for old php version previous php 8
 
 trait LimitationsTrait
@@ -49,7 +49,7 @@ class AuthController extends YesWikiController
     protected $passwordHasherFactory;
     protected $securityController;
     protected $userManager;
-    private $loggedUserCache = null;
+    private $loggedUserCache;
 
     public function __construct(
         ParameterBagInterface $params,

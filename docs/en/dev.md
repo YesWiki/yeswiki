@@ -503,7 +503,7 @@ curl https://mywiki.url/?api/hello/IT%20WORKS!!
 ### Principles (coding standards)
 
 In yeswiki's core code, the main declaration is in file :
-`includes/controllers/ApiController.php`.
+`src/controllers/ApiController.php`.
 This `controllers/ApiController.php` can be defined in any extension (in the tools folder, example `tools/helloworld/controllers/ApiController.php`)
 
 We are using Symfony annotations to **declare new routes** for the API.

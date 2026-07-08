@@ -40,7 +40,7 @@ class HashCashService
      * The bootstrap script served at GET ?api/hashcash: inserts the hidden "hashcash_value"
      * field into the given form, then fetches the actual puzzle from getKeyScript() below.
      * Equivalent of the old tools/security/wp-hashcash-js.php, served directly by URL - which
-     * doesn't exist as a physical file on farm instances (see includes/bootstrap_paths.php).
+     * doesn't exist as a physical file on farm instances (see src/bootstrap_paths.php).
      */
     public function getEnableScript(string $formId): string
     {

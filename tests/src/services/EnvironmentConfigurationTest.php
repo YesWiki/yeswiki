@@ -6,7 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\TestCase;
 use YesWiki\Core\Service\EnvironmentConfiguration;
 
-require_once 'includes/services/EnvironmentConfiguration.php';
+require_once 'src/services/EnvironmentConfiguration.php';
 
 #[CoversMethod(EnvironmentConfiguration::class, 'apply')]
 #[CoversMethod(EnvironmentConfiguration::class, 'knownEnvNames')]

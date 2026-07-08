@@ -10,7 +10,7 @@ use YesWiki\Core\YesWikiLoader;
 
 // boot paths, autoloaders and private/.env before touching the config file, so a
 // WAKKA_CONFIG_FILE set in the instance environment is honored by the pre-read below
-// (this script lives in the source tree: <source>/includes/commands/console)
+// (this script lives in the source tree: <source>/src/commands/console)
 require_once dirname(__DIR__) . '/bootstrap_paths.php';
 require_once dirname(__DIR__) . '/autoload.inc.php';
 require_once YESWIKI_SOURCE_DIR . '/vendor/autoload.php';
@@ -41,7 +41,7 @@ $application = new Application();
 
 // ... register commands
 foreach ([
-        'core' => YESWIKI_SOURCE_DIR . '/includes/commands/*.php',
+        'core' => YESWIKI_SOURCE_DIR . '/src/commands/*.php',
         'custom' => YESWIKI_INSTANCE_DIR . '/custom/commands/*.php',
         'tools' => YESWIKI_SOURCE_DIR . '/tools/*/commands/*.php',
     ] as $type => $search) {

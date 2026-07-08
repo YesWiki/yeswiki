@@ -36,7 +36,7 @@ class GenerateMigrationCommand extends Command
         $migrationFileName = $timestamp . '_' . $className . '.php';
         $migrationTemplate = "<?php\n\nuse YesWiki\\Core\\YesWikiMigration;\n\nclass $className extends YesWikiMigration\n{\n    public function run()\n    {\n\n    }\n}";
 
-        $folderPath = (!empty($tool) ? "tools/$tool/migrations/" : 'includes/migrations/');
+        $folderPath = (!empty($tool) ? "tools/$tool/migrations/" : 'src/migrations/');
         if (!file_exists($folderPath)) {
             mkdir($folderPath);
         }

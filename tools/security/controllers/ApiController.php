@@ -15,7 +15,7 @@ class ApiController extends YesWikiController
      * Bootstrap script that inserts the hashcash hidden field into a form, then fetches the
      * puzzle from getHashcashKey() below. Replaces the old tools/security/wp-hashcash-js.php,
      * which - being a plain file under tools/ - can't be reached by URL on farm instances
-     * (see includes/bootstrap_paths.php: only the source tree has a tools/ folder on disk).
+     * (see src/bootstrap_paths.php: only the source tree has a tools/ folder on disk).
      */
     #[Route('/api/hashcash', methods: ['GET'], options: ['acl' => ['public']])]
     public function getHashcashScript(Request $request): Response

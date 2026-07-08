@@ -20,7 +20,7 @@ then
     DIR=$(php -r "echo realpath('$DIR/../YesWiki/yeswiki');")
 fi
 
-php $DIR/includes/commands/console $@
+php $DIR/src/commands/console $@
 
 # TODO : add those commands
 # extension

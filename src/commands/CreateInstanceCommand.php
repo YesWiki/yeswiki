@@ -11,7 +11,7 @@ use YesWiki\Wiki;
 /**
  * Provision a new farm instance folder: an index.php pointing at this YesWiki source tree,
  * plus the instance data folders. Everything else (config, database) is created by the web
- * installer on first visit - see includes/bootstrap_paths.php for the data folder layout.
+ * installer on first visit - see src/bootstrap_paths.php for the data folder layout.
  */
 class CreateInstanceCommand extends Command
 {
