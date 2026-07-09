@@ -118,7 +118,8 @@ Editez ce fichier et remplacez
 `User-Agent: \*     Disallow: /`
 
 ATTENTION - Pour une efficacité réelle (étant donné que google ne respecte plus
-trop le robot.txt, il convient de rajouter dans yeswiki.config.php, cette ligne :
+trop le robot.txt, il convient de rajouter dans yeswiki.config.php, cette ligne
+:
 
 `'meta' => array('robots' => 'noindex, nofollow'),`
 
@@ -179,9 +180,9 @@ Cette interface d'administration permet :
 ### Le fichier de configuration
 
 Une fois le YesWiki créé / installé, on peut aller éditer le fichier
-**yeswiki.config.php**, se trouvant à la racine du dossier du YesWiki, accessible
-par FTP. Le fichier de configuration déclare un tableau avec des valeurs pour
-chaque élément de configuration.
+**yeswiki.config.php**, se trouvant à la racine du dossier du YesWiki,
+accessible par FTP. Le fichier de configuration déclare un tableau avec des
+valeurs pour chaque élément de configuration.
 
 **Voici le contenu du fichier de configuration par défaut**, voir les
 commentaires en fin de ligne pour le détail de chaque élément de configuration :
@@ -189,10 +190,8 @@ commentaires en fin de ligne pour le détail de chaque élément de configuratio
 ```php
 <?php
 // yeswiki.config.php créée Fri Jun  8 20:58:37 2012
-// ne changez pas la wikini_version manuellement!
 
 $yeswikiConfig = array ( // tableau de configuration
-  'wikini_version' => '0.5.0', // Ne pas toucher, version originale du code de wikini, ancêtre de YesWiki
   'debug' => 'no', // active le mode de débogage si passé à la valeur 'yes' (infos sur le nombre de requêtes, le temps écoulé et force l'affichage des erreurs php pour les développeurs) astuce : on peut aussi passer &debug dans l'url pour debugguer
   'mysql_host' => 'localhost',
   'mysql_database' => 'yeswiki',
@@ -260,9 +259,9 @@ Pour tous les détails sur les droits d'accès :
 
 On peut enlever le `?` des urls à condition de faire les bonnes règles de
 re-écriture dans votre serveur web (configuration d'Apache, Caddy, Nginx ou
-autre). Ensuite, dans le fichier `yeswiki.config.php`, on peut enlever le `?` dans
-le paramètre `base_url`, et passer `rewrite_mode`à `1`. Attention : mettre le
-paramètre `rewrite_mode` à `1` sans faire de re-écriture d'url, ni enlever le
+autre). Ensuite, dans le fichier `yeswiki.config.php`, on peut enlever le `?`
+dans le paramètre `base_url`, et passer `rewrite_mode`à `1`. Attention : mettre
+le paramètre `rewrite_mode` à `1` sans faire de re-écriture d'url, ni enlever le
 `?` de `base_url`, pourrait entrainer un dysfonctionnement de YesWiki, il suffit
 de remettre `rewrite_mode` à `0` pour corriger le problème.
 
@@ -488,10 +487,10 @@ listes._
 2. si ça ne fonctionne pas :
    1. se rendre dans l'interface de gestion de base de données du serveur
       concerné (`phpmyadmin`)
-   2. ouvrir en même temps le fichier `templates/installation-create-tables.sql.twig` depuis
-      votre wiki
-      ([fichier à télécharger](templates/installation-create-tables.sql.twig ':ignore'), la
-      partie du fichier propre à MySQL est celle du bloc `<% else %>`)
+   2. ouvrir en même temps le fichier
+      `templates/installation-create-tables.sql.twig` depuis votre wiki
+      ([fichier à télécharger](templates/installation-create-tables.sql.twig ':ignore'),
+      la partie du fichier propre à MySQL est celle du bloc `<% else %>`)
    3. vérifier dans la structure de chaque table de votre serveur (`phpmyadmin`)
       que chaque colonne est correctement définie.
    4. puis, dans cette ordre, modifier la colonne qui doit être en

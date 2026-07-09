@@ -162,7 +162,6 @@ actions:
           - lang
           - theme_path
           - wakka_version
-          - wikini_version
   listusers:
     label: _t(AB_advanced_action_listusers_label)
     properties:

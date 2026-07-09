@@ -178,11 +178,6 @@ class Wiki
         return $this->GetConfigValue('yeswiki_name');
     }
 
-    public function GetWikiNiVersion()
-    {
-        return WIKINI_VERSION;
-    }
-
     public function isCli(): bool
     {
         // NB: 'cli-server' (php -S) is deliberately NOT considered CLI: it serves real web

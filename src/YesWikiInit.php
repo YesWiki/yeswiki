@@ -187,7 +187,6 @@ class Init
     {
         $_rewrite_mode = detectRewriteMode();
         $yeswikiDefaultConfig = [
-            'wikini_version' => '',
             'yeswiki_version' => '',
             'yeswiki_release' => '',
             'charset' => 'UTF-8',
@@ -214,6 +213,7 @@ class Init
             'comments_handler' => 'yeswiki',
             'preview_before_save' => false,
             'allow_raw_html' => true,
+            'disallowed_html_tags' => ['title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext'],
             'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'bazariframe', 'render'],
             'revisionscount' => 30,
             'timezone' => 'Europe/Paris', // Only used if not set in yeswiki.config.php nor in php.ini

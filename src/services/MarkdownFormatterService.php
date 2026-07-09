@@ -10,10 +10,12 @@ use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\MarkdownConverter;
 use YesWiki\Core\Formatter\ActionExtension;
 use YesWiki\Core\Formatter\CommentExtension;
+use YesWiki\Core\Formatter\ProgressExtension;
 use YesWiki\Wiki;
 
 require_once __DIR__ . '/MarkdownFormatter/ActionExtension.php';
 require_once __DIR__ . '/MarkdownFormatter/CommentExtension.php';
+require_once __DIR__ . '/MarkdownFormatter/ProgressExtension.php';
 
 /**
  * Renders page content: standard CommonMark/GFM Markdown, plus Twig-like comments
@@ -70,12 +72,23 @@ class MarkdownFormatterService
             $environment = new Environment([
                 'html_input' => $wiki->GetConfigValue('allow_raw_html', true) ? 'allow' : 'escape',
                 'allow_unsafe_links' => false,
+                // GithubFlavoredMarkdownExtension pulls in DisallowedRawHtmlExtension, which by
+                // default escapes <iframe> along with <script>/<style>/etc.; YesWiki pages rely
+                // on embedding iframes (maps, videos...), so the default list (see
+                // yeswiki.config.php's 'disallowed_html_tags') excludes it while keeping the
+                // rest of that denylist. Wiki admins can override it in their own config.
+                'disallowed_raw_html' => [
+                    'disallowed_tags' => $wiki->GetConfigValue('disallowed_html_tags', [
+                        'title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext',
+                    ]),
+                ],
             ]);
             $environment->addExtension(new CommonMarkCoreExtension());
             $environment->addExtension(new GithubFlavoredMarkdownExtension());
             // supports [text](url "title"){.class #id key="value"} on links (and images)
             $environment->addExtension(new AttributesExtension());
             $environment->addExtension(new CommentExtension());
+            $environment->addExtension(new ProgressExtension());
             $environment->addExtension(new ActionExtension(
                 function (string $action) use ($wiki): string {
                     return $wiki->Action($action);

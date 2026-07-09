@@ -11,7 +11,6 @@ if (!empty($param)) {
         $param = 'yeswiki_name';
     }
     switch ($param) {
-        case 'wikini_version':
         case 'yeswiki_version':
         case 'yeswiki_release':
         case 'root_page':

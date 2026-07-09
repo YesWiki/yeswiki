@@ -463,7 +463,6 @@ class InstallationController
     protected function writeConfigFile(): void
     {
         // set version to current version, yay!
-        $this->config['wikini_version'] = WIKINI_VERSION;
         $this->config['yeswiki_version'] = YESWIKI_VERSION;
         $this->config['yeswiki_release'] = YESWIKI_RELEASE;
         if ($this->dbDriver() === 'mysql') {
