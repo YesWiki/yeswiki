@@ -24,6 +24,8 @@ class MapField extends BazarField
     protected const FIELD_SHOW_MAP_IN_ENTRY_VIEW = 7;
     protected const FIELD_GEOMETRIES = 9;
     protected const FIELD_MAX_GEOMETRIES = 13;
+    private const FIELD_CLASS_TYPE = 'MapField';
+
     public const DEFAULT_FIELDNAME_POSTALCODE = 'bf_code_postal';
     public const DEFAULT_FIELDNAME_STREET = 'bf_adresse';
     public const DEFAULT_FIELDNAME_STREET1 = 'bf_adresse1';
@@ -256,6 +258,16 @@ class MapField extends BazarField
 
     // GETTERS. Needed to use them in the Twig syntax
 
+    public function getLatitudeField()
+    {
+        return $this->latitudeField;
+    }
+
+    public function getLongitudeField()
+    {
+        return $this->longitudeField;
+    }
+
     public function getAutocomplete()
     {
         return $this->autocomplete;
@@ -271,6 +283,18 @@ class MapField extends BazarField
         return $this->autocompleteFieldnames;
     }
 
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_AUTOCOMPLETE_POSTALCODE] = $fieldProps['autocompleteFieldnames']['postalCode'] ?? '';
+        $new[self::FIELD_AUTOCOMPLETE_TOWN] = $fieldProps['autocompleteFieldnames']['town'] ?? '';
+        $new[self::FIELD_AUTOCOMPLETE_OTHERS] = implode('|', $fieldProps['autocompleteFieldnames']);
+        $new[self::FIELD_SHOW_MAP_IN_ENTRY_VIEW] = $fieldProps['showMapInEntryView'] ?? '';
+        ksort($new);
+
+        return $new;
+    }
+
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
@@ -278,6 +302,7 @@ class MapField extends BazarField
         return array_merge(
             parent::jsonSerialize(),
             [
+                'field_type' => self::FIELD_CLASS_TYPE,
                 'autocomplete' => $this->getAutocomplete(),
                 'geolocate' => $this->getGeolocate(),
                 'autocompleteFieldnames' => $this->getAutocompleteFieldnames(),

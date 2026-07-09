@@ -22,6 +22,7 @@ class PageManager
     protected $tripleStore;
     protected $userManager;
     protected $wiki;
+    public $pageTableName;
 
     protected $ownersCache; // different cache because to set at the same time to prevent infinite loop
     protected $pageCache;
@@ -51,6 +52,8 @@ class PageManager
 
         $this->ownersCache = [];
         $this->pageCache = [];
+
+        $this->pageTableName = trim($this->dbService->prefixTable('pages'));
     }
 
     /**
@@ -213,6 +216,27 @@ class PageManager
         return null;
     }
 
+
+    /**
+    * Get all pages with selected triple id
+    *
+    * @param type one type of the triple table;
+    * @param column column to display
+    */
+    public function getManyFromTriple($type, $column = '*'): array
+    {
+        $columns = is_array($column) ? implode(',', $column) : $column;
+        $triple_uri = TripleStore::TYPE_URI;
+        $request = <<<SQL
+        SELECT {$columns} FROM {$this->pageTableName} WHERE latest = 'Y' AND tag IN
+            (SELECT resource from {$this->dbService->prefixTable('triples')}
+            WHERE property = "{$triple_uri}" AND value = "{$type}")
+        SQL;
+        $pages = $this->dbService->loadAll($request);
+        $pages = $this->checkEntriesACL($pages);
+        return $pages;
+    }
+
     public function getAll(): array
     {
         $pages = $this->dbService->loadAll(<<<SQL
@@ -299,7 +323,6 @@ class PageManager
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='" . TripleStore::TYPE_URI . "' and `value`='" . EntryManager::TRIPLES_ENTRY_ID . "'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource`='{$this->dbService->escape($tag)}' and `property`='http://outils-reseaux.org/_vocabulary/metadata'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
@@ -307,6 +330,39 @@ class PageManager
         $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
             'id' => $tag,
         ]);
+    }
+
+    /**
+     * Delete database entries depending on $tags
+     * @param array $tags : array of pages
+     */
+    public function deleteManyOrphaned($tags)
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+
+        $keys = array_flip($tags);
+        $escaped = array_map(function ($tag) { return $this->dbService->escape($tag); }, $tags);
+
+        $escaped = implode('\', \'', $escaped);
+        $escaped = "'" .$escaped. "'";
+
+        array_diff_key($this->ownersCache, $keys);
+        array_diff_key($this->pageCache, $keys);
+
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag in ({$escaped}) OR comment_on in ({$escaped})");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag in ({$escaped}) ");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag in ({$escaped}) ");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('triples')} WHERE `resource` in ({$escaped})");
+        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag in ({$escaped}) ");
+        // $this->tagsManager->deleteAll($tags);
+
+        foreach ($tags as $tag) {
+            $errors = $this->eventDispatcher->yesWikiDispatch('page.deleted', [
+            'id' => $tag,
+            ]);
+        }
     }
 
     /**

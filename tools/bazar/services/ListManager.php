@@ -66,7 +66,7 @@ class ListManager
 
             return null;
         }
-        $data = $this->loadJson($page['body'], $id);
+        $data = json_decode($page['body'], true);
         if ($parent != null) {
             $this->cachedLists[$id] = $data;
         }
@@ -86,39 +86,13 @@ class ListManager
         return $data;
     }
 
-    private function loadJson(string $json, $id): array
-    {
-        $data = $this->convertDataStructure(json_decode($json, true));
-        $data['id'] = $id;
-
-        return $data;
-    }
-
-    // The structure of List object has been changed in 2024
-    // Convert old List { titre_liste: "My List", label: { id1: "first Key", id2: "second id" } }
-    // to { title: "My List", values: [{ id: "id1", label: "first id"}, { id: "id2", label: "second id"}]}
-    // We still convert the strucure on the fly in case the migration went wrong
-    public function convertDataStructure($json)
-    {
-        if (isset($json['titre_liste'])) {
-            $newJson = ['title' => $json['titre_liste'], 'nodes' => []];
-            foreach ($json['label'] as $id => $label) {
-                $newJson['nodes'][] = ['id' => $id, 'label' => $label];
-            }
-
-            return $newJson;
-        }
-
-        return $json;
-    }
-
     public function getAll($parent = null): array
     {
-        $lists = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
+        $data = $this->pageManager->getManyFromTriple("liste", "tag, body");
 
         $result = [];
-        foreach ($lists as $list) {
-            $result[$list['resource']] = $this->getOne($list['resource'], $parent);
+        foreach ( $data as $value) {
+            $result[$value['tag']] = json_decode($value['body'], true) ;
         }
 
         return $result;
@@ -133,13 +107,14 @@ class ListManager
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
         $json = json_encode([
+            'id' => $id,
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ]);
+        ], JSON_FORCE_OBJECT);
         $this->pageManager->save($id, $json);
 
-        $data = $this->loadJson($json, $id);
-        $this->cachedLists[$id] = $data;
+        // cache the newly created list
+        $this->cachedLists[$id] = json_decode($json);
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
 
@@ -154,13 +129,14 @@ class ListManager
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
         $json = json_encode([
+            'id' => $id,
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ]);
+        ], JSON_FORCE_OBJECT);
         $this->pageManager->save($id, $json);
 
-        $data = $this->loadJson($json, $id);
-        $this->cachedLists[$id] = $data;
+        // cache the newly created list
+        $this->cachedLists[$id] = json_decode($json);
     }
 
     public function delete($id)

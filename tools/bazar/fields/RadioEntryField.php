@@ -12,6 +12,7 @@ class RadioEntryField extends RadioField
 {
     public $isDistantJson;
     protected $baseUrl;
+    private const FIELD_CLASS_TYPE = 'RadioEntryField';
 
     public function __construct(array $values, ContainerInterface $services)
     {
@@ -26,6 +27,18 @@ class RadioEntryField extends RadioField
             $this->baseUrl = null;
         }
     }
+
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+        #[\ReturnTypeWillChange]
+        public function jsonSerialize()
+        {
+            return array_merge(
+                parent::jsonSerialize(),
+                [
+                    'field_type' => self::FIELD_CLASS_TYPE,
+                ]
+            );
+        }
 
     protected function renderStatic($entry)
     {

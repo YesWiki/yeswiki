@@ -16,6 +16,7 @@ class SubscribeField extends BazarField
     protected const FIELD_MAILER_EMAIL = 1;
     protected const FIELD_EMAIL_FIELD = 3;
     protected const FIELD_MAILER_TOOL = 4;
+    private const FIELD_CLASS_TYPE = 'SubscribeField';
 
     public const MAILER_EZMLM = 'ezmlm'; // OVH
     public const MAILER_SYMPA = 'sympa'; // Framaliste
@@ -108,4 +109,31 @@ class SubscribeField extends BazarField
 
         return $unsubscribeEmail;
     }
+
+    // LANG_FIXME not sure about this function
+    public static function mapToFieldArray($fieldProps): array
+    {
+       $new = parent::mapToFieldArray($fieldProps);
+       $new[self::FIELD_MAILER_TOOL] = $fieldProps['mailerTool'];
+       $new[self::FIELD_MAILER_EMAIL] = $fieldProps['mailerEmail'];
+       $new[self::FIELD_EMAIL_FIELD] = $fieldProps['emailField'];
+       ksort($new);
+       return $new;
+    }
+
+    // change return of this method to keep compatible with php 7.3 (mixed is not managed)
+    #[\ReturnTypeWillChange]
+    public function jsonSerialize()
+    {
+        return array_merge(
+            parent::jsonSerialize(),
+            [
+                'field_type' => self::FIELD_CLASS_TYPE,
+                'mailerEmail' => $this->mailerEmail,
+                'emailField' => $this->emailField,
+                'mailerTool' => $this->mailerTool,
+            ]
+        );
+    }
+
 }

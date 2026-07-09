@@ -13,6 +13,7 @@ class CalcField extends BazarField
 {
     protected const FIELD_DISPLAY_TEXT = 4;
     protected const FIELD_CALCFORMULA = 5;
+    private const FIELD_CLASS_TYPE = 'CalcField';
 
     private const ALLOWED_FUNCTIONS = [
         'sin' => 'sin', 'sinh' => 'sinh',
@@ -340,6 +341,15 @@ class CalcField extends BazarField
     public function getDisplayText(): ?string
     {
         return $this->displayText;
+    }
+
+    public static function mapToFieldArray($fieldProps): array
+    {
+        $new = parent::mapToFieldArray($fieldProps);
+        $new[self::FIELD_CALCFORMULA] = $fieldProps['calcFormula'];
+        $new[self::FIELD_DISPLAY_TEXT] = $fieldProps['displayText'];
+        ksort($new);
+        return $new;
     }
 
     // change return of this method to keep compatible with php 7.3 (mixed is not managed)

@@ -8,6 +8,7 @@ use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Core\Service\PageManager;
 
 function multiArraySearch($array, $key, $value)
 {
@@ -33,11 +34,7 @@ function baz_forms_and_lists_ids()
     $lists = array_map(function ($list) {
         return $list['title'];
     }, $lists);
-    $requete = 'SELECT bn_id_nature, bn_label_nature FROM ' . $GLOBALS['wiki']->config['table_prefix'] . 'nature';
-    $result = $GLOBALS['wiki']->LoadAll($requete);
-    foreach ($result as $form) {
-        $forms[$form['bn_id_nature']] = $form['bn_label_nature'];
-    }
+    $forms = $GLOBALS['wiki']->services->get(FormManager::class)->getAllids();
 
     return ['lists' => $lists, 'forms' => $forms];
 }
@@ -233,6 +230,22 @@ function genere_nom_wiki($nom, $occurence = 1)
 
         return genere_nom_wiki($nom, $occurence);
     }
+}
+
+/**
+ * get available slug from page name. First slugify page then look for existing page with same name.
+ * @param string name to look for
+ * return available slug
+ */
+function getAvailableSlug($name) : string {
+    $base_slug = $slug = URLify::slug($name);
+
+    $counter = 0;
+    $pageManager = $GLOBALS['wiki']->services->get(PageManager::class);
+    while (!empty($pageManager->getOne($slug, NULL, true, true))) {
+        $slug = $base_slug . $counter++;
+    }
+    return $slug;
 }
 
 function startsWith($haystack, $needle)
