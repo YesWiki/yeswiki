@@ -165,6 +165,6 @@ class SectionAction extends YesWikiAction
     }
 
     public function end(): string {
-        return '\n</div></section><!-- end of section -->';
+        return '</div></section><!-- end of section -->';
     }
 }
