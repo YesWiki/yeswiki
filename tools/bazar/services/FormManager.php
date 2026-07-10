@@ -31,6 +31,7 @@ class FormManager
     protected $pageManager;
     protected $tripleStore;
     protected $aclService;
+    protected $pageTableName;
 
     public function __construct(
         Wiki $wiki,
@@ -65,6 +66,7 @@ class FormManager
         $this->isAvailableOnlyOneEntryOption = null;
         $this->isAvailableOnlyOneEntryMessage = null;
         $this->attach = new \Attach($this->wiki);
+        $this->pageTableName = $this->dbService->prefixTable('pages');
     }
 
     protected function getBasePath()
@@ -185,12 +187,14 @@ class FormManager
         return [$prepared, $modify];
     }
 
-    public function getOne($formId): ?array
-    {
-        if (isset($this->cachedForms[$formId])) {
-            return $this->cachedForms[$formId];
-        }
+    private function getPageTagFromId($id): ?String {
+        $request = 'SELECT tag FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id.'; ';
+        $tag = $this->dbService->loadSingle($request);
+        return $tag['tag'] ?? null ;
+    }
 
+    public function getOne($formId, $lang = 'default'): ?array
+    {
         //COMMENT we should begin to use form name instead of form number to find form.
         if (is_numeric($formId)) {
             $formId = $this->getPageTagFromId($formId);
@@ -198,6 +202,11 @@ class FormManager
                 return null;
             }
         }
+
+        if (isset($this->cachedForms[$formId . $lang])) {
+            return $this->cachedForms[$formId . $lang];
+        }
+
 
         $form = $this->pageManager->getOne($formId, null, true, false, null);
 
@@ -212,12 +221,9 @@ class FormManager
         return $form ?? [];
     }
 
-    public function getPageTagFromId($id) {
-        $request = 'SELECT tag FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id.'; ';
-        $tag = $this->dbService->loadSingle($request);
-        return $tag['tag'] ?? null ;
-    }
-
+    /*
+    * get json form representation from wiki syntax
+    */
     public function getFromRawData($form)
     {
         foreach ($form as $key => $value) {
@@ -383,6 +389,7 @@ class FormManager
                 'type' => $form['bn_sem_type'],
                 'use_template' => $form['bn_sem_use_template'] ?? '',
             ],
+            'lang' => $this->wiki->lang,
             'only_one_entry' => $form['bn_only_one_entry'] ?? '',
             'only_one_entry_message' => $form['bn_only_one_entry_message'],
             'fields' => $form_array,
@@ -411,6 +418,10 @@ class FormManager
              }
 
         $form = $this->getFromRawData($data);
+        $previous = $this->getOne($tag, 'all');
+
+        $form['extra_langs'] = $previous['extra_langs'];
+
         $this->__createOrUpdate($form, $tag);
 
     }

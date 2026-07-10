@@ -127,7 +127,7 @@ class EntryManager
             return null;
         }
 
-        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
+        $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL, 'default');
         $debug = ($this->wiki->GetConfigValue('debug') == 'yes');
         //  $debug = $this->wiki->isDebugEnabled ();
         $data = $this->getDataFromPage($page, $semantic, $debug);
@@ -173,7 +173,7 @@ class EntryManager
         $extraFields = [
             'id_fiche', 'id_typeannonce', 'date_creation_fiche',
             'date_maj_fiche', 'statut_fiche', 'url',
-            '-is-external-', 'external-data',
+            '-is-external-', 'external-data', 'lang', 'extra_lang',
         ];
 
         foreach ($extraFields as $key) {
@@ -203,7 +203,8 @@ class EntryManager
                 return [];
             }
 
-            $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
+            // duplicate code inside this function and after
+            //$data = $this->removeUnknownFields($data['id_typeannonce'], $data);
 
             // Keep only the fields defined in the form definition
             $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
@@ -231,7 +232,7 @@ class EntryManager
             // Add extra fields that doesn't belong to the form definition
             $extraFields = [
                 'id_fiche', 'id_typeannonce', 'date_creation_fiche',
-                'date_maj_fiche', 'statut_fiche', 'url',
+                'date_maj_fiche', 'statut_fiche', 'url', 'lang', 'extra_lang',
             ];
 
             foreach ($extraFields as $key) {
@@ -337,6 +338,8 @@ class EntryManager
 
         // Let's format the data
         $data = $this->formatDataBeforeSave($data);
+        // add lang information
+        $data['lang'] = $this->wiki->lang;
 
         // We need to check bf_titre and id_typeannonce once the data are formated
         $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);

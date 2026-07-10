@@ -20,6 +20,7 @@ class FormController extends YesWikiController
     protected $securityController;
     protected $activityPubService;
     protected $webfingerService;
+    protected $lang;
 
     public function __construct(FormManager $formManager, SecurityController $securityController, CsrfTokenController $csrfTokenController, ActivityPubService $activityPubService, WebfingerService $webfingerService)
     {
@@ -114,7 +115,8 @@ class FormController extends YesWikiController
     {
         if ($this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
             $form = $this->formManager->getOne($id);
-            $tag = $form['tag'];
+
+            $tag = $form['tag'] ?? $form['bn_label_nature'];
             $post = $this->getRequest()->request;
 
             if ($post->has('valider')) {

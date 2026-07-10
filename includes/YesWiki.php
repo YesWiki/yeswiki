@@ -72,6 +72,7 @@ class Wiki
     public $pageCacheFormatted = [];
     public $_groupsCache = [];
     public $_actionsAclsCache = [];
+    public $lang;
 
     /**
      * Constructor.
@@ -85,6 +86,7 @@ class Wiki
         $this->method = $init->method;
 
         $this->request = Request::createFromGlobals();
+        $this->lang = $this->request->get('lang') ?? $this->config['default_language'] ?? 'fr';
         $this->services = $init->initCoreServices($this);
         $this->loadExtensions();
 

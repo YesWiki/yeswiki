@@ -2,7 +2,7 @@
   margin-top: 15px;
 }
 .list-form
-  .list-node-container:not([data-depth="1"][data-index="0"])
+  .list-node-container:not([data-depth='1'][data-index='0'])
   > .list-node
   > input {
   border-top: 0;
@@ -19,6 +19,11 @@
 .list-form .list-node-children:not(.root) {
   margin-left: 2.5rem;
 }
+
+.list-form .list-node-children:last-child {
+  margin-bottom: 1rem;
+}
+
 .list-form .list-new-node {
   margin-bottom: 15px;
 }

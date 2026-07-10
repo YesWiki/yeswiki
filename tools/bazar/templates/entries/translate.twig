@@ -1,0 +1,65 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js', true, false) }}
+
+{{ include_javascript('tools/bazar/presentation/javascripts/entry-translate.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/list-form.css') }}
+
+<form method="post" id="translate-entry" class="translate-entry form-horizontal"
+    data-extraLang="{{ langs| json_encode }}" data-entry="{{ entry|json_encode }}" data-fieldsNames="{{ fieldsNames|json_encode }}" data-baseLang="{{ baseLang }}">
+    <div class="control-group form-group" v-if="extraLangsList.length > 0">
+        <label class="control-label col-sm-3">
+			{{ _t('BAZ_TRANSLATE_IN') }}
+		</label>
+          <select v-model="selectedLanguage" class="form-control input-sm" id="lang">
+            {% for lang in langs %}
+            <option {% if lang == baseLang %}selected {% endif %} value="{{ lang }}"> {{ lang }} </option>
+            {% endfor %}
+          </select>
+    </div>
+
+	{# entries #}
+	<div class="nodes-container">
+	   {% if isEntry %}
+	   <div class="form-entry" v-for="value of fieldsNames">
+				<label class="control-label"> {{ "{{ value.label }}"  }} </label>
+				<div class="control-group form-group">
+				    <div class="controls input-group col-sm-9">
+    				    <input type="text" v-model="entry[value.name]"
+    	       		       placeholder="{{ _t('BAZ_ENTRY_NAME') }}" class="form-control" disabled required/>
+						<template v-for="lang of extraLangsList">
+    					<input  type="text" class="form-control extra_lang_input" v-model="extraLangValues[lang][value.name]" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="lang != baseLang && lang == selectedLanguage"/>
+						</template>
+					</div>
+				</div>
+	   </div>
+	   {% else %}
+		<div class="form-entry" v-for="(value, key) in display_fields" v-if="value">
+		<label class="control-label"> {{ "{{ key }}"  }} </label>
+		<div class="control-group form-group">
+		    <div class="controls input-group col-sm-9">
+    				    <input type="text" v-model="entry[key]"
+    	       		       placeholder="{{ _t('BAZ_ENTRY_NAME') }}" class="form-control" disabled required/>
+                        <template v-for="lang in extraLangsList">
+    					<input v-model="extraLangValues[lang][key]" type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="lang != baseLang && selectedLanguage === lang"/>
+			</div>
+		</div>
+  </div>
+		{% endif %}
+
+	</div>
+
+	<input type="hidden" name="entry" :value="jsonEntry" />
+	<input type="hidden" name="extra_lang" :value="JsonExtraLang" />
+	<input name="antispam" value="1" type="hidden">
+
+	{# Form Actions #}
+	<div class="form-actions form-group">
+		<div class="col-sm-9 col-sm-offset-3">
+			<button class="btn btn-primary" type="submit" name="submit">
+				{{ _t('BAZ_SAVE') }}
+			</button>
+			<a class="btn btn-default" href="{{ url( [])|raw }}">
+				{{ _t('BAZ_ANNULER') }}
+			</a>
+		</div>
+	</div>
+</div>
