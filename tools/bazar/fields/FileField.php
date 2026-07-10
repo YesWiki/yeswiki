@@ -72,7 +72,7 @@ class FileField extends BazarField
         $deletedFile = false;
         $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/file-field.js');
 
-        if (!empty($value) && !$isUrl) {
+        if (!empty($value) && !$this->isUrl($value)) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
@@ -93,7 +93,7 @@ class FileField extends BazarField
         }
 
         // Handle URL value
-        if ($isUrl) {
+        if ($this->isUrl($value)) {
             // Handle URL deletion
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
@@ -290,7 +290,12 @@ class FileField extends BazarField
     {
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_READ_LABEL] = $fieldProps['readLabel'] ?? '';
-        $new[self::FIELD_AUTHORIZED_EXTS_LABEL] = $fieldProps['authorizedExts'] ? implode(',',$fieldProps['authorizedExts']) : '';
+        if (!empty($fieldProps['autorizedExts'])) {
+            $new[self::FIELD_AUTHORIZED_EXTS_LABEL] =
+            is_array($fieldProps['authorizedExts']) ? implode(',',$fieldProps['authorizedExts']) : $fieldProps['autorizedExts'];
+        } else {
+            $new[self::FIELD_AUTHORIZED_EXTS_LABEL] = '';
+        }
         ksort($new);
         return $new;
     }

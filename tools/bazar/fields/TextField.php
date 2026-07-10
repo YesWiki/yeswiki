@@ -104,7 +104,7 @@ class TextField extends BazarField
         {
            $new = parent::mapToFieldArray($fieldProps);
            $new[self::FIELD_PATTERN] = $fieldProps['pattern'];
-           $new[self::FIELD_SUB_TYPE] = $fieldProps['subType'];
+           $new[self::FIELD_SUB_TYPE] = $fieldProps['subType'] ?? '';
            ksort($new);
            return $new;
         }
