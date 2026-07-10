@@ -10,6 +10,8 @@ use Tamtamchik\SimpleFlash\Flash;
 use Throwable;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\ConditionsCheckingField;
+use YesWiki\Bazar\Field\LabelField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
@@ -156,8 +158,28 @@ class EntryController extends YesWikiController
             // if not found, use default template
             if (is_null($renderedEntry)) {
                 if (!empty($pLocalForm)) {
+                    $fieldsByPropertyName = [];
+                    foreach ($pLocalForm['prepared'] as $field) {
+                        if ($field instanceof BazarField && !empty($field->getPropertyName())) {
+                            $fieldsByPropertyName[$field->getPropertyName()] = $field;
+                        }
+                    }
+                    $conditionsStack = [];
                     foreach ($pLocalForm['prepared'] as $field) {
                         if ($field instanceof BazarField) {
+                            if ($field instanceof ConditionsCheckingField) {
+                                $conditionsStack[] = $field->evaluate($entry, $fieldsByPropertyName);
+
+                                continue;
+                            }
+                            if ($field instanceof LabelField && !empty($conditionsStack) && $field->isConditionsCheckingClosingTag()) {
+                                array_pop($conditionsStack);
+
+                                continue;
+                            }
+                            if (in_array(false, $conditionsStack, true)) {
+                                continue;
+                            }
                             // TODO handle html_outside_app mode for images
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
                                 $renderedEntry .= $field->renderStaticIfPermitted($entry, $userNameForRendering);
@@ -205,7 +227,7 @@ class EntryController extends YesWikiController
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
 
-        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, "", "");
+        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, '', '');
 
         return $this->render('@bazar/entries/view.twig', [
             'form' => $pLocalForm,
@@ -517,6 +539,7 @@ class EntryController extends YesWikiController
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
 
+        $values = [];
         $values['html'] = $html;
         $values['fiche'] = $entry;
         $values['form'] = $form;
@@ -722,7 +745,7 @@ class EntryController extends YesWikiController
 
     /* END OF PART TO FILTER ON DATE */
 
-    public function renderBazarList($entries, $param = [], $showNumEntries = true)
+    public function renderBazarList($entries, $params = [], $showNumEntries = true)
     {
         $ids = [];
         foreach ($entries as $entry) {
