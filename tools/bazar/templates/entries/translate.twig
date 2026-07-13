@@ -24,9 +24,13 @@
 				<div class="control-group form-group">
 				    <div class="controls input-group col-sm-9">
     				    <input type="text" v-model="entry[value.name]"
-    	       		       placeholder="{{ _t('BAZ_ENTRY_NAME') }}" class="form-control" disabled required/>
+    	       		       placeholder="{{ _t('BAZ_ENTRY_NAME') }}" class="form-control" disabled v-if="value.type != 'textarea'"/>
+    				    <textarea v-model="entry[value.name]"
+    	       		       placeholder="{{ _t('BAZ_ENTRY_NAME') }}" class="form-control" disabled v-if="value.type == 'textarea'"></textarea>
 						<template v-for="lang of extraLangsList">
-    					<input  type="text" class="form-control extra_lang_input" v-model="extraLangValues[lang][value.name]" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="lang != baseLang && lang == selectedLanguage"/>
+						<textarea class="form-control extra_lang_input" v-model="extraLangValues[lang][value.name]" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="lang != baseLang && lang == selectedLanguage && value.type == 'textarea'"/>
+						</textarea>
+    					<input :type=value.type class="form-control extra_lang_input" v-model="extraLangValues[lang][value.name]" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="lang != baseLang && lang == selectedLanguage && value.type != 'textarea'"/>
 						</template>
 					</div>
 				</div>
