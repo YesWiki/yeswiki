@@ -2,11 +2,11 @@
 
 // Classe de gestion de l'action {{attach}}
 
+use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Security\Controller\SecurityController;
-use stefangabos\Zebra_Image\Zebra_Image;
 
 if (!class_exists('attach')) {
     class attach
@@ -81,9 +81,9 @@ if (!class_exists('attach')) {
             if ($unit) {
                 // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
                 return round($size * pow(1024, stripos('bkmgtpezy', $unit[0])));
-            } else {
-                return round($size);
             }
+
+            return round($size);
         }
 
         /**
@@ -182,6 +182,7 @@ if (!class_exists('attach')) {
                     )
             );
 
+            $file = [];
             // decompose le nom du fichier en nom+extension ou en page/nom+extension
             if (preg_match('`^((.+)/)?(.*)\.(.*)$`', str_replace(' ', '_', $this->file), $match)) {
                 list(, , $file['page'], $file['name'], $file['ext']) = $match;
@@ -897,6 +898,7 @@ if (!class_exists('attach')) {
         public function size_readable($size, $max = null, $system = 'si', $retstring = '%01.2f %s')
         {
             // Pick units
+            $systems = [];
             $systems['si']['prefix'] = ['', 'Ko', 'Mo', 'Go', 'To', 'Po'];
             $systems['si']['size'] = 1000;
             $systems['bi']['prefix'] = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'];
@@ -1185,10 +1187,10 @@ if (!class_exists('attach')) {
             if (!$result) {
                 // in case of error, show error code
                 return $imgTrans->error;
-            // if there were no errors
-            } else {
-                return $imgTrans->target_path;
+                // if there were no errors
             }
+
+            return $imgTrans->target_path;
         }
     }
 }
