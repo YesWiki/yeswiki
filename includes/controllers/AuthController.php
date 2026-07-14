@@ -209,6 +209,7 @@ class AuthController extends YesWikiController
 
     public function login($user, $remember = 0)
     {
+        $previousUserName = $_SESSION['user']['name'] ?? null;
         if (isset($_SESSION['user']) && $_SESSION['user']['name'] != $user['name']) {
             $this->cleanSensitiveDataFromSession();
         }
@@ -222,6 +223,15 @@ class AuthController extends YesWikiController
                 'name' => $user['name'],
                 'lastConnection' => $currentDateTime->getTimestamp(),
             ];
+
+        if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->wiki->isCli()) {
+            // regenerate the session ID whenever the authenticated identity actually changes
+            // (anonymous -> user, or user A -> user B) to prevent session fixation;
+            // this deliberately excludes connectUser()'s routine per-request re-hydration of
+            // an already logged-in user, which calls login() again with the same name each time
+            session_regenerate_id(true);
+        }
+
         if (!$this->wiki->isCli()) {
             if (!($user instanceof User)) {
                 if (!empty($user['name'])) {
