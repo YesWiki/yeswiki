@@ -414,8 +414,15 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                         return $this->inLineTag('i') . htmlspecialchars($matches[1]) . $this->inLineTag('i');
                     }
                     // markdown images compatibility
-                    elseif (preg_match('/^\!\[([^\]]*)\]\(([^\) ]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
-                        $src = $matches[2];
+                    elseif (preg_match('/^\!\[([^\]]*)\]\(([^) \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+)(?: "(.*)")?\)$/sm', $thing, $matches)) {
+                        // reject dangerous non-http(s) schemes (javascript:, data:, vbscript:, ...) ;
+                        // relative paths (wiki attachments) and http(s) links stay allowed, like the
+                        // plain-url autolink branch above
+                        if (preg_match('/^[a-z][a-z0-9+.-]*:/i', $matches[2]) && !preg_match('/^https?:/i', $matches[2])) {
+                            return htmlspecialchars($thing, ENT_COMPAT, YW_CHARSET);
+                        }
+
+                        $src = htmlspecialchars($matches[2]);
                         $alt = htmlspecialchars($matches[1] ?? '');
                         $title = htmlspecialchars($matches[3] ?? '');
 
