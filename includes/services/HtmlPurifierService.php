@@ -83,9 +83,6 @@ class HtmlPurifierService
      */
     public function sanitizeSVG(string $content)
     {
-        if (!$this->params->get('htmlPurifierActivated')) {
-            return $content;
-        }
         if (is_null($this->sanitizer)) {
             $this->sanitizer = new Sanitizer();
         }
