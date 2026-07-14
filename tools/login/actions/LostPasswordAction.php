@@ -202,14 +202,16 @@ class LostPasswordAction extends YesWikiAction
         }
         $this->authController->setPassword($user, $password);
         // Was able to update password => Remove the key from triples table
-        $this->tripleStore->delete($user['name'], UserManager::KEY_VOCABULARY, $key, '', '');
+        // (only one active key per user, so no need to match the exact value)
+        $this->tripleStore->delete($user['name'], UserManager::KEY_VOCABULARY, null, '', '');
 
         return true;
     }
 
     /** Part of the Password recovery process: Checks the provided key against the value stored for the provided user in triples table.
      *
-     * As part of the Password recovery process, a key is generated and stored as part of a (user, $this->keyVocabulary, key) triple in the triples table. This function checks wether the key is right or not.
+     * As part of the Password recovery process, a key is generated and stored as part of a (user, $this->keyVocabulary, "key:issuedAt") triple
+     * in the triples table. This function checks whether the key is right and still within its validity window.
      * See Password recovery process above
      * replaces checkEmailKey($hash, $key) from login.functions.php
      *         TODO : Add error handling
@@ -222,6 +224,19 @@ class LostPasswordAction extends YesWikiAction
     private function checkEmailKey(string $hash, string $user): bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        return !is_null($this->tripleStore->exist($user, UserManager::KEY_VOCABULARY, $hash, '', ''));
+        $storedValue = $this->tripleStore->getOne($user, UserManager::KEY_VOCABULARY, '', '');
+        if (empty($storedValue)) {
+            return false;
+        }
+        $parts = explode(UserManager::KEY_VALUE_SEPARATOR, $storedValue);
+        if (count($parts) !== 2) {
+            return false; // malformed or legacy (pre-expiry) value : reject
+        }
+        [$storedHash, $issuedAt] = $parts;
+        if (!hash_equals($storedHash, $hash)) {
+            return false;
+        }
+
+        return (time() - (int) $issuedAt) <= UserManager::KEY_TTL;
     }
 }

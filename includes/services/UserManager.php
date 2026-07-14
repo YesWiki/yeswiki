@@ -39,6 +39,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     private array $associatedEntryCache = [];
 
     public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
+    // stored triple value is "$hashedKey$KEY_VALUE_SEPARATOR$issuedAtTimestamp"
+    public const KEY_VALUE_SEPARATOR = ':';
+    // password recovery links expire after 1 hour
+    public const KEY_TTL = 3600;
 
     public function __construct(
         Wiki $wiki,
@@ -207,8 +211,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $hashedKey = $passwordHasher->hash($plainKey);
         // Erase the previous triples in the trible table
         $this->tripleStore->delete($user['name'], self::KEY_VOCABULARY, null, '', '');
-        // Store the (name, vocabulary, key) triple in triples table
-        $this->tripleStore->create($user['name'], self::KEY_VOCABULARY, $hashedKey, '', '');
+        // Store the (name, vocabulary, key:issuedAt) triple in triples table
+        $this->tripleStore->create($user['name'], self::KEY_VOCABULARY, $hashedKey . self::KEY_VALUE_SEPARATOR . time(), '', '');
 
         // Generate the recovery link
         $link = $this->wiki->Href('', 'MotDePassePerdu', [
@@ -235,6 +239,21 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         return $link;
+    }
+
+    /**
+     * Part of the Password recovery process: Deletes expired password recovery keys from the triples table.
+     * Called periodically from YesWiki::Maintenance().
+     */
+    public function purgeExpiredPasswordRecoveryKeys(): void
+    {
+        foreach ($this->tripleStore->getMatching(null, self::KEY_VOCABULARY, null) as $triple) {
+            $parts = explode(self::KEY_VALUE_SEPARATOR, $triple['value']);
+            $issuedAt = count($parts) === 2 ? (int) $parts[1] : 0;
+            if (time() - $issuedAt > self::KEY_TTL) {
+                $this->tripleStore->delete($triple['resource'], self::KEY_VOCABULARY, $triple['value'], '', '');
+            }
+        }
     }
 
     /**
