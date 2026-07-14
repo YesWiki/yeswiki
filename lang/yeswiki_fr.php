@@ -466,6 +466,7 @@ return [
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Nombre maximum de versions d\'une page dans l\'historique des modifications',
     'EDIT_CONFIG_HINT_DEFAULT_COMMENT_AVATAR' => 'Image d\'avatar par défaut pour les commentaires (URL vers une image)',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Activer le nettoyage HTML avant sauvegarde. Attention, modifie le contenu à la sauvegarde ! (true ou false)',
+    'EDIT_CONFIG_HINT_HTMLPURIFIERSAFEIFRAMEREGEXP' => 'Regexp utilisée pour autoriser les url src des <iframe> quand le nettoyage HTML est actif. Laisser vide pour interdire toutes les iframes. La valeur par défaut est très permissive (toute url https) : restreignez-la aux domaines de confiance pour un wiki public.',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Activer les favoris (true ou false)',
     'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Activer la prévisualisation avant sauvegarde (true ou false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Paramètres Principaux',
