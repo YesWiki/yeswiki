@@ -20,8 +20,9 @@ class ActivityPubService
     protected $httpSignatureService;
     protected $semanticTransformer;
     protected $tripleStore;
+    protected $ssrfUrlValidator;
 
-    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, ContainerInterface $container, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore)
+    public function __construct(ParameterBagInterface $params, WebfingerService $webfingerService, ContainerInterface $container, HttpSignatureService $httpSignatureService, SemanticTransformer $semanticTransformer, TripleStore $tripleStore, SsrfUrlValidator $ssrfUrlValidator)
     {
         $this->params = $params;
         $this->httpClient = HttpClient::create();
@@ -30,6 +31,7 @@ class ActivityPubService
         $this->httpSignatureService = $httpSignatureService;
         $this->semanticTransformer = $semanticTransformer;
         $this->tripleStore = $tripleStore;
+        $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
     public function isEnabled($form)
@@ -71,10 +73,14 @@ class ActivityPubService
     }
 
     public function getActorInbox(string $actorUri) : string {
+        $resolve = $this->ssrfUrlValidator->resolveSafe($actorUri);
+
         $response = $this->httpClient->request('GET', $actorUri, [
             'headers' => [
                 'Accept' => 'application/ld+json'
-            ]
+            ],
+            'max_redirects' => 0,
+            'resolve' => $resolve,
         ]);
 
         $actor = json_decode($response->getContent(), true);
@@ -113,12 +119,15 @@ class ActivityPubService
 
         foreach ($recipientsUris as $recipientUri) {
             $inboxUri = $this->getActorInbox($recipientUri);
+            $resolve = $this->ssrfUrlValidator->resolveSafe($inboxUri);
 
             $signatureHeaders = $this->httpSignatureService->generateSignature($activity, $inboxUri, $form);
 
             $response = $this->httpClient->request('POST', $inboxUri, [
                 'body' => json_encode($activity, JSON_UNESCAPED_SLASHES),
-                'headers' => $signatureHeaders
+                'headers' => $signatureHeaders,
+                'max_redirects' => 0,
+                'resolve' => $resolve,
             ]);
 
             $body = $response->getContent(false); // The real error message is on the body
@@ -244,8 +253,11 @@ class ActivityPubService
         $entryManager = $this->container->get(EntryManager::class);
 
         // Fetch actor profile to get its outbox URL
+        $resolve = $this->ssrfUrlValidator->resolveSafe($actorUri);
         $response = $this->httpClient->request('GET', $actorUri, [
-            'headers' => ['Accept' => 'application/activity+json']
+            'headers' => ['Accept' => 'application/activity+json'],
+            'max_redirects' => 0,
+            'resolve' => $resolve,
         ]);
         $actor = json_decode($response->getContent(), true);
 
@@ -335,8 +347,11 @@ class ActivityPubService
         $maxPages = 20; // Safety limit to avoid infinite loops
 
         for ($page = 0; $url && $page < $maxPages; $page++) {
+            $resolve = $this->ssrfUrlValidator->resolveSafe($url);
             $response = $this->httpClient->request('GET', $url, [
-                'headers' => ['Accept' => 'application/activity+json']
+                'headers' => ['Accept' => 'application/activity+json'],
+                'max_redirects' => 0,
+                'resolve' => $resolve,
             ]);
             $data = json_decode($response->getContent(), true);
             $type = $data['type'] ?? null;

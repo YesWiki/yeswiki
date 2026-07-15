@@ -200,6 +200,10 @@ class FormController extends YesWikiController
 
         $post = $this->getRequest()->request;
         if ($post->has('actor_handle')) {
+            if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+            }
+
             $actorHandle = $post->get('actor_handle');
             $recipientUri = str_starts_with($actorHandle, 'http') ? $actorHandle : $this->webfingerService->getRemoteActor($actorHandle);
 
@@ -224,6 +228,10 @@ class FormController extends YesWikiController
 
     public function addFollowing($id, $actorUri)
     {
+        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
 
         $this->activityPubService->postActivity(["type" => "Follow", "object" => $actorUri, "to" => $actorUri], $form);
@@ -233,6 +241,10 @@ class FormController extends YesWikiController
 
     public function removeFollowing($id, $actorUri)
     {
+        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
         $formActorUri = $this->activityPubService->getFormActorUri($form);
 
@@ -254,6 +266,10 @@ class FormController extends YesWikiController
 
     public function syncActorPosts($id, $actorUri)
     {
+        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
         $stats = $this->activityPubService->syncActorPosts($actorUri, $form);
 
@@ -269,6 +285,10 @@ class FormController extends YesWikiController
 
     public function removeFollower($id, $actorUri)
     {
+        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
+        }
+
         $form = $this->formManager->getOne($id);
         $formActorUri = $this->activityPubService->getFormActorUri($form);
 
