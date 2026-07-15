@@ -237,8 +237,19 @@ class PageManager
     * @param type one type of the triple table;
     * @param column column to display
     */
-    public function getManyFromTriple($type, $column = '*'): array
+    public function getManyFromTriple($type, $column = '*', $bazar_lang = null): array
     {
+
+        if (isset($bazar_lang)) {
+            $lang = $bazar_lang === 'default' ? $this->wiki->lang : $bazar_lang;
+        }
+
+        if (!isset($lang) or $lang == 'all') {
+            $columns = '*';
+        } else {
+            $columns = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.extra_lang.$lang\"), body)) as body";
+        }
+
         $columns = is_array($column) ? implode(',', $column) : $column;
         $triple_uri = TripleStore::TYPE_URI;
         $request = <<<SQL

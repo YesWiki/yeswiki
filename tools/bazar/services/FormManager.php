@@ -142,7 +142,7 @@ class FormManager
             if ($template_list[$temp_index][0] == 'image') {
                 $modify = true;
                 $image_comp = $template_list[$temp_index];
-                $default_image_filename = $basePath . "defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
+                $default_image_filename = $basePath . "defaultimage{$form['id']}_{$image_comp[1]}.jpg";
                 if (file_exists($default_image_filename)) {
                     $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $image_comp[ImageField::FIELD_IMAGE_DEFAULT] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
                 } else {
@@ -158,10 +158,10 @@ class FormManager
     protected function prepare_with_special_parameters($form)
     {
         $basePath = $this->getBasePath();
-        if (isset($form['bn_template'])) {
-            $template_list = $this->parseTemplate($form['bn_template']);
-        } else {
+        if (isset($form['fields'])) {
             $template_list = $form;
+        } else {
+            $template_list = $this->parseTemplate($form['bn_template']);
         }
 
         $prepared = [];
@@ -187,7 +187,7 @@ class FormManager
         return [$prepared, $modify];
     }
 
-    private function getPageTagFromId($id): ?String {
+    public function getPageTagFromId($id): ?String {
         $request = 'SELECT tag FROM '. $this->pageManager->pageTableName .' WHERE latest = "Y" AND json_value(body, "$.id") = '.$id.'; ';
         $tag = $this->dbService->loadSingle($request);
         return $tag['tag'] ?? null ;
@@ -208,7 +208,7 @@ class FormManager
         }
 
 
-        $form = $this->pageManager->getOne($formId, null, true, false, null);
+        $form = $this->pageManager->getOne($formId, null, true, false, null, $lang);
 
         if (!$form) {
             return null;
@@ -216,6 +216,7 @@ class FormManager
 
         $form = $this->getFromRawData($form);
 
+        $form['tag'] = $formId;
         $this->cachedForms[$formId] = $form;
 
         return $form ?? [];
@@ -328,12 +329,12 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $id =  $data['id'] ?? $data['bn_id_nature'];
 
         // If ID is not set or if it is already used, find a new ID
         if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
+        $id =  $data['id'] ?? $data['bn_id_nature'];
 
         $activitypubEnabled = (int) $this->activityPubService->isEnabled($data);
 
@@ -385,20 +386,21 @@ class FormManager
             'description' => $form['bn_description'],
             'condition' => $form['bn_condition'],
             'semantic' => [
-                'context' => $form['bn_sem_context'],
-                'type' => $form['bn_sem_type'],
+                'context' => $form['bn_sem_context'] ?? '',
+                'type' => $form['bn_sem_type'] ?? '',
                 'use_template' => $form['bn_sem_use_template'] ?? '',
             ],
             'lang' => $this->wiki->lang,
             'only_one_entry' => $form['bn_only_one_entry'] ?? '',
             'only_one_entry_message' => $form['bn_only_one_entry_message'],
             'fields' => $form_array,
+            'extra_lang' => $form['extra_lang'] ?? ''
         ];
         $saved = $this->pageManager->save($tag, json_encode($newform, JSON_FORCE_OBJECT), '', true);
         return $saved;
     }
 
-    public function update($data, $tag)
+    public function update($data, $tag, $translating = false)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -417,12 +419,16 @@ class FormManager
                  $publicKey = $keyPair[1];
              }
 
-        $form = $this->getFromRawData($data);
-        $previous = $this->getOne($tag, 'all');
+        if ($translating) {
+            return $this->pageManager->save($tag, json_encode($data, JSON_FORCE_OBJECT), '', true);
+        } else {
+            $form = $this->getFromRawData($data);
+            $previous = $this->getOne($tag, 'all');
 
-        $form['extra_langs'] = $previous['extra_langs'];
+            $form['extra_langs'] = $previous['extra_langs'];
 
-        $this->__createOrUpdate($form, $tag);
+          return $this->__createOrUpdate($form, $tag);
+        }
 
     }
 
@@ -449,9 +455,6 @@ class FormManager
         if (is_numeric($id)) {
                 $id = $this->getPageTagFromId($id);
         }
-
-
-
 
         $entries = $this->getEntries($id);
         $entries[] = $id;

@@ -224,6 +224,7 @@ class EntryController extends YesWikiController
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
             'sourceUrl' => $sourceUrl,
+            'isMultilang' => isset($this->wiki->config['supported_langs']),
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
         ]);
     }

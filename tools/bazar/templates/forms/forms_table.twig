@@ -59,9 +59,9 @@
               </a>
             {% endif %}
             {% if form.isDate %}
-              <a class="btn btn-default btn-mini btn-xs" 
-                target="_blank" title="{{ _t('BAZ_ICAL') }}" 
-                href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/ical'}) }}" 
+              <a class="btn btn-default btn-mini btn-xs"
+                target="_blank" title="{{ _t('BAZ_ICAL') }}"
+                href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/ical'}) }}"
                 data-toggle="tooltip" data-placement="bottom">
                 ICAL
               </a>
@@ -93,10 +93,20 @@
               <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_MODIFIER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'modif', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
                 <i class="fa fa-pencil-alt"></i>
               </a>
+              {% if isMultilang %}
+                  <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_TRANSLATE_FORM') }}" href="{{ url({ params: { vue: 'formulaire', action: 'translate', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
+                      <i class="fa fa-globe"></i>
+                  </a>
+              {% endif %}
             {% else %}
               <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
                 <i class="fa fa-pencil-alt"></i>
               </button>
+              {% if isMultilang %}
+              <button type="button" class="btn btn-default btn-mini btn-xs" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
+                <i class="fa fa-globe"></i>
+              </button>
+              {% endif %}
             {% endif %}
             {% if form.isActivityPubEnabled %}
               <a class="btn btn-default btn-mini btn-xs" title="{{ _t('BAZ_GESTION_ABONNEMENTS') }}" href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >

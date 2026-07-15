@@ -1,0 +1,84 @@
+{{ include_javascript('javascripts/vendor/vue/vue.js') }}
+
+{{ include_javascript('tools/bazar/presentation/javascripts/form-translate.js', false, true) }}
+{{ include_css('tools/bazar/presentation/styles/list-form.css') }}
+
+<form method="post" @submit="onSubmit" id="translate-form" class="translate-form form-horizontal" data-extraLang="{{ langs | json_encode }}" data-jsonform="{{ form|json_encode }}" data-defaultLanguage="{{ defaultLanguage }}" =>
+    <div class="control-group form-group">
+        <label class="control-label col-sm-3">
+			{{ _t('BAZ_TRANSLATE_IN') }}
+		</label>
+          <select v-model="selectedLanguage" class="form-control input-sm" id="lang">
+            <option value="{{ defaultLanguage }}" selected> {{ defaultLanguage }} </option>
+              {% for lang in langs %}
+            <option  value="{{ lang }}"> {{ lang }} </option>
+            {% endfor %}
+          </select>
+    </div>
+
+    <div class="control-group form-group">
+		<label class="control-label col-sm-3">
+			<span class="required_symbol">*&nbsp;</span>
+			{{ _t('BAZ_FORM_NAME') }}
+		</label>
+		<div class="controls input-group col-sm-9">
+			<input id="formTitle" type="text" name="title" v-model="form.title"
+			       placeholder="{{ _t('BAZ_FORM_NAME') }}" class="form-control" disable />
+			<template v-for="lang in extraLangsList">
+			<input type="text" v-model="extraLangsValues[lang]['title']" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedLanguage === lang"/>
+			</template>
+		</div>
+    </div>
+	<div class="control-group form-group">
+		<label class="control-label col-sm-3">
+			<span class="required_symbol">*&nbsp;</span>
+			{{ _t('BAZ_FORM_DESC') }}
+		</label>
+		<div class="controls input-group col-sm-9">
+			<textarea id="formDesc" type="text" name="Description" v-model="form.description"
+			       placeholder="{{ _t('BAZ_FORM_DESC') }}" class="form-control" disabled>
+
+										</textarea>
+			<template v-for="lang in extraLangsList">
+    			<textarea  v-model="extraLangsValues[lang]['description']"  type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedLanguage === lang">
+    			</textarea>
+			</template>
+		</div>
+	</div>
+	{# List Nodes #}
+	<div class="nodes-container">
+	   <div class="form-entry" v-for="(entry, key) in form.fields">
+
+				<label class="control-label"> {{ "{{ entry.id }}"  }} </label>
+				{% for field in translatable_fields %}
+				<div class="control-group form-group" v-if="entry.{{ field }}">
+				    <label class="control-label col-sm-3">
+                        {{ field }}
+				    </label>
+				    <div class="controls input-group col-sm-9">
+    				    <input type="text" v-model="entry.{{ field }}"
+    	       		       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="form-control" disabled required/>
+                <template v-for="lang in extraLangsList">
+                <input v-model="extraLangsValues[lang]['fields'][key]['{{field}}']" type="text" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedLanguage === lang"/>
+                </template>
+					</div>
+				</div>
+				{% endfor %}
+	   </div>
+	</div>
+
+	<input type="hidden" name="form" :value="jsonForm" />
+	<input type="hidden" name="extraLangs" :value="jsonExtraLangs" />
+	<input type="hidden" name="tag" value="{{ tag }}"/>
+	{# Form Actions #}
+	<div class="form-actions form-group">
+		<div class="col-sm-9 col-sm-offset-3">
+			<button class="btn btn-primary" type="submit" name="submit">
+				{{ _t('BAZ_SAVE') }}
+			</button>
+			<a class="btn btn-default" href="{{ url({ params: { vue: 'form' }})|raw }}">
+				{{ _t('BAZ_ANNULER') }}
+			</a>
+		</div>
+	</div>
+</div>

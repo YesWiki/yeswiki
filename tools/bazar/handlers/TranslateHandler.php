@@ -58,7 +58,7 @@ class TranslateHandler extends YesWikiHandler
 
         $page = $pageManager->getOne($tag);
         $page = json_decode($page['body'], true);
-        $page_lang = $page['lang'] ?? $this->wiki->config['default_language'];
+        $page_lang = $page['lang'] ?? $this->wiki->config['default_language'] ?? 'fr';
         $langs = $this->wiki->config['supported_langs'];
         $extra_langs = array_filter($langs, function($el) use ($page_lang) {
             return $el != $page_lang;
@@ -67,27 +67,28 @@ class TranslateHandler extends YesWikiHandler
 
         $field_names = [];
         $ignorefields = [];
-            $form = $formManager->getOne($page['id_typeannonce']);
-            dump($form);
-            foreach ($form['fields'] as $field) {
-                if (!in_array($field['type'], self::IGNORE_FIELDS_TYPES)) {
-                    $type = 'text';
-                    if ($field['type'] == 'textarea') {
-                        $type = 'textarea';
-                    } else if ($field['type'] == 'text' && isset($field['subtype'])) {
-                        $type = $field['subtype'];
-                    }
-                    $field_names[] = [
-                    'name' => $field['name'],
-                    'label' => $field['label'],
-                    'type' => $type,
-                    ];
-
-                    foreach($extra_langs as $lang) {
-                        $page['extra_lang'][$lang]['name'] ??= '';
-                    }
+        $form = $formManager->getOne($page['id_typeannonce']);
+        foreach ($form['fields'] as $field) {
+            if (!in_array($field['type'], self::IGNORE_FIELDS_TYPES)) {
+                $type = $field['type'] ?? 'text';
+                if ($field['type'] == 'textarea') {
+                    $type = 'textarea';
+                } else if ($field['type'] == 'text') {
+                    $type = $field['subtype'] ?? $field['subtype2'] ?? 'text';
+                } else if ($field['type'] === 'link') {
+                    $type = 'url';
+                }
+                $field_names[] = [
+                'name' => $field['name'],
+                'label' => $field['label'],
+                'type' => $type,
+                ];
+                foreach($extra_langs as $lang) {
+                    $page['extra_lang'][$lang]['name'] ??= '';
                 }
             }
+        }
+
         $output = $this->render('@bazar/entries/translate.twig', [
         'isEntry' => true,
         'entry' => $page,

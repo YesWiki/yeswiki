@@ -519,7 +519,7 @@ class SearchManager
      *
      * @return $string
      */
-    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false): string
+    public function prepareSearchRequest(&$params = [], bool $filterOnReadACL = false, bool $applyOnAllRevisions = false, $columns = 'f.*'): string
     {
         // Merge default parameters with given parameters
 
@@ -947,8 +947,8 @@ class SearchManager
                                         ($vIDsRequest !== '' ? ' AND ' . $vIDsRequest : '') .
                                 ')' .
                                 ($vSplittedsRequest != '' ? $vSplittedsRequest . ' ' : ' ') .
-                                'SELECT DISTINCT f.* ' .
-                                'FROM filteredPages f ' .
+                                'SELECT DISTINCT ' . $columns .
+                                ' FROM filteredPages f ' .
                                 ($vSplittedsCount > 0 ? 'LEFT JOIN all_multiples s ON s.id = f.id ' : '') .
                                 ($vWhereRequest != '' ? 'WHERE ' . $vWhereRequest : '');
         /*
@@ -1029,7 +1029,16 @@ class SearchManager
      */
     public function search($params = [], bool $filterOnReadACL = false, bool $useGuard = false): array
     {
-        $requete = $this->prepareSearchRequest($params, $filterOnReadACL);
+
+        if (isset($this->wiki->config['supported_langs'])) {
+            $lang = $this->wiki->lang;
+            $columns = "f.id, f.tag, f.time, f.body_r, f.owner, f.user, f.latest, f.handler, f.comment_on ,JSON_MERGE_PATCH(f.body, COALESCE(JSON_EXTRACT(f.body, \"\$.extra_lang.$lang\"), body)) as body";
+        } else {
+            $columns = 'f.*';
+        }
+
+
+        $requete = $this->prepareSearchRequest($params, $filterOnReadACL, false, $columns);
 
         $searchResults = [];
         if ($requete === '') {

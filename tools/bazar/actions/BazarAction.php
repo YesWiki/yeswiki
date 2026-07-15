@@ -37,6 +37,7 @@ class BazarAction extends YesWikiAction
     public const ACTION_FORM_CONFIRM_EMPTY = 'confirm_empty';
     public const ACTION_FORM_CLONE = 'clone';
     public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
+    public const ACTION_FORM_TRANSLATE = 'translate';
 
     // Lists
     public const ACTION_LIST_CREATE = 'saisir_liste';
@@ -190,6 +191,11 @@ class BazarAction extends YesWikiAction
                         }
 
                         return $formController->delete($req->query->get('idformulaire'));
+                    case self::ACTION_FORM_TRANSLATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
+                        return $formController->translate($req->query->get('idformulaire'));
                     case self::ACTION_FORM_CONFIRM_DELETE:
                     case self::ACTION_FORM_CONFIRM_EMPTY:
                         if ($this->isWikiHibernated()) {
