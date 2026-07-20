@@ -28,15 +28,22 @@ if ($pages = $this->LoadAll('select tag, time, user, owner, LEFT(body,500) as bo
 
     $items = '';
     foreach ($pages as $i => $page) {
+        $readAcl = $this->HasAccess('read', $page['tag']);
+        $tag = $readAcl ? $page['tag'] : substr($page['tag'], 0, 3) . '___';
+
         list($day, $time) = explode(' ', $page['time']);
         $day = preg_replace('/-/', ' ', $day);
         list($hh, $mm, $ss) = explode(':', $time);
 
+        $body = $readAcl
+            ? htmlspecialchars($this->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET)
+            : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>';
+
         $items .= "<item>\n";
-        $items .= '<title>' . $page['tag'] . ' --- ' . _t('BY') . ' ' . $page['user'] . ' le ' . $day . ' - ' . $hh . ':' . $mm . "</title>\n";
-        $items .= '<description> ' . _t('RSS_CHANGE_OF') . ' ' . $page['tag'] . ' --- ' . _t('BY') . ' ' . $page['user'] . ' ' . _t('RSS_ON_DATE') . ' ' . $day . ' - ' . $hh . ':' . $mm . htmlspecialchars($this->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET) . "</description>\n";
+        $items .= '<title>' . $tag . ' --- ' . _t('BY') . ' ' . $page['user'] . ' le ' . $day . ' - ' . $hh . ':' . $mm . "</title>\n";
+        $items .= '<description> ' . _t('RSS_CHANGE_OF') . ' ' . $tag . ' --- ' . _t('BY') . ' ' . $page['user'] . ' ' . _t('RSS_ON_DATE') . ' ' . $day . ' - ' . $hh . ':' . $mm . $body . "</description>\n";
         $items .= '<dc:format>text/html</dc:format>';
-        $items .= '<link>' . $this->config['base_url'] . $page['tag'] . '&amp;time=' . rawurlencode($page['time']) . "</link>\n";
+        $items .= '<link>' . $this->config['base_url'] . $tag . '&amp;time=' . rawurlencode($page['time']) . "</link>\n";
         $items .= "</item>\n";
     }
 
