@@ -232,7 +232,7 @@ class PageManager
     public function getReadablePageTags(): array
     {
         $sqlRequest = <<<SQL
-            SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y' ORDER BY tag
+            SELECT tag,owner FROM {$this->dbService->prefixTable('pages')} WHERE LATEST = 'Y'
         SQL;
 
         // append request to filter on acls during the request
@@ -240,6 +240,7 @@ class PageManager
             $aclRequest = $this->aclService->updateRequestWithACL();
             $sqlRequest .= !empty($aclRequest) ? ' AND ' . $aclRequest : '';
         }
+        $sqlRequest .= ' ORDER BY tag';
         $pages = $this->dbService->loadAll($sqlRequest);
 
         return array_map(function ($page) {

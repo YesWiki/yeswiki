@@ -368,13 +368,13 @@ class AclService
                 } else {
                     $addOr = true;
                 }
-                $newRequestStart .= ' list LIKE "%' . $acl . '%"';
+                $newRequestStart .= ' list LIKE "%' . $this->dbService->escape($acl) . '%"';
             }
             $newRequestStart .= ')';
             // not authorized ACL
             foreach ($neededACL as $acl) {
                 $newRequestStart .= ' AND ';
-                $newRequestStart .= ' list NOT LIKE "%!' . $acl . '%"';
+                $newRequestStart .= ' list NOT LIKE "%!' . $this->dbService->escape($acl) . '%"';
             }
 
             // add detection of '%'
