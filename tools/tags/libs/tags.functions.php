@@ -96,7 +96,11 @@ function get_filtertags_parameters_recursive($nb = 1, $tab = [])
         } else {
             $tab[$nb]['class'] = 'filter-inline';
         }
-        $tab['tags'] .= '"' . implode('","', $tab[$nb]['arraytags']) . '"';
+        $dbService = $GLOBALS['wiki']->services->get(\YesWiki\Core\Service\DbService::class);
+        $escapedTags = array_map(function ($tagname) use ($dbService) {
+            return $dbService->escape($tagname);
+        }, $tab[$nb]['arraytags']);
+        $tab['tags'] .= '"' . implode('","', $escapedTags) . '"';
         $nb++;
         $tab = get_filtertags_parameters_recursive($nb, $tab);
 
