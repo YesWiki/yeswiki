@@ -64,7 +64,7 @@ if (!class_exists('\YesWiki\WikiniFormatter')) {
                 . "(?<!\w)_[^_]+_(?!\w)|" // markdown italic
                 . "(?<!\w)\\*[^*]+\\*(?!\w)|" // markdown italic
                 . "`[^`]+`(?![_\w])|" // inline code
-                . "(?<!\!)\[[^\]]+\]\([^\)]+\)(\{[^\}]*\})?|" // markdown links
+                . "(?<!\!)\[[^\]]{1,2000}\]\([^\)]{1,4000}\)(\{[^\}]{0,500}\})?|" // markdown links
                 . "\!\[[^\]]*\]\([^\)]+\)|" // markdown images
                 . '\b[a-z0-9]+:\/\/[^ \t\n\r\f"\|\\\\\^\`\{\}\[\]><]+|'
                 . '(?:^|(?<=\>""))(?!\\\\)\#{1,6} [^\\n\#]*\\n|' // markdown titles doit être avant la ligne suivante pour être prioritaire sur le ## ##

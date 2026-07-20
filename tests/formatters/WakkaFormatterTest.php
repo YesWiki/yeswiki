@@ -67,4 +67,28 @@ class WakkaFormatterTest extends YesWikiTestCase
             ],
         ];
     }
+
+    /**
+     * Regression test for a CPU-exhaustion DoS in the markdown-link branch of the
+     * wakka formatter's mega-regex: an unbounded `[^\]]+`/`[^\)]+` scan restarts at
+     * every `[` in the input, making a run of N `[` characters cost O(N^2).
+     * A vulnerable formatter takes multiple seconds on this payload; a fixed one
+     * (bounded quantifiers) completes in well under a second.
+     */
+    public function testMarkdownLinkBracketRunIsNotQuadratic()
+    {
+        $wiki = $this->getWiki();
+        $payload = str_repeat('[', 60000);
+
+        $start = microtime(true);
+        $wiki->Format($payload);
+        $elapsed = microtime(true) - $start;
+
+        $this->assertLessThan(
+            2.0,
+            $elapsed,
+            "Formatting a run of '[' characters took {$elapsed}s: "
+            . 'the markdown-link regex looks unbounded again (algorithmic-complexity DoS).'
+        );
+    }
 }
