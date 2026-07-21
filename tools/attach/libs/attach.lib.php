@@ -1138,48 +1138,57 @@ if (!class_exists('attach')) {
             $imgTrans->source_path = $image_src;
             $imgTrans->target_path = $image_dest;
 
-            if ($mode == 'crop') {
-                $wantedRatio = $largeur / $hauteur;
-                // get image info except for webp (code copier from Zebra_Image)
-                if (
-                    !(
-                        version_compare(PHP_VERSION, '7.0.0') >= 0
-                        && version_compare(PHP_VERSION, '7.1.0') < 0
-                        && (
-                            $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
-                        ) === 'webp'
-                    )
-                    && !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
-                ) {
-                    return false;
-                }
-                $imageRatio = $sourceImageWidth / $sourceImageHeight;
+            // Zebra_Image still calls imagedestroy(), a no-op deprecated since PHP 8.5.
+            // Silence it here (rather than patching vendor/) so debug-mode deprecation
+            // output isn't echoed into an in-progress image response.
+            $previousErrorReporting = error_reporting();
+            error_reporting($previousErrorReporting & ~E_DEPRECATED);
+            try {
+                if ($mode == 'crop') {
+                    $wantedRatio = $largeur / $hauteur;
+                    // get image info except for webp (code copier from Zebra_Image)
+                    if (
+                        !(
+                            version_compare(PHP_VERSION, '7.0.0') >= 0
+                            && version_compare(PHP_VERSION, '7.1.0') < 0
+                            && (
+                                $imgTrans->source_type = strtolower(substr($imgTrans->source_path, strrpos($imgTrans->source_path, '.') + 1))
+                            ) === 'webp'
+                        )
+                        && !list($sourceImageWidth, $sourceImageHeight, $sourceImageType) = @getimagesize($imgTrans->source_path)
+                    ) {
+                        return false;
+                    }
+                    $imageRatio = $sourceImageWidth / $sourceImageHeight;
 
-                if ($imageRatio != $wantedRatio) {
-                    if ($imageRatio > $wantedRatio) {
-                        // width too large, keep height
-                        $newWidth = round($sourceImageHeight * $wantedRatio);
-                        $newHeight = $sourceImageHeight;
-                    } else {
-                        // height too large, keep width
-                        $newHeight = round($sourceImageWidth / $wantedRatio);
-                        $newWidth = $sourceImageWidth;
+                    if ($imageRatio != $wantedRatio) {
+                        if ($imageRatio > $wantedRatio) {
+                            // width too large, keep height
+                            $newWidth = round($sourceImageHeight * $wantedRatio);
+                            $newHeight = $sourceImageHeight;
+                        } else {
+                            // height too large, keep width
+                            $newHeight = round($sourceImageWidth / $wantedRatio);
+                            $newWidth = $sourceImageWidth;
+                        }
+                        // crop
+                        $ext = pathinfo($image_src)['extension'];
+                        do {
+                            $tempFile = tmpfile();
+                            $tempFileName = stream_get_meta_data($tempFile)['uri'] . ".$ext";
+                            unlink(stream_get_meta_data($tempFile)['uri']);
+                        } while (file_exists($tempFileName));
+                        $imgTrans->target_path = $tempFileName;
+                        if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, -1)) {
+                            $imgTrans->source_path = $tempFileName;
+                        }
+                        $imgTrans->target_path = $image_dest;
                     }
-                    // crop
-                    $ext = pathinfo($image_src)['extension'];
-                    do {
-                        $tempFile = tmpfile();
-                        $tempFileName = stream_get_meta_data($tempFile)['uri'] . ".$ext";
-                        unlink(stream_get_meta_data($tempFile)['uri']);
-                    } while (file_exists($tempFileName));
-                    $imgTrans->target_path = $tempFileName;
-                    if ($imgTrans->resize(intval($newWidth), intval($newHeight), ZEBRA_IMAGE_CROP_CENTER, -1)) {
-                        $imgTrans->source_path = $tempFileName;
-                    }
-                    $imgTrans->target_path = $image_dest;
                 }
+                $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, -1);
+            } finally {
+                error_reporting($previousErrorReporting);
             }
-            $result = $imgTrans->resize(intval($largeur), intval($hauteur), ZEBRA_IMAGE_NOT_BOXED, -1);
 
             if ($mode == 'crop' && !empty($tempFileName) && file_exists($tempFileName)) {
                 unlink($tempFileName);
