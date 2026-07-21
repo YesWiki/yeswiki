@@ -604,15 +604,13 @@ class EntryManager
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
 
+        $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
+
         $this->pageManager->deleteOrphaned($tag);
-        $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
-        $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
         $this->wiki->LogAdministrativeAction(
             $this->authController->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
-
-        $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
              // Notify followers about the deleted object
              $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');

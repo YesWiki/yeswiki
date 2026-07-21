@@ -194,6 +194,32 @@ class TripleStore
     }
 
     /**
+     * Deletes every triple for a given resource, whatever their property.
+     *
+     * @param string $resource
+     *                            The resource of the triples to delete
+     * @param string $re_prefix
+     *                            The prefix to add to $resource (defaults to <tt>THISWIKI_PREFIX</tt>)
+     */
+    public function deleteAll($resource, $re_prefix = THISWIKI_PREFIX): bool
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        $res = $re_prefix . $resource;
+
+        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($res) . '"';
+
+        // invalidate the caches
+        if (isset($this->cacheByResource[$res])) {
+            unset($this->cacheByResource[$res]);
+        }
+        $this->matchingCache = [];
+
+        return $this->dbService->query($sql) !== false;
+    }
+
+    /**
      * Inserts a new triple ($resource, $property, $value) in the triples' table.
      *
      * @param string $resource
