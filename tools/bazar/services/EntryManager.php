@@ -1068,6 +1068,10 @@ class EntryManager
         $params['queries'] = ($params['queries'] ?? []) + $attributesQueries;
         $requete = $this->searchManager->prepareSearchRequest($params, false, $applyOnAllRevisions);
 
+        if ($requete === '') {
+            return [];
+        }
+
         $pages = $this->dbService->loadAll($requete);
 
         if (empty($pages)) {
