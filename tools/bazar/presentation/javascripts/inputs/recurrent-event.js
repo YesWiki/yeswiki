@@ -6,36 +6,6 @@ for (let index = 0; index < rootsElementsRaw.length; index++) {
 const isVueJS3 = (typeof Vue.createApp == 'function')
 
 const defaultNbMax = 600
-const daysToCodeAssoc = {
-  mon: 1,
-  tue: 2,
-  wed: 3,
-  thu: 4,
-  fri: 5,
-  sat: 6,
-  sun: 7
-}
-const monthsToCodeAssoc = {
-  jan: 0,
-  feb: 1,
-  mar: 2,
-  apr: 3,
-  may: 4,
-  jun: 5,
-  jul: 6,
-  aug: 7,
-  sep: 8,
-  oct: 9,
-  nov: 10,
-  dec: 11
-}
-const wantedPositionList = {
-  fisrtOfMonth: 1,
-  secondOfMonth: 2,
-  thirdOfMonth: 3,
-  forthOfMonth: 4,
-  lastOfMonth: 99
-}
 
 const appParams = {
   components: {},
@@ -138,70 +108,26 @@ const appParams = {
          * @returns {String[]} available Except
          */
     calculateAvailableExcept(nbStep = defaultNbMax) {
-      let date = this.getCurrentInputDate('startDateInput')
+      const date = this.getCurrentInputDate('startDateInput')
       if (date === null) {
         return []
       }
-
-      const except = []
-      for (let i = 0; i < nbStep; i++) {
-        let nextStartDate = null
-        switch (this.repetition) {
-          case 'd':
-            nextStartDate = new Date(date.getTime() + Number(this.step) * 24 * 3600 * 1000)
-            break
-          case 'w':
-            const currentStartDayCode = date.getDay() || 7
-            const daysTocode = this.days.map((d) => daysToCodeAssoc[d] ?? 1)
-            let nextWantedDay = null
-            const maxDaysToCode = daysTocode.reduce((acc, val) => Math.max(acc, val), 1)
-            if (!daysTocode.includes(currentStartDayCode) || currentStartDayCode === maxDaysToCode) {
-              nextWantedDay = daysTocode.reduce((acc, val) => Math.min(acc, val), 7)
-              nextStartDate = new Date(date.getTime())
-              nextStartDate.setDate(nextStartDate.getDate() + nextWantedDay + 7 * (Number(this.step) - 1) + 7 - currentStartDayCode)
-            } else {
-              nextWantedDay = daysTocode.filter((d) => d > currentStartDayCode).reduce((acc, val) => Math.min(acc, val), 7)
-              nextStartDate = new Date(date.getTime())
-              nextStartDate.setDate(nextStartDate.getDate() + nextWantedDay - currentStartDayCode)
-            }
-            break
-          case 'm':
-            const { nextStartMonth, currentStartYear } = this.calculateNextMonth(date.getMonth(), date.getFullYear(), Number(this.step))
-            nextStartDate = this.findNextStartDate(date, currentStartYear, nextStartMonth, (m, y) => this.calculateNextMonth(m, y, Number(this.step)))
-            break
-          case 'y':
-            nextStartDate = this.findNextStartDate(date, date.getFullYear() + Number(this.step), monthsToCodeAssoc?.[this.month] ?? 0, (m, y) => ({
-              currentStartYear: y + Number(this.step),
-              nextStartMonth: m
-            }))
-            break
-          default:
-            break
-        }
-        if (nextStartDate === null
-                    || nextStartDate.toString() === 'Invalid Date') {
-          return except
-        }
-        date = nextStartDate
-        if (this.endDateLimitTime < 0
-                     || nextStartDate.getTime() <= this.endDateLimitTime
-        ) {
-          except.push(this.convertDateToString(date))
-        }
-      }
-      return except
-    },
-    calculateNextMonth(nextStartMonth, currentStartYear, step) {
-      const newMonth = nextStartMonth + step
-      return newMonth > 11
-        ? {
-          nextStartMonth: newMonth - 12,
-          currentStartYear: currentStartYear + 1
-        }
-        : {
-          nextStartMonth: newMonth,
-          currentStartYear
-        }
+      const anchor = this.convertDateToString(date)
+      const occurrences = window._bazarRecurrenceCalculator.generateOccurrences({
+        startDate: anchor,
+        endDate: anchor,
+        repetition: this.repetition,
+        step: this.step,
+        days: this.days,
+        month: this.month,
+        whenInMonth: this.whenInMonth,
+        nth: this.nth,
+        nbmax: nbStep,
+        limitdate: this.endDateLimitTime >= 0 ? this.convertDateToString(new Date(this.endDateLimitTime)) : null,
+        except: []
+      })
+      // drop the anchor occurrence (#0): this picker only offers *future* candidate dates
+      return occurrences.slice(1).map((occurrence) => occurrence.start)
     },
     /**
          * convert a Date object to a string YYYY-MM-DD
@@ -218,13 +144,6 @@ const appParams = {
         date.getMinutes(),
         date.getSeconds()
       ))).toISOString().slice(0, 10)
-    },
-    getNbDaysInMonth(year, month) {
-      const firstDayOfMonth = new Date(year, month)
-      firstDayOfMonth.setDate(1)
-      const lastDayOfMonth = new Date(year + (month === 12 ? 1 : 0), (month % 12) + 1)
-      lastDayOfMonth.setDate(0)
-      return Math.round((lastDayOfMonth - firstDayOfMonth) / 1000 / 3600 / 24) + 1
     },
     /**
          * @return {int} nbMax estimated from limitDate
@@ -268,40 +187,6 @@ const appParams = {
           break
       }
       return Math.ceil(duration / 1000 / 3600 / 24 / step) + 20 // margin of 20 to be really sure to catch all repetitions
-    },
-    findNextStartDate(date, startYear, startMonth, callback) {
-      if (this.whenInMonth === 'nthOfMonth') {
-        let limit = 60
-        let currentStartYear = startYear
-        let nextStartMonth = startMonth
-        const nth = this.nth || 1
-        while (limit > 0 && nth > this.getNbDaysInMonth(currentStartYear, nextStartMonth)) {
-          const data = callback(nextStartMonth, currentStartYear)
-          nextStartMonth = data?.nextStartMonth ?? nextStartMonth
-          currentStartYear = data?.currentStartYear ?? currentStartYear
-          limit -= 1
-        }
-        const newStartDate = new Date(date.getTime())
-        newStartDate.setFullYear(currentStartYear, nextStartMonth, nth)
-        return newStartDate
-      }
-      const wantedPosition = wantedPositionList?.[this.whenInMonth] ?? 1
-      const nbDaysInMonth = this.getNbDaysInMonth(startYear, startMonth)
-      const day = this.days.reduce((acc, d) => Math.min(acc, daysToCodeAssoc?.[d] ?? 7), 7)
-      let counter = 0
-      const testedDate = new Date(date.getTime())
-      testedDate.setFullYear(startYear, startMonth)
-      let newStartDate = new Date(date.getTime())
-      for (let curDay = 1; curDay <= nbDaysInMonth; curDay++) {
-        if (counter < wantedPosition) {
-          testedDate.setDate(curDay)
-          if ((testedDate.getDay() || 7) === day) {
-            counter += 1
-            newStartDate = new Date(testedDate.getTime())
-          }
-        }
-      }
-      return newStartDate
     },
     /**
          * get current date from input
@@ -447,10 +332,7 @@ const appParams = {
       this.updateAvailableExceptUpdatingNbMax()
     }
     if (data?.isRecurrent !== '1') {
-      this.recurrenceBaseId = (
-        typeof data === 'string'
-                && data.match(/^\{"recurrentParentId":"([^"]+)"}$/)
-      )
+      this.recurrenceBaseId = window._bazarRecurrenceCalculator.isLegacyRecurrenceChild(data)
         ? data.replace(/^\{"recurrentParentId":"([^"]+)"}$/, '$1')
         : ''
     }

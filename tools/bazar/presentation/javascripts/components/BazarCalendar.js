@@ -12,13 +12,13 @@ const BazarCalendar = {
   },
   methods: {
     addEntry(entry) {
-      const newEvent = this.prepareEvent(entry)
-      if (Object.keys(newEvent).length > 0) {
-        this.calendar.addEvent(newEvent)
+      const hasEvents = this.calendar.getEvents().some((event) => event.groupId === entry.id_fiche)
+      if (!hasEvents) {
+        this.prepareEvents(entry).forEach((event) => this.calendar.addEvent(event))
       }
     },
     addEntries(entries) {
-      const newEvents = entries.map((entry) => this.prepareEvent(entry))
+      const newEvents = entries.flatMap((entry) => this.prepareEvents(entry))
       if (Array.isArray(newEvents) && newEvents.length > 0) {
         this.calendar.addEventSource({ events: newEvents })
       }
@@ -53,7 +53,7 @@ const BazarCalendar = {
     displaySideBar(info) {
       info.jsEvent.preventDefault()
       const { entries } = this
-      this.selectedEntry = entries.filter((entry) => (entry.id_fiche == info.event.id))[0]
+      this.selectedEntry = entries.filter((entry) => (entry.id_fiche == info.event.groupId))[0]
     },
     getEventById(id) {
       return this.calendar ? this.calendar.getEventById(id) : null
@@ -133,38 +133,54 @@ const BazarCalendar = {
         this.mounted = true
       }
     },
-    prepareEvent(entry) {
-      const entryId = entry.id_fiche
-      const existingEvent = this.getEventById(entryId)
-      if (!existingEvent && typeof entry.bf_date_debut_evenement != 'undefined') {
-        const backgroundColor = (entry.color == undefined || entry.color.length == 0) ? '' : entry.color
-        const newEvent = {
-          id: entryId,
-          title: entry.bf_titre,
-          start: this.retrieveTimeZone(entry.bf_date_debut_evenement),
-          end: this.formatEndDate(entry),
-          url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),
-          allDay: this.isAllDayDate(entry.bf_date_debut_evenement),
-          className: `bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}`,
-          backgroundColor,
-          borderColor: backgroundColor,
-          extendedProps: {
-            icon: (entry.icon == undefined || entry.icon.length == 0) ? '' : `<i class="${entry.icon}">&nbsp;</i>`,
-            htmlattributes: `${((entry.html_data != undefined) ? entry.html_data : '')
-              + (this.isModalDisplay() ? ' data-iframe="1"' : '')
-            } data-size="modal-lg"`
-          }
+    buildEventObject(entry, id, start, end) {
+      const backgroundColor = (entry.color == undefined || entry.color.length == 0) ? '' : entry.color
+      return {
+        id,
+        groupId: entry.id_fiche,
+        title: entry.bf_titre,
+        start,
+        end,
+        url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),
+        allDay: this.isAllDayDate(start),
+        className: `bazar-entry${this.isModalDisplay() ? ' modalbox' : ''}`,
+        backgroundColor,
+        borderColor: backgroundColor,
+        extendedProps: {
+          icon: (entry.icon == undefined || entry.icon.length == 0) ? '' : `<i class="${entry.icon}">&nbsp;</i>`,
+          htmlattributes: `${((entry.html_data != undefined) ? entry.html_data : '')
+            + (this.isModalDisplay() ? ' data-iframe="1"' : '')
+          } data-size="modal-lg"`
         }
-        return newEvent
       }
-      return {}
+    },
+    prepareEvents(entry) {
+      if (typeof entry.bf_date_debut_evenement === 'undefined') {
+        return []
+      }
+      const start = this.retrieveTimeZone(entry.bf_date_debut_evenement)
+      const end = this.formatEndDate(entry)
+      const recurrenceData = entry.bf_date_fin_evenement_data
+      const isRecurrent = recurrenceData != null && typeof recurrenceData === 'object' && recurrenceData.isRecurrent === '1'
+      if (!isRecurrent) {
+        return [this.buildEventObject(entry, entry.id_fiche, start, end)]
+      }
+      const occurrences = window._bazarRecurrenceCalculator.generateOccurrences({
+        ...recurrenceData,
+        startDate: start,
+        endDate: end
+      })
+      return occurrences.map((occurrence, index) => this.buildEventObject(
+        entry,
+        `${entry.id_fiche}::${index}`,
+        occurrence.start,
+        occurrence.end
+      ))
     },
     removeEntry(entry) {
-      const entryId = entry.id_fiche
-      const existingEvent = this.getEventById(entryId)
-      if (existingEvent) {
-        existingEvent.remove()
-      }
+      this.calendar.getEvents()
+        .filter((event) => event.groupId === entry.id_fiche)
+        .forEach((event) => event.remove())
     },
     retrieveTimeZone(dateAsString) {
       let exportableDate = dateAsString
@@ -286,7 +302,10 @@ const BazarCalendar = {
       }
     },
     entries() {
-      return this.$root.entriesToDisplay.filter((entry) => entry.bf_date_debut_evenement)
+      return this.$root.entriesToDisplay.filter((entry) => (
+        entry.bf_date_debut_evenement
+        && !window._bazarRecurrenceCalculator.isLegacyRecurrenceChild(entry.bf_date_fin_evenement_data)
+      ))
     },
     events() {
       return this.calendar ? this.calendar.getEvents() : []
