@@ -296,9 +296,12 @@ class PageManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         unset($this->ownersCache[$tag]);
-        if (in_array($tag, $this->pageCache)) {
-            unset($this->pageCache[$tag]);
-        }
+        // was `in_array($tag, $this->pageCache)`: pageCache is keyed BY tag, so that searched
+        // cached page arrays for a value equal to the tag string -- never true, meaning the
+        // stale cached page always survived deletion (see PageManagerMetadataTest for the
+        // regression this caused: a page recreated with the same tag right after deletion
+        // returns the deleted page's data from cache instead of the fresh one)
+        unset($this->pageCache[$tag]);
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
@@ -493,6 +496,12 @@ class PageManager
             $metadata = array_merge($previousMetadata, $metadata);
         }
 
+        // don't create a revision if nothing actually changed, same as save()'s
+        // "don't save if body didn't change" guard
+        if ($metadata == $previousMetadata) {
+            return false;
+        }
+
         $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
 
         $userCol = $this->dbService->quoteIdentifier('user');
@@ -514,6 +523,17 @@ class PageManager
         $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
 
         unset($this->pageCache[$tag]);
+
+        $this->eventDispatcher->yesWikiDispatch('page.updated', [
+            'id' => $tag,
+            'data' => [
+                'tag' => $tag,
+                'body' => $oldPage['body'],
+                'comment_on' => $oldPage['comment_on'] ?? '',
+                'owner' => $oldPage['owner'],
+                'user' => $this->authController->getLoggedUserName(),
+            ],
+        ]);
 
         return true;
     }

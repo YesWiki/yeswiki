@@ -42,9 +42,16 @@ class PageManagerMetadataTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
+            // time has only second-granularity; getOne($tag, $time) identifies a revision by
+            // that column, so revisions created within the same wall-clock second are
+            // ambiguous to look up individually -- force real gaps so every revision below
+            // gets a distinct time, same as real edits a moment apart would
             $pageManager->save(self::TAG, 'v1 body', '', true);
+            sleep(1);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
             $v1 = $pageManager->getOne(self::TAG);
+
+            sleep(1);
 
             // metadata changes independently of content: a later revision changes theme,
             // without touching body
@@ -91,6 +98,27 @@ class PageManagerMetadataTest extends YesWikiTestCase
             $pageManager->save(self::TAG, 'body', '', true);
 
             $this->assertNull($pageManager->getMetadata(self::TAG));
+        } finally {
+            $pageManager->deleteOrphaned(self::TAG);
+        }
+    }
+
+    public function testSetMetadataIsANoOpWhenNothingActuallyChanges()
+    {
+        $wiki = $this->getWiki();
+        $pageManager = $wiki->services->get(PageManager::class);
+
+        try {
+            $pageManager->save(self::TAG, 'body', '', true);
+            $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
+            $revisionsAfterFirstSet = count($pageManager->getRevisions(self::TAG));
+
+            // re-setting the exact same value must not create a spurious revision,
+            // matching save()'s "don't save if body didn't change" guard
+            $result = $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
+
+            $this->assertFalse($result);
+            $this->assertCount($revisionsAfterFirstSet, $pageManager->getRevisions(self::TAG));
         } finally {
             $pageManager->deleteOrphaned(self::TAG);
         }
