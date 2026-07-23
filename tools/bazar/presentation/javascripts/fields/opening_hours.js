@@ -62,7 +62,8 @@ const createOpeningHoursComponent = (openingHoursData) => ({
         <div style="background: white;padding: 1em;box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
         z-index: 1;position: absolute;border-radius: 10px;">
           <table>
-              <tr v-for="day in intervals" v-if="day !== undefined">
+              <template v-for="day in intervals">
+              <tr v-if="day !== undefined">
                   <td> {{ day[0].day }} </td>
                   <td>
                       <ul>
@@ -70,6 +71,7 @@ const createOpeningHoursComponent = (openingHoursData) => ({
                       </ul>
                   </td>
               </tr>
+              </template>
           </table>
         </div>
     </details>
