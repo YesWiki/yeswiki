@@ -5,12 +5,30 @@ namespace YesWiki\Bazar\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\TripleStore;
 use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class FormManager
 {
+    // Forms are `pages` rows typed via this triple, the same convention EntryManager
+    // already uses for bazar entries (TRIPLES_ENTRY_ID).
+    public const TRIPLES_FORM_TYPE = 'form';
+
+    // A form's tag is renameable; when it's renamed, the old tag is kept resolvable via
+    // this triple (resource=old tag, value=new tag) so previously published references to
+    // it (e.g. an ActivityPub actor URL that was ever built from the tag rather than the
+    // stable numeric id) don't dead-end. See ADR / CONTEXT.md "Forms keep a stable
+    // identifier distinct from their (renameable) tag".
+    public const FORMER_TAG_URI = 'http://outils-reseaux.org/_vocabulary/formerTag';
+
+    // bounds resolveTag()'s alias-chain walk (renamed twice, three times, ...) so a cycle
+    // (which should never happen, but shouldn't be trusted blindly either) can't hang
+    private const MAX_ALIAS_HOPS = 10;
+
     protected $wiki;
     protected $dbService;
     protected $activityPubService;
@@ -19,10 +37,11 @@ class FormManager
     protected $securityController;
     protected $fieldFactory;
     protected $params;
+    protected $pageManager;
+    protected $tripleStore;
+    protected $aclService;
     protected $cachedForms;
     protected $cacheValidatedForAll;
-    protected $isAvailableOnlyOneEntryOption;
-    protected $isAvailableOnlyOneEntryMessage;
     protected $attach;
 
     public function __construct(
@@ -34,6 +53,9 @@ class FormManager
         SecurityController $securityController,
         ActivityPubService $activityPubService,
         HttpSignatureService $httpSignatureService,
+        PageManager $pageManager,
+        TripleStore $tripleStore,
+        AclService $aclService,
     ) {
         if (!class_exists('attach')) {
             include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
@@ -45,12 +67,13 @@ class FormManager
         $this->entryManager = $entryManager;
         $this->fieldFactory = $fieldFactory;
         $this->params = $params;
+        $this->pageManager = $pageManager;
+        $this->tripleStore = $tripleStore;
+        $this->aclService = $aclService;
 
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
         $this->securityController = $securityController;
-        $this->isAvailableOnlyOneEntryOption = null;
-        $this->isAvailableOnlyOneEntryMessage = null;
         $this->attach = new \Attach($this->wiki);
     }
 
@@ -75,7 +98,6 @@ class FormManager
 
     protected function convertWithSpecialParameters($template, $id_nature)
     {
-        $template = $template;
         $template_list = $this->parseTemplate($template);
         $modify = false;
         for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
@@ -114,7 +136,11 @@ class FormManager
             $template = $this->encodeTemplate($template_list);
         }
 
-        return $this->dbService->escape($template);
+        // NOTE: unlike the pre-pages version of this method, the return value is NOT
+        // SQL-escaped: callers now json_encode() it into the `pages.body` column, and
+        // PageManager::save() does its own SQL escaping of that JSON string as a whole.
+        // Escaping here too would double-escape and corrupt the stored JSON.
+        return $template;
     }
 
     protected function prepare_with_special_parameters($form)
@@ -139,32 +165,101 @@ class FormManager
         return [$template_list, $modify];
     }
 
+    /**
+     * Resolves a form identifier (numeric stable id, current tag, or a former tag left
+     * behind by a rename) to the form's current `pages.tag`, or null if none matches.
+     */
+    private function resolveTag(string $formId, int $aliasHops = 0): ?string
+    {
+        if ($aliasHops > self::MAX_ALIAS_HOPS) {
+            return null;
+        }
+        if (is_numeric($formId)) {
+            return $this->resolveTagFromNumericId($formId);
+        }
+        if ($this->pageManager->tagExists($formId)) {
+            return $formId;
+        }
+        $newerTag = $this->tripleStore->getOne($formId, self::FORMER_TAG_URI, '', '');
+        if ($newerTag === null) {
+            return null;
+        }
+
+        return $this->resolveTag($newerTag, $aliasHops + 1);
+    }
+
+    private function resolveTagFromNumericId(string $id): ?string
+    {
+        $jsonExtract = $this->dbService->jsonExtract('body', '$.bn_id_nature');
+        $sql = "SELECT tag FROM {$this->dbService->prefixTable('pages')}
+            WHERE latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape((string)(int)$id) . "'
+            LIMIT 1";
+        $row = $this->dbService->loadSingle($sql);
+
+        return $row['tag'] ?? null;
+    }
+
+    private function resolveIdFromTag(string $tag): ?string
+    {
+        $jsonExtract = $this->dbService->jsonExtract('body', '$.bn_id_nature');
+        $sql = "SELECT {$jsonExtract} AS id FROM {$this->dbService->prefixTable('pages')}
+            WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'
+            LIMIT 1";
+        $row = $this->dbService->loadSingle($sql);
+
+        return $row['id'] ?? null;
+    }
+
+    /**
+     * Converts a fetched `pages` row (as returned by PageManager) for a form into the flat,
+     * `bn_*`-keyed array shape every other part of the bazar tool already expects --
+     * unchanged from when forms lived in the `nature` table. ActivityPub credentials, which
+     * live in `metadata.activitypub` (not `body`, so they aren't echoed by generic JSON/API
+     * dumps of a page's body), are merged back in under their historical `bn_activitypub_*`
+     * keys so no consumer needs to know where they're actually stored.
+     */
+    private function pageToFormArray(array $page): array
+    {
+        $body = json_decode($page['body'] ?? '', true) ?? [];
+        $activitypub = $page['metadatas']['activitypub'] ?? [];
+
+        $body['bn_activitypub_enable'] = (string)($activitypub['enabled'] ?? '0');
+        $body['bn_activitypub_username'] = $activitypub['username'] ?? '';
+        $body['bn_activitypub_private_key'] = $activitypub['private_key'] ?? null;
+        $body['bn_activitypub_public_key'] = $activitypub['public_key'] ?? null;
+        $body['tag'] = $page['tag'];
+
+        return $body;
+    }
+
     public function getOne($formId): ?array
     {
         if (isset($this->cachedForms[$formId])) {
             return $this->cachedForms[$formId];
         }
 
-        if (intval($formId) . '' === $formId . '') {
-            $form = $this->dbService->loadSingle('SELECT * FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=\'' . $this->dbService->escape($formId) . '\'');
-
-            if (!$form) {
-                return null;
-            }
-
-            $form = $this->getFromRawData($form);
+        $tag = $this->resolveTag((string)$formId);
+        if ($tag === null) {
+            return null;
         }
 
-        $this->cachedForms[$formId] = $form ?? [];
+        $page = $this->pageManager->getOne($tag, null, true, true);
+        if (!$page) {
+            return null;
+        }
 
-        return $form ?? [];
+        $form = $this->getFromRawData($this->pageToFormArray($page));
+
+        $this->cachedForms[$formId] = $form;
+        if (!empty($form['bn_id_nature'])) {
+            $this->cachedForms[$form['bn_id_nature']] = $form;
+        }
+
+        return $form;
     }
 
     public function getFromRawData($form)
     {
-        foreach ($form as $key => $value) {
-            $form[$key] = $value;
-        }
         list($template_list, $modify) = $this->prepare_with_special_parameters($form);
         $form['template'] = $template_list;
         $form['prepared'] = $this->prepareData($form);
@@ -178,12 +273,16 @@ class FormManager
     public function getAll(): array
     {
         if (!$this->cacheValidatedForAll) {
-            $forms = $this->dbService->loadAll("SELECT * FROM {$this->dbService->prefixTable('nature')} ORDER BY bn_label_nature ASC");
-            foreach ($forms as $form) {
+            $triples = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE);
+            foreach ($triples as $triple) {
+                $page = $this->pageManager->getOne($triple['resource'], null, true, true);
+                if (!$page) {
+                    continue;
+                }
+                $form = $this->getFromRawData($this->pageToFormArray($page));
                 if (!empty($form['bn_id_nature'])) {
                     // save only not empty formId
-                    $formId = $form['bn_id_nature'];
-                    $this->cachedForms[$formId] = $this->getFromRawData($form);
+                    $this->cachedForms[$form['bn_id_nature']] = $form;
                 }
             }
             $this->cacheValidatedForAll = true;
@@ -206,9 +305,16 @@ class FormManager
             return array_keys($this->getAll());
         }
 
-        $rows = $this->dbService->loadAll("SELECT bn_id_nature FROM {$this->dbService->prefixTable('nature')}");
+        $triples = $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE);
+        $ids = [];
+        foreach ($triples as $triple) {
+            $id = $this->resolveIdFromTag($triple['resource']);
+            if ($id !== null) {
+                $ids[] = $id;
+            }
+        }
 
-        return array_column($rows, 'bn_id_nature');
+        return $ids;
     }
 
     public function getMany($formsIds): array
@@ -224,7 +330,7 @@ class FormManager
                 $form = $this->getOne($formId);
                 // don't persist a "form not found" result into the shared cache : a
                 // subsequent getAll() only overwrites cache entries for ids that actually
-                // exist as `nature` rows, so a cached null here would otherwise leak into
+                // exist as form pages, so a cached null here would otherwise leak into
                 // every later getAll() call for the rest of the request
                 if ($form !== null) {
                     $this->cachedForms[$formId] = $form;
@@ -238,61 +344,100 @@ class FormManager
         return $results;
     }
 
+    /**
+     * Builds the storable `body` array (everything except ActivityPub credentials, which
+     * live in metadata -- see buildActivitypubMetadata()) from raw `bn_*`-keyed input
+     * (either an admin form submission or another form's data via clone()). Fields that
+     * aren't part of the admin-editable set (bn_sem_context/type/use_template, historically
+     * seeded, not exposed in the edit UI) are included only if present in $data, so that
+     * update()'s array_merge() over the existing body leaves them untouched rather than
+     * wiping them on every edit.
+     */
+    private function buildBody(array $data): array
+    {
+        $body = [
+            'bn_id_nature' => (string)$data['bn_id_nature'],
+            'bn_ce_i18n' => $data['bn_ce_i18n'] ?? 'fr-FR',
+            'bn_label_nature' => $data['bn_label_nature'] ?? '',
+            'bn_template' => $data['bn_template'] ?? '',
+            'bn_description' => $data['bn_description'] ?? '',
+            'bn_sem_template' => $data['bn_sem_template'] ?? '',
+            'bn_sem_reverse_template' => $data['bn_sem_reverse_template'] ?? '',
+            'bn_only_one_entry' => (isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N',
+            'bn_only_one_entry_message' => empty($data['bn_only_one_entry_message']) ? '' : $data['bn_only_one_entry_message'],
+            'bn_condition' => $data['bn_condition'] ?? '',
+        ];
+        foreach (['bn_sem_context', 'bn_sem_type', 'bn_sem_use_template'] as $legacySeedField) {
+            if (isset($data[$legacySeedField])) {
+                $body[$legacySeedField] = $data[$legacySeedField];
+            }
+        }
+
+        return $body;
+    }
+
+    /**
+     * Builds the `metadata.activitypub` array, generating a fresh keypair the first time a
+     * form is enabled for ActivityPub and preserving the existing one afterwards (the admin
+     * edit form has no input for the keys themselves, only for enable/username).
+     */
+    private function buildActivitypubMetadata(array $data, array $existingActivitypub): array
+    {
+        $enabled = (int)$this->activityPubService->isEnabled($data);
+        $activitypub = [
+            'enabled' => (string)$enabled,
+            'username' => $data['bn_activitypub_username'] ?? ($existingActivitypub['username'] ?? ''),
+            'private_key' => $existingActivitypub['private_key'] ?? null,
+            'public_key' => $existingActivitypub['public_key'] ?? null,
+        ];
+        if ($enabled && empty($activitypub['private_key'])) {
+            [$privateKey, $publicKey] = $this->httpSignatureService->generateKeyPair();
+            $activitypub['private_key'] = $privateKey;
+            $activitypub['public_key'] = $publicKey;
+        }
+
+        return $activitypub;
+    }
+
+    private function slugify(string $title): string
+    {
+        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT', $title);
+        $slug = preg_replace('/[^A-Za-z0-9]+/', '', $ascii === false ? $title : $ascii);
+
+        return $slug !== '' ? $slug : 'Form';
+    }
+
+    private function encodeBody(array $body): string
+    {
+        return json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
     // TODO Pass a Form object instead of a raw array
     public function create($data)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
+
         // If ID is not set or if it is already used, find a new ID
         if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
 
-        $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
-
-        if ($activitypubEnabled) {
-            $keyPair = $this->httpSignatureService->generateKeyPair();
-            $privateKey = $keyPair[0];
-            $publicKey = $keyPair[1];
-        }
+        $tag = $this->pageManager->suggestFreeTag($this->slugify($data['bn_label_nature'] ?? ''));
 
         // reset cache
         $this->cacheValidatedForAll = false;
 
-        $columns = ['bn_id_nature', 'bn_ce_i18n', 'bn_label_nature', 'bn_template', 'bn_description', 'bn_sem_template', 'bn_sem_reverse_template', 'bn_activitypub_enable', 'bn_activitypub_username', 'bn_activitypub_private_key', 'bn_activitypub_public_key'];
-        $values = [
-            intval($data['bn_id_nature']),
-            "'fr-FR'",
-            "'" . $this->dbService->escape($data['bn_label_nature'] ?? '') . "'",
-            "'" . $this->dbService->escape($data['bn_template'] ?? '') . "'",
-            "'" . $this->dbService->escape($data['bn_description'] ?? '') . "'",
-            "'" . $this->dbService->escape($data['bn_sem_template'] ?? '') . "'",
-            "'" . $this->dbService->escape($data['bn_sem_reverse_template'] ?? '') . "'",
-            $activitypubEnabled,
-            "'" . $this->dbService->escape($data['bn_activitypub_username'] ?? '') . "'",
-            isset($privateKey) ? "'" . $privateKey . "'" : "''",
-            isset($publicKey) ? "'" . $publicKey . "'" : "''",
-        ];
+        $saved = $this->pageManager->save($tag, $this->encodeBody($this->buildBody($data)), '', true);
 
-        if ($this->isAvailableOnlyOneEntryOption()) {
-            $columns[] = 'bn_only_one_entry';
-            $values[] = "'" . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . "'";
+        if ($saved === 0) {
+            $this->pageManager->setMetadata($tag, ['activitypub' => $this->buildActivitypubMetadata($data, [])]);
+            $this->aclService->save($tag, 'write', '@admins');
+            $this->tripleStore->create($tag, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE, '', '');
         }
-        if ($this->isAvailableOnlyOneEntryMessage()) {
-            $columns[] = 'bn_only_one_entry_message';
-            $values[] = "'" . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape($data['bn_only_one_entry_message'])) . "'";
-        }
-        $columns[] = 'bn_condition';
-        $values[] = "'" . $this->dbService->escape($data['bn_condition']) . "'";
 
-        $quotedColumns = array_map([$this->dbService, 'quoteIdentifier'], $columns);
-
-        $query = 'INSERT INTO ' . $this->dbService->prefixTable('nature')
-            . '(' . implode(', ', $quotedColumns) . ')'
-            . ' VALUES (' . implode(', ', $values) . ')';
-
-        return $this->dbService->query($query);
+        return $saved;
     }
 
     public function update($data)
@@ -301,50 +446,61 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $template = $this->convertWithSpecialParameters($data['bn_template'], $data['bn_id_nature']);
+        $tag = $this->resolveTag((string)$data['bn_id_nature']);
+        if ($tag === null) {
+            throw new \Exception("Cannot update form '{$data['bn_id_nature']}': no such form");
+        }
+
+        $existingPage = $this->pageManager->getOne($tag, null, true, true);
+        $existingBody = json_decode($existingPage['body'] ?? '', true) ?? [];
+
+        $data['bn_template'] = $this->convertWithSpecialParameters($data['bn_template'], $data['bn_id_nature']);
 
         // reset cache
         $this->cacheValidatedForAll = false;
+        unset($this->cachedForms[$data['bn_id_nature']], $this->cachedForms[$tag]);
 
-        $activitypubEnabled = (int)$this->activityPubService->isEnabled($data);
+        $body = array_merge($existingBody, $this->buildBody($data));
 
-        if ($activitypubEnabled && $data['bn_activitypub_private_key'] === null) {
-            $keyPair = $this->httpSignatureService->generateKeyPair();
-            $privateKey = $keyPair[0];
-            $publicKey = $keyPair[1];
-        }
+        $saved = $this->pageManager->save($tag, $this->encodeBody($body), '', true);
 
-        $assignments = [
-            'bn_label_nature' => "'" . $this->dbService->escape($data['bn_label_nature']) . "'",
-            'bn_template' => "'" . $template . "'",
-            'bn_description' => "'" . $this->dbService->escape($data['bn_description']) . "'",
-            'bn_sem_template' => "'" . $this->dbService->escape($data['bn_sem_template'] ?? '') . "'",
-            'bn_sem_reverse_template' => "'" . $this->dbService->escape($data['bn_sem_reverse_template'] ?? '') . "'",
-            'bn_activitypub_enable' => $activitypubEnabled,
-            'bn_activitypub_username' => "'" . $this->dbService->escape($data['bn_activitypub_username']) . "'",
-        ];
-        if (isset($privateKey)) {
-            $assignments['bn_activitypub_private_key'] = "'" . $privateKey . "'";
-        }
-        if (isset($publicKey)) {
-            $assignments['bn_activitypub_public_key'] = "'" . $publicKey . "'";
-        }
-        if ($this->isAvailableOnlyOneEntryOption()) {
-            $assignments['bn_only_one_entry'] = "'" . ((isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N') . "'";
-        }
-        if ($this->isAvailableOnlyOneEntryMessage()) {
-            $assignments['bn_only_one_entry_message'] = "'" . (empty($data['bn_only_one_entry_message']) ? '' : $this->dbService->escape($data['bn_only_one_entry_message'])) . "'";
-        }
-        $assignments['bn_condition'] = "'" . $this->dbService->escape($data['bn_condition']) . "'";
+        $this->pageManager->setMetadata($tag, [
+            'activitypub' => $this->buildActivitypubMetadata($data, $existingPage['metadatas']['activitypub'] ?? []),
+        ]);
 
-        $setClause = [];
-        foreach ($assignments as $column => $value) {
-            $setClause[] = $this->dbService->quoteIdentifier($column) . '=' . $value;
+        return $saved;
+    }
+
+    /**
+     * Renames a form's tag (its identity in `pages.tag`), keeping its stable numeric id
+     * (and therefore its entries' association, image filenames, and ActivityPub actor URLs,
+     * all keyed off that id) untouched. The old tag is kept resolvable via a
+     * FORMER_TAG_URI triple. Returns the tag actually used (suggestFreeTag()-resolved if
+     * $desiredNewTag collided with existing Content).
+     */
+    public function renameTag($formId, string $desiredNewTag): string
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        return $this->dbService->query('UPDATE' . $this->dbService->prefixTable('nature') . 'SET '
-            . implode(', ', $setClause)
-            . ' WHERE ' . $this->dbService->quoteIdentifier('bn_id_nature') . '=' . intval($data['bn_id_nature']));
+        $oldTag = $this->resolveTag((string)$formId);
+        if ($oldTag === null) {
+            throw new \Exception("Cannot rename form '$formId': no such form");
+        }
+
+        $newTag = $this->pageManager->suggestFreeTag($desiredNewTag);
+
+        $this->pageManager->renameTag($oldTag, $newTag);
+        $this->tripleStore->delete($oldTag, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE, '', '');
+        $this->tripleStore->create($newTag, TripleStore::TYPE_URI, self::TRIPLES_FORM_TYPE, '', '');
+        $this->tripleStore->create($oldTag, self::FORMER_TAG_URI, $newTag, '', '');
+
+        // reset cache
+        $this->cacheValidatedForAll = false;
+        $this->cachedForms = [];
+
+        return $newTag;
     }
 
     public function clone($id)
@@ -372,74 +528,56 @@ class FormManager
             return null;
         }
 
-        $this->clear($id);
+        $tag = $this->resolveTag((string)$id);
+        if ($tag === null) {
+            return null;
+        }
+
+        foreach ($this->getEntryTagsForForm((string)$id) as $entryTag) {
+            $this->entryManager->delete($entryTag, true);
+        }
+
+        $this->pageManager->deleteOrphaned($tag);
 
         // reset cache
         $this->cacheValidatedForAll = false;
+        unset($this->cachedForms[$id], $this->cachedForms[$tag]);
 
-        return $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('nature') . 'WHERE bn_id_nature=' . $this->dbService->escape($id));
+        return true;
     }
 
-    public function clear($id)
+    private function getEntryTagsForForm(string $numericId): array
     {
-        if ($this->securityController->isWikiHibernated()) {
-            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
-        }
-        // ACLs live in the pages row's own metadata column now, not a separate acls table --
-        // deleting the rows below already removes them, no separate ACL delete needed
+        $jsonExtract = $this->dbService->jsonExtract('p.body', '$.id_typeannonce');
+        $sql = "SELECT p.tag FROM {$this->dbService->prefixTable('pages')} p
+            WHERE p.latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape($numericId) . "'
+            AND EXISTS (
+                SELECT 1 FROM {$this->dbService->prefixTable('triples')} t
+                WHERE t.resource = p.tag
+                    AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'
+                    AND t.value = '" . $this->dbService->escape(EntryManager::TRIPLES_ENTRY_ID) . "'
+            )";
 
-        // TODO use PageManager
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('pages') .
-                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-                "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar') AND body LIKE '%\"id_typeannonce\":\"" . $this->dbService->escape($id) . "\"%\';"
-        );
-
-        // TODO use TripleStore
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('triples') .
-                'WHERE resource NOT IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-                "WHERE 1) AND property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar';"
-        );
+        return array_column($this->dbService->loadAll($sql), 'tag');
     }
 
     public function findNewId()
     {
-        $vArrayKeys = array_keys($this->cachedForms);
+        $ids = array_map('intval', $this->getAllIds());
 
-        $vArrayKeys = array_map(function ($Key) {
-            return intval($Key);
-        }, array_filter($vArrayKeys, function ($vKey) {
-            return intval($vKey) . '' === $vKey . '';
-        }));
-
-        $vMaxCachedFormId = (count($vArrayKeys) > 0) ? max($vArrayKeys) : 0;
-
-        $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM ' . $this->dbService->prefixTable('nature') . 'where bn_id_nature < 1000');
-
-        if (!empty($vResult) && isset($vResult['maxi'])) {
-            $vMaxDBFormIdLowerThan1000 = $vResult['maxi'];
-        } else {
-            $vMaxDBFormIdLowerThan1000 = 1;
+        $lowBand = array_filter($ids, function ($id) {
+            return $id < 1000;
+        });
+        $candidate = (empty($lowBand) ? 0 : max($lowBand)) + 1;
+        if ($candidate < 999) {
+            return $candidate;
         }
 
-        $vCandidate = max($vMaxCachedFormId, $vMaxDBFormIdLowerThan1000) + 1;
+        $highBand = array_filter($ids, function ($id) {
+            return $id > 10000;
+        });
 
-        if ($vCandidate < 999) {
-            return $vCandidate;
-        }
-
-        $vResult = $this->dbService->loadSingle('SELECT MAX(bn_id_nature) AS maxi FROM' . $this->dbService->prefixTable('nature') . ' where bn_id_nature > 10000');
-
-        if (!empty($vResult) && isset($vResult['maxi'])) {
-            $vMaxDBFormIdHigherThan10000 = $vResult['maxi'];
-        } else {
-            $vMaxDBFormIdHigherThan10000 = 10001;
-        }
-
-        $vCandidate = max($vMaxCachedFormId, $vMaxDBFormIdHigherThan10000) + 1;
-
-        return $vCandidate;
+        return (empty($highBand) ? 10000 : max($highBand)) + 1;
     }
 
     /**
@@ -494,7 +632,7 @@ class FormManager
                 } elseif ($value == '*') {
                     $new_line .= ' * ';
                 } else {
-                    $new_line .= $value;
+                    $new_line .= is_array($value) ? join(',', $value) : $value;
                 }
                 $new_line .= '***';
             }
@@ -570,11 +708,7 @@ class FormManager
      */
     public function isAvailableOnlyOneEntryOption(): bool
     {
-        if (is_null($this->isAvailableOnlyOneEntryOption)) {
-            $this->isAvailableOnlyOneEntryOption = $this->dbService->columnExists('nature', 'bn_only_one_entry');
-        }
-
-        return $this->isAvailableOnlyOneEntryOption;
+        return true;
     }
 
     /**
@@ -582,11 +716,7 @@ class FormManager
      */
     public function isAvailableOnlyOneEntryMessage(): bool
     {
-        if (is_null($this->isAvailableOnlyOneEntryMessage)) {
-            $this->isAvailableOnlyOneEntryMessage = $this->dbService->columnExists('nature', 'bn_only_one_entry_message');
-        }
-
-        return $this->isAvailableOnlyOneEntryMessage;
+        return true;
     }
 
     public function findTypeOfFields($formId, array $fieldTypes): array

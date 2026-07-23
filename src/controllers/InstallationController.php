@@ -29,7 +29,7 @@ class InstallationController
         'wakka_name' => 'yeswiki_name',
     ];
 
-    private const TABLE_NAMES = ['links', 'nature', 'pages', 'referrers', 'triples', 'users'];
+    private const TABLE_NAMES = ['links', 'pages', 'referrers', 'triples', 'users'];
 
     /** A database backup at this location (instance-relative) can be restored instead of the default content. */
     public const BACKUP_SQL_FILE = 'private/backups/content.sql';

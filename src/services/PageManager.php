@@ -152,6 +152,33 @@ class PageManager
     }
 
     /**
+     * Renames a Content row's identity: updates `tag` (and any `comment_on` referencing it)
+     * across every revision, preserving history under the new identity. A generic `pages`
+     * primitive -- deliberately narrow, it doesn't touch `links`/`referrers`/`triples`, since
+     * whether/how those need updating is specific to the Content type doing the renaming
+     * (e.g. a form moves its own TYPE_URI triple and records a former-tag alias itself, see
+     * FormManager::renameTag()).
+     */
+    public function renameTag(string $oldTag, string $newTag): void
+    {
+        if ($this->securityController->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+        if (!$this->tagExists($oldTag)) {
+            throw new \Exception("Cannot rename '$oldTag': no such page");
+        }
+        if ($this->tagExists($newTag)) {
+            throw new \Exception("Cannot rename '$oldTag' to '$newTag': tag already taken");
+        }
+
+        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET tag = '{$this->dbService->escape($newTag)}' WHERE tag = '{$this->dbService->escape($oldTag)}'");
+        $this->dbService->query("UPDATE {$this->dbService->prefixTable('pages')} SET comment_on = '{$this->dbService->escape($newTag)}' WHERE comment_on = '{$this->dbService->escape($oldTag)}'");
+
+        unset($this->pageCache[$oldTag]);
+        unset($this->ownersCache[$oldTag]);
+    }
+
+    /**
      * Retrieves the cached version of a page.
      *
      * Notice that this method null or false, use

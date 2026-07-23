@@ -27,48 +27,6 @@ CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}links[[ q ]] (
 <% endif %>
 )<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
 
-<# Table: nature (forms) #>
-CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}nature[[ q ]] (
-<% if driver == 'sqlite' %>
-  "bn_id_nature" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "bn_label_nature" TEXT DEFAULT NULL,
-  "bn_description" TEXT DEFAULT NULL,
-  "bn_condition" TEXT DEFAULT NULL,
-  "bn_sem_context" TEXT DEFAULT NULL,
-  "bn_sem_type" TEXT DEFAULT NULL,
-  "bn_sem_use_template" INTEGER NOT NULL DEFAULT 1,
-  "bn_template" TEXT NOT NULL,
-  "bn_ce_i18n" TEXT NOT NULL,
-  "bn_only_one_entry" TEXT NOT NULL DEFAULT 'N' CHECK("bn_only_one_entry" IN ('Y', 'N')),
-  "bn_only_one_entry_message" TEXT DEFAULT NULL
-<% elseif driver == 'pgsql' %>
-  "bn_id_nature" SERIAL PRIMARY KEY,
-  "bn_label_nature" VARCHAR(255) DEFAULT NULL,
-  "bn_description" TEXT DEFAULT NULL,
-  "bn_condition" TEXT DEFAULT NULL,
-  "bn_sem_context" TEXT DEFAULT NULL,
-  "bn_sem_type" VARCHAR(255) DEFAULT NULL,
-  "bn_sem_use_template" SMALLINT NOT NULL DEFAULT 1,
-  "bn_template" TEXT NOT NULL,
-  "bn_ce_i18n" VARCHAR(5) NOT NULL,
-  "bn_only_one_entry" VARCHAR(1) NOT NULL DEFAULT 'N' CHECK("bn_only_one_entry" IN ('Y', 'N')),
-  "bn_only_one_entry_message" TEXT DEFAULT NULL
-<% else %>
-  `bn_id_nature` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `bn_label_nature` VARCHAR(255) DEFAULT NULL,
-  `bn_description` TEXT DEFAULT NULL,
-  `bn_condition` TEXT DEFAULT NULL,
-  `bn_sem_context` TEXT DEFAULT NULL,
-  `bn_sem_type` VARCHAR(255) DEFAULT NULL,
-  `bn_sem_use_template` TINYINT(1) NOT NULL DEFAULT 1,
-  `bn_template` TEXT NOT NULL,
-  `bn_ce_i18n` VARCHAR(5) NOT NULL,
-  `bn_only_one_entry` ENUM('Y','N') NOT NULL DEFAULT 'N',
-  `bn_only_one_entry_message` TEXT DEFAULT NULL,
-  PRIMARY KEY (`bn_id_nature`)
-<% endif %>
-)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
-
 <# Table: pages #>
 CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
 <% if driver == 'sqlite' %>
