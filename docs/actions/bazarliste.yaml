@@ -197,7 +197,6 @@ actions:
         options:
           "false": _t(AB_bazar_commons2_groupsexpanded_false)
           "true": _t(AB_bazar_commons2_groupsexpanded_true)
-        showif: facettes
       filterposition:
         label: _t(AB_bazar_commons2_filterposition_label)
         type: list
@@ -205,7 +204,6 @@ actions:
         options:
           right: _t(AB_RIGHT)
           left: _t(AB_LEFT)
-        showif: facettes
         showExceptFor:
           - bazargogocarto
       filtercolsize:
@@ -214,7 +212,6 @@ actions:
         type: range
         min: 1
         max: 12
-        showif: facettes
       filteruserasowner:
         label: _t(AB_bazar_commons2_filter_user_as_owner)
         type: checkbox
@@ -237,7 +234,6 @@ actions:
         advanced: true
         type: checkbox
         default: true
-        showif: facettes
         showExceptFor:
           - bazargogocarto
       resetfiltersbutton:
@@ -247,7 +243,6 @@ actions:
         default: "0"
         checkedvalue: "1"
         uncheckedvalue: "0"
-        showif: facettes
         showExceptFor:
           - bazargogocarto
       champ:
