@@ -151,6 +151,42 @@ class UserManagerContentTest extends YesWikiTestCase
         }
     }
 
+    public function testRevertingAUserPageDoesNotCorruptThePasswordHash()
+    {
+        // regression test (found by /code-review's Standards axis): revertToRevision()
+        // fetches the target revision via getById(), which -- before this fix -- always
+        // ran users-type pages through Field ACL redaction, unconditionally blanking
+        // `password`. Since revertToRevision() writes that fetched body straight back via
+        // save(), reverting a user page to ANY revision silently erased the real password
+        // hash, not just hid it from display. getById() now takes a $bypassAcls param,
+        // and revertToRevision() passes true.
+        $wiki = $this->getWiki();
+        $userManager = $wiki->services->get(UserManager::class);
+        $pageManager = $wiki->services->get(PageManager::class);
+
+        $name = 'UserManagerContentTestRevert';
+        $this->cleanupUser($userManager, $name);
+
+        try {
+            $userManager->create($name, 'umct-revert@example.tld', 'Aa1!aaaaRegression');
+            $originalUser = $userManager->getOneByName($name);
+            $originalHash = $originalUser['password'];
+            $this->assertNotEmpty($originalHash);
+
+            $firstRevisionId = $pageManager->getOne($name, null, true, true)['id'];
+
+            sleep(1); // pages.time has only second-granularity
+            $userManager->update($originalUser, ['motto' => 'updated motto']);
+
+            $pageManager->revertToRevision($name, $firstRevisionId);
+
+            $afterRevert = $userManager->getOneByName($name);
+            $this->assertSame($originalHash, $afterRevert['password'], 'reverting must not erase the real password hash');
+        } finally {
+            $this->cleanupUser($userManager, $name);
+        }
+    }
+
     public function testCreatingWithANameCollidingWithExistingContentUsesSuggestFreeTag()
     {
         $wiki = $this->getWiki();

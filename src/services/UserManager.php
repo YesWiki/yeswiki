@@ -294,14 +294,23 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     {
         return [
             'email' => $fields['email'] ?? '',
-            'motto' => empty($fields['motto']) ? '' : $fields['motto'],
-            'revisioncount' => empty($fields['revisioncount']) ? '20' : $fields['revisioncount'],
-            'changescount' => empty($fields['changescount']) ? '50' : $fields['changescount'],
-            'doubleclickedit' => empty($fields['doubleclickedit']) ? 'Y' : $fields['doubleclickedit'],
+            'motto' => $this->valueOrDefault($fields, 'motto', ''),
+            // revisioncount/changescount are user-configurable display-count preferences, not
+            // derived counters -- a legitimate stored 0 must not be treated as "unset" and
+            // silently overwritten (empty(0) and empty('0') are both true in PHP, which
+            // empty()-based checks got wrong here)
+            'revisioncount' => $this->valueOrDefault($fields, 'revisioncount', '20'),
+            'changescount' => $this->valueOrDefault($fields, 'changescount', '50'),
+            'doubleclickedit' => $this->valueOrDefault($fields, 'doubleclickedit', 'Y'),
             'signuptime' => $fields['signuptime'] ?? date('Y-m-d H:i:s'),
-            'show_comments' => empty($fields['show_comments']) ? 'N' : $fields['show_comments'],
+            'show_comments' => $this->valueOrDefault($fields, 'show_comments', 'N'),
             'password' => $fields['password'] ?? '',
         ];
+    }
+
+    private function valueOrDefault(array $fields, string $key, string $default)
+    {
+        return (isset($fields[$key]) && $fields[$key] !== '') ? $fields[$key] : $default;
     }
 
     private function encodeBody(array $body): string

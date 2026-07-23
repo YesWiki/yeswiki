@@ -225,13 +225,25 @@ class PageManager
         }
     }
 
-    public function getById($id): ?array
+    /**
+     * @param bool $bypassAcls do not check acl (and, since ticket 06, skip users-type Field
+     *                         ACL redaction too) -- needed by revertToRevision(), which reads
+     *                         a revision's TRUE stored data to write it back, not to display
+     *                         it. Getting this wrong silently corrupts data rather than just
+     *                         hiding it: getById() is also reachable from a genuine display
+     *                         path (Wiki::LoadPageById(), used by the RSS revision-diff view),
+     *                         which must keep bypassAcls=false so it still redacts sensitive
+     *                         fields on that path.
+     */
+    public function getById($id, bool $bypassAcls = false): ?array
     {
         $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
         if ($page) {
             $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
         }
-        $page = $this->checkEntriesACL([$page], $page['tag'])[0];
+        if (!$bypassAcls) {
+            $page = $this->checkEntriesACL([$page], $page['tag'])[0];
+        }
 
         return $page;
     }
@@ -247,7 +259,13 @@ class PageManager
      */
     public function revertToRevision($tag, $revisionId, bool $fullRevert = false): int
     {
-        $target = $this->getById($revisionId);
+        // bypassAcls=true: this reads the revision's TRUE data to restore it, not to
+        // display it -- redaction here (e.g. a users-type page's password, always hidden
+        // even from admins) would silently persist a blanked value via save() below,
+        // corrupting the account rather than just hiding it from view (found via ticket
+        // 06's code review). The caller's actual write permission on $tag is still
+        // enforced by save() itself, unaffected by this bypass.
+        $target = $this->getById($revisionId, true);
         if (!$target || $target['tag'] !== $tag) {
             throw new \Exception("Revision '$revisionId' does not belong to page '$tag'");
         }
