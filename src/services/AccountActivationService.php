@@ -186,7 +186,10 @@ class AccountActivationService
         ], false);
     }
 
-    protected function readActivationField(string $tag, string $field): ?string
+    /**
+     * @return array|null the decoded body, or null if $tag isn't a real, existing page
+     */
+    private function readBody(string $tag): ?array
     {
         $page = $this->wiki->services->get(PageManager::class)->getOne($tag, null, true, true);
         if (!$page) {
@@ -194,7 +197,14 @@ class AccountActivationService
         }
         $body = json_decode($page['body'] ?? '', true);
 
-        return is_array($body) ? ($body[$field] ?? null) : null;
+        return is_array($body) ? $body : [];
+    }
+
+    protected function readActivationField(string $tag, string $field): ?string
+    {
+        $body = $this->readBody($tag);
+
+        return $body !== null ? ($body[$field] ?? null) : null;
     }
 
     /**
@@ -203,12 +213,10 @@ class AccountActivationService
     protected function writeActivationFields(string $tag, array $fields): void
     {
         $pageManager = $this->wiki->services->get(PageManager::class);
-        $page = $pageManager->getOne($tag, null, true, true);
-        if (!$page) {
+        $body = $this->readBody($tag);
+        if ($body === null) {
             throw new Exception("Cannot set activation fields on '$tag': no such user");
         }
-        $body = json_decode($page['body'] ?? '', true);
-        $body = is_array($body) ? $body : [];
         $body = array_merge($body, $fields);
 
         $pageManager->save($tag, json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), '', true);

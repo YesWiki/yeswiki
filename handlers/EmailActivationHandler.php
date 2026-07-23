@@ -14,13 +14,11 @@ class EmailActivationHandler extends YesWikiHandler
         $userManager = $this->getService(UserManager::class);
 
         try {
-            $userName = filter_input(INPUT_GET, 'username', FILTER_UNSAFE_RAW);
-            $userName = in_array($userName, [false, null], true) ? '' : $userName;
+            $userName = $this->getRequiredGetParam('username');
             if (empty($userName)) {
                 throw new UserNameDoesNotExistException(_t('ACCOUNTACTIVATION_BY_EMAIL_EMPTY_USERNAME'));
             }
-            $key = filter_input(INPUT_GET, 'key', FILTER_UNSAFE_RAW);
-            $key = in_array($key, [false, null], true) ? '' : $key;
+            $key = $this->getRequiredGetParam('key');
             if (empty($key)) {
                 throw new BadActivationKeyException(_t('ACCOUNTACTIVATION_BY_EMAIL_EMPTY_KEY'));
             }
@@ -49,5 +47,12 @@ class EmailActivationHandler extends YesWikiHandler
                 'message' => _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ERROR', ['error' => $th->getMessage()]),
             ]);
         }
+    }
+
+    private function getRequiredGetParam(string $name): string
+    {
+        $value = filter_input(INPUT_GET, $name, FILTER_UNSAFE_RAW);
+
+        return in_array($value, [false, null], true) ? '' : $value;
     }
 }
