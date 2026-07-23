@@ -6,9 +6,7 @@ const ConditionsChecking = {
   boolList: ['false', 'true'],
   operationsList: ['!(', 'not(', 'not (', '(', ')'],
   operationsListIncludInSpaceParenthesis: ['and', 'or'],
-  /* BEGIN AJOUT DE L'OPERATEUR MATCH */
   conditionsList: ['match', '==', '!=', ' in', '|length ==', '|length !=', '|length <', '|length <=', '|length >=', '|length >', ' is empty', ' is not empty'],
-  /* END AJOUT DE L'OPERATEUR MATCH */
   pregQuote(input) {
     return (`${input}`).replace(new RegExp('[.\\[\\]\\^(){}!=\\\\+*?$<>|:]', 'g'), '\\$&')
   },
@@ -103,24 +101,65 @@ const ConditionsChecking = {
     }
     return result
   },
-  /* BEGIN AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
-  getTextValues(field) {
-    const result = []
+  getTextValue(field) {
     const value = $(field).val()
-    if (value.trim() != '') {
-      result.push(value.trim())
-    }
-    return result
+    return value ? value.trim() : ''
   },
-  getTextareaValues(field) {
-    const result = []
-    const value = $(field).val()
-    if (value.trim() != '') {
-      result.push(value.trim())
+  getTextareaValue(field) {
+    let value = $(field).val()
+    if (field.hasClass('summernote')) {
+      if (value === '<p><br></p>') {
+        return ''
+      }
+      value = value.replace(/^<p>/, '').replace(/<\/p>$/, '')
     }
-    return result
+    return value ? value.trim() : ''
   },
-  /* END AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
+  getImageSrc(field) {
+    let src = ''
+    if ($(field).is('output')) {
+      // image affichée
+      src = this.getFilename($(field).find('img').attr('src'))
+    } else {
+      // formulaire affiché avec onglets Téléverser / URL
+      const upload = $(field).children('#imagebf_image-upload.tab-pane.active')
+      if (upload.length) {
+        src = this.getFilename($(upload).find('input').val())
+      } else {
+        const url = $(field).children('#imagebf_image-url.tab-pane.active')
+        if (url.length) {
+          src = this.getFilename($(url).find('input').val())
+        }
+      }
+    }
+    return src ? src.trim() : ''
+  },
+  getFileSrc(field) {
+    let src = ''
+    if ($(field).is('a')) {
+      // lien du fichier affiché
+      src = field.attr('download')
+      if (!src) {
+        // si fichier chargé depuis internet
+        src = this.getFilename(field.attr('href'))
+      }
+    } else {
+      // formulaire affiché avec onglets Téléverser / URL
+      const upload = $(field).children('[id$="-upload"].tab-pane.active')
+      if (upload.length) {
+        src = this.getFilename($(upload).find('input').val())
+      } else {
+        const url = $(field).children('[id$="-url"].tab-pane.active')
+        if (url.length) {
+          src = this.getFilename($(url).find('input').val())
+        }
+      }
+    }
+    return src ? src.trim() : ''
+  },
+  getFilename(src) {
+    return src ? src.split(/[\\/]/).pop().trim() : ''
+  },
   getFieldNameValues(fieldName) {
     if (typeof this.fieldNamesCache[fieldName] === 'undefined') {
       return []
@@ -135,12 +174,14 @@ const ConditionsChecking = {
         return this.getRadioValues(fieldData.node)
       case 'select':
         return this.getSelectValues(fieldData.node)
-        /* BEGIN AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
       case 'text':
-        return this.getTextValues(fieldData.node)
+        return this.getTextValue(fieldData.node)
       case 'textarea':
- 		return this.getTextareaValues(fieldData.node)
-        /* END AJOUT DE LA GESTION DES INPUTS DE TYPE TEXT ET DES TEXTAREAS */
+        return this.getTextareaValue(fieldData.node)
+      case 'image':
+        return this.getImageSrc(fieldData.node)
+      case 'file':
+        return this.getFileSrc(fieldData.node)
       default:
         break
     }
@@ -157,13 +198,13 @@ const ConditionsChecking = {
     return tempValues.split(',')
   },
   commonForOperations(fieldName, values, extract) {
-    const fieldValues = this.getFieldNameValues(fieldName)
     const extractedValues = this.extractValues(values)
     for (let index = 0; index < extractedValues.length; index++) {
       if (extract.uniqueValues.indexOf(extractedValues[index].trim()) == -1) {
         extract.uniqueValues.push(extractedValues[index].trim())
       }
     }
+    const fieldValues = this.getFieldNameValues(fieldName)
     for (let index = 0; index < fieldValues.length; index++) {
       if (extract.uniqueFieldValues.indexOf(fieldValues[index].trim()) == -1) {
         extract.uniqueFieldValues.push(fieldValues[index].trim())
@@ -185,7 +226,6 @@ const ConditionsChecking = {
     const number = Number(values)
     return eval(`${length} ${operation} ${number}`)
   },
-  /* BEGIN AJOUT DE LA METHODE MATCH */
   match(fieldName, values) {
     const extract = {
       uniqueValues: [],
@@ -210,8 +250,13 @@ const ConditionsChecking = {
     }
     return result
   },
-  /* END AJOUT DE LA METHODE MATCH */
   isEqual(fieldName, values) {
+    if (
+      typeof this.fieldNamesCache[fieldName] !== 'undefined' &&
+      !this.fieldNamesCache[fieldName].isArray
+    ) {
+      return this.getFieldNameValues(fieldName) == values
+    }
     const extract = {
       uniqueValues: [],
       uniqueFieldValues: []
@@ -229,23 +274,15 @@ const ConditionsChecking = {
     return result
   },
   isUnEqual(fieldName, values) {
-    const extract = {
-      uniqueValues: [],
-      uniqueFieldValues: []
-    }
-    this.commonForOperations(fieldName, values, extract)
-    if (extract.uniqueValues.length != extract.uniqueFieldValues.length) {
-      return true
-    }
-    let result = false
-    for (let index = 0; index < extract.uniqueFieldValues.length; index++) {
-      if (extract.uniqueValues.indexOf(extract.uniqueFieldValues[index]) == -1) {
-        result = true
-      }
-    }
-    return result
+    return !this.isEqual(fieldName, values)
   },
   isIn(fieldName, values) {
+    if (
+      typeof this.fieldNamesCache[fieldName] !== 'undefined' &&
+      !this.fieldNamesCache[fieldName].isArray
+    ) {
+      return false
+    }
     const extract = {
       uniqueValues: [],
       uniqueFieldValues: []
@@ -283,10 +320,8 @@ const ConditionsChecking = {
   },
   renderConditionSecured(fieldName, condition, values) {
     switch (condition) {
-    /* BEGIN AJOUT DE L'OPERATEUR MATCH */
-	  case 'match':
+      case 'match':
         return ` this.match("${fieldName}","${values}")`
-        /* END AJOUT DE L'OPERATEUR MATCH */
       case '==':
         return ` this.isEqual("${fieldName}","${values}")`
       case '!=':
@@ -573,7 +608,7 @@ const ConditionsChecking = {
     if (typeof this.triggersCache[inputId] === 'undefined') {
       this.triggersCache[inputId] = [fieldName]
 
-      $(input).on('change', () => {
+      $(input).on('change input', () => {
         ConditionsChecking.resolveTrigger(inputId)
       })
     } else if (this.triggersCache[inputId].indexOf(fieldName) < 0) {
@@ -644,7 +679,6 @@ const ConditionsChecking = {
     }
     return result
   },
-  /* BEGIN Ajout du support des inputs de type text et des textareas */
   findText(fieldName, result) {
     if (result.type != '') {
       return result
@@ -652,6 +686,7 @@ const ConditionsChecking = {
     const inputs = $(`input[name$=${fieldName}][type=text]`)
     if (inputs.length > 0) {
       result.type = 'text'
+      result.isArray = false
       result.node = inputs
       // register triggers
       $(inputs).each(function() {
@@ -667,41 +702,84 @@ const ConditionsChecking = {
     const inputs = $(`textarea[name$=${fieldName}]`)
     if (inputs.length > 0) {
       result.type = 'textarea'
+      result.isArray = false
       result.node = inputs
       // register triggers
       $(inputs).each(function() {
-        /* BEGIN Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg */
-
+        // Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg
         const vTextArea = $(this)
 
         if (vTextArea.hasClass('aceditor-textarea') || vTextArea.hasClass('summernote')) {
-		    const launchUpdateHandler = function() {
-  			 	let vLastValue = vTextArea.val()
+          const launchUpdateHandler = function() {
+            let vLastValue = vTextArea.val()
 
-  				setInterval(() => {
-  					const vValue = vTextArea.val()
+            setInterval(() => {
+              const vValue = vTextArea.val()
 
-  					if (vValue !== vLastValue) {
-  					    vLastValue = vValue
-  						vTextArea.trigger('change')
-  					}
-  				}, ConditionsChecking.checkDelay)
-			  }
+              if (vValue !== vLastValue) {
+                vLastValue = vValue
+                vTextArea.trigger('change')
+              }
+            }, ConditionsChecking.checkDelay)
+          }
 
-		  	launchUpdateHandler()
+          launchUpdateHandler()
         }
-
-      	/* END Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg */
-
         ConditionsChecking.registerTrigger(this, fieldName)
       })
     }
     return result
   },
-  /* END Ajout du support des inputs de type text et des textareas */
+  findImage(fieldName, result) {
+    if (result.type != '') {
+      return result
+    }
+    const uploadDiv = $(`div[id$=image${fieldName}-upload]`)
+    const imageOutput = $(`output[id$=img-image${fieldName}]`)
+    if (uploadDiv.length || imageOutput.length) {
+      result.type = 'image'
+      result.isArray = false
+      if (uploadDiv.length) {
+        result.node = uploadDiv.parent()
+        $(uploadDiv).find('input').each(function() {
+          ConditionsChecking.registerTrigger(this, fieldName)
+        })
+      } else {
+        result.node = imageOutput
+        $(imageOutput).each(function() {
+          ConditionsChecking.registerTrigger(this, fieldName)
+        })
+      }
+    }
+    return result
+  },
+  findFile(fieldName, result) {
+    if (result.type != '') {
+      return result
+    }
+    const uploadDiv = $(`div[id=fichier${fieldName}-upload]`)
+    const imageLink = $(`a[data-id=${fieldName}]`)
+    if (uploadDiv.length || imageLink.length) {
+      result.type = 'file'
+      result.isArray = false
+      if (uploadDiv.length) {
+        result.node = uploadDiv.parent()
+        $(result.node).find('input').each(function() {
+          ConditionsChecking.registerTrigger(this, fieldName)
+        })
+      } else {
+        result.node = imageLink
+        $(imageLink).each(function() {
+          ConditionsChecking.registerTrigger(this, fieldName)
+        })
+      }
+    }
+    return result
+  },
   extractFieldNode(fieldName) {
     let result = {
       type: '',
+      isArray: true,
       node: {},
       conditionIds: []
     }
@@ -711,6 +789,8 @@ const ConditionsChecking = {
     result = this.findList(fieldName, result)
     result = this.findText(fieldName, result)
     result = this.findTextarea(fieldName, result)
+    result = this.findImage(fieldName, result)
+    result = this.findFile(fieldName, result)
 
     return result
   },

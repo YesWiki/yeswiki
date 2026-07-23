@@ -38,21 +38,21 @@ class PdfAction extends YesWikiAction
     public function run()
     {
         if (
-            empty($this->arguments['url'])
-            || (!in_array(parse_url($this->arguments['url'], PHP_URL_HOST), [$_SERVER['SERVER_NAME'], 'www.' . $_SERVER['SERVER_NAME']]))
-                || (
-                    parse_url($this->arguments['url'], PHP_URL_PORT) == ''
-                    && $_SERVER['SERVER_PORT'] != ''
-                    && $_SERVER['SERVER_PORT'] != '80'
-                    && $_SERVER['SERVER_PORT'] != '443'
-                )
-                || (
-                    parse_url($this->arguments['url'], PHP_URL_PORT) != ''
-                    && parse_url($this->arguments['url'], PHP_URL_PORT) != $_SERVER['SERVER_PORT']
-                )
-                    || (
-                        !empty($_SERVER['HTTP_REFERER'])
-                        && parse_url($this->arguments['url'], PHP_URL_SCHEME) != parse_url($_SERVER['HTTP_REFERER'], PHP_URL_SCHEME)
+            empty($this->arguments['url']) ||
+            (!in_array(parse_url($this->arguments['url'], PHP_URL_HOST), [$this->getRequest()->getHost(), 'www.' . $this->getRequest()->getHost()])) ||
+                (
+                    parse_url($this->arguments['url'], PHP_URL_PORT) == '' &&
+                    $this->getRequest()->getPort() != ''
+                    && $this->getRequest()->getPort() != 80
+                    && $this->getRequest()->getPort() != 443
+                ) ||
+                (
+                    parse_url($this->arguments['url'], PHP_URL_PORT) != '' &&
+                    parse_url($this->arguments['url'], PHP_URL_PORT) != $this->getRequest()->getPort()
+                ) ||
+                    (
+                        !empty($this->getRequest()->headers->get('referer')) &&
+                        parse_url($this->arguments['url'], PHP_URL_SCHEME) != parse_url($this->getRequest()->headers->get('referer'), PHP_URL_SCHEME)
                     )
         ) {
             return $this->render('@templates/alert-message.twig', [

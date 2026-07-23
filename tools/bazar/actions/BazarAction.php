@@ -69,10 +69,13 @@ class BazarAction extends YesWikiAction
             }
         }
 
-        $vIDs = (isset($_REQUEST['id_typeannonce']) && trim($_REQUEST['id_typeannonce']) != ''
-                ? $_REQUEST['id_typeannonce']
-                : (isset($_REQUEST['id']) && trim($_REQUEST['id']) != ''
-                    ? $_REQUEST['id']
+        $req = $this->getRequest();
+        $reqIdTypeAnnonce = $req->get('id_typeannonce');
+        $reqId = $req->get('id');
+        $vIDs = (isset($reqIdTypeAnnonce) && trim($reqIdTypeAnnonce) != ''
+                ? $reqIdTypeAnnonce
+                : (isset($reqId) && trim($reqId) != ''
+                    ? $reqId
                     : (isset($arg['id_typeannonce']) && trim($arg['id_typeannonce']) != ''
                         ? $arg['id_typeannonce']
                         : (isset($arg['id']) && trim($arg['id']) != ''
@@ -110,13 +113,15 @@ class BazarAction extends YesWikiAction
      */
     protected function sanitizedGet(string $key, $callback)
     {
-        return (isset($_GET[$key]) && is_scalar($_GET[$key]))
-            ? $_GET[$key]
+        $val = $this->getRequest()->query->get($key);
+        return (isset($val) && is_scalar($val))
+            ? $val
             : (is_callable($callback) ? $callback() : null);
     }
 
     public function run()
     {
+        $req = $this->getRequest();
         $listController = $this->getService(ListController::class);
         $formController = $this->getService(FormController::class);
         $entryController = $this->getService(EntryController::class);
@@ -142,15 +147,15 @@ class BazarAction extends YesWikiAction
                 }
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
-                        return $entryController->create($_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
+                        return $entryController->create($req->get('id_typeannonce') ?? $req->get('id') ?? $this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
                     case self::ACTION_ENTRY_EDIT:
-                        return $entryController->update($_REQUEST['id_fiche']);
+                        return $entryController->update($req->get('id_fiche'));
                     case self::ACTION_ENTRY_DELETE:
-                        return $entryController->delete($_REQUEST['id_fiche'], true);
+                        return $entryController->delete($req->get('id_fiche'), true);
                     case self::ACTION_PUBLIER:
-                        return $entryController->publish($_REQUEST['id_fiche'], true);
+                        return $entryController->publish($req->get('id_fiche'), true);
                     case self::ACTION_PAS_PUBLIER:
-                        return $entryController->publish($_REQUEST['id_fiche'], false);
+                        return $entryController->publish($req->get('id_fiche'), false);
                     case self::CHOISIR_TYPE_FICHE:
                         return $entryController->selectForm();
                     default:
@@ -178,13 +183,13 @@ class BazarAction extends YesWikiAction
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $formController->update($_GET['idformulaire']);
+                        return $formController->update($req->query->get('idformulaire'));
                     case self::ACTION_FORM_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $formController->delete($_GET['idformulaire']);
+                        return $formController->delete($req->query->get('idformulaire'));
                     case self::ACTION_FORM_CONFIRM_DELETE:
                     case self::ACTION_FORM_CONFIRM_EMPTY:
                         if ($this->isWikiHibernated()) {
@@ -199,35 +204,37 @@ class BazarAction extends YesWikiAction
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $formController->empty($_GET['idformulaire']);
+                        return $formController->empty($req->query->get('idformulaire'));
                     case self::ACTION_FORM_CLONE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $formController->clone($_GET['idformulaire']);
+                        return $formController->clone($req->query->get('idformulaire'));
                     default:
-                        return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
+                        return $formController->displayAll($req->query->get('msg'));
                 }
                 // no break
             case self::VOIR_ABONNEMENTS:
                 switch ($action) {
                     case self::ACTION_ABONNEMENT_LIST:
-                        return $formController->manageAbonnements($_GET['idformulaire']);
+                        return $formController->manageAbonnements($req->query->get('idformulaire'));
                     case self::ACTION_ABONNEMENT_ADD:
-                        if ($_GET['type'] === 'following') {
-                            return $formController->addFollowing($_GET['idformulaire'], $_GET['actor']);
+                        if ($req->query->get('type') === 'following') {
+                            return $formController->addFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
                         }
+                        // no break
                     case self::ACTION_ABONNEMENT_REMOVE:
-                        if ($_GET['type'] === 'followers') {
-                            return $formController->removeFollower($_GET['idformulaire'], $_GET['actor']);
+                        if ($req->query->get('type') === 'followers') {
+                            return $formController->removeFollower($req->query->get('idformulaire'), $req->query->get('actor'));
                         } else {
-                            return $formController->removeFollowing($_GET['idformulaire'], $_GET['actor']);
+                            return $formController->removeFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
                         }
+                        // no break
                     case self::ACTION_ABONNEMENT_SYNC:
-                        return $formController->syncActorPosts($_GET['idformulaire'], $_GET['actor']);
+                        return $formController->syncActorPosts($req->query->get('idformulaire'), $req->query->get('actor'));
                     default:
-                        return $formController->displayAll(!empty($_GET['msg']) ? $_GET['msg'] : null);
+                        return $formController->displayAll($req->query->get('msg'));
                 }
                 // no break
             case self::VOIR_LISTES:
@@ -243,13 +250,13 @@ class BazarAction extends YesWikiAction
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $listController->update($_GET['idliste']);
+                        return $listController->update($req->query->get('idliste'));
                     case self::ACTION_LIST_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $listController->delete($_GET['idliste']);
+                        return $listController->delete($req->query->get('idliste'));
                     default:
                         return $listController->displayAll();
                 }
@@ -263,7 +270,7 @@ class BazarAction extends YesWikiAction
             default:
                 switch ($action) {
                     case self::ACTION_ENTRY_VIEW:
-                        return $entryController->view($_REQUEST['id_fiche'], $_REQUEST['time'] ?? '');
+                        return $entryController->view($req->get('id_fiche'), $req->get('time', ''));
                     case self::MOTEUR_RECHERCHE:
                     default:
                         $this->arguments['search'] = true;

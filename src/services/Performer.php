@@ -167,7 +167,7 @@ class Performer
      *
      * @return string the generated output
      */
-    public function run($objectName, $objectType, array $vars = []): string
+    public function run($objectName, $objectType, array $vars = [], bool $end_elem = false): string
     {
         if (!Performer::TYPES[$objectType]) {
             return "Invalid type $objectType";
@@ -197,7 +197,11 @@ class Performer
                 } elseif ($file['isDefinedAsClass']) {
                     $performable = $this->createPerformable($file, $vars, $output);
                     try {
-                        $output .= $performable->run();
+                        if ($end_elem) {
+                            $output .= $performable->end();
+                        } else {
+                            $output .= $performable->run();
+                        }
                     } catch (HttpException $exception) {
                         return $this->renderError($exception->getMessage(), $objectType);
                     }

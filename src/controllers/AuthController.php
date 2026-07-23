@@ -191,7 +191,7 @@ class AuthController extends YesWikiController
         if ($user = $this->getLoggedUser()) {
             $name = $user['name'];
         } else {
-            $name = $this->wiki->isCli() ? '' : $_SERVER['REMOTE_ADDR'];
+            $name = $this->wiki->isCli() ? '' : $this->getRequest()->getClientIp();
         }
 
         return $name;
@@ -205,6 +205,7 @@ class AuthController extends YesWikiController
 
     public function login($user, $remember = 0)
     {
+        $previousUserName = $_SESSION['user']['name'] ?? null;
         if (isset($_SESSION['user']) && $_SESSION['user']['name'] != $user['name']) {
             $this->cleanSensitiveDataFromSession();
         }
@@ -218,6 +219,15 @@ class AuthController extends YesWikiController
                 'name' => $user['name'],
                 'lastConnection' => $currentDateTime->getTimestamp(),
             ];
+
+        if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->wiki->isCli()) {
+            // regenerate the session ID whenever the authenticated identity actually changes
+            // (anonymous -> user, or user A -> user B) to prevent session fixation;
+            // this deliberately excludes connectUser()'s routine per-request re-hydration of
+            // an already logged-in user, which calls login() again with the same name each time
+            session_regenerate_id(true);
+        }
+
         if (!$this->wiki->isCli()) {
             if (!$user instanceof User) {
                 if (!empty($user['name'])) {
@@ -249,11 +259,11 @@ class AuthController extends YesWikiController
             // prevent setting cookies in CLI (could be errors)
 
             // delete cookies
-            if (!empty($_COOKIE['name'])) {
+            if (!empty($this->getRequest()->cookies->get('name'))) {
                 $this->setPersistentCookie('name', '', time() - 3600);
                 unset($_COOKIE['name']);
             }
-            if (!empty($_COOKIE['token'])) {
+            if (!empty($this->getRequest()->cookies->get('token'))) {
                 $this->setPersistentCookie('token', '', time() - 3600);
                 unset($_COOKIE['token']);
             }
@@ -301,12 +311,12 @@ class AuthController extends YesWikiController
         setcookie($name, '', [
             'path' => $this->wiki->CookiePath,
             'domain' => '',
-            'secure' => !empty($_SERVER['HTTPS']),
+            'secure' => $this->getRequest()->isSecure(),
             'httponly' => true,
             'samesite' => 'Lax',
             'expires' => time() - 3600,
         ]);
-        if (isset($_COOKIE[$name])) {
+        if ($this->getRequest()->cookies->has($name)) {
             unset($_COOKIE[$name]);
         }
     }
@@ -395,15 +405,16 @@ class AuthController extends YesWikiController
      */
     protected function extractDataFromCookie(): CookieData
     {
-        if (empty($_COOKIE['name'])) {
+        $cookies = $this->getRequest()->cookies;
+        if (empty($cookies->get('name'))) {
             throw new BadUserConnectException('cookie \'name\' sould be set');
         }
-        $userName = strval($_COOKIE['name']);
+        $userName = strval($cookies->get('name'));
 
-        if (empty($_COOKIE['token'])) {
+        if (empty($cookies->get('token'))) {
             throw new BadUserConnectException('cookie \'token\' sould be set');
         }
-        $token = strval($_COOKIE['token']);
+        $token = strval($cookies->get('token'));
         if (strlen($token) <= self::DATE_LENGTH_IN_TOKEN) {
             throw new BadUserConnectException('cookie \'token\' is too short');
         }
@@ -453,10 +464,10 @@ class AuthController extends YesWikiController
     protected function cleanOldFormatCookie()
     {
         if (!$this->wiki->isCli()) {
-            if (!empty($_COOKIE['password'])) {
+            if (!empty($this->getRequest()->cookies->get('password'))) {
                 $this->deleteOldCookie('password');
             }
-            if (!empty($_COOKIE['remember'])) {
+            if (!empty($this->getRequest()->cookies->get('remember'))) {
                 $this->deleteOldCookie('remember');
             }
             // update session cookies to be only for session

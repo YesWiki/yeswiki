@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core;
 
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Contracts\Service\Attribute\Required;
 use YesWiki\Core\Service\AclService;
@@ -19,6 +20,11 @@ abstract class YesWikiController
     public function setWiki(Wiki $wiki): void
     {
         $this->wiki = $wiki;
+    }
+
+    protected function getRequest(): Request
+    {
+        return $this->wiki->request;
     }
 
     protected function render($templatePath, $data = [], $method = 'render')

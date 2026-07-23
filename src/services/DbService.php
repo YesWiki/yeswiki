@@ -895,6 +895,9 @@ class DbService
         $error = '';
         try {
             $tablesPrefix = trim($this->prefixTable(''));
+            if (empty($tablesPrefix)) {
+                throw new \Exception("'table_prefix' is empty in wakka.config.php — cannot determine which tables to back up");
+            }
             $tablesPostfix = [];
             // get Tables using the driver-agnostic method
             $tables = $this->getTables();
@@ -1007,7 +1010,9 @@ class DbService
                     }
                     $sql .= ')';
                 }
-                $sql .= ";\n";
+                if (!$firstRow) {
+                    $sql .= ";\n";
+                }
                 $sql .=
                     <<<SQL
 

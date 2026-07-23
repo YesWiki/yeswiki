@@ -36,7 +36,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
         $config = $this->getService(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
 
-        if (isset($_POST['action']) and $_POST['action'] === 'setTemplate') {
+        if ($this->getRequest()->request->get('action') === 'setTemplate') {
             if ($this->securityController->isWikiHibernated()) {
                 return $this->securityController->getMessageWhenHibernated();
             }
@@ -99,7 +99,8 @@ class SetWikiDefaultThemeAction extends YesWikiAction
 
     protected function checkParamActionSetTemplate($availableThemes): ?array
     {
-        if (!isset($_POST['theme_select']) || !isset($_POST['style_select']) || !isset($_POST['squelette_select'])) {
+        $post = $this->getRequest()->request;
+        if (!$post->has('theme_select') || !$post->has('style_select') || !$post->has('squelette_select')) {
             return null;
         }
 
@@ -130,7 +131,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             'style' => $values['style'],
             'squelette' => $values['squelette'],
             'preset' => (!array_key_exists('presets', $availableThemes[$values['theme']]) || empty($values['preset'])) ? null : $values['preset'],
-            'forceTheme' => (isset($_POST['forceTheme']) && $_POST['forceTheme'] === 'on'),
+            'forceTheme' => ($this->getRequest()->request->get('forceTheme') === 'on'),
         ];
     }
 
@@ -139,10 +140,11 @@ class SetWikiDefaultThemeAction extends YesWikiAction
      */
     protected function sanitizePost(string $key): ?string
     {
-        if (empty($_POST[$key]) || !is_string($_POST[$key])) {
+        $raw = $this->getRequest()->request->get($key);
+        if (empty($raw) || !is_string($raw)) {
             return '';
         }
-        $val = filter_var($_POST[$key], FILTER_UNSAFE_RAW);
+        $val = filter_var($raw, FILTER_UNSAFE_RAW);
 
         return in_array($val, [false, null], true) ? '' : htmlspecialchars(strip_tags($val));
     }

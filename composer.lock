@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eb8cf7c6cc6ddc510fe829ad2797cc58",
+    "content-hash": "f50aefebbb274b969574deab0902fa57",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -1330,30 +1330,30 @@
         },
         {
             "name": "stefangabos/zebra_image",
-            "version": "2.8.2",
+            "version": "3.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/stefangabos/Zebra_Image.git",
-                "reference": "11c343fa312d8cc3ffc70231f027af6bdd01f42b"
+                "reference": "2d55a5d1bb784bba5ad8b1f6b2d925313f4d26e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/stefangabos/Zebra_Image/zipball/11c343fa312d8cc3ffc70231f027af6bdd01f42b",
-                "reference": "11c343fa312d8cc3ffc70231f027af6bdd01f42b",
+                "url": "https://api.github.com/repos/stefangabos/Zebra_Image/zipball/2d55a5d1bb784bba5ad8b1f6b2d925313f4d26e4",
+                "reference": "2d55a5d1bb784bba5ad8b1f6b2d925313f4d26e4",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.0.0"
+                "php": ">=5.3"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1.8",
-                "squizlabs/php_codesniffer": "*"
+                "phpstan/phpstan": "^2",
+                "squizlabs/php_codesniffer": "^3"
             },
             "type": "library",
             "autoload": {
-                "classmap": [
-                    "Zebra_Image.php"
-                ]
+                "psr-4": {
+                    "stefangabos\\Zebra_Image\\": "./"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -1380,7 +1380,7 @@
             ],
             "support": {
                 "issues": "https://github.com/stefangabos/Zebra_Image/issues",
-                "source": "https://github.com/stefangabos/Zebra_Image/tree/2.8.2"
+                "source": "https://github.com/stefangabos/Zebra_Image"
             },
             "funding": [
                 {
@@ -1388,7 +1388,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2023-01-25T14:53:20+00:00"
+            "time": "2025-01-28T16:37:43+00:00"
         },
         {
             "name": "symfony/config",

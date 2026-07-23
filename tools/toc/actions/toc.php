@@ -4,7 +4,7 @@ $GLOBALS['tocaction'] = 0;
 
 $tag = $this->GetPageTag();
 $page = $this->LoadPage($tag);
-$toc_body = $page['body'];
+$toc_body = $page['body'] ?? '';
 $class = $this->GetParameter('class');
 $closed = $this->GetParameter('closed');
 $title = $this->GetParameter('title');

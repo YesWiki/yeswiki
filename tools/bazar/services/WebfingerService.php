@@ -9,10 +9,12 @@ use Symfony\Component\HttpClient\HttpClient;
 class WebfingerService
 {
     protected $httpClient;
+    protected $ssrfUrlValidator;
 
-    public function __construct()
+    public function __construct(SsrfUrlValidator $ssrfUrlValidator)
     {
         $this->httpClient = HttpClient::create();
+        $this->ssrfUrlValidator = $ssrfUrlValidator;
     }
 
     public function splitHandle($handle) {
@@ -62,10 +64,14 @@ class WebfingerService
             $handle
         );
 
+        $resolve = $this->ssrfUrlValidator->resolveSafe($webfingerUrl);
+
         $response = $this->httpClient->request('GET', $webfingerUrl, [
             'headers' => [
                 'Accept' => 'application/json'
-            ]
+            ],
+            'max_redirects' => 0,
+            'resolve' => $resolve,
         ]);
 
         $json = (array) json_decode($response->getContent(), true);

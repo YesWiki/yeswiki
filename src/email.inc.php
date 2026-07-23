@@ -102,9 +102,11 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
         }
 
         // for retro-compatibility, if $mail_receiver is not an array, we convert it
-        if (!is_array($mail_receiver) && filter_var($mail_receiver, FILTER_VALIDATE_EMAIL)) {
+        if (!is_array($mail_receiver)) {
             $mailReceiver = [];
-            $mailReceiver[] = $mail_receiver;
+            if (filter_var($mail_receiver, FILTER_VALIDATE_EMAIL)) {
+                $mailReceiver[] = $mail_receiver;
+            }
             $mail_receiver = $mailReceiver;
         }
 

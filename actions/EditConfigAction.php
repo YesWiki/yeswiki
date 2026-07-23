@@ -31,6 +31,7 @@ class EditConfigAction extends YesWikiAction
         'password_for_editing' => 'security',
         'password_for_editing_message' => 'security',
         'htmlPurifierActivated' => 'security',
+        'htmlPurifierSafeIframeRegexp' => 'security',
         'allowed_methods_in_iframe' => 'security',
 
         'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
@@ -45,9 +46,9 @@ class EditConfigAction extends YesWikiAction
     public function formatArguments($arg)
     {
         return [
-            'saving' => $this->formatBoolean($_POST, false, self::SAVE_NAME),
-            'saved' => $this->formatBoolean($_GET, false, self::SAVED_NAME),
-            'post' => $_POST,
+            'saving' => $this->formatBoolean($this->getRequest()->request->all(), false, self::SAVE_NAME),
+            'saved' => $this->formatBoolean($this->getRequest()->query->all(), false, self::SAVED_NAME),
+            'post' => $this->getRequest()->request->all(),
         ];
     }
 

@@ -8,7 +8,8 @@ class BazarCartoAction extends YesWikiAction
     public function formatArguments($arg)
     {
         // PROVIDERS
-        $provider = $_GET['provider'] ?? $arg['provider'] ?? $this->params->get('baz_provider');
+        $get = $this->getRequest()->query;
+        $provider = $get->get('provider') ?? $arg['provider'] ?? $this->params->get('baz_provider');
         $providerId = $arg['providerid'] ?? null;
         $providerPass = $arg['providerpass'] ?? null;
         if (!empty($providerId) && !empty($providerPass)) {
@@ -22,14 +23,14 @@ class BazarCartoAction extends YesWikiAction
         }
 
         // MARKERS
-        $markerSize = $_GET['markersize'] ?? $arg['markersize'] ?? null;
-        $smallMarker = $_GET['smallmarker'] ?? $arg['smallmarker'] ?? $markerSize === 'small' ? '1' : $this->params->get('baz_small_marker');
+        $markerSize = $get->get('markersize') ?? $arg['markersize'] ?? null;
+        $smallMarker = $get->get('smallmarker') ?? $arg['smallmarker'] ?? $markerSize === 'small' ? '1' : $this->params->get('baz_small_marker');
 
         // backward compatibility for custom map.tpl.html
         // TO remove this part when dynamic is robust AND user of custom templates are really aware of this
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
         $navigation = (!$dynamic) ?
-            ($_GET['navigation'] ?? $arg['navigation'] ?? $this->params->get('baz_show_nav')) :
+            ($get->get('navigation') ?? $arg['navigation'] ?? $this->params->get('baz_show_nav')) :
             $this->formatBoolean($arg['navigation'] ?? $this->params->get('baz_show_nav'), true);
         $zoom_molette = (!$dynamic) ?
             ($arg['zoommolette'] ?? $this->params->get('baz_wheel_zoom')) :
@@ -54,7 +55,7 @@ class BazarCartoAction extends YesWikiAction
 
         $vSearchManager = $this->getService(SearchManager::class);
 
-        $query = $vSearchManager->aggregateQueries($arg, $_GET);
+        $query = $vSearchManager->aggregateQueries($arg, $get->all());
 
         return [
             /*
@@ -93,15 +94,15 @@ class BazarCartoAction extends YesWikiAction
             'iconAnchor' => $smallMarker === '1' ? '[8, 19]' : '[18, 45]',
             'popupAnchor' => $smallMarker === '1' ? '[0, -19]' : '[0, -45]',
             // Largeur de la carte à l'écran en pixels ou pourcentage
-            'width' => $_GET['width'] ?? $arg['width'] ?? $this->params->get('baz_map_width'),
+            'width' => $get->get('width') ?? $arg['width'] ?? $this->params->get('baz_map_width'),
             // Hauteur de la carte à l'écran en pixels ou pourcentage
-            'height' => $_GET['height'] ?? $arg['height'] ?? $this->params->get('baz_map_height'),
+            'height' => $get->get('height') ?? $arg['height'] ?? $this->params->get('baz_map_height'),
             // Latitude point central en degres WGS84 (exemple : 46.22763)
-            'latitude' => $_GET['lat'] ?? $arg['lat'] ?? $this->params->get('baz_map_center_lat'),
+            'latitude' => $get->get('lat') ?? $arg['lat'] ?? $this->params->get('baz_map_center_lat'),
             // Longitude point central en degres WGS84 (exemple : 3.42313)
-            'longitude' => $_GET['lon'] ?? $arg['lon'] ?? $this->params->get('baz_map_center_lon'),
+            'longitude' => $get->get('lon') ?? $arg['lon'] ?? $this->params->get('baz_map_center_lon'),
             // Niveau de zoom : de 1 (plus eloigne) a 15 (plus proche)
-            'zoom' => $_GET['zoom'] ?? $arg['zoom'] ?? $this->params->get('baz_map_zoom'),
+            'zoom' => $get->get('zoom') ?? $arg['zoom'] ?? $this->params->get('baz_map_zoom'),
             // Affiche outil de navigation
             'navigation' => $navigation,
             // Zoom sur molette
@@ -120,7 +121,7 @@ class BazarCartoAction extends YesWikiAction
             'entrydisplay' => $arg['entrydisplay'] ?? 'sidebar',
             'pagination' => -1, // disable pagination
             'query' => $query,
-            'geolocationfield' => $_GET['geolocationfield'] ?? $arg['geolocationfield'] ?? 'bf_geolocation',
+            'geolocationfield' => $get->get('geolocationfield') ?? $arg['geolocationfield'] ?? 'bf_geolocation',
         ];
     }
 

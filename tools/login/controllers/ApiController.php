@@ -19,19 +19,20 @@ class ApiController extends YesWikiController
     #[Route('/api/login', methods: ['POST'], options: ['acl' => ['public']])]
     public function login()
     {
+        $post = $this->getRequest()->request;
         // Try login by user name
-        $user = $this->wiki->services->get(UserManager::class)->getOneByName($_POST['username']);
+        $user = $this->wiki->services->get(UserManager::class)->getOneByName($post->get('username'));
 
         // Try login by email
-        if (!$user && filter_var($_POST['username'], FILTER_VALIDATE_EMAIL)) {
-            $user = $this->wiki->services->get(UserManager::class)->getOneByEmail($_POST['username']);
+        if (!$user && filter_var($post->get('username'), FILTER_VALIDATE_EMAIL)) {
+            $user = $this->wiki->services->get(UserManager::class)->getOneByEmail($post->get('username'));
         }
 
         if (!$user) {
             return new ApiResponse(['error' => _t('LOGIN_WRONG_USER')], Response::HTTP_UNAUTHORIZED);
         }
 
-        $isRightPassword = $this->wiki->services->get(AuthController::class)->checkPassword($_POST['password'], $user);
+        $isRightPassword = $this->wiki->services->get(AuthController::class)->checkPassword($post->get('password'), $user);
         if (!$isRightPassword) {
             return new ApiResponse(['error' => _t('LOGIN_WRONG_PASSWORD')], Response::HTTP_UNAUTHORIZED);
         }

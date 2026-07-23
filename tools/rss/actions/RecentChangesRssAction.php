@@ -53,9 +53,10 @@ class RecentChangesRssAction extends YesWikiAction
         $pages = array_slice($pages, 0, $max);
 
         // correctly format lang param for xml
-        if (!empty($_GET['lang'])) {
-            $langParam = ['lang' => $_GET['lang']];
-            unset($_GET['lang']);
+        $lang = $this->getRequest()->query->get('lang');
+        if (!empty($lang)) {
+            $langParam = ['lang' => $lang];
+            unset($_GET['lang']); // prevent wiki->Href() from duplicating the lang param
         } else {
             $langParam = [];
         }

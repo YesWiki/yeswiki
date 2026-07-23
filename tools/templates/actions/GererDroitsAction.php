@@ -34,8 +34,9 @@ class GererDroitsAction extends YesWikiAction
         $this->utils = $this->getService(Utils::class);
         $this->groupController = $this->getService(GroupController::class);
 
-        list('success' => $success, 'error' => $error) = $this->manageChangeRights($_POST ?? []);
-        list('filter' => $filter, 'search' => $search) = $this->getFilterAndSearch($_GET ?? [], $_POST ?? []);
+        $request = $this->getRequest();
+        list('success' => $success, 'error' => $error) = $this->manageChangeRights($request->request->all());
+        list('filter' => $filter, 'search' => $search) = $this->getFilterAndSearch($request->query->all(), $request->request->all());
 
         // récupération de tous les formulaires
         $forms = $this->getService(FormManager::class)->getAll();

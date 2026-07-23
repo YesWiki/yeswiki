@@ -48,8 +48,9 @@ return [
     'ADMIN_BACKUPS_DELETE_SELECTED_ARCHIVES' => 'Suppression des sauvegardes sélectionnées',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE' => 'Restauration de {filename}',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_POSSIBLE_ERROR' => 'Une erreur pourrait avoir eu lieu en restaurant {filename}',
-    'ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS' => 'Restauration réussie de {filename}',
+    'ADMIN_BACKUPS_RESTORE_ARCHIVE_SUCCESS' => 'Restauration réussie de {filename}. Redirection…',
     'ADMIN_BACKUPS_RESTORE_ARCHIVE_ERROR' => 'Restauration impossible de {filename}',
+    'ADMIN_BACKUPS_RESTORE_CONFIRM' => "Restaurer la sauvegarde {filename} ?\n\nAttention : cela va écraser la base de données et les fichiers actuels. Cette action est irréversible.",
     'ADMIN_BACKUPS_START_BACKUP' => "Lancement d'une sauvegarde",
     'ADMIN_BACKUPS_START_BACKUP_SYNC' => "Lancement d'une sauvegarde en direct (moins stable)\n" .
         "Il ne sera pas possible de mettre à jour le statut en direct\n" .

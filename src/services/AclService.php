@@ -368,13 +368,18 @@ class AclService
                 } else {
                     $addOr = true;
                 }
-                $newRequestStart .= ' list LIKE "%' . $acl . '%"';
+                // single-quoted, not double-quoted: DbService::escape() (PDO::quote()) only
+                // guarantees safety inside a single-quoted SQL literal -- e.g. SQLite's PDO
+                // driver never touches '"' at all, so a double-quoted literal here would let
+                // a raw '"' in $acl break out of the string (see
+                // AclServiceUpdateRequestWithAclTest for the regression this guards against)
+                $newRequestStart .= " list LIKE '%" . $this->dbService->escape($acl) . "%'";
             }
             $newRequestStart .= ')';
             // not authorized ACL
             foreach ($neededACL as $acl) {
                 $newRequestStart .= ' AND ';
-                $newRequestStart .= ' list NOT LIKE "%!' . $acl . '%"';
+                $newRequestStart .= " list NOT LIKE '%!" . $this->dbService->escape($acl) . "%'";
             }
 
             // add detection of '%'

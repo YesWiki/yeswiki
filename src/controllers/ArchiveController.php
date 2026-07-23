@@ -97,10 +97,11 @@ class ArchiveController extends YesWikiController
             $action = $this->getService(SecurityController::class)->filterInput(INPUT_POST, 'action', FILTER_DEFAULT, true);
             switch ($action) {
                 case 'delete':
+                    $post = $this->getRequest()->request;
                     if (!empty($id)) {
                         $filenames = [$id];
-                    } elseif (isset($_POST['filesnames']) && is_array($_POST['filesnames'])) {
-                        $filenames = $_POST['filesnames'];
+                    } elseif (is_array($post->all('filesnames'))) {
+                        $filenames = $post->all('filesnames');
                     } else {
                         return new ApiResponse(
                             ['error' => "\$_POST['filesnames'] should be set and be an array for action 'delete'"],
@@ -116,14 +117,16 @@ class ArchiveController extends YesWikiController
                     break;
                 case 'startArchive':
                     try {
-                        if (isset($_POST['params']) && !is_array($_POST['params'])) {
+                        $post = $this->getRequest()->request;
+                        $postParams = $post->all('params');
+                        if ($post->has('params') && !is_array($postParams)) {
                             return new ApiResponse(
                                 ['error' => "\$_POST['params'] should be set and be an array for action 'startArchive'"],
                                 Response::HTTP_BAD_REQUEST
                             );
                         }
-                        $params = (isset($_POST['params']) && is_array($_POST['params'])) ? $_POST['params'] : [];
-                        $callAsync = !isset($_POST['callAsync']) || in_array($_POST['callAsync'], [1, true, 'true', '1'], true);
+                        $params = is_array($postParams) ? $postParams : [];
+                        $callAsync = !$post->has('callAsync') || in_array($post->get('callAsync'), [1, true, 'true', '1'], true);
                         $uid = $this->startArchive($params, $callAsync);
                         if (empty($uid)) {
                             return new ApiResponse(
@@ -144,13 +147,14 @@ class ArchiveController extends YesWikiController
                     }
                     break;
                 case 'stopArchive':
-                    if (empty($_POST['uid']) || !is_string($_POST['uid'])) {
+                    $uidRaw = $this->getRequest()->request->get('uid');
+                    if (empty($uidRaw) || !is_string($uidRaw)) {
                         return new ApiResponse(
                             ['error' => "\$_POST['uid'] should be set and be an string for action 'stopArchive'"],
                             Response::HTTP_BAD_REQUEST
                         );
                     }
-                    $uid = htmlspecialchars($_POST['uid']);
+                    $uid = htmlspecialchars($uidRaw);
                     $result = $this->archiveService->stopArchive($uid);
 
                     return new ApiResponse(
@@ -165,12 +169,18 @@ class ArchiveController extends YesWikiController
                             Response::HTTP_BAD_REQUEST
                         );
                     }
-
-                    // TODO update code here when restore will work
-                    return new ApiResponse(
-                        ['error' => 'action not defined'],
-                        Response::HTTP_BAD_REQUEST
-                    );
+                    try {
+                        $post = $this->getRequest()->request;
+                        $restoreFiles = !$post->has('restoreFiles') || in_array($post->get('restoreFiles'), [1, true, 'true', '1'], true);
+                        $restoreDatabase = !$post->has('restoreDatabase') || in_array($post->get('restoreDatabase'), [1, true, 'true', '1'], true);
+                        $this->archiveService->restoreArchive($id, $restoreFiles, $restoreDatabase);
+                        return new ApiResponse(['success' => true], Response::HTTP_OK);
+                    } catch (\Throwable $th) {
+                        return new ApiResponse(
+                            ['error' => 'Restore failed: ' . $this->wiki->dumpThrowable($th)],
+                            Response::HTTP_INTERNAL_SERVER_ERROR
+                        );
+                    }
                     break;
 
                 case 'futureDeletedArchives':

@@ -9,14 +9,15 @@ class BazarIframeHandler extends YesWikiHandler
         $output = '';
 
         if ($this->wiki->HasAccess('read')) {
-            if (empty($_GET['id'])) {
+            $query = $this->getRequest()->query;
+            if (empty($query->get('id'))) {
                 $output .= '<div class="alert alert-danger">' . _t('BAZ_PAS_D_ID_DE_FORM_INDIQUE') . '</div>';
             } else {
                 // affichage à l'écran de la liste bazar
                 $this->arguments['shownumentries'] = false;
                 $bazaroutput = $this->callAction('bazarliste', $this->arguments);
 
-                if (isset($_GET['iframelinks']) && $_GET['iframelinks'] === '0') {
+                if ($query->get('iframelinks') === '0') {
                     // pas de modification des urls
                     $output .= $bazaroutput;
                 } else {
@@ -40,7 +41,7 @@ class BazarIframeHandler extends YesWikiHandler
 
         $output .= '</div>';
         // on affiche la barre de modification, si on ajoute &edit=1 à l'url de l'iframe
-        if (isset($_GET['edit']) && $_GET['edit'] == '1') {
+        if ($this->getRequest()->query->get('edit') == '1') {
             $output .= $this->wiki->Format('{{barreredaction}}');
         }
         $output .= '</div>';

@@ -17,7 +17,8 @@ class BazarImportAction extends YesWikiAction
 
     public function formatArguments($arg)
     {
-        $vIDs = $_REQUEST['id_typeannonce'] ?? $_REQUEST['id'] ?? $arg['idtypeannonce'] ?? $arg['id'] ?? '';
+        $request = $this->getRequest();
+        $vIDs = $request->get('id_typeannonce') ?? $request->get('id') ?? $arg['idtypeannonce'] ?? $arg['id'] ?? '';
 
         if (!$this->bazarListService) {
             $this->bazarListService = $this->getService(BazarListService::class);
@@ -25,19 +26,20 @@ class BazarImportAction extends YesWikiAction
 
         $vIDs = $this->bazarListService->getIDs($vIDs);
 
-        $vServer = $_REQUEST['server'] ?? $arg['server'] ?? null;
+        $vServer = $request->get('server') ?? $arg['server'] ?? null;
 
+        $post = $request->request;
         return [
             'id' => $vIDs,
             'server' => $vServer,
-            'mode' => (isset($_POST['submit_file']) && !empty($_FILES['fileimport']['name'])) ? 'submitfile' :
-                (isset($_POST['importfiche']) ? 'importentries' : 'default'),
-            'importentries' => $_POST['importfiche'] ?? null,
+            'mode' => ($post->has('submit_file') && !empty($_FILES['fileimport']['name'])) ? 'submitfile' :
+                ($post->has('importfiche') ? 'importentries' : 'default'),
+            'importentries' => $post->get('importfiche'),
             'filesData' => $_FILES['fileimport'] ?? null,
-            'bazar-import-option-detect-columns-on-headers' => !$this->formatBoolean($_REQUEST, false, 'bazar-import-option-not-detect-columns-on-headers'),
+            'bazar-import-option-detect-columns-on-headers' => !$this->formatBoolean($request->query->all() + $request->request->all(), false, 'bazar-import-option-not-detect-columns-on-headers'),
             'params' => array_merge(
                 [BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
-                isset($_GET['debug']) ? ['debug' => 'yes'] : []
+                $request->query->has('debug') ? ['debug' => 'yes'] : []
             ),
             'debug' => (bool)$this->wiki->GetConfigValue('debug'),
         ];
@@ -61,7 +63,7 @@ class BazarImportAction extends YesWikiAction
             $this->bazarListService = $this->getService(BazarListService::class);
         }
 
-        $vRefresh = $this->arguments['refresh'] ?? $_GET['refresh'] ?? 'false';
+        $vRefresh = $this->arguments['refresh'] ?? $this->getRequest()->query->get('refresh', 'false');
         $vRefresh = ($vRefresh == 'true' || $vRefresh == '1') ? true : false;
 
         // get Forms

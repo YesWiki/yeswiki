@@ -568,6 +568,130 @@ class ArchiveService
     }
 
     /**
+     * Restore a backup archive (database and/or files).
+     *
+     * @throws \Exception
+     */
+    public function restoreArchive(string $filename, bool $restoreFiles = true, bool $restoreDatabase = true): void
+    {
+        $filePath = $this->getFilePath($filename);
+        if (empty($filePath)) {
+            throw new \Exception("Archive not found: $filename");
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== true) {
+            throw new \Exception("Cannot open archive: $filename");
+        }
+
+        try {
+            $onlyFiles = str_ends_with($filename, '_archive_only_files.zip');
+            $onlyDb = str_ends_with($filename, '_archive_only_db.zip');
+
+            if ($restoreDatabase && !$onlyFiles) {
+                $sqlContent = $zip->getFromName(self::PRIVATE_FOLDER_NAME_IN_ZIP . '/' . self::SQL_FILENAME_IN_PRIVATE_FOLDER_IN_ZIP);
+                if ($sqlContent === false) {
+                    throw new \Exception('SQL file not found in archive');
+                }
+                $this->restoreDatabase($sqlContent);
+            }
+
+            if ($restoreFiles && !$onlyDb) {
+                $this->restoreFilesFromZip($zip);
+            }
+        } finally {
+            $zip->close();
+        }
+    }
+
+    /**
+     * Drop prefixed tables and re-import SQL dump via a dedicated connection.
+     *
+     * @throws \Exception
+     */
+    protected function restoreDatabase(string $sqlContent): void
+    {
+        $tablesPrefix = trim($this->dbService->prefixTable(''));
+        if (empty($tablesPrefix)) {
+            throw new \Exception('Table prefix is empty — refusing to drop all tables');
+        }
+
+        $this->dbService->query('SET FOREIGN_KEY_CHECKS=0');
+        $tables = $this->dbService->loadAll('show tables');
+        if (is_array($tables)) {
+            foreach ($tables as $tableInfo) {
+                $tableName = array_values($tableInfo)[0];
+                if (strpos($tableName, $tablesPrefix) === 0) {
+                    $this->dbService->query('DROP TABLE IF EXISTS `' . $tableName . '`');
+                }
+            }
+        }
+        $this->dbService->query('SET FOREIGN_KEY_CHECKS=1');
+
+        // Dedicated connection for multi_query to avoid leaving the shared DbService
+        // link with unread result sets.
+        // Note: this restore path is mysqli-specific (MySQL only), like the rest of the backup
+        // feature; the db_* keys are ectoplasme's renamed config (see YesWikiInit's legacy key
+        // mapping) -- restoring on a SQLite/Postgres install isn't supported yet.
+        $conn = mysqli_connect(
+            $this->params->get('db_host'),
+            $this->params->get('db_user'),
+            $this->params->get('db_password'),
+            $this->params->get('db_database')
+        );
+        if (!$conn) {
+            throw new \Exception('Cannot open database connection for restore');
+        }
+        mysqli_set_charset($conn, 'utf8mb4');
+
+        // Strip bare semicolons (empty statements from empty tables in old backups).
+        $sqlContent = preg_replace('/^\s*;\s*$/m', '', $sqlContent);
+        $sqlContent = trim($sqlContent);
+
+        try {
+            if (!mysqli_multi_query($conn, $sqlContent)) {
+                throw new \Exception('SQL restore failed: ' . mysqli_error($conn));
+            }
+            do {
+                if ($r = mysqli_store_result($conn)) {
+                    mysqli_free_result($r);
+                }
+            } while (mysqli_more_results($conn) && mysqli_next_result($conn));
+
+            if ($errno = mysqli_errno($conn)) {
+                throw new \Exception("SQL restore error (errno $errno): " . mysqli_error($conn));
+            }
+        } finally {
+            mysqli_close($conn);
+        }
+    }
+
+    /**
+     * Extract wiki files from zip, skipping private/backups/ and wakka.config.php.
+     */
+    protected function restoreFilesFromZip(\ZipArchive $zip): void
+    {
+        $wikiRoot = realpath(getcwd());
+        $skipPrefix = self::PRIVATE_FOLDER_NAME_IN_ZIP . '/';
+        $skipFile = ConfigurationFileProvider::getConfigFileFromEnv();
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = $zip->getNameIndex($i);
+            if (strpos($name, $skipPrefix) === 0 || $name === $skipFile || strpos($name, '..') !== false) {
+                continue;
+            }
+            if (str_ends_with($name, '/')) {
+                $dir = $wikiRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $name);
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                continue;
+            }
+            $zip->extractTo($wikiRoot, $name);
+        }
+    }
+
+    /**
      * delete archives.
      *
      * @return array $results = ['filename' => bool]
@@ -1093,7 +1217,7 @@ class ArchiveService
     protected function testDb(): bool
     {
         try {
-            $results = $this->consoleService->startConsoleSync('archive:exportdb', [
+            $results = $this->consoleService->startConsoleSync('core:exportdb', [
                 '--test',
             ]);
             if (empty($results) || !is_array($results)) {

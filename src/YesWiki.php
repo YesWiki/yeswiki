@@ -111,6 +111,7 @@ class Wiki
         $this->environment = defined('PHPUNIT_COMPOSER_INSTALL')
             ? 'test'
             : ($this->GetConfigValue('debug') ? 'dev' : 'prod');
+        $this->request = Request::createFromGlobals();
 
         $this->loadExtensions();
     }
@@ -1197,12 +1198,34 @@ class Wiki
     }
 
     // MAINTENANCE
+    protected const MAINTENANCE_INTERVAL = 1800; // run at most once every 30 minutes
+    protected const MAINTENANCE_LOCK_FILE = 'cache/maintenance.lock';
+
     public function Maintenance()
     {
         // purge referrers
         $this->PurgeReferrers();
         // purge old page revisions
         $this->PurgePages();
+        // purge expired password recovery keys
+        $this->services->get(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
+    }
+
+    /**
+     * Poor man's cron: Maintenance() is only run once self::MAINTENANCE_INTERVAL has elapsed.
+     */
+    protected function shouldRunMaintenance(): bool
+    {
+        $lastRun = @filemtime(self::MAINTENANCE_LOCK_FILE) ?: 0;
+        if (time() - $lastRun < self::MAINTENANCE_INTERVAL) {
+            return false;
+        }
+        if (!is_dir('cache')) {
+            mkdir('cache', 0777, true);
+        }
+        touch(self::MAINTENANCE_LOCK_FILE);
+
+        return true;
     }
 
     // THE BIG EVIL NASTY ONE!
@@ -1224,7 +1247,7 @@ class Wiki
 
     private function doRun($tag, $method)
     {
-        if (!(intval($this->GetMicroTime()) % 9)) {
+        if ($this->shouldRunMaintenance()) {
             $this->Maintenance();
         }
 
@@ -1242,8 +1265,6 @@ class Wiki
         }
 
         $this->services->get(AuthController::class)->connectUser();
-
-        $this->request = Request::createFromGlobals();
 
         // Is this a special page ?
         if (in_array($tag, ['api', 'doc'])) {

@@ -122,28 +122,29 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
 
     // si pas d'erreur on envoie
     if ($message['class'] == 'success') {
-        // test de presence d'ezmlm, qui necessite de reformater le mail envoyé
-        if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'ezmlm') {
-            $mail_receiver = str_replace('@', '-' . str_replace('@', '=', $mail_sender) . '@', $mail_receiver);
-        }
+        if (isset($_POST['mailinglist'])) {
+            $mail_receiver = array_pop($mail_receiver); // for the lists, only one mail receiver possible
+            if ($_POST['mailinglist'] == 'ezmlm') {
+                $mail_receiver = str_replace('@', '-' . str_replace('@', '=', $mail_sender) . '@', $mail_receiver);
+            }
 
-        // test de presence de sympa, qui necessite de reformater le mail envoyé
-        if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'sympa') {
-            $tabmail = explode('@', $mail_receiver);
-            $listname = $tabmail[0];
-            $listdomain = $tabmail[1];
-            $mail_receiver = 'sympa@' . $listdomain;
-            if ($type == 'abonnement') {
-                $subject = 'subscribe ' . $listname;
-            } elseif ($type == 'desabonnement') {
-                $subject = 'unsubscribe ' . $listname;
+            // test de presence de sympa, qui necessite de reformater le mail envoyé
+            if (isset($_POST['mailinglist']) and $_POST['mailinglist'] == 'sympa') {
+                $tabmail = explode('@', $mail_receiver);
+                $listname = $tabmail[0];
+                $listdomain = $tabmail[1];
+                $mail_receiver = 'sympa@' . $listdomain;
+                if ($type == 'abonnement') {
+                    $subject = 'subscribe ' . $listname;
+                } elseif ($type == 'desabonnement') {
+                    $subject = 'unsubscribe ' . $listname;
+                }
+            }
+
+            if (empty($message_txt)) {
+                $message_txt = $message_html = 'dummy message';
             }
         }
-
-        if (empty($message_txt)) {
-            $message_txt = $message_html = 'dummy message';
-        }
-
         if (send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $message_txt, $message_html)) {
             if (empty($type) || $type == 'contact' || $type == 'mail') {
                 $message['message'] = _t('CONTACT_MESSAGE_SUCCESSFULLY_SENT');

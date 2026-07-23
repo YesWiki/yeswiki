@@ -53,6 +53,23 @@ class HtmlPurifierService
             }
             $config->set('Cache.SerializerPath', realpath(self::HTMLPURIFIER_CACHE_FOLDER));
 
+            // allow <iframe> whose src matches the configured allowlist regexp
+            $safeIframeRegexp = $this->params->get('htmlPurifierSafeIframeRegexp');
+            if (!empty($safeIframeRegexp)) {
+                $config->set('HTML.SafeIframe', true);
+                $config->set('URI.SafeIframeRegexp', $safeIframeRegexp);
+
+                // width, height, style, src, title and frameborder are already allowed by
+                // HTMLPurifier's built-in Iframe module ; add the remaining embed attributes we need.
+                $config->set('HTML.DefinitionID', 'yeswiki-iframe-attributes');
+                $config->set('HTML.DefinitionRev', 1);
+                if ($htmlDefinition = $config->maybeGetRawHTMLDefinition()) {
+                    $htmlDefinition->addAttribute('iframe', 'allow', 'Text');
+                    $htmlDefinition->addAttribute('iframe', 'referrerpolicy', 'Enum#no-referrer,no-referrer-when-downgrade,origin,origin-when-cross-origin,same-origin,strict-origin,strict-origin-when-cross-origin,unsafe-url');
+                    $htmlDefinition->addAttribute('iframe', 'allowfullscreen', 'Bool#allowfullscreen');
+                }
+            }
+
             $this->purifier = new \HTMLPurifier($config);
         }
 
@@ -66,9 +83,6 @@ class HtmlPurifierService
      */
     public function sanitizeSVG(string $content)
     {
-        if (!$this->params->get('htmlPurifierActivated')) {
-            return $content;
-        }
         if (is_null($this->sanitizer)) {
             $this->sanitizer = new Sanitizer();
         }

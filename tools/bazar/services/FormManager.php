@@ -191,10 +191,12 @@ class FormManager
 
         return array_filter(
             $this->cachedForms,
-            function ($pKey) {
-                return intval($pKey) . '' === $pKey . '';
+            // require a valid numeric-id key *and* an actual form array : consumers (e.g.
+            // SearchManager::searchWithLists()) expect every entry to be a real form
+            function ($pForm, $pKey) {
+                return is_array($pForm) && intval($pKey) . '' === $pKey . '';
             },
-            ARRAY_FILTER_USE_KEY,
+            ARRAY_FILTER_USE_BOTH,
         );
     }
 
@@ -219,9 +221,18 @@ class FormManager
 
         foreach ($formsIds as $formId) {
             if (empty($this->cachedForms[$formId])) {
-                $this->cachedForms[$formId] = $this->getOne($formId);
+                $form = $this->getOne($formId);
+                // don't persist a "form not found" result into the shared cache : a
+                // subsequent getAll() only overwrites cache entries for ids that actually
+                // exist as `nature` rows, so a cached null here would otherwise leak into
+                // every later getAll() call for the rest of the request
+                if ($form !== null) {
+                    $this->cachedForms[$formId] = $form;
+                }
+            } else {
+                $form = $this->cachedForms[$formId];
             }
-            $results[$formId] = $this->cachedForms[$formId];
+            $results[$formId] = $form;
         }
 
         return $results;

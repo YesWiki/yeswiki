@@ -5,6 +5,7 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\ExitException;
@@ -125,6 +126,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         $name = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
         $_POST['email'] = $email;
         $_POST['name'] = $name;
+        $this->refreshRequest($wiki);
 
         $this->ensureCacheFolderIsWritable();
 
@@ -192,7 +194,11 @@ class UserSettingsActionTest extends YesWikiTestCase
             $_POST['name'] = $name;
             $_POST['password'] = $password;
             $_POST['confpassword'] = $password . $suffix;
-            $_REQUEST['usersettings_action'] = 'signup';
+            // must be $_POST (not $_REQUEST): UserSettingsAction resolves the
+            // action name from the Symfony Request's GET+POST bags, which are
+            // built from $_GET/$_POST, never from $_REQUEST
+            $_POST['usersettings_action'] = 'signup';
+            $this->refreshRequest($wiki);
 
             $this->ensureCacheFolderIsWritable();
 
@@ -207,7 +213,7 @@ class UserSettingsActionTest extends YesWikiTestCase
             unset($_POST['name']);
             unset($_POST['password']);
             unset($_POST['confpassword']);
-            unset($_REQUEST['usersettings_action']);
+            unset($_POST['usersettings_action']);
             $user = $userManager->getOneByName($name);
             $connectedUser = $authController->getLoggedUser();
             // clean user before tests
@@ -270,6 +276,16 @@ class UserSettingsActionTest extends YesWikiTestCase
         }
 
         return $output;
+    }
+
+    /**
+     * Wiki::$request (a Symfony Request) is built once from the superglobals
+     * when Wiki is constructed and is never re-synced afterwards; mutating
+     * $_POST/$_GET in a test has no effect on it unless it is rebuilt.
+     */
+    private function refreshRequest(Wiki $wiki)
+    {
+        $wiki->request = Request::createFromGlobals();
     }
 
     /**

@@ -32,7 +32,7 @@ $_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'].$yeswikiConfig['root_page']
 $_SERVER['HTTP_HOST'] = parse_url($yeswikiConfig['base_url'], PHP_URL_HOST);
 $_SERVER['REQUEST_METHOD'] = 'GET';
 // fake wiki page
-$_REQUEST['wiki'] = $yeswikiConfig['root_page'];
+$_GET['wiki'] = $yeswikiConfig['root_page'];
 
 $wiki = YesWikiLoader::getWiki();
 

@@ -620,13 +620,80 @@ $(document).ready(() => {
     }).attr('autocomplete', 'off')
   }
 
-  // If start_date is greater than en_date, set end_date to start_date
+  // interdire dans le datepicker de fin les dates avant la date de début, et inversement
   const $startDate = $('#formulaire #bf_date_debut_evenement')
   const $endDate = $('#formulaire #bf_date_fin_evenement')
-  if ($startDate && $endDate) {
-    $startDate.change(() => {
-      if (new Date($startDate.val()) > new Date($endDate.val())) $endDate.val($startDate.val())
+  if ($startDate.length && $endDate.length) {
+    const startPicker = $startDate.data('datepicker')
+    const endPicker = $endDate.data('datepicker')
+    $startDate.on('changeDate', () => {
+      if ($startDate.val()) {
+        endPicker.setStartDate($startDate.val())
+        checkTimeConstraint('start')
+      }
     })
+    $endDate.on('changeDate', () => {
+      if ($endDate.val()) {
+        startPicker.setEndDate($endDate.val())
+        checkTimeConstraint('end')
+      }
+    })
+
+    // contrainte horaire : si même jour, l'heure de début doit être avant l'heure de fin
+    const $startAllDay = $('select[name="bf_date_debut_evenement_allday"]')
+    const $endAllDay = $('select[name="bf_date_fin_evenement_allday"]')
+    const $startHour = $('select[name="bf_date_debut_evenement_hour"]')
+    const $startMin = $('select[name="bf_date_debut_evenement_minutes"]')
+    const $endHour = $('select[name="bf_date_fin_evenement_hour"]')
+    const $endMin = $('select[name="bf_date_fin_evenement_minutes"]')
+
+    function hasTimeEnabled() {
+      return $startAllDay.val() === '0' && $endAllDay.val() === '0'
+    }
+
+    function isSameDay() {
+      return $startDate.val() && $endDate.val() && $startDate.val() === $endDate.val()
+    }
+
+    function getStartMinutes() {
+      return parseInt($startHour.val()) * 60 + parseInt($startMin.val())
+    }
+
+    function getEndMinutes() {
+      return parseInt($endHour.val()) * 60 + parseInt($endMin.val())
+    }
+
+    // sélectionne 5 minutes après l'heure de début
+    function adjustEndTime() {
+      let total = getStartMinutes() + 5
+      if (total >= 1440) total = 1435
+      const h = Math.floor(total / 60)
+      const m = Math.round(total % 60 / 5) * 5
+      $endHour.val(String(h).padStart(2, '0'))
+      $endMin.val(String(m).padStart(2, '0'))
+    }
+
+    // sélectionne 5 minutes avant l'heure de fin
+    function adjustStartTime() {
+      let total = getEndMinutes() - 5
+      if (total < 0) total = 0
+      const h = Math.floor(total / 60)
+      const m = Math.round(total % 60 / 5) * 5
+      $startHour.val(String(h).padStart(2, '0'))
+      $startMin.val(String(m).padStart(2, '0'))
+    }
+
+    function checkTimeConstraint(changed) {
+      if (!isSameDay() || !hasTimeEnabled()) return
+      if (getStartMinutes() >= getEndMinutes()) {
+        if (changed === 'start') adjustEndTime()
+        else adjustStartTime()
+      }
+    }
+
+    $startHour.add($startMin).on('change', () => checkTimeConstraint('start'))
+    $endHour.add($endMin).on('change', () => checkTimeConstraint('end'))
+    $startAllDay.add($endAllDay).on('change', () => checkTimeConstraint('start'))
   }
 
   // Onglets

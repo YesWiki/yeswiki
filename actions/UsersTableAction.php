@@ -41,7 +41,7 @@ class UsersTableAction extends YesWikiAction
         $isAdmin = $this->wiki->UserIsAdmin();
 
         // manage POST actions
-        $postActionMessages = $this->managePostActions($_POST ?? [], $isAdmin);
+        $postActionMessages = $this->managePostActions($this->getRequest()->request->all(), $isAdmin);
 
         // get Users
         $users = $this->userManager->getAll();

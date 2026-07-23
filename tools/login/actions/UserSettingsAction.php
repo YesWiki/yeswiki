@@ -56,14 +56,15 @@ class UserSettingsAction extends YesWikiAction
         $this->getServices();
 
         // init vars
-        $this->setActionFromRequest($_REQUEST ?? []);
+        $request = $this->getRequest();
+        $this->setActionFromRequest($request->query->all() + $request->request->all());
         $this->error = '';
         $this->errorUpdate = '';
         $this->errorPasswordChange = '';
         $this->referrer = '';
-        $user = $this->getUser($_GET ?? []);
+        $user = $this->getUser($request->query->all());
 
-        $this->doPrerenderingActions($_POST ?? [], $user);
+        $this->doPrerenderingActions($request->request->all(), $user);
 
         return $this->displayForm($user);
     }

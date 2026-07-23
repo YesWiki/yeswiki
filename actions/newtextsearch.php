@@ -104,6 +104,7 @@ if ($phrase) {
     $formManager = $this->services->get(FormManager::class);
     $forms = $formManager->getAll();
     $searchManager = $this->services->get(SearchManager::class);
+    $dbService = $this->services->get(DbService::class);
     $needles = $searchManager->searchWithLists(str_replace(['*', '?'], ['', '_'], $phrase), $forms);
     $requeteSQLForList = '';
     if (!empty($needles)) {
@@ -118,19 +119,21 @@ if ($phrase) {
                 }
                 $requeteSQLForList .= '(';
                 // add regexp standard search
-                $requeteSQLForList .= 'body REGEXP \'' . $needle . '\'';
+                $requeteSQLForList .= 'body REGEXP \'' . $dbService->escape($needle) . '\'';
                 // add search in list
                 // $results is an array not empty only if list
                 foreach ($results as $result) {
                     $requeteSQLForList .= ' OR ';
+                    $escapedPropertyName = $dbService->escape(str_replace('_', '\\_', $result['propertyName']));
+                    $escapedKey = $dbService->escape($result['key']);
                     if (!$result['isCheckBox']) {
-                        $requeteSQLForList .= ' body LIKE \'%"' . str_replace('_', '\\_', $result['propertyName']) . '":"' . $result['key'] . '"%\'';
+                        $requeteSQLForList .= ' body LIKE \'%"' . $escapedPropertyName . '":"' . $escapedKey . '"%\'';
                     } else {
-                        $requeteSQLForList .= ' body REGEXP \'"' . str_replace('_', '\\_', $result['propertyName']) . '":(' .
-                            '"' . $result['key'] . '"' .
-                            '|"[^"]*,' . $result['key'] . '"' .
-                            '|"' . $result['key'] . ',[^"]*"' .
-                            '|"[^"]*,' . $result['key'] . ',[^"]*"' .
+                        $requeteSQLForList .= ' body REGEXP \'"' . $escapedPropertyName . '":(' .
+                            '"' . $escapedKey . '"' .
+                            '|"[^"]*,' . $escapedKey . '"' .
+                            '|"' . $escapedKey . ',[^"]*"' .
+                            '|"[^"]*,' . $escapedKey . ',[^"]*"' .
                             ')\'';
                     }
                 }
@@ -144,7 +147,6 @@ if ($phrase) {
 
     // get some services
     $aclService = $this->services->get(AclService::class);
-    $dbService = $this->services->get(DbService::class);
 
     // Modification de caractère spéciaux
     $phraseFormatted = str_replace(['*', '?'], ['%', '_'], $phrase);

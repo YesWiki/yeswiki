@@ -10,6 +10,7 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Security\Controller\SecurityController;
 
 #[\Field(['fichier'])]
@@ -50,15 +51,15 @@ class FileField extends BazarField
         $this->authorizedExts = array_filter($exts, function ($ext) {
             return preg_match('/^\.[a-z0-9]{1,4}+$/', $ext);
         });
-        $maxFieldSize = $values[self::FIELD_MAX_SIZE] ?
-            $this->getWiki()->parse_size($values[self::FIELD_MAX_SIZE]) :
-            0;
+        $maxFieldSize = $values[self::FIELD_MAX_SIZE]
+            ? $this->getWiki()->parse_size($values[self::FIELD_MAX_SIZE])
+            : 0;
 
         // take the min size limit, excluding 0 values that mean no limit
         $this->maxSize = min(array_filter(
             [
                 $maxFieldSize,
-                $this->getService(ParameterBagInterface::class)->get('max-upload-size'), ]
+                $this->getService(ParameterBagInterface::class)->get('max-upload-size'), ],
         ));
     }
 
@@ -155,6 +156,11 @@ class FileField extends BazarField
                     }
                     move_uploaded_file($_FILES[$this->propertyName]['tmp_name'], $filePath);
                     chmod($filePath, 0755);
+
+                    if (in_array($extension, ['svg', 'html', 'htm'])) {
+                        $purifier = $this->getService(HtmlPurifierService::class);
+                        $purifier->cleanFile($filePath, $extension);
+                    }
                 } else {
                     echo _t('BAZ_FILE_ALREADY_EXISTING') . '<br />';
                 }
@@ -267,7 +273,7 @@ class FileField extends BazarField
             [
                 'readLabel' => $this->getReadLabel(),
                 'authorizedExts' => $this->getAuthorizedExts(),
-            ]
+            ],
         );
     }
 

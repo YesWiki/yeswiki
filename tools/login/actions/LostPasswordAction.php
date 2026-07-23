@@ -31,7 +31,8 @@ class LostPasswordAction extends YesWikiAction
         $this->errorType = null;
         $this->typeOfRendering = 'emailForm';
 
-        if (isset($_POST['subStep']) && !isset($_GET['a'])) {
+        $request = $this->getRequest();
+        if ($request->request->has('subStep') && !$request->query->has('a')) {
             try {
                 $user = $this->manageSubStep(
                     $this->securityController->filterInput(INPUT_POST, 'subStep', FILTER_SANITIZE_NUMBER_INT, false, 'int')
@@ -41,7 +42,7 @@ class LostPasswordAction extends YesWikiAction
                 $this->errorType = 'exception';
                 $message = $ex->getMessage();
             }
-        } elseif (isset($_GET['a']) && $_GET['a'] === 'recover' && !empty($_GET['email'])) {
+        } elseif ($request->query->get('a') === 'recover' && !empty($request->query->get('email'))) {
             $this->typeOfRendering = 'directDangerMessage';
             $message = _t('LOGIN_INVALID_KEY');
             $hash = $this->securityController->filterInput(INPUT_GET, 'email', FILTER_DEFAULT, true);
@@ -133,13 +134,14 @@ class LostPasswordAction extends YesWikiAction
                 break;
             case 2:
                 // we are submitting a new password (only for encrypted)
-                if (empty($_POST['userID']) || empty($_POST['key'])) {
+                $post = $this->getRequest()->request;
+                if (empty($post->get('userID')) || empty($post->get('key'))) {
                     $this->wiki->Redirect($this->wiki->Href('', $this->params->get('root_page')));
                 }
                 $userName = $this->securityController->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
                 $user = $this->userManager->getOneByName($userName);
                 $this->typeOfRendering = 'recoverForm';
-                if (empty($_POST['pw0']) || empty($_POST['pw1']) || (strcmp($_POST['pw0'], $_POST['pw1']) != 0) || (trim($_POST['pw0']) == '')) {
+                if (empty($post->get('pw0')) || empty($post->get('pw1')) || (strcmp($post->get('pw0'), $post->get('pw1')) != 0) || (trim($post->get('pw0')) == '')) {
                     // No pw0 or different pwd
                     $this->errorType = 'differentPasswords';
                 } else {
@@ -198,14 +200,16 @@ class LostPasswordAction extends YesWikiAction
         }
         $this->authController->setPassword($user, $password);
         // Was able to update password => Remove the key from triples table
-        $this->tripleStore->delete($user['name'], UserManager::KEY_VOCABULARY, $key, '', '');
+        // (only one active key per user, so no need to match the exact value)
+        $this->tripleStore->delete($user['name'], UserManager::KEY_VOCABULARY, null, '', '');
 
         return true;
     }
 
     /** Part of the Password recovery process: Checks the provided key against the value stored for the provided user in triples table.
      *
-     * As part of the Password recovery process, a key is generated and stored as part of a (user, $this->keyVocabulary, key) triple in the triples table. This function checks wether the key is right or not.
+     * As part of the Password recovery process, a key is generated and stored as part of a (user, $this->keyVocabulary, "key:issuedAt") triple
+     * in the triples table. This function checks whether the key is right and still within its validity window.
      * See Password recovery process above
      * replaces checkEmailKey($hash, $key) from login.functions.php
      *         TODO : Add error handling
@@ -218,6 +222,19 @@ class LostPasswordAction extends YesWikiAction
     private function checkEmailKey(string $hash, string $user): bool
     {
         // Pas de detournement possible car utilisation de _vocabulary/key ....
-        return !is_null($this->tripleStore->exist($user, UserManager::KEY_VOCABULARY, $hash, '', ''));
+        $storedValue = $this->tripleStore->getOne($user, UserManager::KEY_VOCABULARY, '', '');
+        if (empty($storedValue)) {
+            return false;
+        }
+        $parts = explode(UserManager::KEY_VALUE_SEPARATOR, $storedValue);
+        if (count($parts) !== 2) {
+            return false; // malformed or legacy (pre-expiry) value : reject
+        }
+        [$storedHash, $issuedAt] = $parts;
+        if (!hash_equals($storedHash, $hash)) {
+            return false;
+        }
+
+        return (time() - (int) $issuedAt) <= UserManager::KEY_TTL;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Bazar\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\CheckboxEntryField;
 use YesWiki\Bazar\Field\CheckboxField;
 use YesWiki\Bazar\Field\EnumField;
@@ -27,7 +28,7 @@ class CSVManager
     public function __construct(
         EntryManager $entryManager,
         FormManager $formManager,
-        Wiki $wiki
+        Wiki $wiki,
     ) {
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
@@ -135,7 +136,7 @@ class CSVManager
     public function getCSVfromFormId(
         $pFormID,
         array $pParams,
-        ?array $pOptions = null
+        ?array $pOptions = null,
     ): ?array {
         $vBazarListService = $this->wiki->services->get(BazarListService::class);
 
@@ -166,14 +167,15 @@ class CSVManager
                 ? array_keys($headers)
                 : array_map(function ($fieldHeader) {
                     return $fieldHeader['fullHeader'];
-                }, $headers)
+                }, $headers),
         ));
 
         if (!$vFakeMode) {
             $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
-            $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $_GET);
-            $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $_REQUEST['q'] ?? null, $_REQUEST['keywords'] ?? null);
+            $request = $this->wiki->request;
+            $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $request->query->all());
+            $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $request->get('q'), $request->get('keywords'));
 
             // get lines for each entry
             $vEntries = $vBazarListService->getEntries(array_merge($pParams, [
@@ -292,8 +294,8 @@ class CSVManager
         }
         if ($this->debug && !empty($reasonMessage)) {
             trigger_error('Error when exporting \'' . $field->getPropertyName() . '\''
-                . ' from entry \'' . ($entry['id_fiche'] ?? '<no id_fiche>') . '\'.' .
-                ' Waiting a string, giving ' . $reasonMessage
+                . ' from entry \'' . ($entry['id_fiche'] ?? '<no id_fiche>') . '\'.'
+                . ' Waiting a string, giving ' . $reasonMessage
                 . 'You should edit and save this entry to prevent error.');
         }
 
@@ -419,8 +421,8 @@ class CSVManager
                 if ($ext == 'csv') {
                     if (($handle = fopen($filesData['tmp_name'], 'r')) !== false) {
                         if (($firstLine = fgetcsv($handle, 0, ',', '"', '\\')) !== false) {
-                            if ($columnIndexesForPropertyNames =
-                                $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
+                            if ($columnIndexesForPropertyNames
+                                = $this->getColumnIndexesForPropertyNames($firstLine, $headers, $detectColumnsOnHeaders)
                             ) {
                                 // next lines
                                 $extracted = [];
@@ -509,7 +511,7 @@ class CSVManager
             if ($first_found_key !== false) {
                 $this->array_splice_from_key($data['firstLine'], $first_found_key);
                 // update columnindexes
-                $data['columnIndexes'][$value] = (int)substr($first_found_key, strlen('key_'));
+                $data['columnIndexes'][$value] = (int) substr($first_found_key, strlen('key_'));
             }
         }
 
@@ -544,7 +546,7 @@ class CSVManager
                 // to remove already found headers
                 $foundPropertyNames[] = $propertyName;
                 // update columnindexes
-                $data['columnIndexes'][$propertyName] = (int)substr($first_found_key, strlen('key_'));
+                $data['columnIndexes'][$propertyName] = (int) substr($first_found_key, strlen('key_'));
             }
         }
         // filter headers
@@ -602,7 +604,7 @@ class CSVManager
     {
         // not found indexes
         $notFoundIndexes = array_map(function ($key) {
-            return (int)substr($key, strlen('key_'));
+            return (int) substr($key, strlen('key_'));
         }, array_keys($data['firstLine']));
         // detect modified fields after one detected
         foreach ($notFoundIndexes as $index) {
@@ -670,7 +672,7 @@ class CSVManager
                         $datetime = \DateTime::createFromFormat(
                             'd/m/Y H:i:s',
                             $value,
-                            new \DateTimeZone($this->wiki->config['timezone'])
+                            new \DateTimeZone($this->wiki->config['timezone']),
                         );
                         $value = $datetime->getTimestamp();
                     }
@@ -737,7 +739,7 @@ class CSVManager
                     chr(154),
                     chr(155), chr(156), chr(159),
                 ],
-                $value
+                $value,
             );
         }
 
@@ -802,6 +804,16 @@ class CSVManager
         // TODO refactor this part if needed because only copied
         $imageorig = trim($value);
         $nomimage = renameUrlToSanitizedFilename($imageorig);
+
+        // reject the download outright if the destination extension is not an authorized image extension
+        // (renameUrlToSanitizedFilename only strips path/traversal characters, not the extension)
+        $imageExtPreg = $this->wiki->services->get(ParameterBagInterface::class)->get('attach_config')['ext_images'];
+        if (!preg_match("/({$imageExtPreg})$/i", $nomimage)) {
+            $this->errormsg[] = _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
+
+            return $value;
+        }
+
         // test si c'est url vers l'image
         $fileCopied = copyUrlToLocalFile($imageorig, BAZ_CHEMIN_UPLOAD . $nomimage);
         if ($fileCopied) {
@@ -812,7 +824,7 @@ class CSVManager
                 $nomimage = preg_replace(
                     '/&([a-z])[a-z]+;/i',
                     '$1',
-                    $imageorig
+                    $imageorig,
                 );
                 $nomimage = str_replace(' ', '_', $nomimage);
                 $value = $nomimage;
@@ -821,9 +833,9 @@ class CSVManager
                 // verification de la presence de ce fichier
                 if (!file_exists($chemin_destination)) {
                     rename(
-                        BAZ_CHEMIN_UPLOAD .
-                            $imageorig,
-                        $chemin_destination
+                        BAZ_CHEMIN_UPLOAD
+                            . $imageorig,
+                        $chemin_destination,
                     );
                     chmod($chemin_destination, 0755);
                 }
@@ -831,9 +843,9 @@ class CSVManager
                 $this->errormsg[] = _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
             }
         } else {
-            $this->errormsg[] =
-                _t('BAZ_IMAGE_FILE_NOT_FOUND') .
-                ' : ' . $imageorig;
+            $this->errormsg[]
+                = _t('BAZ_IMAGE_FILE_NOT_FOUND')
+                . ' : ' . $imageorig;
         }
 
         return $value;
@@ -848,10 +860,18 @@ class CSVManager
      */
     private function extractValueFromFileFieldData(string $value, FileField $field): string
     {
-        // TODO refactor this part if needed because only copied
-
         $fileUrl = trim($value);
         $file = renameUrlToSanitizedFilename($fileUrl);
+
+        // reject the download outright if the destination extension is not in the upload allowlist
+        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        $authorizedExtensions = array_keys($this->wiki->services->get(ParameterBagInterface::class)->get('authorized-extensions'));
+        if ($extension === '' || !in_array($extension, $authorizedExtensions, true)) {
+            $this->errormsg[] = _t('BAZ_NOT_AUTHORIZED_FILE');
+
+            return $value;
+        }
+
         // test si c'est url vers l'image
         $fileCopied = copyUrlToLocalFile($fileUrl, BAZ_CHEMIN_UPLOAD . $file);
         if ($fileCopied) {
@@ -863,7 +883,7 @@ class CSVManager
             if (!file_exists($chemin_destination)) {
                 rename(
                     BAZ_CHEMIN_UPLOAD . $fileUrl,
-                    $chemin_destination
+                    $chemin_destination,
                 );
                 chmod($chemin_destination, 0755);
             }
@@ -926,7 +946,7 @@ class CSVManager
             $vFilename = $this->buildExportFilename($vFormID);
 
             $csvFiles[$vFilename] = $this->arrayToCSV(
-                $this->getCSVfromFormId(['locals' => [$vFormID], 'externals' => []], $pParams)
+                $this->getCSVfromFormId(['locals' => [$vFormID], 'externals' => []], $pParams),
             );
         }
 
@@ -934,7 +954,7 @@ class CSVManager
             $vFilename = $this->buildExportFilename($this->wiki->services->get(ExternalBazarService::class)->getExternalFormIDKey($vFormID));
 
             $csvFiles[$vFilename] = $this->arrayToCSV(
-                $this->getCSVfromFormId(['locals' => [], 'externals' => [$vFormID]], $pParams)
+                $this->getCSVfromFormId(['locals' => [], 'externals' => [$vFormID]], $pParams),
             );
         }
 

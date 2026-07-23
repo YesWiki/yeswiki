@@ -69,11 +69,11 @@ class Init
         $uri = explode('&', $uri);
         $uri = explode('?', $uri[0]);
         $args = explode('/', rawurldecode($uri[0]));
-        if (!empty($args[0]) or !empty($_REQUEST['wiki'])) {
+        if (!empty($args[0]) or !empty($_GET['wiki'])) {
             // if old school wiki url
-            if ($args[0] == 'index.php' or !empty($_REQUEST['wiki'])) {
+            if ($args[0] == 'index.php' or !empty($_GET['wiki'])) {
                 // remove leading slash
-                $wiki = empty($_REQUEST['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_REQUEST['wiki']));
+                $wiki = empty($_GET['wiki']) ? '' : preg_replace('/^\//', '', urldecode($_GET['wiki']));
             } else {
                 $a = explode('=', $args[0]);
                 $wiki = urldecode($a[0]);
@@ -83,8 +83,16 @@ class Init
             } elseif (preg_match('`^api`', $wiki)) {
                 // for api split into api/end of route, checking wiki name & method name (XSS proof)
                 $this->page = 'api';
-                array_shift($args); // remove api from the args
-                $this->method = rtrim(implode('/', $args), '=');
+                if (strpos($wiki, '/') !== false) {
+                    // $wiki already contains the full path (e.g. 'api/ferme/wikis/upgrade' from $_REQUEST['wiki'])
+                    $wikiParts = explode('/', $wiki);
+                    array_shift($wikiParts); // remove 'api'
+                    $this->method = rtrim(implode('/', $wikiParts), '=');
+                } else {
+                    // $wiki is just 'api', extract method from URL path segments
+                    array_shift($args); // remove api from the args
+                    $this->method = rtrim(implode('/', $args), '=');
+                }
             } elseif (preg_match('`^' . WN_TAG_HANDLER_CAPTURE . '$`u', $wiki, $matches)) {
                 // split into page/method, checking wiki name & method name (XSS proof)
                 list(, $this->page, $this->method) = $matches;
@@ -219,7 +227,8 @@ class Init
             'timezone' => 'Europe/Paris', // Only used if not set in yeswiki.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from yeswiki.config.php
             'yeswiki_name' => '', // backup yeswiki_name if deleted from yeswiki.config.php
-            'htmlPurifierActivated' => false, // TODO ectoplasme set to true
+            'htmlPurifierActivated' => true,
+            'htmlPurifierSafeIframeRegexp' => '~^https://.*~', // regex for domains allowed as <iframe> src ; very permissive by default, restrict for public wikis
             'favorites_activated' => true,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,

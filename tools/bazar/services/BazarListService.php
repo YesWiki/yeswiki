@@ -19,7 +19,7 @@ class BazarListService
         EntryManager $entryManager,
         EntryExtraFieldsService $entryExtrafields,
         ExternalBazarService $externalBazarService,
-        FormManager $formManager
+        FormManager $formManager,
     ) {
         $this->wiki = $wiki;
         $this->entryManager = $entryManager;
@@ -51,7 +51,7 @@ class BazarListService
         $formIds = array_keys($forms) ?? [];
 
         foreach ($formIds as $id) {
-            $template = $forms[(int)$id]['template'] ?? [];
+            $template = $forms[(int) $id]['template'] ?? [];
             $image_names = array_map(
                 function ($item) {
                     return $item[1];
@@ -60,8 +60,8 @@ class BazarListService
                     $template,
                     function ($item) {
                         return $item[0] == 'image';
-                    }
-                )
+                    },
+                ),
             );
             foreach ($image_names as $image_name) {
                 $default_image_filename = "defaultimage{$id}_{$image_name}.jpg";
@@ -110,7 +110,7 @@ class BazarListService
                     $pOptions,
                     [
                         'formsIds' => $vLocalIDs,
-                    ]
+                    ],
                 ),
                 true, // filter on read ACL,
                 true // use Guard
@@ -124,7 +124,7 @@ class BazarListService
                 array_merge($pOptions, [
                     'idtypeannonce' => ['locals' => [], 'externals' => $vExternalIDs],
                     'forms' => $vForms,
-                ])
+                ]),
             );
         } else {
             $vExternalEntries = [];
@@ -310,7 +310,7 @@ class BazarListService
                 $entriesValues = array_column($entries, $propName);
                 // convert string values to array
                 $entriesValues = array_map(function ($val) {
-                    return explode(',', $val);
+                    return explode(',', $val ?? '');
                 }, $entriesValues);
                 // flatten the array
                 $entriesValues = array_merge(...$entriesValues);
@@ -336,11 +336,12 @@ class BazarListService
     // => ['field1' => ['3', '4'], 'field2' => ['web']]
     private function parseCheckedFiltersInURLForNonDynamic()
     {
-        if (empty($_GET['facette'])) {
+        $facette = $this->wiki->request->query->get('facette');
+        if (empty($facette)) {
             return [];
         }
         $result = [];
-        foreach (explode('|', $_GET['facette']) as $field) {
+        foreach (explode('|', $facette) as $field) {
             list($key, $values) = explode('=', $field);
             $result[$key] = explode(',', trim($values));
         }
@@ -597,14 +598,14 @@ class BazarListService
             if ($ordre == 'desc') {
                 return strnatcmp(
                     $this->sanitizeStringForCompare($val2),
-                    $this->sanitizeStringForCompare($val1)
+                    $this->sanitizeStringForCompare($val1),
+                );
+            } else {
+                return strnatcmp(
+                    $this->sanitizeStringForCompare($val1),
+                    $this->sanitizeStringForCompare($val2),
                 );
             }
-
-            return strnatcmp(
-                $this->sanitizeStringForCompare($val1),
-                $this->sanitizeStringForCompare($val2)
-            );
         };
     }
 

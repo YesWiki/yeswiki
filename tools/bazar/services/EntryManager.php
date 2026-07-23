@@ -79,6 +79,9 @@ class EntryManager
      */
     public function isEntry($tag): bool
     {
+        if (empty($tag)) {
+            return false;
+        }
         if (!isset($this->cachedEntriestags[$tag])) {
             $this->cachedEntriestags[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_ENTRY_ID, '', ''));
         }
@@ -288,7 +291,7 @@ class EntryManager
         }
 
         if ($pFlags & self::VALIDATE_FLAG_BF_TITRE) {
-            if (!isset($data['bf_titre'])) {
+            if (empty($data['bf_titre'] ?? null)) {
                 throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
             }
         }
@@ -601,15 +604,13 @@ class EntryManager
 
         $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
 
+        $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
+
         $this->pageManager->deleteOrphaned($tag);
-        $this->tripleStore->delete($tag, TripleStore::TYPE_URI, null, '', '');
-        $this->tripleStore->delete($tag, TripleStore::SOURCE_URL_URI, null, '', '');
         $this->wiki->LogAdministrativeAction(
             $this->authController->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
-
-        $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
             // Notify followers about the deleted object
             $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
@@ -647,7 +648,7 @@ class EntryManager
     {
         // Let's set the value of id_typeannonce
 
-        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $_REQUEST['id_typeannonce'];
+        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $this->wiki->request->get('id_typeannonce');
 
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
@@ -692,9 +693,12 @@ class EntryManager
         // Let's generate fiche id if necessary
 
         if (!isset($data['id_fiche'])) {
+            if (empty($data['bf_titre'] ?? null)) {
+                throw new Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
+            }
             // Generate the ID from the title
             if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
-                throw new \Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] !');
+                throw new \Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] (value: "' . $data['bf_titre'] . '") !');
             }
         // TODO see if we can remove this
         // $_POST['id_fiche'] = $data['id_fiche'];
@@ -1061,6 +1065,10 @@ class EntryManager
         $params['queries'] = ($params['queries'] ?? []) + $attributesQueries;
         $requete = $this->searchManager->prepareSearchRequest($params, false, $applyOnAllRevisions);
 
+        if ($requete === '') {
+            return [];
+        }
+
         $pages = $this->dbService->loadAll($requete);
 
         if (empty($pages)) {
@@ -1173,7 +1181,7 @@ class EntryManager
             'YesWiki\Bazar\Field\MapField', 'YesWiki\Bazar\Field\HiddenField', 'YesWiki\Bazar\Field\FileField', 'YesWiki\Bazar\Field\ImageField', 'YesWiki\Bazar\Field\LabelField', 'YesWiki\Bazar\Field\LinkField', 'YesWiki\Bazar\Field\TextareaField', 'YesWiki\Bazar\Field\TitleField', 'YesWiki\Bazar\Field\UserField',
         ];
         if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
-            $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+            $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
             foreach ($fiche as $key => $value) {
                 if (!empty($value)) {
                     if (

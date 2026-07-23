@@ -15,4 +15,9 @@ class TabAction extends YesWikiAction
     {
         return $this->getService(TabsController::class)->openATab();
     }
+
+    public function end(): string
+    {
+        return $this->getService(TabsController::class)->closeATab();
+    }
 }

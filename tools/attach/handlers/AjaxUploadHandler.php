@@ -17,7 +17,7 @@ class AjaxUploadHandler extends YesWikiHandler
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        if (!$this->hasAccesUpload($_GET)) {
+        if (!$this->hasAccesUpload($this->getRequest()->query->all())) {
             return $this->formatOuput(['error' => _t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE')]);
         }
 

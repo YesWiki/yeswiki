@@ -7,6 +7,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Exception\UserFieldException;
 use YesWiki\Bazar\Field\BazarField;
+use YesWiki\Bazar\Field\ConditionsCheckingField;
+use YesWiki\Bazar\Field\LabelField;
 use YesWiki\Bazar\Field\UserField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
@@ -120,11 +122,11 @@ class EntryController extends YesWikiController
         $oldPageTag = $this->wiki->GetPageTag();
         $this->wiki->tag = $entryId;
         $renderedEntry = null;
-        $message = $_GET['message'] ?? '';
+        $message = $this->getRequest()->query->get('message', '');
         // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{bazarliste}}
         unset($_GET['message']);
         // to synchronize with const in BazarAction (but do not include it here otherwise include shunts Performer job)
-        $isUpdatingEntry = (isset($_GET['vue']) && $_GET['vue'] === 'consulter');
+        $isUpdatingEntry = ($this->getRequest()->query->get('vue') === 'consulter');
         if ($isUpdatingEntry) {
             unset($_GET['vue']);
         }
@@ -152,8 +154,28 @@ class EntryController extends YesWikiController
             // if not found, use default template
             if (is_null($renderedEntry)) {
                 if (!empty($pLocalForm)) {
+                    $fieldsByPropertyName = [];
+                    foreach ($pLocalForm['prepared'] as $field) {
+                        if ($field instanceof BazarField && !empty($field->getPropertyName())) {
+                            $fieldsByPropertyName[$field->getPropertyName()] = $field;
+                        }
+                    }
+                    $conditionsStack = [];
                     foreach ($pLocalForm['prepared'] as $field) {
                         if ($field instanceof BazarField) {
+                            if ($field instanceof ConditionsCheckingField) {
+                                $conditionsStack[] = $field->evaluate($entry, $fieldsByPropertyName);
+
+                                continue;
+                            }
+                            if ($field instanceof LabelField && !empty($conditionsStack) && $field->isConditionsCheckingClosingTag()) {
+                                array_pop($conditionsStack);
+
+                                continue;
+                            }
+                            if (in_array(false, $conditionsStack, true)) {
+                                continue;
+                            }
                             // TODO handle html_outside_app mode for images
                             if (!in_array($field->getPropertyName(), $this->fieldsToExclude())) {
                                 $renderedEntry .= $field->renderStaticIfPermitted($entry, $userNameForRendering);
@@ -201,7 +223,7 @@ class EntryController extends YesWikiController
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
         }
 
-        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, "", "");
+        $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, '', '');
 
         return $this->render('@bazar/entries/view.twig', [
             'form' => $pLocalForm,
@@ -220,13 +242,14 @@ class EntryController extends YesWikiController
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
             'sourceUrl' => $sourceUrl,
-            'incomingUrl' => $_GET['incomingurl'] ?? getAbsoluteUrl(),
+            'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
         ]);
     }
 
     private function fieldsToExclude()
     {
-        return isset($_GET['excludeFields']) ? explode(',', $_GET['excludeFields']) : [];
+        $excludeFields = $this->getRequest()->query->get('excludeFields');
+        return $excludeFields ? explode(',', $excludeFields) : [];
     }
 
     public function publish($entryId, $accepted)
@@ -261,9 +284,10 @@ class EntryController extends YesWikiController
             return $results['output'];
         } elseif (empty($results['error'])) {
             list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
+            $post = $this->getRequest()->request;
             try {
-                if ($state && isset($_POST['bf_titre'])) {
-                    $entry = $this->entryManager->create($formId, $_POST);
+                if ($state && $post->has('bf_titre')) {
+                    $entry = $this->entryManager->create($formId, $post->all());
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
                         'id' => $entry['id_fiche'],
                         'data' => $entry,
@@ -304,8 +328,8 @@ class EntryController extends YesWikiController
         return $this->render('@bazar/entries/form.twig', [
             'form' => $form,
             'renderedInputs' => $renderedInputs,
-            'showConditions' => $form['bn_condition'] !== '' && !isset($_POST['accept_condition']),
-            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
+            'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
+            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
@@ -325,9 +349,10 @@ class EntryController extends YesWikiController
 
         list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
         $incomingUrl = $this->getIncomingUrl();
+        $post = $this->getRequest()->request;
         try {
-            if ($state && isset($_POST['bf_titre'])) {
-                $entry = $this->entryManager->update($entryId, $_POST);
+            if ($state && $post->has('bf_titre')) {
+                $entry = $this->entryManager->update($entryId, $post->all());
                 $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
                     'id' => $entry['id_fiche'],
                     'data' => $entry,
@@ -361,7 +386,7 @@ class EntryController extends YesWikiController
             'entryId' => $entryId,
             'renderedInputs' => $renderedInputs,
             'showConditions' => false,
-            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']) ? $_POST['password_for_editing'] : '',
+            'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
             'error' => $error,
             'captchaField' => $this->securityController->renderCaptchaField(),
@@ -509,6 +534,7 @@ class EntryController extends YesWikiController
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
 
+        $values = [];
         $values['html'] = $html;
         $values['fiche'] = $entry;
         $values['form'] = $form;
@@ -714,7 +740,7 @@ class EntryController extends YesWikiController
 
     /* END OF PART TO FILTER ON DATE */
 
-    public function renderBazarList($entries, $param = [], $showNumEntries = true)
+    public function renderBazarList($entries, $params = [], $showNumEntries = true)
     {
         $ids = [];
         foreach ($entries as $entry) {
@@ -791,13 +817,8 @@ class EntryController extends YesWikiController
 
     public function getIncomingUrl(): string
     {
-        $incomingUrl = (isset($_GET['incomingurl']) && is_string($_GET['incomingurl']))
-            ? $_GET['incomingurl']
-            : (
-                (isset($_POST['incomingurl']) && is_string($_POST['incomingurl']))
-                ? $_POST['incomingurl']
-                : ''
-            );
+        $request = $this->getRequest();
+        $incomingUrl = $request->query->get('incomingurl') ?? $request->request->get('incomingurl') ?? '';
         if (!empty($incomingUrl)) {
             $incomingUrl = urldecode($incomingUrl);
             $incomingUrl = filter_var($incomingUrl, FILTER_VALIDATE_URL);

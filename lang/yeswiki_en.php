@@ -433,6 +433,7 @@ return [
     'EDIT_CONFIG_HINT_ALLOWED_METHODS_IN_IFRAME' => 'Methods allowed to be displayed in iframes (iframe,editiframe,bazariframe,render,all = allow all)',
     'EDIT_CONFIG_HINT_REVISIONSCOUNT' => 'Maximum number of page\'s revisions displayed in the modification\'s log',
     'EDIT_CONFIG_HINT_HTMLPURIFIERACTIVATED' => 'Enable HTML purifier before backup. Be careful, modify the content to backup! (true or false)',
+    'EDIT_CONFIG_HINT_HTMLPURIFIERSAFEIFRAMEREGEXP' => 'Regexp used to allow <iframe> src urls when HTML purifier is active. Leave empty to forbid all iframes. Default is very permissive (any https url) : restrict it to trusted domains on public wikis.',
     'EDIT_CONFIG_HINT_FAVORITES_ACTIVATED' => 'Enable favorites (true or false)',
     'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Enable pre-save preview (true or false)',
     'EDIT_CONFIG_GROUP_CORE' => 'Main parameters',
