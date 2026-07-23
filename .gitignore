@@ -118,13 +118,16 @@ tools/*
 !.vscode
 .vscode/settings.json
 
+# IA slop
+CLAUDE.md
+docs/agents
+
 # Docker
 .db
 docker-compose.local.yml
 
 # Other
 .phpintel/
-CLAUDE.md
 *.old
 .php-cs-fixer.cache
 .twig-cs-fixer.cache
