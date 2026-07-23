@@ -1,0 +1,65 @@
+<?php
+
+namespace YesWiki\Test\Core\Controller;
+
+use ReflectionClass;
+use YesWiki\Core\Controller\AdminContentController;
+use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Test\Core\YesWikiTestCase;
+
+require_once 'tests/YesWikiTestCase.php';
+
+/**
+ * Regression test for ticket 02 (versioned metadata column on pages): the admin
+ * content list's theme filter used to query the non-versioned METADATA_PROPERTY
+ * triple; it now queries pages.metadata directly.
+ */
+class AdminContentControllerThemeFilterTest extends YesWikiTestCase
+{
+    private const THEMED_TAG = 'AdminContentThemeFilterRegressionThemed';
+    private const UNTHEMED_TAG = 'AdminContentThemeFilterRegressionUntheme';
+
+    private function buildWhere(AdminContentController $controller, DbService $db, string $themeFilter): array
+    {
+        $reflection = new ReflectionClass($controller);
+        $method = $reflection->getMethod('buildWhere');
+        $method->setAccessible(true);
+
+        return $method->invoke($controller, $db, '', 'all', '', '', '', $themeFilter);
+    }
+
+    public function testThemeFilterMatchesPagesByTheirOwnMetadataColumn()
+    {
+        $wiki = $this->getWiki();
+        $pageManager = $wiki->services->get(PageManager::class);
+        $dbService = $wiki->services->get(DbService::class);
+        $controller = $wiki->services->get(AdminContentController::class);
+
+        $favoriteTheme = $wiki->services->get(ThemeManager::class)->getFavoriteTheme();
+        // pick a filter value that isn't the wiki's default theme, so the "pages with no
+        // theme stored inherit the default" branch doesn't also match the untagged page
+        $filterTheme = $favoriteTheme === 'colibris' ? 'margot' : 'colibris';
+
+        try {
+            $pageManager->save(self::THEMED_TAG, 'themed page', '', true);
+            $pageManager->setMetadata(self::THEMED_TAG, ['theme' => $filterTheme]);
+            $pageManager->save(self::UNTHEMED_TAG, 'untheme page', '', true);
+
+            [$whereClause] = $this->buildWhere($controller, $dbService, $filterTheme);
+
+            $pT = $dbService->prefixTable('pages');
+            $matchingTags = array_column(
+                $dbService->loadAll("SELECT tag FROM {$pT} p WHERE p.latest = 'Y' AND {$whereClause}"),
+                'tag'
+            );
+
+            $this->assertContains(self::THEMED_TAG, $matchingTags, "the theme filter should match a page whose pages.metadata JSON has \"theme\":\"$filterTheme\"");
+            $this->assertNotContains(self::UNTHEMED_TAG, $matchingTags, 'the theme filter should not match a page with no metadata at all');
+        } finally {
+            $pageManager->deleteOrphaned(self::THEMED_TAG);
+            $pageManager->deleteOrphaned(self::UNTHEMED_TAG);
+        }
+    }
+}

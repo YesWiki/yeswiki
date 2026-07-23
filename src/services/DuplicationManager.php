@@ -281,16 +281,17 @@ class DuplicationManager
             );
         }
 
-        // duplicate metadatas and tags (TODO: is there more duplicable triples?)
-        $properties = [
-            'http://outils-reseaux.org/_vocabulary/metadata',
-            'http://outils-reseaux.org/_vocabulary/tag',
-        ];
-        foreach ($properties as $prop) {
-            $values = $this->wiki->services->get(TripleStore::class)->getAll($data['originalTag'], $prop, '', '');
-            foreach ($values as $val) {
-                $this->wiki->services->get(TripleStore::class)->create($data['newTag'], $prop, $val['value'], '', '');
-            }
+        // duplicate metadata (versioned pages.metadata column, not a triple -- see
+        // PageManager::getMetadata()/setMetadata())
+        $originalMetadata = $this->wiki->services->get(PageManager::class)->getMetadata($data['originalTag']);
+        if (!empty($originalMetadata)) {
+            $this->wiki->services->get(PageManager::class)->setMetadata($data['newTag'], $originalMetadata);
+        }
+
+        // duplicate tags (TODO: is there more duplicable triples?)
+        $values = $this->wiki->services->get(TripleStore::class)->getAll($data['originalTag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+        foreach ($values as $val) {
+            $this->wiki->services->get(TripleStore::class)->create($data['newTag'], 'http://outils-reseaux.org/_vocabulary/tag', $val['value'], '', '');
         }
     }
 

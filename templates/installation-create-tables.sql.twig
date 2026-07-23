@@ -89,7 +89,8 @@ CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
   "user" TEXT NOT NULL,
   "latest" TEXT NOT NULL DEFAULT 'N' CHECK("latest" IN ('Y', 'N')),
   "handler" TEXT NOT NULL DEFAULT 'page',
-  "comment_on" TEXT NOT NULL DEFAULT ''
+  "comment_on" TEXT NOT NULL DEFAULT '',
+  "metadata" TEXT DEFAULT NULL
 <% elseif driver == 'pgsql' %>
   "id" SERIAL PRIMARY KEY,
   "tag" VARCHAR(191) NOT NULL,
@@ -100,7 +101,8 @@ CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
   "user" VARCHAR(191) NOT NULL,
   "latest" VARCHAR(1) NOT NULL DEFAULT 'N' CHECK("latest" IN ('Y', 'N')),
   "handler" VARCHAR(30) NOT NULL DEFAULT 'page',
-  "comment_on" VARCHAR(191) NOT NULL DEFAULT ''
+  "comment_on" VARCHAR(191) NOT NULL DEFAULT '',
+  "metadata" TEXT DEFAULT NULL
 <% else %>
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `tag` VARCHAR(191) NOT NULL,
@@ -112,6 +114,7 @@ CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}pages[[ q ]] (
   `latest` ENUM('Y','N') NOT NULL DEFAULT 'N',
   `handler` VARCHAR(30) NOT NULL DEFAULT 'page',
   `comment_on` VARCHAR(191) NOT NULL DEFAULT '',
+  `metadata` TEXT DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_tag` (`tag`),
   KEY `idx_time` (`time`),

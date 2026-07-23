@@ -64,17 +64,12 @@ class PageManager
     {
         // retrieve from cache
         if (!$bypassAcls && !$time && $cache && empty($userNameForCheckingACL) && (($cachedPage = $this->getCached($tag)) !== false)) {
-            if ($cachedPage and !isset($cachedPage['metadatas'])) {
-                $cachedPage['metadatas'] = $this->getMetadata($tag);
-                // save page with metadatas
-                $this->cache($cachedPage, $tag);
-            }
             $page = $cachedPage;
         } else {
             // load page
             $timeQuery = $time ? "time = '{$this->dbService->escape($time)}'" : "latest = 'Y'";
             $page = $this->dbService->loadSingle("
-                SELECT * FROM {$this->dbService->prefixTable('pages')} 
+                SELECT * FROM {$this->dbService->prefixTable('pages')}
                 WHERE tag = '{$this->dbService->escape($tag)}' AND {$timeQuery}
                 LIMIT 1
             ");
@@ -83,7 +78,10 @@ class PageManager
             $this->cacheOwner($page);
 
             if ($page) {
-                $page['metadatas'] = $this->getMetadata($tag);
+                // metadata is versioned along with body: this revision's own column value,
+                // not always-latest, so reverting/reading an old revision sees that
+                // revision's metadata (ACLs, theme, ...), not the current one
+                $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
             }
 
             if (!$bypassAcls) {
@@ -152,6 +150,9 @@ class PageManager
     public function getById($id): ?array
     {
         $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
+        if ($page) {
+            $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
+        }
         $page = $this->checkEntriesACL([$page], $page['tag'])[0];
 
         return $page;
@@ -389,7 +390,7 @@ class PageManager
 
             // add new revision
             $userCol = $this->dbService->quoteIdentifier('user');
-            $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', 'body_r'];
+            $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', 'body_r', 'metadata'];
             $values = [
                 "'" . $this->dbService->escape($tag) . "'",
                 $time,
@@ -398,6 +399,9 @@ class PageManager
                 "'Y'",
                 "'" . $this->dbService->escape(chop($body)) . "'",
                 "''",
+                // metadata (ACLs, theme, ...) isn't part of this edit -- carry the previous
+                // revision's value forward unchanged, same as owner/comment_on above
+                empty($oldPage['metadata']) ? 'NULL' : "'" . $this->dbService->escape($oldPage['metadata']) . "'",
             ];
             if ($comment_on) {
                 $columns[] = 'comment_on';
@@ -463,42 +467,80 @@ class PageManager
 
     public function getMetadata($tag): ?array
     {
-        $metadata = $this->tripleStore->getOne($tag, 'http://outils-reseaux.org/_vocabulary/metadata', '', '');
+        $page = $this->dbService->loadSingle("SELECT metadata FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1");
 
-        if (!empty($metadata)) {
-            if (YW_CHARSET != 'UTF-8') {
-                return array_map(function ($value) {
-                    return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
-                }, json_decode($metadata, true));
-            } else {
-                return json_decode($metadata, true);
-            }
-        } else {
-            return null;
-        }
+        return $this->decodeMetadata($page['metadata'] ?? null);
     }
 
+    /**
+     * Metadata is versioned along with content (ADR-0002): changing it creates a new
+     * `pages` revision, the same as an edit to body, carrying the current body forward
+     * unchanged -- so permission/metadata history stays reconstructable and revertable
+     * separately from content (see PageManager::save()'s revisioning, which this mirrors).
+     */
     public function setMetadata($tag, $metadata)
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $previousMetadata = $this->getMetadata($tag);
+        $oldPage = $this->getOne($tag, null, false, true);
+        if (!$oldPage) {
+            throw new \Exception("Cannot set metadata on '$tag': no such page");
+        }
 
+        $previousMetadata = $oldPage['metadatas'] ?? null;
         if ($previousMetadata) {
             $metadata = array_merge($previousMetadata, $metadata);
-            $this->tripleStore->delete($tag, 'http://outils-reseaux.org/_vocabulary/metadata', null, '', '');
         }
 
+        $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
+
+        $userCol = $this->dbService->quoteIdentifier('user');
+        $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', 'body_r', 'metadata'];
+        $values = [
+            "'" . $this->dbService->escape($tag) . "'",
+            $this->dbService->now(),
+            "'" . $this->dbService->escape($oldPage['owner']) . "'",
+            "'" . $this->dbService->escape($this->authController->getLoggedUserName()) . "'",
+            "'Y'",
+            "'" . $this->dbService->escape($oldPage['body']) . "'",
+            "''",
+            "'" . $this->dbService->escape($this->encodeMetadata($metadata)) . "'",
+        ];
+        if (!empty($oldPage['comment_on'])) {
+            $columns[] = 'comment_on';
+            $values[] = "'" . $this->dbService->escape($oldPage['comment_on']) . "'";
+        }
+        $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
+
+        unset($this->pageCache[$tag]);
+
+        return true;
+    }
+
+    private function decodeMetadata(?string $rawJson): ?array
+    {
+        if (empty($rawJson)) {
+            return null;
+        }
         if (YW_CHARSET != 'UTF-8') {
-            $metadata = json_encode(array_map(function ($value) {
+            return array_map(function ($value) {
+                return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
+            }, json_decode($rawJson, true));
+        }
+
+        return json_decode($rawJson, true);
+    }
+
+    private function encodeMetadata(array $metadata): string
+    {
+        if (YW_CHARSET != 'UTF-8') {
+            return json_encode(array_map(function ($value) {
                 return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
             }, $metadata));
-        } else {
-            $metadata = json_encode($metadata);
         }
 
-        return $this->tripleStore->create($tag, 'http://outils-reseaux.org/_vocabulary/metadata', $metadata, '', '');
+        return json_encode($metadata);
     }
 
     /**

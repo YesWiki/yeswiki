@@ -19,7 +19,6 @@ class AdminContentController extends YesWikiController
     private const ALLOWED_TYPES = ['all', 'pages', 'bazar', 'lists', 'special', 'comments'];
     private const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
     private const TYPE_PROPERTY = 'http://outils-reseaux.org/_vocabulary/type';
-    private const METADATA_PROPERTY = 'http://outils-reseaux.org/_vocabulary/metadata';
     private const SPECIAL_PAGES = [
         'BazaR', 'GererSite', 'GererDroits', 'GererThemes', 'GererMisesAJour',
         'GererUtilisateurs', 'GererDroitsActions', 'GererDroitsHandlers', 'TableauDeBord',
@@ -55,7 +54,6 @@ class AdminContentController extends YesWikiController
         $typeProp = self::TYPE_PROPERTY;
         $idTypeAnnonceExpr = $dbService->jsonExtract('p.body', '$.id_typeannonce');
         $tagsAggExpr = $dbService->groupConcat('tg.value');
-        $metaProp = self::METADATA_PROPERTY;
 
         $sql = <<<SQL
             SELECT
@@ -64,6 +62,7 @@ class AdminContentController extends YesWikiController
                 p.owner,
                 p.comment_on,
                 p.user AS last_editor,
+                p.metadata AS page_metadata,
                 a_r.list AS acl_read,
                 a_w.list AS acl_write,
                 a_c.list AS acl_comment,
@@ -73,17 +72,15 @@ class AdminContentController extends YesWikiController
                         {$idTypeAnnonceExpr}
                     ELSE NULL
                 END) AS form_id,
-                {$tagsAggExpr} AS page_tags,
-                MAX(tm.value) AS page_metadata
+                {$tagsAggExpr} AS page_tags
             FROM {$pT} p
             LEFT JOIN {$aT} a_r ON a_r.page_tag = p.tag AND a_r.privilege = 'read'
             LEFT JOIN {$aT} a_w ON a_w.page_tag = p.tag AND a_w.privilege = 'write'
             LEFT JOIN {$aT} a_c ON a_c.page_tag = p.tag AND a_c.privilege = 'comment'
             LEFT JOIN {$trT} tg ON tg.resource = p.tag AND tg.property = '{$tagProp}'
             LEFT JOIN {$trT} tp ON tp.resource = p.tag AND tp.property = '{$typeProp}'
-            LEFT JOIN {$trT} tm ON tm.resource = p.tag AND tm.property = '{$metaProp}'
             WHERE {$whereClause}
-            GROUP BY p.tag, p.time, p.owner, p.comment_on, p.user, a_r.list, a_w.list, a_c.list, tp.value
+            GROUP BY p.tag, p.time, p.owner, p.comment_on, p.user, p.metadata, a_r.list, a_w.list, a_c.list, tp.value
             {$having}
             ORDER BY {$sortCol} {$dirSql}
             LIMIT {$perpage} OFFSET {$offset}
@@ -401,13 +398,11 @@ class AdminContentController extends YesWikiController
 
         if ($themeFilter !== '') {
             $escaped = $db->escape($themeFilter);
-            $metaProp = self::METADATA_PROPERTY;
-            $trT = $db->prefixTable('triples');
             $themeManager = $this->getService(ThemeManager::class);
-            $explicitMatch = "EXISTS (SELECT 1 FROM {$trT} tm2 WHERE tm2.resource = p.tag AND tm2.property = '{$metaProp}' AND tm2.value LIKE '%\"theme\":\"{$escaped}\"%')";
+            $explicitMatch = "p.metadata LIKE '%\"theme\":\"{$escaped}\"%'";
             if ($themeFilter === $themeManager->getFavoriteTheme()) {
                 // Also include pages that have no theme stored (they inherit the wiki default)
-                $noThemeStored = "NOT EXISTS (SELECT 1 FROM {$trT} tm2 WHERE tm2.resource = p.tag AND tm2.property = '{$metaProp}' AND tm2.value LIKE '%\"theme\":\"%')";
+                $noThemeStored = "(p.metadata IS NULL OR p.metadata NOT LIKE '%\"theme\":\"%')";
                 $conditions[] = "({$explicitMatch} OR {$noThemeStored})";
             } else {
                 $conditions[] = $explicitMatch;
