@@ -35,8 +35,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $params;
     protected $tripleStore;
 
-    private $getOneByNameCacheResults;
     private array $associatedEntryCache = [];
+    private array $userTagCache = [];
+
+    // Users are `pages` rows typed via this triple, the same convention FormManager uses
+    // for forms (TRIPLES_FORM_TYPE) and EntryManager for bazar entries (TRIPLES_ENTRY_ID).
+    public const TRIPLES_USER_TYPE = 'user';
 
     public const KEY_VOCABULARY = 'http://outils-reseaux.org/_vocabulary/key';
     // stored triple value is "$hashedKey$KEY_VALUE_SEPARATOR$issuedAtTimestamp"
@@ -44,6 +48,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     // password recovery links expire after 1 hour
     public const KEY_TTL = 3600;
 
+    // PageManager and AclService are deliberately NOT constructor-injected here: PageManager
+    // already depends on UserManager directly, and AclService depends on UserManager too
+    // (its '+' registered-users ACL case calls getOneByName()) -- constructor-injecting
+    // either back into UserManager would be a circular dependency. Fetched late via
+    // $this->wiki->services->get() instead, the same workaround isInGroup() already uses
+    // for AclService below.
     public function __construct(
         Wiki $wiki,
         DbService $dbService,
@@ -58,7 +68,25 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->securityController = $securityController;
         $this->params = $params;
         $this->tripleStore = $tripleStore;
-        $this->getOneByNameCacheResults = [];
+    }
+
+    public function isUserTag(string $tag): bool
+    {
+        if (empty($tag)) {
+            return false;
+        }
+        if (!isset($this->userTagCache[$tag])) {
+            $this->userTagCache[$tag] = !is_null($this->tripleStore->exist($tag, TripleStore::TYPE_URI, self::TRIPLES_USER_TYPE, '', ''));
+        }
+
+        return $this->userTagCache[$tag];
+    }
+
+    public function getAllUserTags(): array
+    {
+        return array_values(array_filter(array_map(function ($triple) {
+            return $triple['resource'] ?? null;
+        }, $this->tripleStore->getMatching(null, TripleStore::TYPE_URI, self::TRIPLES_USER_TYPE))));
     }
 
     public function userExist($name): bool
@@ -69,41 +97,66 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function getOneByName($name, $password = null): ?User
     {
         // use !is_string($password) instead of !$password to allow $password == ""
-
-        // Don't check the cache with isset(), because the value of the cache can be null
-        if (!is_string($password) && array_key_exists($name, $this->getOneByNameCacheResults)) {
-            $result = $this->getOneByNameCacheResults[$name];
-        } else {
-            $result = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where name = '" . $this->dbService->escape($name) . "' " . (!is_string($password) ? '' : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1');
-            if (!is_string($password)) {
-                $this->getOneByNameCacheResults[$name] = $result;
-            }
+        if (!$this->isUserTag($name)) {
+            return null;
         }
 
-        return $this->arrayToUser($result);
+        $page = $this->wiki->services->get(PageManager::class)->getOne($name, null, true, true);
+        $user = $this->arrayToUser($page);
+        if ($user !== null && is_string($password) && $user['password'] !== $password) {
+            return null;
+        }
+
+        return $user;
     }
 
     public function getOneByEmail($mail, $password = null): ?User
     {
-        return $this->arrayToUser($this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('users') . "where email = '" . $this->dbService->escape($mail) . "' " . (!is_string($password) ? '' : "and password = '" . $this->dbService->escape($password) . "'") . ' limit 1'));
+        $tag = $this->resolveTagFromEmail($mail);
+        if ($tag === null) {
+            return null;
+        }
+
+        return $this->getOneByName($tag, $password);
+    }
+
+    private function resolveTagFromEmail(string $email): ?string
+    {
+        $jsonExtract = $this->dbService->jsonExtract('p.body', '$.email');
+        $sql = "SELECT p.tag AS tag FROM {$this->dbService->prefixTable('pages')} p
+            WHERE p.latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape($email) . "'
+            AND EXISTS (
+                SELECT 1 FROM {$this->dbService->prefixTable('triples')} t
+                WHERE t.resource = p.tag
+                    AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'
+                    AND t.value = '" . $this->dbService->escape(self::TRIPLES_USER_TYPE) . "'
+            )
+            LIMIT 1";
+        $row = $this->dbService->loadSingle($sql);
+
+        return $row['tag'] ?? null;
     }
 
     public function getAll($dbFields = ['name', 'password', 'email', 'motto', 'revisioncount', 'changescount', 'doubleclickedit', 'signuptime', 'show_comments']): array
     {
-        if ($this->params->has('user_table_prefix') && !empty($this->params->get('user_table_prefix'))) {
-            $prefix = $this->params->get('user_table_prefix');
-        } else {
-            $prefix = $this->params->get('table_prefix');
+        // $dbFields was a partial-column-select optimization for the old flat `users`
+        // table; kept for signature compatibility but not honored -- every User object
+        // requires the full PROPS_LIST anyway (see User::__construct()), and decoding a
+        // JSON body doesn't offer a meaningful partial-fetch optimization to replace it with.
+        $pageManager = $this->wiki->services->get(PageManager::class);
+        $users = [];
+        foreach ($this->getAllUserTags() as $tag) {
+            $user = $this->arrayToUser($pageManager->getOne($tag, null, true, true));
+            if ($user !== null) {
+                $users[] = $user;
+            }
         }
 
-        $selectDefinition = empty($dbFields) ? '*' : implode(', ', $dbFields);
+        usort($users, function ($a, $b) {
+            return strcmp($a['name'], $b['name']);
+        });
 
-        return array_map(
-            function ($userAsArray) {
-                return $this->arrayToUser($userAsArray, true);
-            },
-            $this->dbService->loadAll("select $selectDefinition from {$prefix}users order by name")
-        );
+        return $users;
     }
 
     /**
@@ -113,7 +166,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      *
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|\Exception
      */
-    public function create($wikiNameOrUser, string $email = '', string $plainPassword = '')
+    public function create($wikiNameOrUser, string $email = '', string $plainPassword = ''): ?User
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -153,6 +206,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (empty($wikiName)) {
             throw new \Exception("'Name' parameter of UserManager->create should not be empty!");
         }
+        // an EXISTING USER with this exact name -- normal "username taken" signup UX,
+        // unchanged. Distinct from a same-named FORM/PAGE/ENTRY, handled below via
+        // suggestFreeTag() instead of failing (ticket 04/05's collision-avoidance helper,
+        // now genuinely needed since users share the same tag namespace as everything else)
         if (!empty($this->getOneByName($wikiName))) {
             throw new UserNameAlreadyUsedException();
         }
@@ -166,51 +223,90 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new \Exception("'password' parameter of UserManager->create should not be empty!");
         }
 
-        // clear both the trimmed name and any untrimmed variant stored in cache
-        unset($this->getOneByNameCacheResults[$wikiName]);
-        if (is_string($wikiNameOrUser) && $wikiNameOrUser !== $wikiName) {
-            unset($this->getOneByNameCacheResults[$wikiNameOrUser]);
-        } elseif (is_array($wikiNameOrUser)) {
-            $originalName = $wikiNameOrUser['name'] ?? '';
-            if ($originalName !== $wikiName) {
-                unset($this->getOneByNameCacheResults[$originalName]);
-            }
-        }
-        $user = $this->arrayToUser($userAsArray);
-        $passwordHasher = $this->passwordHasherFactory->getPasswordHasher($user);
-        $hashedPassword = $passwordHasher->hash($plainPassword);
+        $tag = $this->wiki->services->get(PageManager::class)->suggestFreeTag($wikiName);
 
-        // Build columns and values arrays for cross-database compatibility
-        $columns = ['signuptime', 'name', 'motto', 'email', 'password'];
-        $values = [
-            $this->dbService->now(),
-            "'" . $this->dbService->escape($user['name']) . "'",
-            "'" . (empty($user['motto']) ? '' : $this->dbService->escape($user['motto'])) . "'",
-            "'" . $this->dbService->escape($user['email']) . "'",
-            "'" . $this->dbService->escape($hashedPassword) . "'",
+        $hasher = $this->passwordHasherFactory->getPasswordHasher($this->arrayToDraftUser($userAsArray));
+        $hashedPassword = $hasher->hash($plainPassword);
+
+        $body = $this->buildBody(array_merge($userAsArray, [
+            'password' => $hashedPassword,
+            'signuptime' => date('Y-m-d H:i:s'),
+        ]));
+
+        if (!$this->persistNewUserPage($tag, $body)) {
+            return null;
+        }
+
+        return $this->getOneByName($tag);
+    }
+
+    /**
+     * Migrates one row from the legacy `users` table, preserving its password hash
+     * VERBATIM -- unlike create(), which always hashes a fresh plaintext password and so
+     * must never be reused for migrating an already-hashed existing account (that would
+     * silently invalidate every existing user's password).
+     */
+    public function migrateLegacyUser(array $legacyRow): void
+    {
+        $name = trim((string)($legacyRow['name'] ?? ''));
+        if ($name === '' || $this->getOneByName($name)) {
+            return;
+        }
+
+        $tag = $this->wiki->services->get(PageManager::class)->suggestFreeTag($name);
+        $body = $this->buildBody($legacyRow);
+
+        $this->persistNewUserPage($tag, $body);
+    }
+
+    private function persistNewUserPage(string $tag, array $body): bool
+    {
+        $pageManager = $this->wiki->services->get(PageManager::class);
+        $saved = $pageManager->save($tag, $this->encodeBody($body), '', true);
+        if ($saved !== 0) {
+            return false;
+        }
+
+        // the TYPE_URI triple must be created BEFORE setOwner(): setOwner() calls
+        // UserManager::getOneByName() internally to verify the target exists, and
+        // getOneByName() only recognizes a tag as a user once this triple is in place --
+        // otherwise setOwner() silently no-ops (found via the migration leaving every
+        // migrated user's `owner` column empty). isUserTag()'s cache must ALSO be updated
+        // explicitly here: migrateLegacyUser()/create() already called isUserTag($tag)
+        // (via getOneByName()'s collision check) before this tag existed, caching a
+        // negative result that creating the triple alone doesn't invalidate.
+        $this->tripleStore->create($tag, TripleStore::TYPE_URI, self::TRIPLES_USER_TYPE, '', '');
+        $this->userTagCache[$tag] = true;
+
+        // the account owns itself -- save()'s auto-owner logic would otherwise leave this
+        // empty for a self-registering, not-yet-logged-in user
+        $pageManager->setOwner($tag, $tag);
+
+        // the wiki's default_write_acl is '*' (everyone) -- without this override, anyone
+        // could edit any other user's account page. Late-bound: see the constructor note
+        // on why AclService can't be injected directly.
+        $this->wiki->services->get(AclService::class)->save($tag, 'write', "%\n@admins");
+
+        return true;
+    }
+
+    private function buildBody(array $fields): array
+    {
+        return [
+            'email' => $fields['email'] ?? '',
+            'motto' => empty($fields['motto']) ? '' : $fields['motto'],
+            'revisioncount' => empty($fields['revisioncount']) ? '20' : $fields['revisioncount'],
+            'changescount' => empty($fields['changescount']) ? '50' : $fields['changescount'],
+            'doubleclickedit' => empty($fields['doubleclickedit']) ? 'Y' : $fields['doubleclickedit'],
+            'signuptime' => $fields['signuptime'] ?? date('Y-m-d H:i:s'),
+            'show_comments' => empty($fields['show_comments']) ? 'N' : $fields['show_comments'],
+            'password' => $fields['password'] ?? '',
         ];
+    }
 
-        if (!empty($user['changescount'])) {
-            $columns[] = 'changescount';
-            $values[] = "'" . $this->dbService->escape($user['changescount']) . "'";
-        }
-        if (!empty($user['doubleclickedit'])) {
-            $columns[] = 'doubleclickedit';
-            $values[] = "'" . $this->dbService->escape($user['doubleclickedit']) . "'";
-        }
-        if (!empty($user['revisioncount'])) {
-            $columns[] = 'revisioncount';
-            $values[] = "'" . $this->dbService->escape($user['revisioncount']) . "'";
-        }
-        if (!empty($user['show_comments'])) {
-            $columns[] = 'show_comments';
-            $values[] = "'" . $this->dbService->escape($user['show_comments']) . "'";
-        }
-
-        return $this->dbService->query(
-            'INSERT INTO ' . $this->dbService->prefixTable('users') .
-            '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')'
-        );
+    private function encodeBody(array $body): string
+    {
+        return json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /** Part of the Password recovery process: Handles the password recovery email process.
@@ -315,23 +411,16 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         if (count($authorizedKeys) > 0) {
-            $query = "UPDATE {$this->dbService->prefixTable('users')} SET ";
-            $query .= implode(
-                ', ',
-                array_map(
-                    function ($key) use ($newValues) {
-                        return $this->dbService->quoteIdentifier($key) . " = '{$this->dbService->escape($newValues[$key])}' ";
-                    },
-                    $authorizedKeys
-                )
-            );
-            $query .= "WHERE {$this->dbService->quoteIdentifier('name')} = '{$this->dbService->escape($user['name'])}' ";
-            $query .= "AND {$this->dbService->quoteIdentifier('email')} = '{$this->dbService->escape($user['email'])}' ";
-            $query .= "AND {$this->dbService->quoteIdentifier('password')} = '{$this->dbService->escape($user['password'])}' ";
-            $this->dbService->query($query);
+            $pageManager = $this->wiki->services->get(PageManager::class);
+            $page = $pageManager->getOne($user['name'], null, true, true);
+            if ($page) {
+                $body = json_decode($page['body'] ?? '', true) ?? [];
+                foreach ($authorizedKeys as $key) {
+                    $body[$key] = $newValues[$key];
+                }
+                $pageManager->save($user['name'], $this->encodeBody($body), '', true);
+            }
         }
-
-        unset($this->getOneByNameCacheResults[$user['name']]);
 
         return true;
     }
@@ -347,13 +436,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        unset($this->getOneByNameCacheResults[$user['name']]);
-        $query = "DELETE FROM {$this->dbService->prefixTable('users')} " .
-            " WHERE {$this->dbService->quoteIdentifier('name')} = '{$this->dbService->escape($user['name'])}';";
         try {
-            if (!$this->dbService->query($query)) {
-                throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
-            }
+            $this->wiki->services->get(PageManager::class)->deleteOrphaned($user['name']);
         } catch (\Exception $ex) {
             throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
         }
@@ -456,15 +540,14 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new UnsupportedUserException();
         }
         try {
-            $previousPassword = $user['password'];
             $user->setPassword($newHashedPassword);
-            $query =
-                'UPDATE ' . $this->dbService->prefixTable('users') . 'SET ' .
-                "password = '" . $this->dbService->escape($newHashedPassword) . "'" .
-                " WHERE name = '" . $this->dbService->escape($user['name']) . "' " .
-                "AND email= '" . $this->dbService->escape($user['email']) . "' " .
-                "AND password= '" . $this->dbService->escape($previousPassword) . "';";
-            $this->dbService->query($query);
+            $pageManager = $this->wiki->services->get(PageManager::class);
+            $page = $pageManager->getOne($user['name'], null, true, true);
+            if ($page) {
+                $body = json_decode($page['body'] ?? '', true) ?? [];
+                $body['password'] = $newHashedPassword;
+                $pageManager->save($user['name'], $this->encodeBody($body), '', true);
+            }
         } catch (\Throwable $th) {
             // only throw error in debug mode
             if ($this->wiki->GetConfigValue('debug')) {
@@ -552,16 +635,30 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->wiki->services->get(AuthController::class)->logout();
     }
 
-    private function arrayToUser(?array $userAsArray = null, bool $fillEmpty = false): ?User
+    private function arrayToUser(?array $page): ?User
     {
-        if (empty($userAsArray)) {
+        if (empty($page) || !isset($page['tag'])) {
             return null;
         }
-        if ($fillEmpty) {
-            foreach (User::PROPS_LIST as $key) {
-                if (!array_key_exists($key, $userAsArray)) {
-                    $userAsArray[$key] = null;
-                }
+        $body = json_decode($page['body'] ?? '', true);
+        if (!is_array($body)) {
+            return null;
+        }
+
+        return $this->arrayToDraftUser(array_merge($body, ['name' => $page['tag']]));
+    }
+
+    /**
+     * Builds a User from a flat, name-keyed array (as opposed to arrayToUser(), which
+     * decodes a `pages` row) -- used where a User object is needed before any page exists
+     * yet (picking a password hasher during create(), which needs a User instance but
+     * happens before suggestFreeTag() has even settled the final tag).
+     */
+    private function arrayToDraftUser(array $userAsArray): User
+    {
+        foreach (User::PROPS_LIST as $key) {
+            if (!array_key_exists($key, $userAsArray)) {
+                $userAsArray[$key] = null;
             }
         }
 

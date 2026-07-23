@@ -122,11 +122,8 @@ class DbCommand extends Command
                         "--password=$password",
                         "--result-file=$realFilePath",
                         $databasename, // databasename
-                        "{$tablePrefix}users", // tables
                         "{$tablePrefix}pages", // tables
-                        "{$tablePrefix}nature", // tables
                         "{$tablePrefix}triples", // tables
-                        "{$tablePrefix}acls", // tables
                         "{$tablePrefix}links", // tables
                         "{$tablePrefix}referrers", // tables
                     ]

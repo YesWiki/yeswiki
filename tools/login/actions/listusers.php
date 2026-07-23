@@ -1,5 +1,7 @@
 <?php
 
+use YesWiki\Core\Service\UserManager;
+
 // si une date est indiquée
 if (isset($_GET['period']) && in_array($_GET['period'], ['day', 'week', 'month'])) {
     switch ($_GET['period']) {
@@ -20,6 +22,16 @@ if (isset($_GET['period']) && in_array($_GET['period'], ['day', 'week', 'month']
     $dateMin = $this->GetParameter('period');
 }
 
+$users = array_map(function ($user) {
+    return ['name' => $user['name'], 'signuptime' => $user['signuptime']];
+}, $this->services->get(UserManager::class)->getAll());
+
+if (!empty($dateMin)) {
+    $users = array_values(array_filter($users, function ($user) use ($dateMin) {
+        return $user['signuptime'] >= $dateMin;
+    }));
+}
+
 if ($last = $this->GetParameter('last')) {
     if ($last == 'last') {
         $last = 150;
@@ -27,14 +39,12 @@ if ($last = $this->GetParameter('last')) {
         $last = (int)$last;
     }
     if ($last) {
+        $sortedUsers = $users;
+        usort($sortedUsers, function ($a, $b) {
+            return strcmp($b['signuptime'], $a['signuptime']);
+        });
+        $last_users = array_slice($sortedUsers, 0, $last);
         $curday = '';
-        $sql = 'SELECT name, signuptime FROM ' . $this->config['table_prefix'] . 'users';
-
-        if (!empty($dateMin)) {
-            $sql .= " WHERE signuptime >= '" . $dateMin . "'";
-        }
-        $sql .= ' ORDER BY signuptime DESC LIMIT ' . $last;
-        $last_users = $this->LoadAll($sql);
         foreach ($last_users as $user) {
             // day header
             list($day, $time) = explode(' ', $user['signuptime']);
@@ -52,16 +62,10 @@ if ($last = $this->GetParameter('last')) {
         echo _t('LOGIN_NO_SIGNUP_IN_THIS_PERIOD');
     }
 } else {
-    $sql = 'SELECT name, signuptime FROM ' . $this->config['table_prefix'] . 'users';
-
-    if (!empty($dateMin)) {
-        $sql .= " WHERE signuptime >= '" . $dateMin . "'";
-    }
-    $sql .= ' ORDER BY name ASC';
-    $curday = '';
-    if ($last_users = $this->LoadAll($sql)) {
+    // $users is already name-sorted (UserManager::getAll() orders by name)
+    if (!empty($users)) {
         echo '<ol class="list-users">';
-        foreach ($last_users as $user) {
+        foreach ($users as $user) {
             list($day, $time) = explode(' ', $user['signuptime']);
             echo '<li>' . $user['name'] . ' - <small>' . date('d.m.Y', strtotime($day)) . ' ' . $time . '</small> ' . "</li>\n";
         }

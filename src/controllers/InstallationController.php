@@ -29,7 +29,7 @@ class InstallationController
         'wakka_name' => 'yeswiki_name',
     ];
 
-    private const TABLE_NAMES = ['links', 'pages', 'referrers', 'triples', 'users'];
+    private const TABLE_NAMES = ['links', 'pages', 'referrers', 'triples'];
 
     /** A database backup at this location (instance-relative) can be restored instead of the default content. */
     public const BACKUP_SQL_FILE = 'private/backups/content.sql';
@@ -355,6 +355,24 @@ class InstallationController
             'email' => $this->adminEmail,
             'rootPage' => $this->config['root_page'],
             'url' => $this->config['base_url'],
+            // the admin account is seeded as a `pages` row (see UserManager) -- built as a
+            // single pre-encoded JSON value rather than interpolating {{WikiName}}/
+            // {{password}}/{{email}} into hand-assembled JSON in the twig template, so this
+            // one json_encode() call is the only place responsible for JSON-escaping (the
+            // template's own {{...}} substitution only does SQL-string escaping, not JSON)
+            'adminUserBody' => json_encode([
+                'email' => $this->adminEmail,
+                'motto' => '',
+                'revisioncount' => '20',
+                'changescount' => '50',
+                'doubleclickedit' => 'Y',
+                'signuptime' => date('Y-m-d H:i:s'),
+                'show_comments' => 'N',
+                'password' => md5($this->adminPassword),
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            // default_write_acl is '*' (everyone) -- without this override, anyone could
+            // edit the admin account's page; matches UserManager::persistNewUserPage()
+            'adminUserMetadata' => json_encode(['acls' => ['write' => "%\n@admins"]]),
         ];
 
         $this->dbLink->beginTransaction();

@@ -706,19 +706,30 @@ class PageManager
             $this->cacheOwner($page);
         }
 
-        // not possible to init the EntryManager or Guard in the constructor because of circular reference problem
+        // not possible to init the EntryManager, UserManager or Guard in the constructor
+        // because of circular reference problem
         $entryManager = $this->wiki->services->get(EntryManager::class);
+        $userManager = $this->wiki->services->get(UserManager::class);
         $guard = $this->wiki->services->get(Guard::class);
         $allEntriesTags = empty($tag) ? $entryManager->getAllEntriesTags()
             : ($entryManager->isEntry($tag) ? [$tag] : null);
-        if (empty($allEntriesTags)) {
+        $allUserTags = empty($tag) ? $userManager->getAllUserTags()
+            : ($userManager->isUserTag($tag) ? [$tag] : null);
+        if (empty($allEntriesTags) && empty($allUserTags)) {
             return $pages;
         }
-        $pages = array_map(function ($page) use ($guard, $allEntriesTags, $userNameForCheckingACL) {
-            return (isset($page['tag'])
-                && in_array($page['tag'], $allEntriesTags)
-            ) ? $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL)
-                : $page;
+        $pages = array_map(function ($page) use ($guard, $allEntriesTags, $allUserTags, $userNameForCheckingACL) {
+            if (!isset($page['tag'])) {
+                return $page;
+            }
+            if (!empty($allEntriesTags) && in_array($page['tag'], $allEntriesTags)) {
+                $page = $guard->checkAcls($page, $page['tag'], $userNameForCheckingACL);
+            }
+            if (!empty($allUserTags) && in_array($page['tag'], $allUserTags)) {
+                $page = $guard->checkUserAcls($page, $page['tag'], $userNameForCheckingACL);
+            }
+
+            return $page;
         }, $pages);
 
         return $pages;

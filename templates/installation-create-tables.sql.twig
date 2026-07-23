@@ -137,60 +137,24 @@ CREATE INDEX IF NOT EXISTS "{{prefix}}triples_idx_resource" ON "{{prefix}}triple
 CREATE INDEX IF NOT EXISTS "{{prefix}}triples_idx_property" ON "{{prefix}}triples" ("property");
 <% endif %>
 
-<# Table: users #>
-CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}users[[ q ]] (
-<% if driver == 'sqlite' %>
-  "name" TEXT NOT NULL PRIMARY KEY,
-  "password" TEXT NOT NULL,
-  "email" TEXT NOT NULL,
-  "motto" TEXT NOT NULL,
-  "revisioncount" INTEGER NOT NULL DEFAULT 20,
-  "changescount" INTEGER NOT NULL DEFAULT 50,
-  "doubleclickedit" TEXT NOT NULL DEFAULT 'Y' CHECK("doubleclickedit" IN ('Y', 'N')),
-  "signuptime" TEXT NOT NULL,
-  "show_comments" TEXT NOT NULL DEFAULT 'N' CHECK("show_comments" IN ('Y', 'N'))
-<% elseif driver == 'pgsql' %>
-  "name" VARCHAR(80) NOT NULL PRIMARY KEY,
-  "password" VARCHAR(256) NOT NULL,
-  "email" VARCHAR(191) NOT NULL,
-  "motto" TEXT NOT NULL,
-  "revisioncount" INTEGER NOT NULL DEFAULT 20,
-  "changescount" INTEGER NOT NULL DEFAULT 50,
-  "doubleclickedit" VARCHAR(1) NOT NULL DEFAULT 'Y' CHECK("doubleclickedit" IN ('Y', 'N')),
-  "signuptime" TIMESTAMP NOT NULL,
-  "show_comments" VARCHAR(1) NOT NULL DEFAULT 'N' CHECK("show_comments" IN ('Y', 'N'))
-<% else %>
-  `name` VARCHAR(80) NOT NULL,
-  `password` VARCHAR(256) NOT NULL,
-  `email` VARCHAR(191) NOT NULL,
-  `motto` TEXT NOT NULL,
-  `revisioncount` INT UNSIGNED NOT NULL DEFAULT 20,
-  `changescount` INT UNSIGNED NOT NULL DEFAULT 50,
-  `doubleclickedit` ENUM('Y','N') NOT NULL DEFAULT 'Y',
-  `signuptime` DATETIME NOT NULL,
-  `show_comments` ENUM('Y','N') NOT NULL DEFAULT 'N',
-  PRIMARY KEY (`name`),
-  KEY `idx_name` (`name`),
-  KEY `idx_signuptime` (`signuptime`)
-<% endif %>
-)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
-
-<% if driver != 'mysql' %>
-CREATE INDEX IF NOT EXISTS "{{prefix}}users_idx_name" ON "{{prefix}}users" ("name");
-CREATE INDEX IF NOT EXISTS "{{prefix}}users_idx_signuptime" ON "{{prefix}}users" ("signuptime");
-<% endif %>
-
-<# Insert admin group and user #>
+<# Insert admin group and user -- the admin account is a `pages` row typed via the #>
+<# TYPE_URI='user' triple (see UserManager), not a standalone `users` table row #>
 <% if driver == 'mysql' %>
 INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]id[[ q ]], [[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 (1, 'ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
-INSERT INTO [[ q ]]{{prefix}}users[[ q ]] ([[ q ]]name[[ q ]], [[ q ]]password[[ q ]], [[ q ]]email[[ q ]], [[ q ]]motto[[ q ]], [[ q ]]revisioncount[[ q ]], [[ q ]]changescount[[ q ]], [[ q ]]doubleclickedit[[ q ]], [[ q ]]signuptime[[ q ]], [[ q ]]show_comments[[ q ]]) VALUES
-('{{WikiName}}', '{{password}}', '{{email}}', '', 20, 50, 'Y', [[ now ]], 'N');
+INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]body_r[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]handler[[ q ]], [[ q ]]comment_on[[ q ]], [[ q ]]metadata[[ q ]]) VALUES
+('{{WikiName}}', [[ now ]], '{{adminUserBody}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '', '{{adminUserMetadata}}');
+
+INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
+('{{WikiName}}', 'http://outils-reseaux.org/_vocabulary/type', 'user');
 <% else %>
 INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
 ('ThisWikiGroup:admins', 'http://www.wikini.net/_vocabulary/acls', '{{WikiName}}');
 
-INSERT INTO [[ q ]]{{prefix}}users[[ q ]] ([[ q ]]name[[ q ]], [[ q ]]password[[ q ]], [[ q ]]email[[ q ]], [[ q ]]motto[[ q ]], [[ q ]]revisioncount[[ q ]], [[ q ]]changescount[[ q ]], [[ q ]]doubleclickedit[[ q ]], [[ q ]]signuptime[[ q ]], [[ q ]]show_comments[[ q ]]) VALUES
-('{{WikiName}}', '{{password}}', '{{email}}', '', 20, 50, 'Y', [[ now ]], 'N');
+INSERT INTO [[ q ]]{{prefix}}pages[[ q ]] ([[ q ]]tag[[ q ]], [[ q ]]time[[ q ]], [[ q ]]body[[ q ]], [[ q ]]body_r[[ q ]], [[ q ]]owner[[ q ]], [[ q ]]user[[ q ]], [[ q ]]latest[[ q ]], [[ q ]]handler[[ q ]], [[ q ]]comment_on[[ q ]], [[ q ]]metadata[[ q ]]) VALUES
+('{{WikiName}}', [[ now ]], '{{adminUserBody}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', '', '{{adminUserMetadata}}');
+
+INSERT INTO [[ q ]]{{prefix}}triples[[ q ]] ([[ q ]]resource[[ q ]], [[ q ]]property[[ q ]], [[ q ]]value[[ q ]]) VALUES
+('{{WikiName}}', 'http://outils-reseaux.org/_vocabulary/type', 'user');
 <% endif %>

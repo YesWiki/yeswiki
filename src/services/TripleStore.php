@@ -208,7 +208,11 @@ class TripleStore
         }
         $res = $re_prefix . $resource;
 
-        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . ' WHERE resource = "' . $this->dbService->escape($res) . '"';
+        // single-quoted literal, matching what DbService::escape() (PDO::quote()) actually
+        // guarantees -- SQLite's PDO driver never escapes '"', so wrapping the value in
+        // double quotes here let a resource containing '"' break out of the literal
+        // (found via UserManager::delete() on an account name containing '"', ticket 06)
+        $sql = 'DELETE FROM ' . $this->dbService->prefixTable('triples') . " WHERE resource = '" . $this->dbService->escape($res) . "'";
 
         // invalidate the caches
         if (isset($this->cacheByResource[$res])) {

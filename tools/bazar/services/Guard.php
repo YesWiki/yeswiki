@@ -112,6 +112,55 @@ class Guard
         return $page;
     }
 
+    // password: never surfaced via any generic page-read path (current view, history,
+    // diffs, exports), not even to the account's own owner or an admin -- no legitimate
+    // UI ever needs to display a raw hash back to anyone (password changes go through
+    // AuthController::setPassword(), not by reading the old hash). email and the account
+    // preference fields: hidden from everyone except the account owner and admins.
+    private const USER_ALWAYS_HIDDEN_FIELDS = ['password'];
+    private const USER_OWNER_OR_ADMIN_ONLY_FIELDS = ['email', 'revisioncount', 'changescount', 'doubleclickedit', 'show_comments'];
+
+    /**
+     * Redacts a users-type Content page's sensitive fields for display, the same way
+     * checkAcls() does for bazar entries -- and, like checkAcls(), applies uniformly
+     * whether $page is the current revision or a historical one, since both flow through
+     * this same call from PageManager::checkEntriesACL().
+     *
+     * @param array       $page
+     * @param string      $tag
+     * @param string|null $userNameForCheckingACL username used to check ACL, if empty uses the connected user
+     *
+     * @return array $page
+     */
+    public function checkUserAcls($page, $tag, ?string $userNameForCheckingACL = null)
+    {
+        if (empty($page['body'])) {
+            return $page;
+        }
+        $valeur = json_decode($page['body'], true);
+        if (!is_array($valeur)) {
+            return $page;
+        }
+
+        $fieldsToHide = self::USER_ALWAYS_HIDDEN_FIELDS;
+        if (!$this->wiki->UserIsAdmin($userNameForCheckingACL) && !$this->isPageOwner($page, $userNameForCheckingACL)) {
+            $fieldsToHide = array_merge($fieldsToHide, self::USER_OWNER_OR_ADMIN_ONLY_FIELDS);
+        }
+
+        $modified = false;
+        foreach ($fieldsToHide as $field) {
+            if (array_key_exists($field, $valeur) && $valeur[$field] !== '') {
+                $valeur[$field] = '';
+                $modified = true;
+            }
+        }
+        if ($modified) {
+            $page['body'] = json_encode($valeur);
+        }
+
+        return $page;
+    }
+
     protected function isPageOwner($page, ?string $userName = null): bool
     {
         if (!empty($userName)) {

@@ -109,11 +109,13 @@ class UserController extends YesWikiController
         if (!empty($this->userManager->getOneByEmail($newValues['email']))) {
             throw new \Exception(str_replace('{email}', $newValues['email'], _t('USERSETTINGS_EMAIL_ALREADY_USED')));
         }
-        if (!empty($this->userManager->create($newValues))) {
-            $user = $this->userManager->getOneByName($newValues['name']);
-            if (!empty($user)) {
-                return $user;
-            }
+        // create() returns the actually-created User -- not necessarily under
+        // $newValues['name'] if that name collided with an existing form/page/entry tag
+        // (suggestFreeTag(), ticket 04/06) rather than another user (which the check above
+        // already caught and threw for)
+        $user = $this->userManager->create($newValues);
+        if (!empty($user)) {
+            return $user;
         }
         throw new \Exception(_t('USER_CREATION_FAILED') . '.');
 

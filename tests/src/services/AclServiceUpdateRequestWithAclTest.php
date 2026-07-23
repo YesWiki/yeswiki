@@ -3,7 +3,6 @@
 namespace YesWiki\Test\Core\Service;
 
 use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -94,9 +93,10 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
             } else {
                 $_SESSION['user'] = $previousSessionUser;
             }
-            $wiki->services->get(DbService::class)->query(
-                'DELETE FROM ' . $wiki->config['table_prefix'] . "users WHERE email = '" . self::TEST_EMAIL . "'"
-            );
+            $createdUser = $userManager->getOneByEmail(self::TEST_EMAIL);
+            if ($createdUser) {
+                $userManager->delete($createdUser);
+            }
         }
     }
 }
