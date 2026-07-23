@@ -101,6 +101,42 @@ class PageManager
     }
 
     /**
+     * Returns whether $tag is already in use anywhere in the global Content tag namespace --
+     * type-agnostic by construction, since every Content type (pages, bazar entries today;
+     * forms and users once tickets 05/06 land) is a row in this same `pages` table, so a
+     * single check against the `tag` column covers all of them without needing to know which
+     * type currently holds it.
+     */
+    public function tagExists(string $tag): bool
+    {
+        return (bool)$this->dbService->loadSingle("SELECT 1 FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' LIMIT 1");
+    }
+
+    /**
+     * Resolves a tag-creation collision (ADR-0001): if $desiredTag is free, returns it
+     * unchanged; otherwise suggests the first numeric-suffixed alternative (JohnDoe ->
+     * JohnDoe2, JohnDoe3, ...) that's itself confirmed free at suggestion time, rather than
+     * failing with no path forward. Callers creating new Content (forms, users, ...) use this
+     * to pick a tag; it doesn't reserve anything or touch the database itself, so a caller
+     * still needs to actually create the row promptly to avoid a race with a concurrent
+     * request picking the same suggestion.
+     */
+    public function suggestFreeTag(string $desiredTag): string
+    {
+        if (!$this->tagExists($desiredTag)) {
+            return $desiredTag;
+        }
+
+        $suffix = 2;
+        do {
+            $candidate = $desiredTag . $suffix;
+            $suffix++;
+        } while ($this->tagExists($candidate));
+
+        return $candidate;
+    }
+
+    /**
      * Retrieves the cached version of a page.
      *
      * Notice that this method null or false, use
