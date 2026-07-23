@@ -29,7 +29,27 @@ class MigrateNatureToPages extends YesWikiMigration
                 // was already converted) -- don't duplicate
                 continue;
             }
+
+            // create() has no way to tell "a new form" apart from "an existing form being
+            // migrated" and always generates a fresh ActivityPub keypair when enabled --
+            // stash the real, previously published keypair (if any) and restore it
+            // afterwards, so an already-federating form doesn't silently lose its identity
+            $existingPrivateKey = $row['bn_activitypub_private_key'] ?? null;
+            $existingPublicKey = $row['bn_activitypub_public_key'] ?? null;
+
+            // `nature.bn_activitypub_enable` is an integer column: loadAll() (native
+            // prepared statements, no PDO::ATTR_STRINGIFY_FETCHES) returns it as a PHP int,
+            // but ActivityPubService::isEnabled() strictly compares === '1' -- every other
+            // caller of create()/isEnabled() already passes a string (POST data, or
+            // pageToFormArray()'s (string) cast), so this raw DB row is the one place that
+            // needs normalizing rather than loosening that check everywhere else
+            $row['bn_activitypub_enable'] = (string)($row['bn_activitypub_enable'] ?? '0');
+
             $formManager->create($row);
+
+            if (!empty($existingPrivateKey) && !empty($existingPublicKey)) {
+                $formManager->setActivitypubKeypair($row['bn_id_nature'], $existingPrivateKey, $existingPublicKey);
+            }
         }
     }
 }

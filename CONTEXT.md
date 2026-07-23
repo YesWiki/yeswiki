@@ -26,7 +26,8 @@ _Avoid_: Private field, restricted field (both used informally in existing bazar
 
 ## Decisions so far
 
-- Clean break for this rewrite: no in-place migration of existing installs' data during this effort. A migration script from the pre-ectoplasme schema is planned as separate, later work once the new shape has settled.
+- Clean break for this rewrite: no in-place migration of existing installs' data during this effort, with one exception (`nature`, see below). A migration script from the rest of the pre-ectoplasme schema is planned as separate, later work once the new shape has settled.
+- Exception: forms (`nature` → `pages`, ticket 05) ARE migrated in place, unlike e.g. `acls`. Forms are load-bearing user content that bazar entries depend on to render at all, not reconfigurable state like ACL rules — losing them silently breaks every existing entry, not just access control. The migration reuses the same code path a fresh form creation goes through, so it can't drift from ordinary behavior.
 - `tag` uniqueness is global across all Content types (not scoped per type, not namespaced by prefix). Collisions are avoided at creation time via a suggested-alternative-tag helper.
 - Metadata (including ACLs) is versioned along with Content: it rides in the same revisioned `pages` row rather than being mutated in place, so permission history is reconstructable and revertable like content.
 - Reverting Content to a prior revision is selective by default (content only); a full revert that also restores that revision's Metadata/ACLs is a separate, explicit action.

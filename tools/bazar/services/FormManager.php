@@ -440,6 +440,29 @@ class FormManager
         return $saved;
     }
 
+    /**
+     * Overwrites a form's stored ActivityPub keypair, keeping `enabled`/`username` as
+     * already set. Used by MigrateNatureToPages to restore a form's real, previously
+     * published keypair after create() -- which has no way to know a "new" form is actually
+     * an existing one being migrated, and so always generates a fresh keypair -- would
+     * otherwise silently rotate it out from under any already-federating form.
+     */
+    public function setActivitypubKeypair($formId, string $privateKey, string $publicKey): void
+    {
+        $tag = $this->resolveTag((string)$formId);
+        if ($tag === null) {
+            throw new \Exception("Cannot set ActivityPub keypair on form '$formId': no such form");
+        }
+
+        $page = $this->pageManager->getOne($tag, null, true, true);
+        $activitypub = $page['metadatas']['activitypub'] ?? [];
+        $activitypub['private_key'] = $privateKey;
+        $activitypub['public_key'] = $publicKey;
+        $this->pageManager->setMetadata($tag, ['activitypub' => $activitypub]);
+
+        unset($this->cachedForms[$formId], $this->cachedForms[$tag]);
+    }
+
     public function update($data)
     {
         if ($this->securityController->isWikiHibernated()) {

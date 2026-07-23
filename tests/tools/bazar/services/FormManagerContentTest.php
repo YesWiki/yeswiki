@@ -266,6 +266,78 @@ class FormManagerContentTest extends YesWikiTestCase
         }
     }
 
+    public function testSetActivitypubKeypairRestoresAPreviouslyPublishedKeyAfterCreate()
+    {
+        // regression test for MigrateNatureToPages: create() has no way to distinguish "a
+        // brand-new form" from "an existing, already-federating form being migrated" and
+        // always generates a fresh keypair when ActivityPub is enabled -- the migration
+        // must stash the real keypair and restore it via setActivitypubKeypair() afterwards,
+        // or an upgrading install silently breaks federation for that form (the actor URL
+        // still resolves, but the key behind it changes, so existing followers can no
+        // longer verify signed activity).
+        $wiki = $this->getWiki();
+        $formManager = $wiki->services->get(FormManager::class);
+        $entryManager = $wiki->services->get(EntryManager::class);
+
+        try {
+            $formManager->create([
+                'bn_id_nature' => self::FORM_ID,
+                'bn_label_nature' => 'FormManagerContentTest activitypub restore form',
+                'bn_template' => '',
+                'bn_condition' => '',
+                'bn_activitypub_enable' => '1',
+                'bn_activitypub_username' => 'preexisting',
+            ]);
+            $freshlyGeneratedKey = $formManager->getOne(self::FORM_ID)['bn_activitypub_private_key'];
+            $this->assertNotSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $freshlyGeneratedKey);
+
+            $formManager->setActivitypubKeypair(self::FORM_ID, 'PREVIOUSLY-PUBLISHED-PRIVATE-KEY', 'PREVIOUSLY-PUBLISHED-PUBLIC-KEY');
+
+            $form = $formManager->getOne(self::FORM_ID);
+            $this->assertSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $form['bn_activitypub_private_key']);
+            $this->assertSame('PREVIOUSLY-PUBLISHED-PUBLIC-KEY', $form['bn_activitypub_public_key']);
+            // enabled/username, set by create() and untouched by setActivitypubKeypair(), survive
+            $this->assertSame('1', $form['bn_activitypub_enable']);
+            $this->assertSame('preexisting', $form['bn_activitypub_username']);
+        } finally {
+            $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
+        }
+    }
+
+    public function testBazForFormsAndListsIdsNoLongerQueriesTheDroppedNatureTable()
+    {
+        // regression test: baz_forms_and_lists_ids() (tools/bazar/libs/bazar.fonct.php,
+        // used by FormController and aceditor's ActionsBuilderService) used to run raw SQL
+        // against the `nature` table directly, bypassing FormManager -- now dropped, that
+        // would throw. It must go through FormManager::getAll() like everything else.
+        $wiki = $this->getWiki();
+        $formManager = $wiki->services->get(FormManager::class);
+        $entryManager = $wiki->services->get(EntryManager::class);
+
+        // baz_forms_and_lists_ids() reads $GLOBALS['wiki'], only populated by the
+        // production HTTP bootstrap outside a real request -- see EntryManagerTest's
+        // docblock for the same pre-existing characteristic elsewhere in this tool
+        $GLOBALS['wiki'] = $wiki;
+
+        try {
+            $formManager->create([
+                'bn_id_nature' => self::FORM_ID,
+                'bn_label_nature' => 'FormManagerContentTest baz_forms_and_lists_ids form',
+                'bn_template' => '',
+                'bn_condition' => '',
+            ]);
+
+            $result = baz_forms_and_lists_ids();
+
+            $this->assertArrayHasKey('forms', $result);
+            $this->assertArrayHasKey('lists', $result);
+            $this->assertSame('FormManagerContentTest baz_forms_and_lists_ids form', $result['forms'][self::FORM_ID] ?? null);
+        } finally {
+            unset($GLOBALS['wiki']);
+            $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
+        }
+    }
+
     public function testDeleteRemovesTheFormAndItsEntries()
     {
         $wiki = $this->getWiki();
