@@ -1,0 +1,52 @@
+# YesWiki (ectoplasme rewrite)
+
+YesWiki is a wiki engine. The `ectoplasme` branch is its next MAJOR version: a standardization rewrite that folds most bundled `tools/` into core services/actions/handlers and unifies the data model around a single `pages` table.
+
+## Language
+
+**Content**:
+Anything stored as a row in the `pages` table: an ordinary wiki page, a form definition (formerly the `nature` table), or a user account (formerly the `users` table). Distinguished by a triple `(resource=tag, property=TripleStore::TYPE_URI, value=<type>)` in the `triples` table — the existing mechanism already used to mark bazar entries (`value='fiche_bazar'`, see `EntryManager::TRIPLES_ENTRY_ID`) and extended by [PR #1333](https://github.com/YesWiki/yeswiki/pull/1333) to mark forms; there is no `type` column on `pages` itself.
+_Avoid_: Page (when the type could be a form or user), record, entity, "type column" (it's a triple, not a column).
+
+**Tag**:
+The globally unique identifier of a piece of Content, regardless of its type. A wiki page, a form, and a user account all draw from the same tag namespace — creating a user named `JohnDoe` is only possible if no page or form already holds that tag. Helper functions resolve collisions by suggesting an alternative tag (e.g. `JohnDoe2`) rather than silently namespacing by type.
+_Avoid_: Slug, name, key.
+
+**Metadata**:
+A JSON column on each `pages` row holding structured, user-editable facts about that Content that aren't the body itself: ACLs (replacing the `acls` table), social media metadata, licensing, source URLs, themes, and similar. Versioned along with the row — reverting Content to a prior revision reverts its Metadata too. Absorbs and replaces the pre-existing, non-versioned `AdminContentController::METADATA_PROPERTY` triple (`http://outils-reseaux.org/_vocabulary/metadata`) that today holds at least a `theme` key — that older mechanism is retired, not kept alongside the new column.
+_Avoid_: ACLs (too narrow — ACLs are one key within Metadata, not the whole column), properties, attributes, the old `METADATA_PROPERTY` triple (retired).
+
+**`yw-*` core styles**:
+The minimalist CSS/JS design system shipped by core after Bootstrap is dropped, namespaced under a `yw-*` class prefix so it can't collide with whatever a theme brings in. Replaces per-theme Bootstrap dependence; existing themes (including `yeswiki-theme-bootstrap3`) are expected to be retired rather than ported, and new themes are CSS-framework-agnostic — free to use any framework or none, since core no longer imposes one. Its interactive behavior is built on **vanilla JS and htmx only** — no jQuery, no Bootstrap JS, no other JS framework, starting with this major release.
+_Avoid_: Bootstrap classes (retired from core), jQuery (retired from core), theme framework (themes have none imposed).
+
+**Field ACL**:
+A per-field (not per-page) read/write access-control list, using the same ACL syntax as page-level Metadata ACLs. Already implemented for bazar entry fields (`FIELD_READ_ACCESS`/`FIELD_WRITE_ACCESS` in `tools/bazar/fields/BazarField.php`, enforced by `canRead()`/`canEdit()`); this rewrite extends it to `users`-type Content, where it hides sensitive fields (e.g. the hashed password) that otherwise live in the same versioned `body` as everything else, rather than carving those fields into a separate non-versioned table.
+_Avoid_: Private field, restricted field (both used informally in existing bazar code/UI, but "Field ACL" is the precise mechanism name).
+
+## Decisions so far
+
+- Clean break for this rewrite: no in-place migration of existing installs' data during this effort. A migration script from the pre-ectoplasme schema is planned as separate, later work once the new shape has settled.
+- `tag` uniqueness is global across all Content types (not scoped per type, not namespaced by prefix). Collisions are avoided at creation time via a suggested-alternative-tag helper.
+- Metadata (including ACLs) is versioned along with Content: it rides in the same revisioned `pages` row rather than being mutated in place, so permission history is reconstructable and revertable like content.
+- Reverting Content to a prior revision is selective by default (content only); a full revert that also restores that revision's Metadata/ACLs is a separate, explicit action.
+- Sensitive `users`-type fields (password hash, tokens) are NOT carved into a separate table — they stay hashed in the same versioned `body` as everything else, protected by Field ACL. Field ACL enforcement applies uniformly to historical revisions, not just the latest.
+- Forms keep a stable identifier distinct from their (renameable) `tag`, matching [PR #1333](https://github.com/YesWiki/yeswiki/pull/1333)'s approach. Renaming a form cascades integrity updates to its entries and referencing page content; a former-tag alias may be kept as a triple so previously published sensitive URLs (e.g. ActivityPub actor URLs) keep resolving.
+- The pre-existing triples-based `METADATA_PROPERTY` mechanism (non-versioned page facts, e.g. `theme`) is retired in favor of the new versioned `pages.metadata` JSON column — no dual mechanism.
+- Extensions live in two places: a shared root `extensions/` (source-scoped, available to every farm instance, instances cannot write into it) and instance-local `custom/extensions/` (instance-scoped, per-instance-only plugins). Reuses the existing lookup precedence already implemented for `custom/tools/{ext}` vs `{sourceDir}/tools/{ext}` in `src/autoload.inc.php` — instance-local shadows shared-root, no new mechanism.
+- Which tools get absorbed into core has no fixed criterion — it's periodically re-evaluated with the user community. Confirmed for core (beyond aceditor, attach, bazar, contact, autoupdate, login, rss, security, syndication, tags, templates, toc): qrcode, webhooks, herse, accountactivationbyemail. `lang` and `progressbar` are removed outright, not moved to extensions.
+- Bootstrap is dropped from core in favor of a minimal `yw-*`-prefixed CSS/JS design system. Existing themes are expected to be retired, not ported (including `yeswiki-theme-bootstrap3`). New themes are CSS-framework-agnostic.
+- From this major release on, core JS is vanilla JS and htmx only — no jQuery, no other JS framework. Piloted first on the `tags` rewrite, then applied everywhere.
+- `attach` upload gets one consolidated API-route-backed path, retiring both the legacy page-handler and the vendored `qqFileUploader`. Download enforces the owning page's read ACL by default (a behavior change from today's unauthenticated-by-URL download); a per-file/per-field opt-out flag keeps public embedding possible.
+- `tags` gets a real `GET /api/tags` endpoint with pagination and search criteria, replacing "ship every tag in the wiki to every editor" with live search-as-you-type.
+- `contact` rewrite is scoped to moving mail-sending to an API route and consolidating through the `Mailer` service (today it bypasses `Mailer` via a bare `send_mail()` call). Today's complete absence of CSRF/spam protection is explicitly out of scope for this pass — deferred to a dedicated later security pass.
+- `aceditor` keeps the Ace editor library as-is; only its jQuery/Bootstrap wrapper and toolbar are replaced (vanilla JS/htmx, per the core-wide JS rule).
+- `tools/templates/` (theme/skin selector, bundled today with ~25 unrelated legacy layout actions including a rights-management action) is split during core absorption rather than moved as one unit: the actual theme/skin-selection logic becomes a core service; the grab-bag actions are triaged individually (delete dead code, fold misplaced ones like `GererDroitsAction` into the relevant absorption e.g. `login`/`security`).
+- `security` (today one `SecurityController` bundling hashcash edit-lock, comment spam/captcha, and wiki hibernation status — three unrelated concerns) is likewise split into separate core services during absorption, so the later dedicated security pass has clean seams to extend rather than untangling a bundle first.
+- `toc`'s client-side sticky/scroll-spy variant (`tocjs.php`, jQuery + Bootstrap's `.affix()`/`.scrollspy()` JS components, branches on Bootstrap 2 vs 3) is dropped entirely. Only the server-side, CommonMark-based static TOC (`toc.php`) becomes core.
+- `login`: all `users`-table access is routed exclusively through `UserManager` as part of this absorption — `tools/login/actions/listusers.php`'s raw SQL bypass is fixed now (found to be the only other direct-SQL access point besides `UserManager` itself), so `UserManager` is the single seam the later users→pages migration needs to touch.
+- `accountactivationbyemail` (becoming core): activation status/key move from standalone triples into the `users`-type page's body, protected by Field ACL — same treatment as password hash (ADR-0003). The token also gets an expiry, reusing the `key:issuedAt` + TTL + periodic-purge convention from `UserManager::purgeExpiredPasswordRecoveryKeys()` — **note: that method exists only on `doryphore-dev` (commit `e33edd3c2`, security advisory GHSA-x3xh-4hx3-rgm7 fix), not yet merged into `ectoplasme`; needs merging before this can be implemented.**
+- `autoupdate`: farm-wide core/tools/theme updates target the shared `YESWIKI_SOURCE_DIR` consistently, triggerable only from an admin-designated instance, not any instance (see ADR-0007).
+- `webhooks` (becoming core) stays scoped to comment and Bazar-entry events, as today — not expanded to fire on form or user-account changes despite those now being Content too.
+- `syndication`, `rss`, `qrcode`, `herse` move into core with no new decisions needed: `syndication`/`rss` raise no tensions beyond the already-decided stable form-ID (`syndication` uses `id_typeannonce`); `qrcode`'s Bootstrap modal falls under the existing Bootstrap/jQuery-removal rule and its Bazar-backed relation-badge storage is already clean; `herse` is a trivial HTTP Basic Auth gate with no DB/JS/routes.
+- Before any implementation starts: `doryphore-dev` is fully reconciled into `ectoplasme` (65 unmerged commits, 12+ security-advisory fixes — see ADR-0008), and every `tools/*/index.php` direct-access guard file is deleted outright (not just its debug tracing code stripped) — direct access to `tools/*` is no longer reachable now that requests funnel through the Symfony kernel/routing, so the guard itself is dead legacy protection.
