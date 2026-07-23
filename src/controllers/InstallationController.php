@@ -380,7 +380,9 @@ class InstallationController
     protected function importBackup(): void
     {
         $sql = file_get_contents(self::BACKUP_SQL_FILE);
-        preg_match('/`(.*)acls`/m', $sql, $matches);
+        // `pages`, unlike `acls` (dropped in ticket 03), exists in every schema version this
+        // backup file could have come from -- old or new
+        preg_match('/`(.*)pages`/m', $sql, $matches);
         $backupPrefix = $matches[1] ?? null;
         if ($backupPrefix === null) {
             throw new \Exception(_t('IMPORT_DB_BACKUP') . ' :<br />' . _t('NO_PREFIX_FOUND_IN_BACKUP_SQL'));

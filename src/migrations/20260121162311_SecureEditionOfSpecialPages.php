@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 
 class SecureEditionOfSpecialPages extends YesWikiMigration
@@ -16,12 +17,13 @@ class SecureEditionOfSpecialPages extends YesWikiMigration
     {
         // Ensure that every special page is only editable by admins. AclService::save() now
         // requires the target page to already exist (ACLs live in that page's own metadata
-        // column since ticket 03) -- skip any special page not created yet on this instance
-        // rather than failing the whole migration.
+        // column since ticket 03) -- check for that specific, expected condition rather than
+        // swallowing every possible failure, so a genuine bug in save() itself still surfaces.
+        $pageManager = $this->getService(PageManager::class);
+        $aclService = $this->getService(AclService::class);
         foreach ($this::SPECIAL_PAGES as $page) {
-            try {
-                $this->getService(AclService::class)->save($page, 'write', '@admins');
-            } catch (\Throwable $th) {
+            if ($pageManager->getOne($page, null, false, true)) {
+                $aclService->save($page, 'write', '@admins');
             }
         }
     }
