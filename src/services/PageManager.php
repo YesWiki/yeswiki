@@ -113,6 +113,14 @@ class PageManager
     }
 
     /**
+     * How many sequential numeric suffixes suggestFreeTag() tries (JohnDoe2, JohnDoe3, ...)
+     * before giving up on a "nice" suggestion and falling back to a random one. Bounds the
+     * number of serial existence-check queries a single call can make -- without this, a tag
+     * with many pre-existing sequential collisions (JohnDoe2..JohnDoeN) would cost N queries.
+     */
+    private const MAX_SEQUENTIAL_SUFFIX_ATTEMPTS = 100;
+
+    /**
      * Resolves a tag-creation collision (ADR-0001): if $desiredTag is free, returns it
      * unchanged; otherwise suggests the first numeric-suffixed alternative (JohnDoe ->
      * JohnDoe2, JohnDoe3, ...) that's itself confirmed free at suggestion time, rather than
@@ -127,10 +135,17 @@ class PageManager
             return $desiredTag;
         }
 
-        $suffix = 2;
-        do {
+        for ($suffix = 2; $suffix <= self::MAX_SEQUENTIAL_SUFFIX_ATTEMPTS + 1; $suffix++) {
             $candidate = $desiredTag . $suffix;
-            $suffix++;
+            if (!$this->tagExists($candidate)) {
+                return $candidate;
+            }
+        }
+
+        // pathological case: every sequential suffix up to the cap is already taken --
+        // fall back to a short random one instead of continuing to query forever
+        do {
+            $candidate = $desiredTag . '-' . substr(bin2hex(random_bytes(4)), 0, 6);
         } while ($this->tagExists($candidate));
 
         return $candidate;
