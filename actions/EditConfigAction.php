@@ -33,6 +33,8 @@ class EditConfigAction extends YesWikiAction
         'htmlPurifierActivated' => 'security',
         'htmlPurifierSafeIframeRegexp' => 'security',
         'allowed_methods_in_iframe' => 'security',
+        'signup_email_activation' => 'security',
+        'user_activation_key_length' => 'security',
 
         'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
         'mail_custom_message' => 'contact',

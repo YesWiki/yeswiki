@@ -40,6 +40,11 @@ class UsersTableAction extends YesWikiAction
 
         $isAdmin = $this->wiki->UserIsAdmin();
 
+        if ($isAdmin) {
+            // adds the activate/inactivate column (accountactivationbyemail, ticket 07)
+            $this->wiki->AddJavascriptFile('javascripts/users-table-addon.js');
+        }
+
         // manage POST actions
         $postActionMessages = $this->managePostActions($this->getRequest()->request->all(), $isAdmin);
 

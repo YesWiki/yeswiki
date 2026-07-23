@@ -17,6 +17,7 @@ use YesWiki\Core\Exception\InvalidGroupNameException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameDoesNotExistException;
+use YesWiki\Core\Service\AccountActivationService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\CommentService;
@@ -255,20 +256,48 @@ class ApiController extends YesWikiController
         $this->denyAccessUnlessAdmin();
 
         $users = $this->getService(UserManager::class)->getAll($userFields);
+        $accountActivationService = $this->getService(AccountActivationService::class);
 
         // UserManager::getAll gives array of User but user does not have jsonSerialize
         // so extract only what is needed from each User
-        $users = array_map(function ($user) use ($userFields) {
+        $users = array_map(function ($user) use ($userFields, $accountActivationService) {
             if (!is_array($user)) {
                 $user = $user->getArrayCopy();
             }
 
-            return array_filter($user, function ($k) use ($userFields) {
+            $filtered = array_filter($user, function ($k) use ($userFields) {
                 return in_array($k, $userFields);
             }, ARRAY_FILTER_USE_KEY);
+
+            // isAdmin/activatedStatus (accountactivationbyemail, absorbed into core, ticket
+            // 07) are read through AccountActivationService's own internal fetch, not from
+            // $user itself -- activation_status is Field-ACL-hidden on the generic body a
+            // page-read would otherwise return
+            $filtered['isAdmin'] = $this->wiki->UserIsAdmin($user['name']);
+            $filtered['activatedStatus'] = $accountActivationService->isActivated($user['name']);
+
+            return $filtered;
         }, $users);
 
         return new ApiResponse($users);
+    }
+
+    #[Route('/api/emailactivation/{userId}/activate', methods: ['POST'], options: ['acl' => ['@admins']])]
+    public function activateUser($userId)
+    {
+        $this->denyAccessUnlessAdmin();
+        $this->getService(AccountActivationService::class)->activate($userId, '', true);
+
+        return new ApiResponse(null);
+    }
+
+    #[Route('/api/emailactivation/{userId}/inactivate', methods: ['POST'], options: ['acl' => ['@admins']])]
+    public function inactivateUser($userId)
+    {
+        $this->denyAccessUnlessAdmin();
+        $this->getService(AccountActivationService::class)->inactivate($userId);
+
+        return new ApiResponse(null);
     }
 
     #[Route('api/groups/{group_name}/delete', methods: ['POST'], options: ['acl' => ['@admins']])]

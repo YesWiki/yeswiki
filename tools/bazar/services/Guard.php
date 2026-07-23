@@ -115,9 +115,13 @@ class Guard
     // password: never surfaced via any generic page-read path (current view, history,
     // diffs, exports), not even to the account's own owner or an admin -- no legitimate
     // UI ever needs to display a raw hash back to anyone (password changes go through
-    // AuthController::setPassword(), not by reading the old hash). email and the account
-    // preference fields: hidden from everyone except the account owner and admins.
-    private const USER_ALWAYS_HIDDEN_FIELDS = ['password'];
+    // AuthController::setPassword(), not by reading the old hash). activation_status/
+    // activation_key (ticket 07, accountactivationbyemail absorbed into core) get the same
+    // treatment -- AccountActivationService's own internal (ACL-bypassing) reads are how
+    // the admin users-table UI and the activation gate itself see the true values, the
+    // same pattern password already uses for auth. email and the account preference
+    // fields: hidden from everyone except the account owner and admins.
+    private const USER_ALWAYS_HIDDEN_FIELDS = ['password', 'activation_status', 'activation_key'];
     private const USER_OWNER_OR_ADMIN_ONLY_FIELDS = ['email', 'revisioncount', 'changescount', 'doubleclickedit', 'show_comments'];
 
     /**

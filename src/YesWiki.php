@@ -45,6 +45,7 @@ use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\InvalidGroupNameException;
 use YesWiki\Core\Exception\InvalidInputException;
+use YesWiki\Core\Service\AccountActivationService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\AssetsManager;
@@ -1209,6 +1210,8 @@ class Wiki
         $this->PurgePages();
         // purge expired password recovery keys
         $this->services->get(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
+        // purge expired account-activation keys
+        $this->services->get(AccountActivationService::class)->purgeExpiredActivationKeys();
     }
 
     /**

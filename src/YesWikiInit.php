@@ -217,6 +217,13 @@ class Init
             'default_write_acl' => '*',
             'default_read_acl' => '*',
             'default_comment_acl' => 'comments-closed',
+            // default false, unlike the pre-absorption accountactivationbyemail extension's
+            // own default of true (ticket 07): that default only ever affected wikis that
+            // explicitly installed the extension -- defaulting to true here would silently
+            // gate new signups on every wiki upgrading to this version, whether or not it
+            // ever used this feature before
+            'signup_email_activation' => false,
+            'user_activation_key_length' => 20,
             'comments_activated' => true,
             'comments_handler' => 'yeswiki',
             'preview_before_save' => false,

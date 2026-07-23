@@ -4,10 +4,14 @@ namespace YesWiki\Core\Controller;
 
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Tamtamchik\SimpleFlash\Flash;
+use Throwable;
 use YesWiki\Core\Entity\CookieData;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
+use YesWiki\Core\Exception\BadLoginException;
 use YesWiki\Core\Exception\BadUserConnectException;
+use YesWiki\Core\Service\AccountActivationService;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
@@ -45,6 +49,7 @@ class AuthController extends YesWikiController
     protected const DATE_FORMAT_IN_TOKEN = 'Ymd-H-i-s';
 
     private $limitations;
+    protected $accountActivationService;
     protected $params;
     protected $passwordHasherFactory;
     protected $securityController;
@@ -52,12 +57,14 @@ class AuthController extends YesWikiController
     private $loggedUserCache;
 
     public function __construct(
+        AccountActivationService $accountActivationService,
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
         SecurityController $securityController,
         UserManager $userManager,
         Wiki $wiki
     ) {
+        $this->accountActivationService = $accountActivationService;
         $this->params = $params;
         $this->passwordHasherFactory = $passwordHasherFactory;
         $this->userManager = $userManager;
@@ -161,6 +168,14 @@ class AuthController extends YesWikiController
                 // do not disconnect admin during update
                 $this->logout();
             }
+        } catch (BadLoginException $th) {
+            // login()'s activation gate rejected this session/cookie's own user (e.g. an
+            // admin inactivated the account after it was already logged in) -- this is
+            // connectUser()'s routine per-request re-hydration, not a login form
+            // submission, so there's no request context to surface the message to beyond
+            // a flash on the next render
+            Flash::error($th->getMessage());
+            $this->logout();
         }
     }
 
@@ -203,8 +218,33 @@ class AuthController extends YesWikiController
         return $startTime->getTimestamp() + ($remember ? 90 * 24 * 60 * 60 : 60 * 60);
     }
 
+    /**
+     * @throws BadLoginException if signup_email_activation is on and this user isn't
+     *                           activated yet (an activation email is (re-)sent as a
+     *                           side effect)
+     */
     public function login($user, $remember = 0)
     {
+        $userName = empty($user['name']) ? null : $user['name'];
+        if (
+            $userName !== null
+            // cheapest, most-likely-to-short-circuit check first: skip every other check
+            // (including $this->wiki->UserIsAdmin(), which needs a fully-bootstrapped Wiki)
+            // entirely when the feature is off, its default
+            && in_array($this->params->get('signup_email_activation'), [1, true, '1', 'true'], true)
+            && !$this->hasLoginExtensions()
+            && !$this->wiki->UserIsAdmin($userName)
+            && !$this->accountActivationService->isActivated($userName)
+            && (empty($GLOBALS['utilisateur_wikini']) || $GLOBALS['utilisateur_wikini'] != $userName)
+        ) {
+            try {
+                $this->accountActivationService->sendActivationLink($userName);
+            } catch (Throwable $th) {
+                throw new BadLoginException(_t('ACCOUNTACTIVATION_BY_EMAIL_WARNING', ['message' => _t('ACCOUNTACTIVATION_BY_EMAIL_MESSAGE_NOT_SENT')]));
+            }
+            throw new BadLoginException(_t('ACCOUNTACTIVATION_BY_EMAIL_WARNING', ['message' => _t('ACCOUNTACTIVATION_BY_EMAIL_MESSAGE_SENT')]));
+        }
+
         $previousUserName = $_SESSION['user']['name'] ?? null;
         if (isset($_SESSION['user']) && $_SESSION['user']['name'] != $user['name']) {
             $this->cleanSensitiveDataFromSession();
@@ -289,6 +329,17 @@ class AuthController extends YesWikiController
         $this->login($firstAdmin);
 
         return $firstAdmin;
+    }
+
+    /**
+     * External auth extensions (CAS/LDAP/SSO) handle their own identity verification --
+     * the email-activation gate in login() doesn't apply to accounts they authenticate.
+     */
+    private function hasLoginExtensions(): bool
+    {
+        return array_key_exists('logincas', $this->wiki->extensions)
+            || array_key_exists('loginldap', $this->wiki->extensions)
+            || array_key_exists('login-sso', $this->wiki->extensions);
     }
 
     private function updateSessionCookieExpires(int $expires)
