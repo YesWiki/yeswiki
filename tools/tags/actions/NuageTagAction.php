@@ -119,8 +119,12 @@ class NuageTagAction extends YesWikiAction
             return '';
         }
         $dbService = $this->getService(DbService::class);
+        // single-quoted, not double-quoted: DbService::escape() (PDO::quote()) only
+        // guarantees safety inside a single-quoted SQL literal (see
+        // AclService::updateRequestWithACL() and get_filtertags_parameters_recursive()
+        // for the same class of driver-dependent bug, fixed the same way)
         $escapedTags = array_map(function ($tag) use ($dbService) {
-            return '"' . $dbService->escape($tag) . '"';
+            return "'" . $dbService->escape($tag) . "'";
         }, $tags);
 
         return ' AND value IN (' . implode(',', $escapedTags) . ')';
