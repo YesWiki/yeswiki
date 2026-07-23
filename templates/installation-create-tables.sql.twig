@@ -6,14 +6,6 @@
 <% set q = driver == 'mysql' ? '`' : '"' %>
 <% set now = driver == 'sqlite' ? "datetime('now')" : 'NOW()' %>
 
-<# Table: acls #>
-CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}acls[[ q ]] (
-  [[ q ]]page_tag[[ q ]] <% if driver == 'sqlite' %>TEXT<% else %>VARCHAR(191)<% endif %> NOT NULL,
-  [[ q ]]privilege[[ q ]] <% if driver == 'sqlite' %>TEXT<% else %>VARCHAR(20)<% endif %> NOT NULL,
-  [[ q ]]list[[ q ]] TEXT NOT NULL,
-  PRIMARY KEY ([[ q ]]page_tag[[ q ]], [[ q ]]privilege[[ q ]])
-)<% if driver == 'mysql' %> CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB<% endif %>;
-
 <# Table: links #>
 CREATE TABLE IF NOT EXISTS [[ q ]]{{prefix}}links[[ q ]] (
 <% if driver == 'sqlite' %>

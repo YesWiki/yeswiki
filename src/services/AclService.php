@@ -71,10 +71,12 @@ class AclService
             $this->cache[$tag] = [];
         }
 
-        $res = $this->dbService->loadAll('SELECT * FROM' . $this->dbService->prefixTable('acls') . "WHERE page_tag = '" . $this->dbService->escape($tag) . "'");
-
-        foreach ($res as $acl) {
-            $this->cache[$tag][$acl['privilege']] = $acl;
+        foreach ($this->readMetadataAcls($tag) as $priv => $list) {
+            $this->cache[$tag][$priv] = [
+                'page_tag' => $tag,
+                'privilege' => $priv,
+                'list' => $list,
+            ];
         }
 
         if (isset($this->cache[$tag][$privilege])) {
@@ -105,11 +107,11 @@ class AclService
             $list = $acl['list'] . "\n" . $list;
         }
 
-        if ($acl) {
-            $this->dbService->query('UPDATE' . $this->dbService->prefixTable('acls') . "SET list = '" . $this->dbService->escape(trim(str_replace("\r", '', $list))) . "' WHERE page_tag = '" . $this->dbService->escape($tag) . "' AND privilege = '" . $this->dbService->escape($privilege) . "'");
-        } else {
-            $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('acls') . "(page_tag, privilege, list) VALUES ('" . $this->dbService->escape($tag) . "', '" . $this->dbService->escape($privilege) . "', '" . $this->dbService->escape(trim(str_replace("\r", '', $list))) . "')");
-        }
+        $list = trim(str_replace("\r", '', $list));
+
+        $acls = $this->readMetadataAcls($tag);
+        $acls[$privilege] = $list;
+        $this->writeMetadataAcls($tag, $acls);
 
         // Update the cache
         $this->cache[$tag][$privilege] = [
@@ -132,19 +134,87 @@ class AclService
             $privileges = [$privileges];
         }
 
-        // Add "'" at begin and end of each escaped privileges elements.
-        for ($i = 0; $i < count($privileges); $i++) {
-            $privileges[$i] = "'" . $this->dbService->escape($privileges[$i]) . "'";
+        // unlike save() (which can't set permissions on a page that doesn't exist),
+        // deleting ACL entries for an already-deleted/nonexistent page is a harmless no-op --
+        // a common pattern is deleting a page and then separately clearing its ACLs
+        if ($this->dbService->loadSingle("SELECT 1 FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1")) {
+            $acls = $this->readMetadataAcls($tag);
+            foreach ($privileges as $privilege) {
+                unset($acls[$privilege]);
+            }
+            $this->writeMetadataAcls($tag, $acls);
         }
-
-        // Construct a CSV string with privileges elements
-        $privileges = implode(',', $privileges);
-
-        $this->dbService->query('DELETE FROM' . $this->dbService->prefixTable('acls') . " WHERE page_tag = '" . $this->dbService->escape($tag) . "' AND privilege IN (" . $privileges . ')');
 
         if (isset($this->cache[$tag])) {
             unset($this->cache[$tag]);
         }
+    }
+
+    /**
+     * Reads the `acls` sub-object of a page's `metadata` column (`['read' => '...',
+     * 'write' => '...', 'comment' => '...']`, only the privileges that have an explicit,
+     * non-default value set).
+     */
+    private function readMetadataAcls(string $tag): array
+    {
+        $page = $this->dbService->loadSingle("SELECT metadata FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1");
+        if (empty($page['metadata'])) {
+            return [];
+        }
+
+        $metadata = json_decode($page['metadata'], true);
+
+        return $metadata['acls'] ?? [];
+    }
+
+    /**
+     * Writes the `acls` sub-object back into `metadata`, versioned the same way any other
+     * metadata change is (ADR-0002): marks the current revision non-latest and inserts a new
+     * one carrying `body`/`owner`/`comment_on` forward unchanged, alongside every other
+     * `metadata` key untouched.
+     *
+     * This duplicates the shape of PageManager::setMetadata() rather than calling it:
+     * PageManager already depends on AclService (to bootstrap default ACLs when a page is
+     * first created), so AclService depending back on PageManager would be circular. Keep
+     * this method's revisioning logic in sync with PageManager::setMetadata()'s if that one
+     * changes.
+     */
+    private function writeMetadataAcls(string $tag, array $acls): void
+    {
+        $current = $this->dbService->loadSingle("SELECT * FROM {$this->dbService->prefixTable('pages')} WHERE tag = '{$this->dbService->escape($tag)}' AND latest = 'Y' LIMIT 1");
+        if (!$current) {
+            throw new \Exception("Cannot set ACLs on '$tag': no such page");
+        }
+
+        $metadata = empty($current['metadata']) ? [] : (json_decode($current['metadata'], true) ?? []);
+        $previousAcls = $metadata['acls'] ?? [];
+        // drop empty-string/absent privileges instead of storing them explicitly, so
+        // readMetadataAcls() keeps returning [] for a page that never diverged from defaults
+        $acls = array_filter($acls, fn ($list) => $list !== null && $list !== '');
+        if ($acls === $previousAcls) {
+            return;
+        }
+        $metadata['acls'] = $acls;
+
+        $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET latest = 'N' WHERE tag = '" . $this->dbService->escape($tag) . "'");
+
+        $userCol = $this->dbService->quoteIdentifier('user');
+        $columns = ['tag', 'time', 'owner', $userCol, 'latest', 'body', 'body_r', 'metadata'];
+        $values = [
+            "'" . $this->dbService->escape($tag) . "'",
+            $this->dbService->now(),
+            "'" . $this->dbService->escape($current['owner']) . "'",
+            "'" . $this->dbService->escape($this->authController->getLoggedUserName()) . "'",
+            "'Y'",
+            "'" . $this->dbService->escape($current['body']) . "'",
+            "''",
+            "'" . $this->dbService->escape(json_encode($metadata)) . "'",
+        ];
+        if (!empty($current['comment_on'])) {
+            $columns[] = 'comment_on';
+            $values[] = "'" . $this->dbService->escape($current['comment_on']) . "'";
+        }
+        $this->dbService->query('INSERT INTO' . $this->dbService->prefixTable('pages') . '(' . implode(', ', $columns) . ') VALUES (' . implode(', ', $values) . ')');
     }
 
     /**
@@ -334,64 +404,55 @@ class AclService
             }
         }
 
-        // check default readacl
-        $newRequestStart = '';
-        $newRequestEnd = '';
+        // ACLs now live in metadata.acls, a column on the very `pages` row being filtered --
+        // no join/subquery against a separate table needed, unlike the old acls-table version
+        // this replaces. Every caller of this method selects FROM the (unaliased or
+        // consistently-aliased) pages table, so bare `metadata`/`owner` column references
+        // resolve the same way the pre-existing bare `tag`/`owner` references already did.
+        //
+        // Built as clearly-parenthesized, self-contained sub-expressions (rather than the old
+        // start/end string-accumulator, which relied on an implicit-subquery paren that this
+        // rewrite has no equivalent for) so the grouping is verifiable by inspection instead
+        // of by manually tracing open/close counts across the method.
+        $readAclExpr = $this->dbService->jsonExtract('metadata', '$.acls.read');
+
+        // "the page's read ACL, evaluated against $neededACL": at least one needed entry is
+        // explicitly granted, and none of them is explicitly denied (the '!' prefix)
+        $matchesNeededAcl = '(';
+        $addOr = false;
+        foreach ($neededACL as $acl) {
+            if ($addOr) {
+                $matchesNeededAcl .= ' OR ';
+            } else {
+                $addOr = true;
+            }
+            // single-quoted, not double-quoted: DbService::escape() (PDO::quote()) only
+            // guarantees safety inside a single-quoted SQL literal -- e.g. SQLite's PDO
+            // driver never touches '"' at all, so a double-quoted literal here would let
+            // a raw '"' in $acl break out of the string (see
+            // AclServiceUpdateRequestWithAclTest for the regression this guards against)
+            $matchesNeededAcl .= " {$readAclExpr} LIKE '%" . $this->dbService->escape($acl) . "%'";
+        }
+        $matchesNeededAcl .= ')';
+        foreach ($neededACL as $acl) {
+            $matchesNeededAcl .= " AND {$readAclExpr} NOT LIKE '%!" . $this->dbService->escape($acl) . "%'";
+        }
+
+        // has an explicit read ACL that matches, OR (if logged in) is the page's owner and
+        // the ACL contains the '%' (owner) marker
+        $hasExplicitMatchingAcl = "(({$readAclExpr} IS NOT NULL) AND {$matchesNeededAcl})";
+        if (!empty($user)) {
+            $ownerMatch = "(({$readAclExpr} LIKE '%\\%%' AND {$readAclExpr} NOT LIKE '%!\\%%')" .
+                " AND owner = '" . $this->dbService->escape($userName) . "')";
+            $hasExplicitMatchingAcl = "({$hasExplicitMatchingAcl} OR {$ownerMatch})";
+        }
+
         if ($this->check($this->params->has('default_read_acl') ? $this->params->get('default_read_acl') : '*')) {
-            // current user can display pages without read acl
-            $newRequestStart .= '(';
-            $newRequestEnd = ')' . $newRequestEnd;
-
-            $newRequestStart .= 'tag NOT IN (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
-            "WHERE privilege='read')";
-
-            $newRequestStart .= ' OR (';
-            $newRequestEnd = ')' . $newRequestEnd;
+            // current user can display pages without an explicit read acl too
+            $request = "(({$readAclExpr} IS NULL) OR {$hasExplicitMatchingAcl})";
+        } else {
+            $request = $hasExplicitMatchingAcl;
         }
-        // construct new request when acl
-        $newRequestStart .= 'tag in (SELECT DISTINCT page_tag FROM ' . $this->dbService->prefixTable('acls') .
-            "WHERE privilege='read'";
-        $newRequestEnd = ')' . $newRequestEnd;
-
-        // needed ACL
-        if (count($neededACL) > 0) {
-            $newRequestStart .= ' AND (';
-            if (!empty($user)) {
-                $newRequestStart .= '(';
-                $newRequestEnd = ')' . $newRequestEnd;
-            }
-
-            $addOr = false;
-            foreach ($neededACL as $acl) {
-                if ($addOr) {
-                    $newRequestStart .= ' OR ';
-                } else {
-                    $addOr = true;
-                }
-                // single-quoted, not double-quoted: DbService::escape() (PDO::quote()) only
-                // guarantees safety inside a single-quoted SQL literal -- e.g. SQLite's PDO
-                // driver never touches '"' at all, so a double-quoted literal here would let
-                // a raw '"' in $acl break out of the string (see
-                // AclServiceUpdateRequestWithAclTest for the regression this guards against)
-                $newRequestStart .= " list LIKE '%" . $this->dbService->escape($acl) . "%'";
-            }
-            $newRequestStart .= ')';
-            // not authorized ACL
-            foreach ($neededACL as $acl) {
-                $newRequestStart .= ' AND ';
-                $newRequestStart .= " list NOT LIKE '%!" . $this->dbService->escape($acl) . "%'";
-            }
-
-            // add detection of '%'
-            if (!empty($user)) {
-                $newRequestStart .= ') OR (';
-
-                $newRequestStart .= '(list LIKE "%\\%%" AND list NOT LIKE "%!\\%%")';
-                $newRequestStart .= " AND owner = '" . $this->dbService->escape($userName) . "'";
-            }
-        }
-
-        $request = $newRequestStart . $newRequestEnd;
 
         // return request to append
         return $request;

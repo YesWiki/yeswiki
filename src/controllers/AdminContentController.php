@@ -48,7 +48,6 @@ class AdminContentController extends YesWikiController
         $dirSql = $dir === 'desc' ? 'DESC' : 'ASC';
 
         $pT = $dbService->prefixTable('pages');
-        $aT = $dbService->prefixTable('acls');
         $trT = $dbService->prefixTable('triples');
         $tagProp = self::TAG_PROPERTY;
         $typeProp = self::TYPE_PROPERTY;
@@ -63,9 +62,6 @@ class AdminContentController extends YesWikiController
                 p.comment_on,
                 p.user AS last_editor,
                 p.metadata AS page_metadata,
-                a_r.list AS acl_read,
-                a_w.list AS acl_write,
-                a_c.list AS acl_comment,
                 tp.value AS page_type,
                 MIN(CASE
                     WHEN tp.value = 'fiche_bazar' THEN
@@ -74,13 +70,10 @@ class AdminContentController extends YesWikiController
                 END) AS form_id,
                 {$tagsAggExpr} AS page_tags
             FROM {$pT} p
-            LEFT JOIN {$aT} a_r ON a_r.page_tag = p.tag AND a_r.privilege = 'read'
-            LEFT JOIN {$aT} a_w ON a_w.page_tag = p.tag AND a_w.privilege = 'write'
-            LEFT JOIN {$aT} a_c ON a_c.page_tag = p.tag AND a_c.privilege = 'comment'
             LEFT JOIN {$trT} tg ON tg.resource = p.tag AND tg.property = '{$tagProp}'
             LEFT JOIN {$trT} tp ON tp.resource = p.tag AND tp.property = '{$typeProp}'
             WHERE {$whereClause}
-            GROUP BY p.tag, p.time, p.owner, p.comment_on, p.user, p.metadata, a_r.list, a_w.list, a_c.list, tp.value
+            GROUP BY p.tag, p.time, p.owner, p.comment_on, p.user, p.metadata, tp.value
             {$having}
             ORDER BY {$sortCol} {$dirSql}
             LIMIT {$perpage} OFFSET {$offset}
@@ -88,13 +81,12 @@ class AdminContentController extends YesWikiController
 
         $rows = $dbService->loadAll($sql) ?? [];
 
-        // Count query – includes ACL joins so aclFilter conditions work
+        // ACLs are part of p.metadata now (no separate acls table to join), so the count
+        // query no longer needs anything beyond the shared $whereClause (which itself
+        // queries p.metadata directly for aclFilter, via buildAclFilterCondition())
         $countSql = <<<SQL
             SELECT COUNT(DISTINCT p.tag) AS total
             FROM {$pT} p
-            LEFT JOIN {$aT} a_r ON a_r.page_tag = p.tag AND a_r.privilege = 'read'
-            LEFT JOIN {$aT} a_w ON a_w.page_tag = p.tag AND a_w.privilege = 'write'
-            LEFT JOIN {$aT} a_c ON a_c.page_tag = p.tag AND a_c.privilege = 'comment'
             WHERE {$whereClause}
         SQL;
         $total = (int)($dbService->loadSingle($countSql)['total'] ?? 0);
@@ -107,14 +99,15 @@ class AdminContentController extends YesWikiController
 
         $pages = array_map(function ($r) use ($defaultRead, $defaultWrite, $defaultComment) {
             $metadata = !empty($r['page_metadata']) ? (json_decode($r['page_metadata'], true) ?? []) : [];
+            $acls = $metadata['acls'] ?? [];
             return [
                 'tag' => $r['tag'],
                 'time' => $r['time'],
                 'owner' => $r['owner'] ?? '',
                 'last_editor' => $r['last_editor'] ?? '',
-                'acl_read' => $r['acl_read'] ?? $defaultRead,
-                'acl_write' => $r['acl_write'] ?? $defaultWrite,
-                'acl_comment' => $r['acl_comment'] ?? $defaultComment,
+                'acl_read' => $acls['read'] ?? $defaultRead,
+                'acl_write' => $acls['write'] ?? $defaultWrite,
+                'acl_comment' => $acls['comment'] ?? $defaultComment,
                 'comment_on' => $r['comment_on'] ?? '',
                 'page_type' => $r['page_type'] ?? '',
                 'form_id' => $r['form_id'] ?? '',
@@ -426,11 +419,11 @@ class AdminContentController extends YesWikiController
             return null;
         }
         [$privilege, $value] = $parts;
-        $aclCols = ['read' => 'a_r.list', 'write' => 'a_w.list', 'comment' => 'a_c.list'];
-        if (!isset($aclCols[$privilege])) {
+        if (!in_array($privilege, ['read', 'write', 'comment'], true)) {
             return null;
         }
-        $col = $aclCols[$privilege];
+        // ACLs live in p.metadata now, not a joined acls table
+        $col = $db->jsonExtract('p.metadata', '$.acls.' . $privilege);
         // Escape REGEXP metacharacters, then escape for SQL
         $regexpEscaped = $db->escape(preg_replace('/([.+*?\\[\\]^$(){}|\\\\])/', '\\\\$1', $value));
         $regexpOperator = $db->regexpOperator();

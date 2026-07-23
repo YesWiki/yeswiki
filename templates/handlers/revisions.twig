@@ -46,6 +46,10 @@
             :class="{ disabled: isLastRevision }"
             v-text="isLastRevision ? '{{ _t('CURRENT_VERSION') }}' : '{{ _t('RESTORE_REVISION') }}'">
         </a>
+        <a v-if="!isLastRevision" :href="fullRestoreUrl" class="btn btn-link btn-restore-full"
+           title="{{ _t('RESTORE_REVISION_FULL') }}"
+           v-text="'{{ _t('RESTORE_REVISION_FULL') }}'">
+        </a>
       </div>
       <i class="fa fa-chevron-right fa-4x" @click="moveRevision(false)" :disabled="isLastRevision || null"></i>
     </div>

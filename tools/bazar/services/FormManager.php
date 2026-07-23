@@ -385,12 +385,8 @@ class FormManager
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $this->dbService->query(
-            'DELETE FROM' . $this->dbService->prefixTable('acls') .
-                'WHERE page_tag IN (SELECT tag FROM ' . $this->dbService->prefixTable('pages') .
-                'WHERE tag IN (SELECT resource FROM ' . $this->dbService->prefixTable('triples') .
-                "WHERE property='http://outils-reseaux.org/_vocabulary/type' AND value='fiche_bazar') AND body LIKE '%\"id_typeannonce\":\"" . $this->dbService->escape($id) . "\"%\' );"
-        );
+        // ACLs live in the pages row's own metadata column now, not a separate acls table --
+        // deleting the rows below already removes them, no separate ACL delete needed
 
         // TODO use PageManager
         $this->dbService->query(

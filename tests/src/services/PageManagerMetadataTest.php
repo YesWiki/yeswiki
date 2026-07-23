@@ -89,15 +89,20 @@ class PageManagerMetadataTest extends YesWikiTestCase
         }
     }
 
-    public function testGetMetadataReturnsNullWhenNoneSet()
+    public function testGetMetadataHasNoExtraKeysBeyondDefaultAclsWhenNoneExplicitlySet()
     {
+        // note: as of ticket 03, a freshly-saved page's metadata is no longer null -- ACLs
+        // (default or otherwise) are always present, since PageManager::save() bootstraps
+        // them into metadata immediately for a brand-new page (see AclService)
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
             $pageManager->save(self::TAG, 'body', '', true);
 
-            $this->assertNull($pageManager->getMetadata(self::TAG));
+            $metadata = $pageManager->getMetadata(self::TAG);
+
+            $this->assertSame(['acls'], array_keys($metadata ?? []));
         } finally {
             $pageManager->deleteOrphaned(self::TAG);
         }

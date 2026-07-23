@@ -41,20 +41,18 @@ class GererDroitsAction extends YesWikiAction
         // récupération de tous les formulaires
         $forms = $this->getService(FormManager::class)->getAll();
 
-        // récupération de la liste des pages
+        // récupération de la liste des pages (ACLs live in the pages row's own metadata
+        // column, not a separate acls table -- no join/subquery needed, just extract each
+        // privilege straight out of this same row)
         $pagesTableName = trim($this->dbService->prefixTable('pages'));
-        $aclsTableName = trim($this->dbService->prefixTable('acls'));
+        $aclReadExpr = $this->dbService->jsonExtract("$pagesTableName.metadata", '$.acls.read');
+        $aclWriteExpr = $this->dbService->jsonExtract("$pagesTableName.metadata", '$.acls.write');
+        $aclCommentExpr = $this->dbService->jsonExtract("$pagesTableName.metadata", '$.acls.comment');
         $liste_pages = $this->wiki->Query(<<<SQL
     SELECT tag,
-    (SELECT list
-     FROM $aclsTableName
-     WHERE privilege ='read' AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_read,
-    (SELECT list
-     FROM $aclsTableName
-     WHERE privilege ='write' AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_write,
-    (SELECT list
-     FROM $aclsTableName
-     WHERE privilege ='comment' AND $pagesTableName.tag=$aclsTableName.page_tag) AS acl_comment
+    $aclReadExpr AS acl_read,
+    $aclWriteExpr AS acl_write,
+    $aclCommentExpr AS acl_comment
     FROM $pagesTableName
         WHERE latest='Y' $search
             ORDER BY $pagesTableName.tag ASC

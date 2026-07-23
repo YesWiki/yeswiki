@@ -158,6 +158,44 @@ class PageManager
         return $page;
     }
 
+    /**
+     * Revert a page to a prior revision (identified by its `id`, not `time` -- `time` has
+     * only second-granularity and isn't guaranteed unique across revisions).
+     *
+     * Selective by default (ADR-0002): restores `body` only, leaving the current revision's
+     * `metadata` (ACLs, theme, ...) untouched, so restoring old wording can't silently reopen
+     * access that was deliberately tightened since. Pass $fullRevert=true for the separate,
+     * explicit action that also restores that revision's exact metadata.
+     */
+    public function revertToRevision($tag, $revisionId, bool $fullRevert = false): int
+    {
+        $target = $this->getById($revisionId);
+        if (!$target || $target['tag'] !== $tag) {
+            throw new \Exception("Revision '$revisionId' does not belong to page '$tag'");
+        }
+
+        $result = $this->save($tag, $target['body'], $target['comment_on'] ?? '');
+
+        if ($fullRevert) {
+            $this->replaceMetadata($tag, $target['metadatas']);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Overwrites the *current* latest revision's metadata in place (no new revision, no
+     * merge) -- only meaningful as the second half of revertToRevision()'s full-revert case,
+     * completing that one logical action on the row save() just created a moment ago.
+     * Not a general-purpose replacement for setMetadata(), which merges and versions.
+     */
+    private function replaceMetadata($tag, ?array $metadata): void
+    {
+        $encoded = empty($metadata) ? 'NULL' : "'" . $this->dbService->escape($this->encodeMetadata($metadata)) . "'";
+        $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET metadata = {$encoded} WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'");
+        unset($this->pageCache[$tag]);
+    }
+
     public function getRevisions($pageTag, $limit = 10000)
     {
         $userCol = $this->dbService->quoteIdentifier('user');
@@ -302,9 +340,10 @@ class PageManager
         // regression this caused: a page recreated with the same tag right after deletion
         // returns the deleted page's data from cache instead of the fresh one)
         unset($this->pageCache[$tag]);
+        // ACLs live in the pages row's own metadata column now, not a separate acls table --
+        // deleting the row (below) already removes them, no separate ACL delete needed
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('pages')} WHERE tag='{$this->dbService->escape($tag)}' OR comment_on='{$this->dbService->escape($tag)}'");
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('links')} WHERE from_tag='{$this->dbService->escape($tag)}' ");
-        $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('acls')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tripleStore->deleteAll($tag, '');
         $this->dbService->query("DELETE FROM {$this->dbService->prefixTable('referrers')} WHERE page_tag='{$this->dbService->escape($tag)}' ");
         $this->tagsManager->deleteAll($tag);
@@ -346,20 +385,24 @@ class PageManager
 
         if ($rights) {
             // is page new?
+            $initialMetadata = null;
             if (!$oldPage = $this->getOne($tag)) {
-                // LoadACL (if defined by acls)
+                // Compute default ACLs (ACLs now live in metadata, a column on the `pages`
+                // row itself -- which doesn't exist yet for a brand-new page, so this can't
+                // go through AclService::save() the way an edit to an existing page's ACLs
+                // does; AclService::load() is read-only and has no such ordering problem, so
+                // it's still used for that half). Built directly into the first INSERT below.
                 $defaultWrite = $this->aclService->load($tag, 'write', true)['list'];
                 $defaultRead = $this->aclService->load($tag, 'read', true)['list'];
                 $defaultComment = $this->aclService->load($tag, 'comment', true)['list'];
 
-                // create default write acl. store empty write ACL for comments.
-                $this->aclService->save($tag, 'write', $comment_on ? $user : $defaultWrite);
-
-                // create default read acl
-                $this->aclService->save($tag, 'read', $defaultRead);
-
-                // create default comment acl.
-                $this->aclService->save($tag, 'comment', $comment_on ? '' : $defaultComment);
+                $initialMetadata = ['acls' => [
+                    // empty write ACL for comments: only the comment's author, via `owner`
+                    // below, per the pre-existing comment-ACL convention
+                    'write' => $comment_on ? $user : $defaultWrite,
+                    'read' => $defaultRead,
+                    'comment' => $comment_on ? '' : $defaultComment,
+                ]];
 
                 // current user is owner; if user is logged in! otherwise, no owner.
                 if ($this->authController->getLoggedUser()) {
@@ -403,8 +446,11 @@ class PageManager
                 "'" . $this->dbService->escape(chop($body)) . "'",
                 "''",
                 // metadata (ACLs, theme, ...) isn't part of this edit -- carry the previous
-                // revision's value forward unchanged, same as owner/comment_on above
-                empty($oldPage['metadata']) ? 'NULL' : "'" . $this->dbService->escape($oldPage['metadata']) . "'",
+                // revision's value forward unchanged, same as owner/comment_on above (or the
+                // freshly-computed default ACLs for a brand-new page, see above)
+                $initialMetadata !== null
+                    ? "'" . $this->dbService->escape($this->encodeMetadata($initialMetadata)) . "'"
+                    : (empty($oldPage['metadata']) ? 'NULL' : "'" . $this->dbService->escape($oldPage['metadata']) . "'"),
             ];
             if ($comment_on) {
                 $columns[] = 'comment_on';

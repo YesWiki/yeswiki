@@ -19,11 +19,12 @@ class RevisionsHandler extends YesWikiHandler
 
         if ($this->getRequest()->get('restoreRevisionId')) {
             if ($aclService->hasAccess('write')) {
-                $page = $pageManager->getById($this->getRequest()->get('restoreRevisionId'));
-                $pageManager->save($page['tag'], $page['body'], empty($page['comment_on']) ? '' : $page['comment_on']);
+                $tag = $this->wiki->GetPageTag();
+                $fullRevert = (bool)$this->getRequest()->get('fullRevert');
+                $pageManager->revertToRevision($tag, $this->getRequest()->get('restoreRevisionId'), $fullRevert);
                 // save links
-                $linkTracker->registerLinks($pageManager->getOne($page['tag']));
-                Flash::success(_t('SUCCESS_RESTORE_REVISION'));
+                $linkTracker->registerLinks($pageManager->getOne($tag));
+                Flash::success(_t($fullRevert ? 'SUCCESS_RESTORE_REVISION_FULL' : 'SUCCESS_RESTORE_REVISION'));
             } else {
                 Flash::error(_t('DENY_WRITE'));
             }
