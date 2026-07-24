@@ -120,6 +120,38 @@ class TagsManager
         ];
     }
 
+    /**
+     * Every (id, value, resource) tag triple in the wiki, for the admin tag-management
+     * page (AdminTagAction) -- unlike getAll()/search(), this exposes the triple id,
+     * needed to target individual rows for deleteByIds().
+     */
+    public function getAllTriples(): array
+    {
+        return $this->dbService->loadAll(
+            'SELECT id, value, resource FROM ' . $this->dbService->prefixTable('triples')
+            . " WHERE property='" . self::TAG_PROPERTY . "' ORDER BY value ASC, resource ASC"
+        );
+    }
+
+    /**
+     * Deletes specific tag triples by id (AdminTagAction's bulk "delete from all pages").
+     * $ids is cast to int individually -- triples.id is always numeric, so this is both
+     * simpler and safer than escaping a comma-joined string as a single SQL literal
+     * (which is what silently broke multi-id deletes before this method existed: `id IN
+     * ('3,5,7')` never matches more than one row).
+     */
+    public function deleteByIds(array $ids): void
+    {
+        $ids = array_filter(array_map('intval', $ids));
+        if (empty($ids)) {
+            return;
+        }
+        $this->dbService->query(
+            'DELETE FROM ' . $this->dbService->prefixTable('triples')
+            . " WHERE property='" . self::TAG_PROPERTY . "' AND id IN (" . implode(',', $ids) . ')'
+        );
+    }
+
     public function getPagesByTags($tags = '', $type = '', $nb = '', $tri = '')
     {
         if (!empty($tags)) {
