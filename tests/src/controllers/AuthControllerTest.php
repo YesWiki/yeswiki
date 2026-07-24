@@ -8,9 +8,9 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Service\AccountActivationService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -170,9 +170,9 @@ class AuthControllerTest extends YesWikiTestCase
         };
         $authController = new AuthController(
             $wiki->services->get(AccountActivationService::class),
+            $wiki->services->get(HibernationService::class),
             $wiki->services->get(ParameterBagInterface::class),
             $wiki->services->get(PasswordHasherFactory::class),
-            $wiki->services->get(SecurityController::class),
             $userManager,
             $nonCliWiki
         );
@@ -293,9 +293,9 @@ class AuthControllerTest extends YesWikiTestCase
 
         $authController = new AuthController(
             $accountActivationService,
+            $wiki->services->get(HibernationService::class),
             $forcedParams,
             $wiki->services->get(PasswordHasherFactory::class),
-            $wiki->services->get(SecurityController::class),
             $userManager,
             $wiki
         );

@@ -2,12 +2,11 @@
 
 namespace YesWiki\Core\Service;
 
-use YesWiki\Security\Controller\SecurityController;
 
 class TripleStore
 {
     protected $dbService;
-    protected $securityController;
+    protected $hibernationService;
 
     protected $cacheByResource;
     protected array $matchingCache = [];
@@ -15,10 +14,10 @@ class TripleStore
     public const TYPE_URI = 'http://outils-reseaux.org/_vocabulary/type';
     public const SOURCE_URL_URI = 'http://outils-reseaux.org/_vocabulary/sourceUrl';
 
-    public function __construct(DbService $dbService, SecurityController $securityController)
+    public function __construct(DbService $dbService, HibernationService $hibernationService)
     {
         $this->dbService = $dbService;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->cacheByResource = [];
     }
 
@@ -203,7 +202,7 @@ class TripleStore
      */
     public function deleteAll($resource, $re_prefix = THISWIKI_PREFIX): bool
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $res = $re_prefix . $resource;
@@ -241,7 +240,7 @@ class TripleStore
      */
     public function create($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $res = $re_prefix . $resource;
@@ -283,7 +282,7 @@ class TripleStore
      */
     public function update($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $res = $re_prefix . $resource;
@@ -327,7 +326,7 @@ class TripleStore
      */
     public function delete($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX, $extraSQL = null): bool
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $res = $re_prefix . $resource;

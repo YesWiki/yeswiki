@@ -4,9 +4,9 @@
 
 use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\LinkTracker;
-use YesWiki\Security\Controller\SecurityController;
 
 if (!class_exists('attach')) {
     class attach

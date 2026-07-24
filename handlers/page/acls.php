@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\HibernationService;
 
 ob_start();
 ?>
@@ -37,7 +37,7 @@ ob_start();
         <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_READ'); ?> : </label>
         <div class="controls col-sm-9">
           <textarea class="form-control" name="read_acl" rows="3" cols="20"
-            <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+            <?php if ($this->services->get(HibernationService::class)->isWikiHibernated()) {
                 echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
             } ?>><?php echo $readACL['list']; ?></textarea>
         </div>
@@ -46,7 +46,7 @@ ob_start();
         <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_WRITE'); ?> : </label>
         <div class="controls col-sm-9">
           <textarea class="form-control" name="write_acl" rows="3" cols="20"
-            <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+            <?php if ($this->services->get(HibernationService::class)->isWikiHibernated()) {
                 echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
             } ?>><?php echo $writeACL['list']; ?></textarea>
         </div>
@@ -60,7 +60,7 @@ ob_start();
         <label class="control-label col-sm-3"><?php echo _t('YW_CHANGE_OWNER'); ?> : </label>
         <div class="controls col-sm-9">
           <select class="form-control" name="newowner"
-            <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+            <?php if ($this->services->get(HibernationService::class)->isWikiHibernated()) {
                 echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
             } ?>>
             <option value=""><?php echo _t('YW_CHANGE_NOTHING'); ?></option><!-- Don't change-->
@@ -78,7 +78,7 @@ ob_start();
       <div class="form-actions form-group">
         <div class="col-sm-9 col-sm-offset-3">
           <input type="submit" value="<?php echo _t('SAVE'); ?>" class="btn btn-primary" accesskey="s"
-            <?php if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+            <?php if ($this->services->get(HibernationService::class)->isWikiHibernated()) {
                 echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
             } ?> /><!-- Store ACLs-->
           <input type="button" value="<?php echo _t('YW_CANCEL'); ?>" onclick="if(history.length>1){history.back();}else{location.href='<?php echo $this->Href(); ?>';}" class="btn btn-default btn-xs" /><!-- Cancel -->

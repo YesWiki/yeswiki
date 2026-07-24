@@ -7,7 +7,6 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Exception\TemplateNotFound;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class TemplateEngine
@@ -184,7 +183,7 @@ class TemplateEngine
             $basePath = $this->wiki->getBaseUrl() . '/';
             $attach = new \attach($this->wiki);
             $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
-            $safeRefresh = !$this->wiki->services->get(SecurityController::class)->isWikiHibernated()
+            $safeRefresh = !$this->wiki->services->get(HibernationService::class)->isWikiHibernated()
                 && file_exists($image_dest)
                 && filter_var($options['refresh'], FILTER_VALIDATE_BOOL)
                 && $this->wiki->UserIsAdmin();

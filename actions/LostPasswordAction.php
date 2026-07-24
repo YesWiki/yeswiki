@@ -1,12 +1,13 @@
 <?php
 
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 
 class LostPasswordAction extends YesWikiAction
 {
@@ -14,6 +15,7 @@ class LostPasswordAction extends YesWikiAction
     protected $errorType;
     protected $typeOfRendering;
     protected $securityController;
+    protected $hibernationService;
     protected $tripleStore;
     protected $userManager;
 
@@ -22,6 +24,7 @@ class LostPasswordAction extends YesWikiAction
         // get services
         $this->authController = $this->getService(AuthController::class);
         $this->securityController = $this->getService(SecurityController::class);
+        $this->hibernationService = $this->getService(HibernationService::class);
         $this->tripleStore = $this->getService(TripleStore::class);
         $this->userManager = $this->getService(UserManager::class);
 
@@ -185,7 +188,7 @@ class LostPasswordAction extends YesWikiAction
      */
     private function resetPassword(string $userName, string $key, string $password)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if ($this->checkEmailKey($key, $userName) === false) { // The password recovery key does not match

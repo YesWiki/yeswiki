@@ -3,14 +3,13 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class LinkTracker
 {
     protected $wiki;
     protected $dbService;
-    protected $securityController;
+    protected $hibernationService;
     protected $pageManager;
     protected $userManager;
     protected $params;
@@ -18,14 +17,14 @@ class LinkTracker
     public $enabled;
     public $links;
 
-    public function __construct(Wiki $wiki, DbService $dbService, PageManager $pageManager, UserManager $userManager, ParameterBagInterface $params, SecurityController $securityController)
+    public function __construct(Wiki $wiki, DbService $dbService, PageManager $pageManager, UserManager $userManager, ParameterBagInterface $params, HibernationService $hibernationService)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->pageManager = $pageManager;
         $this->userManager = $userManager;
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
 
         $this->enabled = false;
         $this->links = [];
@@ -77,7 +76,7 @@ class LinkTracker
 
     public function persist()
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $fromTag = $this->wiki->GetPageTag();

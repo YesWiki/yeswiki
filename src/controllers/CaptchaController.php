@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Security\Controller;
+namespace YesWiki\Core\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiController;
@@ -125,7 +125,7 @@ class CaptchaController extends YesWikiController
         $this->words = self::DEFAULT_TEXTS;
         $this->updateWordsFromConfig();
         $this->imageWidth = $this->getImageWidth();
-        $this->fontFile = './tools/security/agenda__.ttf';
+        $this->fontFile = YESWIKI_SOURCE_DIR . '/src/vendor/fonts/agenda__.ttf';
     }
 
     /**
@@ -164,6 +164,88 @@ class CaptchaController extends YesWikiController
     public function generateHash(): string
     {
         return $this->cryptWord($this->selectText());
+    }
+
+    /**
+     * check captcha before save edit.
+     *
+     * @param string $mode 'page' or 'entry'
+     *
+     * @return array [bool $state,string $error]
+     */
+    public function checkCaptchaBeforeSave(string $mode = 'page'): array
+    {
+        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
+            $post = $this->getRequest()->request;
+            if (($mode != 'entry' && $post->get('submit') == SecurityController::EDIT_PAGE_SUBMIT_VALUE)
+                || ($mode == 'entry' && !empty($post->get('bf_titre')))) {
+                /**
+                 * @var string $error message if error
+                 */
+                $error = '';
+                if (empty($post->get('captcha'))) {
+                    $error = _t('CAPTCHA_ERROR_PAGE_UNSAVED');
+                } elseif (!$this->check(
+                    $post->get('captcha', ''),
+                    $post->get('captcha_hash', '')
+                )) {
+                    $error = _t('CAPTCHA_ERROR_WRONG_WORD');
+                }
+                // clean if error
+                if (!empty($error)) {
+                    $_POST['submit'] = '';
+                    if ($mode == 'entry') {
+                        unset($_POST['bf_titre']);
+                    }
+                }
+                unset($_POST['captcha']);
+                unset($_POST['captcha_hash']);
+            }
+        }
+
+        return [empty($error), $error ?? null];
+    }
+
+    /**
+     * render captcha if needed.
+     */
+    public function renderCaptcha(string &$output)
+    {
+        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
+            $champsCaptcha = $this->renderCaptchaField();
+            $matches = [];
+            if (preg_match_all('/(\<div class="form-actions">.*<button type=\"submit\" name=\"submit\")/Uis', $output, $matches)) {
+                foreach ($matches[0] as $key => $match) {
+                    $output = str_replace(
+                        $match,
+                        $champsCaptcha . $matches[1][$key],
+                        $output
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * render captcha field if needed.
+     */
+    public function renderCaptchaField(): string
+    {
+        $champsCaptcha = '';
+        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
+            // afficher les champs de formulaire et de l'image
+            $hash = $this->generateHash();
+            $champsCaptcha = $this->render(
+                '@core/captcha-field.twig',
+                [
+                    'baseUrl' => $this->wiki->getBaseUrl(),
+                    'crypt' => $hash,
+                    'cryptBase64' => base64_encode($hash),
+                ]
+            );
+        }
+
+        return $champsCaptcha;
     }
 
     /**

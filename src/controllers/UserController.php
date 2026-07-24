@@ -8,11 +8,11 @@ use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class UserController extends YesWikiController
 {
@@ -42,7 +42,7 @@ class UserController extends YesWikiController
     protected $groupController;
     protected $pageManager;
     protected $params;
-    protected $securityController;
+    protected $hibernationService;
     protected $tripleStore;
     protected $userManager;
 
@@ -52,7 +52,7 @@ class UserController extends YesWikiController
         GroupController $groupController,
         PageManager $pageManager,
         ParameterBagInterface $params,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         TripleStore $tripleStore,
         UserManager $userManager
     ) {
@@ -61,7 +61,7 @@ class UserController extends YesWikiController
         $this->groupController = $groupController;
         $this->pageManager = $pageManager;
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
         $this->initLimitations();
@@ -188,7 +188,7 @@ class UserController extends YesWikiController
      */
     public function delete(User $user)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->UserIsAdmin()) {

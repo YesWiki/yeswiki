@@ -15,26 +15,28 @@ use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Bazar\Service\SemanticTransformer;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\CaptchaController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\FavoritesManager;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class EntryController extends YesWikiController
 {
     protected $aclService;
     protected $authController;
+    protected $captchaController;
     protected $config;
     protected $entryManager;
     protected $eventDispatcher;
     protected $favoritesManager;
     protected $formManager;
+    protected $hibernationService;
     protected $pageManager;
-    protected $securityController;
     protected $semanticTransformer;
     protected $templateEngine;
     protected $tripleStore;
@@ -44,26 +46,28 @@ class EntryController extends YesWikiController
     public function __construct(
         AclService $aclService,
         AuthController $authController,
+        CaptchaController $captchaController,
         EntryManager $entryManager,
         EventDispatcher $eventDispatcher,
         FavoritesManager $favoritesManager,
         FormManager $formManager,
+        HibernationService $hibernationService,
         PageManager $pageManager,
         ParameterBagInterface $config,
-        SecurityController $securityController,
         SemanticTransformer $semanticTransformer,
         TripleStore $tripleStore,
     ) {
         $this->aclService = $aclService;
         $this->authController = $authController;
+        $this->captchaController = $captchaController;
         $this->config = $config->all();
         $this->entryManager = $entryManager;
         $this->eventDispatcher = $eventDispatcher;
         $this->favoritesManager = $favoritesManager;
         $this->formManager = $formManager;
+        $this->hibernationService = $hibernationService;
         $this->pageManager = $pageManager;
         $this->parentsEntries = [];
-        $this->securityController = $securityController;
         $this->semanticTransformer = $semanticTransformer;
         $this->tripleStore = $tripleStore;
     }
@@ -236,8 +240,8 @@ class EntryController extends YesWikiController
             'currentuser' => $currentuser ?? null,
             'isUserFavorite' => $isUserFavorite ?? false,
             'canShow' => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
-            'canEdit' => !$this->securityController->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
-            'canDelete' => !$this->securityController->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)) && !isset($entry['read-only']),
+            'canEdit' => !$this->hibernationService->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
+            'canDelete' => !$this->hibernationService->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)) && !isset($entry['read-only']),
             'canDuplicate' => $this->wiki->UserIsAdmin($userNameForRendering) && !isset($entry['read-only']),
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
@@ -283,7 +287,7 @@ class EntryController extends YesWikiController
         if (!empty($results['output'])) {
             return $results['output'];
         } elseif (empty($results['error'])) {
-            list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
+            list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
             $post = $this->getRequest()->request;
             try {
                 if ($state && $post->has('bf_titre')) {
@@ -332,7 +336,7 @@ class EntryController extends YesWikiController
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
             'error' => $error,
-            'captchaField' => $this->securityController->renderCaptchaField(),
+            'captchaField' => $this->captchaController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
             'imageSmallHeight' => $this->config['image-small-height'],
             'imageMediumWidth' => $this->config['image-medium-width'],
@@ -347,7 +351,7 @@ class EntryController extends YesWikiController
         $entry = $this->entryManager->getOne($entryId);
         $form = $this->formManager->getOne($entry['id_typeannonce']);
 
-        list($state, $error) = $this->securityController->checkCaptchaBeforeSave('entry');
+        list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
         $incomingUrl = $this->getIncomingUrl();
         $post = $this->getRequest()->request;
         try {
@@ -389,7 +393,7 @@ class EntryController extends YesWikiController
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
             'error' => $error,
-            'captchaField' => $this->securityController->renderCaptchaField(),
+            'captchaField' => $this->captchaController->renderCaptchaField(),
             'imageSmallWidth' => $this->config['image-small-width'],
             'imageSmallHeight' => $this->config['image-small-height'],
             'imageMediumWidth' => $this->config['image-medium-width'],

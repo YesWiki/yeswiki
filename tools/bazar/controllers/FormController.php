@@ -6,26 +6,26 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Bazar\Field\MapField;
 use YesWiki\Bazar\Service\ActivityPubService;
-use YesWiki\Bazar\Service\WebfingerService;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Bazar\Service\WebfingerService;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class FormController extends YesWikiController
 {
     protected $csrfTokenController;
     protected $formManager;
-    protected $securityController;
+    protected $hibernationService;
     protected $activityPubService;
     protected $webfingerService;
 
-    public function __construct(FormManager $formManager, SecurityController $securityController, CsrfTokenController $csrfTokenController, ActivityPubService $activityPubService, WebfingerService $webfingerService)
+    public function __construct(FormManager $formManager, HibernationService $hibernationService, CsrfTokenController $csrfTokenController, ActivityPubService $activityPubService, WebfingerService $webfingerService)
     {
         $this->csrfTokenController = $csrfTokenController;
         $this->formManager = $formManager;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->activityPubService = $activityPubService;
         $this->webfingerService = $webfingerService;
     }
@@ -62,8 +62,8 @@ class FormController extends YesWikiController
             foreach ($forms as $form) {
                 $values[$form['bn_id_nature']]['title'] = $form['bn_label_nature'];
                 $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
-                $values[$form['bn_id_nature']]['canEdit'] = !$this->securityController->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['bn_id_nature']]['canDelete'] = !$this->securityController->isWikiHibernated() && $this->wiki->UserIsAdmin();
+                $values[$form['bn_id_nature']]['canEdit'] = !$this->hibernationService->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+                $values[$form['bn_id_nature']]['canDelete'] = !$this->hibernationService->isWikiHibernated() && $this->wiki->UserIsAdmin();
                 $values[$form['bn_id_nature']]['isSemantic'] = !empty($form['bn_sem_template']);
                 $values[$form['bn_id_nature']]['isActivityPubEnabled'] = $form['bn_activitypub_enable'] === '1';
                 $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
@@ -77,7 +77,7 @@ class FormController extends YesWikiController
             'message' => $message,
             'forms' => $values,
             'userIsAdmin' => $this->wiki->UserIsAdmin(),
-            'isWikiHibernated' => $this->securityController->isWikiHibernated(),
+            'isWikiHibernated' => $this->hibernationService->isWikiHibernated(),
         ]);
     }
 
@@ -200,7 +200,7 @@ class FormController extends YesWikiController
 
         $post = $this->getRequest()->request;
         if ($post->has('actor_handle')) {
-            if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+            if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
                 return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
             }
 
@@ -228,7 +228,7 @@ class FormController extends YesWikiController
 
     public function addFollowing($id, $actorUri)
     {
-        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+        if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 
@@ -241,7 +241,7 @@ class FormController extends YesWikiController
 
     public function removeFollowing($id, $actorUri)
     {
-        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+        if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 
@@ -266,7 +266,7 @@ class FormController extends YesWikiController
 
     public function syncActorPosts($id, $actorUri)
     {
-        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+        if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 
@@ -285,7 +285,7 @@ class FormController extends YesWikiController
 
     public function removeFollower($id, $actorUri)
     {
-        if (!$this->wiki->UserIsAdmin() || $this->securityController->isWikiHibernated()) {
+        if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 

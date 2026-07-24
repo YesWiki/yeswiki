@@ -3,7 +3,6 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class TagsManager
@@ -12,22 +11,22 @@ class TagsManager
 
     protected $wiki;
     protected $dbService;
-    protected $securityController;
+    protected $hibernationService;
     protected $tripleStore;
     protected $params;
 
-    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, ParameterBagInterface $params, SecurityController $securityController)
+    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, ParameterBagInterface $params, HibernationService $hibernationService)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
     }
 
     public function deleteAll($page)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // on recupere les anciens tags de la page courante
@@ -41,7 +40,7 @@ class TagsManager
 
     public function save($page, $liste_tags)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // TODO check if we need to escape here, or if we can do that in the tripleStore methods

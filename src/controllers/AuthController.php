@@ -12,10 +12,10 @@ use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\BadLoginException;
 use YesWiki\Core\Exception\BadUserConnectException;
 use YesWiki\Core\Service\AccountActivationService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 // this trait should be into src/traits/LimitationsTrait folder
@@ -52,23 +52,23 @@ class AuthController extends YesWikiController
     protected $accountActivationService;
     protected $params;
     protected $passwordHasherFactory;
-    protected $securityController;
+    protected $hibernationService;
     protected $userManager;
     private $loggedUserCache;
 
     public function __construct(
         AccountActivationService $accountActivationService,
+        HibernationService $hibernationService,
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
-        SecurityController $securityController,
         UserManager $userManager,
         Wiki $wiki
     ) {
         $this->accountActivationService = $accountActivationService;
+        $this->hibernationService = $hibernationService;
         $this->params = $params;
         $this->passwordHasherFactory = $passwordHasherFactory;
         $this->userManager = $userManager;
-        $this->securityController = $securityController;
         $this->wiki = $wiki;
         $this->initLimitations();
     }
@@ -100,7 +100,7 @@ class AuthController extends YesWikiController
         if (!$passwordHasher->verify($hashedPassword, $plainTextPassword)) {
             return false;
         }
-        if ($passwordHasher->needsRehash($hashedPassword) && !$this->securityController->isWikiHibernated()) {
+        if ($passwordHasher->needsRehash($hashedPassword) && !$this->hibernationService->isWikiHibernated()) {
             $newHashedPassword = $passwordHasher->hash($plainTextPassword);
             $this->userManager->upgradePassword($user, $newHashedPassword);
         }

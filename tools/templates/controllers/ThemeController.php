@@ -3,23 +3,23 @@
 namespace YesWiki\Templates\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class ThemeController extends YesWikiController
 {
     protected $params;
-    protected $securityController;
+    protected $hibernationService;
     protected $themeManager;
 
     public function __construct(
         ParameterBagInterface $params,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         ThemeManager $themeManager
     ) {
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->themeManager = $themeManager;
     }
 
@@ -50,7 +50,7 @@ class ThemeController extends YesWikiController
                 ])
                 : $t;
         }, $templates);
-        $hibernated = $this->securityController->isWikiHibernated();
+        $hibernated = $this->hibernationService->isWikiHibernated();
 
         return $this->render(
             $templateName,

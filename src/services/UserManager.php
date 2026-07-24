@@ -19,7 +19,6 @@ use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 if (!function_exists('send_mail')) {
@@ -31,7 +30,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     protected $wiki;
     protected $dbService;
     protected $passwordHasherFactory;
-    protected $securityController;
+    protected $hibernationService;
     protected $params;
     protected $tripleStore;
 
@@ -59,13 +58,13 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         DbService $dbService,
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         TripleStore $tripleStore
     ) {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->passwordHasherFactory = $passwordHasherFactory;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->params = $params;
         $this->tripleStore = $tripleStore;
     }
@@ -168,7 +167,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function create($wikiNameOrUser, string $email = '', string $plainPassword = ''): ?User
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
@@ -391,7 +390,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function update(User $user, array $newValues): bool
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $newKeys = array_keys($newValues);
@@ -442,7 +441,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function delete(User $user)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         try {
@@ -542,7 +541,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function upgradePassword(PasswordAuthenticatedUserInterface $user, string $newHashedPassword): void
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->supportsClass(get_class($user))) {

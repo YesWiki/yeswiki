@@ -4,7 +4,6 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\AuthController;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class AclService
@@ -12,7 +11,7 @@ class AclService
     protected $authController;
     protected $wiki;
     protected $dbService;
-    protected $securityController;
+    protected $hibernationService;
     protected $userManager;
     protected $params;
 
@@ -24,14 +23,14 @@ class AclService
         DbService $dbService,
         UserManager $userManager,
         ParameterBagInterface $params,
-        SecurityController $securityController
+        HibernationService $hibernationService
     ) {
         $this->authController = $authController;
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->userManager = $userManager;
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
 
         $this->cache = [];
     }
@@ -93,7 +92,7 @@ class AclService
      */
     public function save($tag, $privilege, $list, $appendAcl = false)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // If list is comma-separated, convert into to line-break-separated
@@ -127,7 +126,7 @@ class AclService
      */
     public function delete($tag, $privileges = ['read', 'write', 'comment'])
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!is_array($privileges)) {

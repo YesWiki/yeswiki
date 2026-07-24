@@ -2,12 +2,12 @@
 
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Exception\LoginException;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 
 class LoginAction extends YesWikiAction
 {

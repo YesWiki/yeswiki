@@ -1,8 +1,8 @@
 <?php
 
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TagsManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 
 class AdminTagAction extends YesWikiAction
 {
@@ -12,7 +12,7 @@ class AdminTagAction extends YesWikiAction
         $tagsManager = $this->getService(TagsManager::class);
 
         if ($isAdmin && $this->getRequest()->query->has('delete_tag')) {
-            if ($this->getService(SecurityController::class)->isWikiHibernated()) {
+            if ($this->getService(HibernationService::class)->isWikiHibernated()) {
                 throw new \Exception(_t('WIKI_IN_HIBERNATION'));
             }
             $tagsManager->deleteByIds(explode(',', $this->getRequest()->query->get('delete_tag')));

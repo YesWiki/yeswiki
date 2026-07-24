@@ -1,13 +1,13 @@
 <?php
 
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\YesWikiHandler;
-use YesWiki\Security\Controller\SecurityController;
 
 class UpdateHandler extends YesWikiHandler
 {
     public function run(): string
     {
-        if ($this->getService(SecurityController::class)->isWikiHibernated()) {
+        if ($this->getService(HibernationService::class)->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
 

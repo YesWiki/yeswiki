@@ -1,9 +1,9 @@
 <?php
 
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\TagsManager;
 use YesWiki\Core\YesWikiHandler;
-use YesWiki\Security\Controller\SecurityController;
 
 class __EditHandler extends YesWikiHandler
 {

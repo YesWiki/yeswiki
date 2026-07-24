@@ -238,6 +238,10 @@ class Init
             'htmlPurifierSafeIframeRegexp' => '~^https://.*~', // regex for domains allowed as <iframe> src ; very permissive by default, restrict for public wikis
             'favorites_activated' => true,
             'hide_keywords' => false,
+            'use_alerte' => true, // alerte pour quitter le mode édition
+            'use_hashcash' => true, // hashcash pour le mode edition
+            'use_captcha' => false, // recaptcha
+            'wiki_status' => 'running', // status of the wiki ('running','maintenance','hibernation')
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
                 'authorize_bypass_preupdate_backup' => false,

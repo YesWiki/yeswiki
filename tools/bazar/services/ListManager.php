@@ -4,10 +4,10 @@ namespace YesWiki\Bazar\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class ListManager
@@ -17,7 +17,7 @@ class ListManager
     protected $htmlPurifierService;
     protected $pageManager;
     protected $params;
-    protected $securityController;
+    protected $hibernationService;
     protected $tripleStore;
 
     public const TRIPLES_LIST_ID = 'liste';
@@ -30,7 +30,7 @@ class ListManager
         HtmlPurifierService $htmlPurifierService,
         PageManager $pageManager,
         ParameterBagInterface $params,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         TripleStore $tripleStore
     ) {
         $this->wiki = $wiki;
@@ -39,7 +39,7 @@ class ListManager
         $this->pageManager = $pageManager;
         $this->htmlPurifierService = $htmlPurifierService;
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
 
         $this->cachedLists = [];
     }
@@ -126,7 +126,7 @@ class ListManager
 
     public function create($title, $nodes, $id = null)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $id = $id ?? genere_nom_wiki('List ' . $title);
@@ -148,7 +148,7 @@ class ListManager
 
     public function update($id, $title, $nodes)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $nodes = $nodes ?? [];
@@ -165,7 +165,7 @@ class ListManager
 
     public function delete($id)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!isset($id) || $id === '') {

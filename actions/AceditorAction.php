@@ -1,9 +1,9 @@
 <?php
 
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Service\ActionsBuilderService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 
 class AceditorAction extends YesWikiAction
 {

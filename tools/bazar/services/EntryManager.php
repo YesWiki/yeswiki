@@ -11,11 +11,11 @@ use YesWiki\Bazar\Field\TitleField;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class EntryManager
@@ -29,7 +29,7 @@ class EntryManager
     protected $userManager;
     protected $dbService;
     protected $semanticTransformer;
-    protected $securityController;
+    protected $hibernationService;
     protected $activityPubService;
     protected $params;
     protected $searchManager;
@@ -55,7 +55,7 @@ class EntryManager
         SemanticTransformer $semanticTransformer,
         ParameterBagInterface $params,
         SearchManager $searchManager,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         ActivityPubService $activityPubService,
     ) {
         $this->wiki = $wiki;
@@ -69,7 +69,7 @@ class EntryManager
         $this->semanticTransformer = $semanticTransformer;
         $this->params = $params;
         $this->searchManager = $searchManager;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->activityPubService = $activityPubService;
         $this->cachedEntriestags = [];
     }
@@ -316,7 +316,7 @@ class EntryManager
      */
     public function create($formId, $data, $semantic = false, $sourceUrl = null)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
@@ -430,7 +430,7 @@ class EntryManager
      */
     public function update($tag, $data, $semantic = false, $replace = false)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->aclService->hasAccess('write', $tag)) {
@@ -569,7 +569,7 @@ class EntryManager
      */
     public function publish($entryId, $accepted)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // not possible to init the Guard in the constructor because of circular reference problem
@@ -590,7 +590,7 @@ class EntryManager
      */
     public function delete($tag, bool $forceEvenIfNotOwner = false)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$forceEvenIfNotOwner && !$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)) {
@@ -1021,7 +1021,7 @@ class EntryManager
      */
     private function manageAttributes($params, array $attributesNames, bool $applyOnAllRevisions = false, string $mode = 'remove'): array
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->UserIsAdmin()) {

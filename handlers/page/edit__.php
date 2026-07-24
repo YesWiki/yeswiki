@@ -1,6 +1,9 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Controller\CaptchaController;
+use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\HashCashService;
 use YesWiki\Core\Service\TagsManager;
 
 $params = $this->services->get(ParameterBagInterface::class);
@@ -34,4 +37,20 @@ if (!$params->get('hide_keywords') && $this->HasAccess('write') && $this->HasAcc
 
     $target = '<div class="tags-container">';
     $plugin_output_new = str_replace($target, $target . $html, $plugin_output_new);
+}
+
+if ($this->HasAccess('write') && $this->HasAccess('read')) {
+    // Edition
+    if (!isset($_POST['submit']) || $_POST['submit'] != SecurityController::EDIT_PAGE_SUBMIT_VALUE) {
+        if ($this->config['use_hashcash']) {
+            $hashCash = $this->services->get(HashCashService::class);
+            $hashCashCode = $hashCash->getJavascriptCode();
+            $plugin_output_new = preg_replace(
+                '/\<hr class=\"hr_clear\" \/\>/',
+                $hashCashCode . '<hr class="hr_clear" />',
+                $plugin_output_new
+            );
+        }
+        $this->services->get(CaptchaController::class)->renderCaptcha($plugin_output_new);
+    }
 }

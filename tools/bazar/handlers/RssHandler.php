@@ -4,7 +4,6 @@ use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\BazarListService;
 use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\YesWikiHandler;
-use YesWiki\Security\Controller\SecurityController;
 
 // TODO use Symfony XmlEncoder instead
 // https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
@@ -19,7 +18,6 @@ class RssHandler extends YesWikiHandler
 
             $vSearchManager = $this->getService(SearchManager::class);
             $vBazarListService = $this->getService(BazarListService::class);
-            $securityController = $this->getService(SecurityController::class);
 
             $get = $this->getRequest()->query;
             $vIDs = $vBazarListService->getIDs($get->get('id') ?? $get->get('id_typeannonce') ?? $get->get('idtypeannonce') ?? []);

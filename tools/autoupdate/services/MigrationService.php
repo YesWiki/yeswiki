@@ -5,8 +5,8 @@ namespace YesWiki\AutoUpdate\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 // This is a simple mecanism to perform migrations
@@ -36,7 +36,7 @@ class MigrationService
 
     public function run()
     {
-        if ($this->wiki->services->get(SecurityController::class)->isWikiHibernated()) {
+        if ($this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 

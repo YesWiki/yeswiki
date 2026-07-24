@@ -7,9 +7,9 @@ use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class FormManager
@@ -34,7 +34,7 @@ class FormManager
     protected $activityPubService;
     protected $httpSignatureService;
     protected $entryManager;
-    protected $securityController;
+    protected $hibernationService;
     protected $fieldFactory;
     protected $params;
     protected $pageManager;
@@ -50,7 +50,7 @@ class FormManager
         EntryManager $entryManager,
         FieldFactory $fieldFactory,
         ParameterBagInterface $params,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         ActivityPubService $activityPubService,
         HttpSignatureService $httpSignatureService,
         PageManager $pageManager,
@@ -73,7 +73,7 @@ class FormManager
 
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->attach = new \Attach($this->wiki);
     }
 
@@ -415,7 +415,7 @@ class FormManager
     // TODO Pass a Form object instead of a raw array
     public function create($data)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
@@ -465,7 +465,7 @@ class FormManager
 
     public function update($data)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
@@ -503,7 +503,7 @@ class FormManager
      */
     public function renameTag($formId, string $desiredNewTag): string
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
@@ -542,7 +542,7 @@ class FormManager
 
     public function delete($id)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 

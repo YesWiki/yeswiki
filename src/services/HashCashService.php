@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Security\Service;
+namespace YesWiki\Core\Service;
 
 use YesWiki\Wiki;
 
@@ -13,9 +13,26 @@ class HashCashService
         $this->wiki = $wiki;
     }
 
+    /**
+     * Verifies the submitted hashcash_value POST field against the current server-side
+     * puzzle answer (see getKeyScript()). Returns true when hashcash is disabled (nothing
+     * to check) or the value matches; false when enabled and the value is missing/wrong.
+     * Consolidates a check previously duplicated between the edit and add-comment flows.
+     */
+    public function checkHashcash(): bool
+    {
+        if (empty($this->wiki->config['use_hashcash'])) {
+            return true;
+        }
+        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
+        $value = $this->wiki->request->request->get('hashcash_value');
+
+        return isset($value) && $value == hashcash_field_value();
+    }
+
     public function getJavascriptCode($formId = 'ACEditor')
     {
-        require_once YESWIKI_SOURCE_DIR . '/tools/security/secret/wp-hashcash.lib';
+        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
         if (!file_exists(HASHCASH_SECRET_FILE)) {
             $handle = fopen(HASHCASH_SECRET_FILE, 'w');
             fclose($handle);
@@ -44,7 +61,7 @@ class HashCashService
      */
     public function getEnableScript(string $formId): string
     {
-        require_once YESWIKI_SOURCE_DIR . '/tools/security/secret/wp-hashcash.lib';
+        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
 
         $formId = htmlspecialchars(strip_tags($formId));
         $fieldId = hashcash_random_string(rand(6, 18));
@@ -124,7 +141,7 @@ class HashCashService
      */
     public function getKeyScript(): string
     {
-        require_once YESWIKI_SOURCE_DIR . '/tools/security/secret/wp-hashcash.lib';
+        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
 
         $expired = [];
 

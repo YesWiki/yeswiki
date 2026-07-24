@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Service\AssetsManager;
-use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\HibernationService;
 
 #[\Field(['image'])]
 class ImageField extends FileField
@@ -197,7 +197,7 @@ class ImageField extends FileField
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
             $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
 
-            if ($this->isImage($rawFileName) && !$this->getService(SecurityController::class)->isWikiHibernated()) {
+            if ($this->isImage($rawFileName) && !$this->getService(HibernationService::class)->isWikiHibernated()) {
                 if (!file_exists($filePath)) {
                     if ($_FILES[$this->propertyName]['size'] > $this->maxSize) {
                         throw new \Exception(_t('BAZ_FILEFIELD_TOO_LARGE_FILE', ['fileMaxSize' => $this->maxSize]));

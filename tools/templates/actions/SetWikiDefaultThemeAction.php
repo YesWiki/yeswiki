@@ -2,14 +2,14 @@
 
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Templates\Controller\ThemeController;
 
 class SetWikiDefaultThemeAction extends YesWikiAction
 {
-    protected $securityController;
+    protected $hibernationService;
     protected $themeController;
     protected $themeManager;
 
@@ -28,7 +28,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             ]);
         }
 
-        $this->securityController = $this->getService(SecurityController::class);
+        $this->hibernationService = $this->getService(HibernationService::class);
         $this->themeController = $this->getService(ThemeController::class);
         $this->themeManager = $this->getService(ThemeManager::class);
 
@@ -37,8 +37,8 @@ class SetWikiDefaultThemeAction extends YesWikiAction
         $config->load();
 
         if ($this->getRequest()->request->get('action') === 'setTemplate') {
-            if ($this->securityController->isWikiHibernated()) {
-                return $this->securityController->getMessageWhenHibernated();
+            if ($this->hibernationService->isWikiHibernated()) {
+                return $this->hibernationService->getMessageWhenHibernated();
             }
             $params = $this->checkParamActionSetTemplate($themes);
 

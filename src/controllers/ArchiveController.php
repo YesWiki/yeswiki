@@ -7,9 +7,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class ArchiveController extends YesWikiController
 {

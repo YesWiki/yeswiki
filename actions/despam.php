@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Controller\PageController;
-use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\HibernationService;
 
 // TODO
 // -- case pour selectionner tout
@@ -124,7 +124,7 @@ if ($this->UserIsAdmin()) {
         echo "</form>\n";
         echo "</div>\n\n";
     } elseif (isset($_POST['clean'])) {
-        if ($this->services->get(SecurityController::class)->isWikiHibernated()) {
+        if ($this->services->get(HibernationService::class)->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // -- (3) Nettoyage des pages et affichage de la page de resultats -------

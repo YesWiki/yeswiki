@@ -9,6 +9,9 @@ class EditConfigAction extends YesWikiAction
     private const SAVE_NAME = 'save_config';
     private const SAVED_NAME = 'saved_config';
     private const CONFIG_POSTFIX = '_editable_config_params';
+    // formerly contributed via tools/security's config.yaml through the generic
+    // extension _editable_config_params mechanism (see getAuthorizedKeys())
+    private const ARCHIVE_KEYS = ['privatePath', 'call_archive_async', 'max_nb_files', 'preupdate_backup_activated'];
     private const AUTHORIZED_KEYS = [
         'yeswiki_name' => 'core',
         'root_page' => 'core',
@@ -35,6 +38,10 @@ class EditConfigAction extends YesWikiAction
         'allowed_methods_in_iframe' => 'security',
         'signup_email_activation' => 'security',
         'user_activation_key_length' => 'security',
+        'use_alerte' => 'security',
+        'use_captcha' => 'security',
+        'use_hashcash' => 'security',
+        'wiki_status' => 'security',
 
         'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
         'mail_custom_message' => 'contact',
@@ -115,6 +122,12 @@ class EditConfigAction extends YesWikiAction
         if (is_null($this->keys)) {
             $associatedExtensions = self::AUTHORIZED_KEYS;
             $keys = array_keys(self::AUTHORIZED_KEYS);
+
+            $keys[] = ['archive' => self::ARCHIVE_KEYS];
+            foreach (self::ARCHIVE_KEYS as $archiveKey) {
+                $associatedExtensions["archive[{$archiveKey}]"] = 'security';
+            }
+
             foreach ($this->wiki->extensions as $extensionFolder) {
                 $matches = [];
                 if (preg_match('/(?:\/?tools\/?)?([^\/]+)\/?/', $extensionFolder, $matches)) {

@@ -6,7 +6,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Core\Service\TagsManager;
 use YesWiki\Wiki;
 
@@ -17,7 +16,7 @@ class PageManager
     protected $dbService;
     protected $eventDispatcher;
     protected $params;
-    protected $securityController;
+    protected $hibernationService;
     protected $tagsManager;
     protected $tripleStore;
     protected $userManager;
@@ -32,7 +31,7 @@ class PageManager
         DbService $dbService,
         EventDispatcher $eventDispatcher,
         ParameterBagInterface $params,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         TagsManager $tagsManager,
         TripleStore $tripleStore,
         UserManager $userManager,
@@ -43,7 +42,7 @@ class PageManager
         $this->dbService = $dbService;
         $this->eventDispatcher = $eventDispatcher;
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->tagsManager = $tagsManager;
         $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
@@ -161,7 +160,7 @@ class PageManager
      */
     public function renameTag(string $oldTag, string $newTag): void
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->tagExists($oldTag)) {
@@ -426,7 +425,7 @@ class PageManager
 
     public function deleteOrphaned($tag)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         unset($this->ownersCache[$tag]);
@@ -468,7 +467,7 @@ class PageManager
      */
     public function save($tag, $body, $comment_on = '', $bypass_acls = false, $forcedDate = null): int
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $user = $this->authController->getLoggedUserName();
@@ -599,7 +598,7 @@ class PageManager
 
     public function setOwner($tag, $user)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->userManager->getOneByName($user)) {
@@ -625,7 +624,7 @@ class PageManager
      */
     public function setMetadata($tag, $metadata)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $oldPage = $this->getOne($tag, null, false, true);

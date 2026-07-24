@@ -53,16 +53,16 @@ use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\Performer;
+use YesWiki\Core\Service\TagsManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiControllerResolver;
-use YesWiki\Security\Controller\SecurityController;
-use YesWiki\Core\Service\TagsManager;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
 // time, before anything (Init, the installer, error paths) calls _t()
@@ -390,7 +390,7 @@ class Wiki
      */
     public function PurgePages()
     {
-        if (($days = $this->GetConfigValue('pages_purge_time')) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
+        if (($days = $this->GetConfigValue('pages_purge_time')) && !$this->services->get(HibernationService::class)->isWikiHibernated()) {
             // is purge active ?
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
@@ -778,7 +778,7 @@ class Wiki
 
     public function PurgeReferrers()
     {
-        if (($days = $this->GetConfigValue('referrers_purge_time')) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
+        if (($days = $this->GetConfigValue('referrers_purge_time')) && !$this->services->get(HibernationService::class)->isWikiHibernated()) {
             $dbService = $this->services->get(DbService::class);
             $this->Query('delete from ' . $this->config['table_prefix'] . 'referrers where time < ' . $dbService->dateSubDays(intval($days)));
         }

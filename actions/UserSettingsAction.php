@@ -3,7 +3,9 @@
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\CaptchaController;
 use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Controller\UserController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
@@ -12,7 +14,6 @@ use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 
 class UserSettingsAction extends YesWikiAction
 {
@@ -28,8 +29,8 @@ class UserSettingsAction extends YesWikiAction
     ];
 
     private $authController;
+    private $captchaController;
     private $csrfTokenController;
-    private $securityController;
     private $userController;
     private $userManager;
 
@@ -70,7 +71,7 @@ class UserSettingsAction extends YesWikiAction
     {
         $this->authController = $this->getService(AuthController::class);
         $this->csrfTokenController = $this->getService(CsrfTokenController::class);
-        $this->securityController = $this->getService(SecurityController::class);
+        $this->captchaController = $this->getService(CaptchaController::class);
         $this->userController = $this->getService(UserController::class);
         $this->userManager = $this->getService(UserManager::class);
     }
@@ -163,7 +164,7 @@ class UserSettingsAction extends YesWikiAction
                 'userLoggedIn' => $this->userLoggedIn,
             ]);
         }
-        $captcha = $this->securityController->renderCaptchaField();
+        $captcha = $this->captchaController->renderCaptchaField();
         $captcha = preg_replace('/(' .
             preg_quote('<div class="media-body">', '/') .
             "\s*" .
@@ -319,7 +320,7 @@ class UserSettingsAction extends YesWikiAction
                     $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL') . '.';
                 } else { // Password is correct
                     $_POST['submit'] = SecurityController::EDIT_PAGE_SUBMIT_VALUE;
-                    list($state, $error) = $this->securityController->checkCaptchaBeforeSave();
+                    list($state, $error) = $this->captchaController->checkCaptchaBeforeSave();
                     if (!$state) {
                         $this->error = $error;
                     } else {

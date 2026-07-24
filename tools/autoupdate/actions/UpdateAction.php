@@ -4,9 +4,9 @@ use YesWiki\AutoUpdate\Entity\Messages;
 use YesWiki\AutoUpdate\Service\AutoUpdateService;
 use YesWiki\AutoUpdate\Service\MigrationService;
 use YesWiki\AutoUpdate\Service\UpdateAdminPagesService;
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 
 class UpdateAction extends YesWikiAction
 {

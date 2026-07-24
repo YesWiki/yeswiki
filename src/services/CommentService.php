@@ -5,7 +5,7 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Core\Entity\Event;
-use YesWiki\Security\Service\HashCashService;
+use YesWiki\Core\Service\HashCashService;
 use YesWiki\Wiki;
 
 class CommentService implements EventSubscriberInterface

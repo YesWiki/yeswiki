@@ -4,9 +4,9 @@ namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\UserManager;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 /**
@@ -182,7 +182,7 @@ abstract class YesWikiPerformable
      */
     protected function isWikiHibernated(): bool
     {
-        return $this->wiki->services->get(SecurityController::class)->isWikiHibernated();
+        return $this->wiki->services->get(HibernationService::class)->isWikiHibernated();
     }
 
     /**
@@ -192,6 +192,6 @@ abstract class YesWikiPerformable
      */
     protected function getMessageWhenHibernated(): string
     {
-        return $this->wiki->services->get(SecurityController::class)->getMessageWhenHibernated();
+        return $this->wiki->services->get(HibernationService::class)->getMessageWhenHibernated();
     }
 }

@@ -2,9 +2,9 @@
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\PasswordForEditingService;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\YesWikiHandler;
-use YesWiki\Security\Controller\SecurityController;
 
 class EditIframeHandler extends YesWikiHandler
 {
@@ -13,11 +13,11 @@ class EditIframeHandler extends YesWikiHandler
         $output = '';
 
         if ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read')) {
-            $securityController = $this->getService(SecurityController::class);
+            $passwordForEditingService = $this->getService(PasswordForEditingService::class);
             if ($this->isWikiHibernated()) {
                 $buffer = $this->getMessageWhenHibernated();
             } else {
-                list($state, $message) = $securityController->isGrantedPasswordForEditing();
+                list($state, $message) = $passwordForEditingService->isGrantedPasswordForEditing();
                 if (!$state) {
                     $buffer = $message;
                 } else {

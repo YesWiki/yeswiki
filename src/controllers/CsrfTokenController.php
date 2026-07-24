@@ -5,8 +5,8 @@ namespace YesWiki\Core\Controller;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Security\Controller\SecurityController;
 
 class CsrfTokenController extends YesWikiController
 {

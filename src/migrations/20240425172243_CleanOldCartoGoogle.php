@@ -3,23 +3,23 @@
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
-use YesWiki\Security\Controller\SecurityController;
 
 class CleanOldCartoGoogle extends YesWikiMigration
 {
     private $entryManager;
     private $formManager;
     private $pageManager;
-    private $securityController;
+    private $hibernationService;
 
     public function run()
     {
         $this->entryManager = $this->wiki->services->get(EntryManager::class);
         $this->formManager = $this->wiki->services->get(FormManager::class);
         $this->pageManager = $this->wiki->services->get(PageManager::class);
-        $this->securityController = $this->wiki->services->get(SecurityController::class);
+        $this->hibernationService = $this->wiki->services->get(HibernationService::class);
 
         $entries = $this->searchEntriesWithOnlyOldGeoloc();
         if (!empty($entries)) {
@@ -85,7 +85,7 @@ class CleanOldCartoGoogle extends YesWikiMigration
 
     private function updateEntry($data)
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new Exception(_t('WIKI_IN_HIBERNATION'));
         }
 

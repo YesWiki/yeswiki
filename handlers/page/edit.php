@@ -1,13 +1,14 @@
 <?php
 
+use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Security\Controller\SecurityController;
 
 // on initialise la sortie:
 $output = '';
 
-$isWikiHibernated = $this->services->get(SecurityController::class)->isWikiHibernated();
+$isWikiHibernated = $this->services->get(HibernationService::class)->isWikiHibernated();
 // bare-script handler: $this is the Wiki instance itself, which exposes the current
 // request as a public property, not via a getRequest() helper (that's only on
 // YesWikiPerformable-derived actions/handlers)
@@ -93,7 +94,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
 } else {
     $output .= '<i>' . _t('EDIT_NO_WRITE_ACCESS') . "</i>\n";
     if ($isWikiHibernated) {
-        $output .= $this->services->get(SecurityController::class)->getMessageWhenHibernated();
+        $output .= $this->services->get(HibernationService::class)->getMessageWhenHibernated();
     }
 }
 

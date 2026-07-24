@@ -6,7 +6,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Entity\Event;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Templates\Service\Utils;
 use YesWiki\Wiki;
 
@@ -49,7 +48,7 @@ class ThemeManager implements EventSubscriberInterface
     protected $fileLoaded;
     protected $pageManager;
     protected $params;
-    protected $securityController;
+    protected $hibernationService;
     protected $squelette;
     protected $templateFooter;
     protected $templateHeader;
@@ -72,7 +71,7 @@ class ThemeManager implements EventSubscriberInterface
         TemplateEngine $twig,
         PageManager $pageManager,
         ParameterBagInterface $params,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         Utils $utils
     ) {
         $this->wiki = $wiki;
@@ -89,7 +88,7 @@ class ThemeManager implements EventSubscriberInterface
         $this->fileLoaded = false;
         $this->pageManager = $pageManager;
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->squelette = null;
         $this->templateFooter = '';
         $this->templateHeader = '';
@@ -474,7 +473,7 @@ class ThemeManager implements EventSubscriberInterface
      */
     public function deleteCustomCSSPreset(string $filename): array
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
@@ -504,7 +503,7 @@ class ThemeManager implements EventSubscriberInterface
      */
     public function addCustomCSSPreset(string $filename, array $post): array
     {
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         if (!$this->wiki->getUser()) {

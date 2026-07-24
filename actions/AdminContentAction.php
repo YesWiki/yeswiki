@@ -2,9 +2,9 @@
 
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 
 class AdminContentAction extends YesWikiAction
 {
@@ -20,7 +20,7 @@ class AdminContentAction extends YesWikiAction
         $dbService = $this->getService(DbService::class);
         $groupController = $this->getService(GroupController::class);
         $themeManager = $this->getService(ThemeManager::class);
-        $securityController = $this->getService(SecurityController::class);
+        $hibernationService = $this->getService(HibernationService::class);
 
         // Forms for the type filter dropdown
         $forms = [];
@@ -48,7 +48,7 @@ class AdminContentAction extends YesWikiAction
             'groups' => $groups,
             'forms' => $forms,
             'templates' => $templates,
-            'isHibernated' => $securityController->isWikiHibernated(),
+            'isHibernated' => $hibernationService->isWikiHibernated(),
             'apiUrl' => $this->wiki->Href('', 'api/admin/pages'),
             'bulkApiUrl' => $this->wiki->Href('', 'api/admin/pages/bulk'),
         ]);

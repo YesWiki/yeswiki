@@ -6,7 +6,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Process;
 use YesWiki\Core\Exception\StopArchiveException;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Wiki;
 
 class ArchiveService
@@ -69,7 +68,7 @@ class ArchiveService
     protected $consoleService;
     protected $dbService;
     protected $params;
-    protected $securityController;
+    protected $hibernationService;
     protected $wiki;
 
     public function __construct(
@@ -77,14 +76,14 @@ class ArchiveService
         ConsoleService $consoleService,
         DbService $dbService,
         ParameterBagInterface $params,
-        SecurityController $securityController,
+        HibernationService $hibernationService,
         Wiki $wiki
     ) {
         $this->configurationService = $configurationService;
         $this->consoleService = $consoleService;
         $this->dbService = $dbService;
         $this->params = $params;
-        $this->securityController = $securityController;
+        $this->hibernationService = $hibernationService;
         $this->wiki = $wiki;
     }
 
@@ -197,7 +196,7 @@ class ArchiveService
         if (file_exists($location)) {
             throw new \Exception('Zip file already existing !');
         }
-        if ($this->securityController->isWikiHibernated()) {
+        if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 

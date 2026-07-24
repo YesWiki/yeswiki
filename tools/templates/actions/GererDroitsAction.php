@@ -8,14 +8,14 @@
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Security\Controller\SecurityController;
 use YesWiki\Templates\Service\Utils;
 
 class GererDroitsAction extends YesWikiAction
 {
     protected $dbService;
-    protected $securityController;
+    protected $hibernationService;
     protected $utils;
     protected $groupController;
 
@@ -30,7 +30,7 @@ class GererDroitsAction extends YesWikiAction
         }
         // get services
         $this->dbService = $this->getService(DbService::class);
-        $this->securityController = $this->getService(SecurityController::class);
+        $this->hibernationService = $this->getService(HibernationService::class);
         $this->utils = $this->getService(Utils::class);
         $this->groupController = $this->getService(GroupController::class);
 
@@ -73,7 +73,7 @@ class GererDroitsAction extends YesWikiAction
                 'forms' => $forms,
                 'pageEtDroits' => $pageEtDroits,
                 'groups' => $groups,
-                'isHibernated' => $this->securityController->isWikiHibernated(),
+                'isHibernated' => $this->hibernationService->isWikiHibernated(),
             ]
         );
     }

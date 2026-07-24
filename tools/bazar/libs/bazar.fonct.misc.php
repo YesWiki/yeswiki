@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\HibernationService;
 
 function getConfigValue($key, $default = false, $cfg = '')
 {
@@ -34,7 +34,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
         // force new name
         $image_dest = $attach->getResizedFilename($image_src, $largeur, $hauteur, $method);
 
-        if (!$wiki->services->get(SecurityController::class)->isWikiHibernated()
+        if (!$wiki->services->get(HibernationService::class)->isWikiHibernated()
             && file_exists($image_dest)
             && isset($_GET['refresh'])
             && $_GET['refresh'] == 1

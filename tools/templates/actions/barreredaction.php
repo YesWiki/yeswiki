@@ -4,7 +4,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\FavoritesManager;
-use YesWiki\Security\Controller\SecurityController;
+use YesWiki\Core\Service\HibernationService;
 
 $user = $this->services->get(AuthController::class)->getLoggedUser();
 if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions') {
@@ -32,7 +32,7 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
 
     if ($this->HasAccess('write')) {
         // on ajoute le lien d'édition si l'action est autorisée
-        if ($this->HasAccess('write', $page) && !$this->services->get(SecurityController::class)->isWikiHibernated()) {
+        if ($this->HasAccess('write', $page) && !$this->services->get(HibernationService::class)->isWikiHibernated()) {
             $options['linkedit'] = $this->href('edit', $page);
         }
 
@@ -58,7 +58,7 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
             // if current user is owner or admin
             if ($this->UserIsOwner($page) || $this->UserIsAdmin()) {
                 $options['owner'] .= ' - ' . _t('TEMPLATE_PERMISSIONS');
-                if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
+                if (!$this->services->get(HibernationService::class)->isWikiHibernated()) {
                     $options['linkacls'] = $this->href('acls', $page);
                     $options['linkdeletepage'] = $this->href('deletepage', $page);
                 }
@@ -74,7 +74,7 @@ if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions'
                 }
             } elseif (!$owner && $this->GetUser()) {
                 $options['owner'] .= ' - ' . _t('TEMPLATE_CLAIM');
-                if (!$this->services->get(SecurityController::class)->isWikiHibernated()) {
+                if (!$this->services->get(HibernationService::class)->isWikiHibernated()) {
                     $options['linkacls'] = $this->href('claim', $page);
                 }
             }

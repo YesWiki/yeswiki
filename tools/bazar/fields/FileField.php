@@ -8,10 +8,11 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\DateService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\HtmlPurifierService;
-use YesWiki\Security\Controller\SecurityController;
 
 #[\Field(['fichier'])]
 class FileField extends BazarField
@@ -214,7 +215,7 @@ class FileField extends BazarField
      */
     protected function isAllowedToDeleteFile(array $entry, string $fileName): bool
     {
-        return !$this->getService(SecurityController::class)->isWikiHibernated()
+        return !$this->getService(HibernationService::class)->isWikiHibernated()
             && $this->getService(Guard::class)->isAllowed('supp_fiche', $entry['owner'] ?? '');
     }
 

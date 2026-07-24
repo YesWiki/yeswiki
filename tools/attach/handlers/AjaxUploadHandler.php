@@ -3,9 +3,9 @@
 namespace YesWiki\Attach;
 
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
-use YesWiki\Security\Controller\SecurityController;
 
 class AjaxUploadHandler extends YesWikiHandler
 {
@@ -13,7 +13,7 @@ class AjaxUploadHandler extends YesWikiHandler
 
     public function run()
     {
-        if ($this->getService(SecurityController::class)->isWikiHibernated()) {
+        if ($this->getService(HibernationService::class)->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
