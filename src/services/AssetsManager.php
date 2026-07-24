@@ -29,6 +29,21 @@ class AssetsManager
         'tools/bazar/libs/vendor/moment.min.js' => 'javascripts/vendor/moment/moment-with-locales.min.js',
         'tools/templates/libs/vendor/iframeResizer.contentWindow.min.js' => 'javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js',
         'tools/templates/libs/vendor/iframeResizer.min.js' => 'javascripts/vendor/iframe-resizer/iframeResizer.min.js',
+        // ticket 12 (templates absorbed into core)
+        'tools/templates/libs/vendor/marked/marked.min.js' => 'javascripts/vendor/marked/marked.min.js',
+        'tools/templates/libs/vendor/wow.min.js' => 'javascripts/vendor/wow.min.js',
+        'tools/templates/libs/vendor/izmir/izmir.min.css' => 'styles/vendor/izmir/izmir.min.css',
+        'tools/templates/libs/vendor/jquery.fontselect.js' => 'javascripts/vendor/jquery.fontselect.js',
+        'tools/templates/libs/vendor/bootstrap3-typeahead.min.js' => 'javascripts/vendor/bootstrap3-typeahead.min.js',
+        'tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js' => 'javascripts/vendor/font-picker/fontawesome-picker.min.js',
+        'tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css' => 'styles/vendor/font-picker/fontawesome-picker.min.css',
+        'tools/templates/presentation/styles/animate.css' => 'styles/animate.css',
+        'tools/templates/presentation/styles/install.css' => 'styles/install.css',
+        'tools/templates/presentation/styles/preset-sidenav.css' => 'styles/preset-sidenav.css',
+        'tools/templates/javascripts/change-theme.js' => 'javascripts/change-theme.js',
+        'tools/templates/javascripts/template-edit.js' => 'javascripts/template-edit.js',
+        'tools/templates/presentation/javascripts/preset-sidenav.js' => 'javascripts/preset-sidenav.js',
+        'tools/templates/javascripts/reload-gerer-droits.js' => 'javascripts/reload-gerer-droits.js',
     ];
 
     protected const PRODUCTION_PATH_MAPPING = [

@@ -242,6 +242,11 @@ class Init
             'use_hashcash' => true, // hashcash pour le mode edition
             'use_captcha' => false, // recaptcha
             'wiki_status' => 'running', // status of the wiki ('running','maintenance','hibernation')
+            'favorite_theme' => THEME_PAR_DEFAUT,
+            'favorite_style' => CSS_PAR_DEFAUT,
+            'favorite_squelette' => SQUELETTE_PAR_DEFAUT,
+            'favorite_background_image' => BACKGROUND_IMAGE_PAR_DEFAUT,
+            'hide_action_template' => false,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
                 'authorize_bypass_preupdate_backup' => false,

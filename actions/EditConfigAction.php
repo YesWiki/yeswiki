@@ -12,6 +12,8 @@ class EditConfigAction extends YesWikiAction
     // formerly contributed via tools/security's config.yaml through the generic
     // extension _editable_config_params mechanism (see getAuthorizedKeys())
     private const ARCHIVE_KEYS = ['privatePath', 'call_archive_async', 'max_nb_files', 'preupdate_backup_activated'];
+    // formerly contributed via tools/templates's config.yaml the same way
+    private const META_KEYS = ['robots'];
     private const AUTHORIZED_KEYS = [
         'yeswiki_name' => 'core',
         'root_page' => 'core',
@@ -47,6 +49,9 @@ class EditConfigAction extends YesWikiAction
         'mail_custom_message' => 'contact',
 
         'hide_keywords' => 'tags',
+
+        'meta_keywords' => 'templates',
+        'meta_description' => 'templates',
     ];
 
     private $keys;
@@ -68,13 +73,13 @@ class EditConfigAction extends YesWikiAction
         $this->keys = null;
         $this->associatedExtensions = null;
         if (!$this->wiki->UserIsAdmin()) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => get_class($this) . ' : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),
             ]);
         }
         if (!is_writable(ConfigurationFileProvider::getConfigFileFromEnv())) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ERROR_NO_ACCESS') . ' ' . _t('FILE_WRITE_PROTECTED'),
             ]);
@@ -88,7 +93,7 @@ class EditConfigAction extends YesWikiAction
             $this->save();
             $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => '1'], false));
         } elseif ($this->arguments['saved']) {
-            $output .= $this->render('@templates/alert-message.twig', [
+            $output .= $this->render('@core/alert-message.twig', [
                 'type' => 'info',
                 'message' => _t('EDIT_CONFIG_SAVE'),
             ]);
@@ -126,6 +131,11 @@ class EditConfigAction extends YesWikiAction
             $keys[] = ['archive' => self::ARCHIVE_KEYS];
             foreach (self::ARCHIVE_KEYS as $archiveKey) {
                 $associatedExtensions["archive[{$archiveKey}]"] = 'security';
+            }
+
+            $keys[] = ['meta' => self::META_KEYS];
+            foreach (self::META_KEYS as $metaKey) {
+                $associatedExtensions["meta[{$metaKey}]"] = 'templates';
             }
 
             foreach ($this->wiki->extensions as $extensionFolder) {

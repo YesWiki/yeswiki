@@ -12,7 +12,7 @@
   {# Restrict number of columns for horizontal card #}
   {% if nbcol > 2 and params.displayfields.visual and params.style == "horizontal" %}
     {% set nbcol =  2 %}
-    {{ include('@templates/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
+    {{ include('@core/alert-message.twig',{type:'info',message:_t('BAZ_CARD_NBCOL_TOO_HIGH')}) }}
   {% endif %}
 
   {% set imWidth = (nbcol == 4) ? 500 : (nbcol == 5 ? 400 : 700 ) %}

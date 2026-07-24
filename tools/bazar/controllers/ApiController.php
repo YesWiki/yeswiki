@@ -160,7 +160,7 @@ class ApiController extends YesWikiController
                     $html = replaceLinksWithIframe($html);
                 }
             } else {
-                $html = $this->render('@templates/alert-message.twig', [
+                $html = $this->render('@core/alert-message.twig', [
                     'type' => 'info',
                     'message' => _t('ERROR_NO_ACCESS'),
                 ]);

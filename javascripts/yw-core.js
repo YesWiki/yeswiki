@@ -52,6 +52,33 @@
       return
     }
 
+    // Toggle: click on [data-yw-collapse-toggle="#id"] (accordion panels etc.)
+    // Optional [data-yw-accordion="#id"] closes every other panel within that
+    // container first, mirroring Bootstrap's data-parent exclusive-open behavior.
+    const collapseToggle = e.target.closest('[data-yw-collapse-toggle]')
+    if (collapseToggle) {
+      const target = document.querySelector(collapseToggle.getAttribute('data-yw-collapse-toggle'))
+      if (target) {
+        const willOpen = !target.classList.contains('yw-collapse--open')
+        const accordionSelector = collapseToggle.getAttribute('data-yw-accordion')
+        if (accordionSelector) {
+          const accordion = document.querySelector(accordionSelector)
+          if (accordion) {
+            accordion.querySelectorAll('.yw-collapse--open').forEach((el) => {
+              if (el !== target) el.classList.remove('yw-collapse--open')
+            })
+            const openToggleSelector = '[data-yw-collapse-toggle][aria-expanded="true"]'
+            accordion.querySelectorAll(openToggleSelector).forEach((btn) => {
+              if (btn !== collapseToggle) btn.setAttribute('aria-expanded', 'false')
+            })
+          }
+        }
+        target.classList.toggle('yw-collapse--open', willOpen)
+        collapseToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false')
+      }
+      return
+    }
+
     // Picking an item inside an open dropdown's menu closes it (its own click
     // action, e.g. a link's href or an onclick handler, still runs normally)
     if (e.target.closest('.yw-dropdown__menu')) {

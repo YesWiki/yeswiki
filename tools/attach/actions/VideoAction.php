@@ -90,7 +90,7 @@ class VideoAction extends YesWikiAction
         if (empty($this->arguments['id'])
             || empty($this->arguments['serveur'])
             || !in_array(strtolower($this->arguments['serveur']), self::ALLOWED_SERVERS)) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ATTACH_ACTION_VIDEO_PARAM_ERROR'),
             ]);

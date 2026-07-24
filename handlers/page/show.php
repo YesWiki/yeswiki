@@ -67,7 +67,7 @@ if ($HasAccessRead = $this->HasAccess('read')) {
         $this->UnregisterLastInclusion();
     }
 } else {
-    echo '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>'; // to sync with /tools/templates/handlers/page/show__.php
+    echo '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>'; // to sync with /handlers/page/show__.php
 }
 ?>
 <hr class="hr_clear" />

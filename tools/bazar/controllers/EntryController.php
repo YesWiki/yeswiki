@@ -188,7 +188,7 @@ class EntryController extends YesWikiController
                     }
                 } else {
                     $renderedEntry = $this->render(
-                        '@templates/alert-message.twig',
+                        '@core/alert-message.twig',
                         [
                             'type' => 'info',
                             'message' => str_replace('{{nb}}', $entry['id_typeannonce'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')),
@@ -318,7 +318,7 @@ class EntryController extends YesWikiController
                     $this->wiki->exit();
                 }
             } catch (UserFieldException $e) {
-                $error .= $this->render('@templates/alert-message.twig', [
+                $error .= $this->render('@core/alert-message.twig', [
                     'type' => 'warning',
                     'message' => $e->getMessage(),
                 ]);
@@ -377,7 +377,7 @@ class EntryController extends YesWikiController
                 $this->wiki->exit();
             }
         } catch (UserFieldException $e) {
-            $error .= $this->render('@templates/alert-message.twig', [
+            $error .= $this->render('@core/alert-message.twig', [
                 'type' => 'warning',
                 'message' => $e->getMessage(),
             ]);
@@ -757,7 +757,7 @@ class EntryController extends YesWikiController
 
         if (empty($ids)) {
             return $this->render(
-                '@templates/alert-message.twig',
+                '@core/alert-message.twig',
                 [
                     'type' => 'info',
                     'message' => _t('BAZ_IL_Y_A') . ' 0 ' . _t('BAZ_FICHE'),
@@ -786,7 +786,7 @@ class EntryController extends YesWikiController
             $loggerUser = $this->authController->getLoggedUser();
             if (!$formHasUserField && empty($loggerUser)) {
                 // forbidden : ask to connect
-                $results['output'] = $this->render('@templates/alert-message.twig', [
+                $results['output'] = $this->render('@core/alert-message.twig', [
                     'type' => 'warning',
                     'message' => _t('BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM'),
                 ]);
@@ -805,7 +805,7 @@ class EntryController extends YesWikiController
                     $firstEntry = $entries[array_keys($entries)[0]];
                     $message = !empty($form['bn_only_one_entry_message']) ? $form['bn_only_one_entry_message'] : _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM');
                     $message = str_replace('{formName}', $form['bn_label_nature'], $message);
-                    $results['output'] = $this->render('@templates/alert-message.twig', [
+                    $results['output'] = $this->render('@core/alert-message.twig', [
                         'type' => 'info',
                         'message' => $message,
                     ]);

@@ -18,7 +18,7 @@
     {% endblock formcontent %}
 {% endembed %}
 {% if error_message is not empty %}
-{% include '@templates/alert-message.twig' with { 'type' : error_message.type, 'message' : error_message.message} %}
+{% include '@core/alert-message.twig' with { 'type' : error_message.type, 'message' : error_message.message} %}
 {% endif %}
 {% if selectedGroupName is not empty %}
     {% embed '@core/form.twig' with {formMethod: 'post', class:'form-horizontal'} %}
@@ -85,5 +85,5 @@
 {% endembed %}
 
 {% if message is not empty %}
-    {{ include('@templates/alert-message.twig',{message:message,type:type ?? 'info'}) }}
+    {{ include('@core/alert-message.twig',{message:message,type:type ?? 'info'}) }}
 {% endif %}

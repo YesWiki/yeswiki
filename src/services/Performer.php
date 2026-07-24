@@ -234,11 +234,11 @@ class Performer
         ];
         if ($objectType == 'handler') {
             // display it with a header and a footer
-            return $this->twig->renderInSquelette('@templates/alert-message-with-back.twig', $data);
+            return $this->twig->renderInSquelette('@core/alert-message-with-back.twig', $data);
         }
 
         // display it inline
-        return $this->twig->render('@templates/alert-message.twig', $data);
+        return $this->twig->render('@core/alert-message.twig', $data);
     }
 
     /**

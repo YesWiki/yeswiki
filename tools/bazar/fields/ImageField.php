@@ -73,14 +73,14 @@ class ImageField extends FileField
             if ($this->getRequest()->query->has('suppr_image') && urldecode($this->getRequest()->query->get('suppr_image')) === $value) {
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
-                    $output = $this->render('@templates/alert-message.twig', [
+                    $output = $this->render('@core/alert-message.twig', [
                         'type' => 'info',
                         'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
                     ]);
                     // Return empty input after deletion
                     return $output . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
                 } else {
-                    $output = $this->render('@templates/alert-message.twig', [
+                    $output = $this->render('@core/alert-message.twig', [
                         'type' => 'info',
                         'message' => _t('BAZ_DROIT_INSUFFISANT'),
                     ]) . "\n";
@@ -107,13 +107,13 @@ class ImageField extends FileField
                 if ($this->securedDeleteImageAndCache($entry, $value)) {
                     $this->updateEntryAfterFileDelete($entry);
 
-                    $output = $this->render('@templates/alert-message.twig', [
+                    $output = $this->render('@core/alert-message.twig', [
                         'type' => 'info',
                         'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
                     ]);
                     $value = '';
                 } else {
-                    $alertMessage = $this->render('@templates/alert-message.twig', [
+                    $alertMessage = $this->render('@core/alert-message.twig', [
                         'type' => 'info',
                         'message' => _t('BAZ_DROIT_INSUFFISANT'),
                     ]) . "\n";
@@ -149,7 +149,7 @@ class ImageField extends FileField
             }
             $this->updateEntryAfterFileDelete($entry);
 
-            $alertMessage = $this->render('@templates/alert-message.twig', [
+            $alertMessage = $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => str_replace('{file}', $value, _t('BAZ_FICHIER_IMAGE_INEXISTANT')),
             ]);

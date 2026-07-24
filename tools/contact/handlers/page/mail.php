@@ -50,8 +50,6 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
             if (file_exists($chemin)) {
                 $file_content = file_get_contents($chemin);
-            } elseif (file_exists(YESWIKI_SOURCE_DIR . '/tools/templates/' . $chemin)) {
-                $file_content = file_get_contents(YESWIKI_SOURCE_DIR . '/tools/templates/' . $chemin);
             } else {
                 $file_content = '{WIKINI_PAGE}';
             }
@@ -158,7 +156,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
             $message['message'] = _t('CONTACT_MESSAGE_NOT_SENT');
         }
     }
-    echo $this->render('@templates/alert-message.twig', [
+    echo $this->render('@core/alert-message.twig', [
         'type' => $message['class'],
         'message' => $message['message'],
     ]);
@@ -219,7 +217,7 @@ if ((!empty($_POST['mail']) || !empty($_POST['email'])) && isset($_SERVER['HTTP_
         </form>';
     } else {
         // on affiche le formulaire d'identification sinon
-        $output .= $this->render('@templates/alert-message.twig', [
+        $output .= $this->render('@core/alert-message.twig', [
             'type' => 'danger',
             'message' => ($this->GetUser())
                 ? _t('LOGIN_NOT_AUTORIZED')

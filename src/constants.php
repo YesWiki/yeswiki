@@ -56,3 +56,11 @@ define('DEFAULT_MAX_UPLOAD_SIZE', 2000 * 1024);
 
 // define min search keyword length
 define('MIN_SEARCH_KEYWORD_LENGTH', 3);
+
+// default theme/style/squelette (ticket 12, formerly tools/templates/wiki.php)
+define('THEME_PAR_DEFAUT', 'margot');
+define('CSS_PAR_DEFAUT', file_exists(YESWIKI_SOURCE_DIR . '/themes/margot/styles/light.css') ? 'light.css' : 'margot.css');
+define('SQUELETTE_PAR_DEFAUT', '1col.tpl.html');
+define('BACKGROUND_IMAGE_PAR_DEFAUT', '');
+// only the page owner and admins may change its theme
+define('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);

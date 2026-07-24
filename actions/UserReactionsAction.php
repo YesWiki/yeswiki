@@ -18,7 +18,7 @@ class UserReactionsAction extends YesWikiAction
             ]);
         }
 
-        return $this->render('@templates/alert-message.twig', [
+        return $this->render('@core/alert-message.twig', [
             'type' => 'info',
             'message' => _t('REACTION_LOGIN_TO_SEE_YOUR_REACTION'),
         ]);

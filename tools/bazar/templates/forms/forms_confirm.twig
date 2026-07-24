@@ -7,7 +7,7 @@
 		method="post"
 		style="display: inline"
 		>
-		{{ include("@templates/alert-message.twig",{
+		{{ include("@core/alert-message.twig",{
 			type: "warning",
 			message: 
 				_t(type == 'delete' ? 'BAZ_FORM_DELETE' : 'BAZ_FORM_EMPTY',{'formId': int(request.get.idformulaire)}) ~ '<br/>' ~

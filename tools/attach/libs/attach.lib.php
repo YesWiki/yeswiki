@@ -429,7 +429,7 @@ if (!class_exists('attach')) {
             $this->height = $this->wiki->GetParameter('height');
             $this->width = $this->wiki->GetParameter('width');
             $this->displayPDF = $this->wiki->GetParameter('displaypdf');
-            $this->data = $this->wiki->services->get(YesWiki\Templates\Service\Utils::class)->getDataParameter();
+            $this->data = $this->wiki->services->get(YesWiki\Core\Service\TemplateHelperService::class)->getDataParameter();
 
             // test de validité des parametres
             if (empty($this->file)) {

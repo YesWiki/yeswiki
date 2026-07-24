@@ -13,7 +13,7 @@ class EditGroupsAction extends YesWikiAction
         $userManager = $this->getService(UserManager::class);
 
         if (!$this->wiki->UserIsAdmin()) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => 'EditGroupsAction : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),
             ]);

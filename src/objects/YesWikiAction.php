@@ -2,6 +2,8 @@
 
 namespace YesWiki\Core;
 
+use YesWiki\Core\Service\TemplateHelperService;
+
 abstract class YesWikiAction extends YesWikiPerformable
 {
     /* check if ACL are secured for this action
@@ -19,12 +21,12 @@ abstract class YesWikiAction extends YesWikiPerformable
 
         // For admin actions, if the acl is defined with not secured values or not defined
         if ($adminOnly && in_array($acl, ['*', '+', '', '%']) && !$this->wiki->UserIsAdmin()) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => "Action $actionName : " . _t('BAZ_NEED_ADMIN_RIGHTS'),
             ]);
         } elseif (!$this->wiki->CheckModuleACL($actionName, 'action')) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => "Action $actionName : " . _t('NOT_AUTORIZED') . '.',
             ]);
@@ -46,7 +48,7 @@ abstract class YesWikiAction extends YesWikiPerformable
         $pagetag = $this->wiki->GetPageTag();
         if (!isset($GLOBALS["check_$pagetag"][$action_name])) {
             $GLOBALS["check_$pagetag"][$action_name] =
-                $this->wiki->services->get(\YesWiki\Templates\Service\Utils::class)
+                $this->wiki->services->get(TemplateHelperService::class)
                     ->checkGraphicalElements($action_name, $pagetag, $this->wiki->page['body'] ?? '');
         }
         return $GLOBALS["check_$pagetag"][$action_name];
@@ -55,7 +57,7 @@ abstract class YesWikiAction extends YesWikiPerformable
     protected function generate_error_msg(string $action_name): string
     {
         $action_name = strtoupper($action_name);
-        return '<div class="alert alert-danger"><strong>'
+        return '<div class="yw-alert yw-alert--danger"><strong>'
             . _t("TEMPLATE_ACTION_$action_name") . '</strong> : '
             . _t("TEMPLATE_ELEM_{$action_name}_NOT_CLOSED") . '.</div>' . "\n";
     }

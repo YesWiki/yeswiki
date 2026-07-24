@@ -5,7 +5,7 @@ namespace YesWiki\Bazar\Field;
 use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\Performer;
-use YesWiki\Templates\Service\TabsService;
+use YesWiki\Core\Service\TabsService;
 
 #[\Field(['listefichesliees', 'listefiches'])]
 class LinkedEntryField extends BazarField

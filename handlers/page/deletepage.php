@@ -61,13 +61,13 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
                         );
                     }
                 } else {
-                    $msg = $this->render('@templates/alert-message-with-back.twig', [
+                    $msg = $this->render('@core/alert-message-with-back.twig', [
                         'type' => 'danger',
                         'message' => _t('DELETEPAGE_NOT_DELETED'),
                     ]);
                 }
             } catch (TokenNotFoundException $th) {
-                $msg = $this->render('@templates/alert-message-with-back.twig', [
+                $msg = $this->render('@core/alert-message-with-back.twig', [
                     'type' => 'danger',
                     'message' => _t('DELETEPAGE_NOT_DELETED') . ' ' . $th->getMessage(),
                 ]);
@@ -84,7 +84,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             try {
                 $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
             } catch (TokenNotFoundException $th) {
-                $msg .= $this->render('@templates/alert-message.twig', [
+                $msg .= $this->render('@core/alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('DELETEPAGE_NOT_DELETED') . ' ' . $th->getMessage(),
                 ]);

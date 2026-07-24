@@ -27,7 +27,7 @@ class ReactionsAction extends YesWikiAction
     public function run()
     {
         if (empty($this->arguments['title'])) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('REACTION_TITLE_PARAM_NEEDED'),
             ]);

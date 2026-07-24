@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wktemplates" version="0.2" active="1">
-  <author>Florian Schmitt</author>
-  <label>Templates</label>
-  <desc>Le plugin "Templates" vous permet de gerer des template html et css</desc>
-</plugin>

@@ -100,6 +100,11 @@ class ApiController extends YesWikiController
             '<p><code>POST ' . $urlArchives . '</code></p>' .
             '<p><code>POST ' . $urlArchives . '/{id}</code></p>';
 
+        $urlCustomPresets = $this->wiki->Href('', 'api/templates/custom-presets/{presetFilename}');
+        $output .= '<h2>' . _t('TEMPLATES') . '</h2>' . "\n" .
+            '<p><code>POST ' . $urlCustomPresets . '</code><br>' . _t('TEMPLATE_ADD_CSS_PRESET_API_HINT') . '.</p>' .
+            '<p><code>DELETE ' . $urlCustomPresets . '</code><br>' . _t('TEMPLATE_DELETE_CSS_PRESET_API_HINT') . '.</p>';
+
         // TODO use annotations to document the API endpoints
         foreach ($this->wiki->extensions as $extension => $pluginBase) {
             $response = null;
@@ -661,6 +666,26 @@ class ApiController extends YesWikiController
         $page = $pageManager->getOne($tag);
 
         return new ApiResponse($page, Response::HTTP_OK);
+    }
+
+    /**
+     * Relocated from tools/templates's loadmetadatas/savemetadatas AJAX handlers
+     * (ticket 12) - saves per-page theme/style/squelette/background-image overrides.
+     */
+    #[Route('/api/pages/{tag}/metadatas', methods: ['POST'], options: ['acl' => ['+']])]
+    public function savePageMetadatas(Request $request, $tag)
+    {
+        $this->denyAccessUnlessGranted('write', $tag);
+
+        $metadatas = $request->request->all('metadatas');
+        if (empty($metadatas)) {
+            return new ApiResponse(['error' => "'metadatas' should not be empty"], Response::HTTP_BAD_REQUEST);
+        }
+
+        $pageManager = $this->getService(PageManager::class);
+        $pageManager->setMetadata($tag, $metadatas);
+
+        return new ApiResponse($pageManager->getMetadata($tag), Response::HTTP_OK);
     }
 
     #[Route('/api/pages/{tag}/duplicate', methods: ['POST'], options: ['acl' => ['@admins']])]

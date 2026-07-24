@@ -29,7 +29,7 @@ class EmailActivationHandler extends YesWikiHandler
                 && $userName == $currentUser['name']
                 && $accountActivationService->isActivated($currentUser['name'])
             ) {
-                return $this->renderInSquelette('@templates/alert-message.twig', [
+                return $this->renderInSquelette('@core/alert-message.twig', [
                     'type' => 'success',
                     'message' => _t('ACCOUNTACTIVATION_BY_EMAIL_ALREADY_ACTIVATED'),
                 ]);
@@ -37,12 +37,12 @@ class EmailActivationHandler extends YesWikiHandler
 
             $accountActivationService->activate($userName, $key);
 
-            return $this->renderInSquelette('@templates/alert-message.twig', [
+            return $this->renderInSquelette('@core/alert-message.twig', [
                 'type' => 'primary',
                 'message' => _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_SUCCESS'),
             ]);
         } catch (UserNameDoesNotExistException | BadActivationKeyException $th) {
-            return $this->renderInSquelette('@templates/alert-message.twig', [
+            return $this->renderInSquelette('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ERROR', ['error' => $th->getMessage()]),
             ]);

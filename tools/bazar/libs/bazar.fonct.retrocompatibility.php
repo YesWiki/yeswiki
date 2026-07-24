@@ -280,7 +280,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         $output = $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche, '', $danslappli, null, $form);
     } catch (Throwable $t) {
         return $GLOBALS['wiki']->services->get(TemplateEngine::class)
-            ->render('@templates/alert-message.twig', [
+            ->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('PERFORMABLE_ERROR') . '<br/>' . $GLOBALS['wiki']->dumpThrowable($t),
             ]);

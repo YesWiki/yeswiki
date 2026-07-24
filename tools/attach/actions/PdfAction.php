@@ -55,7 +55,7 @@ class PdfAction extends YesWikiAction
                         parse_url($this->arguments['url'], PHP_URL_SCHEME) != parse_url($this->getRequest()->headers->get('referer'), PHP_URL_SCHEME)
                     )
         ) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ATTACH_ACTION_PDF_PARAM_URL_ERROR'),
             ]);

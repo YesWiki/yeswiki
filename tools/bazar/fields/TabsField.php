@@ -3,8 +3,8 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Controller\TabsController;
 use YesWiki\Core\Service\AssetsManager;
-use YesWiki\Templates\Controller\TabsController;
 
 #[\Field(['tabs'])]
 class TabsField extends LabelField

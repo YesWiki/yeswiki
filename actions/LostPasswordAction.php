@@ -65,17 +65,17 @@ class LostPasswordAction extends YesWikiAction
         $renderedTitle = '<h2>' . _t('LOGIN_CHANGE_PASSWORD') . '</h2>';
         switch ($this->typeOfRendering) {
             case 'userNotFound':
-                return $renderedTitle . $this->render('@templates/alert-message-with-back.twig', [
+                return $renderedTitle . $this->render('@core/alert-message-with-back.twig', [
                     'type' => 'danger',
                     'message' => _t('LOGIN_UNKNOWN_USER'),
                 ]);
             case 'successPage':
-                return $renderedTitle . $this->render('@templates/alert-message.twig', [
+                return $renderedTitle . $this->render('@core/alert-message.twig', [
                     'type' => 'success',
                     'message' => _t('LOGIN_MESSAGE_SENT'),
                 ]);
             case 'recoverSuccess':
-                return $renderedTitle . $this->render('@templates/alert-message.twig', [
+                return $renderedTitle . $this->render('@core/alert-message.twig', [
                     'type' => 'success',
                     'message' => _t('LOGIN_PASSWORD_WAS_RESET'),
                 ]);
@@ -94,7 +94,7 @@ class LostPasswordAction extends YesWikiAction
                     'inIframe' => (testUrlInIframe() == 'iframe'),
                 ]);
             case 'directDangerMessage':
-                return $renderedTitle . $this->render('@templates/alert-message.twig', [
+                return $renderedTitle . $this->render('@core/alert-message.twig', [
                     'type' => 'danger',
                     'message' => $message,
                 ]);

@@ -115,7 +115,7 @@ class UsersTableAction extends YesWikiAction
             $action = filter_var($post['userstable_action'], FILTER_UNSAFE_RAW);
             $action = in_array($action, [false, null], true) ? '' : htmlspecialchars(strip_tags($action));
             if ($action != 'deleteUser' || empty($post['username'])) {
-                return $this->render('@templates/alert-message.twig', [
+                return $this->render('@core/alert-message.twig', [
                     'type' => 'danger',
                     'message' => _t('USER_USERSTABLE_MISTAKEN_ARGUMENT'),
                 ]);
@@ -127,7 +127,7 @@ class UsersTableAction extends YesWikiAction
                 $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-delete', false);
                 $user = $this->userManager->getOneByName($rawUserName);
                 if (empty($user)) {
-                    return $this->render('@templates/alert-message.twig', [
+                    return $this->render('@core/alert-message.twig', [
                         'type' => 'danger',
                         'message' => str_replace('{username}', $userName, _t('USERSTABLE_NOT_EXISTING_USER')),
                     ]);
@@ -135,18 +135,18 @@ class UsersTableAction extends YesWikiAction
                 try {
                     $this->userController->delete($user);
 
-                    return $this->render('@templates/alert-message.twig', [
+                    return $this->render('@core/alert-message.twig', [
                         'type' => 'success',
                         'message' => str_replace('{username}', $userName, _t('USERSTABLE_USER_DELETED')),
                     ]);
                 } catch (DeleteUserException $ex) {
-                    return $this->render('@templates/alert-message.twig', [
+                    return $this->render('@core/alert-message.twig', [
                         'type' => 'warning',
                         'message' => $ex->getMessage(),
                     ]);
                 }
             } catch (TokenNotFoundException $th) {
-                return $this->render('@templates/alert-message.twig', [
+                return $this->render('@core/alert-message.twig', [
                     'type' => 'danger',
                     'message' => str_replace('{username}', $userName, _t('USERSTABLE_USER_NOT_DELETED')) . ' ' . $th->getMessage(),
                 ]);

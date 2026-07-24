@@ -2,7 +2,7 @@
   {% if userIsAdmin %}
     <div id="checkboxListe{{forceLabel}}_fake_value_checked" class="conditional_inversed_checkbox">
   {% endif %}
-    {{ include('@templates/alert-message.twig',{
+    {{ include('@core/alert-message.twig',{
         type:'info',
         message:message|nl2br()
     })}}

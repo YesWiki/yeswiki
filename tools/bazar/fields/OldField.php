@@ -22,7 +22,7 @@ class OldField extends BazarField
         $twig = $services->get(TemplateEngine::class);
         if (empty($this->functionName)) {
             $this->error = $twig->render(
-                '@templates/alert-message.twig',
+                '@core/alert-message.twig',
                 [
                     'type' => 'danger',
                     'message' => "Error \$values['functionName'] is not defined while creating " . get_class($this) . ". \n<br>" .
@@ -31,7 +31,7 @@ class OldField extends BazarField
             );
         } elseif (!function_exists($this->functionName)) {
             $this->error = $twig->render(
-                '@templates/alert-message.twig',
+                '@core/alert-message.twig',
                 [
                     'type' => 'danger',
                     'message' => "Error function '" . $this->functionName . "' is not defined while creating " . get_class($this),

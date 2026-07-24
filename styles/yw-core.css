@@ -400,7 +400,149 @@ textarea.yw-input {
   border-left: 4px solid transparent;
 }
 
+/* ---- Collapse/accordion (ticket 12: replaces Bootstrap's data-toggle="collapse") ---- */
+.yw-collapse {
+  display: none;
+}
+.yw-collapse--open {
+  display: block;
+}
+.yw-collapse-toggle {
+  cursor: pointer;
+}
+.yw-collapse-toggle__caret {
+  transition: transform 0.15s ease-in-out;
+}
+.yw-collapse-toggle[aria-expanded='true'] .yw-collapse-toggle__caret {
+  transform: rotate(180deg);
+}
+
+/* ---- Panel/accordion (ticket 12: replaces Bootstrap's .panel/.panel-group) ---- */
+.yw-panel {
+  margin-bottom: 15px;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+}
+.yw-panel__heading {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  background: var(--neutral-light-color, #f5f5f5);
+  border: 0;
+  border-bottom: 1px solid var(--neutral-soft-color);
+}
+.yw-panel__title {
+  margin: 0;
+  font-size: 14px;
+}
+.yw-panel__body {
+  padding: 15px;
+}
+
+/* ---- Container (ticket 12: replaces Bootstrap's .container) ---- */
+.yw-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* ---- Grid/columns (ticket 12: replaces Bootstrap's .row/.col-md-*) ---- */
+.yw-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -10px;
+}
+.yw-col {
+  box-sizing: border-box;
+  padding: 0 10px;
+}
+
+/* ---- Label (ticket 12: replaces Bootstrap's .label) ---- */
+.yw-label {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  background: var(--neutral-soft-color);
+  border-radius: 4px;
+}
+.yw-label--primary {
+  background: var(--primary-color);
+}
+.yw-label--danger {
+  background: var(--danger-color);
+}
+.yw-label--warning {
+  background: var(--warning-color);
+}
+.yw-label--success {
+  background: var(--success-color);
+}
+
+/* ---- Nav (ticket 12: replaces Bootstrap's .nav/.nav-tabs) ---- */
+.yw-nav {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid var(--neutral-soft-color);
+}
+.yw-nav li {
+  list-style: none;
+}
+.yw-nav li a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: var(--neutral-color);
+}
+.yw-nav li.active a {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+}
+
+/* ---- Progress bar (ticket 12: replaces Bootstrap's .progress) ---- */
+.yw-progressbar {
+  height: 16px;
+  overflow: hidden;
+  background: var(--neutral-light-color, #f5f5f5);
+  border-radius: 4px;
+}
+.yw-progressbar__bar {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+/* ---- Breadcrumb (ticket 12: replaces Bootstrap's .breadcrumb) ---- */
+.yw-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+.yw-breadcrumb li {
+  list-style: none;
+}
+.yw-breadcrumb li + li::before {
+  content: '/';
+  padding: 0 6px;
+  color: var(--neutral-soft-color);
+}
+.yw-breadcrumb__active {
+  color: var(--neutral-soft-color);
+}
+
 /* ---- Utilities -------------------------------------------------- */
+.yw-list-unstyled {
+  list-style: none;
+  padding-left: 0;
+}
 .yw-text-muted {
   color: var(--neutral-soft-color);
 }

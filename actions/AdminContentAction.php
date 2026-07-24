@@ -11,7 +11,7 @@ class AdminContentAction extends YesWikiAction
     public function run()
     {
         if (!$this->wiki->UserIsAdmin()) {
-            return $this->render('@templates/alert-message.twig', [
+            return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ACLS_RESERVED_FOR_ADMINS'),
             ]);

@@ -6,7 +6,6 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Entity\Event;
-use YesWiki\Templates\Service\Utils;
 use YesWiki\Wiki;
 
 class ThemeManager implements EventSubscriberInterface
@@ -72,7 +71,7 @@ class ThemeManager implements EventSubscriberInterface
         PageManager $pageManager,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        Utils $utils
+        TemplateHelperService $utils
     ) {
         $this->wiki = $wiki;
         $this->errorMessage = '';

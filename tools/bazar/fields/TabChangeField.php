@@ -3,7 +3,7 @@
 namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Templates\Controller\TabsController;
+use YesWiki\Core\Controller\TabsController;
 
 #[\Field(['tabchange'])]
 class TabChangeField extends LabelField

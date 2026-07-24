@@ -35,6 +35,6 @@ class HibernationService
             'message' => _t('WIKI_IN_HIBERNATION') . '<br/>',
         ];
 
-        return $this->templateEngine->render('@templates/alert-message-with-back.twig', $message);
+        return $this->templateEngine->render('@core/alert-message-with-back.twig', $message);
     }
 }

@@ -15,7 +15,7 @@ class DownloadHandler extends YesWikiHandler
             $att->doDownload();
             unset($att);
         } else {
-            return $this->renderInSquelette('@templates/alert-message.twig', [
+            return $this->renderInSquelette('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => get_class($this) . ' : ' . _t('ERROR_NO_ACCESS'),
             ]);
