@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Login\Exception;
+namespace YesWiki\Core\Exception;
 
 class LoginException extends \Exception
 {

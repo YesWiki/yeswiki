@@ -1,8 +1,5 @@
 <?php
 
-namespace YesWiki\Login;
-
-use Exception;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
@@ -156,7 +153,7 @@ class UserSettingsAction extends YesWikiAction
     private function displayForm(?User $user = null)
     {
         if ($this->adminIsActing || $this->userLoggedIn) {
-            return $this->render('@login/usersettings.twig', [
+            return $this->render('@core/usersettings.twig', [
                 'adminIsActing' => $this->adminIsActing,
                 'errorPasswordChange' => $this->errorPasswordChange,
                 'errorUpdate' => $this->errorUpdate,
@@ -175,7 +172,7 @@ class UserSettingsAction extends YesWikiAction
             preg_quote('</strong>', '/') .
             ')/', '$1' . _t('USERSETTINGS_CAPTCHA_USER_CREATION') . '$2', $captcha);
 
-        return $this->render('@login/user-signup-form.twig', [
+        return $this->render('@core/user-signup-form.twig', [
             'error' => $this->error,
             'name' => $this->wantedUserName,
             'email' => $this->wantedEmail,

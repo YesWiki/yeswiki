@@ -105,9 +105,15 @@ class AccountActivationService
 
         $baseUrl = $this->getBaseUrl();
         $context = ['userName' => $user['name'], 'baseUrl' => $baseUrl, 'link' => $link];
-        $subject = $this->templateEngine->render('@templates/emailactivation-email-subject.twig', $context);
-        $text = $this->templateEngine->render('@templates/emailactivation-email-text.twig', $context);
-        $html = $this->templateEngine->render('@templates/emailactivation-email-html.twig', $context);
+        // '@templates' is tools/templates/'s own Twig namespace (it's the tool literally
+        // named "templates", e.g. alert-message.twig) -- repo-root templates/ is '@core'
+        // (see TemplateEngine's core-paths registration). Using '@templates' here was a
+        // real bug from ticket 07: sendActivationLink() would have thrown "template not
+        // found" the first time it actually ran, never caught because the ticket 07 tests
+        // deliberately avoided exercising this method (to not trigger a real email send).
+        $subject = $this->templateEngine->render('@core/emailactivation-email-subject.twig', $context);
+        $text = $this->templateEngine->render('@core/emailactivation-email-text.twig', $context);
+        $html = $this->templateEngine->render('@core/emailactivation-email-html.twig', $context);
 
         $mailer->sendEmailFromAdmin($user['email'], $subject, $text, $html);
 

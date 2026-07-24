@@ -1,7 +1,5 @@
 <?php
 
-namespace YesWiki\Login;
-
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
@@ -85,7 +83,7 @@ class LostPasswordAction extends YesWikiAction
                     $key = $this->securityController->filterInput(INPUT_POST, 'key', FILTER_DEFAULT, true);
                 }
 
-                return $this->render('@login/lost-password-recover-form.twig', [
+                return $this->render('@core/lost-password-recover-form.twig', [
                     'errorType' => $this->errorType,
                     'user' => $user,
                     'message' => $message ?? '',
@@ -99,7 +97,7 @@ class LostPasswordAction extends YesWikiAction
                 ]);
             case 'emailForm':
             default:
-                return $this->render('@login/lost-password-email-form.twig', [
+                return $this->render('@core/lost-password-email-form.twig', [
                     'errorType' => $this->errorType,
                 ]);
         }
@@ -181,6 +179,8 @@ class LostPasswordAction extends YesWikiAction
      * @param string $userName The user login
      * @param string $key      The password recovery key (sent by email)
      *
+     * @throws BadFormatPasswordException if $password doesn't meet the site's password policy
+     *
      * @return bool True if OK or false if any problems
      */
     private function resetPassword(string $userName, string $key, string $password)
@@ -198,6 +198,12 @@ class LostPasswordAction extends YesWikiAction
 
             return false;
         }
+        // password-recovery was the one path to setting a password that never enforced the
+        // site's strength policy, unlike signup and self-service change -- a backdoor around
+        // it. checkPasswordValidateRequirements() throws BadFormatPasswordException, already
+        // caught by manageSubStep()'s case 2 (the catch clause was already there, unreachable
+        // until now).
+        $this->authController->checkPasswordValidateRequirements($password);
         $this->authController->setPassword($user, $password);
         // Was able to update password => Remove the key from triples table
         // (only one active key per user, so no need to match the exact value)

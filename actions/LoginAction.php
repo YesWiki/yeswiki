@@ -1,14 +1,12 @@
 <?php
 
-namespace YesWiki\Login;
-
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Exception\LoginException;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Login\Exception\LoginException;
 use YesWiki\Security\Controller\SecurityController;
 
 class LoginAction extends YesWikiAction
@@ -74,7 +72,7 @@ class LoginAction extends YesWikiAction
             'nobtn' => $this->formatBoolean($arg, false, 'nobtn'),
             'template' => (empty($arg['template'])
                 || empty(basename($arg['template']))
-                || !$this->templateEngine->hasTemplate('@login/' . basename($arg['template'])))
+                || !$this->templateEngine->hasTemplate('@core/' . basename($arg['template'])))
                 ? 'default.twig'
                 : basename($arg['template']),
         ];
@@ -163,7 +161,7 @@ class LoginAction extends YesWikiAction
             $error = _t('LOGIN_COOKIES_ERROR');
         }
 
-        $output = $this->render("@login/{$this->arguments['template']}", [
+        $output = $this->render("@core/{$this->arguments['template']}", [
             'connected' => $connected,
             'user' => $user['name'] ?? $this->getRequest()->request->get('name', ''),
             'email' => $user['email'] ?? $this->getRequest()->request->get('email', ''),
@@ -240,8 +238,9 @@ class LoginAction extends YesWikiAction
             // on affiche une erreur sur le NomWiki sinon
             $this->wiki->SetMessage($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
-        } catch (Exception $ex) {
-            // error error
+        } catch (\Exception $ex) {
+            // catches AuthController::login()'s BadLoginException (ticket 07's activation
+            // gate, already carrying a full user-facing message) along with anything else
             Flash::error($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
         }
