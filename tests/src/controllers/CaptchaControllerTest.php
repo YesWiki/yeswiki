@@ -6,10 +6,12 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\CaptchaController;
 use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
+require_once 'tests/ForcedParameterBag.php';
 
 /**
  * Regression tests for ticket 15 (security-core-split): checkCaptchaBeforeSave() was merged
@@ -22,58 +24,7 @@ class CaptchaControllerTest extends YesWikiTestCase
     private function buildController(Wiki $wiki, bool $useCaptcha): CaptchaController
     {
         $realParams = $wiki->services->get(ParameterBagInterface::class);
-        $forcedParams = new class ($realParams, $useCaptcha) implements ParameterBagInterface {
-            public function __construct(private ParameterBagInterface $real, private bool $useCaptcha)
-            {
-            }
-
-            public function get(string $name): \UnitEnum|array|string|int|float|bool|null
-            {
-                return $name === 'use_captcha' ? $this->useCaptcha : $this->real->get($name);
-            }
-
-            public function has(string $name): bool
-            {
-                return $name === 'use_captcha' ? true : $this->real->has($name);
-            }
-
-            public function clear(): void
-            {
-                $this->real->clear();
-            }
-            public function add(array $parameters): void
-            {
-                $this->real->add($parameters);
-            }
-            public function all(): array
-            {
-                return $this->real->all();
-            }
-            public function remove(string $name): void
-            {
-                $this->real->remove($name);
-            }
-            public function set(string $name, $value): void
-            {
-                $this->real->set($name, $value);
-            }
-            public function resolve(): void
-            {
-                $this->real->resolve();
-            }
-            public function resolveValue(mixed $value): mixed
-            {
-                return $this->real->resolveValue($value);
-            }
-            public function escapeValue(mixed $value): mixed
-            {
-                return $this->real->escapeValue($value);
-            }
-            public function unescapeValue(mixed $value): mixed
-            {
-                return $this->real->unescapeValue($value);
-            }
-        };
+        $forcedParams = new ForcedParameterBag($realParams, ['use_captcha' => $useCaptcha]);
 
         $captchaController = new CaptchaController($forcedParams);
         $captchaController->setWiki($wiki);

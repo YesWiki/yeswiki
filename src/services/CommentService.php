@@ -5,7 +5,6 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Core\Entity\Event;
-use YesWiki\Core\Service\HashCashService;
 use YesWiki\Wiki;
 
 class CommentService implements EventSubscriberInterface
@@ -64,14 +63,11 @@ class CommentService implements EventSubscriberInterface
             ];
         }
         if ($this->wiki->HasAccess('comment', $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
-            if ($this->params->get('use_hashcash')) {
-                require_once YESWIKI_SOURCE_DIR . '/tools/security/secret/wp-hashcash.lib';
-                if (!isset($content['hashcash_value']) || ($content['hashcash_value'] != hashcash_field_value())) {
-                    return [
-                        'code' => 400,
-                        'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
-                    ];
-                }
+            if (!$this->wiki->services->get(HashCashService::class)->checkHashcash()) {
+                return [
+                    'code' => 400,
+                    'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
+                ];
             }
             if (empty($idComment)) {
                 $newComment = true;
