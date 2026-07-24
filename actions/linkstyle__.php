@@ -1,6 +1,11 @@
 
 <?php
 
+// relocated from tools/tags/actions/linkstyle__.php (ticket 10): tags.css covers the
+// tag cloud, epub export selection UI, and the rss-icon, loaded on every page like the
+// rest of this file's styles
+$this->AddCSSFile('styles/actions/tags-nuage.css');
+
 // This GLOBALS is populated from AddCSS and AddCSSFile, we add it at the end
 // Be careful to render Header AFTER rendering actions
 // do not use YesWiki:AddCSSFile(), YesWiki:LinkCSSFile() or YesWiki:AddCSS() in custom/linkstyle__.php (it will not work)

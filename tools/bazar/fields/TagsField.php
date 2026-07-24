@@ -4,7 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Tags\Service\TagsManager;
+use YesWiki\Core\Service\TagsManager;
 
 #[\Field(['tags'])]
 class TagsField extends EnumField
@@ -65,7 +65,7 @@ class TagsField extends EnumField
             }
         }
 
-        $GLOBALS['wiki']->AddJavascriptFile('tools/tags/libs/vendor/bootstrap-tagsinput.min.js');
+        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/bootstrap-tagsinput.min.js');
 
         return $this->render('@bazar/inputs/tags.twig', [
             'value' => $value,

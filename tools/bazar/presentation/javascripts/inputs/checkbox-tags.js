@@ -1,5 +1,5 @@
 // Jquery needed
-// tools/tags/libs/vendor/bootstrap-tagsinput.min.js needed
+// javascripts/vendor/bootstrap-tagsinput.min.js needed
 $(document).ready(() => {
   function BazarTagsInputService() {
     this.init = function() {

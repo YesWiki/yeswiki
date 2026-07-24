@@ -138,4 +138,7 @@ return [
     'SHOW_PASSWORD' => 'Afficher le mot de passe',
     'HIDE_PASSWORD' => 'Masquer le mot de passe',
     'ERROR_CONTACT_ADMIN' => 'Une erreur est survenue. Veuillez contacter l\'administrateur du site et lui communiquer le message suivant : ',
+
+    // relocated from tools/tags/lang/tagsjs_fr.inc.php (ticket 10)
+    'TAGS_NUMBER_OF_PAGES' => 'Nombre de pages : {nb}',
 ];

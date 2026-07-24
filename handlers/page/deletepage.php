@@ -101,7 +101,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         }
 
         $msg .= "</ul>\n";
-        // eraselink=oui will delete the page links in tools/tags/handlers/page/__deletepage.php
+        // eraselink=oui will delete the page links in handlers/page/__deletepage.php
         $msg .= '</br><form action="' . $this->Href('deletepage', '', 'confirme=oui&eraselink=oui' . $incomingUrlParam);
         $msg .= '" method="post" style="display: inline">' . "\n";
         $msg .= str_replace('{tag}', $this->Link($this->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";

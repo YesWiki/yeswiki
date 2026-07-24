@@ -11,7 +11,7 @@ require_once 'tests/YesWikiTestCase.php';
 /**
  * Regression test for the SQL injection in the {{filtertags}} action.
  *
- * get_filtertags_parameters_recursive() (tools/tags/libs/tags.functions.php) used
+ * get_filtertags_parameters_recursive() (src/tags.functions.php) used
  * to quote-wrap each comma-separated filterN token without escaping it, then
  * filtertags.php concatenated the result raw into a `tags.value IN (...)` clause.
  * Under MySQL/MariaDB's default sql_mode (backslash-escapes enabled, no
@@ -45,7 +45,7 @@ class FiltertagsActionTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $dbService = $wiki->services->get(DbService::class);
         $tripleStore = $wiki->services->get(TripleStore::class);
-        // get_filtertags_parameters_recursive() (tools/tags/libs/tags.functions.php)
+        // get_filtertags_parameters_recursive() (src/tags.functions.php)
         // reads $GLOBALS['wiki'], which is normally populated by the production HTTP
         // bootstrap rather than by the test harness.
         $GLOBALS['wiki'] = $wiki;
@@ -59,7 +59,7 @@ class FiltertagsActionTest extends YesWikiTestCase
         $tripleStore->create(self::PAGE_TAG, self::TAG_PROPERTY, self::DECOY_TAG, '', '');
 
         try {
-            include_once 'tools/tags/libs/tags.functions.php';
+            include_once 'src/tags.functions.php';
 
             $wiki->parameter = ['filter1' => self::MALICIOUS_TAG . ',' . self::DECOY_TAG];
             $params = get_filtertags_parameters_recursive();

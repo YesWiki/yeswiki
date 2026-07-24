@@ -237,6 +237,7 @@ class Init
             'htmlPurifierActivated' => true,
             'htmlPurifierSafeIframeRegexp' => '~^https://.*~', // regex for domains allowed as <iframe> src ; very permissive by default, restrict for public wikis
             'favorites_activated' => true,
+            'hide_keywords' => false,
             ArchiveService::PARAMS_KEY_IN_WAKKA => [
                 ArchiveService::KEY_FOR_HIDE_CONFIG_VALUES => ArchiveService::DEFAULT_PARAMS_TO_ANONYMIZE,
                 'authorize_bypass_preupdate_backup' => false,

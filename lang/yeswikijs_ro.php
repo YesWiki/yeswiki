@@ -118,4 +118,7 @@ return [
     'ADMIN_BACKUPS_CONFIRMATION_TO_DELETE' => 'Următoarele fişiere vor fi şterse de backup.
 Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
 <pre>{files}</pre>',
+
+    // relocated from tools/tags/lang/tagsjs_ro.inc.php (ticket 10)
+    'TAGS_NUMBER_OF_PAGES' => 'Număr de pagini: {nb}',
 ];

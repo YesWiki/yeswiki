@@ -62,7 +62,7 @@ use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Security\Controller\SecurityController;
-use YesWiki\Tags\Service\TagsManager;
+use YesWiki\Core\Service\TagsManager;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
 // time, before anything (Init, the installer, error paths) calls _t()

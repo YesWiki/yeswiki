@@ -26,6 +26,7 @@ use YesWiki\Core\Service\DiffService;
 use YesWiki\Core\Service\DuplicationManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ReactionManager;
+use YesWiki\Core\Service\TagsManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
@@ -61,6 +62,10 @@ class ApiController extends YesWikiController
             '<h4>' . _t('UPDATE') . ' ' . _t('GROUP') . '</h4>' . "\n" .
             '<p><code>POST ' . $urlGroup . '/{group_name}/update</code></p>' . "\n" .
             '<p><code> users[0]=…&users[1]</code></p>' . "\n";
+
+        $urlTags = $this->wiki->Href('', 'api/tags');
+        $output .= '<h2>' . _t('TAGS_TAGS') . '</h2>' . "\n" .
+            '<p><code>GET ' . $urlTags . '?search=…&page=…&perpage=…</code><br>Search tags (paginated, empty search returns everything)</p>';
 
         $urlPages = $this->wiki->Href('', 'api/pages');
         $output .= '<h2>' . _t('PAGES') . '</h2>' . "\n" .
@@ -554,6 +559,26 @@ class ApiController extends YesWikiController
     {
         // todo use Anti-Csrf token or Bearer HTTP header
         return $this->deleteComment($tag);
+    }
+
+    #[Route('/api/tags', methods: ['GET'], options: ['acl' => ['public']])]
+    public function getTags(Request $request)
+    {
+        $perpage = max(1, min((int) $request->query->get('perpage', 20), 100));
+        $page = max(1, (int) $request->query->get('page', 1));
+
+        $result = $this->getService(TagsManager::class)->search(
+            (string) $request->query->get('search', ''),
+            $perpage,
+            ($page - 1) * $perpage
+        );
+
+        return new ApiResponse([
+            'tags' => $result['tags'],
+            'total' => $result['total'],
+            'page' => $page,
+            'perpage' => $perpage,
+        ]);
     }
 
     #[Route('/api/pages', options: ['acl' => ['public']])]

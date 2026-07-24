@@ -105,4 +105,7 @@ return [
     'REACTION_CONFIRM_DELETE_ALL' => 'இந்த வாக்குகளிலிருந்து அனைத்து எதிர்வினைகளையும் அகற்ற விரும்புகிறீர்களா?',
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'இந்த பக்கத்தை கிதுபில் மாற்றவும்',
     'LINK_TO_CHANGE_PASSWORD' => 'கடவுச்சொல்லை மாற்றுவதற்கான இணைப்பு',
+
+    // relocated from tools/tags/lang/tagsjs_ta.inc.php (ticket 10)
+    'TAGS_NUMBER_OF_PAGES' => 'நோம்ப்ரே டி பக்கங்கள்: {nb}',
 ];

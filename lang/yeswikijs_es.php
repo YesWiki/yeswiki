@@ -118,4 +118,7 @@ Confirme su eliminación marcando la casilla siguiente.
     'FORM_ID_AVAILABLE' => 'El formulario con el identificador {id} aún no existe en la url indicada, por lo que será creado.',
     'FORM_ID_NOT_AVAILABLE' => 'El formulario con el identificador {id} ya no está disponible en la url indicada. Debe cambiar el identificador.',
     'FORM_ID_IS_COMPATIBLE' => 'Existe un formulario con el mismo identificador ({id}) en la url indicada y parece tener al menos los mismos campos obligatorios. Se utilizará para la duplicación.',
+
+    // relocated from tools/tags/lang/tagsjs_es.inc.php (ticket 10)
+    'TAGS_NUMBER_OF_PAGES' => 'Número de páginas: {nb}',
 ];

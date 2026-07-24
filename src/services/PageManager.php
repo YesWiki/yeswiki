@@ -7,7 +7,7 @@ use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Security\Controller\SecurityController;
-use YesWiki\Tags\Service\TagsManager;
+use YesWiki\Core\Service\TagsManager;
 use YesWiki\Wiki;
 
 class PageManager

@@ -118,4 +118,7 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     'FORM_ID_AVAILABLE' => 'Adierazitako URLan ez dago oraindik {id} identifikatzailea duen inprimakia, sortu egingo da.',
     'FORM_ID_NOT_AVAILABLE' => '{id} identifikatzailea duen formularioa ez dago erabilgarri adierazitako URLan; identifikatzailea aldatu behar da.',
     'FORM_ID_IS_COMPATIBLE' => 'Identifikatzaile bereko ({id}) formulario bat dago adierazitako URLan, eta badirudi gutxienez antzeko nahitaezko eremuak dituela. Bikoizketa egiteko erabiliko da.',
+
+    // relocated from tools/tags/lang/tagsjs_eu.inc.php (ticket 10)
+    'TAGS_NUMBER_OF_PAGES' => 'Orrialde-kopurua: {nb}',
 ];

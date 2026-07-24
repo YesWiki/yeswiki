@@ -38,6 +38,8 @@ class EditConfigAction extends YesWikiAction
 
         'contact_from' => 'contact', // merged in contact instead of email to prevent duplication of blocks
         'mail_custom_message' => 'contact',
+
+        'hide_keywords' => 'tags',
     ];
 
     private $keys;

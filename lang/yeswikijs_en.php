@@ -120,4 +120,7 @@ Please confirm their deletion by checking the box below.
     'FORM_ID_NOT_AVAILABLE' => 'The form with the identifier {id} is no longer available on the indicated url, you must change the identifier.',
     'SHOW_PASSWORD' => 'Show password',
     'HIDE_PASSWORD' => 'Hide password',
+
+    // relocated from tools/tags/lang/tagsjs_en.inc.php (ticket 10)
+    'TAGS_NUMBER_OF_PAGES' => 'Number of pages : {nb}',
 ];

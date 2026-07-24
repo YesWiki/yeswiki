@@ -83,7 +83,7 @@ class UserFavoritesAction extends YesWikiAction
             } else {
                 $page = $this->pageManager->getOne($favorite['resource']);
                 if (!empty($page)) {
-                    include_once YESWIKI_SOURCE_DIR . '/tools/tags/libs/tags.functions.php';
+                    include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
                     $title = get_title_from_body($page);
                     if (!empty($title)) {
                         $favorites[$key]['title'] = $title;
