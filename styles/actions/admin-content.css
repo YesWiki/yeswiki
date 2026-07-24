@@ -16,19 +16,19 @@
   align-items: flex-end;
   gap: 8px 12px;
 }
-.admin-content-filter-bar .form-group {
+.admin-content-filter-bar .yw-form-group {
   display: flex;
   flex-direction: column;
   margin: 0;
 }
-.admin-content-filter-bar .form-group label {
+.admin-content-filter-bar .yw-form-group label {
   font-size: 11px;
   font-weight: 600;
   color: #555;
   margin-bottom: 2px;
   white-space: nowrap;
 }
-.admin-content-filter-bar .form-control {
+.admin-content-filter-bar .yw-input {
   height: 30px;
   font-size: 13px;
   padding: 4px 8px;
@@ -65,7 +65,7 @@
   font-weight: 600;
   flex: 1;
 }
-.admin-bulk-panel .btn {
+.admin-bulk-panel .yw-btn {
   font-size: 13px;
 }
 
@@ -164,11 +164,11 @@
   cursor: auto;
 }
 
-.table-condensed > tbody > tr > td {
+.yw-table--condensed > tbody > tr > td {
   line-height: 1.1rem;
 }
 
-.table > thead > tr > th {
+.yw-table > thead > tr > th {
   font-weight: 600;
 }
 
@@ -183,7 +183,7 @@
   margin-bottom: 6px;
 }
 
-.admin-content-pager .pagination {
+.admin-content-pager .yw-pagination {
   margin: 0;
 }
 
@@ -216,7 +216,7 @@
   overflow-x: auto;
   overflow-y: auto;
 }
-#admin-content-table-container .table > thead > tr > th {
+#admin-content-table-container .yw-table > thead > tr > th {
   position: sticky;
   top: 0;
   background: #fff;

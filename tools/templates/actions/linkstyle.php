@@ -12,6 +12,10 @@ if (!strstr($favoriteStyle, 'bootstrap.') && !strstr($favoriteStyle, 'bs.')) {
 // styles par defaut de yeswiki
 echo $this->LinkCSSFile('styles/yeswiki-base.css');
 
+// yw-* core design system (ADR-0004): namespaced under yw-*, safe to load
+// alongside Bootstrap/a theme without class collisions
+echo $this->LinkCSSFile('styles/yw-core.css');
+
 // presets activated and path ?
 $favoritePreset = $themeManager->getFavoritePreset();
 $presetsActivated = !empty($themeManager->getTemplates()[$themeManager->getFavoriteTheme()]['presets']) && !empty($favoritePreset);

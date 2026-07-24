@@ -1,0 +1,281 @@
+/* ============================================================
+   yw-core.css — core's own minimal, yw-*-namespaced CSS design
+   system (ADR-0004). Every selector here is a `.yw-*` class so it
+   can load alongside Bootstrap (or any theme framework) without
+   colliding. Reuses the color tokens already defined in
+   yeswiki-base.css's :root block (loaded before this file).
+   ============================================================ */
+
+/* ---- Buttons ------------------------------------------------ */
+.yw-btn {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--neutral-color);
+  text-decoration: none;
+}
+.yw-btn:hover {
+  filter: brightness(0.95);
+}
+.yw-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.yw-btn--sm {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+.yw-btn--primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+.yw-btn--danger {
+  background: var(--danger-color);
+  border-color: var(--danger-color);
+  color: #fff;
+}
+.yw-btn--warning {
+  background: var(--warning-color);
+  border-color: var(--warning-color);
+  color: #fff;
+}
+.yw-btn--info {
+  background: var(--secondary-color-2, var(--primary-color));
+  border-color: var(--secondary-color-2, var(--primary-color));
+  color: #fff;
+}
+.yw-btn--success {
+  background: var(--success-color);
+  border-color: var(--success-color);
+  color: #fff;
+}
+
+/* ---- Form controls -------------------------------------------- */
+.yw-input,
+select.yw-input,
+textarea.yw-input {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--neutral-color);
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.yw-input:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -1px;
+}
+.yw-form-group {
+  margin-bottom: 10px;
+}
+.yw-form-group > label {
+  display: block;
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+.yw-radio-inline,
+.yw-checkbox-inline {
+  display: inline-block;
+  font-weight: normal;
+  margin-right: 12px;
+}
+.yw-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+.yw-form-row > .yw-form-group {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.yw-box {
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 8px 10px;
+  font-size: 12px;
+  background: var(--neutral-light-color, #f5f5f5);
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+}
+
+/* ---- Alerts --------------------------------------------------- */
+.yw-alert {
+  position: relative;
+  padding: 10px 32px 10px 12px;
+  margin-bottom: 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+.yw-alert--info {
+  background: #eef6f7;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+.yw-alert--success {
+  background: #eef8ee;
+  border-color: var(--success-color);
+  color: var(--success-color);
+}
+.yw-alert--warning {
+  background: #fdf3ec;
+  border-color: var(--warning-color);
+  color: var(--warning-color);
+}
+.yw-alert--danger {
+  background: #fbeeec;
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+.yw-close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.yw-close:hover {
+  opacity: 1;
+}
+.yw-modal__header .yw-close {
+  position: static;
+}
+
+/* ---- Modal ------------------------------------------------------
+   Bootstrap's modal toggled visibility with JS-added inline styles
+   and a separate backdrop element; here a single `.yw-modal--open`
+   class (added/removed by yw-core.js) does both via CSS. */
+.yw-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  padding: 20px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.5);
+}
+.yw-modal--open {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.yw-modal__dialog {
+  width: 100%;
+  max-width: 600px;
+  margin: 30px auto;
+}
+.yw-modal__dialog--lg {
+  max-width: 900px;
+}
+.yw-modal__content {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+.yw-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--neutral-light-color, #eee);
+}
+.yw-modal__title {
+  margin: 0;
+  font-size: 17px;
+}
+.yw-modal__body {
+  padding: 16px;
+}
+.yw-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--neutral-light-color, #eee);
+}
+
+/* ---- Table -------------------------------------------------- */
+.yw-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.yw-table th,
+.yw-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--neutral-light-color, #eee);
+  vertical-align: top;
+}
+.yw-table--condensed th,
+.yw-table--condensed td {
+  padding: 4px 8px;
+}
+.yw-table--striped tbody tr:nth-child(odd) {
+  background: var(--neutral-light-color, #f9f9f9);
+}
+.yw-table--hover tbody tr:hover {
+  background: #eef6f7;
+}
+
+/* ---- Pagination ----------------------------------------------- */
+.yw-pagination {
+  display: flex;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.yw-pagination__link {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 12px;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 3px;
+  color: var(--primary-color);
+  text-decoration: none;
+}
+.yw-pagination__item--active .yw-pagination__link {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+.yw-pagination__item--disabled .yw-pagination__link {
+  color: var(--neutral-soft-color);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---- Utilities -------------------------------------------------- */
+.yw-text-muted {
+  color: var(--neutral-soft-color);
+}
+.yw-text-center {
+  text-align: center;
+}
+.yw-text-danger {
+  color: var(--danger-color);
+}
+.yw-text-warning {
+  color: var(--warning-color);
+}
+.yw-text-info {
+  color: var(--primary-color);
+}

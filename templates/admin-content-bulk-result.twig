@@ -4,8 +4,8 @@
    ============================================================ #}
 
 {% if errors is not empty %}
-<div class="alert alert-warning alert-dismissible" role="alert">
-    <button type="button" class="close" data-dismiss="alert">&times;</button>
+<div class="yw-alert yw-alert--warning" role="alert">
+    <button type="button" class="yw-close" data-yw-dismiss="alert">&times;</button>
     <strong><i class="fa fa-exclamation-triangle"></i> {{ _t('ADMIN_CONTENT_BULK_RESULT_PARTIAL_FAILURE') }}</strong>
     {% if success is not empty %}
      — {{ _t('ADMIN_CONTENT_BULK_RESULT_PARTIAL_UPDATED')|replace({'{success}': success|length, '{errors}': errors|length}) }}
@@ -21,8 +21,8 @@
 {% endif %}
 
 {% if success is not empty %}
-<div class="alert alert-success alert-dismissible" role="alert">
-    <button type="button" class="close" data-dismiss="alert">&times;</button>
+<div class="yw-alert yw-alert--success" role="alert">
+    <button type="button" class="yw-close" data-yw-dismiss="alert">&times;</button>
     <i class="fa fa-check-circle"></i>
     {% if action == 'delete' %}
         {{ _t('ADMIN_CONTENT_BULK_RESULT_DELETED')|replace({'{success}': success|length}) }}

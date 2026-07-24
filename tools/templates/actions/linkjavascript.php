@@ -64,6 +64,11 @@ if (!$yeswikijs) {
     $this->addJavascriptFile('javascripts/yeswiki-base.js');
 }
 
+// htmx + yw-* core design system (ADR-0004/0005): loaded on every page so
+// core interactions can rely on them without each surface opting in itself
+$this->addJavascriptFile('javascripts/vendor/htmx/htmx.min.js');
+$this->addJavascriptFile('javascripts/yw-core.js');
+
 // ajoute la méthode pour les traductions js
 $this->addJavascriptFile('javascripts/yeswiki-base-no-defer.js', true);
 

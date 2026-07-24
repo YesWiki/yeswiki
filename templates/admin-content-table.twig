@@ -34,7 +34,7 @@
                 {%- else -%}<i class="fa fa-sort-down"></i>
             {%- endif -%}
         {%- else -%}
-            <i class="fa fa-sort text-muted"></i>
+            <i class="fa fa-sort yw-text-muted"></i>
         {%- endif -%}
     </span>
 </a>
@@ -45,7 +45,7 @@
 {% set offset = (currentPage - 1) * perpage %}
 {% set rangeEnd = (offset + perpage < total) ? (offset + perpage) : total %}
 <div class="admin-content-pager admin-content-pager-top">
-    <small class="text-muted">
+    <small class="yw-text-muted">
         {% if total > 0 %}
             {{ _t("ADMIN_CONTENT_PAGER_RANGE") |replace({'{start}': offset + 1, '{end}': rangeEnd, '{total}': total}) }}
         {% else %}
@@ -61,7 +61,7 @@
    Table
    ----------------------------------------------------------------------- #}
 <div class="admin-content-table-wrapper">
-    <table class="table table-striped table-condensed table-hover admin-content-table">
+    <table class="yw-table yw-table--striped yw-table--condensed yw-table--hover admin-content-table">
         <thead>
             <tr>
                 <th class="col-cb">
@@ -84,7 +84,7 @@
         <tbody>
             {% if pages is empty %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted admin-content-no-results">
+                    <td colspan="7" class="yw-text-center yw-text-muted admin-content-no-results">
                         <i class="fa fa-search"></i> {{ _t("ADMIN_CONTENT_NO_RESULTS") }}
                     </td>
                 </tr>
@@ -131,7 +131,7 @@
                             {{ page.time|slice(0, 16) }}
                             {% if page.last_editor %}
                                 <br>
-                                <small class="text-muted">{{ page.last_editor }}</small>
+                                <small class="yw-text-muted">{{ page.last_editor }}</small>
                             {% endif %}
                         </td>
                         <td class="col-acl">
@@ -139,13 +139,13 @@
                                 <strong>{{ _t("TEMPLATE_OWNER") }}: {{ page.owner ? page.owner|e : _t("ADMIN_CONTENT_NO_OWNER") }}</strong>
                             </div>
                             <div title="{{ _t("ACLS_READ") }}">
-                                <i class="fa fa-eye text-muted"></i> {{ _self.aclText(page.acl_read) }}
+                                <i class="fa fa-eye yw-text-muted"></i> {{ _self.aclText(page.acl_read) }}
                             </div>
                             <div title="{{ _t("ACLS_WRITE") }}">
-                                <i class="fa fa-pencil-alt text-muted"></i> {{ _self.aclText(page.acl_write) }}
+                                <i class="fa fa-pencil-alt yw-text-muted"></i> {{ _self.aclText(page.acl_write) }}
                             </div>
                             <div title="{{ _t("COMMENTS") }}">
-                                <i class="fa fa-comment text-muted"></i> {{ _self.aclText(page.acl_comment) }}
+                                <i class="fa fa-comment yw-text-muted"></i> {{ _self.aclText(page.acl_comment) }}
                             </div>
                         </td>
                         <td class="col-theme">
@@ -154,18 +154,18 @@
                             {%- set effectiveStyle = page.style     is not empty ? page.style     : defaultStyle -%}
                             {%- set effectivePreset = page.preset    is not empty ? page.preset    : defaultPreset -%}
                             <strong>{{ effectiveTheme }}
-                                {% if page.theme is empty %}<em class="text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
+                                {% if page.theme is empty %}<em class="yw-text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
                             </strong>
                             <br>
                             {{ effectiveSquelette }}
-                            {% if page.squelette is empty %}<em class="text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
+                            {% if page.squelette is empty %}<em class="yw-text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
                             <br>
                             {{ effectiveStyle }}
-                            {% if page.style is empty %}<em class="text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
+                            {% if page.style is empty %}<em class="yw-text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
                             {% if effectivePreset is not empty %}
                                 <br>
                                 {{ effectivePreset }}
-                                {% if page.preset is empty %}<em class="text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
+                                {% if page.preset is empty %}<em class="yw-text-muted">{{ _t("ADMIN_CONTENT_THEME_DEFAULT") }}</em>{% endif %}
                             {% endif %}
                         </td>
                         <td class="col-tags">
@@ -182,7 +182,7 @@
    ----------------------------------------------------------------------- #}
 {% if totalPages > 1 %}
     <div class="admin-content-pager">
-        <small class="text-muted">
+        <small class="yw-text-muted">
             {{ _t("ADMIN_CONTENT_PAGER_INFO") |replace({'{current}': currentPage, '{totalPages}': totalPages, '{total}': total}) }}
         </small>
         {{ _self.pagerLinks(currentPage, totalPages) }}
@@ -193,10 +193,10 @@
    ----------------------------------------------------------------------- #}
 {% macro pagerLinks(currentPage, totalPages) %}
     {% if totalPages > 1 %}
-        <ul class="pagination pagination-sm">
+        <ul class="yw-pagination">
             {# Previous #}
-            <li class="{{ currentPage <= 1 ? 'disabled' : '' }}">
-                <a href="#"
+            <li class="yw-pagination__item{{ currentPage <= 1 ? ' yw-pagination__item--disabled' : '' }}">
+                <a class="yw-pagination__link" href="#"
                    {% if currentPage > 1 %}onclick="event.preventDefault(); adminContent.goToPage({{ currentPage - 1 }})"{% else %}tabindex="-1"{% endif %}>
                     &laquo;
                 </a>
@@ -206,18 +206,18 @@
             {% set start = (currentPage - windowSize > 1) ? (currentPage - windowSize) : 1 %}
             {% set end = (currentPage + windowSize < totalPages) ? (currentPage + windowSize) : totalPages %}
             {% if start > 1 %}
-                <li>
-                    <a href="#" onclick="event.preventDefault(); adminContent.goToPage(1)">1</a>
+                <li class="yw-pagination__item">
+                    <a class="yw-pagination__link" href="#" onclick="event.preventDefault(); adminContent.goToPage(1)">1</a>
                 </li>
                 {% if start > 2 %}
-                    <li class="disabled">
-                        <a href="#">…</a>
+                    <li class="yw-pagination__item yw-pagination__item--disabled">
+                        <a class="yw-pagination__link" href="#">…</a>
                     </li>
                 {% endif %}
             {% endif %}
             {% for p in start..end %}
-                <li class="{{ p == currentPage ? 'active' : '' }}">
-                    <a href="#"
+                <li class="yw-pagination__item{{ p == currentPage ? ' yw-pagination__item--active' : '' }}">
+                    <a class="yw-pagination__link" href="#"
                        onclick="event.preventDefault(); {% if p != currentPage %}adminContent.goToPage({{ p }}){% endif %}">
                         {{ p }}
                     </a>
@@ -225,18 +225,18 @@
             {% endfor %}
             {% if end < totalPages %}
                 {% if end < totalPages - 1 %}
-                    <li class="disabled">
-                        <a href="#">…</a>
+                    <li class="yw-pagination__item yw-pagination__item--disabled">
+                        <a class="yw-pagination__link" href="#">…</a>
                     </li>
                 {% endif %}
-                <li>
-                    <a href="#"
+                <li class="yw-pagination__item">
+                    <a class="yw-pagination__link" href="#"
                        onclick="event.preventDefault(); adminContent.goToPage({{ totalPages }})">{{ totalPages }}</a>
                 </li>
             {% endif %}
             {# Next #}
-            <li class="{{ currentPage >= totalPages ? 'disabled' : '' }}">
-                <a href="#"
+            <li class="yw-pagination__item{{ currentPage >= totalPages ? ' yw-pagination__item--disabled' : '' }}">
+                <a class="yw-pagination__link" href="#"
                    {% if currentPage < totalPages %}onclick="event.preventDefault(); adminContent.goToPage({{ currentPage + 1 }})"{% else %}tabindex="-1"{% endif %}>
                     &raquo;
                 </a>
