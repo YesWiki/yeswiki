@@ -1,6 +1,7 @@
 <?php
 
 return [
+    // relocated from tools/aceditor/lang/aceditorjs_nl.inc.php (ticket 11)
     'ACTION_BUILDER_COPY' => 'Begrepen',
     'ACTION_BUILDER_PREVIEW' => 'Overview (niet klikken)',
     'ACTION_BUILDER_ONLINEDOC' => 'Online documentatie',

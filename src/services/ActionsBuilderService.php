@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Aceditor\Service;
+namespace YesWiki\Core\Service;
 
 use Symfony\Component\Yaml\Yaml;
 use YesWiki\Core\Service\TemplateEngine;

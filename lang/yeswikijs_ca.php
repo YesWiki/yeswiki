@@ -1,6 +1,7 @@
 <?php
 
 return [
+    // relocated from tools/aceditor/lang/aceditorjs_ca.inc.php (ticket 11)
     'ACTION_BUILDER_COPY' => 'Còpia',
     'ACTION_BUILDER_PREVIEW' => 'Vista prèvia (no es pot fer clic)',
     'ACTION_BUILDER_ONLINEDOC' => 'Documentació en línia',

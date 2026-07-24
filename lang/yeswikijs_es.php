@@ -121,4 +121,15 @@ Confirme su eliminación marcando la casilla siguiente.
 
     // relocated from tools/tags/lang/tagsjs_es.inc.php (ticket 10)
     'TAGS_NUMBER_OF_PAGES' => 'Número de páginas: {nb}',
+
+    // relocated from tools/aceditor/lang/aceditorjs_es.inc.php (ticket 11)
+    'ACTION_BUILDER_COPY' => 'Copiar',
+    'ACTION_BUILDER_PREVIEW' => 'Vista previa (no se puede hacer clic)',
+    'ACTION_BUILDER_ONLINEDOC' => 'Documentación en línea',
+    'ACTION_BUILDER_UPDATE_CODE' => 'Actualizar el código',
+    'ACTION_BUILDER_INSERT_CODE' => 'Insertar en la página',
+    'ACTION_BUILDER_OWNER' => 'El propietario del archivo',
+    'ACTION_BUILDER_MODIFICATION_DATE' => 'Fecha de modificación',
+    'ACTION_BUILDER_CREATION_DATE' => 'Fecha de creación',
+    'ACTION_BUILDER_FORM_ID' => 'Formulario',
 ];

@@ -8,25 +8,17 @@ use YesWiki\Security\Controller\SecurityController;
 $output = '';
 
 $isWikiHibernated = $this->services->get(SecurityController::class)->isWikiHibernated();
+// bare-script handler: $this is the Wiki instance itself, which exposes the current
+// request as a public property, not via a getRequest() helper (that's only on
+// YesWikiPerformable-derived actions/handlers)
+$request = $this->request;
 
 if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated) {
-    if (!empty($_POST['submit'])) {
-        $submit = $_POST['submit'];
-    } else {
-        $submit = false;
-    }
+    $submit = $request->request->get('submit') ?: false;
 
     // fetch fields
-    if (empty($_POST['previous'])) {
-        $previous = isset($this->page['id']) ? $this->page['id'] : null;
-    } else {
-        $previous = $_POST['previous'];
-    }
-    if (empty($_POST['body'])) {
-        $body = isset($this->page['body']) ? $this->page['body'] : null;
-    } else {
-        $body = $_POST['body'];
-    }
+    $previous = $request->request->get('previous') ?: (isset($this->page['id']) ? $this->page['id'] : null);
+    $body = $request->request->get('body') ?: (isset($this->page['body']) ? $this->page['body'] : null);
 
     $cancelUrl = addslashes($this->href(testUrlInIframe()));
 
@@ -45,7 +37,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
         ]);
         $this->SetInclusions($temp);
     } else {
-        if ($submit == SecurityController::EDIT_PAGE_SUBMIT_VALUE && $this->page && $this->page['id'] != $_POST['previous']) {
+        if ($submit == SecurityController::EDIT_PAGE_SUBMIT_VALUE && $this->page && $this->page['id'] != $request->request->get('previous')) {
             $error = _t('EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER');
             $submit = false;
         }
@@ -80,11 +72,11 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             // RENDER FORM
 
             // append a comment?
-            if (isset($_REQUEST['appendcomment'])) {
+            if ($request->query->has('appendcomment') || $request->request->has('appendcomment')) {
                 $body = trim($body) . "\n\n----\n\n-- " . $this->GetUserName() . ' (' . date('c') . ')';
             }
 
-            $passwordForEditing = !empty($this->config['password_for_editing']) && isset($_POST['password_for_editing']);
+            $passwordForEditing = !empty($this->config['password_for_editing']) && $request->request->has('password_for_editing');
 
             $output .= $this->render('@core/handlers/edit.twig', [
                 'error' => $error ?? null,

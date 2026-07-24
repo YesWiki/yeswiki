@@ -1,7 +1,7 @@
 <div class="aceditor-container" data-name="{{ arguments.name }}">
   <div class="scroll-container-toolbar">
     <div class="btn-toolbar aceditor-toolbar">
-      {{ include('@aceditor/aceditor-toolbar.twig') }}
+      {{ include('@core/aceditor-toolbar.twig') }}
     </div>
   </div>
 
@@ -10,7 +10,7 @@
   </div>
 
   <div class="flying-edit-button">
-    <a class="open-actions-builder-btn btn btn-primary btn-icon">
+    <a class="open-actions-builder-btn yw-btn yw-btn--primary">
       <i class="fa fa-pencil-alt"></i>
     </a>
   </div>
@@ -32,5 +32,5 @@
 {{ include_javascript('javascripts/vendor/vue-select/vue-select.min.js') }}
 {{ include_css('styles/vendor/vue-select/vue-select.css') }}
 
-{{ include_javascript('tools/aceditor/presentation/javascripts/aceditor.js', false, true) }}
-{{ include_css('tools/aceditor/presentation/styles/aceditor.css') }}
+{{ include_javascript('javascripts/aceditor.js', false, true) }}
+{{ include_css('styles/actions/aceditor.css') }}

@@ -2,24 +2,24 @@
 {% if arguments.saveButton %}
   {% set action = config['preview_before_save'] ? 'preview' : saveValue %}
   <div class="btn-group">
-    <button type="submit" name="submit" value="{{ action }}" class="aceditor-btn-save btn btn-primary">
+    <button type="submit" name="submit" value="{{ action }}" class="aceditor-btn-save yw-btn yw-btn--primary">
       {{ _t('ACEDITOR_SAVE') }}
     </button>
   </div>
 {% endif %}
 
 {# Text formatting #}
-<div class="btn-group format-menu">
-  <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
+<div class="btn-group format-menu yw-dropdown">
+  <a class="yw-btn" href="#" data-yw-dropdown-toggle>
     {{ _t('ACEDITOR_FORMAT') }}
-    <span class="caret"></span>
+    <span class="yw-dropdown__caret"></span>
   </a>
-  <ul class="dropdown-menu">
+  <ul class="yw-dropdown__menu">
     <li>{{ _self.button('title1', '') }}</li>
     <li>{{ _self.button('title2', '') }}</li>
     <li>{{ _self.button('title3', '') }}</li>
     <li>{{ _self.button('title4', '') }}</li>
-    <li class="divider"></li>
+    <li class="yw-dropdown__divider"></li>
     <li>{{ _self.button('center', '') }}</li>
     <li>{{ _self.button('lead', '') }}</li>
     <li>{{ _self.button('highlight', '') }}</li>
@@ -46,12 +46,12 @@
 {{ include('@attach/file-upload-button.twig') }}
 
 {# Actions builder menu #}
-<div class="btn-group actions-builder-button">
-  <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
+<div class="btn-group actions-builder-button yw-dropdown">
+  <a class="yw-btn" href="#" data-yw-dropdown-toggle>
     {{ _t('ACEDITOR_ACTIONS') }}
-    <span class="caret"></span>
+    <span class="yw-dropdown__caret"></span>
   </a>
-  <ul class="dropdown-menu component-action-list">
+  <ul class="yw-dropdown__menu component-action-list">
     <li class="open-actions-builder-btn open-existing-action">
       <a>{{ _t('ACEDITOR_ACTIONS_EDIT_CURRENT') }}</a>
     </li>
@@ -68,13 +68,13 @@
 
 {# Help #}
 <div class="btn-group">
-  <a class="btn btn-default btn-icon aceditor-btn aceditor-btn-help" data-remote="true"
+  <a class="yw-btn aceditor-btn aceditor-btn-help" data-remote="true"
      href="{{ url({ tag: 'ReglesDeFormatage' }) }}" title="{{ _t('ACEDITOR_HELP') }}">
     <i class="fa fa-question-circle"></i>
   </a>
 </div>
 
-{% macro button(name, btnClass = 'btn btn-default btn-icon') %}
+{% macro button(name, btnClass = 'yw-btn') %}
 
   {% set DELIMITERS = {
     TITLE1: { yeswiki: ['======', '======'], html: ['<h1>', '</h1>'] },

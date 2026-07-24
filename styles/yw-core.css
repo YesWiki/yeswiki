@@ -307,7 +307,10 @@ textarea.yw-input {
 .yw-tag-input__search:focus {
   outline: none;
 }
-.yw-tag-input__suggestions {
+/* Reusable suggestions dropdown: the tag-input widget's live-search results
+   (ticket 10) and the aceditor link-modal's local page-name autocomplete
+   (ticket 11) both use this same shape */
+.yw-suggestions {
   position: absolute;
   top: 100%;
   left: 0;
@@ -323,7 +326,7 @@ textarea.yw-input {
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
-.yw-tag-input__suggestions button {
+.yw-suggestions button {
   display: block;
   width: 100%;
   padding: 5px 10px;
@@ -333,8 +336,68 @@ textarea.yw-input {
   border: 0;
   cursor: pointer;
 }
-.yw-tag-input__suggestions button:hover {
+.yw-suggestions button:hover {
   background: var(--neutral-light-color, #f2f2f2);
+}
+
+/* ---- Dropdown (ticket 11 pilot: replaces Bootstrap's data-toggle="dropdown") ---- */
+.yw-dropdown {
+  position: relative;
+  display: inline-block;
+}
+.yw-dropdown__menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  min-width: 160px;
+  margin: 2px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.yw-dropdown--open > .yw-dropdown__menu {
+  display: block;
+}
+.yw-dropdown__menu li {
+  list-style: none;
+}
+.yw-dropdown__menu a,
+.yw-dropdown__menu button {
+  display: block;
+  width: 100%;
+  padding: 5px 12px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--neutral-color);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.yw-dropdown__menu a:hover,
+.yw-dropdown__menu button:hover {
+  background: var(--neutral-light-color, #f2f2f2);
+}
+.yw-dropdown__menu .yw-dropdown__divider {
+  height: 0;
+  margin: 4px 0;
+  border-top: 1px solid var(--neutral-light-color, #eee);
+}
+.yw-dropdown__caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 4px;
+  vertical-align: middle;
+  border-top: 4px solid;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
 }
 
 /* ---- Utilities -------------------------------------------------- */

@@ -121,4 +121,15 @@ Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
 
     // relocated from tools/tags/lang/tagsjs_ro.inc.php (ticket 10)
     'TAGS_NUMBER_OF_PAGES' => 'Număr de pagini: {nb}',
+
+    // relocated from tools/aceditor/lang/aceditorjs_ro.inc.php (ticket 11)
+    'ACTION_BUILDER_COPY' => 'Copia',
+    'ACTION_BUILDER_PREVIEW' => 'Previzualizare (nu se poate face clic)',
+    'ACTION_BUILDER_ONLINEDOC' => 'Documentație online',
+    'ACTION_BUILDER_UPDATE_CODE' => 'Actualizați codul',
+    'ACTION_BUILDER_INSERT_CODE' => 'Introduceți în pagină',
+    'ACTION_BUILDER_OWNER' => 'Proprietarul înregistrării',
+    'ACTION_BUILDER_MODIFICATION_DATE' => 'Data Schimbării',
+    'ACTION_BUILDER_CREATION_DATE' => 'Data creării',
+    'ACTION_BUILDER_FORM_ID' => 'Formular',
 ];

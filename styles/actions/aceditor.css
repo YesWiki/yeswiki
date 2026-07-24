@@ -154,15 +154,15 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   display: none;
 }
 
-.component-action-list>li.open-existing-action {
+.component-action-list > li.open-existing-action {
   display: none;
 }
 
-.component-action-list.only-edit>li.open-existing-action {
+.component-action-list.only-edit > li.open-existing-action {
   display: block;
 }
 
-.component-action-list.only-edit>li:not(.open-existing-action) {
+.component-action-list.only-edit > li:not(.open-existing-action) {
   display: none;
 }
 
@@ -184,7 +184,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   margin: 0 !important;
 }
 
-.ace_editor.ace_autocomplete .ace_text-layer>.ace_line {
+.ace_editor.ace_autocomplete .ace_text-layer > .ace_line {
   padding: 0 0.5rem;
 }
 
@@ -213,7 +213,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   opacity: 1;
 }
 
-.flying-edit-button .btn {
+.flying-edit-button .yw-btn {
   width: 2.3rem;
   padding: 0.4rem 0;
   transform: translateX(-2.3rem);
@@ -221,7 +221,7 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 }
 
 /* In iframe, button is inside the textarea */
-.yeswiki-iframe-body .flying-edit-button .btn {
+.yeswiki-iframe-body .flying-edit-button .yw-btn {
   border-radius: 0 3px 3px 0;
   padding: 0.25rem 0;
   width: 1.8rem;
@@ -230,14 +230,14 @@ form:not(#ACEditor) .ace-container .ace_scroller {
 
 /* in small screen, make button smaller and overlapping textarea */
 @media (width <=1200px) {
-  body:not(.yeswiki-iframe-body) .flying-edit-button .btn {
+  body:not(.yeswiki-iframe-body) .flying-edit-button .yw-btn {
     border-radius: 4px;
     padding: 0.4rem 0;
     width: 2rem;
     transform: translateX(-0.9rem);
   }
 
-  body:not(.yeswiki-iframe-body) form#ACEditor .flying-edit-button .btn {
+  body:not(.yeswiki-iframe-body) form#ACEditor .flying-edit-button .yw-btn {
     /* overlap more to cover gutter */
     border-radius: 4px;
     padding: 0.4rem 0;

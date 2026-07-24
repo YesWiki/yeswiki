@@ -27,7 +27,7 @@ if (!$params->get('hide_keywords') && $this->HasAccess('write') && $this->HasAcc
 		<input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search
 		       name="search" autocomplete="off" placeholder="' . _t('TAGS_ADD_TAGS') . '"
 		       hx-get="' . $searchUrl . '" hx-trigger="keyup changed delay:300ms" hx-include="this" hx-vals=\'{"perpage":8}\' hx-swap="none">
-		<ul class="yw-tag-input__suggestions" data-yw-tag-input-suggestions hidden></ul>
+		<ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
 		<input type="hidden" name="pagetags" data-yw-tag-input-value value="' . htmlspecialchars(implode(',', $tagspage), ENT_QUOTES) . '">
 	</div>
     <input type="hidden" class="antispam" name="antispam" value="0">';
