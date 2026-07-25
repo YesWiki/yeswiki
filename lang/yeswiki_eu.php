@@ -367,6 +367,7 @@ return [
     'THEME_MANAGER_AND_REPAIR' => ' eta tokia konpondu',
     'THEME_MANAGER_CLICK_TO_INSTALL' => 'Klikatu tema instalatzeko ',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Mesedez, konektatu administratzaile gisa eguneratzea egiteko.',
+    'TOC_TABLE_OF_CONTENTS' => 'Aurkibidea',
     'EDIT_CONFIG_TITLE' => 'Konfigurazio-fitxategia aldatzea',
     'EDIT_CONFIG_CURRENT_VALUE' => 'Uneko balioa ',
     'EDIT_CONFIG_SAVE' => 'Gordetako konfigurazioa',

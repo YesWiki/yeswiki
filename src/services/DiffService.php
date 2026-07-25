@@ -63,7 +63,7 @@ class DiffService
     {
         $actionsToKeep = [
             'grid', 'section', 'col', 'button', 'configuration', 'end', 'label', 'nav', 'panel',
-            'progressbar', 'accordion', 'currentpage', 'titrepage', 'valeur', 'lang', 'tocjs',
+            'progressbar', 'accordion', 'currentpage', 'titrepage', 'valeur', 'lang',
         ];
         $regexpr = "/(\{\{";
         foreach ($actionsToKeep as $action) {

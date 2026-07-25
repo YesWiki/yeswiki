@@ -257,6 +257,7 @@ return [
     'THEME_MANAGER_CLICK_TO_INSTALL' => 'Clicar para instalar el tema ',
     'THEME_MANAGER_AND_REPAIR' => ' y reparar el sitio',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Conectaya como administrador para actualizar.',
+    'TOC_TABLE_OF_CONTENTS' => 'Tabla de contenidos',
     'EDIT_CONFIG_HINT_PREVIEW_BEFORE_SAVE' => 'Activar vista previa antes de guardar (true o false)',
     'USERSTABLE_USER_DELETED' => 'El usuario «{nombredeusuario}» ha sido eliminado.',
     'USERSTABLE_USER_NOT_DELETED' => 'El usuario «{nombredeusuario}» no ha sido eliminado.',

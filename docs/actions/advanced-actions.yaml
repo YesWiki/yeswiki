@@ -2,24 +2,6 @@ label: _t(AB_advanced_actions_label)
 position: 1999
 previewHeight: 200px
 actions:
-  tocjs:
-    label: _t(AB_advanced_action_tocjs_label)
-    properties:
-      align:
-        label: _t(AB_advanced_action_tocjs_position_label)
-        advanced: true
-        type: list
-        options:
-          right: _t(AB_advanced_action_tocjs_position_right_option)
-          left: _t(AB_advanced_action_tocjs_position_left_option)
-      size:
-        label: _t(AB_advanced_action_tocjs_size_label)
-        advanced: true
-        type: list
-        options:
-          - 2
-          - 3
-          - 4
   trail:
     label: _t(AB_advanced_action_trail_label)
     properties:

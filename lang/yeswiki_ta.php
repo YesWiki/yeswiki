@@ -427,6 +427,7 @@ return [
     'THEME_MANAGER_CLICK_TO_INSTALL' => 'கருப்பொருள் நிறுவ சொடுக்கு செய்க ',
     'THEME_MANAGER_AND_REPAIR' => ' மற்றும் தளத்தை சரிசெய்யவும்',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'புதுப்பிக்க நிர்வாகியாக இணைக்கவும்.',
+    'TOC_TABLE_OF_CONTENTS' => 'டேபிள் டெச் மாட்டி & எக்ரேவ்; ரெச்',
     'EDIT_CONFIG_TITLE' => 'உள்ளமைவு கோப்பின் மாற்றம்',
     'EDIT_CONFIG_CURRENT_VALUE' => 'தற்போதைய மதிப்பு ',
     'EDIT_CONFIG_SAVE' => 'சேமித்த உள்ளமைவு',

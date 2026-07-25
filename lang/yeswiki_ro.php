@@ -94,6 +94,7 @@ return [
     'INCLUDED_PAGE' => 'Pagina include',
     'ACLS_AUTHENTIFICATED_USERS' => 'Utilizatorii conectați',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Vă rugăm să vă conectați ca administrator pentru a actualiza.',
+    'TOC_TABLE_OF_CONTENTS' => 'Tabelul Conținutului',
     'USER_DELETED' => 'utilizator șters',
     'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'Ați fost citat într-un comentariu nou scris de %{user} pe pagina %{tag} pe site [%{site}].',
     'FILL_THE_NEXT_FIELDS_IF_YOU_LOGGIN_FOR_THE_FIRST_TIME_AND_REGISTER' => 'Următoarele câmpuri trebuie completate dacă vă conectați pentru prima dată (vă veți crea un cont)',

@@ -318,6 +318,7 @@ return [
     'END_OF_EXEC' => 'Fim da execução',
     'ACLS_AUTHENTIFICATED_USERS' => 'Usuários conectados',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Faça login como administrador para atualizar.',
+    'TOC_TABLE_OF_CONTENTS' => 'Índice',
     'USER_DELETED' => 'usuário excluído',
     'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'Você foi citado em um novo comentário escrito por %{user} na página %{tag} no site [%{site}].',
     'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => 'Língua padrão (en ou en ... auto = idioma do navegador)',

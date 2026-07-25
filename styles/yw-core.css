@@ -538,6 +538,17 @@ textarea.yw-input {
   color: var(--neutral-soft-color);
 }
 
+/* ---- TOC (ticket 13: replaces tools/toc's jQuery scrollspy/animate follow-scroll script) ---- */
+.yw-toc {
+  position: sticky;
+  top: 50px;
+  z-index: 5;
+}
+.yw-toc__menu {
+  max-height: 400px;
+  overflow: auto;
+}
+
 /* ---- Utilities -------------------------------------------------- */
 .yw-list-unstyled {
   list-style: none;

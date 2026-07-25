@@ -325,6 +325,7 @@ return [
     'END_OF_EXEC' => 'Fi d\'execució',
     'ACLS_AUTHENTIFICATED_USERS' => 'Usuaris connectats',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Si us plau, introdueix dins de la caixa de text els caràcters que veu a la imatge de sota. Això és requerit per evitar enviaments automàtics.',
+    'TOC_TABLE_OF_CONTENTS' => 'Índex de continguts',
     'USER_DELETED' => 'usuari esborrat',
     'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'En aquest lloc web utilitzem cookies per millorar la vostra experiència. Podeu desactivar-lo si ho voleu. Accepto Més informació.',
     'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => 'L\'Hospitalet de Llobregat (Barcelona)',

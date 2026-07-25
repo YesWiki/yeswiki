@@ -413,6 +413,7 @@ return [
     'THEME_MANAGER_CLICK_TO_INSTALL' => 'Click to install the theme ',
     'THEME_MANAGER_AND_REPAIR' => ' and repair the website',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Login as admin to upgrade.',
+    'TOC_TABLE_OF_CONTENTS' => 'Table of contents',
     'EDIT_CONFIG_TITLE' => 'Change configuration file',
     'EDIT_CONFIG_CURRENT_VALUE' => 'Current value ',
     'EDIT_CONFIG_SAVE' => 'Configuration saved',

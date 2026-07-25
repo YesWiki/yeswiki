@@ -468,6 +468,7 @@ return [
     'THEME_MANAGER_CLICK_TO_INSTALL' => 'Cliquer pour installer le thème ',
     'THEME_MANAGER_AND_REPAIR' => ' et réparer le site',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Veuillez vous connecter en tant qu\'administrateur pour faire la mise à jour.',
+    'TOC_TABLE_OF_CONTENTS' => 'Table des matières',
     'EDIT_CONFIG_TITLE' => 'Modification du fichier de configuration',
     'EDIT_CONFIG_CURRENT_VALUE' => 'Valeur actuelle ',
     'EDIT_CONFIG_SAVE' => 'Configuration sauvegardée',

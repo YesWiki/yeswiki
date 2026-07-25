@@ -322,6 +322,7 @@ return [
     'END_OF_EXEC' => 'Einde executie',
     'ACLS_AUTHENTIFICATED_USERS' => 'Vertaling:',
     'THEME_MANAGER_LOGIN_AS_ADMIN' => 'Inloggen als een beheerder om te updaten.',
+    'TOC_TABLE_OF_CONTENTS' => 'Inhoudsopgave',
     'USER_DELETED' => 'vertaling:',
     'COMMENT_NEW_COMMENT_MESSAGE_TAG' => 'Je was geciteerd in een nieuw commentaar geschreven door de pagina op de site waar je het over had.',
     'EDIT_CONFIG_HINT_DEFAULT_LANGUAGE' => 'Default taal (en of en... auto = browser taal)',
