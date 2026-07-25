@@ -36,7 +36,6 @@ export default defineConfig([globalIgnores([
   '!tools/tableau',
   '!tools/tags',
   '!tools/templates',
-  '!tools/toc',
   'tools/aceditor/presentation/javascripts/ext-searchbox.js'
 ]), {
   extends: compat.extends('airbnb-base'),
