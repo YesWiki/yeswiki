@@ -1,45 +1,47 @@
 // nombre total d'utilisateur (pour compter les contacts)
-var nbUsers = new Array()
+let nbUsers = []
 // relations avec les données des fiches associées
-var relations = new Array()
-var nbRelations = new Array() // nombre total de liens
-var minSize = 20 // tailles min de cercles
-var maxSize = 35 // tailles max de cercles
-var dragging = false // mode drag de cercle si l'on clique dessus
-var balls = new Array() // les bulles représentant les relations
-var canvas = document.getElementById("canvas-qrcodetroc")
-var relationType = canvas.dataset.relation
-var formUser = canvas.dataset.formuser
+let relations = []
+let nbRelations = [] // nombre total de liens
+const minSize = 20 // tailles min de cercles
+const maxSize = 35 // tailles max de cercles
+let dragging = false // mode drag de cercle si l'on clique dessus
+const balls = [] // les bulles représentant les relations
+const canvas = document.getElementById('canvas-qrcodetroc')
+const relationType = canvas.dataset.relation
+const formUser = canvas.dataset.formuser
 
 setInterval(getRelations, canvas.dataset.refresh)
 
-window.addEventListener("resize", function () {
+window.addEventListener('resize', () => {
   resizeCanvas(window.innerWidth, window.innerHeight)
 })
 
 function getRelations() {
-  $.getJSON("?api/relations/" + relationType, function (dataRelations) {
-    relations = dataRelations
-    nbRelations = Object.keys(relations).length
-    //console.log(relations, "Nb relations : " + nbRelations)
-  })
-  $.getJSON("?api/forms/" + formUser + "/entries&fields=bf_titre", function (dataUsers) {
-    nbUsers = Object.keys(dataUsers).length
-    i = 0
-    Object.keys(dataUsers).forEach((key) => {
-      if (!(key in balls)) {
-        balls[key] = new Ball(
-          random(window.innerWidth),
-          random(window.innerHeight),
-          random(minSize, maxSize),
-          color(random(255), random(255), random(255), 70),
-          dataUsers[key].bf_titre
-        )
-      }
-      i = i + 1
+  fetch(`?api/relations/${relationType}`)
+    .then((response) => response.json())
+    .then((dataRelations) => {
+      relations = dataRelations
+      nbRelations = Object.keys(relations).length
+      // console.log(relations, "Nb relations : " + nbRelations)
     })
-    //console.log(balls, "Nb users : " + nbUsers)
-  })
+  fetch(`?api/forms/${formUser}/entries&fields=bf_titre`)
+    .then((response) => response.json())
+    .then((dataUsers) => {
+      nbUsers = Object.keys(dataUsers).length
+      Object.keys(dataUsers).forEach((key) => {
+        if (!(key in balls)) {
+          balls[key] = new Ball(
+            random(window.innerWidth),
+            random(window.innerHeight),
+            random(minSize, maxSize),
+            color(random(255), random(255), random(255), 70),
+            dataUsers[key].bf_titre
+          )
+        }
+      })
+      // console.log(balls, "Nb users : " + nbUsers)
+    })
 }
 
 class Ball {
@@ -52,6 +54,7 @@ class Ball {
     this.color = color
     this.title = title
   }
+
   update() {
     this.position.add(this.velocity)
   }
@@ -74,33 +77,33 @@ class Ball {
 
   checkCollision(other) {
     // Get distances between the balls components
-    let distanceVect = p5.Vector.sub(other.position, this.position)
+    const distanceVect = p5.Vector.sub(other.position, this.position)
 
     // Calculate magnitude of the vector separating the balls
-    let distanceVectMag = distanceVect.mag()
+    const distanceVectMag = distanceVect.mag()
 
     // Minimum distance before they are touching
-    let minDistance = this.r + other.r
+    const minDistance = this.r + other.r
 
     if (distanceVectMag < minDistance) {
-      let distanceCorrection = (minDistance - distanceVectMag) / 2.0
-      let d = distanceVect.copy()
-      let correctionVector = d.normalize().mult(distanceCorrection)
+      const distanceCorrection = (minDistance - distanceVectMag) / 2.0
+      const d = distanceVect.copy()
+      const correctionVector = d.normalize().mult(distanceCorrection)
       other.position.add(correctionVector)
       this.position.sub(correctionVector)
 
       // get angle of distanceVect
-      let theta = distanceVect.heading()
+      const theta = distanceVect.heading()
       // precalculate trig values
-      let sine = sin(theta)
-      let cosine = cos(theta)
+      const sine = sin(theta)
+      const cosine = cos(theta)
 
-      /* bTemp will hold rotated ball this.positions. You 
-         just need to worry about bTemp[1] this.position*/
-      let bTemp = [new p5.Vector(), new p5.Vector()]
+      /* bTemp will hold rotated ball this.positions. You
+         just need to worry about bTemp[1] this.position */
+      const bTemp = [new p5.Vector(), new p5.Vector()]
 
       /* this ball's this.position is relative to the other
-         so you can use the vector between them (bVect) as the 
+         so you can use the vector between them (bVect) as the
          reference point in the rotation expressions.
          bTemp[0].this.position.x and bTemp[0].this.position.y will initialize
          automatically to 0.0, which is what you want
@@ -109,7 +112,7 @@ class Ball {
       bTemp[1].y = cosine * distanceVect.y - sine * distanceVect.x
 
       // rotate Temporary velocities
-      let vTemp = [new p5.Vector(), new p5.Vector()]
+      const vTemp = [new p5.Vector(), new p5.Vector()]
 
       vTemp[0].x = cosine * this.velocity.x + sine * this.velocity.y
       vTemp[0].y = cosine * this.velocity.y - sine * this.velocity.x
@@ -117,9 +120,9 @@ class Ball {
       vTemp[1].y = cosine * other.velocity.y - sine * other.velocity.x
 
       /* Now that velocities are rotated, you can use 1D
-         conservation of momentum equations to calculate 
+         conservation of momentum equations to calculate
          the final this.velocity along the x-axis. */
-      let vFinal = [new p5.Vector(), new p5.Vector()]
+      const vFinal = [new p5.Vector(), new p5.Vector()]
 
       // final rotated this.velocity for b[0]
       vFinal[0].x = ((this.m - other.m) * vTemp[0].x + 2 * other.m * vTemp[1].x) / (this.m + other.m)
@@ -134,10 +137,10 @@ class Ball {
       bTemp[1].x += vFinal[1].x
 
       /* Rotate ball this.positions and velocities back
-         Reverse signs in trig expressions to rotate 
+         Reverse signs in trig expressions to rotate
          in the opposite direction */
       // rotate balls
-      let bFinal = [new p5.Vector(), new p5.Vector()]
+      const bFinal = [new p5.Vector(), new p5.Vector()]
 
       bFinal[0].x = cosine * bTemp[0].x - sine * bTemp[0].y
       bFinal[0].y = cosine * bTemp[0].y + sine * bTemp[0].x
@@ -145,16 +148,20 @@ class Ball {
       bFinal[1].y = cosine * bTemp[1].y + sine * bTemp[1].x
 
       // update balls to screen this.position
-      other.position.x = this.position.x + bFinal[1].x
-      other.position.y = this.position.y + bFinal[1].y
+      Object.assign(other.position, {
+        x: this.position.x + bFinal[1].x,
+        y: this.position.y + bFinal[1].y
+      })
 
       this.position.add(bFinal[0])
 
       // update velocities
       this.velocity.x = cosine * vFinal[0].x - sine * vFinal[0].y
       this.velocity.y = cosine * vFinal[0].y + sine * vFinal[0].x
-      other.velocity.x = cosine * vFinal[1].x - sine * vFinal[1].y
-      other.velocity.y = cosine * vFinal[1].y + sine * vFinal[1].x
+      Object.assign(other.velocity, {
+        x: cosine * vFinal[1].x - sine * vFinal[1].y,
+        y: cosine * vFinal[1].y + sine * vFinal[1].x
+      })
     }
   }
 
@@ -184,26 +191,32 @@ class Ball {
   }
 }
 
-/* Méthode mouseDragged() */
+/* Méthode mouseDragged() -- called by p5.js's global-mode engine, not from this file */
+// eslint-disable-next-line no-unused-vars
 function mouseDragged() {
   dragging = true // mise de drag switch à true
 }
 
-/* Méthode mouseReleased() */
+/* Méthode mouseReleased() -- called by p5.js's global-mode engine, not from this file */
+// eslint-disable-next-line no-unused-vars
 function mouseReleased() {
   dragging = false // fin de dragging
 }
 
+// called by p5.js's global-mode engine, not from this file
+// eslint-disable-next-line no-unused-vars
 function setup() {
-  //frameRate(20)
+  // frameRate(20)
   createCanvas(window.innerWidth, window.innerHeight)
   getRelations()
 }
 
+// called by p5.js's global-mode engine, not from this file
+// eslint-disable-next-line no-unused-vars
 function draw() {
   background(20)
   Object.keys(balls).forEach((key) => {
-    let b = balls[key]
+    const b = balls[key]
     b.update()
     b.display()
     b.checkBoundaryCollision()
@@ -219,34 +232,34 @@ function draw() {
   noStroke()
   fill(255)
   textAlign(LEFT)
-  var txtuser = ""
+  let txtuser = ''
   if (nbUsers > 1) {
-    txtuser = nbUsers + " utilisateur·ices"
+    txtuser = `${nbUsers} utilisateur·ices`
   } else {
-    txtuser = nbUsers + " utilisateur·ice"
+    txtuser = `${nbUsers} utilisateur·ice`
   }
-  var txtlinks = ""
+  let txtlinks = ''
   if (nbRelations > 1) {
-    txtlinks = nbRelations + " liens"
+    txtlinks = `${nbRelations} liens`
   } else {
-    txtlinks = nbRelations + " lien"
+    txtlinks = `${nbRelations} lien`
   }
-  text(txtuser + "  |  " + txtlinks, 20, 20)
+  text(`${txtuser}  |  ${txtlinks}`, 20, 20)
 
   // afficher les relations
   Object.keys(relations).forEach((key) => {
     noFill()
     stroke(126)
     if (
-      (key in relations) &&
-      ('bf_fiche1' in relations[key]) &&
-      ('bf_fiche2' in relations[key]) &&
-      (relations[key].bf_fiche1 in balls) &&
-      (relations[key].bf_fiche2 in balls) &&
-      balls[relations[key].bf_fiche1].position.x &&
-      balls[relations[key].bf_fiche1].position.y &&
-      balls[relations[key].bf_fiche2].position.x &&
-      balls[relations[key].bf_fiche2].position.y
+      (key in relations)
+      && ('bf_fiche1' in relations[key])
+      && ('bf_fiche2' in relations[key])
+      && (relations[key].bf_fiche1 in balls)
+      && (relations[key].bf_fiche2 in balls)
+      && balls[relations[key].bf_fiche1].position.x
+      && balls[relations[key].bf_fiche1].position.y
+      && balls[relations[key].bf_fiche2].position.x
+      && balls[relations[key].bf_fiche2].position.y
     ) {
       line(
         balls[relations[key].bf_fiche1].position.x,

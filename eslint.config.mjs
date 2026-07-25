@@ -36,10 +36,7 @@ export default defineConfig([globalIgnores([
   '!tools/tableau',
   '!tools/tags',
   '!tools/templates',
-  'tools/aceditor/presentation/javascripts/ext-searchbox.js',
-  // ticket 14: p5.js canvas visualization, no jQuery/Bootstrap dependency (ADR-0005 doesn't
-  // apply) -- a tangential feature the ticket's own text never named, out of scope to modernize
-  'javascripts/qrcodetroc-visualisation.js'
+  'tools/aceditor/presentation/javascripts/ext-searchbox.js'
 ]), {
   extends: compat.extends('airbnb-base'),
 
@@ -53,7 +50,32 @@ export default defineConfig([globalIgnores([
       ace: 'writable',
       toastMessage: 'readable',
       Html5Qrcode: 'readable',
-      Html5QrcodeSupportedFormats: 'readable'
+      Html5QrcodeSupportedFormats: 'readable',
+      // p5.js "global mode" API, used by javascripts/qrcodetroc-visualisation.js
+      p5: 'readable',
+      resizeCanvas: 'readable',
+      createCanvas: 'readable',
+      random: 'readable',
+      color: 'readable',
+      width: 'readable',
+      height: 'readable',
+      sin: 'readable',
+      cos: 'readable',
+      noStroke: 'readable',
+      noFill: 'readable',
+      fill: 'readable',
+      stroke: 'readable',
+      ellipse: 'readable',
+      rect: 'readable',
+      line: 'readable',
+      dist: 'readable',
+      mouseX: 'readable',
+      mouseY: 'readable',
+      textAlign: 'readable',
+      text: 'readable',
+      background: 'readable',
+      CENTER: 'readable',
+      LEFT: 'readable'
     },
 
     ecmaVersion: 13,

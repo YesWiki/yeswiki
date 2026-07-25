@@ -24,7 +24,7 @@ class QrcodetrocHandler extends YesWikiHandler
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->wiki->Header());
         $output .= $header[0] . '<body>'."\n";
-        $output .= '<main id="canvas-qrcodetroc" data-form="'.$form.'" data-formuser="'.$formuser.'" data-relation="'.$relation.'" data-refresh="'.$refresh.'"></main>';
+        $output .= '<main id="canvas-qrcodetroc" data-form="'.htmlspecialchars($form).'" data-formuser="'.htmlspecialchars($formuser).'" data-relation="'.htmlspecialchars($relation).'" data-refresh="'.htmlspecialchars($refresh).'"></main>';
         $this->wiki->addJavascriptFile('javascripts/vendor/p5.min.js');
         $this->wiki->addJavascriptFile('javascripts/qrcodetroc-visualisation.js');
 

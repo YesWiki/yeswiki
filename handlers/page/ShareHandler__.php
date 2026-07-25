@@ -11,7 +11,7 @@ class ShareHandler__ extends YesWikiHandler
         $url = $this->wiki->Href();
         $cacheImage = 'cache/qrcode-'.$this->wiki->getPageTag().'-url.svg';
         $this->getService(QrCodeService::class)->generateToFile($url, $cacheImage);
-        $html = '<img class="right" src="'.$cacheImage.'" title="QRcode de l\'adresse de cette page " alt="'.$url.'" />'."\n";
+        $html = '<img class="right" src="'.$cacheImage.'" title="'._t('QR_CODE_PAGE').'" alt="'.$url.'" />'."\n";
 
         // Agrégation du QRcode dans le buffer du handler share
         $this->output = preg_replace(

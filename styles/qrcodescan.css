@@ -1,5 +1,5 @@
 #qr-container {
-  background: #eff3f6;
+  background: var(--neutral-light-color);
   padding: 30px 0;
 }
 .flex-center {
@@ -49,7 +49,6 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-/* DO NOT COPY THIS. END OF BLOCK */
 
 .stepper__row {
   /*width: 623px;*/
