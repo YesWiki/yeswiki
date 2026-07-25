@@ -1,0 +1,48 @@
+#qr-container {
+  background: var(--neutral-light-color);
+  padding: 2em 0;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-element {
+  flex: none;
+}
+#qrreader {
+  margin: 0 auto;
+  border-radius: 20px;
+  border: 4px var(--primary-color) solid;
+  background: #111;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  overflow: hidden;
+}
+
+#multimedia-player {
+  margin-bottom: 1em;
+}
+#multimedia-player figcaption {
+  position: relative;
+  color: var(--main-text-color);
+  background-color: transparent;
+  opacity: 1;
+  text-align: left;
+}
+#audio-player {
+  with: 100%;
+  display: block;
+}
+#multimedia-player figcaption :last-child {
+  padding-bottom: 0;
+}
+
+#multimedia-player figcaption :first-child {
+  padding-top: 0;
+}
+
+#multimedia-player figcaption * {
+  padding: 0;
+}

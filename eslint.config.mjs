@@ -36,7 +36,10 @@ export default defineConfig([globalIgnores([
   '!tools/tableau',
   '!tools/tags',
   '!tools/templates',
-  'tools/aceditor/presentation/javascripts/ext-searchbox.js'
+  'tools/aceditor/presentation/javascripts/ext-searchbox.js',
+  // ticket 14: p5.js canvas visualization, no jQuery/Bootstrap dependency (ADR-0005 doesn't
+  // apply) -- a tangential feature the ticket's own text never named, out of scope to modernize
+  'javascripts/qrcodetroc-visualisation.js'
 ]), {
   extends: compat.extends('airbnb-base'),
 
@@ -48,7 +51,9 @@ export default defineConfig([globalIgnores([
       Vue: 'readable',
       _t: 'readable',
       ace: 'writable',
-      toastMessage: 'readable'
+      toastMessage: 'readable',
+      Html5Qrcode: 'readable',
+      Html5QrcodeSupportedFormats: 'readable'
     },
 
     ecmaVersion: 13,

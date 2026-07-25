@@ -1,0 +1,76 @@
+{{ include_javascript('javascripts/vendor/html5-qrcode.min.js') }}
+{{ include_javascript('javascripts/qrcodescan.js') }}
+{{ include_css('styles/qrcodescan.css') }}
+<div id="qrinfos" data-speak="{{ speak }}"  data-relation="{{ relation }}" data-entity="{{ entity|json_encode() }}"  class="yw-hide">
+    <div class="yw-alert yw-alert--info">{{ _t('QR_FIRST_INSTRUCTIONS') }}</div>
+</div>
+<div id="qr-container">
+    <div class="yw-row">
+        <div class="yw-col" style="width:66.67%;">
+            <div class="flex-center">
+                <div class="flex-element yw-text-center">
+                    <div id="qrreader"></div>
+                    <div id="qrreader-results"></div>
+                    <a href="#" class="yw-btn btn-reset"><i class="fas fa-sync-alt"></i> {{ _t('QR_RESET') }}</a>
+                </div>
+            </div>
+        </div>
+        <div class="yw-col" style="width:33.33%;">
+            <div class="step1 stepper__row stepper__row--active">
+                <div class="stepper--vertical">
+                  <div class="stepper--vertical__circle">
+                    <span class="stepper--vertical__circle__text">
+                      1
+                    </span>
+                  </div>
+                  <div class="stepper--vertical__details">
+                    <h3 class="heading__three">
+                      {{ _t('QR_SCAN_FIRST') }}
+
+                    </h3>
+                    <p class="text-success yw-text-success"></p>
+                    <p class="paragraph">
+                      {{ _t('QR_FIRST_INSTRUCTIONS') }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            <div class="step2 stepper__row stepper__row--disabled">
+              <div class="stepper--vertical">
+                <div class="stepper--vertical__circle">
+                  <span class="stepper--vertical__circle__text">
+                    2
+                  </span>
+                </div>
+                <div class="stepper--vertical__details">
+                  <h3 class="heading__three">
+                    {{ _t('QR_SCAN_SECOND') }}
+                  </h3>
+                  <p class="text-success yw-text-success"></p>
+                  <p class="paragraph">
+                    {{ _t('QR_SECOND_INSTRUCTIONS') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="step3 stepper__row stepper__row--disabled">
+              <div class="stepper--vertical">
+                <div class="stepper--vertical__circle">
+                  <span class="stepper--vertical__circle__text">
+                    3
+                  </span>
+                </div>
+                <div class="stepper--vertical__details">
+                  <h3 class="heading__three">
+                    {{ _t('QR_FINISH') }}
+                  </h3>
+                  <p class="text-success yw-text-success"></p>
+                  <p class="paragraph">
+                    {{ _t('QR_FINAL_INSTRUCTIONS') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+        </div>
+    </div>
+</div>

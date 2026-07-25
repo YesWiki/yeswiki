@@ -255,6 +255,15 @@ class Init
                 ArchiveService::KEY_FOR_PRIVATE_FOLDER => ArchiveService::PRIVATE_FOLDER_NAME_IN_ZIP,
                 'max_nb_files' => 10,
             ],
+            // qrcode generic config (ticket 14, formerly yeswiki-extension-qrcode's config.yaml)
+            'qrcode_config' => [
+                'relation_form_id' => 1300, // official reserved bazar form id for relations
+                'default_relation_type' => 'contact',
+                'default_entity_type' => 'personne',
+                'default_entity_form' => '1',
+                'default_user_form' => '1',
+                'visualisation_refresh_period' => '30000',
+            ],
         ];
         unset($_rewrite_mode);
 

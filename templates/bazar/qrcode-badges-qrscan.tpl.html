@@ -1,0 +1,157 @@
+<?php
+use YesWiki\Core\Service\QrCodeService;
+
+$i = 0;
+$nbcardsperpage = $GLOBALS['wiki']->GetParameter('cardsperpage');
+if (empty($nbcardsperpage)) {
+  $nbcardsperpage = 4;
+}
+$relation = $this->wiki->getParameter('relation');
+if (empty($relation)) {
+    $relation = $this->wiki->config['qrcode_config']['default_relation_type'];
+}
+$entityType = $this->wiki->getParameter('entity');
+if (empty($entityType)) {
+    $entityType = $this->wiki->config['qrcode_config']['default_entity_type'];
+}
+$entityForm = $this->wiki->getParameter('entityform');
+if (empty($entityForm)) {
+    $entityForm = $this->wiki->config['qrcode_config']['default_entity_form'];
+}
+$logo = $this->wiki->getParameter('logo');
+if (empty($logo)) {
+    $logo = 'themes/margot/images/favicon.png';
+}
+
+if (count($fiches)>0) : ?>
+<div class="badge-container">
+    <?php foreach($fiches as $fiche): $i = $i+1; // DEBUG echo $i.' '.$fiche['id_fiche'].'<br >'; ?>
+          <div class="qrbadge bazar-entry" <?php echo $fiche['html_data'];?>>
+            <?php
+            $fiche = array_map(
+              function($a) {
+                  if (is_array($a)) {
+                    return array_map('trim', $a);
+                  } else {
+                    return trim($a);
+                  }
+              },
+              $fiche
+            );
+            $qrcode = $GLOBALS['wiki']->href('', 'QRcodeScan').'&id='.$entityForm.'&'.$entityType.'='.$fiche['id_fiche'];
+            $cacheImage = 'cache'.DIRECTORY_SEPARATOR.'qrcodebadge-'.$GLOBALS['wiki']->getPageTag().'-'.md5($qrcode).'.svg';
+            if (!file_exists($cacheImage) || (!empty($_GET['refresh']) && $_GET['refresh']=='1')) {
+                $this->wiki->services->get(QrCodeService::class)->generateToFile($qrcode, $cacheImage);
+            }
+            ?>
+          <div class="badge-info">
+            <img class="badge-logo" src="<?php echo $logo; ?>" alt="badge logo" />
+            <h4 class="badge-title"><?php echo $fiche['bf_titre']; ?></h4>
+
+            <?php if (!empty($fiche['bf_structure'])) : ?><div class="badge-organisation"><?php echo $fiche['bf_structure']; ?></div><?php endif; ?>
+            <?php //desactive 
+	   if (false && !empty($fiche['bf_fonction'])) : ?><div class="badge-occupation"><?php echo $fiche['bf_fonction']; ?></div><?php endif; ?>
+          </div>
+          <img class="img-qrcode" src="<?php echo $cacheImage; ?>" alt="qrcode" />
+        </div>
+        <?php if (($i % $nbcardsperpage == 0)) { echo '</div><div class="badge-container">'; } ?>
+    <?php endforeach; ?>
+    <?php if (($i % $nbcardsperpage == 0)) {echo '</div>';} ?>
+  </div>
+  <style>
+  .badge-container {width:210mm;height:297mm;margin:0 auto;
+  display: grid;
+  grid-gap:10mm;
+  grid-template-columns: 1fr 1fr;
+  justify-items: center;
+  justify-content: center;
+  }
+  .qrbadge {
+    border:1px solid #ddd;
+    margin: 0 /*30mm 9mm 9mm 9mm*/; 
+    padding: 1mm 1mm 9mm 1mm;
+    display: inline-block;
+    width: 74mm;
+    height: 105mm;
+    overflow:hidden;
+    position: relative;
+    font-size: 10pt;
+  }
+  .badge-info {text-align: left;}
+  .badge-title { font-size: 16pt; color:#61b32e !important; margin: 3mm 0mm; text-transform: capitalize;}
+  .badge-organisation {margin-bottom:1em; font-weight: bold;line-height: 1em;}
+
+.qrbadge {
+  display: grid;
+  align-content: space-between;
+}
+
+.img-qrcode {
+  width: 45mm;
+  height: 45mm;
+  display: block;
+  margin: 0 auto;
+}
+.badge-logo {
+  display: block;
+  margin: 16mm auto 0 auto;
+  width: 15mm;
+}
+
+.badge-info {
+  /* text-align: left; */
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+
+.badge-title {
+  margin: 2mm 0mm 1mm 0mm;
+}
+
+.badge-organisation {
+  margin-bottom: 0em;
+}
+
+.badge-container {
+  width: 158mm;
+  grid-template-columns: 74mm 74mm;
+}
+
+
+  @media print {
+     @page {
+         size: auto;
+         margin: 0;
+       }
+     
+       body {
+         -webkit-print-color-adjust: exact !important;
+         print-color-adjust: exact !important;
+         overflow: visible;
+         margin: 0px;
+       }
+       a[href]::after {
+         content: none;
+       }
+       .footer,
+       #search-form,
+       #yw-topnav,
+       #yw-header,
+       #yw-footer,
+	  .export-links,
+       .debug,
+       .BAZ_fiche_info,
+       .no-print {
+         display: none !important;
+       }
+     .page, #yw-container {padding:0;width:100%;margin:0;}
+     <?php if (isset($_GET['border']) && $_GET['border'] == "0") : ?>.qrbadge { border:none !important;}<?php endif; ?>
+     .break,.badge-container {
+        page-break-after: always;
+        page-break-inside: avoid;
+        break-after: always;
+      }
+  }
+  </style>
+<?php endif;

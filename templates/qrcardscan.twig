@@ -1,0 +1,16 @@
+{{ include_javascript('javascripts/vendor/html5-qrcode.min.js') }}
+{{ include_javascript('javascripts/qrcardscan.js') }}
+{{ include_css('styles/qrcardscan.css') }}
+<div id="qrinfos" data-speak="{{ speak }}">
+    <div class="yw-alert yw-alert--info">{{ _t('QR_INTRO')}}</div>
+</div>
+<div class="yw-row">
+    <div class="yw-col" style="width:66.67%;">
+        <div id="qrreader"></div>
+    </div>
+    <div class="yw-col" style="width:33.33%;">
+        <div id="multimedia-player"></div>
+        <div id="multimedia-playlist" class="yw-list-group">
+        </div>
+    </div>
+</div>

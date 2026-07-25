@@ -1,0 +1,193 @@
+#qr-container {
+  background: #eff3f6;
+  padding: 30px 0;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-element {
+  flex: none;
+}
+#qrreader {
+  margin: 0 auto;
+  border-radius: 20px;
+  border: 4px var(--primary-color) solid;
+  background: #111;
+  width: 100%;
+  height: 450px;
+  display: flex;
+  overflow: hidden;
+}
+
+#qrreader video {
+}
+.heading__three {
+  font-size: 22px;
+  font-weight: 500;
+  color: #3e4e68;
+  line-height: 26px;
+  margin: 0;
+  /*font-family: proxima-nova, sans-serif;*/
+  font-style: normal;
+  text-rendering: optimizeLegibility !important;
+  font-smooth: always !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.paragraph {
+  font-size: 14px;
+  font-weight: 500;
+  color: #3e4e68;
+  line-height: 22px;
+  margin: 0;
+  /*font-family: proxima-nova, sans-serif;*/
+  font-style: normal;
+  text-rendering: optimizeLegibility !important;
+  font-smooth: always !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* DO NOT COPY THIS. END OF BLOCK */
+
+.stepper__row {
+  /*width: 623px;*/
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  margin-bottom: 67px;
+  margin-left: auto;
+  margin-right: auto;
+  -webkit-transition: margin 0.4s;
+  transition: margin 0.4s;
+}
+
+.stepper__row:last-child {
+  margin-bottom: 0;
+}
+
+.stepper__row:last-child .button__rectangle {
+  display: none;
+}
+
+.stepper--vertical {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: relative;
+}
+
+.stepper--vertical__circle {
+  background: url('../images/step-circle-icon_zkr7qg.svg');
+  width: 60px;
+  height: 60px;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  position: relative;
+}
+
+.stepper--vertical__circle:after {
+  border-left: 2px #b7c3ca solid;
+  display: block;
+  content: ' ';
+  position: absolute;
+  top: 75px;
+  left: 29px;
+  width: 3px;
+  height: 70px;
+  -webkit-transform-origin: 100% 0%;
+  transform-origin: 100% 0%;
+  -webkit-transition: -webkit-transform 0.2s;
+  transition: -webkit-transform 0.2s;
+  transition: transform 0.2s;
+  transition:
+    transform 0.2s,
+    -webkit-transform 0.2s;
+}
+
+.stepper--vertical__circle__text {
+  -ms-flex-item-align: center;
+  -ms-grid-row-align: center;
+  align-self: center;
+  font-size: 18px;
+  font-weight: 500;
+  color: #388cf3;
+}
+
+.stepper--vertical__details {
+  margin-left: 24px;
+  margin-top: 10px;
+  -ms-flex-item-align: center;
+  -ms-grid-row-align: center;
+  align-self: center;
+  max-width: 270px;
+}
+
+.stepper--vertical__details .paragraph {
+  margin-top: 12px;
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s;
+}
+
+.stepper--vertical__details .button__rectangle {
+  margin-top: 24px;
+}
+.stepper__row:last-child .stepper--vertical__circle:after {
+  content: '';
+  display: none;
+}
+.stepper__row--disabled {
+  margin-bottom: 45px;
+}
+.stepper__row--disabled .button__rectangle {
+  display: none;
+}
+.stepper__row--disabled .stepper--vertical__circle {
+  background: url('../images/step-circle-icon--disabled_xakuwy.svg');
+  opacity: 0.4;
+}
+.stepper__row--disabled .stepper--vertical__circle__text {
+  color: rgba(62, 78, 104, 0.7);
+}
+.stepper__row--disabled .stepper--vertical__circle:after {
+  -webkit-transform: scaleY(0.75);
+  transform: scaleY(0.75);
+  top: 75px;
+}
+.stepper__row--disabled .stepper--vertical__details .paragraph {
+  color: rgba(62, 78, 104, 0.8);
+}
+.stepper__row--disabled .stepper--vertical__details .heading__three {
+  color: rgba(62, 78, 104, 0.7);
+}
+
+.stepper__row:hover {
+}
+
+#multimedia-player figcaption {
+  position: relative;
+  color: var(--main-text-color);
+  background-color: transparent;
+  opacity: 1;
+  text-align: left;
+}
+
+#multimedia-player figcaption :last-child {
+  padding-bottom: 0;
+}
+
+#multimedia-player figcaption :first-child {
+  padding-top: 0;
+}
+
+#multimedia-player figcaption * {
+  padding: 0;
+}

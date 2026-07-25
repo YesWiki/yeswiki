@@ -30,6 +30,7 @@
     "ext-pcre": "*",
     "ext-zip": "^1.0",
     "caxy/php-htmldiff": "^0.1.13",
+    "endroid/qr-code": "^6.0",
     "enshrined/svg-sanitize": "^0.22.0",
     "ezyang/htmlpurifier": "^4.19",
     "jbroadway/urlify": "^1.2",

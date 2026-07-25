@@ -14,6 +14,13 @@ class EditConfigAction extends YesWikiAction
     private const ARCHIVE_KEYS = ['privatePath', 'call_archive_async', 'max_nb_files', 'preupdate_backup_activated'];
     // formerly contributed via tools/templates's config.yaml the same way
     private const META_KEYS = ['robots'];
+    // formerly contributed via yeswiki-extension-qrcode's config.yaml's qrcode_editable_config_params
+    // (default_user_form added here: it already had an EDIT_CONFIG_HINT_ lang key but was
+    // missing from both the old extension's editable-params list and its own config.yaml defaults)
+    private const QRCODE_KEYS = [
+        'relation_form_id', 'default_relation_type', 'default_entity_type',
+        'default_entity_form', 'default_user_form', 'visualisation_refresh_period',
+    ];
     private const AUTHORIZED_KEYS = [
         'yeswiki_name' => 'core',
         'root_page' => 'core',
@@ -136,6 +143,11 @@ class EditConfigAction extends YesWikiAction
             $keys[] = ['meta' => self::META_KEYS];
             foreach (self::META_KEYS as $metaKey) {
                 $associatedExtensions["meta[{$metaKey}]"] = 'templates';
+            }
+
+            $keys[] = ['qrcode_config' => self::QRCODE_KEYS];
+            foreach (self::QRCODE_KEYS as $qrcodeKey) {
+                $associatedExtensions["qrcode_config[{$qrcodeKey}]"] = 'qrcode';
             }
 
             foreach ($this->wiki->extensions as $extensionFolder) {

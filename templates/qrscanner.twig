@@ -1,0 +1,17 @@
+{{ include_javascript('javascripts/vendor/html5-qrcode.min.js') }}
+{{ include_javascript('javascripts/qrcodescanner.js') }}
+{{ include_css('styles/qrcodescan.css') }}
+<div id="qrinfos" data-speak="{{ speak }}">
+    <div class="yw-alert yw-alert--info">Passer le QR code de la carte musicale dans la zone visuelle pour lancer le son.</div>
+</div>
+    <div class="yw-row">
+        <div class="yw-col" style="width:50%;">
+          <div id="qrreader"></div>
+          <div id="qrreader-results"></div>
+          <a href="#" class="yw-btn btn-reset"><i class="fas fa-sync-alt"></i> {{ _t('QR_RESET') }}</a>
+        </div>
+        <div class="yw-col" style="width:50%;">
+          <div id="multimedia-player"></div>
+        </div>
+    </div>
+</div>

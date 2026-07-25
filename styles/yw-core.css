@@ -440,6 +440,29 @@ textarea.yw-input {
   padding: 15px;
 }
 
+/* ---- List group (ticket 14: replaces Bootstrap's .list-group/.list-group-item) ---- */
+.yw-list-group {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+.yw-list-group__item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  background: none;
+  border: 1px solid var(--neutral-soft-color);
+  border-top: 0;
+}
+.yw-list-group__item:first-child {
+  border-top: 1px solid var(--neutral-soft-color);
+}
+.yw-list-group__item--active {
+  color: #fff;
+  background: var(--primary-color);
+}
+
 /* ---- Container (ticket 12: replaces Bootstrap's .container) ---- */
 .yw-container {
   max-width: 1200px;
@@ -568,4 +591,10 @@ textarea.yw-input {
 }
 .yw-text-info {
   color: var(--primary-color);
+}
+.yw-text-success {
+  color: var(--success-color);
+}
+.yw-hide {
+  display: none;
 }
