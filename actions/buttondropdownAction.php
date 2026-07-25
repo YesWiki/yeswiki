@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 
 class ButtondropdownAction extends YesWikiAction
@@ -20,18 +21,9 @@ class ButtondropdownAction extends YesWikiAction
            $caret = '1';
        }
 
-       $icon = trim($this->arguments['icon']);
-       if (!empty($icon)) {
-           // si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
-
-           if (preg_match('/\s/', $icon) === 1) {
-               $icon = '<i class="' . $icon . '"></i>';
-           } else {
-               $icon = '<i class="icon-' . $icon . ' fa fa-' . $icon . '"></i>';
-           }
-           if (!empty($text)) {
-               $icon = $icon . ' ';
-           }
+       $icon = $this->services->get(TemplateHelperService::class)->formatIconHtml($this->arguments['icon']);
+       if (!empty($icon) && !empty($text)) {
+           $icon = $icon . ' ';
        }
 
        // classe css supplémentaire l'ensemble du

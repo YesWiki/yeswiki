@@ -669,8 +669,9 @@ class ApiController extends YesWikiController
     }
 
     /**
-     * Relocated from tools/templates's loadmetadatas/savemetadatas AJAX handlers
-     * (ticket 12) - saves per-page theme/style/squelette/background-image overrides.
+     * Relocated from tools/templates's savemetadatas AJAX handler (ticket 12) - saves
+     * per-page theme/style/squelette/background-image overrides. loadmetadatas had zero
+     * callers and was simply deleted, not relocated.
      */
     #[Route('/api/pages/{tag}/metadatas', methods: ['POST'], options: ['acl' => ['+']])]
     public function savePageMetadatas(Request $request, $tag)

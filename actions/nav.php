@@ -30,17 +30,9 @@ $icons = $this->GetParameter('icons');
 if (!empty($icons)) {
     $icons = explode(',', $icons);
     foreach ($icons as $key => $icon) {
-        $icon = trim($icon);
-        if (!empty($icon)) {
-            // si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
-            if (preg_match('/\s/', $icon)) {
-                $icon = '<i class="' . $icon . '"></i>';
-            } else {
-                $icon = '<i class="icon-' . $icon . ' fa fa-' . $icon . '"></i>';
-            }
-            if (!empty($text)) {
-                $icon = $icon . ' ';
-            }
+        $icon = $this->services->get(TemplateHelperService::class)->formatIconHtml($icon);
+        if (!empty($icon) && !empty($text)) {
+            $icon = $icon . ' ';
         }
         $icons[$key] = $icon;
     }

@@ -1,6 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Core\Service\TemplateHelperService;
 
 // adresse vers quoi le bouton pointe
 $link = $this->GetParameter('link');
@@ -26,17 +27,9 @@ $text = $this->GetParameter('text');
 $title = $this->GetParameter('title');
 
 // icone du bouton
-$icon = trim($this->GetParameter('icon'));
-if (!empty($icon)) {
-    // si le parametre contient des espaces, il s'agit d'une icone autre que celles par defaut de bootstrap
-    if (preg_match('/\s/', $icon)) {
-        $icon = '<i class="' . $icon . '"></i>';
-    } else {
-        $icon = '<i class="icon-' . $icon . ' fa fa-' . $icon . '"></i>';
-    }
-    if (!empty($text)) {
-        $icon = $icon . ' ';
-    }
+$icon = $this->services->get(TemplateHelperService::class)->formatIconHtml($this->GetParameter('icon'));
+if (!empty($icon) && !empty($text)) {
+    $icon = $icon . ' ';
 }
 
 // classe css supplémentaire pour changer le look

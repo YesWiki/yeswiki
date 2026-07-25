@@ -269,6 +269,23 @@ class TemplateHelperService
         return null;
     }
 
+    /**
+     * wrap a trimmed icon parameter (from `button`, `buttondropdown`, `nav`) into its <i> markup ;
+     * a space in the value means it is a raw class list, not a bare bootstrap/fontawesome icon name.
+     */
+    public function formatIconHtml(string $icon): string
+    {
+        $icon = trim($icon);
+        if (empty($icon)) {
+            return '';
+        }
+        if (preg_match('/\s/', $icon)) {
+            return '<i class="' . $icon . '"></i>';
+        }
+
+        return '<i class="icon-' . $icon . ' fa fa-' . $icon . '"></i>';
+    }
+
     public function postFormat($output)
     {
         // pour les buttondropdown, on ajoute les classes css aux listes
