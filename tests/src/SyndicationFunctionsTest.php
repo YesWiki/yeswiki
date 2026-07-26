@@ -35,12 +35,9 @@ class SyndicationFunctionsTest extends YesWikiTestCase
      * SyndicationAction::run() calls multiArraySearch() (to detect whether a feed item
      * was already imported as a Bazar entry) without defining it itself -- it's defined
      * in tools/bazar/libs/bazar.fonct.php, loaded via the normal extension-bootstrap
-     * mechanism whenever bazar is enabled. A real cross-tool dependency, confirmed still
-     * intact after this ticket's relocation (bazar's own bootstrap is unaffected by
-     * where SyndicationAction.php itself lives). This is deliberately NOT redefined in
-     * src/syndication.functions.php -- an earlier pass here almost shipped exactly that
-     * duplicate definition, having only grepped src/ and tools/syndication and missed
-     * tools/bazar, which would have been a fatal "cannot redeclare function" error.
+     * mechanism whenever bazar is enabled. A real cross-tool dependency, unaffected by
+     * this ticket's relocation of SyndicationAction.php, and deliberately NOT redefined
+     * in src/syndication.functions.php.
      */
     public function testMultiArraySearchFromBazarIsReachableAfterWikiBoots()
     {

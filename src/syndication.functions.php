@@ -1,17 +1,13 @@
 <?php
 
-// ticket 23: relocated from tools/syndication/libs/syndication.lib.php.
-// getRelativeDate() dropped: confirmed dead (zero callers anywhere in the codebase).
+// relocated from tools/syndication/libs/syndication.lib.php (ticket 23).
+// getRelativeDate() dropped: dead, zero callers anywhere in the codebase.
 //
 // multiArraySearch() (called by SyndicationAction to detect whether a feed item was
-// already imported as a Bazar entry) is NOT defined here: it already exists in
+// already imported as a Bazar entry) is NOT defined here: it's defined in
 // tools/bazar/libs/bazar.fonct.php (a generic recursive multi-array search, not
-// syndication-specific) and is loaded via the normal extension-bootstrap mechanism
-// whenever bazar is enabled -- a real cross-tool dependency, not a bug. Confirmed by
-// checking bazar's implementation actually handles this call site's shape (a flat list
-// of entries) correctly via its recursive descent. An earlier pass here wrongly
-// concluded this was an undefined-function bug, having only grepped src/ and
-// tools/syndication and missed tools/bazar.
+// syndication-specific) and loaded via the normal extension-bootstrap mechanism
+// whenever bazar is enabled -- a real cross-tool dependency, not a bug.
 
 /**
  * Truncates text.
