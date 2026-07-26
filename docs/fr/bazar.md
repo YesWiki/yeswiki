@@ -384,7 +384,7 @@ de paramétrer des comportements spécifiquement liés à ce type de données.
   **Pour aller plus loin dans la personnalisation des mails envoyés** : pour les
   développeurs Il est possible d'adapter les messages affichés dans les e-mails
   en copiant les templates associés depuis
-  tools/contact/templates/notify-email-\*.twig dans custom/templates/contact/
+  templates/notify-email-\*.twig dans custom/templates/core/
   puis en modifiant le contenu de ces modèles (syntaxe twig)
 
 ### 1.2.11. Proposer des choix entre plusieurs possibilités

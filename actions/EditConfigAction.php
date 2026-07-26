@@ -26,6 +26,14 @@ class EditConfigAction extends YesWikiAction
     // the original bare top-level key never matched storage and so never worked)
     private const ATTACH_VIDEO_KEYS = ['default_video_service', 'default_peertube_instance'];
     private const ATTACH_CONFIG_KEYS = ['max_file_size'];
+    // formerly contributed via tools/contact's config.yaml's contact_editable_config_params
+    // (contact_from/mail_custom_message were already merged into AUTHORIZED_KEYS below,
+    // predating this ticket)
+    private const CONTACT_KEYS = [
+        'contact_use_long_wiki_urls_in_emails', 'contact_mail_func', 'contact_smtp_host',
+        'contact_smtp_port', 'contact_smtp_user', 'contact_smtp_pass', 'contact_smtp_secure',
+        'contact_debug', 'contact_disable_email_for_password',
+    ];
     private const AUTHORIZED_KEYS = [
         'yeswiki_name' => 'core',
         'root_page' => 'core',
@@ -162,6 +170,12 @@ class EditConfigAction extends YesWikiAction
             $keys[] = ['attach_config' => self::ATTACH_CONFIG_KEYS];
             foreach (self::ATTACH_CONFIG_KEYS as $attachConfigKey) {
                 $associatedExtensions["attach_config[{$attachConfigKey}]"] = 'attach';
+            }
+
+            // top-level keys, matching tools/contact's own (bare, not nested) config.yaml shape
+            foreach (self::CONTACT_KEYS as $contactKey) {
+                $keys[] = $contactKey;
+                $associatedExtensions[$contactKey] = 'contact';
             }
 
             foreach ($this->wiki->extensions as $extensionFolder) {

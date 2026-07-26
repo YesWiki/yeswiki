@@ -1,15 +1,12 @@
 <?php
 
-/**
- * desabonnement.php.
- *
- * Description : action permettant l'envoi par mail d'une demande de desinscription a une liste de discussion
- */
+// ticket 18: relocated from tools/contact/actions/desabonnement.php.
+// action permettant l'envoi par mail d'une demande de desinscription a une liste de discussion
 
 // recuperation des parametres
 $listelements['mail'] = $this->GetParameter('mail');
 if (empty($listelements['mail'])) {
-    echo '<div class="alert alert-danger"><strong>' . _t('CONTACT_ACTION_DESABONNEMENT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
+    echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_DESABONNEMENT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
 } else {
     // on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
     if (isset($GLOBALS['nbactionmail'])) {
@@ -35,14 +32,14 @@ if (empty($listelements['mail'])) {
     // on peut ajouter des classes à la classe par défaut
     $listelements['class'] = ($this->GetParameter('class') ? 'form-desabonnement ' . $this->GetParameter('class') : 'form-desabonnement');
 
-    // adresse url d'envoi du mail
-    $listelements['mailerurl'] = $this->href('mail');
+    // page context for the /api/contact/mail route (javascripts/contact.js)
+    $listelements['pageTag'] = $this->GetPageTag();
 
     // type de demande et placeholder
     $listelements['demand'] = 'desabonnement';
     $listelements['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
 
-    echo $this->render("@contact/$template", $listelements);
+    echo $this->render("@core/$template", $listelements);
 
-    $this->addJavascriptFile('tools/contact/libs/contact.js');
+    $this->addJavascriptFile('javascripts/contact.js');
 }

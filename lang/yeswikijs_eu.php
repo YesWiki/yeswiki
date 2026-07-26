@@ -135,4 +135,8 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     // relocated from tools/attach/lang/attachjs_eu.inc.php (ticket 17)
     'ATTACH_FAILED' => 'Huts egin du',
 
+    // relocated from tools/contact/lang/contactjs_eu.inc.php (ticket 18)
+    'CONTACT_REQUIRED_FIELD' => 'Eremu hau nahitaez idatzi behar da.',
+    'CONTACT_EMAIL_NOT_VALID' => 'Sartutako helbide elektronikoa ez da baliozkoa.',
+
 ];

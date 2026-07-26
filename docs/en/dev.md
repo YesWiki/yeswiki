@@ -230,7 +230,7 @@ You can override any template used in yeswiki by mimicking the same folder struc
 | ------------------------------------------------ | ------------------------------------------------- |
 | `templates/comment.twig`                         | `custom/templates/core/comment.twig`              |
 | `tools/login/templates/user-signup-form.twig`    | `custom/templates/login/user-signup-form.twig`    |
-| `tools/contact/templates/notify-email-text.twig` | `custom/templates/contact/notify-email-text.twig` |
+| `templates/notify-email-text.twig`               | `custom/templates/core/notify-email-text.twig`    |
 
 ### Custom Javascript
 

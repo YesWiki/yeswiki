@@ -38,7 +38,7 @@ class Mailer
 
         $baseUrl = $this->getBaseUrl();
         $sujet = $this->templateEngine->render(
-            '@contact/notify-admins-email-subject.twig',
+            '@core/notify-admins-email-subject.twig',
             [
                 'entry' => $data,
                 'baseUrl' => $baseUrl,
@@ -46,7 +46,7 @@ class Mailer
             ]
         );
         $text = $this->templateEngine->render(
-            '@contact/notify-admins-email-text.twig',
+            '@core/notify-admins-email-text.twig',
             [
                 'entry' => $data,
                 'baseUrl' => $baseUrl,
@@ -54,7 +54,7 @@ class Mailer
         );
         $userName = $admins[0]['name'] ?? null;
         $html = $this->templateEngine->render(
-            '@contact/notify-admins-email-html.twig',
+            '@core/notify-admins-email-html.twig',
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
                 'entry' => $data,
@@ -72,21 +72,21 @@ class Mailer
     {
         $baseUrl = $this->getBaseUrl();
         $sujet = $this->templateEngine->render(
-            '@contact/notify-admins-list-deleted-email-subject.twig',
+            '@core/notify-admins-list-deleted-email-subject.twig',
             [
                 'baseUrl' => $baseUrl,
                 'listId' => $id,
             ]
         );
         $text = $this->templateEngine->render(
-            '@contact/notify-admins-list-deleted-email-text.twig',
+            '@core/notify-admins-list-deleted-email-text.twig',
             [
                 'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
                 'userName' => $this->wiki->GetUserName(),
             ]
         );
         $html = $this->templateEngine->render(
-            '@contact/notify-admins-list-deleted-email-html.twig',
+            '@core/notify-admins-list-deleted-email-html.twig',
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
                 'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
@@ -121,8 +121,7 @@ class Mailer
 
     public function sendEmailFromAdmin(string $address, string $subject, string $text, string $html = '')
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
-        send_mail(
+        $this->send(
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
             $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
             $address,
@@ -132,11 +131,26 @@ class Mailer
         );
     }
 
+    /**
+     * Generic send, the single seam every mail-sending caller in core should go
+     * through (ticket 18) instead of calling send_mail() directly -- a thin wrapper
+     * today (send_mail() itself, in src/email.inc.php, is unchanged), but the seam
+     * this ticket asked for so callers don't reach past the abstraction.
+     *
+     * @param string|string[] $mailReceiver
+     */
+    public function send($mailSender, $nameSender, $mailReceiver, string $subject, string $messageTxt, string $messageHtml = ''): bool
+    {
+        include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
+
+        return send_mail($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml);
+    }
+
     public function notifyEmail($email, $data, bool $isCreation = false, ?array $previousEntry = null)
     {
         $baseUrl = $this->getBaseUrl();
         $sujet = $this->templateEngine->render(
-            '@contact/notify-email-subject.twig',
+            '@core/notify-email-subject.twig',
             [
                 'entry' => $data,
                 'baseUrl' => $baseUrl,
@@ -145,7 +159,7 @@ class Mailer
             ]
         );
         $text = $this->templateEngine->render(
-            '@contact/notify-email-text.twig',
+            '@core/notify-email-text.twig',
             [
                 'entry' => $data,
                 'baseUrl' => $baseUrl,
@@ -169,7 +183,7 @@ class Mailer
             $userName = $randomString;
         }
         $html = $this->templateEngine->render(
-            '@contact/notify-email-html.twig',
+            '@core/notify-email-html.twig',
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
                 'entry' => $data,
@@ -188,14 +202,14 @@ class Mailer
     {
         $baseUrl = $this->getBaseUrl();
         $objetmail = $this->templateEngine->render(
-            '@contact/notify-newuser-email-subject.twig',
+            '@core/notify-newuser-email-subject.twig',
             [
                 'baseUrl' => $baseUrl,
                 'yeswikiName' => $this->params->get('yeswiki_name'),
             ]
         );
         $messagemail = $this->templateEngine->render(
-            '@contact/notify-newuser-email-text.twig',
+            '@core/notify-newuser-email-text.twig',
             [
                 'wikiName' => $wikiName,
                 'email' => $email,
@@ -208,8 +222,7 @@ class Mailer
 
     public function subscribeToMailingList($email, $mailingList)
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
-        send_mail(
+        $this->send(
             $email,
             $email,
             $mailingList,

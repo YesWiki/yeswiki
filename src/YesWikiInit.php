@@ -406,6 +406,18 @@ class Init
                 'default_video_service' => 'peertube',
                 'default_peertube_instance' => 'https://framatube.org/',
             ],
+            // contact/mail-sending generic config (ticket 18, formerly tools/contact's config.yaml)
+            'contact_mail_func' => 'mail', // mail, sendmail ou smtp
+            'contact_smtp_host' => '',
+            'contact_smtp_port' => '',
+            'contact_smtp_user' => '',
+            'contact_smtp_pass' => '',
+            'contact_smtp_secure' => '', // smtp secure (ssl,tls,...)
+            'contact_use_long_wiki_urls_in_emails' => false, // add 'wiki=' in url
+            'contact_reply_to' => '', // default mail to reply to
+            'contact_debug' => 0, // debug mode (0 pour rien, 1 pour normal, 2 pour détaillé)
+            'contact_passphrase' => '', // passphrase pour envoyer des mail (cron-triggered digests)
+            'contact_disable_email_for_password' => false, // pour désactiver l'envoie d'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)
         ];
         unset($_rewrite_mode);
 

@@ -1,9 +1,10 @@
 <?php
 
-use YesWiki\Core\Service\GroupManager;
-use YesWiki\Core\Service\UserManager;
+// ticket 18: relocated from tools/contact/libs/contact.functions.php.
 
-include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
+use YesWiki\Core\Service\GroupManager;
+use YesWiki\Core\Service\Mailer;
+use YesWiki\Core\Service\UserManager;
 
 function FindMailFromWikiPage($wikipage, $nbactionmail)
 {
@@ -90,7 +91,6 @@ function getPageTitle($page)
     preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
         $title = preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]);
-    // preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
@@ -142,6 +142,8 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         $sub = _t('CONTACT_MONTHLY_REPORT');
     }
 
+    $mailer = $GLOBALS['wiki']->services->get(Mailer::class);
+
     foreach ($groups as $group) {
         // get page name
         $page = preg_replace(['/^Mail/', '/' . ucfirst($period) . '$/'], '', $group);
@@ -167,7 +169,7 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         foreach ($groupmembers as $member) {
             $user = $GLOBALS['wiki']->LoadUser($member);
             if (!empty($user['email'])) {
-                send_mail($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $user['email'], $subject, $message_txt, $message_html);
+                $mailer->send($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $user['email'], $subject, $message_txt, $message_html);
             }
         }
     }

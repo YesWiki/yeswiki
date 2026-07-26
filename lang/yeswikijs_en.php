@@ -137,4 +137,8 @@ Please confirm their deletion by checking the box below.
     // relocated from tools/attach/lang/attachjs_en.inc.php (ticket 17)
     'ATTACH_FAILED' => 'Failed',
 
+    // relocated from tools/contact/lang/contactjs_en.inc.php (ticket 18)
+    'CONTACT_REQUIRED_FIELD' => 'This field is mandatory.',
+    'CONTACT_EMAIL_NOT_VALID' => 'The given mail is not valid.',
+
 ];

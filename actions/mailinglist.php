@@ -1,26 +1,23 @@
 <?php
 
-/**
- * mailinglist.php.
- *
- * Description : action permettant d'inscrire ou d?sinscrire massivement des mails a une newsletter
- */
-include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
+// ticket 18: relocated from tools/contact/actions/mailinglist.php.
+// action permettant d'inscrire ou desinscrire massivement des mails a une newsletter
+
+use YesWiki\Core\Service\Mailer;
+
+include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
 
 // recuperation des parametres
 $list = $this->GetParameter('list');
 if (empty($list)) {
-    echo '<div class="alert alert-danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_PARAMETER_LIST_REQUIRED') . '.</div>';
+    echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_PARAMETER_LIST_REQUIRED') . '.</div>';
 } elseif ($this->UserIsAdmin()) {
     echo '<h2>' . _('CONTACT_MAILS_TO_ADD_OR_REMOVE') . ' ' . $list . '</h2>';
 
     // les mails formates sont prets a etre envoyes
     if (isset($_POST['mails'])) {
         if (is_array($_POST['mails'])) {
-            // inclusion de la bibliotheque de fonctions pour l'envoi des mails
-            include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
-            include_once YESWIKI_SOURCE_DIR . '/tools/contact/libs/contact.functions.php';
-
+            $mailer = $this->services->get(Mailer::class);
             $tab_listadress = explode('@', $list);
 
             // en fonction de l'action demand
@@ -32,7 +29,8 @@ if (empty($list)) {
             echo '<div class="well" style="width:600px; height:150px; overflow:auto; ">';
             foreach ($_POST['mails'] as $email) {
                 echo _t('CONTACT_SENT_TO_THE_LIST') . ' : ' . $listaction . ' ' . _t('CONTACT_THE_EMAIL') . ' : ' . $email;
-                echo send_mail($email, $email, $listaction, $_POST['action_mails'], $_POST['action_mails'], '', ' <span class="text-success">' . _t('CONTACT_OK') . '</span>') . '<br />';
+                echo $mailer->send($email, $email, $listaction, $_POST['action_mails'], $_POST['action_mails']) ? ' <span class="text-success">' . _t('CONTACT_OK') . '</span>' : '';
+                echo '<br />';
             }
             echo '</div>
 			<a href="' . $this->href() . '" title="' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '">' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '</a>';
@@ -58,13 +56,13 @@ if (empty($list)) {
 			</form><br /><br />
 			<a href="' . $this->href() . '" title="' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '">' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '</a>';
         } else {
-            echo '<div class="alert alert-danger">' . _t('CONTACT_NO_EMAILS_FOUND_IN_THIS_TEXT') . '.</div>
+            echo '<div class="yw-alert yw-alert--danger">' . _t('CONTACT_NO_EMAILS_FOUND_IN_THIS_TEXT') . '.</div>
 			<a href="' . $this->href() . '" title="' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '">' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '</a>';
         }
     }
     // rien n'a ete fait, on propose un formulaire pour ajouter les mails
     else {
-        echo '<div class="alert alert-info">' . _t('CONTACT_ENTER_TEXT_WITH_EMAILS_INSIDE') . '.</div>
+        echo '<div class="yw-alert yw-alert--info">' . _t('CONTACT_ENTER_TEXT_WITH_EMAILS_INSIDE') . '.</div>
 		<form id="ajax-mailing-form" method="post" action="' . $this->href() . '">
 			<label style="display:inline-block;width:200px;text-align:right;">' . _t('CONTACT_YOUR_EMAIL_LIST') . '</label>
 			<textarea name="mailinglist" rows="6" cols="20" style="width:600px;height:150px;"></textarea>
@@ -72,5 +70,5 @@ if (empty($list)) {
 		</form>';
     }
 } else {
-    echo '<div class="alert alert-danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION') . '.</div>' . "\n";
+    echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_MUST_BE_ADMIN_TO_USE_THIS_ACTION') . '.</div>' . "\n";
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace YesWiki\Contact;
+// ticket 18: relocated from tools/contact/actions/ContactAction.php.
 
 use YesWiki\Core\YesWikiAction;
 
-include_once YESWIKI_SOURCE_DIR . '/tools/contact/libs/contact.functions.php';
+include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
 
 class ContactAction extends YesWikiAction
 {
@@ -27,7 +27,7 @@ class ContactAction extends YesWikiAction
     public function run()
     {
         if (empty($this->arguments['mail'])) {
-            return '<div class="alert alert-danger"><strong>' . _t('CONTACT_ACTION_CONTACT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
+            return '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_CONTACT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         }
         // this global is for identifying different contact forms on the same page
         if (isset($GLOBALS['nbactionmail'])) {
@@ -37,11 +37,11 @@ class ContactAction extends YesWikiAction
         }
         $options = array_merge($this->arguments, [
             'nbactionmail' => $GLOBALS['nbactionmail'],
-            'mailerurl' => $this->wiki->href('mail'),
+            'pageTag' => $this->wiki->GetPageTag(),
         ]);
 
-        $this->wiki->addJavascriptFile('tools/contact/libs/contact.js');
+        $this->wiki->addJavascriptFile('javascripts/contact.js');
 
-        return $this->render('@contact/' . $this->arguments['template'], $options);
+        return $this->render('@core/' . $this->arguments['template'], $options);
     }
 }

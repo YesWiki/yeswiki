@@ -122,4 +122,8 @@ return [
     // relocated from tools/attach/lang/attachjs_ta.inc.php (ticket 17)
     'ATTACH_FAILED' => 'தோல்வி',
 
+    // relocated from tools/contact/lang/contactjs_ta.inc.php (ticket 18)
+    'CONTACT_REQUIRED_FIELD' => 'இந்தப் புலத்தின் நுழைவு கட்டாயமாகும்.',
+    'CONTACT_EMAIL_NOT_VALID' => 'உள்ளிட்ட மின்னஞ்சல் செல்லுபடியாகாது.',
+
 ];

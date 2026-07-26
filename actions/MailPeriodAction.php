@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Contact;
+// ticket 18: relocated from tools/contact/actions/MailPeriodAction.php.
 
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\UserManager;
@@ -44,7 +44,7 @@ class MailPeriodAction extends YesWikiAction
             $periods = $this->updatePeriods($periods, $userName);
         }
 
-        return $this->render('@contact/mailperiod.twig', [
+        return $this->render('@core/mailperiod.twig', [
             'user' => $user,
             'messages' => $messages,
             'periods' => $periods,

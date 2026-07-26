@@ -135,4 +135,8 @@ Confirme su eliminación marcando la casilla siguiente.
     // relocated from tools/attach/lang/attachjs_es.inc.php (ticket 17)
     'ATTACH_FAILED' => 'Fallado',
 
+    // relocated from tools/contact/lang/contactjs_es.inc.php (ticket 18)
+    'CONTACT_REQUIRED_FIELD' => 'Este campo es obligatorio.',
+    'CONTACT_EMAIL_NOT_VALID' => 'El correo electrónico introducido no es válido.',
+
 ];
