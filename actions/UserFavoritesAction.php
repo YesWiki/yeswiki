@@ -3,6 +3,7 @@
 use YesWiki\Bazar\Field\ImageField;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Attach;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\PageManager;
@@ -35,10 +36,7 @@ class UserFavoritesAction extends YesWikiAction
         $this->formManager = $this->getService(FormManager::class);
         $this->pageManager = $this->getService(PageManager::class);
         $this->templateEngine = $this->getService(TemplateEngine::class);
-        if (!class_exists('attach')) {
-            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-        }
-        $this->attach = new attach($this->wiki);
+        $this->attach = new Attach($this->wiki);
 
         $user = $this->authController->getLoggedUser();
         $currentUser = empty($user) ? null : $user['name'];

@@ -5,6 +5,7 @@ namespace YesWiki\Bazar\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Field\BazarField;
 use YesWiki\Bazar\Field\ImageField;
+use YesWiki\Core\Attach;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HibernationService;
@@ -57,9 +58,6 @@ class FormManager
         TripleStore $tripleStore,
         AclService $aclService,
     ) {
-        if (!class_exists('attach')) {
-            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-        }
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->activityPubService = $activityPubService;
@@ -74,7 +72,7 @@ class FormManager
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
         $this->hibernationService = $hibernationService;
-        $this->attach = new \Attach($this->wiki);
+        $this->attach = new Attach($this->wiki);
     }
 
     protected function getBasePath()

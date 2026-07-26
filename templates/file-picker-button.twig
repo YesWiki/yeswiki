@@ -1,0 +1,11 @@
+{# ticket 17: replaces @attach/file-upload-button.twig's qq.js/jQuery uploader.
+   A plain button opening the new @core/file-picker-modal.twig (JS-driven, see
+   javascripts/file-picker-modal.js), which lists already-uploaded files (as their
+   own tagged Content entries) alongside a plain upload form -- no drag/drop
+   fine-uploader widget, no per-button qq.FileUploader instance to init. #}
+<div class="btn-group">
+  <button type="button" class="yw-btn aceditor-btn aceditor-btn-file" title="{{ _t('UPLOAD_A_FILE') }}">
+    <i class="fa fa-upload icon-upload"></i>
+    <span>{{ _t('UPLOAD_A_FILE_SHORT') }}</span>
+  </button>
+</div>

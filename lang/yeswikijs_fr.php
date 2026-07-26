@@ -152,4 +152,7 @@ return [
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Date de modification',
     'ACTION_BUILDER_CREATION_DATE' => 'Date de création',
     'ACTION_BUILDER_FORM_ID' => 'Formulaire',
+    // relocated from tools/attach/lang/attachjs_fr.inc.php (ticket 17)
+    'ATTACH_FAILED' => 'Échoué',
+
 ];

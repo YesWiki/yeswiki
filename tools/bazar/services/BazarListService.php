@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Service;
 
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Field\EnumField;
+use YesWiki\Core\Attach;
 use YesWiki\Wiki;
 
 class BazarListService
@@ -42,16 +43,13 @@ class BazarListService
 
     private function replaceDefaultImage($options, $forms, $entries): array
     {
-        if (!class_exists('attach')) {
-            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-        }
-        $attach = new \Attach($this->wiki);
+        $attach = new Attach($this->wiki);
         $basePath = $attach->GetUploadPath();
         $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
         $formIds = array_keys($forms) ?? [];
 
         foreach ($formIds as $id) {
-            $template = $forms[(int) $id]['template'] ?? [];
+            $template = $forms[(int)$id]['template'] ?? [];
             $image_names = array_map(
                 function ($item) {
                     return $item[1];
@@ -600,12 +598,12 @@ class BazarListService
                     $this->sanitizeStringForCompare($val2),
                     $this->sanitizeStringForCompare($val1),
                 );
-            } else {
-                return strnatcmp(
-                    $this->sanitizeStringForCompare($val1),
-                    $this->sanitizeStringForCompare($val2),
-                );
             }
+
+            return strnatcmp(
+                $this->sanitizeStringForCompare($val1),
+                $this->sanitizeStringForCompare($val2),
+            );
         };
     }
 

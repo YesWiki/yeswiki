@@ -21,6 +21,11 @@ class EditConfigAction extends YesWikiAction
         'relation_form_id', 'default_relation_type', 'default_entity_type',
         'default_entity_form', 'default_user_form', 'visualisation_refresh_period',
     ];
+    // formerly contributed via tools/attach's config.yaml's attach_editable_config_params
+    // (max_file_size moved under attach_config, matching where it's actually read from --
+    // the original bare top-level key never matched storage and so never worked)
+    private const ATTACH_VIDEO_KEYS = ['default_video_service', 'default_peertube_instance'];
+    private const ATTACH_CONFIG_KEYS = ['max_file_size'];
     private const AUTHORIZED_KEYS = [
         'yeswiki_name' => 'core',
         'root_page' => 'core',
@@ -148,6 +153,15 @@ class EditConfigAction extends YesWikiAction
             $keys[] = ['qrcode_config' => self::QRCODE_KEYS];
             foreach (self::QRCODE_KEYS as $qrcodeKey) {
                 $associatedExtensions["qrcode_config[{$qrcodeKey}]"] = 'qrcode';
+            }
+
+            $keys[] = ['attach-video-config' => self::ATTACH_VIDEO_KEYS];
+            foreach (self::ATTACH_VIDEO_KEYS as $attachVideoKey) {
+                $associatedExtensions["attach-video-config[{$attachVideoKey}]"] = 'attach';
+            }
+            $keys[] = ['attach_config' => self::ATTACH_CONFIG_KEYS];
+            foreach (self::ATTACH_CONFIG_KEYS as $attachConfigKey) {
+                $associatedExtensions["attach_config[{$attachConfigKey}]"] = 'attach';
             }
 
             foreach ($this->wiki->extensions as $extensionFolder) {

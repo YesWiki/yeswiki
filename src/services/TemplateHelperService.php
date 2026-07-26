@@ -2,10 +2,10 @@
 
 namespace YesWiki\Core\Service;
 
-use Attach;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Attach;
 use YesWiki\Wiki;
 
 class TemplateHelperService
@@ -129,13 +129,9 @@ class TemplateHelperService
         return empty($image) ? '' : $image;
     }
 
-    protected function getAttach()
+    protected function getAttach(): Attach
     {
-        if (!class_exists('attach')) {
-            include_once YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-        }
-
-        return new \Attach($this->wiki);
+        return new Attach($this->wiki);
     }
 
     /**

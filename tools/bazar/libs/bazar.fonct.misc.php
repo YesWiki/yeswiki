@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Attach;
 use YesWiki\Core\Service\HibernationService;
 
 function getConfigValue($key, $default = false, $cfg = '')
@@ -26,10 +27,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
 {
     $wiki = $GLOBALS['wiki'];
     if (file_exists($image_src)) {
-        if (!class_exists('attach')) {
-            include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-        }
-        $attach = new attach($wiki);
+        $attach = new Attach($wiki);
 
         // force new name
         $image_dest = $attach->getResizedFilename($image_src, $largeur, $hauteur, $method);
@@ -107,7 +105,7 @@ function copyUrlToLocalFile($url, $localPath)
  *
  * @return void
  *
- * @deprecated use $wiki->render('@attach/display-image.twig') instead
+ * @deprecated use $wiki->render('@core/display-image.twig') instead
  */
 function afficher_image(
     $champ,
@@ -130,16 +128,13 @@ function afficher_image(
     $nom_image = str_replace($url_base . BAZ_CHEMIN_UPLOAD, '', $nom_image);
     $ext = pathinfo($nom_image)['extension'];
 
-    if (!class_exists('attach')) {
-        include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-    }
-    $attach = new attach($wiki);
+    $attach = new Attach($wiki);
     $imagePath = $attach->GetUploadPath() . '/' . $nom_image;
     $attach->file = $imagePath;
 
     if (file_exists($imagePath)
        && $attach->isPicture()) {
-        return $wiki->render('@attach/display-image.twig', [
+        return $wiki->render('@core/display-image.twig', [
             'baseUrl' => $url_base,
             'imageFullPath' => $imagePath,
             'fieldName' => $champ,

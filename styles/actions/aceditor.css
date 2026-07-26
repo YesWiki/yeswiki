@@ -252,3 +252,58 @@ form:not(#ACEditor) .ace-container .ace_scroller {
   margin: 1.5rem 0;
   padding: 0.5rem 0;
 }
+
+/* File picker modal (ticket 17, replaces the qq.js uploader + Bootstrap upload modal) */
+#YesWikiFilePickerModal .file-picker-tabs {
+  margin-bottom: 1rem;
+}
+
+#YesWikiFilePickerModal .file-picker-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
+
+#YesWikiFilePickerModal .file-picker-results:empty {
+  display: none;
+}
+
+#YesWikiFilePickerModal .file-picker-results li {
+  border-bottom: 1px solid #eee;
+}
+
+#YesWikiFilePickerModal .file-picker-results li:last-child {
+  border-bottom: none;
+}
+
+#YesWikiFilePickerModal .file-picker__result {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+}
+
+#YesWikiFilePickerModal .file-picker__result:hover,
+#YesWikiFilePickerModal .file-picker__result.file-picker__result--selected {
+  background: var(--neutral-light-color);
+}
+
+#YesWikiFilePickerModal .file-picker-selected {
+  margin: 1rem 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--neutral-light-color);
+  border-radius: 4px;
+}
+
+#YesWikiFilePickerModal .file-picker-options {
+  margin-top: 1rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}

@@ -6,6 +6,12 @@
 // rest of this file's styles
 $this->AddCSSFile('styles/actions/tags-nuage.css');
 
+// relocated from tools/attach/actions/linkstyle__.php (ticket 17): attached-file display
+// (figures/captions/zoom), pointimage markers, background-image, embedded pdf/video sizing.
+// Trimmed of qq-uploader (dead, superseded by the /api/files upload route) and Bootstrap
+// .popover/jPlayer rules (converted to yw-popover / native <audio>/<video>).
+$this->AddCSSFile('styles/actions/attach.css');
+
 // This GLOBALS is populated from AddCSS and AddCSSFile, we add it at the end
 // Be careful to render Header AFTER rendering actions
 // do not use YesWiki:AddCSSFile(), YesWiki:LinkCSSFile() or YesWiki:AddCSS() in custom/linkstyle__.php (it will not work)

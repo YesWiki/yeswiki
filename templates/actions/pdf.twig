@@ -1,0 +1,19 @@
+{% extends "@core/actions/commons-pdf-video.twig" %}
+
+{% block main %}
+<div class="pdf-wrapper" data-pdf="{{ url }}"></div>
+
+<style>
+    .pdf-wrapper {
+        width: 100%;
+        height: 80vh;
+        border: 1px solid #ddd;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f9f9f9;
+    }
+</style>
+{{ include_javascript('javascripts/actions/pdf-object.js') }}
+{% endblock %}

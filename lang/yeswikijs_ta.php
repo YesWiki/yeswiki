@@ -119,4 +119,7 @@ return [
     'ACTION_BUILDER_MODIFICATION_DATE' => 'மாற்றியமைத்த தேதி',
     'ACTION_BUILDER_CREATION_DATE' => 'உருவாக்கிய தேதி',
     'ACTION_BUILDER_FORM_ID' => 'வடிவம்',
+    // relocated from tools/attach/lang/attachjs_ta.inc.php (ticket 17)
+    'ATTACH_FAILED' => 'தோல்வி',
+
 ];

@@ -47,6 +47,7 @@
     "symfony/http-client": "^7.4",
     "symfony/http-foundation": "^7.4",
     "symfony/http-kernel": "^7.4",
+    "symfony/mime": "^7.4",
     "symfony/process": "^7.4",
     "symfony/routing": "^7.4",
     "symfony/security-core": "^7.4",

@@ -77,14 +77,14 @@ class ImageField extends FileField
                         'type' => 'info',
                         'message' => str_replace('{file}', $value, _t('BAZ_LE_FICHIER_A_ETE_EFFACE')),
                     ]);
+
                     // Return empty input after deletion
                     return $output . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
-                } else {
-                    $output = $this->render('@core/alert-message.twig', [
-                        'type' => 'info',
-                        'message' => _t('BAZ_DROIT_INSUFFISANT'),
-                    ]) . "\n";
                 }
+                $output = $this->render('@core/alert-message.twig', [
+                    'type' => 'info',
+                    'message' => _t('BAZ_DROIT_INSUFFISANT'),
+                ]) . "\n";
             }
 
             return $output . $this->render('@bazar/inputs/image.twig', [
@@ -131,7 +131,7 @@ class ImageField extends FileField
                     'isUrl' => false,
                     'downloadUrl' => $this->getBasePath() . $img,
                     'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $img, false),
-                    'image' => $this->getWiki()->render('@attach/display-image.twig', [
+                    'image' => $this->getWiki()->render('@core/display-image.twig', [
                         'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',
                         'imageFullPath' => $this->getBasePath() . $img,
                         'fieldName' => $this->name,
@@ -266,7 +266,7 @@ class ImageField extends FileField
         }
 
         if (isset($value) && $value != '' && file_exists($this->getBasePath() . $value)) {
-            return $this->getWiki()->render('@attach/display-image.twig', [
+            return $this->getWiki()->render('@core/display-image.twig', [
                 'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',
                 'imageFullPath' => $this->getBasePath() . $value,
                 'fieldName' => $this->name,

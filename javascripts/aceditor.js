@@ -2,7 +2,7 @@
 import setupAceditorKeyBindings from './aceditor-key-bindings.js'
 import openModal from './aceditor-toolbar-remote-modal.js'
 import LinkModal from './link-modal.js'
-import FileUploadModal from '../tools/attach/presentation/javascripts/file-upload-modal.js'
+import FilePickerModal from './file-picker-modal.js'
 import AceWrapper from './ace-wrapper.js'
 import ActionsBuilder from './actions-builder.js'
 import FlyingEditButton from './flying-edit-button.js'
@@ -10,7 +10,7 @@ import FlyingEditButton from './flying-edit-button.js'
 class Aceditor {
   editor
   linkModal
-  fileUplodModal
+  filePickerModal
 
   constructor(container) {
     this.container = container
@@ -37,7 +37,7 @@ class Aceditor {
     // Init Components
     this.editor = new AceWrapper(this.aceBody, { rows: this.textarea.getAttribute('rows') })
     this.linkModal = new LinkModal()
-    this.fileUplodModal = new FileUploadModal()
+    this.filePickerModal = new FilePickerModal()
     this.actionsBuilder = new ActionsBuilder()
     this.flyingButton = new FlyingEditButton(this.container)
 
@@ -61,12 +61,6 @@ class Aceditor {
   }
 
   initToolbar() {
-    this.fileUplodModal.initButton(
-      this.toolbar.querySelector('.attach-file-uploader'),
-      (result) => {
-        this.editor.replaceSelectionBy(result)
-      }
-    )
     this.toolbar.querySelectorAll('.aceditor-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         if (btn.dataset.remote) {
@@ -88,6 +82,13 @@ class Aceditor {
             action: 'newpage',
             onComplete: (result) => {
               this.editor.insert(result)
+            }
+          })
+        } else if (btn.classList.contains('aceditor-btn-file')) {
+          // File Picker Button (ticket 17: replaces the per-button qq.FileUploader init)
+          this.filePickerModal.open({
+            onComplete: (result) => {
+              this.editor.replaceSelectionBy(result)
             }
           })
         } else {

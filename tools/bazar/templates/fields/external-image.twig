@@ -1,4 +1,4 @@
-{# inspired from @attach/display-image-macro.twig #}
+{# inspired from @core/display-image-macro.twig #}
 {% macro displayImageWithoutCache(attachClass, baseUrl, imageFullPath, fieldName, thumbnailHeight, thumbnailWidth, imageHeight, imageWidth, class = "",mode = "fit", showThumbnail = true) %}
   {% set shortImageName = imageFullPath|split('/')|slice(-1,1)|first %}
   {% if thumbnailHeight is not empty and thumbnailWidth is not empty %}

@@ -132,4 +132,7 @@ Confirme su eliminación marcando la casilla siguiente.
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Fecha de modificación',
     'ACTION_BUILDER_CREATION_DATE' => 'Fecha de creación',
     'ACTION_BUILDER_FORM_ID' => 'Formulario',
+    // relocated from tools/attach/lang/attachjs_es.inc.php (ticket 17)
+    'ATTACH_FAILED' => 'Fallado',
+
 ];

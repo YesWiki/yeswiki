@@ -128,8 +128,8 @@ class ComposerScriptsHelper
                                                 </IfModule>
                                                 TXT
                                             );
-                                            if (file_exists('tools/attach/libs/pdf-viewer.php')) {
-                                                copy('tools/attach/libs/pdf-viewer.php', 'javascripts/vendor/pdfjs-dist/web/pdf-viewer.php');
+                                            if (file_exists('src/pdf-viewer.php')) {
+                                                copy('src/pdf-viewer.php', 'javascripts/vendor/pdfjs-dist/web/pdf-viewer.php');
                                             }
                                             echo "Pdfjs-dist updated ! \n";
                                             // Clean not needded files

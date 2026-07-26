@@ -132,4 +132,7 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Aldaketa-data',
     'ACTION_BUILDER_CREATION_DATE' => 'Sorrera-data',
     'ACTION_BUILDER_FORM_ID' => 'Inprimakia',
+    // relocated from tools/attach/lang/attachjs_eu.inc.php (ticket 17)
+    'ATTACH_FAILED' => 'Huts egin du',
+
 ];

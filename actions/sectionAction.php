@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Core\Attach;
 use YesWiki\Core\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 
@@ -82,10 +83,7 @@ class SectionAction extends YesWikiAction
         }
 
         if (!empty($file)) {
-            if (!class_exists('attach')) {
-                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-            }
-            $att = new attach($this->wiki);
+            $att = new Attach($this->wiki);
 
             // test of image extension
             if (!$att->isPicture($file)) {
@@ -101,7 +99,7 @@ class SectionAction extends YesWikiAction
                 $width = 1920;
             }
 
-            //recuperation des parametres necessaires
+            // recuperation des parametres necessaires
             $att->file = $file;
             $att->desc = 'background image ' . $file;
             $att->height = $height;
@@ -124,7 +122,7 @@ class SectionAction extends YesWikiAction
             // specify the role to be checked ( *, +, %, @admins)
             $role = $this->arguments['visibility'] ?? '';
             $role = empty($role) ? $role : str_replace('\\n', "\n", $role);
-            $visible = !$role || ($GLOBALS['wiki']->CheckACL($role, null, false));
+            $visible = !$role || $GLOBALS['wiki']->CheckACL($role, null, false);
             $class = ($backgroundimg ? 'background-image' : '')
                 . ($patternId && !$patternborder ? ' with-bg-pattern' : '')
                 . ($patternborder ? ' pattern-border' : '')
@@ -152,20 +150,22 @@ class SectionAction extends YesWikiAction
             } else {
                 echo '<div>';
             }
-            //test d'existance du fichier
+            // test d'existance du fichier
             if (isset($fullFilename) and (!file_exists($fullFilename) or $fullFilename == '')) {
                 $att->showFileNotExits();
-                //return;
+                // return;
             }
         } else {
             echo $this->generate_error_msg('section');
         }
         $section = ob_get_contents();
         ob_end_clean();
+
         return $section;
     }
 
-    public function end(): string {
+    public function end(): string
+    {
         return '</div></section><!-- end of section -->';
     }
 }

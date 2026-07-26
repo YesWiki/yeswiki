@@ -132,4 +132,7 @@ Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Data Schimbării',
     'ACTION_BUILDER_CREATION_DATE' => 'Data creării',
     'ACTION_BUILDER_FORM_ID' => 'Formular',
+    // relocated from tools/attach/lang/attachjs_ro.inc.php (ticket 17)
+    'ATTACH_FAILED' => 'Eșuat',
+
 ];

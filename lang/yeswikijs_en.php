@@ -134,4 +134,7 @@ Please confirm their deletion by checking the box below.
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Modification date',
     'ACTION_BUILDER_CREATION_DATE' => 'Creation date',
     'ACTION_BUILDER_FORM_ID' => 'Form',
+    // relocated from tools/attach/lang/attachjs_en.inc.php (ticket 17)
+    'ATTACH_FAILED' => 'Failed',
+
 ];

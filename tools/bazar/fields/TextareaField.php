@@ -4,6 +4,7 @@ namespace YesWiki\Bazar\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
+use YesWiki\Core\Attach;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HtmlPurifierService;
 
@@ -192,12 +193,9 @@ class TextareaField extends BazarField
         $temp_tag_for_entry_creation = $wiki->config['temp_tag_for_entry_creation'];
 
         if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
-            if (!class_exists('attach')) {
-                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-            }
             $entryCreationTime = $this->getEntryCreationTime($entry);
             foreach ($matches[0] as $key => $value) {
-                $attach = new \Attach($wiki);
+                $attach = new Attach($wiki);
                 $attach->file = $matches[2][$key];
                 $previousTag = $wiki->tag;
                 $previousPage = $wiki->page;
@@ -241,9 +239,6 @@ class TextareaField extends BazarField
         $wiki = $this->getWiki();
         $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"\s*[^>]*(?>(?<=data-filename=")[^"]*")?[^>]*>';
         if (preg_match_all("/$regExpSearch/", $text, $matches)) {
-            if (!class_exists('attach')) {
-                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-            }
             $entryCreationTime = $this->getEntryCreationTime($entry);
             $previousTag = $wiki->tag;
             $previousPage = $wiki->page;
@@ -262,7 +257,7 @@ class TextareaField extends BazarField
                     $fileName = $this->sanitizeFileName($fileName);
                 }
 
-                $attach = new \Attach($wiki);
+                $attach = new Attach($wiki);
                 $attach->file = $fileName;
 
                 // fake page

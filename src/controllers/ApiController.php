@@ -2,15 +2,18 @@
 
 namespace YesWiki\Core\Controller;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\Attach;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
@@ -26,7 +29,9 @@ use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\DiffService;
 use YesWiki\Core\Service\DuplicationManager;
+use YesWiki\Core\Service\FileManager;
 use YesWiki\Core\Service\HashCashService;
+use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\Service\TagsManager;
@@ -110,6 +115,14 @@ class ApiController extends YesWikiController
         $output .= '<h2>' . _t('QRCODE_EXTENSION') . '</h2>' . "\n" .
             '<p><code>GET ' . $urlRelations . '</code><br>' . _t('QRCODE_DOC_GET_RELATIONS') . '.</p>' .
             '<p><code>POST ' . $this->wiki->Href('', 'api/relations') . '</code><br>' . _t('QRCODE_DOC_POST_RELATIONS') . '.</p>';
+
+        $output .= '<h2>' . _t('ATTACH_EXTENSION') . '</h2>' . "\n" .
+            '<p><code>POST ' . $this->wiki->Href('', 'api/files') . '</code><br>' . _t('ATTACH_DOC_POST_FILES') . '.</p>' .
+            '<p><code>GET ' . $this->wiki->Href('', 'api/files/{tag}/download') . '</code><br>' . _t('ATTACH_DOC_GET_DOWNLOAD') . '.</p>' .
+            '<p><code>GET ' . $this->wiki->Href('', 'api/files') . '</code><br>' . _t('ATTACH_DOC_GET_FILES') . '.</p>' .
+            '<p><b>' .
+            "<code>GET {$this->wiki->href('', 'api/images/{filename}/cache/{width}/{height}/{mode}', ['csrftoken' => 'xxxx'], false)}</code></b><br />" .
+            nl2br(_t('ATTACH_GET_URLIMAGE_CACHE_API_HELP')) . '</p>';
 
         // TODO use annotations to document the API endpoints
         foreach ($this->wiki->extensions as $extension => $pluginBase) {
@@ -577,11 +590,11 @@ class ApiController extends YesWikiController
     #[Route('/api/tags', methods: ['GET'], options: ['acl' => ['public']])]
     public function getTags(Request $request)
     {
-        $perpage = max(1, min((int) $request->query->get('perpage', 20), 100));
-        $page = max(1, (int) $request->query->get('page', 1));
+        $perpage = max(1, min((int)$request->query->get('perpage', 20), 100));
+        $page = max(1, (int)$request->query->get('page', 1));
 
         $result = $this->getService(TagsManager::class)->search(
-            (string) $request->query->get('search', ''),
+            (string)$request->query->get('search', ''),
             $perpage,
             ($page - 1) * $perpage
         );
@@ -883,24 +896,23 @@ class ApiController extends YesWikiController
                                         ['error' => 'Seulement ' . $params['maxreaction'] . ' réaction(s) possible(s). Vous pouvez désélectionner une de vos réactions pour changer.'],
                                         Response::HTTP_UNAUTHORIZED
                                     );
-                                } else {
-                                    $reactionValues = [
-                                        'userName' => $user['name'],
-                                        'reactionId' => $reactionid,
-                                        'id' => $reactionIdValue,
-                                        'date' => date('Y-m-d H:i:s'),
-                                    ];
-                                    $this->getService(ReactionManager::class)->addUserReaction(
-                                        $pagetag,
-                                        $reactionValues
-                                    );
-
-                                    // hurra, the reaction is saved!
-                                    return new ApiResponse(
-                                        $reactionValues,
-                                        Response::HTTP_OK
-                                    );
                                 }
+                                $reactionValues = [
+                                    'userName' => $user['name'],
+                                    'reactionId' => $reactionid,
+                                    'id' => $reactionIdValue,
+                                    'date' => date('Y-m-d H:i:s'),
+                                ];
+                                $this->getService(ReactionManager::class)->addUserReaction(
+                                    $pagetag,
+                                    $reactionValues
+                                );
+
+                                // hurra, the reaction is saved!
+                                return new ApiResponse(
+                                    $reactionValues,
+                                    Response::HTTP_OK
+                                );
                             }
 
                             return new ApiResponse(
@@ -1164,6 +1176,7 @@ class ApiController extends YesWikiController
     public function getArchiveStatus($uid)
     {
         $forceStarted = $this->getRequest()->query->get('forceStarted');
+
         return $this->getService(ArchiveController::class)->getArchiveStatus(
             $uid,
             !empty($forceStarted) && in_array($forceStarted, [1, true, '1', 'true'], true)
@@ -1342,5 +1355,245 @@ class ApiController extends YesWikiController
             ['success' => $this->wiki->Href('', $entry['id_fiche'])],
             Response::HTTP_CREATED
         );
+    }
+
+    /**
+     * Consolidated upload route (ticket 17, replaces tools/attach's legacy upload.php
+     * page-handler AND the AJAX qqFileUploader path -- both funneled into the same
+     * underlying Attach class already, this is the one real validated path they become).
+     * Creates a new, independent "file" Content entry (FileManager), not tied 1:1 to
+     * $pageTag afterward -- only used here to seed the new entry's initial read ACL.
+     */
+    #[Route('/api/files', methods: ['POST'], options: ['acl' => ['public']])]
+    public function uploadFile(Request $request)
+    {
+        $pageTag = (string)$request->request->get('pageTag', '');
+        if (empty($pageTag)) {
+            return new ApiResponse(['error' => "'pageTag' should not be empty"], Response::HTTP_BAD_REQUEST);
+        }
+        $this->denyAccessUnlessGranted('write', $pageTag);
+
+        $uploadedFile = $request->files->get('upFile');
+        if (empty($uploadedFile) || !$uploadedFile->isValid()) {
+            return new ApiResponse(['error' => _t('ERROR_NO_FILE_UPLOADED')], Response::HTTP_BAD_REQUEST);
+        }
+
+        $originalFilename = $uploadedFile->getClientOriginalName();
+        $ext = strtolower($uploadedFile->getClientOriginalExtension());
+        $authorizedExtensions = $this->wiki->config['authorized-extensions'] ?? [];
+        if (!empty($authorizedExtensions) && !array_key_exists($ext, $authorizedExtensions)) {
+            return new ApiResponse(['error' => _t('ERROR_NOT_AUTHORIZED_EXTENSION')], Response::HTTP_BAD_REQUEST);
+        }
+
+        $maxFileSize = $this->wiki->config['attach_config']['max_file_size']
+            ?? $this->getService(ParameterBagInterface::class)->get('max-upload-size');
+        if ($uploadedFile->getSize() > $maxFileSize) {
+            return new ApiResponse(['error' => _t('ERROR_MAX_FILE_SIZE')], Response::HTTP_BAD_REQUEST);
+        }
+
+        // captured before move(): the SplFileInfo/UploadedFile object stops reflecting the
+        // original tmp path (and getSize()/getMimeType() start failing) once moved away
+        $size = $uploadedFile->getSize();
+        $mimeType = $uploadedFile->getMimeType() ?? '';
+
+        $fileManager = $this->getService(FileManager::class);
+        $sanitized = $fileManager->sanitizeFilename($originalFilename);
+        $storedFilename = $fileManager->suggestFreeFilename($sanitized);
+
+        $uploadedFile->move(FileManager::STORAGE_DIR, $storedFilename);
+        if (in_array($ext, ['svg', 'xml'], true)) {
+            $this->getService(HtmlPurifierService::class)->cleanFile(FileManager::STORAGE_DIR . '/' . $storedFilename, $ext);
+        }
+
+        $entry = $fileManager->create($originalFilename, $storedFilename, $pageTag, $size, $mimeType);
+
+        return new ApiResponse($entry, Response::HTTP_CREATED);
+    }
+
+    /**
+     * Consolidated download route (ticket 17, replaces tools/attach's DownloadHandler/
+     * doDownload(), which performed NO ownership ACL check at all -- the only external
+     * gate was AclService::hasAccess('read') with no tag argument, checking whatever
+     * page the current URL happened to resolve to instead of the file's own ACL).
+     */
+    #[Route('/api/files/{tag}/download', methods: ['GET'], options: ['acl' => ['public']])]
+    public function downloadFile(Request $request, string $tag)
+    {
+        $this->denyAccessUnlessGranted('read', $tag);
+
+        $fileManager = $this->getService(FileManager::class);
+        $entry = $fileManager->getOne($tag);
+        $path = $fileManager->getPhysicalPath($tag);
+        if (empty($entry) || empty($path)) {
+            return new ApiResponse(['error' => _t('ATTACH_PARAM_FILE_NOT_FOUND')], Response::HTTP_NOT_FOUND);
+        }
+
+        $filename = $entry['original_filename'] ?? basename($path);
+        // default inline (so {{attach}}'s <img>/<audio>/<iframe> rendering can point straight
+        // at this route now that the bytes no longer live under the web-servable files/ dir);
+        // ?download=1 forces a real "Save As" download
+        $disposition = !empty($request->query->get('download')) ? 'attachment' : 'inline';
+
+        return new StreamedResponse(
+            function () use ($path) {
+                readfile($path);
+            },
+            Response::HTTP_OK,
+            [
+                'Content-Type' => $entry['mime_type'] ?: 'application/octet-stream',
+                'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
+                'Content-Length' => (string)filesize($path),
+                'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            ]
+        );
+    }
+
+    /**
+     * List file entries the requester can read, for the file-picker UI (ticket 17).
+     */
+    #[Route('/api/files', methods: ['GET'], options: ['acl' => ['public']])]
+    public function getFiles(Request $request)
+    {
+        $search = strtolower((string)$request->query->get('search', ''));
+        $fileManager = $this->getService(FileManager::class);
+        $aclService = $this->getService(AclService::class);
+
+        $entries = [];
+        foreach ($fileManager->getAllFileTags() as $tag) {
+            if (!$aclService->hasAccess('read', $tag)) {
+                continue;
+            }
+            $entry = $fileManager->getOne($tag);
+            if (empty($entry)) {
+                continue;
+            }
+            if (!empty($search) && strpos(strtolower($entry['original_filename'] ?? ''), $search) === false) {
+                continue;
+            }
+            $entries[] = $entry;
+        }
+
+        return new ApiResponse($entries, Response::HTTP_OK);
+    }
+
+    public const POST_CACHE_URLIMAGE_TOKEN_ID = 'POST api/images/cache/{width}/{height}/{mode}';
+
+    /**
+     * Generate/serve a resized cached copy of an image (ticket 17, relocated from
+     * tools/attach). $filename is a raw legacy filename (Bazar's own image/file fields
+     * upload through the same {pageTag}_{name}_{dates}.{ext} convention tools/attach
+     * always used, and were never migrated to a file-entry tag) -- this route used to
+     * perform NO ownership check at all beyond `file_exists()`, the same vulnerability
+     * class as the download route above. Fixed the same way: recover the owning page
+     * tag from the filename's legacy prefix and deny access unless its read ACL grants
+     * this requester read.
+     */
+    #[Route('/api/images/{filename}/cache/{width}/{height}/{mode}', methods: ['POST'], options: ['acl' => ['public']])]
+    public function getCacheUrlImageViaPost($filename, $width, $height, $mode)
+    {
+        try {
+            $this->checkParamsGetCacheUrlImageViaPost($filename, $width, $height, $mode);
+            $newToken = $this->checkTokenForGetCacheUrlImageViaPost($width, $height, $mode);
+
+            if (!file_exists("files/$filename")) {
+                return new ApiResponse([
+                    'error' => _t('ATTACH_GET_CACHE_URLIMAGE_NO_FILE'),
+                    'filename' => $filename,
+                    'width' => $width,
+                    'height' => $height,
+                    'mode' => $mode,
+                    'newToken' => $newToken,
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $ownerPageTag = $this->getService(FileManager::class)->guessOwnerPageTagFromLegacyFilename($filename);
+            if (!empty($ownerPageTag)) {
+                $this->denyAccessUnlessGranted('read', $ownerPageTag);
+            }
+
+            try {
+                $cachefilename = $this->getCacheFileName($filename, $width, $height, $mode);
+            } catch (\Exception $e) {
+                return new ApiResponse([
+                    'error' => $e->getMessage(),
+                    'cachefilename' => '',
+                    'filename' => $filename,
+                    'width' => $width,
+                    'height' => $height,
+                    'mode' => $mode,
+                    'newToken' => $newToken,
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            return new ApiResponse([
+                'cachefilename' => $cachefilename,
+                'filename' => $filename,
+                'width' => $width,
+                'height' => $height,
+                'mode' => $mode,
+                'newToken' => $newToken,
+            ], Response::HTTP_OK);
+        } catch (TokenNotFoundException $th) {
+            return new ApiResponse(['error' => $th->getMessage()], Response::HTTP_UNAUTHORIZED);
+        } catch (\Exception $e) {
+            return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    private function checkParamsGetCacheUrlImageViaPost(string $filename, string &$width, string &$height, string $mode)
+    {
+        if (strval($width) != strval(intval($width))) {
+            throw new \Exception('width should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        }
+        $width = intval($width);
+        if (empty($width)) {
+            throw new \Exception('width should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        }
+        if (strval($height) != strval(intval($height))) {
+            throw new \Exception('height should be an integer for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        }
+        $height = intval($height);
+        if (empty($height)) {
+            throw new \Exception('height should not be 0 or null for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        }
+        if (!in_array($mode, ['fit', 'crop'], true)) {
+            throw new \Exception("mode should be in ['fit','mode'] for " . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        }
+        if (empty(trim($filename))) {
+            throw new \Exception('filename should not be empty for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
+        }
+    }
+
+    /**
+     * use $_POST['csrftoken'].
+     */
+    private function checkTokenForGetCacheUrlImageViaPost(int $width, int $height, string $mode): string
+    {
+        $csrfTokenManager = $this->getService(CsrfTokenManager::class);
+        $csrfTokenController = $this->getService(CsrfTokenController::class);
+
+        $tokenId = str_replace(
+            ['{width}', '{height}', '{mode}'],
+            [$width, $height, $mode],
+            self::POST_CACHE_URLIMAGE_TOKEN_ID
+        );
+
+        if ($csrfTokenController->checkToken($tokenId, 'POST', 'csrftoken', false)) {
+            $csrfTokenManager->removeToken($tokenId);
+
+            return $csrfTokenManager->getToken($tokenId)->getValue();
+        }
+    }
+
+    private function getCacheFileName(string $filename, int $width, int $height, string $mode): string
+    {
+        $attach = new Attach($this->wiki);
+        $newFileName = $attach->getResizedFilename("files/$filename", $width, $height, $mode);
+        if (file_exists($newFileName)) {
+            return $newFileName;
+        }
+        $attach->redimensionner_image("files/$filename", $newFileName, $width, $height, $mode);
+
+        return $newFileName;
     }
 }

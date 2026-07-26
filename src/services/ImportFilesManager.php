@@ -4,6 +4,7 @@ namespace YesWiki\Core\Service;
 
 use YesWiki\Bazar\Field\TextareaField;
 use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Attach;
 use YesWiki\Wiki;
 
 class ImportFilesManager
@@ -239,15 +240,11 @@ class ImportFilesManager
      */
     public function downloadHiddenAttachment($remoteUrl, $pageTag, $lastPageUpdate, $filename, $overwrite = false)
     {
-        if (!class_exists('attach')) {
-            require_once YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-        }
-
         $this->wiki->tag = $pageTag;
         $this->wiki->page = ['tag' => $pageTag, 'time' => $lastPageUpdate];
 
         $remoteFileUrl = $remoteUrl . '?' . $pageTag . '/download&file=' . $filename;
-        $att = new \attach($this->wiki);
+        $att = new Attach($this->wiki);
         $att->file = $filename;
         $newFilename = $att->GetFullFilename(true);
 

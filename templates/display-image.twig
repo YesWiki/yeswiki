@@ -1,0 +1,3 @@
+{% from '@core/display-image-macro.twig' import displayImage %}
+
+{{ displayImage(baseUrl, imageFullPath, fieldName, thumbnailHeight, thumbnailWidth, imageHeight, imageWidth, class ?? "",mode ?? "fit", showThumbnail ?? true, shortImageName ?? "") }}

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<plugin name="wkattach" version="0.2" active="1">
-  <author>GarfieldFr</author>
-  <label>Attach</label>
-  <desc>Action permettant de joindre un fichier a YesWiki</desc>
-</plugin>

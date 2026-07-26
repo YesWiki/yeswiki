@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Bazar\Service\DateService;
 use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Bazar\Service\Guard;
+use YesWiki\Core\Attach;
 use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EventDispatcher;
@@ -34,6 +35,7 @@ class FileField extends BazarField
         if (empty($value)) {
             return false;
         }
+
         return filter_var($value, FILTER_VALIDATE_URL) !== false;
     }
 
@@ -329,16 +331,12 @@ class FileField extends BazarField
         return $basePath . (substr($basePath, -1) != '/' ? '/' : '');
     }
 
-    protected function getAttach(): \attach
+    protected function getAttach(): Attach
     {
         if (is_null($this->attach)) {
-            if (!class_exists('attach')) {
-                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-            }
-
             $wiki = $this->getWiki();
 
-            $this->attach = new \attach($wiki);
+            $this->attach = new Attach($wiki);
         }
 
         return $this->attach;

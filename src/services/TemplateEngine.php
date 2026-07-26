@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Core\Attach;
 use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Wiki;
 
@@ -177,11 +178,8 @@ class TemplateEngine
             }
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
 
-            if (!class_exists('attach')) {
-                include YESWIKI_SOURCE_DIR . '/tools/attach/libs/attach.lib.php';
-            }
             $basePath = $this->wiki->getBaseUrl() . '/';
-            $attach = new \attach($this->wiki);
+            $attach = new Attach($this->wiki);
             $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
             $safeRefresh = !$this->wiki->services->get(HibernationService::class)->isWikiHibernated()
                 && file_exists($image_dest)
