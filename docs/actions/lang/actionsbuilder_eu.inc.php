@@ -253,7 +253,6 @@ return [
     'AB_management_editactionsacls_label' => 'Editatu ekintzetara sartzeko eskubideak',
     'AB_management_edithandlersacls_label' => 'Editatu handlerrak atzitzeko eskubideak',
     'AB_management_editgroups_label' => 'Editatu erabiltzaile-taldeak',
-    'AB_management_adminpages_label' => 'Orrialdeen kudeaketa',
     'AB_management_gererdroits_label' => 'Kudeatu orrien atzipen-eskubideak',
     'AB_management_gererthemes_label' => 'Kudeatu orrien atzipen eskubideak',
     'AB_management_setwikidefaulttheme_label' => 'Ezarri oinarrizko gaia',

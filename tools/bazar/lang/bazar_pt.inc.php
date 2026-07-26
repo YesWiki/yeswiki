@@ -339,7 +339,6 @@ return [
     'SUM' => 'Somme',
     'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong>No form créé por agora.</strong><br />Você pode créer uma nova forma manualmente (clique no botão com um sinal mais),<br /> ou importe as formas de um YesWiki existente (como https://yeswiki.net/server).',
     'BAZ_ACTIVATE_COMMENTS' => 'Ativar comentários nesta folha?',
-    'BAZ_WIDGET' => 'Widget',
     'BAZ_EXISTINGMESSAGEREPLACEFORM' => 'Atenção, este identificador e o título deste formulário já existem, se você o selecionar, ele será substituído.',
     'BAZ_ADD_NEW_ENTRY' => 'Adicionar uma nova folha',
     'EDIT_CONFIG_HINT_BAZ_ADRESSE_MAIL_ADMIN' => 'Endereço de e-mail do remetente das mudanças nas folhas de bazar',

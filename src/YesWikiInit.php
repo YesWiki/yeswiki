@@ -126,18 +126,6 @@ class Init
                 header('Access-Control-Expose-Headers: Location, Slug, Accept, Content-Type');
                 header('Access-Control-Allow-Methods: POST, GET, OPTIONS, DELETE, PUT, PATCH');
                 header('Access-Control-Max-Age: 86400');
-
-                switch ($requestMethod) {
-                    case 'DELETE':
-                        $this->method = 'api_delete';
-                        break;
-                    case 'PATCH':
-                        $this->method = 'api_patch';
-                        break;
-                    case 'PUT':
-                        $this->method = 'api_put';
-                        break;
-                }
             }
             $_GET['wiki'] = $this->page . ($this->method ? '/' . $this->method : '');
         }
@@ -229,7 +217,7 @@ class Init
             'preview_before_save' => false,
             'allow_raw_html' => true,
             'disallowed_html_tags' => ['title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext'],
-            'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'bazariframe', 'render'],
+            'allowed_methods_in_iframe' => ['iframe', 'editiframe', 'render'],
             'revisionscount' => 30,
             'timezone' => 'Europe/Paris', // Only used if not set in yeswiki.config.php nor in php.ini
             'root_page' => 'PagePrincipale', // backup root_page if deleted from yeswiki.config.php

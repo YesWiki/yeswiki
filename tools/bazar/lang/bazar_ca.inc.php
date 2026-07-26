@@ -239,7 +239,6 @@ return [
     'BAZ_URL_IMPORT_LISTS_INFO' => 'Entrar el url de qualsevol pàgina yeswiki o del seu dossier',
     'BAZ_GO' => 'Go',
     'BAZ_ID' => 'ID',
-    'BAZ_WIDGET' => 'Giny',
     'BAZ_JSON' => 'JSON',
     'BAZ_GEOJSON' => 'GeoJSON',
     'BAZ_LOADING' => 'Carregant',

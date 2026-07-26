@@ -53,7 +53,6 @@ return [
     'AB_management_editactionsacls_label' => 'Editar direitos de acesso às ações',
     'AB_management_edithandlersacls_label' => 'Editar direitos de acesso aos handlers',
     'AB_management_editgroups_label' => 'Editar grupos de usuários',
-    'AB_management_adminpages_label' => 'Mostrar os logs administrativos',
     'AB_management_gererdroits_label' => 'Gerenciar direitos de acesso à página',
     'AB_management_gererthemes_label' => 'Gerenciar o tema das páginas',
     'AB_management_setwikidefaulttheme_label' => 'Definir o tema base',

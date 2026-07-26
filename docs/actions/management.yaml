@@ -9,8 +9,6 @@ actions:
     label: _t(AB_management_edithandlersacls_label)
   editgroups:
     label: _t(AB_management_editgroups_label)
-  adminpages:
-    label: _t(AB_management_adminpages_label)
   gererdroits:
     label: _t(AB_management_gererdroits_label)
   commentstable:

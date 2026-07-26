@@ -845,8 +845,6 @@ return [
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Bilatu testu hau duten orriak.',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'Bilatu…',
     'TEMPLATE_SEARCH' => 'Bilatu',
-    'TEMPLATE_WIDGET_TITLE' => 'Trepeta: txertatu orri honen edukia beste leku batean',
-    'TEMPLATE_WIDGET_COPY_PASTE' => 'Kopiatu eta itsatsi aurreko HTML kodea, edukia behean azaltzen den bezala integratzeko.',
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'HTML orri batean edukia integratzeko kodea',
     'TEMPLATE_SHARE_MUST_READ' => 'Hau esan behar du: ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Facebooken partekatu',

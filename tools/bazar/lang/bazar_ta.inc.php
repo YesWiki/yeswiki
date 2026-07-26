@@ -41,7 +41,6 @@ return [
     'BAZ_TITLE' => 'டைட்ரே',
     'BAZ_ACTIONS' => 'செயல்கள்',
     'BAZ_DATA_FORMAT' => 'வடிவங்கள் டி டோனீச்',
-    'BAZ_WIDGET' => 'விட்செட்',
     'BAZ_CSV' => 'காபிம',
     'BAZ_JSON' => 'சாதொபொகு',
     'BAZ_JSON_LD' => 'JSON-LD (சொற்பொருள்)',

@@ -253,7 +253,6 @@ return [
     'AB_management_editactionsacls_label' => '',
     'AB_management_edithandlersacls_label' => '',
     'AB_management_editgroups_label' => '',
-    'AB_management_adminpages_label' => '',
     'AB_management_gererdroits_label' => '',
     'AB_management_gererthemes_label' => '',
     'AB_management_setwikidefaulttheme_label' => '',

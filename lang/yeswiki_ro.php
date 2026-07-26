@@ -845,8 +845,6 @@ return [
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Căutați pagini cu acest text.',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'Căutați …',
     'TEMPLATE_SEARCH' => 'Căutați',
-    'TEMPLATE_WIDGET_TITLE' => 'Widget : încorporați conținutul acestei pagini în altă parte',
-    'TEMPLATE_WIDGET_COPY_PASTE' => 'Copiați și lipiți codul HTML de mai sus pentru a încorpora conținutul așa cum apare mai jos.',
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'Conținutul încorporează codul în pagina HTML',
     'TEMPLATE_SHARE_MUST_READ' => 'Un lire : ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Partaja pe Facebook',

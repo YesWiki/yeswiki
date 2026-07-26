@@ -253,7 +253,6 @@ return [
     'AB_management_editactionsacls_label' => 'Editarea drepturilor de acces la acțiuni',
     'AB_management_edithandlersacls_label' => 'Editați drepturile de acces la manipulatori',
     'AB_management_editgroups_label' => 'Editați grupurile de utilizatori',
-    'AB_management_adminpages_label' => 'Gestionarea paginilor',
     'AB_management_gererdroits_label' => 'Gestionați drepturile de acces la pagini',
     'AB_management_gererthemes_label' => 'Gestionați tema paginilor',
     'AB_management_setwikidefaulttheme_label' => 'Definiți tema de bază',

@@ -249,7 +249,6 @@ return [
     'AB_management_editactionsacls_label' => 'Изменение прав доступа к действиям',
     'AB_management_edithandlersacls_label' => 'Права доступа редактеров',
     'AB_management_editgroups_label' => 'Редактирование групп пользователей',
-    'AB_management_adminpages_label' => 'Управление страницей',
     'AB_management_gererdroits_label' => 'Права доступа страницы',
     'AB_management_gererthemes_label' => 'Страница управления',
     'AB_management_setwikidefaulttheme_label' => 'Определение основной темы',

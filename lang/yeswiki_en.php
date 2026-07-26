@@ -976,8 +976,6 @@ return [
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Search the page containing those words.',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'Search…',
     'TEMPLATE_SEARCH' => 'Search',
-    'TEMPLATE_WIDGET_TITLE' => 'Widget : integrate this page\'s content elsewhere',
-    'TEMPLATE_WIDGET_COPY_PASTE' => 'Copy and paste the HTML code above to embed the content as it appears below.',
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'Content embed code in HTML page',
     'TEMPLATE_SHARE_MUST_READ' => 'To read : ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Share on Facebook',

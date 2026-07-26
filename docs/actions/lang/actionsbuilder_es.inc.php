@@ -253,7 +253,6 @@ return [
     'AB_management_editactionsacls_label' => 'Editar derechos de acceso a la acción',
     'AB_management_edithandlersacls_label' => 'Editar los derechos de acceso del controlador',
     'AB_management_editgroups_label' => 'Editar grupos de usuarios',
-    'AB_management_adminpages_label' => 'Gestión de páginas',
     'AB_management_gererdroits_label' => 'Gestionar los derechos de acceso a las páginas',
     'AB_management_gererthemes_label' => 'Gestionar temas de página',
     'AB_management_setwikidefaulttheme_label' => 'Definir el tema básico',

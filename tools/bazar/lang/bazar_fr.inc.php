@@ -42,7 +42,6 @@ return [
     'BAZ_TITLE' => 'Titre',
     'BAZ_ACTIONS' => 'Actions',
     'BAZ_DATA_FORMAT' => 'Formats de données',
-    'BAZ_WIDGET' => 'Widget',
     'BAZ_CSV' => 'CSV',
     'BAZ_JSON' => 'JSON',
     'BAZ_JSON_LD' => 'JSON-LD (Sémantique)',

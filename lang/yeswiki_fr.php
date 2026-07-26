@@ -992,8 +992,6 @@ return [
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Rechercher les pages comportant ce texte.',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'Rechercher …',
     'TEMPLATE_SEARCH' => 'Rechercher',
-    'TEMPLATE_WIDGET_TITLE' => 'Widget : intégrer le contenu de cette page ailleurs',
-    'TEMPLATE_WIDGET_COPY_PASTE' => 'Copier-collez le code HTML ci-dessus pour intégrer le contenu tel qu\'il apparait ci dessous.',
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'Code d\'intégration de contenu dans une page HTML',
     'TEMPLATE_SHARE_MUST_READ' => 'A lire : ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Partager sur Facebook',

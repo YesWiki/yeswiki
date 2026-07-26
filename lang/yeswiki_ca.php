@@ -797,8 +797,6 @@ return [
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Cerca les pàgines que contenen aquest text.',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'Cerca...',
     'TEMPLATE_SEARCH' => 'Cerca',
-    'TEMPLATE_WIDGET_TITLE' => 'Giny: integra el contingut d\'aquesta pàgina en una altra',
-    'TEMPLATE_WIDGET_COPY_PASTE' => 'Copieu i enganxeu el codi HTML següent per integrar el contingut tal i com apareix.',
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'Codi d\'integració de contingut en una pàgina HTML',
     'TEMPLATE_SHARE_MUST_READ' => 'Per llegir: ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Comparteix a Facebook',

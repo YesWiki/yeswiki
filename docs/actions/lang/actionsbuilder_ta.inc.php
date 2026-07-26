@@ -250,7 +250,6 @@ return [
     'AB_management_editactionsacls_label' => 'எடிட்டர் லெச் ட்ரோய்ட்ச் டி அக்யச் ஆக்ச் செயல்கள்',
     'AB_management_edithandlersacls_label' => 'எடிட்டர் லெச் ட்ரோய்ட்ச் டி அக்ச் ஆக்ச் ஏண்ட்லர்கள்',
     'AB_management_editgroups_label' => "எடிட்டர் லெச் குழுக்கள் டி'அபிலிசேட்டர்கள்",
-    'AB_management_adminpages_label' => 'கெச்டியன் டெச் பக்கங்கள்',
     'AB_management_gererdroits_label' => 'செரர் லெச் ட்ரோய்ட்ச் டி அக்ச் ஆக்ச் பக்கங்கள்',
     'AB_management_gererthemes_label' => 'செரர் லு தெம் டெச் பக்கங்கள்',
     'AB_management_setwikidefaulttheme_label' => 'டெஃபினிர் லு தெம் டி பேச்',

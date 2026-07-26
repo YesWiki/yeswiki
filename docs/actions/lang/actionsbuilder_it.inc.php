@@ -245,7 +245,6 @@ return [
     'AB_management_editactionsacls_label' => 'Modifica dei diritti di accesso alle azioni',
     'AB_management_edithandlersacls_label' => 'Modificare i diritti di accesso dei gestori',
     'AB_management_editgroups_label' => 'Modifica dei gruppi utente',
-    'AB_management_adminpages_label' => 'Gestione della pagina',
     'AB_management_gererdroits_label' => 'Gestione dei diritti di accesso alla pagina',
     'AB_management_gererthemes_label' => 'Gestione del tema della pagina',
     'AB_management_setwikidefaulttheme_label' => 'Definire il tema di base',

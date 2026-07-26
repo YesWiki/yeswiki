@@ -225,7 +225,6 @@ return [
     'BAZ_IMPORT_FORMS_FROM_URL' => 'Import forms from another yeswiki',
     'BAZ_ACTIONS' => 'Actions',
     'BAZ_DATA_FORMAT' => 'Data formats',
-    'BAZ_WIDGET' => 'Widget',
     'BAZ_CSV' => 'CSV',
     'BAZ_JSON' => 'JSON',
     'BAZ_GEOJSON' => 'GeoJSON',

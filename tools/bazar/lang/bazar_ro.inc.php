@@ -28,7 +28,6 @@ return [
     'BAZ_TITLE' => 'Titlu',
     'BAZ_ACTIONS' => 'Acțiuni',
     'BAZ_DATA_FORMAT' => 'Formate de date',
-    'BAZ_WIDGET' => 'Widget',
     'BAZ_JSON' => 'JSON',
     'BAZ_JSON_LD' => 'JSON-LD (Semantică)',
     'BAZ_GEOJSON' => 'GeoJSON',

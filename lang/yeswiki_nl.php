@@ -798,8 +798,6 @@ return [
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Pagina’s met deze tekst opzoeken.',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'Opzoeken...',
     'TEMPLATE_SEARCH' => 'Opzoeken',
-    'TEMPLATE_WIDGET_TITLE' => 'Widget: de inhoud van deze pagina elders integreren',
-    'TEMPLATE_WIDGET_COPY_PASTE' => 'De HTML-code hierboven kopiëren/plakken om de inhoud te integreren zoals hij hieronder verschijnt.',
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'Code om inhoud te integreren in een HTML-pagina',
     'TEMPLATE_SHARE_MUST_READ' => 'Te lezen: ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Delen op Facebook',

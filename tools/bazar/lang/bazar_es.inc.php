@@ -254,7 +254,6 @@ return [
     'BAZ_CORRESPONDANCE_ERROR' => 'acción bazarliste : parametre correspondencia mal llenado : tiene que etre de la forma correspondencia="que identifica_1=identificando_2" o correspondencia="que identifica_1=identificando_2, identificando_3=identificando_4"',
     'BAZ_AUTH_NEEDED' => 'Usted debe ser identificado para editar o eliminar un formulario',
     'BAZ_DATA_FORMAT' => 'Formatos de datos',
-    'BAZ_WIDGET' => 'Widget',
     'BAZ_CSV' => 'CSV',
     'BAZ_JSON' => 'JSON',
     'BAZ_JSON_LD' => 'JSON-LD (Semántica)',

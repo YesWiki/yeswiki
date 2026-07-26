@@ -212,7 +212,6 @@ return [
     'BAZ_FORM_DELETE' => 'Verwijder formulier _',
     'BAZ_GO' => 'Ga',
     'BAZ_RECUPERATION' => 'Data herstel',
-    'BAZ_WIDGET' => 'Widget',
     'BAZ_JSON' => 'JSON',
     'BAZ_JSON_LD' => 'JSON-LD (Semantics)',
     'BAZ_GEOJSON' => 'GeoJSON',

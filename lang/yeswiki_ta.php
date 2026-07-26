@@ -803,8 +803,6 @@ return [
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'ரீச்சர் லெச் பக்கங்கள் காம்போர்டன்ட் சிஇ டெக்ச்டே.',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'மறுசீரமைப்பு ...',
     'TEMPLATE_SEARCH' => 'மறுசீரமைப்பு',
-    'TEMPLATE_WIDGET_TITLE' => 'விட்செட்: இன்ட் & ஈகூட்;',
-    'TEMPLATE_WIDGET_COPY_PASTE' => 'COPIER-COLLEZ LE குறியீடு உஉகுமொ CI-Dessus Pour int & eacute; கிரெர் லு கான்டெனு டெல் க்யூயில் எஞ்சர் தொஒ டெசச்.',
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'குறியீடு d\'in & eacute; கிரேசன் டி கான்டெனு டான்ச் une பக்கம் உஉகுமொ',
     'TEMPLATE_SHARE_MUST_READ' => 'ஒரு லைர்: ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Partager சுர் facebook',

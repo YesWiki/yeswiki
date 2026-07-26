@@ -38,7 +38,6 @@ return [
     'BAZ_TITLE' => 'Izenburua',
     'BAZ_ACTIONS' => 'Ekintzak',
     'BAZ_DATA_FORMAT' => 'Datu-formatuak',
-    'BAZ_WIDGET' => 'Trepeta',
     'BAZ_CSV' => 'CSV',
     'BAZ_JSON' => 'JSON',
     'BAZ_JSON_LD' => 'JSON-LD (Semantika)',

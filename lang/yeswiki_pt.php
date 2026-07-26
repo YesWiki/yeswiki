@@ -799,8 +799,6 @@ return [
     'TEMPLATE_SEARCH_BUTTON_TITLE' => 'Encontrar páginas com esse texto..',
     'TEMPLATE_SEARCH_PLACEHOLDER' => 'Procurar...',
     'TEMPLATE_SEARCH' => 'Procurar',
-    'TEMPLATE_WIDGET_TITLE' => 'Widget : integrar o conteúdo desta página em outro lugar',
-    'TEMPLATE_WIDGET_COPY_PASTE' => 'Copiar e pastar o código HTML acima para incorporar o conteúdo de tal forma que apareça abaixo.',
     'TEMPLATE_SHARE_INCLUDE_CODE' => 'Código de integração de conteúdo numa página HTML',
     'TEMPLATE_SHARE_MUST_READ' => 'Leia-se: : ',
     'TEMPLATE_SHARE_FACEBOOK' => 'Share on Facebook',

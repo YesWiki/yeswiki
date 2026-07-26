@@ -80,7 +80,6 @@ return [
     'AB_management_editactionsacls_label' => 'Edit actions access control rights',
     'AB_management_edithandlersacls_label' => 'Edit handlers access control rights',
     'AB_management_editgroups_label' => "Edit users' groups",
-    'AB_management_adminpages_label' => 'Display admin logs',
     'AB_management_gererdroits_label' => "Manage pages' access control rights",
     'AB_management_gererthemes_label' => "Manage pages' theme",
     'AB_management_setwikidefaulttheme_label' => "Set page's default theme",
