@@ -518,7 +518,7 @@ class InstallationController
      * content (default page content), so Twig is configured with different delimiters
      * ([[ ]] / <% %> / <# #>) to avoid parsing that content as Twig.
      *
-     * Also used by tools/autoupdate to extract the default admin pages.
+     * Also used by UpdateAdminPagesService to extract the default admin pages.
      *
      * @param string $templateFile absolute path to the .sql.twig template file
      * @param array  $variables    variables to pass to the template

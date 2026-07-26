@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\AutoUpdate\Service\AutoUpdateService;
 use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\AutoUpdateService;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\YesWikiMigration;

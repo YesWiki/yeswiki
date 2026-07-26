@@ -63,7 +63,6 @@ private/backups/*
 # tools
 tools/*
 !tools/README.md
-!tools/autoupdate
 !tools/aceditor/*
 !tools/aceditor
 !tools/aceditor/*

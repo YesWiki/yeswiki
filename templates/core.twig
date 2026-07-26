@@ -1,0 +1,90 @@
+{% macro phpTooLowText(actionText,core,phpVersion) %}
+    {{- _t('AU_PHP_TOO_LOW_ERROR',{
+        textAction: actionText,
+        NEEDEDPHPVERSION: (core.neededPHPversion ?? '99.99.99'),
+        CURRENTPHPVERSION: phpVersion,
+        hint: _t('AU_PHP_TOO_LOW_HINT',{textAction: actionText})
+    }) -}}
+{% endmacro %}
+
+{% set canTriggerUpdate = isAdmin and not isHibernated and isDesignatedUpdateInstance %}
+{% set blockedReason = isHibernated ? _t('WIKI_IN_HIBERNATION') : (not isDesignatedUpdateInstance ? _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') : _t('ACLS_RESERVED_FOR_ADMINS')) %}
+
+<h2>YesWiki</h2>
+<p>
+    {{ _t('AU_VERSION_WIKI') }} : <span class="label {{ (core.updateAvailable or core.newVersionRequested) ? 'label-warning' : 'label-primary' }}">{{ core.localVersion }} {{ core.localRelease }}</span>
+</p>
+<p>
+    {{ _t('AU_VERSION_REPO') }} : <span class="label label-primary">{{ core.requestedVersion }} {{ core.release }}</span>
+</p>
+
+{% if core.newVersionRequested %}
+    {% if canTriggerUpdate %}
+        {% if core.PHPVersionEnoughHigh %}
+            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
+                class="btn btn-danger" title="{{ _t('AU_VERSION_UPDATE') }}">
+                {{ _t('AU_VERSION_UPDATE') }}
+            </a>
+        {% else %}
+            <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
+                data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_VERSION_UPDATE'),core,phpVersion) }}">
+                {{ _t('AU_VERSION_UPDATE') }}
+            </button>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction: _t('AU_PHP_TOO_LOW_VERSION_UPDATE')}) }}</i></p>
+        {% endif %}
+    {% else %}
+        <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
+            data-placement="bottom" title="{{ blockedReason }}">
+            {{ _t('AU_VERSION_UPDATE') }}
+        </button>
+    {% endif %}
+{% elseif core.updateAvailable %}
+    {% if canTriggerUpdate %}
+        {% if core.PHPVersionEnoughHigh %}
+            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
+                class="btn btn-primary" title="{{ _t('AU_UPDATE') }}">
+                {{ _t('AU_UPDATE') }}
+            </a>
+        {% else %}
+            <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
+                data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_UPDATE'),core,phpVersion) }}">
+                {{ _t('AU_UPDATE') }}
+            </button>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction:_t('AU_PHP_TOO_LOW_UPDATE')}) }}</i></p>
+        {% endif %}
+    {% else %}
+        <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
+            data-placement="bottom" title="{{ blockedReason }}">
+            {{ _t('AU_UPDATE') }}
+        </button>
+    {% endif %}
+{% elseif not core.updateAvailable %}
+    {% if canTriggerUpdate %}
+        {% if core.PHPVersionEnoughHigh %}
+            <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
+                class="btn btn-warning" title="{{ _t('AU_FORCE_UPDATE') }}">
+                {{ _t('AU_FORCE_UPDATE') }}
+            </a>
+        {% else %}
+            <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
+                data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_FORCE_UPDATE'),core,phpVersion) }}">
+                {{ _t('AU_FORCE_UPDATE') }}
+            </button>
+            <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction:_t('AU_PHP_TOO_LOW_FORCE_UPDATE')}) }}</i></p>
+        {% endif %}
+    {% else %}
+        <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
+            data-placement="bottom" title="{{ blockedReason }}">
+            {{ _t('AU_FORCE_UPDATE') }}
+        </button>
+    {% endif %}
+{% endif %}
+{# Remove following lines if the page https://yeswiki.net/?ChangeLog is not maintained anymore. #}
+<div>
+    <i>
+        <a class="new-window" style="font-size:80%;" href="https://yeswiki.net/?ChangeLog"
+            title="{{ _t('AU_CHANGELOG_HINT')|raw('html') }}">
+            {{ _t('AU_CHANGELOG') }}
+        </a>
+    </i>
+</div>

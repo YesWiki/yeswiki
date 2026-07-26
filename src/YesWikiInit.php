@@ -406,6 +406,23 @@ class Init
             'contact_debug' => 0, // debug mode (0 pour rien, 1 pour normal, 2 pour détaillé)
             'contact_passphrase' => '', // passphrase pour envoyer des mail (cron-triggered digests)
             'contact_disable_email_for_password' => false, // pour désactiver l'envoie d'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)
+            // autoupdate config (ticket 19, formerly tools/autoupdate's config.yaml): pages
+            // re-provisioned from the default install content after a core upgrade, in case
+            // their default content changed between versions
+            'admin_pages_to_update' => [
+                'BazaR',
+                'GererSite',
+                'GererDroits',
+                'GererDroitsActions',
+                'GererDroitsHandlers',
+                'GererMisesAJour',
+                'GererThemes',
+                'GererConfig',
+                'GererUtilisateurs',
+                'TableauDeBord',
+                'LookWiki',
+                'GererSauvegardes',
+            ],
         ];
         unset($_rewrite_mode);
 

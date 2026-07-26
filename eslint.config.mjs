@@ -21,7 +21,6 @@ export default defineConfig([globalIgnores([
   '!styles',
   '!tools',
   'tools/*',
-  '!tools/autoupdate',
   '!tools/aceditor',
   '!tools/attach',
   '!tools/bazar',

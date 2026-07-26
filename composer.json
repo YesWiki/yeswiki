@@ -8,11 +8,9 @@
   "scripts": {
     "test": "bash tests/tests.sh",
     "post-install-cmd": [
-      "@composer install --working-dir ./tools/autoupdate/",
       "YesWiki\\Core\\ComposerScriptsHelper::postInstall"
     ],
     "post-update-cmd": [
-      "@composer update --working-dir ./tools/autoupdate/",
       "YesWiki\\Core\\ComposerScriptsHelper::postUpdate"
     ]
   },
