@@ -1,6 +1,5 @@
 <?php
 
-use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\FileManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
@@ -14,12 +13,22 @@ use YesWiki\Core\YesWikiMigration;
  *     subdirectory naming (`{pageTag}/{name}_{pageDate}_{uploadDate}.{ext}[_]`),
  *     moves each into FileManager::STORAGE_DIR and registers it as a file entry
  *     (ACL seeded from the owning page's *current* read ACL);
- *  2) rewrites every page body's `file="oldRawFilename"` argument (across {{attach}}
- *     and its sibling actions) to the new file tag, site-wide.
+ *  2) rewrites each owning page's own body, replacing `file="originalFilename"`
+ *     (across {{attach}} and its sibling actions) with `file="newTag"`.
  *
  * Files whose name doesn't match the known legacy convention are left in place --
  * some seed/demo assets (e.g. files/yeswiki-logo.png) were never real {{attach}}
  * uploads and aren't referenced via file="..." at all, so there's nothing to migrate.
+ *
+ * The rewrite in step 2 is deliberately scoped to each file's own owning page, not a
+ * single global filename => tag map applied to every page site-wide: `file="..."` in
+ * a page body was never a globally unique identifier -- the pre-migration upload flow
+ * (qq.lib.php's handleUpload()) never enforced uniqueness of the short "simplefilename"
+ * across different pages, and GetFullFilename()'s search resolves a bare `file="name.ext"`
+ * relative to the *current* page's tag. Two different pages that each uploaded a
+ * same-named file (both "report.pdf", say) would collide into one entry in a global
+ * map and silently mis-rewrite one page's reference to the other's file/ACL. Scoping
+ * the replacement to each file's own owning page's body avoids that entirely.
  */
 class MigrateAttachmentsToPages extends YesWikiMigration
 {
@@ -34,11 +43,10 @@ class MigrateAttachmentsToPages extends YesWikiMigration
 
         $fileManager = $this->getService(FileManager::class);
         $pageManager = $this->getService(PageManager::class);
-        $aclService = $this->getService(AclService::class);
 
-        $renameMap = $this->migrateFiles($uploadPath, $fileManager, $pageManager, $aclService);
-        if (!empty($renameMap)) {
-            $this->rewritePageBodies($renameMap, $pageManager);
+        $renameMapByOwnerPage = $this->migrateFiles($uploadPath, $fileManager, $pageManager);
+        if (!empty($renameMapByOwnerPage)) {
+            $this->rewritePageBodies($renameMapByOwnerPage, $pageManager);
         }
     }
 
@@ -50,11 +58,11 @@ class MigrateAttachmentsToPages extends YesWikiMigration
     }
 
     /**
-     * @return array<string,string> old raw filename => new file tag
+     * @return array<string,array<string,string>> ownerPageTag => [originalFilename => newTag]
      */
-    private function migrateFiles(string $uploadPath, FileManager $fileManager, PageManager $pageManager, AclService $aclService): array
+    private function migrateFiles(string $uploadPath, FileManager $fileManager, PageManager $pageManager): array
     {
-        $renameMap = [];
+        $renameMapByOwnerPage = [];
 
         foreach (scandir($uploadPath) as $entry) {
             if ($entry === '.' || $entry === '..') {
@@ -71,7 +79,7 @@ class MigrateAttachmentsToPages extends YesWikiMigration
                     if ($subEntry === '.' || $subEntry === '..') {
                         continue;
                     }
-                    $this->migrateOneFile($entryPath . '/' . $subEntry, $subEntry, $entry, $fileManager, $aclService, $renameMap);
+                    $this->migrateOneFile($entryPath . '/' . $subEntry, $subEntry, $entry, $fileManager, $renameMapByOwnerPage);
                 }
                 continue;
             }
@@ -81,10 +89,10 @@ class MigrateAttachmentsToPages extends YesWikiMigration
             if (is_null($ownerPageTag)) {
                 continue;
             }
-            $this->migrateOneFile($entryPath, $entry, $ownerPageTag, $fileManager, $aclService, $renameMap, $ownerPageTag);
+            $this->migrateOneFile($entryPath, $entry, $ownerPageTag, $fileManager, $renameMapByOwnerPage, $ownerPageTag);
         }
 
-        return $renameMap;
+        return $renameMapByOwnerPage;
     }
 
     private function migrateOneFile(
@@ -92,8 +100,7 @@ class MigrateAttachmentsToPages extends YesWikiMigration
         string $rawFilename,
         string $ownerPageTag,
         FileManager $fileManager,
-        AclService $aclService,
-        array &$renameMap,
+        array &$renameMapByOwnerPage,
         ?string $stripPrefix = null
     ): void {
         $originalFilename = self::recoverOriginalFilename($rawFilename, $stripPrefix);
@@ -112,7 +119,10 @@ class MigrateAttachmentsToPages extends YesWikiMigration
         $entry = $fileManager->create($originalFilename, $storedFilename, $ownerPageTag, (int)$size, $mimeType);
         unlink($physicalPath);
 
-        $renameMap[$rawFilename] = $entry['tag'];
+        // page bodies reference the short original filename (`file="report.pdf"`), never
+        // the raw on-disk name with its page-tag prefix and timestamp suffix -- that's
+        // what rewritePageBodies() needs to search for
+        $renameMapByOwnerPage[$ownerPageTag][$originalFilename] = $entry['tag'];
     }
 
     /**
@@ -140,27 +150,29 @@ class MigrateAttachmentsToPages extends YesWikiMigration
         return $namePart . '.' . $ext;
     }
 
-    private function rewritePageBodies(array $renameMap, PageManager $pageManager): void
+    /**
+     * @param array<string,array<string,string>> $renameMapByOwnerPage ownerPageTag => [originalFilename => newTag]
+     */
+    private function rewritePageBodies(array $renameMapByOwnerPage, PageManager $pageManager): void
     {
-        // longest-filename-first, so e.g. "photo.jpg" doesn't get rewritten inside a
-        // page body that actually references "photo.jpg_" or a longer sibling name
-        uksort($renameMap, function ($a, $b) {
-            return strlen($b) <=> strlen($a);
-        });
-
-        $rows = $this->dbService->loadAll(
-            "SELECT tag, body FROM {$this->dbService->prefixTable('pages')} WHERE latest = 'Y'"
-        );
-        foreach ($rows as $row) {
-            if (empty($row['body']) || strpos($row['body'], 'file="') === false) {
+        foreach ($renameMapByOwnerPage as $ownerPageTag => $renameMap) {
+            $page = $pageManager->getOne($ownerPageTag, null, true, true);
+            if (empty($page) || empty($page['body']) || strpos($page['body'], 'file="') === false) {
                 continue;
             }
-            $newBody = $row['body'];
-            foreach ($renameMap as $oldFilename => $newTag) {
-                $newBody = str_replace('file="' . $oldFilename . '"', 'file="' . $newTag . '"', $newBody);
+
+            // longest-filename-first, so e.g. "photo.jpg" doesn't get rewritten inside
+            // a reference to "photo.jpg_" or a longer sibling name
+            uksort($renameMap, function ($a, $b) {
+                return strlen($b) <=> strlen($a);
+            });
+
+            $newBody = $page['body'];
+            foreach ($renameMap as $originalFilename => $newTag) {
+                $newBody = str_replace('file="' . $originalFilename . '"', 'file="' . $newTag . '"', $newBody);
             }
-            if ($newBody !== $row['body']) {
-                $pageManager->save($row['tag'], $newBody, '', true);
+            if ($newBody !== $page['body']) {
+                $pageManager->save($ownerPageTag, $newBody, '', true);
             }
         }
     }

@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
@@ -1506,10 +1507,15 @@ class ApiController extends YesWikiController
                 ], Response::HTTP_BAD_REQUEST);
             }
 
+            // fail closed: every legitimate caller's filename follows the legacy
+            // {pageTag}_{name}_{dates}.{ext} convention, so if we can't recover an owner
+            // page tag from it, there's no ACL we could possibly check -- deny rather
+            // than silently serving the image unauthenticated
             $ownerPageTag = $this->getService(FileManager::class)->guessOwnerPageTagFromLegacyFilename($filename);
-            if (!empty($ownerPageTag)) {
-                $this->denyAccessUnlessGranted('read', $ownerPageTag);
+            if (empty($ownerPageTag)) {
+                throw new AccessDeniedHttpException();
             }
+            $this->denyAccessUnlessGranted('read', $ownerPageTag);
 
             try {
                 $cachefilename = $this->getCacheFileName($filename, $width, $height, $mode);

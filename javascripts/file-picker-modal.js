@@ -174,11 +174,14 @@ export default class {
       const field = checked || form.querySelector(`[name="${name}"]`)
       return (field && field.value) || ''
     }
+    // a value containing a literal `"` would otherwise close the wikitext attribute
+    // early and corrupt the emitted {{attach ...}} action
+    const esc = (s) => String(s).replace(/"/g, '&quot;')
 
     let desc = form.querySelector('[name="attach_alt"]').value || val('attach_link_text')
     if (!desc) desc = this.selectedEntry.original_filename
 
-    let result = `{{attach file="${this.selectedTag}" desc="${desc}"`
+    let result = `{{attach file="${esc(this.selectedTag)}" desc="${esc(desc)}"`
 
     if (val('attach_action_display_pdf') === '1') {
       result += ' displaypdf="1"'
@@ -186,24 +189,24 @@ export default class {
 
     const imagesize = val('attach_imagesize')
     if (imagesize) {
-      result += ` size="${imagesize}"`
+      result += ` size="${esc(imagesize)}"`
     }
 
     const align = val('attach_align')
     const checkedEffects = form.querySelectorAll('[name="attach_css_class"]:checked')
     const effects = Array.from(checkedEffects).map((el) => el.value)
     if (align || effects.length) {
-      result += ` class="${[align, ...effects].filter(Boolean).join(' ')}"`
+      result += ` class="${esc([align, ...effects].filter(Boolean).join(' '))}"`
     }
 
     const link = form.querySelector('[name="attach_link"]').value
     if (link) {
-      result += ` link="${link}"`
+      result += ` link="${esc(link)}"`
     }
 
     const caption = form.querySelector('[name="attach_caption"]').value
     if (caption) {
-      result += ` caption="${caption}"`
+      result += ` caption="${esc(caption)}"`
     }
 
     if (val('attach_nofullimagelink') === '1') {
