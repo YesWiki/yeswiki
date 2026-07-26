@@ -3,8 +3,8 @@
 namespace YesWiki\Core\Field;
 
 use Field;
-use YesWiki\Core\Service\DateService;
 use YesWiki\Core\Service\DateService as CoreDateService;
+use YesWiki\Core\Service\EntryDateService;
 
 #[\Field(['jour', 'listedatedeb', 'listedatefin'])]
 class DateField extends BazarField
@@ -50,7 +50,7 @@ class DateField extends BazarField
             'hasTime' => $hasTime,
             'value' => $value,
             'data' => $entry["{$this->getPropertyName()}_data"] ?? [],
-            'canRegisterMultipleEntries' => $this->getService(DateService::class)->canRegisterMultipleEntries($entry),
+            'canRegisterMultipleEntries' => $this->getService(EntryDateService::class)->canRegisterMultipleEntries($entry),
         ]);
     }
 
@@ -60,9 +60,9 @@ class DateField extends BazarField
         if ($this->getPropertyname() === 'bf_date_fin_evenement') {
             if (!empty($entry['id_fiche'])
                     && is_string($entry['id_fiche'])) {
-                $this->getService(DateService::class)->followId($entry['id_fiche']);
+                $this->getService(EntryDateService::class)->followId($entry['id_fiche']);
             }
-            if (!$this->getService(DateService::class)->canRegisterMultipleEntries($entry)) {
+            if (!$this->getService(EntryDateService::class)->canRegisterMultipleEntries($entry)) {
                 // clean data from entry because not possible to create repetition
                 if (isset($entry['bf_date_fin_evenement_data'])) {
                     unset($entry['bf_date_fin_evenement_data']);
@@ -110,7 +110,7 @@ class DateField extends BazarField
         $data = [];
         if ($this->getPropertyname() === 'bf_date_fin_evenement'
                 && !empty($entry['bf_date_fin_evenement_data'])) {
-            if (DateService::isLegacyRecurrenceChild($entry['bf_date_fin_evenement_data'])
+            if (EntryDateService::isLegacyRecurrenceChild($entry['bf_date_fin_evenement_data'])
                 && preg_match('/^\{"recurrentParentId":"([^"]+)"}$/', $entry['bf_date_fin_evenement_data'], $matches)) {
                 $recurrenceBaseId = $matches[1];
             } elseif (is_array($entry['bf_date_fin_evenement_data'])) {

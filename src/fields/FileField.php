@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Attach;
 use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\Service\AssetsManager;
-use YesWiki\Core\Service\DateService;
+use YesWiki\Core\Service\EntryDateService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\Guard;
@@ -377,7 +377,7 @@ class FileField extends BazarField
             if (!empty($newEntry['id_fiche'])
                 && is_string($newEntry['id_fiche'])
                 && isset($newEntry['bf_date_fin_evenement'])) {
-                $this->getService(DateService::class)->followId($newEntry['id_fiche']);
+                $this->getService(EntryDateService::class)->followId($newEntry['id_fiche']);
             }
 
             $errors = $this->services->get(EventDispatcher::class)->yesWikiDispatch('entry.updated', [

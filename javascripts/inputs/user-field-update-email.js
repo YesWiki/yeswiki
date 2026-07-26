@@ -5,7 +5,8 @@ function updateEmailForUser() {
     if (emailField && emailField.length > 0 && userEmail && userEmail.length > 0) {
       const form = nomwikiInput.closest('form#formulaire')
       const emailInput = form ? form.querySelector(`input#${emailField}`) : null
-      if (emailInput && (emailInput.value.length === 0 || emailInput.value === false)) {
+      // '0' is treated as empty too, matching the original jQuery `.val() == false` loose check
+      if (emailInput && (emailInput.value.length === 0 || emailInput.value === '0')) {
         emailInput.value = userEmail
         emailInput.dispatchEvent(new Event('change', { bubbles: true }))
       }
