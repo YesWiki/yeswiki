@@ -21,10 +21,6 @@ use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Wiki;
 
-if (!function_exists('send_mail')) {
-    require_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
-}
-
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
     protected $wiki;
@@ -358,7 +354,15 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
             $subject = _t('LOGIN_PASSWORD_LOST_FOR') . ' ' . $domain;
 
-            send_mail($this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'), $user['email'], $subject, $message);
+            // fetched lazily, not constructor-injected: Mailer itself depends on
+            // UserManager, so a constructor dependency would be circular (ticket 18)
+            $this->wiki->services->get(Mailer::class)->send(
+                $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
+                $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
+                $user['email'],
+                $subject,
+                $message
+            );
         }
 
         return $link;
@@ -372,7 +376,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     {
         foreach ($this->tripleStore->getMatching(null, self::KEY_VOCABULARY, null) as $triple) {
             $parts = explode(self::KEY_VALUE_SEPARATOR, $triple['value']);
-            $issuedAt = count($parts) === 2 ? (int) $parts[1] : 0;
+            $issuedAt = count($parts) === 2 ? (int)$parts[1] : 0;
             if (time() - $issuedAt > self::KEY_TTL) {
                 $this->tripleStore->delete($triple['resource'], self::KEY_VOCABULARY, $triple['value'], '', '');
             }
