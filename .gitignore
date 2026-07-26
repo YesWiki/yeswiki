@@ -89,8 +89,6 @@ tools/*
 !tools/rss/*
 !tools/security
 !tools/security/*
-!tools/syndication
-!tools/syndication/*
 !tools/tableau
 !tools/tableau/*
 !tools/tags

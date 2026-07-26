@@ -1,0 +1,34 @@
+<!-- SYNDICATION liste-description -->
+{{ include_css('styles/actions/syndication.css')}}
+{% if title is not empty %}
+<h2>{{ title }}</h2>
+{% endif %}
+{% for page in syndication.pages %}
+<div class="feed-item with-desc">
+  {% if showImage is not empty and page.image is not empty %}
+  <img class="feed-img pull-left" src="{{ page.image }}" alt="" />
+  {% endif %}
+  <h3>
+    {% if page.date is not empty %}
+    <small class="date_rss">{{ page.date }}</small>
+    {% endif %}
+    <a class="lien_rss" href="{{ page.url }}" {% if ext == true %}target="_blank"{% endif %}>
+      {{ page.title }}
+    </a>
+    {% if page.source is not empty %}
+    <small>{{ _t('SYNDICATION_SOURCE') ~ ' : ' ~ page.source }}</small>
+    {% endif %}
+    {% if page.linkToEntry is not empty %}
+    <a class="bazar-actions" href="{{ page.linkToEntry }}" title="{{ _t('BAZ_SEE_ENTRY') }}"><i class="fa fa-eye"></i></a>
+    <a class="bazar-actions" href="{{ page.linkToEntry ~ '/edit' }}" title="{{ _t('BAZ_MODIFIER_LA_FICHE') }}"><i class="fas fa-edit"></i></a>
+    <a class="bazar-actions text-danger" href="{{ page.linkToEntry ~ '/deletepage' }}" title="{{ _t('BAZ_SUPPRIMER_LA_FICHE') }}"><i class="fa fa-trash"></i></a>
+    {% endif %}
+    {% if page.mappingInput is not empty %}
+    <a class="bazar-actions" href="{{ url({ params: { mapping: page.mappingInput|e('url') }}) }}" title="{{ _t('SYNDICATION_COPY_IN_WIKI') }}"><i class="fa fa-plus"></i></a>
+    {% endif %}
+  </h3>
+  <div class="description_rss">{{ page.description|raw }}</div>
+  <div class="clearfix"></div>
+</div>
+{% endfor %}
+<!-- SYNDICATION liste-description end -->

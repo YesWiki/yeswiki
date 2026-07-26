@@ -31,7 +31,6 @@ export default defineConfig([globalIgnores([
   '!tools/progressbar',
   '!tools/rss',
   '!tools/security',
-  '!tools/syndication',
   '!tools/tableau',
   '!tools/tags',
   '!tools/templates',
