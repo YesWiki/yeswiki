@@ -23,7 +23,6 @@ export default defineConfig([globalIgnores([
   'tools/*',
   '!tools/aceditor',
   '!tools/attach',
-  '!tools/bazar',
   '!tools/contact',
   '!tools/helloworld',
   '!tools/lang',
