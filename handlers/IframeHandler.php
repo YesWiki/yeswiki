@@ -1,9 +1,9 @@
 <?php
 
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\YesWikiHandler;
 

@@ -1226,6 +1226,7 @@ return [
     'AB_mailinglist_action_label' => 'Escribir correos electrónicos masivamente a un boletín informativo',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => 'Añadir \'wiki=\' a los enlaces a este wiki en e-mails',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Enviar correos electrónicos',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Desactivar el correo electrónico para reintroducir una contraseña (ex: LDAP, SSO)',
     'CONTACT_HANDLER_MAIL_FOR_CONNECTED' => 'Los correos electrónicos sólo pueden enviarse a personas identificadas.',
     'CONTACT_LOGIN_IF_CONNECTED' => 'Si tiene un identificador, por favor identítese.',
@@ -1318,5 +1319,4 @@ return [
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'no existe, se usa el patrón por defecto',
     'SYNDICATION_SOURCE' => 'fuente',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Acceder a todo el contenido',
-
 ];

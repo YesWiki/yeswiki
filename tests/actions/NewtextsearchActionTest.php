@@ -2,8 +2,8 @@
 
 namespace YesWiki\Test\Actions;
 
-use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Core\Service\FormManager;
+use YesWiki\Core\Service\ListManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;

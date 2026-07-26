@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Controller\EntryController;
+use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\PasswordForEditingService;
 use YesWiki\Core\Service\Performer;
 use YesWiki\Core\YesWikiHandler;

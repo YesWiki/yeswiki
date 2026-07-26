@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Core\Service\ListManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;

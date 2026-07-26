@@ -3,10 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\Guard;
 use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Service\TagsManager;
 use YesWiki\Wiki;
 
 class PageManager
@@ -294,6 +291,7 @@ class PageManager
     public function getRevisions($pageTag, $limit = 10000)
     {
         $userCol = $this->dbService->quoteIdentifier('user');
+
         return $this->checkEntriesACL($this->dbService->loadAll("
             SELECT id, time, $userCol AS user FROM {$this->dbService->prefixTable('pages')}
             WHERE tag = '{$this->dbService->escape($pageTag)}'
@@ -330,7 +328,7 @@ class PageManager
         $userCol = $this->dbService->quoteIdentifier('user');
         if (!empty($minDate)) {
             if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' and time >= '$minDate' order by time desc")) {
-                //foreach ($pages as $page) {
+                // foreach ($pages as $page) {
                 //    $this->cache($page);
                 // }
                 return $pages;
@@ -339,7 +337,7 @@ class PageManager
             $limit = (int)$limit;
             $limit = ($limit < 1) ? 50 : $limit;
             if ($pages = $this->dbService->loadAll("select id, tag, time, $userCol AS user, owner from" . $this->dbService->prefixTable('pages') . "where latest = 'Y' and comment_on = '' order by time desc limit $limit")) {
-                //foreach ($pages as $page) {
+                // foreach ($pages as $page) {
                 //    $this->cache($page);
                 // }
                 return $pages;
@@ -389,10 +387,10 @@ class PageManager
 
     public function getCreateTime($pageTag)
     {
-        $sql = "SELECT time FROM " . $this->dbService->prefixTable('pages')
+        $sql = 'SELECT time FROM ' . $this->dbService->prefixTable('pages')
             . " WHERE tag = '" . $this->dbService->escape($pageTag) . "'"
             . " AND comment_on = ''"
-            . " ORDER BY `time` ASC LIMIT 1";
+            . ' ORDER BY `time` ASC LIMIT 1';
         $page = $this->dbService->loadSingle($sql);
         if ($page) {
             return $page['time'];

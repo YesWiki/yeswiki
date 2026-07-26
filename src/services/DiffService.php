@@ -4,8 +4,7 @@ namespace YesWiki\Core\Service;
 
 use Caxy\HtmlDiff\HtmlDiff;
 use Caxy\HtmlDiff\HtmlDiffConfig;
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Controller\EntryController;
 use YesWiki\Wiki;
 
 class DiffService

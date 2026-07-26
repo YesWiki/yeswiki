@@ -100,6 +100,7 @@ class AdminContentController extends YesWikiController
         $pages = array_map(function ($r) use ($defaultRead, $defaultWrite, $defaultComment) {
             $metadata = !empty($r['page_metadata']) ? (json_decode($r['page_metadata'], true) ?? []) : [];
             $acls = $metadata['acls'] ?? [];
+
             return [
                 'tag' => $r['tag'],
                 'time' => $r['time'],
@@ -445,7 +446,7 @@ class AdminContentController extends YesWikiController
     private function getForms(): array
     {
         try {
-            return $this->getService(\YesWiki\Bazar\Service\FormManager::class)->getAll();
+            return $this->getService(\YesWiki\Core\Service\FormManager::class)->getAll();
         } catch (\Throwable $e) {
             return [];
         }

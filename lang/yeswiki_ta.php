@@ -1213,6 +1213,7 @@ return [
     'AB_mailinglist_action_description' => 'செயல்',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => 'அசூட்டர் \'விக்கி =\' ஆக்ச் லீன்ச் வெர்சச் சி.இ விக்கி டான்ச் லெச் மின்னஞ்சல்கள்',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des மின்னஞ்சல்கள்',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
     'EDIT_CONFIG_HINT_CONTACT_MAIL_FUNC' => 'அஞ்சல் அனுப்பும் முறை ("SMTP" அல்லது "அஞ்சல்")',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_HOST' => 'Servur smtp (எ.கா: "smtp.mondomeaine.ext")',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_PORT' => 'SMTP துறைமுகம் (பொதுவாக 465 அல்லது 587)',
@@ -1282,5 +1283,4 @@ return [
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'n\'existe pas, le வார்ப்புருவைப் பயன்படுத்துங்கள் par டி & eacute; faut',
     'SYNDICATION_SOURCE' => 'மூலம்',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Accéder à l\'integralité du contenu',
-
 ];

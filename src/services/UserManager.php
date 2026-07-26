@@ -10,8 +10,6 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\SearchManager;
 use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Entity\User;

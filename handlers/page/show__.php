@@ -1,5 +1,28 @@
 <?php
 
+use YesWiki\Core\Service\EntryManager;
+
+// relocated from tools/bazar/handlers/page/show__.php (ticket 24): if the page is a bazar
+// entry, replace the hidden aceditor "body" field with the entry's own JSON data so edits
+// go through the entry form instead of the raw wikitext editor.
+$entryManager = $this->services->get(EntryManager::class);
+
+if ($entryManager->isEntry($this->GetPageTag())) {
+    $this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
+
+    $fiche = $entryManager->getOne($this->GetPageTag());
+
+    $replace = '<input type="hidden" name="body" value="' . htmlspecialchars(json_encode($fiche), ENT_COMPAT, YW_CHARSET) . '" />';
+    if (isset($_GET['time'])) {
+        $replace = '<input type="hidden" name="time" value="' . htmlspecialchars($_GET['time'], ENT_COMPAT, YW_CHARSET) . '">' . "\n" . $replace;
+    }
+    $plugin_output_new = preg_replace(
+        '/\<input type=\"hidden\" name=\"body\" value=\".*\" \/\>/Uis',
+        $replace,
+        $plugin_output_new
+    );
+}
+
 // on efface des événements javascript issus de wikini
 $plugin_output_new = str_replace('ondblclick="doubleClickEdit(event);"', '', $plugin_output_new);
 

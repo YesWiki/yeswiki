@@ -1398,6 +1398,7 @@ Text of the column to be changed later
     'AB_listsubscription_action_label' => 'listsubscription',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => 'Add \'wiki=\' to the links to this wiki in e-mails',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Sending e-mails',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Disable sending email to re-initialize a password (ex: LDAP, SSO)',
     'AB_abonnement_template_label' => 'template',
     'EDIT_CONFIG_HINT_CONTACT_MAIL_FUNC' => 'Mode of sending emails ("smtp" or "mail")',
@@ -1481,5 +1482,4 @@ Text of the column to be changed later
     'SYNDICATION_SEE_ALL_CONTENT' => 'Access to all content',
     'SYNDICATION_MAPPING_ID_REQUIRED' => 'syndication, parameter mapping : id is required',
     'SYNDICATION_COPY_IN_WIKI' => 'Add as entry in my YesWiki',
-
 ];

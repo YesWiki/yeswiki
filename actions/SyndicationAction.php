@@ -4,8 +4,8 @@
 
 use League\HTMLToMarkdown\HtmlConverter;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
 include_once YESWIKI_SOURCE_DIR . '/src/syndication.functions.php';

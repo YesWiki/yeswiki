@@ -12,6 +12,12 @@ $this->AddCSSFile('styles/actions/tags-nuage.css');
 // .popover/jPlayer rules (converted to yw-popover / native <audio>/<video>).
 $this->AddCSSFile('styles/actions/attach.css');
 
+// relocated from tools/bazar/actions/linkstyle__.php (ticket 24): styles for bazar entries,
+// the calendar view, and the google/leaflet map display.
+// TODO(ticket 24 checkpoint 2): update to styles/actions/bazar.css once bazar.css itself
+// is relocated there alongside the rest of ticket 24's JS/CSS conversion pass.
+$this->AddCSSFile('tools/bazar/presentation/styles/bazar.css');
+
 // if exists and not empty, add the 'PageCss' yeswiki page's content to the styles
 // (the PageCss content must respect the CSS syntax). Inlined via AddCSS() rather than
 // linked from the /raw handler: raw.php serves text/plain, and browsers in standards

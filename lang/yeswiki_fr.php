@@ -1462,6 +1462,7 @@ A tres bientot ! ',
     'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'Utilisateur auquel la réponse mail sera envoyée',
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Mode verbeux pour débugguer (mettre 2 pour avoir des informations)',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Envoi des e-mails',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Désactiver l\'envoie d\'email pour ré-initaliser un mot de passe (ex: LDAP, SSO)',
 
     // relocated from tools/autoupdate/lang/autoupdate_fr.inc.php (ticket 19)
@@ -1548,5 +1549,4 @@ Vous avez la version %{CURRENTPHPVERSION}.
     'SYNDICATION_MAPPING_ID_REQUIRED' => 'syndication, paramètre mapping : id obligatoire',
     'SYNDICATION_COPY_IN_WIKI' => 'Ajouter comme fiche dans mon YesWiki',
     'SYNDICATION_ENTRY_SAVED' => 'L\'article "%{title}" du flux RSS a bien été enregistré.',
-
 ];

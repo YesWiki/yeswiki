@@ -1196,6 +1196,7 @@ return [
     'AB_contact_action_mail_label' => 'Correu electrònic',
     'AB_contact_action_entete_label' => 'Prefix automàtic de l\'objecte de correu',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Enviar correu electrònic',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Desactiva el correu electrònic per tornar a introduir una contrasenya (ex: LDAP, SSO)',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_HOST' => 'Preguntes Freqüents - FAQ',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_PORT' => 'Port SMTP (generalment 465 o 587)',
@@ -1286,5 +1287,4 @@ return [
     'SYNDICATION_READ_MORE' => 'Llegir més',
     'SYNDICATION_SOURCE' => 'cal critiseacute; fer un r♣eacute; veure "cache" al r♣eacute',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Accés a tots els continguts',
-
 ];

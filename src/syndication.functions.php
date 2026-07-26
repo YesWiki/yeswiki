@@ -5,9 +5,9 @@
 //
 // multiArraySearch() (called by SyndicationAction to detect whether a feed item was
 // already imported as a Bazar entry) is NOT defined here: it's defined in
-// tools/bazar/libs/bazar.fonct.php (a generic recursive multi-array search, not
-// syndication-specific) and loaded via the normal extension-bootstrap mechanism
-// whenever bazar is enabled -- a real cross-tool dependency, not a bug.
+// src/bazar.functions.php (a generic recursive multi-array search, not syndication-
+// specific), required unconditionally from src/YesWiki.php -- a real cross-tool
+// dependency, not a bug.
 
 /**
  * Truncates text.

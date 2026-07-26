@@ -1276,6 +1276,7 @@ Aldatu beharreko zutabearen testua geroago
     'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'Postako erantzuna bidaliko zaion erabiltzailea',
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Desbuxatzeko aditz-modua (jarri 2 informazioa izateko)',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Mezu elektronikoak bidaltzea',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Desaktibatu posta elektronikoaren bidalketa pasahitz bat berriro ezartzeko (adib.: LDAP, SSO)',
 
     // relocated from tools/autoupdate/lang/autoupdate_eu.inc.php (ticket 19)
@@ -1338,5 +1339,4 @@ Aldatu beharreko zutabearen testua geroago
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'ez dago, aurrez zehaztutako txantiloia erabiltzen da',
     'SYNDICATION_SOURCE' => 'iturburua',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Eduki osoa atzitu',
-
 ];

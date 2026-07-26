@@ -2,10 +2,8 @@
 
 namespace YesWiki\Core\Service;
 
-use YesWiki\Bazar\Field\ReactionsField;
-use YesWiki\Bazar\Field\TextareaField;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Field\ReactionsField;
+use YesWiki\Core\Field\TextareaField;
 use YesWiki\Wiki;
 
 class ReactionManager
@@ -350,9 +348,9 @@ class ReactionManager
                     'AND' .
                     "(`value` NOT LIKE '%\"date\":\"%')"
             );
-        } else {
-            return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $this->dbService->escape($user) . '","idReaction":"' . $this->dbService->escape($reactionId) . '","id":"' . $this->dbService->escape($id) . '"%\'');
         }
+
+        return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $this->dbService->escape($user) . '","idReaction":"' . $this->dbService->escape($reactionId) . '","id":"' . $this->dbService->escape($id) . '"%\'');
 
         return $this->tripleStore->delete($pageTag, self::TYPE_URI, null, '', '', 'value LIKE \'%user":"' . $user . '","idReaction":"' . $reactionId . '","id":"' . $id . '"%\'');
     }

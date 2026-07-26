@@ -3,8 +3,8 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Controller\EntryController;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\EntryController;
 use YesWiki\Wiki;
 
 class Mailer

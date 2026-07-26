@@ -1,8 +1,8 @@
 <?php
 
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;

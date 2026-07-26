@@ -145,9 +145,9 @@ function encodingFromUTF8($matches)
 }
 
 // on cherche les actions attach avec image, puis les images bazar -- afficher_image()/
-// genere_nom_wiki() below are defined by tools/bazar (bazar.fonct.misc.php/bazar.fonct.php),
-// a pre-existing cross-tool dependency this function inherited unchanged, not introduced
-// by this relocation
+// genere_nom_wiki() below are defined by src/bazar.functions.php (relocated from
+// tools/bazar by ticket 24), a pre-existing cross-tool dependency this function
+// inherited unchanged, not introduced by this relocation
 function get_image_from_body($page)
 {
     preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $page['body'], $images);

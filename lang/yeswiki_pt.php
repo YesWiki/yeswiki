@@ -1226,6 +1226,7 @@ return [
     'AB_mailinglist_action_description' => 'Ação para registrar ou cancelar a assinatura de emails massivos para uma newsletter',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => 'Adicione \'wiki=\' aos links para esta wiki em e-mails',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Enviar e-mails',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
 
     // relocated from tools/autoupdate/lang/autoupdate_pt.inc.php (ticket 19)
     'AU_ACL' => 'Verificação dos direitos nos arquivos',
@@ -1287,5 +1288,4 @@ return [
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'não existe, o arquivo template padrão é usado.',
     'SYNDICATION_SOURCE' => 'fonte',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Acesso a todo o conteúdo',
-
 ];

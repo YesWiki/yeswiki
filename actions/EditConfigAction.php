@@ -34,6 +34,14 @@ class EditConfigAction extends YesWikiAction
         'contact_smtp_port', 'contact_smtp_user', 'contact_smtp_pass', 'contact_smtp_secure',
         'contact_debug', 'contact_disable_email_for_password',
     ];
+    // formerly contributed via tools/bazar's config.yaml's bazar_editable_config_params
+    private const BAZAR_KEYS = [
+        'baz_map_center_lat', 'baz_map_center_lon', 'baz_map_zoom', 'baz_map_height',
+        'BAZ_ADRESSE_MAIL_ADMIN', 'BAZ_ENVOI_MAIL_ADMIN', 'bazarIgnoreAcls',
+    ];
+    private const BAZAR_EXTERNAL_SERVICE_KEYS = [
+        'cache_time_to_check_changes', 'cache_time_to_check_deletion', 'cache_time_to_refresh_forms',
+    ];
     private const AUTHORIZED_KEYS = [
         'yeswiki_name' => 'core',
         'root_page' => 'core',
@@ -176,6 +184,17 @@ class EditConfigAction extends YesWikiAction
             foreach (self::CONTACT_KEYS as $contactKey) {
                 $keys[] = $contactKey;
                 $associatedExtensions[$contactKey] = 'contact';
+            }
+
+            // top-level keys, matching tools/bazar's own (bare, not nested) config.yaml shape
+            foreach (self::BAZAR_KEYS as $bazarKey) {
+                $keys[] = $bazarKey;
+                $associatedExtensions[$bazarKey] = 'bazar';
+            }
+
+            $keys[] = ['baz_external_service' => self::BAZAR_EXTERNAL_SERVICE_KEYS];
+            foreach (self::BAZAR_EXTERNAL_SERVICE_KEYS as $bazarExternalServiceKey) {
+                $associatedExtensions["baz_external_service[{$bazarExternalServiceKey}]"] = 'bazar';
             }
 
             foreach ($this->wiki->extensions as $extensionFolder) {

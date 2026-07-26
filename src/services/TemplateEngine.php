@@ -4,8 +4,6 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Attach;
 use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Wiki;

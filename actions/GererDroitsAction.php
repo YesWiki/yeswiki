@@ -5,9 +5,9 @@
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
  */
 
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Controller\GroupController;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
@@ -58,7 +58,7 @@ class GererDroitsAction extends YesWikiAction
             ORDER BY $pagesTableName.tag ASC
     SQL);
         $pageEtDroits = [];
-        while ($pages = $liste_pages->fetch(\PDO::FETCH_ASSOC)) {
+        while ($pages = $liste_pages->fetch(PDO::FETCH_ASSOC)) {
             $pageEtDroits[] = $this->utils->recupDroits($pages);
         }
 

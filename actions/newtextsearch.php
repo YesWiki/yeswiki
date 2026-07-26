@@ -6,12 +6,12 @@
  * Utilisation {{newtextsearch}} en lieu eet place de {{textsearch}}.
  **/
 
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\FormManager;
+use YesWiki\Core\Service\SearchManager;
 
 // On récupére ou initialise toutes le varible comme pour textsearch
 // label à afficher devant la zone de saisie

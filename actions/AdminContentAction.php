@@ -25,7 +25,7 @@ class AdminContentAction extends YesWikiAction
         // Forms for the type filter dropdown
         $forms = [];
         try {
-            $forms = $this->getService(YesWiki\Bazar\Service\FormManager::class)->getAll();
+            $forms = $this->getService(YesWiki\Core\Service\FormManager::class)->getAll();
         } catch (Throwable $e) {
             // bazar not available
         }

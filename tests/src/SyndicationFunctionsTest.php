@@ -34,10 +34,10 @@ class SyndicationFunctionsTest extends YesWikiTestCase
     /**
      * SyndicationAction::run() calls multiArraySearch() (to detect whether a feed item
      * was already imported as a Bazar entry) without defining it itself -- it's defined
-     * in tools/bazar/libs/bazar.fonct.php, loaded via the normal extension-bootstrap
-     * mechanism whenever bazar is enabled. A real cross-tool dependency, unaffected by
-     * this ticket's relocation of SyndicationAction.php, and deliberately NOT redefined
-     * in src/syndication.functions.php.
+     * in src/bazar.functions.php (relocated from tools/bazar/libs/bazar.fonct.php by
+     * ticket 24), required unconditionally from src/YesWiki.php. A real cross-tool
+     * dependency, unaffected by this ticket's relocation of SyndicationAction.php, and
+     * deliberately NOT redefined in src/syndication.functions.php.
      */
     public function testMultiArraySearchFromBazarIsReachableAfterWikiBoots()
     {

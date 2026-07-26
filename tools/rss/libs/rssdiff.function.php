@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\EntryManager;
 
 if (!function_exists('rssdiff')) {
     function rssdiff($tag, $idfirst, $idlast)
@@ -14,7 +14,7 @@ if (!function_exists('rssdiff')) {
                 'select id from '
                 . $wiki->config['table_prefix']
                 . "pages where tag = '"
-                . $wiki->services->get(\YesWiki\Core\Service\DbService::class)->escape($tag)
+                . $wiki->services->get(YesWiki\Core\Service\DbService::class)->escape($tag)
                 . "' and id < $idfirst order by time desc limit 1"
             );
             if ($previousdiff) {

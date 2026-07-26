@@ -6,6 +6,7 @@ require_once __DIR__ . '/bootstrap_paths.php';
 require_once __DIR__ . '/constants.php';
 require_once __DIR__ . '/urlutils.inc.php';
 require_once __DIR__ . '/email.inc.php';
+require_once __DIR__ . '/bazar.functions.php';
 // defines LanguageController and the global _t() translation function; loaded
 // explicitly because the autoloader may not be registered yet at this point
 require_once __DIR__ . '/controllers/LanguageController.php';

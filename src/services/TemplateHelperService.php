@@ -3,9 +3,8 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
 use YesWiki\Core\Attach;
+use YesWiki\Core\Controller\EntryController;
 use YesWiki\Wiki;
 
 class TemplateHelperService

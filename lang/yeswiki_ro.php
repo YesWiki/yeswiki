@@ -1276,6 +1276,7 @@ Conținutul filei "{tabName}"
     'EDIT_CONFIG_HINT_CONTACT_REPLY_TO' => 'Utilizatorul căruia îi va fi trimis răspunsul prin e-mail',
     'EDIT_CONFIG_HINT_CONTACT_DEBUG' => 'Modul Verbose pentru depanare (puneți 2 pentru a obține informații)',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Trimiterea de e-mailuri',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'Dezactivați trimiterea de e-mail pentru a reinițializa o parolă (ex: LDAP, SSO)',
 
     // relocated from tools/autoupdate/lang/autoupdate_ro.inc.php (ticket 19)
@@ -1338,5 +1339,4 @@ Conținutul filei "{tabName}"
     'SYNDICATION_USE_OF_DEFAULT_TEMPLATE' => 'nu există, se utilizează șablonul implicit',
     'SYNDICATION_SOURCE' => 'sursă',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Acces la întregul conținut',
-
 ];

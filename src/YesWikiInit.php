@@ -423,6 +423,64 @@ class Init
                 'LookWiki',
                 'GererSauvegardes',
             ],
+            // bazar generic config (ticket 24, formerly tools/bazar's config.yaml)
+            'baz_menu' => 'formulaire,consulter,saisir,listes,importer,exporter',
+            'BAZ_ENVOI_MAIL_ADMIN' => false,
+            'BAZ_ADRESSE_MAIL_ADMIN' => 'noreply@%mail_domain%',
+            // TODO(ticket 24 checkpoint 2): update once the legacy liste_accordeon.tpl.html
+            // display mode is either converted or dropped alongside the other legacy
+            // tools/bazar/presentation/templates/*.tpl.html display modes.
+            'default_bazar_template' => 'liste_accordeon.tpl.html',
+            'baz_semantic_types_mapping' => [
+                'https://www.w3.org/ns/activitystreams' => 'activitystreams',
+            ],
+            'global_query' => 'true',
+            'bazarIgnoreAcls' => true,
+            'BAZ_RSS_NOMSITE' => '%yeswiki_name%',
+            'BAZ_RSS_ADRESSESITE' => '%base_url%',
+            'BAZ_RSS_DESCRIPTIONSITE' => '%meta_description%',
+            'BAZ_NB_ENTREES_FLUX_RSS' => 20,
+            'BAZ_RSS_LOGOSITE' => 'https:#yeswiki.net/themes/margot/images/favicon.png',
+            'BAZ_RSS_MANAGINGEDITOR' => 'contact@yeswiki.net (Mr YesWiki)',
+            'BAZ_RSS_WEBMASTER' => '%BAZ_RSS_MANAGINGEDITOR%',
+            'BAZ_RSS_CATEGORIE' => 'Economie Sociale et Solidaire',
+            'BAZ_ETAT_VALIDATION' => '1',
+            'BAZ_TYPE_AFFICHAGE_LISTE' => 'jma',
+            'BAZ_DATE_VIDE' => false,
+            'BAZ_NOMBRE_RES_PAR_PAGE' => 50,
+            'BAZ_MODE_DIVISION' => 'Jumping',
+            'BAZ_DELTA' => 12,
+            'BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE' => 6,
+            'BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL' => 7,
+            'BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE' => 'list',
+            'BAZ_MAX_CHECKBOXLIST_WITHOUT_FILTER' => false,
+            'BAZ_MAX_RADIO_WITHOUT_FILTER' => 6,
+            'BAZ_MAX_CHECKBOXLIST_WITHOUT_SELECTALL' => 7,
+            'BAZ_MAX_CHECKBOXLIST_DISPLAY_MODE' => 'div',
+            'BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT' => null,
+            'baz_map_center_lat' => '46.22763',
+            'baz_map_center_lon' => '2.213749',
+            'baz_marker_icon_prefix' => 'fa fa-',
+            'baz_provider' => 'OpenStreetMap.Mapnik',
+            'baz_provider_id' => '',
+            'baz_provider_pass' => '',
+            'baz_marker_icon' => 'bullseye',
+            'baz_marker_color' => 'darkred',
+            'baz_small_marker' => '',
+            'baz_map_zoom' => 5,
+            'baz_map_width' => '100%',
+            'baz_map_height' => '600px',
+            'baz_show_nav' => 'true',
+            'baz_wheel_zoom' => 'false',
+            // TODO(ticket 24 checkpoint 2): update once tools/bazar/presentation/images/ is relocated.
+            'baz_marker_image_file' => 'tools/bazar/presentation/images/marker.png',
+            'baz_external_service' => [
+                'cache_time_to_check_changes' => 60, // seconds
+                'cache_time_to_check_deletion' => 86400, // seconds (1 day)
+                'cache_time_to_refresh_forms' => 7200, // seconds (2 hours)
+                'time_debug' => false,
+            ],
+            'temp_tag_for_entry_creation' => 'unknown_entry_id',
         ];
         unset($_rewrite_mode);
 

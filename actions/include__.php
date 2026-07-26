@@ -1,6 +1,16 @@
 <?php
 
+use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\TemplateHelperService;
+
+// relocated from tools/bazar/actions/include__.php (ticket 24): if the included page is a
+// bazar entry, show the entry instead of formatting the page as plain wiki content.
+$entryManager = $this->services->get(EntryManager::class);
+if ($entryManager->isEntry($incPageName)) {
+    $plugin_output_new = '<div class="' . $class . '">' . "\n" . baz_voir_fiche(0, $incPageName) . "\n" . '</div>' . "\n";
+} else {
+    $type = '';
+}
 
 // si la page inclue n'existe pas, on propose de la créer
 if (!$incPage = $this->LoadPage($incPageName)) {

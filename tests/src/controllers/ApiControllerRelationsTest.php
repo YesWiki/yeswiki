@@ -3,9 +3,9 @@
 namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Controller\ApiController;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\FormManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -35,7 +35,7 @@ class ApiControllerRelationsTest extends YesWikiTestCase
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
         $controller = $wiki->services->get(ApiController::class);
-        // EntryManager::create() reaches bazar.fonct.php helpers relying on $GLOBALS['wiki'],
+        // EntryManager::create() reaches src/bazar.functions.php helpers relying on $GLOBALS['wiki'],
         // normally populated by the production HTTP bootstrap (same workaround as
         // AceditorWidgetTest/FiltertagsActionTest).
         $GLOBALS['wiki'] = $wiki;

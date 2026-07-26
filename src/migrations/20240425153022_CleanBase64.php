@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
 
 class CleanBase64 extends YesWikiMigration
@@ -17,9 +17,9 @@ class CleanBase64 extends YesWikiMigration
     {
         $anchor = '%src=\\\\\\\\\\"data:image\\\\\\\\/%;base64,%';
         $select_entries_filter =
-            "SELECT DISTINCT resource FROM " . $this->dbService->prefixTable('triples') .
+            'SELECT DISTINCT resource FROM ' . $this->dbService->prefixTable('triples') .
             " WHERE value = 'fiche_bazar' AND property = 'http://outils-reseaux.org/_vocabulary/type' " .
-            "ORDER BY resource ASC";
+            'ORDER BY resource ASC';
 
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages') . ' ' .
             "WHERE body LIKE '{$anchor}' " .

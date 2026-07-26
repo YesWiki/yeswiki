@@ -2,7 +2,7 @@
 
 namespace YesWiki\Core\Controller;
 
-use YesWiki\Bazar\Field\Tabsfield;
+use YesWiki\Core\Field\Tabsfield;
 use YesWiki\Core\Service\TabsService;
 use YesWiki\Core\YesWikiController;
 

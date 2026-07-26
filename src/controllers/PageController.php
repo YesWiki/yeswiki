@@ -2,8 +2,7 @@
 
 namespace YesWiki\Core\Controller;
 
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiController;
 

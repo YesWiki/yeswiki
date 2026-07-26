@@ -42,3 +42,8 @@ services:
   YesWiki\Core\Service\ThemeManager:
     tags:
       - { name: yeswiki.event_subscriber }
+  YesWiki\Core\Service\WebFinger:
+    autowire: false
+  YesWiki\Core\Service\EntryDateService:
+    tags:
+      - { name: yeswiki.event_subscriber }

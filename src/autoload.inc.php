@@ -46,9 +46,7 @@ spl_autoload_register(function ($className) {
                     require "$basePath/controllers/{$matches[3]}.php";
                     break;
                 case 'Field':
-                    if ($matches[1] != 'Core') {
-                        require "$basePath/fields/{$matches[3]}.php";
-                    }
+                    require "$basePath/fields/{$matches[3]}.php";
                     break;
                 case 'Commands':
                     require "$basePath/commands/{$matches[3]}.php";

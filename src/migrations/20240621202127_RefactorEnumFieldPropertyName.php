@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Bazar\Field\EnumField;
-use YesWiki\Bazar\Service\FieldFactory;
-use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Field\EnumField;
+use YesWiki\Core\Service\FieldFactory;
+use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
 
 class RefactorEnumFieldPropertyName extends YesWikiMigration

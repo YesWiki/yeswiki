@@ -2,9 +2,8 @@
 
 namespace YesWiki\Core\Service;
 
-use YesWiki\Bazar\Field\TextareaField;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Attach;
+use YesWiki\Core\Field\TextareaField;
 use YesWiki\Wiki;
 
 class ImportFilesManager

@@ -1,10 +1,10 @@
 <?php
 
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
+use YesWiki\Core\Controller\EntryController;
+use YesWiki\Core\Service\CommentService;
 // V?rification de s?curit?
 
-use YesWiki\Core\Service\CommentService;
+use YesWiki\Core\Service\EntryManager;
 
 // Generate page before displaying the header, so that it might interract with the header
 ob_start();

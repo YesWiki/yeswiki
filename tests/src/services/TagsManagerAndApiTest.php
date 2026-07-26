@@ -53,7 +53,7 @@ class TagsManagerAndApiTest extends YesWikiTestCase
 
     public function testGetAllWithNoPageStillDumpsEverything(): void
     {
-        // tools/bazar/fields/TagsField.php (out of scope for this ticket) relies on this
+        // src/fields/TagsField.php (out of scope for this ticket) relies on this
         // exact no-arg "everything" behavior for its own tag-autocomplete -- must survive
         $tagsManager = $this->getWiki()->services->get(TagsManager::class);
 

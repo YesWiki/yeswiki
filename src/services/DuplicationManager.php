@@ -2,12 +2,9 @@
 
 namespace YesWiki\Core\Service;
 
-use YesWiki\Bazar\Field\FileField;
-use YesWiki\Bazar\Field\ImageField;
-use YesWiki\Bazar\Field\TextareaField;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\ListManager;
+use YesWiki\Core\Field\FileField;
+use YesWiki\Core\Field\ImageField;
+use YesWiki\Core\Field\TextareaField;
 use YesWiki\Wiki;
 
 class DuplicationManager

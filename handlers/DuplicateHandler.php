@@ -1,12 +1,12 @@
 <?php
 
-use YesWiki\Bazar\Controller\EntryController;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\ListManager;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DuplicationManager;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\FormManager;
+use YesWiki\Core\Service\ListManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 

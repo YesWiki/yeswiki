@@ -1182,6 +1182,7 @@ return [
     'AB_mailinglist_action_label' => 'Massief schrijven e-mails naar een nieuwsletter',
     'EDIT_CONFIG_HINT_CONTACT_USE_LONG_WIKI_URLS_IN_EMAILS' => 'Voeg \'wiki\' toe aan de link met deze wiki in e-mails',
     'EDIT_CONFIG_GROUP_CONTACT' => 'Stuur e-mails',
+    'EDIT_CONFIG_GROUP_BAZAR' => 'Bazar',
     'EDIT_CONFIG_HINT_CONTACT_DISABLE_EMAIL_FOR_PASSWORD' => 'E-mail om een wachtwoord te herintroduceren',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_HOST' => 'Vertaling:',
     'EDIT_CONFIG_HINT_CONTACT_SMTP_PORT' => 'SMTP poort 465 of 587',
@@ -1269,5 +1270,4 @@ return [
     'SYNDICATION_SOURCE' => 'bron',
     'SYNDICATION_SEE_ALL_CONTENT' => 'Toegang tot alle inhoud',
     'SYNDICATION_READ_MORE' => 'Lees meer',
-
 ];

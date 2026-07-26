@@ -1,17 +1,18 @@
 <?php
 
 /**
- * Qrscan action for yeswiki, for scanning a qrcode pair and save their relation in a bazar entry
+ * Qrscan action for yeswiki, for scanning a qrcode pair and save their relation in a bazar entry.
  *
  * @category Wiki
- * @package  YesWikiQrcode
+ *
  * @author   2018-2021 Florian Schmitt <mrflos@lilo.org>
  * @license  GNU AFFERO GENERAL PUBLIC LICENSE version 3
- * @link     https://yeswiki.net
+ *
+ * @see     https://yeswiki.net
  */
 
+use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Bazar\Service\EntryManager;
 
 class QrscanAction extends YesWikiAction
 {
@@ -58,8 +59,9 @@ class QrscanAction extends YesWikiAction
         $output .= $this->render('@core/qrscan.twig', [
             'speak' => $speak,
             'relation' => $relation,
-            'entity' => $entity
+            'entity' => $entity,
         ]);
+
         return $output;
     }
 }

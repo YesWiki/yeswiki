@@ -1,10 +1,10 @@
 <?php
 
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
-use YesWiki\Bazar\Service\SearchManager;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\SearchManager;
 use YesWiki\Core\YesWikiMigration;
 
 class CleanOldCartoGoogle extends YesWikiMigration

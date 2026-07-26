@@ -36,6 +36,7 @@
     "league/html-to-markdown": "^5.1",
     "nesbot/carbon": "^2.66.0",
     "oomphinc/composer-installers-extender": "^2.0",
+    "pear/xml_util": "^1.4",
     "phpmailer/phpmailer": "^6.2",
     "simplepie/simplepie": "^1.8",
     "stefangabos/zebra_image": "^3.0",

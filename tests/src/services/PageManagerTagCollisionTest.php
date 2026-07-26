@@ -2,8 +2,8 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 

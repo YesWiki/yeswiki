@@ -1,11 +1,11 @@
 <?php
 
-use YesWiki\Bazar\Field\ImageField;
-use YesWiki\Bazar\Service\EntryManager;
-use YesWiki\Bazar\Service\FormManager;
 use YesWiki\Core\Attach;
 use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Field\ImageField;
+use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FavoritesManager;
+use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\YesWikiAction;
