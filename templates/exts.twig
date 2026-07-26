@@ -1,4 +1,4 @@
-{% set canTriggerUpdate = isAdmin and not isHibernated and isDesignatedUpdateInstance %}
+{# canTriggerUpdate is computed once in UpdateAction.php and passed down through status.twig's include #}
 {% set blockedReason = isHibernated ? _t('WIKI_IN_HIBERNATION') : _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') %}
 
 <table class="table table-striped table-condensed table-updates">

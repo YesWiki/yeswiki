@@ -50,11 +50,16 @@ class UpdateAction extends YesWikiAction
 
         $vAction = $vSecurityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
         if (empty($vAction) || !$this->wiki->UserIsAdmin() || $vIsReadOnly) {
+            $vIsAdmin = $this->wiki->UserIsAdmin();
+            $vIsDesignatedUpdateInstance = $vUpdateService->isDesignatedUpdateInstance();
+
             // Base action, display current status of software, extension and themes
             return $this->render('@core/status.twig', [
-                'isAdmin' => $this->wiki->UserIsAdmin(),
+                'isAdmin' => $vIsAdmin,
                 'isHibernated' => $vIsReadOnly,
-                'isDesignatedUpdateInstance' => $vUpdateService->isDesignatedUpdateInstance(),
+                'isDesignatedUpdateInstance' => $vIsDesignatedUpdateInstance,
+                // computed once here rather than repeated in both core.twig and exts.twig
+                'canTriggerUpdate' => $vIsAdmin && !$vIsReadOnly && $vIsDesignatedUpdateInstance,
                 'core' => $vUpdateService->repository->getCorePackage(),
                 'themes' => $vUpdateService->repository->getThemesPackages(),
                 'tools' => $vUpdateService->repository->getToolsPackages(),
