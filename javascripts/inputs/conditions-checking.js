@@ -107,8 +107,10 @@ const ConditionsChecking = {
   },
   getTextareaValue(field) {
     let value = $(field).val()
-    if (field.hasClass('summernote')) {
-      if (value === '<p><br></p>') {
+    if (field.hasClass('vditor-html')) {
+      // strip all tags first: an editor-empty doc renders as an empty paragraph
+      // (exact markup shape isn't guaranteed, so check on text content, not a literal string)
+      if (value.replace(/<[^>]+>/g, '').trim() === '') {
         return ''
       }
       value = value.replace(/^<p>/, '').replace(/<\/p>$/, '')
@@ -709,7 +711,7 @@ const ConditionsChecking = {
         // Gestion de la mise à jour des textareas pour les editeurs Wiki et Wysiwyg
         const vTextArea = $(this)
 
-        if (vTextArea.hasClass('aceditor-textarea') || vTextArea.hasClass('summernote')) {
+        if (vTextArea.hasClass('aceditor-textarea') || vTextArea.hasClass('vditor-html')) {
           const launchUpdateHandler = function() {
             let vLastValue = vTextArea.val()
 

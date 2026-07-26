@@ -42,6 +42,7 @@
     "node-fetch": "^2.6.7",
     "sortablejs": "^1.15.2",
     "spectrum-colorpicker2": "^2.0.8",
+    "vditor": "^3.11.2",
     "vue": "^3.2.47",
     "vue-select": "4.0.0-beta.6",
     "vuedraggable": "^4.1.0"

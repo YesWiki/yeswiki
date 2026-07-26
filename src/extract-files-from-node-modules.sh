@@ -61,6 +61,21 @@ cp -f -r node_modules/gogocarto-js/dist/fonts styles/vendor/gogocarto
 mkdir -p javascripts/vendor/spectrum-colorpicker2 && copy_js node_modules/spectrum-colorpicker2/dist/spectrum.min.js javascripts/vendor/spectrum-colorpicker2/spectrum.min.js
 mkdir -p styles/vendor/spectrum-colorpicker2 && copy_css node_modules/spectrum-colorpicker2/dist/spectrum.min.css styles/vendor/spectrum-colorpicker2/spectrum.min.css
 
+# Vditor (WYSIWYG/Markdown editor, replaces summernote). The main bundle/CSS sit directly
+# under vditor/, matching this script's usual per-library layout; lute.min.js/i18n/icons stay
+# under a dist/js/... subpath because Vditor's own runtime hardcodes that path relative to
+# whatever base URL is passed as its `cdn` option (see javascripts/vditor-textarea.js).
+mkdir -p javascripts/vendor/vditor/dist/js/lute &&
+	copy_js node_modules/vditor/dist/index.min.js javascripts/vendor/vditor/index.min.js &&
+	copy_js node_modules/vditor/dist/js/lute/lute.min.js javascripts/vendor/vditor/dist/js/lute/lute.min.js
+mkdir -p styles/vendor/vditor && copy_css node_modules/vditor/dist/index.css styles/vendor/vditor/index.css
+mkdir -p javascripts/vendor/vditor/dist/js/icons &&
+	copy_js node_modules/vditor/dist/js/icons/ant.js javascripts/vendor/vditor/dist/js/icons/ant.js
+mkdir -p javascripts/vendor/vditor/dist/js/i18n &&
+	for lang in en_US es_ES fr_FR pt_BR; do
+		copy_js "node_modules/vditor/dist/js/i18n/$lang.js" "javascripts/vendor/vditor/dist/js/i18n/$lang.js"
+	done
+
 # formBuilder
 mkdir -p javascripts/vendor/formBuilder && copy_js node_modules/formBuilder/dist/form-builder.min.js javascripts/vendor/formBuilder/form-builder.min.js
 
@@ -146,7 +161,7 @@ mkdir -p javascripts/vendor/ace &&
 	copy_js node_modules/ace-builds/src-min-noconflict/mode-markdown.js javascripts/vendor/ace/mode-markdown.js &&
 	copy_js node_modules/ace-builds/src-min-noconflict/ext-language_tools.js javascripts/vendor/ace/ext-language_tools.js
 # This one need to be in the same folder than aceditor otherwise it's not working
-copy_js node_modules/ace-builds/src-min-noconflict/ext-searchbox.js tools/aceditor/presentation/javascripts/ext-searchbox.js
+copy_js node_modules/ace-builds/src-min-noconflict/ext-searchbox.js javascripts/ext-searchbox.js
 
 # iframe-resizer
 mkdir -p javascripts/vendor/iframe-resizer &&

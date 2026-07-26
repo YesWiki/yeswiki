@@ -44,6 +44,7 @@ export default defineConfig([globalIgnores([
       wiki: 'writable',
       Vue: 'readable',
       Sortable: 'readable',
+      Vditor: 'readable',
       _t: 'readable',
       ace: 'writable',
       toastMessage: 'readable',

@@ -38,10 +38,11 @@
               }
             )|raw }}
         {% else %}
-            <textarea 
+            <textarea
                 id="{{ field.name }}"
                 name="{{ field.name }}"
-                class="form-control {% if field.syntax == 'html' %}summernote{% else %}{{ field.syntax }}{% endif %}"
+                class="form-control {% if field.syntax == 'html' %}vditor-html{% else %}{{ field.syntax }}{% endif %}"
+                {% if field.syntax == 'html' %}data-vditor-lang="{{ vditorLang }}"{% endif %}
                 rows="{{ field.numRows }}"
                 {% if field.size %} cols="{{ field.size }}" {% endif %}
                 {% if field.maxChars %} maxlength="{{ field.maxChars }}" {% endif %}

@@ -43,58 +43,28 @@ class TextareaField extends BazarField
         }
     }
 
+    // Vditor only ships a handful of locales; languages this wiki supports but Vditor
+    // doesn't (ca/eu/nl/ro/ta as of ticket 16) fall back to its base English UI strings --
+    // this only affects the editor toolbar's own tooltip text, not page/entry content.
+    private const VDITOR_LANG_MAP = [
+        'en' => 'en_US',
+        'es' => 'es_ES',
+        'fr' => 'fr_FR',
+        'pt' => 'pt_BR',
+    ];
+
     protected function renderInput($entry)
     {
         $output = '';
         $wiki = $this->getWiki();
+        $vditorLang = null;
         // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
-            $wiki->AddJavascriptFile('javascripts/vendor/summernote/summernote.min.js');
-            $wiki->AddCSSFile('styles/vendor/summernote/summernote.css');
+            $wiki->AddCSSFile('styles/vendor/vditor/index.css');
+            $wiki->AddJavascriptFile('javascripts/vendor/vditor/index.min.js');
+            $wiki->AddJavascriptFile('javascripts/vditor-textarea.js');
 
-            $langKey = strtolower($GLOBALS['prefered_language']) . '-' . strtoupper($GLOBALS['prefered_language']);
-            $langFile = 'javascripts/vendor/summernote/lang/summernote-' . $langKey . '.js';
-            if (file_exists($langFile)) {
-                $wiki->AddJavascriptFile($langFile);
-                $langOptions = 'lang: "' . $langKey . '",';
-            } else {
-                $langOptions = '';
-            }
-
-            $script = '$(document).ready(function() {
-              $(".summernote").summernote({
-                ' . $langOptions . '
-                height: ' . $this->numRows * 30 . ',    // set editor height
-                minHeight: 100, // set minimum height of editor
-                maxHeight: 350,                // set maximum height of editor
-                focus: false,                   // set focus to editable area after initializing summernote
-                inheritPlaceholder: true,
-                toolbar: [
-                    //[groupname, [button list]]
-                    //[\'style\', [\'style\', \'well\']],
-                    [\'style\', [\'style\']],
-                    [\'textstyle\', [\'bold\', \'italic\', \'underline\', \'strikethrough\', \'clear\']],
-                    [\'color\', [\'color\']],
-                    [\'para\', [\'ul\', \'ol\', \'paragraph\']],
-                    [\'insert\', [\'hr\', \'link\', \'table\']], // \'picture\', \'video\' removed because of the storage in the field
-                    [\'misc\', [\'codeview\']]
-                ],
-                isNotSplitEdgePoint : true,
-                styleTags: [\'h3\', \'h4\', \'h5\', \'h6\', \'p\', \'blockquote\', \'pre\'],
-                oninit: function() {
-                  //$(\'button[data-original-title=Style]\').prepend("Style").find("i").remove();
-                },
-                callbacks: {
-                    onPaste: function (e) {
-                        var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData(\'Text\');
-                        e.preventDefault();
-                        document.execCommand(\'insertText\', false, bufferText);
-                    }
-                }
-              });
-            });';
-
-            $wiki->AddJavascript($script);
+            $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
         }
 
         $tempTag = !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
@@ -106,6 +76,7 @@ class TextareaField extends BazarField
             'value' => $this->getValue($entry),
             'entryId' => $entry['id_fiche'] ?? null,
             'tempTag' => $tempTag,
+            'vditorLang' => $vditorLang,
         ]);
     }
 

@@ -226,7 +226,7 @@ $(document).ready(() => {
       this[key] = (this[key]).filter(function() {
         let inputVisible = $(this).filter(':visible')
         if ((
-          $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('aceditor-textarea') || $(this).hasClass('summernote'))
+          $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('aceditor-textarea') || $(this).hasClass('vditor-html'))
         ) || $(this).siblings('.bootstrap-tagsinput').length > 0) {
           inputVisible = $(this).parent().filter(':visible')
         }
@@ -280,9 +280,8 @@ $(document).ready(() => {
         if ($(input).hasClass('aceditor-textarea')) {
           return 'wikitextarea'
         }
-        if ($(input).hasClass('summernote')) {
-          return 'summernote'
-        }
+        // vditor-html fields are validated like plain textareas: the underlying <textarea>'s
+        // value is kept in sync with the editor's content (javascripts/vditor-textarea.js)
         return 'textarea'
       }
       return 'default'
@@ -345,15 +344,6 @@ $(document).ready(() => {
         return false
       }
       $(input).parent().removeClass('invalid')
-      return true
-    },
-    summernoteChecking(input) {
-      if ($(input).summernote('isEmpty')) {
-        $(input).closest('.form-control.textarea.summernote').addClass('invalid')
-        this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'))
-        return false
-      }
-      $(input).closest('.form-control.textarea.summernote').removeClass('invalid')
       return true
     },
     checkboxChecking(input) {
@@ -518,12 +508,6 @@ $(document).ready(() => {
         reqChecking.runWhenUpdated(event.target, reqChecking)
       })
     },
-    summernoteInitlistener(input) {
-      const reqChecking = this
-      $(input).on('summernote.change', (event) => {
-        reqChecking.runWhenUpdated(event.target, reqChecking)
-      })
-    },
     wikitextareaInitlistener(input) {
       const reqChecking = this
       const aceditor = $(input)
@@ -552,7 +536,7 @@ $(document).ready(() => {
         const inputType = this.getInputType(input)
         if (['default', 'select', 'textarea', 'tags'].indexOf(inputType) > -1) {
           this.inputInitlistener(input)
-        } else if (['summernote', 'wikitextarea', 'checkbox', 'radio'].indexOf(inputType) > -1) {
+        } else if (['wikitextarea', 'checkbox', 'radio'].indexOf(inputType) > -1) {
           this[`${inputType}Initlistener`](input)
         }
       }
