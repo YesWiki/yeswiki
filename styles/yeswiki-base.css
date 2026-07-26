@@ -350,6 +350,10 @@ body > :not(#YesWikiModal) .current-revision-text {
   width: max-content;
 }
 
+#yw-topnav > .container > .yw-topnav-fast-access .yw-btn {
+  border: none;
+}
+
 /* menu du haut fixe */
 #yw-topnav.fixable {
   position: sticky;
