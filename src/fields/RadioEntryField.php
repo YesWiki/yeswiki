@@ -42,7 +42,7 @@ class RadioEntryField extends RadioField
             $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
-        return $this->render('@bazar/fields/select_entry.twig', [
+        return $this->render('@core/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value],
             'entryUrl' => $entryUrl,

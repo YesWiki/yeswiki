@@ -76,7 +76,7 @@ class AclField extends BazarField
         }
 
         return ($this->askIfActivateComments)
-            ? $this->render('@bazar/inputs/comments.twig', [
+            ? $this->render('@core/inputs/comments.twig', [
                 'value' => $commentsAlreadyClosed ? self::OPTION_NO : $this->getValue($entry),
                 'options' => $this->getOptions(),
                 'showAlertForCommentsNotActivated' => $isYesWikiType

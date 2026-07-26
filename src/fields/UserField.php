@@ -86,7 +86,7 @@ class UserField extends BazarField
             }
         }
 
-        return $this->render('@bazar/inputs/user.twig', [
+        return $this->render('@core/inputs/user.twig', [
             'value' => $value,
             'creationMode' => empty($entry[$this->getPropertyName()]),
             'message' => $message ?? null,
@@ -147,7 +147,7 @@ class UserField extends BazarField
                         || !in_array($this->getRequest()->request->get($this->propertyName . self::CONFIRM_NAME_SUFFIX), [true, 1, '1'], true)
                     )
                 ) {
-                    throw new UserFieldException($this->render('@bazar/inputs/user-confirm.twig', ['confirmName' => $this->propertyName . self::CONFIRM_NAME_SUFFIX, 'wikiName' => $currentWikiName, 'newWikiName' => $wikiName]));
+                    throw new UserFieldException($this->render('@core/inputs/user-confirm.twig', ['confirmName' => $this->propertyName . self::CONFIRM_NAME_SUFFIX, 'wikiName' => $currentWikiName, 'newWikiName' => $wikiName]));
                 }
             }
             if (!isset($entry[$this->emailField])) {
@@ -214,7 +214,7 @@ class UserField extends BazarField
         $authController = $this->getService(AuthController::class);
 
         if (!empty($value)) {
-            return $this->render('@bazar/fields/user.twig', [
+            return $this->render('@core/fields/user.twig', [
                 'value' => $value,
                 'isLoggedUser' => $authController->getLoggedUser() && $authController->getLoggedUserName() === $value,
                 'editUrl' => $this->getWiki()->href('edit', $value),

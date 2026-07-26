@@ -27,7 +27,7 @@ class BazarFollowAction extends YesWikiAction
         $activityPubEnabled = $activityPubService->isEnabled($form);
 
         if ($activityPubEnabled) {
-            return $this->render('@bazar/follow.twig', [
+            return $this->render('@core/follow.twig', [
                 'form' => $form,
             ]);
         }

@@ -309,7 +309,7 @@ class BazarListeAction extends YesWikiAction
             }
             $currentUser = $this->getService(AuthController::class)->getLoggedUser();
 
-            return $this->render("@bazar/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
+            return $this->render("@core/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
                 'param' => $this->arguments, // DEPRECATED but still there for retro-compatibility: use params (plural)
                 'params' => $this->arguments,
                 'keywords' => $this->arguments['keywords'],
@@ -330,9 +330,9 @@ class BazarListeAction extends YesWikiAction
 
         // TODO put in all bazar templates
 
-        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
+        $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
 
-        return $this->render('@bazar/entries/index.twig', [
+        return $this->render('@core/entries/index.twig', [
             'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
             'filters' => $filters,
             'entries' => $entries,
@@ -367,7 +367,7 @@ class BazarListeAction extends YesWikiAction
         $data['forms'] = $pForms;
 
         if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {
-            require_once YESWIKI_SOURCE_DIR . '/tools/bazar/libs/vendor/Pager/Pager.php';
+            require_once YESWIKI_SOURCE_DIR . '/src/vendor/Pager/Pager.php';
             $tab = $this->getRequest()->query->all();
             unset($tab['wiki']);
             $pager = &Pager::factory([
@@ -392,7 +392,7 @@ class BazarListeAction extends YesWikiAction
         }
 
         try {
-            return $this->render("@bazar/{$templateName}", $data);
+            return $this->render("@core/{$templateName}", $data);
         } catch (TemplateNotFound $e) {
             return '<div class="alert alert-danger">' . $e->getMessage() . '</div>';
         }

@@ -61,7 +61,7 @@ class ExternalTagsField extends TagsField
                     . $entry['external-data']['baseUrl'] . '?' . $GLOBALS['wiki']->GetPageTag() . '/listpages&tags=' . urlencode(trim($tag)) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
-            return $this->render('@bazar/fields/tags.twig', [
+            return $this->render('@core/fields/tags.twig', [
                 'value' => join(' ', $tags) ?? '',
             ]);
         }

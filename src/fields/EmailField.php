@@ -64,7 +64,7 @@ class EmailField extends BazarField
             $GLOBALS['wiki']->addJavascriptFile('javascripts/contact.js');
         }
 
-        return $this->render('@bazar/fields/email.twig', [
+        return $this->render('@core/fields/email.twig', [
             'value' => $value,
         ]);
     }

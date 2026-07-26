@@ -24,7 +24,7 @@
     {% embed '@core/form.twig' with {formMethod: 'post', class:'form-horizontal'} %}
         {% block formcontent %}
             
-            {% embed '@bazar/inputs/checkbox_drag_and_drop.twig' %}
+            {% embed '@core/inputs/checkbox_drag_and_drop.twig' %}
             {% block list_options %}
 			{% for item_id, item in options %}
 				{% if item not in selectedOptionsId %}

@@ -24,7 +24,7 @@ class ConditionsCheckingField extends LabelField
 
     protected function prepareFormText(): ?string
     {
-        return $this->render('@bazar/inputs/conditions-checking.twig', [
+        return $this->render('@core/inputs/conditions-checking.twig', [
         ]);
     }
 

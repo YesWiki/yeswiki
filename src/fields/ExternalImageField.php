@@ -36,7 +36,7 @@ class ExternalImageField extends ImageField
         $value = $this->getValue($entry);
 
         if (isset($value) && $value != '') {
-            return $this->render('@bazar/fields/external-image.twig', [
+            return $this->render('@core/fields/external-image.twig', [
                 'attachClass' => $this->getAttach(),
                 'baseUrl' => $entry['external-data']['baseUrl'],
                 'imageFullPath' => $this->getBasePath() . $value,

@@ -36,7 +36,7 @@ class ExternalFileField extends FileField
         $value = $this->getValue($entry);
 
         if (isset($value) && $value != '') {
-            return $this->render('@bazar/fields/file.twig', [
+            return $this->render('@core/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => $entry['external-data']['baseUrl'] . BAZ_CHEMIN_UPLOAD . $value,
             ]);

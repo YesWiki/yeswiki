@@ -44,7 +44,7 @@ class LinkedEntryField extends BazarField
         // Display the linked entries only on update
         if (isset($entry['id_fiche'])) {
             return $this->render(
-                '@bazar/inputs/linked-entry.twig',
+                '@core/inputs/linked-entry.twig',
                 $this->getTwigOptions($entry)
             );
         }
@@ -55,7 +55,7 @@ class LinkedEntryField extends BazarField
         // Display the linked entries only if id_fiche and id_typeannonce
         if (!empty($entry['id_fiche']) && !empty($entry['id_typeannonce'])) {
             return $this->render(
-                '@bazar/fields/linked-entry.twig',
+                '@core/fields/linked-entry.twig',
                 $this->getTwigOptions($entry)
             );
         }

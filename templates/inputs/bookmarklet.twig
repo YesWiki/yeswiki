@@ -1,0 +1,31 @@
+<div class="control-group form-group">
+    <label class="control-label col-sm-3">  
+        {% if field.hint %}
+            <img loading="lazy" class="tooltip_aide" title="{{ field.hint|striptags }}" alt="{{ field.hint|striptags }}" src="images/bazar/aide.png" width="16" height="16" />
+        {% endif %} 
+        {{ field.label|raw }}   
+    </label>
+    <div class="controls col-sm-9">
+        <div class="yw-alert yw-alert--info">
+            <a
+                href="javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2; window.open('{{ 
+                        url({handler:'iframe',params:
+                            urlParams|merge({
+                            bf_titre: "_",
+                            (field.urlField): "_",
+                            (field.descriptionField): "_"
+                        })})|replace({
+                            "bf_titre=_": "bf_titre='+escape(document.title)+'",
+                            "id=_": "id='+escape(document.querySelector('input[name=id_typeannonce]').getAttribute('value'))+'",
+                            (field.urlField~"=_"): field.urlField~"='+encodeURIComponent(location.href)+'",
+                            (field.descriptionField~"=_"): field.descriptionField~"='+encodeURIComponent(document.getSelection())+'",
+                        }) 
+                    }}', '{{ field.name }}', 'height=530,width=700,left='+wleft+',top='+wtop+',toolbar=no,location=no,directories=no,status=no,scrollbars=yes,resizable=yes,menubar=no');void 0;"
+                class="yw-btn"
+            >
+                {{ _t('BAZ_BOOKMARKLET_LABEL',{form:urlParams.id}) }}
+            </a>
+            << {{ field.text|raw }}
+        </div>
+    </div>
+</div>

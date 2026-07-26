@@ -72,7 +72,7 @@ class FormController extends YesWikiController
             }
         }
 
-        return $this->render('@bazar/forms/forms_table.twig', [
+        return $this->render('@core/forms/forms_table.twig', [
             'message' => $message,
             'forms' => $values,
             'userIsAdmin' => $this->wiki->UserIsAdmin(),
@@ -99,7 +99,7 @@ class FormController extends YesWikiController
                 }
             }
 
-            return $this->render('@bazar/forms/forms_form.twig', [
+            return $this->render('@core/forms/forms_form.twig', [
                 'form' => $form,
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
@@ -124,7 +124,7 @@ class FormController extends YesWikiController
                 }
             }
 
-            return $this->render('@bazar/forms/forms_form.twig', [
+            return $this->render('@core/forms/forms_form.twig', [
                 'form' => $form,
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
@@ -216,7 +216,7 @@ class FormController extends YesWikiController
 
         $domain = parse_url($this->wiki->GetBaseURL(), PHP_URL_HOST);
 
-        return $this->render('@bazar/forms/abonnements.twig', [
+        return $this->render('@core/forms/abonnements.twig', [
             'message' => $this->getRequest()->query->get('msg'),
             'form' => $form,
             'domain' => $domain,

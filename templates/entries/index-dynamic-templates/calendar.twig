@@ -1,0 +1,19 @@
+{% extends "@core/entries/index-dynamic.twig" %}
+
+{% set necessary_fields = ['bf_date_debut_evenement', 'bf_date_fin_evenement', 'bf_date_fin_evenement_data'] %}
+
+{% block assets %}
+  {{ include_css('styles/vendor/fullcalendar/main.min.css') }}
+  {{ include_css('styles/bazar/calendar.css') }}
+
+  {{ include_javascript('javascripts/vendor/moment/moment-with-locales.min.js') }}
+  {{ include_javascript('javascripts/vendor/fullcalendar/main.min.js') }}
+  {{ include_javascript('javascripts/vendor/fullcalendar/locales-all.min.js') }}
+
+  {{ include_javascript('javascripts/services/recurrence-calculator.js') }}
+  {{ include_javascript('javascripts/components/BazarCalendar.js', false, true) }}
+{% endblock %}
+
+{% block display_entries %}
+  <Bazar-Calendar :params="params" class="no-dblclick {{ params.class }}"></Bazar-Calendar>
+{% endblock %}

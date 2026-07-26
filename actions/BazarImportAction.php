@@ -135,7 +135,7 @@ class BazarImportAction extends YesWikiAction
             $vFilename = $this->CSVManager->buildExportFilename($vID);
         }
 
-        return $this->render('@bazar/bazar-import.twig', [
+        return $this->render('@core/bazar-import.twig', [
             'id' => $vID['id'] ?? '',
             'server' => $this->arguments['server'],
             'forms' => $vForms,

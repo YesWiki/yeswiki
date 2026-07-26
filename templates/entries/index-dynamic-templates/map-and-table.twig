@@ -1,0 +1,18 @@
+{% extends "@core/entries/index-dynamic-templates/table.twig" %}
+
+{% set necessary_fields = ( necessary_fields|default([]))|merge(['geolocation']) %}
+
+{% block assets %}
+  {{ block('assets','@core/entries/index-dynamic-templates/map.twig') }}
+  {{ parent() }} 
+  {{ include_javascript('javascripts/components/BazarTableEntrySelector.js', false, true) }}
+{% endblock %}
+
+{% block display_entries %}
+  {{ block("display_entries",'@core/entries/index-dynamic-templates/map.twig') }}
+  <Bazar-Table-Entry-Selector :entries="entriesToDisplay" :params="params">
+    <template #bazarlist="{entriesToDisplay}">
+      {{ parent() }}
+    </template>
+  <Bazar-Table-Entry-Selector/>
+{% endblock %}

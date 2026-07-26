@@ -34,7 +34,7 @@ class SubscribeField extends BazarField
 
     protected function renderInput($entry)
     {
-        return $this->render('@bazar/inputs/subscribe.twig', [
+        return $this->render('@core/inputs/subscribe.twig', [
             'value' => $this->getValue($entry),
             'subscribeEmail' => $this->getSubscribeEmail($entry),
         ]);

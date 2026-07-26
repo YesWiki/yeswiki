@@ -166,7 +166,7 @@ abstract class BazarField implements \JsonSerializable
     {
         $value = $this->getValue($entry);
 
-        return ($value) ? $this->render("@bazar/fields/{$this->type}.twig", [
+        return ($value) ? $this->render("@core/fields/{$this->type}.twig", [
             'value' => $this->getValue($entry),
         ]) : '';
     }
@@ -175,7 +175,7 @@ abstract class BazarField implements \JsonSerializable
     // so we are sure same safety checks are done for all fields
     protected function renderInput($entry)
     {
-        return $this->render("@bazar/inputs/{$this->type}.twig", [
+        return $this->render("@core/inputs/{$this->type}.twig", [
             'value' => $this->getValue($entry),
         ]);
     }

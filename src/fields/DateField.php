@@ -43,7 +43,7 @@ class DateField extends BazarField
             }
         }
 
-        return $this->render('@bazar/inputs/date.twig', [
+        return $this->render('@core/inputs/date.twig', [
             'day' => $day,
             'hour' => $hour,
             'minute' => $minute,
@@ -118,7 +118,7 @@ class DateField extends BazarField
             }
         }
 
-        return $this->render('@bazar/fields/date.twig', [
+        return $this->render('@core/fields/date.twig', [
             'value' => $value,
             'recurrenceBaseId' => $recurrenceBaseId,
             'data' => $data,

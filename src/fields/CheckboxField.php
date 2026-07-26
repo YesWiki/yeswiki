@@ -17,8 +17,8 @@ abstract class CheckboxField extends EnumField
     protected const CHECKBOX_DISPLAY_MODE_LIST = 'list';
     protected const CHECKBOX_DISPLAY_MODE_DIV = 'div';
     protected const CHECKBOX_TWIG_LIST = [
-        self::CHECKBOX_DISPLAY_MODE_DIV => '@bazar/inputs/checkbox.twig',
-        self::CHECKBOX_DISPLAY_MODE_LIST => '@bazar/inputs/checkbox_list.twig',
+        self::CHECKBOX_DISPLAY_MODE_DIV => '@core/inputs/checkbox.twig',
+        self::CHECKBOX_DISPLAY_MODE_LIST => '@core/inputs/checkbox_list.twig',
     ];
 
     protected const FROM_FORM_ID = '_fromForm';
@@ -43,7 +43,7 @@ abstract class CheckboxField extends EnumField
     {
         switch ($this->displayMethod) {
             case 'tags':
-                $htmlReturn = $this->render('@bazar/inputs/checkbox_tags.twig', [
+                $htmlReturn = $this->render('@core/inputs/checkbox_tags.twig', [
                     'bazarlistTagsInputsData' => json_encode($this->generateTagsData($entry)),
                 ]);
 
@@ -60,7 +60,7 @@ abstract class CheckboxField extends EnumField
             default:
                 // List with multi levels
                 if ($this->optionsTree) {
-                    return $this->render('@bazar/inputs/checkbox-tree.twig', [
+                    return $this->render('@core/inputs/checkbox-tree.twig', [
                         'data' => $this->optionsTree,
                         'values' => $this->getValues($entry),
                         'displaySelectAllLimit' => $this->displaySelectAllLimit,
@@ -70,7 +70,7 @@ abstract class CheckboxField extends EnumField
 
                 if ($this->displayFilterLimit) {
                     // javascript additions
-                    $GLOBALS['wiki']->AddJavascriptFile('tools/bazar/libs/vendor/jquery.fastLiveFilter.js');
+                    $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/jquery.fastLiveFilter.js');
                     $script = "$(function() { $('.filter-entries').each(function() {
                                 $(this).fastLiveFilter($(this).parent().siblings('.list-bazar-entries,.bazar-checkbox-cols')); });
                             });";

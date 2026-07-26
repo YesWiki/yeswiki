@@ -1,0 +1,82 @@
+
+<?php if( count($fiches)>0 ) : ?>
+<?php
+$imgwidth=450;
+$imgheight=450;
+$classnb = 1;
+$agenda = 'tout';
+$datejour = time();
+$rowcol = ''; // declaration d'une chaine de char vide
+$modal = ''; // declaration d'une chaine de char vide
+?>
+<?php /* traces : pour avoir date en mois : <?php echo str_replace('00:00', '', date("M", strtotime($fiche['bf_date_debut_evenement']))); ?> */ ?>
+
+<div class="agenda-container">
+  <?php foreach($fiches as $fiche): ?>
+  <div class="agenda-entry-container">
+    <figure class="bazar-entry agenda-entry" <?php echo $fiche['html_data'];?>>
+      <div class="image">
+        <?php if (isset($fiche['imagebf_image']) && $fiche['imagebf_image']!='') : ?>
+          <img loading="lazy" class="img-responsive" alt=""
+            src="<?php echo (isset($fiche['external-data']))
+              ? $fiche['external-data']['baseUrl'] . 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image']
+              : redimensionner_image('files/'.$fiche['imagebf_image'], 'cache/image_'.$imgwidth.'x'.$imgheight.'_'.$fiche['imagebf_image'], $imgwidth, $imgheight, 'crop'); ?>"
+              <?php echo (isset($fiche['external-data']))
+                ? 'onerror="this.src=\''.$fiche['external-data']['baseUrl'].'files/'.$fiche['imagebf_image'].'\'"'
+                : '' //TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ?
+              ;?>>
+        <?php else : ?>
+          <img loading="lazy" class="trombi-image img-placeholder" alt=""
+               src="javascripts/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+          <i class="trombi-image icon-placeholder fa fa-calendar"></i>
+        <?php endif; ?>
+      </div>
+      <fig-caption>
+        <?php $moisen = date("M", strtotime($fiche['bf_date_debut_evenement'])); ?>
+        <?php  $moisfr = str_replace(array('Feb', 'Apr', 'May', 'Jun', 'Aug') , array('fev', 'avr', 'mai', 'jui', 'aou'), $moisen); ?>
+
+        <div class="date"><span class="day"><?php echo substr($fiche['bf_date_debut_evenement'],8,2); ?></span><span class="month"><?php echo $moisfr;?></span></div>
+        <h5><?php echo $fiche['bf_titre'];?></h5>
+        <?php if (isset($fiche['soustitre']) && !empty($fiche['soustitre'])) :
+          $soustitre = nl2br(strip_tags($GLOBALS['wiki']->format($fiche['soustitre']), '<br>')); ?>
+            <small class='agenda-subtitle'>
+              <?php echo substr($soustitre, 0, 280) . (strlen($soustitre) > 280 ? '...' : ''); ?>
+            </small>
+        <?php endif; ?>
+
+        </p>
+      </fig-caption>
+      <?php $useModal = $GLOBALS['wiki']->GetParameter('modal') == 1; ?>
+      <a class="<?php echo $useModal ? 'modalbox' : ''; ?>"
+         title="<?php echo htmlspecialchars($fiche['bf_titre']);?>"
+         href="<?php echo $fiche['url']
+          // add /iframe only for external YesWiki entries and modal
+          .(
+            (isset($fiche['external-data']) && $useModal)
+            ? '/iframe" data-iframe="1"'
+            : '"'
+          ); ?>>
+      </a>
+    </figure>
+  </div>
+  <?php endforeach; ?>
+</div>
+
+<?php $GLOBALS['wiki']->AddCSSFile('styles/bazar/agenda.css'); ?>
+<style>
+  <?php
+   // Nombres de colonne
+   $nbcol = $GLOBALS['wiki']->GetParameter('nbcol');
+   $width = empty($nbcol) ? 25 : 100 / $nbcol;
+  ?>
+  .agenda-entry-container {
+    width: <?php echo $width; ?>%;
+    padding: 1rem;
+  }
+  @media (max-width: 900px) { .agenda-entry-container { width: 33%; } }
+  @media (max-width: 700px) { .agenda-entry-container { width: 50%; } }
+
+</style>
+
+<?php endif; ?>
+<?php echo $pager_links;?>

@@ -56,7 +56,7 @@ class CalcField extends BazarField
             return '';
         }
 
-        return $this->render('@bazar/fields/text.twig', [
+        return $this->render('@core/fields/text.twig', [
             'value' => str_replace('{value}', strval($value), $this->displayText),
         ]);
     }

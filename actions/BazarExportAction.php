@@ -84,7 +84,7 @@ class BazarExportAction extends YesWikiAction
             $vSelectedForm = null;
         }
 
-        return $this->render('@bazar/bazar-export.twig', [
+        return $this->render('@core/bazar-export.twig', [
             'id' => $vID ?? null,
             'forms' => $vForms,
             'params' => $this->arguments['params'],

@@ -42,7 +42,7 @@ class ExternalCheckboxEntryField extends CheckboxEntryField
             }
         }
 
-        return (count($values) > 0) ? $this->render('@bazar/fields/externalcheckboxentry.twig', [
+        return (count($values) > 0) ? $this->render('@core/fields/externalcheckboxentry.twig', [
             'values' => $values,
         ]) : '';
     }

@@ -52,7 +52,7 @@ class TextField extends BazarField
     protected function renderInput($entry)
     {
         // Handling all subtypes (url, number) in the text.twig
-        return $this->render('@bazar/inputs/' . ($this->getType() == 'range' ? 'range' : 'text') . '.twig', [
+        return $this->render('@core/inputs/' . ($this->getType() == 'range' ? 'range' : 'text') . '.twig', [
             'value' => $this->getValue($entry),
         ]);
     }
@@ -65,12 +65,12 @@ class TextField extends BazarField
         }
 
         if ($this->name === 'bf_titre') {
-            return $this->render('@bazar/fields/title.twig', [
+            return $this->render('@core/fields/title.twig', [
                 'value' => $value,
             ]);
         }
 
-        return $this->render('@bazar/fields/text.twig', [
+        return $this->render('@core/fields/text.twig', [
             'value' => $value,
         ]);
     }

@@ -135,7 +135,7 @@ class ReactionsField extends BazarField
                 true
             );
 
-        return $this->render('@bazar/fields/reactions.twig', [
+        return $this->render('@core/fields/reactions.twig', [
             'reactionId' => $this->name,
             'reactionItems' => $reactionItems,
             'userName' => $username,
@@ -181,7 +181,7 @@ class ReactionsField extends BazarField
 
     protected function renderInput($entry)
     {
-        return $this->render('@bazar/inputs/select.twig', [
+        return $this->render('@core/inputs/select.twig', [
             'value' => $this->getValue($entry),
             'options' => $this->options,
         ]);

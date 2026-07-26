@@ -49,11 +49,11 @@ class TextareaField extends BazarField
         $wiki = $this->getWiki();
         // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
-            $wiki->AddJavascriptFile('tools/bazar/libs/vendor/summernote/summernote.min.js');
-            $wiki->AddCSSFile('tools/bazar/libs/vendor/summernote/summernote.css');
+            $wiki->AddJavascriptFile('javascripts/vendor/summernote/summernote.min.js');
+            $wiki->AddCSSFile('styles/vendor/summernote/summernote.css');
 
             $langKey = strtolower($GLOBALS['prefered_language']) . '-' . strtoupper($GLOBALS['prefered_language']);
-            $langFile = 'tools/bazar/libs/vendor/summernote/lang/summernote-' . $langKey . '.js';
+            $langFile = 'javascripts/vendor/summernote/lang/summernote-' . $langKey . '.js';
             if (file_exists($langFile)) {
                 $wiki->AddJavascriptFile($langFile);
                 $langOptions = 'lang: "' . $langKey . '",';
@@ -102,7 +102,7 @@ class TextareaField extends BazarField
             $tempTag .= '_' . bin2hex(random_bytes(10));
         }
 
-        return $output . $this->render('@bazar/inputs/textarea.twig', [
+        return $output . $this->render('@core/inputs/textarea.twig', [
             'value' => $this->getValue($entry),
             'entryId' => $entry['id_fiche'] ?? null,
             'tempTag' => $tempTag,
@@ -165,7 +165,7 @@ class TextareaField extends BazarField
                 break;
         }
 
-        return $this->render('@bazar/fields/textarea.twig', [
+        return $this->render('@core/fields/textarea.twig', [
             'value' => $value,
         ]);
     }

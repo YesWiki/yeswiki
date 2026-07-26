@@ -1,0 +1,19 @@
+{% if field.label is not empty %}
+  {% embed "@core/layouts/input.twig" %}
+    {% block label %}
+      {{ field.label|raw }}         
+    {% endblock %}
+    {% block input %}
+      {% if not emptyList %}
+      {{ output|raw }}
+      {% endif %}
+      {% if addEntryBtnLabel is not empty %}
+      <a href="{{ addEntryLink }}" class="modalbox yw-btn yw-btn--primary" data-iframe="1">{{ addEntryBtnLabel }}</a>
+      {% endif %}
+    {% endblock %}
+  {% endembed %}
+{% else %}
+  {{ output|raw }}
+{% endif %}
+
+

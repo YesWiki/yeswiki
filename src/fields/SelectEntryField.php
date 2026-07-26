@@ -32,7 +32,7 @@ class SelectEntryField extends EnumField
 
     protected function renderInput($entry)
     {
-        return $this->render('@bazar/inputs/select.twig', [
+        return $this->render('@core/inputs/select.twig', [
             'value' => $this->getValue($entry),
             'options' => $this->getOptions(),
         ]);
@@ -65,7 +65,7 @@ class SelectEntryField extends EnumField
             $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
         }
 
-        return $this->render('@bazar/fields/select_entry.twig', [
+        return $this->render('@core/fields/select_entry.twig', [
             'value' => $value,
             'label' => $this->getOptions()[$value],
             'entryUrl' => $entryUrl,

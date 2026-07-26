@@ -16,7 +16,7 @@ class SelectListField extends EnumField
 
     protected function renderInput($entry)
     {
-        return $this->render('@bazar/inputs/select.twig', [
+        return $this->render('@core/inputs/select.twig', [
             'value' => $this->getValue($entry),
             'options' => $this->options,
         ]);
@@ -29,7 +29,7 @@ class SelectListField extends EnumField
             return '';
         }
 
-        return $this->render('@bazar/fields/select.twig', [
+        return $this->render('@core/fields/select.twig', [
             'value' => $this->options[$value] ?? '',
         ]);
     }

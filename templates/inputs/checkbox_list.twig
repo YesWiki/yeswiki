@@ -1,0 +1,11 @@
+{% extends "@core/inputs/checkbox.twig" %}
+
+{% block list_options %}
+	<ul class="list-bazar-entries list-unstyled group-checkbox-{{ field.propertyName }}{{ field.required ? ' chk_required' : ''}}">
+		{% for key, option in options %}
+			<div class="yeswiki-checkbox checkbox">
+				{{ block('item_option') }}
+			</div>
+		{% endfor %}
+	</ul>
+{% endblock %}

@@ -128,14 +128,14 @@ class BazarAction extends YesWikiAction
         $entryController = $this->getService(EntryController::class);
 
         // TODO put in all bazar templates
-        $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
+        $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
 
         $view = $this->arguments[self::VARIABLE_VOIR];
         $action = $this->arguments[self::VARIABLE_ACTION];
 
         // Display menu, unless we explicitly don't want to see it
         if ($this->arguments['voirmenu'] !== '0') {
-            echo $this->render('@bazar/menu.twig', [
+            echo $this->render('@core/menu.twig', [
                 'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
                 'view' => $view,
             ]);
@@ -197,7 +197,7 @@ class BazarAction extends YesWikiAction
                             return $this->getMessageWhenHibernated();
                         }
 
-                        return $this->render('@bazar/forms/forms_confirm.twig', [
+                        return $this->render('@core/forms/forms_confirm.twig', [
                             'type' => ($action == self::ACTION_FORM_CONFIRM_DELETE) ? 'delete' : 'empty',
                         ]);
                     case self::ACTION_FORM_EMPTY:

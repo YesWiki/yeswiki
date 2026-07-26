@@ -32,7 +32,7 @@ class BookmarkletField extends BazarField
     {
         $wiki = $this->getWiki();
         if ($this->getWiki()->GetMethod() != 'bazariframe') {
-            return $this->render('@bazar/inputs/bookmarklet.twig', [
+            return $this->render('@core/inputs/bookmarklet.twig', [
                 'urlParams' => [
                     'vue' => BAZ_VOIR_SAISIR,
                     'action' => BAZ_ACTION_NOUVEAU,

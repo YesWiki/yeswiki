@@ -27,7 +27,7 @@ class TitleField extends BazarField
 
     protected function renderInput($entry)
     {
-        return $this->render('@bazar/inputs/title.twig', [
+        return $this->render('@core/inputs/title.twig', [
             'titleTemplate' => $this->titleTemplate,
         ]);
     }
@@ -100,7 +100,7 @@ class TitleField extends BazarField
 
     protected function renderStatic($entry)
     {
-        return $this->render('@bazar/fields/title.twig', [
+        return $this->render('@core/fields/title.twig', [
             'value' => $this->getValue($entry),
         ]);
     }

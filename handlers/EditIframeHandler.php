@@ -35,7 +35,7 @@ class EditIframeHandler extends YesWikiHandler
                 }
             }
 
-            $this->wiki->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
+            $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
             $output .= '<body class="yeswiki-iframe-body">' . "\n"
                 . '<div class="container">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page">' . "\n";

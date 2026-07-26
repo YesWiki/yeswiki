@@ -30,7 +30,7 @@ class CheckboxEntryField extends CheckboxField
             array_keys(self::CHECKBOX_TWIG_LIST)
         )) ? $wiki->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
             self::CHECKBOX_DISPLAY_MODE_LIST;
-        $this->dragAndDropDisplayMode = '@bazar/inputs/checkbox_drag_and_drop_entry.twig';
+        $this->dragAndDropDisplayMode = '@core/inputs/checkbox_drag_and_drop_entry.twig';
 
         $this->isDistantJson = filter_var($this->name, FILTER_VALIDATE_URL);
 
@@ -61,7 +61,7 @@ class CheckboxEntryField extends CheckboxField
             }
         }
 
-        return (count($values) > 0) ? $this->render('@bazar/fields/checkboxentry.twig', [
+        return (count($values) > 0) ? $this->render('@core/fields/checkboxentry.twig', [
             'values' => $values,
         ]) : '';
     }

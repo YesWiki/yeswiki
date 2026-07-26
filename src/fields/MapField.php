@@ -173,7 +173,7 @@ class MapField extends BazarField
     {
         $mapFieldData = $this->getMapFieldData($entry);
 
-        return $this->render('@bazar/inputs/map.twig', [
+        return $this->render('@core/inputs/map.twig', [
             'latitude' => $mapFieldData['latitude'],
             'longitude' => $mapFieldData['longitude'],
             'geometries' => $mapFieldData['geometries'],
@@ -242,7 +242,7 @@ class MapField extends BazarField
         ) {
             $mapFieldData = $this->getMapFieldData($entry);
             if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries'])) {
-                $output .= $this->render('@bazar/fields/map.twig', [
+                $output .= $this->render('@core/fields/map.twig', [
                     'tag' => $entry['id_fiche'],
                     'mapFieldData' => $mapFieldData,
                 ]);

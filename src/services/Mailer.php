@@ -56,7 +56,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-admins-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
                 'entry' => $data,
                 'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['id_fiche'], '', true, $userName),
                 'baseUrl' => $baseUrl,
@@ -88,7 +88,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-admins-list-deleted-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
                 'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
                 'userName' => $this->wiki->GetUserName(),
                 'baseUrl' => $baseUrl,
@@ -185,7 +185,7 @@ class Mailer
         $html = $this->templateEngine->render(
             '@core/notify-email-html.twig',
             [
-                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/tools/bazar/presentation/styles/bazar.css'),
+                'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
                 'entry' => $data,
                 'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['id_fiche'], '', true, $userName),
                 'baseUrl' => $baseUrl,

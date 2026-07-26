@@ -1,4 +1,4 @@
-import SpinnerLoader from '../../tools/bazar/presentation/javascripts/components/SpinnerLoader.js'
+import SpinnerLoader from '../components/SpinnerLoader.js'
 
 const { createApp } = Vue
 

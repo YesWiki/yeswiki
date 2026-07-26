@@ -1,0 +1,11 @@
+{% extends "@core/fields/checkbox.twig" %}
+
+{% block value_item -%}
+	<a href="{{ value.href|e ~ '/iframe' }}"
+			{{ not isInIframe ? 'class="modalbox" data-size="modal-lg"' : '' }}
+			{{ field.isDistantJson and not isInIframe ? 'data-iframe="1"' }}
+			data-header="false" data-iframe="1"
+		 	title="{{ _t('BAZ_SEE_ENTRY') }} {{ value.value|striptags }}">
+	{{- value.value|raw -}}
+	</a>
+{%- endblock %}

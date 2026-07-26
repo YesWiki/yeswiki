@@ -53,7 +53,7 @@ class ListController extends YesWikiController
             $lists[$key]['options'] = $field->getOptions();
         }
 
-        return $this->render('@bazar/lists/list_table.twig', [
+        return $this->render('@core/lists/list_table.twig', [
             'lists' => $lists,
             'loggedUser' => $this->authController->getLoggedUser(),
             'canCreate' => !$this->hibernationService->isWikiHibernated(),
@@ -78,7 +78,7 @@ class ListController extends YesWikiController
             );
         }
 
-        return $this->render('@bazar/lists/list_form.twig', [
+        return $this->render('@core/lists/list_form.twig', [
             'list' => ['title' => '', 'nodes' => []],
         ]);
     }
@@ -111,7 +111,7 @@ class ListController extends YesWikiController
             }
         }
 
-        return $this->render('@bazar/lists/list_form.twig', [
+        return $this->render('@core/lists/list_form.twig', [
             'list' => $list,
         ]);
     }

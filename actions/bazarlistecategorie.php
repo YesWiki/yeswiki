@@ -10,7 +10,7 @@ use YesWiki\Core\Service\TemplateEngine;
 
 $entryManager = $this->services->get(EntryManager::class);
 
-$this->AddJavascriptFile('tools/bazar/presentation/javascripts/bazar.js', true, true);
+$this->AddJavascriptFile('javascripts/bazar.js', true, true);
 
 // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
 if (!function_exists('champCompare')) {
@@ -35,7 +35,7 @@ if (empty($GLOBALS['ordre'])) {
 }
 
 $template = $this->GetParameter('template');
-$template = $this->services->get(TemplateEngine::class)->hasTemplate("@bazar/$template") ? $template : '';
+$template = $this->services->get(TemplateEngine::class)->hasTemplate("@core/$template") ? $template : '';
 if (empty($template)) {
     $template = $GLOBALS['wiki']->config['default_bazar_template'];
 }
@@ -101,7 +101,7 @@ if (empty($list)) {
         if ($currentlabel !== $fiche[$id]) {
             if (!$first) {
                 if (is_array($fichescat) && count($fichescat) > 0) {
-                    $output .= $this->render("@bazar/$template", $fichescat);
+                    $output .= $this->render("@core/$template", $fichescat);
                 }
                 // it's not the first time in the loop so we must close previously opened div
                 $output .= '</div>' . "\n";
@@ -124,7 +124,7 @@ if (empty($list)) {
     }
     // last results
     if (is_array($fichescat) && count($fichescat) > 0) {
-        $output .= $this->render("@bazar/$template", $fichescat);
+        $output .= $this->render("@core/$template", $fichescat);
     }
     // it's not the first time in the loop so we must close previously opened div
     $output .= '</div>' . "\n";

@@ -67,7 +67,7 @@ class TagsField extends EnumField
 
         $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/bootstrap-tagsinput.min.js');
 
-        return $this->render('@bazar/inputs/tags.twig', [
+        return $this->render('@core/inputs/tags.twig', [
             'value' => $value,
             'allTags' => $allTags,
         ]);
@@ -110,7 +110,7 @@ class TagsField extends EnumField
                 return '<a class="tag-label label label-info" href="' . $GLOBALS['wiki']->href('listpages', $GLOBALS['wiki']->GetPageTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
-            return $this->render('@bazar/fields/tags.twig', [
+            return $this->render('@core/fields/tags.twig', [
                 'value' => join(' ', $tags) ?? '',
             ]);
         }

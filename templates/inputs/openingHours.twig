@@ -1,0 +1,5 @@
+{{ include_javascript(config.debug ? 'javascripts/vendor/vue/vue.js' : 'javascripts/vendor/vue/vue.min.js', true) }}
+
+{{ include_javascript('javascripts/inputs/opening_hours.js', false, true) }}
+{{ include_css('styles/bazar/opening_hours.css') }}
+<opening-hours-create data-openingHours="{{ opening_hours }}" data-field="{{ field | json_encode }}"></opening-hours-create>

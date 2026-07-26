@@ -9,7 +9,7 @@ class OpeningHoursField extends BazarField
 {
     protected function renderInput($entry)
     {
-        return $this->render('@bazar/inputs/openingHours.twig', [
+        return $this->render('@core/inputs/openingHours.twig', [
             'opening_hours' => $this->getValue($entry) ?? '',
             'title' => $this->getLabel(),
         ]);
@@ -24,11 +24,11 @@ class OpeningHoursField extends BazarField
 
         $GLOBALS['wiki']->addJavascriptFile('javascripts/vendor/vue/vue.js');
         $GLOBALS['wiki']->addJavascriptFile('javascripts/vendor/opening_hours/opening_hours.js');
-        $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/fields/opening_hours.js');
-        $GLOBALS['wiki']->addJavascriptFile('tools/bazar/presentation/javascripts/vueapp.js');
-        $GLOBALS['wiki']->AddCSSFile('tools/bazar/presentation/styles/opening_hours.css');
+        $GLOBALS['wiki']->addJavascriptFile('javascripts/fields/opening_hours.js');
+        $GLOBALS['wiki']->addJavascriptFile('javascripts/vueapp.js');
+        $GLOBALS['wiki']->AddCSSFile('styles/bazar/opening_hours.css');
 
-        return $this->render('@bazar/fields/openingHours.twig', [
+        return $this->render('@core/fields/openingHours.twig', [
             'opening_hours' => $value,
             'title' => $this->getLabel(),
         ]);

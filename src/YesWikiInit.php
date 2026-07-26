@@ -427,9 +427,11 @@ class Init
             'baz_menu' => 'formulaire,consulter,saisir,listes,importer,exporter',
             'BAZ_ENVOI_MAIL_ADMIN' => false,
             'BAZ_ADRESSE_MAIL_ADMIN' => 'noreply@%mail_domain%',
-            // TODO(ticket 24 checkpoint 2): update once the legacy liste_accordeon.tpl.html
-            // display mode is either converted or dropped alongside the other legacy
-            // tools/bazar/presentation/templates/*.tpl.html display modes.
+            // liste_accordeon.tpl.html and its sibling legacy display modes (agenda, blog,
+            // carousel, damier, gogocarto, tableau, timeline, trombinoscope, etc.) are NOT
+            // dead: the actions-builder wizard's bazarliste/bazaragenda/bazartableau/...
+            // entries (docs/actions/bazarliste.yaml and friends) still default-select these
+            // exact template names, so they're relocated as-is rather than dropped.
             'default_bazar_template' => 'liste_accordeon.tpl.html',
             'baz_semantic_types_mapping' => [
                 'https://www.w3.org/ns/activitystreams' => 'activitystreams',
@@ -472,8 +474,12 @@ class Init
             'baz_map_height' => '600px',
             'baz_show_nav' => 'true',
             'baz_wheel_zoom' => 'false',
-            // TODO(ticket 24 checkpoint 2): update once tools/bazar/presentation/images/ is relocated.
-            'baz_marker_image_file' => 'tools/bazar/presentation/images/marker.png',
+            // marker.png itself has never actually existed anywhere in the repo -- a
+            // pre-existing gap, not introduced by this relocation. The default marker
+            // rendering (baz_marker_icon/baz_marker_icon_prefix) is a FontAwesome icon,
+            // not an image file; this key is only consulted if an admin opts into a
+            // custom marker image.
+            'baz_marker_image_file' => 'images/bazar/marker.png',
             'baz_external_service' => [
                 'cache_time_to_check_changes' => 60, // seconds
                 'cache_time_to_check_deletion' => 86400, // seconds (1 day)

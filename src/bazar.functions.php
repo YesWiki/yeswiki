@@ -8,7 +8,11 @@
 // same unconditional, always-available guarantee holds without depending on an 'bazar'
 // entry in $wiki->extensions.
 //
-// BAZ_CHEMIN ('tools/bazar/', used nowhere else) was dropped: confirmed dead. Every other
+// BAZ_CHEMIN ('tools/bazar/') was dropped here -- but it turned out NOT to be dead: an
+// initial grep only covering src/actions/handlers missed src/vendor/Pager/*.php (the PEAR
+// pagination library BazarListeAction uses), whose require_once/classfile-loading logic
+// depended on this exact constant. Fixed at the point of discovery by switching those
+// files to __DIR__-relative paths instead of resurrecting the constant here. Every other
 // constant and function below has at least one real caller elsewhere in core.
 
 use function Symfony\Component\String\u;

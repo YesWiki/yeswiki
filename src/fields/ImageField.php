@@ -64,7 +64,7 @@ class ImageField extends FileField
         $isUrl = $this->isUrl($value);
         // javascript pour gerer la previsualisation
         // si une taille maximale est indiquée, on teste
-        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/image-field.js');
+        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/image-field.js');
         $imgDefault = $this->getDefaultImageName($entry);
 
         // Handle URL value
@@ -79,7 +79,7 @@ class ImageField extends FileField
                     ]);
 
                     // Return empty input after deletion
-                    return $output . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
+                    return $output . $this->render('@core/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
                 }
                 $output = $this->render('@core/alert-message.twig', [
                     'type' => 'info',
@@ -87,7 +87,7 @@ class ImageField extends FileField
                 ]) . "\n";
             }
 
-            return $output . $this->render('@bazar/inputs/image.twig', [
+            return $output . $this->render('@core/inputs/image.twig', [
                 'value' => $value,
                 'isUrl' => true,
                 'downloadUrl' => $value,
@@ -126,7 +126,7 @@ class ImageField extends FileField
             ) {
                 $img = $value ? $value : $imgDefault;
 
-                return $output . ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', [
+                return $output . ($alertMessage ?? '') . $this->render('@core/inputs/image.twig', [
                     'value' => $img,
                     'isUrl' => false,
                     'downloadUrl' => $this->getBasePath() . $img,
@@ -155,7 +155,7 @@ class ImageField extends FileField
             ]);
         }
 
-        return ($alertMessage ?? '') . $this->render('@bazar/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
+        return ($alertMessage ?? '') . $this->render('@core/inputs/image.twig', ['maxSize' => $this->maxSize, 'isUrl' => false]);
     }
 
     /*

@@ -86,7 +86,7 @@ class EntryController extends YesWikiController
             $forms = $this->formManager->getMany($formsIds);
         }
 
-        return $this->render('@bazar/entries/select_form.twig', ['forms' => $forms]);
+        return $this->render('@core/entries/select_form.twig', ['forms' => $forms]);
     }
 
     /**
@@ -150,7 +150,7 @@ class EntryController extends YesWikiController
             if (is_null($renderedEntry) && !empty($customTemplateValues['html']['semantic'])) {
                 $customTemplatePath = $this->getCustomSemanticTemplatePath($customTemplateValues['html']['semantic']);
                 if ($customTemplatePath) {
-                    $renderedEntry = $this->render("@bazar/$customTemplatePath", $customTemplateValues);
+                    $renderedEntry = $this->render("@core/$customTemplatePath", $customTemplateValues);
                 }
             }
             // if not found, use default template
@@ -227,7 +227,7 @@ class EntryController extends YesWikiController
 
         $sourceUrl = $this->tripleStore->getOne($entryId, TripleStore::SOURCE_URL_URI, '', '');
 
-        return $this->render('@bazar/entries/view.twig', [
+        return $this->render('@core/entries/view.twig', [
             'form' => $pLocalForm,
             'externalForm' => $pExternalForm,
             'entry' => $entry,
@@ -328,7 +328,7 @@ class EntryController extends YesWikiController
 
         $renderedInputs = $this->getRenderedInputs($form);
 
-        return $this->render('@bazar/entries/form.twig', [
+        return $this->render('@core/entries/form.twig', [
             'form' => $form,
             'renderedInputs' => $renderedInputs,
             'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
@@ -384,7 +384,7 @@ class EntryController extends YesWikiController
 
         $renderedInputs = $this->getRenderedInputs($form, $entry);
 
-        return $this->render('@bazar/entries/form.twig', [
+        return $this->render('@core/entries/form.twig', [
             'form' => $form,
             'entryId' => $entryId,
             'renderedInputs' => $renderedInputs,
@@ -453,8 +453,8 @@ class EntryController extends YesWikiController
     private function getCustomTemplatePath($entry): ?string
     {
         $templatePaths = [
-            "@bazar/fiche-{$entry['id_typeannonce']}.tpl.html",
-            "@bazar/fiche-{$entry['id_typeannonce']}.twig",
+            "@core/fiche-{$entry['id_typeannonce']}.tpl.html",
+            "@core/fiche-{$entry['id_typeannonce']}.twig",
         ];
         foreach ($templatePaths as $templatePath) {
             if ($this->getService(TemplateEngine::class)->hasTemplate($templatePath)) {

@@ -72,7 +72,7 @@ class FileField extends BazarField
         $value = $this->getValue($entry);
         $deletedFile = false;
         $isUrl = $this->isUrl($value);
-        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('tools/bazar/presentation/javascripts/inputs/file-field.js');
+        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/file-field.js');
 
         if (!empty($value) && !$isUrl) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
@@ -95,7 +95,7 @@ class FileField extends BazarField
         }
 
         return ($alertMessage ?? '') . $this->render(
-            '@bazar/inputs/file.twig',
+            '@core/inputs/file.twig',
             empty($value) || !file_exists($this->getBasePath() . $value) || $deletedFile
             ? [
                 'maxSize' => $this->maxSize,
@@ -187,7 +187,7 @@ class FileField extends BazarField
 
         // Handle URL value
         if ($this->isUrl($value)) {
-            return $this->render('@bazar/fields/file.twig', [
+            return $this->render('@core/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => $value,
                 'shortFileName' => basename(parse_url($value, PHP_URL_PATH)) ?: $value,
@@ -199,7 +199,7 @@ class FileField extends BazarField
         if (!empty($value) && file_exists($basePath . $value)) {
             $shortFileName = $this->getShortFileName($value);
 
-            return $this->render('@bazar/fields/file.twig', [
+            return $this->render('@core/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
                     ? $this->getWiki()->getBaseUrl() . '/' . $basePath . $value

@@ -20,7 +20,7 @@ class CheckboxListField extends CheckboxField
         $this->formName = _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST') . ' ' . $this->name;
         $this->normalDisplayMode = (in_array($this->services->get(Wiki::class)->config['BAZ_MAX_CHECKBOXLIST_DISPLAY_MODE'], array_keys(self::CHECKBOX_TWIG_LIST))) ?
             $this->services->get(Wiki::class)->config['BAZ_MAX_CHECKBOXLIST_DISPLAY_MODE'] : self::CHECKBOX_DISPLAY_MODE_DIV;
-        $this->dragAndDropDisplayMode = '@bazar/inputs/checkbox_drag_and_drop.twig';
+        $this->dragAndDropDisplayMode = '@core/inputs/checkbox_drag_and_drop.twig';
     }
 
     protected function renderStatic($entry)
@@ -34,7 +34,7 @@ class CheckboxListField extends CheckboxField
 
         // List with multi levels
         if ($this->optionsTree) {
-            return $this->render('@bazar/fields/checkbox-tree.twig', [
+            return $this->render('@core/fields/checkbox-tree.twig', [
                 'treeValues' => $this->filterTree($this->optionsTree, $keys),
             ]);
         }
@@ -46,7 +46,7 @@ class CheckboxListField extends CheckboxField
             }
         }
 
-        return $this->render('@bazar/fields/checkbox.twig', [
+        return $this->render('@core/fields/checkbox.twig', [
             'values' => $values,
         ]);
     }
