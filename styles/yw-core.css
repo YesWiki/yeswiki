@@ -212,6 +212,54 @@ textarea.yw-input {
   padding: 12px 16px;
   border-top: 1px solid var(--neutral-light-color, #eee);
 }
+/* Remote-load modal (ticket 16): loading indicator shown while the fetch is in flight,
+   and the iframe variant used for [data-yw-modal-iframe] openers. */
+.yw-modal__loading {
+  display: block;
+  width: 56px;
+  height: 16px;
+  margin: 0 auto;
+  background:
+    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 0% 50%,
+    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 50%
+      50%,
+    radial-gradient(circle closest-side, var(--primary-color) 90%, #0000) 100%
+      50%;
+  background-size: calc(100% / 3) 13.4px;
+  background-repeat: no-repeat;
+  animation: yw-modal-loading-dots 1s infinite linear;
+}
+@keyframes yw-modal-loading-dots {
+  20% {
+    background-position:
+      0% 0%,
+      50% 50%,
+      100% 50%;
+  }
+  40% {
+    background-position:
+      0% 100%,
+      50% 0%,
+      100% 50%;
+  }
+  60% {
+    background-position:
+      0% 50%,
+      50% 100%,
+      100% 0%;
+  }
+  80% {
+    background-position:
+      0% 50%,
+      50% 50%,
+      100% 100%;
+  }
+}
+.yw-modal__iframe {
+  width: 100%;
+  height: 70vh;
+  border: 0;
+}
 
 /* ---- Table -------------------------------------------------- */
 .yw-table {
@@ -233,6 +281,43 @@ textarea.yw-input {
 }
 .yw-table--hover tbody tr:hover {
   background: #eef6f7;
+}
+
+/* ---- Datatable (ticket 16: replaces jQuery DataTables — vanilla sort/search/paginate) ---- */
+.yw-datatable__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+.yw-datatable__search {
+  max-width: 240px;
+}
+table[data-yw-datatable] th[data-yw-sort] {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+table[data-yw-datatable] th[data-yw-sort]::after {
+  content: '\2195';
+  margin-left: 4px;
+  opacity: 0.35;
+}
+table[data-yw-datatable] th[data-yw-sort='asc']::after {
+  content: '\2191';
+  opacity: 1;
+}
+table[data-yw-datatable] th[data-yw-sort='desc']::after {
+  content: '\2193';
+  opacity: 1;
+}
+.yw-datatable__empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--neutral-soft-color);
+}
+.yw-datatable__pagination {
+  margin-top: 8px;
+  justify-content: center;
 }
 
 /* ---- Pagination ----------------------------------------------- */
@@ -558,6 +643,67 @@ textarea.yw-input {
 }
 .yw-breadcrumb__active {
   color: var(--neutral-soft-color);
+}
+
+/* ---- Tooltip (ticket 16: replaces Bootstrap's data-toggle="tooltip", pure CSS, no JS) ---- */
+[data-yw-tooltip] {
+  position: relative;
+}
+[data-yw-tooltip]::after,
+[data-yw-tooltip]::before {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  transform: translateX(-50%);
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+  z-index: 20;
+}
+[data-yw-tooltip]::after {
+  content: attr(data-yw-tooltip);
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  max-width: 240px;
+  width: max-content;
+  white-space: pre-line;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.4;
+  color: #fff;
+  background: var(--neutral-color, #333);
+  border-radius: 4px;
+}
+[data-yw-tooltip]::before {
+  content: '';
+  margin-bottom: 1px;
+  border: 5px solid transparent;
+  border-top-color: var(--neutral-color, #333);
+}
+[data-yw-tooltip]:hover::after,
+[data-yw-tooltip]:hover::before,
+[data-yw-tooltip]:focus-visible::after,
+[data-yw-tooltip]:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+}
+/* [data-yw-tooltip-placement="bottom"]: flip below the element instead of above */
+[data-yw-tooltip-placement='bottom']::after,
+[data-yw-tooltip-placement='bottom']::before {
+  top: 100%;
+  bottom: auto;
+  transform: translateX(-50%);
+}
+[data-yw-tooltip-placement='bottom']::after {
+  margin-bottom: 0;
+  margin-top: 6px;
+}
+[data-yw-tooltip-placement='bottom']::before {
+  margin-bottom: 0;
+  margin-top: 1px;
+  border-top-color: transparent;
+  border-bottom-color: var(--neutral-color, #333);
 }
 
 /* ---- TOC (ticket 13: replaces tools/toc's jQuery scrollspy/animate follow-scroll script) ---- */

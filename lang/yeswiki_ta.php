@@ -1907,4 +1907,6 @@ return [
     'LIST_ERROR_MISSING_IDS' => 'சில மதிப்புகளில் தொடர்புடைய விசை இல்லை',
     'LIST_ERROR_DUPLICATES_IDS' => 'ஒவ்வொரு விசையும் தனித்துவமாக இருக்க வேண்டும். இந்த விசைகள் பல முறை பயன்படுத்தப்படுகின்றன: ',
 
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'தேடு...',
+    'DATATABLE_NO_RESULTS' => 'பொருந்தும் முடிவுகள் இல்லை',
 ];

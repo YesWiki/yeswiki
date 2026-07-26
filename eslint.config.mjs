@@ -43,6 +43,7 @@ export default defineConfig([globalIgnores([
       ...globals.jquery,
       wiki: 'writable',
       Vue: 'readable',
+      Sortable: 'readable',
       _t: 'readable',
       ace: 'writable',
       toastMessage: 'readable',

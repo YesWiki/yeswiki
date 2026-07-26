@@ -1989,4 +1989,6 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'LIST_ERROR_MISSING_IDS' => 'Balio batzuek ez dute gakorik lotuta',
     'LIST_ERROR_DUPLICATES_IDS' => 'Gako bakoitzak bakarra izan behar du. Gako hauek behin baino gehiagotan erabiltzen dira: ',
 
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Bilatu...',
+    'DATATABLE_NO_RESULTS' => 'Ez da emaitzarik aurkitu',
 ];

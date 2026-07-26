@@ -2,6 +2,14 @@
 // yw-*/htmx pattern). No jQuery, no bootstrap-tagsinput. The search <input>'s
 // hx-get drives the live query; this file only renders the JSON response and
 // manages the chip list + hidden `pagetags` value htmx doesn't know about.
+//
+// Ticket 16 adds a second, "closed" mode for replacing bootstrap-tagsinput call
+// sites that pick from a fixed local option list instead of a live server query:
+// a widget with [data-yw-tag-input-options='{"id":"label", ...}'] filters
+// suggestions from that local map (re-read on every keystroke, so a caller can
+// swap the map at runtime just by updating the attribute -- no re-init needed).
+// [data-yw-tag-input-closed] additionally restricts tags to that option list
+// (no free-typed tags). [data-yw-tag-input-max="1"] caps the number of tags.
 (function() {
   function widgetOf(el) {
     return el.closest('[data-yw-tag-input]')
@@ -25,15 +33,33 @@
     }
   }
 
-  function addTag(widget, rawTag) {
-    const tag = rawTag.trim()
-    if (!tag || currentTags(widget).includes(tag)) return
+  function staticOptions(widget) {
+    const raw = widget.getAttribute('data-yw-tag-input-options')
+    if (!raw) return null
+    try {
+      return JSON.parse(raw)
+    } catch {
+      return null
+    }
+  }
+
+  function maxTagsReached(widget) {
+    const max = parseInt(widget.getAttribute('data-yw-tag-input-max'), 10)
+    return Number.isInteger(max) && max > 0 && currentTags(widget).length >= max
+  }
+
+  function addTag(widget, id, label) {
+    const tag = (id || '').trim()
+    if (!tag || currentTags(widget).includes(tag) || maxTagsReached(widget)) return
+
+    const options = staticOptions(widget)
+    if (widget.hasAttribute('data-yw-tag-input-closed') && options && !(tag in options)) return
 
     const chip = document.createElement('span')
     chip.className = 'yw-tag-input__chip'
     chip.setAttribute('data-yw-tag-input-chip', '')
     chip.dataset.tag = tag
-    chip.textContent = tag
+    chip.textContent = label || tag
 
     const remove = document.createElement('button')
     remove.type = 'button'
@@ -47,11 +73,43 @@
     syncValue(widget)
   }
 
+  function renderStaticSuggestions(widget, input) {
+    const list = widget.querySelector('[data-yw-tag-input-suggestions]')
+    const options = staticOptions(widget)
+    if (!list || !options) return
+
+    const needle = input.value.trim().toLowerCase()
+    const existing = currentTags(widget)
+    const matches = Object.entries(options).filter(([id, label]) => {
+      if (existing.includes(id)) return false
+      return !needle || String(label).toLowerCase().includes(needle)
+    })
+
+    list.innerHTML = ''
+    if (!matches.length) {
+      list.hidden = true
+      return
+    }
+    matches.forEach(([id, label]) => {
+      const item = document.createElement('li')
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.setAttribute('data-yw-tag-input-suggestion', '')
+      button.dataset.id = id
+      button.textContent = label
+      item.appendChild(button)
+      list.appendChild(item)
+    })
+    list.hidden = false
+  }
+
   document.addEventListener('htmx:afterRequest', (e) => {
     const input = e.target.closest('[data-yw-tag-input-search]')
     if (!input || !e.detail.successful) return
 
     const widget = widgetOf(input)
+    if (staticOptions(widget)) return // this widget is in local/static mode, not htmx-driven
+
     const list = widget.querySelector('[data-yw-tag-input-suggestions]')
     if (!list) return
 
@@ -81,11 +139,25 @@
     list.hidden = false
   })
 
+  document.addEventListener('input', (e) => {
+    const input = e.target.closest('[data-yw-tag-input-search]')
+    if (!input) return
+    const widget = widgetOf(input)
+    if (staticOptions(widget)) renderStaticSuggestions(widget, input)
+  })
+
+  document.addEventListener('focus', (e) => {
+    const input = e.target.closest && e.target.closest('[data-yw-tag-input-search]')
+    if (!input) return
+    const widget = widgetOf(input)
+    if (staticOptions(widget)) renderStaticSuggestions(widget, input)
+  }, true)
+
   document.addEventListener('click', (e) => {
     const suggestion = e.target.closest('[data-yw-tag-input-suggestion]')
     if (suggestion) {
       const widget = widgetOf(suggestion)
-      addTag(widget, suggestion.textContent)
+      addTag(widget, suggestion.dataset.id || suggestion.textContent, suggestion.textContent)
       const search = widget.querySelector('[data-yw-tag-input-search]')
       search.value = ''
       search.focus()
@@ -109,15 +181,24 @@
   document.addEventListener('keydown', (e) => {
     const input = e.target.closest('[data-yw-tag-input-search]')
     if (!input) return
+    const widget = widgetOf(input)
+    const options = staticOptions(widget)
 
-    if (e.key === 'Enter' || e.key === ',' || e.key === ';') {
+    if (e.key === 'Enter' || (!options && (e.key === ',' || e.key === ';'))) {
       e.preventDefault()
-      const widget = widgetOf(input)
-      addTag(widget, input.value.replace(/[,;]$/, ''))
+      if (options) {
+        const list = widget.querySelector('[data-yw-tag-input-suggestions]')
+        const firstSuggestion = list && list.querySelector('[data-yw-tag-input-suggestion]')
+        if (firstSuggestion) {
+          addTag(widget, firstSuggestion.dataset.id, firstSuggestion.textContent)
+        }
+      } else {
+        addTag(widget, input.value.replace(/[,;]$/, ''))
+      }
       input.value = ''
       hideSuggestions(widget)
     } else if (e.key === 'Escape') {
-      hideSuggestions(widgetOf(input))
+      hideSuggestions(widget)
     }
   })
 }())

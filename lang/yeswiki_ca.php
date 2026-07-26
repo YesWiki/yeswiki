@@ -1664,4 +1664,6 @@ return [
     'BAZ_SORT_BY' => 'ordenar per',
     'BAZ_SORTED_BY' => 'Classificació',
 
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Cerca...',
+    'DATATABLE_NO_RESULTS' => 'Cap resultat',
 ];

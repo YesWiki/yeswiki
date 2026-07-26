@@ -1645,4 +1645,6 @@ return [
     'BAZ_CSV' => 'CSV',
     'EVENT_UP_TO_DATE' => 'Totdat:',
 
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Zoeken...',
+    'DATATABLE_NO_RESULTS' => 'Geen resultaten',
 ];

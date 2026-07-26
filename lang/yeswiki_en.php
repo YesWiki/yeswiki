@@ -2174,4 +2174,6 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'EDIT_TOOLTIP_SUBTEXT' => 'Click cancel to undo changes.',
     'REMOVE_TOOLTIP_TEXT' => 'Click on a feature to remove.',
 
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Search...',
+    'DATATABLE_NO_RESULTS' => 'No matching results',
 ];

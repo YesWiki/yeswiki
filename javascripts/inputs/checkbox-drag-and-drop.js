@@ -1,156 +1,201 @@
-$(document).ready(() => {
-  $('.yeswiki-checkbox').each(function() {
-    if ($(this).find('.list-entries-to-export .select-page-item').length < 1) {
-      $(this).find('.list-entries-to-export .empty-list').show()
+// javascripts/vendor/sortablejs/sortable.js needed
+document.addEventListener('DOMContentLoaded', () => {
+  function selectPageItem(element) {
+    Array.from(element.parentNode.children).forEach((sibling) => {
+      if (sibling === element) return
+      if (sibling.matches('.remove-page-item, .movable, .checkbox-icons-up-down')) {
+        sibling.classList.remove('hide')
+      }
+    })
+    const movableH = element.closest('.list-group-item').querySelector('.movable-h')
+    if (movableH) movableH.classList.add('hide')
+    element.classList.add('hide')
+    const checkbox = element.closest('.list-group-item')
+    if (checkbox) {
+      const yeswikiCheckbox = checkbox.closest('.yeswiki-checkbox')
+      const emptyList = yeswikiCheckbox.querySelector('ul.checkbox-selection-container .empty-list')
+      if (emptyList) emptyList.style.display = 'none'
+      const input = checkbox.querySelector('input')
+      if (input) input.checked = true
+    }
+  }
+
+  function updateAtSelect(root) {
+    const yeswikiCheckbox = root.closest('.yeswiki-checkbox')
+    if (yeswikiCheckbox.querySelectorAll('.list-entries-to-export .select-page-item').length < 1) {
+      const emptyList = yeswikiCheckbox.querySelector('.list-entries-to-export .empty-list')
+      if (emptyList) emptyList.style.display = ''
+    }
+    const filterInput = yeswikiCheckbox.querySelector('.checkbox-filter-input')
+    if (filterInput) filterInput.dispatchEvent(new Event('input'))
+  }
+
+  function removePageItem(element) {
+    Array.from(element.parentNode.children).forEach((sibling) => {
+      if (sibling === element) return
+      if (sibling.matches('.select-page-item')) sibling.classList.remove('hide')
+      if (sibling.matches('.movable, .checkbox-icons-up-down')) sibling.classList.add('hide')
+    })
+    const movableH = element.closest('.list-group-item').querySelector('.movable-h')
+    if (movableH) movableH.classList.remove('hide')
+    element.classList.add('hide')
+    const checkbox = element.closest('.list-group-item')
+    if (checkbox) {
+      const yeswikiCheckbox = checkbox.closest('.yeswiki-checkbox')
+      const emptyList = yeswikiCheckbox.querySelector('.list-entries-to-export .empty-list')
+      if (emptyList) emptyList.style.display = 'none'
+      const input = checkbox.querySelector('input')
+      if (input) input.checked = false
+    }
+  }
+
+  function updateAtRemove(root) {
+    const yeswikiCheckbox = root.closest('.yeswiki-checkbox')
+    const remainingSelector = '.checkbox-selection-container .select-page-item'
+    if (yeswikiCheckbox.querySelectorAll(remainingSelector).length < 1) {
+      const emptyList = yeswikiCheckbox.querySelector('.checkbox-selection-container .empty-list')
+      if (emptyList) emptyList.style.display = ''
+    }
+    const filterInput = yeswikiCheckbox.querySelector('.checkbox-filter-input')
+    if (filterInput) filterInput.dispatchEvent(new Event('input'))
+  }
+
+  document.querySelectorAll('.yeswiki-checkbox').forEach((container) => {
+    if (container.querySelectorAll('.list-entries-to-export .select-page-item').length < 1) {
+      const emptyList = container.querySelector('.list-entries-to-export .empty-list')
+      if (emptyList) emptyList.style.display = ''
     }
   })
 
-  $('ul.checkbox-selection-container').each(function() {
-    const text_id = `ul.list-entries-to-export.group-${$(this).data('group')}`
-    $(this).sortable({
-      connectWith: text_id,
-      receive(event, ui) {
-        $(this).find('.select-page-item').each(function() {
-          checkbox_dragndrop_select(this)
-          checkbox_dragndrop_update_at_select(this)
+  document.querySelectorAll('ul.checkbox-selection-container').forEach((list) => {
+    Sortable.create(list, {
+      group: `checkbox-dnd-${list.dataset.group}`,
+      filter: '.empty-list',
+      onAdd(evt) {
+        evt.item.querySelectorAll('.select-page-item').forEach((el) => {
+          selectPageItem(el)
+          updateAtSelect(el)
         })
-      },
-      cancel: '.empty-list'
+      }
     })
   })
 
-  $('ul.list-entries-to-export').each(function() {
-    const text_id = `ul.checkbox-selection-container.group-${$(this).data('group')}`
-    $(this).sortable({
-      connectWith: text_id,
-      receive(event, ui) {
-        $(this).find('.remove-page-item').each(function() {
-          checkbox_dragndrop_remove(this)
-          checkbox_dragndrop_update_at_remove(this)
+  document.querySelectorAll('ul.list-entries-to-export').forEach((list) => {
+    Sortable.create(list, {
+      group: `checkbox-dnd-${list.dataset.group}`,
+      filter: '.empty-list',
+      onAdd(evt) {
+        evt.item.querySelectorAll('.remove-page-item').forEach((el) => {
+          removePageItem(el)
+          updateAtRemove(el)
         })
-      },
-      cancel: '.empty-list'
+      }
     })
   })
 
-  $('.btn-erase-filter').on('click', function() {
-    $(this).parents('.input-group').find('.checkbox-filter-input').val('')
-      .keyup()
-  })
-
-  $('.checkbox-select-all').on('click', function(event) {
-    event.stopPropagation()
-    $(this).parents('.export-table-container').find('.list-entries-to-export .list-group-item').not(':hidden')
-      .find('.select-page-item')
-      .click()
-    return false
-  })
-  $('.checkbox-remove-all').on('click', function(event) {
-    event.stopPropagation()
-    $(this).parents('.import-table-container').find('ul.checkbox-selection-container .list-group-item').not(':hidden')
-      .find('.remove-page-item')
-      .click()
-    return false
-  })
-
-  function checkbox_dragndrop_select(element) {
-    $(element).siblings().filter('.remove-page-item').removeClass('hide')
-    $(element).siblings().filter('.movable').removeClass('hide')
-    $(element).siblings().filter('.checkbox-icons-up-down').removeClass('hide')
-    $(element).parent().find('.movable-h').addClass('hide')
-    $(element).addClass('hide')
-    $(element).parents('.yeswiki-checkbox').find('ul.checkbox-selection-container .empty-list').hide()
-    $(element).parent().find('input').prop('checked', true)
-  }
-
-  function checkbox_dragndrop_update_at_select(element) {
-    if ($(element).parents('.yeswiki-checkbox').find('.list-entries-to-export .select-page-item').length < 1) {
-      $(element).parents('.yeswiki-checkbox').find('.list-entries-to-export .empty-list').show()
-    }
-    $(element).parents('.yeswiki-checkbox').find('.checkbox-filter-input').keyup()
-  }
-
-  $('.select-page-item').on('click', function() {
-    const elem = this
-    const listitem = $(this).parent()
-    listitem.fadeOut('fast', function() {
-      checkbox_dragndrop_select(elem)
-      listitem.appendTo($(this).parents('.yeswiki-checkbox').find('ul.checkbox-selection-container')).fadeIn('fast')
-      checkbox_dragndrop_update_at_select(this)
+  document.querySelectorAll('.btn-erase-filter').forEach((button) => {
+    button.addEventListener('click', () => {
+      const input = button.closest('.input-group').querySelector('.checkbox-filter-input')
+      if (input) {
+        input.value = ''
+        input.dispatchEvent(new Event('input'))
+      }
     })
-    return false
   })
 
-  function checkbox_dragndrop_remove(element) {
-    $(element).siblings().filter('.select-page-item').removeClass('hide')
-    $(element).siblings().filter('.movable').addClass('hide')
-    $(element).siblings().filter('.checkbox-icons-up-down').addClass('hide')
-    $(element).parent().find('.movable-h').removeClass('hide')
-    $(element).addClass('hide')
-    $(element).parents('.yeswiki-checkbox').find('.list-entries-to-export .empty-list').hide()
-    $(element).parent().find('input').prop('checked', false)
-  }
-
-  function checkbox_dragndrop_update_at_remove(element) {
-    if ($(element).parents('.yeswiki-checkbox').find('.checkbox-selection-container .select-page-item').length < 1) {
-      $(element).parents('.yeswiki-checkbox').find('.checkbox-selection-container .empty-list').show()
-    }
-    $(element).parents('.yeswiki-checkbox').find('.checkbox-filter-input').keyup()
-  }
-
-  $('.remove-page-item').on('click', function() {
-    const elem = this
-    const listitem = $(this).parent()
-    listitem.fadeOut('fast', function() {
-      checkbox_dragndrop_remove(elem)
-      listitem.prependTo($(this).parents('.yeswiki-checkbox').find('ul.list-entries-to-export')).fadeIn('fast')
-      checkbox_dragndrop_update_at_remove(this)
+  document.querySelectorAll('.checkbox-select-all').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation()
+      const items = button.closest('.export-table-container')
+        .querySelectorAll('.list-entries-to-export .list-group-item')
+      items.forEach((item) => {
+        if (item.offsetParent === null) return // matches jQuery's :hidden exclusion
+        const selectItem = item.querySelector('.select-page-item')
+        if (selectItem) selectItem.click()
+      })
+      return false
     })
-    return false
   })
 
-  $('.checkbox-icons-up').on('click', function() {
-    const elem_to_move = $(this).parents('.list-group-item')
-    if (elem_to_move.prev('.empty-list').length > 0) {
-      elem_to_move.prev().prev().before(elem_to_move)
-    } else {
-      elem_to_move.prev().before(elem_to_move)
-    }
+  document.querySelectorAll('.checkbox-remove-all').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation()
+      const items = button.closest('.import-table-container')
+        .querySelectorAll('ul.checkbox-selection-container .list-group-item')
+      items.forEach((item) => {
+        if (item.offsetParent === null) return // matches jQuery's :hidden exclusion
+        const removeItem = item.querySelector('.remove-page-item')
+        if (removeItem) removeItem.click()
+      })
+      return false
+    })
   })
 
-  $('.checkbox-icons-down').on('click', function() {
-    const elem_to_move = $(this).parents('.list-group-item')
-    if (elem_to_move.next('.empty-list').length > 0) {
-      elem_to_move.next().next().after(elem_to_move)
-    } else {
-      elem_to_move.next().after(elem_to_move)
-    }
+  document.querySelectorAll('.select-page-item').forEach((element) => {
+    element.addEventListener('click', () => {
+      const listitem = element.parentNode
+      const yeswikiCheckbox = listitem.closest('.yeswiki-checkbox')
+      const target = yeswikiCheckbox.querySelector('ul.checkbox-selection-container')
+      selectPageItem(element)
+      target.appendChild(listitem)
+      updateAtSelect(element)
+      return false
+    })
   })
 
-  for (const filter of document.getElementsByClassName('checkbox-filter-input')) {
-    filter.onkeypress = function() {
-      // Retrieve the input field text and reset the count to zero
+  document.querySelectorAll('.remove-page-item').forEach((element) => {
+    element.addEventListener('click', () => {
+      const listitem = element.parentNode
+      const target = listitem.closest('.yeswiki-checkbox').querySelector('ul.list-entries-to-export')
+      removePageItem(element)
+      target.insertBefore(listitem, target.firstChild)
+      updateAtRemove(element)
+      return false
+    })
+  })
+
+  document.querySelectorAll('.checkbox-icons-up').forEach((button) => {
+    button.addEventListener('click', () => {
+      const elemToMove = button.closest('.list-group-item')
+      const prev = elemToMove.previousElementSibling
+      if (prev && prev.matches('.empty-list')) {
+        const beforePrev = prev.previousElementSibling
+        if (beforePrev) beforePrev.parentNode.insertBefore(elemToMove, beforePrev)
+      } else if (prev) {
+        prev.parentNode.insertBefore(elemToMove, prev)
+      }
+    })
+  })
+
+  document.querySelectorAll('.checkbox-icons-down').forEach((button) => {
+    button.addEventListener('click', () => {
+      const elemToMove = button.closest('.list-group-item')
+      const next = elemToMove.nextElementSibling
+      if (next && next.matches('.empty-list')) {
+        const afterNext = next.nextElementSibling
+        if (afterNext) afterNext.parentNode.insertBefore(elemToMove, afterNext.nextSibling)
+      } else if (next) {
+        next.parentNode.insertBefore(elemToMove, next.nextSibling)
+      }
+    })
+  })
+
+  document.querySelectorAll('.checkbox-filter-input').forEach((filter) => {
+    filter.addEventListener('input', () => {
       let count = 0
-
-      // TODO get filter depend on id instead of getting global
-
-      // Loop through the comment list
-      $(this).parents('.export-table-container').find('.list-group-item').not('.empty-list')
-        .each(function() {
-          // If the list item does not contain the text phrase fade it out
-          if ($(this).text().search(new RegExp(filter.value, 'i')) < 0) {
-            $(this).hide()
-
-            // Show the list item if the phrase matches and increase the count by 1
-          } else {
-            $(this).show()
-            count++
-          }
-        })
-
-      // Update the count
-      const numberItems = count
-      $(this).parents('.export-table-container').find('.checkbox-filter-count').text(count)
-    }
-  }
+      const items = filter.closest('.export-table-container')
+        .querySelectorAll('.list-group-item:not(.empty-list)')
+      items.forEach((rawItem) => {
+        const item = rawItem
+        if (item.textContent.search(new RegExp(filter.value, 'i')) < 0) {
+          item.style.display = 'none'
+        } else {
+          item.style.display = ''
+          count += 1
+        }
+      })
+      const counter = filter.closest('.export-table-container').querySelector('.checkbox-filter-count')
+      if (counter) counter.textContent = count
+    })
+  })
 })

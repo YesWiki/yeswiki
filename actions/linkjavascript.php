@@ -68,6 +68,7 @@ if (!$yeswikijs) {
 // core interactions can rely on them without each surface opting in itself
 $this->addJavascriptFile('javascripts/vendor/htmx/htmx.min.js');
 $this->addJavascriptFile('javascripts/yw-core.js');
+$this->addJavascriptFile('javascripts/yw-datatable.js');
 
 // ajoute la méthode pour les traductions js
 $this->addJavascriptFile('javascripts/yeswiki-base-no-defer.js', true);

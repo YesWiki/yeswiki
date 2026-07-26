@@ -1997,4 +1997,6 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
   - un câmp url (în mod implicit "bf_url"){br}
   - un câmp text lung (în mod implicit "bf_description")',
 
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Căutare...',
+    'DATATABLE_NO_RESULTS' => 'Niciun rezultat',
 ];

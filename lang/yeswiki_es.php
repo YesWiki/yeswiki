@@ -1945,4 +1945,6 @@ return [
     'LIST_ERROR_MISSING_IDS' => '',
     'LIST_ERROR_DUPLICATES_IDS' => '',
 
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Buscar...',
+    'DATATABLE_NO_RESULTS' => 'Sin resultados',
 ];

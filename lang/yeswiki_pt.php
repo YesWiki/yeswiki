@@ -1663,4 +1663,6 @@ return [
     'EVENTS_REPETITIONS' => 'Repito',
     'BAZ_WIDGET_INSTRUCTION' => 'Código incorpora um paser copiador em seu site',
 
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Pesquisar...',
+    'DATATABLE_NO_RESULTS' => 'Nenhum resultado encontrado',
 ];
