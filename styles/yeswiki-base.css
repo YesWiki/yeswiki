@@ -345,7 +345,10 @@ body > :not(#YesWikiModal) .current-revision-text {
   justify-content: end;
 }
 
-#yw-topnav > .container > .yw-topnav-fast-access > * {
+#yw-topnav
+  > .container
+  > .yw-topnav-fast-access
+  > *:not(.yw-modal):not(.modal) {
   display: block;
   width: max-content;
 }

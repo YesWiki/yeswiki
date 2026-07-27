@@ -178,6 +178,13 @@ textarea.yw-input {
   align-items: flex-start;
   justify-content: center;
 }
+/* A closed modal must stay hidden no matter where its markup sits: templates can
+   render modals inside layout containers whose descendant rules (e.g. the topnav
+   fast-access column) would otherwise out-specify .yw-modal's display: none.
+   yeswiki-base.js moves modals to <body>, but hiding must not depend on JS. */
+.yw-modal:not(.yw-modal--open) {
+  display: none !important;
+}
 .yw-modal__dialog {
   width: 100%;
   max-width: 600px;
