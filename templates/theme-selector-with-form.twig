@@ -126,10 +126,7 @@
         <form id="preset-form" action="#" method="post">
             <h4>{{ _t('TEMPLATE_CUSTOMIZE_PRESET') }}<span class="closebtn" onclick="closeNav()">&times;</span></h4>
 
-            {{ include_javascript('javascripts/vendor/spectrum-colorpicker2/spectrum.min.js') }}
-            {{ include_javascript('javascripts/vendor/jquery.fontselect.js') }}
             {{ include_javascript('javascripts/preset-sidenav.js') }}
-            {{ include_css('styles/vendor/spectrum-colorpicker2/spectrum.min.css') }}
             {{ include_css('styles/preset-sidenav.css') }}
 
             {% for name,data in {

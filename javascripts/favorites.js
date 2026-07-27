@@ -1,14 +1,45 @@
+// favorites.js — star/unstar pages as favorites via the triples API
+// (ticket 16: vanilla JS, fetch instead of $.ajax; the Bootstrap tooltip
+// destroy/re-title dance is just a title-attribute update now, CSS tooltips
+// read it live)
 const FavoritesHelper = {
   propertyName: 'https://yeswiki.net/vocabulary/favorite',
-  updateElem(elem, mode, withMessage = true) {
-    if (mode == 'add') {
-      $(elem).addClass('user-favorite')
-      $(elem).find('i')
-        .removeClass('far fa-star')
-        .addClass('fas fa-star')
-      $(elem).tooltip('destroy')
-      $(elem).attr('title', _t('FAVORITES_REMOVE'))
-      $(elem).removeData('original-title')
+  getJson(url, params) {
+    const query = new URLSearchParams(params).toString()
+    return fetch(`${url}${url.includes('?') ? '&' : '?'}${query}`)
+      .then((response) => (response.ok ? response.json() : Promise.reject(response.statusText)))
+  },
+  postForm(url, params) {
+    return fetch(url, { method: 'POST', body: new URLSearchParams(params) })
+      .then((response) => (response.ok ? response : Promise.reject(response.statusText)))
+  },
+  errorToast(error) {
+    toastMessage(
+      _t('FAVORITES_ERROR', { error }),
+      3000,
+      'alert alert-danger'
+    )
+  },
+  updateElem(elems, mode, withMessage = true) {
+    elems.forEach((elem) => {
+      const icon = elem.querySelector('i')
+      if (mode === 'add') {
+        elem.classList.add('user-favorite')
+        if (icon) {
+          icon.classList.remove('far')
+          icon.classList.add('fas', 'fa-star')
+        }
+        elem.setAttribute('title', _t('FAVORITES_REMOVE'))
+      } else {
+        elem.classList.remove('user-favorite')
+        if (icon) {
+          icon.classList.remove('fas')
+          icon.classList.add('far', 'fa-star')
+        }
+        elem.setAttribute('title', _t('FAVORITES_ADD'))
+      }
+    })
+    if (mode === 'add') {
       if (withMessage) {
         toastMessage(
           _t('FAVORITES_ADDED'),
@@ -17,13 +48,6 @@ const FavoritesHelper = {
         )
       }
     } else {
-      $(elem).removeClass('user-favorite')
-      $(elem).find('i')
-        .removeClass('fas fa-star')
-        .addClass('far fa-star')
-      $(elem).tooltip('destroy')
-      $(elem).attr('title', _t('FAVORITES_ADD'))
-      $(elem).removeData('original-title')
       if (withMessage) {
         toastMessage(
           _t('FAVORITES_REMOVED'),
@@ -33,16 +57,16 @@ const FavoritesHelper = {
       }
       // remove linked favorite 1.5s after
       setTimeout(() => {
-        $(elem).each(function() {
-          if (!$(this).hasClass('user-favorite')) {
-            const linkedFavoriteId = $(this).attr('data-linkedFavoriteid')
-            if (linkedFavoriteId != undefined && linkedFavoriteId.length > 0) {
-              const linkedFavorite = $(`#${linkedFavoriteId}`)
-              if (linkedFavorite != undefined && linkedFavorite.length > 0) {
-                $(linkedFavorite).remove()
-                $(this).remove()
+        elems.forEach((elem) => {
+          if (!elem.classList.contains('user-favorite')) {
+            const linkedFavoriteId = elem.getAttribute('data-linkedFavoriteid')
+            if (linkedFavoriteId && linkedFavoriteId.length > 0) {
+              const linkedFavorite = document.getElementById(linkedFavoriteId)
+              if (linkedFavorite) {
+                linkedFavorite.remove()
+                elem.remove()
               } else {
-                console.warn(`#linkedFavoriteId was waited but not found : ${JSON.stringify(linkedFavorite)}`)
+                console.warn(`#${linkedFavoriteId} was waited but not found`)
               }
             }
           }
@@ -50,113 +74,67 @@ const FavoritesHelper = {
       }, 1500)
     }
   },
+  elemsFor(resource) {
+    return Array.from(document.querySelectorAll(`[data-resource="${resource}"]`))
+  },
   addFavorite(resource, user, elem, checkNotEmpty = false) {
-    $.ajax({
-      method: 'GET',
-      url: wiki.url(`?api/triples/${resource}`),
-      data: {
-        property: FavoritesHelper.propertyName,
-        user
-      },
-      success(data) {
-        if (!Array.isArray(data) || data.length == 0) {
+    FavoritesHelper.getJson(wiki.url(`?api/triples/${resource}`), {
+      property: FavoritesHelper.propertyName,
+      user
+    })
+      .then((data) => {
+        if (!Array.isArray(data) || data.length === 0) {
           if (checkNotEmpty) {
-            toastMessage(
-              _t('FAVORITES_ERROR', { error: 'not created' }),
-              3000,
-              'alert alert-danger'
-            )
+            FavoritesHelper.errorToast('not created')
           } else {
-            $.ajax({
-              method: 'POST',
-              url: wiki.url(`?api/triples/${resource}`),
-              data: {
-                property: FavoritesHelper.propertyName,
-                user
-              },
-              success() {
-                FavoritesHelper.addFavorite(resource, user, elem, true)
-              },
-              error(xhr, status, error) {
-                toastMessage(
-                  _t('FAVORITES_ERROR', { error }),
-                  3000,
-                  'alert alert-danger'
-                )
-              }
+            FavoritesHelper.postForm(wiki.url(`?api/triples/${resource}`), {
+              property: FavoritesHelper.propertyName,
+              user
             })
+              .then(() => {
+                FavoritesHelper.addFavorite(resource, user, elem, true)
+              })
+              .catch(FavoritesHelper.errorToast)
           }
         } else {
-          FavoritesHelper.updateElem($(`[data-resource="${resource}"]`), 'add')
+          FavoritesHelper.updateElem(FavoritesHelper.elemsFor(resource), 'add')
         }
-      },
-      error(xhr, status, error) {
-        toastMessage(
-          _t('FAVORITES_ERROR', { error }),
-          3000,
-          'alert alert-danger'
-        )
-      }
-    })
+      })
+      .catch(FavoritesHelper.errorToast)
   },
   deleteFavorite(resource, user, elem, checkEmpty = false) {
-    $.ajax({
-      method: 'GET',
-      url: wiki.url(`?api/triples/${resource}`),
-      data: {
-        property: FavoritesHelper.propertyName,
-        user
-      },
-      success(data) {
+    FavoritesHelper.getJson(wiki.url(`?api/triples/${resource}`), {
+      property: FavoritesHelper.propertyName,
+      user
+    })
+      .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           if (checkEmpty) {
-            toastMessage(
-              _t('FAVORITES_ERROR', { error: 'not deleted' }),
-              3000,
-              'alert alert-danger'
-            )
+            FavoritesHelper.errorToast('not deleted')
           } else {
-            $.ajax({
-              method: 'POST',
-              url: wiki.url(`?api/triples/${resource}/delete`),
-              data: {
-                property: FavoritesHelper.propertyName,
-                user
-              },
-              success() {
-                FavoritesHelper.deleteFavorite(resource, user, elem, true)
-              },
-              error(xhr, status, error) {
-                toastMessage(
-                  _t('FAVORITES_ERROR', { error }),
-                  3000,
-                  'alert alert-danger'
-                )
-              }
+            FavoritesHelper.postForm(wiki.url(`?api/triples/${resource}/delete`), {
+              property: FavoritesHelper.propertyName,
+              user
             })
+              .then(() => {
+                FavoritesHelper.deleteFavorite(resource, user, elem, true)
+              })
+              .catch(FavoritesHelper.errorToast)
           }
         } else {
-          FavoritesHelper.updateElem($(`[data-resource="${resource}"]`), 'delete')
+          FavoritesHelper.updateElem(FavoritesHelper.elemsFor(resource), 'delete')
         }
-      },
-      error(xhr, status, error) {
-        toastMessage(
-          _t('FAVORITES_ERROR', { error }),
-          3000,
-          'alert alert-danger'
-        )
-      }
-    })
+      })
+      .catch(FavoritesHelper.errorToast)
   },
   manageFavorites(event) {
     event.preventDefault()
     let { target } = event
-    if ($(target).prop('tagName') == 'I') {
-      target = $(target).parent()
+    if (target.tagName === 'I') {
+      target = target.parentElement
     }
-    const resource = $(target).data('resource')
-    const user = $(target).data('user')
-    if ($(target).hasClass('user-favorite')) {
+    const { resource, user } = target.dataset
+    if (target.classList.contains('user-favorite')) {
       FavoritesHelper.deleteFavorite(resource, user, target)
     } else {
       FavoritesHelper.addFavorite(resource, user, target)
@@ -167,55 +145,30 @@ const FavoritesHelper = {
     if (previousTag || (Array.isArray(tags) && tags.length > 0)) {
       const lastTag = previousTag || tags.pop()
       const { resource } = lastTag
-      $.ajax({
-        method: 'GET',
-        url: wiki.url(`?api/triples/${resource}`),
-        data: {
-          property: FavoritesHelper.propertyName,
-          user
-        },
-        success(data) {
+      FavoritesHelper.getJson(wiki.url(`?api/triples/${resource}`), {
+        property: FavoritesHelper.propertyName,
+        user
+      })
+        .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
             if (previousTag) {
-              toastMessage(
-                _t('FAVORITES_ERROR', { error: 'not deleted' }),
-                3000,
-                'alert alert-danger'
-              )
+              FavoritesHelper.errorToast('not deleted')
             } else {
-              $.ajax({
-                method: 'POST',
-                url: wiki.url(`?api/triples/${resource}/delete`),
-                data: {
-                  property: FavoritesHelper.propertyName,
-                  user
-                },
-                success() {
-                  FavoritesHelper.deleteFirstFavorite(user, tags, lastTag)
-                },
-                error(xhr, status, error) {
-                  toastMessage(
-                    _t('FAVORITES_ERROR', { error }),
-                    3000,
-                    'alert alert-danger'
-                  )
-                }
+              FavoritesHelper.postForm(wiki.url(`?api/triples/${resource}/delete`), {
+                property: FavoritesHelper.propertyName,
+                user
               })
+                .then(() => {
+                  FavoritesHelper.deleteFirstFavorite(user, tags, lastTag)
+                })
+                .catch(FavoritesHelper.errorToast)
             }
           } else {
-            const elem = $(`[data-resource="${resource}"]`)
-            FavoritesHelper.updateElem(elem, 'delete', false)
+            FavoritesHelper.updateElem(FavoritesHelper.elemsFor(resource), 'delete', false)
             FavoritesHelper.deleteFirstFavorite(user, tags)
           }
-        },
-        error(xhr, status, error) {
-          toastMessage(
-            _t('FAVORITES_ERROR', { error }),
-            3000,
-            'alert alert-danger'
-          )
-        }
-      })
+        })
+        .catch(FavoritesHelper.errorToast)
     } else {
       toastMessage(
         _t('FAVORITES_ALL_DELETED'),
@@ -225,33 +178,29 @@ const FavoritesHelper = {
     }
   },
   deleteAll(user) {
-    $.ajax({
-      method: 'GET',
-      url: wiki.url('?api/triples'),
-      data: {
-        property: FavoritesHelper.propertyName,
-        user
-      },
-      success(data) {
+    FavoritesHelper.getJson(wiki.url('?api/triples'), {
+      property: FavoritesHelper.propertyName,
+      user
+    })
+      .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           FavoritesHelper.deleteFirstFavorite(user, data)
         }
-      },
-      error(xhr, status, error) {
-        toastMessage(
-          _t('FAVORITES_ERROR', { error }),
-          3000,
-          'alert alert-danger'
-        )
-      }
+      })
+      .catch(FavoritesHelper.errorToast)
+  },
+  bindLinks() {
+    document.querySelectorAll('a.favorites:not(.eventSet)').forEach((link) => {
+      link.classList.add('eventSet')
+      link.addEventListener('click', FavoritesHelper.manageFavorites)
     })
   },
   init() {
-    $('a.favorites').addClass('eventSet').on('click', FavoritesHelper.manageFavorites)
+    FavoritesHelper.bindLinks()
   }
 }
 
 FavoritesHelper.init()
-$(document).on('yw-modal-open', () => {
-  $('a.favorites:not(.eventSet)').addClass('eventSet').on('click', FavoritesHelper.manageFavorites)
+document.addEventListener('yw-modal-open', () => {
+  FavoritesHelper.bindLinks()
 })

@@ -1,86 +1,105 @@
-(function($) {
-  const findSibling = (baseElement, type) => $(baseElement).siblings().filter(function() {
-    const firstSelect = $(this).find('select').first()
-    return firstSelect && firstSelect.attr('name') === type
-  }).first()
-    .find(`[name=${type}`)
-    .first()
-
-  const updateOptions = (currentBase, type, val, data) => {
-    if (val in data.templates) {
-      const theme = data.templates[val]
-      const element = findSibling(currentBase, `${type}_select`)
-      if (element[0]) {
-        const curVal = $(element).val()
-        // empty list
-        let emptyOption = ''
-        for (let index = 0; index < element[0].options.length; index++) {
-          if (element[0].options[index].value.length === 0) {
-            emptyOption = element[0].options[index].text
-            break
-          }
-        }
-        for (let index = element[0].options.length - 1; index >= 0; index--) {
-          element[0].options.remove(index)
-        }
-        if (emptyOption.length > 0) {
-          element[0].options.add(new Option(emptyOption, '', false, false))
-        }
-        const favorite = type in data.favorites ? data.favorites[type] : null
-        if (type === 'preset') {
-          if (!('presets' in theme)) {
-            $(element).closest('.form-group').hide()
-          } else {
-            const currentList = theme.presets
-            const anchor = currentList.map((val) => val.replace(/(\.css)$/, '')).includes(curVal)
-              ? curVal
-              : favorite
-            currentList.forEach((value) => {
-              const shortValue = value.replace(/\.css$/, '')
-              element[0].options.add(new Option(shortValue, shortValue, false, anchor === value))
-            })
-            Object.keys(data.presets).forEach((k) => {
-              if (k.slice(0, 'custom/'.length) === 'custom/') {
-                const value = data.presets[k]
-                const shortValue = value.replace(/\.css$/, '')
-                element[0].options.add(new Option(shortValue, shortValue, false, anchor === value))
-              }
-            })
-            $(element).closest('.form-group').show()
-          }
-        } else if (type in theme) {
-          const currentList = theme[type]
-          const anchor = Object.values(currentList).map((val) => val.replace(/(\.css|\.tpl.html)$/, '')).includes(curVal)
-            ? curVal
-            : favorite
-          Object.keys(currentList).forEach((k) => {
-            const value = currentList[k]
-            const shortValue = value.replace(/(\.css|\.tpl.html)$/, '')
-            element[0].options.add(new Option(shortValue, k, false, anchor === k))
-          })
+// change-theme.js — dependent theme/squelette/style/preset selects
+// (ticket 16: vanilla JS)
+(function() {
+  // among the siblings of `baseElement`, the select named `type`
+  const findSibling = (baseElement, type) => {
+    let found = null
+    Array.from(baseElement.parentElement ? baseElement.parentElement.children : []).forEach(
+      (sibling) => {
+        if (found || sibling === baseElement) return
+        const firstSelect = sibling.querySelector('select')
+        if (firstSelect && firstSelect.getAttribute('name') === type) {
+          found = sibling.querySelector(`[name=${type}]`)
         }
       }
+    )
+    return found
+  }
+
+  const parseJsonDataset = (value) => {
+    if (!value) return {}
+    try {
+      const parsed = JSON.parse(value)
+      return (typeof parsed === 'object' && parsed !== null) ? parsed : {}
+    } catch {
+      return {}
     }
   }
 
   const extractData = (currentBase) => {
-    let templates = $(currentBase).data('templates')
-    templates = (typeof templates === 'object' && templates !== null) ? templates : {}
-    let favorites = $(currentBase).data('favorites')
-    favorites = (typeof favorites === 'object' && favorites !== null) ? favorites : {}
-    let presets = $(currentBase).data('presets')
-    presets = (typeof presets === 'object' && presets !== null) ? presets : {}
-    let updateUrl = $(currentBase).data('updateUrl')
-    updateUrl = ['string', 'boolean'].includes(typeof updateUrl) && [true, 'true'].includes(updateUrl)
+    const templates = parseJsonDataset(currentBase.dataset.templates)
+    const favorites = parseJsonDataset(currentBase.dataset.favorites)
+    const presets = parseJsonDataset(currentBase.dataset.presets)
+    const rawUpdateUrl = currentBase.dataset.updateUrl
+    const updateUrl = [true, 'true'].includes(rawUpdateUrl)
     return { templates, favorites, presets, updateUrl }
   }
 
-  const newUrlFromType = (url, type, currentBase) => {
+  const updateOptions = (currentBase, type, val, data) => {
+    if (!(val in data.templates)) return
+    const theme = data.templates[val]
+    const element = findSibling(currentBase, `${type}_select`)
+    if (!element) return
+    const curVal = element.value
+    // empty list, keeping the placeholder empty option's label if there is one
+    let emptyOption = ''
+    Array.from(element.options).some((option) => {
+      if (option.value.length === 0) {
+        emptyOption = option.text
+        return true
+      }
+      return false
+    })
+    for (let index = element.options.length - 1; index >= 0; index -= 1) {
+      element.options.remove(index)
+    }
+    if (emptyOption.length > 0) {
+      element.options.add(new Option(emptyOption, '', false, false))
+    }
+    const favorite = type in data.favorites ? data.favorites[type] : null
+    const formGroup = element.closest('.form-group')
+    if (type === 'preset') {
+      if (!('presets' in theme)) {
+        if (formGroup) formGroup.style.display = 'none'
+      } else {
+        const currentList = theme.presets
+        const anchor = currentList.map((value) => value.replace(/(\.css)$/, '')).includes(curVal)
+          ? curVal
+          : favorite
+        currentList.forEach((value) => {
+          const shortValue = value.replace(/\.css$/, '')
+          element.options.add(new Option(shortValue, shortValue, false, anchor === value))
+        })
+        Object.keys(data.presets).forEach((k) => {
+          if (k.slice(0, 'custom/'.length) === 'custom/') {
+            const value = data.presets[k]
+            const shortValue = value.replace(/\.css$/, '')
+            element.options.add(new Option(shortValue, shortValue, false, anchor === value))
+          }
+        })
+        if (formGroup) formGroup.style.display = ''
+      }
+    } else if (type in theme) {
+      const currentList = theme[type]
+      const anchor = Object.values(currentList)
+        .map((value) => value.replace(/(\.css|\.tpl.html)$/, '')).includes(curVal)
+        ? curVal
+        : favorite
+      Object.keys(currentList).forEach((k) => {
+        const value = currentList[k]
+        const shortValue = value.replace(/(\.css|\.tpl.html)$/, '')
+        element.options.add(new Option(shortValue, k, false, anchor === k))
+      })
+    }
+  }
+
+  const newUrlFromType = (urlParam, type, currentBase) => {
+    let url = urlParam
     const element = type === 'theme'
-      ? $(currentBase).find('select')
+      ? currentBase.querySelector('select')
       : findSibling(currentBase, `${type}_select`)
-    if (element.length > 0) {
-      let val = $(element).val()
+    if (element) {
+      let val = element.value
       if (val && typeof val !== 'undefined') {
         const ext = type === 'squelette' ? '.tpl.html' : '.css'
         if (type !== 'theme' && val.slice(-ext.length) !== ext) {
@@ -109,28 +128,35 @@
     }
   }
 
-  $('[name=theme_select]').on('change', function() {
-    const currentBase = $(this).closest('.control-group.form-group')
-    const data = extractData(currentBase)
+  document.querySelectorAll('[name=theme_select]').forEach((select) => {
+    select.addEventListener('change', () => {
+      const currentBase = select.closest('.control-group.form-group')
+      if (!currentBase) return
+      const data = extractData(currentBase)
 
-    // On change le theme dynamiquement
-    const val = $(this).val()
-    updateOptions(currentBase, 'squelette', val, data)
-    updateOptions(currentBase, 'style', val, data)
-    updateOptions(currentBase, 'preset', val, data)
-    if (data.updateUrl) {
-      updateUrl(data, currentBase)
-    }
+      // On change le theme dynamiquement
+      const val = select.value
+      updateOptions(currentBase, 'squelette', val, data)
+      updateOptions(currentBase, 'style', val, data)
+      updateOptions(currentBase, 'preset', val, data)
+      if (data.updateUrl) {
+        updateUrl(data, currentBase)
+      }
+    })
   })
 
-  $('[name=style_select],[name=squelette_select]').on('change', function() {
-    const currentBase = $(this).closest('.control-group.form-group')
-    const element = findSibling(currentBase, 'theme_select')
-    const realBase = $(element).closest('.control-group.form-group')
-    const data = extractData(realBase)
+  document.querySelectorAll('[name=style_select],[name=squelette_select]').forEach((select) => {
+    select.addEventListener('change', () => {
+      const currentBase = select.closest('.control-group.form-group')
+      if (!currentBase) return
+      const element = findSibling(currentBase, 'theme_select')
+      const realBase = element ? element.closest('.control-group.form-group') : null
+      if (!realBase) return
+      const data = extractData(realBase)
 
-    if (data.updateUrl) {
-      updateUrl(data, realBase)
-    }
+      if (data.updateUrl) {
+        updateUrl(data, realBase)
+      }
+    })
   })
-}(jQuery))
+}())

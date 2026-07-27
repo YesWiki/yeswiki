@@ -117,14 +117,15 @@ const BazarCalendar = {
     mountCalendar() {
       if (!this.mounted) {
         if (this.params.minical) {
-          $(this.$el).addClass('minical')
+          this.$el.classList.add('minical')
         }
-        const calendarEl = $('<div>').on(
-          'dblclick',
-          (e) => false
-        )
-        $(this.$el).prepend(calendarEl)
-        this.calendar = new FullCalendar.Calendar(calendarEl.get(0), this.calendarOptions)
+        const calendarEl = document.createElement('div')
+        calendarEl.addEventListener('dblclick', (e) => {
+          e.preventDefault()
+          e.stopPropagation()
+        })
+        this.$el.prepend(calendarEl)
+        this.calendar = new FullCalendar.Calendar(calendarEl, this.calendarOptions)
         this.calendar.setOption('eventDidMount', this.updateEventData)
         if (this.params.entrydisplay == 'sidebar') {
           this.calendar.setOption('eventClick', this.displaySideBar)
@@ -208,36 +209,45 @@ const BazarCalendar = {
     updateEventData(arg) {
       const { event } = arg
       const htmlAttributes = event.extendedProps.htmlattributes
-      const element = $(arg.el)
-      $.each($(`<div ${htmlAttributes}>`).data(), (index, value) => {
-        $(element).attr(`data-${index}`, value)
-      })
-      if (!$(element).hasClass('iconDefined')) {
+      const element = arg.el
+      // copy the entry's data-* attributes onto the calendar event element
+      const holder = document.createElement('div')
+      holder.innerHTML = `<div ${htmlAttributes}></div>`
+      const attributesSource = holder.firstElementChild
+      if (attributesSource) {
+        Array.from(attributesSource.attributes).forEach((attribute) => {
+          if (attribute.name.startsWith('data-')) {
+            element.setAttribute(attribute.name, attribute.value)
+          }
+        })
+      }
+      if (!element.classList.contains('iconDefined')) {
         if (event.extendedProps.icon.length > 0) {
-          if (!$(element).hasClass('fc-list-event')) {
-            $(element).find('.fc-event-title').prepend($(event.extendedProps.icon))
-          } else {
-            $(element).find('.fc-list-event-title a').prepend($(event.extendedProps.icon))
+          const title = element.classList.contains('fc-list-event')
+            ? element.querySelector('.fc-list-event-title a')
+            : element.querySelector('.fc-event-title')
+          if (title) {
+            title.insertAdjacentHTML('afterbegin', event.extendedProps.icon)
           }
         }
-        $(element).addClass('iconDefined')
+        element.classList.add('iconDefined')
       }
-      if ($(element).hasClass('fc-list-event') && this.isModalDisplay()) {
-        $(element).find('.fc-list-event-title a').each(function() {
-          $(this).attr('data-size', 'modal-lg')
-          $(this).attr('data-iframe', '1')
-          $(this).attr('title', event.title)
+      if (element.classList.contains('fc-list-event') && this.isModalDisplay()) {
+        element.querySelectorAll('.fc-list-event-title a').forEach((link) => {
+          link.setAttribute('data-size', 'modal-lg')
+          link.setAttribute('data-iframe', '1')
+          link.setAttribute('title', event.title)
         })
-      } else if ($(element).hasClass('fc-list-event') && this.isNewTabDisplay()) {
-        $(element).find('.fc-list-event-title a').each(function() {
-          $(this).addClass('new-window')
-          $(this).attr('title', event.title)
+      } else if (element.classList.contains('fc-list-event') && this.isNewTabDisplay()) {
+        element.querySelectorAll('.fc-list-event-title a').forEach((link) => {
+          link.classList.add('new-window')
+          link.setAttribute('title', event.title)
         })
       }
-      if (!$(element).hasClass('toolTipDefined')) {
-        $(element).tooltip({ title: event.title, html: true })
-        $(element).addClass('toolTipDefined')
-        $(element).attr('title', event.title)
+      if (!element.classList.contains('toolTipDefined')) {
+        // CSS tooltips read the title attribute live, no init needed
+        element.classList.add('toolTipDefined')
+        element.setAttribute('title', event.title)
       }
     }
   },
@@ -348,4 +358,4 @@ const BazarCalendar = {
 }
 
 if (!window._bazarDynamicComponents) window._bazarDynamicComponents = {}
-window._bazarDynamicComponents['BazarCalendar'] = BazarCalendar
+window._bazarDynamicComponents.BazarCalendar = BazarCalendar

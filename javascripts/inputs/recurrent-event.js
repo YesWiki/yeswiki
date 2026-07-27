@@ -298,7 +298,9 @@ const appParams = {
                  */
         const lastAvailableExcept = availableExcept[availableExcept.length - 1]
         if (lastAvailableExcept < endDateLimitStr) {
-          $(this.datePickerForLimit).datepicker('update', lastAvailableExcept)
+          // native <input type="date"> now (was bootstrap-datepicker 'update')
+          this.datePickerForLimit.value = lastAvailableExcept
+          this.updateEndDateLimitTime(lastAvailableExcept)
           this.showEndDateMessage = true
         }
       }
@@ -317,11 +319,11 @@ const appParams = {
   mounted() {
     const data = JSON.parse(this.dataset)
     const limitdate = data?.limitdate ?? ''
-    $(this.datePickerForLimit).on('changeDate', (event) => {
-      this.updateEndDateLimitTime(event.date)
+    this.datePickerForLimit.addEventListener('change', () => {
+      this.updateEndDateLimitTime(this.datePickerForLimit.value || '')
     })
-    $(this.datePickerForLimit).on('input', (event) => {
-      if (event.date === undefined) {
+    this.datePickerForLimit.addEventListener('input', () => {
+      if (!this.datePickerForLimit.value) {
         this.updateEndDateLimitTime('')
       }
     })

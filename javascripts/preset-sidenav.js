@@ -1,49 +1,11 @@
-function openNav() {
-  // si c'est déja ouvert, on ferme
-  if (document.getElementById('preset-sidenav').style.width == '250px') {
-    closeNav()
-  } else {
-    document.getElementById('preset-sidenav').style.width = '250px'
-    document.getElementById('yw-container').style.paddingRight = '250px'
-    const previousAdtive = $('.css-preset.active')
-    $('#preset-sidenav .colorpicker').each(function() {
-      // define values from current set for color picker
-      const value = document.documentElement.style.getPropertyValue(`--${$(this).attr('name')}`)
-      if (value) {
-        $(this).val(value)
-        // trigger change event
-        $(this).change()
-      }
-    })
-    $('#preset-sidenav .fontpicker').each(function() {
-      // define values from current set for color picker
-      let value = document.documentElement.style.getPropertyValue(`--${$(this).attr('name')}`)
-      if (value) {
-        // extract name
-        const values = value.split(',')
-        value = values[0]
-        value = value.replace(/'/g, '')
-        $(this).val(value)
-        // trigger change event
-        $(this).change()
-      }
-    })
-    $('#preset-sidenav .form-input[name=main-text-fontsize]').each(function() {
-      // define values from current set for color picker
-      let value = document.documentElement.style.getPropertyValue('--main-text-fontsize')
-
-      if (value) {
-        // extract name
-        const values = value.split('px')
-        value = values[0]
-        $(this).val(value)
-        // trigger change event
-        $(this).change()
-      }
-    })
-    $(previousAdtive).addClass('active')
-  }
-  return false
+// preset-sidenav.js — live theme-preset editor sidebar (ticket 16: vanilla JS;
+// the native <input type="color"> pickers replace the jQuery spectrum widget —
+// disclosed: no alpha channel/palette popup — and the font inputs are plain text
+// inputs instead of the jQuery fontselect dropdown)
+function deactivatePresets() {
+  document.querySelectorAll('.css-preset').forEach((preset) => {
+    preset.classList.remove('active')
+  })
 }
 
 function closeNav() {
@@ -52,156 +14,203 @@ function closeNav() {
   return false
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  if (typeof $('.colorpicker').spectrum === 'function') {
-    $('.colorpicker').spectrum({
-      showPalette: true,
-      showAlpha: true,
-      showInput: true,
-      clickoutFiresChange: true,
-      showInitial: true,
-      chooseText: themeSelectorTranslation.TEMPLATE_APPLY,
-      cancelText: themeSelectorTranslation.TEMPLATE_CANCEL,
-      change(color) {
-        document.documentElement.style.setProperty(`--${$(this).attr('name')}`, color.toRgbString())
-        $('.css-preset').removeClass('active')
-      },
-      hide(color) {
-        document.documentElement.style.setProperty(`--${$(this).attr('name')}`, color.toRgbString())
-      },
-      move(color) {
-        document.documentElement.style.setProperty(`--${$(this).attr('name')}`, color.toRgbString())
-      },
-      palette: [
-        [
-          wiki.cssVar('--primary-color'),
-          wiki.cssVar('--secondary-color-1'),
-          wiki.cssVar('--secondary-color-2')
-        ],
-        [
-          wiki.cssVar('--neutral-light-color'),
-          wiki.cssVar('--neutral-soft-color'),
-          wiki.cssVar('--neutral-color')
-        ]
-      ]
+// eslint-disable-next-line no-unused-vars
+function openNav() {
+  // si c'est déja ouvert, on ferme
+  if (document.getElementById('preset-sidenav').style.width === '250px') {
+    closeNav()
+  } else {
+    document.getElementById('preset-sidenav').style.width = '250px'
+    document.getElementById('yw-container').style.paddingRight = '250px'
+    const previousActive = Array.from(document.querySelectorAll('.css-preset.active'))
+    document.querySelectorAll('#preset-sidenav .colorpicker').forEach((pickerParam) => {
+      // define values from current set for color picker
+      const picker = pickerParam
+      const value = document.documentElement.style.getPropertyValue(
+        `--${picker.getAttribute('name')}`
+      )
+      if (value) {
+        picker.value = value
+        picker.dispatchEvent(new Event('change', { bubbles: true }))
+      }
     })
-  }
-  if (typeof $('.fontpicker').fontselect === 'function') {
-    $('.fontpicker')
-      .fontselect({
-        placeholder: themeSelectorTranslation.TEMPLATE_CHOOSE_FONT,
-        placeholderSearch: themeSelectorTranslation.TEMPLATE_SEARCH_POINTS
-      })
-      .on('change', function() {
-        // Replace + signs with spaces for css
-        let font = this.value.replace(/\+/g, ' ')
-
-        // Split font into family and weight
-        font = font.split(':')
-
-        const fontFamily = font[0]
-        const fontWeight = font[1] || 400
-
-        document.documentElement.style.setProperty(`--${$(this).attr('name')}`, `'${fontFamily}'`)
-        $('.css-preset').removeClass('active')
-      })
-  }
-
-  $('#preset-sidenav .range').on('change', function() {
-    document.documentElement.style.setProperty(`--${$(this).attr('name')}`, `${$(this).val()}px`)
-    $('.css-preset').removeClass('active')
-  })
-}, false)
-
-$('.css-preset').click(function() {
-  closeNav()
-  // get data
-  const primaryColor = $(this).data('primary-color')
-  const secondaryColor1 = $(this).data('secondary-color-1')
-  const secondaryColor2 = $(this).data('secondary-color-2')
-  const neutralColor = $(this).data('neutral-color')
-  const neutralSoftColor = $(this).data('neutral-soft-color')
-  const neutralLightColor = $(this).data('neutral-light-color')
-  const mainTextFontsize = $(this).data('main-text-fontsize')
-  const mainTextFontfamily = $(this).data('main-text-fontfamily')
-  const mainTitleFontfamily = $(this).data('main-title-fontfamily')
-  // check all data
-  if (!primaryColor || !secondaryColor1 || !secondaryColor2 || !neutralColor
-        || !neutralSoftColor || !neutralLightColor || !mainTextFontsize
-        || !mainTextFontfamily || !mainTitleFontfamily) {
-    // error
-    const message = themeSelectorTranslation.TEMPLATE_PRESET_ERROR
-    if (typeof toastMessage == 'function') {
-      toastMessage(message, 3000, 'alert alert-warning')
-    } else {
-      alert(message)
-    }
-    return false
-  }
-  // set values
-  document.documentElement.style.setProperty('--primary-color', primaryColor)
-  document.documentElement.style.setProperty('--secondary-color-1', secondaryColor1)
-  document.documentElement.style.setProperty('--secondary-color-2', secondaryColor2)
-  document.documentElement.style.setProperty('--neutral-color', neutralColor)
-  document.documentElement.style.setProperty('--neutral-soft-color', neutralSoftColor)
-  document.documentElement.style.setProperty('--neutral-light-color', neutralLightColor)
-  document.documentElement.style.setProperty('--main-text-fontsize', mainTextFontsize)
-  document.documentElement.style.setProperty('--main-text-fontfamily', mainTextFontfamily)
-  document.documentElement.style.setProperty('--main-title-fontfamily', mainTitleFontfamily)
-  // set filename
-  let filename = $(this).data('key')
-  filename = filename.replace('.css', '')
-  if (filename) {
-    $('#preset-sidenav input.form-input[name=filename]').each(function() {
-      $(this).val(filename)
+    document.querySelectorAll('#preset-sidenav .fontpicker').forEach((pickerParam) => {
+      // define values from current set for font picker
+      const picker = pickerParam
+      let value = document.documentElement.style.getPropertyValue(
+        `--${picker.getAttribute('name')}`
+      )
+      if (value) {
+        // extract name
+        const values = value.split(',');
+        [value] = values
+        value = value.replace(/'/g, '')
+        picker.value = value
+        picker.dispatchEvent(new Event('change', { bubbles: true }))
+      }
     })
-  }
-  // set class active or toggle it
-  const isAlreadyActive = $(this).hasClass('active')
-  $('.css-preset').removeClass('active')
-  if (!isAlreadyActive) {
-    $(this).addClass('active')
+    document.querySelectorAll('#preset-sidenav .form-input[name=main-text-fontsize]')
+      .forEach((inputParam) => {
+        const input = inputParam
+        let value = document.documentElement.style.getPropertyValue('--main-text-fontsize')
+
+        if (value) {
+          const values = value.split('px');
+          [value] = values
+          input.value = value
+          input.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+      })
+    previousActive.forEach((preset) => preset.classList.add('active'))
   }
   return false
-})
-function deleteCSSPreset(elem, text, url) {
-  event.preventDefault()
-  const key = $(elem).data('key')
-  const confirmResult = confirm(text)
-  if (confirmResult) {
-    $.ajax({
-      url,
-      success(data, textStatus, jqXHR) {
-        console.log(`${key} deleted !`)
-        $(elem).parent().remove()
-      },
-      method: 'DELETE',
-      cache: false,
-      error(jqXHR, textStatus, errorThrown) {
-        const message = key + themeSelectorTranslation.TEMPLATE_FILE_NOT_DELETED
-        console.log(`${message} Message :${jqXHR.responseText}`)
-        if (typeof toastMessage == 'function') {
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.colorpicker').forEach((picker) => {
+    const applyColor = () => {
+      document.documentElement.style.setProperty(
+        `--${picker.getAttribute('name')}`,
+        picker.value
+      )
+    }
+    picker.addEventListener('input', () => {
+      applyColor()
+      deactivatePresets()
+    })
+    picker.addEventListener('change', applyColor)
+  })
+
+  document.querySelectorAll('.fontpicker').forEach((picker) => {
+    picker.addEventListener('change', () => {
+      // Replace + signs with spaces for css
+      let font = picker.value.replace(/\+/g, ' ')
+
+      // Split font into family and weight (weight kept for compat, unused in css var)
+      font = font.split(':')
+
+      const fontFamily = font[0]
+
+      document.documentElement.style.setProperty(
+        `--${picker.getAttribute('name')}`,
+        `'${fontFamily}'`
+      )
+      deactivatePresets()
+    })
+  })
+
+  document.querySelectorAll('#preset-sidenav .range').forEach((range) => {
+    range.addEventListener('change', () => {
+      document.documentElement.style.setProperty(
+        `--${range.getAttribute('name')}`,
+        `${range.value}px`
+      )
+      deactivatePresets()
+    })
+  })
+
+  document.querySelectorAll('.css-preset').forEach((preset) => {
+    preset.addEventListener('click', (e) => {
+      e.preventDefault()
+      closeNav()
+      // get data
+      const data = preset.dataset
+      const { primaryColor } = data
+      const { secondaryColor1 } = data
+      const { secondaryColor2 } = data
+      const { neutralColor } = data
+      const { neutralSoftColor } = data
+      const { neutralLightColor } = data
+      const { mainTextFontsize } = data
+      const { mainTextFontfamily } = data
+      const { mainTitleFontfamily } = data
+      // check all data
+      if (!primaryColor || !secondaryColor1 || !secondaryColor2 || !neutralColor
+            || !neutralSoftColor || !neutralLightColor || !mainTextFontsize
+            || !mainTextFontfamily || !mainTitleFontfamily) {
+        // error
+        const message = themeSelectorTranslation.TEMPLATE_PRESET_ERROR
+        if (typeof toastMessage === 'function') {
           toastMessage(message, 3000, 'alert alert-warning')
         } else {
           alert(message)
         }
+        return
+      }
+      // set values
+      document.documentElement.style.setProperty('--primary-color', primaryColor)
+      document.documentElement.style.setProperty('--secondary-color-1', secondaryColor1)
+      document.documentElement.style.setProperty('--secondary-color-2', secondaryColor2)
+      document.documentElement.style.setProperty('--neutral-color', neutralColor)
+      document.documentElement.style.setProperty('--neutral-soft-color', neutralSoftColor)
+      document.documentElement.style.setProperty('--neutral-light-color', neutralLightColor)
+      document.documentElement.style.setProperty('--main-text-fontsize', mainTextFontsize)
+      document.documentElement.style.setProperty('--main-text-fontfamily', mainTextFontfamily)
+      document.documentElement.style.setProperty('--main-title-fontfamily', mainTitleFontfamily)
+      // set filename
+      let filename = data.key || ''
+      filename = filename.replace('.css', '')
+      if (filename) {
+        document.querySelectorAll('#preset-sidenav input.form-input[name=filename]')
+          .forEach((inputParam) => {
+            const input = inputParam
+            input.value = filename
+          })
+      }
+      // set class active or toggle it
+      const isAlreadyActive = preset.classList.contains('active')
+      deactivatePresets()
+      if (!isAlreadyActive) {
+        preset.classList.add('active')
       }
     })
+  })
+})
+
+// eslint-disable-next-line no-unused-vars
+function deleteCSSPreset(elem, text, url) {
+  // called from template onclick attributes, using the implicit window.event
+  // eslint-disable-next-line no-restricted-globals
+  event.preventDefault()
+  const { key } = elem.dataset
+  // eslint-disable-next-line no-restricted-globals
+  const confirmResult = confirm(text)
+  if (confirmResult) {
+    fetch(url, { method: 'DELETE' })
+      .then((response) => (response.ok ? response : Promise.reject(response)))
+      .then(() => {
+        console.log(`${key} deleted !`)
+        elem.parentElement.remove()
+      })
+      .catch(async(response) => {
+        const message = key + themeSelectorTranslation.TEMPLATE_FILE_NOT_DELETED
+        const responseText = response.text ? await response.text().catch(() => '') : ''
+        console.log(`${message} Message :${responseText}`)
+        if (typeof toastMessage === 'function') {
+          toastMessage(message, 3000, 'alert alert-warning')
+        } else {
+          alert(message)
+        }
+      })
   }
   // to prevent opening url
   return false
 }
+
 function componentToHex(c) {
-  const hex = parseInt(c).toString(16)
-  return hex.length == 1 ? `0${hex}` : hex
+  const hex = parseInt(c, 10).toString(16)
+  return hex.length === 1 ? `0${hex}` : hex
 }
-function extractFromStringWithRGB(value) {
+
+function extractFromStringWithRGB(valueParam) {
+  let value = valueParam
   const res = value.match(/\s*rgb\(\s*([0-9]*)\s*,\s*([0-9]*)\s*,\s*([0-9]*)\s*\)/)
   if (res && res.length > 3) {
     value = `#${componentToHex(res[1])}${componentToHex(res[2])}${componentToHex(res[3])}`
   }
   return value
 }
+
 function getStyleValueEvenIfNotInitialized(prop) {
   let value = document.documentElement.style.getPropertyValue(prop)
   if (!value) {
@@ -209,93 +218,99 @@ function getStyleValueEvenIfNotInitialized(prop) {
   }
   return value
 }
-function saveCSSPreset(elem, url, rewriteMode) {
+
+function quoteFontFamily(fontFamilyParam) {
+  let fontFamily = fontFamilyParam
+  if (fontFamily.search(/^[A-Za-z0-9 ]*$/) !== -1) {
+    fontFamily = `'${fontFamily}', sans-serif`
+  } else if (fontFamily.search(/^'[A-Za-z0-9 ]*'$/) !== -1) {
+    fontFamily = `${fontFamily}, sans-serif`
+  }
+  return fontFamily
+}
+
+function selectValue(selector) {
+  const el = document.querySelector(selector)
+  return el ? el.value : ''
+}
+
+// eslint-disable-next-line no-unused-vars
+function saveCSSPreset(elem, urlParam, rewriteMode) {
+  // called from template onclick attributes, using the implicit window.event
+  // eslint-disable-next-line no-restricted-globals
   event.preventDefault()
-  let fileName = $(elem).prev().find('input[name=filename]').val()
+  let url = urlParam
+  const previous = elem.previousElementSibling
+  const filenameInput = previous ? previous.querySelector('input[name=filename]') : null
+  let fileName = filenameInput ? filenameInput.value : ''
   fileName = fileName.replace('.css', '')
   const fullFileName = `${fileName}.css`
   url += fullFileName
   // get values
-  const primaryColor = extractFromStringWithRGB(getStyleValueEvenIfNotInitialized('--primary-color'))
-  const secondaryColor1 = extractFromStringWithRGB(getStyleValueEvenIfNotInitialized('--secondary-color-1'))
-  const secondaryColor2 = extractFromStringWithRGB(getStyleValueEvenIfNotInitialized('--secondary-color-2'))
-  const neutralColor = extractFromStringWithRGB(getStyleValueEvenIfNotInitialized('--neutral-color'))
-  const neutralSoftColor = extractFromStringWithRGB(getStyleValueEvenIfNotInitialized('--neutral-soft-color'))
-  const neutralLightColor = extractFromStringWithRGB(getStyleValueEvenIfNotInitialized('--neutral-light-color'))
-  const mainTextFontsize = getStyleValueEvenIfNotInitialized('--main-text-fontsize')
-  let mainTextFontfamily = getStyleValueEvenIfNotInitialized('--main-text-fontfamily')
-  let mainTitleFontfamily = getStyleValueEvenIfNotInitialized('--main-title-fontfamily')
-  if (mainTextFontfamily.search(/^[A-Za-z0-9 ]*$/) != -1) {
-    mainTextFontfamily = `'${mainTextFontfamily}', sans-serif`
-  } else if (mainTextFontfamily.search(/^\'[A-Za-z0-9 ]*\'$/) != -1) {
-    mainTextFontfamily = `${mainTextFontfamily}, sans-serif`
-  }
-  if (mainTitleFontfamily.search(/^[A-Za-z0-9 ]*$/) != -1) {
-    mainTitleFontfamily = `'${mainTitleFontfamily}', sans-serif`
-  } else if (mainTitleFontfamily.search(/^\'[A-Za-z0-9 ]*\'$/) != -1) {
-    mainTitleFontfamily = `${mainTitleFontfamily}, sans-serif`
-  }
-  $.ajax({
-    url,
-    success(data, textStatus, jqXHR) {
+  const colorProp = (prop) => extractFromStringWithRGB(getStyleValueEvenIfNotInitialized(prop))
+  const fontProp = (prop) => quoteFontFamily(getStyleValueEvenIfNotInitialized(prop))
+  const body = new URLSearchParams({
+    'primary-color': colorProp('--primary-color'),
+    'secondary-color-1': colorProp('--secondary-color-1'),
+    'secondary-color-2': colorProp('--secondary-color-2'),
+    'neutral-color': colorProp('--neutral-color'),
+    'neutral-soft-color': colorProp('--neutral-soft-color'),
+    'neutral-light-color': colorProp('--neutral-light-color'),
+    'main-text-fontsize': getStyleValueEvenIfNotInitialized('--main-text-fontsize'),
+    'main-text-fontfamily': fontProp('--main-text-fontfamily'),
+    'main-title-fontfamily': fontProp('--main-title-fontfamily')
+  })
+  fetch(url, { method: 'POST', body })
+    .then((response) => (response.ok ? response : Promise.reject(response)))
+    .then(() => {
       console.log(`${fullFileName} added !`)
       const urlwindow = window.location.toString()
       const urlAux = urlwindow.split(`${rewriteMode ? '?' : '&'}theme=`)
+      const squelette = selectValue('[name=squelette_select]')
+      const style = selectValue('[name=style_select]')
       window.location = `${urlAux[0]
                 + (rewriteMode ? '?' : '&')}theme=${
-        $('[name=theme_select]').first().val()
+        selectValue('[name=theme_select]')
       }&squelette=${
-        $('[name=squelette_select]').first().val()}${$('[name=squelette_select]').first().val().slice(-'.tpl.html'.length) === '.tpl.html' ? '' : '.tpl.html'
+        squelette}${squelette.slice(-'.tpl.html'.length) === '.tpl.html' ? '' : '.tpl.html'
       }&style=${
-        $('[name=style_select]').first().val()}${$('[name=style_select]').first().slice(-'.css'.length) === '.css' ? '' : '.css'
+        style}${style.slice(-'.css'.length) === '.css' ? '' : '.css'
       }&preset=${customCSSPresetsPrefix
       }${fullFileName}`
-    },
-    method: 'POST',
-    data: {
-      'primary-color': primaryColor,
-      'secondary-color-1': secondaryColor1,
-      'secondary-color-2': secondaryColor2,
-      'neutral-color': neutralColor,
-      'neutral-soft-color': neutralSoftColor,
-      'neutral-light-color': neutralLightColor,
-      'main-text-fontsize': mainTextFontsize,
-      'main-text-fontfamily': mainTextFontfamily,
-      'main-title-fontfamily': mainTitleFontfamily
-    },
-    cache: false,
-    error(jqXHR, textStatus, errorThrown) {
+    })
+    .catch(async(response) => {
+      let data = null
+      let dataMessage = ''
+      const responseText = response.text ? await response.text().catch(() => '') : ''
       try {
-        var data = JSON.parse(jqXHR.responseText)
-        var dataMessage = data.message
-      } catch (error) {
-        var data = null
-        var dataMessage = JSON.stringify(jqXHR.responseText)
+        data = JSON.parse(responseText)
+        dataMessage = data.message
+      } catch {
+        data = null
+        dataMessage = JSON.stringify(responseText)
       }
       let message = fullFileName + themeSelectorTranslation.TEMPLATE_FILE_NOT_ADDED
       let duration = 3000
-      if (data && data.errorCode == 2) {
+      if (data && data.errorCode === 2) {
         message = `${message}\n${themeSelectorTranslation.TEMPLATE_FILE_ALREADY_EXISTING}`
         duration = 6000
       }
       console.log(`${message}. Message :${dataMessage}`)
-      if (typeof toastMessage == 'function') {
+      if (typeof toastMessage === 'function') {
         toastMessage(message, duration, 'alert alert-danger')
       } else {
         alert(message)
       }
-    }
-  })
+    })
 }
 
 function getActivePreset() {
   let presetKey = ''
-  const selectedCssPresets = $('.css-preset.active')
-  if (selectedCssPresets && selectedCssPresets.length > 0) {
-    const selectedCssPreset = $(selectedCssPresets).first()
-    const key = $(selectedCssPreset).data('key')
+  const selectedCssPreset = document.querySelector('.css-preset.active')
+  if (selectedCssPreset) {
+    const { key } = selectedCssPreset.dataset
     if (key) {
-      if ($(selectedCssPreset).hasClass('custom')) {
+      if (selectedCssPreset.classList.contains('custom')) {
         presetKey = customCSSPresetsPrefix + key
       } else {
         presetKey = key
@@ -305,25 +320,38 @@ function getActivePreset() {
   return presetKey
 }
 
+// eslint-disable-next-line no-unused-vars
 function saveTheme(event, url) {
   const { target } = event
-  const form = $(target).closest('form')
-  const theme = $(form).find('[name=theme_select]').first().val()
-  console.log({ event, url, target, form, theme })
-  const squelette = $(form).find('[name=squelette_select]').first().val()
-  const style = $(form).find('[name=style_select]').val()
+  const form = target.closest('form')
+  const theme = selectValue('[name=theme_select]')
+  const squelette = selectValue('[name=squelette_select]')
+  const style = form ? (form.querySelector('[name=style_select]') || {}).value : ''
   const preset = getActivePreset()
   const errorMessage = themeSelectorTranslation.TEMPLATE_THEME_NOT_SAVE
   if (theme && squelette && style) {
-    const $form = $('<form>').attr({ id: 'templateFormSubmit', method: 'post', action: url, enctype: 'multipart/form-data' })
-      .append($('<input>').attr({ type: 'hidden', name: 'action', value: 'setTemplate' }))
-      .append($('<input>').attr({ type: 'hidden', name: 'theme_select', value: theme }))
-      .append($('<input>').attr({ type: 'hidden', name: 'squelette_select', value: squelette }))
-      .append($('<input>').attr({ type: 'hidden', name: 'style_select', value: style }))
-      .append($('<input>').attr({ type: 'hidden', name: 'preset_select', value: preset }))
-    $('body').append($form)
-    $form.submit()
-  } else if (typeof toastMessage == 'function') {
+    const hiddenForm = document.createElement('form')
+    hiddenForm.id = 'templateFormSubmit'
+    hiddenForm.method = 'post'
+    hiddenForm.action = url
+    hiddenForm.enctype = 'multipart/form-data'
+    const fields = {
+      action: 'setTemplate',
+      theme_select: theme,
+      squelette_select: squelette,
+      style_select: style,
+      preset_select: preset
+    }
+    Object.keys(fields).forEach((name) => {
+      const input = document.createElement('input')
+      input.type = 'hidden'
+      input.name = name
+      input.value = fields[name]
+      hiddenForm.appendChild(input)
+    })
+    document.body.appendChild(hiddenForm)
+    hiddenForm.submit()
+  } else if (typeof toastMessage === 'function') {
     toastMessage(errorMessage, 3000, 'alert alert-warning')
   } else {
     alert(errorMessage)

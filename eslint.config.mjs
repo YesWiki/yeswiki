@@ -44,6 +44,8 @@ export default defineConfig([globalIgnores([
       wiki: 'writable',
       Vue: 'readable',
       Sortable: 'readable',
+      // Leaflet global (javascripts/vendor/leaflet)
+      L: 'readable',
       Vditor: 'readable',
       _t: 'readable',
       ace: 'writable',
@@ -51,6 +53,9 @@ export default defineConfig([globalIgnores([
       multiDeleteService: 'readable',
       usersTableService: 'readable',
       autocompleteFieldnames: 'readable',
+      // page-level config globals injected by theme-selector-with-form.twig
+      themeSelectorTranslation: 'readable',
+      customCSSPresetsPrefix: 'readable',
       geolocationHelper: 'readable',
       // page-level config globals injected by reactions templates
       blockReactionRemove: 'readable',
