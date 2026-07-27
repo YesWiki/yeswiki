@@ -2001,6 +2001,7 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'DATATABLE_NO_RESULTS' => 'Niciun rezultat',
 
     // webhooks (ticket 20, formerly the webhooks extension)
+    'WEBHOOKS_COMMENTS' => 'Comments',
     'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
     'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
     'WEBHOOKS_CONFIG_TITLE' => 'Outgoing webhooks',

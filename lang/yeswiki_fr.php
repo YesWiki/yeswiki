@@ -2276,6 +2276,7 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'DATATABLE_NO_RESULTS' => 'Aucun résultat',
 
     // webhooks (ticket 20, formerly the webhooks extension)
+    'WEBHOOKS_COMMENTS' => 'Commentaires',
     'WEBHOOKS_POST_ERROR' => "Une action d'arrière-plan ne s'est pas déroulée comme prévue.\nVous pouvez prévenir les administrateurs pour les aider à maintenir ce site en leur donnant cette information :\n erreur exécutant '{function}' dans '{method}'.",
     'WEBHOOKS_CONFIG_TITLE' => 'Webhooks sortants',
     'WEBHOOKS_CONFIG_DESC' => 'Les URLs que vous définissez ci-dessous seront appelés à chaque ajout / modification / suppression de fiche BazaR.',

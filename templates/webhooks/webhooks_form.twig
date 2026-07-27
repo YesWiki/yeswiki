@@ -1,6 +1,6 @@
 <hr>
 <strong>{{ _t('WEBHOOKS_CONFIG_TITLE') }}</strong>
-<p class="text-info">{{ _t('WEBHOOKS_CONFIG_DESC') }}</p>
+<p class="yw-text-info">{{ _t('WEBHOOKS_CONFIG_DESC') }}</p>
 
 {{ include_css('styles/webhooks/webhooks-form.css') }}
 <form action="{{ url }}" method="POST" class="webhooks-form">
@@ -29,18 +29,18 @@
             <div class="webhooks-form-col webhooks-form-col--url">
                 <input 
                     type="text" 
-                    name="url[]" {{ (webhooks[i] is defined and not userIsAdmin) ? 'disabled data-toggle="tooltip" data-placement="bottom" title="' ~ _t('WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS') ~ '"' : ''}}
+                    name="url[]" {{ (webhooks[i] is defined and not userIsAdmin) ? 'disabled data-yw-tooltip="' ~ _t('WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS') ~ '" data-yw-tooltip-placement="bottom"' : ''}}
                     value="{{ webhooks[i] is defined ? (userIsAdmin ? webhooks[i].url : "***** #{ _t('WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS')  } *****") : "" }}" 
                     class="yw-input" 
                     placeholder="{{ _t('WEBHOOKS_URL_PLACEHOLDER') }}">
             </div>
         {% endfor %}
     </div>
-    <span class="input-group-btn">
+    <span class="webhooks-form-submit">
         <button
             id="btn-set-webhooks"
-            {% if not userIsAdmin %} disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}"{% endif %}
-            class="yw-btn yw-btn--primary pull-right" 
+            {% if not userIsAdmin %} disabled data-yw-tooltip="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}" data-yw-tooltip-placement="bottom"{% endif %}
+            class="yw-btn yw-btn--primary" 
             type="submit">
             {{ _t('WEBHOOKS_UPDATE') }}
         </button>

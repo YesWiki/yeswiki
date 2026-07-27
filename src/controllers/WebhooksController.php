@@ -532,7 +532,11 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             // same short timeout and ignore-errors behavior as the Guzzle version
             $client = HttpClient::create([
                 'headers' => ['Connection' => 'Close'],
-                'timeout' => 4, // to prevent 504 error if a webhook is not reachable
+                // to prevent 504 error if a webhook is not reachable; unlike
+                // Guzzle's total-duration `timeout`, Symfony's `timeout` is an
+                // idle timeout — max_duration is what caps the whole request
+                'timeout' => 4,
+                'max_duration' => 4,
             ]);
 
             $responses = [];

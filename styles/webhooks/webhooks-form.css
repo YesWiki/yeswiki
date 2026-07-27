@@ -14,3 +14,9 @@
 .webhooks-form-col--url {
   flex: 3 1 300px;
 }
+
+.webhooks-form-submit {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
