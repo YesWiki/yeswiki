@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf, escapeHtml } from './commons/attributes.js'
 
 export default {
   field: {
@@ -42,7 +42,7 @@ export default {
       }
     },
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   advancedAttributes: ['read_access', 'write_access', 'hint', 'ratio', 'maxwidth', 'maxheight', 'options', 'class'],
   // disabledAttributes: [],
@@ -83,7 +83,7 @@ export default {
     return {
       field: field.displayvideo === 'displayvideo'
         ? '<input type="text" disabled value="https://framatube.org/w/pAQiVCgv2CsLg79KKXUoMw"/>'
-        : `<input type="url" placeholder="${field.default || ''}"/>`
+        : `<input type="url" placeholder="${escapeHtml(field.default || '')}"/>`
     }
   }
 }

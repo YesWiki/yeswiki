@@ -19,7 +19,7 @@ export default {
       value: ''
     },
     read_access: readConf
-    // write: writeconf
+    // write: writeConf
   },
   disabledAttributes: [
     'required', 'default'

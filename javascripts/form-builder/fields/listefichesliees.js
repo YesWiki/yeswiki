@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -38,7 +38,7 @@ export default {
         _t('BAZ_FORM_EDIT_LISTEFICHES_LISTTYPE_PLACEHOLDER')
     },
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   advancedAttributes: ['read_access', 'write_access', 'template', 'link_type', 'other_params', 'query', 'add_entry_btn_label'],
   disabledAttributes: ['required', 'default'],

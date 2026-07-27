@@ -59,7 +59,7 @@ export const readConf = {
   multiple: true
 }
 
-export const writeconf = {
+export const writeConf = {
   label: _t('BAZ_FORM_EDIT_CAN_BE_WRITTEN_BY'),
   options: { ...visibilityOptions, ...formattedGroupList },
   multiple: true
@@ -70,11 +70,42 @@ export const searchableConf = {
   options: { '': _t('NO'), 1: _t('YES') }
 }
 
+// escape a value interpolated into a renderInput() preview HTML string
+export function escapeHtml(value) {
+  const div = document.createElement('div')
+  div.textContent = String(value ?? '')
+  return div.innerHTML
+}
+
+// Opens the iframed list editor in a remote modal and resolves its postmessage
+// answer (same contract as the old builder: the editor posts list_created /
+// list_updated back). Listens via addEventListener so concurrent handlers on
+// window.onmessage are left alone, and unhooks itself when the modal closes.
+function openListEditorModal(title, url, expectedMsg, onDone) {
+  const modal = openRemoteModal(title, url)
+  const onMessage = (event) => {
+    if (event.data?.msg === expectedMsg) {
+      onDone(event.data)
+      toastMessage(_t(expectedMsg === 'list_created' ? 'LIST_CREATED' : 'LIST_UPDATED'), 3000, 'yw-alert yw-alert--success')
+      window.removeEventListener('message', onMessage)
+      modal.close()
+    }
+  }
+  window.addEventListener('message', onMessage)
+}
+
+function listActionButton(iconClass, onClick) {
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = 'yw-btn yw-btn--sm yw-btn--primary'
+  button.innerHTML = `<i class="fa ${iconClass}"></i>`
+  button.addEventListener('click', onClick)
+  return button
+}
+
 // Shared editorSetup for the enum family (select / checkbox-group / radio-group):
 // the data source choice (list vs form) repopulates the linked_object options, and
-// list sources get create/edit buttons opening the list editor in a remote modal
-// (same contract as the old builder: the iframed editor posts list_created /
-// list_updated messages back).
+// list sources get create/edit buttons opening the list editor in a remote modal.
 export function enumEditorSetup(api) {
   const updateOptions = () => {
     const source = api.getValue('subtype2') === 'form' ? 'forms' : 'lists'
@@ -85,46 +116,36 @@ export function enumEditorSetup(api) {
   const row = api.getRow('linked_object')
   if (!row) return
 
-  const editButton = document.createElement('button')
-  editButton.type = 'button'
-  editButton.className = 'yw-btn yw-btn--sm yw-btn--primary'
-  editButton.innerHTML = '<i class="fa fa-pen"></i>'
-  editButton.addEventListener('click', () => {
+  const editButton = listActionButton('fa-pen', () => {
     const listId = api.getValue('linked_object')
-    const url = wiki.url(`?BazaR/iframe&vue=listes&action=modif_liste&voirmenu=0&onsubmit=postmessage&idliste=${listId}`)
-    const modal = openRemoteModal(_t('LIST_UPDATE_TITLE'), url)
-    window.onmessage = (event) => {
-      if (event.data.msg === 'list_updated') {
+    openListEditorModal(
+      _t('LIST_UPDATE_TITLE'),
+      wiki.url(`?BazaR/iframe&vue=listes&action=modif_liste&voirmenu=0&onsubmit=postmessage&idliste=${listId}`),
+      'list_updated',
+      (data) => {
         // update the options (list name might have changed)
-        formAndListIds.lists[event.data.id] = event.data.title
+        formAndListIds.lists[data.id] = data.title
         updateOptions()
-        toastMessage(_t('LIST_UPDATED'), 3000, 'alert alert-success')
-        modal.close()
       }
-    }
+    )
   })
 
-  const createButton = document.createElement('button')
-  createButton.type = 'button'
-  createButton.className = 'yw-btn yw-btn--sm yw-btn--primary'
-  createButton.innerHTML = '<i class="fa fa-plus"></i>'
-  createButton.addEventListener('click', () => {
-    const url = wiki.url('?BazaR/iframe&vue=listes&action=saisir_liste&voirmenu=0&onsubmit=postmessage')
-    const modal = openRemoteModal(_t('LIST_CREATE_TITLE'), url)
-    window.onmessage = (event) => {
-      if (event.data.msg === 'list_created') {
-        formAndListIds.lists[event.data.id] = event.data.title
+  const createButton = listActionButton('fa-plus', () => {
+    openListEditorModal(
+      _t('LIST_CREATE_TITLE'),
+      wiki.url('?BazaR/iframe&vue=listes&action=saisir_liste&voirmenu=0&onsubmit=postmessage'),
+      'list_created',
+      (data) => {
+        formAndListIds.lists[data.id] = data.title
         updateOptions()
         // select the newly created list
-        api.setValue('linked_object', event.data.id)
-        toastMessage(_t('LIST_CREATED'), 3000, 'alert alert-success')
-        modal.close()
+        api.setValue('linked_object', data.id)
       }
-    }
+    )
   })
 
   const actions = document.createElement('div')
-  actions.className = 'fb__list-actions'
+  actions.className = 'yw-fb__list-actions'
   actions.append(editButton, createButton)
   row.append(actions)
 
@@ -162,5 +183,5 @@ export const selectConf = {
   },
   hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
   read_access: readConf,
-  write_access: writeconf
+  write_access: writeConf
 }

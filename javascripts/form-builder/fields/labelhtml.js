@@ -1,3 +1,5 @@
+import { escapeHtml } from './commons/attributes.js'
+
 export default {
   field: {
     label: _t('BAZ_FORM_EDIT_CUSTOM_HTML_LABEL'),
@@ -32,8 +34,8 @@ export default {
   renderInput(field) {
     return {
       field:
-        `${field.form_text && field.form_text.trim() !== '' ? `<div>${_t('BAZ_FORM_EDIT_EDIT_CONTENT_LABEL')}: <pre>${field.form_text}</pre></div>` : ''}`
-        + `${field.view_text && field.view_text.trim() !== '' ? `<div>${_t('BAZ_FORM_EDIT_VIEW_CONTENT_LABEL')}: <pre>${field.view_text}</pre></div>` : ''}`
+        `${field.form_text && field.form_text.trim() !== '' ? `<div>${_t('BAZ_FORM_EDIT_EDIT_CONTENT_LABEL')}: <pre>${escapeHtml(field.form_text)}</pre></div>` : ''}`
+        + `${field.view_text && field.view_text.trim() !== '' ? `<div>${_t('BAZ_FORM_EDIT_VIEW_CONTENT_LABEL')}: <pre>${escapeHtml(field.view_text)}</pre></div>` : ''}`
     }
   }
 }

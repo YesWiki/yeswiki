@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf, escapeHtml } from './commons/attributes.js'
 
 export default {
   field: {
@@ -26,7 +26,7 @@ export default {
     },
     placeholder: { label: _t('BAZ_FORM_EDIT_PLACEHOLDER'), value: '' },
     read_access: readConf,
-    write_access: writeconf,
+    write_access: writeConf,
     pattern: {
       label: _t('BAZ_FORM_EDIT_TEXT_PATTERN'),
       value: '',
@@ -57,13 +57,13 @@ export default {
     applySubtype()
   },
   renderInput(fieldData) {
-    let string = `<input type="${fieldData.sub_type}"`
+    let string = `<input type="${escapeHtml(fieldData.sub_type)}"`
     if (fieldData.sub_type === 'url') {
-      string += ` placeholder="${fieldData.default || ''}"/>`
+      string += ` placeholder="${escapeHtml(fieldData.default || '')}"/>`
     } else if (fieldData.sub_type === 'range' || fieldData.sub_type === 'number') {
-      string += ` min="${fieldData.size || ''}" max="${fieldData.max_chars || ''}"/>`
+      string += ` min="${escapeHtml(fieldData.size || '')}" max="${escapeHtml(fieldData.max_chars || '')}"/>`
     } else {
-      string += ` value="${fieldData.default}"/>`
+      string += ` value="${escapeHtml(fieldData.default ?? '')}"/>`
     }
     return { field: string }
   }

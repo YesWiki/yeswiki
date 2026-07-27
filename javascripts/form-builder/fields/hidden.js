@@ -1,3 +1,5 @@
+import { escapeHtml } from './commons/attributes.js'
+
 export default {
   field: {
     label: _t('FORM_BUILDER_HIDDEN_LABEL'),
@@ -9,6 +11,6 @@ export default {
   attributes: {},
   disabledAttributes: ['required'],
   renderInput(field) {
-    return { field: `<em>${_t('FORM_BUILDER_HIDDEN_LABEL')} — ${field.default || ''}</em>` }
+    return { field: `<em>${_t('FORM_BUILDER_HIDDEN_LABEL')} — ${escapeHtml(field.default || '')}</em>` }
   }
 }

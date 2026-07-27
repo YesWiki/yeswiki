@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -28,7 +28,7 @@ export default {
     },
     max_size: { label: _t('BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL'), value: '' },
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   advancedAttributes: ['read_access', 'write_access', 'thumbnail_height', 'thumbnail_width', 'image_height', 'image_width', 'max_size'],
   // disabledAttributes: [],

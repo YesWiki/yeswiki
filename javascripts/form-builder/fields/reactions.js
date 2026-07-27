@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf, escapeHtml } from './commons/attributes.js'
 
 export default {
   field: {
@@ -35,12 +35,12 @@ export default {
       description: _t('BAZ_REACTIONS_FIELD_IDS_HINT')
     },
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   disabledAttributes: [
     'label', 'required'
   ],
   renderInput(field) {
-    return { field: `<i class="far fa-thumbs-up"></i> ${field.label_reaction || _t('BAZ_ACTIVATE_REACTIONS')}` }
+    return { field: `<i class="far fa-thumbs-up"></i> ${escapeHtml(field.label_reaction || _t('BAZ_ACTIVATE_REACTIONS'))}` }
   }
 }

@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -29,7 +29,7 @@ export default {
     geometries: { label: _t('BAZ_FORM_EDIT_MAP_GEOMETRIES'), value: 'marker' },
     max_geometries: { label: _t('BAZ_FORM_EDIT_MAP_MAX_GEOMETRIES'), value: '' },
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   advancedAttributes: ['read_access', 'write_access', 'geolocate', 'autocomplete_others', 'autocomplete_street1', 'autocomplete_street2', 'show_map_in_entry_view', 'geometries', 'max_geometries'],
   // disabledAttributes: [],

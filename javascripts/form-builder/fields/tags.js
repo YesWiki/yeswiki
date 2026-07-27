@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -10,7 +10,7 @@ export default {
   attributes: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   // disabledAttributes: [],
   renderInput() {

@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf, escapeHtml } from './commons/attributes.js'
 
 export default {
   field: {
@@ -24,7 +24,7 @@ export default {
     readWhenForm: { transient: true, ...readConf, ...{ label: _t('BAZ_FORM_EDIT_EMAIL_SEND_ACLS') } },
     // searchable: searchableConf, -> 10/19 Florian say that this conf is not working for now
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   advancedAttributes: ['read_access', 'write_access', 'name', 'see_mail_acls', 'readWhenForm'],
   // disabledAttributes: [],
@@ -68,6 +68,6 @@ export default {
     applyButtonMode()
   },
   renderInput(fieldData) {
-    return { field: `<input id="${fieldData.name}" type="email" value="" />` }
+    return { field: `<input id="${escapeHtml(fieldData.name)}" type="email" value="" />` }
   }
 }

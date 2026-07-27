@@ -1,4 +1,4 @@
-import { aclsOptions, aclsCommentOptions } from './commons/attributes.js'
+import { aclsOptions, aclsCommentOptions, escapeHtml } from './commons/attributes.js'
 
 export default {
   field: {
@@ -68,6 +68,6 @@ export default {
     applyActivateComments()
   },
   renderInput(field) {
-    return { field: field.ask_if_activate_comments === 1 || field.ask_if_activate_comments === '1' ? `<i class="far fa-comment-dots"></i> ${field.label || _t('BAZ_ACTIVATE_COMMENTS')}` : '' }
+    return { field: field.ask_if_activate_comments === 1 || field.ask_if_activate_comments === '1' ? `<i class="far fa-comment-dots"></i> ${escapeHtml(field.label || _t('BAZ_ACTIVATE_COMMENTS'))}` : '' }
   }
 }

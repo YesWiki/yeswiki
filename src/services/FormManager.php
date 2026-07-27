@@ -616,7 +616,10 @@ class FormManager
      * (`[{"type": "texte", "name": "bf_titre", "label": "..."}]`) -- attribute keys are
      * the FIELD_* constant names of the handling field class (see
      * FieldFactory::getAttributeIndexToKeyMap()); positions with no named constant
-     * round-trip as numeric string keys. The historical positional `***`-separated
+     * round-trip as numeric string keys. Note the converse: a named key that is NOT
+     * in the handling class's map (e.g. a typo hand-edited into the code tab) has no
+     * positional slot and is silently dropped on the next write. The historical
+     * positional `***`-separated
      * syntax is still READ here -- old page revisions, remote imports from older wikis --
      * but is never written back: every write path re-encodes to JSON.
      *
@@ -767,8 +770,10 @@ class FormManager
      */
     private function templateToStorage($template): array
     {
+        // arrays go through the same positional round-trip canonicalization as
+        // string input (empty-slot dropping, key resolution) — no bypass
         if (is_array($template)) {
-            return array_values($template);
+            $template = json_encode($template, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
         return json_decode($this->normalizeTemplate($template), true) ?? [];

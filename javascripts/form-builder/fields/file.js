@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -22,7 +22,7 @@ export default {
     max_size: { label: _t('BAZ_FORM_EDIT_FILE_MAXSIZE_LABEL'), value: '' },
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   advancedAttributes: ['read_access', 'write_access', 'max_size', 'authorized_exts_label']
   // disabledAttributes: [],

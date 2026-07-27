@@ -1,4 +1,4 @@
-import { readConf, writeconf } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -26,7 +26,7 @@ export default {
     },
     placeholder: { label: _t('BAZ_FORM_EDIT_PLACEHOLDER'), value: '' },
     read_access: readConf,
-    write_access: writeconf
+    write_access: writeConf
   },
   advancedAttributes: ['placeholder', 'read_access', 'write_access', 'syntax', 'num_rows']
   // disabledAttributes: [],
