@@ -1948,4 +1948,20 @@ return [
     // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
+
+    // form designer (ticket 26)
+    'FORM_BUILDER_ADD_FIELDS' => 'ஒரு புலத்தைச் சேர்க்கவும்',
+    'FORM_BUILDER_ADVANCED' => 'மேம்பட்ட அமைப்புகள்',
+    'FORM_BUILDER_BACK' => 'பின்செல்',
+    'FORM_BUILDER_DATE_LABEL' => 'தேதி',
+    'FORM_BUILDER_DEFAULT_LABEL' => 'இயல்புநிலை மதிப்பு',
+    'FORM_BUILDER_DELETE' => 'நீக்கு',
+    'FORM_BUILDER_DUPLICATE' => 'நகலெடு',
+    'FORM_BUILDER_EMPTY' => 'படிவத்தை உருவாக்க இடது பலகையிலிருந்து ஒரு புலத்தை கிளிக் செய்யவும் அல்லது இழுக்கவும்',
+    'FORM_BUILDER_FILE_LABEL' => 'கோப்பு',
+    'FORM_BUILDER_HIDDEN_LABEL' => 'மறைந்த புலம்',
+    'FORM_BUILDER_INVALID_JSON' => 'படிவக் குறியீடு செல்லுபடியான JSON அல்ல: குறியீடு தாவலில் அதைத் திருத்தவும்',
+    'FORM_BUILDER_LABEL_LABEL' => 'சிட்டை',
+    'FORM_BUILDER_NAME_LABEL' => 'அடையாளங்காட்டி',
+    'FORM_BUILDER_REQUIRED_LABEL' => 'கட்டாயம்',
 ];

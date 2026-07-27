@@ -2030,4 +2030,20 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
+
+    // form designer (ticket 26)
+    'FORM_BUILDER_ADD_FIELDS' => 'Gehitu eremu bat',
+    'FORM_BUILDER_ADVANCED' => 'Ezarpen aurreratuak',
+    'FORM_BUILDER_BACK' => 'Itzuli',
+    'FORM_BUILDER_DATE_LABEL' => 'Data',
+    'FORM_BUILDER_DEFAULT_LABEL' => 'Balio lehenetsia',
+    'FORM_BUILDER_DELETE' => 'Ezabatu',
+    'FORM_BUILDER_DUPLICATE' => 'Bikoiztu',
+    'FORM_BUILDER_EMPTY' => 'Egin klik edo arrastatu eremu bat ezkerreko paneletik formularioa eraikitzeko',
+    'FORM_BUILDER_FILE_LABEL' => 'Fitxategia',
+    'FORM_BUILDER_HIDDEN_LABEL' => 'Ezkutuko eremua',
+    'FORM_BUILDER_INVALID_JSON' => 'Formularioaren kodea ez da baliozko JSON: zuzendu kode fitxan',
+    'FORM_BUILDER_LABEL_LABEL' => 'Etiketa',
+    'FORM_BUILDER_NAME_LABEL' => 'Identifikatzailea',
+    'FORM_BUILDER_REQUIRED_LABEL' => 'Beharrezkoa',
 ];

@@ -2038,4 +2038,20 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
+
+    // form designer (ticket 26)
+    'FORM_BUILDER_ADD_FIELDS' => 'Adaugă un câmp',
+    'FORM_BUILDER_ADVANCED' => 'Setări avansate',
+    'FORM_BUILDER_BACK' => 'Înapoi',
+    'FORM_BUILDER_DATE_LABEL' => 'Dată',
+    'FORM_BUILDER_DEFAULT_LABEL' => 'Valoare implicită',
+    'FORM_BUILDER_DELETE' => 'Șterge',
+    'FORM_BUILDER_DUPLICATE' => 'Duplică',
+    'FORM_BUILDER_EMPTY' => 'Faceți clic sau trageți un câmp din panoul din stânga pentru a construi formularul',
+    'FORM_BUILDER_FILE_LABEL' => 'Fișier',
+    'FORM_BUILDER_HIDDEN_LABEL' => 'Câmp ascuns',
+    'FORM_BUILDER_INVALID_JSON' => 'Codul formularului nu este JSON valid: corectați-l în fila de cod',
+    'FORM_BUILDER_LABEL_LABEL' => 'Etichetă',
+    'FORM_BUILDER_NAME_LABEL' => 'Identificator',
+    'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatoriu',
 ];

@@ -1,221 +1,185 @@
-{# ticket 16: jQuery is not loaded globally anymore — this admin page is the
-   one disclosed jQuery island (the vendored formBuilder plugin needs it) and
-   self-loads it; no Bootstrap file is loaded, form-builder's hardcoded
-   Bootstrap class names are styled by a scoped shim in form-edit-template.css #}
-{{ include_javascript('javascripts/vendor/jquery/jquery.min.js') }}
-{{ include_javascript('javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js') }}
-{{ include_javascript('javascripts/vendor/formBuilder/form-builder.min.js') }}
-{{ include_javascript('javascripts/form-edit-template/form-edit-template.js', false, true) }}
-{{ include_css('styles/bazar/form-edit-template.css') }}
+{# ticket 26: the form designer is a vanilla ES module (javascripts/form-builder/)
+   editing the stored JSON template directly — no jQuery, no vendored formBuilder #}
+{{ include_javascript('javascripts/vendor/sortablejs/sortable.js') }}
+{{ include_javascript('javascripts/form-builder/form-builder.js', false, true) }}
+{{ include_css('styles/form-builder.css') }}
 
 <form
   action=""
   method="post"
   name="formulaire"
   id="formulaire"
-  class="form-horizontal"
 >
-  <div class="control-group form-group">
-    <label class="control-label col-sm-3">
+  <div class="yw-form-group">
+    <label class="yw-form-label">
       {{ _t('BAZ_NOM_FORMULAIRE') }}
       <span class="symbole_obligatoire"></span>
     </label>
-    <div class="controls col-sm-9">
-      <input
-        class="form-control input-xxlarge"
-        name="bn_label_nature"
-        type="text"
-        value="{{ form.bn_label_nature }}"
-        required
-      />
-    </div>
+    <input
+      class="yw-input"
+      name="bn_label_nature"
+      type="text"
+      value="{{ form.bn_label_nature }}"
+      required
+    />
   </div>
-  <div class="control-group form-group">
-    <label class="control-label col-sm-3">
+  <div class="yw-form-group">
+    <label class="yw-form-label">
       {{ _t('BAZ_DESCRIPTION') }}
     </label>
-    <div class="controls col-sm-9">
-      <textarea
-        class="form-control input-xxlarge"
-        cols="20"
-        rows="3"
-        name="bn_description"
-      >
-        {{- form.bn_description -}}
-      </textarea>
-    </div>
+    <textarea
+      class="yw-input"
+      cols="20"
+      rows="3"
+      name="bn_description"
+    >
+      {{- form.bn_description -}}
+    </textarea>
   </div>
 
-  <div class="control-group form-group">
-    <label class="control-label col-sm-3 form-builder-label">
+  <div class="yw-form-group">
+    <label class="yw-form-label form-builder-label">
       {{ _t('BAZ_TEMPLATE') }}
       <span class="symbole_obligatoire"></span>
     </label>
-    <div class="controls col-sm-9">
-      <ul class="yw-nav" role="tablist">
-        <li role="presentation" class="active">
-          <a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">
-            {{ _t('BAZ_FORM_GRAPHICAL_BUILDER') }}
-          </a>
-        </li>
-        <li role="presentation">
-          <a href="#code" aria-controls="code" role="tab" data-toggle="tab">
-            {{ _t('BAZ_FORM_WIKI_CODE') }}
-          </a>
-        </li>
-      </ul>
+    <ul class="yw-nav" role="tablist">
+      <li role="presentation" class="active">
+        <a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">
+          {{ _t('BAZ_FORM_GRAPHICAL_BUILDER') }}
+        </a>
+      </li>
+      <li role="presentation">
+        <a href="#code" aria-controls="code" role="tab" data-toggle="tab">
+          {{ _t('BAZ_FORM_WIKI_CODE') }}
+        </a>
+      </li>
+    </ul>
 
-      <div class="yw-tabs__content">
-        <div role="tabpanel" class="yw-tabs__pane active" id="formbuilder">
-          <!-- container where the form bulder will be rendered -->
-          <div id="form-builder-container"></div>
-        </div>
-        <div role="tabpanel" class="yw-tabs__pane" id="code">
-          <textarea
-            class="form-control input-xxlarge"
-            id="form-builder-text"
-            cols="20"
-            rows="15"
-            name="bn_template"
-            required
-          >
-            {{- form.bn_template ?? ('[{"type": "texte", "name": "bf_titre", "label": "' ~ _t('BAZ_TITREANNONCE') ~ '", "sub_type": "text", "required": "1"}]') -}}
-          </textarea>
-        </div>
+    <div class="yw-tabs__content">
+      <div role="tabpanel" class="yw-tabs__pane active" id="formbuilder">
+        <!-- container where the form builder will be rendered -->
+        <div id="form-builder-container"></div>
+      </div>
+      <div role="tabpanel" class="yw-tabs__pane" id="code">
+        <textarea
+          class="yw-input"
+          id="form-builder-text"
+          cols="20"
+          rows="25"
+          name="bn_template"
+          required
+        >
+          {{- form.bn_template ?? ('[{"type": "texte", "name": "bf_titre", "label": "' ~ _t('BAZ_TITREANNONCE') ~ '", "sub_type": "text", "required": "1"}]') -}}
+        </textarea>
       </div>
     </div>
   </div>
 
   {% if onlyOneEntryOptionAvailable %}
-    <div class="controls checkbox">
+    <div class="yw-form-group">
       <label for="bn_only_one_entry">
-			    {% apply spaceless %}
-            <input 
-              id="bn_only_one_entry" 
-              type="checkbox" 
-              value="Y" 
-              name="bn_only_one_entry"{{ form.bn_only_one_entry == "Y" ? ' checked' : ''}}
-              onchange="javascript:if($(this).prop('checked')){$('#bn_only_one_entry_message-group').show();}else{$('#bn_only_one_entry_message-group').hide();};"
-              />
-            <span>{{ _t('BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM') }}</span>
-			    {% endapply %}
-        </label>
+        {% apply spaceless %}
+          <input
+            id="bn_only_one_entry"
+            type="checkbox"
+            value="Y"
+            name="bn_only_one_entry"{{ form.bn_only_one_entry == "Y" ? ' checked' : ''}}
+            onchange="document.getElementById('bn_only_one_entry_message-group').classList.toggle('hide', !this.checked)"
+            />
+          <span>{{ _t('BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM') }}</span>
+        {% endapply %}
+      </label>
     </div>
-    <div id="bn_only_one_entry_message-group" class="control-group form-group"{{ form.bn_only_one_entry == "Y" ? '': ' style="display:none;"' }}>
-      <label class="control-label col-sm-3">
+    <div id="bn_only_one_entry_message-group" class="yw-form-group{{ form.bn_only_one_entry == "Y" ? '': ' hide' }}">
+      <label class="yw-form-label">
         {{ _t('BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST') }}
       </label>
-      <div class="controls col-sm-9">
-        <input
-          class="form-control input-xxlarge"
-          name="bn_only_one_entry_message"
-          type="text"
-          value="{{ form.bn_only_one_entry_message }}"
-          placeholder="{{ _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM') }}"
-        />
-      </div>
+      <input
+        class="yw-input"
+        name="bn_only_one_entry_message"
+        type="text"
+        value="{{ form.bn_only_one_entry_message }}"
+        placeholder="{{ _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM') }}"
+      />
     </div>
   {% endif %}
 
-  <div class="control-group form-group">
-    <div class="controls col-sm-9 col-sm-offset-3">
-      <div class="accordion-heading">
-        <a
-          class="plusinfos yw-btn yw-btn--sm yw-btn--info"
-          data-toggle="collapse"
-          data-parent="#accordion4"
-          href="#collapseFour"
-        >
-          {{ _t('ADVANCED_CONFIGURATION') }}
-        </a>
-      </div>
+  <div class="yw-form-group">
+    <a
+      class="plusinfos yw-btn yw-btn--sm yw-btn--info"
+      data-toggle="collapse"
+      href="#collapseFour"
+    >
+      {{ _t('ADVANCED_CONFIGURATION') }}
+    </a>
+  </div>
+
+  <div id="collapseFour" class="yw-collapse collapse">
+    <div class="yw-form-group">
+      <label class="yw-form-label">
+        {{ _t('BAZ_CONDITION') }}
+      </label>
+      <textarea
+        class="yw-input"
+        cols="20"
+        rows="3"
+        name="bn_condition"
+      >
+        {{- form.bn_condition -}}
+      </textarea>
+    </div>
+    <div class="yw-form-group">
+      <label>
+        <input type="checkbox" name="bn_activitypub_enable" value="1" {% if form.bn_activitypub_enable %}checked{% endif %}>
+        {{ _t('BAZ_ACTIVITYPUB_ENABLE') }}
+      </label>
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">
+        {{ _t('BAZ_ACTIVITYPUB_USERNAME') }}
+      </label>
+      <input
+        class="yw-input"
+        name="bn_activitypub_username"
+        type="text"
+        value="{{ form.bn_activitypub_username }}"
+      />
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_SEM_TEMPLATE') }}</label>
+      <textarea
+        class="yw-input"
+        cols="20"
+        rows="6"
+        name="bn_sem_template"
+      >
+        {{- form.bn_sem_template -}}
+      </textarea>
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">
+        {{ _t('BAZ_SEM_REVERSE_TEMPLATE') }}
+      </label>
+      <textarea
+        class="yw-input"
+        cols="20"
+        rows="6"
+        name="bn_sem_reverse_template"
+      >
+        {{- form.bn_sem_reverse_template -}}
+      </textarea>
     </div>
   </div>
 
-  <div class="accordion" id="accordion4">
-    <div class="accordion-group">
-      <div id="collapseFour" class="accordion-body collapse">
-        <div class="accordion-inner">
-          <div class="control-group form-group">
-            <label class="control-label col-sm-3">
-              {{ _t('BAZ_CONDITION') }}
-            </label>
-            <div class="controls col-sm-9">
-              <textarea
-                class="form-control input-xxlarge"
-                cols="20"
-                rows="3"
-                name="bn_condition"
-              >
-                {{- form.bn_condition -}}
-              </textarea>
-            </div>
-          </div>
-          <div class="controls checkbox">
-            <label>
-              <input type="checkbox" name="bn_activitypub_enable" value="1" {% if form.bn_activitypub_enable %}checked{% endif %}>
-              {{ _t('BAZ_ACTIVITYPUB_ENABLE') }}
-            </label>
-          </div>
-          <div class="control-group form-group">
-            <label class="control-label col-sm-3">
-              {{ _t('BAZ_ACTIVITYPUB_USERNAME') }}
-            </label>
-            <div class="controls col-sm-9">
-              <input
-                class="form-control input-xxlarge"
-                name="bn_activitypub_username"
-                type="text"
-                value="{{ form.bn_activitypub_username }}"
-              />
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <label class="control-label col-sm-3"
-              >{{ _t('BAZ_SEM_TEMPLATE') }}</label
-            >
-            <div class="controls col-sm-9">
-              <textarea
-                class="form-control input-xxlarge"
-                cols="20"
-                rows="6"
-                name="bn_sem_template"
-              >
-                {{- form.bn_sem_template -}}
-              </textarea>
-            </div>
-          </div>
-          <div class="control-group form-group">
-            <label class="control-label col-sm-3">
-              {{ _t('BAZ_SEM_REVERSE_TEMPLATE') }}
-            </label>
-            <div class="controls col-sm-9">
-              <textarea
-                class="form-control input-xxlarge"
-                cols="20"
-                rows="6"
-                name="bn_sem_reverse_template"
-              >
-                {{- form.bn_sem_reverse_template -}}
-              </textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="yw-form-group">
+    <button type="submit" name="valider" class="yw-btn yw-btn--primary">
+      {{ _t('BAZ_VALIDER') }}
+    </button>
+    <a class="yw-btn yw-btn--sm" href="{{ url({ params: { vue: 'formulaire' }}) }}">
+      {{ _t('BAZ_ANNULER') }}
+    </a>
   </div>
-
-  <div class="form-group">
-    <div class="col-sm-9 col-sm-offset-3">
-      <button type="submit" name="valider" class="yw-btn yw-btn--primary">
-        {{ _t('BAZ_VALIDER') }}
-      </button>
-      <a class="yw-btn yw-btn--sm" href="{{ url({ params: { vue: 'formulaire' }}) }}">
-        {{ _t('BAZ_ANNULER') }}
-      </a>
-    </div>
-  </div>
-  <div class="col-sm-9 col-sm-offset-3 symbole_obligatoire">
+  <div class="symbole_obligatoire">
     {{ _t('BAZ_CHAMPS_REQUIS') }}
   </div>
   {% if form %}

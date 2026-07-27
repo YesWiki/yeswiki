@@ -1704,4 +1704,20 @@ return [
     // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'O parâmetro de destino (idioma de destino), obrigatório, está faltando.',
     'LANG_FLAG_FILE_MISSING' => 'Falta bandeira para este país',
+
+    // form designer (ticket 26)
+    'FORM_BUILDER_ADD_FIELDS' => 'Adicionar um campo',
+    'FORM_BUILDER_ADVANCED' => 'Configurações avançadas',
+    'FORM_BUILDER_BACK' => 'Voltar',
+    'FORM_BUILDER_DATE_LABEL' => 'Data',
+    'FORM_BUILDER_DEFAULT_LABEL' => 'Valor padrão',
+    'FORM_BUILDER_DELETE' => 'Excluir',
+    'FORM_BUILDER_DUPLICATE' => 'Duplicar',
+    'FORM_BUILDER_EMPTY' => 'Clique ou arraste um campo do painel esquerdo para construir seu formulário',
+    'FORM_BUILDER_FILE_LABEL' => 'Arquivo',
+    'FORM_BUILDER_HIDDEN_LABEL' => 'Campo oculto',
+    'FORM_BUILDER_INVALID_JSON' => 'O código do formulário não é JSON válido: corrija-o na aba de código',
+    'FORM_BUILDER_LABEL_LABEL' => 'Rótulo',
+    'FORM_BUILDER_NAME_LABEL' => 'Identificador',
+    'FORM_BUILDER_REQUIRED_LABEL' => 'Obrigatório',
 ];

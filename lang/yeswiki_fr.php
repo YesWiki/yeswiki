@@ -2313,4 +2313,20 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Le paramètre destination (langue destination), obligatoire, est manquant.',
     'LANG_FLAG_FILE_MISSING' => 'Drapeau absent pour ce pays',
+
+    // form designer (ticket 26)
+    'FORM_BUILDER_ADD_FIELDS' => 'Ajouter un champ',
+    'FORM_BUILDER_ADVANCED' => 'Paramètres avancés',
+    'FORM_BUILDER_BACK' => 'Retour',
+    'FORM_BUILDER_DATE_LABEL' => 'Date',
+    'FORM_BUILDER_DEFAULT_LABEL' => 'Valeur par défaut',
+    'FORM_BUILDER_DELETE' => 'Supprimer',
+    'FORM_BUILDER_DUPLICATE' => 'Dupliquer',
+    'FORM_BUILDER_EMPTY' => 'Cliquez ou glissez un champ depuis le panneau de gauche pour construire votre formulaire',
+    'FORM_BUILDER_FILE_LABEL' => 'Fichier',
+    'FORM_BUILDER_HIDDEN_LABEL' => 'Champ caché',
+    'FORM_BUILDER_INVALID_JSON' => 'Le code du formulaire n\'est pas du JSON valide : corrigez-le dans l\'onglet code',
+    'FORM_BUILDER_LABEL_LABEL' => 'Étiquette',
+    'FORM_BUILDER_NAME_LABEL' => 'Identifiant',
+    'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatoire',
 ];

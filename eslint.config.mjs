@@ -53,6 +53,9 @@ export default defineConfig([globalIgnores([
       multiDeleteService: 'readable',
       usersTableService: 'readable',
       autocompleteFieldnames: 'readable',
+      // page-level config globals injected by forms_form.twig (form designer)
+      groupsList: 'readable',
+      formAndListIds: 'readable',
       // page-level config globals injected by theme-selector-with-form.twig
       themeSelectorTranslation: 'readable',
       customCSSPresetsPrefix: 'readable',
@@ -96,7 +99,10 @@ export default defineConfig([globalIgnores([
   rules: {
     semi: ['error', 'never'],
 
-    'max-len': ['error', { code: 104 }],
+    // long embedded data (SVG icon paths, HTML template literals, URLs) is exempt
+    'max-len': ['error', {
+      code: 104, ignoreStrings: true, ignoreTemplateLiterals: true, ignoreUrls: true
+    }],
 
     'vars-on-top': 'off',
     'class-methods-use-this': 'off',

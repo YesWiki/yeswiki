@@ -2215,4 +2215,20 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
+
+    // form designer (ticket 26)
+    'FORM_BUILDER_ADD_FIELDS' => 'Add a field',
+    'FORM_BUILDER_ADVANCED' => 'Advanced settings',
+    'FORM_BUILDER_BACK' => 'Back',
+    'FORM_BUILDER_DATE_LABEL' => 'Date',
+    'FORM_BUILDER_DEFAULT_LABEL' => 'Default value',
+    'FORM_BUILDER_DELETE' => 'Delete',
+    'FORM_BUILDER_DUPLICATE' => 'Duplicate',
+    'FORM_BUILDER_EMPTY' => 'Click or drag a field from the left panel to build your form',
+    'FORM_BUILDER_FILE_LABEL' => 'File',
+    'FORM_BUILDER_HIDDEN_LABEL' => 'Hidden field',
+    'FORM_BUILDER_INVALID_JSON' => 'The template code is not valid JSON: fix it in the code tab',
+    'FORM_BUILDER_LABEL_LABEL' => 'Label',
+    'FORM_BUILDER_NAME_LABEL' => 'Identifier',
+    'FORM_BUILDER_REQUIRED_LABEL' => 'Required',
 ];

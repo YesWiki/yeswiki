@@ -80,6 +80,37 @@ class FormController extends YesWikiController
         ]);
     }
 
+    /**
+     * The form designer (javascripts/form-builder/) is pure JS and reads its labels
+     * from wiki.lang; its keys live in the main PHP catalogs, so push them into the
+     * javascript catalog when rendering the designer page.
+     */
+    private function loadDesignerTranslations(): void
+    {
+        $prefixes = ['BAZ_FORM_', 'FORM_BUILDER_', 'BAZ_REACTIONS_', 'BAZAR_VIDEO_'];
+        $names = [
+            'BAZ_ACTIVATE_COMMENTS', 'BAZ_ACTIVATE_COMMENTS_HINT', 'BAZ_ACTIVATE_REACTIONS',
+            'BAZAR_URL_DISPLAY_VIDEO', 'BAZ_BOOKMARKLET_HINT', 'BAZ_FILEFIELD_FILE',
+            'GEOLOCATER_GROUP_GEOLOCATIZATION', 'GEOLOCATER_GROUP_GEOLOCATIZATION_HINT',
+            'EVERYONE', 'IDENTIFIED_USERS', 'MEMBER_OF_GROUP',
+            'NO', 'YES', 'LEFT', 'RIGHT', 'PRIMARY', 'SECONDARY', 'NORMAL_F', 'SMALL_F',
+        ];
+        $designerKeys = array_filter(
+            $GLOBALS['translations'] ?? [],
+            function ($key) use ($prefixes, $names) {
+                foreach ($prefixes as $prefix) {
+                    if (str_starts_with($key, $prefix)) {
+                        return true;
+                    }
+                }
+
+                return in_array($key, $names, true);
+            },
+            ARRAY_FILTER_USE_KEY,
+        );
+        $this->getService(LanguageController::class)->loadTranslations($designerKeys, true);
+    }
+
     public function create()
     {
         if ($this->wiki->UserIsAdmin()) {
@@ -98,6 +129,8 @@ class FormController extends YesWikiController
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE'], false));
                 }
             }
+
+            $this->loadDesignerTranslations();
 
             return $this->render('@core/forms/forms_form.twig', [
                 'form' => $form,
@@ -123,6 +156,8 @@ class FormController extends YesWikiController
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
                 }
             }
+
+            $this->loadDesignerTranslations();
 
             return $this->render('@core/forms/forms_form.twig', [
                 'form' => $form,

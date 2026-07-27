@@ -1705,4 +1705,20 @@ return [
     // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
+
+    // form designer (ticket 26)
+    'FORM_BUILDER_ADD_FIELDS' => 'Afegeix un camp',
+    'FORM_BUILDER_ADVANCED' => 'Paràmetres avançats',
+    'FORM_BUILDER_BACK' => 'Enrere',
+    'FORM_BUILDER_DATE_LABEL' => 'Data',
+    'FORM_BUILDER_DEFAULT_LABEL' => 'Valor per defecte',
+    'FORM_BUILDER_DELETE' => 'Suprimeix',
+    'FORM_BUILDER_DUPLICATE' => 'Duplica',
+    'FORM_BUILDER_EMPTY' => 'Feu clic o arrossegueu un camp des del panell esquerre per construir el formulari',
+    'FORM_BUILDER_FILE_LABEL' => 'Fitxer',
+    'FORM_BUILDER_HIDDEN_LABEL' => 'Camp ocult',
+    'FORM_BUILDER_INVALID_JSON' => 'El codi del formulari no és JSON vàlid: corregiu-lo a la pestanya de codi',
+    'FORM_BUILDER_LABEL_LABEL' => 'Etiqueta',
+    'FORM_BUILDER_NAME_LABEL' => 'Identificador',
+    'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatori',
 ];

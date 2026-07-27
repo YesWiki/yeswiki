@@ -1686,4 +1686,20 @@ return [
     // page translation (ticket 25 revision, formerly tools/lang)
     'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
     'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
+
+    // form designer (ticket 26)
+    'FORM_BUILDER_ADD_FIELDS' => 'Veld toevoegen',
+    'FORM_BUILDER_ADVANCED' => 'Geavanceerde instellingen',
+    'FORM_BUILDER_BACK' => 'Terug',
+    'FORM_BUILDER_DATE_LABEL' => 'Datum',
+    'FORM_BUILDER_DEFAULT_LABEL' => 'Standaardwaarde',
+    'FORM_BUILDER_DELETE' => 'Verwijderen',
+    'FORM_BUILDER_DUPLICATE' => 'Dupliceren',
+    'FORM_BUILDER_EMPTY' => 'Klik of sleep een veld vanuit het linkerpaneel om je formulier op te bouwen',
+    'FORM_BUILDER_FILE_LABEL' => 'Bestand',
+    'FORM_BUILDER_HIDDEN_LABEL' => 'Verborgen veld',
+    'FORM_BUILDER_INVALID_JSON' => 'De formuliercode is geen geldige JSON: corrigeer deze in het codetabblad',
+    'FORM_BUILDER_LABEL_LABEL' => 'Label',
+    'FORM_BUILDER_NAME_LABEL' => 'Identificatie',
+    'FORM_BUILDER_REQUIRED_LABEL' => 'Verplicht',
 ];
