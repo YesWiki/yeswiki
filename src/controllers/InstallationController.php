@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Controller;
 
 use PDO;
+use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\EnvironmentConfiguration;
 use YesWiki\Core\YesWikiLoader;
@@ -343,6 +344,20 @@ class InstallationController
     }
 
     /**
+     * Hashes the admin password with the same 'auto' algorithm the runtime
+     * PasswordHasherFactory (src/services/PasswordHasherFactory.php) configures for
+     * User::class, so the seeded hash is exactly what UserManager would produce.
+     * Historically this was md5() — which still logs in thanks to the runtime's
+     * migrate_from chain, but there is no reason to seed a fresh install with it.
+     */
+    protected function hashAdminPassword(): string
+    {
+        $factory = new PasswordHasherFactory(['admin' => ['algorithm' => 'auto']]);
+
+        return $factory->getPasswordHasher('admin')->hash($this->adminPassword);
+    }
+
+    /**
      * Create the tables and insert the default pages from the .sql.twig templates.
      */
     protected function installDatabaseContent(): void
@@ -351,7 +366,6 @@ class InstallationController
             'prefix' => $this->config['table_prefix'],
             'siteTitle' => $this->config['yeswiki_name'],
             'WikiName' => $this->adminName,
-            'password' => md5($this->adminPassword),
             'email' => $this->adminEmail,
             'rootPage' => $this->config['root_page'],
             'url' => $this->config['base_url'],
@@ -368,7 +382,7 @@ class InstallationController
                 'doubleclickedit' => 'Y',
                 'signuptime' => date('Y-m-d H:i:s'),
                 'show_comments' => 'N',
-                'password' => md5($this->adminPassword),
+                'password' => $this->hashAdminPassword(),
             ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             // default_write_acl is '*' (everyone) -- without this override, anyone could
             // edit the admin account's page; matches UserManager::persistNewUserPage()
