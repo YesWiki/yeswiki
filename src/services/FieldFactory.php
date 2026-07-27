@@ -11,6 +11,9 @@ class FieldFactory
 
     protected $availableFields;
 
+    /** @var array per-type cache of ['byIndex' => [int => string], 'byKey' => [string => int]] */
+    protected $attributeMaps = [];
+
     public function __construct(Wiki $wiki)
     {
         $this->wiki = $wiki;
@@ -81,5 +84,80 @@ class FieldFactory
 
         return false;
         // throw new \Exception('Unknown field type: ' . $values[0]);
+    }
+
+    /**
+     * Positional-index => attribute-key map for a field type (e.g. for 'texte':
+     * [1 => 'name', 2 => 'label', ..., 6 => 'pattern', 7 => 'sub_type']), derived by
+     * reflection from the FIELD_* constants of the class handling that type -- the same
+     * constants its constructor reads the positional template array through, so the map
+     * is by construction in sync with what the field actually consumes. When a subclass
+     * redeclares an index (TextareaField's FIELD_NUM_ROWS = 4 over BazarField's
+     * FIELD_MAX_CHARS = 4), the most-derived declaration names the slot. Index 0 is
+     * always the type keyword and is excluded. Unknown types get an empty map.
+     */
+    public function getAttributeIndexToKeyMap(string $type): array
+    {
+        return $this->getAttributeMap($type)['byIndex'];
+    }
+
+    /** Inverse of getAttributeIndexToKeyMap(): attribute-key => positional index. */
+    public function getAttributeKeyToIndexMap(string $type): array
+    {
+        return $this->getAttributeMap($type)['byKey'];
+    }
+
+    private function getAttributeMap(string $type): array
+    {
+        if (!isset($this->attributeMaps[$type])) {
+            $this->attributeMaps[$type] = $this->buildAttributeMap($type);
+        }
+
+        return $this->attributeMaps[$type];
+    }
+
+    private function buildAttributeMap(string $type): array
+    {
+        if (empty($this->availableFields[$type])) {
+            return ['byIndex' => [], 'byKey' => []];
+        }
+
+        // Walk the class hierarchy base-first so more-derived FIELD_* declarations
+        // override inherited ones -- first by constant NAME (EnumField's FIELD_NAME = 6
+        // retires BazarField's FIELD_NAME = 1 as the meaning of 'name'), then by INDEX
+        // (EmailField's own FIELD_SEE_MAIL_ACLS = 4 names slot 4, not the inherited
+        // FIELD_MAX_CHARS = 4).
+        $chain = [];
+        for ($class = new \ReflectionClass($this->availableFields[$type]); $class; $class = $class->getParentClass()) {
+            array_unshift($chain, $class);
+        }
+
+        $byName = [];
+        foreach ($chain as $depth => $class) {
+            foreach ($class->getReflectionConstants() as $constant) {
+                if ($constant->getDeclaringClass()->getName() !== $class->getName()) {
+                    continue;
+                }
+                $name = $constant->getName();
+                if (!str_starts_with($name, 'FIELD_') || !is_int($constant->getValue())) {
+                    continue;
+                }
+                $byName[$name] = ['index' => $constant->getValue(), 'depth' => $depth];
+            }
+        }
+
+        $byIndex = [];
+        $depthAtIndex = [];
+        foreach ($byName as $name => $info) {
+            $index = $info['index'];
+            if (!isset($byIndex[$index]) || $info['depth'] >= $depthAtIndex[$index]) {
+                $byIndex[$index] = strtolower(substr($name, strlen('FIELD_')));
+                $depthAtIndex[$index] = $info['depth'];
+            }
+        }
+        unset($byIndex[0]); // slot 0 is the type keyword itself, serialized as 'type'
+        ksort($byIndex);
+
+        return ['byIndex' => $byIndex, 'byKey' => array_flip($byIndex)];
     }
 }

@@ -79,7 +79,7 @@
             name="bn_template"
             required
           >
-            {{- form.bn_template ?? ('texte***bf_titre***' ~ _t('BAZ_TITREANNONCE') ~ '*** *** *** *** ***text***1***') -}}
+            {{- form.bn_template ?? ('[{"type": "texte", "name": "bf_titre", "label": "' ~ _t('BAZ_TITREANNONCE') ~ '", "sub_type": "text", "required": "1"}]') -}}
           </textarea>
         </div>
       </div>

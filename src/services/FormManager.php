@@ -92,10 +92,8 @@ class FormManager
     protected function convertWithSpecialParameters($template, $id_nature)
     {
         $template_list = $this->parseTemplate($template);
-        $modify = false;
         for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
             if ($template_list[$temp_index][0] == 'image') {
-                $modify = true;
                 $basePath = $this->getBasePath();
                 $image_comp = $template_list[$temp_index];
                 $default_image_prefix = "defaultimage{$id_nature}_{$image_comp[1]}";
@@ -125,15 +123,16 @@ class FormManager
                 $template_list[$temp_index] = $image_comp;
             }
         }
-        if ($modify) {
-            $template = $this->encodeTemplate($template_list);
-        }
 
+        // Always re-encode (not only when an image field was modified): this is also the
+        // normalization point that converts any legacy `***`-syntax input (e.g. a form
+        // imported from an older remote wiki) to the canonical JSON storage format.
+        //
         // NOTE: unlike the pre-pages version of this method, the return value is NOT
         // SQL-escaped: callers now json_encode() it into the `pages.body` column, and
         // PageManager::save() does its own SQL escaping of that JSON string as a whole.
         // Escaping here too would double-escape and corrupt the stored JSON.
-        return $template;
+        return $this->encodeTemplate($template_list);
     }
 
     protected function prepare_with_special_parameters($form)
@@ -215,6 +214,15 @@ class FormManager
     {
         $body = json_decode($page['body'] ?? '', true) ?? [];
         $activitypub = $page['metadatas']['activitypub'] ?? [];
+
+        // Canonical storage keeps the template as a native JSON array inside the body
+        // (no string-in-string double encoding); the in-memory form array exposes it as
+        // a JSON *string* (what the edit textarea and the API historically carry).
+        // Pre-migration bodies still hold a legacy `***`-syntax string: passed through
+        // as-is, parseTemplate()'s legacy branch reads it.
+        if (is_array($body['bn_template'] ?? null)) {
+            $body['bn_template'] = json_encode($body['bn_template'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        }
 
         $body['bn_activitypub_enable'] = (string)($activitypub['enabled'] ?? '0');
         $body['bn_activitypub_username'] = $activitypub['username'] ?? '';
@@ -352,7 +360,7 @@ class FormManager
             'bn_id_nature' => (string)$data['bn_id_nature'],
             'bn_ce_i18n' => $data['bn_ce_i18n'] ?? 'fr-FR',
             'bn_label_nature' => $data['bn_label_nature'] ?? '',
-            'bn_template' => $data['bn_template'] ?? '',
+            'bn_template' => $this->templateToStorage($data['bn_template'] ?? ''),
             'bn_description' => $data['bn_description'] ?? '',
             'bn_sem_template' => $data['bn_sem_template'] ?? '',
             'bn_sem_reverse_template' => $data['bn_sem_reverse_template'] ?? '',
@@ -416,6 +424,10 @@ class FormManager
         if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
             $data['bn_id_nature'] = $this->findNewId();
         }
+
+        // Canonicalize the template to the JSON storage format (converts legacy
+        // `***`-syntax input, e.g. imports from older remote wikis)
+        $data['bn_template'] = $this->normalizeTemplate($data['bn_template'] ?? '');
 
         $tag = $this->pageManager->suggestFreeTag($this->slugify($data['bn_label_nature'] ?? ''));
 
@@ -597,19 +609,49 @@ class FormManager
     }
 
     /**
-     * Découpe le template et renvoie un tableau structuré.
+     * Parses a stored template into the internal positional field arrays consumed by the
+     * Field constructors (via their FIELD_* index constants).
      *
-     * @param string  Template du formulaire
+     * The canonical storage format is a JSON array of named-attribute field objects
+     * (`[{"type": "texte", "name": "bf_titre", "label": "..."}]`) -- attribute keys are
+     * the FIELD_* constant names of the handling field class (see
+     * FieldFactory::getAttributeIndexToKeyMap()); positions with no named constant
+     * round-trip as numeric string keys. The historical positional `***`-separated
+     * syntax is still READ here -- old page revisions, remote imports from older wikis --
+     * but is never written back: every write path re-encodes to JSON.
      *
-     * @return mixed Le tableau des elements du formulaire et options pour l'element liste
+     * @param string $raw stored template (JSON, or legacy `***` syntax)
+     *
+     * @return array list of positional field arrays, each padded to 16 entries
      */
     public function parseTemplate($raw)
     {
-        // Parcours du template, pour mettre les champs du formulaire avec leurs valeurs specifiques
+        $raw = trim((string)$raw);
+        if ($raw === '') {
+            return [];
+        }
+
+        if ($raw[0] === '[') {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $tableau_template = [];
+                foreach ($decoded as $fieldObject) {
+                    if (is_array($fieldObject)) {
+                        $positional = $this->namedToPositional($fieldObject);
+                        if ($positional !== null) {
+                            $tableau_template[] = $positional;
+                        }
+                    }
+                }
+
+                return $tableau_template;
+            }
+            // not valid JSON after all -- fall through to the legacy parser
+        }
+
+        // Legacy positional syntax, one field per line, `***`-separated
         $tableau_template = [];
         $nblignes = 0;
-
-        // on traite le template ligne par ligne
         $chaine = explode("\n", $raw);
         foreach ($chaine as $ligne) {
             $ligne = trim($ligne);
@@ -618,18 +660,20 @@ class FormManager
                 // on decoupe chaque ligne par le separateur *** (c'est historique)
                 $tablignechampsformulaire = array_map('trim', explode('***', $ligne));
 
-                // TODO find another way to check that the field is valid
-                if (true /* function_exists($tablignechampsformulaire[self::FIELD_TYPE]) */) {
-                    if (count($tablignechampsformulaire) > 3) {
-                        $tableau_template[$nblignes] = $tablignechampsformulaire;
-                        for ($i = 0; $i < 16; $i++) {
-                            if (!isset($tableau_template[$nblignes][$i])) {
-                                $tableau_template[$nblignes][$i] = '';
-                            }
+                if (count($tablignechampsformulaire) > 3) {
+                    $tableau_template[$nblignes] = $tablignechampsformulaire;
+                    for ($i = 0; $i < 16; $i++) {
+                        if (!isset($tableau_template[$nblignes][$i])) {
+                            $tableau_template[$nblignes][$i] = '';
                         }
-
-                        $nblignes++;
                     }
+                    // drop empty slots beyond the 16 the field constructors read, so a
+                    // line's trailing `***` separators parse identically to the JSON form
+                    while (count($tableau_template[$nblignes]) > 16 && end($tableau_template[$nblignes]) === '') {
+                        array_pop($tableau_template[$nblignes]);
+                    }
+
+                    $nblignes++;
                 }
             }
         }
@@ -637,26 +681,97 @@ class FormManager
         return $tableau_template;
     }
 
+    /**
+     * Serializes the internal positional field arrays to the canonical stored form: a
+     * pretty-printed JSON array of named-attribute field objects (the inverse of
+     * parseTemplate()'s JSON branch). Empty slots are omitted; slots with no named
+     * FIELD_* constant on the handling class keep their numeric position as a string
+     * key so unknown/extension data survives round-trips losslessly.
+     */
     public function encodeTemplate($template_list)
     {
-        $new_template_list = [];
-        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
-            $new_line = '';
-            foreach ($template_list[$temp_index] as $value) {
-                if ($value == '') {
-                    $new_line .= ' ';
-                } elseif ($value == '*') {
-                    $new_line .= ' * ';
-                } else {
-                    $new_line .= is_array($value) ? join(',', $value) : $value;
-                }
-                $new_line .= '***';
+        $fieldObjects = [];
+        foreach ($template_list as $positional) {
+            $fieldObject = $this->positionalToNamed((array)$positional);
+            if ($fieldObject !== null) {
+                $fieldObjects[] = $fieldObject;
             }
-            $new_template_list[] = $new_line;
         }
-        $template = implode("\r\n", array_map('trim', $new_template_list));
 
-        return $template;
+        return json_encode($fieldObjects, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    }
+
+    /** One JSON field object => one positional array padded to 16 entries, or null if typeless. */
+    private function namedToPositional(array $fieldObject): ?array
+    {
+        $type = trim((string)($fieldObject['type'] ?? $fieldObject[0] ?? ''));
+        if ($type === '') {
+            return null;
+        }
+
+        $keyToIndex = $this->fieldFactory->getAttributeKeyToIndexMap($type);
+        $positional = array_fill(0, 16, '');
+        $positional[0] = $type;
+        foreach ($fieldObject as $key => $value) {
+            if ($key === 'type' || $key === 0 || $key === '0') {
+                continue;
+            }
+            $index = $keyToIndex[$key] ?? (is_numeric($key) ? (int)$key : null);
+            if ($index === null || $index < 1) {
+                continue;
+            }
+            $positional[$index] = trim(is_array($value) ? join(',', $value) : (string)$value);
+        }
+        ksort($positional);
+
+        return $positional;
+    }
+
+    /** One positional array => one JSON field object with named keys, or null if typeless. */
+    private function positionalToNamed(array $positional): ?array
+    {
+        $type = trim((string)($positional[0] ?? ''));
+        if ($type === '') {
+            return null;
+        }
+
+        $indexToKey = $this->fieldFactory->getAttributeIndexToKeyMap($type);
+        $fieldObject = ['type' => $type];
+        foreach ($positional as $index => $value) {
+            if (!is_int($index) || $index < 1) {
+                continue;
+            }
+            $value = trim(is_array($value) ? join(',', $value) : (string)$value);
+            if ($value === '') {
+                continue;
+            }
+            $fieldObject[$indexToKey[$index] ?? (string)$index] = $value;
+        }
+
+        return $fieldObject;
+    }
+
+    /**
+     * Re-encodes any template input (designer JSON or legacy `***` syntax, e.g. a form
+     * imported from an older remote wiki) to the canonical JSON storage format.
+     */
+    public function normalizeTemplate($template): string
+    {
+        return $this->encodeTemplate($this->parseTemplate((string)$template));
+    }
+
+    /**
+     * Template input (JSON string from the designer/API, legacy `***` syntax from an
+     * import, or an already-decoded array) => the native array of named-attribute field
+     * objects stored inside the page body.
+     */
+    private function templateToStorage($template): array
+    {
+        if (is_array($template)) {
+            return array_values($template);
+        }
+
+        return json_decode($this->normalizeTemplate($template), true) ?? [];
     }
 
     public function prepareData($form)
