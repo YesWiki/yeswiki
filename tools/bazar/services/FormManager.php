@@ -366,17 +366,17 @@ class FormManager
     public function __createOrUpdate($form, $tag) {
         $counter = 0;
         $form_array = [];
-        foreach ($form['prepared'] as $i => $fields) {
-            $classType = get_class($fields);
-            $fields = json_decode(json_encode($fields), true);
-            $fields['name'] = $fields['name'] ?? $fields['type'] . '__' . $counter;
-            $fields['order'] = $counter++;
-            if (isset($fields['options'])) {
-                unset($fields['options']);
+        foreach ($form['prepared'] as $i => $field) {
+            $classType = get_class($field);
+            $field = json_decode(json_encode($field), true);
+            $field['name'] = $field['name'] ?? $field['type'] . '__' . $counter;
+            $field['order'] = $counter++;
+            if (isset($field['options'])) {
+                unset($field['options']);
             }
             $fieldExploded = explode('\\', $classType);
-            $fields['field_type'] = array_pop($fieldExploded);
-            $form_array[] = $fields;
+            $field['field_type'] = array_pop($fieldExploded);
+            $form_array[$field['id']] = $field;
         }
         $newform = [
             'id' => $form['id'] ?? $form['bn_id_nature'],
@@ -392,7 +392,7 @@ class FormManager
             'only_one_entry' => $form['bn_only_one_entry'] ?? '',
             'only_one_entry_message' => $form['bn_only_one_entry_message'],
             'fields' => $form_array,
-            'extra_lang' => $form['extra_lang'] ?? ''
+            'extra_lang' => $form['extra_lang']
         ];
         $saved = $this->pageManager->save($tag, json_encode($newform, JSON_FORCE_OBJECT), '', true);
         return $saved;
@@ -423,7 +423,9 @@ class FormManager
             $form = $this->getFromRawData($data);
             $previous = $this->getOne($tag, 'all');
 
-            $form['extra_langs'] = $previous['extra_langs'];
+            $form['extra_lang'] = $previous['extra_lang'] ?? '';
+            dump("update form");
+            dump($form);
 
           return $this->__createOrUpdate($form, $tag);
         }
@@ -454,7 +456,8 @@ class FormManager
                 $id = $this->getPageTagFromId($id);
         }
 
-        $entries = $this->getEntries($id);
+        $entries = $this->getEntries($id, 'tag');
+        $entries = array_map(function ($el) { return $el['tag'];}, $entries);
         $entries[] = $id;
         $this->pageManager->deleteManyOrphaned($entries);
 
