@@ -459,6 +459,11 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border-radius: 4px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+/* a closed dropdown menu must stay hidden regardless of surrounding layout
+   rules (same rationale as the .yw-modal guard above) */
+.yw-dropdown:not(.yw-dropdown--open) > .yw-dropdown__menu {
+  display: none !important;
+}
 .yw-dropdown--open > .yw-dropdown__menu {
   display: block;
 }
@@ -1160,6 +1165,9 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border: 1px solid var(--neutral-soft-color);
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+*:not(.open) > .dropdown-menu {
+  display: none !important;
 }
 .open > .dropdown-menu {
   display: block;

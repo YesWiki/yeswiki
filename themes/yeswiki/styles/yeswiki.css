@@ -43,8 +43,9 @@
   display: none;
 }
 
-/* menu pages render plain lists: lay them out horizontally in the top bar */
-#yw-topnav .topnavpage ul {
+/* menu pages render plain lists: lay them out horizontally in the top bar
+   (dropdown menus inside the page keep their own layout) */
+#yw-topnav .topnavpage ul:not(.yw-dropdown__menu):not(.dropdown-menu) {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25em;
@@ -123,7 +124,7 @@
     flex-wrap: wrap;
   }
 
-  #yw-topnav .topnavpage ul {
+  #yw-topnav .topnavpage ul:not(.yw-dropdown__menu):not(.dropdown-menu) {
     flex-direction: column;
     width: 100%;
   }
