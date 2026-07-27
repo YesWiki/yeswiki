@@ -9,8 +9,8 @@ Anything stored as a row in the `pages` table: an ordinary wiki page, a form def
 _Avoid_: Page (when the type could be a form or user), record, entity, "type column" (it's a triple, not a column).
 
 **Tag**:
-The globally unique identifier of a piece of Content, regardless of its type. A wiki page, a form, and a user account all draw from the same tag namespace — creating a user named `JohnDoe` is only possible if no page or form already holds that tag. Helper functions resolve collisions by suggesting an alternative tag (e.g. `JohnDoe2`) rather than silently namespacing by type.
-_Avoid_: Slug, name, key.
+The globally unique identifier of a piece of Content, regardless of its type. A wiki page, a form, and a user account all draw from the same tag namespace — creating a user named `JohnDoe` is only possible if no page or form already holds that tag. Helper functions resolve collisions by suggesting an alternative tag rather than silently namespacing by type. *Generated* tags (bazar entries, new forms) are lowercase slugs (`l-ete-a-nantes`, collisions suffixed `-2`); *user-chosen* tags (usernames, hand-created pages) are kept exactly as typed — usernames are never slugified. Existing tags are never rewritten.
+_Avoid_: Name, key, CamelCase id generation (`genere_nom_wiki` is retired for generated tags).
 
 **Metadata**:
 A JSON column on each `pages` row holding structured, user-editable facts about that Content that aren't the body itself: ACLs (replacing the `acls` table), social media metadata, licensing, source URLs, themes, and similar. Versioned along with the row — reverting Content to a prior revision reverts its Metadata too. Absorbs and replaces the pre-existing, non-versioned `AdminContentController::METADATA_PROPERTY` triple (`http://outils-reseaux.org/_vocabulary/metadata`) that today holds at least a `theme` key — that older mechanism is retired, not kept alongside the new column.
@@ -21,8 +21,28 @@ The minimalist CSS/JS design system shipped by core after Bootstrap is dropped, 
 _Avoid_: Bootstrap classes (retired from core; a small legacy vocabulary present in stored wiki content stays styled by core — see ADR-0004's ticket-16 amendment — but is not an API for new code), jQuery (retired from core; one disclosed island remains, see ADR-0005's ticket-16 amendment and ticket 26), theme framework (themes have none imposed).
 
 **Field ACL**:
-A per-field (not per-page) read/write access-control list, using the same ACL syntax as page-level Metadata ACLs. Already implemented for bazar entry fields (`FIELD_READ_ACCESS`/`FIELD_WRITE_ACCESS` in `tools/bazar/fields/BazarField.php`, enforced by `canRead()`/`canEdit()`); this rewrite extends it to `users`-type Content, where it hides sensitive fields (e.g. the hashed password) that otherwise live in the same versioned `body` as everything else, rather than carving those fields into a separate non-versioned table.
+A per-field (not per-page) read/write access-control list, using the same ACL syntax as page-level Metadata ACLs. Already implemented for bazar entry fields (`read_access`/`write_access` attributes, `src/fields/BazarField.php`, enforced by `canRead()`/`canEdit()`); this rewrite extends it to `users`-type Content, where it hides sensitive fields (e.g. the hashed password) that otherwise live in the same versioned `body` as everything else, rather than carving those fields into a separate non-versioned table.
 _Avoid_: Private field, restricted field (both used informally in existing bazar code/UI, but "Field ACL" is the precise mechanism name).
+
+**Form template**:
+The JSON array of field objects stored under `template` in a form's body — the schema of the inputs a visitor fills when creating an entry, and nothing else. Attribute keys are the `FIELD_*` constant names of the handling field class. Form-level behavior (title computation, entry ACLs, presentation, account creation, bookmarklet) never lives here — those are Form properties.
+_Avoid_: `***` syntax (legacy, read-only), `bn_template` (renamed), "prepared json" (ambiguous — see Prepared fields), pseudo-field / special field (retired concept).
+
+**Form property**:
+A named key in a form's body holding form-level configuration: identity (`id`, `label`, `description`, `lang`), behavior (`entry_title_template`, `entry_read_access`, `entry_write_access`, `entry_comment_access`, `entry_permit_activate_comments`, `entry_creates_user`, `entry_bookmarklet`), presentation (`entry_metadatas`), and the legacy-carried `sem_*`, `only_one_entry*`, `activitypub_*`, `condition`. Plain-English names; the `bn_` prefix is retired.
+_Avoid_: `bn_*` keys (renamed), pseudo-fields (form behavior stored as fake template fields — retired).
+
+**Prepared fields**:
+The runtime field objects constructed from the Form template (one per real field), serialized in the API as `prepared` — what rendering consumers iterate. The internal positional arrays feeding the field constructors are an implementation detail and are not exposed anywhere.
+_Avoid_: "prepared json" for the *stored* template (the stored template is the Form template; `prepared` is derived from it), positional template arrays in any public payload.
+
+**Entry title**:
+The `title` key of an entry, always computed at save from the form's `entry_title_template` (a `{{field}}` substitution template; picking a single field stores `{{bf_x}}`). Also the source for the entry's generated tag (slug).
+_Avoid_: `bf_titre` as the title mechanism (it may exist as an ordinary input field a template references, but nothing reads it as "the title" anymore).
+
+**Entry system keys**:
+The non-field keys every entry body carries: `tag` (its page tag), `form_id`, `title`, `created_at`, `updated_at`, `status`. Submission artifacts (`antispam`, `valider`, …) are stripped at save, never stored.
+_Avoid_: `id_fiche`, `id_typeannonce`, `date_creation_fiche`, `date_maj_fiche`, `statut_fiche` (all renamed).
 
 ## Decisions so far
 
