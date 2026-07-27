@@ -13,8 +13,7 @@
   <label class="control-label col-sm-3">{{ _t('USER_USERNAME') }}
     <span class='form-help fa fa-question-circle'
       title="{{ _t('USERNAME_MUST_BE_WIKINAME') }}"
-      onclick="$(this).tooltip('toggle');"
-      onmouseover="$(this).tooltip('toggle');">
+      data-tooltip="tooltip">
     </span>
   </label>
   <div class="controls col-sm-9">
@@ -52,6 +51,6 @@
 
 <hr>
 
-<button class="btn btn-block btn-default" onclick="$('a[href=\'#LoginModal\']').click()">
+<button class="btn btn-block btn-default" onclick="document.querySelector('a[href=\'#LoginModal\']').click()">
   {{ _t('LOGIN_LOGIN') }}
 </button>

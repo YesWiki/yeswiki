@@ -18,7 +18,7 @@ _Avoid_: ACLs (too narrow — ACLs are one key within Metadata, not the whole co
 
 **`yw-*` core styles**:
 The minimalist CSS/JS design system shipped by core after Bootstrap is dropped, namespaced under a `yw-*` class prefix so it can't collide with whatever a theme brings in. Replaces per-theme Bootstrap dependence; existing themes (including `yeswiki-theme-bootstrap3`) are expected to be retired rather than ported, and new themes are CSS-framework-agnostic — free to use any framework or none, since core no longer imposes one. Its interactive behavior is built on **vanilla JS and htmx only** — no jQuery, no Bootstrap JS, no other JS framework, starting with this major release.
-_Avoid_: Bootstrap classes (retired from core), jQuery (retired from core), theme framework (themes have none imposed).
+_Avoid_: Bootstrap classes (retired from core; a small legacy vocabulary present in stored wiki content stays styled by core — see ADR-0004's ticket-16 amendment — but is not an API for new code), jQuery (retired from core; one disclosed island remains, see ADR-0005's ticket-16 amendment and ticket 26), theme framework (themes have none imposed).
 
 **Field ACL**:
 A per-field (not per-page) read/write access-control list, using the same ACL syntax as page-level Metadata ACLs. Already implemented for bazar entry fields (`FIELD_READ_ACCESS`/`FIELD_WRITE_ACCESS` in `tools/bazar/fields/BazarField.php`, enforced by `canRead()`/`canEdit()`); this rewrite extends it to `users`-type Content, where it hides sensitive fields (e.g. the hashed password) that otherwise live in the same versioned `body` as everything else, rather than carving those fields into a separate non-versioned table.

@@ -132,31 +132,27 @@ if ( count($fiches)>0 ) : ?>
 <?php echo $pager_links; ?>
 <?php
 $GLOBALS['wiki']->AddCSSFile('styles/bazar/material-card.css');
-$js = "$(function() {
-  $('.material-card > .mc-btn-action').click(function() {
-    var card = $(this).parent('.material-card');
-    var icon = $(this).children('i');
-    icon.addClass('fa-spin-fast');
+$js = "document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(action) {
+  action.addEventListener('click', function() {
+    var card = action.parentElement;
+    var icon = action.querySelector('i');
+    if (icon) icon.classList.add('fa-spin-fast');
 
-    if (card.hasClass('mc-active')) {
-      card.removeClass('mc-active');
-
+    if (card.classList.contains('mc-active')) {
+      card.classList.remove('mc-active');
       window.setTimeout(function() {
-        icon
-          .removeClass('fa-arrow-left')
-          .removeClass('fa-spin-fast')
-          .addClass('fa-bars');
-
+        if (icon) {
+          icon.classList.remove('fa-arrow-left', 'fa-spin-fast');
+          icon.classList.add('fa-bars');
+        }
       }, 800);
     } else {
-      card.addClass('mc-active');
-
+      card.classList.add('mc-active');
       window.setTimeout(function() {
-        icon
-          .removeClass('fa-bars')
-          .removeClass('fa-spin-fast')
-          .addClass('fa-arrow-left');
-
+        if (icon) {
+          icon.classList.remove('fa-bars', 'fa-spin-fast');
+          icon.classList.add('fa-arrow-left');
+        }
       }, 800);
     }
   });
@@ -222,31 +218,27 @@ $GLOBALS['wiki']->AddJavascript($js);
 <?php echo $pager_links; ?>
 <?php
 $GLOBALS['wiki']->AddCSSFile('styles/bazar/material-card.css');
-$js = "$(function() {
-  $('.material-card > .mc-btn-action').click(function() {
-    var card = $(this).parent('.material-card');
-    var icon = $(this).children('i');
-    icon.addClass('fa-spin-fast');
+$js = "document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(action) {
+  action.addEventListener('click', function() {
+    var card = action.parentElement;
+    var icon = action.querySelector('i');
+    if (icon) icon.classList.add('fa-spin-fast');
 
-    if (card.hasClass('mc-active')) {
-      card.removeClass('mc-active');
-
+    if (card.classList.contains('mc-active')) {
+      card.classList.remove('mc-active');
       window.setTimeout(function() {
-        icon
-          .removeClass('fa-arrow-left')
-          .removeClass('fa-spin-fast')
-          .addClass('fa-bars');
-
+        if (icon) {
+          icon.classList.remove('fa-arrow-left', 'fa-spin-fast');
+          icon.classList.add('fa-bars');
+        }
       }, 800);
     } else {
-      card.addClass('mc-active');
-
+      card.classList.add('mc-active');
       window.setTimeout(function() {
-        icon
-          .removeClass('fa-bars')
-          .removeClass('fa-spin-fast')
-          .addClass('fa-arrow-left');
-
+        if (icon) {
+          icon.classList.remove('fa-bars', 'fa-spin-fast');
+          icon.classList.add('fa-arrow-left');
+        }
       }, 800);
     }
   });

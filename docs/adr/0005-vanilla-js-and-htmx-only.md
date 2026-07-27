@@ -10,3 +10,20 @@ As part of dropping Bootstrap from core (ADR-0004), we also decided core's inter
 ## Consequences
 
 Every tool absorbed into core (or rewritten while there) needs its JS audited — anything currently depending on jQuery or Bootstrap's JS components (modals, tooltips, tabs) needs an htmx or vanilla-JS replacement, not a drop-in jQuery-free polyfill.
+
+## Amendment (ticket 16, 2026-07-27): one disclosed jQuery island, and the Vue boundary
+
+The removal landed with a single, bounded exception: the bazar form-designer
+admin page (`javascripts/form-edit-template/`, built on the vendored jQuery
+`formBuilder` plugin, which has no vanilla equivalent) keeps jQuery,
+self-loaded by `templates/forms/forms_form.twig` only — no other page loads
+it, and no Bootstrap file is loaded even there (the plugin's hardcoded `btn*`
+class names are styled by a scoped CSS shim). Ticket 26 tracks replacing the
+plugin and removing jQuery entirely.
+
+The pre-existing Vue-based "dynamic entries index" subsystem (BazarTable/
+DynTable/BazarMap/BazarCalendar and the actions-builder app) was grandfathered
+as-is in ticket 24 (user-confirmed boundary) and stays: this ADR governs new
+core JS, which remains vanilla + htmx; the Vue island neither grew nor was it
+ported to something heavier — its jQuery/DataTables usage was removed like
+everywhere else.

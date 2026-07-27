@@ -50,12 +50,12 @@
   <p class="type-modif-container">
     <label for="typemajdefault">
       <input type=radio name="typemaj" value="reinitialiser" id="typemajdefault" checked
-            onClick="$('.edit-theme-container').slideUp()">
+            onClick="document.querySelectorAll('.edit-theme-container').forEach((el) => { el.style.display = 'none' })">
       <span>{{ _t('GERERTHEMES_INIT_THEME_FOR_SELECTED_PAGES') }}</span>
     </label>
     <label for="typemajajouter">
       <input type=radio name="typemaj" value="modifier" id="typemajajouter"
-            onClick="$('.edit-theme-container').slideDown()">
+            onClick="document.querySelectorAll('.edit-theme-container').forEach((el) => { el.style.display = '' })">
       <span>{{ _t('GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES') }}</span>
     </label>
   </p>

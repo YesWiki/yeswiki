@@ -30,7 +30,7 @@
     <input type="hidden" name="admin_password_conf" value="{{ adminPasswordConf }}">
     <div class="form-actions">
       <button type="submit" class="btn btn-primary pull-right">{{ _t('TRY_AGAIN') }}</button>
-      <button type="submit" onclick="$('#form-actions').attr('action', $('#form-actions').attr('action').replace('=install', '=default'));" class="btn btn-primary">{{ _t('GO_BACK') }}</button>
+      <button type="submit" onclick="const f = document.getElementById('form-actions'); f.action = f.action.replace('=install', '=default');" class="btn btn-primary">{{ _t('GO_BACK') }}</button>
     </div>
   </form>
 {% endif %}

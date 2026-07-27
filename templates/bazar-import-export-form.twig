@@ -54,7 +54,7 @@
 		{
 			cCSVBtn.addEventListener('click', function ()
 			{
-				downloadCSV(removeCSVCrochet($('.precsv').html()), '{% block downloadFileName %}{{filename}}{% endblock %}');return false;
+				downloadCSV(removeCSVCrochet(document.querySelector('.precsv').innerHTML), '{% block downloadFileName %}{{filename}}{% endblock %}');return false;
 			});		
 		}
 	});	  

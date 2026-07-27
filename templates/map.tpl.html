@@ -309,8 +309,8 @@ endforeach;
 import { drawGeometries } from "./javascripts/leaflet-draw.helper.js"
 
 var map'.$params['nbbazarliste'].';	
-$(document).ready(function() {
-    if ($(\'#osmmap'.$params['nbbazarliste'].'\').length>0) {
+document.addEventListener(\'DOMContentLoaded\', function() {
+    if (document.getElementById(\'osmmap'.$params['nbbazarliste'].'\')) {
 		'.$js.'
 		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
 		map'.$params['nbbazarliste'].'.addLayer(provider);
