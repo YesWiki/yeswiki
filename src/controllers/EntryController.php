@@ -289,7 +289,7 @@ class EntryController extends YesWikiController
             list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
             $post = $this->getRequest()->request;
             try {
-                if ($state && $post->has('bf_titre')) {
+                if ($state && $post->has('valider')) {
                     $entry = $this->entryManager->create($formId, $post->all());
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
                         'id' => $entry['tag'],
@@ -354,7 +354,7 @@ class EntryController extends YesWikiController
         $incomingUrl = $this->getIncomingUrl();
         $post = $this->getRequest()->request;
         try {
-            if ($state && $post->has('bf_titre')) {
+            if ($state && $post->has('valider')) {
                 $entry = $this->entryManager->update($entryId, $post->all());
                 $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
                     'id' => $entry['tag'],
