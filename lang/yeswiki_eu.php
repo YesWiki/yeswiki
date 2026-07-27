@@ -2054,4 +2054,5 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'FORM_EDIT_PRESENTATION' => 'Fitxen aurkezpena',
     'FORM_EDIT_CREATES_USER' => 'Fitxa bakoitzak erabiltzaile kontu bat sortzen du',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'Iragazi eremuak…',
 ];

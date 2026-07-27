@@ -2239,4 +2239,5 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'FORM_EDIT_PRESENTATION' => 'Entry presentation',
     'FORM_EDIT_CREATES_USER' => 'Each entry creates a wiki user account',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'Filter fields…',
 ];

@@ -1728,4 +1728,5 @@ return [
     'FORM_EDIT_PRESENTATION' => 'Apresentação das fichas',
     'FORM_EDIT_CREATES_USER' => 'Cada ficha cria uma conta de usuário',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'Filtrar os campos…',
 ];

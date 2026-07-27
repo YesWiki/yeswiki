@@ -20,8 +20,10 @@
 /* ------------------------------------------------ sidebar */
 
 .yw-fb__sidebar {
-  flex: 0 0 280px;
-  max-width: 280px;
+  /* the sidebar sits on the RIGHT of the canvas (old-builder muscle memory) */
+  order: 2;
+  flex: 0 0 340px;
+  max-width: 340px;
   position: sticky;
   top: 8px;
   border: 1px solid var(--neutral-light-color, #ddd);
@@ -39,23 +41,24 @@
 
 .yw-fb__palette-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
 }
 
 .yw-fb__palette-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 10px 6px;
+  gap: 4px;
+  padding: 8px 4px;
   border: 1px solid var(--neutral-light-color, #ddd);
   border-radius: 6px;
   background: #fff;
   cursor: grab;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .yw-fb__palette-item:hover {
@@ -65,10 +68,19 @@
 
 .yw-fb__palette-icon svg,
 .yw-fb__palette-icon i {
-  width: 20px;
-  height: 20px;
-  font-size: 18px;
+  width: 16px;
+  height: 16px;
+  font-size: 14px;
   fill: currentColor;
+}
+
+.yw-fb__filter {
+  margin-bottom: 8px;
+}
+
+/* floating button opening the sidebar drawer on narrow screens */
+.yw-fb__drawer-toggle {
+  display: none;
 }
 
 /* ------------------------------------------------ settings */
@@ -163,6 +175,7 @@
 /* ------------------------------------------------ canvas */
 
 .yw-fb__canvas {
+  order: 1;
   flex: 1 1 auto;
   min-width: 0;
   display: flex;
@@ -278,14 +291,29 @@
 }
 
 @media (max-width: 800px) {
-  .yw-fb {
-    flex-direction: column;
+  .yw-fb__sidebar {
+    position: fixed;
+    z-index: 1040;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(340px, 90vw);
+    max-height: none;
+    border-radius: 0;
+    transform: translateX(100%);
+    transition: transform 0.2s ease;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.2);
   }
 
-  .yw-fb__sidebar {
-    position: static;
-    flex-basis: auto;
-    max-width: none;
-    width: 100%;
+  .yw-fb--drawer-open .yw-fb__sidebar {
+    transform: none;
+  }
+
+  .yw-fb__drawer-toggle {
+    display: block;
+    position: fixed;
+    z-index: 1041;
+    right: 12px;
+    bottom: 12px;
   }
 }

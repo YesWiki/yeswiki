@@ -1710,4 +1710,5 @@ return [
     'FORM_EDIT_PRESENTATION' => 'Fiche-presentatie',
     'FORM_EDIT_CREATES_USER' => 'Elke fiche maakt een gebruikersaccount aan',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'Velden filteren…',
 ];

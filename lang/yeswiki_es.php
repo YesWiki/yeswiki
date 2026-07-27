@@ -2010,4 +2010,5 @@ return [
     'FORM_EDIT_PRESENTATION' => 'Presentación de las fichas',
     'FORM_EDIT_CREATES_USER' => 'Cada ficha crea una cuenta de usuario',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'Filtrar los campos…',
 ];

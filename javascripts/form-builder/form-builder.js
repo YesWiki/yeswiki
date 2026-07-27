@@ -199,6 +199,7 @@ function boot() {
   initCanvasSort()
   bindTabsAndSubmit()
   bindTitleSelect()
+  initDrawer()
 }
 
 function showError(message) {
@@ -212,7 +213,16 @@ function clearError() {
 
 // ---------------------------------------------------------------- palette
 
+// case- and diacritic-insensitive match ("hidden" finds "Champ caché"'s
+// normalized form too — matching happens on the translated label)
+function normalizeForFilter(text) {
+  return String(text).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+}
+
 function renderPalette() {
+  const filter = el(`<input type="search" class="yw-input yw-fb__filter" placeholder="${esc(_t('FORM_BUILDER_FILTER'))}"/>`)
+  paletteEl.insertBefore(filter, paletteEl.querySelector('.yw-fb__palette-grid'))
+
   const grid = paletteEl.querySelector('.yw-fb__palette-grid')
   paletteEntries.forEach(({ type, config }) => {
     const entry = config.set || config.field
@@ -224,6 +234,15 @@ function renderPalette() {
     grid.append(item)
   })
 
+  // live filter on the palette only — a selected field's settings are never filtered
+  filter.addEventListener('input', () => {
+    const needle = normalizeForFilter(filter.value.trim())
+    grid.querySelectorAll('.yw-fb__palette-item').forEach((item) => {
+      const label = item.querySelector('.yw-fb__palette-label').textContent
+      item.classList.toggle('hide', needle !== '' && !normalizeForFilter(label).includes(needle))
+    })
+  })
+
   if (window.Sortable) {
     window.Sortable.create(grid, {
       group: { name: 'fb', pull: 'clone', put: false },
@@ -231,6 +250,17 @@ function renderPalette() {
       animation: 150
     })
   }
+}
+
+// narrow screens: the sidebar is a right-side drawer behind a floating button
+function initDrawer() {
+  const toggle = el(`<button type="button" class="yw-btn yw-btn--primary yw-fb__drawer-toggle"
+    aria-expanded="false" title="${esc(_t('FORM_BUILDER_ADD_FIELDS'))}"><i class="fa fa-plus"></i></button>`)
+  toggle.addEventListener('click', () => {
+    const open = container.classList.toggle('yw-fb--drawer-open')
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false')
+  })
+  container.append(toggle)
 }
 
 function addFromPalette(type, index = fields.length) {

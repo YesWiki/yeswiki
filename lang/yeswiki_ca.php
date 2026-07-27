@@ -1729,4 +1729,5 @@ return [
     'FORM_EDIT_PRESENTATION' => 'Presentació de les fitxes',
     'FORM_EDIT_CREATES_USER' => 'Cada fitxa crea un compte d’usuari',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'Filtra els camps…',
 ];

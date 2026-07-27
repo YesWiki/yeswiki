@@ -2337,4 +2337,5 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'FORM_EDIT_PRESENTATION' => 'Présentation des fiches',
     'FORM_EDIT_CREATES_USER' => 'Chaque fiche crée un compte utilisateur',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'Filtrer les champs…',
 ];

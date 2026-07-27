@@ -1972,4 +1972,5 @@ return [
     'FORM_EDIT_PRESENTATION' => 'பதிவு காட்சி அமைப்பு',
     'FORM_EDIT_CREATES_USER' => 'ஒவ்வொரு பதிவும் ஒரு பயனர் கணக்கை உருவாக்கும்',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'புலங்களை வடிகட்டு…',
 ];

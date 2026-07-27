@@ -2062,4 +2062,5 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'FORM_EDIT_PRESENTATION' => 'Prezentarea fișelor',
     'FORM_EDIT_CREATES_USER' => 'Fiecare fișă creează un cont de utilizator',
     'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
+    'FORM_BUILDER_FILTER' => 'Filtrează câmpurile…',
 ];
