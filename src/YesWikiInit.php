@@ -425,6 +425,22 @@ class Init
             ],
             // bazar generic config (ticket 24, formerly tools/bazar's config.yaml)
             'baz_menu' => 'formulaire,consulter,saisir,listes,importer,exporter',
+            // webhooks generic config (ticket 20, formerly the webhooks extension's config.yaml)
+            'webhooks_formats' => [
+                'raw' => 'WEBHOOKS_FORMAT_RAW',
+                'activitypub' => 'WEBHOOKS_FORMAT_ACTIVITYPUB',
+                'mattermost' => 'WEBHOOKS_FORMAT_MATTERMOST',
+                'slack' => 'WEBHOOKS_FORMAT_SLACK',
+                'yeswiki' => 'WEBHOOKS_FORMAT_YESWIKI',
+            ],
+            // If no actor field is defined semantically, this value will be used
+            'webhooks_activitypub_default_actor' => '',
+            // If an actor is defined, we can override the base URL with this config
+            'webhooks_activitypub_actors_base_url' => '',
+            // Bot config (works for Mattermost if username and profile picture override is enabled)
+            // See https://docs.mattermost.com/developer/webhooks-incoming.html
+            'webhooks_bot_name' => 'YesWiki Bot',
+            'webhooks_bot_icon' => '%base_url%styles/webhooks/default-bot.png',
             'BAZ_ENVOI_MAIL_ADMIN' => false,
             'BAZ_ADRESSE_MAIL_ADMIN' => 'noreply@%mail_domain%',
             // liste_accordeon.tpl.html and its sibling legacy display modes (agenda, blog,

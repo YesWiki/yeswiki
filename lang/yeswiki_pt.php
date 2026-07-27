@@ -1665,4 +1665,21 @@ return [
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Pesquisar...',
     'DATATABLE_NO_RESULTS' => 'Nenhum resultado encontrado',
+
+    // webhooks (ticket 20, formerly the webhooks extension)
+    'WEBHOOKS_POST_ERROR' => "A background action did not run as expected.\nYou can help the site administrators by giving them this information:\n error executing '{function}' in '{method}'.",
+    'WEBHOOKS_FORMAT_YESWIKI' => 'YesWiki',
+    'WEBHOOKS_CONFIG_TITLE' => 'Webhooks de saída',
+    'WEBHOOKS_CONFIG_DESC' => 'Os URLs que você definir abaixo serão chamados cada vez que um arquivo BazaR for adicionado / modificado / excluído.',
+    'WEBHOOKS_FORMAT_RAW' => 'Bruto',
+    'WEBHOOKS_FORMAT_ACTIVITYPUB' => 'ActivityPub',
+    'WEBHOOKS_FORMAT_MATTERMOST' => 'Mattermost',
+    'WEBHOOKS_FORMAT_SLACK' => 'Slack',
+    'WEBHOOKS_URL_PLACEHOLDER' => 'Endereço URL',
+    'WEBHOOKS_UPDATE' => 'Atualizar',
+    'WEBHOOKS_ANONYMOUS_USER' => 'Anônimo',
+    'WEBHOOKS_FORMS_ALL' => 'Todos os itens do Bazar',
+    'WEBHOOKS_ERROR_INVALID_URL' => 'O link fornecido não é válido',
+    'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'Um ou vários formulários selecionados não estão semanticamente definidos, o formato ActivityPub não pode ser usado',
+    'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Visible uniquement pour les administrateurs',
 ];

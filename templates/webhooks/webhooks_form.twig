@@ -1,0 +1,48 @@
+<hr>
+<strong>{{ _t('WEBHOOKS_CONFIG_TITLE') }}</strong>
+<p class="text-info">{{ _t('WEBHOOKS_CONFIG_DESC') }}</p>
+
+{{ include_css('styles/webhooks/webhooks-form.css') }}
+<form action="{{ url }}" method="POST" class="webhooks-form">
+    <div class="yw-form-group">
+        {% set userIsAdmin = hasAcl('@admins') %}
+        {% set delta = userIsAdmin ? 0 : -1 %}
+        {% for i in 0..(webhooks|length + delta) %}
+            <div class="webhooks-form-col">
+                <select class="yw-input" name="format[]" {{ (webhooks[i] is defined and not userIsAdmin) ? 'disabled' : '' }}>
+                    {% for key,label in formats %}
+                        <option value="{{ key }}" {{ (webhooks[i] is defined and webhooks[i].format is same as key) ? "selected" : "" }}>{{ _t(label) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="webhooks-form-col">
+                <select class="yw-input" name="form[]" {{ (webhooks[i] is defined and not userIsAdmin) ? 'disabled' : '' }}>
+                    <option value="0">{{ _t('WEBHOOKS_FORMS_ALL') }}</option>
+                    {% for form in forms %}
+                        <option value="{{ form.bn_id_nature }}" {{ (webhooks[i] is defined and (webhooks[i].form)|number_format is same as form.bn_id_nature) ? "selected" : "" }}>{{ form.bn_label_nature }}</option>
+                    {% endfor %}
+                    {% if showComment %}
+                    <option value="comments" {{ (webhooks[i] is defined and webhooks[i].form == 'comments') ? "selected" : "" }}>{{ _t('WEBHOOKS_COMMENTS') }}</option>
+                    {% endif %}
+                </select>
+            </div>
+            <div class="webhooks-form-col webhooks-form-col--url">
+                <input 
+                    type="text" 
+                    name="url[]" {{ (webhooks[i] is defined and not userIsAdmin) ? 'disabled data-toggle="tooltip" data-placement="bottom" title="' ~ _t('WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS') ~ '"' : ''}}
+                    value="{{ webhooks[i] is defined ? (userIsAdmin ? webhooks[i].url : "***** #{ _t('WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS')  } *****") : "" }}" 
+                    class="yw-input" 
+                    placeholder="{{ _t('WEBHOOKS_URL_PLACEHOLDER') }}">
+            </div>
+        {% endfor %}
+    </div>
+    <span class="input-group-btn">
+        <button
+            id="btn-set-webhooks"
+            {% if not userIsAdmin %} disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_NEED_ADMIN_RIGHTS') }}"{% endif %}
+            class="yw-btn yw-btn--primary pull-right" 
+            type="submit">
+            {{ _t('WEBHOOKS_UPDATE') }}
+        </button>
+    </span>
+</form>

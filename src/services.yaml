@@ -47,3 +47,7 @@ services:
   YesWiki\Core\Service\EntryDateService:
     tags:
       - { name: yeswiki.event_subscriber }
+  # outgoing webhooks on comment/entry events (ticket 20)
+  YesWiki\Core\Controller\WebhooksController:
+    tags:
+      - { name: yeswiki.event_subscriber }

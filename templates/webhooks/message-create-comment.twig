@@ -1,0 +1,6 @@
+**AJOUT** Commentaire "{{ data.comment.tag }}" ({{ url }}{{ data.comment.tag }})
+{% if data.comment.commentOn != data.comment.parentPage.tag %}
+en réponse à "{{ data.comment.commentOn }}" ({{ url }}{{ data.comment.commentOn }})
+{% endif %}
+sur la page "{{ data.comment.parentPage.tag }}" ({{ url }}{{ data.comment.parentPage.tag }}),
+ajouté par {{ user }}
