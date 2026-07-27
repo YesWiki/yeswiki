@@ -47,6 +47,9 @@
           <a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'modif_liste', idliste: key }}) }}">
             <i class="fa fa-pencil-alt"></i>
           </a>
+          {% if isMultilang %}
+          <a class="btn btn-default btn-xs" href="{{ url({ params: { vue: 'listes', action: 'traduire_liste', idliste: key }}) }}">
+          {% endif %}
           {% endif %}
           {% if list.canDelete %}
           <a

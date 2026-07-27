@@ -41,6 +41,7 @@ class BazarAction extends YesWikiAction
 
     // Lists
     public const ACTION_LIST_CREATE = 'saisir_liste';
+    public const ACTION_LIST_TRANSLATE = 'traduire_liste';
     public const ACTION_LIST_EDIT = 'modif_liste';
     public const ACTION_LIST_DELETE = 'supprimer_liste';
 
@@ -257,6 +258,12 @@ class BazarAction extends YesWikiAction
                         }
 
                         return $listController->update($req->query->get('idliste'));
+                    case self::ACTION_LIST_TRANSLATE:
+                        if ($this->isWikiHibernated()) {
+                            return $this->getMessageWhenHibernated();
+                        }
+
+                        return $listController->translate($req->query->get('idliste'));
                     case self::ACTION_LIST_DELETE:
                         if ($this->isWikiHibernated()) {
                             return $this->getMessageWhenHibernated();

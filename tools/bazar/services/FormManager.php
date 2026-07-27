@@ -250,9 +250,7 @@ class FormManager
         }
         $form['template'] = $template_list;
         $form['prepared'] = $this->prepareData($form);
-        if ($modify == true) {
-            $form['bn_template'] = $this->encodeTemplate($template_list);
-        }
+        $form['bn_template'] = $this->encodeTemplate($template_list);
 
         return $form;
     }

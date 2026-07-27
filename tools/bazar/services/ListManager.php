@@ -49,10 +49,10 @@ class ListManager
         return boolval($this->tripleStore->exist($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', ''));
     }
 
-    public function getOne($id, $parent = null): ?array
+    public function getOne($id, $parent = null, $lang='default'): ?array
     {
-        if (isset($this->cachedLists[$id]) && $parent === null) { // we cache all information, not just a level
-            return $this->cachedLists[$id];
+        if (isset($this->cachedLists[$id. $lang]) && $parent === null) { // we cache all information, not just a level
+            return $this->cachedLists[$id. $lang];
         }
 
         // Ensure a list exist with this ID
@@ -60,7 +60,7 @@ class ListManager
             return null;
         }
 
-        $page = $this->pageManager->getOne($id);
+        $page = $this->pageManager->getOne($id, null, true, false, null, $lang);
         if (empty($page)) {
             echo '<div class="alert alert-danger">List id not found: ' . $id . '</div>';
 
@@ -68,7 +68,7 @@ class ListManager
         }
         $data = json_decode($page['body'], true);
         if ($parent != null) {
-            $this->cachedLists[$id] = $data;
+            $this->cachedLists[$id. $lang] = $data;
         }
 
         if ($parent === 'root') {
@@ -121,18 +121,32 @@ class ListManager
         return $id;
     }
 
-    public function update($id, $title, $nodes)
+    public function update($id, $title, $nodes, $extra_lang = [])
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
-        $json = json_encode([
-            'id' => $id,
-            'title' => $title,
-            'nodes' => $this->sanitizeHMTL($nodes),
-        ], JSON_FORCE_OBJECT);
+        $list = [
+        'id' => $id,
+        'title' => $title,
+        'nodes' => $this->sanitizeHMTL($nodes)
+        ];
+        if (!empty($extra_lang)) {
+            $sanitized_langs = [];
+            foreach ($extra_lang as $lang => $value) {
+                $sanitized_langs[$lang] = [];
+                if (array_key_exists('title', $value)) {
+                    $sanitized_langs[$lang]['title'] = $this->htmlPurifierService->cleanHTML($value['title']);
+                }
+                if (array_key_exists('nodes', $value)) {
+                    $sanitized_langs[$lang]['nodes'] = $this->sanitizeHMTL($value['nodes']);
+                }
+            }
+            $list['extralang'] = $sanitized_langs;
+        }
+        $json = json_encode($list, JSON_FORCE_OBJECT);
         $this->pageManager->save($id, $json);
 
         // cache the newly created list
@@ -173,7 +187,9 @@ class ListManager
     private function sanitizeHMTL(array $nodes)
     {
         return array_map(function ($node) {
-            $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
+            if (array_key_exists('label', $node)) {
+                $node['label'] = $this->htmlPurifierService->cleanHTML($node['label']);
+            }
             $node['children'] = $this->sanitizeHMTL($node['children'] ?? []);
 
             return $node;
