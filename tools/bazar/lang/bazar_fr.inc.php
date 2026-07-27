@@ -402,4 +402,8 @@ return [
     'BAZ_CORRESPONDANCE_ERROR' => 'action bazarliste : parametre correspondance mal rempli : il doit etre de la forme correspondance="identifiant_1=identifiant_2" ou correspondance="identifiant_1=identifiant_2, identifiant_3=identifiant_4"',
     'BAZ_CORRESPONDANCE_ERROR2' => "action bazarliste : le paramètre correspondance est mal rempli.\nIl doit être de la forme correspondance=\"identifiant_1=identifiant_2\" ou correspondance=\"identifiant_1=identifiant_2, identifiant_3=identifiant_4\"",
     'BAZ_FORM_EDIT_GEO_LABEL' => 'Géolocalisation de l\'adresse',
-];
+    'BAZ_TRANSLATE' => 'Traduire',
+    'BAZ_TRANSLATE_FORM' => 'Traduire le formulaire',
+    'BAZ_TRANSLATE_IN' => 'Traduire en',
+    'BAZ_TRANSLATION' => 'Traduction',
+    ];

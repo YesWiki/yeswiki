@@ -177,7 +177,7 @@ class FormController extends YesWikiController
             $form = $this->formManager->getOne($tag, 'all');
             unset($form['template']);
             unset($form['prepared']);
-            if ($form['extralang'] === '') {
+            if (isset($form['extralang']) and $form['extralang'] === '') {
                 unset($form['extralang']);
             }
             $default_lang = $this->wiki->config['default_language'] ?? 'fr';

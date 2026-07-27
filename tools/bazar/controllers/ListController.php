@@ -60,6 +60,7 @@ class ListController extends YesWikiController
             'lists' => $lists,
             'loggedUser' => $this->authController->getLoggedUser(),
             'canCreate' => !$this->securityController->isWikiHibernated(),
+            'isMultilang' => isset($this->wiki->config['supported_langs']),
         ]);
     }
 

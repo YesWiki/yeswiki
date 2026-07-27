@@ -19,7 +19,7 @@ export default {
               class="form-control" />
         <template v-for="lang in langs">
           <input  v-model="node[lang]" type="text" class="form-control extra_lang_input"
-          placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedlanguage === lang"/>
+          placeholder="${_t('BAZ_TRANSLATION')}" v-if="selectedlanguage === lang"/>
         </template>
       </div>
       <div v-show="depth == 0 || expanded" class="list-node-children">

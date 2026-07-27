@@ -327,4 +327,5 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'EDIT_TOOLTIP_TEXT' => 'Déplacer les points ou carrés pour modifier les formes.',
     'EDIT_TOOLTIP_SUBTEXT' => 'Cliquer sur "Annuler" pour abandonner les changements.',
     'REMOVE_TOOLTIP_TEXT' => 'Cliquer sur une forme pour la supprimer.',
+    'BAZ_TRANSLATION' => 'Traduction',
 ];

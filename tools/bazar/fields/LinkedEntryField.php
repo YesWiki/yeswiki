@@ -151,7 +151,7 @@ class LinkedEntryField extends BazarField
         $new = parent::mapToFieldArray($fieldProps);
         $new[self::FIELD_QUERY] = $fieldProps['query'];
         $new[self::FIELD_LIMIT] = $fieldProps['limit'];
-        $new[self::FIELD_LINK_TYPE] = $fieldProps['linkType'];
+        $new[self::FIELD_LINK_TYPE] = $fieldProps['linkType'] ?? '';
         $new[self::FIELD_TEMPLATE] = $fieldProps['template'];
         $new[self::FIELD_OTHER_PARAMS] = $fieldProps['otherParams'];
         ksort($new);

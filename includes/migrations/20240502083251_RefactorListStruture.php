@@ -5,6 +5,20 @@ use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
 
+function convertDataStructure2024050208($json)
+{
+    if (isset($json['titre_liste'])) {
+        $newJson = ['title' => $json['titre_liste'], 'nodes' => []];
+        foreach ($json['label'] as $id => $label) {
+            $newJson['nodes'][] = ['id' => $id, 'label' => $label];
+        }
+
+        return $newJson;
+    }
+
+    return $json;
+}
+
 // Convert old List { titre_liste: "My List", label: { id1: "first Key", id2: "second id" } }
 // to { title: "My List", values: [{ id: "id1", label: "first id"}, { id: "id2", label: "second id"}]}
 class RefactorListStruture extends YesWikiMigration
@@ -19,7 +33,7 @@ class RefactorListStruture extends YesWikiMigration
             $tag = $list['resource'];
             $page = $pageManager->getOne($tag);
             $oldJson = json_decode($page['body'], true);
-            $newJson = $listManager->convertDataStructure($oldJson);
+            $newJson = convertDataStructure2024050208($oldJson);
             $pageManager->save($tag, json_encode($newJson));
         }
     }

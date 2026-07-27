@@ -19,11 +19,11 @@
     <div class="control-group form-group">
 		<label class="control-label col-sm-3">
 			<span class="required_symbol">*&nbsp;</span>
-			{{ _t('BAZ_FORM_NAME') }}
+			{{ _t('BAZ_NOM_FORMULAIRE') }}
 		</label>
 		<div class="controls input-group col-sm-9">
 			<input id="formTitle" type="text" name="title" v-model="form.title"
-			       placeholder="{{ _t('BAZ_FORM_NAME') }}" class="form-control" disable />
+			       placeholder="{{ _t('BAZ_NOM_FORMULAIRE') }}" class="form-control" disable />
 			<template v-for="lang in extraLangsList">
 			<input type="text" v-model="extraLangsValues[lang]['title']" class="form-control extra_lang_input" placeholder="{{ _t('BAZ_TRANSLATION') }}" v-if="selectedLanguage === lang"/>
 			</template>
@@ -32,11 +32,11 @@
 	<div class="control-group form-group">
 		<label class="control-label col-sm-3">
 			<span class="required_symbol">*&nbsp;</span>
-			{{ _t('BAZ_FORM_DESC') }}
+			{{ _t('BAZ_DESCRIPTION') }}
 		</label>
 		<div class="controls input-group col-sm-9">
 			<textarea id="formDesc" type="text" name="Description" v-model="form.description"
-			       placeholder="{{ _t('BAZ_FORM_DESC') }}" class="form-control" disabled>
+			       placeholder="{{ _t('BAZ_DESCRIPTION') }}" class="form-control" disabled>
 
 										</textarea>
 			<template v-for="lang in extraLangsList">
