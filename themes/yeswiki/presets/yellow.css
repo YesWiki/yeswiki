@@ -1,0 +1,11 @@
+:root {
+  --primary-color: #f9c401;
+  --secondary-color-1: #147386;
+  --secondary-color-2: #d78958;
+  --neutral-color: #444041;
+  --neutral-soft-color: #a7a6a6;
+  --neutral-light-color: #fff;
+  --main-text-fontsize: 17px;
+  --main-text-fontfamily: 'Nunito', sans-serif;
+  --main-title-fontfamily: 'Nunito', sans-serif;
+}

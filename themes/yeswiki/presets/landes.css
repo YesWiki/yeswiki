@@ -1,0 +1,11 @@
+:root {
+  --primary-color: #31572c;
+  --secondary-color-1: #9ab87a;
+  --secondary-color-2: #22aed1;
+  --neutral-color: #4e5056;
+  --neutral-soft-color: #87898e;
+  --neutral-light-color: #f2f2f2;
+  --main-text-fontsize: 17px;
+  --main-text-fontfamily: 'Roboto', sans-serif;
+  --main-title-fontfamily: 'Merriweather', sans-serif;
+}
