@@ -847,3 +847,471 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .text-center {
   text-align: center;
 }
+
+/* ============================================================
+   Legacy Bootstrap vocabulary (ticket 16)
+   Bootstrap itself is fully removed. Templates and wiki content
+   accumulated over the years still carry its class names, so this
+   compatibility layer styles that vocabulary with the yw-* look.
+   New code should use the yw-* classes above; these rules exist so
+   old markup keeps rendering, not as an API to build on.
+   ============================================================ */
+.btn {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--neutral-color);
+  text-decoration: none;
+}
+.btn:hover {
+  filter: brightness(0.95);
+}
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-xs,
+.btn-mini,
+.btn-sm {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+.btn-lg {
+  padding: 10px 16px;
+  font-size: 15px;
+}
+.btn-block {
+  display: block;
+  width: 100%;
+}
+.btn-primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+.btn-danger,
+.btn-error {
+  background: var(--danger-color);
+  border-color: var(--danger-color);
+  color: #fff;
+}
+.btn-warning {
+  background: var(--warning-color);
+  border-color: var(--warning-color);
+  color: #fff;
+}
+.btn-success {
+  background: var(--success-color);
+  border-color: var(--success-color);
+  color: #fff;
+}
+.btn-info {
+  background: var(--secondary-color-2, var(--primary-color));
+  border-color: var(--secondary-color-2, var(--primary-color));
+  color: #fff;
+}
+.btn-link {
+  background: none;
+  border-color: transparent;
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+.btn-group {
+  display: inline-flex;
+}
+.btn-group > .btn:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}
+.btn-group > .btn:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.alert {
+  position: relative;
+  padding: 10px 32px 10px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+  background: var(--neutral-light-color, #f5f5f5);
+}
+.alert-info {
+  background: #eef6f7;
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+.alert-success {
+  background: #eef8ee;
+  border-color: var(--success-color);
+  color: var(--success-color);
+}
+.alert-warning {
+  background: #fdf3ec;
+  border-color: var(--warning-color);
+  color: var(--warning-color);
+}
+.alert-danger,
+.alert-error {
+  background: #fbeeec;
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+.alert .close {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+}
+.close {
+  padding: 0;
+  font-size: 18px;
+  line-height: 1;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  opacity: 0.6;
+}
+.close:hover {
+  opacity: 1;
+}
+
+.label {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  background: var(--neutral-soft-color);
+  border-radius: 4px;
+}
+.label-default {
+  background: var(--neutral-soft-color);
+}
+.label-primary {
+  background: var(--primary-color);
+}
+.label-info {
+  background: var(--secondary-color-2, var(--primary-color));
+}
+.label-success {
+  background: var(--success-color);
+}
+.label-warning {
+  background: var(--warning-color);
+}
+.label-danger {
+  background: var(--danger-color);
+}
+.badge {
+  display: inline-block;
+  min-width: 10px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff;
+  background: var(--neutral-soft-color);
+  border-radius: 10px;
+}
+
+.well {
+  padding: 12px;
+  margin-bottom: 16px;
+  background: var(--neutral-light-color, #f5f5f5);
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--neutral-color);
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.form-control:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -1px;
+}
+.form-group {
+  margin-bottom: 10px;
+}
+.control-label {
+  display: inline-block;
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+.help-block {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--neutral-soft-color);
+}
+.has-error .form-control,
+.form-group.has-error input {
+  border-color: var(--danger-color);
+}
+.has-error .help-block,
+.has-error .control-label {
+  color: var(--danger-color);
+}
+.has-success .form-control,
+.form-group.has-success input {
+  border-color: var(--success-color);
+}
+.has-success .help-block,
+.has-success .control-label {
+  color: var(--success-color);
+}
+.input-group {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+.input-group > .form-control {
+  flex: 1;
+  min-width: 0;
+}
+.input-group-addon,
+.input-group-btn {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  background: var(--neutral-light-color, #f5f5f5);
+  border: 1px solid var(--neutral-soft-color);
+}
+.input-group > :first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.input-group > :last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--neutral-light-color, #eee);
+  vertical-align: top;
+  text-align: left;
+}
+.table-condensed th,
+.table-condensed td {
+  padding: 4px 8px;
+}
+.table-striped tbody tr:nth-child(odd) {
+  background: var(--neutral-light-color, #f9f9f9);
+}
+.table-hover tbody tr:hover {
+  background: #eef6f7;
+}
+.table-responsive {
+  overflow-x: auto;
+}
+
+/* legacy dropdown markup: yw-core.js toggles .open on .dropdown-menu's parent */
+.dropdown,
+.btn-group.bootstrap-select,
+.dropup {
+  position: relative;
+  display: inline-block;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  min-width: 160px;
+  margin: 2px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.open > .dropdown-menu {
+  display: block;
+}
+.dropdown-menu > li > a,
+.dropdown-menu > a {
+  display: block;
+  padding: 5px 14px;
+  color: var(--neutral-color);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dropdown-menu > li > a:hover,
+.dropdown-menu > a:hover {
+  background: var(--neutral-light-color, #f5f5f5);
+}
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 4px;
+  vertical-align: middle;
+  border-top: 4px dashed;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+}
+
+/* legacy collapse markup: yw-core.js toggles .in on .collapse targets */
+.collapse:not(.in) {
+  display: none;
+}
+
+/* legacy panel markup */
+.panel {
+  margin-bottom: 15px;
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+}
+.panel-heading {
+  display: block;
+  width: 100%;
+  padding: 10px 15px;
+  text-align: left;
+  background: var(--neutral-light-color, #f5f5f5);
+  border: 0;
+  border-bottom: 1px solid var(--neutral-soft-color);
+  cursor: pointer;
+}
+.panel-title {
+  margin: 0;
+  font-size: 14px;
+}
+.panel-body {
+  padding: 15px;
+}
+.panel-footer {
+  padding: 10px 15px;
+  background: var(--neutral-light-color, #f5f5f5);
+  border-top: 1px solid var(--neutral-soft-color);
+}
+
+.progress {
+  height: 16px;
+  overflow: hidden;
+  background: var(--neutral-light-color, #f5f5f5);
+  border-radius: 4px;
+}
+.progress-bar {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.list-group {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+.list-group-item {
+  display: block;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid var(--neutral-light-color, #ddd);
+}
+.list-group-item + .list-group-item {
+  border-top: 0;
+}
+
+/* legacy grid: minimal flex approximation of Bootstrap's row/col-* */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -8px;
+}
+.row > [class*='col-'] {
+  padding: 0 8px;
+  box-sizing: border-box;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .row > .col-sm-1,
+  .row > .col-md-1,
+  .row > .col-lg-1 {
+    width: 8.3333%;
+  }
+  .row > .col-sm-2,
+  .row > .col-md-2,
+  .row > .col-lg-2 {
+    width: 16.6667%;
+  }
+  .row > .col-sm-3,
+  .row > .col-md-3,
+  .row > .col-lg-3 {
+    width: 25%;
+  }
+  .row > .col-sm-4,
+  .row > .col-md-4,
+  .row > .col-lg-4 {
+    width: 33.3333%;
+  }
+  .row > .col-sm-5,
+  .row > .col-md-5,
+  .row > .col-lg-5 {
+    width: 41.6667%;
+  }
+  .row > .col-sm-6,
+  .row > .col-md-6,
+  .row > .col-lg-6 {
+    width: 50%;
+  }
+  .row > .col-sm-7,
+  .row > .col-md-7,
+  .row > .col-lg-7 {
+    width: 58.3333%;
+  }
+  .row > .col-sm-8,
+  .row > .col-md-8,
+  .row > .col-lg-8 {
+    width: 66.6667%;
+  }
+  .row > .col-sm-9,
+  .row > .col-md-9,
+  .row > .col-lg-9 {
+    width: 75%;
+  }
+  .row > .col-sm-10,
+  .row > .col-md-10,
+  .row > .col-lg-10 {
+    width: 83.3333%;
+  }
+  .row > .col-sm-11,
+  .row > .col-md-11,
+  .row > .col-lg-11 {
+    width: 91.6667%;
+  }
+  .row > .col-sm-12,
+  .row > .col-md-12,
+  .row > .col-lg-12 {
+    width: 100%;
+  }
+}

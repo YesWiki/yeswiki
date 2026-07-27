@@ -91,7 +91,7 @@ textarea:not(:placeholder-shown):invalid,
 .submitted input:required:invalid,
 .submitted textarea:required:invalid,
 .submitted select:required:invalid,
-.submitted .bootstrap-tagsinput.invalid,
+.submitted .yw-tag-input.invalid,
 .submitted .form-group.input-checkbox.invalid,
 .submitted .form-group.input-radio.invalid,
 .submitted .invalid > .ace-container,
@@ -140,10 +140,6 @@ input.form-control.error {
 .entries-list .yeswiki-checkbox {
   width: 100% !important;
 }
-.yeswiki-input-entries + .bootstrap-tagsinput input {
-  display: block;
-}
-
 .pagination .page {
   min-height: auto;
 }

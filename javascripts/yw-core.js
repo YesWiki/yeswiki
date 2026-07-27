@@ -14,6 +14,10 @@
     document.querySelectorAll('.yw-dropdown--open').forEach((dropdown) => {
       if (dropdown !== except) dropdown.classList.remove('yw-dropdown--open')
     })
+    // legacy Bootstrap markup: parent of a .dropdown-menu gets .open
+    document.querySelectorAll('.open > .dropdown-menu').forEach((menu) => {
+      if (menu.parentElement !== except) menu.parentElement.classList.remove('open')
+    })
   }
 
   // ---- Remote-load modal (ticket 16: replaces jQuery `.load()` + `.modal('show')`) ----
@@ -270,6 +274,13 @@
         const willOpen = !dropdown.classList.contains('yw-dropdown--open')
         closeDropdowns()
         dropdown.classList.toggle('yw-dropdown--open', willOpen)
+      } else if (toggle.parentElement && toggle.parentElement.querySelector('.dropdown-menu')) {
+        // legacy Bootstrap markup: toggle .open on the .dropdown-menu's parent
+        e.preventDefault()
+        const parent = toggle.parentElement
+        const willOpen = !parent.classList.contains('open')
+        closeDropdowns()
+        parent.classList.toggle('open', willOpen)
       }
       return
     }
@@ -291,7 +302,33 @@
     const collapseToggle = e.target.closest('[data-yw-collapse-toggle], [data-toggle="collapse"]')
     if (collapseToggle) {
       const target = toggleTarget(collapseToggle, 'data-yw-collapse-toggle')
-      // same transition guard as modals: only converted .yw-collapse targets are ours
+      // legacy Bootstrap .collapse markup toggles its .in class instead
+      if (target && !target.classList.contains('yw-collapse')
+        && target.classList.contains('collapse')) {
+        e.preventDefault()
+        const willOpen = !target.classList.contains('in')
+        const accordionSelector = collapseToggle.getAttribute('data-yw-accordion')
+          || collapseToggle.getAttribute('data-parent')
+        if (accordionSelector) {
+          const accordion = document.querySelector(accordionSelector)
+          if (accordion) {
+            accordion.querySelectorAll('.collapse.in').forEach((el) => {
+              if (el !== target) el.classList.remove('in')
+            })
+            accordion.querySelectorAll('[data-toggle="collapse"][aria-expanded="true"]')
+              .forEach((btn) => {
+                if (btn !== collapseToggle) {
+                  btn.setAttribute('aria-expanded', 'false')
+                  btn.classList.add('collapsed')
+                }
+              })
+          }
+        }
+        target.classList.toggle('in', willOpen)
+        collapseToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false')
+        collapseToggle.classList.toggle('collapsed', !willOpen)
+        return
+      }
       if (target && target.classList.contains('yw-collapse')) {
         e.preventDefault()
         const willOpen = !target.classList.contains('yw-collapse--open')

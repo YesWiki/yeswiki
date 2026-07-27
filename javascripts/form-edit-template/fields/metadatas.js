@@ -15,7 +15,7 @@ export default {
     style: {
       label: _t('BAZ_FORM_EDIT_METADATA_STYLE_LABEL'),
       value: '',
-      placeholder: 'bootstrap.css...'
+      placeholder: 'yeswiki.css...'
     },
     preset: {
       label: _t('BAZ_FORM_EDIT_METADATA_PRESET_LABEL'),
