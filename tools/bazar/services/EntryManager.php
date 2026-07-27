@@ -173,7 +173,7 @@ class EntryManager
         $extraFields = [
             'id_fiche', 'id_typeannonce', 'date_creation_fiche',
             'date_maj_fiche', 'statut_fiche', 'url',
-            '-is-external-', 'external-data', 'lang', 'extra_lang',
+            '-is-external-', 'external-data', 'lang', 'extralang',
         ];
 
         foreach ($extraFields as $key) {
@@ -232,7 +232,7 @@ class EntryManager
             // Add extra fields that doesn't belong to the form definition
             $extraFields = [
                 'id_fiche', 'id_typeannonce', 'date_creation_fiche',
-                'date_maj_fiche', 'statut_fiche', 'url', 'lang', 'extra_lang',
+                'date_maj_fiche', 'statut_fiche', 'url', 'lang', 'extralang',
             ];
 
             foreach ($extraFields as $key) {

@@ -36,9 +36,9 @@ class TranslateHandler extends YesWikiHandler
 
     private function save($entryManager) : string{
         $post = $this->getRequest()->request;
-        if ($post->get('entry') != null && $post->get('extra_lang') != null && $post->get('antispam') != null) {
+        if ($post->get('entry') != null && $post->get('extralang') != null && $post->get('antispam') != null) {
             $entry = json_decode($post->get('entry'), true);
-            $entry['extra_lang'] = json_decode($post->get('extra_lang'), true);
+            $entry['extralang'] = json_decode($post->get('extralang'), true);
             $entry['antispam'] = $post->get('antispam');
             $entryManager->update($entry['id_fiche'], $entry);
 
@@ -84,7 +84,7 @@ class TranslateHandler extends YesWikiHandler
                 'type' => $type,
                 ];
                 foreach($extra_langs as $lang) {
-                    $page['extra_lang'][$lang]['name'] ??= '';
+                    $page['extralang'][$lang]['name'] ??= '';
                 }
             }
         }

@@ -7,7 +7,7 @@ const app = createApp({
     const fieldTypes = ['label', 'helper', 'default']
     const extraLangsList = JSON.parse(extralang)
     const form = JSON.parse(jsonform)
-    const extraLangsValues = form.extra_lang ?? {}
+    const extraLangsValues = form.extralang ?? {}
 
     for (const lang of Object.values(extraLangsList)) {
       extraLangsValues[lang] ??= {}

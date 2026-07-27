@@ -85,7 +85,7 @@ class PageManager
             if (!isset($lang) or $lang == 'all') {
                 $select_options = '*';
             } else {
-                $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.extra_lang.$lang\"), body)) as body";
+                $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.extralang.$lang\"), body)) as body";
             }
 
             // load page
@@ -247,7 +247,7 @@ class PageManager
         if (!isset($lang) or $lang == 'all') {
             $columns = '*';
         } else {
-            $columns = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.extra_lang.$lang\"), body)) as body";
+            $columns = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.extralang.$lang\"), body)) as body";
         }
 
         $columns = is_array($column) ? implode(',', $column) : $column;
@@ -267,7 +267,7 @@ class PageManager
         if ($lang == 'all') {
             $select_options = '*';
         } else {
-            $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.extra_lang.$lang\"), body)) as body";
+            $select_options = "id, tag, time, body_r, owner, user, latest, handler, comment_on ,JSON_MERGE_PATCH(body, COALESCE(JSON_EXTRACT(body, \"\$.extralang.$lang\"), body)) as body";
         }
 
         $pages = $this->dbService->loadAll(<<<SQL

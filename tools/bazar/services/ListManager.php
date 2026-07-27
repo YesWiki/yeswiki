@@ -121,7 +121,7 @@ class ListManager
         return $id;
     }
 
-    public function update($id, $title, $nodes, $extra_lang = [])
+    public function update($id, $title, $nodes, $extralang = [])
     {
         if ($this->securityController->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -133,9 +133,9 @@ class ListManager
         'title' => $title,
         'nodes' => $this->sanitizeHMTL($nodes)
         ];
-        if (!empty($extra_lang)) {
+        if (!empty($extralang)) {
             $sanitized_langs = [];
-            foreach ($extra_lang as $lang => $value) {
+            foreach ($extralang as $lang => $value) {
                 $sanitized_langs[$lang] = [];
                 if (array_key_exists('title', $value)) {
                     $sanitized_langs[$lang]['title'] = $this->htmlPurifierService->cleanHTML($value['title']);

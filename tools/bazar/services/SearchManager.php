@@ -1032,7 +1032,7 @@ class SearchManager
 
         if (isset($this->wiki->config['supported_langs'])) {
             $lang = $this->wiki->lang;
-            $columns = "f.id, f.tag, f.time, f.body_r, f.owner, f.user, f.latest, f.handler, f.comment_on ,JSON_MERGE_PATCH(f.body, COALESCE(JSON_EXTRACT(f.body, \"\$.extra_lang.$lang\"), body)) as body";
+            $columns = "f.id, f.tag, f.time, f.body_r, f.owner, f.user, f.latest, f.handler, f.comment_on ,JSON_MERGE_PATCH(f.body, COALESCE(JSON_EXTRACT(f.body, \"\$.extralang.$lang\"), body)) as body";
         } else {
             $columns = 'f.*';
         }

@@ -11,7 +11,7 @@ const app = createApp({
       extraLangsList: JSON.parse(extralang),
       entry: JSON.parse(entry),
       JsonExtraLang: '',
-      extraLangValues: JSON.parse(entry).extra_lang,
+      extraLangValues: JSON.parse(entry).extralang,
       jsonEntry: entry,
       fieldsNames: JSON.parse(fieldsnames),
     }

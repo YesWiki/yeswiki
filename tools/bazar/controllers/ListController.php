@@ -98,7 +98,7 @@ class ListController extends YesWikiController
         if ($post->has('submit')) {
             if ($this->aclService->hasAccess('write', $id)) {
                 $title = $post->get('title');
-                $this->listManager->update($id, $title, json_decode($post->get('nodes'), true, $list['extralang'] ?? []));
+                $this->listManager->update($id, $title, json_decode($post->get('nodes'), true), $list['extralang'] ?? []);
 
                 if ($this->shouldPostMessageOnSubmit()) {
                     return $this->render('@core/iframe_result.twig', [
