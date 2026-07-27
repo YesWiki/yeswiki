@@ -421,7 +421,10 @@ const load = (domElement) => {
       }
     },
     mounted() {
-      $(this.$el).on('dblclick', (e) => false)
+      this.$el.addEventListener('dblclick', (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+      })
       this.savedHash = decodeURIComponent(document.location.hash.substring(1)) // Save the hash for later updating
       // params already set from elementDataset in data()
 

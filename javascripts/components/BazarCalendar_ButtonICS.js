@@ -28,7 +28,7 @@ export default {
         ...entriesParams
       }
       this.href = wiki.url(baseUrlPath, urlParams)
-      $(this.$el).attr('href', this.href)
+      this.$el.setAttribute('href', this.href)
     }
   },
   computed: {

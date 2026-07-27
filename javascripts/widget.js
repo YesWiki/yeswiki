@@ -1,9 +1,7 @@
 // on recupere les donnees passées par les attributs data et les donnees facettes
-const widgetdata = $('#widgetapp').data()
-const datas = {}
-$.extend(datas, widgetdata)
-// $.extend( datas, facetteval );
-$.extend(datas, facettetext)
+const widgetappNode = document.getElementById('widgetapp')
+const widgetdata = widgetappNode ? { ...widgetappNode.dataset } : {}
+const datas = { ...widgetdata, ...facettetext }
 
 const { createApp } = Vue
 

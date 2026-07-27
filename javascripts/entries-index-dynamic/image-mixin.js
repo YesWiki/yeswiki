@@ -9,7 +9,7 @@ export default {
   methods: {
     urlImageResizedOnError(entry, fieldName, width, height, mode, token) {
       const node = event.target
-      $(node).removeAttr('onerror')
+      node.removeAttribute('onerror')
       if (entry[fieldName]) {
         const fileName = entry[fieldName]
         if (!this.isExternalUrl(entry)) {
@@ -30,11 +30,12 @@ export default {
             .slice(0, -entry.id_fiche.length)
             .replace(/\?$/, '')
             .replace(/\/$/, '')
-          const previousUrl = $(node).prop('src')
+          const previousUrl = node.src
           const newUrl = `${baseUrl}/files/${fileName}`
           if (newUrl != previousUrl) {
-            $(`img[src="${previousUrl}"]`).each(function() {
-              $(this).prop('src', newUrl)
+            document.querySelectorAll(`img[src="${previousUrl}"]`).forEach((imgParam) => {
+              const img = imgParam
+              img.src = newUrl
             })
           }
         }
@@ -85,39 +86,43 @@ export default {
         this.processingImage = true
         const newImageParams = this.imagesToProcess[0]
         this.imagesToProcess = this.imagesToProcess.slice(1)
-        $.ajax({
-          url: wiki.url(
-            `?api/images/${newImageParams.fileName}/cache/${newImageParams.width}/${newImageParams.height}/${newImageParams.mode}`
-          ),
-          method: 'post',
-          data: { csrftoken: this.tokenForImages },
-          cache: false,
-          success: (data) => {
-            const previousUrl = $(newImageParams.node).prop('src')
+        const { fileName, width, height } = newImageParams
+        const cacheUrl = wiki.url(
+          `?api/images/${fileName}/cache/${width}/${height}/${newImageParams.mode}`
+        )
+        fetch(cacheUrl, {
+          method: 'POST',
+          body: new URLSearchParams({ csrftoken: this.tokenForImages })
+        })
+          .then((response) => response.json()
+            .then((data) => ({ ok: response.ok, data })))
+          .then(({ ok, data }) => {
+            if (data != undefined && data.newToken != undefined) {
+              this.tokenForImages = data.newToken
+            }
+            if (!ok) return
+            const previousUrl = newImageParams.node.src
             const srcFileName = `${wiki.baseUrl.replace(/(\?)?$/, '')}${data.cachefilename}`
 
-            $(`img[src="${previousUrl}"]`).each(function() {
-              const $img = $(this)
-              $img.prop('src', srcFileName)
+            document.querySelectorAll(`img[src="${previousUrl}"]`).forEach((imgParam) => {
+              const img = imgParam
+              img.src = srcFileName
 
-              const $next = $img.next('div.area.visual-area[style]')
-              if ($next.length) {
-                const backgroundImage = $next.css('background-image')
+              const next = img.nextElementSibling
+              if (next && next.matches('div.area.visual-area[style]')) {
+                const { backgroundImage } = next.style
                 if (backgroundImage && backgroundImage.length) {
-                  $next.css({ 'background-image': '' }) // reset to force update
-                  $next.css({ 'background-image': `url("${srcFileName}")` })
+                  next.style.backgroundImage = '' // reset to force update
+                  next.style.backgroundImage = `url("${srcFileName}")`
                 }
               }
             })
-          },
-          complete: (e) => {
-            if (e.responseJSON != undefined && e.responseJSON.newToken != undefined) {
-              this.tokenForImages = e.responseJSON.newToken
-            }
+          })
+          .catch(() => { /* image cache generation failed, keep the original src */ })
+          .finally(() => {
             this.processingImage = false
             this.processNextImage()
-          }
-        })
+          })
       }
     }
   }

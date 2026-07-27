@@ -1,65 +1,54 @@
-$(document).ready(() => {
-  const filterelements = []
-  const filterresults = []
-  // var mixitupoptions = Array();
-  const wookmarkoptions = []
-  let results
-  $('.filter-container').each(function(index, value) {
-    const $this = $(this)
-    filterelements[index] = $this.find('.filtered-element')
-    filterelements[index].css('width', $this.data('element-width'))
-    filterresults[index] = $this.find('.filtered-results')
-    /* mixitupoptions[index] = {
-      onMixEnd: function(index) {
-        results = filterelements[index].filter(function() {
-          return $(this).css('opacity') == '1';
-        });
-        results.wookmark(wookmarkoptions[index]);
-        $('.nbfilteredelements').text(results.length);
-      },
-      filterSelector: '.filter-original',
-      targetSelector: filterelements[index],
-      filterLogic: 'and',
-      effects:  ['fade','scale'],
-      transitionSpeed: 300
-    };
-    filterresults[index].mixitup(mixitupoptions[index]);
-*/
-    wookmarkoptions[index] = {
-      autoResize: true, // This will auto-update the layout when the browser window is resized.
-      container: filterresults[index], // Optional, used for some extra CSS styling
-      offset: $this.data('element-width'), // Optional, the distance between grid items
-      itemWidth: $this.data('element-offset'), // Optional, the width of a grid item
-      fillEmptySpace: true
-    }
-    filterresults[index].imagesLoaded(() => {
-      filterelements[index].wookmark(wookmarkoptions[index])
-    })
-
-    $this.prev('.controls').find('.filter').on('click', function() {
-      const $filter = $(this)
-      $filter.toggleClass('active')
-      if ($filter.parents('.filter-group').data('type') === 'radio') { $filter.siblings('.filter').removeClass('active') }
-      // for the radio type filter buttons, just one active in one row
-      // var $radio = $('.filter-group').filter('div[data-type=radio]').find('.filter').removeClass('active');
-      // if (!active) {
-      //  $this.addClass('active');
-      // }
-      const filtercontrols = $filter.parents('.controls')
-      const selectedfilters = filtercontrols.find('.active')
-      filterString = ''
-      const activeFilters = []
-      $.each(selectedfilters, function() {
-        /* filterString = filterString+' '+$(this).data('filter'); */
-        activeFilters.push($(this).data('filter'))
+// filtertags.js — tag-filtered page grid (ticket 16: vanilla JS; the jQuery
+// wookmark masonry layout is replaced by the browser's normal flow layout —
+// filtering simply shows/hides the matching elements)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.filter-container').forEach((container) => {
+    const elements = Array.from(container.querySelectorAll('.filtered-element'))
+    const { elementWidth } = container.dataset
+    if (elementWidth) {
+      elements.forEach((elementParam) => {
+        const element = elementParam
+        element.style.width = elementWidth
       })
-      console.log(filterelements[index].wookmarkInstance.filter(activeFilters))
-      /* if (filterString === '') {filterString = 'all';}
+    }
 
-      filtercontrols.next('.filter-container').find('.filter-results').mixitup('filter', filterString); */
+    const controls = container.previousElementSibling
+    if (!controls || !controls.classList.contains('controls')) return
 
-      filterelements[index].wookmarkInstance.filter(activeFilters)
-      return false
+    const applyFilters = () => {
+      const activeFilters = Array.from(controls.querySelectorAll('.filter.active'))
+        .map((filter) => filter.dataset.filter)
+        .filter((value) => value)
+      elements.forEach((elementParam) => {
+        const element = elementParam
+        const matches = activeFilters.every(
+          (value) => element.classList.contains(value)
+        )
+        element.style.display = matches ? '' : 'none'
+      })
+      const counter = document.querySelector('.nbfilteredelements')
+      if (counter) {
+        counter.textContent = elements.filter(
+          (element) => element.style.display !== 'none'
+        ).length
+      }
+    }
+
+    controls.querySelectorAll('.filter').forEach((filter) => {
+      filter.addEventListener('click', (e) => {
+        e.preventDefault()
+        filter.classList.toggle('active')
+        const group = filter.closest('.filter-group')
+        if (group && group.dataset.type === 'radio') {
+          // for the radio type filter buttons, just one active in one row
+          Array.from(filter.parentElement.children).forEach((sibling) => {
+            if (sibling !== filter && sibling.classList.contains('filter')) {
+              sibling.classList.remove('active')
+            }
+          })
+        }
+        applyFilters()
+      })
     })
   })
 })

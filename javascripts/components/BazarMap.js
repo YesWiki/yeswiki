@@ -298,12 +298,11 @@ const BazarMapComponent = {
     },
     definePopupContent(entry) {
       const slots = this.$slots
-      const renderedHtml = slots.popupentrywithhtml != undefined
-        ? $(this.$el)
-          .find('.popupentry-container.with-html-render > div')
-          .first()
-          .html()
-        : $(this.$el).find('.popupentry-container > div').first().html()
+      const popupSelector = slots.popupentrywithhtml != undefined
+        ? '.popupentry-container.with-html-render > div'
+        : '.popupentry-container > div'
+      const popupNode = this.$el.querySelector(popupSelector)
+      const renderedHtml = popupNode ? popupNode.innerHTML : undefined
       if (entry.marker.popup == undefined) {
         if (renderedHtml != undefined && renderedHtml.length != 0) {
           entry.marker

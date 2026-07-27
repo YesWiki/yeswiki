@@ -22,11 +22,15 @@ const FilterNode = {
       }
     },
     nodeTitle() {
-      const vLanguage = $('html').attr('lang') ?? undefined
+      const vLanguage = document.documentElement.getAttribute('lang') ?? undefined
       let vLabel
 
-      if (vLanguage) vLabel = $(`<span>${this.node.label}<span>`).find(`[lang=${vLanguage}]`).text()
-      else vLabel = this.node.label
+      if (vLanguage) {
+        const holder = document.createElement('span')
+        holder.innerHTML = this.node.label
+        vLabel = Array.from(holder.querySelectorAll(`[lang=${vLanguage}]`))
+          .map((el) => el.textContent).join('')
+      } else vLabel = this.node.label
 
       return vLabel
     }
