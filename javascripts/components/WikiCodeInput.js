@@ -2,15 +2,14 @@ export default {
   props: ['isEditing', 'editor', 'wikiCode'],
   methods: {
     selectFullText() {
-      const range = $(this.$refs.input)
-      range.select()
+      this.$refs.input.select()
     },
     copyContent() {
       this.selectFullText()
       document.execCommand('copy')
     },
     insertCodeInEditor() {
-      $('#actions-builder-modal').modal('hide')
+      document.getElementById('actions-builder-modal').classList.remove('yw-modal--open')
       if (this.isEditing) {
         this.editor.replaceCurrentGroupBy(this.wikiCode)
       } else {

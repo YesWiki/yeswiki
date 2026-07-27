@@ -1,15 +1,13 @@
-<div class="modal" id="actions-builder-modal" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content" id="actions-builder-app">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-        <h2 class="modal-title" v-text="actionGroup ? actionGroup.label : ''"></h2>
+<div class="yw-modal" id="actions-builder-modal" tabindex="-1" role="dialog">
+  <div class="yw-modal__dialog yw-modal__dialog--lg">
+    <div class="yw-modal__content" id="actions-builder-app">
+      <div class="yw-modal__header">
+        <h2 class="yw-modal__title" v-text="actionGroup ? actionGroup.label : ''"></h2>
+        <button type="button" class="yw-close" data-yw-dismiss="modal" aria-label="close">&times;</button>
       </div>
 
       <!-- Modal Body -->
-      <div class="modal-body">
+      <div class="yw-modal__body">
         <!-- Choose form (only for bazar actions) -->
         <div v-if="needFormField" class="form-group">
           <label class="control-label">{{ _t('ACTION_BUILDER_CHOOSE_FORM') }}</label>
@@ -69,19 +67,13 @@
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default btn-block" data-dismiss="modal">Close</button>
+      <div class="yw-modal__footer">
+        <button type="button" class="yw-btn yw-btn--block" data-yw-dismiss="modal">Close</button>
       </div>
 
     </div>
   </div>
 </div>
-
-{{ include_css('styles/vendor/font-picker/fontawesome-picker.min.css') }}
-{{ include_javascript('javascripts/vendor/font-picker/fontawesome-picker.min.js') }}
-
-{{ include_javascript('javascripts/vendor/spectrum-colorpicker2/spectrum.min.js') }}
-{{ include_css('styles/vendor/spectrum-colorpicker2/spectrum.min.css') }}
 
 {{ include_css('styles/vendor/leaflet/leaflet.css') }}
 {{ include_javascript('javascripts/vendor/leaflet/leaflet.min.js') }}

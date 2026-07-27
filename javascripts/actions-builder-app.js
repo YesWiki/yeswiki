@@ -195,7 +195,7 @@ export const appConfig = {
   methods: {
     open(editor, options) {
       this.editor = editor
-      $('#actions-builder-modal').modal('show')
+      document.getElementById('actions-builder-modal').classList.add('yw-modal--open')
       this.currentGroupId = options.groupName
       this.currentSelectedAction = options.action
       this.isEditingExistingAction = !!options.action
@@ -207,7 +207,9 @@ export const appConfig = {
       const previousSelectedActionId = this.selectedActionId
       if (this.isEditingExistingAction) {
         // use a fake dom to parse wiki code attributes
-        const fakeDom = $(`<${this.currentSelectedAction}/>`)[0]
+        const holder = document.createElement('div')
+        holder.innerHTML = `<${this.currentSelectedAction}/>`
+        const fakeDom = holder.firstElementChild
 
         for (const attribute of fakeDom.attributes) {
           this.values[attribute.name] = attribute.value
