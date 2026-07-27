@@ -27,7 +27,7 @@
   border: 1px solid var(--neutral-light-color, #ddd);
   border-radius: 6px;
   padding: 12px;
-  background: var(--neutral-soft-color, #f7f7f7);
+  background: #fafafa;
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -105,6 +105,13 @@
 
 .yw-fb__attribute .yw-input {
   width: 100%;
+}
+
+/* lightest-gray inputs inside the designer (yw-core's default input border,
+   --neutral-soft-color, is a dark gray) */
+.yw-fb .yw-input {
+  background: #fcfcfc;
+  border-color: var(--neutral-light-color, #ddd);
 }
 
 .yw-fb__description {
@@ -188,7 +195,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  border-bottom: 1px solid var(--neutral-soft-color, #eee);
+  border-bottom: 1px solid var(--neutral-light-color, #eee);
   font-size: 0.9rem;
 }
 
@@ -214,7 +221,7 @@
 
 .yw-fb__card-name {
   font-size: 0.75rem;
-  background: var(--neutral-soft-color, #f0f0f0);
+  background: var(--neutral-light-color, #f0f0f0);
   padding: 1px 6px;
   border-radius: 3px;
 }
@@ -254,7 +261,7 @@
   border: 1px solid var(--neutral-light-color, #ddd);
   border-radius: 4px;
   padding: 3px 6px;
-  background: var(--neutral-soft-color, #fafafa);
+  background: #fcfcfc;
 }
 
 .yw-fb__card-hint {

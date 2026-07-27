@@ -1342,3 +1342,30 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
     width: 100%;
   }
 }
+
+/* Legacy .nav / .nav-tabs (stored wiki content using the {{nav}} action with the
+   old Bootstrap class names) — same look as .yw-nav */
+ul.nav,
+ul.nav-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+ul.nav li,
+ul.nav-tabs li {
+  list-style: none;
+}
+ul.nav li a,
+ul.nav-tabs li a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: var(--neutral-color);
+}
+ul.nav li.active a,
+ul.nav-tabs li.active a {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+}
