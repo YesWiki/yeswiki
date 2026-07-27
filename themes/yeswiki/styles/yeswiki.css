@@ -1,0 +1,130 @@
+/* themes/yeswiki — the minimal yw-native default theme (ticket 16, replaces
+ * the Bootstrap-based margot theme as THEME_PAR_DEFAUT).
+ * Core layout/chrome selectors (#yw-topnav internals, body, tokens) already
+ * live in styles/yeswiki-base.css; this file only adds what a theme owns:
+ * page width, top bar / header / footer looks, and menu-page styling.
+ * Colors and fonts come from the CSS variables in yeswiki-base.css's :root
+ * (overridable per preset). */
+
+/* ---- page layout ---- */
+.container {
+  width: 100%;
+  max-width: 1170px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+#yw-main {
+  max-width: 1170px;
+  margin: 0 auto;
+  padding: 20px 15px;
+}
+
+/* ---- top bar ---- */
+#yw-topnav {
+  background: #fff;
+  border-bottom: 1px solid var(--neutral-light-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  padding: 6px 0;
+  z-index: 100;
+}
+
+#yw-topnav .navbar-brand {
+  display: inline-block;
+  font-family: var(--main-title-fontfamily);
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+#yw-topnav .btn-menu {
+  display: none;
+}
+
+/* menu pages render plain lists: lay them out horizontally in the top bar */
+#yw-topnav .topnavpage ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#yw-topnav .topnavpage li {
+  list-style: none;
+}
+
+#yw-topnav .topnavpage a {
+  display: block;
+  padding: 8px 12px;
+  color: var(--neutral-color);
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+#yw-topnav .topnavpage a:hover,
+#yw-topnav .topnavpage .active-list > a,
+#yw-topnav .topnavpage a.active-link {
+  color: var(--primary-color);
+  background: var(--neutral-light-color);
+}
+
+/* ---- header ---- */
+#yw-header {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+#yw-header .navbar-header {
+  display: none; /* brand is already in the top bar */
+}
+
+#yw-header .yw-headerpage {
+  max-width: 1170px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+#yw-header a {
+  color: #fff;
+}
+
+#yw-header:not(:has(.yw-headerpage *)) {
+  display: none; /* nothing to show when PageHeader is empty */
+}
+
+/* ---- footer ---- */
+#yw-footer {
+  margin-top: 2em;
+  padding: 20px 0;
+  background: var(--neutral-light-color);
+  color: var(--neutral-color);
+}
+
+#yw-footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#yw-footer a {
+  color: var(--neutral-color);
+}
+
+/* ---- small screens ---- */
+@media (max-width: 767px) {
+  #yw-topnav > .container {
+    flex-wrap: wrap;
+  }
+
+  #yw-topnav .topnavpage ul {
+    flex-direction: column;
+    width: 100%;
+  }
+}

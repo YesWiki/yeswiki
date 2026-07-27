@@ -442,7 +442,7 @@ class Init
             'BAZ_RSS_ADRESSESITE' => '%base_url%',
             'BAZ_RSS_DESCRIPTIONSITE' => '%meta_description%',
             'BAZ_NB_ENTREES_FLUX_RSS' => 20,
-            'BAZ_RSS_LOGOSITE' => 'https:#yeswiki.net/themes/margot/images/favicon.png',
+            'BAZ_RSS_LOGOSITE' => 'https:#yeswiki.net/favicon.ico',
             'BAZ_RSS_MANAGINGEDITOR' => 'contact@yeswiki.net (Mr YesWiki)',
             'BAZ_RSS_WEBMASTER' => '%BAZ_RSS_MANAGINGEDITOR%',
             'BAZ_RSS_CATEGORIE' => 'Economie Sociale et Solidaire',

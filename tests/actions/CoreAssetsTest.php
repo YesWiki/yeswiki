@@ -24,11 +24,11 @@ class CoreAssetsTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testYwCoreCssIsLoadedAlongsideBootstrap(Wiki $wiki)
+    public function testYwCoreCssIsLoadedWithoutBootstrap(Wiki $wiki)
     {
         $output = $wiki->Format('{{linkstyle}}');
         $this->assertStringContainsString('styles/yw-core.css', $output);
-        $this->assertStringContainsString('bootstrap.min.css', $output, 'Bootstrap must still load -- this ticket does not remove it.');
+        $this->assertStringNotContainsString('bootstrap', $output, 'ticket 16: Bootstrap CSS must not load anymore.');
     }
 
     #[Depends('testWikiExisting')]
@@ -39,6 +39,7 @@ class CoreAssetsTest extends YesWikiTestCase
         $this->assertStringContainsString('javascripts/yw-core.js', $output);
         $this->assertStringContainsString('javascripts/yw-datatable.js', $output);
         $this->assertStringContainsString('javascripts/yw-autocomplete.js', $output);
-        $this->assertStringContainsString('jquery', $output, 'jQuery must still load -- this ticket does not remove it.');
+        $this->assertStringNotContainsString('jquery', $output, 'ticket 16: jQuery must not load globally anymore.');
+        $this->assertStringNotContainsString('bootstrap', $output, 'ticket 16: Bootstrap JS must not load anymore.');
     }
 }

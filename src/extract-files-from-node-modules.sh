@@ -17,13 +17,6 @@ mkdir -p javascripts/vendor/jquery && copy_js node_modules/jquery/dist/jquery.mi
 # Fontawesome
 mkdir -p styles/vendor/fontawesome && cp -f -r node_modules/@fortawesome/fontawesome-free/webfonts styles/vendor/fontawesome
 mkdir -p styles/vendor/fontawesome/css && copy_css node_modules/@fortawesome/fontawesome-free/css/all.min.css styles/vendor/fontawesome/css/all.min.css
-# Bootstrap
-mkdir -p javascripts/vendor/bootstrap && copy_js node_modules/bootstrap/dist/js/bootstrap.min.js javascripts/vendor/bootstrap/bootstrap.min.js
-mkdir -p styles/vendor/bootstrap/css &&
-	copy_css node_modules/bootstrap/dist/css/bootstrap.min.css styles/vendor/bootstrap/css/bootstrap.min.css &&
-	cp -f node_modules/bootstrap/dist/css/bootstrap.min.css.map styles/vendor/bootstrap/css
-mkdir -p styles/vendor/bootstrap && cp -f -r node_modules/bootstrap/dist/fonts styles/vendor/bootstrap
-
 #  Vue 3 (global build for browser usage)
 mkdir -p javascripts/vendor/vue && copy_js node_modules/vue/dist/vue.global.js javascripts/vendor/vue/vue.js
 copy_js node_modules/vue/dist/vue.global.prod.js javascripts/vendor/vue/vue.min.js
@@ -57,10 +50,6 @@ mkdir -p styles/vendor/gogocarto && copy_css node_modules/gogocarto-js/dist/gogo
 cp -f -r node_modules/gogocarto-js/dist/images styles/vendor/gogocarto
 cp -f -r node_modules/gogocarto-js/dist/fonts styles/vendor/gogocarto
 
-# Spectrum Color Picker
-mkdir -p javascripts/vendor/spectrum-colorpicker2 && copy_js node_modules/spectrum-colorpicker2/dist/spectrum.min.js javascripts/vendor/spectrum-colorpicker2/spectrum.min.js
-mkdir -p styles/vendor/spectrum-colorpicker2 && copy_css node_modules/spectrum-colorpicker2/dist/spectrum.min.css styles/vendor/spectrum-colorpicker2/spectrum.min.css
-
 # Vditor (WYSIWYG/Markdown editor, replaces summernote). The main bundle/CSS sit directly
 # under vditor/, matching this script's usual per-library layout; lute.min.js/i18n/icons stay
 # under a dist/js/... subpath because Vditor's own runtime hardcodes that path relative to
@@ -84,31 +73,6 @@ mkdir -p javascripts/vendor/formbuilder-languages && cp -f node_modules/formbuil
 
 #jquery-ui-sortable
 mkdir -p javascripts/vendor/jquery-ui-sortable && copy_js node_modules/jquery-ui-sortable/jquery-ui.min.js javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js
-
-# DataTables
-mkdir -p javascripts/vendor/datatables-full &&
-	cat node_modules/datatables.net/js/jquery.dataTables.min.js \
-		node_modules/datatables.net-bs/js/dataTables.bootstrap.min.js \
-		node_modules/datatables.net-buttons/js/dataTables.buttons.min.js \
-		node_modules/datatables.net-buttons/js/buttons.colVis.min.js \
-		node_modules/datatables.net-buttons/js/buttons.flash.min.js \
-		node_modules/datatables.net-buttons/js/buttons.html5.min.js \
-		node_modules/datatables.net-buttons/js/buttons.print.min.js \
-		node_modules/datatables.net-buttons-bs/js/buttons.bootstrap.min.js \
-		node_modules/datatables.net-fixedheader/js/dataTables.fixedHeader.min.js \
-		node_modules/datatables.net-fixedheader-bs/js/fixedHeader.bootstrap.min.js \
-		node_modules/datatables.net-responsive/js/dataTables.responsive.min.js \
-		node_modules/datatables.net-responsive-bs/js/responsive.bootstrap.min.js \
-		| sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' \
-		>javascripts/vendor/datatables-full/jquery.dataTables.min.js
-
-mkdir -p styles/vendor/datatables-full &&
-	cat node_modules/datatables.net-bs/css/dataTables.bootstrap.min.css \
-		node_modules/datatables.net-buttons-bs/css/buttons.bootstrap.min.css \
-		node_modules/datatables.net-fixedheader-bs/css/fixedHeader.bootstrap.min.css \
-		node_modules/datatables.net-responsive-bs/css/responsive.bootstrap.min.css \
-		| sed '/^[[:space:]]*\/\*#[[:space:]]*sourceMappingURL=/d' \
-		>styles/vendor/datatables-full/dataTables.bootstrap.min.css
 
 # fullcalendar
 mkdir -p styles/vendor/fullcalendar &&

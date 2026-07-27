@@ -4,10 +4,8 @@ use YesWiki\Core\Service\ThemeManager;
 
 $themeManager = $this->services->get(ThemeManager::class);
 $favoriteStyle = $themeManager->getFavoriteStyle();
-// si pas le mot bootstrap. ou bs. dans les css, on charge les styles bootstrap par defaut
-if (!strstr($favoriteStyle, 'bootstrap.') && !strstr($favoriteStyle, 'bs.')) {
-    echo $this->LinkCSSFile('styles/vendor/bootstrap/css/bootstrap.min.css');
-}
+// ticket 16: Bootstrap CSS is not loaded anymore — the yw-* design system
+// (yeswiki-base.css + yw-core.css) is the only core-provided styling
 
 // styles par defaut de yeswiki
 echo $this->LinkCSSFile('styles/yeswiki-base.css');

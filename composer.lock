@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f574611dd873966f4e4d91348d893a36",
+    "content-hash": "d6c400966b3d7b4723f7218b69036d8c",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -5079,37 +5079,6 @@
                 "source": "https://github.com/voku/stop-words/tree/master"
             },
             "time": "2018-11-23T01:37:27+00:00"
-        },
-        {
-            "name": "yeswiki/theme-margot",
-            "version": "v1.1.8",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/YesWiki/yeswiki-theme-margot.git",
-                "reference": "85b143514a80903d3aa0a16b4115645393401664"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/YesWiki/yeswiki-theme-margot/zipball/85b143514a80903d3aa0a16b4115645393401664",
-                "reference": "85b143514a80903d3aa0a16b4115645393401664",
-                "shasum": ""
-            },
-            "require": {
-                "composer/installers": "~2.3"
-            },
-            "type": "yeswiki-theme",
-            "extra": {
-                "installer-name": "margot"
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "AGPL-3.0"
-            ],
-            "support": {
-                "issues": "https://github.com/YesWiki/yeswiki-theme-margot/issues",
-                "source": "https://github.com/YesWiki/yeswiki-theme-margot/tree/v1.1.8"
-            },
-            "time": "2026-03-09T11:15:51+00:00"
         }
     ],
     "packages-dev": [

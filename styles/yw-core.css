@@ -795,7 +795,55 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-hide {
   display: none;
 }
-/* legacy Bootstrap utility name, still toggled by JS and used across templates */
+/* legacy Bootstrap utility names, still used across templates (ticket 16) */
 .hide {
   display: none !important;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+.sr-only-focusable:active,
+.sr-only-focusable:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+}
+.pull-left {
+  float: left !important;
+}
+.pull-right {
+  float: right !important;
+}
+.clearfix::after {
+  display: block;
+  clear: both;
+  content: '';
+}
+.text-danger {
+  color: var(--danger-color);
+}
+.text-warning {
+  color: var(--warning-color);
+}
+.text-success {
+  color: var(--success-color);
+}
+.text-muted {
+  color: var(--neutral-soft-color);
+}
+.text-info {
+  color: var(--primary-color);
+}
+.text-center {
+  text-align: center;
 }

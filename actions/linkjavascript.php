@@ -6,11 +6,9 @@ use YesWiki\Core\Service\ThemeManager;
 $themeManager = $this->services->get(ThemeManager::class);
 $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 
-if (isset($this->config['use_jquery_cdn']) && $this->config['use_jquery_cdn'] == '1') {
-    $this->addJavascriptFile('https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js', true);
-} else {
-    $this->addJavascriptFile('javascripts/vendor/jquery/jquery.min.js', true);
-}
+// ticket 16: jQuery and Bootstrap JS are no longer loaded globally. The only
+// jQuery left in core is the deferred form-builder island, which self-loads it
+// (templates/forms/forms_form.twig).
 
 // on récupère le bon chemin pour le theme
 if ($themeManager->getUseFallbackTheme()) {
@@ -25,16 +23,11 @@ if ($themeManager->getUseFallbackTheme()) {
 }
 
 // on scanne les javascripts du theme
-$bootstrapjs = false;
 $yeswikijs = false;
 $dir = (is_dir($repertoire) ? opendir($repertoire) : false);
 while ($dir && ($file = readdir($dir)) !== false) {
     if (substr($file, -3, 3) == '.js') {
         $scripts[] = $repertoire . '/' . $file;
-        if (strstr($file, 'bootstrap.min.') || strstr($file, 'bs.')) {
-            // le theme contient deja le js de bootstrap
-            $bootstrapjs = true;
-        }
         if (strstr($file, 'yeswiki.') || strstr($file, 'yw.')) {
             // le theme contient deja le js de yeswiki
             $yeswikijs = true;
@@ -43,12 +36,6 @@ while ($dir && ($file = readdir($dir)) !== false) {
 }
 if (is_dir($repertoire)) {
     closedir($dir);
-}
-
-// s'il n'y a pas le javascript de bootstrap dans le theme, on le rajoute
-if (!$bootstrapjs) {
-    $this->addJavascriptFile('javascripts/vendor/bootstrap/bootstrap.min.js');
-    $this->addJavascriptFile('javascripts/vendor/bootstrap3-typeahead.min.js');
 }
 
 // on trie les javascripts du theme par ordre alphabéthique et on les insere

@@ -10,8 +10,6 @@ class AssetsManager
     // tools/templates (and which have been moved elsewhere), we handle it
     protected const BACKWARD_PATH_MAPPING = [
         'tools/templates/libs/vendor/vue/vue.js' => 'javascripts/vendor/vue/vue.js',
-        'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.js' => 'javascripts/vendor/spectrum-colorpicker2/spectrum.min.js',
-        'tools/templates/libs/vendor/spectrum-colorpicker/spectrum.min.css' => 'styles/vendor/spectrum-colorpicker2/spectrum.min.css',
         'tools/bazar/libs/vendor/leaflet/leaflet.js' => 'javascripts/vendor/leaflet/leaflet.min.js',
         'tools/bazar/libs/vendor/leaflet/leaflet-providers.js' => 'javascripts/vendor/leaflet-providers/leaflet-providers.js',
         'tools/bazar/libs/vendor/leaflet/leaflet.css' => 'styles/vendor/leaflet/leaflet.css',
@@ -23,8 +21,6 @@ class AssetsManager
         'tools/bazar/libs/vendor/leaflet/spiderfier/oms.min.js' => 'javascripts/vendor/leaflet-spiderfier/oms.min.js',
         'tools/bazar/presentation/javascripts/form-builder.min.js' => 'javascripts/vendor/formBuilder/form-builder.min.js',
         'tools/bazar/libs/vendor/jquery-ui-sortable/jquery-ui.min.js' => 'javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js',
-        'tools/templates/libs/vendor/datatables/jquery.dataTables.min.js' => 'javascripts/vendor/datatables-full/jquery.dataTables.min.js',
-        'tools/templates/libs/vendor/datatables/dataTables.bootstrap.min.css' => 'styles/vendor/datatables-full/dataTables.bootstrap.min.css',
         'tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.css' => 'styles/vendor/fullcalendar-jquery-v3.10.0/fullcalendar.min.css',
         'tools/bazar/libs/vendor/fullcalendar/fullcalendar.min.js' => 'javascripts/vendor/fullcalendar-jquery-v3.10.0/fullcalendar.min.js',
         'tools/bazar/libs/vendor/fullcalendar/locale-all.js' => 'javascripts/vendor/fullcalendar-jquery-v3.10.0/locale-all.min.js',
@@ -35,10 +31,6 @@ class AssetsManager
         'tools/templates/libs/vendor/marked/marked.min.js' => 'javascripts/vendor/marked/marked.min.js',
         'tools/templates/libs/vendor/wow.min.js' => 'javascripts/vendor/wow.min.js',
         'tools/templates/libs/vendor/izmir/izmir.min.css' => 'styles/vendor/izmir/izmir.min.css',
-        'tools/templates/libs/vendor/jquery.fontselect.js' => 'javascripts/vendor/jquery.fontselect.js',
-        'tools/templates/libs/vendor/bootstrap3-typeahead.min.js' => 'javascripts/vendor/bootstrap3-typeahead.min.js',
-        'tools/templates/libs/vendor/font-picker/fontawesome-picker.min.js' => 'javascripts/vendor/font-picker/fontawesome-picker.min.js',
-        'tools/templates/libs/vendor/font-picker/fontawesome-picker.min.css' => 'styles/vendor/font-picker/fontawesome-picker.min.css',
         'tools/templates/presentation/styles/animate.css' => 'styles/animate.css',
         'tools/templates/presentation/styles/install.css' => 'styles/install.css',
         'tools/templates/presentation/styles/preset-sidenav.css' => 'styles/preset-sidenav.css',

@@ -51,6 +51,8 @@ files/*
 !files/PageHeader_bandeau_19880101000000_23001231235959.webp
 themes/*
 !themes/README.md
+# the bundled yw-native default theme (ticket 16) is part of core
+!themes/yeswiki
 custom/*
 !custom/.gitkeep
 private/*

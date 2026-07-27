@@ -115,8 +115,9 @@ class PackageCore extends Package
 
     public function upgradeDefaultTheme()
     {
-        $src = $this->extractionPath . '/themes/margot';
-        $desPath = $this->localPath . '/themes/margot';
+        // ticket 16: the bundled default theme is themes/yeswiki now
+        $src = $this->extractionPath . '/themes/' . THEME_PAR_DEFAUT;
+        $desPath = $this->localPath . '/themes/' . THEME_PAR_DEFAUT;
         $file2ignore = ['.', '..'];
         if ($res = opendir($src)) {
             while (($file = readdir($res)) !== false) {

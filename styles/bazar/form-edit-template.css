@@ -325,3 +325,57 @@ xmp {
   margin-right: 0;
   cursor: pointer;
 }
+
+/* ---- Bootstrap-classname shim (ticket 16) ----
+   The vendored jQuery formBuilder plugin hardcodes Bootstrap class names
+   (btn, btn-default, btn-primary, btn-group, btn-xs) in its own markup but
+   invokes no Bootstrap JS. Bootstrap itself is fully removed, so these rules
+   restyle those class names onto the yw-btn look, scoped to formBuilder's own
+   containers so they cannot leak Bootstrap semantics anywhere else. */
+.form-wrap.form-builder .btn,
+.form-builder-dialog .btn {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+  background: #fff;
+  color: var(--neutral-color);
+  text-decoration: none;
+}
+.form-wrap.form-builder .btn:hover,
+.form-builder-dialog .btn:hover {
+  filter: brightness(0.95);
+}
+.form-wrap.form-builder .btn-xs,
+.form-builder-dialog .btn-xs {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+.form-wrap.form-builder .btn-primary,
+.form-builder-dialog .btn-primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+.form-wrap.form-builder .btn-group,
+.form-builder-dialog .btn-group {
+  display: inline-flex;
+}
+.form-wrap.form-builder .btn-group > .btn:not(:first-child),
+.form-builder-dialog .btn-group > .btn:not(:first-child) {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-left: -1px;
+}
+.form-wrap.form-builder .btn-group > .btn:not(:last-child),
+.form-builder-dialog .btn-group > .btn:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}

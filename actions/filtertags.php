@@ -83,6 +83,4 @@ echo $this->render("@core/$template", [
 ]);
 
 // ajout du javascript gerant le filtrage
-$this->AddJavascriptFile('javascripts/vendor/imagesloaded.pkgd.min.js');
-$this->AddJavascriptFile('javascripts/vendor/jquery.wookmark.min.js');
 $this->AddJavascriptFile('javascripts/filtertags.js');
