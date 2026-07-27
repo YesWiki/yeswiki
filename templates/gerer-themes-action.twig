@@ -2,13 +2,11 @@
   {{ include('@core/alert-message.twig',{type:'danger',message:errorMessage}) }}
 {% endif %}
 
-{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
-{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
 <form method="post" action="{{ url({params:{}}) }}">
 
   <p>{{ _t('GERERTHEMES_HINT') }}</p>
   <div class="table-responsive">
-    <table class="table table-striped table-condensed gerer-theme">
+    <table class="yw-table gerer-theme" data-yw-datatable>
       <thead>
         <tr>
           <th class="prevent-sorting">
@@ -71,7 +69,7 @@
       name="theme_modifier" 
       type="submit" 
       value="Mettre à jour"
-      class="btn btn-primary"
+      class="yw-btn yw-btn--primary"
       onclick="this.form.action+='#gererthemes'; return true;"
       {% if hibernated -%}
       disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('WIKI_IN_HIBERNATION') }}"

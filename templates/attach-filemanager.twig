@@ -1,5 +1,3 @@
-{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
-{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
 <ul id="fmtab{{ tag }}" class="nav nav-tabs">
   <li {% if not trash %} class="active"{% endif %}>
     <a
@@ -20,7 +18,7 @@
     {{ _t('ATTACH_NO_ATTACHED_FILES')|replace({'{tag}':format(tag)|raw})|raw }}
   </div>
 {% else %}
-  <table class="fmtable table table-condensed table-hover table-striped">
+  <table class="fmtable yw-table" data-yw-datatable>
     <thead>
       <tr>
         <td class="fmfilename">{{ _t('ATTACH_FILENAME') }}</td>
@@ -55,7 +53,7 @@
             {% if trash %}
               {# lien de restauration #}
               <a
-                class="btn btn-sm btn-primary"
+                class="yw-btn yw-btn--sm yw-btn--primary"
                 href="{{ url({tag:tag,handler:method,params:{do:'restore',file:file.realname}}) }}"
                 title="{{ _t('ATTACH_RESTORE') }}"
               >
@@ -64,7 +62,7 @@
             {% endif %}
             {# lien de suppression #}
             <a
-              class="btn btn-sm btn-danger btn-icon"
+              class="yw-btn yw-btn--sm yw-btn--danger btn-icon"
               href="{{ url({tag:tag,handler:method,params:{do: (trash ? 'erase' : 'del'),file:file.realname}}) }}"
               title="{{ _t('DELETE') }}">
               <i class="{{ trash ? 'fa fa-remove icon-remove' : 'fa fa-trash icon-trash' }} icon-white"></i>
@@ -78,7 +76,7 @@
     <div class="yw-alert yw-alert--danger">
       <a
         href="{{ url({tag:tag,handler:method,params:{do:'emptytrash'}}) }}"
-        class="btn btn-danger pull-right">
+        class="yw-btn yw-btn--danger pull-right">
         <i class="fa fa-remove icon-remove icon-white"></i>&nbsp;{{ _t('ATTACH_EMPTY_TRASH') }}
       </a>
       <strong>{{ _t('CAUTION') }} :</strong> {{ _t('ATTACH_EMPTY_TRASH_NOTICE') }}

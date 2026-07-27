@@ -1,5 +1,5 @@
 {% if titles is not empty %}
-  <ul class="nav nav-tabs" role="tablist">
+  <ul class="yw-nav" role="tablist">
     {% for title in titles %}
       <li role="presentation"{%if loop.index == selectedtab %} class="active"{% endif %}>
         <a 
@@ -14,5 +14,5 @@
     {% endfor %}
   </ul>
 
-  <div class="tab-content">
+  <div class="yw-tabs__content">
 {% endif %}

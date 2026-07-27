@@ -35,7 +35,7 @@
             />
         {% else %}
             <div class="file-url-tabs">
-                <ul class="nav nav-tabs" role="tablist">
+                <ul class="yw-nav" role="tablist">
                     <li role="presentation" class="active">
                         <a href="#{{ field.propertyName }}-upload" aria-controls="{{ field.propertyName }}-upload" role="tab" data-toggle="tab">
                             <i class="fa fa-upload"></i> {{ _t('BAZ_UPLOAD_FILE') }}
@@ -47,8 +47,8 @@
                         </a>
                     </li>
                 </ul>
-                <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane active" id="{{ field.propertyName }}-upload">
+                <div class="yw-tabs__content">
+                    <div role="tabpanel" class="yw-tabs__pane active" id="{{ field.propertyName }}-upload">
                         {% block inputblock %}
                         <input
                             type="file"
@@ -62,7 +62,7 @@
                         />
                         {% endblock %}
                     </div>
-                    <div role="tabpanel" class="tab-pane" id="{{ field.propertyName }}-url">
+                    <div role="tabpanel" class="yw-tabs__pane" id="{{ field.propertyName }}-url">
                         <input
                             type="url"
                             id="{{ field.propertyName }}_url"

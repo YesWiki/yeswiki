@@ -48,6 +48,10 @@ export default defineConfig([globalIgnores([
       _t: 'readable',
       ace: 'writable',
       toastMessage: 'readable',
+      multiDeleteService: 'readable',
+      // page-level config globals injected by reactions templates
+      blockReactionRemove: 'readable',
+      blockReactionRemoveMessage: 'readable',
       Html5Qrcode: 'readable',
       Html5QrcodeSupportedFormats: 'readable',
       // p5.js "global mode" API, used by javascripts/qrcodetroc-visualisation.js

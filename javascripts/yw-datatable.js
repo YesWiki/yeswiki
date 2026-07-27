@@ -92,6 +92,17 @@
     let sortDir = 'asc'
     let page = 1
 
+    // Optional initial sort, e.g. data-yw-datatable-sort="0,desc" (replaces
+    // DataTables' data-order attribute)
+    const initialSort = (table.getAttribute('data-yw-datatable-sort') || '').split(',')
+    if (initialSort.length === 2) {
+      const initialCol = parseInt(initialSort[0], 10)
+      if (!Number.isNaN(initialCol)) {
+        sortCol = initialCol
+        sortDir = initialSort[1].trim() === 'desc' ? 'desc' : 'asc'
+      }
+    }
+
     if (!noSearch) {
       const toolbar = document.createElement('div')
       toolbar.className = 'yw-datatable__toolbar'
@@ -127,7 +138,7 @@
 
     headerCells.forEach((th, index) => {
       if (th.hasAttribute('data-yw-no-sort')) return
-      th.setAttribute('data-yw-sort', '')
+      th.setAttribute('data-yw-sort', index === sortCol ? sortDir : '')
       th.addEventListener('click', () => {
         if (sortCol === index) {
           sortDir = sortDir === 'asc' ? 'desc' : 'asc'

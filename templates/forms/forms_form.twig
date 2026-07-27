@@ -47,7 +47,7 @@
       <span class="symbole_obligatoire"></span>
     </label>
     <div class="controls col-sm-9">
-      <ul class="nav nav-tabs" role="tablist">
+      <ul class="yw-nav" role="tablist">
         <li role="presentation" class="active">
           <a href="#formbuilder" aria-controls="formbuilder" role="tab" data-toggle="tab">
             {{ _t('BAZ_FORM_GRAPHICAL_BUILDER') }}
@@ -60,12 +60,12 @@
         </li>
       </ul>
 
-      <div class="tab-content">
-        <div role="tabpanel" class="tab-pane active" id="formbuilder">
+      <div class="yw-tabs__content">
+        <div role="tabpanel" class="yw-tabs__pane active" id="formbuilder">
           <!-- container where the form bulder will be rendered -->
           <div id="form-builder-container"></div>
         </div>
-        <div role="tabpanel" class="tab-pane" id="code">
+        <div role="tabpanel" class="yw-tabs__pane" id="code">
           <textarea
             class="form-control input-xxlarge"
             id="form-builder-text"
@@ -116,7 +116,7 @@
     <div class="controls col-sm-9 col-sm-offset-3">
       <div class="accordion-heading">
         <a
-          class="plusinfos btn btn-xs btn-info"
+          class="plusinfos yw-btn yw-btn--sm yw-btn--info"
           data-toggle="collapse"
           data-parent="#accordion4"
           href="#collapseFour"
@@ -205,7 +205,7 @@
       <button type="submit" name="valider" class="yw-btn yw-btn--primary">
         {{ _t('BAZ_VALIDER') }}
       </button>
-      <a class="btn btn-xs btn-default" href="{{ url({ params: { vue: 'formulaire' }}) }}">
+      <a class="yw-btn yw-btn--sm" href="{{ url({ params: { vue: 'formulaire' }}) }}">
         {{ _t('BAZ_ANNULER') }}
       </a>
     </div>

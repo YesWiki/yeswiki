@@ -1,11 +1,8 @@
-{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
-{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
-
 {% include '@core/core.twig' %}
 
 <p>&nbsp;</p>
 
-<div class="panel-group" role="tablist" aria-multiselectable="true" id="accordion_update" >
+<div role="tablist" aria-multiselectable="true" id="accordion_update" >
 	{# THEMES #}
 	{% set nbMaj = 0 %}
 	{% set exts = themes %}
@@ -15,12 +12,12 @@
 		{% endif %}
 	{% endfor %}
 	{% if nbMaj > 0 %}
-		<div class="panel panel-warning"  >
+		<div class="yw-panel yw-panel--warning">
 	{% else %}
-		<div class="panel panel-default"  >
+		<div class="yw-panel">
 	{% endif %}
-		<button class="panel-heading collapsed" role="tab" id="headingThemes" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseThemes" aria-expanded="false" aria-controls="collapseThemes">
-			<h2 class="panel-title">Thèmes
+		<button class="yw-panel__heading yw-collapse-toggle" role="tab" id="headingThemes" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseThemes" aria-expanded="false" aria-controls="collapseThemes">
+			<h2 class="yw-panel__title">Thèmes
 				{% if nbMaj > 0 %}
 					{% set alerte = '' %}
 					{% if nbMaj > 1 %}
@@ -32,7 +29,7 @@
 				{% endif %}
 			</h2>
 		</button>
-		<div id="collapseThemes" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThemes">
+		<div id="collapseThemes" class="yw-collapse" role="tabpanel" aria-labelledby="headingThemes">
 			{% set exts = themes %}
 			{% include '@core/exts.twig' %}
 		</div>
@@ -47,12 +44,12 @@
 		{% endif %}
 	{% endfor %}
 	{% if nbMaj > 0 %}
-		<div class="panel panel-warning"  >
+		<div class="yw-panel yw-panel--warning">
 	{% else %}
-		<div class="panel panel-default"  >
+		<div class="yw-panel">
 	{% endif %}
-		<button class="panel-heading collapsed" role="tab" id="headingTools" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseTools" aria-expanded="false" aria-controls="collapseTools">
-			<h2 class="panel-title">Tools (extensions)
+		<button class="yw-panel__heading yw-collapse-toggle" role="tab" id="headingTools" role="button" data-toggle="collapse" data-parent="#accordion_update" href="#collapseTools" aria-expanded="false" aria-controls="collapseTools">
+			<h2 class="yw-panel__title">Tools (extensions)
 				{% if nbMaj > 0 %}
 					{% set alerte = '' %}
 					{% if nbMaj > 1 %}
@@ -64,7 +61,7 @@
 				{% endif %}
 			</h2>
 		</button>
-		<div id="collapseTools" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTools">
+		<div id="collapseTools" class="yw-collapse" role="tabpanel" aria-labelledby="headingTools">
 			{% set exts = tools %}
 			{% include '@core/exts.twig' %}
 		</div>

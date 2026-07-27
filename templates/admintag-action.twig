@@ -1,7 +1,4 @@
-{# following line commented to prevent empty tagsname #}
-{# {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }} #}
-{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
-<table class="table table-striped table-condensed">
+<table class="yw-table" data-yw-datatable>
   <thead>
     <tr>
       <th>Page</th>
@@ -21,7 +18,7 @@
           </td>
           {% if isAdmin %}
           <td class="delete_tag">
-            <a class="btn btn-xs btn-mini btn-error btn-danger" 
+            <a class="yw-btn yw-btn--sm yw-btn--danger" 
               href="{{ url({params:{delete_tag:tag.id}}) }}">
               <i class="icon icon-trash icon-white"></i>
               {{- ' ' ~ _t('TAGS_DELETE_MINUSCULE') }} {{ _t('TAGS_FROM_THIS_PAGE') -}}
@@ -36,7 +33,7 @@
           <td></td>
           {% if isAdmin %}
           <td class="delete_all_tags">
-            <a class="btn btn-xs btn-mini btn-error btn-danger" 
+            <a class="yw-btn yw-btn--sm yw-btn--danger" 
                 href="{{ url({params:{delete_tag:tagsForName|map(tag => tag.id)|join(',')}}) }}">
               <strong>
                 <i class="icon icon-trash icon-white"></i>

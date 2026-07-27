@@ -1,7 +1,7 @@
 {# canTriggerUpdate is computed once in UpdateAction.php and passed down through status.twig's include #}
 {% set blockedReason = isHibernated ? _t('WIKI_IN_HIBERNATION') : _t('AU_NOT_DESIGNATED_UPDATE_INSTANCE') %}
 
-<table class="table table-striped table-condensed table-updates">
+<table class="yw-table table-updates" data-yw-datatable>
   <thead>
     <tr>
         <th>{{ _t('AU_NAME') }}</th>
@@ -36,14 +36,14 @@
                 {% if isAdmin and ext.updateAvailable and ext.installed %}
                     {% if canTriggerUpdate %}
                         <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
-                            class="btn btn-xs btn-primary"
+                            class="yw-btn yw-btn--sm yw-btn--primary"
                             title="{{ _t('AU_UPDATE') }}"
                         >
                             {{ _t('AU_UPDATE') }}
                         </a>
                     {% else %}
                         <button disabled
-                            class="btn btn-xs btn-primary"
+                            class="yw-btn yw-btn--sm yw-btn--primary"
                             title="{{ blockedReason }}"
                             data-toggle="tooltip"
                             data-placement="bottom"
@@ -59,14 +59,14 @@
                 {% if isAdmin and not ext.installed %}
                     {% if canTriggerUpdate %}
                         <a  href="{{ url({ params: { action: 'upgrade', package: ext.updateLink } }) }}"
-                            class="btn btn-xs btn-primary"
+                            class="yw-btn yw-btn--sm yw-btn--primary"
                             title="{{ _t('AU_INSTALL') }}"
                         >
                             {{ _t('AU_INSTALL') }}
                         </a>
                     {% else %}
                         <button disabled
-                            class="btn btn-xs btn-primary"
+                            class="yw-btn yw-btn--sm yw-btn--primary"
                             title="{{ blockedReason }}"
                             data-toggle="tooltip"
                             data-placement="bottom"
@@ -79,14 +79,14 @@
                 {% if isAdmin and ext.installed and ext.name != 'autoupdate' %}
                     {% if canTriggerUpdate %}
                         <a  href="{{ url({params:{ action: 'delete', package: ext.deleteLink|split('delete=')|slice(1,1)|first}}) }}"
-                            class="btn btn-xs btn-danger"
+                            class="yw-btn yw-btn--sm yw-btn--danger"
                             title="{{ _t('AU_DELETE_EXT') }}"
                         >
                             {{ _t('AU_DELETE_EXT') }}
                         </a>
                     {% else %}
                         <button disabled
-                            class="btn btn-xs btn-danger"
+                            class="yw-btn yw-btn--sm yw-btn--danger"
                             title="{{ blockedReason }}"
                             data-toggle="tooltip"
                             data-placement="bottom"

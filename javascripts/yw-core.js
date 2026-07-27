@@ -15,14 +15,19 @@
   }
 
   // ---- Remote-load modal (ticket 16: replaces jQuery `.load()` + `.modal('show')`) ----
-  // Any element with [data-yw-modal-remote="<url>"] opens a single shared modal shell,
-  // fetches the URL, and injects its content. Optional attributes on the opener:
-  //   title="..."                     modal header title
-  //   data-yw-modal-size="lg"         appends a `yw-modal__dialog--lg`-style modifier
-  //   data-yw-modal-no-header         suppresses the header entirely
-  //   data-yw-modal-iframe            loads the url in an <iframe> instead of fetching it
-  //   data-yw-modal-fragment=".page"  extract only this selector's innerHTML from the
-  //                                   fetched response (default: the whole response body)
+  // Matches the EXACT pre-existing markup contract every "open in a modal" link across
+  // the codebase already uses (`class="modalbox"`/`href`/`data-size`/`data-iframe`/
+  // `data-header`/`title`) rather than inventing a new attribute scheme -- this lets every
+  // existing modalbox link keep working unconverted. Optional attributes on the opener:
+  //   href="<url>"           required: what to load into the modal
+  //   title="..."            modal header title
+  //   data-size="modal-lg"   appends a `yw-modal__dialog--lg`-style modifier (a legacy
+  //                          "modal-" prefix, if present, is stripped before appending)
+  //   data-header="false"    suppresses the header entirely
+  //   data-iframe="1"        loads the url in an <iframe> instead of fetching it
+  //   data-yw-modal-fragment=".foo"  extract only this selector's innerHTML from the
+  //                          fetched response (default: ".page", matching the legacy
+  //                          behavior of always extracting the fetched page's own content)
   function remoteModalShell() {
     let modal = document.getElementById('yw-modal-remote')
     if (!modal) {
@@ -68,8 +73,16 @@
     })
   }
 
+  // A url already routed through an edit/iframe handler is left alone; a same-domain url
+  // gets `/iframe` appended so it renders without this wiki's own surrounding chrome
+  function addIframeHandlerTo(url) {
+    if (/\??.*\/(edit)?iframe(&.*)?/.test(url)) return url
+    if (new RegExp(`^${wiki.baseUrl}`).test(url)) return `${url}/iframe`
+    return url
+  }
+
   function openRemoteModal(opener) {
-    const url = opener.getAttribute('data-yw-modal-remote')
+    const url = opener.getAttribute('href')
     if (!url) return
 
     const modal = remoteModalShell()
@@ -79,24 +92,30 @@
     const header = modal.querySelector('.yw-modal__header')
 
     dialog.className = 'yw-modal__dialog'
-    const size = opener.getAttribute('data-yw-modal-size')
+    const size = (opener.getAttribute('data-size') || '').replace(/^modal-/, '')
     if (size) dialog.classList.add(`yw-modal__dialog--${size}`)
-    header.hidden = opener.hasAttribute('data-yw-modal-no-header')
+    header.hidden = opener.getAttribute('data-header') === 'false'
     title.textContent = opener.getAttribute('title') || ''
 
-    if (/\.(gif|jpe?g|png|svg|webp)$/i.test(url)) {
+    if (/\.(gif|jpe?g|png|svg|webp|tiff)$/i.test(url)) {
       body.replaceChildren()
       const img = document.createElement('img')
       img.loading = 'lazy'
       img.src = url
       img.alt = ''
       body.appendChild(img)
-    } else if (opener.hasAttribute('data-yw-modal-iframe')) {
+    } else if (opener.getAttribute('data-iframe') === '1') {
+      const iframeUrl = addIframeHandlerTo(url)
+      if (!title.textContent) title.textContent = url.substring(0, 128)
       body.innerHTML = `<span class="yw-modal__loading"></span>
-        <iframe class="yw-modal__iframe" src="${url}" referrerpolicy="no-referrer"></iframe>`
+        <iframe class="yw-modal__iframe" src="${iframeUrl}" referrerpolicy="no-referrer"></iframe>`
+      const loading = body.querySelector('.yw-modal__loading')
+      body.querySelector('.yw-modal__iframe').addEventListener('load', () => {
+        if (loading) loading.remove()
+      })
     } else {
       body.innerHTML = '<span class="yw-modal__loading"></span>'
-      const fragmentSelector = opener.getAttribute('data-yw-modal-fragment')
+      const fragmentSelector = opener.getAttribute('data-yw-modal-fragment') || '.page'
       fetch(url)
         .then((response) => {
           if (!response.ok) throw new Error(`HTTP ${response.status}`)
@@ -105,7 +124,7 @@
         .then((html) => {
           const doc = new DOMParser().parseFromString(html, 'text/html')
           loadMissingAssets(doc)
-          const target = fragmentSelector ? doc.querySelector(fragmentSelector) : doc.body
+          const target = doc.querySelector(fragmentSelector) || doc.body
           body.innerHTML = target ? target.innerHTML : ''
           document.dispatchEvent(new CustomEvent('yw-modal-open'))
         })
@@ -117,32 +136,122 @@
     modal.classList.add('yw-modal--open')
   }
 
-  // Open: click on any [data-yw-modal-target="#id"], or [data-yw-modal-remote="<url>"]
+  // Resolves the element a toggle points at, reading whichever attribute the
+  // markup uses: the yw-* one, legacy Bootstrap's data-target, or a "#id" href.
+  function toggleTarget(toggle, ywAttribute) {
+    const selector = toggle.getAttribute(ywAttribute)
+      || toggle.getAttribute('data-target')
+      || (/^#./.test(toggle.getAttribute('href') || '') ? toggle.getAttribute('href') : null)
+    return selector ? document.querySelector(selector) : null
+  }
+
+  // ---- Tabs (ticket 16: replaces Bootstrap's tab plugin + jQuery historyTabs) ----
+  // Markup contract (legacy attributes honored, no template churn):
+  //   <ul class="yw-tabs"><li class="active"><a href="#pane1" data-toggle="tab">...</a></li>...</ul>
+  //   <div class="yw-tabs__content"><div class="yw-tabs__pane active" id="pane1">...</div>...</div>
+  // A trigger can also live inside the pane container itself (next/previous
+  // buttons) — the nav is then found as the container's preceding tab list.
+  function tabNavFor(link, pane) {
+    const ownNav = link.closest('ul')
+    if (ownNav && ownNav.querySelector('a[data-toggle="tab"], a[data-yw-tab]')) return ownNav
+    let el = pane.parentElement
+    while (el && el.previousElementSibling) {
+      el = el.previousElementSibling
+      if (el.matches('ul') && el.querySelector('a[data-toggle="tab"], a[data-yw-tab]')) return el
+    }
+    return null
+  }
+
+  function activateTab(link) {
+    const href = link.getAttribute('href')
+    if (!href || !/^#./.test(href)) return
+    const pane = document.querySelector(href)
+    if (!pane) return
+
+    Array.from(pane.parentElement.children).forEach((sibling) => {
+      sibling.classList.toggle('active', sibling === pane)
+    })
+    const nav = tabNavFor(link, pane)
+    if (nav) {
+      nav.querySelectorAll('li').forEach((item) => {
+        const itemLink = item.querySelector('a[href]')
+        item.classList.toggle('active', !!itemLink && itemLink.getAttribute('href') === href)
+      })
+    }
+    // A trigger inside the pane container (next/previous button) scrolls back up
+    // to the tab strip, matching the legacy behavior for long tabbed forms
+    if (nav && !nav.contains(link)) {
+      nav.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
+  // Remember the visited tab in the browser history (legacy historyTabs behavior)
+  function recordTabInHistory(href) {
+    const state = { url: href }
+    const url = window.location.pathname + window.location.search + href
+    if (window.location.hash && href !== window.location.hash) {
+      window.history.pushState(state, document.title, url)
+    } else {
+      window.history.replaceState(state, document.title, url)
+    }
+  }
+
+  function tabLinkFor(href) {
+    return document.querySelector(
+      `a[data-toggle="tab"][href="${href}"], a[data-yw-tab][href="${href}"]`
+    )
+  }
+
+  window.addEventListener('popstate', (event) => {
+    if (event.state && event.state.url) {
+      const link = tabLinkFor(event.state.url)
+      if (link) activateTab(link)
+    }
+  })
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.hash) {
+      const link = tabLinkFor(window.location.hash)
+      if (link) activateTab(link)
+    }
+  })
+
+  // Open: click on any [data-yw-modal-target="#id"] / legacy [data-toggle="modal"],
+  // or a remote-loading "a.modalbox"-style link
   document.addEventListener('click', (e) => {
-    const remoteOpener = e.target.closest('[data-yw-modal-remote]')
+    const opener = e.target.closest('[data-yw-modal-target], [data-toggle="modal"]')
+    if (opener) {
+      const modal = toggleTarget(opener, 'data-yw-modal-target')
+      // only claim converted .yw-modal targets — a legacy Bootstrap-markup modal
+      // (not yet converted) is still Bootstrap JS's to open, not ours
+      if (modal && modal.classList.contains('yw-modal')) {
+        e.preventDefault()
+        modal.classList.add('yw-modal--open')
+        // Replaces Bootstrap's shown.bs.modal + event.relatedTarget contract
+        modal.dispatchEvent(
+          new CustomEvent('yw-modal-shown', { detail: { relatedTarget: opener } })
+        )
+      }
+      return
+    }
+
+    const remoteOpener = e.target.closest('a.modalbox, a.modal, .modalbox a')
     if (remoteOpener) {
+      e.stopPropagation()
       e.preventDefault()
       openRemoteModal(remoteOpener)
       return
     }
 
-    const opener = e.target.closest('[data-yw-modal-target]')
-    if (opener) {
-      const modal = document.querySelector(opener.getAttribute('data-yw-modal-target'))
-      if (modal) {
-        modal.classList.add('yw-modal--open')
-      }
-      return
-    }
-
-    // Dismiss: click on [data-yw-dismiss="modal"] (hide) or "alert" (remove)
-    const dismisser = e.target.closest('[data-yw-dismiss]')
+    // Dismiss: click on [data-yw-dismiss="modal"] (hide) or "alert" (remove);
+    // legacy [data-dismiss] markup means the same thing
+    const dismisser = e.target.closest('[data-yw-dismiss], [data-dismiss]')
     if (dismisser) {
-      const kind = dismisser.getAttribute('data-yw-dismiss')
+      const kind = dismisser.getAttribute('data-yw-dismiss') || dismisser.getAttribute('data-dismiss')
       if (kind === 'modal') {
         closeModal(dismisser.closest('.yw-modal'))
       } else if (kind === 'alert') {
-        const alertEl = dismisser.closest('.yw-alert')
+        const alertEl = dismisser.closest('.yw-alert, .alert')
         if (alertEl) {
           alertEl.remove()
         }
@@ -150,11 +259,12 @@
       return
     }
 
-    // Toggle: click on [data-yw-dropdown-toggle]
-    const toggle = e.target.closest('[data-yw-dropdown-toggle]')
+    // Toggle: click on [data-yw-dropdown-toggle] or legacy [data-toggle="dropdown"]
+    const toggle = e.target.closest('[data-yw-dropdown-toggle], [data-toggle="dropdown"]')
     if (toggle) {
       const dropdown = toggle.closest('.yw-dropdown')
       if (dropdown) {
+        e.preventDefault()
         const willOpen = !dropdown.classList.contains('yw-dropdown--open')
         closeDropdowns()
         dropdown.classList.toggle('yw-dropdown--open', willOpen)
@@ -162,29 +272,49 @@
       return
     }
 
+    // Switch tab: click on [data-yw-tab] or legacy [data-toggle="tab"]
+    const tabLink = e.target.closest('a[data-yw-tab], a[data-toggle="tab"]')
+    if (tabLink) {
+      e.preventDefault()
+      activateTab(tabLink)
+      recordTabInHistory(tabLink.getAttribute('href'))
+      return
+    }
+
     // Toggle: click on [data-yw-collapse-toggle="#id"] (accordion panels etc.)
     // Optional [data-yw-accordion="#id"] closes every other panel within that
     // container first, mirroring Bootstrap's data-parent exclusive-open behavior.
-    const collapseToggle = e.target.closest('[data-yw-collapse-toggle]')
+    // Legacy [data-toggle="collapse"] markup (data-target/href + data-parent) is
+    // honored too, driving the same .yw-collapse--open class.
+    const collapseToggle = e.target.closest('[data-yw-collapse-toggle], [data-toggle="collapse"]')
     if (collapseToggle) {
-      const target = document.querySelector(collapseToggle.getAttribute('data-yw-collapse-toggle'))
-      if (target) {
+      const target = toggleTarget(collapseToggle, 'data-yw-collapse-toggle')
+      // same transition guard as modals: only converted .yw-collapse targets are ours
+      if (target && target.classList.contains('yw-collapse')) {
+        e.preventDefault()
         const willOpen = !target.classList.contains('yw-collapse--open')
         const accordionSelector = collapseToggle.getAttribute('data-yw-accordion')
+          || collapseToggle.getAttribute('data-parent')
         if (accordionSelector) {
           const accordion = document.querySelector(accordionSelector)
           if (accordion) {
             accordion.querySelectorAll('.yw-collapse--open').forEach((el) => {
               if (el !== target) el.classList.remove('yw-collapse--open')
             })
-            const openToggleSelector = '[data-yw-collapse-toggle][aria-expanded="true"]'
+            const openToggleSelector = '[data-yw-collapse-toggle][aria-expanded="true"],'
+              + ' [data-toggle="collapse"][aria-expanded="true"]'
             accordion.querySelectorAll(openToggleSelector).forEach((btn) => {
-              if (btn !== collapseToggle) btn.setAttribute('aria-expanded', 'false')
+              if (btn !== collapseToggle) {
+                btn.setAttribute('aria-expanded', 'false')
+                btn.classList.add('collapsed')
+              }
             })
           }
         }
         target.classList.toggle('yw-collapse--open', willOpen)
         collapseToggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false')
+        // Legacy Bootstrap markup styles the trigger via a .collapsed class
+        collapseToggle.classList.toggle('collapsed', !willOpen)
       }
       return
     }

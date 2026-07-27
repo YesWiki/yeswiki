@@ -1,9 +1,7 @@
 {{ include_javascript('javascripts/reload-gerer-droits.js') }}
-{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
-{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
 
 {% macro displaySpan(class,keyText,direct) -%}
-  <span class="label label-{{ class }}">{{ direct ? keyText : _t(keyText) }}</span>
+  <span class="yw-label yw-label--{{ class }}">{{ direct ? keyText : _t(keyText) }}</span>
 {%- endmacro displaySpan %}
 
 {% macro displayRights(text) %}
@@ -56,10 +54,11 @@
     </div>
 
     <div class="table-responsive">
-        <table class="table table-striped table-condensed table-acls">
+        {# sort-only: search/pagination would detach rows (and their inputs) from the form #}
+        <table class="yw-table table-acls" data-yw-datatable data-yw-no-search data-yw-no-paginate>
             <thead>
                 <tr>
-                    <th class="prevent-sorting">
+                    <th data-yw-no-sort>
                     <label class="check-all-container">
                         <input type="checkbox" name="id" value="tous" onClick="checkAll(this.checked)">
                         <span></span>
@@ -107,13 +106,13 @@
     <p class="type-modif-container">
         <label for="typemajdefault">
             <input type=radio name="typemaj" value="default" id="typemajdefault"
-                    onClick="$('.edit-acl-container').slideUp()">
+                    onClick="document.querySelector('.edit-acl-container').style.display='none'">
             <span>{{ _t('ACLS_RESET_SELECTED_PAGES') }} <em>yeswiki.config.php</em>)</span>
         </label>
 
         <label for="typemalremplacer">
             <input type=radio name="typemaj" value="remplacer" id="typemalremplacer" checked
-                    onClick="$('.edit-acl-container').slideDown()">
+                    onClick="document.querySelector('.edit-acl-container').style.display=''">
             <span>{{ _t('ACLS_REPLACE_SELECTED_PAGES') }}</span>
         </label>
     </p>
@@ -131,7 +130,7 @@
             </label>
         </div>
 
-        <div class="alert alert-default acl-advanced">
+        <div class="yw-alert acl-advanced">
             {{ _t('ACLS_HELPER')|raw }}
         </div>
 
@@ -162,8 +161,7 @@
         {% if filTer %}<input type="hidden" name="filter" value="{{ filTer }}"/>{% endif %}
         <input
             name="geredroits_modifier"
-            class="btn btn-primary" 
-            onclick="$('.table-acls').DataTable().$('input, select').appendTo('.form-acls');" 
+            class="yw-btn yw-btn--primary"
             value="{{ _t('ACLS_UPDATE') }}" 
             {% if isHibernated %}
                 disabled 

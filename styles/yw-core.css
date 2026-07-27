@@ -186,6 +186,9 @@ textarea.yw-input {
 .yw-modal__dialog--lg {
   max-width: 900px;
 }
+.yw-modal__dialog--sm {
+  max-width: 340px;
+}
 .yw-modal__content {
   background: #fff;
   border-radius: 6px;
@@ -517,6 +520,13 @@ table[data-yw-datatable] th[data-yw-sort='desc']::after {
   border: 0;
   border-bottom: 1px solid var(--neutral-soft-color);
 }
+.yw-panel--warning {
+  border-color: var(--warning-color);
+}
+.yw-panel--warning > .yw-panel__heading {
+  border-color: var(--warning-color);
+  background: color-mix(in srgb, var(--warning-color) 15%, #fff);
+}
 .yw-panel__title {
   margin: 0;
   font-size: 14px;
@@ -612,6 +622,17 @@ table[data-yw-datatable] th[data-yw-sort='desc']::after {
   border-bottom: 2px solid var(--primary-color);
 }
 
+/* ---- Tabs (ticket 16: replaces Bootstrap's tab plugin panes) ----
+   Tab strips reuse .yw-nav (li.active marks the current tab); panes live in a
+   .yw-tabs__content container and only the .active pane is shown. Switching is
+   handled by yw-core.js on a[data-toggle="tab"] / a[data-yw-tab] clicks. */
+.yw-tabs__content > .yw-tabs__pane {
+  display: none;
+}
+.yw-tabs__content > .yw-tabs__pane.active {
+  display: block;
+}
+
 /* ---- Progress bar (ticket 12: replaces Bootstrap's .progress) ---- */
 .yw-progressbar {
   height: 16px;
@@ -645,12 +666,21 @@ table[data-yw-datatable] th[data-yw-sort='desc']::after {
   color: var(--neutral-soft-color);
 }
 
-/* ---- Tooltip (ticket 16: replaces Bootstrap's data-toggle="tooltip", pure CSS, no JS) ---- */
-[data-yw-tooltip] {
+/* ---- Tooltip (ticket 16: replaces Bootstrap's data-toggle="tooltip", pure CSS, no JS) ----
+   Also matches the legacy `[data-toggle='tooltip']`/`[data-tooltip='tooltip']` markup
+   (Bootstrap's own convention, title attribute holds the text) so none of the ~24 existing
+   templates using it need to change -- only its content source attribute differs. */
+[data-yw-tooltip],
+[data-toggle='tooltip'][title],
+[data-tooltip='tooltip'][title] {
   position: relative;
 }
 [data-yw-tooltip]::after,
-[data-yw-tooltip]::before {
+[data-yw-tooltip]::before,
+[data-toggle='tooltip'][title]::after,
+[data-toggle='tooltip'][title]::before,
+[data-tooltip='tooltip'][title]::after,
+[data-tooltip='tooltip'][title]::before {
   opacity: 0;
   visibility: hidden;
   position: absolute;
@@ -661,8 +691,9 @@ table[data-yw-datatable] th[data-yw-sort='desc']::after {
   pointer-events: none;
   z-index: 20;
 }
-[data-yw-tooltip]::after {
-  content: attr(data-yw-tooltip);
+[data-yw-tooltip]::after,
+[data-toggle='tooltip'][title]::after,
+[data-tooltip='tooltip'][title]::after {
   margin-bottom: 6px;
   padding: 4px 8px;
   max-width: 240px;
@@ -675,7 +706,16 @@ table[data-yw-datatable] th[data-yw-sort='desc']::after {
   background: var(--neutral-color, #333);
   border-radius: 4px;
 }
-[data-yw-tooltip]::before {
+[data-yw-tooltip]::after {
+  content: attr(data-yw-tooltip);
+}
+[data-toggle='tooltip'][title]::after,
+[data-tooltip='tooltip'][title]::after {
+  content: attr(title);
+}
+[data-yw-tooltip]::before,
+[data-toggle='tooltip'][title]::before,
+[data-tooltip='tooltip'][title]::before {
   content: '';
   margin-bottom: 1px;
   border: 5px solid transparent;
@@ -684,7 +724,15 @@ table[data-yw-datatable] th[data-yw-sort='desc']::after {
 [data-yw-tooltip]:hover::after,
 [data-yw-tooltip]:hover::before,
 [data-yw-tooltip]:focus-visible::after,
-[data-yw-tooltip]:focus-visible::before {
+[data-yw-tooltip]:focus-visible::before,
+[data-toggle='tooltip'][title]:hover::after,
+[data-toggle='tooltip'][title]:hover::before,
+[data-toggle='tooltip'][title]:focus-visible::after,
+[data-toggle='tooltip'][title]:focus-visible::before,
+[data-tooltip='tooltip'][title]:hover::after,
+[data-tooltip='tooltip'][title]:hover::before,
+[data-tooltip='tooltip'][title]:focus-visible::after,
+[data-tooltip='tooltip'][title]:focus-visible::before {
   opacity: 1;
   visibility: visible;
 }

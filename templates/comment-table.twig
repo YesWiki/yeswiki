@@ -1,22 +1,18 @@
 {% import "@core/multidelete-macro.twig" as multidelete %}
 
-{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
-{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
-
 <div id='comments-table-action'>
-  {# order on signuptime desc #}
-  <table class="table table-striped" data-order='[[ 0, "desc" ]]'>
+  {# order on date desc #}
+  <table class="yw-table" data-yw-datatable data-yw-datatable-sort="1,desc">
     <thead>
       <tr>
         {{ multidelete.insertSelectAll('comments-table-action','top') }}
         <th>{{ _t('COMMENT_DATE') }}</th>
-        {# mmmmmmm because https://datatables.net/reference/option/columns.contentPadding #}
-        <th data-content-padding="mmmmmmmmmmmmmmmmmmmmmmmmmm">{{ _t('COMMENT_CONTENT') }}</th>
-        <th data-class-name="comments-table-break-word-column">{{ _t('COMMENT_USER') }}</th>
-        <th data-class-name="comments-table-break-word-column">{{ _t('COMMENT_TAG') }}</th>
-        <th data-class-name="comments-table-break-word-column">{{ _t('COMMENT_ON_PAGE') }}</th>
-        <th>{{ _t('MODIFY') }}</th>
-        <th>{{ _t('DELETE') }}</th>
+        <th>{{ _t('COMMENT_CONTENT') }}</th>
+        <th class="comments-table-break-word-column">{{ _t('COMMENT_USER') }}</th>
+        <th class="comments-table-break-word-column">{{ _t('COMMENT_TAG') }}</th>
+        <th class="comments-table-break-word-column">{{ _t('COMMENT_ON_PAGE') }}</th>
+        <th data-yw-no-sort>{{ _t('MODIFY') }}</th>
+        <th data-yw-no-sort>{{ _t('DELETE') }}</th>
       </tr>
     </thead>
     <tbody>
@@ -34,9 +30,9 @@
           <td>{% set tagAnchor = com.parentTag ?? com.comment_on %}<a class="new-window" href="{{ url({tag:tagAnchor}) }}">{{ tagAnchor }}</a></td>
           <td>
             {# if admin or comment's owner #}
-            {% if hasAcl(com.owner) %} 
+            {% if hasAcl(com.owner) %}
               <a href="{{ url({tag:com.tag,handler:'edit'}) }}"
-                class="btn btn-sm btn-warning new-window" role="button"
+                class="yw-btn yw-btn--sm yw-btn--warning new-window" role="button"
                 title="{{ _t('MODIFY') }} {{ com.tag }}">
                 {{ _t('MODIFY') }}
               </a>
@@ -44,11 +40,11 @@
           </td>
           <td>
             {% if hasAcl(com.owner) %}
-              <a 
+              <a
                 data-toggle="modal"
                 role="button"
                 href="#commentsTableDeleteModal"
-                class="btn btn-sm btn-danger" 
+                class="yw-btn yw-btn--sm yw-btn--danger"
                 data-name="{{ com.tag }}"
                 title="{{ _t('COMMENT_DELETE') }}">
                 {{ _t('DELETE') }}
@@ -57,7 +53,7 @@
           </td>
       {% endfor %}
     </tbody>
-    <tfooter>
+    <tfoot>
       <tr>
         {{ multidelete.insertSelectAll('comments-table-action','bottom') }}
         <th></th>
@@ -67,39 +63,38 @@
         <th></th>
         <th></th>
       </tr>
-    </tfooter>
+    </tfoot>
   </table>
   {{ multidelete.insertButton('comments-table-action','comments') }}
 </div>
 
-<div class="modal fade" 
-  id="commentsTableDeleteModal" 
-  tabindex="-1" 
-  role="dialog" 
-  aria-labelledby="commentsTableDeleteModalLabel" 
-  aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h3 id="commentsTableDeleteModalLabel">{{ _t('COMMENT_DELETE') }} : <span id="commentToDelete"></span></h3>
+<div class="yw-modal"
+  id="commentsTableDeleteModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="commentsTableDeleteModalLabel">
+  <div class="yw-modal__dialog yw-modal__dialog--lg">
+    <div class="yw-modal__content">
+      <div class="yw-modal__header">
+        <h3 class="yw-modal__title" id="commentsTableDeleteModalLabel">{{ _t('COMMENT_DELETE') }} : <span id="commentToDelete"></span></h3>
+        <button type="button" class="yw-close" data-yw-dismiss="modal" aria-label="close">&times;</button>
       </div>
-      <div class="modal-body">
-        <div class="alert alert-warning">
+      <div class="yw-modal__body">
+        <div class="yw-alert yw-alert--warning">
           {{ _t('COMMENT_CONFIRM_DELETE') }}
         </div>
-        <button class="btn btn-sm btn-warning start-btn-delete-comment">{{ _t('DELETE') }}</button>
+        <button class="yw-btn yw-btn--sm yw-btn--warning start-btn-delete-comment">{{ _t('DELETE') }}</button>
         <br/><br/>
         <div class="multi-delete-results"></div>
       </div>
-      <div class="modal-footer">
-        <div class="progressbar progress">
-          <div class="progress-bar" role="progressbar"
+      <div class="yw-modal__footer">
+        <div class="yw-progressbar">
+          <div class="yw-progressbar__bar" role="progressbar"
             style="width: 0%;"
             aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
           </div>
         </div>
       </div>
-    </div>{# .modal-content #}
-  </div>{# .modal-dialog #}
+    </div>{# .yw-modal__content #}
+  </div>{# .yw-modal__dialog #}
 </div>

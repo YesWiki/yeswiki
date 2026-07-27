@@ -22,18 +22,18 @@
     {% if canTriggerUpdate %}
         {% if core.PHPVersionEnoughHigh %}
             <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
-                class="btn btn-danger" title="{{ _t('AU_VERSION_UPDATE') }}">
+                class="yw-btn yw-btn--danger" title="{{ _t('AU_VERSION_UPDATE') }}">
                 {{ _t('AU_VERSION_UPDATE') }}
             </a>
         {% else %}
-            <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
+            <button type="button" class="yw-btn yw-btn--danger" disabled data-toggle="tooltip"
                 data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_VERSION_UPDATE'),core,phpVersion) }}">
                 {{ _t('AU_VERSION_UPDATE') }}
             </button>
             <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction: _t('AU_PHP_TOO_LOW_VERSION_UPDATE')}) }}</i></p>
         {% endif %}
     {% else %}
-        <button type="button" class="btn btn-danger" disabled data-toggle="tooltip"
+        <button type="button" class="yw-btn yw-btn--danger" disabled data-toggle="tooltip"
             data-placement="bottom" title="{{ blockedReason }}">
             {{ _t('AU_VERSION_UPDATE') }}
         </button>
@@ -42,18 +42,18 @@
     {% if canTriggerUpdate %}
         {% if core.PHPVersionEnoughHigh %}
             <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
-                class="btn btn-primary" title="{{ _t('AU_UPDATE') }}">
+                class="yw-btn yw-btn--primary" title="{{ _t('AU_UPDATE') }}">
                 {{ _t('AU_UPDATE') }}
             </a>
         {% else %}
-            <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
+            <button type="button" class="yw-btn yw-btn--primary" disabled data-toggle="tooltip"
                 data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_UPDATE'),core,phpVersion) }}">
                 {{ _t('AU_UPDATE') }}
             </button>
             <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction:_t('AU_PHP_TOO_LOW_UPDATE')}) }}</i></p>
         {% endif %}
     {% else %}
-        <button type="button" class="btn btn-primary" disabled data-toggle="tooltip"
+        <button type="button" class="yw-btn yw-btn--primary" disabled data-toggle="tooltip"
             data-placement="bottom" title="{{ blockedReason }}">
             {{ _t('AU_UPDATE') }}
         </button>
@@ -62,18 +62,18 @@
     {% if canTriggerUpdate %}
         {% if core.PHPVersionEnoughHigh %}
             <a  href="{{ url({ params: { action: 'upgrade', package: core.updateLink } }) }}"
-                class="btn btn-warning" title="{{ _t('AU_FORCE_UPDATE') }}">
+                class="yw-btn yw-btn--warning" title="{{ _t('AU_FORCE_UPDATE') }}">
                 {{ _t('AU_FORCE_UPDATE') }}
             </a>
         {% else %}
-            <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
+            <button type="button" class="yw-btn yw-btn--warning" disabled data-toggle="tooltip"
                 data-placement="bottom" title="{{ _self.phpTooLowText(_t('AU_PHP_TOO_LOW_FORCE_UPDATE'),core,phpVersion) }}">
                 {{ _t('AU_FORCE_UPDATE') }}
             </button>
             <p><i>{{ _t('AU_PHP_TOO_LOW_HINT',{textAction:_t('AU_PHP_TOO_LOW_FORCE_UPDATE')}) }}</i></p>
         {% endif %}
     {% else %}
-        <button type="button" class="btn btn-warning" disabled data-toggle="tooltip"
+        <button type="button" class="yw-btn yw-btn--warning" disabled data-toggle="tooltip"
             data-placement="bottom" title="{{ blockedReason }}">
             {{ _t('AU_FORCE_UPDATE') }}
         </button>

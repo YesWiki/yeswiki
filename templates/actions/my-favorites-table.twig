@@ -1,10 +1,8 @@
 {% extends "@core/actions/my-favorites.twig" %}
 
 {% block favorites %}
-    {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
-    {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
 
-    <table class="table table-striped">
+    <table class="yw-table" data-yw-datatable>
         <thead>
             <tr>
                 <th></th>
@@ -22,7 +20,7 @@
                             data-resource="{{ favorite.resource }}" 
                             data-user="{{ currentUser }}"
                             data-linkedFavoriteid="favoriteRow{{favorite.resource}}"
-                            class="btn btn-icon btn-default btn-xs favorites user-favorite">
+                            class="yw-btn yw-btn--sm btn-icon favorites user-favorite">
                             <i class="fas fa-star"></i>
                         </a>
                     </td>

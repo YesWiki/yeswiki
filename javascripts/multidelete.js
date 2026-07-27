@@ -1,15 +1,19 @@
 function checkAllFirstCol(elem) {
   const newState = $(elem).prop('checked')
-  $(elem)
-    .closest('.dataTables_wrapper')
+  // DataTables-driven tables live in a .dataTables_wrapper; yw-datatable ones don't,
+  // the table element itself is the scope there
+  let scope = $(elem).closest('.dataTables_wrapper')
+  if (scope.length === 0) {
+    scope = $(elem).closest('table')
+  }
+  scope
     .find('tr > td:first-child input.selectline[type=checkbox]:visible')
     .each(function() {
       $(this).prop('checked', newState)
       $(this).trigger('change')
     })
 
-  $(elem)
-    .closest('.dataTables_wrapper')
+  scope
     .find('tr > th:first-child label.check-all-container input[type=checkbox]')
     .prop('checked', newState)
 }
@@ -29,7 +33,7 @@ const multiDeleteService = {
   },
   updateProgressBar(modal, items, currentIndex) {
     const value = (items.length == 0) ? 100 : Math.min(100, Math.round((currentIndex + 1) / items.length * 100))
-    $(modal).find('.modal-footer .progress-bar').each(function() {
+    $(modal).find('.modal-footer .progress-bar, .yw-modal__footer .yw-progressbar__bar').each(function() {
       $(this).attr('style', `width: ${value}%;`)
       $(this).attr('aria-valuenow', value)
     })
@@ -38,7 +42,7 @@ const multiDeleteService = {
     return ($(modal).filter(':visible').length == 0)
   },
   addErrorMessage(modal, message) {
-    $(modal).find('.modal-body .multi-delete-results').first().append(
+    $(modal).find('.modal-body .multi-delete-results, .yw-modal__body .multi-delete-results').first().append(
       $('<div>').addClass('alert alert-danger')
         .text(message)
     )
@@ -57,7 +61,7 @@ const multiDeleteService = {
       this.deleteOneItem(modal, items, type, currentIndex + 1, target)
     } else {
       this.isRunning = false
-      $(modal).find('.modal-body .multi-delete-results').first().append(
+      $(modal).find('.modal-body .multi-delete-results, .yw-modal__body .multi-delete-results').first().append(
         $('<div>').text(_t('MULTIDELETE_END'))
       )
     }
