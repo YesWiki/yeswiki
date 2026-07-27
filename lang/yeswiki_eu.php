@@ -2046,4 +2046,12 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'FORM_BUILDER_LABEL_LABEL' => 'Etiketa',
     'FORM_BUILDER_NAME_LABEL' => 'Identifikatzailea',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Beharrezkoa',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'Fitxen izenburu gisa erabilitako eremua',
+    'FORM_EDIT_CUSTOM_TITLE' => 'Izenburu pertsonalizatua…',
+    'FORM_EDIT_PERMISSIONS' => 'Fitxen baimenak',
+    'FORM_EDIT_PRESENTATION' => 'Fitxen aurkezpena',
+    'FORM_EDIT_CREATES_USER' => 'Fitxa bakoitzak erabiltzaile kontu bat sortzen du',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];

@@ -77,6 +77,73 @@
     </div>
   </div>
 
+  {# ---- Entry title (entry_title_template, ADR-0010): a select of the form's
+     fields, rebuilt live by the designer, plus a custom-template mode ---- #}
+  <div class="yw-form-group" id="entry-title-group">
+    <label class="yw-form-label">
+      {{ _t('FORM_EDIT_ENTRY_TITLE') }}
+      <span class="symbole_obligatoire"></span>
+    </label>
+    <select id="entry-title-select" class="yw-input"></select>
+    <input
+      class="yw-input"
+      id="entry-title-custom"
+      name="entry_title_template"
+      type="text"
+      value="{{ form.entry_title_template ?? '{{bf_titre}}' }}"
+      placeholder="{{ '{{bf_field1}} - {{bf_field2}}' }}"
+      required
+    />
+  </div>
+
+  {# ---- Permissions (entry_*_access + comments toggle) ---- #}
+  <fieldset class="yw-form-group">
+    <legend class="yw-form-label">{{ _t('FORM_EDIT_PERMISSIONS') }}</legend>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_ACL_READ_LABEL') }}</label>
+      <input class="yw-input" name="entry_read_access" type="text" value="{{ form.entry_read_access }}" placeholder="*" />
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_ACL_WRITE_LABEL') }}</label>
+      <input class="yw-input" name="entry_write_access" type="text" value="{{ form.entry_write_access }}" placeholder="%" />
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_ACL_COMMENT_LABEL') }}</label>
+      <input class="yw-input" name="entry_comment_access" type="text" value="{{ form.entry_comment_access }}" placeholder="comments-closed" />
+    </div>
+    <div class="yw-form-group">
+      <label>
+        <input type="checkbox" name="entry_permit_activate_comments" value="1" {% if form.entry_permit_activate_comments %}checked{% endif %}>
+        {{ _t('BAZ_FORM_EDIT_ACL_ASK_IF_ACTIVATE_COMMENT_LABEL') }}
+      </label>
+    </div>
+  </fieldset>
+
+  {# ---- Presentation (entry_metadatas) ---- #}
+  <fieldset class="yw-form-group">
+    <legend class="yw-form-label">{{ _t('FORM_EDIT_PRESENTATION') }}</legend>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_THEME_LABEL') }}</label>
+      <input class="yw-input" name="entry_metadatas[theme]" type="text" value="{{ form.entry_metadatas.theme ?? '' }}" />
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_SQUELETON_LABEL') }}</label>
+      <input class="yw-input" name="entry_metadatas[skeleton]" type="text" value="{{ form.entry_metadatas.skeleton ?? '' }}" />
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_STYLE_LABEL') }}</label>
+      <input class="yw-input" name="entry_metadatas[style]" type="text" value="{{ form.entry_metadatas.style ?? '' }}" />
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_BACKGROUND_IMAGE_LABEL') }}</label>
+      <input class="yw-input" name="entry_metadatas[background_image]" type="text" value="{{ form.entry_metadatas.background_image ?? '' }}" />
+    </div>
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_METADATA_PRESET_LABEL') }}</label>
+      <input class="yw-input" name="entry_metadatas[css_preset]" type="text" value="{{ form.entry_metadatas.css_preset ?? '' }}" />
+    </div>
+  </fieldset>
+
   {% if onlyOneEntryOptionAvailable %}
     <div class="yw-form-group">
       <label for="only_one_entry">
@@ -116,7 +183,63 @@
     </a>
   </div>
 
-  <div id="collapseFour" class="yw-collapse collapse">
+  <div id="collapseFour" class="yw-collapse">
+    {# ---- Account creation (entry_creates_user) ---- #}
+    <div class="yw-form-group">
+      <label>
+        <input type="checkbox" id="entry-creates-user-enable" name="entry_creates_user_enable" value="1"
+          {% if form.entry_creates_user %}checked{% endif %}
+          onchange="document.getElementById('entry-creates-user-config').classList.toggle('hide', !this.checked)">
+        {{ _t('FORM_EDIT_CREATES_USER') }}
+      </label>
+    </div>
+    <div id="entry-creates-user-config" class="{{ form.entry_creates_user ? '' : 'hide' }}">
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_USERS_WIKINI_NAME_FIELD_LABEL') }}</label>
+        <input class="yw-input" name="entry_creates_user[name_field]" type="text" value="{{ form.entry_creates_user.name_field ?? 'bf_titre' }}" />
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_USERS_WIKINI_EMAIL_FIELD_LABEL') }}</label>
+        <input class="yw-input" name="entry_creates_user[email_field]" type="text" value="{{ form.entry_creates_user.email_field ?? 'bf_mail' }}" />
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_ADD_TO_GROUP_LABEL') }}</label>
+        <input class="yw-input" name="entry_creates_user[add_to_group]" type="text" value="{{ form.entry_creates_user.add_to_group ?? '' }}"
+          placeholder="{{ _t('BAZ_FORM_EDIT_ADD_TO_GROUP_DESCRIPTION') }}" />
+      </div>
+      <div class="yw-form-group">
+        <label>
+          <input type="checkbox" name="entry_creates_user[update_email]" value="1"
+            {% if (form.entry_creates_user.update_email ?? '') in ['1', 1, true] %}checked{% endif %}>
+          {{ _t('BAZ_FORM_EDIT_USERS_WIKINI_AUTOUPDATE_MAIL') }}
+        </label>
+      </div>
+    </div>
+
+    {# ---- Bookmarklet (entry_bookmarklet; the install widget lives on the forms table) ---- #}
+    <div class="yw-form-group">
+      <label>
+        <input type="checkbox" id="entry-bookmarklet-enable" name="entry_bookmarklet_enable" value="1"
+          {% if form.entry_bookmarklet %}checked{% endif %}
+          onchange="document.getElementById('entry-bookmarklet-config').classList.toggle('hide', !this.checked)">
+        {{ _t('FORM_EDIT_BOOKMARKLET') }}
+      </label>
+    </div>
+    <div id="entry-bookmarklet-config" class="{{ form.entry_bookmarklet ? '' : 'hide' }}">
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_BOOKMARKLET_URLFIELD_LABEL') }}</label>
+        <input class="yw-input" name="entry_bookmarklet[url_field]" type="text" value="{{ form.entry_bookmarklet.url_field ?? 'bf_url' }}" />
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_BOOKMARKLET_DESCRIPTIONFIELD_LABEL') }}</label>
+        <input class="yw-input" name="entry_bookmarklet[description_field]" type="text" value="{{ form.entry_bookmarklet.description_field ?? 'bf_description' }}" />
+      </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_BOOKMARKLET_TEXT_LABEL') }}</label>
+        <input class="yw-input" name="entry_bookmarklet[text_field]" type="text" value="{{ form.entry_bookmarklet.text_field ?? '' }}" />
+      </div>
+    </div>
+
     <div class="yw-form-group">
       <label class="yw-form-label">
         {{ _t('BAZ_CONDITION') }}

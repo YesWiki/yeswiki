@@ -1721,4 +1721,12 @@ return [
     'FORM_BUILDER_LABEL_LABEL' => 'Etiqueta',
     'FORM_BUILDER_NAME_LABEL' => 'Identificador',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatori',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'Camp utilitzat com a títol de les fitxes',
+    'FORM_EDIT_CUSTOM_TITLE' => 'Títol personalitzat…',
+    'FORM_EDIT_PERMISSIONS' => 'Permisos de les fitxes',
+    'FORM_EDIT_PRESENTATION' => 'Presentació de les fitxes',
+    'FORM_EDIT_CREATES_USER' => 'Cada fitxa crea un compte d’usuari',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];

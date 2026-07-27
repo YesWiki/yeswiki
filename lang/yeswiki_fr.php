@@ -2329,4 +2329,12 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'FORM_BUILDER_LABEL_LABEL' => 'Étiquette',
     'FORM_BUILDER_NAME_LABEL' => 'Identifiant',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatoire',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'Champ utilisé comme titre des fiches',
+    'FORM_EDIT_CUSTOM_TITLE' => 'Titre personnalisé…',
+    'FORM_EDIT_PERMISSIONS' => 'Permissions des fiches',
+    'FORM_EDIT_PRESENTATION' => 'Présentation des fiches',
+    'FORM_EDIT_CREATES_USER' => 'Chaque fiche crée un compte utilisateur',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];

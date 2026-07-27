@@ -46,6 +46,7 @@ class FormController extends YesWikiController
                     return $field instanceof MapField;
                 }));
                 $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
+                $values[$form['id']]['bookmarklet'] = $form['entry_bookmarklet'] ?? null;
             }
         }
 
@@ -64,7 +65,7 @@ class FormController extends YesWikiController
      */
     private function loadDesignerTranslations(): void
     {
-        $prefixes = ['BAZ_FORM_', 'FORM_BUILDER_', 'BAZ_REACTIONS_', 'BAZAR_VIDEO_'];
+        $prefixes = ['BAZ_FORM_', 'FORM_BUILDER_', 'FORM_EDIT_', 'BAZ_REACTIONS_', 'BAZAR_VIDEO_'];
         $names = [
             'BAZ_ACTIVATE_COMMENTS', 'BAZ_ACTIVATE_COMMENTS_HINT', 'BAZ_ACTIVATE_REACTIONS',
             'BAZAR_URL_DISPLAY_VIDEO', 'BAZ_BOOKMARKLET_HINT', 'BAZ_FILEFIELD_FILE',
@@ -88,6 +89,40 @@ class FormController extends YesWikiController
         $this->getService(LanguageController::class)->loadTranslations($designerKeys, true);
     }
 
+    /**
+     * Massages the form-edit POST into the stored entry_* property shapes (ADR-0010):
+     * checkbox-gated nested objects become arrays-or-null, empty sub-values are
+     * compacted away, the comments toggle becomes a real boolean. A null/empty value
+     * means "cleared" -- FormManager::update() removes the property from the body.
+     */
+    private function normalizeFormPropertiesPost(array $data): array
+    {
+        $data['entry_permit_activate_comments'] = !empty($data['entry_permit_activate_comments']);
+
+        $metadatas = array_filter(array_map(function ($value) {
+            return trim((string)$value);
+        }, (array)($data['entry_metadatas'] ?? [])), function ($value) {
+            return $value !== '';
+        });
+        $data['entry_metadatas'] = $metadatas ?: null;
+
+        foreach (['entry_creates_user', 'entry_bookmarklet'] as $property) {
+            if (empty($data[$property . '_enable'])) {
+                $data[$property] = null;
+            } else {
+                $config = array_filter(array_map(function ($value) {
+                    return trim((string)$value);
+                }, (array)($data[$property] ?? [])), function ($value) {
+                    return $value !== '';
+                });
+                $data[$property] = $config ?: null;
+            }
+            unset($data[$property . '_enable']);
+        }
+
+        return $data;
+    }
+
     public function create()
     {
         if ($this->wiki->UserIsAdmin()) {
@@ -96,7 +131,7 @@ class FormController extends YesWikiController
             if ($post->has('valider')) {
                 $form = $this->formManager->getFromRawData($post->all());
                 if ($this->formIsValid($form)) {
-                    $this->formManager->create($post->all());
+                    $this->formManager->create($this->normalizeFormPropertiesPost($post->all()));
 
                     /* mrflos : i think this is not used */
                     /* if ($this->activityPubService->isEnabled($form)) { */
@@ -128,7 +163,7 @@ class FormController extends YesWikiController
             if ($post->has('valider')) {
                 $form = $this->formManager->getFromRawData($post->all());
                 if ($this->formIsValid($form)) {
-                    $this->formManager->update($post->all());
+                    $this->formManager->update($this->normalizeFormPropertiesPost($post->all()));
 
                     return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_MODIFIE'], false));
                 }
@@ -149,10 +184,19 @@ class FormController extends YesWikiController
 
     private function formIsValid($form)
     {
-        $titleFields = array_filter($form['prepared'], function ($field) {
-            return $field->getPropertyName() == 'bf_titre';
-        });
-        if (count($titleFields) == 0) {
+        // the entry title is computed from entry_title_template (ADR-0010): at least
+        // one of its {{field}} references must exist in the template, otherwise every
+        // entry title would come out empty
+        $titleTemplate = trim((string)($this->getRequest()->request->get('entry_title_template') ?? $form['entry_title_template'] ?? ''));
+        if ($titleTemplate === '') {
+            $titleTemplate = '{{bf_titre}}';
+        }
+        preg_match_all('#{{(.*)}}#U', $titleTemplate, $matches);
+        $fieldNames = array_filter(array_map(function ($field) {
+            return $field->getPropertyName();
+        }, $form['prepared']));
+        $referencesExistingField = !empty(array_intersect($matches[1], $fieldNames));
+        if (!$referencesExistingField) {
             Flash::error(_t('BAZ_FORM_NEED_TITLE'));
 
             return false;

@@ -537,6 +537,18 @@ class FormManager
 
         $body = array_merge($existingBody, $this->buildBody($data));
 
+        // a posted-but-cleared entry_* property (null/''/false) is REMOVED from the
+        // body -- absence in the POST leaves the stored value untouched
+        foreach ([
+            'entry_read_access', 'entry_write_access', 'entry_comment_access',
+            'entry_permit_activate_comments', 'entry_metadatas', 'entry_creates_user',
+            'entry_bookmarklet',
+        ] as $property) {
+            if (array_key_exists($property, $data) && in_array($data[$property], [null, '', false], true)) {
+                unset($body[$property]);
+            }
+        }
+
         $saved = $this->pageManager->save($tag, $this->encodeBody($body), '', true);
 
         $this->pageManager->setMetadata($tag, [

@@ -156,25 +156,29 @@ class FormPropertiesService
             return;
         }
 
+        $toStamp = [];
         foreach (['read' => 'entry_read_access', 'write' => 'entry_write_access'] as $mode => $property) {
             $right = trim((string)($form[$property] ?? ''));
             if ($right === '') {
                 continue;
             }
             if ($force || empty($this->aclService->load($tag, $mode, false)['list'])) {
-                $this->aclService->save($tag, $mode, $this->replaceWithCreator($right, $entry));
+                $toStamp[$mode] = $this->replaceWithCreator($right, $entry);
             }
         }
 
         if ($this->permitsActivateComments($form)) {
-            $this->applyCommentsChoice($form, $entry);
-
-            return;
+            $toStamp['comment'] = $this->resolveCommentsChoice($form, $entry);
+        } else {
+            $commentRight = trim((string)($form['entry_comment_access'] ?? ''));
+            if ($commentRight !== '' && ($force || empty($this->aclService->load($tag, 'comment', false)['list']))) {
+                $toStamp['comment'] = $this->replaceWithCreator($commentRight, $entry);
+            }
         }
 
-        $commentRight = trim((string)($form['entry_comment_access'] ?? ''));
-        if ($commentRight !== '' && ($force || empty($this->aclService->load($tag, 'comment', false)['list']))) {
-            $this->aclService->save($tag, 'comment', $this->replaceWithCreator($commentRight, $entry));
+        if (!empty($toStamp)) {
+            // one batched revision, not one per privilege (ADR-0002 versions ACLs)
+            $this->aclService->saveMany($tag, $toStamp);
         }
     }
 
@@ -194,21 +198,19 @@ class FormPropertiesService
      * The author's posted comments-toggle choice opens or closes the entry's comments.
      * The comment ACL IS the state -- nothing is stored in the entry body.
      */
-    private function applyCommentsChoice(array $form, array $entry): void
+    private function resolveCommentsChoice(array $form, array $entry): string
     {
-        $tag = $entry['tag'];
-        $request = $this->wiki->request;
-        $choice = $request->request->get(self::COMMENTS_TOGGLE_POST_KEY, '');
+        $choice = $this->wiki->request->request->get(self::COMMENTS_TOGGLE_POST_KEY, '');
 
         $commentsType = $this->getCommentsType();
         if (in_array($commentsType, ['', 'yeswiki'], true) && $choice === self::COMMENT_YES) {
-            $this->aclService->save($tag, 'comment', $this->replaceWithCreator(
+            return $this->replaceWithCreator(
                 trim((string)($form['entry_comment_access'] ?? '')) ?: '+',
                 $entry
-            ));
-        } else {
-            $this->aclService->save($tag, 'comment', 'comments-closed');
+            );
         }
+
+        return 'comments-closed';
     }
 
     /**
@@ -398,11 +400,7 @@ class FormPropertiesService
                         || !in_array($request->request->get(self::USER_PROPERTY_NAME . self::CONFIRM_NAME_SUFFIX), [true, 1, '1'], true)
                     )
                 ) {
-                    throw new UserFieldException($this->getService(TemplateEngine::class)->render('@core/inputs/user-confirm.twig', [
-                        'confirmName' => self::USER_PROPERTY_NAME . self::CONFIRM_NAME_SUFFIX,
-                        'wikiName' => $currentWikiName,
-                        'newWikiName' => $wikiName,
-                    ]));
+                    throw new UserFieldException($this->getService(TemplateEngine::class)->render('@core/inputs/user-confirm.twig', ['confirmName' => self::USER_PROPERTY_NAME . self::CONFIRM_NAME_SUFFIX, 'wikiName' => $currentWikiName, 'newWikiName' => $wikiName]));
                 }
             }
             if (!isset($entry[$emailField])) {

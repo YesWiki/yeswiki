@@ -1702,4 +1702,12 @@ return [
     'FORM_BUILDER_LABEL_LABEL' => 'Label',
     'FORM_BUILDER_NAME_LABEL' => 'Identificatie',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Verplicht',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'Veld gebruikt als titel van de fiches',
+    'FORM_EDIT_CUSTOM_TITLE' => 'Aangepaste titel…',
+    'FORM_EDIT_PERMISSIONS' => 'Fiche-rechten',
+    'FORM_EDIT_PRESENTATION' => 'Fiche-presentatie',
+    'FORM_EDIT_CREATES_USER' => 'Elke fiche maakt een gebruikersaccount aan',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];

@@ -112,6 +112,54 @@ function serialize() {
 
 function syncToTextarea() {
   textarea.value = serialize()
+  updateTitleSelect()
+}
+
+// ---------------------------------------------------------------- entry title
+// The "field used as title" select under the builder (entry_title_template,
+// ADR-0010): its options mirror the designer's current named fields; picking one
+// stores `{{name}}`, the custom option reveals the free-template input.
+
+const CUSTOM_TITLE = '__custom__'
+const titleSelect = document.getElementById('entry-title-select')
+const titleCustom = document.getElementById('entry-title-custom')
+
+function updateTitleSelect() {
+  if (!titleSelect || !titleCustom) return
+  const current = titleCustom.value.trim()
+  titleSelect.innerHTML = ''
+  let matched = false
+  fields.forEach(({ data }) => {
+    if (!data.name) return
+    const option = document.createElement('option')
+    option.value = `{{${data.name}}}`
+    option.textContent = data.label ? `${data.label} (${data.name})` : data.name
+    if (current === option.value) {
+      option.selected = true
+      matched = true
+    }
+    titleSelect.append(option)
+  })
+  const custom = document.createElement('option')
+  custom.value = CUSTOM_TITLE
+  custom.textContent = _t('FORM_EDIT_CUSTOM_TITLE')
+  if (!matched) custom.selected = true
+  titleSelect.append(custom)
+  titleCustom.classList.toggle('hide', matched)
+}
+
+function bindTitleSelect() {
+  if (!titleSelect || !titleCustom) return
+  titleSelect.addEventListener('change', () => {
+    if (titleSelect.value === CUSTOM_TITLE) {
+      titleCustom.classList.remove('hide')
+      titleCustom.focus()
+    } else {
+      titleCustom.value = titleSelect.value
+      titleCustom.classList.add('hide')
+    }
+  })
+  updateTitleSelect()
 }
 
 function loadFromTextarea() {
@@ -150,6 +198,7 @@ function boot() {
   renderCanvas()
   initCanvasSort()
   bindTabsAndSubmit()
+  bindTitleSelect()
 }
 
 function showError(message) {

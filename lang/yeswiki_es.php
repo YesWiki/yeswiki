@@ -2002,4 +2002,12 @@ return [
     'FORM_BUILDER_LABEL_LABEL' => 'Etiqueta',
     'FORM_BUILDER_NAME_LABEL' => 'Identificador',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatorio',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'Campo utilizado como título de las fichas',
+    'FORM_EDIT_CUSTOM_TITLE' => 'Título personalizado…',
+    'FORM_EDIT_PERMISSIONS' => 'Permisos de las fichas',
+    'FORM_EDIT_PRESENTATION' => 'Presentación de las fichas',
+    'FORM_EDIT_CREATES_USER' => 'Cada ficha crea una cuenta de usuario',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];

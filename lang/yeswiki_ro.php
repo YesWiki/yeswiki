@@ -2054,4 +2054,12 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'FORM_BUILDER_LABEL_LABEL' => 'Etichetă',
     'FORM_BUILDER_NAME_LABEL' => 'Identificator',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatoriu',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'Câmp folosit ca titlu al fișelor',
+    'FORM_EDIT_CUSTOM_TITLE' => 'Titlu personalizat…',
+    'FORM_EDIT_PERMISSIONS' => 'Permisiunile fișelor',
+    'FORM_EDIT_PRESENTATION' => 'Prezentarea fișelor',
+    'FORM_EDIT_CREATES_USER' => 'Fiecare fișă creează un cont de utilizator',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];

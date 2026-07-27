@@ -97,7 +97,24 @@
                 <i class="fa fa-user-plus"></i>
               </a>
             {% endif %}
+            {% if form.bookmarklet %}
+              {# entry_bookmarklet configured: the install widget lives here now, not in
+                 the entry form (ticket 27, ADR-0010) #}
+              <a class="yw-btn yw-btn--sm" title="{{ _t('FORM_EDIT_BOOKMARKLET') }}" data-toggle="collapse" href="#bookmarklet-{{ key }}" data-placement="bottom">
+                <i class="fa fa-bookmark"></i>
+              </a>
+            {% endif %}
             </div>
+            {% if form.bookmarklet %}
+              <div id="bookmarklet-{{ key }}" class="yw-collapse">
+                {{ include('@core/forms/bookmarklet-widget.twig', {
+                  formId: key,
+                  urlField: form.bookmarklet.url_field ?? 'bf_url',
+                  descriptionField: form.bookmarklet.description_field ?? 'bf_description',
+                  text: form.bookmarklet.text_field ?? '',
+                }) }}
+              </div>
+            {% endif %}
             <div class="erase-actions">
             {% if form.canDelete %}
               <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">

@@ -2231,4 +2231,12 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'FORM_BUILDER_LABEL_LABEL' => 'Label',
     'FORM_BUILDER_NAME_LABEL' => 'Identifier',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Required',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'Field used as entry title',
+    'FORM_EDIT_CUSTOM_TITLE' => 'Custom title…',
+    'FORM_EDIT_PERMISSIONS' => 'Entry permissions',
+    'FORM_EDIT_PRESENTATION' => 'Entry presentation',
+    'FORM_EDIT_CREATES_USER' => 'Each entry creates a wiki user account',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];

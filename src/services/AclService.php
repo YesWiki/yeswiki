@@ -86,10 +86,37 @@ class AclService
     }
 
     /**
-     * @param string $tag       the page's tag
-     * @param string $privilege the privilege
-     * @param string $list      the multiline string describing the acl
+     * @param string $tag the page's tag
      */
+    /**
+     * Saves several privileges in ONE metadata revision (ACLs are versioned with
+     * content, ADR-0002 -- privilege-by-privilege stamping would pile up a revision
+     * per privilege, e.g. at entry creation).
+     *
+     * @param array $lists privilege => list
+     */
+    public function saveMany($tag, array $lists): void
+    {
+        if ($this->hibernationService->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+
+        $acls = $this->readMetadataAcls($tag);
+        foreach ($lists as $privilege => $list) {
+            if (strpos((string)$list, ',') !== false) {
+                $list = preg_replace('/\s*,\s*/', "\n", $list);
+            }
+            $list = trim(str_replace("\r", '', (string)$list));
+            $acls[$privilege] = $list;
+            $this->cache[$tag][$privilege] = [
+                'page_tag' => $tag,
+                'privilege' => $privilege,
+                'list' => $list,
+            ];
+        }
+        $this->writeMetadataAcls($tag, $acls);
+    }
+
     public function save($tag, $privilege, $list, $appendAcl = false)
     {
         if ($this->hibernationService->isWikiHibernated()) {

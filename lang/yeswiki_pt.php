@@ -1720,4 +1720,12 @@ return [
     'FORM_BUILDER_LABEL_LABEL' => 'Rótulo',
     'FORM_BUILDER_NAME_LABEL' => 'Identificador',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obrigatório',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'Campo usado como título das fichas',
+    'FORM_EDIT_CUSTOM_TITLE' => 'Título personalizado…',
+    'FORM_EDIT_PERMISSIONS' => 'Permissões das fichas',
+    'FORM_EDIT_PRESENTATION' => 'Apresentação das fichas',
+    'FORM_EDIT_CREATES_USER' => 'Cada ficha cria uma conta de usuário',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];

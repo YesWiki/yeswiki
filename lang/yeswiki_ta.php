@@ -1964,4 +1964,12 @@ return [
     'FORM_BUILDER_LABEL_LABEL' => 'சிட்டை',
     'FORM_BUILDER_NAME_LABEL' => 'அடையாளங்காட்டி',
     'FORM_BUILDER_REQUIRED_LABEL' => 'கட்டாயம்',
+
+    // form edit page sections (ticket 27)
+    'FORM_EDIT_ENTRY_TITLE' => 'பதிவுகளின் தலைப்பாகப் பயன்படும் புலம்',
+    'FORM_EDIT_CUSTOM_TITLE' => 'தனிப்பயன் தலைப்பு…',
+    'FORM_EDIT_PERMISSIONS' => 'பதிவு அனுமதிகள்',
+    'FORM_EDIT_PRESENTATION' => 'பதிவு காட்சி அமைப்பு',
+    'FORM_EDIT_CREATES_USER' => 'ஒவ்வொரு பதிவும் ஒரு பயனர் கணக்கை உருவாக்கும்',
+    'FORM_EDIT_BOOKMARKLET' => 'Bookmarklet',
 ];
