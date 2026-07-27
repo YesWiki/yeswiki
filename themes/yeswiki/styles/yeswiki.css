@@ -23,14 +23,15 @@
   --link-color: var(--primary-color);
   --link-hover-color: var(--primary-color);
 
-  /* Top bar */
-  --navbar-bg-color: var(--primary-color);
-  --navbar-text-color: white;
-  --navbar-link-color: white;
+  /* Top bar — white/transparent by default, like margot's light.css (the
+     colored-navbar.css style variant restores the primary-colored bar) */
+  --navbar-bg-color: white;
+  --navbar-text-color: var(--neutral-color);
+  --navbar-link-color: var(--neutral-color);
   --navbar-link-bg-color: transparent;
-  --navbar-link-hover-color: rgb(255 255 255 / 85%);
+  --navbar-link-hover-color: var(--primary-color);
   --navbar-link-bg-hover-color: transparent;
-  --navbar-border: none;
+  --navbar-border-bottom: 1px solid var(--neutral-light-color);
   --navbar-border-radius: 0;
   --navbar-shadow: none;
 
@@ -121,7 +122,7 @@ input[type='radio'] {
 #yw-topnav {
   background: var(--navbar-bg-color);
   color: var(--navbar-text-color);
-  border: var(--navbar-border);
+  border-bottom: var(--navbar-border-bottom);
   border-radius: var(--navbar-border-radius);
   box-shadow: var(--navbar-shadow);
   padding: 6px 0;
@@ -133,9 +134,25 @@ input[type='radio'] {
   font-family: var(--main-title-fontfamily);
   font-size: 1.2em;
   font-weight: 700;
-  color: var(--navbar-text-color);
+  color: var(--primary-color);
   text-decoration: none;
   white-space: nowrap;
+}
+
+/* top-bar buttons sit flat on the bar (margot light.css look) */
+#yw-topnav .yw-topnav-fast-access .yw-btn,
+#yw-topnav .yw-topnav-fast-access .btn {
+  background: transparent;
+  border-color: transparent;
+  color: var(--navbar-link-color);
+}
+
+#yw-topnav .yw-topnav-fast-access .yw-btn:hover,
+#yw-topnav .yw-topnav-fast-access .yw-btn:focus,
+#yw-topnav .yw-topnav-fast-access .btn:hover,
+#yw-topnav .yw-topnav-fast-access .btn:focus {
+  color: var(--navbar-link-hover-color);
+  filter: none;
 }
 
 #yw-topnav .btn-menu {
@@ -236,6 +253,18 @@ input[type='radio'] {
 }
 
 /* ---- small screens ---- */
+@media (max-width: 1200px) {
+  :root {
+    --main-text-fontsize: 15px;
+  }
+}
+
+@media (max-width: 800px) {
+  :root {
+    --main-text-fontsize: 13px;
+  }
+}
+
 @media (max-width: 767px) {
   #yw-topnav > .container {
     flex-wrap: wrap;
