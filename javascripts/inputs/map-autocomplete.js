@@ -1,76 +1,69 @@
-$(document).ready(() => {
-  if (typeof autocompleteFieldnames == 'object' && 'postalCode' in autocompleteFieldnames && 'town' in autocompleteFieldnames) {
-    $(`input[name="${autocompleteFieldnames.postalCode}"],input[name="${autocompleteFieldnames.town}"]`).attr('autocomplete', 'off')
-    const $inputcp = $(`input[name="${autocompleteFieldnames.postalCode}"]`)
-    $inputcp.typeahead({
-      items: 'all',
-      source(input, callback) {
-        if (input.length === 5) {
-          geolocationHelper.getGelocationDataFromPostalCode('France', input)
-            .then((data) => {
-              const result = []
-              data.forEach((geoloc) => {
-                geoloc.postalCodes.forEach((code) => {
-                  result.push({
-                    id: code,
-                    name: `${code} ${geoloc.town}`,
-                    ville: geoloc.town
-                  })
-                })
-              })
-              callback(result)
-            })
-            .catch(() => {
-              callback([{ id: input, name: _t('BAZ_POSTAL_CODE_HINT') }])
-            })
-        } else {
-          callback([{ id: input, name: _t('BAZ_POSTAL_CODE_HINT') }])
+// map-autocomplete.js — postal-code/town suggestions for the map field's address
+// inputs (ticket 16: vanilla, on yw-autocomplete instead of bootstrap3-typeahead)
+(function() {
+  document.addEventListener('DOMContentLoaded', () => {
+    if (
+      typeof autocompleteFieldnames !== 'object'
+      || !('postalCode' in autocompleteFieldnames)
+      || !('town' in autocompleteFieldnames)
+    ) {
+      return
+    }
+    const inputCp = document.querySelector(`input[name="${autocompleteFieldnames.postalCode}"]`)
+    const inputTown = document.querySelector(`input[name="${autocompleteFieldnames.town}"]`)
+    if (!inputCp || !inputTown) return
+    inputCp.setAttribute('autocomplete', 'off')
+    inputTown.setAttribute('autocomplete', 'off')
+
+    function toSuggestions(data) {
+      const result = []
+      data.forEach((geoloc) => {
+        geoloc.postalCodes.forEach((code) => {
+          result.push({
+            id: code,
+            name: `${code} ${geoloc.town}`,
+            ville: geoloc.town
+          })
+        })
+      })
+      return result
+    }
+
+    // a hint row carries no `ville`: picking it must not overwrite the inputs
+    function applySelection(item) {
+      if (!item.ville) return
+      inputCp.value = item.id
+      inputTown.value = item.ville
+      const geolocate = document.querySelector('.btn-geolocate-address')
+      if (geolocate) geolocate.click()
+    }
+
+    window.ywAutocomplete(inputCp, {
+      items: 99,
+      render: (item) => item.name,
+      onSelect: applySelection,
+      source(query) {
+        if (query.length !== 5) {
+          return [{ id: query, name: _t('BAZ_POSTAL_CODE_HINT') }]
         }
-      },
-      autoSelect: false,
-      afterSelect(item) {
-        $inputcp.val(item.id)
-        $inputville.val(item.ville)
-        $('.btn-geolocate-address').click()
+        return geolocationHelper.getGelocationDataFromPostalCode('France', query)
+          .then(toSuggestions)
+          .catch(() => [{ id: query, name: _t('BAZ_POSTAL_CODE_HINT') }])
       }
     })
-    var $inputville = $(`input[name="${autocompleteFieldnames.town}"]`)
-    $inputville.typeahead({
+
+    window.ywAutocomplete(inputTown, {
       items: 12,
       minLength: 3,
-      source(input, callback) {
-        if (input.length >= 3) {
-          geolocationHelper.getGelocationDataFromTown('France', input)
-            .then((data) => {
-              const result = []
-              if (data.length > 0) {
-                data.forEach((geoloc) => {
-                  geoloc.postalCodes.forEach((code) => {
-                    result.push({
-                      id: code,
-                      name: `${code} ${geoloc.town}`,
-                      ville: geoloc.town
-                    })
-                  })
-                })
-                callback(result)
-              } else {
-                callback([{ id: input, name: _t('BAZ_TOWN_NOT_FOUND', { input }) }])
-              }
-            })
-            .catch(() => {
-              callback([{ id: input, name: _t('BAZ_TOWN_HINT') }])
-            })
-        } else {
-          callback([{ id: input, name: _t('BAZ_TOWN_HINT') }])
-        }
-      },
-      autoSelect: false,
-      afterSelect(item) {
-        $inputcp.val(item.id)
-        $inputville.val(item.ville)
-        $('.btn-geolocate-address').click()
+      render: (item) => item.name,
+      onSelect: applySelection,
+      source(query) {
+        return geolocationHelper.getGelocationDataFromTown('France', query)
+          .then((data) => (data.length > 0
+            ? toSuggestions(data)
+            : [{ id: query, name: _t('BAZ_TOWN_NOT_FOUND', { input: query }) }]))
+          .catch(() => [{ id: query, name: _t('BAZ_TOWN_HINT') }])
       }
     })
-  }
-})
+  })
+}())

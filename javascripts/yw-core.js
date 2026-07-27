@@ -3,8 +3,10 @@
 // later by htmx, not just what's in the DOM at load time.
 (function() {
   function closeModal(modal) {
-    if (modal) {
+    if (modal && modal.classList.contains('yw-modal--open')) {
       modal.classList.remove('yw-modal--open')
+      // replaces Bootstrap's hidden.bs.modal for close-time cleanup hooks
+      modal.dispatchEvent(new CustomEvent('yw-modal-hidden', { bubbles: true }))
     }
   }
 
@@ -229,7 +231,7 @@
         modal.classList.add('yw-modal--open')
         // Replaces Bootstrap's shown.bs.modal + event.relatedTarget contract
         modal.dispatchEvent(
-          new CustomEvent('yw-modal-shown', { detail: { relatedTarget: opener } })
+          new CustomEvent('yw-modal-shown', { bubbles: true, detail: { relatedTarget: opener } })
         )
       }
       return

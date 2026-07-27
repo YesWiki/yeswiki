@@ -49,6 +49,8 @@ export default defineConfig([globalIgnores([
       ace: 'writable',
       toastMessage: 'readable',
       multiDeleteService: 'readable',
+      autocompleteFieldnames: 'readable',
+      geolocationHelper: 'readable',
       // page-level config globals injected by reactions templates
       blockReactionRemove: 'readable',
       blockReactionRemoveMessage: 'readable',

@@ -1,30 +1,34 @@
+// multidelete.js — bulk deletion of pages/users/comments from admin tables
+// (ticket 16: vanilla JS, yw-modal events instead of Bootstrap modal events)
+
+// eslint-disable-next-line no-unused-vars
 function checkAllFirstCol(elem) {
-  const newState = $(elem).prop('checked')
-  // DataTables-driven tables live in a .dataTables_wrapper; yw-datatable ones don't,
-  // the table element itself is the scope there
-  let scope = $(elem).closest('.dataTables_wrapper')
-  if (scope.length === 0) {
-    scope = $(elem).closest('table')
-  }
-  scope
-    .find('tr > td:first-child input.selectline[type=checkbox]:visible')
-    .each(function() {
-      $(this).prop('checked', newState)
-      $(this).trigger('change')
+  const newState = elem.checked
+  // DataTables-driven tables live in a .dataTables_wrapper; yw-datatable ones
+  // don't, the table element itself is the scope there
+  const scope = elem.closest('.dataTables_wrapper') || elem.closest('table')
+  if (!scope) return
+  scope.querySelectorAll('tr > td:first-child input.selectline[type=checkbox]')
+    .forEach((checkboxParam) => {
+      const checkbox = checkboxParam
+      if (checkbox.offsetParent === null) return // hidden
+      checkbox.checked = newState
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }))
     })
 
-  scope
-    .find('tr > th:first-child label.check-all-container input[type=checkbox]')
-    .prop('checked', newState)
+  scope.querySelectorAll('tr > th:first-child label.check-all-container input[type=checkbox]')
+    .forEach((checkboxParam) => {
+      const checkbox = checkboxParam
+      checkbox.checked = newState
+    })
 }
 
 const multiDeleteService = {
   isRunning: false,
   refreshOnModalClosing: {},
   modalClosing(modalContainer) {
-    const id = $(modalContainer).prop('id')
-    if (this.refreshOnModalClosing.hasOwnProperty(id)
-      && this.refreshOnModalClosing[id] === true) {
+    const id = modalContainer && modalContainer.id
+    if (id && this.refreshOnModalClosing[id] === true) {
       window.location.reload()
     }
   },
@@ -32,27 +36,38 @@ const multiDeleteService = {
     this.updateProgressBar(modal, ['test'], -1)
   },
   updateProgressBar(modal, items, currentIndex) {
-    const value = (items.length == 0) ? 100 : Math.min(100, Math.round((currentIndex + 1) / items.length * 100))
-    $(modal).find('.modal-footer .progress-bar, .yw-modal__footer .yw-progressbar__bar').each(function() {
-      $(this).attr('style', `width: ${value}%;`)
-      $(this).attr('aria-valuenow', value)
+    if (!modal) return
+    const value = (items.length === 0)
+      ? 100
+      : Math.min(100, Math.round(((currentIndex + 1) / items.length) * 100))
+    modal.querySelectorAll(
+      '.modal-footer .progress-bar, .yw-modal__footer .yw-progressbar__bar'
+    ).forEach((barParam) => {
+      const bar = barParam
+      bar.style.width = `${value}%`
+      bar.setAttribute('aria-valuenow', value)
     })
   },
-  modalIsClosed(modal) {
-    return ($(modal).filter(':visible').length == 0)
+  resultsContainer(modal) {
+    return modal
+      ? modal.querySelector('.modal-body .multi-delete-results, .yw-modal__body .multi-delete-results')
+      : null
   },
   addErrorMessage(modal, message) {
-    $(modal).find('.modal-body .multi-delete-results, .yw-modal__body .multi-delete-results').first().append(
-      $('<div>').addClass('alert alert-danger')
-        .text(message)
-    )
+    const results = this.resultsContainer(modal)
+    if (!results) return
+    const error = document.createElement('div')
+    error.className = 'yw-alert yw-alert--danger'
+    error.textContent = message
+    results.appendChild(error)
   },
   removeLine(target, itemId) {
-    const table = $(`#${target} .dataTable[id]`)
-    if (table.length == 0) {
+    const row = document.querySelector(`#${target} [data-itemid="${itemId}"]`)
+    const line = row ? row.closest('tr') : null
+    if (!line) {
       return false
     }
-    table.DataTable().row($(`#${target} [data-itemid="${itemId}"]`).parents('tr')).remove().draw()
+    line.remove()
     return true
   },
   deleteNextItem(modal, items, type, currentIndex, target) {
@@ -61,22 +76,26 @@ const multiDeleteService = {
       this.deleteOneItem(modal, items, type, currentIndex + 1, target)
     } else {
       this.isRunning = false
-      $(modal).find('.modal-body .multi-delete-results, .yw-modal__body .multi-delete-results').first().append(
-        $('<div>').text(_t('MULTIDELETE_END'))
-      )
+      const results = this.resultsContainer(modal)
+      if (results) {
+        const done = document.createElement('div')
+        done.textContent = _t('MULTIDELETE_END')
+        results.appendChild(done)
+      }
     }
   },
   deleteOneItem(modal, items, type, currentIndex, target) {
-    if (['pages', 'comments', 'users'].indexOf(type) == -1) {
+    if (['pages', 'comments', 'users'].indexOf(type) === -1) {
       this.addErrorMessage(modal, "Unknown type ! Should be 'pages' or 'users' or 'comments'!")
       return
     }
     const item = items[currentIndex] ?? {}
-    const itemId = (item.id != undefined) ? item.id : ''
-    const csrfToken = ('antiCsrfToken' in wiki)
-      ? wiki.antiCsrfToken
-      : ((item.token != undefined) ? item.token : '')
-    if (itemId.length == 0 || csrfToken.length == 0) {
+    const itemId = (item.id !== undefined) ? item.id : ''
+    let csrfToken = item.token !== undefined ? item.token : ''
+    if ('antiCsrfToken' in wiki) {
+      csrfToken = wiki.antiCsrfToken
+    }
+    if (itemId.length === 0 || csrfToken.length === 0) {
       this.deleteNextItem(modal, items, type, currentIndex, target)
       return
     }
@@ -90,11 +109,10 @@ const multiDeleteService = {
     )
       .then(() => {
         if (!this.removeLine(target, itemId)) {
-          this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
+          this.refreshOnModalClosing[modal.id] = true
         }
       })
       .catch((error) => {
-      // do nothing on error
         this.addErrorMessage(
           modal,
           _t('MULTIDELETE_ERROR')
@@ -102,33 +120,34 @@ const multiDeleteService = {
             .replace('{error}', error)
         )
         // if error force reload
-        this.refreshOnModalClosing[$(modal).parent().prop('id')] = true
+        this.refreshOnModalClosing[modal.id] = true
       })
       .finally(() => {
         setTimeout(() => { this.deleteNextItem(modal, items, type, currentIndex, target) }, 0)
       })
   },
   deleteItems(elem) {
-    const target = $(elem).data('target')
-    const type = $(elem).data('type')
-    // get selected item
-    if (target.length > 0) {
-      const inputs = $(`#${target}`).find('tr > td:first-child input.selectline[type=checkbox]:visible:checked')
-      const modal = $(elem).closest('.modal-dialog')
+    const { target, type } = elem.dataset
+    if (!target || target.length === 0) return
+    const container = document.getElementById(target)
+    const modal = elem.closest('.yw-modal, .modal')
+    if (!container || !modal) return
+    const inputs = Array.from(container.querySelectorAll(
+      'tr > td:first-child input.selectline[type=checkbox]'
+    )).filter((input) => input.offsetParent !== null && input.checked)
 
-      const items = []
-      for (let index = 0; index < inputs.length; index++) {
-        const itemId = $(inputs[index]).data('itemid')
-        const csrfToken = $(inputs[index]).data('csrftoken')
-        if (itemId.length > 0 && (csrfToken == undefined || csrfToken.length == 0)) {
-          items.push({ id: itemId })
-        } else if (itemId.length > 0 && csrfToken.length > 0) {
-          items.push({ id: itemId, token: csrfToken })
-        }
+    const items = []
+    inputs.forEach((input) => {
+      const itemId = input.dataset.itemid
+      const csrfToken = input.dataset.csrftoken
+      if (itemId && itemId.length > 0 && (csrfToken === undefined || csrfToken.length === 0)) {
+        items.push({ id: itemId })
+      } else if (itemId && itemId.length > 0 && csrfToken.length > 0) {
+        items.push({ id: itemId, token: csrfToken })
       }
-      if (items.length > 0) {
-        setTimeout(() => { this.deleteOneItem(modal, items, type, 0, target) }, 0)
-      }
+    })
+    if (items.length > 0) {
+      setTimeout(() => { this.deleteOneItem(modal, items, type, 0, target) }, 0)
     }
   },
   async localFetchJson(url, options) {
@@ -142,10 +161,11 @@ const multiDeleteService = {
     if ('method' in options && options.method === 'POST') {
       internalOptions.method = 'POST'
       internalOptions.body = new URLSearchParams(this.prepareFormData(options.data ?? {}))
-      internalOptions.headers = (new Headers()).append('Content-Type', 'application/x-www-form-urlencoded')
+      internalOptions.headers = (new Headers())
+        .append('Content-Type', 'application/x-www-form-urlencoded')
     }
-    return await fetch(url, internalOptions)
-      .then(async (response) => {
+    return fetch(url, internalOptions)
+      .then(async(response) => {
         if (response.ok) {
           return response.json()
         }
@@ -153,9 +173,9 @@ const multiDeleteService = {
         try {
           const body = await response.json()
           if (body && body.error) {
-            errorDetail = ': ' + body.error
+            errorDetail = `: ${body.error}`
           }
-        } catch (e) { /* ignore parse errors */ }
+        } catch { /* ignore parse errors */ }
         throw new Error(`Response is not ok (code ${response.status})${errorDetail}`)
       })
       .finally(() => {
@@ -166,44 +186,55 @@ const multiDeleteService = {
   },
   prepareFormData(thing) {
     const formData = new FormData()
-    if (typeof thing == 'object') {
-      for (const key in thing) {
+    if (typeof thing === 'object') {
+      Object.keys(thing).forEach((key) => {
         formData.append(key, String(thing[key]))
-      }
+      })
     }
     return formData
   },
   updateNbSelected(modalId) {
-    const button = $(`#${modalId} .modal-body > button.start-btn-delete-all`)
-    const text = $(`#${modalId} .modal-body > .alert.alert-info > span.nb-elem-selected`)
-    const target = $(button).data('target')
-    if (target.length > 0) {
-      const inputs = $(`#${target}`).find('tr > td:first-child input.selectline[type=checkbox]:visible:checked')
-      $(text).html(inputs.length)
-    } else {
-      $(text).html('error')
+    const modal = document.getElementById(modalId)
+    if (!modal) return
+    const button = modal.querySelector('button.start-btn-delete-all')
+    const text = modal.querySelector('.nb-elem-selected')
+    const target = button ? button.dataset.target : null
+    if (text && target && target.length > 0) {
+      const container = document.getElementById(target)
+      const nb = container
+        ? Array.from(container.querySelectorAll(
+          'tr > td:first-child input.selectline[type=checkbox]'
+        )).filter((input) => input.offsetParent !== null && input.checked).length
+        : 0
+      text.textContent = nb
+    } else if (text) {
+      text.textContent = 'error'
     }
   }
 }
 
-$('button.start-btn-delete-all').on('click', () => {
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('button.start-btn-delete-all')
+  if (!button) return
   if (!multiDeleteService.isRunning) {
     multiDeleteService.isRunning = true
-    const elem = event.target
-    if (elem) {
-      $(elem).attr('disabled', 'disabled')
-      multiDeleteService.deleteItems(elem)
-    }
+    button.setAttribute('disabled', 'disabled')
+    multiDeleteService.deleteItems(button)
   }
 })
 
-$('.modal.multidelete').on('shown.bs.modal', function() {
-  multiDeleteService.initProgressBar($(this))
-  $(this).find('.modal-body .multi-delete-results').html('')
-  $(this).find('button.start-btn-delete-all').removeAttr('disabled')
+document.addEventListener('yw-modal-shown', (event) => {
+  const modal = event.target.closest('.yw-modal.multidelete')
+  if (!modal) return
+  multiDeleteService.initProgressBar(modal)
+  const results = multiDeleteService.resultsContainer(modal)
+  if (results) results.innerHTML = ''
+  const button = modal.querySelector('button.start-btn-delete-all')
+  if (button) button.removeAttribute('disabled')
 })
 
-$('.modal.multidelete').on('hidden.bs.modal', function() {
-  multiDeleteService.modalClosing($(this))
+document.addEventListener('yw-modal-hidden', (event) => {
+  const modal = event.target.closest('.yw-modal.multidelete')
+  if (!modal) return
+  multiDeleteService.modalClosing(modal)
 })
-

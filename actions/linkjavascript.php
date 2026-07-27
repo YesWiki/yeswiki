@@ -69,6 +69,7 @@ if (!$yeswikijs) {
 $this->addJavascriptFile('javascripts/vendor/htmx/htmx.min.js');
 $this->addJavascriptFile('javascripts/yw-core.js');
 $this->addJavascriptFile('javascripts/yw-datatable.js');
+$this->addJavascriptFile('javascripts/yw-autocomplete.js');
 
 // ajoute la méthode pour les traductions js
 $this->addJavascriptFile('javascripts/yeswiki-base-no-defer.js', true);

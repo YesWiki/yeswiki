@@ -614,7 +614,7 @@ const componentParams = {
         multiDeleteService.isRunning = true
         const elem = event.target
         if (elem) {
-          $(elem).attr('disabled', 'disabled')
+          elem.setAttribute('disabled', 'disabled')
           multiDeleteService.deleteItems(elem)
         }
       }
@@ -633,7 +633,10 @@ const componentParams = {
     }
   },
   mounted() {
-    $(this.$el.parentNode).on('dblclick', (e) => false)
+    this.$el.parentNode.addEventListener('dblclick', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    })
     Waiter.resolve('params')
     this.updateFieldsFromRoot()
     window.urlImageResizedOnError = this.$root.urlImageResizedOnError
@@ -662,23 +665,9 @@ const componentParams = {
     },
     params() {
       Waiter.resolve('params')
-    },
-    ready() {
-      this.sanitizedParamAsync('displayadmincol').then((displayadmincol) => {
-        if (displayadmincol) {
-          $(this.$refs.buttondeleteall).find(`#MultiDeleteModal${this.getUuid()}`).first().each(function() {
-            $(this).on('shown.bs.modal', function() {
-              multiDeleteService.initProgressBar($(this))
-              $(this).find('.modal-body .multi-delete-results').html('')
-              $(this).find('button.start-btn-delete-all').removeAttr('disabled')
-            })
-            $(this).on('hidden.bs.modal', function() {
-              multiDeleteService.modalClosing($(this))
-            })
-          })
-        }
-      }).catch(this.manageError)
     }
+    // multidelete modal open/close hooks are handled by multidelete.js's
+    // delegated yw-modal-shown/yw-modal-hidden listeners
   },
   template: `
     <div>

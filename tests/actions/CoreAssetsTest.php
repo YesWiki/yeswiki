@@ -38,6 +38,7 @@ class CoreAssetsTest extends YesWikiTestCase
         $this->assertStringContainsString('javascripts/vendor/htmx/htmx.min.js', $output);
         $this->assertStringContainsString('javascripts/yw-core.js', $output);
         $this->assertStringContainsString('javascripts/yw-datatable.js', $output);
+        $this->assertStringContainsString('javascripts/yw-autocomplete.js', $output);
         $this->assertStringContainsString('jquery', $output, 'jQuery must still load -- this ticket does not remove it.');
     }
 }
