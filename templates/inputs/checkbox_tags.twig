@@ -1,18 +1,23 @@
 {% extends "@core/layouts/input.twig" %}
 
 {% block input %}
-  {{ include_javascript('javascripts/vendor/bootstrap-tagsinput.min.js') }}
+  {{ include_javascript('javascripts/yw-tags-input.js') }}
   {{ include_javascript('javascripts/inputs/checkbox-tags.js') }}
-    <input 
-      type="text" 
-      name="{{ field.propertyName }}" 
-      class="yeswiki-input-entries yeswiki-input-entries{{ field.propertyName }}" 
-      {% if field.required %}required{% endif %}>
-    <input type="hidden" value="''" name="{{ field.propertyName  ~ field.fromFormId }}">
-    <script>
-      if (typeof bazarlistTagsInputsData === "undefined"){
-        var bazarlistTagsInputsData = new Object();
-      }
-      bazarlistTagsInputsData['{{ field.propertyName }}'] = {{ bazarlistTagsInputsData|raw }};
-    </script>
+  {% set options = {} %}
+  {% for key, tag in tagsData.existingTags %}
+    {% set options = options|merge({(key): tag.title}) %}
+  {% endfor %}
+  <div class="yw-tag-input" data-yw-tag-input data-yw-tag-input-closed
+    data-yw-tag-input-options="{{ options|json_encode }}"
+    {% if tagsData.limit is not empty and tagsData.limit > 0 %}data-yw-tag-input-max="{{ tagsData.limit }}"{% endif %}>
+    {% for id in tagsData.selectedOptions %}
+      {% if tagsData.existingTags[id] is defined %}
+        <span class="yw-tag-input__chip" data-yw-tag-input-chip data-tag="{{ id }}">{{ tagsData.existingTags[id].title }}<button type="button" class="yw-tag-input__chip-remove" data-yw-tag-input-remove aria-label="remove">&times;</button></span>
+      {% endif %}
+    {% endfor %}
+    <input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search>
+    <ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
+    <input type="hidden" name="{{ field.propertyName }}" data-yw-tag-input-value value="{{ tagsData.selectedOptions|join(',') }}">
+  </div>
+  <input type="hidden" value="''" name="{{ field.propertyName ~ field.fromFormId }}">
 {% endblock %}

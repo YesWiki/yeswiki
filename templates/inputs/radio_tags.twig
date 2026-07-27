@@ -1,34 +1,33 @@
 {% extends "@core/layouts/input.twig" %}
 
 {% block input %}
-    {{ include_javascript('javascripts/vendor/bootstrap-tagsinput.min.js') }}
-    {{ include_javascript('javascripts/inputs/checkbox-tags.js') }}
-    {% if field.isDistantJson %}
-      <div class="input-group">
-    {% endif %}
-    <input 
-      type="text" 
-      name="{{ field.propertyName }}" 
-      class="yeswiki-input-entries yeswiki-input-entries{{ field.propertyName }}"
-      {% if field.required %}required{% endif %}>
-    {% if field.isDistantJson %}
-        <div class="input-group-append">
-            <button 
-                class="btn btn-default btn-xs btn-icon tagsinput-refresh" 
-                data-property-name="{{ field.propertyName }}" 
-                type="button"
-                data-toggle="tooltip"
-                data-placement="right"
-                title="{{ _t('BAZ_RADIO_REFRESH') }}">
-              <i class="fas fa-sync"></i>
-            </button>
-        </div>
-      </div>
-    {% endif %}
-    <script>
-      if (typeof bazarlistTagsInputsData === "undefined"){
-        var bazarlistTagsInputsData = new Object();
-      }
-      bazarlistTagsInputsData['{{ field.propertyName }}'] = {{ bazarlistTagsInputsData|raw }};
-    </script>
+  {{ include_javascript('javascripts/yw-tags-input.js') }}
+  {{ include_javascript('javascripts/inputs/checkbox-tags.js') }}
+  {% set options = {} %}
+  {% for key, tag in tagsData.existingTags %}
+    {% set options = options|merge({(key): tag.title}) %}
+  {% endfor %}
+  <div class="yw-tag-input" data-yw-tag-input data-yw-tag-input-closed
+    data-yw-tag-input-options="{{ options|json_encode }}"
+    data-yw-tag-input-max="1">
+    {% for id in tagsData.selectedOptions %}
+      {% if tagsData.existingTags[id] is defined %}
+        <span class="yw-tag-input__chip" data-yw-tag-input-chip data-tag="{{ id }}">{{ tagsData.existingTags[id].title }}<button type="button" class="yw-tag-input__chip-remove" data-yw-tag-input-remove aria-label="remove">&times;</button></span>
+      {% endif %}
+    {% endfor %}
+    <input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search>
+    <ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
+    <input type="hidden" name="{{ field.propertyName }}" data-yw-tag-input-value value="{{ tagsData.selectedOptions|join(',') }}">
+  </div>
+  {% if field.isDistantJson %}
+    <button
+      class="yw-btn yw-btn--sm btn-icon tagsinput-refresh"
+      data-property-name="{{ field.propertyName }}"
+      type="button"
+      data-toggle="tooltip"
+      data-placement="right"
+      title="{{ _t('BAZ_RADIO_REFRESH') }}">
+      <i class="fas fa-sync"></i>
+    </button>
+  {% endif %}
 {% endblock %}

@@ -28,7 +28,7 @@ abstract class RadioField extends EnumField
         switch ($this->displayMethod) {
             case 'tags':
                 $htmlReturn = $this->render('@core/inputs/radio_tags.twig', [
-                    'bazarlistTagsInputsData' => json_encode($this->generateTagsData($entry)),
+                    'tagsData' => $this->generateTagsData($entry),
                 ]);
 
                 return $htmlReturn;
@@ -36,12 +36,7 @@ abstract class RadioField extends EnumField
             default:
                 $options = $this->getOptions();
                 if ($this->displayFilterLimit && (count($options) > $this->displayFilterLimit)) {
-                    // javascript additions
-                    $this->wiki->AddJavascriptFile('javascripts/vendor/jquery.fastLiveFilter.js');
-                    $script = "$(function() { $('.filter-entries').each(function() {
-                                $(this).fastLiveFilter($(this).siblings('.bazar-radio-rows')); });
-                            });";
-                    $this->wiki->AddJavascript($script);
+                    $this->wiki->AddJavascriptFile('javascripts/inputs/filter-entries.js');
                 }
 
                 return $this->render('@core/inputs/radio.twig', [

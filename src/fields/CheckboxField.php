@@ -44,7 +44,7 @@ abstract class CheckboxField extends EnumField
         switch ($this->displayMethod) {
             case 'tags':
                 $htmlReturn = $this->render('@core/inputs/checkbox_tags.twig', [
-                    'bazarlistTagsInputsData' => json_encode($this->generateTagsData($entry)),
+                    'tagsData' => $this->generateTagsData($entry),
                 ]);
 
                 return $htmlReturn;
@@ -69,12 +69,7 @@ abstract class CheckboxField extends EnumField
                 }
 
                 if ($this->displayFilterLimit) {
-                    // javascript additions
-                    $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/jquery.fastLiveFilter.js');
-                    $script = "$(function() { $('.filter-entries').each(function() {
-                                $(this).fastLiveFilter($(this).parent().siblings('.list-bazar-entries,.bazar-checkbox-cols')); });
-                            });";
-                    $GLOBALS['wiki']->AddJavascript($script);
+                    $GLOBALS['wiki']->AddJavascriptFile('javascripts/inputs/filter-entries.js');
                 }
 
                 return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode], [

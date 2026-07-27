@@ -64,7 +64,7 @@ if (count($fiches) > 0) :
     <?php
     if (isset($fiche['imagebf_image']) && $fiche['imagebf_image'] != '') : ?>
     <li class="bazar-entry" <?php echo $fiche['html_data'];?>>
-        <a class="pbgalery-link" title="<?php echo htmlentities($fiche['bf_titre']); ?>"
+        <a class="pbgalery-link modalbox" title="<?php echo htmlentities($fiche['bf_titre']); ?>"
             href="<?php echo redimensionner_image(
                 'files/' . $fiche['imagebf_image'],
                 'cache/image_' . $bigwidth . '_' . $bigheight . '_' . $fiche['imagebf_image'],
@@ -94,11 +94,7 @@ if (count($fiches) > 0) :
 #gallery<?php echo $GLOBALS['nbgalleries']; ?> li {margin: <?php echo $thumbmargin; ?>px}
 </style>
 <?php
-$GLOBALS['wiki']->AddJavascriptFile('javascripts/jquery.photobox.js');
-$GLOBALS['wiki']->AddJavascript('
-$(document).ready(function () {
- $(\'#gallery' . $GLOBALS['nbgalleries'] . '\').photobox(\'a\',{ time:0 });
-});
-');
+// the fullscreen view is yw-core.js's modalbox image mode (ticket 16, replaces
+// the jQuery photobox lightbox — no prev/next navigation, one image per open)
 endif; ?>
 <?php echo $pager_links;?>
