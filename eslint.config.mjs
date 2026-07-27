@@ -49,6 +49,7 @@ export default defineConfig([globalIgnores([
       ace: 'writable',
       toastMessage: 'readable',
       multiDeleteService: 'readable',
+      usersTableService: 'readable',
       autocompleteFieldnames: 'readable',
       geolocationHelper: 'readable',
       // page-level config globals injected by reactions templates

@@ -19,12 +19,8 @@
 %}
 
 {% block assets %}
-  {{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
   {{ include_css('styles/bazar/tableau.css') }}
-
-  {{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }} 
   {{ include_javascript('javascripts/components/BazarTable.js', false, true) }}
-   
 {% endblock %}
 
 {% block display_entries %}
@@ -74,11 +70,10 @@
       <a :href="isExternal ? `${entryUrl}/editiframe` : `{{ url({tag:'${entryId}',handler:'editiframe'}) }}`"
         data-toggle="tooltip"
         data-placement="left"
-        class="btn btn-default btn-icon btn-xs modalbox"
+        class="yw-btn yw-btn--sm btn-icon modalbox"
         data-size="modal-lg"
         data-iframe="1"
         :title="`{{ _t('MODIFY') }} ${entryId}`"
-        onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
         >
         <i class="fas fa-pencil-alt"></i>
       </a>
@@ -86,9 +81,8 @@
         :href="`{{ url({tag:'${entryId}',handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}`"
         data-toggle="tooltip"
         data-placement="left"
-        class="btn btn-danger btn-icon btn-xs modalbox"
+        class="yw-btn yw-btn--sm yw-btn--danger btn-icon modalbox"
         :title="`{{ _t('DELETE') }} ${entryId}`"
-        onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
         >
         <i class="fas fa-trash"></i>
       </a>
@@ -97,7 +91,7 @@
         disabled="disabled"
         data-toggle="tooltip"
         data-placement="left"
-        class="btn btn-danger btn-icon btn-xs"
+        class="yw-btn yw-btn--sm yw-btn--danger btn-icon"
         title="{{ _t('DELETEPAGE_NOT_OWNER') }}"
         >
         <i class="fas fa-trash"></i>

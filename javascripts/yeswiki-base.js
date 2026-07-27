@@ -2,62 +2,6 @@
 // Modal/dropdown/collapse/tab/tooltip primitives live in yw-core.js and yw-core.css;
 // this file keeps the page-level glue: comments, reactions, search widget, misc UI.
 
-// Transitional (ticket 16): the generic `$('.table').DataTable(...)` auto-init is gone
-// (yw-datatable.js self-initializes table[data-yw-datatable] instead), but tableau.js,
-// forms-import.js and components/DynTable.js still read this legacy options global until
-// their own conversion — delete it together with them.
-// eslint-disable-next-line no-unused-vars
-const DATATABLE_OPTIONS = {
-  paging: false,
-  language: {
-    sProcessing: _t('DATATABLES_PROCESSING'),
-    sSearch: _t('DATATABLES_SEARCH'),
-    sLengthMenu: _t('DATATABLES_LENGTHMENU'),
-    sInfo: _t('DATATABLES_INFO'),
-    sInfoEmpty: _t('DATATABLES_INFOEMPTY'),
-    sInfoFiltered: _t('DATATABLES_INFOFILTERED'),
-    sInfoPostFix: '',
-    sLoadingRecords: _t('DATATABLES_LOADINGRECORDS'),
-    sZeroRecords: _t('DATATABLES_ZERORECORD'),
-    sEmptyTable: _t('DATATABLES_EMPTYTABLE'),
-    oPaginate: {
-      sFirst: _t('FIRST'),
-      sPrevious: _t('PREVIOUS'),
-      sNext: _t('NEXT'),
-      sLast: _t('LAST')
-    },
-    oAria: {
-      sSortAscending: _t('DATATABLES_SORTASCENDING'),
-      sSortDescending: _t('DATATABLES_SORTDESCENDING')
-    }
-  },
-  fixedHeader: {
-    header: true,
-    footer: false
-  },
-  dom:
-    "<'row'<'col-sm-6'l><'col-sm-6'f>>"
-    + "<'row'<'col-sm-12'tr>>"
-    + "<'row'<'col-sm-6'i><'col-sm-6'<'pull-right'B>>>",
-  buttons: [
-    {
-      extend: 'copy',
-      className: 'btn btn-default',
-      text: `<i class="far fa-copy"></i> ${_t('COPY')}`
-    },
-    {
-      extend: 'csv',
-      className: 'btn btn-default',
-      text: '<i class="fas fa-file-csv"></i> CSV'
-    },
-    {
-      extend: 'print',
-      className: 'btn btn-default',
-      text: `<i class="fas fa-print"></i> ${_t('PRINT')}`
-    }
-  ]
-}
-
 function toastMessage(
   message,
   duration = 3000,

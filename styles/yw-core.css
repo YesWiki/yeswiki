@@ -295,21 +295,25 @@ textarea.yw-input {
 .yw-datatable__search {
   max-width: 240px;
 }
-table[data-yw-datatable] th[data-yw-sort] {
+table[data-yw-datatable] th[data-yw-sort],
+table.yw-table--sortable th[data-yw-sort] {
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
 }
-table[data-yw-datatable] th[data-yw-sort]::after {
+table[data-yw-datatable] th[data-yw-sort]::after,
+table.yw-table--sortable th[data-yw-sort]::after {
   content: '\2195';
   margin-left: 4px;
   opacity: 0.35;
 }
-table[data-yw-datatable] th[data-yw-sort='asc']::after {
+table[data-yw-datatable] th[data-yw-sort='asc']::after,
+table.yw-table--sortable th[data-yw-sort='asc']::after {
   content: '\2191';
   opacity: 1;
 }
-table[data-yw-datatable] th[data-yw-sort='desc']::after {
+table[data-yw-datatable] th[data-yw-sort='desc']::after,
+table.yw-table--sortable th[data-yw-sort='desc']::after {
   content: '\2193';
   opacity: 1;
 }

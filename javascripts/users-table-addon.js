@@ -1,210 +1,159 @@
+// users-table-addon.js — appends an email-activation status/action column to the
+// admin users table (ticket 16: vanilla JS on the yw-datatable markup, replacing
+// the DataTables destroy/re-init dance)
 const usersTableServiceAddOn = {
-    data: function(){
-        return {
-            users: {},
-            usersDataTables: {},
-        };
-    },
-    methods: {
-        appendActivationColumn: function(){
-            for (const dataTableApiIdx in this.usersDataTables) {
-                let settings = this.usersDataTables[dataTableApiIdx].init();
-                let node = this.usersDataTables[dataTableApiIdx].table().node();
-                this.usersDataTables[dataTableApiIdx].destroy(false);
-                node.querySelector('thead > tr').appendChild(document.createElement('th'))
-                node.querySelectorAll('tbody > tr').forEach((row)=>{
-                    let name = row.children[1].innerText;
-                    let td = document.createElement('td');
-                    if (name in this.users){
-                        td.innerText = JSON.stringify({
-                            activatedStatus:this.users[name].activatedStatus,
-                            isAdmin:this.users[name].isAdmin,
-                        });
-                    }
-                    row.appendChild(td)
-                });
-                node.querySelector('tfoot > tr').appendChild(document.createElement('th'))
-                settings.columnDefs = [
-                    ...('columnDefs' in settings ? settings.columnDefs : []),
-                    ...[
-                        {
-                            targets: -1,
-                            title: _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_STATUS'),
-                            render: (data,type,row)=>{
-                                let name = row[1];
-                                if (!(name in this.users)) return '';
-                                let cellData = '';
-                                try {
-                                    cellData = JSON.parse(data);
-                                } catch (error) {
-                                    console.warn({data,row});
-                                    throw error;
-                                }
-                                let activatedStatus = cellData.activatedStatus || false;
-                                let isAdmin = cellData.isAdmin || false;
-                                return this.renderButton(name,activatedStatus,isAdmin);
-                            }
-                        }
-                    ]
-                ];
-                this.usersDataTables[dataTableApiIdx] = new DataTable(node,settings);
-            }
-        },
-        getUsers: async function(){
-            let url = wiki.url('?api/users');
-            return await fetch(url)
-                .then((response)=>{
-                    if (!response.ok){
-                        throw `error when getting ${url}`
-                    }
-                    return response.json().then((decoded)=>{
-                        let result = {};
-                        if (Array.isArray(decoded)){
-                            decoded.forEach((user)=>{
-                                result[user.name] = user;
-                            })
-                        }
-                        return result;
-                    });
-                });
-        },
-        init: function(){
-            this.searchAndAddTables();
-            this.getUsers()
-              .then((users)=>{
-                this.users=users;
-                this.appendActivationColumn();
-            })
-              .catch((error)=>console.warn(error))
-        },
-        manageClick: function(action,name){
-            if (!(name in this.users)){
-                alert(`user '${String(name)}' is not existing !`);
-                return false;
-            }
-            let url = '';
-            switch (action) {
-                case 'activate':
-                    if (this.users[name].activatedStatus){
-                        alert(`user '${String(name)}' is already activated !`);
-                        return false;
-                    }
-                    url = wiki.url(`?api/emailactivation/${name}/activate`);
-                    break;
-                case 'inactivate':
-                    if (!this.users[name].activatedStatus){
-                        alert(`user '${String(name)}' is already inactivated !`);
-                        return false;
-                    }
-                    url = wiki.url(`?api/emailactivation/${name}/inactivate`);
-                    break;
-                default:
-                    alert(`action '${String(action)}' is not existing !`);
-                    return false;
-            }
-            fetch(url,{method: 'POST'})
-              .then((response)=>{
-                if (response.ok){
-                    this.getUsers()
-                      .then((users)=>{
-                        if (name in users){
-                            this.users[name] = users[name];
-                            let newValue = JSON.stringify(
-                                {
-                                    activatedStatus:users[name].activatedStatus,
-                                    isAdmin:users[name].isAdmin,
-                                }
-                            );
-                            let baseObj = this;
-                            for (const dataTableApiIdx in this.usersDataTables) {
-                                this.usersDataTables[dataTableApiIdx].rows(function(idx,data){
-                                    return (data.length > 0 && data[1] == name);
-                                })
-                                  .every(function(rowIdx){
-                                    let d = this.data();
-                                    let cell = this.cell(rowIdx,d.length-1)
-                                    cell.data(newValue)
-                                    cell.node().innerHTML = baseObj.renderButton(name,users[name].activatedStatus,users[name].isAdmin);
-                                  })
-                            }
-                        } else {
-                            throw `not possible to ${action} user ${name} because user is not anymore a user !`
-                        }
-                      })
-                } else {
-                    throw `not possible to ${action} user ${name}`;
-                }
-              })
-              .catch((error)=>{
-                alert(`error '${String(error)}'`);
-              })
-        },
-        renderButton: function(name,activatedStatus,isAdmin){
-            let btnType = '';
-            let btnText = '';
-            let action = '';
-            if (activatedStatus){
-                action = 'inactivate';
-                if (isAdmin){
-                    btnType = 'btn-info';
-                    btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_INACTIVATE_ADMIN');
-                } else {
-                    btnType = 'btn-danger';
-                    btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_INACTIVATE');
-                }
-            } else if (isAdmin){
-                action = 'activate';
-                btnType = 'btn-info';
-                btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ACTIVATE_ADMIN');
-            } else {
-                action = 'activate';
-                btnType = 'btn-primary';
-                btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ACTIVATE');
-            }
-            return `
-              <button 
-                class="btn btn-sm ${btnType}" 
-                onClick="usersTableServiceAddOn.methods.manageClick('${action}',${JSON.stringify(name).replace(/(^"|"$)/g,'\'')})">
-                ${btnText}
-              </button>
-            `;
-        },
-        searchAndAddTables: function(){
-            document.querySelectorAll('#users-table-action').forEach((item)=>{
-                let table = null;
-                let tables = item.children
-                let len = tables.length
-                for (let i = 0; i < len && !table; i++) {
-                    if (tables[i].classList.contains('dataTables_wrapper')){
-                        table = tables[i];
-                    }
-                }
-                if (table){
-                    let tableId = table.id.slice(0,-"_wrapper".length);
-                    let datatable = table.querySelector(`#${tableId}`);
-                    if (datatable && DataTable.isDataTable(datatable)){
-                        this.usersDataTables[tableId] = new DataTable(datatable);
-                    }
-                }
-            });
-        }
-    },
-    initData: function(){
-        this.methods.parent = this;
-        // init data -- not needed with VueJs
-        let data = this.data();
-        for(const key in data){
-            this.methods[key] = data[key];
-        }
-    },
-    mounted: function(){
-        this.initData(); // not needed with VueJs
-        this.methods.init(); // replace by this.init() in VueJs
+  users: {},
+  tables: [],
+  nameOf(row) {
+    // column 0 is the multidelete checkbox, column 1 the user name
+    return row.cells[1] ? row.cells[1].textContent.trim() : ''
+  },
+  async getUsers() {
+    const url = wiki.url('?api/users')
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`error when getting ${url}`)
     }
+    const decoded = await response.json()
+    const result = {}
+    if (Array.isArray(decoded)) {
+      decoded.forEach((user) => {
+        result[user.name] = user
+      })
+    }
+    return result
+  },
+  renderButton(name, activatedStatus, isAdmin) {
+    let btnType = ''
+    let btnText = ''
+    let action = ''
+    if (activatedStatus) {
+      action = 'inactivate'
+      if (isAdmin) {
+        btnType = 'yw-btn--info'
+        btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_INACTIVATE_ADMIN')
+      } else {
+        btnType = 'yw-btn--danger'
+        btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_INACTIVATE')
+      }
+    } else if (isAdmin) {
+      action = 'activate'
+      btnType = 'yw-btn--info'
+      btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ACTIVATE_ADMIN')
+    } else {
+      action = 'activate'
+      btnType = 'yw-btn--primary'
+      btnText = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ACTIVATE')
+    }
+    const escapedName = JSON.stringify(name).replace(/(^"|"$)/g, '\'')
+    return `
+      <button
+        class="yw-btn yw-btn--sm ${btnType}"
+        onClick="usersTableServiceAddOn.manageClick('${action}',${escapedName})">
+        ${btnText}
+      </button>
+    `
+  },
+  renderCellFor(name) {
+    this.tables.forEach((table) => {
+      Array.from(table.tBodies[0].rows).forEach((row) => {
+        if (this.nameOf(row) === name && name in this.users) {
+          const cell = row.cells[row.cells.length - 1]
+          cell.innerHTML = this.renderButton(
+            name,
+            this.users[name].activatedStatus,
+            this.users[name].isAdmin
+          )
+        }
+      })
+    })
+  },
+  appendActivationColumn() {
+    this.tables.forEach((table) => {
+      const headRow = table.tHead ? table.tHead.rows[0] : null
+      if (headRow) {
+        const th = document.createElement('th')
+        th.setAttribute('data-yw-no-sort', '')
+        th.textContent = _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_STATUS')
+        headRow.appendChild(th)
+      }
+      Array.from(table.tBodies[0].rows).forEach((row) => {
+        const name = this.nameOf(row)
+        const td = document.createElement('td')
+        if (name in this.users) {
+          td.innerHTML = this.renderButton(
+            name,
+            this.users[name].activatedStatus,
+            this.users[name].isAdmin
+          )
+        }
+        row.appendChild(td)
+      })
+      const footRow = table.tFoot ? table.tFoot.rows[0] : null
+      if (footRow) footRow.appendChild(document.createElement('th'))
+    })
+  },
+  manageClick(action, name) {
+    if (!(name in this.users)) {
+      alert(`user '${String(name)}' is not existing !`)
+      return
+    }
+    let url = ''
+    switch (action) {
+      case 'activate':
+        if (this.users[name].activatedStatus) {
+          alert(`user '${String(name)}' is already activated !`)
+          return
+        }
+        url = wiki.url(`?api/emailactivation/${name}/activate`)
+        break
+      case 'inactivate':
+        if (!this.users[name].activatedStatus) {
+          alert(`user '${String(name)}' is already inactivated !`)
+          return
+        }
+        url = wiki.url(`?api/emailactivation/${name}/inactivate`)
+        break
+      default:
+        alert(`action '${String(action)}' is not existing !`)
+        return
+    }
+    fetch(url, { method: 'POST' })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`not possible to ${action} user ${name}`)
+        }
+        return this.getUsers()
+      })
+      .then((users) => {
+        if (!(name in users)) {
+          throw new Error(
+            `not possible to ${action} user ${name} because user is not anymore a user !`
+          )
+        }
+        this.users[name] = users[name]
+        this.renderCellFor(name)
+      })
+      .catch((error) => {
+        alert(`error '${String(error)}'`)
+      })
+  },
+  init() {
+    this.tables = Array.from(
+      document.querySelectorAll('#users-table-action table')
+    ).filter((table) => table.tBodies.length > 0)
+    if (this.tables.length === 0) return
+    this.getUsers()
+      .then((users) => {
+        this.users = users
+        this.appendActivationColumn()
+      })
+      .catch((error) => console.warn(error))
+  }
+}
 
-};
-document.addEventListener('DOMContentLoaded',()=>{
-    if (usersTableService){
-        usersTableServiceAddOn.mounted();
-    }
-});
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof usersTableService !== 'undefined' && usersTableService) {
+    usersTableServiceAddOn.init()
+  }
+})

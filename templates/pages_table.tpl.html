@@ -1,9 +1,7 @@
 <?php
 if (count($pages)>0) :
-$GLOBALS['wiki']->addJavascriptFile('javascripts/vendor/datatables-full/jquery.dataTables.min.js');
-$GLOBALS['wiki']->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap.min.css');
 ?>
-    <table class="table table-condensed table-striped" style="table-layout:fixed;word-wrap: break-word;">
+    <table class="yw-table" data-yw-datatable style="table-layout:fixed;word-wrap: break-word;">
 		    <thead>
 		        <tr>
 		            <th><?php echo _t('TEMPLATE_PAGE'); ?></th>
@@ -22,7 +20,7 @@ $GLOBALS['wiki']->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap
 		            <td>
 		            <?php
         if ($GLOBALS['wiki']->HasAccess("write", $page['tag'])) :?>
-		                <a class="btn btn-default btn-mini btn-xs" href="<?php
+		                <a class="yw-btn yw-btn--sm" href="<?php
             echo $GLOBALS['wiki']->href('edit', $page['tag']); ?>">
             					  <i class="fa fa-pencil-alt icon-pencil"></i> <?php
             echo _t('TEMPLATE_MODIFY'); ?>
@@ -31,7 +29,7 @@ $GLOBALS['wiki']->addCSSFile('styles/vendor/datatables-full/dataTables.bootstrap
         endif; ?>
 		            <?php
         if ($GLOBALS['wiki']->UserIsAdmin() || $GLOBALS['wiki']->UserIsOwner()) :?>
-		                <a class="btn btn-danger btn-mini btn-xs" href="<?php
+		                <a class="yw-btn yw-btn--sm yw-btn--danger" href="<?php
             echo $GLOBALS['wiki']->href('deletepage', $page['tag']); ?>"  onclick="javascript:return confirm('<?php
             echo _t('TEMPLATE_CONFIRM_DELETE_PAGE'); ?> ?');">
             					  <i class="fa fa-trash icon-trash icon-white"></i>

@@ -1,5 +1,12 @@
-import Waiter from '../Waiter.js'
-
+// DynTable.js — Vue-native data table for the bazar dynamic index (ticket 16:
+// replaces jQuery DataTables; sorting/search happen in computed properties over
+// the reactive rows, no DOM-driven table library). DataTables-style column defs
+// are still the contract with BazarTable: {data, title, class, orderable,
+// visible, width, render(value, type, row), footer}; render() is called with
+// 'display' for cell html, 'sort' and 'filter' for the comparable/searchable
+// values, exactly as before. No pagination and no visible search input, matching
+// the legacy config (paging:false, search driven externally by BazarTable).
+// Disclosed simplification: the copy/csv/print export buttons are gone.
 export default {
   props: {
     columns: {
@@ -30,194 +37,106 @@ export default {
   },
   data() {
     return {
-      dataTable: null,
-      displayedRows: {},
-      templatesForRendering: {}
+      sortColIdx: null,
+      sortDir: 'asc',
+      orderInitialized: false
     }
   },
   computed: {
     element() {
       return this.$el.parentNode
     },
+    visibleColumns() {
+      return this.columns
+        .map((col, idx) => ({ col, idx }))
+        .filter(({ col }) => col.visible !== false)
+    },
     showFooter() {
       return this.forceDisplayTotal || this.columns.some((col) => col?.class?.match(/sum-activated/))
+    },
+    formattedRows() {
+      return Object.keys(this.rows).map((id) => {
+        const rowData = { id, ...this.rows[id] }
+        const cells = this.visibleColumns.map(({ col }) => {
+          const raw = typeof col.data === 'string' ? (rowData[col.data] ?? '') : ''
+          return {
+            html: this.applyRender(col, raw, 'display', rowData),
+            sortVal: this.plainValue(this.applyRender(col, raw, 'sort', rowData)),
+            searchVal: this.plainValue(this.applyRender(col, raw, 'filter', rowData))
+          }
+        })
+        return { id, rowData, cells }
+      })
+    },
+    matchedRows() {
+      const needle = (this.externalSearch || '').trim().toLowerCase()
+      if (!needle) return this.formattedRows
+      return this.formattedRows.filter(
+        (row) => row.cells.some((cell) => cell.searchVal.toLowerCase().includes(needle))
+      )
+    },
+    sortedRows() {
+      if (this.sortColIdx === null) return this.matchedRows
+      const position = this.visibleColumns.findIndex(({ idx }) => idx === this.sortColIdx)
+      if (position === -1) return this.matchedRows
+      const direction = this.sortDir === 'desc' ? -1 : 1
+      return this.matchedRows.slice().sort((a, b) => {
+        const av = a.cells[position].sortVal
+        const bv = b.cells[position].sortVal
+        const an = parseFloat(String(av).replace(',', '.'))
+        const bn = parseFloat(String(bv).replace(',', '.'))
+        const looksNumeric = /^-?[\d.,]+$/.test(av) && /^-?[\d.,]+$/.test(bv)
+        const result = looksNumeric && !Number.isNaN(an) && !Number.isNaN(bn)
+          ? an - bn
+          : String(av).localeCompare(String(bv), undefined, { sensitivity: 'base' })
+        return result * direction
+      })
+    },
+    totalColPosition() {
+      if (!this.showFooter) return -1
+      let position = -1
+      this.visibleColumns.some(({ col }, idx) => {
+        const hasFooter = 'footer' in col && col.footer && col.footer.length > 0
+        if (!hasFooter && !col?.class?.match(/not-export-this-col/)
+          && !col?.class?.match(/sum-activated/)) {
+          position = idx
+          return true
+        }
+        return false
+      })
+      return position
+    },
+    footerCells() {
+      return this.visibleColumns.map(({ col }, position) => {
+        if (col?.class?.match(/sum-activated/)) {
+          let sum = 0
+          this.matchedRows.forEach((row) => {
+            sum += this.sanitizeValue(row.rowData[col.data])
+          })
+          return { kind: 'sum', content: String(sum) }
+        }
+        if ('footer' in col && col.footer && col.footer.length > 0) {
+          return { kind: 'html', content: col.footer }
+        }
+        if (position === this.totalColPosition) {
+          return { kind: 'total', content: '' }
+        }
+        return { kind: 'empty', content: '' }
+      })
     }
   },
   methods: {
-    addRows(dataTable, columns, rows) {
-      const formattedDataList = []
-      Object.keys(rows).forEach((id) => {
-        if (id in this.displayedRows) {
-          return
-        }
-        this.displayedRows[id] = rows[id]
-        const formattedData = {}
-        formattedData.id = id
-        columns.forEach((col) => {
-          if (!(typeof col.data === 'string')) {
-            return
-          }
-          formattedData[col.data] = rows[id]?.[col.data] ?? ''
-        })
-        // extra cols
-        Object.keys(rows[id]).forEach((k) => {
-          if (!(k in formattedData)) {
-            formattedData[k] = rows[id][k]
-          }
-        })
-        formattedDataList.push(formattedData)
-      })
-      dataTable.rows.add(formattedDataList)
+    applyRender(col, value, type, rowData) {
+      const rendered = typeof col.render === 'function'
+        ? col.render(value, type, rowData)
+        : value
+      return rendered === null || rendered === undefined ? '' : rendered
     },
-    async getColumns() {
-      return await Waiter.waitFor('columns', this).catch((error) => {
-        this.manageError(error)
-        return []
-      })
-    },
-    getDatatableOptions() {
-      const buttons = []
-      DATATABLE_OPTIONS.buttons.forEach((option) => {
-        buttons.push({
-          ...option,
-          ...{ footer: true },
-          ...{
-            exportOptions: {
-              ...(
-                option.extend != 'print'
-                  ? {
-                    orthogonal: 'sort', // use sort data for export
-                    columns(idx, data, node) {
-                      return !$(node).hasClass('not-export-this-col')
-                    }
-                  }
-                  : {
-                    columns(idx, data, node) {
-                      const isVisible = $(node).data('visible')
-                      return !$(node).hasClass('not-export-this-col') && (
-                        isVisible == undefined || isVisible != false
-                      ) && !$(node).hasClass('not-printable')
-                    }
-                  }),
-              ...{ format: { footer: (data, column) => this.dataTable.footer().to$().find(`> tr > th:nth-child(${column + 1})`).text() } }
-            }
-          }
-        })
-      })
-      const options = { ...DATATABLE_OPTIONS }
-      options.searching = true // allow search but ue dom option not display filter
-      const dom = this.getTemplateFromSlot('dom', {})
-      if (dom && dom.length > 0) {
-        options.dom = dom
-        // instead of default lfrtip , with f for filter, see help : https://datatables.net/reference/option/dom
-        // and removing filter
+    plainValue(val) {
+      if (Object.prototype.toString.call(val) === '[object Object]') {
+        return String(val.display || '')
       }
-      options.footerCallback = () => {
-        this.updateFooter()
-      }
-      options.buttons = buttons
-      return options
-    },
-    async getDatatable() {
-      if (this.dataTable === null) {
-        // create dataTable
-        const columns = await this.getColumns()
-        this.dataTable = $(this.$refs.dataTable).DataTable({
-          ...this.getDatatableOptions(),
-          ...{
-            columns,
-            scrollX: true
-          },
-          ...{ ...this.extraOptions }
-        })
-        $(this.dataTable.table().node()).prop('id', this.getUuid())
-        if (this.showFooter) {
-          this.initFooter(columns)
-        }
-      }
-      return this.dataTable
-    },
-    getTemplateFromSlot(name, params) {
-      const key = `${name}-${JSON.stringify(params)}`
-      if (!(key in this.templatesForRendering)) {
-        // Vue 3: $slots contains functions that return VNodes
-        const slots = this.$slots
-        if (slots && name in slots) {
-          const slotFn = slots[name]
-          const { createApp, h } = Vue
-          const tempContainer = document.createElement('div')
-          const app = createApp({
-            render() {
-              return h('div', {}, slotFn(params))
-            }
-          })
-          app.mount(tempContainer)
-          let outerHtml = ''
-          const children = tempContainer.firstChild?.childNodes || []
-          for (let index = 0; index < children.length; index++) {
-            const child = children[index]
-            if (child.nodeType !== Node.COMMENT_NODE) {
-              outerHtml += child.outerHTML || child.textContent
-            }
-          }
-          app.unmount()
-          this.templatesForRendering[key] = outerHtml
-        } else {
-          this.templatesForRendering[key] = ''
-        }
-      }
-      return this.templatesForRendering[key]
-    },
-    getUuid() {
-      if (this.uuid === null) {
-        return `${Date.now()}-${Math.round(Math.random() * 10000)}`
-      }
-      return this.uuid
-    },
-    initFooter(columns) {
-      const footerNode = this.dataTable.footer().to$()
-      if (footerNode[0] !== null) {
-        const footer = $('<tr>')
-        let displayTotal = columns.some((col) => col?.class?.match(/sum-activated/))
-        columns.forEach((col) => {
-          let newElem = $('<th>')
-          if ('footer' in col && col.footer.length > 0) {
-            const element = $(col.footer)
-            const isTh = $(element).prop('tagName') === 'TH'
-            newElem = isTh ? element : $('<th>').append(element)
-          } else if (displayTotal && !col?.class?.match(/not-export-this-col/)) {
-            displayTotal = false
-            newElem = $('<th>').text(this.render('sumtranslate', {}, 'Total'))
-          }
-          footer.append(newElem)
-        })
-        footerNode.html(footer)
-      }
-    },
-    manageError(error) {
-      if (wiki.isDebugEnabled) {
-        console.error(error)
-      }
-      return null
-    },
-    removeRows(dataTable, newIds) {
-      const entryIdsToRemove = Object.keys(this.displayedRows).filter((id) => !newIds.includes(id))
-      entryIdsToRemove.forEach((id) => {
-        if (id in this.displayedRows) {
-          delete this.displayedRows[id]
-        }
-      })
-      dataTable.rows((idx, data, node) => data?.id === undefined || entryIdsToRemove.includes(data?.id)).remove()
-    },
-    render(name, replacement = {}, defaultContent = null, params = {}) {
-      let output = this.getTemplateFromSlot(name, params)
-      Object.entries(replacement).forEach(([anchor, replacement]) => {
-        output = output.replace(anchor, replacement)
-      })
-      if (output.length === 0 && defaultContent && defaultContent.length > 0) {
-        output = defaultContent
-      }
-      return output
+      return String(val)
     },
     sanitizeValue(val) {
       let sanitizedValue = val
@@ -225,70 +144,83 @@ export default {
         // because if orthogonal data is defined, value is an object
         sanitizedValue = val.display || ''
       }
-      return (isNaN(sanitizedValue)) ? 1 : Number(sanitizedValue)
+      return (Number.isNaN(Number(sanitizedValue))) ? 1 : Number(sanitizedValue)
     },
-    async updateRows(newVal) {
-      const newIds = Object.keys(newVal)
-      const dataTable = await this.getDatatable()
-      this.removeRows(dataTable, newIds)
-      this.addRows(dataTable, this.columns, newVal)
-      this.dataTable.draw()
+    manageError(error) {
+      if (wiki.isDebugEnabled) {
+        console.error(error)
+      }
+      return null
     },
-    updateFastSearch(newSearch) {
-      if (this.dataTable !== null) {
-        this.dataTable.search(newSearch).draw()
+    headerSortState(colIdx) {
+      if (this.sortColIdx !== colIdx) return ''
+      return this.sortDir
+    },
+    toggleSort({ col, idx }) {
+      if (col.orderable === false) return
+      if (this.sortColIdx === idx) {
+        this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc'
+      } else {
+        this.sortColIdx = idx
+        this.sortDir = 'asc'
       }
     },
-    updateFooter() {
-      if (this.dataTable !== null) {
-        const activatedRows = []
-        this.dataTable.rows({ search: 'applied' }).every(function() {
-          activatedRows.push(this.index())
-        })
-        this.dataTable.columns('.sum-activated').every((indexCol) => {
-          const col = this.dataTable.column(indexCol)
-          let sum = 0
-          activatedRows.forEach((indexRow) => {
-            const value = this.dataTable.row(indexRow).data()[col.dataSrc()]
-            sum += this.sanitizeValue(Number(value))
-          })
-          this.dataTable.footer().to$().find(`> tr > th:nth-child(${indexCol + 1})`).html(sum)
-        })
+    applyInitialOrder() {
+      if (this.orderInitialized) return
+      const order = this.extraOptions && this.extraOptions.order
+      if (Array.isArray(order) && Array.isArray(order[0])) {
+        const [[column, direction]] = order
+        this.sortColIdx = column
+        this.sortDir = direction === 'desc' ? 'desc' : 'asc'
+        this.orderInitialized = true
       }
     }
   },
   mounted() {
-    $(this.element).on('dblclick', (e) => false)
+    this.element.addEventListener('dblclick', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    })
+    this.applyInitialOrder()
   },
   watch: {
-    rows: {
-      deep: true,
-      handler(newVal) {
-        this.updateRows(newVal).catch(this.manageError)
-      }
-    },
-    columns(newVal) {
-      if (Array.isArray(newVal) && newVal.length > 0) {
-        Waiter.resolve('columns')
-      }
-    },
-    externalSearch(newSearch) {
-      this.updateFastSearch(newSearch)
-    },
-    forceRefresh() {
-      // whatever is the value toogle
-      if (this.dataTable !== null) {
-        this.removeRows(this.dataTable, [])
-        this.addRows(this.dataTable, this.columns, this.rows)
-        this.dataTable.draw()
-      }
+    extraOptions() {
+      this.applyInitialOrder()
     }
   },
   template: `
     <div>
-        <table ref="dataTable" class="table prevent-auto-init table-condensed display">
+        <table :id="uuid" class="yw-table yw-table--sortable in-dyntable">
+            <thead>
+                <tr>
+                    <th v-for="entry in visibleColumns"
+                        :key="entry.idx"
+                        :class="entry.col.class"
+                        :style="entry.col.width ? { width: entry.col.width } : {}"
+                        :data-yw-sort="entry.col.orderable === false
+                          ? null : headerSortState(entry.idx)"
+                        @click="toggleSort(entry)"
+                        v-html="entry.col.title"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="row in sortedRows" :key="row.id">
+                    <td v-for="(cell, position) in row.cells"
+                        :key="position"
+                        :class="visibleColumns[position].col.class"
+                        v-html="cell.html"></td>
+                </tr>
+            </tbody>
             <tfoot v-if="showFooter">
-                <tr></tr>
+                <tr>
+                    <th v-for="(cell, position) in footerCells" :key="position">
+                        <template v-if="cell.kind === 'total'">
+                            <slot name="sumtranslate">Total</slot>
+                        </template>
+                        <span v-else-if="cell.kind === 'html'" v-html="cell.content"></span>
+                        <template v-else>{{ cell.content }}</template>
+                    </th>
+                </tr>
             </tfoot>
         </table>
     </div>
