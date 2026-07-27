@@ -53,6 +53,53 @@ export function parseSearchParams(pParams) // Return params as a structured obje
  * @return the concatenated URL parameters as <string> or <object>
  */
 
+/* eslint-disable no-param-reassign */
+/**
+ * Deep-merge plain objects/arrays into pTarget (the jQuery $.extend(true, …) shape
+ * this file historically relied on — ticket 26 removed the last jQuery usage).
+ */
+export function deepMergeParams(pTarget, ...pSources) {
+  pSources.forEach((pSource) => {
+    Object.entries(pSource || {}).forEach(([pKey, pValue]) => {
+      if (Array.isArray(pValue)) {
+        pTarget[pKey] = deepMergeParams(Array.isArray(pTarget[pKey]) ? pTarget[pKey] : [], pValue)
+      } else if (pValue && typeof pValue === 'object') {
+        const vExisting = pTarget[pKey]
+        pTarget[pKey] = deepMergeParams(
+          vExisting && typeof vExisting === 'object' && !Array.isArray(vExisting) ? vExisting : {},
+          pValue
+        )
+      } else if (pValue !== undefined) {
+        pTarget[pKey] = pValue
+      }
+    })
+  })
+  return pTarget
+}
+/* eslint-enable no-param-reassign */
+
+/**
+ * Serialize a (possibly nested) parameters object to an URL query string with
+ * PHP-style bracket notation — the jQuery $.param encoding the API expects.
+ */
+export function serializeSearchParams(pParams) {
+  const vPairs = []
+  const add = (pKey, pValue) => {
+    if (pValue === null || pValue === undefined || typeof pValue === 'function') return
+    if (Array.isArray(pValue)) {
+      pValue.forEach((pItem, pIndex) => {
+        add(`${pKey}[${typeof pItem === 'object' ? pIndex : ''}]`, pItem)
+      })
+    } else if (typeof pValue === 'object') {
+      Object.entries(pValue).forEach(([pSubKey, pSubValue]) => add(`${pKey}[${pSubKey}]`, pSubValue))
+    } else {
+      vPairs.push(`${encodeURIComponent(pKey)}=${encodeURIComponent(pValue)}`)
+    }
+  }
+  Object.entries(pParams || {}).forEach(([pKey, pValue]) => add(pKey, pValue))
+  return vPairs.join('&')
+}
+
 export function mergeSearchParams(pParams1, pParams2, pOptions = { returnMode: 'string', overrideKeywords: false, overrideQuery: false }) {
   const vMerged = {}
   let vQuery
@@ -61,7 +108,7 @@ export function mergeSearchParams(pParams1, pParams2, pOptions = { returnMode: '
   const vParamsObject1 = typeof (pParams1) == 'string' ? parseSearchParams(pParams1) : pParams1
   const vParamsObject2 = typeof (pParams2) == 'string' ? parseSearchParams(pParams2) : pParams2
 
-  $.extend(true, vMerged, vParamsObject1, vParamsObject2)
+  deepMergeParams(vMerged, vParamsObject1, vParamsObject2)
 
   // Merge query parameter
 
@@ -130,7 +177,7 @@ export function mergeSearchParams(pParams1, pParams2, pOptions = { returnMode: '
     if (vKeywords.trim() != '') vMerged.keywords = vKeywords
   }
 
-  if (pOptions.returnMode == 'string') return $.param(vMerged)
+  if (pOptions.returnMode == 'string') return serializeSearchParams(vMerged)
   return vMerged
 }
 

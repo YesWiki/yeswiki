@@ -6,9 +6,9 @@ use YesWiki\Core\Service\ThemeManager;
 $themeManager = $this->services->get(ThemeManager::class);
 $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 
-// ticket 16: jQuery and Bootstrap JS are no longer loaded globally. The only
-// jQuery left in core is the deferred form-builder island, which self-loads it
-// (templates/forms/forms_form.twig).
+// ticket 16: jQuery and Bootstrap JS are no longer loaded globally; ticket 26
+// removed the last jQuery island (the old form-builder admin page) — core ships
+// no jQuery at all.
 
 // on récupère le bon chemin pour le theme
 if ($themeManager->getUseFallbackTheme()) {

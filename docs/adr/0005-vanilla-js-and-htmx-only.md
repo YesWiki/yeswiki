@@ -21,6 +21,15 @@ it, and no Bootstrap file is loaded even there (the plugin's hardcoded `btn*`
 class names are styled by a scoped CSS shim). Ticket 26 tracks replacing the
 plugin and removing jQuery entirely.
 
+**Resolved (ticket 26, 2026-07-27): the island is gone.** The form designer
+was rewritten as a vanilla ES module (`javascripts/form-builder/`) editing
+the JSON form template directly; `javascripts/form-edit-template/`, the
+vendored `formBuilder`/`formbuilder-languages`/`jquery`/`jquery-ui-sortable`
+packages, and the scoped CSS shim were all deleted, along with the last
+stray `$.getJSON`/`$.extend`/`$.param` utility calls (replaced by `fetch`
+and `deepMergeParams`/`serializeSearchParams` in `javascripts/url.js`).
+Core ships zero jQuery, with no exceptions.
+
 The pre-existing Vue-based "dynamic entries index" subsystem (BazarTable/
 DynTable/BazarMap/BazarCalendar and the actions-builder app) was grandfathered
 as-is in ticket 24 (user-confirmed boundary) and stays: this ADR governs new

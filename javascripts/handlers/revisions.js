@@ -69,7 +69,7 @@ const app = createApp({
           time: this.selectedRevision.phpTime,
           includeDiff: true
         })
-        $.getJSON(url, (data) => {
+        fetch(url).then((response) => response.json()).then((data) => {
           this.selectedRevision.current_html = data.html
           this.selectedRevision.current_code = data.code
           this.selectedRevision.commit_diff_html = data.commit_diff_html

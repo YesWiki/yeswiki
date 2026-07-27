@@ -1,6 +1,6 @@
 // TODO better list and translatable
 import { parseCondition, parseKeywords, removeDiacritics, extractRegExp } from '../search.js'
-import { parseSearchParams, mergeSearchParams } from '../url.js'
+import { parseSearchParams, mergeSearchParams, serializeSearchParams } from '../url.js'
 
 const wordsToExcludeFromSearch = ['le', 'la', 'les', 'du', 'en', 'un', 'une']
 
@@ -35,7 +35,7 @@ export default {
 
       const vParams = mergeSearchParams(this.params, { keywords: search }, { returnMode: 'object', overrideKeywords: false, overrideQuery: false })
 
-      $.getJSON(wiki.url('?api/entries/bazarlist'), vParams, (data) => {
+      fetch(`${wiki.url('?api/entries/bazarlist')}&${serializeSearchParams(vParams)}`).then((response) => response.json()).then((data) => {
         this.isLoading = false
         const searchedIds = data.entries.map((entry) => entry[0])
         this.searchedEntries = entries.filter((entry) => searchedIds.includes(entry.id_fiche))

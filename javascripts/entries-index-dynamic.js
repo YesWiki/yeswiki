@@ -8,7 +8,7 @@ import BazarMap from './components/BazarMap.js'
 import { initEntryMaps } from './fields/map-field-map-entry.js'
 import { recursivelyCalculateRelations, deepGet } from './utils.js'
 import { updateExportLinks } from './export.js'
-import { updateHash, parseSearchParams, mergeSearchParams } from './url.js'
+import { updateHash, parseSearchParams, mergeSearchParams, serializeSearchParams } from './url.js'
 import ImageMixin from './entries-index-dynamic/image-mixin.js'
 import BazarSearch from './entries-index-dynamic/search-mixin.js'
 
@@ -431,7 +431,7 @@ const load = (domElement) => {
       this.pagination = parseInt(this.params.pagination, 10)
       this.mounted = true
       // Retrieve data asynchronoulsy
-      $.getJSON(wiki.url('?api/entries/bazarlist'), this.params, (data) => {
+      fetch(`${wiki.url('?api/entries/bazarlist')}&${serializeSearchParams(this.params)}`).then((response) => response.json()).then((data) => {
         // process the filters
         const filters = data.filters || []
         // Calculate the parents

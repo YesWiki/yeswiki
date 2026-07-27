@@ -445,6 +445,26 @@ function renderSettings() {
       const label = settingsEl.querySelector(`[data-fb-attribute="${name}"] > label`)
       if (label) label.textContent = text
     },
+    // rebuilds a select attribute's option list (the current value stays selected,
+    // and is kept as an extra option if the new list doesn't contain it)
+    setOptions: (name, options) => {
+      const control = settingsEl.querySelector(`select[data-fb-input="${name}"]`)
+      if (!control) return
+      const current = control.value || String(field.data[name] ?? '')
+      const entries = Object.entries(options)
+      if (current && !entries.some(([optionValue]) => optionValue === current)) {
+        entries.unshift([current, current])
+      }
+      control.innerHTML = ''
+      entries.forEach(([optionValue, optionLabel]) => {
+        const option = el(`<option value="${esc(optionValue)}">${esc(optionLabel)}</option>`)
+        if (current === String(optionValue)) option.selected = true
+        control.append(option)
+      })
+    },
+    // the settings-panel row of an attribute, for configs that add their own
+    // adjacent controls (e.g. the enum family's create/edit-list buttons)
+    getRow: (name) => settingsEl.querySelector(`[data-fb-attribute="${name}"]`),
     onChange: (name, callback) => {
       (changeCallbacks[name] = changeCallbacks[name] || []).push(callback)
     }

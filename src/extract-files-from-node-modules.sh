@@ -12,8 +12,6 @@ copy_js() { sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' "$1" > "$2"
 # Copy a CSS file while stripping sourceMappingURL comments
 copy_css() { sed '/^[[:space:]]*\/\*#[[:space:]]*sourceMappingURL=/d' "$1" > "$2"; }
 
-# Jquery
-mkdir -p javascripts/vendor/jquery && copy_js node_modules/jquery/dist/jquery.min.js javascripts/vendor/jquery/jquery.min.js
 # Fontawesome
 mkdir -p styles/vendor/fontawesome && cp -f -r node_modules/@fortawesome/fontawesome-free/webfonts styles/vendor/fontawesome
 mkdir -p styles/vendor/fontawesome/css && copy_css node_modules/@fortawesome/fontawesome-free/css/all.min.css styles/vendor/fontawesome/css/all.min.css
@@ -64,15 +62,6 @@ mkdir -p javascripts/vendor/vditor/dist/js/i18n &&
 	for lang in en_US es_ES fr_FR pt_BR; do
 		copy_js "node_modules/vditor/dist/js/i18n/$lang.js" "javascripts/vendor/vditor/dist/js/i18n/$lang.js"
 	done
-
-# formBuilder
-mkdir -p javascripts/vendor/formBuilder && copy_js node_modules/formBuilder/dist/form-builder.min.js javascripts/vendor/formBuilder/form-builder.min.js
-
-# formbuilder-languages
-mkdir -p javascripts/vendor/formbuilder-languages && cp -f node_modules/formbuilder-languages/*.lang javascripts/vendor/formbuilder-languages
-
-#jquery-ui-sortable
-mkdir -p javascripts/vendor/jquery-ui-sortable && copy_js node_modules/jquery-ui-sortable/jquery-ui.min.js javascripts/vendor/jquery-ui-sortable/jquery-ui.min.js
 
 # fullcalendar
 mkdir -p styles/vendor/fullcalendar &&

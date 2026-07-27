@@ -1,4 +1,4 @@
-import { selectConf } from './commons/attributes.js'
+import { selectConf, enumEditorSetup } from './commons/attributes.js'
 
 export default {
   field: {
@@ -25,7 +25,8 @@ export default {
     }
   },
   defaultIdentifier: 'bf_choice',
-  advancedAttributes: ['read_access', 'write_access', 'queries', 'display_method']
+  advancedAttributes: ['read_access', 'write_access', 'queries', 'display_method'],
   // disabledAttributes: [],
+  editorSetup: enumEditorSetup
   // renderInput(fieldData) {},
 }

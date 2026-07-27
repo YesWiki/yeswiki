@@ -40,7 +40,6 @@ export default defineConfig([globalIgnores([
   languageOptions: {
     globals: {
       ...globals.browser,
-      ...globals.jquery,
       wiki: 'writable',
       Vue: 'readable',
       Sortable: 'readable',

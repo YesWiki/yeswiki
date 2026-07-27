@@ -45,11 +45,6 @@
   resolved "https://registry.yarnpkg.com/@chevrotain/types/-/types-11.1.2.tgz#e83a1a2704f0c5e49e7592b214031a0f4a34d7e5"
   integrity sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==
 
-"@draggable/i18n@1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@draggable/i18n/-/i18n-1.1.1.tgz#a7e076137e4cf946d6c4cfec5f6daaa371c7cf63"
-  integrity sha512-fJ9F2QUg4Nzac1o/S/d/1dOBJS2tHrF1aEOdS6B9mIb8a+xx3+zJ1rT0BX1jsRFSpxiKuibOdUjLPNUGHYTb5Q==
-
 "@eslint-community/eslint-utils@^4.8.0":
   version "4.9.1"
   resolved "https://registry.yarnpkg.com/@eslint-community/eslint-utils/-/eslint-utils-4.9.1.tgz#4e90af67bc51ddee6cdef5284edf572ec376b595"
@@ -1700,21 +1695,6 @@ for-each@^0.3.3, for-each@^0.3.5:
   dependencies:
     is-callable "^1.2.7"
 
-formBuilder@3.7.3:
-  version "3.7.3"
-  resolved "https://registry.yarnpkg.com/formBuilder/-/formBuilder-3.7.3.tgz#65160f0269efe28f8cc9a201811861e964d276fd"
-  integrity sha512-prSeP4i3rZY686G8Cgh4pfTYk2YUU/x+NrXwBUBIIdDi0W8pOPCdzp4DoypmRiF+GX+Z7KVXo8foF/Yf4i84zw==
-  dependencies:
-    jquery ">=3.4.1"
-    jquery-ui-sortable "*"
-
-formbuilder-languages@^1.1.0:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/formbuilder-languages/-/formbuilder-languages-1.2.1.tgz#44f8d1240e59f0844323ec008e43d4fd1eb746d9"
-  integrity sha512-yBKwGiX7H+T7N/lQu6vdPDHAw0zNSw3KKusdX/nPnB0PC7S7VN3fS96wkrlvkJ3vbwqv81YQ3CrL3NL5VB5oew==
-  dependencies:
-    "@draggable/i18n" "1.1.1"
-
 fsevents@2.3.2:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"
@@ -2133,20 +2113,10 @@ isexe@^2.0.0:
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
   integrity sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==
 
-jquery-ui-sortable@*, jquery-ui-sortable@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/jquery-ui-sortable/-/jquery-ui-sortable-1.0.0.tgz#0ee062ce02b29b36585ede3a3e0ddde666060f96"
-  integrity sha512-7xAUWoEJ/jHoj48ei8CCUtiad2uM3ie3IR2b3KB0Mpmb54IbBxzVb5vtrj0zqtd0GNQDImx+BPZml9QmK2EL3w==
-
-"jquery@>=3.4.0 <4.0.0", jquery@^3.5.1, jquery@^3.7.1:
+"jquery@>=3.4.0 <4.0.0", jquery@^3.7.1:
   version "3.7.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.7.1.tgz#083ef98927c9a6a74d05a6af02806566d16274de"
   integrity sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==
-
-jquery@>=3.4.1:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-4.0.0.tgz#95c33ac29005ff72ec444c5ba1cf457e61404fbb"
-  integrity sha512-TXCHVR3Lb6TZdtw1l3RTLf8RBWVGexdxL6AC8/e0xZKEpBflBsjh9/8LXw+dkNFuOyW9B7iB3O1sP7hS0Kiacg==
 
 js-yaml@^4.1.1:
   version "4.2.0"

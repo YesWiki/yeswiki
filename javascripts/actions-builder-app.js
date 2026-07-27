@@ -307,7 +307,7 @@ export const appConfig = {
               params[`id[${index}]`] = id
             })
           }
-          $.getJSON(wiki.url('?wiki/json', params), (data) => {
+          fetch(wiki.url('?wiki/json', params)).then((response) => response.json()).then((data) => {
             this.loadingForms = this.loadingForms.filter((e) => !idsToSearch.includes(e))
             // keep ? because standart http rewrite waits for CamelCase and 'root' is not
             if (Array.isArray(data) && data[0] != undefined) {
