@@ -86,9 +86,6 @@ class AclService
     }
 
     /**
-     * @param string $tag the page's tag
-     */
-    /**
      * Saves several privileges in ONE metadata revision (ACLs are versioned with
      * content, ADR-0002 -- privilege-by-privilege stamping would pile up a revision
      * per privilege, e.g. at entry creation).

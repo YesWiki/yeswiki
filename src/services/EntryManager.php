@@ -646,17 +646,13 @@ class EntryManager
         $data = json_decode($body, true);
         if (is_iterable($data)) {
             foreach (self::LEGACY_ENTRY_KEYS as $legacyKey => $key) {
-                if ($legacyKey === 'bf_titre') {
-                    // bf_titre stays as ordinary field data; it only ALSO feeds `title`
-                    if (array_key_exists($legacyKey, $data) && !array_key_exists($key, $data)) {
-                        $data[$key] = $data[$legacyKey];
-                    }
-                    continue;
-                }
                 if (array_key_exists($legacyKey, $data) && !array_key_exists($key, $data)) {
                     $data[$key] = $data[$legacyKey];
                 }
-                unset($data[$legacyKey]);
+                // bf_titre stays as ordinary field data; it only ALSO feeds `title`
+                if ($legacyKey !== 'bf_titre') {
+                    unset($data[$legacyKey]);
+                }
             }
         }
 

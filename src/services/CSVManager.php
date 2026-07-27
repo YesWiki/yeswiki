@@ -52,19 +52,17 @@ class CSVManager
         foreach ($form['prepared'] as $field) {
             $propName = $field->getPropertyName();
             if (!empty($propName)) {
-                {
-                    // *** standard case ****
-                    $fullHeader = $field->getLabel();
-                    if (!empty($fullHeader)) {
-                        if ($field->isRequired()) {
-                            $fullHeader .= ' *';
-                        }
-
-                        $headers[$propName] = [
-                            'field' => $field,
-                            'fullHeader' => $fullHeader,
-                        ];
+                // *** standard case ****
+                $fullHeader = $field->getLabel();
+                if (!empty($fullHeader)) {
+                    if ($field->isRequired()) {
+                        $fullHeader .= ' *';
                     }
+
+                    $headers[$propName] = [
+                        'field' => $field,
+                        'fullHeader' => $fullHeader,
+                    ];
                 }
             }
         }
@@ -662,21 +660,16 @@ class CSVManager
                 }
             }
         }
-        // append entry's data
-        if (!empty($entry['bf_titre'])) {
-            $entry['tag'] = genere_nom_wiki($entry['bf_titre']);
-            $entry['form_id'] = $formId;
-            $entry['created_at'] = date('Y-m-d H:i:s', $entry['datetime_create'] ?? time());
-            $entry['updated_at'] = date('Y-m-d H:i:s', $entry['datetime_latest'] ?? time());
-            if ($this->wiki->UserIsAdmin()) {
-                $entry['status'] = 1;
-            } else {
-                $entry['status'] = $this->wiki->config['BAZ_ETAT_VALIDATION'];
-            }
+        // append entry's data -- no tag here: EntryManager's pipeline computes the
+        // title from the form's entry_title_template and generates the slug tag
+        // (ADR-0010); bf_titre is just a field the template may reference
+        $entry['form_id'] = $formId;
+        $entry['created_at'] = date('Y-m-d H:i:s', $entry['datetime_create'] ?? time());
+        $entry['updated_at'] = date('Y-m-d H:i:s', $entry['datetime_latest'] ?? time());
+        if ($this->wiki->UserIsAdmin()) {
+            $entry['status'] = 1;
         } else {
-            $this->errormsg[] = 'Empty $entry[\'bf_titre\'] in ' . get_class($this) . ', line ' . __LINE__;
-
-            return null;
+            $entry['status'] = $this->wiki->config['BAZ_ETAT_VALIDATION'];
         }
         foreach ($skipFields as $field) {
             if (isset($entry[$field])) {

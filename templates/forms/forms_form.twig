@@ -214,6 +214,10 @@
           {{ _t('BAZ_FORM_EDIT_USERS_WIKINI_AUTOUPDATE_MAIL') }}
         </label>
       </div>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST') }}</label>
+        <input class="yw-input" name="entry_creates_user[mailing_list]" type="text" value="{{ form.entry_creates_user.mailing_list ?? '' }}" />
+      </div>
     </div>
 
     {# ---- Bookmarklet (entry_bookmarklet; the install widget lives on the forms table) ---- #}

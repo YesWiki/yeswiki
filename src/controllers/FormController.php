@@ -7,6 +7,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Field\MapField;
 use YesWiki\Core\Service\ActivityPubService;
 use YesWiki\Core\Service\FormManager;
+use YesWiki\Core\Service\FormPropertiesService;
 use YesWiki\Core\Service\Guard;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\WebfingerService;
@@ -189,13 +190,13 @@ class FormController extends YesWikiController
         // entry title would come out empty
         $titleTemplate = trim((string)($this->getRequest()->request->get('entry_title_template') ?? $form['entry_title_template'] ?? ''));
         if ($titleTemplate === '') {
-            $titleTemplate = '{{bf_titre}}';
+            $titleTemplate = FormPropertiesService::DEFAULT_TITLE_TEMPLATE;
         }
-        preg_match_all('#{{(.*)}}#U', $titleTemplate, $matches);
+        $referenced = $this->getService(FormPropertiesService::class)->referencedFieldNames($titleTemplate);
         $fieldNames = array_filter(array_map(function ($field) {
             return $field->getPropertyName();
         }, $form['prepared']));
-        $referencesExistingField = !empty(array_intersect($matches[1], $fieldNames));
+        $referencesExistingField = !empty(array_intersect($referenced, $fieldNames));
         if (!$referencesExistingField) {
             Flash::error(_t('BAZ_FORM_NEED_TITLE'));
 

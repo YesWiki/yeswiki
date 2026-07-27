@@ -351,6 +351,7 @@ class ExternalBazarService
                         if (is_string($vEntry)) {
                             throw new ExternalBazarServiceException('Entry should not be a string : ' . $vEntry);
                         }
+                        $vEntry = $this->normalizeRemoteEntry($vEntry);
                         $vEntry['-is-external-'] = '1';
                         // save external data with key 'external-data' because '-' is not used for name
                         $vEntry['external-data'] = [
@@ -713,6 +714,7 @@ class ExternalBazarService
             $maxUpdatedDate = null;
 
             foreach ($entries as $entry) {
+                $entry = is_array($entry) ? $this->normalizeRemoteEntry($entry) : $entry;
                 if (
                     !empty($entry['updated_at'])
                     && (
@@ -763,6 +765,25 @@ class ExternalBazarService
      *
      * @return array $form
      */
+    /**
+     * Remote entries speak two dialects too: pre-ectoplasme wikis serve id_fiche /
+     * id_typeannonce / date_* keys. Alias them to the renamed ones (the same
+     * insurance EntryManager::LEGACY_ENTRY_KEYS provides for local legacy bodies).
+     */
+    private function normalizeRemoteEntry(array $entry): array
+    {
+        foreach (EntryManager::LEGACY_ENTRY_KEYS as $legacyKey => $key) {
+            if (array_key_exists($legacyKey, $entry) && !array_key_exists($key, $entry)) {
+                $entry[$key] = $entry[$legacyKey];
+            }
+            if ($legacyKey !== 'bf_titre') {
+                unset($entry[$legacyKey]);
+            }
+        }
+
+        return $entry;
+    }
+
     private function prepareExtForm(int $localFormId, string $url, array $form): array
     {
         // Remote wikis speak two dialects: pre-ectoplasme ones serve `bn_*` keys and

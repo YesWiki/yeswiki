@@ -396,7 +396,7 @@ class FormManager
             'description' => $data['description'] ?? '',
             // entry_title_template can never be empty (ADR-0010): the historical
             // implicit convention (a visitor-typed bf_titre field) is its default
-            'entry_title_template' => trim((string)($data['entry_title_template'] ?? '')) ?: '{{bf_titre}}',
+            'entry_title_template' => trim((string)($data['entry_title_template'] ?? '')) ?: FormPropertiesService::DEFAULT_TITLE_TEMPLATE,
             'sem_template' => $data['sem_template'] ?? '',
             'sem_reverse_template' => $data['sem_reverse_template'] ?? '',
             'only_one_entry' => (isset($data['only_one_entry']) && $data['only_one_entry'] === 'Y') ? 'Y' : 'N',
@@ -405,11 +405,7 @@ class FormManager
         ];
         // the other entry_* form properties are included when present, so update()'s
         // array_merge over the existing body leaves unposted ones untouched
-        foreach ([
-            'entry_read_access', 'entry_write_access', 'entry_comment_access',
-            'entry_permit_activate_comments', 'entry_metadatas', 'entry_creates_user',
-            'entry_bookmarklet',
-        ] as $property) {
+        foreach (FormPropertiesService::OPTIONAL_PROPERTIES as $property) {
             if (isset($data[$property])) {
                 $body[$property] = $data[$property];
             }
@@ -539,11 +535,7 @@ class FormManager
 
         // a posted-but-cleared entry_* property (null/''/false) is REMOVED from the
         // body -- absence in the POST leaves the stored value untouched
-        foreach ([
-            'entry_read_access', 'entry_write_access', 'entry_comment_access',
-            'entry_permit_activate_comments', 'entry_metadatas', 'entry_creates_user',
-            'entry_bookmarklet',
-        ] as $property) {
+        foreach (FormPropertiesService::OPTIONAL_PROPERTIES as $property) {
             if (array_key_exists($property, $data) && in_array($data[$property], [null, '', false], true)) {
                 unset($body[$property]);
             }

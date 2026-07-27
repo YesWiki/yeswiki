@@ -28,6 +28,16 @@ class FormPropertiesService
     public const COMMENT_YES = 'oui';
     public const COMMENT_NO = 'non';
 
+    /** The historical implicit title convention: a visitor-typed bf_titre field. */
+    public const DEFAULT_TITLE_TEMPLATE = '{{bf_titre}}';
+
+    /** Every entry_* form property except entry_title_template (which is required). */
+    public const OPTIONAL_PROPERTIES = [
+        'entry_read_access', 'entry_write_access', 'entry_comment_access',
+        'entry_permit_activate_comments', 'entry_metadatas', 'entry_creates_user',
+        'entry_bookmarklet',
+    ];
+
     protected $wiki;
     protected $params;
     protected $aclService;
@@ -63,7 +73,7 @@ class FormPropertiesService
         $template = trim((string)($form['entry_title_template'] ?? ''));
         if ($template === '') {
             // pre-migration safety net: behave like the historical default
-            $template = '{{bf_titre}}';
+            $template = self::DEFAULT_TITLE_TEMPLATE;
         }
 
         $value = $this->getService(HtmlPurifierService::class)->cleanHTML($template);
@@ -71,9 +81,8 @@ class FormPropertiesService
 
         // TODO improve import detection
         if (!isset($GLOBALS['_BAZAR_']['provenance']) || $GLOBALS['_BAZAR_']['provenance'] !== 'import') {
-            preg_match_all('#{{(.*)}}#U', $value, $matches);
             $formId = $entry['form_id'] ?? null;
-            foreach ($matches[1] as $fieldName) {
+            foreach ($this->referencedFieldNames($value) as $fieldName) {
                 $field = $formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
                 if ($field instanceof EnumField || $field instanceof FileField) {
                     $fieldValue = $field->getValue($entry);
@@ -124,6 +133,14 @@ class FormPropertiesService
         }
 
         return trim($value);
+    }
+
+    /** The {{field}} names a title template references. */
+    public function referencedFieldNames(string $titleTemplate): array
+    {
+        preg_match_all('#{{(.*)}}#U', $titleTemplate, $matches);
+
+        return $matches[1];
     }
 
     /**
