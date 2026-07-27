@@ -14,9 +14,9 @@ use YesWiki\Wiki;
  * To create a before callback, use same file name prefixed by "__"
  * To create an after callback, use same file name suffixed by "__"
  * For example:
- *  1) tools/bazar/actions/BazarShowAction.php
- *  2) tools/attach/actions/__BazarShowAction.php
- *  3) tools/security/actions/BazarShowAction__.php
+ *  1) extensions/myext/actions/BazarShowAction.php
+ *  2) extensions/other/actions/__BazarShowAction.php
+ *  3) extensions/third/actions/BazarShowAction__.php
  * When we run the action 'bazarshow', all 3 files will be executed in following order : 2,1,3.
  */
 class Performer
@@ -131,7 +131,7 @@ class Performer
         require_once $object['filePath'];
         $className = $object['baseName'];
         /* extract extension name from path to allow namespace */
-        if (preg_match('/(?:tools[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/][a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
+        if (preg_match('/(?:extensions[\\\\\\/]([A-Za-z0-9_\\-]+)|(custom))[\\\\\/][a-zA-Z0-9_\\\\\/\\-]+.php$/', $object['filePath'], $matches)) {
             $extensionName = empty($matches[1]) ? $matches[2] : $matches[1];
             $classNameWithNamespace = 'YesWiki\\' . StringUtilService::folderToNamespace($extensionName) . '\\' . $object['baseName'];
             if (class_exists($classNameWithNamespace)) {

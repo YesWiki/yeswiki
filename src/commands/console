@@ -43,7 +43,8 @@ $application = new Application();
 foreach ([
         'core' => YESWIKI_SOURCE_DIR . '/src/commands/*.php',
         'custom' => YESWIKI_INSTANCE_DIR . '/custom/commands/*.php',
-        'tools' => YESWIKI_SOURCE_DIR . '/tools/*/commands/*.php',
+        'extensions' => YESWIKI_SOURCE_DIR . '/extensions/*/commands/*.php',
+        'custom-extensions' => YESWIKI_INSTANCE_DIR . '/custom/extensions/*/commands/*.php',
     ] as $type => $search) {
     $files = glob($search);
     foreach ($files as $filePath) {
@@ -55,7 +56,8 @@ foreach ([
             case 'custom':
                 $className = "\\YesWiki\\Custom\\Commands\\$filename";
                 break;
-            case 'tools':
+            case 'extensions':
+            case 'custom-extensions':
                 $toolName = ucfirst(strtolower(basename(dirname(dirname($filePath)))));
                 $className = "\\YesWiki\\$toolName\\Commands\\$filename";
                 break;

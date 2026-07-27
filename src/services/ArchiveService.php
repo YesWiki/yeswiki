@@ -25,8 +25,8 @@ class ArchiveService
         'styles',
         'templates',
         'tests',
+        'extensions',
         'themes',
-        'tools',
         'vendor',
     ];
 

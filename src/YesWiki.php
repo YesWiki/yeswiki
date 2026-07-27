@@ -1598,10 +1598,14 @@ class Wiki
      */
     private function loadExtensions() // make it private since once services are compiled, they cannot be modified - @YvesGufflet : contact@yvesgufflet.fr
     {
-        // absolute paths: shared tools/docs come from the source tree, custom/ belongs to the
-        // instance - everything downstream ($pluginBase . 'file' concatenations) works unchanged
-        $this->loadExtensionsFromDir(YESWIKI_SOURCE_DIR . '/tools/');
-        $this->loadExtensionsFromDir(YESWIKI_INSTANCE_DIR . '/custom/tools/');
+        // absolute paths: shared extensions come from the source tree (farm-wide, an
+        // instance cannot write there), custom/extensions/ belongs to the instance -
+        // everything downstream ($pluginBase . 'file' concatenations) works unchanged.
+        // Loaded shared-first so an instance-local custom/extensions/{ext} shadows the
+        // shared extensions/{ext} in the array_merge (ticket 25, formerly tools/ and
+        // custom/tools/ with the exact same precedence).
+        $this->loadExtensionsFromDir(YESWIKI_SOURCE_DIR . '/extensions/');
+        $this->loadExtensionsFromDir(YESWIKI_INSTANCE_DIR . '/custom/extensions/');
         // TODO refactor as custom and actionsbuilder are not extensions
         $this->extensions['custom'] = YESWIKI_INSTANCE_DIR . '/custom/'; // Will load custom/actions, custom/handlers etc...
         $this->extensions['actionsbuilder'] = YESWIKI_SOURCE_DIR . '/docs/actions/'; // Will load langs inside docs/actions/lang

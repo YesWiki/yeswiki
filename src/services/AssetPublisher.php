@@ -18,7 +18,7 @@ namespace YesWiki\Core\Service;
  *    it. Because published paths preserve the original directory layout, relative references
  *    inside CSS (@import, url(...) fonts/images) and companion files loaded relative to a
  *    script's URL resolve to sibling published paths and get materialized the same way on
- *    first request. Hardcoded template references to source paths (tools/x/presentation/...)
+ *    first request. Hardcoded template references to source paths (extensions/x/presentation/...)
  *    are covered by the direct-path branch.
  */
 class AssetPublisher
@@ -29,7 +29,7 @@ class AssetPublisher
         'styles/',
         'javascripts/',
         'themes/',
-        'tools/',
+        'extensions/',
         'custom/',
         'docs/',
     ];

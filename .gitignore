@@ -15,7 +15,7 @@
 !templates/
 !tests/
 !themes/
-!tools/
+!extensions/
 !docker/
 
 # Composer
@@ -55,6 +55,9 @@ themes/*
 !themes/yeswiki
 custom/*
 !custom/.gitkeep
+!custom/extensions
+custom/extensions/*
+!custom/extensions/.gitkeep
 private/*
 !private/.htaccess
 !private/backups
@@ -63,41 +66,12 @@ private/backups/*
 !private/backups/README.md
 
 # tools
-tools/*
-!tools/README.md
-!tools/aceditor/*
-!tools/aceditor
-!tools/aceditor/*
-!tools/attach
-!tools/attach/*
-!tools/attach/libs/vendor
-!tools/contact
-!tools/contact/*
-!tools/despam
-!tools/despam/*
-!tools/hashcash
-!tools/hashcash/*
-!tools/lang
-!tools/lang/*
-!tools/login
-!tools/login/*
-!tools/nospam
-!tools/nospam/*
-!tools/progressBar
-!tools/progressBar/*
-!tools/rss
-!tools/rss/*
-!tools/security
-!tools/security/*
-!tools/tableau
-!tools/tableau/*
-!tools/tags
-!tools/tags/*
-!tools/templates
-!tools/templates/*
-!tools/toc
-!tools/toc/*
-!tools/helloworld
+# extensions (ticket 25, formerly tools/): the shared dir ships only the
+# helloworld sample; community extensions installed there stay untracked
+extensions/*
+!extensions/README.md
+!extensions/helloworld
+!extensions/helloworld/**
 
 # Macintosh OS
 .DS_Store

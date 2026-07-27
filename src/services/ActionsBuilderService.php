@@ -3,7 +3,6 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\Yaml\Yaml;
-use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Wiki;
 
 class ActionsBuilderService
@@ -30,7 +29,7 @@ class ActionsBuilderService
         $data = baz_forms_and_lists_ids();
         // Loads various Yaml file
         $docFiles = glob('docs/actions/*.yaml');
-        $extensionDocFiles = glob(YESWIKI_SOURCE_DIR . '/tools/*/actions/documentation.yaml');
+        $extensionDocFiles = glob(YESWIKI_SOURCE_DIR . '/extensions/*/actions/documentation.yaml');
         $customDocFiles = glob('custom/actions/documentation.yaml');
         $docFiles = array_merge($docFiles, $extensionDocFiles);
         $docFiles = array_merge($docFiles, $customDocFiles);
@@ -38,9 +37,9 @@ class ActionsBuilderService
         foreach ($docFiles as $filePath) {
             $filename = pathinfo($filePath)['filename'];
             if ($filename == 'documentation') {
-                // find key from filePath between tools and actions
+                // find key from filePath between extensions and actions
                 $matches = [];
-                if (preg_match('/tools(?:\\/|\\\)([^\/]*)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
+                if (preg_match('/extensions(?:\\/|\\\)([^\/]*)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
                     || preg_match('/(custom)(?:\\/|\\\)actions(?:\\/|\\\)documentation.yaml/', $filePath, $matches)
                 ) {
                     $key = $matches[1];

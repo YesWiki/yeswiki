@@ -27,7 +27,7 @@ class TemplateEngine
         $this->csrfTokenManager = $csrfTokenManager;
         // Default paths (main namespace): the instance dir then the source tree. There are no
         // templates at either root, but it's needed to call relative path like
-        // render('tools/bazar/templates/...') - resolved instance-first so custom overrides win
+        // render('extensions/myext/templates/...') - resolved instance-first so custom overrides win
         $this->twigLoader = new \Twig\Loader\FilesystemLoader(['./', YESWIKI_SOURCE_DIR]);
 
         // Custom Extension, so we can create action and handlers inside custom folder
@@ -43,7 +43,7 @@ class TemplateEngine
 
             $paths[] = 'custom/templates/' . $extensionName . '/templates/';
 
-            $paths[] = "custom/tools/$extensionName/templates";
+            $paths[] = "custom/extensions/$extensionName/templates";
 
             $paths[] = YESWIKI_SOURCE_DIR . '/templates/' . $extensionName . '/templates/';
             $paths[] = YESWIKI_SOURCE_DIR . '/templates/' . $extensionName . '/';
@@ -58,14 +58,14 @@ class TemplateEngine
 
             // Ability to override an extension template from another extension
             foreach ($this->wiki->extensions as $otherExtensionName => $otherExtensionPath) {
-                $paths[] = "custom/tools/$otherExtensionName/templates/$extensionName/";
+                $paths[] = "custom/extensions/$otherExtensionName/templates/$extensionName/";
                 $paths[] = $otherExtensionPath . "templates/$extensionName/";
             }
             // Standard path for an extension template
-            $paths[] = YESWIKI_SOURCE_DIR . "/tools/$extensionName/templates/";
+            $paths[] = YESWIKI_SOURCE_DIR . "/extensions/$extensionName/templates/";
             // Legacy directories, should not be used anymore for new templates. Maybe
             // of them are not used by anybody, but just in case we keep them for backward compatibility
-            $paths[] = YESWIKI_SOURCE_DIR . "/tools/$extensionName/presentation/templates/";
+            $paths[] = YESWIKI_SOURCE_DIR . "/extensions/$extensionName/presentation/templates/";
 
             foreach ($paths as $path) {
                 if (file_exists($path)) {

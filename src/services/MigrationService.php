@@ -41,7 +41,7 @@ class MigrationService
         $tripleStore = $this->wiki->services->get(TripleStore::class);
         $completedMigrations = $this->getCompletedMigrations();
 
-        // Get all Php files in migrations folder (in root or in any tools)
+        // Get all Php files in migrations folder (in root or in any extension)
         // Run the file if it was not already run in the past
         $folders = array_merge([YESWIKI_SOURCE_DIR . '/src/'], $this->wiki->extensions); // root folder + extensions folders
         foreach ($folders as $folder) {
@@ -70,7 +70,7 @@ class MigrationService
                 foreach ($vFiles as $vFile) {
                     $vFilename = $vFile . '.php';
 
-                    $filePath = $folder . $vFilename; // tools/publication/2024040500000_TestMigration.php
+                    $filePath = $folder . $vFilename; // extensions/publication/2024040500000_TestMigration.php
                     require_once $filePath;
 
                     preg_match("/^([\d]*)/", $vFile, $vMatches);

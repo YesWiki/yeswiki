@@ -56,7 +56,7 @@ class YesWikiKernel extends Kernel
     public function getCacheDir(): string
     {
         // keyed on the instance dir (cwd, YesWiki's convention), NOT getProjectDir(): with a
-        // farm several instances share the sources but each has its own config/tools, so the
+        // farm several instances share the sources but each has its own config/extensions, so the
         // compiled container must live in the instance's cache/, never in the shared core's
         return getcwd() . '/cache/container/' . $this->environment;
     }
@@ -106,12 +106,12 @@ class YesWikiKernel extends Kernel
 
     /**
      * Invalidate the compiled container cache when: an admin setting is saved (yeswiki.config.php
-     * is rewritten), a tool is installed/removed (tools/ or custom/ itself gains or loses an
-     * entry), or a tool is enabled/disabled/reconfigured (its desc.xml/config.yaml is rewritten).
+     * is rewritten), an extension is installed/removed (extensions/ or custom/ itself gains or
+     * loses an entry), or one is enabled/disabled/reconfigured (its desc.xml/config.yaml is rewritten).
      *
      * Deliberately not a Symfony DirectoryResource: that recurses the entire tree on every
      * freshness check (isFresh() runs every request here, see the constructor), which would be
-     * far too expensive against tools/ and custom/. FileResource does a single filemtime() call
+     * far too expensive against extensions/ and custom/. FileResource does a single filemtime() call
      * and works on directories too - editing/adding/removing an immediate child of a directory
      * bumps that directory's own mtime, which is all we need to detect here. Editing an existing
      * config.yaml is already covered for free: YamlFileLoader auto-registers a FileResource for
@@ -159,15 +159,15 @@ class YesWikiKernel extends Kernel
     {
         $resources = [];
 
-        // shared tools live in the source tree ($projectDir), custom/ belongs to the instance
-        foreach (['tools' => $projectDir, 'custom' => YESWIKI_INSTANCE_DIR] as $extensionsRoot => $rootDir) {
+        // shared extensions live in the source tree ($projectDir), custom/ belongs to the instance
+        foreach (['extensions' => $projectDir, 'custom' => YESWIKI_INSTANCE_DIR] as $extensionsRoot => $rootDir) {
             $dir = $rootDir . '/' . $extensionsRoot;
             if (is_dir($dir)) {
                 $resources[] = new FileResource($dir);
             }
         }
 
-        foreach ([$projectDir . '/tools/*/desc.xml', YESWIKI_INSTANCE_DIR . '/custom/tools/*/desc.xml'] as $pattern) {
+        foreach ([$projectDir . '/extensions/*/desc.xml', YESWIKI_INSTANCE_DIR . '/custom/extensions/*/desc.xml'] as $pattern) {
             foreach (glob($pattern) ?: [] as $descFile) {
                 $resources[] = new FileResource($descFile);
             }

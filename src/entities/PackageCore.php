@@ -12,7 +12,7 @@ class PackageCore extends Package
         '.',
         '..',
         'custom',
-        'tools',
+        'extensions',
         'files',
         'cache',
         'themes',
@@ -134,8 +134,8 @@ class PackageCore extends Package
 
     public function upgradeTools()
     {
-        $src = $this->extractionPath . '/tools';
-        $desPath = $this->localPath . '/tools';
+        $src = $this->extractionPath . '/extensions';
+        $desPath = $this->localPath . '/extensions';
         $file2ignore = ['.', '..'];
         if ($res = opendir($src)) {
             while (($file = readdir($res)) !== false) {

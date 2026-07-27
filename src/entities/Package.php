@@ -64,8 +64,8 @@ abstract class Package extends Files
             'lang',
             'src',
             'templates',
+            'extensions',
             'themes',
-            'tools',
             'vendor',
         ];
 

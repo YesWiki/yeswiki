@@ -30,10 +30,13 @@ spl_autoload_register(function ($className) {
                 default:
                     $extension = strtolower($matches[1]);
 
-                    if (is_dir("custom/tools/{$extension}")) {
-                        $basePath = "custom/tools/{$extension}";
+                    // instance-local custom/extensions/{ext} shadows the shared
+                    // extensions/{ext} (ticket 25, same precedence as the old
+                    // custom/tools/ vs tools/ lookup)
+                    if (is_dir("custom/extensions/{$extension}")) {
+                        $basePath = "custom/extensions/{$extension}";
                     } else {
-                        $basePath = $sourceDir . "/tools/{$extension}";
+                        $basePath = $sourceDir . "/extensions/{$extension}";
                     }
                     break;
             }
