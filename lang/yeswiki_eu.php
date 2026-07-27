@@ -2015,4 +2015,15 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
+
+    // rss (ticket 22, formerly tools/rss)
+    'RSS_CHANGE_OF' => 'Honen aldaketa',
+    'RSS_HISTORY' => 'historikoa',
+    'RSS_HIDDEN_CONTENT' => 'Ezkutuko edukia',
+    'RSS_ON_DATE' => 'le',
+    'RSS_COMPARISON_OF' => 'Konparazioa',
+    'RSS_TO' => 'à',
+    'RSS_ADDS' => 'Eransketak',
+    'RSS_DELETIONS' => 'Ezabapenak',
+    'RSS_NO_DIFF' => 'Desberdintasunik ez',
 ];

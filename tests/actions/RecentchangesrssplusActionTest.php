@@ -11,7 +11,7 @@ require_once 'tests/YesWikiTestCase.php';
 
 /**
  * Regression test for anonymous disclosure via the legacy {{recentchangesrssplus}}
- * action (tools/rss/actions/recentchangesrssplus.php): it queried every latest,
+ * action (actions/recentchangesrssplus.php, formerly tools/rss): it queried every latest,
  * non-comment page and wrote a 500-char body excerpt into the public RSS feed with
  * no per-page read-ACL check, unlike its modern sibling RecentChangesRssAction.php.
  * The fix keeps every page's entry in the feed (so the feed still reflects all
@@ -40,7 +40,7 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
 
         try {
             try {
-                $wiki->runFileInBuffer('tools/rss/actions/recentchangesrssplus.php', $vars);
+                $wiki->runFileInBuffer('actions/recentchangesrssplus.php', $vars);
             } catch (ExitException $e) {
                 // recentchangesrssplus.php ends with $this->exit(), which throws in CLI;
                 // $output was already populated by reference before the throw.

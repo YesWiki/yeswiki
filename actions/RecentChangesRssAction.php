@@ -1,7 +1,5 @@
 <?php
 
-namespace YesWiki\Rss;
-
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
@@ -21,7 +19,7 @@ class RecentChangesRssAction extends YesWikiAction
             return _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ' .
                 $this->wiki->Link($this->wiki->getPageTag(), 'xml', null, $this->wiki->Href('xml'));
         }
-        require_once YESWIKI_SOURCE_DIR . '/tools/rss/libs/rssdiff.function.php';
+        require_once YESWIKI_SOURCE_DIR . '/src/rss.functions.php';
         $max = 50;
         if ($user = $this->wiki->GetUser()) {
             $max = $user['changescount'];
@@ -113,7 +111,7 @@ class RecentChangesRssAction extends YesWikiAction
         $description = empty($decription) ? $yeswikiName : $description;
 
         return $this->render(
-            '@rss/recent-changes-rss.twig',
+            '@core/rss/recent-changes-rss.twig',
             compact(['xmlUrl', 'yeswikiName', 'link', 'items', 'yesWikiRevision', 'description'])
         );
     }

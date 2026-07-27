@@ -1971,4 +1971,15 @@ return [
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
+
+    // rss (ticket 22, formerly tools/rss)
+    'RSS_CHANGE_OF' => 'Modificación de',
+    'RSS_HISTORY' => 'histórico',
+    'RSS_HIDDEN_CONTENT' => 'contenido oculto',
+    'RSS_ON_DATE' => 'el',
+    'RSS_COMPARISON_OF' => 'Comparación de',
+    'RSS_TO' => 'a',
+    'RSS_ADDS' => 'Añadidos',
+    'RSS_DELETIONS' => 'supresiones',
+    'RSS_NO_DIFF' => 'Ninguna diferencia',
 ];

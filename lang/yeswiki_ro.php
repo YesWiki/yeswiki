@@ -2023,4 +2023,15 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
+
+    // rss (ticket 22, formerly tools/rss)
+    'RSS_CHANGE_OF' => 'Modificare a',
+    'RSS_HISTORY' => 'istoric',
+    'RSS_HIDDEN_CONTENT' => 'Conținut ascuns',
+    'RSS_ON_DATE' => 'les',
+    'RSS_COMPARISON_OF' => 'Comparație a',
+    'RSS_TO' => 'a',
+    'RSS_ADDS' => 'Adăugiri',
+    'RSS_DELETIONS' => 'Eliminări',
+    'RSS_NO_DIFF' => 'Nici o diferență',
 ];

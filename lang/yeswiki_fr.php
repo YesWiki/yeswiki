@@ -2298,4 +2298,15 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'EDIT_CONFIG_GROUP_HERSE' => 'Herse / Mot de passe unique d\'entrée',
     'EDIT_CONFIG_HINT_HERSE_ID' => 'Identifiant pour la herse',
     'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Mot de passe pour la herse',
+
+    // rss (ticket 22, formerly tools/rss)
+    'RSS_CHANGE_OF' => 'Modification de',
+    'RSS_HISTORY' => 'historique',
+    'RSS_HIDDEN_CONTENT' => 'Contenu masqué',
+    'RSS_ON_DATE' => 'le',
+    'RSS_COMPARISON_OF' => 'Comparaison de',
+    'RSS_TO' => 'à',
+    'RSS_ADDS' => 'Ajouts',
+    'RSS_DELETIONS' => 'Suppressions',
+    'RSS_NO_DIFF' => 'Pas de différences',
 ];
