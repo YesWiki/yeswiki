@@ -505,6 +505,11 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 }
 
 /* ---- Collapse/accordion (ticket 12: replaces Bootstrap's data-toggle="collapse") ---- */
+/* closed panels stay hidden regardless of surrounding layout rules,
+   same rationale as the .yw-modal/.yw-dropdown guards */
+.yw-collapse:not(.yw-collapse--open) {
+  display: none !important;
+}
 .yw-collapse {
   display: none;
 }
@@ -642,6 +647,9 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
    Tab strips reuse .yw-nav (li.active marks the current tab); panes live in a
    .yw-tabs__content container and only the .active pane is shown. Switching is
    handled by yw-core.js on a[data-toggle="tab"] / a[data-yw-tab] clicks. */
+.yw-tabs__content > .yw-tabs__pane:not(.active) {
+  display: none !important;
+}
 .yw-tabs__content > .yw-tabs__pane {
   display: none;
 }
@@ -1197,7 +1205,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 
 /* legacy collapse markup: yw-core.js toggles .in on .collapse targets */
 .collapse:not(.in) {
-  display: none;
+  display: none !important;
 }
 
 /* legacy panel markup */
