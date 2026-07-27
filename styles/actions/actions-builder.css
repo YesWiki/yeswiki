@@ -1,19 +1,19 @@
 /* CUSTOM FORM */
-.form-group,
-#actions-builder-app .form-group:first-child {
+.yw-form-group,
+#actions-builder-app .yw-form-group:first-child {
   margin: 0 0 1.2rem 0 !important;
 }
 
-.form-group.range {
+.yw-form-group.range {
   margin-top: 25px;
 }
 
-.form-group.geo .leaflet-container {
+.yw-form-group.geo .leaflet-container {
   height: 200px;
   border-radius: 5px;
 }
 
-.form-group.range .control-label {
+.yw-form-group.range .yw-form-label {
   top: -1.2em !important;
 }
 
@@ -27,7 +27,7 @@ input[type='range'] {
   overflow: hidden !important;
 }
 
-#actions-builder-app .form-group .control-label {
+#actions-builder-app .yw-form-group .yw-form-label {
   left: 0.9rem !important;
 }
 
@@ -51,7 +51,7 @@ input[type='range'] {
   :not(.multi-input-container)
   > *
   > .input-group:not(.iconpicker-container)
-  .form-control {
+  .yw-input {
   width: auto;
   flex-grow: 1;
 }
@@ -113,7 +113,7 @@ input[type='range'] {
   font-size: 20px;
 }
 
-.form-group.color .sp-original-input-container .sp-add-on {
+.yw-form-group.color .sp-original-input-container .sp-add-on {
   order: 2;
   border-radius: 0 3px 3px 0 !important;
   border: none !important;
@@ -182,7 +182,7 @@ input[type='range'] {
   margin-left: 1rem !important;
 }
 
-#actions-builder-modal .input-group-addon + label.control-label {
+#actions-builder-modal .input-group-addon + label.yw-form-label {
   margin-left: 2.5rem !important;
 }
 
@@ -201,7 +201,7 @@ input[type='range'] {
   margin-top: 5px;
 }
 
-.btn-add-element + .form-group {
+.btn-add-element + .yw-form-group {
   margin-top: 25px;
 }
 
@@ -211,7 +211,7 @@ input[type='range'] {
   /* align-items: baseline; */
 }
 
-.inline-form .form-group {
+.inline-form .yw-form-group {
   padding: 0 !important;
   margin: 1rem 0 0;
 }

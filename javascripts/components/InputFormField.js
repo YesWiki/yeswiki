@@ -31,8 +31,8 @@ export default {
     }
   },
   template: `
-    <div class="form-group" :class="config.type" :title="config.hint" >
-      <label v-if="config.label" class="control-label">{{ config.label }}</label>
+    <div class="yw-form-group" :class="config.type" :title="config.hint" >
+      <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
       
       <v-select v-if="config.multiple" v-model="fields" :options="fieldOptions" label="id" :multiple="true">
         <template v-slot:option="option">
@@ -40,7 +40,7 @@ export default {
         </template>
       </v-select>
       
-      <select v-else :value="value" v-on:input="$emit('input', $event.target.value)" class="form-control">
+      <select v-else :value="value" v-on:input="$emit('input', $event.target.value)" class="yw-input">
         <option value=""></option>
         <template v-for="field in fieldOptions" :key="field.id">
           <option v-if="field.label" :value="field.id">{{ field.label }} - {{ field.id }}</option>

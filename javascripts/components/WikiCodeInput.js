@@ -22,7 +22,7 @@ export default {
       <div class="input-group-addon btn btn-primary" @click="insertCodeInEditor">
         {{ isEditing ? '${wiki.lang.ACTION_BUILDER_UPDATE_CODE}' : '${wiki.lang.ACTION_BUILDER_INSERT_CODE}' }}
       </div>
-      <input type="text" class="result form-control" @click="selectFullText" :value="wikiCode" ref="input">
+      <input type="text" class="result yw-input" @click="selectFullText" :value="wikiCode" ref="input">
       <div class="input-group-addon btn btn-default" @click="copyContent">${wiki.lang.ACTION_BUILDER_COPY}</div>
     </div>
   `

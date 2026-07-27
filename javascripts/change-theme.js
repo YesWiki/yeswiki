@@ -57,7 +57,7 @@
       element.options.add(new Option(emptyOption, '', false, false))
     }
     const favorite = type in data.favorites ? data.favorites[type] : null
-    const formGroup = element.closest('.form-group')
+    const formGroup = element.closest('.yw-form-group')
     if (type === 'preset') {
       if (!('presets' in theme)) {
         if (formGroup) formGroup.style.display = 'none'
@@ -130,7 +130,7 @@
 
   document.querySelectorAll('[name=theme_select]').forEach((select) => {
     select.addEventListener('change', () => {
-      const currentBase = select.closest('.control-group.form-group')
+      const currentBase = select.closest('.yw-form-group')
       if (!currentBase) return
       const data = extractData(currentBase)
 
@@ -147,10 +147,10 @@
 
   document.querySelectorAll('[name=style_select],[name=squelette_select]').forEach((select) => {
     select.addEventListener('change', () => {
-      const currentBase = select.closest('.control-group.form-group')
+      const currentBase = select.closest('.yw-form-group')
       if (!currentBase) return
       const element = findSibling(currentBase, 'theme_select')
-      const realBase = element ? element.closest('.control-group.form-group') : null
+      const realBase = element ? element.closest('.yw-form-group') : null
       if (!realBase) return
       const data = extractData(realBase)
 

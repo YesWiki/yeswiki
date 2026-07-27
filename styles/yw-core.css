@@ -82,7 +82,8 @@ textarea.yw-input {
 .yw-form-group {
   margin-bottom: 10px;
 }
-.yw-form-group > label {
+.yw-form-group > label,
+.yw-form-label {
   display: block;
   margin-bottom: 3px;
   font-weight: 600;
@@ -816,7 +817,8 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   display: none;
 }
 /* legacy Bootstrap utility names, still used across templates (ticket 16) */
-.hide {
+.hide,
+.hidden {
   display: none !important;
 }
 .sr-only {
@@ -1090,7 +1092,8 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border-color: var(--danger-color);
 }
 .has-error .help-block,
-.has-error .control-label {
+.has-error .control-label,
+.has-error .yw-form-label {
   color: var(--danger-color);
 }
 .has-success .form-control,
@@ -1098,7 +1101,8 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border-color: var(--success-color);
 }
 .has-success .help-block,
-.has-success .control-label {
+.has-success .control-label,
+.has-success .yw-form-label {
   color: var(--success-color);
 }
 .input-group {

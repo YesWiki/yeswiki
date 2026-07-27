@@ -1,5 +1,5 @@
-<div class="yw-form-group control-group form-group input-{{ field.type }} {% block groupClass %}{% endblock %}">
-    <label class="control-label col-sm-3">
+<div class="yw-form-group input-{{ field.type }} {% block groupClass %}{% endblock %}">
+    <label class="yw-form-label">
         {#- No leading/trailing whitespace, see https://twig.symfony.com/doc/3.x/templates.html#templates-whitespace-control-#}
         {%- block label -%}
             {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
@@ -9,7 +9,7 @@
             {{ field.label|raw }}
         {%- endblock -%}
     </label>
-    <div class="controls col-sm-9">
+    <div class="controls">
         {% block input %}
         {% endblock %}
         {% block submit %}

@@ -1,6 +1,6 @@
 <!-- FORM SIGN UP -->
 <h2>{{ _t('USER_SIGN_UP') }}</h2>
-<form action="{{ url({tag:''}) }}" method="post" class="form-horizontal">
+<form action="{{ url({tag:''}) }}" method="post" class="">
   <input type="hidden" name="usersettings_action" value="signup" />
   {% if error is not empty %}
     {% if error matches '/<div[^>]*class\="alert.*/' %}
@@ -9,41 +9,41 @@
       <div class="alert alert-danger">{{ error }}</div>          
     {% endif %}
   {% endif %}
-  <div class="control-group form-group">
-  <label class="control-label col-sm-3">{{ _t('USER_USERNAME') }}
+  <div class="yw-form-group">
+  <label class="yw-form-label">{{ _t('USER_USERNAME') }}
     <span class='form-help fa fa-question-circle'
       title="{{ _t('USERNAME_MUST_BE_WIKINAME') }}"
       data-tooltip="tooltip">
     </span>
   </label>
-  <div class="controls col-sm-9">
-    <input class="form-control" name="name" size="40" value="{{ name }}" 
+  <div class="controls">
+    <input class="yw-input" name="name" size="40" value="{{ name }}" 
       pattern="{{ regexUserName | raw}}"/>{# pattern for valid user name #}
   </div>
 </div>
-<div class="control-group form-group">
-  <label class="control-label col-sm-3">{{ _t('USER_EMAIL_ADDRESS') }}</label>
-  <div class="controls col-sm-9">
-    <input class="form-control" name="email" size="40" value="{{ email }}" 
+<div class="yw-form-group">
+  <label class="yw-form-label">{{ _t('USER_EMAIL_ADDRESS') }}</label>
+  <div class="controls">
+    <input class="yw-input" name="email" size="40" value="{{ email }}" 
       pattern="[!#-'*+/-9=?A-Za-z^-~-]+(?:\.[!#-'*+/-9=?A-Z^-~-]+)*@(?:[!#-'*+/-9=?A-Z^-~-]+\.[!#-'*+/-9=?A-Z^-~-]+)*"/>
     {# pattern inspired from RFC 5322  #}
   </div>
 </div>
-<div class="control-group form-group">
-  <label class="control-label col-sm-3">{{ _t('USER_PASSWORD') }}</label>
-  <div class="controls col-sm-9">
-    <input class="form-control" type="password" name="password" size="40"/>
+<div class="yw-form-group">
+  <label class="yw-form-label">{{ _t('USER_PASSWORD') }}</label>
+  <div class="controls">
+    <input class="yw-input" type="password" name="password" size="40"/>
   </div>
 </div>
-<div class="control-group form-group">
-  <label class="control-label col-sm-3">{{ _t('USER_PASSWORD_CONFIRMATION') }}</label>
-  <div class="controls col-sm-9">
-    <input class="form-control" type="password" name="confpassword" size="40" />
+<div class="yw-form-group">
+  <label class="yw-form-label">{{ _t('USER_PASSWORD_CONFIRMATION') }}</label>
+  <div class="controls">
+    <input class="yw-input" type="password" name="confpassword" size="40" />
   </div>
 </div>
 {{ captcha|raw }}
-<div class="control-group form-group">
-  <div class="controls col-sm-9 col-sm-offset-3">
+<div class="yw-form-group">
+  <div class="controls">
     <input class="btn btn-block btn-primary" type="submit" value="{{ _t('USER_NEW_ACCOUNT')|e('html_attr') }}" size="40" />
   </div>
 </div>

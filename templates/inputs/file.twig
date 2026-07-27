@@ -56,7 +56,7 @@
                             id="{{ field.propertyName }}"
                             name="{{ field.propertyName }}"
                             {% if style %}style="{{ style }}"{% endif %}
-                            class="form-control yw-file-upload"
+                            class="yw-input yw-file-upload"
                             {% if field.authorizedExts is not empty %}accept="{{field.authorizedExts|join(',')}}"{% endif %}
                             {% if field.required %}required{% endif %}
                         />
@@ -67,7 +67,7 @@
                             type="url"
                             id="{{ field.propertyName }}_url"
                             name="{{ field.propertyName }}_url"
-                            class="form-control"
+                            class="yw-input"
                             placeholder="https://..."
                         />
                     </div>

@@ -57,7 +57,7 @@
     {% endembed %}
 
     {% if mode != 'edit' and showAdminActions %}
-        <button class="btn btn-success btn-block " type="button" onclick="saveTheme(event,'{{ url({params:{}}) }}')">
+        <button class="btn btn-success btn-block" type="button" onclick="saveTheme(event,'{{ url({params:{}}) }}')">
           {{ _t('TEMPLATE_APPLY_ALL') }}
         </button>    
     {% endif %}
@@ -78,10 +78,10 @@
     </div>
     <div id="avanced-page-settings" class="collapse">
         <hr>
-        <div class="control-group form-group">
-        <label class="control-label">{{ _t('PAGE_LANGUAGE') }}</label>
+        <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('PAGE_LANGUAGE') }}</label>
         <div class="controls">
-            <select class="form-control" name="lang">
+            <select class="yw-input" name="lang">
                 <option value=""></option>
                 {% for value in availableLanguages %}
                     <option value="{{ value }}"{% if value == preferedLanguage %} selected="selected"{% endif %}>
@@ -100,11 +100,11 @@
                 PageFooter: 'FOOTER_PAGE',
                 PageMenu: 'VERTICAL_MENU_PAGE',
             } %}
-                <div class="control-group form-group">
-                    <label class="control-label">{{ _t(t) }}</label>
+                <div class="yw-form-group">
+                    <label class="yw-form-label">{{ _t(t) }}</label>
                     <div class="controls">
                         <input 
-                            class="form-control typeahead" 
+                            class="yw-input typeahead" 
                             type="text" 
                             autocomplete="off" 
                             name="{{ tag }}" 
@@ -137,7 +137,7 @@
                 'neutral-soft-color': {color:'#b0b1b3',t:'TEMPLATE_SOFT_COLOR'},
                 'neutral-light-color': {color:'#ffffff',t:'TEMPLATE_LIGHT_COLOR'}
             } %}
-                <div class="form-group">
+                <div class="yw-form-group">
                     <input 
                         class="form-input colorpicker"
                         type="color" name="{{ name }}"
@@ -146,26 +146,26 @@
                 </div>
             {% endfor %}
             
-            <div class="form-group">
+            <div class="yw-form-group">
                 <label>{{ _t('TEMPLATE_MAIN_TEXT_SIZE') }}</label>
                 <input class="form-input range" type="range" min="9" max="34" step="1" name="main-text-fontsize"
                     value="{{ (presetsData.currentCSSValues['main-text-fontsize'] is defined) 
                         ? (presetsData.currentCSSValues['main-text-fontsize']|split('px'))[0] : '17' }}" />
             </div>
-            <div class="form-group">
+            <div class="yw-form-group">
                 <label>{{ _t('TEMPLATE_MAIN_TEXT_FONT') }}</label>
                 <input class="form-input fontpicker" type="text" name="main-text-fontfamily"
                     value="{{ presetsData.currentCSSValues['main-text-fontfamily'] ?? 'Nunito' }}" />
                 </div>
-            <div class="form-group">
+            <div class="yw-form-group">
                 <label>{{ _t('TEMPLATE_MAIN_TITLE_FONT') }}</label>
                 <input class="form-input fontpicker" type="text" name="main-title-fontfamily"
                     value="{{ presetsData.currentCSSValues['main-title-fontfamily'] ?? 'Nunito' }}" />
             </div>
             {% if hasAcl('+') %}
-                <div class="form-group">
+                <div class="yw-form-group">
                     <label>{{ _t('TEMPLATE_PRESET_FILENAME') }}</label>
-                    <input class="form-input form-control" type="text" name="filename"
+                    <input class="form-input yw-input" type="text" name="filename"
                     value="{{ presetsData.selectedPresetName is not empty
                         ? presetsData.selectedPresetName|replace({'.css':''})
                         : (

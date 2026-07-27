@@ -16,7 +16,7 @@ function arrayIncludesAllRequiredFields(arr, fields) {
 }
 
 function setMessageState(element, state) {
-  const group = element ? element.closest('.form-group') : null
+  const group = element ? element.closest('.yw-form-group') : null
   if (!group) return
   group.classList.remove('has-error', 'has-success')
   group.classList.add(state === 'success' ? 'has-success' : 'has-error')

@@ -19,7 +19,7 @@
                     <i class="fas fa-redo-alt"></i>
                 </span>
                 <select 
-                    class="form-control select-allday"
+                    class="yw-input select-allday"
                     name="{{ "#{field.propertyName}_data[other][repetition]" }}"
                     v-model="repetitionInternal"
                     >
@@ -50,7 +50,7 @@
                         type="date"
                         value=""
                         name="{{ "#{field.propertyName}_data[limitdate]" }}"
-                        class="form-control bazar-date"
+                        class="yw-input bazar-date"
                         :disabled="!isRecurrent"
                         required
                     />
@@ -58,7 +58,7 @@
                 <i class="limit-date-hint" v-if="showEndDateMessage">{{ _t('EVENT_LIMIT_DATE_UPDATE_FORCED') }}</i>
             </div>
             <div class="input-prepend input-group specific-for-recurrence" v-if="isRecurrent">
-                <div class="form-control for-selector-is-recurrent">
+                <div class="yw-input for-selector-is-recurrent">
                     <input type="hidden" name="{{ "#{field.propertyName}_data[step]" }}" :value="step"/>
                     {% set inputString = "<input type=\"number\" min=\"2\" name=\"#{field.propertyName}_data[other][step]\" v-model=\"stepInternal\" required/>" %}
                     <div v-if="repetitionInternal == 'xd'">
@@ -78,7 +78,7 @@
                             {{ _t('EVENT_ON_MONTH') }}
                         </span>
                         <select 
-                            class="form-control"
+                            class="yw-input"
                             name="{{ "#{field.propertyName}_data[month]" }}"
                             v-model="month"
                             required
@@ -107,7 +107,7 @@
                         </span>
                         <select 
                             v-model="whenInMonth"
-                            class="form-control"
+                            class="yw-input"
                             name="{{ "#{field.propertyName}_data[whenInMonth]" }}"
                             required>
                             <option value="">{{ _t('BAZ_CHOISIR') }}</option>
@@ -146,7 +146,7 @@
                         v-else-if="['m','y'].includes(repetition) && whenInMonth?.length > 0 && whenInMonth != 'nthOfMonth'"
                         class="input-prepend input-group">
                         <select 
-                            class="form-control"
+                            class="yw-input"
                             name="{{ "#{field.propertyName}_data[other][day]" }}"
                             :value="days?.[0] ?? ''"
                             @input="event => toggleDay(event.target.value)"
@@ -159,7 +159,7 @@
                     </div>
                     <div v-else-if="['m','y'].includes(repetition) && whenInMonth === 'nthOfMonth'"  class="input-prepend input-group">  
                         <span class="add-on input-group-addon">{{ _t('BAZ_DAY') }}</span>
-                        <select name="{{ "#{field.propertyName}_data[nth]" }}" class="form-control" v-model="nth" required>
+                        <select name="{{ "#{field.propertyName}_data[nth]" }}" class="yw-input" v-model="nth" required>
                             <option value="">{{ _t('BAZ_CHOISIR') }}</option>
                             <template v-for="idx in 31">
                             <option :value="(idx < 10 ? '0' :'')+idx">{{ "{{ (idx < 10 ? '0' :'')+idx }}" }}</option>

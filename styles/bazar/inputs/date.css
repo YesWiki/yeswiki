@@ -1,26 +1,26 @@
 .bazar-date,
-.bazar-date.form-control {
+.bazar-date.yw-input {
   width: 133px;
 }
 
-.form-group.input-listedatedeb .controls,
-.form-group.input-listedatefin .controls,
-.form-group.input-jour .controls {
+.yw-form-group.input-listedatedeb .controls,
+.yw-form-group.input-listedatefin .controls,
+.yw-form-group.input-jour .controls {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem 1.5rem;
 }
 
-.form-group.input-listedatedeb .select-time,
-.form-group.input-listedatefin .select-time,
-.form-group.input-jour .select-time {
+.yw-form-group.input-listedatedeb .select-time,
+.yw-form-group.input-listedatefin .select-time,
+.yw-form-group.input-jour .select-time {
   margin-left: 0 !important;
 }
 
 @media (width <= 600px) {
-  .form-group.input-listedatedeb .select-time,
-  .form-group.input-listedatefin .select-time,
-  .form-group.input-jour .select-time {
+  .yw-form-group.input-listedatedeb .select-time,
+  .yw-form-group.input-listedatefin .select-time,
+  .yw-form-group.input-jour .select-time {
     width: 100%;
     margin: 0;
   }
@@ -68,31 +68,31 @@ input[type='date']::input-placeholder {
 /* -------------------------------------------------------------------------- */
 /*                               DATE RECURRENT                               */
 /* -------------------------------------------------------------------------- */
-div.form-control.for-selector-is-recurrent {
+div.yw-input.for-selector-is-recurrent {
   height: auto;
   max-width: 100%;
 }
 
-div.form-control.for-selector-is-recurrent > .input-prepend.input-group {
+div.yw-input.for-selector-is-recurrent > .input-prepend.input-group {
   margin-top: 0.4rem;
   margin-bottom: 0.4rem;
 }
 
-.control-group.input-listedatedeb .specific-for-recurrence,
-.control-group.input-listedatefin
+.yw-form-group.input-listedatedeb .specific-for-recurrence,
+.yw-form-group.input-listedatefin
   .specific-for-recurrence
-  .control-group.input-jour
+  .yw-form-group.input-jour
   .specific-for-recurrence {
   align-self: flex-start;
 }
 
-.control-group.input-listedatedeb
+.yw-form-group.input-listedatedeb
   .specific-for-recurrence
   span.add-on.input-group-addon,
-.control-group.input-listedatefin
+.yw-form-group.input-listedatefin
   .specific-for-recurrence
   span.add-on.input-group-addon,
-.control-group.input-jour
+.yw-form-group.input-jour
   .specific-for-recurrence
   span.add-on.input-group-addon {
   width: auto;
@@ -103,19 +103,19 @@ div.form-control.for-selector-is-recurrent > .input-prepend.input-group {
   max-width: 100%;
 }
 
-.input-recur-date.control-group > .controls {
+.input-recur-date.yw-form-group > .controls {
   gap: 1rem 1rem;
   flex-wrap: wrap;
 }
 
-.input-recur-date.control-group .for-selector-is-recurrent > .input-group {
+.input-recur-date.yw-form-group .for-selector-is-recurrent > .input-group {
   flex-wrap: wrap;
 }
 
-.input-recur-date.control-group
+.input-recur-date.yw-form-group
   .for-selector-is-recurrent
   > .input-group
-  select.form-control {
+  select.yw-input {
   max-width: 80%;
   width: auto;
 }

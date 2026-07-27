@@ -7,7 +7,7 @@
     <div class="trombi-container my-favorites">
         {% for favorite in favorites %}
             {% set favoriteTitle = favorite.title is not empty ? favorite.title : favorite.resource %}
-            <a class="bazar-entry modalbox " data-size="modal-lg" 
+            <a class="bazar-entry modalbox" data-size="modal-lg" 
                 {{ (favorite.entry is not empty and favorite.entry.html_data is not empty) ? favorite.entry.html_data|raw : '' }}
                 href="{{ url({tag:favorite.resource}) }}"
                 title="{{ favoriteTitle }}"

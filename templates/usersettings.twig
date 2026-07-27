@@ -12,22 +12,22 @@
     : {}
     ))) }}"
   method="post"
-  class="form-horizontal">
+  class="">
   <input type="hidden" name="usersettings_action" value="update{{ adminIsActing ? 'ByAdmin' : '' }}" />
-  <div class="control-group form-group">
-        <label class="control-label col-sm-3">{{ _t('USER_EMAIL_ADDRESS') }}</label>
-        <div class="controls col-sm-9">
-            <input class="form-control" name="email" value="{{ user.email }}" size="40" />
+  <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('USER_EMAIL_ADDRESS') }}</label>
+        <div class="controls">
+            <input class="yw-input" name="email" value="{{ user.email }}" size="40" />
         </div>
     </div>
-  {# <div class="control-group form-group">
-    <label class="control-label col-sm-3">{{ _t('USER_MAX_NUMBER_OF_VERSIONS') }}</label>
-    <div class="controls col-sm-9">
-      <input class="form-control" name="revisioncount" value="{{ user.revisioncount|e('html_attr') }}" size="40" />
+  {# <div class="yw-form-group">
+    <label class="yw-form-label">{{ _t('USER_MAX_NUMBER_OF_VERSIONS') }}</label>
+    <div class="controls">
+      <input class="yw-input" name="revisioncount" value="{{ user.revisioncount|e('html_attr') }}" size="40" />
     </div>
   </div> #}
-  <div class="control-group form-group">
-        <div class="controls col-sm-9 col-sm-offset-3">
+  <div class="yw-form-group">
+        <div class="controls">
       <input type="hidden" name="csrf-token-update" value="{{ csrfToken({id: 'main', refresh: false}) }}">
             <input class="btn btn-primary" type="submit" value="{{ _t('USER_UPDATE')|e('html_attr') }}" />
       {% if userLoggedIn %}{# // The one who runs the session is acting #}
@@ -43,12 +43,12 @@
 
 {# FORM DELETE #}
 {% if adminIsActing %}
-  <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="form-horizontal">
+  <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="">
     <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
     <input type="hidden" name="usersettings_action" value="resetpass" />
     <input class="btn btn-neutral" type="submit" value="{{ _t('RESETTING_THE_PASSWORD') }}" />
   </form>
-  <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="form-horizontal">
+  <form action="{{ url({params: {user: user.name, from: referrer}}) }}" method="post" class="">
     <input type="hidden" name="csrf-token-delete" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
     <input type="hidden" name="usersettings_action" value="deleteByAdmin" />
     <input class="btn btn-danger" type="submit" value="{{ _t('USER_DELETE')|e('html_attr') }}" />
@@ -57,7 +57,7 @@
 
 {# FORM CHANGE PASSWORD #}
 {% if userLoggedIn %}
-  <form action="{{ url({tag: ''}) }}" method="post" class="form-horizontal">
+  <form action="{{ url({tag: ''}) }}" method="post" class="">
       <hr>
       <input type="hidden" name="usersettings_action" value="changepass" />
       <h2>{{ _t('USER_CHANGE_THE_PASSWORD') }}</h2>
@@ -72,20 +72,20 @@
           '{link}': "<a target=\"_blank\" href=\"#{urlWithoutIframe}\">#{urlWithoutIframe}</a>",
           })|raw }}</div>
     {% endif %}
-    <div class="control-group form-group">
-      <label class="control-label col-sm-3">{{ _t('USER_OLD_PASSWORD') }}</label>
-      <div class="controls col-sm-9">
-        <input class="form-control" type="password" name="oldpass" size="40" />
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('USER_OLD_PASSWORD') }}</label>
+      <div class="controls">
+        <input class="yw-input" type="password" name="oldpass" size="40" />
       </div>
     </div>
-    <div class="control-group form-group">
-      <label class="control-label col-sm-3">{{ _t('LOGIN_NEW_PASSWORD') }}</label>
-      <div class="controls col-sm-9">
-        <input class="form-control" type="password" name="password" size="40" />
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('LOGIN_NEW_PASSWORD') }}</label>
+      <div class="controls">
+        <input class="yw-input" type="password" name="password" size="40" />
       </div>
     </div>
-    <div class="control-group form-group">
-      <div class="controls col-sm-9 col-sm-offset-3">
+    <div class="yw-form-group">
+      <div class="controls">
         <input type="hidden" name="csrf-token-changepass" value="{{ csrfToken({id: 'main', refresh: false})|e('html_attr') }}">
         <input class="btn btn-primary" type="submit" value="{{ _t('USER_CHANGE')|e('html_attr') }}" size="40" />
       </div>

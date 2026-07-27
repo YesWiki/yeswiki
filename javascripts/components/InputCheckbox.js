@@ -39,7 +39,7 @@ export default {
     }
   },
   template: `
-    <div class="form-group input-group checkbox" :title="config.hint" >
+    <div class="yw-form-group input-group checkbox" :title="config.hint" >
       <addon-icon :config="config" v-if="config.icon"></addon-icon>
       <label>
         <input type="checkbox" v-model="checked" />

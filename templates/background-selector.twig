@@ -4,7 +4,7 @@
     <div class="carousel-inner">
         {% for row in backgrounds|sort|batch(8) %}
           <div class="item{{ ((favoriteBackgroundImage is empty and loop.first) or 
-            (favoriteBackgroundImage is not empty and "files/backgrounds/#{favoriteBackgroundImage}" in row)) ? ' active' : ''}}">
+ (favoriteBackgroundImage is not empty and"files/backgrounds/#{favoriteBackgroundImage}" in row)) ? ' active' : ''}}">
             {% for background in row %}
                 {% set imgextension = background|slice(-4)|lower %}
                 {% set choosen = (background is same as "files/backgrounds/#{favoriteBackgroundImage}") %}

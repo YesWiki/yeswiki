@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   </td>
                   <td>${idlist + existingmessage}</td>
                   <td>${list.title}</td>
-                  <td><select class="form-control">${select}</select></td>
+                  <td><select class="yw-input">${select}</select></td>
                 </tr>`
             )
           })

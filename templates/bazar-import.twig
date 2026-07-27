@@ -90,8 +90,8 @@
 
 {% block appendToForm %}
   {% if debug %}
-    <div class="control-group form-group">
-      <div class="controls col-sm-9">
+    <div class="yw-form-group">
+      <div class="controls">
         <label>
           <input type="checkbox" class="form-check-input" 
             id="bazar-import-option-detect-columns-on-headers" name="bazar-import-option-not-detect-columns-on-headers" 
@@ -105,15 +105,15 @@
     </div>
   {% endif %}
   {% if id %}
-    <div class="control-group form-group">
-      <label class="control-label col-sm-3">{{ _t('BAZ_FICHIER_CSV_A_IMPORTER') }} :</label>
-      <div class="controls col-sm-9">
-        <input type="file" class="form-control" name="fileimport" id="idfileimport" />
+    <div class="yw-form-group">
+      <label class="yw-form-label">{{ _t('BAZ_FICHIER_CSV_A_IMPORTER') }} :</label>
+      <div class="controls">
+        <input type="file" class="yw-input" name="fileimport" id="idfileimport" />
       </div>
     </div>
 
-    <div class="control-group form-group import-file">
-      <div class="controls col-sm-9 col-sm-offset-3">
+    <div class="yw-form-group import-file">
+      <div class="controls">
         <input name="submit_file" type="submit" value="{{ _t('BAZ_IMPORTER_CE_FICHIER') }}" class="yw-btn yw-btn--primary" />
       </div>
     </div>

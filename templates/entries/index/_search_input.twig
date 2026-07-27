@@ -3,27 +3,27 @@
           method="get"
           name="search-form"
           id="search-form"
-          class="form-horizontal">
+          class="">
         {% set handler = url({tag:pageTag})|slice(url({tag:pageTag,handler:' '})|length-1) %}
         <input type="hidden"
                name="wiki"
                value="{{ pageTag ~ (handler ? '/' ~ handler : '') }}">
         <input type="hidden" name="vue" value="consulter">
         <input type="hidden" name="action" value="recherche">
-        <div class="bazar-search control-group">
+        <div class="bazar-search yw-form-group">
             <div class="input-group input-prepend input-append">
                 <span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
                 <input type="text"
                        value="{{ params.keywords }}"
                        name="keywords"
                        placeholder="{{ _t("BAZ_MOT_CLE") }}"
-                       class="search-input form-control input-lg">
+                       class="search-input yw-input input-lg">
                 {% if forms|length > 1 %}
                     <span class="input-group-btn search-filter"
                           style="width:auto;
                                  max-width:240px">
                         <select onchange="javascript:this.form.submit();"
-                                class="form-control input-lg"
+                                class="yw-input input-lg"
                                 name="selectedID">
                             <option value="">{{ _t("BAZ_TOUS_TYPES_FICHES") }}</option>
                             {% for form in forms %}

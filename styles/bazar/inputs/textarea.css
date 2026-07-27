@@ -1,21 +1,21 @@
-.form-group.wiki-textarea .btn-toolbar {
+.yw-form-group.wiki-textarea .btn-toolbar {
   margin-left: 1em;
   margin-right: 1em;
 }
 
-.form-group.wiki-textarea .control-label {
+.yw-form-group.wiki-textarea .yw-form-label {
   top: 0.6em !important;
   margin-top: -0.5em !important;
 }
 
 /* field.syntax is 'html' for this mode -- note the corrected selector below: the
-   pre-existing ".form-group.summernote" never matched anything, since groupClass
+   pre-existing ".yw-form-group.summernote" never matched anything, since groupClass
    is always the field's syntax value, never the editor's own name. */
-.form-group.html .vditor {
+.yw-form-group.html .vditor {
   margin-top: 3px;
 }
 
-.form-group.wiki-textarea .controls .ace_placeholder {
+.yw-form-group.wiki-textarea .controls .ace_placeholder {
   font-family: monospace;
   color: gray;
   font-size: 1rem;

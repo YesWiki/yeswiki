@@ -11,13 +11,13 @@
 {% block formTitle %}<h4 class="text-center">{{ _t('LOGIN_LOGIN') }}</h4>{% endblock %}
 
 {% block wikiNameInputGroup %}
-    <div class="form-group">
-        <input id="inputWikiName" class="form-control" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required required placeholder="{{ _t('LOGIN_WIKINAME') }}"/>
+    <div class="yw-form-group">
+        <input id="inputWikiName" class="yw-input" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required required placeholder="{{ _t('LOGIN_WIKINAME') }}"/>
     </div>
 {% endblock %}
 {% block passwordInputGroup %}
-    <div class="form-group">
-        <input id="inputPassword" class="form-control" name="password" type="password" required placeholder="{{ _t('LOGIN_PASSWORD') }}"/>
+    <div class="yw-form-group">
+        <input id="inputPassword" class="yw-input" name="password" type="password" required placeholder="{{ _t('LOGIN_PASSWORD') }}"/>
     </div>
 {% endblock %}
 

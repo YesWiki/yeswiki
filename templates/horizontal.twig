@@ -7,8 +7,8 @@
 {% block signupurlbtnclass %}btn btn-default{% endblock %}
 
 {% block formContent %}
-    <input id="inputWikiName" class="form-control" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required required placeholder="{{ _t('LOGIN_WIKINAME') }}"/>
-    <input id="inputPassword" class="form-control" name="password" type="password" required placeholder="{{ _t('LOGIN_PASSWORD') }}"/>
+    <input id="inputWikiName" class="yw-input" type="text" name="name" value="{{user ? user|e('html_attr') : '' }}" required required placeholder="{{ _t('LOGIN_WIKINAME') }}"/>
+    <input id="inputPassword" class="yw-input" name="password" type="password" required placeholder="{{ _t('LOGIN_PASSWORD') }}"/>
     <button type="submit" class="btn {{ btnclass }} btn-primary">{{ _t('LOGIN_LOGIN') }}</button>
     {{ block('signupurl') }}
     {{ block('hidden') }}

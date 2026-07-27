@@ -1,27 +1,27 @@
 <form id="ajax-contact-form{{ nbactionmail }}" class="ajax-mail-form {{class}}" data-page-tag="{{ pageTag }}">
-  <div class="form-group">
+  <div class="yw-form-group">
     <div class="input-group">
       <span class="input-group-addon"><i class="fa fa-user"></i></span>
-      <input required class="form-control" type="text" name="name" placeholder="{{ _t('CONTACT_YOUR_NAME') }}" />
+      <input required class="yw-input" type="text" name="name" placeholder="{{ _t('CONTACT_YOUR_NAME') }}" />
     </div>
   </div>
 
-  <div class="form-group">
+  <div class="yw-form-group">
     <div class="input-group">
       <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-      <input required class="form-control" type="email" name="email" placeholder="{{ _t('CONTACT_YOUR_MAIL') }}" />
+      <input required class="yw-input" type="email" name="email" placeholder="{{ _t('CONTACT_YOUR_MAIL') }}" />
     </div>
   </div>
 
-  <div class="form-group">
-      <input required class="form-control contact-subject" type="text" name="subject" placeholder="{{ _t('CONTACT_SUBJECT') }}" />
+  <div class="yw-form-group">
+      <input required class="yw-input contact-subject" type="text" name="subject" placeholder="{{ _t('CONTACT_SUBJECT') }}" />
   </div>
 
-  <div class="form-group">
-    <textarea required rows="8" class="form-control contact-message" name="message" placeholder="{{ _t('CONTACT_YOUR_MESSAGE') }}"></textarea>
+  <div class="yw-form-group">
+    <textarea required rows="8" class="yw-input contact-message" name="message" placeholder="{{ _t('CONTACT_YOUR_MESSAGE') }}"></textarea>
   </div>
 
-  <div class="form-group">
+  <div class="yw-form-group">
     <button class="btn btn-primary btn-block mail-submit" type="submit" name="submit"><i class="icon-envelope icon-white"></i>&nbsp;{{ _t('CONTACT_SEND_MESSAGE') }}</button>
   </div>
   <input type="hidden" name="nbactionmail" value="{{ nbactionmail }}" />

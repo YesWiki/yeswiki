@@ -19,9 +19,9 @@
 
 {{ include_javascript('javascripts/inputs/map-leaflet.js', false, true) }}
 
-<div class="control-group form-group geocode-input {% if field.required %}required{% endif %}" id="{{ field.name }}" name="{{ field.name }}" data-field-names="{{ field.autocompleteFieldNames|json_encode }}" data-map-field-data="{{ mapFieldData|json_encode|e('html_attr') }}">
+<div class="yw-form-group geocode-input {% if field.required %}required{% endif %}" id="{{ field.name }}" name="{{ field.name }}" data-field-names="{{ field.autocompleteFieldNames|json_encode }}" data-map-field-data="{{ mapFieldData|json_encode|e('html_attr') }}">
     <label class="col-sm-3"></label>
-    <div class="controls col-sm-9">
+    <div class="controls">
         {% if field.geolocate %}
             <a class="yw-btn yw-btn--primary btn-geolocate">
                 {{ _t('BAZ_GEOLOCATE') }}

@@ -33,10 +33,10 @@ export default {
     }
   },
   template: `
-    <div class="form-group input-group" :class="config.type" :title="config.hint" >
+    <div class="yw-form-group input-group" :class="config.type" :title="config.hint" >
       <addon-icon :config="config" v-if="config.icon"></addon-icon>
-      <label v-if="config.label" class="control-label">{{ config.label }}</label>
-      <input type="text" autocomplete="off" :value="value" class="form-control"
+      <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
+      <input type="text" autocomplete="off" :value="value" class="yw-input"
              @input="$emit('input', $event.target.value)"
              @blur="$emit('input', $event.target.value)"
              :required="config.required" :min="config.min" :max="config.max" ref="input"

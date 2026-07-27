@@ -215,10 +215,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
           <div id="${cName}_geolocation_popup" class="input-group" style="margin-bottom: 10px">
             <span class="input-group-addon">Lat</span>
-            <input id="${cName}_latitude_popup" type="text" class="form-control"
+            <input id="${cName}_latitude_popup" type="text" class="yw-input"
               pattern="-?\\d{1,3}\\.\\d+" value="${pPoint.lat}" />
             <span class="input-group-addon">Lon</span>
-            <input id="${cName}_longitude_popup" type="text" class="form-control"
+            <input id="${cName}_longitude_popup" type="text" class="yw-input"
               pattern="-?\\d{1,3}\\.\\d+" value="${pPoint.lng}" />
           </div>
           <div class="text-center">${_t('BAZ_ADJUST_MARKER_POSITION')}</div>

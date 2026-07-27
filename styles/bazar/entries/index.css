@@ -92,15 +92,15 @@ textarea:not(:placeholder-shown):invalid,
 .submitted textarea:required:invalid,
 .submitted select:required:invalid,
 .submitted .yw-tag-input.invalid,
-.submitted .form-group.input-checkbox.invalid,
-.submitted .form-group.input-radio.invalid,
+.submitted .yw-form-group.input-checkbox.invalid,
+.submitted .yw-form-group.input-radio.invalid,
 .submitted .invalid > .ace-container,
 .submitted .textarea.summernote.invalid {
   border-color: #dd2c00;
   border-color: var(--danger-color);
 }
 
-input.form-control.error {
+input.yw-input.error {
   border-color: var(--danger-color) !important;
 }
 .BAZ_label {

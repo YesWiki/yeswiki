@@ -1,11 +1,11 @@
-<div class="control-group form-group">
-    <label class="control-label col-sm-3">  
+<div class="yw-form-group">
+    <label class="yw-form-label">  
         {% if field.hint %}
             <img loading="lazy" class="tooltip_aide" title="{{ field.hint|striptags }}" alt="{{ field.hint|striptags }}" src="images/bazar/aide.png" width="16" height="16" />
         {% endif %} 
         {{ field.label|raw }}   
     </label>
-    <div class="controls col-sm-9">
+    <div class="controls">
         <div class="yw-alert yw-alert--info">
             <a
                 href="javascript:var wleft = (screen.width-700)/2; var wtop=(screen.height-530)/2; window.open('{{ 

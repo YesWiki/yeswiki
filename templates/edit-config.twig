@@ -1,6 +1,6 @@
 <h3>{{ _t('EDIT_CONFIG_TITLE') }}</h3>
 
-<form action="" method="post" name="edit-config" id="edit-config" class="form-horizontal">
+<form action="" method="post" name="edit-config" id="edit-config" class="">
   <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
     {% for group, data in keysList %}
       <div class="panel panel-{{ group == 'core' ? 'primary' : 'default' }}">
@@ -16,7 +16,7 @@
               <div class="field-container">
                 <label for="{{ key }}">{{ help[key] ?? key }}</label>
                 {% if help[key] %}<span> - {{ key }}</span>{% endif %}
-                <input type="text" class="form-control" id="{{ key }}" name="{{ key }}" value="{{ value }}"
+                <input type="text" class="yw-input" id="{{ key }}" name="{{ key }}" value="{{ value }}"
                   {{ help[key] ? 'aria-describedby="' ~ key ~ 'Help"' }}
                   {% if placeholders[key] is not null -%}placeholder="{{ _t('EDIT_CONFIG_CURRENT_VALUE') }}: {{ placeholders[key] }}"{%- endif %}
                   />
@@ -31,7 +31,7 @@
   {# DO NOT REMOVE THE FOLLOWING LINE THAT IS DEFINED FOR POST ACTIONS__.php#}
   <!-- end of #edit-config form -->
   <input type="hidden" name="{{ SAVE_NAME }}" value="1">
-  <div class="form-group">
+  <div class="yw-form-group">
     <div class="col-sm-9 col-sm-offset-3">
       <button type="submit" name="valider" class="btn btn-primary">
         {{ _t('BAZ_VALIDER') }}

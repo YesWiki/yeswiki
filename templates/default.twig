@@ -42,10 +42,10 @@
                         {% block formContent %}
                             {% block formTitle %}<h2>{{ _t("LOGIN_LOGIN") }}</h2>{% endblock %}
                             {% block wikiNameInputGroup %}
-                                <div class="form-group">
-                                    <label for="inputWikiName" class="control-label">{{ _t("LOGIN_WIKINAME") }}</label>
+                                <div class="yw-form-group">
+                                    <label for="inputWikiName" class="yw-form-label">{{ _t("LOGIN_WIKINAME") }}</label>
                                     <input id="inputWikiName"
-                                           class="form-control"
+                                           class="yw-input"
                                            type="text"
                                            name="name"
                                            value="{{ user ? user|e("html_attr") : '' }}"
@@ -53,10 +53,10 @@
                                 </div>
                             {% endblock %}
                             {% block passwordInputGroup %}
-                                <div class="form-group">
-                                    <label for="inputPassword" class="control-label">{{ _t("LOGIN_PASSWORD") }}</label>
+                                <div class="yw-form-group">
+                                    <label for="inputPassword" class="yw-form-label">{{ _t("LOGIN_PASSWORD") }}</label>
                                     <input id="inputPassword"
-                                           class="form-control"
+                                           class="yw-input"
                                            name="password"
                                            type="password"
                                            required />

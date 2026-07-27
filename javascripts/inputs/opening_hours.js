@@ -81,8 +81,8 @@ const createOpeningHoursCreateComponent = (openingHoursData, fieldData, titleDat
     }
   },
   template: `
-  <div class="opening-hours control-group form-group">
-    <label class="control-label col-sm-3"> {{ field.label }} </label>
+  <div class="opening-hours yw-form-group">
+    <label class="yw-form-label"> {{ field.label }} </label>
     <div>
         <div class="opening-hours-interval" v-for="interval in opening_days">
             <select v-model="interval.days" multiple title="${_t('BAZ_OPENING_HOURS_HELP_DAY')}">

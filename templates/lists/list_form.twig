@@ -5,20 +5,20 @@
 {{ include_javascript('javascripts/list-form.js', false, true) }}
 {{ include_css('styles/bazar/list-form.css') }}
 
-<form method="post" @submit="onSubmit" class="list-form form-horizontal" data-list="{{ list|json_encode }}">
-	<div class="control-group form-group">
-		<label class="control-label col-sm-3">
+<form method="post" @submit="onSubmit" class="list-form" data-list="{{ list|json_encode }}">
+	<div class="yw-form-group">
+		<label class="yw-form-label">
 			<span class="required_symbol">*&nbsp;</span>
 			{{ _t('BAZ_LIST_NAME') }}
 		</label>
-		<div class="controls col-sm-9">
+		<div class="controls">
 			<input type="text" v-model="title" name="title" 
-			       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="form-control" required/>
+			       placeholder="{{ _t('BAZ_LIST_NAME') }}" class="yw-input" required/>
 		</div>
 	</div>
 
 	{# List Nodes #}
-	<label class="control-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
+	<label class="yw-form-label">{{ _t('BAZ_VALEURS_LISTE') }}</label>
 	<div class="nodes-container">
 		<list-node :node="rootNode" :depth="0" :index="0"></list-node>
 	</div>
@@ -26,7 +26,7 @@
 	<input type="hidden" name="nodes" :value="jsonNodes" />
 
 	{# Form Actions #}
-	<div class="form-actions form-group">
+	<div class="form-actions yw-form-group">
 		<div class="col-sm-9 col-sm-offset-3">
 			<button class="btn btn-primary" type="submit" name="submit">
 				{{ _t('BAZ_SAVE') }}

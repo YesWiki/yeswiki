@@ -6,10 +6,10 @@
     {{ include_javascript('javascripts/handlers/duplicate.js') }}
     <form class="duplication-wiki-form">
     <div class="text-tip">{{ _t('WIKI_URL_RECENT') }}.</div>
-    <div class="form-group">
-      <label for="url-wiki" class="control-label">{{ _t('WIKI_URL') }}</label>
+    <div class="yw-form-group">
+      <label for="url-wiki" class="yw-form-label">{{ _t('WIKI_URL') }}</label>
       <div class="input-group">
-        <input required type="url" class="form-control" id="url-wiki" name="url-wiki" placeholder="{{ _t('WIKI_URL') }}" value="" />
+        <input required type="url" class="yw-input" id="url-wiki" name="url-wiki" placeholder="{{ _t('WIKI_URL') }}" value="" />
         <span class="input-group-btn">
           <button class="btn-verify-wiki btn btn-primary" type="submit">{{ _t('VERIFY_WIKI') }}</button>
         </span>
@@ -19,19 +19,19 @@
     </form>
     <form class="login-fields hide row duplication-login-form">{# hide the field while no valid yeswiki url given #}
       <div class="col-lg-4">
-        <div class="form-group">
-          <label for="username" class="control-label">{{ _t('LOGIN_WIKINAME') }}</label>
-          <input required type="text" class="form-control" id="username" name="username" placeholder="{{ _t('LOGIN_WIKINAME') }}" value="" />
+        <div class="yw-form-group">
+          <label for="username" class="yw-form-label">{{ _t('LOGIN_WIKINAME') }}</label>
+          <input required type="text" class="yw-input" id="username" name="username" placeholder="{{ _t('LOGIN_WIKINAME') }}" value="" />
         </div>
       </div>
       <div class="col-lg-4">
-        <div class="form-group">
-          <label for="login" class="control-label">{{ _t('LOGIN_PASSWORD') }}</label>
-          <input required type="password" class="form-control" id="password" name="password" placeholder="{{ _t('LOGIN_PASSWORD') }}" value="" />
+        <div class="yw-form-group">
+          <label for="login" class="yw-form-label">{{ _t('LOGIN_PASSWORD') }}</label>
+          <input required type="password" class="yw-input" id="password" name="password" placeholder="{{ _t('LOGIN_PASSWORD') }}" value="" />
         </div>
       </div>
       <div class="col-lg-4">
-        <div class="form-group">
+        <div class="yw-form-group">
           <button type="submit" class="btn-distant-login btn btn-primary btn-block"><i class="fa fa-sign-in-alt"></i> {{ _t('DISTANT_LOGIN') }}</button>
         </div>
       </div>
@@ -47,18 +47,18 @@
     {% endif %}
   <form id="form-duplication" method="post" action="{{ url({handler: 'duplicate'})}}">
     {% if pageTitle %}
-    <div class="form-group">
-      <label for="newTitle" class="control-label">{{ _t('PAGE_TITLE_TO_DUPLICATE') }}</label>
+    <div class="yw-form-group">
+      <label for="newTitle" class="yw-form-label">{{ _t('PAGE_TITLE_TO_DUPLICATE') }}</label>
       <div class="input-group">
-        <input required type="text" class="form-control" id="newTitle" name="newTitle" placeholder="{{ _t('PAGE_TITLE_TO_DUPLICATE') }}" value="{{pageTitle}}" />
+        <input required type="text" class="yw-input" id="newTitle" name="newTitle" placeholder="{{ _t('PAGE_TITLE_TO_DUPLICATE') }}" value="{{pageTitle}}" />
       </div>
     </div>
     {% endif %}
-    <div class="form-group">
-      <label for="newTag" class="control-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
+    <div class="yw-form-group">
+      <label for="newTag" class="yw-form-label">{{ _t('PAGE_TAG_TO_DUPLICATE') }}</label>
       <div class="input-group">
         <span class="input-group-addon" id="base-url">{{ baseUrl }}</span>
-        <input required type="text" class="form-control" id="newTag" name="newTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
+        <input required type="text" class="yw-input" id="newTag" name="newTag" placeholder="{{ _t('PAGE_TAG_TO_DUPLICATE') }}" value="{{proposedTag}}" />
         {% if toExternalWiki %}
         <span class="input-group-btn">
           <button class="btn-verify-tag btn btn-primary" type="submit">{{ _t('VERIFY_PAGE_AVAILABILITY') }}</button>

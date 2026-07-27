@@ -144,12 +144,12 @@
 <hr>
 
 <strong>{{ _t('BAZ_IMPORT_FORMS_FROM_URL') }}</strong>
-<form action="javascript:undefined" class="form-horizontal">
+<form action="javascript:undefined" class="">
 	<div class="input-prepend input-append input-group">
 		<span class="add-on input-group-addon">
       <i class="fa fa-link icon-globe"></i>
     </span>
-		<input id="url-import-forms" class="form-control input-xxlarge" {% if not userIsAdmin or isWikiHibernated %}disabled  data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
+		<input id="url-import-forms" class="yw-input input-xxlarge" {% if not userIsAdmin or isWikiHibernated %}disabled  data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
 		<span class="input-group-btn">
       <button id="btn-import-forms" {% if not userIsAdmin or isWikiHibernated %}disabled  disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} class="yw-btn yw-btn--primary" type="submit">{{ _t('BAZ_GO') }} !</button>
     </span>

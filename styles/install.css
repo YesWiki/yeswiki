@@ -85,7 +85,7 @@ legend {
   margin-bottom: 100px;
 }
 
-.accordion-inner .control-label {
+.accordion-inner .yw-form-label {
   width: 232px;
 }
 
@@ -129,7 +129,7 @@ span {
   font-size: 14px;
 }
 
-.form-horizontal .control-group {
+.yw-form-group {
   margin-bottom: 15px;
 }
 

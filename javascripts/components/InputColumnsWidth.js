@@ -17,7 +17,7 @@ export default {
   },
   template: `
     <div class="multi-input-container" :class="name">
-      <label v-if="config.label" class="control-label">{{ config.label }}</label>
+      <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
       <div class="inline-form" v-for="element in elements">
         <template v-for="(property, propName) in config.subproperties">
           <component :is="componentIdFrom(property)" v-model="element[propName]"
@@ -26,7 +26,7 @@ export default {
           </component>
         </template>
         <!-- Remove Button -->
-        <div class="form-group btn-close-container">
+        <div class="yw-form-group btn-close-container">
           <button class="btn btn-default btn-icon" @click="removeElement(element)">
             <i class="btn-remove-group fa fa-times"></i>
           </button>

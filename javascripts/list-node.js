@@ -41,13 +41,13 @@ export default {
         </button>
         <!-- Label -->
         <input type="text" v-model="node.label" placeholder="${_t('LIST_TEXT')}" 
-              class="form-control" @keydown.enter.prevent />
+              class="yw-input" @keydown.enter.prevent />
         <!-- Id -->
         <div class="input-group-addon" >
           ${_t('LIST_KEY')} :
         </div>
         <input type="text" v-model="node.id" placeholder="${_t('LIST_KEY')}" 
-              class="form-control input-id" :class="{ error: !node.id }"
+              class="yw-input input-id" :class="{ error: !node.id }"
               @keydown.enter.prevent />
         <!-- Delete Icon -->
         <button type="button" @click="$emit('delete', node)" 
@@ -70,7 +70,7 @@ export default {
           </button>
           <input type="text" v-model="newNodeLabel" 
                  :placeholder="depth > 0 ? '${_t('LIST_ADD_CHILD_NODE')}' : '${_t('LIST_ADD_NODE')}'" 
-                 class="form-control" @keydown.enter.prevent="addChildNode" />
+                 class="yw-input" @keydown.enter.prevent="addChildNode" />
           
         </div>
         

@@ -41,7 +41,7 @@
             <textarea
                 id="{{ field.name }}"
                 name="{{ field.name }}"
-                class="form-control {% if field.syntax == 'html' %}vditor-html{% else %}{{ field.syntax }}{% endif %}"
+                class="yw-input {% if field.syntax == 'html' %}vditor-html{% else %}{{ field.syntax }}{% endif %}"
                 {% if field.syntax == 'html' %}data-vditor-lang="{{ vditorLang }}"{% endif %}
                 rows="{{ field.numRows }}"
                 {% if field.size %} cols="{{ field.size }}" {% endif %}

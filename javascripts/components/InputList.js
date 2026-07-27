@@ -34,11 +34,11 @@ export default {
     }
   },
   template: `
-    <div class="form-group input-group" :class="config.type" :title="config.hint" >
+    <div class="yw-form-group input-group" :class="config.type" :title="config.hint" >
       <addon-icon :config="config" v-if="config.icon"></addon-icon>
-      <label v-if="config.label" class="control-label">{{ config.label }}</label>
+      <label v-if="config.label" class="yw-form-label">{{ config.label }}</label>
       <select :value="value" v-on:input="$emit('input', $event.target.value)"
-              :required="config.required" class="form-control">
+              :required="config.required" class="yw-input">
         <option value=""></option>
         <option v-for="(optLabel, optValue) in optionsList" :value="optValue" :selected="value == optValue">
           {{ optLabel }}

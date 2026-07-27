@@ -44,7 +44,7 @@ export default {
     }
   },
   template: `
-    <div class="form-group" :class="config.type" :title="config.hint" >
+    <div class="yw-form-group" :class="config.type" :title="config.hint" >
       <label class="text-center">{{ config.label }}</label>
       <div ref="mapContainer"></div>
       <input-hint :config="config"></input-hint>

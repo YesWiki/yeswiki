@@ -38,9 +38,9 @@
     {% endif %}
 
     <p>{{ _t('ACLS_SELECT_PAGES_TO_MODIFY') }}</p>
-    <div class="form-group" style="display:flex;justify-content:flex-end;margin-bottom:10px;margin-top:10px;">
+    <div class="yw-form-group" style="display:flex;justify-content:flex-end;margin-bottom:10px;margin-top:10px;">
     <label for="filterforpages" style="margin-right:10px;">{{ _t('ACLS_SELECT_PAGES_FILTER') }}</label>
-        <select class="form-control" id="filterforpages" onchange="reloadGererDroits(this)">
+        <select class="yw-input" id="filterforpages" onchange="reloadGererDroits(this)">
             <option value="" {% if filTer is empty %}selected="selected"{% endif %}></option>
             <option value="pages" {% if filTer == 'pages' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_PAGES') }}</option>
             <option value="specialpages" {% if filTer == 'specialpages' %}selected="selected"{% endif %}>{{ _t('ACLS_SELECT_PAGES_FILTER_ON_SPECIALPAGES') }}</option>
@@ -138,10 +138,10 @@
           {% for role,label in {lire:_t('YW_ACLS_READ'),ecrire:_t('YW_ACLS_WRITE'),comment:_t('YW_ACLS_COMMENT')} %}
             {% set labelRole = "new#{ role }" %}
             <div class="acl-single-container">
-                <label for="{{ labelRole }}" class="control-label">
+                <label for="{{ labelRole }}" class="yw-form-label">
                     {{ label }}
                 </label>
-                <select name="{{ labelRole }}" class="form-control acl-simple">
+                <select name="{{ labelRole }}" class="yw-input acl-simple">
                     <option value="">{{ _t('ACLS_NO_CHANGE') }}</option>
                     {% if role == 'comment' %}<option value="comments-closed">{{ _t('ACLS_COMMENTS_CLOSED') }}</option>
                     {% else %}<option value="*">{{ _t('ACLS_EVERYBODY') }}</option>{% endif %}
@@ -151,7 +151,7 @@
                 <option value="@{{ group }}">{{ group }}</option>
                 {% endfor %}
                 </select>
-                <input placeholder="{{ _t('ACLS_LIST_OF_ACLS') }}" name="{{ labelRole }}_advanced" class="acl-advanced form-control" />
+                <input placeholder="{{ _t('ACLS_LIST_OF_ACLS') }}" name="{{ labelRole }}_advanced" class="acl-advanced yw-input" />
             </div>
           {% endfor %}
         </div>

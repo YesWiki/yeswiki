@@ -1,4 +1,4 @@
-<form class="form-horizontal form-yeswiki-install" action="{{ baseUrl }}?PagePrincipale&installAction=install" method="post">
+<form class="form-yeswiki-install" action="{{ baseUrl }}?PagePrincipale&installAction=install" method="post">
 
   {% if backupFound %}
     <div class="well">
@@ -58,10 +58,10 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label">{{ _t('DEFAULT_LANGUAGE') }}</label>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('DEFAULT_LANGUAGE') }}</label>
         <div class="col-sm-9">
-          <select required autocomplete="off" class="form-control" name="config[default_language]"
+          <select required autocomplete="off" class="yw-input" name="config[default_language]"
             {%- if env.default_language is defined %} disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}"
             {%- else %} onchange="const f = this.closest('.form-yeswiki-install'); f.action = '{{ baseUrl }}?installAction=default&lang=' + this.value; f.submit();"
             {%- endif %}>
@@ -73,31 +73,31 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label">{{ _t('YOUR_WEBSITE_NAME') }}</label>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('YOUR_WEBSITE_NAME') }}</label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[yeswiki_name]" {% if env.yeswiki_name is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.yeswiki_name }}" />
+          <input type="text" required class="yw-input" name="config[yeswiki_name]" {% if env.yeswiki_name is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.yeswiki_name }}" />
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label">{{ _t('DESCRIPTION') }}</label>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('DESCRIPTION') }}</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control" name="config[meta_description]" {% if env.meta_description is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.meta_description }}" />
+          <input type="text" class="yw-input" name="config[meta_description]" {% if env.meta_description is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.meta_description }}" />
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label">{{ _t('KEYWORDS') }}</label>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('KEYWORDS') }}</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control" name="config[meta_keywords]" {% if env.meta_keywords is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.meta_keywords }}" />
+          <input type="text" class="yw-input" name="config[meta_keywords]" {% if env.meta_keywords is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.meta_keywords }}" />
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label">{{ _t('HOMEPAGE') }}</label>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('HOMEPAGE') }}</label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[root_page]" {% if env.root_page is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.root_page }}" pattern="{{ pattern }}" />
+          <input type="text" required class="yw-input" name="config[root_page]" {% if env.root_page is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.root_page }}" pattern="{{ pattern }}" />
           <p class="help-block">{{ _t('MUST_BE_WIKINAME') }}</p>
         </div>
       </div>
@@ -140,10 +140,10 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label">{{ _t('DATABASE_DRIVER') }}</label>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('DATABASE_DRIVER') }}</label>
         <div class="col-sm-9">
-          <select class="form-control" name="config[db_driver]" id="db_driver_select" {% if env.db_driver is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}"{% endif %}>
+          <select class="yw-input" name="config[db_driver]" id="db_driver_select" {% if env.db_driver is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}"{% endif %}>
             {% for driver, label in availableDrivers %}
               <option value="{{ driver }}" {% if driver == config.db_driver %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
@@ -156,38 +156,38 @@
         </div>
       </div>
 
-      <div class="form-group db-server-field">
-        <label class="col-sm-3 control-label">{{ _t('DATABASE_SERVER') }}</label>
+      <div class="yw-form-group db-server-field">
+        <label class="yw-form-label">{{ _t('DATABASE_SERVER') }}</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control" name="config[db_host]" id="db_host" {% if env.db_host is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.db_host }}" />
+          <input type="text" class="yw-input" name="config[db_host]" id="db_host" {% if env.db_host is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.db_host }}" />
         </div>
       </div>
 
-      <div class="form-group db-server-field">
-        <label class="col-sm-3 control-label">{{ _t('DATABASE_NAME') }}</label>
+      <div class="yw-form-group db-server-field">
+        <label class="yw-form-label">{{ _t('DATABASE_NAME') }}</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control" name="config[db_database]" id="db_database" {% if env.db_database is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.db_database }}" />
+          <input type="text" class="yw-input" name="config[db_database]" id="db_database" {% if env.db_database is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.db_database }}" />
         </div>
       </div>
 
-      <div class="form-group db-server-field">
-        <label class="col-sm-3 control-label">{{ _t('DATABASE_USERNAME') }}</label>
+      <div class="yw-form-group db-server-field">
+        <label class="yw-form-label">{{ _t('DATABASE_USERNAME') }}</label>
         <div class="col-sm-9">
-          <input type="text" class="form-control" name="config[db_user]" id="db_user" {% if env.db_user is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.db_user }}" />
+          <input type="text" class="yw-input" name="config[db_user]" id="db_user" {% if env.db_user is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.db_user }}" />
         </div>
       </div>
 
-      <div class="form-group db-server-field">
-        <label class="col-sm-3 control-label">{{ _t('DATABASE_PASSWORD') }}</label>
+      <div class="yw-form-group db-server-field">
+        <label class="yw-form-label">{{ _t('DATABASE_PASSWORD') }}</label>
         <div class="col-sm-9">
-          <input type="password" class="form-control" name="config[db_password]" id="db_password" {% if env.db_password is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.db_password }}" />
+          <input type="password" class="yw-input" name="config[db_password]" id="db_password" {% if env.db_password is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.db_password }}" />
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="col-sm-3 control-label">{{ _t('TABLE_PREFIX') }}</label>
+      <div class="yw-form-group">
+        <label class="yw-form-label">{{ _t('TABLE_PREFIX') }}</label>
         <div class="col-sm-9">
-          <input type="text" required class="form-control" name="config[table_prefix]" {% if env.table_prefix is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.table_prefix }}" />
+          <input type="text" required class="yw-input" name="config[table_prefix]" {% if env.table_prefix is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.table_prefix }}" />
         </div>
       </div>
     </div>
@@ -225,33 +225,33 @@
       {% endif %}
       <div class="admin-form{% if backupFound and contentSQL == backupSqlFile %} hide{% endif %}">
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label">{{ _t('ADMIN') }}</label>
+        <div class="yw-form-group">
+          <label class="yw-form-label">{{ _t('ADMIN') }}</label>
           <div class="col-sm-9">
-            <input type="text" required class="form-control" name="admin_name" {% if adminEnvForced.name %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ adminName }}" />
+            <input type="text" required class="yw-input" name="admin_name" {% if adminEnvForced.name %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ adminName }}" />
             <p class="help-block">{{ _t('USERNAME_MUST_BE_WIKINAME') }}</p>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label">{{ _t('PASSWORD') }}</label>
+        <div class="yw-form-group">
+          <label class="yw-form-label">{{ _t('PASSWORD') }}</label>
           <div class="col-sm-9">
-            <input type="password" required class="form-control" name="admin_password" {% if adminEnvForced.password %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ adminPassword }}" />
+            <input type="password" required class="yw-input" name="admin_password" {% if adminEnvForced.password %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ adminPassword }}" />
             <p class="help-block">{{ _t('PASSWORD_SHOULD_HAVE_5_CHARS_MINIMUM') }}</p>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label">{{ _t('PASSWORD_CONFIRMATION') }}</label>
+        <div class="yw-form-group">
+          <label class="yw-form-label">{{ _t('PASSWORD_CONFIRMATION') }}</label>
           <div class="col-sm-9">
-            <input type="password" required class="form-control" size="50" name="admin_password_conf" {% if adminEnvForced.password %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ adminPassword }}" />
+            <input type="password" required class="yw-input" size="50" name="admin_password_conf" {% if adminEnvForced.password %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ adminPassword }}" />
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="col-sm-3 control-label">{{ _t('EMAIL_ADDRESS') }}</label>
+        <div class="yw-form-group">
+          <label class="yw-form-label">{{ _t('EMAIL_ADDRESS') }}</label>
           <div class="col-sm-9">
-            <input type="email" required class="form-control" name="admin_email" {% if adminEnvForced.email %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ adminEmail }}" />
+            <input type="email" required class="yw-input" name="admin_email" {% if adminEnvForced.email %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ adminEmail }}" />
           </div>
         </div>
 
@@ -261,7 +261,7 @@
 
   <div class="accordion-heading">
     <h3>
-      <a class="" data-toggle="collapse" data-parent="#accordion4" href="#collapseFour">{{ _t('ADVANCED_CONFIGURATION') }}</a>
+      <a data-toggle="collapse" data-parent="#accordion4" href="#collapseFour">{{ _t('ADVANCED_CONFIGURATION') }}</a>
     </h3>
   </div>
 
@@ -269,10 +269,10 @@
     <div class="accordion-group">
       <div id="collapseFour" class="accordion-body collapse">
         <div class="accordion-inner">
-          <div class="form-group">
-            <label class="col-sm-3 control-label">{{ _t('BASE_URL') }}</label>
+          <div class="yw-form-group">
+            <label class="yw-form-label">{{ _t('BASE_URL') }}</label>
             <div class="col-sm-9">
-              <input type="text" required class="form-control" name="config[base_url]" {% if env.base_url is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.base_url }}" />
+              <input type="text" required class="yw-input" name="config[base_url]" {% if env.base_url is defined %}disabled title="{{ _t('VARIABLE_ENV_NOT_MODIFIABLE') }}" {% endif %}value="{{ config.base_url }}" />
               <p class="help-block">{{ _t('PAGENAME_WILL_BE_ADDED_AFTER_CHANGE_JUST_FOR_REDIRECTION') }}</p>
             </div>
           </div>
@@ -306,7 +306,7 @@
     </div>
   </div>
 
-  <div class="form-group">
+  <div class="yw-form-group">
     <div class="col-sm-offset-3 col-sm-9">
       <input class="btn btn-lg btn-primary" type="submit" value="{{ _t('CONTINUE') }}" />
     </div>
@@ -320,7 +320,7 @@
     border-color: #DD2C00;
   }
 
-  .form-control[disabled] {
+  .yw-input[disabled] {
     background-color: #bdbdbd;
   }
 </style>

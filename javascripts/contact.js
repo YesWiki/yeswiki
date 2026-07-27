@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let firstErrorGroup = null
 
     form.querySelectorAll('input[required], textarea[required]').forEach((field) => {
-      const group = field.closest('.form-group')
+      const group = field.closest('.yw-form-group')
       if (field.value.length === 0 || field.value === '0') {
         atLeastOneFieldNotValid = true
         if (group) {
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     form.querySelectorAll('input[type=email]').forEach((field) => {
       const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
       const address = field.value
-      const group = field.closest('.form-group')
+      const group = field.closest('.yw-form-group')
       const isEmptyOptional = address === '' && field.getAttribute('required') !== 'required'
       if (reg.test(address) === false && !isEmptyOptional) {
         atLeastOneMailFieldNotValid = true

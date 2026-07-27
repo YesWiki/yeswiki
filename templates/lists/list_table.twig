@@ -24,7 +24,7 @@
         </td>
         <td>
           {% if list.options %}
-            <select class="form-control input-sm" id="liste_{{ key }}">
+            <select class="yw-input input-sm" id="liste_{{ key }}">
               <option>{{ _t('BAZ_CHOISIR') }}</option>
               {% for option in list.options %}
                 <option>{{ option|raw }}</option>
@@ -71,12 +71,12 @@
 {# LIST IMPORT #}
 
 <strong>{{ _t('BAZ_IMPORT_LISTS_FROM_URL') }}</strong>
-<form action="javascript:undefined" class="form-horizontal">
+<form action="javascript:undefined" class="">
 	<div class="input-prepend input-append input-group">
 		<span class="add-on input-group-addon">
 			<i class="fa fa-link icon-globe"></i>
 		</span>
-		<input id="url-import-lists" class="form-control input-xxlarge" {% if not loggedUser %} disabled {% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url"/>
+		<input id="url-import-lists" class="yw-input input-xxlarge" {% if not loggedUser %} disabled {% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url"/>
 		<span class="input-group-btn">
 			<button id="btn-import-lists" {% if not loggedUser %} disabled {% endif %} class="yw-btn yw-btn--primary" type="submit">
 				{{ _t('BAZ_GO') }}&nbsp;!

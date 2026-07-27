@@ -30,7 +30,7 @@
   padding: 1em;
 }
 
-.opening-hours > .control-label {
+.opening-hours > .yw-form-label {
   background-color: white;
   margin-bottom: 0.3em;
 }

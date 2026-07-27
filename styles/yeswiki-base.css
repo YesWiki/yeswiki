@@ -446,7 +446,7 @@ body > :not(#YesWikiModal) .current-revision-text {
   z-index: 200000;
 }
 
-#form_page_options .control-label {
+#form_page_options .yw-form-label {
   width: 200px;
 }
 
@@ -523,7 +523,7 @@ body {
   min-height: auto !important;
 }
 
-.control-label::after {
+.yw-form-label::after {
   content: ':';
   margin: 0 0.25em;
 }
@@ -646,7 +646,7 @@ body {
     0 1px 5px 0 rgb(0 0 0 / 12%);
 }
 
-.form-control[type='checkbox'] {
+.yw-input[type='checkbox'] {
   border: none;
   height: auto;
   display: inline-block;

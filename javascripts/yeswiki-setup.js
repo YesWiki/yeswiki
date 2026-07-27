@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.admin-message').forEach((element) => {
         element.classList.toggle('hide', !useBackup)
       })
-      document.querySelectorAll('.admin-form .form-control').forEach((field) => {
+      document.querySelectorAll('.admin-form .yw-input').forEach((field) => {
         field.required = !useBackup && !field.disabled
       })
     }

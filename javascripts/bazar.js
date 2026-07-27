@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   //= ===========longueur maximale d'un champ textarea
   function remainingCounterFor(textarea) {
-    const group = textarea.closest('.control-group')
+    const group = textarea.closest('.yw-form-group')
     return group ? group.querySelector('.charsRemaining') : null
   }
 
@@ -109,8 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   // éviter la validation du formulaire en pressant la touche Entrée
-  const enterTrapSelector = 'form#formulaire .control-group.form-group'
-    + ' input.form-control[type=text]'
+  const enterTrapSelector = 'form#formulaire .yw-form-group'
+    + ' input.yw-input[type=text]'
   document.querySelectorAll(enterTrapSelector).forEach((item) => {
     item.addEventListener(
       'keydown',
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     checkboxChecking(input) {
       const nbelems = input.querySelectorAll('input:checked')
-      const parentToInvalid = input.closest('.form-group.input-checkbox')
+      const parentToInvalid = input.closest('.yw-form-group.input-checkbox')
       if (nbelems.length === 0) {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_CHECKBOX'))
         if (parentToInvalid) parentToInvalid.classList.add('invalid')
@@ -272,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     radioChecking(input) {
       const nbelems = input.querySelectorAll('input:checked')
-      const parentToInvalid = input.closest('.form-group.input-radio')
+      const parentToInvalid = input.closest('.yw-form-group.input-radio')
       if (nbelems.length === 0) {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_RADIO'))
         if (parentToInvalid) parentToInvalid.classList.add('invalid')
