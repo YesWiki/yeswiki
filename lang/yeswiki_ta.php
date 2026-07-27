@@ -1944,4 +1944,8 @@ return [
     'RSS_ADDS' => 'அசவுட்ச்',
     'RSS_DELETIONS' => 'அடக்குமுறைகள்',
     'RSS_NO_DIFF' => 'பாச் டி டிஃப் & ஈகூட்; ரெனன்ச்',
+
+    // page translation (ticket 25 revision, formerly tools/lang)
+    'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
+    'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 ];

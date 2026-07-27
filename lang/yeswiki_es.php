@@ -1982,4 +1982,8 @@ return [
     'RSS_ADDS' => 'Añadidos',
     'RSS_DELETIONS' => 'supresiones',
     'RSS_NO_DIFF' => 'Ninguna diferencia',
+
+    // page translation (ticket 25 revision, formerly tools/lang)
+    'LANG_DESTINATION_REQUIRED' => 'Falta el parámetro destinación (idioma destinación) obligatorio.',
+    'LANG_FLAG_FILE_MISSING' => 'Falta la bandera para este país',
 ];

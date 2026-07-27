@@ -1700,4 +1700,8 @@ return [
     'RSS_ADDS' => 'Addings',
     'RSS_DELETIONS' => 'Deletions',
     'RSS_NO_DIFF' => 'No differences',
+
+    // page translation (ticket 25 revision, formerly tools/lang)
+    'LANG_DESTINATION_REQUIRED' => 'O parâmetro de destino (idioma de destino), obrigatório, está faltando.',
+    'LANG_FLAG_FILE_MISSING' => 'Falta bandeira para este país',
 ];

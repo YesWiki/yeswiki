@@ -26,3 +26,21 @@ if (empty($class)) {
     $this->parameter['class'] = 'include ' . $class;
     $class = 'include ' . $class;
 }
+
+// Page translation (formerly tools/lang's __include before-callback): filter the
+// included page's body to the visitor's {{lang="xx"}} section and refresh the
+// page cache so the include action below renders the filtered version
+require_once YESWIKI_SOURCE_DIR . '/src/lang.functions.php';
+$langIncludedPage = $this->LoadPage(trim($this->GetParameter('page')));
+if (!empty($langIncludedPage['body'])) {
+    $langFilteredBody = filterBodyByLanguage(
+        $langIncludedPage['body'],
+        $GLOBALS['prefered_language'],
+        $this->config['default_language']
+    );
+    if ($langFilteredBody !== $langIncludedPage['body']) {
+        $langIncludedPage['body'] = $langFilteredBody;
+        // Hack : mise a jour du cache avec la nouvelle version.
+        $this->CachePage($langIncludedPage);
+    }
+}

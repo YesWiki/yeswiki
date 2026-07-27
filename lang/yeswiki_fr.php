@@ -2309,4 +2309,8 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'RSS_ADDS' => 'Ajouts',
     'RSS_DELETIONS' => 'Suppressions',
     'RSS_NO_DIFF' => 'Pas de différences',
+
+    // page translation (ticket 25 revision, formerly tools/lang)
+    'LANG_DESTINATION_REQUIRED' => 'Le paramètre destination (langue destination), obligatoire, est manquant.',
+    'LANG_FLAG_FILE_MISSING' => 'Drapeau absent pour ce pays',
 ];

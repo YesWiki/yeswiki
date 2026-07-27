@@ -2034,4 +2034,8 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
     'RSS_ADDS' => 'Adăugiri',
     'RSS_DELETIONS' => 'Eliminări',
     'RSS_NO_DIFF' => 'Nici o diferență',
+
+    // page translation (ticket 25 revision, formerly tools/lang)
+    'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
+    'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 ];

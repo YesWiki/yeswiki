@@ -33,3 +33,14 @@ if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess('read')) {
 
 // Verification de securite
 $this->addJavascriptFile('javascripts/tag.js');
+
+// Page translation (formerly tools/lang's __show before-callback): keep only the
+// {{lang="xx"}} section matching the visitor's language, if the page uses markers
+require_once YESWIKI_SOURCE_DIR . '/src/lang.functions.php';
+if (!empty($this->page['body'])) {
+    $this->page['body'] = filterBodyByLanguage(
+        $this->page['body'],
+        $GLOBALS['prefered_language'],
+        $this->config['default_language']
+    );
+}

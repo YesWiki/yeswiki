@@ -1701,4 +1701,8 @@ return [
     'RSS_ADDS' => 'Addings',
     'RSS_DELETIONS' => 'Deletions',
     'RSS_NO_DIFF' => 'No differences',
+
+    // page translation (ticket 25 revision, formerly tools/lang)
+    'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
+    'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 ];

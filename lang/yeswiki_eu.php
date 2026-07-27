@@ -2026,4 +2026,8 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'RSS_ADDS' => 'Eransketak',
     'RSS_DELETIONS' => 'Ezabapenak',
     'RSS_NO_DIFF' => 'Desberdintasunik ez',
+
+    // page translation (ticket 25 revision, formerly tools/lang)
+    'LANG_DESTINATION_REQUIRED' => 'Missing parameter destination (destination lang)',
+    'LANG_FLAG_FILE_MISSING' => 'No flag for this country',
 ];
