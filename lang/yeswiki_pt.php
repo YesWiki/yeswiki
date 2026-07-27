@@ -1683,4 +1683,10 @@ return [
     'WEBHOOKS_ERROR_INVALID_URL' => 'O link fornecido não é válido',
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'Um ou vários formulários selecionados não estão semanticamente definidos, o formato ActivityPub não pode ser usado',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Visible uniquement pour les administrateurs',
+
+    // herse (ticket 21, formerly the herse extension)
+    'ACCESS_DENIED' => 'Access denied',
+    'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
+    'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
+    'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 ];

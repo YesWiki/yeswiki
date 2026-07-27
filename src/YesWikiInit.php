@@ -425,6 +425,9 @@ class Init
             ],
             // bazar generic config (ticket 24, formerly tools/bazar's config.yaml)
             'baz_menu' => 'formulaire,consulter,saisir,listes,importer,exporter',
+            // herse: site-wide Basic Auth gate, off while empty (ticket 21)
+            'herse_id' => '',
+            'herse_password' => '',
             // webhooks generic config (ticket 20, formerly the webhooks extension's config.yaml)
             'webhooks_formats' => [
                 'raw' => 'WEBHOOKS_FORMAT_RAW',

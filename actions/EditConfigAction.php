@@ -61,6 +61,11 @@ class EditConfigAction extends YesWikiAction
         'comments_handler' => 'access',
         'allow_doubleclic' => 'access',
 
+        // formerly contributed via yeswiki-extension-herse's config.yaml's
+        // herse_editable_config_params (ticket 21)
+        'herse_id' => 'herse',
+        'herse_password' => 'herse',
+
         'password_for_editing' => 'security',
         'password_for_editing_message' => 'security',
         'htmlPurifierActivated' => 'security',

@@ -2194,4 +2194,10 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'WEBHOOKS_ERROR_INVALID_URL' => 'The given link is invalid',
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'One or more selected form is not semantic, the ActivityPub format cannot be used',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Only visible by admins',
+
+    // herse (ticket 21, formerly the herse extension)
+    'ACCESS_DENIED' => 'Access denied',
+    'EDIT_CONFIG_GROUP_HERSE' => 'Unique entrance password',
+    'EDIT_CONFIG_HINT_HERSE_ID' => 'Id for basic authentication',
+    'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Password for authentication',
 ];

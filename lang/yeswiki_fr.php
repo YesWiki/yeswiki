@@ -2292,4 +2292,10 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'WEBHOOKS_ERROR_INVALID_URL' => 'Le lien fourni n\'est pas valide',
     'WEBHOOKS_ERROR_FORM_NOT_SEMANTIC' => 'Un ou plusieurs formulaires sélectionnés n\'est pas défini sémantiquement, le format ActivityPub ne peut être utilisé',
     'WEBHOOKS_VISIBLE_ONLY_FOR_ADMINS' => 'Visible uniquement pour les administrateurs',
+
+    // herse (ticket 21, formerly the herse extension)
+    'ACCESS_DENIED' => 'Accès interdit',
+    'EDIT_CONFIG_GROUP_HERSE' => 'Herse / Mot de passe unique d\'entrée',
+    'EDIT_CONFIG_HINT_HERSE_ID' => 'Identifiant pour la herse',
+    'EDIT_CONFIG_HINT_HERSE_PASSWORD' => 'Mot de passe pour la herse',
 ];

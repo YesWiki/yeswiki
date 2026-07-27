@@ -1609,7 +1609,49 @@ class Wiki
         $this->includeExtensionsBootstrapFiles();
         $this->boot();
         $this->loadLanguages();
+        $this->enforceHerseGate();
         $this->loadTemplates();
+    }
+
+    /**
+     * Site-wide HTTP Basic Auth gate (ticket 21, formerly the herse extension's
+     * wiki.php bootstrap snippet): when herse_id/herse_password are configured,
+     * every web request must present them as Basic Auth credentials. Runs after
+     * loadLanguages() so _t() works (the extension had to manually include its
+     * lang file because it ran earlier). CLI is exempt — a console command
+     * cannot send Basic Auth; the extension version would have broken every
+     * console run on a herse-protected wiki (disclosed adaptation).
+     */
+    private function enforceHerseGate(): void
+    {
+        if (php_sapi_name() === 'cli') {
+            return;
+        }
+        if (!self::herseGateAllows($this->config, $_SERVER)) {
+            // the extension read wakka_name for the realm; core renamed the key
+            // to yeswiki_name (old configs may still carry the legacy name)
+            $realm = $this->config['yeswiki_name'] ?? $this->config['wakka_name'] ?? 'YesWiki';
+            header('WWW-Authenticate: Basic realm="' . $realm . '"');
+            header('HTTP/1.0 401 Unauthorized');
+            echo _t('ACCESS_DENIED');
+            exit;
+        }
+    }
+
+    /**
+     * The herse gate's pure decision: allowed when the gate is unconfigured, or
+     * when the request carries the exact configured Basic Auth credentials.
+     */
+    public static function herseGateAllows(array $config, array $server): bool
+    {
+        if (empty($config['herse_id']) || empty($config['herse_password'])) {
+            return true;
+        }
+
+        return isset($server['PHP_AUTH_USER'])
+            && isset($server['PHP_AUTH_PW'])
+            && $server['PHP_AUTH_USER'] == $config['herse_id']
+            && $server['PHP_AUTH_PW'] == $config['herse_password'];
     }
 
     /**
