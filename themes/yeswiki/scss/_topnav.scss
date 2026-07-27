@@ -1,0 +1,80 @@
+/* ---- top bar ---- */
+#yw-topnav {
+  background: var(--navbar-bg-color);
+  color: var(--navbar-text-color);
+  border-bottom: var(--navbar-border-bottom);
+  border-radius: var(--navbar-border-radius);
+  box-shadow: var(--navbar-shadow);
+  padding: 6px 0;
+  z-index: 100;
+}
+
+#yw-topnav .navbar-brand {
+  display: inline-block;
+  font-family: var(--main-title-fontfamily);
+  font-size: 1.2em;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* top-bar buttons sit flat on the bar (margot light.css look) */
+#yw-topnav .yw-topnav-fast-access .yw-btn,
+#yw-topnav .yw-topnav-fast-access .btn {
+  background: transparent;
+  border-color: transparent;
+  color: var(--navbar-link-color);
+}
+
+#yw-topnav .yw-topnav-fast-access .yw-btn:hover,
+#yw-topnav .yw-topnav-fast-access .yw-btn:focus,
+#yw-topnav .yw-topnav-fast-access .btn:hover,
+#yw-topnav .yw-topnav-fast-access .btn:focus {
+  color: var(--navbar-link-hover-color);
+  filter: none;
+}
+
+#yw-topnav .btn-menu {
+  display: none;
+}
+
+/* menu pages render plain lists: lay them out horizontally in the top bar
+   (dropdown menus inside the page keep their own layout) */
+#yw-topnav .topnavpage ul:not(.yw-dropdown__menu):not(.dropdown-menu) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#yw-topnav .topnavpage li {
+  list-style: none;
+}
+
+#yw-topnav .topnavpage > * a,
+#yw-topnav .yw-topnav-fast-access > * > a {
+  display: block;
+  padding: 8px 12px;
+  color: var(--navbar-link-color);
+  background: var(--navbar-link-bg-color);
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+#yw-topnav .topnavpage a:hover,
+#yw-topnav .topnavpage .active-list > a,
+#yw-topnav .topnavpage a.active-link {
+  color: var(--navbar-link-hover-color);
+  background: var(--navbar-link-bg-hover-color);
+}
+
+/* dropdown menus opened from the top bar sit on a light panel: keep their
+   links readable there rather than navbar-colored */
+#yw-topnav .yw-dropdown__menu a,
+#yw-topnav .dropdown-menu a {
+  color: var(--main-text-color);
+  background: transparent;
+}

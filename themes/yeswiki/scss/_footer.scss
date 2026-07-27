@@ -1,0 +1,27 @@
+/* ---- footer ---- */
+#yw-footer {
+  margin-top: 2em;
+  padding: 20px 0;
+  background: var(--footer-bg-color);
+  color: var(--footer-text-color);
+  border-top: var(--footer-border);
+}
+
+#yw-footer h1,
+#yw-footer h2,
+#yw-footer h3 {
+  color: var(--footer-title-color);
+}
+
+#yw-footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#yw-footer a {
+  color: var(--footer-text-color);
+}

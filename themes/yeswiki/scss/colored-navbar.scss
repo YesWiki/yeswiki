@@ -1,0 +1,16 @@
+// Variante du style yeswiki avec barre de menu colorée (l'équivalent inverse
+// de margot : light.css était la barre blanche, margot.css la barre colorée —
+// ici le style par défaut est blanc). Compiled flat: still one HTTP request.
+@use 'yeswiki';
+
+:root {
+  --navbar-bg-color: var(--primary-color);
+  --navbar-text-color: white;
+  --navbar-link-color: white;
+  --navbar-link-hover-color: rgb(255 255 255 / 85%);
+  --navbar-border-bottom: none;
+}
+
+#yw-topnav .navbar-brand {
+  color: white;
+}

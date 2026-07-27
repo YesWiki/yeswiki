@@ -1,1 +1,3 @@
 **/vendor/**
+# compiled theme CSS (built from themes/yeswiki/scss by `yarn build-theme`)
+themes/yeswiki/styles/
