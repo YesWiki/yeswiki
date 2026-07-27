@@ -25,7 +25,7 @@ if (empty($logo)) {
 
 if (count($fiches)>0) : ?>
 <div class="badge-container">
-    <?php foreach($fiches as $fiche): $i = $i+1; // DEBUG echo $i.' '.$fiche['id_fiche'].'<br >'; ?>
+    <?php foreach($fiches as $fiche): $i = $i+1; // DEBUG echo $i.' '.$fiche['tag'].'<br >'; ?>
           <div class="qrbadge bazar-entry" <?php echo $fiche['html_data'];?>>
             <?php
             $fiche = array_map(
@@ -38,7 +38,7 @@ if (count($fiches)>0) : ?>
               },
               $fiche
             );
-            $qrcode = $GLOBALS['wiki']->href('', 'QRcodeScan').'&id='.$entityForm.'&'.$entityType.'='.$fiche['id_fiche'];
+            $qrcode = $GLOBALS['wiki']->href('', 'QRcodeScan').'&id='.$entityForm.'&'.$entityType.'='.$fiche['tag'];
             $cacheImage = 'cache'.DIRECTORY_SEPARATOR.'qrcodebadge-'.$GLOBALS['wiki']->getPageTag().'-'.md5($qrcode).'.svg';
             if (!file_exists($cacheImage) || (!empty($_GET['refresh']) && $_GET['refresh']=='1')) {
                 $this->wiki->services->get(QrCodeService::class)->generateToFile($qrcode, $cacheImage);

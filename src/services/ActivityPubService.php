@@ -331,7 +331,7 @@ class ActivityPubService
         $localEntries = $entryManager->search(['idtypeannonce' => $form['id']]);
 
         foreach ($localEntries as $entry) {
-            $tag = $entry['id_fiche'];
+            $tag = $entry['tag'];
             $sourceTriples = $this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', '');
 
             if (!empty($sourceTriples)) {

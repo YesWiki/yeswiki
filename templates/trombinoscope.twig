@@ -12,7 +12,7 @@
               <img loading="lazy" class="trombi-image" alt=""
                    src="{{ fiche['external-data'] 
                         ? fiche['external-data']['baseUrl'] ~ 'cache/image_300_300_' ~ fiche.imagebf_image
-                        : resizedImages[fiche.id_fiche] }}"
+                        : resizedImages[fiche.tag] }}"
                    {{ fiche['external-data']
                     ? 'onerror=this.src=\'' ~ fiche['external-data'].baseUrl ~ 'files/' ~ fiche.imagebf_image ~ "\'"
                     : '' }} > {# TODO refactor redimensionner_image to use url and local cache ; idea  http://image.intervention.io/  ? #}

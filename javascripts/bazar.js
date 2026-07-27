@@ -731,8 +731,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // geometries need the id to be hidden
       const idsToMatch = new Set()
       data.entries.forEach((entry) => {
-        if (tabres.indexOf(entry) === -1 && entry.dataset.id_fiche) {
-          idsToMatch.add(String(entry.dataset.id_fiche))
+        if (tabres.indexOf(entry) === -1 && entry.dataset.tag) {
+          idsToMatch.add(String(entry.dataset.tag))
         }
       })
       data.geometries.forEach((geometry) => {
@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // on compte les résultats visibles (points et geometries confondus)
     const visibleIds = new Set()
     data.entries.filter(isVisible).forEach((entry) => {
-      if (entry.dataset.id_fiche) visibleIds.add(String(entry.dataset.id_fiche))
+      if (entry.dataset.tag) visibleIds.add(String(entry.dataset.tag))
     })
     data.geometries.filter(isVisible).forEach((geometry) => {
       if (geometry.dataset.id) visibleIds.add(String(geometry.dataset.id))
@@ -843,12 +843,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (bazarList[target] === undefined) {
         bazarList[target] = []
         containerEl.querySelectorAll('.bazar-entry').forEach((entry) => {
-          bazarList[target][entry.dataset.id_fiche] = entry.textContent.toLowerCase()
+          bazarList[target][entry.dataset.tag] = entry.textContent.toLowerCase()
         })
       }
       let nbresults = 0
       containerEl.querySelectorAll('.bazar-entry').forEach((entry) => {
-        const text = bazarList[target][entry.dataset.id_fiche] || ''
+        const text = bazarList[target][entry.dataset.tag] || ''
         const matches = text.indexOf(searchstring) > -1
         if (matches) {
           show(entry)

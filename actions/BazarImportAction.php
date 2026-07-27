@@ -18,7 +18,7 @@ class BazarImportAction extends YesWikiAction
     public function formatArguments($arg)
     {
         $request = $this->getRequest();
-        $vIDs = $request->get('id_typeannonce') ?? $request->get('id') ?? $arg['idtypeannonce'] ?? $arg['id'] ?? '';
+        $vIDs = $request->get('form_id') ?? $request->get('id') ?? $arg['idtypeannonce'] ?? $arg['id'] ?? '';
 
         if (!$this->bazarListService) {
             $this->bazarListService = $this->getService(BazarListService::class);

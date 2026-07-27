@@ -16,7 +16,7 @@ class BazarExportAction extends YesWikiAction
     {
         $request = $this->getRequest();
         $get = $request->query;
-        $vIDs = $request->get('id_typeannonce') ?? $request->get('id') ?? $arg['idtypeannonce'] ?? $arg['id'] ?? '';
+        $vIDs = $request->get('form_id') ?? $request->get('id') ?? $arg['idtypeannonce'] ?? $arg['id'] ?? '';
 
         // get services
         if (!$this->bazarListService) {

@@ -20,7 +20,7 @@ export default {
       if (search.length > 0 || Object.keys(filters).filter((filterKey) => filters[filterKey].length > 0).length > 0 || (params.id.indexOf(',') > -1)) {
         // filter on entries
         const { entries } = this.bazarcalendar
-        entriesParams = { query: `id_fiche=${entries.map((entry) => entry.id_fiche).join(',')}` }
+        entriesParams = { query: `tag=${entries.map((entry) => entry.tag).join(',')}` }
       }
       const urlParams = {
         ...formIdParams,

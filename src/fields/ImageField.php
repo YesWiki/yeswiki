@@ -44,7 +44,7 @@ class ImageField extends FileField
     protected function getDefaultImageName($entry)
     {
         if (!empty($entry)) {
-            $id = $entry['id_typeannonce'];
+            $id = $entry['form_id'];
         } else {
             $id = $_SESSION['current_form_id'] ?? 'no_id';
         }
@@ -159,7 +159,7 @@ class ImageField extends FileField
     }
 
     /*
-    *	indicates if id_fiche must be set before to format the value
+    *	indicates if tag must be set before to format the value
     */
 
     public function requireIDFiche()
@@ -190,12 +190,12 @@ class ImageField extends FileField
             ];
         }
 
-        if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
+        if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['tag'])) {
             $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
             $rawFileName = in_array($rawFileName, [false, null], true) ? '' : htmlspecialchars(strip_tags($rawFileName));
             $sanitizedFilename = $this->sanitizeFilename($rawFileName);
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
-            $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
+            $filePath = $this->getFullFileName($fileName, $entry['tag'], true);
 
             if ($this->isImage($rawFileName) && !$this->getService(HibernationService::class)->isWikiHibernated()) {
                 if (!file_exists($filePath)) {

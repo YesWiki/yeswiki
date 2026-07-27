@@ -27,7 +27,7 @@ const componentParams = {
   },
   methods: {
     addRows(columns, entries, currentusername, isadmin) {
-      const entriesToAdd = entries.filter((entry) => entry?.id_fiche && !(entry.id_fiche in this.rows))
+      const entriesToAdd = entries.filter((entry) => entry?.tag && !(entry.tag in this.rows))
       entriesToAdd.forEach((entry) => {
         const formattedData = {}
         columns.forEach((col) => {
@@ -76,12 +76,12 @@ const componentParams = {
             }
           }
         });
-        ['id_fiche', 'color', 'icon', 'url'].forEach((key) => {
+        ['tag', 'color', 'icon', 'url'].forEach((key) => {
           if (!(key in formattedData)) {
             formattedData[key] = entry[key] || ''
           }
         })
-        this.rows[entry.id_fiche] = formattedData
+        this.rows[entry.tag] = formattedData
       })
     },
     arraysEqual(a, b) {
@@ -99,7 +99,7 @@ const componentParams = {
       // if something to do before showing modal
     },
     getAdminsButtons(entryId, entryTitle, entryUrl, candelete) {
-      const isExternal = this.$root.isExternalUrl({ id_fiche: entryId, url: entryUrl })
+      const isExternal = this.$root.isExternalUrl({ tag: entryId, url: entryUrl })
       return TemplateRenderer.render(
         'BazarTable',
         this,
@@ -137,7 +137,7 @@ const componentParams = {
               data: '==canDelete==',
               class: 'not-export-this-col',
               orderable: false,
-              render: (data, type, row) => (type === 'display' ? this.getDeleteChekbox(uuid, row.id_fiche, !data) : ''),
+              render: (data, type, row) => (type === 'display' ? this.getDeleteChekbox(uuid, row.tag, !data) : ''),
               title: this.getDeleteChekboxAll(uuid, 'top'),
               footer: this.getDeleteChekboxAll(uuid, 'bottom')
             },
@@ -148,7 +148,7 @@ const componentParams = {
               data: '==adminsbuttons==',
               orderable: false,
               class: 'horizontal-admins-btn not-export-this-col',
-              render: (data, type, row) => (type === 'display' ? this.getAdminsButtons(row.id_fiche, row.bf_titre || '', row.url || '', row['==canDelete==']) : ''),
+              render: (data, type, row) => (type === 'display' ? this.getAdminsButtons(row.tag, row.bf_titre || '', row.url || '', row['==canDelete==']) : ''),
               title: '',
               footer: ''
             },
@@ -168,7 +168,7 @@ const componentParams = {
           displayvaluesinsteadofkeys: this.sanitizedParam(params, this.isAdmin, 'displayvaluesinsteadofkeys'),
           baseIdx: data.columns.length
         }
-        let fieldsToRegister = ['date_creation_fiche', 'date_maj_fiche', 'owner', 'id_typeannonce', 'url']
+        let fieldsToRegister = ['created_at', 'updated_at', 'owner', 'form_id', 'url']
         columnfieldsids.forEach((id, idx) => {
           if (id.length > 0 && id in fields) {
             this.registerField(data, {
@@ -361,11 +361,11 @@ const componentParams = {
     registerSpecialFields(fieldsToRegister, test, params, data, options) {
       if (Array.isArray(fieldsToRegister) && fieldsToRegister.length > 0) {
         const parameters = {
-          date_creation_fiche: {
+          created_at: {
             paramName: 'displaycreationdate',
             slotName: 'creationdatetranslate'
           },
-          date_maj_fiche: {
+          updated_at: {
             paramName: 'displaylastchangedate',
             slotName: 'modifiydatetranslate'
           },
@@ -373,7 +373,7 @@ const componentParams = {
             paramName: 'displayowner',
             slotName: 'ownertranslate'
           },
-          id_typeannonce: {
+          form_id: {
             paramName: '',
             slotName: 'formidtranslate'
           },
@@ -429,7 +429,7 @@ const componentParams = {
         let anchorOtherEntryId = ''
         if (fieldtype === 'image') {
           if (formattedData.length > 0) {
-            let regExp = new RegExp(`^(${row.id_fiche}_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`)
+            let regExp = new RegExp(`^(${row.tag}_${fieldName}_)(.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`)
             if (regExp.test(formattedData)) {
               let anchorImageDate1 = ''
               let anchorImageDate2 = '';
@@ -437,7 +437,7 @@ const componentParams = {
               anchorImageOther = `${anchorImageDate1}_${anchorImageDate2}`
               anchorData = 'entryIdAnchor_fieldNameAnchor_anchorImageSpecificPart_anchorImageOther.anchorImageExt'
             } else {
-              regExp = new RegExp(`^(${row.id_fiche}_${fieldName}_)(.*)\\.([^.]+)$`)
+              regExp = new RegExp(`^(${row.tag}_${fieldName}_)(.*)\\.([^.]+)$`)
               if (regExp.test(formattedData)) {
                 [,, anchorImageSpecificPart, anchorImageExt] = formattedData.match(regExp)
                 anchorData = 'entryIdAnchor_fieldNameAnchor_anchorImageSpecificPart.anchorImageExt'
@@ -479,7 +479,7 @@ const componentParams = {
           return formattedArray.map(({ key, title }) => this.renderCell({ fieldtype: intFieldType, fieldName, idx })({ display: title }, type, {
             ...row,
             ...{
-              id_fiche: key,
+              tag: key,
               url: (intFieldType === 'urlmodal')
                 ? wiki.url(`${key}/iframe`)
                 : (
@@ -519,7 +519,7 @@ const componentParams = {
           },
           [
             [/anchorData/g, formattedData.replace(/\n/g, '<br/>')],
-            [/entryIdAnchor/g, row?.id_fiche],
+            [/entryIdAnchor/g, row?.tag],
             [/anchorUrl/g, row?.url],
             [/lightslategray/g, row?.color],
             [/iconAnchor/g, row?.icon],
@@ -656,9 +656,9 @@ const componentParams = {
   watch: {
     entries(newVal, oldVal) {
       this.updateFieldsFromRoot() // because updated in same time than entries (but not reactive)
-      const sanitizedNewVal = newVal.filter((e) => (typeof e === 'object' && e !== null && 'id_fiche' in e))
-      const newIds = sanitizedNewVal.map((e) => e.id_fiche)
-      const oldIds = oldVal.map((e) => e.id_fiche || '').filter((e) => (typeof e === 'string' && e.length > 0))
+      const sanitizedNewVal = newVal.filter((e) => (typeof e === 'object' && e !== null && 'tag' in e))
+      const newIds = sanitizedNewVal.map((e) => e.tag)
+      const oldIds = oldVal.map((e) => e.tag || '').filter((e) => (typeof e === 'string' && e.length > 0))
       if (!this.arraysEqual(newIds, oldIds)) {
         this.updateEntries(sanitizedNewVal, newIds).catch(this.manageError)
       }

@@ -114,8 +114,8 @@ function baz_forms_and_lists_ids()
 function getHtmlDataAttributes($fiche, $formtab = '')
 {
     $htmldata = '';
-    if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
-        $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+    if (is_array($fiche) && isset($fiche['form_id'])) {
+        $form = isset($formtab[$fiche['form_id']]) ? $formtab[$fiche['form_id']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['form_id']);
         foreach ($fiche as $key => $value) {
             if (!empty($value)) {
                 if (
@@ -124,14 +124,14 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                         [
                             'bf_latitude',
                             'bf_longitude',
-                            'id_typeannonce',
+                            'form_id',
                             'owner',
-                            'date_creation_fiche',
+                            'created_at',
                             'date_debut_validite_fiche',
                             'date_fin_validite_fiche',
-                            'id_fiche',
-                            'statut_fiche',
-                            'date_maj_fiche',
+                            'tag',
+                            'status',
+                            'updated_at',
                         ]
                     )
                 ) {
@@ -179,7 +179,7 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
         if (substr($val, 0, 10) === 'listeListe' or substr($val, 0, 13) === 'checkboxListe') {
             $func = (substr($val, 0, 10) === 'listeListe' ? 'liste' : 'checkbox');
             $dummy = '';
-            $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+            $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['form_id']);
             $f = multiArraySearch($form, '1', preg_replace('/^(liste|checkbox)/i', '', $val));
             $f = array_shift($f);
             if (function_exists($func)) {
@@ -529,7 +529,7 @@ function baz_insertion_fiche($data)
 {
     $data['antispam'] = 1;
 
-    return $GLOBALS['wiki']->services->get(EntryManager::class)->create($data['id_fiche'], $data);
+    return $GLOBALS['wiki']->services->get(EntryManager::class)->create($data['tag'], $data);
 }
 
 /**
@@ -537,7 +537,7 @@ function baz_insertion_fiche($data)
  */
 function baz_mise_a_jour_fiche($data)
 {
-    return $GLOBALS['wiki']->services->get(EntryManager::class)->update($data['id_fiche'], $data);
+    return $GLOBALS['wiki']->services->get(EntryManager::class)->update($data['tag'], $data);
 }
 
 /**
@@ -613,7 +613,7 @@ function searchResultstoArray($pages, $params, $formtab = '')
     foreach ($pages as $page) {
         $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->decode($page['body']);
         $GLOBALS['wiki']->services->get(EntryManager::class)->appendDisplayData($fiche, false, $params['correspondance'] ?? '', $page);
-        $fiches[$fiche['id_fiche']] = $fiche;
+        $fiches[$fiche['tag']] = $fiche;
     }
 
     return $fiches;
@@ -727,9 +727,9 @@ function baz_formulaire($mode, $url = '', $valeurs = '')
         case BAZ_CHOISIR_TYPE_FICHE:
             return $GLOBALS['wiki']->services->get(EntryController::class)->selectForm();
         case BAZ_ACTION_NOUVEAU:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->create($_GET['id_typeannonce'] ?? $_GET['id'] ?? $_POST['id_typeannonce']);
+            return $GLOBALS['wiki']->services->get(EntryController::class)->create($_GET['form_id'] ?? $_GET['id'] ?? $_POST['form_id']);
         case BAZ_ACTION_MODIFIER:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['id_fiche'] ?? $_POST['id_typeannonce']);
+            return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['tag'] ?? $_POST['form_id']);
     }
 }
 
@@ -740,9 +740,9 @@ function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
 {
     switch ($mode) {
         case BAZ_ACTION_NOUVEAU:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->create($_GET['id_typeannonce'] ?? $_GET['id'] ?? $_POST['id_typeannonce']);
+            return $GLOBALS['wiki']->services->get(EntryController::class)->create($_GET['form_id'] ?? $_GET['id'] ?? $_POST['form_id']);
         case BAZ_ACTION_MODIFIER:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['id_fiche'] ?? $_POST['id_typeannonce']);
+            return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['tag'] ?? $_POST['form_id']);
     }
 }
 

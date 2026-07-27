@@ -11,7 +11,7 @@
   {% endif %}
 {% endif %}
 {% if value %}
-    <input type="hidden" name="nomwiki" value="{{ value }}"{% if userEmail is not empty %} data-fieldnametoupdate="{{ field.emailField }}" data-useremail="{{ userEmail }}"{% endif %}/>
+    <input type="hidden" name="nomwiki" value="{{ value }}"{% if userEmail is not empty %} data-fieldnametoupdate="{{ emailField }}" data-useremail="{{ userEmail }}"{% endif %}/>
 {% endif %}
 {% if userIsAdmin and value == userName and creationMode %}
     <div class="input-group">
@@ -37,28 +37,24 @@
     <div class="yw-form-group"{{ userIsAdmin ? " id=checkboxListe" ~ forceLabel ~ "_fake_value_checked" : '' }}>
         <label class="yw-form-label">
             <span class="symbole_obligatoire"></span>
-            {% if field.hint %}
-                <img loading="lazy" class="tooltip_aide" title="{{ field.hint|striptags }}" alt="{{ field.hint|striptags }}" src="images/bazar/aide.png" width="16" height="16" />
-            {% endif %}
+
             {{ _t('BAZ_MOT_DE_PASSE') }}
         </label>
         <div class="controls">
             <div class="input-group">
-                <input class="yw-input" type="password" name="mot_de_passe_wikini" size="{{ field.size }}" required />
+                <input class="yw-input" type="password" name="mot_de_passe_wikini" size="60" required />
             </div>
         </div>
     </div>
     <div class="yw-form-group"{{ userIsAdmin ? " id=checkboxListe" ~ forceLabel ~"_fake_value_checked": '' }}>
         <label class="yw-form-label">
             <span class="symbole_obligatoire"></span>
-            {% if field.hint %}
-						<img loading="lazy" class="tooltip_aide" title="{{ field.hint|striptags }}" alt="{{ field.hint|striptags }}" src="images/bazar/aide.png" width="16" height="16" />
-            {% endif %}
+
             {{ _t('BAZ_MOT_DE_PASSE') }} ({{ _t('BAZ_VERIFICATION') }})
         </label>
         <div class="controls">
             <div class="input-group">
-                <input class="yw-input" type="password" name="mot_de_passe_repete_wikini" size="{{ field.size }}" required />
+                <input class="yw-input" type="password" name="mot_de_passe_repete_wikini" size="60" required />
             </div>
         </div>
     </div>

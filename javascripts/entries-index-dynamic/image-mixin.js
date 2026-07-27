@@ -27,7 +27,7 @@ export default {
           this.processNextImage()
         } else {
           const baseUrl = entry.url
-            .slice(0, -entry.id_fiche.length)
+            .slice(0, -entry.tag.length)
             .replace(/\?$/, '')
             .replace(/\/$/, '')
           const previousUrl = node.src
@@ -46,7 +46,7 @@ export default {
         return null
       }
       let baseUrl = this.isExternalUrl(entry)
-        ? entry.url.slice(0, -entry.id_fiche.length)
+        ? entry.url.slice(0, -entry.tag.length)
         : wiki.baseUrl
       baseUrl = baseUrl.replace(/\?$/, '').replace(/\/$/, '')
       const fileName = entry[fieldName]
@@ -55,14 +55,14 @@ export default {
       if (fileName.toLowerCase().endsWith('.svg')) return `${baseUrl}/files/${fileName}`
 
       let regExp = new RegExp(
-        `^(${entry.id_fiche}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`
+        `^(${entry.tag}_${field.propertyname}_.*)_(\\d{14})_(\\d{14})\\.([^.]+)$`
       )
 
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}_$2_$3.$4`)}`
       }
       regExp = new RegExp(
-        `^(${entry.id_fiche}_${field.propertyname}_.*)\\.([^.]+)$`
+        `^(${entry.tag}_${field.propertyname}_.*)\\.([^.]+)$`
       )
       if (regExp.test(fileName)) {
         return `${baseUrl}/cache/${fileName.replace(regExp, `$1_${mode == 'fit' ? 'vignette' : 'cropped'}_${width}_${height}.$2`)}`

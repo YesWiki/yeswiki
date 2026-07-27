@@ -38,7 +38,7 @@ export default {
       fetch(`${wiki.url('?api/entries/bazarlist')}&${serializeSearchParams(vParams)}`).then((response) => response.json()).then((data) => {
         this.isLoading = false
         const searchedIds = data.entries.map((entry) => entry[0])
-        this.searchedEntries = entries.filter((entry) => searchedIds.includes(entry.id_fiche))
+        this.searchedEntries = entries.filter((entry) => searchedIds.includes(entry.tag))
         this.filterEntries()
         if (this.pendingRequest) {
           this.distantSearch(entries, this.pendingRequest)

@@ -58,9 +58,9 @@ class DateField extends BazarField
     {
         $return = [];
         if ($this->getPropertyname() === 'bf_date_fin_evenement') {
-            if (!empty($entry['id_fiche'])
-                    && is_string($entry['id_fiche'])) {
-                $this->getService(EntryDateService::class)->followId($entry['id_fiche']);
+            if (!empty($entry['tag'])
+                    && is_string($entry['tag'])) {
+                $this->getService(EntryDateService::class)->followId($entry['tag']);
             }
             if (!$this->getService(EntryDateService::class)->canRegisterMultipleEntries($entry)) {
                 // clean data from entry because not possible to create repetition

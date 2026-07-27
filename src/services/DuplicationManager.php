@@ -56,9 +56,9 @@ class DuplicationManager
     {
         $fields = [];
         $entry = $this->wiki->services->get(EntryManager::class)->getOne($id);
-        if (!empty($entry['id_fiche'])) { // bazar entry
+        if (!empty($entry['tag'])) { // bazar entry
             $formManager = $this->wiki->services->get(FormManager::class);
-            $form = $formManager->getOne($entry['id_typeannonce']);
+            $form = $formManager->getOne($entry['form_id']);
             // find fields that are textareas
             foreach ($form['prepared'] as $field) {
                 if ($field instanceof TextareaField || $field instanceof ImageField || $field instanceof FileField) {
@@ -247,10 +247,10 @@ class DuplicationManager
                         $entry[$f->getPropertyName()] = str_replace($fi['originalFile'], $fi['duplicatedFile'], $entry[$f->getPropertyName()]);
                     }
                 }
-                $entry['id_fiche'] = $data['newTag'];
+                $entry['tag'] = $data['newTag'];
                 $entry['bf_titre'] = $data['newTitle'];
                 $entry['antispam'] = 1;
-                $this->wiki->services->get(EntryManager::class)->create($entry['id_typeannonce'], $entry);
+                $this->wiki->services->get(EntryManager::class)->create($entry['form_id'], $entry);
                 break;
 
             default:
@@ -313,9 +313,9 @@ class DuplicationManager
             $this->wiki->services->get(PageManager::class)->save($tag, $newBody);
         } elseif ($req['type'] === 'entry') {
             $entry = json_decode($newBody, true);
-            $entry['id_fiche'] = $tag;
+            $entry['tag'] = $tag;
             $entry['antispam'] = 1;
-            $this->wiki->services->get(EntryManager::class)->create($entry['id_typeannonce'], $entry, false, $req['sourceUrl']);
+            $this->wiki->services->get(EntryManager::class)->create($entry['form_id'], $entry, false, $req['sourceUrl']);
         }
     }
 

@@ -6,7 +6,7 @@
         {{- entryHTML|replace({'src="tools':'src="' ~ baseUrl ~ '/tools'})|raw }}
         <br />
         <br />
-        <a href="{{ url({tag:entry.id_fiche}) }}" 
+        <a href="{{ url({tag:entry.tag}) }}" 
             title="{{ _t('BAZ_SEE_ENTRY') }}">
             {{ _t('BAZ_SEE_ENTRY_ONLINE_TO_ADMIN') }}
         </a>

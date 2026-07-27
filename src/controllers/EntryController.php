@@ -9,10 +9,10 @@ use YesWiki\Core\Exception\UserFieldException;
 use YesWiki\Core\Field\BazarField;
 use YesWiki\Core\Field\ConditionsCheckingField;
 use YesWiki\Core\Field\LabelField;
-use YesWiki\Core\Field\UserField;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\FormPropertiesService;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\HibernationService;
@@ -97,10 +97,10 @@ class EntryController extends YesWikiController
      */
     public function view($entryId, $time = '', $showFooter = true, ?string $userNameForRendering = null, $pLocalForm = '', $pExternalForm = '')
     {
-        if (is_array($entryId) && !empty($entryId) && isset($entryId['id_fiche'])) {
+        if (is_array($entryId) && !empty($entryId) && isset($entryId['tag'])) {
             // If entry ID is the full entry with all the values
             $entry = $entryId;
-            $entryId = $entry['id_fiche'];
+            $entryId = $entry['tag'];
         } elseif ($entryId) {
             $entry = $this->entryManager->getOne($entryId, false, $time, empty($userNameForRendering), false, $userNameForRendering);
             if (!$entry) {
@@ -111,7 +111,7 @@ class EntryController extends YesWikiController
         }
 
         if (empty($pLocalForm)) {
-            $pLocalForm = $this->formManager->getOne($entry['id_typeannonce']);
+            $pLocalForm = $this->formManager->getOne($entry['form_id']);
         }
 
         $vExternalData = $entry['external-data'] ?? null;
@@ -189,7 +189,7 @@ class EntryController extends YesWikiController
                         '@core/alert-message.twig',
                         [
                             'type' => 'info',
-                            'message' => str_replace('{{nb}}', $entry['id_typeannonce'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')),
+                            'message' => str_replace('{{nb}}', $entry['form_id'], _t('BAZ_PAS_DE_FORM_AVEC_ID_DE_CETTE_FICHE')),
                         ],
                     );
                 }
@@ -237,7 +237,7 @@ class EntryController extends YesWikiController
             'showFooter' => $showFooter,
             'currentuser' => $currentuser ?? null,
             'isUserFavorite' => $isUserFavorite ?? false,
-            'canShow' => $this->wiki->GetPageTag() != $entry['id_fiche'], // hide if we are already in the show page
+            'canShow' => $this->wiki->GetPageTag() != $entry['tag'], // hide if we are already in the show page
             'canEdit' => !$this->hibernationService->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
             'canDelete' => !$this->hibernationService->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)) && !isset($entry['read-only']),
             'canDuplicate' => $this->wiki->UserIsAdmin($userNameForRendering) && !isset($entry['read-only']),
@@ -292,7 +292,7 @@ class EntryController extends YesWikiController
                 if ($state && $post->has('bf_titre')) {
                     $entry = $this->entryManager->create($formId, $post->all());
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
-                        'id' => $entry['id_fiche'],
+                        'id' => $entry['tag'],
                         'data' => $entry,
                     ]);
                     // get the GET parameter 'incomingurl' for the incoming url
@@ -307,7 +307,7 @@ class EntryController extends YesWikiController
                                 [
                                     'vue' => 'consulter',
                                     'action' => 'voir_fiche',
-                                    'id_fiche' => $entry['id_fiche'],
+                                    'tag' => $entry['tag'],
                                     'message' => 'ajout_ok',
                                 ],
                                 false,
@@ -348,7 +348,7 @@ class EntryController extends YesWikiController
     public function update($entryId)
     {
         $entry = $this->entryManager->getOne($entryId);
-        $form = $this->formManager->getOne($entry['id_typeannonce']);
+        $form = $this->formManager->getOne($entry['form_id']);
 
         list($state, $error) = $this->captchaController->checkCaptchaBeforeSave('entry');
         $incomingUrl = $this->getIncomingUrl();
@@ -357,7 +357,7 @@ class EntryController extends YesWikiController
             if ($state && $post->has('bf_titre')) {
                 $entry = $this->entryManager->update($entryId, $post->all());
                 $errors = $this->eventDispatcher->yesWikiDispatch('entry.updated', [
-                    'id' => $entry['id_fiche'],
+                    'id' => $entry['tag'],
                     'data' => $entry,
                 ]);
                 $redirectUrl = !empty($incomingUrl)
@@ -368,7 +368,7 @@ class EntryController extends YesWikiController
                         : $this->wiki->Href(testUrlInIframe(), '', [
                             'vue' => 'consulter',
                             'action' => 'voir_fiche',
-                            'id_fiche' => $entry['id_fiche'],
+                            'tag' => $entry['tag'],
                             'message' => 'modif_ok',
                         ], false)
                     );
@@ -447,14 +447,20 @@ class EntryController extends YesWikiController
             }
         }
 
+        // form-property-driven inputs appended at the end of the entry form
+        // (ADR-0010): the account-creation block and the comments toggle
+        $formProperties = $this->getService(FormPropertiesService::class);
+        $renderedFields[] = $formProperties->renderUserCreationInputs($form, $entry);
+        $renderedFields[] = $formProperties->renderCommentsToggle($form, $entry);
+
         return $renderedFields;
     }
 
     private function getCustomTemplatePath($entry): ?string
     {
         $templatePaths = [
-            "@core/fiche-{$entry['id_typeannonce']}.tpl.html",
-            "@core/fiche-{$entry['id_typeannonce']}.twig",
+            "@core/fiche-{$entry['form_id']}.tpl.html",
+            "@core/fiche-{$entry['form_id']}.twig",
         ];
         foreach ($templatePaths as $templatePath) {
             if ($this->getService(TemplateEngine::class)->hasTemplate($templatePath)) {
@@ -533,7 +539,7 @@ class EntryController extends YesWikiController
         }
 
         if (!empty($form['sem_type'])) {
-            $html['id_fiche'] = $entry['id_fiche'];
+            $html['tag'] = $entry['tag'];
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
 
@@ -747,11 +753,11 @@ class EntryController extends YesWikiController
     {
         $ids = [];
         foreach ($entries as $entry) {
-            if (!empty($entry['id_fiche'])) {
-                $ids[] = $entry['id_fiche'];
+            if (!empty($entry['tag'])) {
+                $ids[] = $entry['tag'];
             }
         }
-        $params['query'] = 'id_fiche=' . implode(',', $ids);
+        $params['query'] = 'tag=' . implode(',', $ids);
         $params['shownumentries'] = $showNumEntries;
 
         if (empty($ids)) {
@@ -779,9 +785,7 @@ class EntryController extends YesWikiController
             'output' => '',
         ];
         if (isset($form['only_one_entry']) && $form['only_one_entry'] === 'Y') {
-            $formHasUserField = !empty(array_filter($form['prepared'], function ($field) {
-                return $field instanceof UserField;
-            }));
+            $formHasUserField = $this->getService(FormPropertiesService::class)->createsUser($form);
             $loggerUser = $this->authController->getLoggedUser();
             if (!$formHasUserField && empty($loggerUser)) {
                 // forbidden : ask to connect
@@ -808,7 +812,7 @@ class EntryController extends YesWikiController
                         'type' => 'info',
                         'message' => $message,
                     ]);
-                    $results['output'] .= $this->view($firstEntry['id_fiche']);
+                    $results['output'] .= $this->view($firstEntry['tag']);
 
                     return $results;
                 }

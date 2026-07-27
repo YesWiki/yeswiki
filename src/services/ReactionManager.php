@@ -145,8 +145,8 @@ class ReactionManager
     {
         $entry = $this->entryManager->getOne($entryId);
         $params = [];
-        if (!empty($entry) && !empty($entry['id_typeannonce'])) {
-            $formId = $entry['id_typeannonce'];
+        if (!empty($entry) && !empty($entry['form_id'])) {
+            $formId = $entry['form_id'];
             $form = $this->formManager->getOne($formId);
             if (!empty($form['prepared'])) {
                 foreach ($form['prepared'] as $field) {
@@ -237,8 +237,8 @@ class ReactionManager
         $images = [];
         if (is_null($field) && !empty($tag)) {
             $entry = $this->entryManager->getOne($tag);
-            if (!empty($entry['id_typeannonce'])) {
-                $form = $this->formManager->getOne($entry['id_typeannonce']);
+            if (!empty($entry['form_id'])) {
+                $form = $this->formManager->getOne($entry['form_id']);
                 if (!empty($form['prepared'])) {
                     $reactionsFields = array_filter($form['prepared'], function ($intField) {
                         return $intField instanceof ReactionsField;

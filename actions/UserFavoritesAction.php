@@ -64,7 +64,7 @@ class UserFavoritesAction extends YesWikiAction
                 if (!empty($entry)) {
                     $favorites[$key]['entry'] = $entry;
                     $favorites[$key]['title'] = $entry['bf_titre'] ?? $favorite['resource'];
-                    $form = $this->formManager->getOne($entry['id_typeannonce']);
+                    $form = $this->formManager->getOne($entry['form_id']);
                     if (!empty($form)) {
                         $favorites[$key]['form'] = $form;
                         $imageFields = array_filter($form['prepared'], function ($field) {

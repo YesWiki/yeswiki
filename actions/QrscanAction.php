@@ -46,7 +46,7 @@ class QrscanAction extends YesWikiAction
         if (!empty($_REQUEST[$entityType])) {
             // check if value exist in database
             $entity = $entryManager->getOne($_REQUEST[$entityType]);
-            if (!isset($entity['id_typeannonce']) || $entity['id_typeannonce'] !== $entityForm) {
+            if (!isset($entity['form_id']) || $entity['form_id'] !== $entityForm) {
                 // if an entry is found that is not from the good type, we empty it
                 $entity = null;
                 $output .= $this->render('@core/alert-message.twig', [

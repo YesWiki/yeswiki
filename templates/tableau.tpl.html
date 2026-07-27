@@ -20,7 +20,7 @@ $sanitizedParams = [];
 $optionsIfDisplayvaluesinsteadofkeys = [];
 
 if (count($fiches) > 0) {
-    $formId = $fiches[array_key_first($fiches)]['id_typeannonce'] ?? null;
+    $formId = $fiches[array_key_first($fiches)]['form_id'] ?? null;
     $form = $formManager->getOne($formId);
     if (!empty($form)) {
         $fields = $form['prepared'];
@@ -171,11 +171,11 @@ if (count($fiches) > 0) {
         /* append extra cols */
         foreach ([
             'displaycreationdate' => [
-                'fieldName' => 'date_creation_fiche',
+                'fieldName' => 'created_at',
                 'translationKey' => 'BAZ_DATE_CREATION',
             ],
             'displaylastchangedate' => [
-                'fieldName' => 'date_maj_fiche',
+                'fieldName' => 'updated_at',
                 'translationKey' => 'BAZ_DATE_MAJ',
             ],
             'displayowner' => [
@@ -205,7 +205,7 @@ if (count($fiches) > 0) {
         /* sanitize emails */
         if (!$this->wiki->UserIsAdmin()) {
             foreach ($fiches as $index => $fiche) {
-                $formId = $fiche['id_typeannonce'];
+                $formId = $fiche['form_id'];
                 if (strval($formId) != strval(intval($formId))) {
                     unset($fiches[$index]);
                 } else {
@@ -228,13 +228,13 @@ if (count($fiches) > 0) {
 
         /* manage colors and icons */
         foreach ($fiches as $fiche) {
-            $colors[$fiche['id_fiche']] = getCustomValueForEntry(
+            $colors[$fiche['tag']] = getCustomValueForEntry(
                 $params['color'],
                 $params['colorfield'],
                 $fiche,
                 ''
             );
-            $icons[$fiche['id_fiche']] = getCustomValueForEntry(
+            $icons[$fiche['tag']] = getCustomValueForEntry(
                 $params['icon'],
                 $params['iconfield'],
                 $fiche,

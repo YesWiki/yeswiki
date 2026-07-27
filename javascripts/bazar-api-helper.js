@@ -78,7 +78,7 @@ async function createEntry(formId, data) {
  */
 async function modifyEntry(data) {
   try {
-    const response = await fetch(`${BASE_URL}api/entries/${data.id_typeannonce}`, {
+    const response = await fetch(`${BASE_URL}api/entries/${data.form_id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -28,7 +28,7 @@ if (count($fiches)>0) : ?>
             if (!empty($fiche['bf_mail'])) {
               $qrcode .= 'EMAIL;HOME;INTERNET:'.$fiche['bf_mail']."\n";
             }
-            $qrcode .= 'URL:'.$GLOBALS['wiki']->href('', $fiche['id_fiche'])."\n";
+            $qrcode .= 'URL:'.$GLOBALS['wiki']->href('', $fiche['tag'])."\n";
             $qrcode .= 'ADR:;;'.$fiche['bf_adresse'].';'.$fiche['bf_ville'].';;'.$fiche['bf_code_postal']."\n";
             if (!empty($fiche['bf_structure'])) {
               $qrcode .= 'ORG:'.$fiche['bf_structure']."\n";

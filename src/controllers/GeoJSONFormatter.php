@@ -50,7 +50,7 @@ class GeoJSONFormatter extends YesWikiController
                         'type' => 'Point',
                         'coordinates' => [$extendedEntry['geo']['longitude'], $extendedEntry['geo']['latitude']],
                     ],
-                    'id' => $entry['id_fiche'],
+                    'id' => $entry['tag'],
                     'title' => $entry['bf_titre'],
                     'properties' => $entry,
                 ];
@@ -68,8 +68,8 @@ class GeoJSONFormatter extends YesWikiController
     public function getGeoData(array $entry, array &$cache): array
     {
         $propertyName = null;
-        if (!empty($entry['id_typeannonce']) && $entry['id_typeannonce'] == intval($entry['id_typeannonce'])) {
-            $propertyName = $this->getFirstMapFieldPropertyName($entry['id_typeannonce'], $cache);
+        if (!empty($entry['form_id']) && $entry['form_id'] == intval($entry['form_id'])) {
+            $propertyName = $this->getFirstMapFieldPropertyName($entry['form_id'], $cache);
         }
         if (!empty($entry[$propertyName]['latitude']) && !empty($entry[$propertyName]['longitude'])) {
             $latitude = $entry[$propertyName]['latitude'];

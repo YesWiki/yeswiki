@@ -16,7 +16,7 @@
                             (field.descriptionField): "_"
                         })})|replace({
                             "bf_titre=_": "bf_titre='+escape(document.title)+'",
-                            "id=_": "id='+escape(document.querySelector('input[name=id_typeannonce]').getAttribute('value'))+'",
+                            "id=_": "id='+escape(document.querySelector('input[name=form_id]').getAttribute('value'))+'",
                             (field.urlField~"=_"): field.urlField~"='+encodeURIComponent(location.href)+'",
                             (field.descriptionField~"=_"): field.descriptionField~"='+encodeURIComponent(document.getSelection())+'",
                         }) 

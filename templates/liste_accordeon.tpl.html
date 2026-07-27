@@ -47,7 +47,7 @@
           <div id="collapse<?php echo $params['nbbazarliste']; ?>_<?php echo $vIndex ?>" class="panel-collapse collapse">
             <div class="panel-body">            
               <?php 
-              echo baz_voir_fiche($params['barregestion'], $fiche, $forms[$fiche['id_typeannonce']]??null); ?>
+              echo baz_voir_fiche($params['barregestion'], $fiche, $forms[$fiche['form_id']]??null); ?>
             </div>
           </div>
         </div>

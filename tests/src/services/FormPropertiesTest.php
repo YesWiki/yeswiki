@@ -1,0 +1,163 @@
+<?php
+
+namespace YesWiki\Test\Core\Service;
+
+use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\FormManager;
+use YesWiki\Test\Core\YesWikiTestCase;
+
+require_once 'tests/YesWikiTestCase.php';
+
+/**
+ * Ticket 27 (ADR-0010): form-level behavior lives in form properties -- the entry
+ * pipeline computes `title` from entry_title_template, generates slugged tags, and
+ * stamps entry ACLs from entry_*_access.
+ */
+class FormPropertiesTest extends YesWikiTestCase
+{
+    private const FORM_ID = '999909';
+
+    private function makeForm(FormManager $formManager, array $extra = []): void
+    {
+        $formManager->create($extra + [
+            'id' => self::FORM_ID,
+            'label' => 'FormPropertiesTest form',
+            'template' => '[{"type": "texte", "name": "bf_titre", "label": "Titre", "required": "1"}]',
+            'condition' => '',
+        ]);
+    }
+
+    private function cleanup(FormManager $formManager, EntryManager $entryManager, array $entryTags = []): void
+    {
+        foreach ($entryTags as $tag) {
+            if ($entryManager->isEntry($tag)) {
+                $entryManager->delete($tag, true);
+            }
+        }
+        if ($formManager->getOne(self::FORM_ID)) {
+            $formManager->delete(self::FORM_ID);
+        }
+    }
+
+    public function testEntryGetsComputedTitleAndSluggedTag()
+    {
+        $wiki = $this->getWiki();
+        $formManager = $wiki->services->get(FormManager::class);
+        $entryManager = $wiki->services->get(EntryManager::class);
+        $created = [];
+
+        try {
+            $this->makeForm($formManager, ['entry_title_template' => '{{bf_titre}}']);
+
+            $entry = $entryManager->create(self::FORM_ID, [
+                'antispam' => 1,
+                'bf_titre' => "L'Été à Nantes",
+            ]);
+            $created[] = $entry['tag'];
+
+            // computed title, slugged tag (ADR-0010)
+            $this->assertSame("L'Été à Nantes", $entry['title']);
+            $this->assertSame('l-ete-a-nantes', $entry['tag']);
+
+            // a second entry with the same title gets a -2 suffix
+            $second = $entryManager->create(self::FORM_ID, [
+                'antispam' => 1,
+                'bf_titre' => "L'Été à Nantes",
+            ]);
+            $created[] = $second['tag'];
+            $this->assertSame('l-ete-a-nantes-2', $second['tag']);
+
+            // submission artifacts are stripped from the stored body
+            $stored = $entryManager->getOne($entry['tag']);
+            $this->assertArrayNotHasKey('antispam', $stored);
+            $this->assertSame(self::FORM_ID, $stored['form_id']);
+            $this->assertArrayNotHasKey('id_fiche', $stored);
+        } finally {
+            $this->cleanup($formManager, $entryManager, $created);
+        }
+    }
+
+    public function testCompositeTitleTemplate()
+    {
+        $wiki = $this->getWiki();
+        $formManager = $wiki->services->get(FormManager::class);
+        $entryManager = $wiki->services->get(EntryManager::class);
+        $created = [];
+
+        try {
+            $formManager->create([
+                'id' => self::FORM_ID,
+                'label' => 'FormPropertiesTest composite',
+                'template' => '[{"type": "texte", "name": "bf_nom", "label": "Nom", "required": "1"},'
+                    . '{"type": "texte", "name": "bf_prenom", "label": "Prénom"}]',
+                'condition' => '',
+                'entry_title_template' => '{{bf_prenom}} {{bf_nom}}',
+            ]);
+
+            $entry = $entryManager->create(self::FORM_ID, [
+                'antispam' => 1,
+                'bf_nom' => 'Dupont',
+                'bf_prenom' => 'Jean',
+            ]);
+            $created[] = $entry['tag'];
+
+            $this->assertSame('Jean Dupont', $entry['title']);
+            $this->assertSame('jean-dupont', $entry['tag']);
+        } finally {
+            $this->cleanup($formManager, $entryManager, $created);
+        }
+    }
+
+    public function testEntryAclsStampedFromFormProperties()
+    {
+        $wiki = $this->getWiki();
+        $formManager = $wiki->services->get(FormManager::class);
+        $entryManager = $wiki->services->get(EntryManager::class);
+        $aclService = $wiki->services->get(AclService::class);
+        $created = [];
+
+        try {
+            $this->makeForm($formManager, [
+                'entry_title_template' => '{{bf_titre}}',
+                'entry_read_access' => '*',
+                'entry_write_access' => '@admins',
+                'entry_comment_access' => 'comments-closed',
+            ]);
+
+            $entry = $entryManager->create(self::FORM_ID, [
+                'antispam' => 1,
+                'bf_titre' => 'Acl stamped entry',
+            ]);
+            $created[] = $entry['tag'];
+
+            $this->assertSame('*', $aclService->load($entry['tag'], 'read', false)['list'] ?? null);
+            $this->assertSame('@admins', $aclService->load($entry['tag'], 'write', false)['list'] ?? null);
+            $this->assertSame('comments-closed', $aclService->load($entry['tag'], 'comment', false)['list'] ?? null);
+        } finally {
+            $this->cleanup($formManager, $entryManager, $created);
+        }
+    }
+
+    public function testLegacyEntryBodyKeysAreAliasedOnRead()
+    {
+        $wiki = $this->getWiki();
+        $entryManager = $wiki->services->get(EntryManager::class);
+
+        $data = $entryManager->decode(json_encode([
+            'id_fiche' => 'OldEntry',
+            'id_typeannonce' => '42',
+            'bf_titre' => 'Old title',
+            'date_creation_fiche' => '2020-01-01 00:00:00',
+            'statut_fiche' => '1',
+        ]));
+
+        $this->assertSame('OldEntry', $data['tag']);
+        $this->assertSame('42', $data['form_id']);
+        $this->assertSame('Old title', $data['title']);
+        $this->assertSame('Old title', $data['bf_titre']); // ordinary field data stays
+        $this->assertSame('2020-01-01 00:00:00', $data['created_at']);
+        $this->assertSame('1', $data['status']);
+        $this->assertArrayNotHasKey('id_fiche', $data);
+    }
+}

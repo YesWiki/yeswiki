@@ -166,7 +166,7 @@ class GererDroitsAction extends YesWikiAction
             SQL;
 
                 $search = <<<SQL
-              AND body LIKE '%"id_typeannonce":"{$this->dbService->escape($filter)}"%'
+              AND body LIKE '%"form_id":"{$this->dbService->escape($filter)}"%'
               AND tag IN ($requete_pages_wiki_bazar_fiches)
             SQL;
             } elseif ($filter === 'lists') {

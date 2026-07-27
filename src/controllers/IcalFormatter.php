@@ -217,8 +217,8 @@ class IcalFormatter extends YesWikiController
         $output .= 'DTSTART' . $this->formatDate($icalData['startDate']) . "\r\n";
         $output .= 'DTEND' . $this->formatDate($icalData['endDate']) . "\r\n";
         $output .= $this->formatRecurrenceLines($entry, $icalData);
-        $output .= 'CREATED' . $this->formatDate($entry['date_creation_fiche']) . "\r\n";
-        $output .= 'DATE-MOD' . $this->formatDate($entry['date_maj_fiche']) . "\r\n";
+        $output .= 'CREATED' . $this->formatDate($entry['created_at']) . "\r\n";
+        $output .= 'DATE-MOD' . $this->formatDate($entry['updated_at']) . "\r\n";
         $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'SUMMARY:' . $entry['bf_titre'] . "\r\n");
         $output .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'NAME:' . $entry['bf_titre'] . "\r\n");
         $decription = (!empty($entry['bf_description'])) ?

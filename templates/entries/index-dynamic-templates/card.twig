@@ -33,7 +33,7 @@
     {% endblock %}
 
     {% block iter_start %}
-    {% if isLink %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.id_fiche"
+    {% if isLink %}<a{% else %}<div{% endif %} v-for="entry in entriesToDisplay" :key="entry.tag"
         class="bazar-entry bazar-card{{ isModal ? ' modalbox' : ''}}"
         {% if not isLink %}@click="openEntry(entry)"{% endif %}
         :class="{'with-image': Object.keys(entry).includes('visual')}"

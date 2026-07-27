@@ -13,8 +13,8 @@
         : []
       )
     ))
-    |merge((params.displaycreationdate is defined and (params.displaycreationdate != 'no'))? ['date_creation_fiche']: [])
-    |merge((params.displaylastchangedate is defined and (params.displaycreationdate != 'no'))? ['date_maj_fiche']: [])
+    |merge((params.displaycreationdate is defined and (params.displaycreationdate != 'no'))? ['created_at']: [])
+    |merge((params.displaylastchangedate is defined and (params.displaycreationdate != 'no'))? ['updated_at']: [])
 
 %}
 
@@ -128,8 +128,8 @@
           loading="lazy"
           height="{{ imHeight }}"
           width="{{ imWidth }}"
-          :src="urlImage({id_fiche:entryId,url:wiki.url(entryId),[fieldName]:anchorData},fieldName,{{ imWidth }},{{ imHeight }},'crop')"
-          :onError="`urlImageResizedOnError({id_fiche:'${entryId}',url:'${wiki.url(entryId)}',['${fieldName}']:'${anchorData}'},'${fieldName}',{{ imWidth }},{{ imHeight }},'crop','{{ firstTokenCrop|e('html') }}')`"/>
+          :src="urlImage({tag:entryId,url:wiki.url(entryId),[fieldName]:anchorData},fieldName,{{ imWidth }},{{ imHeight }},'crop')"
+          :onError="`urlImageResizedOnError({tag:'${entryId}',url:'${wiki.url(entryId)}',['${fieldName}']:'${anchorData}'},'${fieldName}',{{ imWidth }},{{ imHeight }},'crop','{{ firstTokenCrop|e('html') }}')`"/>
       </template>
       <template v-else-if="fieldtype === 'urlmodal' && anchorData.length > 0">
         <a :href="url" v-html="anchorData" :title="anchorData" class="modalbox" data-header="false" data-size="modal-lg" data-iframe="1"></a>

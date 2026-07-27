@@ -88,7 +88,7 @@ class EntryExtraFieldsService
         $formManager = $this->wiki->services->get(FormManager::class);
 
         $entry = $entryManager->getOne($this->entryId);
-        $entryFields = $formManager->findTypeOfFields($entry['id_typeannonce'], ['SelectEntryField', 'CheckboxEntryField']);
+        $entryFields = $formManager->findTypeOfFields($entry['form_id'], ['SelectEntryField', 'CheckboxEntryField']);
         foreach ($entryFields as $field) {
             $prop = $field->getPropertyName();
             $fields[$prop] = [];
@@ -116,7 +116,7 @@ class EntryExtraFieldsService
             foreach ($entries as $entry) {
                 $htmlData .= str_replace(
                     'data-',
-                    'data-' . $fieldName . $sep . $entry['id_fiche'] . $sep,
+                    'data-' . $fieldName . $sep . $entry['tag'] . $sep,
                     $entry['html_data']
                 ) . ' ';
             }

@@ -67,14 +67,14 @@ class TextareaField extends BazarField
             $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
         }
 
-        $tempTag = !isset($entry['id_fiche']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
+        $tempTag = !isset($entry['tag']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
         if ($tempTag) {
             $tempTag .= '_' . bin2hex(random_bytes(10));
         }
 
         return $output . $this->render('@core/inputs/textarea.twig', [
             'value' => $this->getValue($entry),
-            'entryId' => $entry['id_fiche'] ?? null,
+            'entryId' => $entry['tag'] ?? null,
             'tempTag' => $tempTag,
             'vditorLang' => $vditorLang,
         ]);
@@ -110,7 +110,7 @@ class TextareaField extends BazarField
                 // Do the page change in any case (useful for attach or grid)
                 $oldPage = $GLOBALS['wiki']->GetPageTag();
                 $oldPageArray = $GLOBALS['wiki']->page;
-                $GLOBALS['wiki']->tag = $entry['id_fiche'];
+                $GLOBALS['wiki']->tag = $entry['tag'];
                 $GLOBALS['wiki']->page = $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->tag);
                 $GLOBALS['wiki']->page['body'] = $value;
 
@@ -180,9 +180,9 @@ class TextareaField extends BazarField
                 ];
                 $previousFileName = $attach->GetFullFilename();
                 $attach->file = $matches[4][$key];
-                $wiki->tag = $entry['id_fiche'];
+                $wiki->tag = $entry['tag'];
                 $wiki->page = [
-                    'tag' => $entry['id_fiche'],
+                    'tag' => $entry['tag'],
                     'body' => json_encode($entry),
                     'time' => $entryCreationTime,
                     'owner' => '',
@@ -232,9 +232,9 @@ class TextareaField extends BazarField
                 $attach->file = $fileName;
 
                 // fake page
-                $wiki->tag = $entry['id_fiche'];
+                $wiki->tag = $entry['tag'];
                 $wiki->page = [
-                    'tag' => $entry['id_fiche'],
+                    'tag' => $entry['tag'],
                     'page' => json_encode($entry),
                     'time' => $entryCreationTime,
                     'owner' => '',
@@ -264,8 +264,8 @@ class TextareaField extends BazarField
     {
         $dbTz = $this->getService(DbService::class)->getDbTimeZone();
         $sqlTimeFormat = 'Y-m-d H:i:s';
-        $entryCreationTime = !empty($entry['date_maj_fiche'])
-            ? $entry['date_creation_fiche']
+        $entryCreationTime = !empty($entry['updated_at'])
+            ? $entry['created_at']
             : (
                 !empty($dbTz)
                 ? (new \DateTime())->setTimezone(new \DateTimeZone($dbTz))->format($sqlTimeFormat)

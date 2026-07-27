@@ -61,7 +61,7 @@ export function drawGeometries(drawnItems, features, popup = '', id = 'unknown')
           }
         })
       }
-      layer.id_fiche = id
+      layer.tag = id
       drawnItems.addLayer(layer)
     })
   }

@@ -83,12 +83,12 @@ class Guard
             $valeur = json_decode($valjson, true);
 
             if ($valeur) {
-                $form = $this->formManager->getOne($valeur['id_typeannonce']);
+                $form = $this->formManager->getOne($valeur['form_id']);
                 if ($form) {
                     $fieldname = [];
                     foreach ($form['prepared'] as $field) {
                         if ($field instanceof BazarField
-                             && !$field->canRead(['id_fiche' => $tag], $userNameForCheckingACL)
+                             && !$field->canRead(['tag' => $tag], $userNameForCheckingACL)
                         ) {
                             $fieldname[] = $field->getPropertyName();
                         }
@@ -194,8 +194,8 @@ class Guard
                 && !$this->isPageOwner($page)
                 && !empty($fieldName)
                 && isset($entry[$fieldName])
-                && !empty($entry['id_typeannonce'])) {
-            $formId = $entry['id_typeannonce'];
+                && !empty($entry['form_id'])) {
+            $formId = $entry['form_id'];
             $field = $this->formManager->findFieldFromNameOrPropertyName($fieldName, $formId);
             if (!empty($field) && $field instanceof EmailField && $field->getShowContactForm()) {
                 return '';

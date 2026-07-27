@@ -4,7 +4,7 @@
 $resizedImages = [];
 foreach ($fiches as $fiche) {
     if (!empty($fiche['imagebf_image'])) {
-        $resizedImages[$fiche['id_fiche']] = redimensionner_image(
+        $resizedImages[$fiche['tag']] = redimensionner_image(
             'files/' . $fiche['imagebf_image'],
             'cache/image_300_300_' . $fiche['imagebf_image'],
             300,

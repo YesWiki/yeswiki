@@ -61,12 +61,12 @@ class ApiControllerRelationsTest extends YesWikiTestCase
             $entry1 = $entryManager->create(self::ENTITY_FORM_ID, [
                 'antispam' => 1,
                 'bf_titre' => 'First entity',
-                'id_fiche' => self::ENTITY1_TAG,
+                'tag' => self::ENTITY1_TAG,
             ]);
             $entry2 = $entryManager->create(self::ENTITY_FORM_ID, [
                 'antispam' => 1,
                 'bf_titre' => 'Second entity',
-                'id_fiche' => self::ENTITY2_TAG,
+                'tag' => self::ENTITY2_TAG,
             ]);
             $this->assertIsArray($entry1);
             $this->assertIsArray($entry2);
@@ -95,12 +95,12 @@ class ApiControllerRelationsTest extends YesWikiTestCase
                 fn ($r) => $r['bf_fiche1'] === self::ENTITY1_TAG && $r['bf_fiche2'] === self::ENTITY2_TAG
             ));
             $this->assertNotFalse($found, 'the created relation must show up in getAllRelations()');
-            $relationTag = $found['id_fiche'] ?? null;
-            $this->assertSame(self::ENTITY1_TAG, $found['entry1']['id_fiche']);
-            $this->assertSame(self::ENTITY2_TAG, $found['entry2']['id_fiche']);
+            $relationTag = $found['tag'] ?? null;
+            $this->assertSame(self::ENTITY1_TAG, $found['entry1']['tag']);
+            $this->assertSame(self::ENTITY2_TAG, $found['entry2']['tag']);
             $this->assertNotSame(
-                $found['entry1']['id_fiche'],
-                $found['entry2']['id_fiche'],
+                $found['entry1']['tag'],
+                $found['entry2']['tag'],
                 'entry1 and entry2 must be the two distinct linked entities, not the same one twice'
             );
         } finally {

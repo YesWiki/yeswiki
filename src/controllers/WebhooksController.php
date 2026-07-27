@@ -288,7 +288,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 $formulaire = '';
                 break;
             default:
-                $idformulaire = $data['id_typeannonce'] ?? '';
+                $idformulaire = $data['form_id'] ?? '';
                 if (is_array($idformulaire) and count($idformulaire) > 0) {
                     $idformulaire = $idformulaire[0];
                 }
@@ -387,8 +387,8 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                             'attributedTo' => $actorUri,
                             'to' => $to,
                             // If published or updated are defined as a semantic field, this will be overwritten
-                            'published' => $this->format_date_xsd($data['data']['date_creation_fiche']),
-                            'updated' => $this->format_date_xsd($data['data']['date_maj_fiche']),
+                            'published' => $this->format_date_xsd($data['data']['created_at']),
+                            'updated' => $this->format_date_xsd($data['data']['updated_at']),
                         ],
                         $data['data']['semantic']
                     );
@@ -421,7 +421,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             case self::FORMAT_YESWIKI:
                 // remove not used fields
                 foreach ($data['data'] as $key => $value) {
-                    if (!in_array($key, ['id_fiche', 'bf_titre', 'id_typeannonce', 'url', 'date_maj_fiche'], true)) {
+                    if (!in_array($key, ['tag', 'bf_titre', 'form_id', 'url', 'updated_at'], true)) {
                         unset($data['data'][$key]);
                     }
                 }
@@ -489,11 +489,11 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 $form_id = 'comments';
                 break;
             default:
-                if (!isset($data['id_typeannonce'])) {
-                    throw new \Exception('Webhook error: unable to determine the form ID (id_typeannonce is not defined)');
+                if (!isset($data['form_id'])) {
+                    throw new \Exception('Webhook error: unable to determine the form ID (form_id is not defined)');
                 }
 
-                $form_id = intval($data['id_typeannonce']);
+                $form_id = intval($data['form_id']);
                 break;
         }
 
@@ -509,7 +509,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                 });
 
                 if (count($activityPubWebhooks) > 0) {
-                    $data['semantic'] = $this->semanticTransformer->convertToSemanticData($data['id_typeannonce'], $data);
+                    $data['semantic'] = $this->semanticTransformer->convertToSemanticData($data['form_id'], $data);
                 }
             }
 

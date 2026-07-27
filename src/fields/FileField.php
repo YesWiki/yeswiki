@@ -107,14 +107,14 @@ class FileField extends BazarField
                 'isUrl' => false,
                 'shortFileName' => $this->getShortFileName($value),
                 'fileUrl' => $this->getBasePath() . $value,
-                'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['id_fiche'], ['delete_file' => $value], false),
+                'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['tag'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
             ]
         );
     }
 
     /*
-    *	indicates if id_fiche must be set before to format the value
+    *	indicates if tag must be set before to format the value
     */
 
     public function requireIDFiche()
@@ -142,12 +142,12 @@ class FileField extends BazarField
         }
 
         $params = $this->getService(ParameterBagInterface::class);
-        if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['id_fiche'])) {
+        if (!empty($_FILES[$this->propertyName]['name']) && !empty($entry['tag'])) {
             $rawFileName = filter_var($_FILES[$this->propertyName]['name'], FILTER_UNSAFE_RAW);
             $rawFileName = in_array($rawFileName, [false, null], true) ? '' : htmlspecialchars(strip_tags($rawFileName));
             $sanitizedFilename = $this->sanitizeFilename($rawFileName);
             $fileName = "{$this->getPropertyName()}_$sanitizedFilename";
-            $filePath = $this->getFullFileName($fileName, $entry['id_fiche'], true);
+            $filePath = $this->getFullFileName($fileName, $entry['tag'], true);
 
             $pathinfo = pathinfo($filePath);
             $extension = strtolower($pathinfo['extension']);
@@ -203,7 +203,7 @@ class FileField extends BazarField
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
                     ? $this->getWiki()->getBaseUrl() . '/' . $basePath . $value
-                    : $this->getWiki()->Href('download', $entry['id_fiche'] . '_' . $this->getPropertyName(), ['file' => $value], false),
+                    : $this->getWiki()->Href('download', $entry['tag'] . '_' . $this->getPropertyName(), ['file' => $value], false),
                 'shortFileName' => $shortFileName,
                 'isUrl' => false,
             ]);
@@ -228,7 +228,7 @@ class FileField extends BazarField
      */
     protected function defineFilePrefix(array $entry)
     {
-        return $entry['id_fiche'] . '_' . $this->getPropertyName() . '_';
+        return $entry['tag'] . '_' . $this->getPropertyName() . '_';
     }
 
     /**
@@ -347,7 +347,7 @@ class FileField extends BazarField
         $entryManager = $this->services->get(EntryManager::class);
 
         // unset value in entry from db without modifier from GET
-        $entryFromDb = $entryManager->getOne($entry['id_fiche']);
+        $entryFromDb = $entryManager->getOne($entry['tag']);
         if (!empty($entryFromDb)) {
             $previousGet = $_GET;
             $_GET = ['wiki' => $previousGet['wiki']];
@@ -365,8 +365,8 @@ class FileField extends BazarField
             }
 
             $entryFromDb['antispam'] = 1;
-            $entryFromDb['date_maj_fiche'] = date('Y-m-d H:i:s', time());
-            $newEntry = $entryManager->update($entryFromDb['id_fiche'], $entryFromDb, false, true);
+            $entryFromDb['updated_at'] = date('Y-m-d H:i:s', time());
+            $newEntry = $entryManager->update($entryFromDb['tag'], $entryFromDb, false, true);
 
             $_GET = $previousGet;
             $_POST = $previousPost;
@@ -374,14 +374,14 @@ class FileField extends BazarField
 
             // be careful to recurrence
 
-            if (!empty($newEntry['id_fiche'])
-                && is_string($newEntry['id_fiche'])
+            if (!empty($newEntry['tag'])
+                && is_string($newEntry['tag'])
                 && isset($newEntry['bf_date_fin_evenement'])) {
-                $this->getService(EntryDateService::class)->followId($newEntry['id_fiche']);
+                $this->getService(EntryDateService::class)->followId($newEntry['tag']);
             }
 
             $errors = $this->services->get(EventDispatcher::class)->yesWikiDispatch('entry.updated', [
-                'id' => $newEntry['id_fiche'],
+                'id' => $newEntry['tag'],
                 'data' => $newEntry,
             ]);
         }

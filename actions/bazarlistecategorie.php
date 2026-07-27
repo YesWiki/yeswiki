@@ -25,9 +25,9 @@ if (!function_exists('champCompare')) {
     }
 }
 
-$id_typeannonce = $this->GetParameter('idtypeannonce');
-if (empty($id_typeannonce)) {
-    $id_typeannonce = 'toutes';
+$form_id = $this->GetParameter('idtypeannonce');
+if (empty($form_id)) {
+    $form_id = 'toutes';
 }
 $GLOBALS['ordre'] = $this->GetParameter('ordre');
 if (empty($GLOBALS['ordre'])) {
@@ -60,7 +60,7 @@ if (empty($list)) {
     }
     unset($_GET['query']);
 
-    $tabfiches = $entryManager->search(['queries' => $query, 'formsIds' => [$id_typeannonce]]);
+    $tabfiches = $entryManager->search(['queries' => $query, 'formsIds' => [$form_id]]);
 
     $fiches['info_res'] = '';
     $fiches['pager_links'] = '';
@@ -70,7 +70,7 @@ if (empty($list)) {
         $tabcheckbox = explode(',', $fiche[$id]);
         foreach ($tabcheckbox as $value) {
             // on sauve les multiples valeurs pour les retablir é l'affichage
-            $multiplecheckbox[$fiche['id_fiche']] = $fiche[$id];
+            $multiplecheckbox[$fiche['tag']] = $fiche[$id];
             $fiche[$id] = $value;
 
             // permet de voir la fiche
@@ -78,13 +78,13 @@ if (empty($list)) {
             // lien de suppression visible pour le super admin
             if (baz_a_le_droit('supp_fiche', $fiche['owner'])) {
                 $fiche['lien_suppression'] = '<a class="modalbox" href="'
-                    . $this->href('deletepage', $fiche['id_fiche'], 'incoming=' . urlencode($this->getAbsolutePath())) . '"></a>' . "\n";
+                    . $this->href('deletepage', $fiche['tag'], 'incoming=' . urlencode($this->getAbsolutePath())) . '"></a>' . "\n";
             }
             if (baz_a_le_droit('modif_fiche', $fiche['owner'])) {
-                $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->href('edit', $fiche['id_fiche']) . '"></a>' . "\n";
+                $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->href('edit', $fiche['tag']) . '"></a>' . "\n";
             }
-            $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="' . $this->href('', $fiche['id_fiche']) . '">' . $fiche['bf_titre'] . '</a>' . "\n";
-            $fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="' . $this->href('', $fiche['id_fiche']) . '"></a>' . "\n";
+            $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="' . $this->href('', $fiche['tag']) . '">' . $fiche['bf_titre'] . '</a>' . "\n";
+            $fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="' . $this->href('', $fiche['tag']) . '"></a>' . "\n";
             $fiches['fiches'][] = $fiche;
         }
     }
@@ -97,7 +97,7 @@ if (empty($list)) {
     $output = '';
     $first = true;
     foreach ($fiches['fiches'] as $fiche) {
-        $fiche['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $fiche[$id])) . $fiche['id_fiche']);
+        $fiche['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $fiche[$id])) . $fiche['tag']);
         if ($currentlabel !== $fiche[$id]) {
             if (!$first) {
                 if (is_array($fichescat) && count($fichescat) > 0) {
@@ -117,8 +117,8 @@ if (empty($list)) {
         }
         $currentlabel = $fiche[$id];
         // on rétablit les valeurs multiples
-        if (isset($multiplecheckbox[$fiche['id_fiche']])) {
-            $fiche[$id] = $multiplecheckbox[$fiche['id_fiche']];
+        if (isset($multiplecheckbox[$fiche['tag']])) {
+            $fiche[$id] = $multiplecheckbox[$fiche['tag']];
         }
         $fichescat['fiches'][] = $fiche;
     }

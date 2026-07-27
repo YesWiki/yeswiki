@@ -63,7 +63,7 @@ actions:
       colorfield:
         label: _t(AB_bazar_commons_colorfield_label)
         type: form-field
-        extraFields: id_typeannonce
+        extraFields: form_id
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
@@ -92,7 +92,7 @@ actions:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
             type: list
-            extraFields: id_typeannonce
+            extraFields: form_id
             dataFromFormField: colorfield
           color:
             label: _t(AB_bazar_commons_colormapping_color_label)
@@ -101,7 +101,7 @@ actions:
         label: _t(AB_bazar_commons_iconfield_label)
         type: form-field
         advanced: true
-        extraFields: id_typeannonce
+        extraFields: form_id
         only: lists # ce champ doit être de type checkboxListe, listeListe ...
         showOnlyFor:
           - bazarcarto
@@ -129,7 +129,7 @@ actions:
           id:
             label: _t(AB_bazar_commons_subproperty_id_label)
             type: list
-            extraFields: id_typeannonce
+            extraFields: form_id
             dataFromFormField: iconfield
           icon:
             label: _t(AB_bazar_commons_iconfield_icon_label)
@@ -182,7 +182,7 @@ actions:
           field:
             label: _t(AB_bazar_facettes_field_label)
             type: form-field
-            extraFields: id_typeannonce
+            extraFields: form_id
             only: lists # ce champ doit être de type checkboxListe, listeListe ...
           title:
             label: _t(AB_bazar_facettes_title_label)
@@ -255,9 +255,9 @@ actions:
         label: _t(AB_bazar_facettes_field_label)
         type: form-field
         extraFields:
-          - id_typeannonce
-          - date_creation_fiche
-          - date_maj_fiche
+          - form_id
+          - created_at
+          - updated_at
         default:
         advanced: true
         showExceptFor:
@@ -290,8 +290,8 @@ actions:
             label: _t(AB_bazar_facettes_field_label)
             type: form-field
             extraFields:
-              - date_creation_fiche
-              - date_maj_fiche
+              - created_at
+              - updated_at
           title:
             label: _t(AB_bazar_facettes_title_label)
             type: text
@@ -323,24 +323,24 @@ actions:
             type: form-field
             extraFields:
               - owner
-              - date_creation_fiche
-              - date_maj_fiche
+              - created_at
+              - updated_at
             label: _t(AB_bazarliste_displayfields_subtitle_label)
             default: ""
           floating:
             type: form-field
             extraFields:
               - owner
-              - date_creation_fiche
-              - date_maj_fiche
+              - created_at
+              - updated_at
             label: _t(AB_bazarliste_displayfields_floating_label)
             default: ""
           visual:
             type: form-field
             extraFields:
               - owner
-              - date_creation_fiche
-              - date_maj_fiche
+              - created_at
+              - updated_at
             label: _t(AB_bazarliste_displayfields_visual_label)
             default: ""
 
@@ -629,15 +629,15 @@ actions:
           bf_date_debut_evenement:
             type: form-field
             extraFields:
-              - date_creation_fiche
-              - date_maj_fiche
+              - created_at
+              - updated_at
             label: _t(AB_bazar_bf_date_debut_evenement_label)
             default: ""
           bf_date_fin_evenement:
             type: form-field
             extraFields:
-              - date_creation_fiche
-              - date_maj_fiche
+              - created_at
+              - updated_at
             label: _t(AB_bazar_bf_date_fin_evenement_label)
             default: ""
       nbcol:
@@ -678,8 +678,8 @@ actions:
           bf_date_debut_evenement:
             type: form-field
             extraFields:
-              - date_creation_fiche
-              - date_maj_fiche
+              - created_at
+              - updated_at
             label: _t(AB_bazar_bf_date_debut_evenement_label)
             default: ""
 
@@ -765,11 +765,11 @@ actions:
       correspondance:
         type: correspondance
         subproperties:
-          date_creation_fiche:
+          created_at:
             type: form-field
             extraFields:
-              - date_creation_fiche
-              - date_maj_fiche
+              - created_at
+              - updated_at
             label: _t(AB_bazarblog_date_creation_fiche_label)
             default: ""
 
@@ -819,9 +819,9 @@ actions:
         multiple: true
         default: ""
         extraFields:
-          - id_typeannonce
-          - date_creation_fiche
-          - date_maj_fiche
+          - form_id
+          - created_at
+          - updated_at
           - url
       columntitles:
         type: text
@@ -1064,9 +1064,9 @@ actions:
         multiple: true
         default: ""
         extraFields:
-          - id_typeannonce
-          - date_creation_fiche
-          - date_maj_fiche
+          - form_id
+          - created_at
+          - updated_at
           - url
       columntitles:
         type: text

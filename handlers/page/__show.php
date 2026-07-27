@@ -20,7 +20,7 @@ if ($entryManager->isEntry($this->GetPageTag()) && $this->HasAccess('read')) {
         $fiche = $entryManager->getOne($this->GetPageTag());
 
         if ($semantic) {
-            $form = $this->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+            $form = $this->services->get(FormManager::class)->getOne($fiche['form_id']);
             $semanticFiche = $this->services->get(SemanticTransformer::class)->convertToSemanticData($form, $fiche);
             $this->exit(json_encode($semanticFiche));
         } else {

@@ -166,7 +166,7 @@ class FormManagerContentTest extends YesWikiTestCase
             $entry = $entryManager->create(self::FORM_ID, [
                 'antispam' => 1,
                 'bf_titre' => 'Test entry',
-                'id_fiche' => self::ENTRY_TAG,
+                'tag' => self::ENTRY_TAG,
             ]);
             $this->assertIsArray($entry);
 
@@ -185,7 +185,7 @@ class FormManagerContentTest extends YesWikiTestCase
             // the entry (keyed off the stable numeric id, not the tag) is unaffected
             $this->assertTrue($entryManager->isEntry(self::ENTRY_TAG));
             $fetchedEntry = $entryManager->getOne(self::ENTRY_TAG);
-            $this->assertSame(self::FORM_ID, $fetchedEntry['id_typeannonce']);
+            $this->assertSame(self::FORM_ID, $fetchedEntry['form_id']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID, self::ENTRY_TAG);
         }
@@ -355,7 +355,7 @@ class FormManagerContentTest extends YesWikiTestCase
         $entryManager->create(self::FORM_ID, [
             'antispam' => 1,
             'bf_titre' => 'Test entry',
-            'id_fiche' => self::ENTRY_TAG,
+            'tag' => self::ENTRY_TAG,
         ]);
 
         $formManager->delete(self::FORM_ID);

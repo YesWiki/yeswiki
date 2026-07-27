@@ -211,7 +211,7 @@ const BazarMapComponent = {
       } catch (e) {
         entry.marker = null
         console.error(
-          `Entry ${entry.id_fiche} has invalid geolocation`,
+          `Entry ${entry.tag} has invalid geolocation`,
           entry,
           e
         )
@@ -255,8 +255,8 @@ const BazarMapComponent = {
               const key = keys[index]
               if (
                 [
-                  'id_fiche',
-                  'id_typeannonce',
+                  'tag',
+                  'form_id',
                   'url',
                   'color',
                   'icon',
@@ -271,14 +271,14 @@ const BazarMapComponent = {
           }
           if (this.$root.isExternalUrl(entry)) {
             url = entry.url.replace(
-              new RegExp(`${entry.id_fiche}$`),
-              `api/entries/html/${entry.id_fiche}`
+              new RegExp(`${entry.tag}$`),
+              `api/entries/html/${entry.tag}`
             )
             if (excludeFields.length > 0) {
               url = `${url + (url.match('?') ? '&' : '?')}excludeFields=${excludeFields}`
             }
           } else {
-            url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+            url = wiki.url(`?api/entries/html/${entry.tag}`, {
               ...{ fields: 'html_output' },
               ...(excludeFields.length > 0 ? { excludeFields } : {})
             })
@@ -323,12 +323,12 @@ const BazarMapComponent = {
     loadMapEntries(newEntries, oldEntries) {
       if (!this.map) return
 
-      const newIds = newEntries.map((e) => e.id_fiche)
+      const newIds = newEntries.map((e) => e.tag)
 
       // Remove geometries for entries no longer displayed
       if (oldEntries) {
         oldEntries.forEach((entry) => {
-          if (!newIds.includes(entry.id_fiche)) {
+          if (!newIds.includes(entry.tag)) {
             if (entry.geometryGroup) {
               entry.geometryGroup.remove()
               entry.geometryGroup = null
@@ -352,9 +352,9 @@ const BazarMapComponent = {
               L.DomEvent.stopPropagation(e)
               this.selectedEntry = entry
             })
-            drawGeometries(entry.geometryGroup, geojsonGeometries.features, '', entry.id_fiche)
+            drawGeometries(entry.geometryGroup, geojsonGeometries.features, '', entry.tag)
           } catch (e) {
-            console.error(`Error drawing geometry for ${entry.id_fiche}`, e)
+            console.error(`Error drawing geometry for ${entry.tag}`, e)
           }
         }
 
@@ -371,7 +371,7 @@ const BazarMapComponent = {
         // For non-cluster mode, remove old markers not in new list
         if (oldEntries) {
           oldEntries.forEach((entry) => {
-            if (!newIds.includes(entry.id_fiche) && entry.marker) {
+            if (!newIds.includes(entry.tag) && entry.marker) {
               entry.marker.remove()
             }
           })
@@ -420,8 +420,8 @@ const BazarMapComponent = {
     entries(newVal, oldVal) {
       if (!this.map) return
 
-      const newIds = newVal.map((e) => e.id_fiche)
-      const oldIds = oldVal ? oldVal.map((e) => e.id_fiche) : []
+      const newIds = newVal.map((e) => e.tag)
+      const oldIds = oldVal ? oldVal.map((e) => e.tag) : []
 
       // Only update if arrays differ
       if (!this.arraysEqual(newIds, oldIds)) {

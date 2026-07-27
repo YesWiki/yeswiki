@@ -88,8 +88,8 @@ class EntryDateService implements EventSubscriberInterface
 
     protected function shouldFollowEntry(array $entry): bool
     {
-        return !empty($entry['id_fiche'])
-            && in_array($entry['id_fiche'], $this->followedIds);
+        return !empty($entry['tag'])
+            && in_array($entry['tag'], $this->followedIds);
     }
 
     /**
@@ -99,8 +99,8 @@ class EntryDateService implements EventSubscriberInterface
     {
         $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
-        $entryId = $entry['id_fiche'];
-        $formId = $entry['id_typeannonce'];
+        $entryId = $entry['tag'];
+        $formId = $entry['form_id'];
         $hasEndDateField = isset($entry['bf_date_fin_evenement']);
 
         if ($hasEndDateField && !empty($entryId) && !empty($formId)) {
@@ -124,7 +124,7 @@ class EntryDateService implements EventSubscriberInterface
                 );
                 foreach ($entriesToDelete as $entryToDelete) {
                     try {
-                        $this->entryManager->delete($entryToDelete['id_fiche'], true); // $forceEvenIfNotOwner = true
+                        $this->entryManager->delete($entryToDelete['tag'], true); // $forceEvenIfNotOwner = true
                     } catch (\Throwable $th) {
                         // do nothing
                     }
@@ -140,8 +140,8 @@ class EntryDateService implements EventSubscriberInterface
     {
         // default true
         $canRegisterMultipleEntries = true;
-        if (!empty($entry['id_typeannonce']) && is_scalar($entry['id_typeannonce'])) {
-            $form = $this->formManager->getOne(strval($entry['id_typeannonce']));
+        if (!empty($entry['form_id']) && is_scalar($entry['form_id'])) {
+            $form = $this->formManager->getOne(strval($entry['form_id']));
             if (!empty($form['only_one_entry'])) {
                 $canRegisterMultipleEntries = ($form['only_one_entry'] !== 'Y');
             }

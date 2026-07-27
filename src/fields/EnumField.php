@@ -135,7 +135,7 @@ abstract class EnumField extends BazarField
 
         $this->options = [];
         foreach ($fiches as $fiche) {
-            $this->options[$fiche['id_fiche']] = $fiche['bf_titre'];
+            $this->options[$fiche['tag']] = $fiche['bf_titre'];
         }
         if (is_array($this->options)) {
             asort($this->options);
@@ -215,7 +215,7 @@ abstract class EnumField extends BazarField
     }
 
     /**
-     * check existence of &fields=bf_titre,id_fiche,url in url when api.
+     * check existence of &fields=bf_titre,tag,url in url when api.
      *
      * @return string $url
      */
@@ -230,12 +230,12 @@ abstract class EnumField extends BazarField
                     $extraction = explode('=', $elem, 2);
                     if ($extraction[0] === 'fields') {
                         $fields = explode(',', $extraction[1]);
-                        $fields = $fields + ['id_fiche', 'bf_titre', 'url'];
+                        $fields = $fields + ['tag', 'bf_titre', 'url'];
                         $queries[$key] = 'fields=' . implode(',', $fields);
                     }
                 }
                 if (empty($fields)) {
-                    $queries[] = 'fields=id_fiche,bf_titre,url';
+                    $queries[] = 'fields=tag,bf_titre,url';
                 }
                 $newQuery = implode('&', $queries);
                 $url = str_replace($query, $newQuery, $url);

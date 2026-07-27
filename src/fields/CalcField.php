@@ -134,12 +134,12 @@ class CalcField extends BazarField
 
     private function getPropertyNameIfDefined($entry, $name): ?string
     {
-        if (!empty($entry['id_typeannonce'])) {
+        if (!empty($entry['form_id'])) {
             if (is_null($this->formManager)) {
                 // lazy loading because not possible at construct
                 $this->formManager = $this->getService(FormManager::class);
             }
-            $field = $this->formManager->findFieldFromNameOrPropertyName($name, $entry['id_typeannonce']);
+            $field = $this->formManager->findFieldFromNameOrPropertyName($name, $entry['form_id']);
             if (!empty($field)) {
                 $propertyName = $field->getPropertyName();
                 if (!empty($propertyName) && isset($entry[$propertyName]) && is_scalar($entry[$propertyName])) {

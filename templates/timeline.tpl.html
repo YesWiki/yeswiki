@@ -66,16 +66,16 @@ if (!function_exists('date_compare')) {
     if ($gauche) {
         $gauche=false;
         $output .= affiche_ligne_timeline(
-         '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
-         '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+         '<a href="'.$GLOBALS['wiki']->href('',$fiche['tag']).'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
+         '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['tag']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
                     $fiche['listeListeTailleImage'], $fiche
                   );
       }
       else {
         $gauche=true;
         $output .= affiche_ligne_timeline(
-         '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
-         '<a href="'.$GLOBALS['wiki']->href('',$fiche['id_fiche']).'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
+         '<h3><span>'.$fiche['bf_date_debut_evenement'].'</span><a href="'.$GLOBALS['wiki']->href('',$fiche['tag']).'">'.$fiche['bf_titre'].'</a></h3>'.$fiche['texte'],
+         '<a href="'.$GLOBALS['wiki']->href('',$fiche['tag']).'" class="ss-circle" style="background-image:url('.$url.');">'.$fiche['bf_titre'].'</a>',
                     $fiche['listeListeTailleImage'],  $fiche
                   );
       }

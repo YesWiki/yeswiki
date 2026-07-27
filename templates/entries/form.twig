@@ -26,9 +26,9 @@
     </div>
   </div>
   <input name="antispam" value="0" type="hidden">
-  <input name="id_typeannonce" value="{{ form.id }}" type="hidden">
+  <input name="form_id" value="{{ form.id }}" type="hidden">
   {% if entryId %}
-    <input name="id_fiche" value="{{ entryId }}" type="hidden">
+    <input name="tag" value="{{ entryId }}" type="hidden">
   {% endif %}
   {% if passwordForEditing %}
     <input name="password_for_editing" value="{{ passwordForEditing }}" type="hidden">

@@ -176,7 +176,7 @@ function stepHandler(currentStep, entry) {
       params.set('bf_relation', qrinfos.dataset.relation)
       params.set('bf_fiche1', url1Query)
       params.set('bf_fiche2', url2Query)
-      params.set('id_typeannonce', '1300')
+      params.set('form_id', '1300')
       fetch('?api/relations', { method: 'POST', body: params })
 
       // first mail send
@@ -252,7 +252,7 @@ function successHandler(data) {
           .then((response) => response.text())
           .then((response) => {
             const json = JSON.parse(response)
-            json.url = `${data.split('/?')[0]}/?${json.id_fiche}`
+            json.url = `${data.split('/?')[0]}/?${json.tag}`
             step = stepHandler(step, json)
             console.log(json)
           })

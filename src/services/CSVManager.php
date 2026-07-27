@@ -10,7 +10,6 @@ use YesWiki\Core\Field\FileField;
 use YesWiki\Core\Field\ImageField;
 use YesWiki\Core\Field\MapField;
 use YesWiki\Core\Field\TagsField;
-use YesWiki\Core\Field\UserField;
 use YesWiki\Wiki;
 
 class CSVManager
@@ -53,24 +52,7 @@ class CSVManager
         foreach ($form['prepared'] as $field) {
             $propName = $field->getPropertyName();
             if (!empty($propName)) {
-                if ($field instanceof UserField) {
-                    // TODO save userField data on one field
-                    $fullHeader1 = 'NomWiki';
-                    $fullHeader2 = 'Mot de passe';
-                    if ($field->isRequired()) {
-                        $fullHeader1 .= ' *';
-                        $fullHeader2 .= ' *';
-                    }
-
-                    $headers['nomwiki'] = [
-                        'field' => $field,
-                        'fullHeader' => $fullHeader1,
-                    ];
-                    $headers['mot_de_passe_wikini'] = [
-                        'field' => $field,
-                        'fullHeader' => $fullHeader2,
-                    ];
-                } else {
+                {
                     // *** standard case ****
                     $fullHeader = $field->getLabel();
                     if (!empty($fullHeader)) {
@@ -217,8 +199,8 @@ class CSVManager
         // line
         $line = [];
         // create date and latest date
-        $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['date_creation_fiche']), 'd/m/Y H:i:s');
-        $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['date_maj_fiche']), 'd/m/Y H:i:s');
+        $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['created_at']), 'd/m/Y H:i:s');
+        $line[] = date_format(date_create_from_format('Y-m-d H:i:s', $entry['updated_at']), 'd/m/Y H:i:s');
 
         foreach ($headers as $propertyName => $header) {
             $value = $entry[$propertyName] ?? null;
@@ -294,7 +276,7 @@ class CSVManager
         }
         if ($this->debug && !empty($reasonMessage)) {
             trigger_error('Error when exporting \'' . $field->getPropertyName() . '\''
-                . ' from entry \'' . ($entry['id_fiche'] ?? '<no id_fiche>') . '\'.'
+                . ' from entry \'' . ($entry['tag'] ?? '<no tag>') . '\'.'
                 . ' Waiting a string, giving ' . $reasonMessage
                 . 'You should edit and save this entry to prevent error.');
         }
@@ -380,9 +362,9 @@ class CSVManager
                 $entry = array_map('strval', $entry);
 
                 $entry['antispam'] = 1;
-                if (isset($entry['id_fiche'])) {
+                if (isset($entry['tag'])) {
                     // to prevent errors when several entries with same bf_titre
-                    unset($entry['id_fiche']);
+                    unset($entry['tag']);
                 }
                 $entry = $this->entryManager->create($formId, $entry);
 
@@ -682,14 +664,14 @@ class CSVManager
         }
         // append entry's data
         if (!empty($entry['bf_titre'])) {
-            $entry['id_fiche'] = genere_nom_wiki($entry['bf_titre']);
-            $entry['id_typeannonce'] = $formId;
-            $entry['date_creation_fiche'] = date('Y-m-d H:i:s', $entry['datetime_create'] ?? time());
-            $entry['date_maj_fiche'] = date('Y-m-d H:i:s', $entry['datetime_latest'] ?? time());
+            $entry['tag'] = genere_nom_wiki($entry['bf_titre']);
+            $entry['form_id'] = $formId;
+            $entry['created_at'] = date('Y-m-d H:i:s', $entry['datetime_create'] ?? time());
+            $entry['updated_at'] = date('Y-m-d H:i:s', $entry['datetime_latest'] ?? time());
             if ($this->wiki->UserIsAdmin()) {
-                $entry['statut_fiche'] = 1;
+                $entry['status'] = 1;
             } else {
-                $entry['statut_fiche'] = $this->wiki->config['BAZ_ETAT_VALIDATION'];
+                $entry['status'] = $this->wiki->config['BAZ_ETAT_VALIDATION'];
             }
         } else {
             $this->errormsg[] = 'Empty $entry[\'bf_titre\'] in ' . get_class($this) . ', line ' . __LINE__;

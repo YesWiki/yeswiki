@@ -295,7 +295,7 @@ class ExternalBazarService
             array_push($vEntries, ...$vLocalEntries);
         }
 
-        unset($pParams['id_typeannonce']);
+        unset($pParams['form_id']);
         unset($pParams['id']);
 
         $vURLSearchParams = $vSearchManager->paramsToURLSearchParams($pParams);
@@ -360,8 +360,8 @@ class ExternalBazarService
                             'localFormID' => $vLocalFormID,
                             'formIDKey' => $vExternalFormIDKey,
                         ];
-                        $vEntry['url'] = $vURL . '?' . $vEntry['id_fiche'];
-                        $vEntry['id_typeannonce'] = $vLocalFormID;
+                        $vEntry['url'] = $vURL . '?' . $vEntry['tag'];
+                        $vEntry['form_id'] = $vLocalFormID;
 
                         $vEntries[] = $vEntry;
                     }
@@ -623,7 +623,7 @@ class ExternalBazarService
         $lastModificationDate = $this->getLastModificationDateFromFile($cache_file);
         if (empty($lastModificationDate)) {
             if ($this->debug) {
-                trigger_error($cache_file . " should contain 'date_maj_fiche' !", E_USER_WARNING);
+                trigger_error($cache_file . " should contain 'updated_at' !", E_USER_WARNING);
             }
 
             $this->cacheURLContent($url, '', $cache_file, $forceRefresh);
@@ -634,7 +634,7 @@ class ExternalBazarService
 
             if (!empty($newEntries) && is_array($newEntries)) {
                 foreach ($newEntries as $key => $entry) {
-                    $entries[$entry['id_fiche'] ?? $key] = $entry;
+                    $entries[$entry['tag'] ?? $key] = $entry;
                 }
 
                 $this->cacheURLContent('', json_encode($entries), $cache_file, $forceRefresh);
@@ -680,9 +680,9 @@ class ExternalBazarService
             }
 
             foreach ($entries as $key => $entry) {
-                if (isset($entriesList) && isset($entry['id_fiche']) && !isset($entriesList[$entry['id_fiche']])) {
+                if (isset($entriesList) && isset($entry['tag']) && !isset($entriesList[$entry['tag']])) {
                     if ($this->debug && $this->wiki->UserIsAdmin()) {
-                        trigger_error('Deleting ' . $entry['id_fiche'] . ' from ' . $cache_file);
+                        trigger_error('Deleting ' . $entry['tag'] . ' from ' . $cache_file);
                     }
                     unset($entries[$key]);
                 }
@@ -714,13 +714,13 @@ class ExternalBazarService
 
             foreach ($entries as $entry) {
                 if (
-                    !empty($entry['date_maj_fiche'])
+                    !empty($entry['updated_at'])
                     && (
                         is_null($maxUpdatedDate)
-                        || ($entry['date_maj_fiche'] > $maxUpdatedDate)
+                        || ($entry['updated_at'] > $maxUpdatedDate)
                     )
                 ) {
-                    $maxUpdatedDate = $entry['date_maj_fiche'];
+                    $maxUpdatedDate = $entry['updated_at'];
                 }
             }
 
@@ -835,9 +835,9 @@ class ExternalBazarService
     }
 
     /**
-     * check existence of &fields=date_maj_fiche in url for entries refresh.
+     * check existence of &fields=updated_at in url for entries refresh.
      *
-     * @param bool $addFields add fields=id_fiche,bf_titre,url
+     * @param bool $addFields add fields=tag,bf_titre,url
      *
      * @return string $url
      */
@@ -860,7 +860,7 @@ class ExternalBazarService
                         )
                         : $value
                     );
-                    foreach (($addFields ? ['id_fiche', 'bf_titre', 'url', 'date_maj_fiche'] : ['date_maj_fiche']) as $fieldName) {
+                    foreach (($addFields ? ['tag', 'bf_titre', 'url', 'updated_at'] : ['updated_at']) as $fieldName) {
                         if (!in_array($fieldName, $fields)) {
                             $fields[] = $fieldName;
                         }
@@ -874,7 +874,7 @@ class ExternalBazarService
             }
 
             if ($addFields && empty($fields)) {
-                $queries['fields'] = 'id_fiche,bf_titre,url,date_maj_fiche';
+                $queries['fields'] = 'tag,bf_titre,url,updated_at';
             }
 
             $newQuery = implode('&', $queries);

@@ -7,7 +7,7 @@ export default {
       .then((data) => {
         const pages = []
         for (const key in data) {
-          const pageTag = data[key].id_fiche
+          const pageTag = data[key].tag
           if (pageTag) {
             pages.push(pageTag)
           }

@@ -10,9 +10,9 @@ export default {
       if (this.config.dataFromFormField) {
         if (!this.selectedForms || !this.values[this.config.dataFromFormField]) return []
         let extraFields = this.formatExtraFieldsAsArray(this.config.extraFields)
-        // allow only 'id_typeannonce'
-        extraFields = (extraFields.includes('id_typeannonce') && Object.keys(this.selectedForms).length > 1)
-          ? ['id_typeannonce']
+        // allow only 'form_id'
+        extraFields = (extraFields.includes('form_id') && Object.keys(this.selectedForms).length > 1)
+          ? ['form_id']
           : []
         const fields = this.getFieldsFormSelectedForms(this.selectedForms, extraFields)
         const fieldConfig = fields.find((e) => e.id == this.values[this.config.dataFromFormField])

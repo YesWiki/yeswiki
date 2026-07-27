@@ -85,7 +85,7 @@ class DuplicateHandler extends YesWikiHandler
                     $pageTitle = $originalContent['bf_titre'];
                     $proposedTag = $this->wiki->GetPageTag();
                     $originalContent = $this->wiki->page['body'];
-                    $form = $this->getService(FormManager::class)->getOne($this->getService(EntryManager::class)->getOne($proposedTag)['id_typeannonce']);
+                    $form = $this->getService(FormManager::class)->getOne($this->getService(EntryManager::class)->getOne($proposedTag)['form_id']);
                 } else {
                     $pageTitle = $originalContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = genere_nom_wiki($pageTitle);

@@ -24,7 +24,7 @@ class SemanticTransformer
         $json = $this->templateEngine->renderSandboxedFromStringNoEscape($form['sem_template'], $data);
         $semanticData = json_decode($json, true);
 
-        $semanticData['id'] = $this->params->get('base_url') . $data['id_fiche'];
+        $semanticData['id'] = $this->params->get('base_url') . $data['tag'];
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new \Exception('Semantic template produced invalid JSON: ' . json_last_error_msg());
@@ -50,7 +50,7 @@ class SemanticTransformer
 
         return array_merge([
             'antispam' => 1,
-            'id_typeannonce' => $data['id_typeannonce'] ?? '',
+            'form_id' => $data['form_id'] ?? '',
         ], $fields);
     }
 }

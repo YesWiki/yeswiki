@@ -58,7 +58,7 @@ class Mailer
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
                 'entry' => $data,
-                'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['id_fiche'], '', true, $userName),
+                'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['tag'], '', true, $userName),
                 'baseUrl' => $baseUrl,
             ]
         );
@@ -187,7 +187,7 @@ class Mailer
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
                 'entry' => $data,
-                'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['id_fiche'], '', true, $userName),
+                'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['tag'], '', true, $userName),
                 'baseUrl' => $baseUrl,
                 'mailCustomMessage' => $this->params->has('mail_custom_message') ? $this->params->get('mail_custom_message') : null,
                 'previousEntry' => $previousEntry,

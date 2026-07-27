@@ -12,7 +12,7 @@ const BazarCalendar = {
   },
   methods: {
     addEntry(entry) {
-      const hasEvents = this.calendar.getEvents().some((event) => event.groupId === entry.id_fiche)
+      const hasEvents = this.calendar.getEvents().some((event) => event.groupId === entry.tag)
       if (!hasEvents) {
         this.prepareEvents(entry).forEach((event) => this.calendar.addEvent(event))
       }
@@ -53,7 +53,7 @@ const BazarCalendar = {
     displaySideBar(info) {
       info.jsEvent.preventDefault()
       const { entries } = this
-      this.selectedEntry = entries.filter((entry) => (entry.id_fiche == info.event.groupId))[0]
+      this.selectedEntry = entries.filter((entry) => (entry.tag == info.event.groupId))[0]
     },
     getEventById(id) {
       return this.calendar ? this.calendar.getEventById(id) : null
@@ -138,7 +138,7 @@ const BazarCalendar = {
       const backgroundColor = (entry.color == undefined || entry.color.length == 0) ? '' : entry.color
       return {
         id,
-        groupId: entry.id_fiche,
+        groupId: entry.tag,
         title: entry.bf_titre,
         start,
         end,
@@ -164,7 +164,7 @@ const BazarCalendar = {
       const recurrenceData = entry.bf_date_fin_evenement_data
       const isRecurrent = recurrenceData != null && typeof recurrenceData === 'object' && recurrenceData.isRecurrent === '1'
       if (!isRecurrent) {
-        return [this.buildEventObject(entry, entry.id_fiche, start, end)]
+        return [this.buildEventObject(entry, entry.tag, start, end)]
       }
       const occurrences = window._bazarRecurrenceCalculator.generateOccurrences({
         ...recurrenceData,
@@ -173,14 +173,14 @@ const BazarCalendar = {
       })
       return occurrences.map((occurrence, index) => this.buildEventObject(
         entry,
-        `${entry.id_fiche}::${index}`,
+        `${entry.tag}::${index}`,
         occurrence.start,
         occurrence.end
       ))
     },
     removeEntry(entry) {
       this.calendar.getEvents()
-        .filter((event) => event.groupId === entry.id_fiche)
+        .filter((event) => event.groupId === entry.tag)
         .forEach((event) => event.remove())
     },
     retrieveTimeZone(dateAsString) {
@@ -334,8 +334,8 @@ const BazarCalendar = {
       this.mountCalendar()
     },
     entries(newVal, oldVal) {
-      const newIds = newVal.map((e) => e.id_fiche)
-      const oldIds = oldVal.map((e) => e.id_fiche)
+      const newIds = newVal.map((e) => e.tag)
+      const oldIds = oldVal.map((e) => e.tag)
       if (!this.arraysEqual(newIds, oldIds)) {
         const { entries } = this
         this.$nextTick(function() {

@@ -101,9 +101,9 @@ class ImportFilesManager
         $fields = [];
         if (!empty($wikiPage['tag'])) { // classic wiki page
             $fields[] = 'body';
-        } elseif (!empty($wikiPage['id_fiche'])) { // bazar entry
+        } elseif (!empty($wikiPage['tag'])) { // bazar entry
             $formManager = $this->wiki->services->get(FormManager::class);
-            $form = $formManager->getOne($wikiPage['id_typeannonce']);
+            $form = $formManager->getOne($wikiPage['form_id']);
             // find fields that are textareas
             foreach ($form['prepared'] as $field) {
                 if ($field instanceof TextareaField) {
@@ -275,7 +275,7 @@ class ImportFilesManager
 
         if (!empty($attachments)) {
             foreach ($attachments as $attachment) {
-                $this->downloadHiddenAttachment($remoteUrl, $wikiPage['id_fiche'], date('Y-m-d H:i:s'), $attachment, $overwrite);
+                $this->downloadHiddenAttachment($remoteUrl, $wikiPage['tag'], date('Y-m-d H:i:s'), $attachment, $overwrite);
             }
         }
     }

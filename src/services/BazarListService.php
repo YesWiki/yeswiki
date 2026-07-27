@@ -139,7 +139,7 @@ class BazarListService
         if ($pOptions['random'] ?? false) {
             shuffle($vEntries);
         } else {
-            usort($vEntries, $this->buildFieldSorter($pOptions['ordre'] ?? 'asc', $pOptions['champ'] ?? 'bf_titre'));
+            usort($vEntries, $this->buildFieldSorter($pOptions['ordre'] ?? 'asc', $pOptions['champ'] ?? 'title'));
         }
 
         // Limit entries
@@ -152,7 +152,7 @@ class BazarListService
         // add extra informations (comments, reactions, metadatas)
         if (($pOptions['extrafields'] ?? false) === true) {
             foreach ($vEntries as $i => $vEntry) {
-                $this->entryExtraFields->setEntryId($vEntry['id_fiche']);
+                $this->entryExtraFields->setEntryId($vEntry['tag']);
                 foreach (EntryExtraFieldsService::EXTRA_FIELDS as $vField) {
                     $vEntries[$i][$vField] = $this->entryExtraFields->get($vField);
                 }
@@ -179,7 +179,7 @@ class BazarListService
             'groupsexpanded' => false,
         ], $options);
 
-        $formIdsUsed = array_unique(array_column($entries, 'id_typeannonce'));
+        $formIdsUsed = array_unique(array_column($entries, 'form_id'));
         $formsUsed = array_map(function ($formId) use ($forms) {
             return $forms[$formId] ?? null;
         }, $formIdsUsed);
@@ -235,8 +235,8 @@ class BazarListService
                         $filter['nodes'][] = $this->createFilterNode($value, $label);
                     }
                 }
-            } elseif ($propName == 'id_typeannonce') {
-                // SPECIAL PROPNAME id_typeannonce
+            } elseif ($propName == 'form_id') {
+                // SPECIAL PROPNAME form_id
                 $filter['title'] = _t('BAZ_TYPE_FICHE');
                 foreach ($formsUsed as $form) {
                     $filter['nodes'][] = $this->createFilterNode($form['id'], $form['label']);
@@ -585,6 +585,11 @@ class BazarListService
 
     private function buildFieldSorter($ordre, $champ): callable
     {
+        // stored wiki content still says {{bazarliste champ="date_creation_fiche"}} or
+        // champ="bf_titre" -- legacy entry-key names are aliased to the renamed ones
+        // (ADR-0010; bf_titre maps to the computed `title`)
+        $champ = EntryManager::LEGACY_ENTRY_KEYS[$champ] ?? $champ;
+
         return function ($a, $b) use ($ordre, $champ) {
             if (strstr($champ, '.')) {
                 $val1 = $this->getValueForArray($a, $champ);

@@ -47,16 +47,16 @@ class EntryManagerTest extends YesWikiTestCase
 
         $tag = null;
         try {
-            // id_fiche supplied explicitly to avoid the unrelated legacy genere_nom_wiki()
+            // tag supplied explicitly to avoid the unrelated legacy genere_nom_wiki()
             // global function (also $GLOBALS['wiki']-dependent, out of scope here)
             $entry = $entryManager->create(self::FORM_ID, [
                 'antispam' => 1,
                 'bf_titre' => 'Test entry',
-                'id_fiche' => self::ENTRY_TAG,
+                'tag' => self::ENTRY_TAG,
             ]);
             $this->assertIsArray($entry);
-            $this->assertArrayHasKey('id_fiche', $entry);
-            $tag = $entry['id_fiche'];
+            $this->assertArrayHasKey('tag', $entry);
+            $tag = $entry['tag'];
 
             $this->assertTrue($entryManager->isEntry($tag));
             $fetched = $entryManager->getOne($tag);

@@ -20,13 +20,13 @@
             <input type="checkbox" disabled>{{ extract.entry.bf_titre }}
           </label>
             <a class="btn-mini btn-xs btn btn-default"
-              data-target="#collapse{{ extract.entry.id_fiche ~ (index + 1) }}"
+              data-target="#collapse{{ extract.entry.tag ~ (index + 1) }}"
               data-toggle="collapse">
               <i class="fa fa-eye-open icon-eye-open icon-white"></i>
               {{ _t('BAZ_SEE_ENTRY') }}
             </a>
           <div class="panel panel-danger">
-            <div id="collapse{{ extract.entry.id_fiche ~ (index + 1) }}" class="panel-collapse collapse">
+            <div id="collapse{{ extract.entry.tag ~ (index + 1) }}" class="panel-collapse collapse">
               <div class="panel-body">
                 <div class="yw-alert yw-alert--danger">
                   {{ extract.errormsg|join('<br>') }}
@@ -37,17 +37,17 @@
           </div>
         {% else %}
           <label>
-            <input type="checkbox" name="importfiche[{{ extract.entry.id_fiche ~ (index + 1) }}]"
+            <input type="checkbox" name="importfiche[{{ extract.entry.tag ~ (index + 1) }}]"
               value="{{ extract.json|e }}">{{ extract.entry.bf_titre }}
           </label>
           <a class="btn-mini btn-xs btn btn-default"
-            data-target="#collapse{{ extract.entry.id_fiche ~ (index + 1) }}"
+            data-target="#collapse{{ extract.entry.tag ~ (index + 1) }}"
             data-toggle="collapse">
             <i class="fa fa-eye-open icon-eye-open icon-white"></i>
               {{ _t('BAZ_SEE_ENTRY')  }}
           </a>
           <div class="panel panel-default">
-            <div id="collapse{{ extract.entry.id_fiche ~ (index + 1) }}" class="panel-collapse collapse">
+            <div id="collapse{{ extract.entry.tag ~ (index + 1) }}" class="panel-collapse collapse">
               <div class="panel-body">
                 {{ extract.displayData|raw }}
               </div>
@@ -80,7 +80,7 @@
       </div>
       {% set outputToFormat = '' %}
       {% for index,entry in importedEntries %}
-        {% set outputToFormat = outputToFormat ~ ' ' ~ index ~') [[' ~ entry.id_fiche ~ ' ' ~ entry.bf_titre ~ ']]\n' %}
+        {% set outputToFormat = outputToFormat ~ ' ' ~ index ~') [[' ~ entry.tag ~ ' ' ~ entry.bf_titre ~ ']]\n' %}
       {% endfor %}
       {{ format(outputToFormat)|raw }}
   {% else %}

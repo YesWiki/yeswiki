@@ -53,23 +53,23 @@ export default {
           }
         })
       }
-      if (extraFields.includes('id_typeannonce')) {
+      if (extraFields.includes('form_id')) {
         const options = {}
         Object.keys(this.selectedForms).forEach((key) => {
           options[key] = this.selectedForms[key].label || key
         })
         // fake a field
         fields.push({
-          id: 'id_typeannonce',
-          name: 'id_typeannonce',
-          propertyName: 'id_typeannonce',
+          id: 'form_id',
+          name: 'form_id',
+          propertyName: 'form_id',
           label: _t('ACTION_BUILDER_FORM_ID'),
           options: { ...options } // clone object
         })
       }
       const extraFieldsWithoutOptions = {
-        date_creation_fiche: _t('ACTION_BUILDER_CREATION_DATE'),
-        date_maj_fiche: _t('ACTION_BUILDER_MODIFICATION_DATE'),
+        created_at: _t('ACTION_BUILDER_CREATION_DATE'),
+        updated_at: _t('ACTION_BUILDER_MODIFICATION_DATE'),
         owner: _t('ACTION_BUILDER_OWNER'),
         url: _t('URL')
       }

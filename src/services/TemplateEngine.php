@@ -202,7 +202,7 @@ class TemplateEngine
             return $this->wiki->services->get(Performer::class)->run($name, 'action', $params);
         });
         $this->addTwigHelper('reaction', function ($entry, $reactionId) {
-            $form = $this->wiki->services->get(FormManager::class)->getOne($entry['id_typeannonce']);
+            $form = $this->wiki->services->get(FormManager::class)->getOne($entry['form_id']);
             $found = false;
             foreach ($form['prepared'] as $i => $element) {
                 if ($reactionId == $element->getPropertyName()) {

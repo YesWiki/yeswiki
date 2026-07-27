@@ -176,7 +176,7 @@ class ReactionsField extends BazarField
     protected function getCurrentTag($entry): ?string
     {
         // the tag of the current activity page
-        return !empty($entry['id_fiche']) ? $entry['id_fiche'] : null;
+        return !empty($entry['tag']) ? $entry['tag'] : null;
     }
 
     protected function renderInput($entry)

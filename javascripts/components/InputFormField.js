@@ -15,8 +15,8 @@ export default {
   computed: {
     fieldOptions() {
       const extraFields = this.formatExtraFieldsAsArray(this.config.extraFields)
-      if (extraFields.includes('id_typeannonce') && Object.keys(this.selectedForms).length < 2) {
-        extraFields.splice(extraFields.indexOf('id_typeannonce'), 1)
+      if (extraFields.includes('form_id') && Object.keys(this.selectedForms).length < 2) {
+        extraFields.splice(extraFields.indexOf('form_id'), 1)
       }
       let fields = this.getFieldsFormSelectedForms(this.selectedForms, extraFields)
       if (this.config.only == 'lists') {

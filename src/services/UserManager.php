@@ -521,7 +521,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $found = null;
         if (!empty($entry)) {
             $candidate = array_pop($entry);
-            if (!empty($candidate['id_fiche'])) {
+            if (!empty($candidate['tag'])) {
                 $found = $candidate;
             }
         }

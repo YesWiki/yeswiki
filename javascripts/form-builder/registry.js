@@ -7,8 +7,6 @@
 //
 // Extensions can add their own configs before the engine boots via
 // window.formBuilderFields (same contract as the old builder's field modules).
-import acls from './fields/acls.js'
-import bookmarklet from './fields/bookmarklet.js'
 import calc from './fields/calc.js'
 import champsMail from './fields/champs_mail.js'
 import checkboxGroup from './fields/checkbox-group.js'
@@ -22,7 +20,6 @@ import inscriptionliste from './fields/inscriptionliste.js'
 import labelhtml from './fields/labelhtml.js'
 import listefichesliees from './fields/listefichesliees.js'
 import map from './fields/map.js'
-import metadatas from './fields/metadatas.js'
 import openinghours from './fields/openinghours.js'
 import radioGroup from './fields/radio-group.js'
 import reactions from './fields/reactions.js'
@@ -32,9 +29,7 @@ import tabs from './fields/tabs.js'
 import tags from './fields/tags.js'
 import text from './fields/text.js'
 import textarea from './fields/textarea.js'
-import titre from './fields/titre.js'
 import url from './fields/url.js'
-import utilisateurWikini from './fields/utilisateur_wikini.js'
 
 const registry = {
   text,
@@ -48,22 +43,17 @@ const registry = {
   url,
   map,
   champs_mail: champsMail,
-  titre,
   labelhtml,
   tags,
   hidden,
   listefichesliees,
-  acls,
   reactions,
   tabs,
   tabchange,
   conditionschecking,
-  utilisateur_wikini: utilisateurWikini,
   inscriptionliste,
   openinghours,
   calc,
-  bookmarklet,
-  metadatas,
   custom,
   // extension-provided configs win over core ones with the same name
   ...(window.formBuilderFields || {})

@@ -54,7 +54,7 @@ class TextareaFieldTest extends YesWikiTestCase
         $GLOBALS['prefered_language'] = 'fr';
 
         $field = $this->buildTextareaField('html');
-        $output = $this->renderInput($field, ['id_fiche' => 'TextareaFieldTestEntry']);
+        $output = $this->renderInput($field, ['tag' => 'TextareaFieldTestEntry']);
 
         $this->assertStringContainsString('vditor-html', $output);
         $this->assertStringContainsString('data-vditor-lang="fr_FR"', $output);
@@ -64,7 +64,7 @@ class TextareaFieldTest extends YesWikiTestCase
     public function testPlainSyntaxDoesNotLoadVditor()
     {
         $field = $this->buildTextareaField('nohtml');
-        $output = $this->renderInput($field, ['id_fiche' => 'TextareaFieldTestEntry']);
+        $output = $this->renderInput($field, ['tag' => 'TextareaFieldTestEntry']);
 
         $this->assertStringNotContainsString('vditor-html', $output);
         $this->assertStringNotContainsString('data-vditor-lang', $output);
@@ -75,7 +75,7 @@ class TextareaFieldTest extends YesWikiTestCase
         $GLOBALS['prefered_language'] = 'eu';
 
         $field = $this->buildTextareaField('html');
-        $output = $this->renderInput($field, ['id_fiche' => 'TextareaFieldTestEntry']);
+        $output = $this->renderInput($field, ['tag' => 'TextareaFieldTestEntry']);
 
         $this->assertStringContainsString('data-vditor-lang="en_US"', $output);
     }

@@ -90,7 +90,7 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
             $entryManager->create(self::BAZAR_FORM_ID, [
                 'antispam' => 1,
                 'bf_titre' => 'Test entry',
-                'id_fiche' => self::BAZAR_ENTRY_TAG,
+                'tag' => self::BAZAR_ENTRY_TAG,
             ]);
             $this->assertTrue($entryManager->isEntry(self::BAZAR_ENTRY_TAG));
 

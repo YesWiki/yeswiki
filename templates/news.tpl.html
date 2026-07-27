@@ -74,7 +74,7 @@ if (!function_exists('date_compare')) {
       </fig-caption>
       <?php $useModal = $GLOBALS['wiki']->GetParameter('modal') == 1; ?>
       <a class="<?php echo $useModal ? 'modalbox' : ''; ?>"
-         href="<?php echo $GLOBALS['wiki']->href('', $fiche['id_fiche']); ?>">
+         href="<?php echo $GLOBALS['wiki']->href('', $fiche['tag']); ?>">
       </a>
     </figure>
   </div>

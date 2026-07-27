@@ -59,8 +59,8 @@ class TagsField extends EnumField
         $value = $this->getValue($entry);
 
         // Delete existing tags linked to this entry
-        if (!isset($GLOBALS['delete_tags']) && !empty($entry['id_fiche'])) {
-            $tripleStore->delete($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
+        if (!isset($GLOBALS['delete_tags']) && !empty($entry['tag'])) {
+            $tripleStore->delete($entry['tag'], 'http://outils-reseaux.org/_vocabulary/tag', null, '', '');
             $GLOBALS['delete_tags'] = true;
         }
 
@@ -69,7 +69,7 @@ class TagsField extends EnumField
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
-                $tripleStore->create($entry['id_fiche'], 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
+                $tripleStore->create($entry['tag'], 'http://outils-reseaux.org/_vocabulary/tag', $tag, '', '');
             }
         }
 

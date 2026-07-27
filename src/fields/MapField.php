@@ -218,7 +218,7 @@ class MapField extends BazarField
                 return !empty($v['action'])
                     && substr($v['action'], 0, 5) === 'bazar'
                     && !empty($v['vars']['id'])
-                    && $v['vars']['id'] == $entry['id_typeannonce'];
+                    && $v['vars']['id'] == $entry['form_id'];
             });
         $lastAction = end($filteredActions);
         $showMapInDynamicListView = ($this->getRequest()->query->get('showmapinlistview') === '1');
@@ -232,7 +232,7 @@ class MapField extends BazarField
         ) {
             $showMapInListView = true;
         }
-        $currentUrlIsEntry = (explode('/', $this->getRequest()->query->get('wiki', ''))[0] === $entry['id_fiche']);
+        $currentUrlIsEntry = (explode('/', $this->getRequest()->query->get('wiki', ''))[0] === $entry['tag']);
 
         // the map is only showed on the fullpage entry view,
         // or if action parameter showmapinlistview is set to '1'
@@ -243,7 +243,7 @@ class MapField extends BazarField
             $mapFieldData = $this->getMapFieldData($entry);
             if (!empty($mapFieldData['latitude']) && !empty($mapFieldData['longitude']) || !empty($mapFieldData['geometries'])) {
                 $output .= $this->render('@core/fields/map.twig', [
-                    'tag' => $entry['id_fiche'],
+                    'tag' => $entry['tag'],
                     'mapFieldData' => $mapFieldData,
                 ]);
             }

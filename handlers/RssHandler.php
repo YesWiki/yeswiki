@@ -20,7 +20,7 @@ class RssHandler extends YesWikiHandler
             $vBazarListService = $this->getService(BazarListService::class);
 
             $get = $this->getRequest()->query;
-            $vIDs = $vBazarListService->getIDs($get->get('id') ?? $get->get('id_typeannonce') ?? $get->get('idtypeannonce') ?? []);
+            $vIDs = $vBazarListService->getIDs($get->get('id') ?? $get->get('form_id') ?? $get->get('idtypeannonce') ?? []);
 
             $vItemCount = intval($get->get('nbitem') ?? $get->get('nb') ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
 
@@ -56,7 +56,7 @@ class RssHandler extends YesWikiHandler
                     'datefilter' => $vDateFilter,
                     'correspondance' => $vCorrespondance,
                     'ordre' => 'desc',
-                    'champ' => 'date_creation_fiche',
+                    'champ' => 'created_at',
                     'nb' => $vItemCount,
                     'minDate' => $get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '',
                 ]
@@ -124,11 +124,11 @@ class RssHandler extends YesWikiHandler
                         '<![CDATA[' . preg_replace(
                             '/data-id=".*"/Ui',
                             '',
-                            $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($vRSSEntry), $this->wiki->href('', $vRSSEntry['id_fiche'])))
+                            $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($vRSSEntry), $this->wiki->href('', $vRSSEntry['tag'])))
                         ) . ']]>'
                     );
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime($vRSSEntry['date_creation_fiche'])));
+                    $xml .= XML_Util::createTag('pubDate', null, date('r', strtotime($vRSSEntry['created_at'])));
                     $xml .= "\r\n      ";
                     $xml .= XML_Util::createEndElement('item');
                 }

@@ -134,7 +134,7 @@ const load = (domElement) => {
         if (this.searchFormId) {
           // filter based on formId, when no form id is specified
           result = result.filter(
-            (entry) => entry.id_typeannonce == this.searchFormId
+            (entry) => entry.form_id == this.searchFormId
           )
         }
 
@@ -335,7 +335,7 @@ const load = (domElement) => {
             // that are already displayed in the panel header
             fieldsToExclude = Object.values(this.params.displayfields)
           }
-          const url = wiki.url(`?api/entries/html/${entry.id_fiche}`, {
+          const url = wiki.url(`?api/entries/html/${entry.tag}`, {
             ...{ isInIframe: this.params.isInIframe },
             ...{ fields: 'html_output' },
             ...(fieldsToExclude.length > 0
@@ -354,7 +354,7 @@ const load = (domElement) => {
       async setEntryFromUrl(entry, url) {
         return await this.getJSON(url)
           .then((data) => {
-            const html = data?.[entry.id_fiche]?.html_output ?? 'error'
+            const html = data?.[entry.tag]?.html_output ?? 'error'
             entry.html_render = html
             return html
           })
@@ -400,7 +400,7 @@ const load = (domElement) => {
         if (!entry.url) {
           return false
         }
-        return entry.url !== wiki.url(entry.id_fiche)
+        return entry.url !== wiki.url(entry.tag)
       },
       isInIframe() {
         return window != window.parent

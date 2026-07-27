@@ -241,7 +241,7 @@ class SearchManager
 
                         if ($vField['hasMultipleStructures']) {
                             if ($vORRequest != '') {
-                                $vORRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                                $vORRequest = '( ' . $this->renameJSONPathVariable('form_id') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                     return '\'' . $pFormID . '\'';
                                 }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vORRequest . ')';
                             }
@@ -306,7 +306,7 @@ class SearchManager
 
                     if ($vField['hasMultipleStructures']) {
                         if ($vExcludedRequest != '') {
-                            $vExcludedRequest = '( ' . $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                            $vExcludedRequest = '( ' . $this->renameJSONPathVariable('form_id') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                 return '\'' . $pFormID . '\'';
                             }, $vFieldDescriptor['_ids_'])) . ') AND ' . $vExcludedRequest . ')';
                         }
@@ -482,7 +482,7 @@ class SearchManager
 
                     if ($vField['hasMultipleStructures']) {
                         if ($vDescriptorCondition != '') {
-                            $vDescriptorCondition = $this->renameJSONPathVariable('id_typeannonce') . ' IN (' . implode(',', array_map(function ($pFormID) {
+                            $vDescriptorCondition = $this->renameJSONPathVariable('form_id') . ' IN (' . implode(',', array_map(function ($pFormID) {
                                 return '\'' . $pFormID . '\'';
                             }, $vDescriptor['_ids_'])) . ') AND (' . $vDescriptorCondition . ')';
                         }
@@ -578,7 +578,7 @@ class SearchManager
                 },
             );
 
-            $vIDsRequest .= $this->dbService->jsonExtract('body', '$.id_typeannonce') . ' IN (' . join(',', array_map(function ($pFormID) {
+            $vIDsRequest .= $this->dbService->jsonExtract('body', '$.form_id') . ' IN (' . join(',', array_map(function ($pFormID) {
                 return '\'' . $pFormID . '\'';
             }, $vFormIDs)) . ')';
         } else {
@@ -633,7 +633,7 @@ class SearchManager
 
         $vHash = $this->buildFieldDescriptorHash($vFieldDescriptor);
 
-        $vFields['id_fiche']
+        $vFields['tag']
         = [
             'needSplit' => false,
             'hasMultipleStructures' => false,
@@ -782,12 +782,12 @@ class SearchManager
 
         // Build the SELECT part of the request :
 
-        // - Retrieves all columns and extract id_typeannonce
+        // - Retrieves all columns and extract form_id
 
         $vSelectRequest
         = [
             'p.*',
-            $this->dbService->jsonExtract('body', '$.id_typeannonce') . ' AS ' . $this->renameJSONPathVariable('id_typeannonce'),
+            $this->dbService->jsonExtract('body', '$.form_id') . ' AS ' . $this->renameJSONPathVariable('form_id'),
         ];
 
         // - Extract all fields ("single" and "multiple" mode)
@@ -1044,7 +1044,7 @@ class SearchManager
                 : $page;
             $data = $vEntryManager->getDataFromPage($filteredPage, false, $debug, $params['correspondance'] ?? '');
             $data['-is-external-'] = '0';
-            $searchResults[$data['id_fiche']] = $data;
+            $searchResults[$data['tag']] = $data;
         }
 
         return $searchResults;
@@ -1177,18 +1177,18 @@ class SearchManager
                     $vUniqueValues = [];
                     if (isset($pMatches[3][0])) {
                         foreach (explode(',', trim($pMatches[3][0])) as $vValue) {
-                            // replace tokens like [user.name] and [user.entry.id_fiche]
+                            // replace tokens like [user.name] and [user.entry.tag]
                             // TODO: make it a service that could be used for any params
                             if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
                                 switch ($matches[1]) {
                                     case 'user.name':
                                         $vValue = $this->wiki->getUserName();
                                         break;
-                                    case 'user.entry.id_fiche':
+                                    case 'user.entry.tag':
                                         $vUserManager = $this->wiki->services->get(UserManager::class);
                                         $entry = $vUserManager->getAssociatedEntry();
                                         if (!empty($entry)) {
-                                            $vValue = $entry['id_fiche'];
+                                            $vValue = $entry['tag'];
                                         }
                                         break;
                                 }

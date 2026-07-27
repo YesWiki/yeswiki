@@ -8,7 +8,6 @@ use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\ParsingMultipleException;
 use YesWiki\Core\Field\BazarField;
 use YesWiki\Core\Field\ImageField;
-use YesWiki\Core\Field\TitleField;
 use YesWiki\Wiki;
 
 class EntryManager
@@ -32,9 +31,9 @@ class EntryManager
     public const TRIPLES_ENTRY_ID = 'fiche_bazar';
 
     public const VALIDATE_FLAG_ANTISPAM = 1 << 0;
-    public const VALIDATE_FLAG_BF_TITRE = 1 << 1;
-    public const VALIDATE_FLAG_ID_TYPEANNONCE = 1 << 2;
-    public const VALIDATE_FLAG_ALL = self::VALIDATE_FLAG_ANTISPAM | self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE;
+    public const VALIDATE_FLAG_TITLE = 1 << 1;
+    public const VALIDATE_FLAG_FORM_ID = 1 << 2;
+    public const VALIDATE_FLAG_ALL = self::VALIDATE_FLAG_ANTISPAM | self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID;
 
     public function __construct(
         Wiki $wiki,
@@ -164,8 +163,8 @@ class EntryManager
 
         // Add extra fields that doesn't belong to the form definition
         $extraFields = [
-            'id_fiche', 'id_typeannonce', 'date_creation_fiche',
-            'date_maj_fiche', 'statut_fiche', 'url',
+            'tag', 'form_id', 'created_at',
+            'updated_at', 'status', 'url',
             '-is-external-', 'external-data',
         ];
 
@@ -196,10 +195,10 @@ class EntryManager
                 return [];
             }
 
-            $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
+            $data = $this->removeUnknownFields($data['form_id'], $data);
 
             // Keep only the fields defined in the form definition
-            $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+            $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);
 
             $vRegisteredData = [...$data];
             /* CORRECT BUG FOR RECURRENT EVENT
@@ -223,8 +222,8 @@ class EntryManager
             */
             // Add extra fields that doesn't belong to the form definition
             $extraFields = [
-                'id_fiche', 'id_typeannonce', 'date_creation_fiche',
-                'date_maj_fiche', 'statut_fiche', 'url',
+                'tag', 'form_id', 'created_at',
+                'updated_at', 'status', 'url',
             ];
 
             foreach ($extraFields as $key) {
@@ -236,18 +235,18 @@ class EntryManager
             $data = $vRegisteredData;
 
             if ($debug) {
-                if (empty($data['id_fiche'])) {
-                    trigger_error('empty \'id_fiche\' in EntryManager::getDataFromPage in body of page \''
-                        . $page['tag'] . '\'. Edit it to create id_fiche', E_USER_WARNING);
+                if (empty($data['tag'])) {
+                    trigger_error('empty \'tag\' in EntryManager::getDataFromPage in body of page \''
+                        . $page['tag'] . '\'. Edit it to create tag', E_USER_WARNING);
                 }
                 if (empty($page['tag'])) {
                     trigger_error('empty $page[\'tag\'] in EntryManager::getDataFromPage! ', E_USER_WARNING);
                 }
             }
 
-            // cas ou on ne trouve pas les valeurs id_fiche
-            if (!isset($data['id_fiche'])) {
-                $data['id_fiche'] = $page['tag'];
+            // cas ou on ne trouve pas les valeurs tag
+            if (!isset($data['tag'])) {
+                $data['tag'] = $page['tag'];
             }
 
             // TODO call this function only when necessary
@@ -283,15 +282,17 @@ class EntryManager
             }
         }
 
-        if ($pFlags & self::VALIDATE_FLAG_BF_TITRE) {
-            if (empty($data['bf_titre'] ?? null)) {
+        if ($pFlags & self::VALIDATE_FLAG_TITLE) {
+            // `title` is always computed from the form's entry_title_template; before
+            // formatDataBeforeSave() ran, the raw source field may be all we have
+            if (empty($data['title'] ?? null) && empty($data['bf_titre'] ?? null)) {
                 throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
             }
         }
 
-        if ($pFlags & self::VALIDATE_FLAG_ID_TYPEANNONCE) {
+        if ($pFlags & self::VALIDATE_FLAG_FORM_ID) {
             // form metadata
-            if (!isset($data['id_typeannonce'])) {
+            if (!isset($data['form_id'])) {
                 throw new \Exception(_t('BAZ_NO_FORMS_FOUND'));
             }
         }
@@ -313,7 +314,7 @@ class EntryManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $data['id_typeannonce'] = "$formId"; // Must be a string
+        $data['form_id'] = "$formId"; // Must be a string
 
         if ($semantic) {
             $data = $this->semanticTransformer->convertFromSemanticData($formId, $data);
@@ -323,7 +324,7 @@ class EntryManager
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);
 
         // replace the field values which are restricted at reading and writing with default values
         $data = $this->assignRestrictedFields($data, [], $form);
@@ -331,8 +332,8 @@ class EntryManager
         // Let's format the data
         $data = $this->formatDataBeforeSave($data);
 
-        // We need to check bf_titre and id_typeannonce once the data are formated
-        $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
+        // We need to check bf_titre and form_id once the data are formated
+        $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
@@ -355,28 +356,35 @@ class EntryManager
 
         // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
         $saved = $this->pageManager->save(
-            $data['id_fiche'],
+            $data['tag'],
             json_encode($data),
             '',
             $ignoreAcls, // Ignore les ACLs
-            $data['date_maj_fiche']
+            $data['updated_at']
         );
 
         // on cree un triple pour specifier que la page wiki creee est une fiche
         // bazar
         if ($saved == 0) {
             $this->tripleStore->create(
-                $data['id_fiche'],
+                $data['tag'],
                 TripleStore::TYPE_URI,
                 self::TRIPLES_ENTRY_ID,
                 '',
                 ''
             );
+
+            // Form properties needing the saved page: entry ACLs (+ the author's
+            // comments-toggle choice) and presentation metadata -- they write to the
+            // page's metadata, not into the entry body (ADR-0010)
+            $formProperties = $this->wiki->services->get(FormPropertiesService::class);
+            $formProperties->applyEntryAcls($form, $data, true);
+            $formProperties->applyEntryMetadatas($form, $data);
         }
 
         if ($sourceUrl) {
             $this->tripleStore->create(
-                $data['id_fiche'],
+                $data['tag'],
                 TripleStore::SOURCE_URL_URI,
                 $sourceUrl,
                 '',
@@ -393,7 +401,7 @@ class EntryManager
             }
         }
 
-        $this->cachedEntriestags[$data['id_fiche']] = true;
+        $this->cachedEntriestags[$data['tag']] = true;
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data, true);
@@ -430,18 +438,18 @@ class EntryManager
             throw new \Exception(_t('BAZ_ERROR_EDIT_UNAUTHORIZED'));
         }
 
-        // replace id_fiche with $tag to prevent errors before getOne
-        $data['id_fiche'] = $tag;
+        // replace tag with $tag to prevent errors before getOne
+        $data['tag'] = $tag;
         // if there are some restricted fields, load the previous data by bypassing the rights
-        $previousData = $this->getOne($data['id_fiche'], false, null, false, true);
-        $data['id_typeannonce'] = $previousData['id_typeannonce'];
+        $previousData = $this->getOne($data['tag'], false, null, false, true);
+        $data['form_id'] = $previousData['form_id'];
 
         // We need to check antispam before data are modified
 
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);
 
         // replace the field values which are restricted at reading and writing
         $data = $this->assignRestrictedFields($data, $previousData, $form);
@@ -452,20 +460,24 @@ class EntryManager
         }
 
         if ($semantic) {
-            $data = $this->semanticTransformer->convertFromSemanticData($data['id_typeannonce'], $data);
+            $data = $this->semanticTransformer->convertFromSemanticData($data['form_id'], $data);
         }
 
         // Let's get formatted values (it will format each values and take into account access right and defaut values)
         $data = $this->formatDataBeforeSave($data);
 
-        // Title can be automatic, we need to check it now. Check also id_typeannonce (necessary ?)
+        // Title can be automatic, we need to check it now. Check also form_id (necessary ?)
 
-        $this->validate($data, self::VALIDATE_FLAG_BF_TITRE | self::VALIDATE_FLAG_ID_TYPEANNONCE);
+        $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-        $this->pageManager->save($data['id_fiche'], json_encode($data), '');
+        $this->pageManager->save($data['tag'], json_encode($data), '');
+
+        $formProperties = $this->wiki->services->get(FormPropertiesService::class);
+        $formProperties->applyEntryAcls($form, $data);
+        $formProperties->applyEntryMetadatas($form, $data);
 
         // if sendmail has referenced email fields, send an email to their adresses
         $this->sendMailToNotifiedEmails($sendmail, $data, false, $previousData);
@@ -475,7 +487,7 @@ class EntryManager
             $this->mailer->notifyAdmins($data, false);
         }
 
-        $isExternalEntry = !empty($this->tripleStore->getMatching($data['id_fiche'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
+        $isExternalEntry = !empty($this->tripleStore->getMatching($data['tag'], TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
             // Notify followers about the updated object (skip if external)
             $this->activityPubService->notifyFollowers($form, $data, 'Update');
@@ -595,7 +607,7 @@ class EntryManager
             throw new \Exception("Not existing entry : $tag");
         }
 
-        $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+        $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['form_id']);
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
 
@@ -615,12 +627,36 @@ class EntryManager
     /*
      * Convert body to JSON object
      */
+    /**
+     * Legacy entry body keys => their plain-English replacements (ticket 27,
+     * ADR-0010). RenameEntryBodyKeys converts stored latest revisions; this map is
+     * the read-side insurance for anything older (old revisions, remote payloads).
+     */
+    public const LEGACY_ENTRY_KEYS = [
+        'id_fiche' => 'tag',
+        'id_typeannonce' => 'form_id',
+        'bf_titre' => 'title',
+        'date_creation_fiche' => 'created_at',
+        'date_maj_fiche' => 'updated_at',
+        'statut_fiche' => 'status',
+    ];
+
     public function decode($body)
     {
         $data = json_decode($body, true);
         if (is_iterable($data)) {
-            foreach ($data as $key => $value) {
-                $data[$key] = $value;
+            foreach (self::LEGACY_ENTRY_KEYS as $legacyKey => $key) {
+                if ($legacyKey === 'bf_titre') {
+                    // bf_titre stays as ordinary field data; it only ALSO feeds `title`
+                    if (array_key_exists($legacyKey, $data) && !array_key_exists($key, $data)) {
+                        $data[$key] = $data[$legacyKey];
+                    }
+                    continue;
+                }
+                if (array_key_exists($legacyKey, $data) && !array_key_exists($key, $data)) {
+                    $data[$key] = $data[$legacyKey];
+                }
+                unset($data[$legacyKey]);
             }
         }
 
@@ -633,20 +669,20 @@ class EntryManager
      *
      * @param $data current raw entry values
      *
-     * @return array with extra calculated fields like id_fiche, and time, and handled fields with acls
+     * @return array with extra calculated fields like tag, and time, and handled fields with acls
      *
      * @throws \Exception
      */
     public function formatDataBeforeSave($data): array
     {
-        // Let's set the value of id_typeannonce
+        // Let's set the value of form_id
 
-        $data['id_typeannonce'] = isset($data['id_typeannonce']) ? $data['id_typeannonce'] : $this->wiki->request->get('id_typeannonce');
+        $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : $this->wiki->request->get('form_id');
 
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($data['id_typeannonce']);
+        $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);
         if (empty($form)) {
-            throw new \Exception('No form with id: ' . $data['id_typeannonce']);
+            throw new \Exception('No form with id: ' . $data['form_id']);
         }
 
         // We first need to ensure default values for uneditable fields are set
@@ -654,8 +690,7 @@ class EntryManager
 
         foreach ($form['prepared'] as $bazarField) {
             if ($bazarField instanceof BazarField
-                && !($bazarField instanceof TitleField)
-                && !$bazarField->requireIDFiche() // Some fields like ImageField and File Field need the id_fiche to be defined before to call formatValuesBeforeSave. So we will handle them later.
+                && !$bazarField->requireIDFiche() // Some fields like ImageField and File Field need the tag to be defined before to call formatValuesBeforeSave. So we will handle them later.
             ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
@@ -673,33 +708,37 @@ class EntryManager
             }
         }
 
-        // We can now build the field title if there is one
+        $formProperties = $this->wiki->services->get(FormPropertiesService::class);
 
-        if (is_array($form['prepared'])) {
-            foreach ($form['prepared'] as $field) {
-                if ($field instanceof TitleField) {
-                    $data = array_merge($data, $field->formatValuesBeforeSave($data));
+        // Account creation (entry_creates_user): must run before title/tag generation
+        // so the created user's name is available (owner attribution, `user` ACLs)
+        if ($formProperties->createsUser($form)) {
+            $tab = $formProperties->applyUserCreation($form, $data);
+            if (!empty($tab)) {
+                foreach ($tab['fields-to-remove'] ?? [] as $field) {
+                    unset($data[$field]);
                 }
+                unset($tab['fields-to-remove']);
+                $data = array_merge($data, $tab);
             }
         }
 
-        // Let's generate fiche id if necessary
+        // The entry title is always computed from the form's entry_title_template
+        // (ADR-0010); `title` is the canonical key, `bf_titre` is just a field a
+        // template may reference
+        $data['title'] = $formProperties->computeTitle($form, $data);
 
-        if (!isset($data['id_fiche'])) {
-            if (empty($data['bf_titre'] ?? null)) {
+        // Let's generate the entry tag if necessary: a lowercase slug of the title
+        if (!isset($data['tag'])) {
+            if (empty($data['title'])) {
                 throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
             }
-            // Generate the ID from the title
-            if (empty($data['id_fiche'] = genere_nom_wiki($data['bf_titre']))) {
-                throw new \Exception('$data[\'id_fiche\'] can not be generated from $data[\'bf_titre\'] (value: "' . $data['bf_titre'] . '") !');
-            }
-        // TODO see if we can remove this
-        // $_POST['id_fiche'] = $data['id_fiche'];
-        } elseif (empty($data['id_fiche'])) {
-            throw new \Exception('$data[\'id_fiche\'] is set but with empty value !');
+            $data['tag'] = $formProperties->generateTag($data['title']);
+        } elseif (empty($data['tag'])) {
+            throw new \Exception('$data[\'tag\'] is set but with empty value !');
         }
 
-        // We can now handle fields like ImageField and File Field that require id_fiche in order to format their values
+        // We can now handle fields like ImageField and File Field that require tag in order to format their values
 
         foreach ($form['prepared'] as $bazarField) {
             if ($bazarField->requireIDFiche()) {
@@ -720,33 +759,35 @@ class EntryManager
         }
 
         // Get creation date if it exists, initialize it otherwise
-        $tag = $this->dbService->escape($data['id_fiche']);
+        $tag = $this->dbService->escape($data['tag']);
         $result = $this->dbService->loadSingle('SELECT MIN(time) as firsttime FROM ' . $this->dbService->prefixTable('pages') . "WHERE tag='" . $tag . "'");
-        $data['date_creation_fiche'] = $data['date_creation_fiche'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
+        $data['created_at'] = $data['created_at'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
         // Entry status
         if ($this->wiki->UserIsAdmin()) {
-            $data['statut_fiche'] = '1';
+            $data['status'] = '1';
         } else {
-            $data['statut_fiche'] = $this->params->get('BAZ_ETAT_VALIDATION');
+            $data['status'] = $this->params->get('BAZ_ETAT_VALIDATION');
         }
 
-        // Let's ensure $data['id_typeannonce'] is not empty
-        if (empty($data['id_typeannonce'])) {
-            throw new \Exception('$data[\'id_typeannonce\'] is empty !');
+        // Let's ensure $data['form_id'] is not empty
+        if (empty($data['form_id'])) {
+            throw new \Exception('$data[\'form_id\'] is empty !');
         }
 
-        // Let's ensure $data['id_fiche'] is not empty
-        if (empty($data['id_fiche'])) {
-            throw new \Exception('$data[\'id_fiche\'] is empty !');
+        // Let's ensure $data['tag'] is not empty
+        if (empty($data['tag'])) {
+            throw new \Exception('$data[\'tag\'] is empty !');
         }
 
-        $data['date_maj_fiche'] = $data['date_maj_fiche'] ?? date('Y-m-d H:i:s', time());
+        $data['updated_at'] = $data['updated_at'] ?? date('Y-m-d H:i:s', time());
 
         // on enleve les champs hidden ou non necessaires a la fiche
+        // (submission artifacts are stripped, never stored -- ADR-0010)
         unset($data['valider']);
         unset($data['MAX_FILE_SIZE']);
         unset($data['antispam']);
+        unset($data[FormPropertiesService::COMMENTS_TOGGLE_POST_KEY]);
         unset($data['mot_de_passe_wikini']);
         unset($data['mot_de_passe_repete_wikini']);
         unset($data['html_data']);
@@ -768,7 +809,7 @@ class EntryManager
             }, $data);
         }
 
-        $data = $this->removeUnknownFields($data['id_typeannonce'], $data);
+        $data = $this->removeUnknownFields($data['form_id'], $data);
 
         foreach ($form['prepared'] as $vBazarField) {
             if ($vBazarField instanceof BazarField) {
@@ -852,13 +893,13 @@ class EntryManager
         // pFiche URL
         if (!isset($pFiche['url'])) {
             // could already be defined for entries from external json
-            $pFiche['url'] = $this->wiki->Href('', $pFiche['id_fiche']);
+            $pFiche['url'] = $this->wiki->Href('', $pFiche['tag']);
         }
 
         // Données sémantiques
         if ($pSemantic) {
             // not possible to init the formManager in the constructor because of circular reference problem
-            $form = $this->wiki->services->get(FormManager::class)->getOne($pFiche['id_typeannonce']);
+            $form = $this->wiki->services->get(FormManager::class)->getOne($pFiche['form_id']);
             $pFiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $pFiche);
         }
     }
@@ -1078,16 +1119,16 @@ class EntryManager
                         if (isset($entry[$oldName])) {
                             $entry[$newName] = $entry[$oldName];
                             unset($entry[$oldName]);
-                            if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'], $entriesIds)) {
-                                $entriesIds[] = $entry['id_fiche'];
+                            if (!empty($entry['tag']) && !in_array($entry['tag'], $entriesIds)) {
+                                $entriesIds[] = $entry['tag'];
                             }
                         }
                     }
                 } else {
                     if (isset($entry[$attributeName])) {
                         unset($entry[$attributeName]);
-                        if (!empty($entry['id_fiche']) && !in_array($entry['id_fiche'], $entriesIds)) {
-                            $entriesIds[] = $entry['id_fiche'];
+                        if (!empty($entry['tag']) && !in_array($entry['tag'], $entriesIds)) {
+                            $entriesIds[] = $entry['tag'];
                         }
                     }
                 }
@@ -1105,7 +1146,7 @@ class EntryManager
                 $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET body = '" . $this->dbService->escape(chop($body)) . "'" .
                     " WHERE id = '" . $this->dbService->escape($page['id']) . "';");
             } else {
-                $this->pageManager->save($entry['id_fiche'], $body);
+                $this->pageManager->save($entry['tag'], $body);
             }
         }
 
@@ -1159,22 +1200,22 @@ class EntryManager
     {
         $htmldata = '';
         $filterFieldIds = [
-            'id_typeannonce',
+            'form_id',
             'owner',
-            'date_creation_fiche',
+            'created_at',
             'date_debut_validite_fiche',
             'date_fin_validite_fiche',
-            'id_fiche',
-            'statut_fiche',
-            'date_maj_fiche',
+            'tag',
+            'status',
+            'updated_at',
         ]
         ;
         $notFilterFieldIds = ['bf_titre'];
         $notFilterFieldClasses = [
-            'YesWiki\Core\Field\MapField', 'YesWiki\Core\Field\HiddenField', 'YesWiki\Core\Field\FileField', 'YesWiki\Core\Field\ImageField', 'YesWiki\Core\Field\LabelField', 'YesWiki\Core\Field\LinkField', 'YesWiki\Core\Field\TextareaField', 'YesWiki\Core\Field\TitleField', 'YesWiki\Core\Field\UserField',
+            'YesWiki\Core\Field\MapField', 'YesWiki\Core\Field\HiddenField', 'YesWiki\Core\Field\FileField', 'YesWiki\Core\Field\ImageField', 'YesWiki\Core\Field\LabelField', 'YesWiki\Core\Field\LinkField', 'YesWiki\Core\Field\TextareaField',
         ];
-        if (is_array($fiche) && isset($fiche['id_typeannonce'])) {
-            $form = isset($formtab[$fiche['id_typeannonce']]) ? $formtab[$fiche['id_typeannonce']] : $this->wiki->services->get(FormManager::class)->getOne($fiche['id_typeannonce']);
+        if (is_array($fiche) && isset($fiche['form_id'])) {
+            $form = isset($formtab[$fiche['form_id']]) ? $formtab[$fiche['form_id']] : $this->wiki->services->get(FormManager::class)->getOne($fiche['form_id']);
             foreach ($fiche as $key => $value) {
                 if (!empty($value)) {
                     if (

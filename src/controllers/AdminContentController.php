@@ -51,7 +51,7 @@ class AdminContentController extends YesWikiController
         $trT = $dbService->prefixTable('triples');
         $tagProp = self::TAG_PROPERTY;
         $typeProp = self::TYPE_PROPERTY;
-        $idTypeAnnonceExpr = $dbService->jsonExtract('p.body', '$.id_typeannonce');
+        $idTypeAnnonceExpr = $dbService->jsonExtract('p.body', '$.form_id');
         $tagsAggExpr = $dbService->groupConcat('tg.value');
 
         $sql = <<<SQL
@@ -374,7 +374,7 @@ class AdminContentController extends YesWikiController
                 if (ctype_digit((string)$type) && (int)$type > 0) {
                     $escaped = $db->escape($type);
                     $conditions[] = "p.tag IN (SELECT DISTINCT resource FROM {$trT} WHERE value = 'fiche_bazar' AND property = '{$typeProp}')";
-                    $conditions[] = "p.body LIKE '%\"id_typeannonce\":\"{$escaped}\"%'";
+                    $conditions[] = "p.body LIKE '%\"form_id\":\"{$escaped}\"%'";
                 }
                 break;
         }

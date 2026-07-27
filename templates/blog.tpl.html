@@ -56,7 +56,7 @@ if (!empty($nbcols)) {
 					<a href="<?php echo $fiche['url'].'/revisions';?>">
 						<i class="far fa-calendar-alt"></i>
 					</a>
-					&nbsp;<?php echo date('d.m.Y', strtotime($fiche['date_maj_fiche'])); ?>
+					&nbsp;<?php echo date('d.m.Y', strtotime($fiche['updated_at'])); ?>
 				</small>
 				<?php endif; ?>
 				<?php if ($showauthor) : ?>
@@ -108,7 +108,7 @@ if (!empty($nbcols)) {
 					<a href="<?php echo $fiche['url'].'/revisions';?>">
 						<i class="far fa-calendar-alt"></i>
 					</a>
-					&nbsp;<?php echo date('d.m.Y', strtotime($fiche['date_maj_fiche'])); ?>
+					&nbsp;<?php echo date('d.m.Y', strtotime($fiche['updated_at'])); ?>
 				</small>
 				<?php endif; ?>
 				<?php if ($showauthor) : ?>

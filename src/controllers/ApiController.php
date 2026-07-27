@@ -1364,7 +1364,7 @@ class ApiController extends YesWikiController
         }
 
         return new ApiResponse(
-            ['success' => $this->wiki->Href('', $entry['id_fiche'])],
+            ['success' => $this->wiki->Href('', $entry['tag'])],
             Response::HTTP_CREATED
         );
     }
@@ -1529,9 +1529,9 @@ class ApiController extends YesWikiController
                 if (is_array($val) && isset($val[$field])) {
                     $mailReceiver[] = $val[$field];
                 }
-                $form = baz_valeurs_formulaire($val['id_typeannonce'] ?? null);
+                $form = baz_valeurs_formulaire($val['form_id'] ?? null);
                 $mailSenderForMsg = (string)$request->request->get('email', '');
-                $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->wiki->href('', $val['id_fiche']) . '">'
+                $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->wiki->href('', $val['tag']) . '">'
                     . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['label'] . ' » '
                     . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->wiki->config['yeswiki_name'] . ' ». ' .
                     ($mailSenderForMsg ? _t('CONTACT_REPLY') . ' <strong>' . $mailSenderForMsg . '</strong> '
@@ -1817,7 +1817,7 @@ class ApiController extends YesWikiController
 
         $vQuery = $get->get('query') ?? $get->get('queries') ?? null;
         $vQuery = $vSearchManager->aggregateQueries(
-            !empty($selectedEntries) ? ['queries' => ['id_fiche' => $selectedEntries]] : [],
+            !empty($selectedEntries) ? ['queries' => ['tag' => $selectedEntries]] : [],
             isset($vQuery) ? urldecode($vQuery) : ''
         );
 
@@ -1827,7 +1827,7 @@ class ApiController extends YesWikiController
         $vCorrespondance = $get->has('correspondance') ? urldecode($get->get('correspondance')) : null;
         $vDateFilter = $get->has('datefilter') ? urldecode($get->get('datefilter')) : null;
         $vOrdre = $get->get('ordre', 'asc');
-        $vChamp = $get->get('champ', 'bf_titre');
+        $vChamp = $get->get('champ', 'title');
         $vNb = intval($get->get('nbitem') ?? $get->get('nb') ?? null);
         $vMinDate = urldecode($get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '');
 
@@ -2023,10 +2023,10 @@ class ApiController extends YesWikiController
         }
         $postData['antispam'] = 1;
 
-        if (!isset($postData['id_fiche']) || !$this->getService(EntryManager::class)->isEntry($postData['id_fiche'])) {
+        if (!isset($postData['tag']) || !$this->getService(EntryManager::class)->isEntry($postData['tag'])) {
             $entry = $this->getService(EntryManager::class)->create($formId, $postData, false, $request->headers->get('source-url'));
         } else {
-            $entry = $this->getService(EntryManager::class)->update($postData['id_fiche'], $postData, false, true);
+            $entry = $this->getService(EntryManager::class)->update($postData['tag'], $postData, false, true);
         }
 
         if (!$entry) {
@@ -2034,7 +2034,7 @@ class ApiController extends YesWikiController
         }
 
         return new ApiResponse(
-            ['success' => $this->wiki->Href('', $entry['id_fiche'])],
+            ['success' => $this->wiki->Href('', $entry['tag'])],
             Response::HTTP_CREATED
         );
     }
@@ -2052,7 +2052,7 @@ class ApiController extends YesWikiController
 
         return new Response('', Response::HTTP_CREATED, [
             'Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"',
-            'Location: ' . $this->wiki->Href('', $entry['id_fiche']),
+            'Location: ' . $this->wiki->Href('', $entry['tag']),
         ]);
     }
 
@@ -2100,7 +2100,7 @@ class ApiController extends YesWikiController
 
         // Associated Forms
         $formIds = array_unique(array_map(function ($entry) {
-            return $entry['id_typeannonce'];
+            return $entry['form_id'];
         }, $entries));
         $usedForms = array_filter($forms, function ($form) use ($formIds) {
             return in_array($form['id'], $formIds);
@@ -2110,10 +2110,10 @@ class ApiController extends YesWikiController
         }, $usedForms);
 
         // Basic fields
-        $fieldList = ['id_fiche', 'bf_titre', 'url', '-is-external-', 'external-data'];
+        $fieldList = ['tag', 'bf_titre', 'url', '-is-external-', 'external-data'];
         // If no id, we need idtypeannonce (== formId) to filter
         if (!$get->has('id')) {
-            $fieldList[] = 'id_typeannonce';
+            $fieldList[] = 'form_id';
         }
         // fields for color / icon
         $colorfield = $get->get('colorfield');
@@ -2142,11 +2142,11 @@ class ApiController extends YesWikiController
         $entryFieldsService = $this->getService(EntryExtraFieldsService::class);
 
         $entries = array_map(function ($entry) use ($fieldList, $entryFieldsService) {
-            $entryFieldsService->setEntryId($entry['id_fiche']);
+            $entryFieldsService->setEntryId($entry['tag']);
             $result = [];
             foreach ($fieldList as $fieldName) {
                 // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
-                $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['id_typeannonce']);
+                $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['form_id']);
                 if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
                     $entry[$fieldName] = $this->wiki->Format($entry[$fieldName]);
                 }

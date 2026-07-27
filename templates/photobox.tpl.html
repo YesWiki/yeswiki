@@ -73,7 +73,7 @@ if (count($fiches) > 0) :
                 $bigresize
             ); ?>">
             <img loading="lazy" alt="" data-pb-captionLink="<?php echo htmlentities($fiche['bf_titre']); ?>[<?php echo htmlentities(
-                $GLOBALS['wiki']->href('iframe', $fiche['id_fiche'])
+                $GLOBALS['wiki']->href('iframe', $fiche['tag'])
             ); ?>]" src="<?php echo redimensionner_image(
                 'files/' . $fiche['imagebf_image'],
                 'cache/image_' . $thumbwidth . '_' . $thumbheight . '_' . $fiche['imagebf_image'],

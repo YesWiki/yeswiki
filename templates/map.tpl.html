@@ -60,7 +60,7 @@ if (count($fiches)>0) :
             $vGeometries = $vGeolocation ['geometries'] ?? '';
             $vGeometries = str_replace(
                 '"type":"FeatureCollection"',
-                '"id":"'.$fiche['id_fiche'].'","type":"FeatureCollection"',
+                '"id":"'.$fiche['tag'].'","type":"FeatureCollection"',
                 $vGeometries
             );
 
@@ -105,10 +105,10 @@ if (count($fiches)>0) :
            } elseif (!empty($vGeometries)) {
                // fake marker for facetted search
                // TODO: this is way too hacky, need to find a way to search on marker and geometries in a better way
-               $geometriesWithoutMarker[$fiche['id_fiche']] = '<div class="bazar-entry" '.str_replace('\'', '', $fiche['html_data']).'></div>';
+               $geometriesWithoutMarker[$fiche['tag']] = '<div class="bazar-entry" '.str_replace('\'', '', $fiche['html_data']).'></div>';
            }
         if (!empty($vGeometries)) {
-            $vAllGeometries[$fiche['id_fiche']] = $vGeometries;
+            $vAllGeometries[$fiche['tag']] = $vGeometries;
         }
 endforeach;
 

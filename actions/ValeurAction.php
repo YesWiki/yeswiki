@@ -55,7 +55,7 @@ class ValeurAction extends YesWikiAction
         // le titre est un cas particulier
         if ($champ == 'bf_titre') {
             $regexp = '/<h1 class="BAZ_fiche_titre">(.*)<\/h1>/Uis';
-        } elseif ($champ == 'id_fiche') {
+        } elseif ($champ == 'tag') {
             // l'id est un cas particulier
             $urlparsed = parse_url($url);
 

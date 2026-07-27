@@ -55,7 +55,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
                     if ($redirectToIncoming) {
                         // to prevent errors when deleting entry from BazaR page
                         $incomingurl = str_replace(
-                            ["&action=voir_fiche&id_fiche=$tag", '&message=ajout_ok'],
+                            ["&action=voir_fiche&tag=$tag", '&message=ajout_ok'],
                             [''],
                             $incomingurl
                         );

@@ -34,9 +34,9 @@ pour différencier les différents tableaux table_1 table_2 #}
         {% if displayadmincol %}
           {{ multidelete.insertSelectLine(
               'bazar-list-'~ params.nbbazarliste,
-              entry.id_fiche,
+              entry.tag,
               entry.external-data is not empty or not(
-                wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche))) }}
+                wiki.UserIsAdmin or wiki.UserIsOwner(entry.tag))) }}
         {% endif %}
         {% set searchTitle = ("bf_titre" in columnsInfo|filter(
           info => info['not-visible'] is not defined or not info['not-visible'])|map(
@@ -70,8 +70,8 @@ pour différencier les différents tableaux table_1 table_2 #}
             {% if info.key is empty %}
               {% if (searchTitle and info.propertyName == "bf_titre") or 
                     (not searchTitle and loop.first and not info.mapFieldId) %}
-                {% if colors[entry.id_fiche] is not empty %}<span class="pellet" style="background-color: {{ colors[entry.id_fiche] }} ;"></span>{% endif %}
-                {% if icons[entry.id_fiche] is not empty %}<i class="{{ icons[entry.id_fiche] }}"></i>{% endif %}
+                {% if colors[entry.tag] is not empty %}<span class="pellet" style="background-color: {{ colors[entry.tag] }} ;"></span>{% endif %}
+                {% if icons[entry.tag] is not empty %}<i class="{{ icons[entry.tag] }}"></i>{% endif %}
                   {% if param.entrydisplay is defined and param.entrydisplay =='direct' %}
                       <a href="{{ entry.url }}">
                           {{ val|nl2br }}
@@ -100,14 +100,14 @@ pour différencier les différents tableaux table_1 table_2 #}
         {% if displayadmincol %}
           <td class="horizontal-admins-btn">
             {% if entry.external-data is empty %}
-              {% if aclService.hasAccess('write',entry.id_fiche) %}
-                <a href="{{ url({tag:entry.id_fiche,handler:'editiframe'}) }}"
+              {% if aclService.hasAccess('write',entry.tag) %}
+                <a href="{{ url({tag:entry.tag,handler:'editiframe'}) }}"
                   data-toggle="tooltip"
                   data-placement="left"
                   class="yw-btn yw-btn--sm btn-icon modalbox"
                   data-size="modal-lg"
                   data-iframe="1"
-                  title="{{ _t('MODIFY') }} {{ entry.id_fiche }}"
+                  title="{{ _t('MODIFY') }} {{ entry.tag }}"
                   >
                   <i class="fas fa-pencil-alt"></i>
                 </a>
@@ -122,12 +122,12 @@ pour différencier les différents tableaux table_1 table_2 #}
                   <i class="fas fa-pencil-alt"></i>
                 </button>
               {% endif %}
-              {% if wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche) %}
-                <a href="{{ url({tag:entry.id_fiche,handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}"
+              {% if wiki.UserIsAdmin or wiki.UserIsOwner(entry.tag) %}
+                <a href="{{ url({tag:entry.tag,handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}"
                   data-toggle="tooltip"
                   data-placement="left"
                   class="yw-btn yw-btn--sm yw-btn--danger btn-icon modalbox"
-                  title="{{ _t('DELETE') }} {{ entry.id_fiche }}"
+                  title="{{ _t('DELETE') }} {{ entry.tag }}"
                   >
                   <i class="fas fa-trash"></i>
                 </a>

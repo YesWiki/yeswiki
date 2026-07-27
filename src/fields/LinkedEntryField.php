@@ -42,7 +42,7 @@ class LinkedEntryField extends BazarField
     protected function renderInput($entry)
     {
         // Display the linked entries only on update
-        if (isset($entry['id_fiche'])) {
+        if (isset($entry['tag'])) {
             return $this->render(
                 '@core/inputs/linked-entry.twig',
                 $this->getTwigOptions($entry)
@@ -52,8 +52,8 @@ class LinkedEntryField extends BazarField
 
     protected function renderStatic($entry)
     {
-        // Display the linked entries only if id_fiche and id_typeannonce
-        if (!empty($entry['id_fiche']) && !empty($entry['id_typeannonce'])) {
+        // Display the linked entries only if tag and form_id
+        if (!empty($entry['tag']) && !empty($entry['form_id'])) {
             return $this->render(
                 '@core/fields/linked-entry.twig',
                 $this->getTwigOptions($entry)
@@ -70,7 +70,7 @@ class LinkedEntryField extends BazarField
         $addEntryLink = $this->getWiki()->href(
             'iframe',
             'BazaR',
-            'context=addentry&voirmenu=0&vue=saisir&' . $this->linkedId . '=' . $entry['id_fiche'] . '&id=' . $this->name,
+            'context=addentry&voirmenu=0&vue=saisir&' . $this->linkedId . '=' . $entry['tag'] . '&id=' . $this->name,
             false
         );
         $emptyList = $this->isEmptyOutput($output);
@@ -124,19 +124,19 @@ class LinkedEntryField extends BazarField
         }
         if (!$externalForm) {
             // we just query on the field
-            return isset($entry['id_fiche']) ? $this->linkedId . '=' . $entry['id_fiche'] : '';
+            return isset($entry['tag']) ? $this->linkedId . '=' . $entry['tag'] : '';
         }
         if (!is_array($form) || !is_array($form['prepared'])
-                || empty($entry['id_typeannonce'])
-                || empty($entry['id_fiche'])) {
+                || empty($entry['form_id'])
+                || empty($entry['tag'])) {
             return '';
         }
         $query = '';
         // find EnumEntryField with right name
         foreach ($form['prepared'] as $field) {
-            if (strstr($field['propertyname'], '-api-forms-' . $entry['id_typeannonce'] ?? 'none')) {
+            if (strstr($field['propertyname'], '-api-forms-' . $entry['form_id'] ?? 'none')) {
                 $query .= (empty($query)) ? '' : '|';
-                $query .= ($externalForm ? $field['propertyname'] : $field->getPropertyName()) . '=' . $entry['id_fiche'];
+                $query .= ($externalForm ? $field['propertyname'] : $field->getPropertyName()) . '=' . $entry['tag'];
             }
         }
 

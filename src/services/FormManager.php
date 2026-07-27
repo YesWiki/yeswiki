@@ -394,12 +394,26 @@ class FormManager
             'label' => $data['label'] ?? '',
             'template' => $this->templateToStorage($data['template'] ?? ''),
             'description' => $data['description'] ?? '',
+            // entry_title_template can never be empty (ADR-0010): the historical
+            // implicit convention (a visitor-typed bf_titre field) is its default
+            'entry_title_template' => trim((string)($data['entry_title_template'] ?? '')) ?: '{{bf_titre}}',
             'sem_template' => $data['sem_template'] ?? '',
             'sem_reverse_template' => $data['sem_reverse_template'] ?? '',
             'only_one_entry' => (isset($data['only_one_entry']) && $data['only_one_entry'] === 'Y') ? 'Y' : 'N',
             'only_one_entry_message' => empty($data['only_one_entry_message']) ? '' : $data['only_one_entry_message'],
             'condition' => $data['condition'] ?? '',
         ];
+        // the other entry_* form properties are included when present, so update()'s
+        // array_merge over the existing body leaves unposted ones untouched
+        foreach ([
+            'entry_read_access', 'entry_write_access', 'entry_comment_access',
+            'entry_permit_activate_comments', 'entry_metadatas', 'entry_creates_user',
+            'entry_bookmarklet',
+        ] as $property) {
+            if (isset($data[$property])) {
+                $body[$property] = $data[$property];
+            }
+        }
         foreach (['sem_context', 'sem_type', 'sem_use_template'] as $legacySeedField) {
             if (isset($data[$legacySeedField])) {
                 $body[$legacySeedField] = $data[$legacySeedField];
@@ -609,7 +623,7 @@ class FormManager
 
     private function getEntryTagsForForm(string $numericId): array
     {
-        $jsonExtract = $this->dbService->jsonExtract('p.body', '$.id_typeannonce');
+        $jsonExtract = $this->dbService->jsonExtract('p.body', '$.form_id');
         $sql = "SELECT p.tag FROM {$this->dbService->prefixTable('pages')} p
             WHERE p.latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape($numericId) . "'
             AND EXISTS (

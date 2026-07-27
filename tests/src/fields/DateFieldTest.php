@@ -60,7 +60,7 @@ class DateFieldTest extends YesWikiTestCase
         $field = $this->buildDateField('bf_date_fin_evenement');
 
         $entry = [
-            'id_fiche' => 'DateFieldTestEntry',
+            'tag' => 'DateFieldTestEntry',
             'bf_date_fin_evenement' => '2024-01-01 10:00:00',
         ];
 
@@ -77,7 +77,7 @@ class DateFieldTest extends YesWikiTestCase
         $field = $this->buildDateField('bf_date_fin_evenement');
 
         $entry = [
-            'id_fiche' => 'DateFieldTestEntry',
+            'tag' => 'DateFieldTestEntry',
             'bf_date_fin_evenement' => '2024-01-01 10:00:00',
             'bf_date_fin_evenement_data' => '{"recurrentParentId":"SomeParentEntry"}',
         ];

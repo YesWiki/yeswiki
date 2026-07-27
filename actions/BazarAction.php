@@ -70,14 +70,14 @@ class BazarAction extends YesWikiAction
         }
 
         $req = $this->getRequest();
-        $reqIdTypeAnnonce = $req->get('id_typeannonce');
+        $reqIdTypeAnnonce = $req->get('form_id');
         $reqId = $req->get('id');
         $vIDs = (isset($reqIdTypeAnnonce) && trim($reqIdTypeAnnonce) != ''
                 ? $reqIdTypeAnnonce
                 : (isset($reqId) && trim($reqId) != ''
                     ? $reqId
-                    : (isset($arg['id_typeannonce']) && trim($arg['id_typeannonce']) != ''
-                        ? $arg['id_typeannonce']
+                    : (isset($arg['form_id']) && trim($arg['form_id']) != ''
+                        ? $arg['form_id']
                         : (isset($arg['id']) && trim($arg['id']) != ''
                         ? $arg['id']
                         : ''))));
@@ -148,15 +148,15 @@ class BazarAction extends YesWikiAction
                 }
                 switch ($action) {
                     case self::ACTION_ENTRY_CREATE:
-                        return $entryController->create($req->get('id_typeannonce') ?? $req->get('id') ?? $this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
+                        return $entryController->create($req->get('form_id') ?? $req->get('id') ?? $this->arguments['idtypeannonce']['locals'][0], $this->arguments['redirecturl']);
                     case self::ACTION_ENTRY_EDIT:
-                        return $entryController->update($req->get('id_fiche'));
+                        return $entryController->update($req->get('tag'));
                     case self::ACTION_ENTRY_DELETE:
-                        return $entryController->delete($req->get('id_fiche'), true);
+                        return $entryController->delete($req->get('tag'), true);
                     case self::ACTION_PUBLIER:
-                        return $entryController->publish($req->get('id_fiche'), true);
+                        return $entryController->publish($req->get('tag'), true);
                     case self::ACTION_PAS_PUBLIER:
-                        return $entryController->publish($req->get('id_fiche'), false);
+                        return $entryController->publish($req->get('tag'), false);
                     case self::CHOISIR_TYPE_FICHE:
                         return $entryController->selectForm();
                     default:
@@ -271,7 +271,7 @@ class BazarAction extends YesWikiAction
             default:
                 switch ($action) {
                     case self::ACTION_ENTRY_VIEW:
-                        return $entryController->view($req->get('id_fiche'), $req->get('time', ''));
+                        return $entryController->view($req->get('tag'), $req->get('time', ''));
                     case self::MOTEUR_RECHERCHE:
                     default:
                         $this->arguments['search'] = true;

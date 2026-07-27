@@ -7,7 +7,7 @@
     const button = e.target.closest('.tagsinput-refresh')
     if (!button) return
     const { propertyName } = button.dataset
-    const formIdInput = document.querySelector('input[name=id_typeannonce]')
+    const formIdInput = document.querySelector('input[name=form_id]')
     const formId = formIdInput ? formIdInput.value : null
     const hidden = propertyName
       ? document.querySelector(`input[name="${propertyName}"][data-yw-tag-input-value]`)

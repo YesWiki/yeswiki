@@ -88,7 +88,7 @@ class EmailField extends BazarField
             } elseif ($aclService->check($this->getSeeEmailAcls(), $userNameForRendering, true)) {
                 // check if user is allowed to see raw email
                 $canBeRead = true;
-            } elseif ($tag === $entry['id_fiche']) {
+            } elseif ($tag === $entry['tag']) {
                 // if not api and not already acl OK, just for certain handlers
                 $canBeRead = in_array($wiki->getMethod(), ['show', 'html', 'edit', 'editiframe', 'mail']);
             } else {

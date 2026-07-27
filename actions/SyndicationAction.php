@@ -164,14 +164,14 @@ class SyndicationAction extends YesWikiAction
                                 $feedItem['linkToEntry'] = $feedItem['mappingInput'] = '';
                                 $entryExists = multiArraySearch($entries, $this->arguments['mapping']['url'], $feedItem['url']);
                                 if (!empty($entryExists)) {
-                                    $feedItem['linkToEntry'] = $this->wiki->href('', $entryExists[0]['id_fiche']);
+                                    $feedItem['linkToEntry'] = $this->wiki->href('', $entryExists[0]['tag']);
                                 } else {
                                     $entry = [];
                                     $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
                                     foreach ($this->arguments['mapping'] as $key => $val) {
                                         switch ($key) {
                                             case 'id':
-                                                $entry['id_typeannonce'] = $val;
+                                                $entry['form_id'] = $val;
                                                 break;
 
                                             case 'categories':
@@ -191,7 +191,7 @@ class SyndicationAction extends YesWikiAction
                                                 break;
                                         }
                                     }
-                                    $entry['date_creation_fiche'] = $item->get_date('Y-m-d H:i:s');
+                                    $entry['created_at'] = $item->get_date('Y-m-d H:i:s');
                                     $feedItem['mappingInput'] = json_encode($entry);
                                 }
                             }
@@ -270,7 +270,7 @@ class SyndicationAction extends YesWikiAction
             if (!empty($data)) {
                 $data['antispam'] = 1;
                 $entryManager = $this->getService(EntryManager::class);
-                $entryManager->create($data['id_typeannonce'], $data, false, $data['bf_url']);
+                $entryManager->create($data['form_id'], $data, false, $data['bf_url']);
                 Flash::success(_t('SYNDICATION_ENTRY_SAVED', ['title' => $data['bf_titre']]));
                 $this->wiki->redirect($this->wiki->href());
             }

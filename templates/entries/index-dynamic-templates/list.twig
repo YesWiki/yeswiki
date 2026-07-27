@@ -10,7 +10,7 @@
         {% block no_result %}
             <div v-if="entriesToDisplay.length == 0" class="alert alert-info">{{ _t("BAZ_NO_RESULT") }}</div>
         {% endblock %}
-        <Panel v-for="entry in entriesToDisplay" :key="entry.id_fiche" class="bazar-entry" @opened="getEntryRender(entry)">
+        <Panel v-for="entry in entriesToDisplay" :key="entry.tag" class="bazar-entry" @opened="getEntryRender(entry)">
         <template #header>
             <div class="panel-heading-container" :class="{'with-image': entry.visual}">
                 {# VISUAL AREA #}

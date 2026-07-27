@@ -1,23 +1,45 @@
-{{ include('@core/inputs/select.twig') }}
-{% if field.commentsType not in ['','yeswiki'] %}
-  {{ include('@core/alert-message.twig',{
+{# Comments toggle appended at the end of the entry form when the form's
+   entry_permit_activate_comments property is on (ticket 27, ADR-0010). The
+   author's choice opens/closes the entry's comments — nothing is stored in
+   the entry body. #}
+<div class="yw-form-group input-comments">
+  <label class="yw-form-label">
+    {% if hint %}
+      <img loading="lazy" class="tooltip_aide" title="{{ hint|striptags }}" alt="{{ hint|striptags }}" src="images/bazar/aide.png" width="16" height="16" />
+    {% endif %}
+    {{ label }}
+  </label>
+  <div class="controls">
+    <select id="{{ name }}" name="{{ name }}" class="yw-input">
+      {% if not value %}
+        <option value="" selected="selected">{{ _t('BAZ_CHOISIR') }}</option>
+      {% else %}
+        <option value=""></option>
+      {% endif %}
+      {% for key, option in options %}
+        <option value="{{ key }}" {% if value == key %}selected{% endif %}>{{ option }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+{% if commentsType not in ['', 'yeswiki'] %}
+  {{ include('@core/alert-message.twig', {
     type: 'info',
-    message: '<i>'~((field.commentsType == 'external_humhub')
-        ? _t('BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL' )
+    message: '<i>'~((commentsType == 'external_humhub')
+        ? _t('BAZ_COMMENTS_INFO_HUMHUB_EXTERNAL')
         : (
-            (field.commentsType == 'embedded_humhub')
-            ? _t('BAZ_COMMENTS_INFO_HUMHUB_EMBEDDED' )
-            : ( (field.commentsType == 'discourse')
-                ? _t('BAZ_COMMENTS_INFO_DISCOURSE' )
-                : _t('BAZ_COMMENTS_INFO_UNKNOWN' )
+            (commentsType == 'embedded_humhub')
+            ? _t('BAZ_COMMENTS_INFO_HUMHUB_EMBEDDED')
+            : ((commentsType == 'discourse')
+                ? _t('BAZ_COMMENTS_INFO_DISCOURSE')
+                : _t('BAZ_COMMENTS_INFO_UNKNOWN')
             )
         ))~'</i>'
   }) }}
 {% endif %}
 {% if showAlertForCommentsNotActivated %}
   {{ include('@core/alert-message.twig', {
-        type:'danger',
-        message: _t('BAZ_COMMENTS_NOT_ACTIVATED')
-    } 
-    )}}
+    type: 'danger',
+    message: _t('BAZ_COMMENTS_NOT_ACTIVATED')
+  }) }}
 {% endif %}
