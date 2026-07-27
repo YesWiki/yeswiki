@@ -1,6 +1,6 @@
 /**
  *
- * javascript for bazar
+ * javascript for bazar (ticket 16: vanilla JS — no jQuery, no Bootstrap plugins)
  *
  * */
 
@@ -9,210 +9,122 @@ import { parseCondition } from './search.js'
 
 let gSavedHash
 
-$(document).ready(() => {
+function isVisible(el) {
+  return !!el && el.offsetParent !== null
+}
+
+document.addEventListener('DOMContentLoaded', () => {
   gSavedHash = decodeURIComponent(document.location.hash.substring(1))
 
   // accordeon pour bazarliste
-  $('.titre_accordeon').on('click', function() {
-    if ($(this).hasClass('current')) {
-      $(this).removeClass('current')
-      $(this).next('div.pane').hide()
-    } else {
-      $(this).addClass('current')
-      $(this).next('div.pane').show()
-    }
+  document.querySelectorAll('.titre_accordeon').forEach((title) => {
+    title.addEventListener('click', () => {
+      const pane = title.nextElementSibling
+      const isPane = pane && pane.matches('div.pane')
+      if (title.classList.contains('current')) {
+        title.classList.remove('current')
+        if (isPane) pane.style.display = 'none'
+      } else {
+        title.classList.add('current')
+        if (isPane) pane.style.display = ''
+      }
+    })
   })
 
   // antispam javascript
-  $('input[name=antispam]').val('1')
-
-  // carto google
-  const divcarto = document.getElementById('map')
-  if (divcarto) {
-    initialize()
-  }
-
-  // clic sur le lien d'une fiche, l'ouvre sur la carto
-  $('#markers a').on('click', function() {
-    const i = $(this).attr('rel')
-
-    // this next line closes all open infowindows before opening the selected one
-    for (x = 0; x < arrInfoWindows.length; x++) {
-      arrInfoWindows[x].close()
-    }
-
-    arrInfoWindows[i].open(map, arrMarkers[i])
-    $('ul.css-tabs li').remove()
-    $('fieldset.tab').each(function(i) {
-      $(this)
-        .parent('div.BAZ_cadre_fiche')
-        .prev('ul.css-tabs')
-        .append(`<li class='liste${i}'><a href="#">${$(this).find('legend:first').hide().html()}</a></li>`)
-    })
-
-    $('ul.css-tabs').tabs('fieldset.tab', { onClick() { } })
+  document.querySelectorAll('input[name=antispam]').forEach((inputParam) => {
+    const input = inputParam
+    input.value = '1'
   })
 
-  // initialise les tooltips pour l'aide et pour les cartes leaflet
-  $('img.tooltip_aide[title], .bazar-marker').each(function() {
-    $(this).tooltip({
-      animation: true,
-      delay: 0,
-      position: 'top'
-    })
-  })
+  // The old Google-Maps carto block (#markers/arrMarkers/initialize) was dead
+  // code — nothing renders that markup anymore — and has been removed.
+  // img.tooltip_aide[title] helper icons rely on the native browser tooltip now.
 
   // on enleve la fonction doubleclic dans le cas d'une page contenant bazar
-  $('#formulaire, #map, #calendar, .accordion').bind('dblclick', (e) => false)
+  document.querySelectorAll('#formulaire, #map, #calendar, .accordion').forEach((el) => {
+    el.addEventListener('dblclick', (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+    })
+  })
 
-  function emptyChildren(element) {
-    if (typeof ConditionsChecking === 'undefined') {
-      // backward compatibility old system (not clean) TODO remove it when ConditionsChecking is sure to be installed (even in local cahe)
-      $(element).find(':input').val('').removeProp('checked')
-    } else {
-      ConditionsChecking.emptyChildren(element)
-    }
-  }
-
-  // TODO : when conditionschecking is the only system (ex: for ectoplasme) remove the followings line to manage
-  // conditions by the old way
-
-  // permet de gerer des affichages conditionnels, en fonction de balises div
-  function handleConditionnalListChoice() {
-    const id = $(this).attr('id')
-    $(`div[id^='${id}'], div[id^='${id.replace('liste', '')}']`)
-      .not(`div[id='${id}_${$(this).val()}'], div[id='${id.replace('liste', '')}_${$(this).val()}']`).hide()
-      .each(function() {
-        emptyChildren(this)
-      })
-    $(`div[id='${id}_${$(this).val()}'], div[id='${id.replace('liste', '')}_${$(this).val()}']`).show()
-  }
-  function handleConditionnalRadioChoice() {
-    const id = $(this).attr('id')
-    const shortId = id.substr(0, id.length - $(this).val().toString().length - 1)
-    $(`div[id^='${shortId}']`)
-      .not(`div[id='${id}']`).hide()
-      .each(function() {
-        emptyChildren(this)
-      })
-    $(`div[id='${id}']`).show()
-  }
-  function handleConditionnalCheckboxChoice() {
-    const id = $(this).attr('id')
-    const re = /^([a-zA-Z0-9-_]+)\[([a-zA-Z0-9-_]+)\]$/
-    let m
-
-    if ((m = re.exec(id)) !== null) {
-      if (m.index === re.lastIndex) {
-        re.lastIndex++
-      }
-    }
-    if (m) {
-      if ($(this).prop('checked') == true) {
-        $(`div[id='${m[1]}_${m[2]}']:not(.conditional_inversed_checkbox)`).show()
-        $(`div[id='${m[1]}_${m[2]}'].conditional_inversed_checkbox`).hide()
-          .each(function() {
-            emptyChildren(this)
-          })
-      } else {
-        $(`div[id='${m[1]}_${m[2]}']:not(.conditional_inversed_checkbox)`).hide()
-          .each(function() {
-            emptyChildren(this)
-          })
-        $(`div[id='${m[1]}_${m[2]}'].conditional_inversed_checkbox`).show()
-      }
-    }
-  }
-
-  $('select[id^=\'liste\']').each(handleConditionnalListChoice).change(handleConditionnalListChoice)
-  $('input.element_radio').each(handleConditionnalRadioChoice).change(handleConditionnalRadioChoice)
-  $('.element_checkbox[id^=\'checkboxListe\']').each(handleConditionnalCheckboxChoice).change(handleConditionnalCheckboxChoice)
+  // The legacy inline conditional-display system (handleConditionnalListChoice &
+  // friends) is gone: ConditionsChecking (javascripts/inputs/conditions-checking.js)
+  // is the only system now, as the old code's own TODO planned.
 
   // choix de l'heure pour une date
-  $('.select-allday').change(function() {
-    if ($(this).val() === '0') {
-      $(this).parent().next('.select-time').removeClass('hide')
-    } else if ($(this).val() === '1') {
-      $(this).parent().next('.select-time').addClass('hide')
-    }
+  document.querySelectorAll('.select-allday').forEach((select) => {
+    select.addEventListener('change', () => {
+      const timeBlock = select.parentElement
+        ? select.parentElement.nextElementSibling
+        : null
+      if (!timeBlock || !timeBlock.classList.contains('select-time')) return
+      if (select.value === '0') {
+        timeBlock.classList.remove('hide')
+      } else if (select.value === '1') {
+        timeBlock.classList.add('hide')
+      }
+    })
   })
 
   //= ===========longueur maximale d'un champ textarea
-  const $textareas = $('textarea[maxlength!=\'\']')
+  function remainingCounterFor(textarea) {
+    const group = textarea.closest('.control-group')
+    return group ? group.querySelector('.charsRemaining') : null
+  }
 
-  // si les textarea contiennent déja quelque chose, on calcule les caractères restants
-  $textareas.each(function() {
-    const $this = $(this)
-    const max = $this.attr('maxlength')
-    if ($this.hasClass('aceditor-textarea')) {
-      const { length } = window[`aceditor-${$this.attr('id')}`].editor.getValue()
-      $this.parents('.control-group').find('.charsRemaining').text(max - length)
-    } else if (!$this.hasClass('ace_text-input')) {
-      const { length } = $this.val()
-      $this.parents('.control-group').find('.charsRemaining').text(max - length)
-    }
-    if (length > max) {
-      if ($this.hasClass('aceditor-textarea')) {
-        const aceId = `aceditor-${$this.attr('id')}`
-        window[aceId].editor.setValue(
-          window[aceId].editor.getValue().substr(0, max)
-        )
-      } else if (!$this.hasClass('ace_text-input')) {
-        $this.val($this.val().substr(0, max))
+  document.querySelectorAll('textarea[maxlength]').forEach((textareaParam) => {
+    const textarea = textareaParam
+    const max = parseInt(textarea.getAttribute('maxlength'), 10)
+    if (!max) return
+    const counter = remainingCounterFor(textarea)
+
+    if (textarea.classList.contains('aceditor-textarea')) {
+      const aceId = `aceditor-${textarea.id}`
+      const { editor } = window[aceId]
+      if (counter) counter.textContent = max - editor.getValue().length
+      if (editor.getValue().length > max) {
+        editor.setValue(editor.getValue().substr(0, max))
       }
-    }
-
-    // when a char is typed, we check the max length limit
-    if ($this.hasClass('aceditor-textarea')) {
-      const aceId = `aceditor-${$this.attr('id')}`
-      window[aceId].editor.on('input', () => {
-        const $ed = $(this)
-        const max = $ed.attr('maxlength')
-        const { length } = $ed.val()
+      editor.on('input', () => {
+        const { length } = editor.getValue()
         if (length > max) {
-          window[aceId].editor.setValue(
-            window[aceId].editor.getValue().substr(0, max)
-          )
+          editor.setValue(editor.getValue().substr(0, max))
         }
-        $this.parents('.control-group').find('.charsRemaining').text(max - length)
+        if (counter) counter.textContent = max - editor.getValue().length
       })
-    } else if (!$this.hasClass('ace_text-input')) {
-      // on empeche d'aller au dela de la limite du nombre de caracteres
-      $this.on('keyup', function() {
-        const $ed = $(this)
-        const max = $ed.attr('maxlength')
-        const { length } = $ed.val()
-        if (length > max) {
-          $ed.val($ed.val().substr(0, max))
+    } else if (!textarea.classList.contains('ace_text-input')) {
+      if (counter) counter.textContent = max - textarea.value.length
+      if (textarea.value.length > max) {
+        textarea.value = textarea.value.substr(0, max)
+      }
+      textarea.addEventListener('keyup', () => {
+        if (textarea.value.length > max) {
+          textarea.value = textarea.value.substr(0, max)
         }
-
-        $this.parents('.control-group').find('.charsRemaining').text(max - length)
+        if (counter) counter.textContent = max - textarea.value.length
       })
     }
   })
 
   // éviter la validation du formulaire en pressant la touche Entrée
-  document.querySelectorAll('form#formulaire .control-group.form-group input.form-control[type=text]').forEach((item) => {
+  const enterTrapSelector = 'form#formulaire .control-group.form-group'
+    + ' input.form-control[type=text]'
+  document.querySelectorAll(enterTrapSelector).forEach((item) => {
     item.addEventListener(
       'keydown',
       (event) => {
         if (event.key === 'Enter') {
           event.preventDefault()
           event.stopPropagation()
-          return true
         }
       },
       true
     )
   })
 
-  //= =========== bidouille pour que les widgets en flash restent ===========
-  //= =========== en dessous des éléments en survol ===========
-  $('object').append('<param value="opaque" name="wmode">')
-  $('embed').attr('wmode', 'opaque')
-
   //= ===========validation formulaire============================
-  //= ===========gestion des dates================================
 
   // validation formulaire de saisie
   const requirementHelper = {
@@ -222,109 +134,110 @@ $(document).ready(() => {
     errorMessage: '',
     errorPattern: -1,
     errorMessagePattern: '',
+    // an input hidden only because it sits in a non-active tab pane still counts
     filterVisibleInputs(key = 'requiredInputs') {
-      this[key] = (this[key]).filter(function() {
-        let inputVisible = $(this).filter(':visible')
-        if ((
-          $(this).prop('tagName') == 'TEXTAREA' && ($(this).hasClass('aceditor-textarea') || $(this).hasClass('vditor-html'))
-        ) || $(this).siblings('.bootstrap-tagsinput').length > 0) {
-          inputVisible = $(this).parent().filter(':visible')
+      this[key] = (this[key]).filter((input) => {
+        let checked = input
+        if (
+          (input.tagName === 'TEXTAREA'
+            && (input.classList.contains('aceditor-textarea')
+              || input.classList.contains('vditor-html')))
+          || input.closest('[data-yw-tag-input]')
+        ) {
+          checked = input.parentElement
         }
-        if (typeof inputVisible !== 'undefined' && inputVisible.length > 0) {
-          return true
+        if (isVisible(checked)) return true
+        let el = checked
+        while (el && el !== document.body && !isVisible(el)) {
+          const style = window.getComputedStyle(el)
+          if (style.display === 'none' && el.getAttribute('role') !== 'tabpanel') {
+            return false
+          }
+          el = el.parentElement
         }
-        const notVisibleParents = $(this).parentsUntil(':visible')
-        if (typeof notVisibleParents === 'undefined' || notVisibleParents.length == 0) {
-          return false
-        }
-        // check if visible in a tab
-        if ($(this).parentsUntil(':visible')
-          .filter(function() {
-            return $(this).css('display') == 'none'
-              && $(this).attr('role') != 'tabpanel'
-          }).length == 0) {
-          return true
-        }
-        return false
+        return true
       })
     },
     getInputType(input) {
-      if ($(input).hasClass('bazar-date')) {
+      if (input.classList.contains('bazar-date')) {
         return 'date'
       }
-      if ($(input).hasClass('chk_required')) {
+      if (input.classList.contains('chk_required')) {
         return 'checkbox'
       }
-      if ($(input).hasClass('geocode-input')) {
+      if (input.classList.contains('geocode-input')) {
         return 'geocode'
       }
-      if ($(input).hasClass('radio_required')) {
+      if (input.classList.contains('radio_required')) {
         return 'radio'
       }
-      if ($(input).siblings('.bootstrap-tagsinput').length > 0) {
+      if (input.closest('[data-yw-tag-input]')) {
         return 'tags'
       }
-      if ($(input).attr('type') == 'email') {
+      if (input.getAttribute('type') === 'email') {
         return 'email'
       }
-      if ($(input).attr('type') == 'url') {
+      if (input.getAttribute('type') === 'url') {
         return 'url'
       }
-      if ($(input).attr('type') == 'range') {
+      if (input.getAttribute('type') === 'range') {
         return 'range'
       }
-      if ($(input).prop('tagName') == 'SELECT') {
+      if (input.tagName === 'SELECT') {
         return 'select'
       }
-      if ($(input).prop('tagName') == 'TEXTAREA') {
-        if ($(input).hasClass('aceditor-textarea')) {
+      if (input.tagName === 'TEXTAREA') {
+        if (input.classList.contains('aceditor-textarea')) {
           return 'wikitextarea'
         }
-        // vditor-html fields are validated like plain textareas: the underlying <textarea>'s
-        // value is kept in sync with the editor's content (javascripts/vditor-textarea.js)
+        // vditor-html fields are validated like plain textareas: the underlying
+        // <textarea>'s value is kept in sync (javascripts/vditor-textarea.js)
         return 'textarea'
       }
       return 'default'
     },
     updateError(index) {
-      if (this.error == -1) {
+      if (this.error === -1) {
         this.error = index
       }
     },
     updateErrorMessage(message) {
-      if (this.error == -1) {
+      if (this.error === -1) {
         this.errorMessage = message
       }
     },
     dateChecking(input) {
-      if ($(input).val() === '') {
+      if (input.value === '') {
         this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'))
         return false
       }
       return true
     },
     rangeChecking(input) {
-      if ($(input).val() === $(input).data('default')) {
+      if (input.value === input.dataset.default) {
         this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'))
         return false
       }
       return true
     },
     emailChecking(input) {
+      // eslint-disable-next-line max-len, no-useless-escape
       const reg = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/ // regex that works for 99,99%, following RFC 5322
-      if ($(input).prop('required') && !this.defaultChecking(input)) {
+      if (input.required && !this.defaultChecking(input)) {
         return false
-      } if ($(input).val() != '' && reg.test($(input).val()) === false) {
+      }
+      if (input.value !== '' && reg.test(input.value) === false) {
         this.updateErrorMessage(_t('BAZ_FORM_INVALID_EMAIL'))
         return false
       }
       return true
     },
     urlChecking(input) {
-      const reg = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
-      if ($(input).prop('required') && !this.defaultChecking(input)) {
+      const reg = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/
+      if (input.required && !this.defaultChecking(input)) {
         return false
-      } if ($(input).val() != '' && reg.test($(input).val()) === false) {
+      }
+      if (input.value !== '' && reg.test(input.value) === false) {
         this.updateErrorMessage(_t('BAZ_FORM_INVALID_URL'))
         return false
       }
@@ -337,62 +250,64 @@ $(document).ready(() => {
       return this.defaultChecking(input)
     },
     wikitextareaChecking(input) {
-      const value = window[`aceditor-${$(input).attr('id')}`].editor.getValue()
+      const value = window[`aceditor-${input.id}`].editor.getValue()
       if (value.length === 0 || value === '') {
         this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'))
-        $(input).parent().addClass('invalid')
+        input.parentElement.classList.add('invalid')
         return false
       }
-      $(input).parent().removeClass('invalid')
+      input.parentElement.classList.remove('invalid')
       return true
     },
     checkboxChecking(input) {
-      const nbelems = $(input).find('input:checked')
-      const parentToInvalid = $(input).closest('.form-group.input-checkbox')
+      const nbelems = input.querySelectorAll('input:checked')
+      const parentToInvalid = input.closest('.form-group.input-checkbox')
       if (nbelems.length === 0) {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_CHECKBOX'))
-        $(parentToInvalid).addClass('invalid')
+        if (parentToInvalid) parentToInvalid.classList.add('invalid')
         return false
       }
-      $(parentToInvalid).removeClass('invalid')
+      if (parentToInvalid) parentToInvalid.classList.remove('invalid')
       return true
     },
     radioChecking(input) {
-      const nbelems = $(input).find('input:checked')
-      const parentToInvalid = $(input).closest('.form-group.input-radio')
+      const nbelems = input.querySelectorAll('input:checked')
+      const parentToInvalid = input.closest('.form-group.input-radio')
       if (nbelems.length === 0) {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_RADIO'))
-        $(parentToInvalid).addClass('invalid')
+        if (parentToInvalid) parentToInvalid.classList.add('invalid')
         return false
       }
-      $(parentToInvalid).removeClass('invalid')
+      if (parentToInvalid) parentToInvalid.classList.remove('invalid')
       return true
     },
     tagsChecking(input) {
-      const bootstrapBaseDiv = $(input).siblings('.bootstrap-tagsinput')
-      const nbelems = $(bootstrapBaseDiv).find('.tag')
+      const widget = input.closest('[data-yw-tag-input]')
+      const nbelems = widget ? widget.querySelectorAll('[data-yw-tag-input-chip]') : []
       if (nbelems.length === 0) {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_AUTOCOMPLETE'))
-        $(bootstrapBaseDiv).addClass('invalid')
+        if (widget) widget.classList.add('invalid')
         return false
       }
-      $(bootstrapBaseDiv).removeClass('invalid')
+      widget.classList.remove('invalid')
       return true
     },
     geocodeChecking(input) {
-      // console.log("GEOCODE CHECKING");
-      const vLatitude = $(input).find('.yw-latitude-input').val()
-      const vLongitude = $(input).find('.yw-longitude-input').val()
-      const vGeometries = $(input).find('.yw-geometries-input').val()
-      // console.log(vLatitude, vLongitude, vGeometries);
-      if (vLatitude == '' && vLongitude == '' && vGeometries == '') {
+      const latitude = input.querySelector('.yw-latitude-input')
+      const longitude = input.querySelector('.yw-longitude-input')
+      const geometries = input.querySelector('.yw-geometries-input')
+      if (
+        (!latitude || latitude.value === '')
+        && (!longitude || longitude.value === '')
+        && (!geometries || geometries.value === '')
+      ) {
         this.updateErrorMessage(_t('BAZ_FORM_EMPTY_GEOLOC'))
         return false
       }
       return true
     },
     defaultChecking(input) {
-      if ($(input).val().length === 0 || $(input).val() === '') {
+      if (input.value.length === 0 || input.value === '') {
         this.updateErrorMessage(_t('BAZ_FORM_REQUIRED_FIELD'))
         return false
       }
@@ -401,43 +316,37 @@ $(document).ready(() => {
     checkInput(input, saveError, index) {
       const inputType = this.getInputType(input)
       if (typeof this[`${inputType}Checking`] !== 'function') {
-        $(input).addClass('invalid')
-        this.updateErrorMessage(`Not possible to check field : unknown function requirementHelper.${inputType}Checking() !`)
+        input.classList.add('invalid')
+        this.updateErrorMessage(
+          `Not possible to check field : unknown function requirementHelper.${inputType}Checking() !`
+        )
         if (saveError) {
           this.updateError(index)
         }
       } else if (!(this[`${inputType}Checking`](input))) {
-        $(input).addClass('invalid')
+        input.classList.add('invalid')
         if (saveError) {
           this.updateError(index)
         }
       } else {
-        $(input).removeClass('invalid')
+        input.classList.remove('invalid')
       }
     },
     checkPattern(input, index) {
-      if ($(input)[0]) {
-        const val = $(input).val()
-        const element = $(input)[0]
-        if (val.length > 0) {
-          if (!element.checkValidity()) {
-            if (this.errorPattern == -1) {
-              this.errorMessagePattern = _t('BAZ_FORM_INVALID_TEXT')
-              this.errorPattern = index
-            }
-          }
+      if (input && input.value.length > 0 && !input.checkValidity()) {
+        if (this.errorPattern === -1) {
+          this.errorMessagePattern = _t('BAZ_FORM_INVALID_TEXT')
+          this.errorPattern = index
         }
       }
     },
     checkInputs() {
-      for (let index = 0; index < this.requiredInputs.length; index++) {
-        const input = this.requiredInputs[index]
+      this.requiredInputs.forEach((input, index) => {
         this.checkInput(input, true, index)
-      }
-      for (let index = 0; index < this.textInputsWithPattern.length; index++) {
-        const input = this.textInputsWithPattern[index]
+      })
+      this.textInputsWithPattern.forEach((input, index) => {
         this.checkPattern(input, index)
-      }
+      })
     },
     displayErrorMessage() {
       alert(this.errorMessage)
@@ -445,28 +354,36 @@ $(document).ready(() => {
     scrollToFirstinputInError(type = 'error') {
       const error = this[type] ?? -1
       if (error > -1) {
-        // TODO afficher l'onglet en question
-        // on remonte en haut du formulaire
         let input = this.requiredInputs[error]
-        if ($(input).filter(':visible').length == 0) {
-          // panel ?
-          const panel = $(input).parentsUntil(':visible').last()
-          if ($(panel).attr('role') == 'tabpanel') {
-            $(`a[href="#${$(panel).attr('id')}"][role=tab]`).first().click()
+        if (!isVisible(input)) {
+          // the input may live in a non-active tab: activate that tab first
+          let panel = input.parentElement
+          while (panel && panel !== document.body && isVisible(panel) === false
+            && (!panel.parentElement || !isVisible(panel.parentElement))) {
+            panel = panel.parentElement
           }
-          if ($(input).filter(':visible').length == 0) {
-            input = $(input).closest(':visible')
+          const pane = input.closest('[role=tabpanel]')
+          if (pane) {
+            const tabLink = document.querySelector(`a[href="#${pane.id}"][role=tab]`)
+            if (tabLink) tabLink.click()
+          }
+          if (!isVisible(input)) {
+            let closestVisible = input.parentElement
+            while (closestVisible && !isVisible(closestVisible)) {
+              closestVisible = closestVisible.parentElement
+            }
+            if (closestVisible) input = closestVisible
           }
         }
-        $('html, body').animate({ scrollTop: $(input).offset().top - 80 }, 500)
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }
     },
     initTextInputsWithPattern(form) {
-      this.textInputsWithPattern = $(form).find('input[type=text][pattern]')
+      this.textInputsWithPattern = Array.from(form.querySelectorAll('input[type=text][pattern]'))
       this.errorPattern = -1
     },
     initRequiredInputs(form) {
-      this.requiredInputs = $(form).find(
+      this.requiredInputs = Array.from(form.querySelectorAll(
         'input[required],'
         + 'select[required],'
         + 'textarea[required],'
@@ -475,7 +392,7 @@ $(document).ready(() => {
         + '.chk_required,'
         + '.radio_required,'
         + '.geocode-input.required'
-      )
+      ))
       this.error = -1
     },
     run(form) {
@@ -501,173 +418,121 @@ $(document).ready(() => {
     },
     inputInitlistener(input) {
       const reqChecking = this
-      $(input).keypress((event) => {
+      input.addEventListener('keypress', (event) => {
         reqChecking.runWhenUpdated(event.target, reqChecking)
       })
-      $(input).change((event) => {
+      input.addEventListener('change', (event) => {
         reqChecking.runWhenUpdated(event.target, reqChecking)
       })
     },
     wikitextareaInitlistener(input) {
       const reqChecking = this
-      const aceditor = $(input)
-      aceditor.on('change', (event) => {
+      input.addEventListener('change', () => {
         reqChecking.runWhenUpdated(input, reqChecking)
       })
     },
     checkboxInitlistener(input) {
       const reqChecking = this
-      const checkboxes = $(input).find('input[type=checkbox]')
-      $(checkboxes).change((event) => {
-        reqChecking.runWhenUpdated($(event.target).closest('.chk_required'), reqChecking)
+      input.querySelectorAll('input[type=checkbox]').forEach((checkbox) => {
+        checkbox.addEventListener('change', (event) => {
+          reqChecking.runWhenUpdated(event.target.closest('.chk_required'), reqChecking)
+        })
       })
     },
     radioInitlistener(input) {
       const reqChecking = this
-      const radioButtons = $(input).find('input[type=radio]')
-      $(radioButtons).change((event) => {
-        reqChecking.runWhenUpdated($(event.target).closest('.radio_required'), reqChecking)
+      input.querySelectorAll('input[type=radio]').forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+          reqChecking.runWhenUpdated(event.target.closest('.radio_required'), reqChecking)
+        })
       })
     },
     initListeners() {
-      this.initRequiredInputs($('#formulaire'))
-      for (let index = 0; index < this.requiredInputs.length; index++) {
-        const input = this.requiredInputs[index]
+      const form = document.getElementById('formulaire')
+      if (!form) return
+      this.initRequiredInputs(form)
+      this.requiredInputs.forEach((input) => {
         const inputType = this.getInputType(input)
         if (['default', 'select', 'textarea', 'tags'].indexOf(inputType) > -1) {
           this.inputInitlistener(input)
         } else if (['wikitextarea', 'checkbox', 'radio'].indexOf(inputType) > -1) {
           this[`${inputType}Initlistener`](input)
         }
-      }
+      })
     }
   }
 
   requirementHelper.initListeners()
-  $('#formulaire').submit(function(e) {
-    $(this).addClass('submitted')
-
-    try {
-      if (requirementHelper.run(this)) {
-        // formulaire validé, on soumet le formulaire
-        // mais juste avant on change le comportement du bouton pour éviter les validations multiples
-        $(this).find('.form-actions button[type=submit]').each(function() {
-          $(this).attr('disabled', true)
-          $(this).addClass('submit-disabled')
-          $(this).attr('title', _t('BAZ_SAVING'))
-          const button = $(this)
-          setTimeout(() => {
-            // on réactive le bouton au bout de 10s juste pour permettre de forcer une nouvelle validation si jamais ça a planté
-            $(button).removeAttr('disabled')
-          }, 10000)
-        })
-        return true
+  const formulaire = document.getElementById('formulaire')
+  if (formulaire) {
+    formulaire.addEventListener('submit', (e) => {
+      formulaire.classList.add('submitted')
+      try {
+        if (requirementHelper.run(formulaire)) {
+          // formulaire validé, on soumet le formulaire mais juste avant on change
+          // le comportement du bouton pour éviter les validations multiples
+          formulaire.querySelectorAll('.form-actions button[type=submit]').forEach((button) => {
+            button.setAttribute('disabled', 'disabled')
+            button.classList.add('submit-disabled')
+            button.setAttribute('title', _t('BAZ_SAVING'))
+            setTimeout(() => {
+              // on réactive le bouton au bout de 10s juste pour permettre de
+              // forcer une nouvelle validation si jamais ça a planté
+              button.removeAttribute('disabled')
+            }, 10000)
+          })
+          return
+        }
+      } catch (error) {
+        console.warn(error.message)
       }
-    } catch (error) {
-      console.warn(error.message)
-    }
-    e.preventDefault()
-    return false
-  })
+      e.preventDefault()
+    })
 
-  // bidouille PEAR form
-  $('#formulaire').removeAttr('onsubmit')
-
-  // selecteur de dates
-  const $dateinputs = $('.bazar-date')
-
-  // test pour verifier si le browser gere l'affichage des dates
-  // var input = document.createElement('input');
-  // input.setAttribute('type','date');
-  // var notADateValue = 'not-a-date';
-  // input.setAttribute('value', notADateValue);
-
-  // if ($dateinputs.length > 0 && (input.value == notADateValue)) {
-  if ($dateinputs.length > 0) {
-    $.fn.datepicker.dates.fr = {
-      days: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
-        .map((day) => _t(day)),
-      daysShort: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
-        .map((day) => _t(`BAZ_DATESHORT_${day}`)),
-      daysMin: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
-        .map((day) => _t(`BAZ_DATEMIN_${day}`)),
-      months: ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
-        .map((month) => _t(month)),
-      monthsShort: ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
-        .map((month) => _t(`BAZ_DATESHORT_${month}`))
-    }
-    $dateinputs.datepicker({
-      format: 'yyyy-mm-dd',
-      weekStart: 1,
-      autoclose: true,
-      language: 'fr'
-    }).attr('autocomplete', 'off')
+    // bidouille PEAR form
+    formulaire.removeAttribute('onsubmit')
   }
 
-  // interdire dans le datepicker de fin les dates avant la date de début, et inversement
-  const $startDate = $('#formulaire #bf_date_debut_evenement')
-  const $endDate = $('#formulaire #bf_date_fin_evenement')
-  if ($startDate.length && $endDate.length) {
-    const startPicker = $startDate.data('datepicker')
-    const endPicker = $endDate.data('datepicker')
-    $startDate.on('changeDate', () => {
-      if ($startDate.val()) {
-        endPicker.setStartDate($startDate.val())
-        checkTimeConstraint('start')
-      }
-    })
-    $endDate.on('changeDate', () => {
-      if ($endDate.val()) {
-        startPicker.setEndDate($endDate.val())
-        checkTimeConstraint('end')
-      }
-    })
+  // dates : les <input type="date"> sont natifs maintenant (plus de datepicker) ;
+  // on garde la contrainte début/fin via les attributs min/max natifs
+  const startDate = document.querySelector('#formulaire #bf_date_debut_evenement')
+  const endDate = document.querySelector('#formulaire #bf_date_fin_evenement')
+  if (startDate && endDate) {
+    const startAllDay = document.querySelector('select[name="bf_date_debut_evenement_allday"]')
+    const endAllDay = document.querySelector('select[name="bf_date_fin_evenement_allday"]')
+    const startHour = document.querySelector('select[name="bf_date_debut_evenement_hour"]')
+    const startMin = document.querySelector('select[name="bf_date_debut_evenement_minutes"]')
+    const endHour = document.querySelector('select[name="bf_date_fin_evenement_hour"]')
+    const endMin = document.querySelector('select[name="bf_date_fin_evenement_minutes"]')
 
-    // contrainte horaire : si même jour, l'heure de début doit être avant l'heure de fin
-    const $startAllDay = $('select[name="bf_date_debut_evenement_allday"]')
-    const $endAllDay = $('select[name="bf_date_fin_evenement_allday"]')
-    const $startHour = $('select[name="bf_date_debut_evenement_hour"]')
-    const $startMin = $('select[name="bf_date_debut_evenement_minutes"]')
-    const $endHour = $('select[name="bf_date_fin_evenement_hour"]')
-    const $endMin = $('select[name="bf_date_fin_evenement_minutes"]')
-
-    function hasTimeEnabled() {
-      return $startAllDay.val() === '0' && $endAllDay.val() === '0'
-    }
-
-    function isSameDay() {
-      return $startDate.val() && $endDate.val() && $startDate.val() === $endDate.val()
-    }
-
-    function getStartMinutes() {
-      return parseInt($startHour.val()) * 60 + parseInt($startMin.val())
-    }
-
-    function getEndMinutes() {
-      return parseInt($endHour.val()) * 60 + parseInt($endMin.val())
-    }
+    const hasTimeEnabled = () => startAllDay && endAllDay
+      && startAllDay.value === '0' && endAllDay.value === '0'
+    const isSameDay = () => startDate.value && endDate.value
+      && startDate.value === endDate.value
+    const getStartMinutes = () => parseInt(startHour.value, 10) * 60 + parseInt(startMin.value, 10)
+    const getEndMinutes = () => parseInt(endHour.value, 10) * 60 + parseInt(endMin.value, 10)
 
     // sélectionne 5 minutes après l'heure de début
-    function adjustEndTime() {
+    const adjustEndTime = () => {
       let total = getStartMinutes() + 5
       if (total >= 1440) total = 1435
       const h = Math.floor(total / 60)
-      const m = Math.round(total % 60 / 5) * 5
-      $endHour.val(String(h).padStart(2, '0'))
-      $endMin.val(String(m).padStart(2, '0'))
+      const m = Math.round((total % 60) / 5) * 5
+      endHour.value = String(h).padStart(2, '0')
+      endMin.value = String(m).padStart(2, '0')
     }
 
     // sélectionne 5 minutes avant l'heure de fin
-    function adjustStartTime() {
+    const adjustStartTime = () => {
       let total = getEndMinutes() - 5
       if (total < 0) total = 0
       const h = Math.floor(total / 60)
-      const m = Math.round(total % 60 / 5) * 5
-      $startHour.val(String(h).padStart(2, '0'))
-      $startMin.val(String(m).padStart(2, '0'))
+      const m = Math.round((total % 60) / 5) * 5
+      startHour.value = String(h).padStart(2, '0')
+      startMin.value = String(m).padStart(2, '0')
     }
 
-    function checkTimeConstraint(changed) {
+    const checkTimeConstraint = (changed) => {
       if (!isSameDay() || !hasTimeEnabled()) return
       if (getStartMinutes() >= getEndMinutes()) {
         if (changed === 'start') adjustEndTime()
@@ -675,130 +540,146 @@ $(document).ready(() => {
       }
     }
 
-    $startHour.add($startMin).on('change', () => checkTimeConstraint('start'))
-    $endHour.add($endMin).on('change', () => checkTimeConstraint('end'))
-    $startAllDay.add($endAllDay).on('change', () => checkTimeConstraint('start'))
+    startDate.addEventListener('change', () => {
+      if (startDate.value) {
+        endDate.min = startDate.value
+        checkTimeConstraint('start')
+      }
+    })
+    endDate.addEventListener('change', () => {
+      if (endDate.value) {
+        startDate.max = endDate.value
+        checkTimeConstraint('end')
+      }
+    })
+    if (startDate.value) endDate.min = startDate.value
+    if (endDate.value) startDate.max = endDate.value
+
+    const timeSelects = [startHour, startMin, startAllDay]
+    timeSelects.forEach((select) => {
+      if (select) select.addEventListener('change', () => checkTimeConstraint('start'))
+    })
+    const endSelects = [endHour, endMin, endAllDay]
+    endSelects.forEach((select) => {
+      if (select) select.addEventListener('change', () => checkTimeConstraint('end'))
+    })
   }
 
   // Onglets
   // hack pour les fiches avec tabulations : on change les id pour qu'ils soient uniques
-  $('.bazar-entry').each(function(i) {
-    $(this).find('[data-toggle="tab"]').each(function() {
-      $(this).attr('href', `${$(this).attr('href')}-${i}`)
+  document.querySelectorAll('.bazar-entry').forEach((entry, i) => {
+    entry.querySelectorAll('[data-toggle="tab"]').forEach((link) => {
+      link.setAttribute('href', `${link.getAttribute('href')}-${i}`)
     })
-
-    $(this).find('.tab-pane').each(function() {
-      $(this).attr('id', `${$(this).attr('id')}-${i}`)
+    entry.querySelectorAll('.yw-tabs__pane, .tab-pane').forEach((paneParam) => {
+      const pane = paneParam
+      pane.id = `${pane.id}-${i}`
     })
   })
 
   // cocher / decocher tous
-  const checkboxselectall = $('.selectall')
-  checkboxselectall.click(function(event) {
-    const $this = $(this)
-    let target = $this.parents('.controls').find('.yeswiki-checkbox')
-    if ($this.data('target')) {
-      target = $($this.data('target'))
-    }
-
-    if (this.checked) { // check select status
-      target.each(function() {
-        $(this).find(':checkbox').prop('checked', true)
-        $(this).prop('checked', true)
+  document.querySelectorAll('.selectall').forEach((selectAll) => {
+    selectAll.addEventListener('click', () => {
+      let targets
+      if (selectAll.dataset.target) {
+        targets = document.querySelectorAll(selectAll.dataset.target)
+      } else {
+        const controls = selectAll.closest('.controls')
+        targets = controls ? controls.querySelectorAll('.yeswiki-checkbox') : []
+      }
+      targets.forEach((targetParam) => {
+        const target = targetParam
+        target.querySelectorAll('input[type=checkbox]').forEach((checkboxParam) => {
+          const checkbox = checkboxParam
+          checkbox.checked = selectAll.checked
+        })
+        if (target.matches('input[type=checkbox]')) {
+          target.checked = selectAll.checked
+        }
       })
-    } else {
-      target.each(function() {
-        $(this).find(':checkbox').prop('checked', false)
-        $(this).prop('checked', false)
-      })
-    }
+    })
   })
 
   // facettes
 
   // recuperer un parametre donné de l'url
   function getURLParameter(name) {
-    return decodeURIComponent(
-      (new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)').exec(location.search) || [, ''])[1]
-        .replace(/\+/g, '%20')
-    ) || null
+    const match = new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`)
+      .exec(window.location.search)
+    return decodeURIComponent((match ? match[1] : '').replace(/\+/g, '%20')) || null
   }
 
   // modifier un parametre de l'url pour les modifier dynamiquement
   function changeURLParameter(name, value) {
+    const s = window.location.search
+    let urlquery
     if (getURLParameter(name) == null) {
-      var s = location.search
-      var urlquery = s.replace(`&${name}=`, '').replace(`?${name}=`, '')
+      urlquery = s.replace(`&${name}=`, '').replace(`?${name}=`, '')
       if (value !== '') {
-        if (s !== '') {
-          urlquery += `&${name}=${value}`
-        } else {
-          urlquery += `?${name}=${value}`
-        }
+        urlquery += s !== '' ? `&${name}=${value}` : `?${name}=${value}`
       }
-
-      history.pushState({ filter: true }, null, urlquery)
-
+      window.history.pushState({ filter: true }, null, urlquery)
       // pour les url dans une iframe
-      if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
-        var iframeurlquery = `${window.top.location.search
+      if (window.frameElement && window.frameElement.nodeName === 'IFRAME') {
+        const iframeurlquery = `${window.top.location.search
           .replace(`&${name}=`, '')}&${name}=${value}`
         window.top.history.pushState({ filter: true }, null, iframeurlquery)
       }
     } else {
-      var s = location.search
-      // console.log('s', s, s !== '', decodeURIComponent(s));
-      // console.log('value', value);
-      var urlquery
       if (value !== '') {
-        if (s !== '') {
-          // console.log(s);
-          urlquery = decodeURIComponent(s).replace(
-            new RegExp(`&${name}=` + '([^&;]+?)(&|#|;|$)'),
+        urlquery = s !== ''
+          ? decodeURIComponent(s).replace(
+            new RegExp(`&${name}=([^&;]+?)(&|#|;|$)`),
             `&${name}=${value}`
           )
-          // console.log('location.search', s, urlquery);
-        } else {
-          urlquery = `?${name}=${value}`
-        } // console.log('location.search vide', s, urlquery);
+          : `?${name}=${value}`
       } else {
-        // console.log(s);
         urlquery = decodeURIComponent(s).replace(
-          new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)'),
+          new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`),
           ''
         )
       }
-
-      history.pushState({ filter: true }, null, urlquery)
-
+      window.history.pushState({ filter: true }, null, urlquery)
       // pour les url dans une iframe
-      if (window.frameElement && window.frameElement.nodeName == 'IFRAME') {
-        var iframeurlquery = decodeURIComponent(window.top.location.search).replace(
-          new RegExp(`[?|&]${name}=` + '([^&;]+?)(&|#|;|$)'),
+      if (window.frameElement && window.frameElement.nodeName === 'IFRAME') {
+        const iframeurlquery = decodeURIComponent(window.top.location.search).replace(
+          new RegExp(`[?|&]${name}=([^&;]+?)(&|#|;|$)`),
           `&${name}=${value}`
         )
         window.top.history.pushState({ filter: true }, null, iframeurlquery)
       }
-
-      return location.search
     }
   }
 
+  function facetteData(container) {
+    return {
+      nbresults: container.querySelectorAll('.nb-results'),
+      filterboxes: container.querySelectorAll('.filter-box'),
+      entries: Array.from(container.querySelectorAll('.bazar-entry')),
+      geometries: Array.from(container.querySelectorAll('.bazar-entry-geometry')),
+      resultlabel: container.querySelectorAll('.result-label'),
+      resultslabel: container.querySelectorAll('.results-label')
+    }
+  }
+
+  function show(el) {
+    el.style.display = '' // eslint-disable-line no-param-reassign
+  }
+  function hideEl(el) {
+    el.style.display = 'none' // eslint-disable-line no-param-reassign
+  }
+
   // activer les filtres des facettes
-  function updateFilters(e) {
+  function updateFilters(data) {
     const tabfilters = []
-    let i = 0
     let newquery = ''
-    let select
-    // on filtre les resultat par boite de filtre pour faire l'intersection apres
-    e.data.$filterboxes.each(function() {
-      select = ''
+    // on filtre les resultats par boite de filtre pour faire l'intersection apres
+    data.filterboxes.forEach((box) => {
+      let select = ''
       let first = true
-      const filterschk = $(this).find('.filter-checkbox:checked')
-      $.each(filterschk, (index, checkbox) => {
-        // les valeurs sont mis en cache
-        const name = $(checkbox).attr('name')
-        const val = $(checkbox).attr('value')
+      box.querySelectorAll('.filter-checkbox:checked').forEach((checkbox) => {
+        const name = checkbox.getAttribute('name')
+        const val = checkbox.getAttribute('value')
         const attr = `data-${name.toLowerCase()}`
         if (first) {
           // si ce n'est pas le premier appel, on ajoute un | pour separer les query
@@ -811,19 +692,15 @@ $(document).ready(() => {
           newquery += `,${val}`
           select += ','
         }
-
-        // La requete de selection prend pour les champs non multiples :
-        // - exactement la valeur de l'attribut html
-        // Pour les champs multiples :
-        // - soit les attributs commencant par la valeur suivie d'une virgule
-        // - soit les attributs finissant par la valeur avec une virgule avant
-        // - soit les attributs contenant la valeur entouree de virgules
+        // champs non multiples : exactement la valeur; champs multiples : la
+        // valeur en début/fin/milieu de la liste separee par des virgules
         select += `[${attr}~="${val}"],[${attr}$=",${val}"],[${attr}^="${val},"],[${attr}*=",${val},"]`
       })
-      const res = e.data.$entries.filter(select)
-      if (res.length > 0) {
-        tabfilters[i] = res
-        i += 1
+      if (select !== '') {
+        const res = data.entries.filter((entry) => entry.matches(select))
+        if (res.length > 0) {
+          tabfilters.push(res)
+        }
       }
     })
 
@@ -833,62 +710,67 @@ $(document).ready(() => {
     // au moins un filtre à actionner
     let tabres = []
     if (tabfilters.length > 0) {
-      // un premier résultat pour le tableau
-      tabres = tabfilters[0].toArray()
-
       // pour chaque boite de filtre, on fait l'intersection avec la suivante
-      $.each(tabfilters, (index, tab) => {
-        tabres = tabres.filter((n) => tab.toArray().indexOf(n) != -1)
-      })
-      $('body').trigger('updatefilters', [tabres])
-      e.data.$entries.hide().filter(tabres).show()
-      e.data.$entries.parent('.bazar-marker').hide()
-      e.data.$entries.filter(tabres).parent('.bazar-marker').show()
-
-      // geometries need the id to be hidden
-      const $toHide = e.data.$entries.not(tabres)
-      const idsToMatch = new Set()
-
-      $toHide.each(function() {
-        const id = $(this).attr('data-id_fiche')
-        if (id) {
-          idsToMatch.add(String(id))
+      tabres = tabfilters.reduce(
+        (acc, tab) => acc.filter((entry) => tab.indexOf(entry) !== -1)
+      )
+      document.body.dispatchEvent(
+        new CustomEvent('updatefilters', { detail: { entries: tabres } })
+      )
+      data.entries.forEach((entry) => {
+        const kept = tabres.indexOf(entry) !== -1
+        if (kept) show(entry)
+        else hideEl(entry)
+        const marker = entry.parentElement
+        if (marker && marker.classList.contains('bazar-marker')) {
+          if (kept) show(marker)
+          else hideEl(marker)
         }
       })
 
-      const matchingGeometries = e.data.$geometries.filter(function() {
-        const geoId = $(this).attr('data-id')
-        return idsToMatch.has(String(geoId))
+      // geometries need the id to be hidden
+      const idsToMatch = new Set()
+      data.entries.forEach((entry) => {
+        if (tabres.indexOf(entry) === -1 && entry.dataset.id_fiche) {
+          idsToMatch.add(String(entry.dataset.id_fiche))
+        }
       })
-
-      matchingGeometries.hide()
+      data.geometries.forEach((geometry) => {
+        if (idsToMatch.has(String(geometry.dataset.id))) hideEl(geometry)
+      })
     } else {
       // pas de filtres: on affiche tout les résultats
-      e.data.$entries.show()
-      e.data.$geometries.show()
-      e.data.$entries.parent('.bazar-marker').show()
+      data.entries.forEach(show)
+      data.geometries.forEach(show)
+      data.entries.forEach((entry) => {
+        const marker = entry.parentElement
+        if (marker && marker.classList.contains('bazar-marker')) show(marker)
+      })
     }
     // on compte les résultats visibles (points et geometries confondus)
     const visibleIds = new Set()
-    e.data.$entries.filter(':visible').each(function() {
-      const id = $(this).attr('data-id_fiche')
-      if (id) visibleIds.add(String(id))
+    data.entries.filter(isVisible).forEach((entry) => {
+      if (entry.dataset.id_fiche) visibleIds.add(String(entry.dataset.id_fiche))
     })
-    e.data.$geometries.filter(':visible').each(function() {
-      const id = $(this).attr('data-id')
-      if (id) visibleIds.add(String(id))
+    data.geometries.filter(isVisible).forEach((geometry) => {
+      if (geometry.dataset.id) visibleIds.add(String(geometry.dataset.id))
     })
     const nbresults = visibleIds.size
-    e.data.$nbresults.html(nbresults)
+    data.nbresults.forEach((elParam) => {
+      const el = elParam
+      el.textContent = nbresults
+    })
     if (nbresults > 1) {
-      e.data.$resultlabel.hide()
-      e.data.$resultslabel.show()
+      data.resultlabel.forEach(hideEl)
+      data.resultslabel.forEach(show)
     } else {
-      e.data.$resultlabel.show()
-      e.data.$resultslabel.hide()
+      data.resultlabel.forEach(show)
+      data.resultslabel.forEach(hideEl)
     }
 
-    $('body').trigger('updatedfilters', (!tabres.length) ? [] : [tabres])
+    document.body.dispatchEvent(
+      new CustomEvent('updatedfilters', { detail: { entries: tabres } })
+    )
 
     const vParam = new URLSearchParams(document.location.search)
     const vKeywords = vParam.get('keywords')
@@ -896,156 +778,116 @@ $(document).ready(() => {
     const vSortOrder = vParam.get('ordre')
 
     const vFacette = getURLParameter('facette')
-    let vQueries
-    let vFilters = []
+    const vFilters = []
     if (vFacette) {
-      vQueries = getURLParameter('facette')
+      vFacette
         .split('|')
         .map(parseCondition)
         .forEach((pCondition) => {
           vFilters[pCondition.name] = pCondition.values
         })
-    } else vFilters = []
+    }
 
     updateHash(gSavedHash, vKeywords, vSortField, vSortOrder, vFilters)
   }
 
   // process changes on visible entries according to filters
   setTimeout(() => {
-    $('.facette-container:not(.dynamic)').each(function() {
-      const $container = $(this)
-      const $filters = $('.filter-checkbox', $container)
-      const data = {
-        $nbresults: $('.nb-results', $container),
-        $filterboxes: $('.filter-box', $container),
-        $entries: $('.bazar-entry', $container),
-        $geometries: $('.bazar-entry-geometry', $container),
-        $resultlabel: $('.result-label', $container),
-        $resultslabel: $('.results-label', $container)
-      }
-      $filters.on('click', data, updateFilters)
-      jQuery(window).ready((e) => {
-        e.data = data
-        updateFilters(e)
+    document.querySelectorAll('.facette-container:not(.dynamic)').forEach((container) => {
+      const data = facetteData(container)
+      container.querySelectorAll('.filter-checkbox').forEach((checkbox) => {
+        checkbox.addEventListener('click', () => updateFilters(data))
       })
+      updateFilters(data)
     })
   }, 500)
 
   // gestion de l'historique : on reapplique les filtres
-  window.onpopstate = function(e) {
+  window.onpopstate = (e) => {
     if (e.state && e.state.filter) {
-      $('.facette-container').each(function() {
-        const $this = $(this)
-        $(this).find('input:checkbox').prop('checked', false)
+      document.querySelectorAll('.facette-container').forEach((container) => {
+        container.querySelectorAll('input[type=checkbox]').forEach((checkboxParam) => {
+          const checkbox = checkboxParam
+          checkbox.checked = false
+        })
         const urlparamfacette = getURLParameter('facette')
-
-        const tabfacette = urlparamfacette.split('|')
-        for (let i = 0; i < tabfacette.length; i++) {
-          const tabfilter = tabfacette[i].split('=')
-          if (tabfilter[1] !== '') {
-            tabvalues = tabfilter[1].split(',')
-            for (let j = 0; j < tabvalues.length; j++) {
-              $(`#${tabfilter[0]}${tabvalues[j]}`).prop('checked', true)
+        if (urlparamfacette) {
+          urlparamfacette.split('|').forEach((facette) => {
+            const tabfilter = facette.split('=')
+            if (tabfilter[1] !== '') {
+              tabfilter[1].split(',').forEach((value) => {
+                const checkbox = document.getElementById(`${tabfilter[0]}${value}`)
+                if (checkbox) checkbox.checked = true
+              })
             }
-          }
+          })
         }
-
-        const $container = $(this)
-        const $filters = $('.filter-checkbox', $container)
-        const data = {
-          $nbresults: $('.nb-results', $container),
-          $filterboxes: $('.filter-box', $container),
-          $entries: $('.bazar-entry', $container),
-          $geometries: $('.bazar-entry-geometry', $container),
-          $resultlabel: $('.result-label', $container),
-          $resultslabel: $('.results-label', $container)
-        }
-        e.data = data
-        updateFilters(e)
+        updateFilters(facetteData(container))
       })
     }
   }
 
-  // Tags
-  // bidouille pour les typeahead des champs tags
-  $('.bootstrap-tagsinput input').on('keypress', function() {
-    $(this).attr('size', $(this).val().length + 2)
-  })
-
-  $('.bootstrap-tagsinput').on('change', function() {
-    $(this).parent().find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function() {
-      $(this).tagsinput('input').val('')
-    })
-  })
-
-  $.extend($.fn.typeahead.Constructor.prototype, { val() { } })
-
-  // on envoie la valeur au submit
-  $('#formulaire').on('submit', function() {
-    $(this).find('.yeswiki-input-entries, .yeswiki-input-pagetag').each(function() {
-      $(this).tagsinput('add', $(this).tagsinput('input').val())
-    })
-  })
+  // The bootstrap-tagsinput/typeahead glue that used to live here is gone: tag
+  // fields are yw-tags-input.js widgets that manage their own input and value.
 
   const bazarList = []
-  $('.facette-container:not(.dynamic) .filter-bazar').on('keyup', function(e) {
-    const target = $(this).data('target')
-    let searchstring = $(this).val()
-    if (searchstring) {
-      searchstring = searchstring.toLowerCase()
-    }
-    if (bazarList[target] === undefined) {
-      bazarList[target] = []
-      $(`#${target} .bazar-entry`).each(function() {
-        bazarList[target][$(this).data('id_fiche')] = $(this).find(':visible').text().toLowerCase()
+  document.querySelectorAll('.facette-container:not(.dynamic) .filter-bazar').forEach((filter) => {
+    filter.addEventListener('keyup', () => {
+      const { target } = filter.dataset
+      let searchstring = filter.value
+      if (searchstring) {
+        searchstring = searchstring.toLowerCase()
+      }
+      const containerEl = document.getElementById(target)
+      if (!containerEl) return
+      if (bazarList[target] === undefined) {
+        bazarList[target] = []
+        containerEl.querySelectorAll('.bazar-entry').forEach((entry) => {
+          bazarList[target][entry.dataset.id_fiche] = entry.textContent.toLowerCase()
+        })
+      }
+      let nbresults = 0
+      containerEl.querySelectorAll('.bazar-entry').forEach((entry) => {
+        const text = bazarList[target][entry.dataset.id_fiche] || ''
+        const matches = text.indexOf(searchstring) > -1
+        if (matches) {
+          show(entry)
+          nbresults += 1
+        } else {
+          hideEl(entry)
+        }
       })
-    }
-    $(`#${target} .bazar-entry`).hide()
-    $(`#${target} .bazar-entry`).filter(function(i) {
-      return bazarList[target][$(this).data('id_fiche')].indexOf(searchstring) > -1
-    }).show()
-    const nbresults = $(`#${target} .bazar-entry:visible`).length
-    $(this).parents('.facette-container').find('.nb-results').html(nbresults)
-    if (nbresults > 1) {
-      $(this).parents('.facette-container').find('.result-label').hide()
-      $(this).parents('.facette-container').find('.results-label').show()
-    } else {
-      $(this).parents('.facette-container').find('.result-label').show()
-      $(this).parents('.facette-container').find('.results-label').hide()
-    }
+      const facetteContainer = filter.closest('.facette-container')
+      if (!facetteContainer) return
+      facetteContainer.querySelectorAll('.nb-results').forEach((elParam) => {
+        const el = elParam
+        el.textContent = nbresults
+      })
+      facetteContainer.querySelectorAll('.result-label').forEach(
+        nbresults > 1 ? hideEl : show
+      )
+      facetteContainer.querySelectorAll('.results-label').forEach(
+        nbresults > 1 ? show : hideEl
+      )
+    })
   })
 
   // gestion du bouton de réinitialisation des filtres
-  $('.facette-container:not(.dynamic) .filters .reset-filters').on('click', () => {
-    $('.facette-container:not(.dynamic) .filters input.filter-checkbox:checked').click()
-  })
+  document.querySelectorAll('.facette-container:not(.dynamic) .filters .reset-filters')
+    .forEach((reset) => {
+      reset.addEventListener('click', () => {
+        document.querySelectorAll(
+          '.facette-container:not(.dynamic) .filters input.filter-checkbox:checked'
+        ).forEach((checkbox) => checkbox.click())
+      })
+    })
 })
 
-function exportTableToCSV(filename, selector = 'table tr') {
-  const csv = []
-  const rows = document.querySelectorAll(selector)
-
-  for (let i = 0; i < rows.length; i++) {
-    const row = []; const
-      cols = rows[i].querySelectorAll('td, th')
-
-    for (let j = 0; j < cols.length; j++) row.push(cols[j].innerText)
-
-    csv.push(row.join(','))
-  }
-
-  // Download CSV file
-  downloadCSV(csv.join('\n'), filename)
-}
-
 export function downloadCSV(csv, filename) {
-  let csvFile
-  let downloadLink
-
   // CSV file
-  csvFile = new Blob([csv], { type: 'text/csv' })
+  const csvFile = new Blob([csv], { type: 'text/csv' })
   // Download link
-  downloadLink = document.createElement('a')
+  const downloadLink = document.createElement('a')
   // File name
   downloadLink.download = filename
   // Create a link to the file
@@ -1065,15 +907,15 @@ export function removeCSVCrochet(str) {
 }
 
 // range input
-$(document).ready(() => {
+document.addEventListener('DOMContentLoaded', () => {
   const rangeInputs = document.querySelectorAll('.range-wrap input[type="range"]')
   function handleInputChange(e) {
     const { target } = e
-    const { min } = target
-    const { max } = target
+    const { min, max } = target
     const val = target.value
-    target.style.backgroundSize = `${(val - min) * 100 / (max - min)}% 100%`
-    $(target).siblings('output').val(val)
+    target.style.backgroundSize = `${((val - min) * 100) / (max - min)}% 100%`
+    const output = target.parentElement ? target.parentElement.querySelector('output') : null
+    if (output) output.value = val
   }
 
   rangeInputs.forEach((input) => {

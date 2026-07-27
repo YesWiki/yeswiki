@@ -1,14 +1,13 @@
 {% embed "@core/layouts/input.twig" %}
     {% block input %}
         {{ include_css('styles/bazar/inputs/date.css') }}
-        {{ include_javascript('javascripts/vendor/bootstrap-datepicker.js') }}
 
         <div class="input-prepend input-group">
             <span class="add-on input-group-addon">
                 <i class="icon-calendar fa fa-calendar"></i>
             </span>
             <input
-                type="text"
+                type="date"
                 value="{{ day }}"
                 id="{{ field.name }}"
                 name="{{ field.name }}"

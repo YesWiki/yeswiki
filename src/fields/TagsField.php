@@ -29,33 +29,13 @@ class TagsField extends EnumField
         $value = $this->getValue($entry);
 
         $allTags = $tagsManager->getAll();
+        $existingTags = [];
         if (is_array($allTags)) {
             foreach ($allTags as $tag) {
-                // TODO why ISO-8859-15 ? fix the encoding ???
-                $response[] = str_replace('\'', '&#39;', $tag['value']);
+                $existingTags[] = $tag['value'];
             }
+            sort($existingTags);
         }
-        if (isset($response)) {
-            sort($response);
-            $allTags = '\'' . implode('\',\'', $response) . '\'';
-        } else {
-            $allTags = '';
-        }
-
-        $script = '$(function(){
-            var tagsexistants = [' . $allTags . '];
-            var pagetag = $(\'#formulaire .yeswiki-input-pagetag[name="' . $this->getName() . '"]\');
-            pagetag.tagsinput({
-                typeahead: {
-                    afterSelect: function(val) { pagetag.tagsinput(\'input\').val(""); },
-                    source: tagsexistants,
-                    autoSelect: false,
-                },
-                confirmKeys: [13, 186, 188]
-            });
-        });';
-
-        $GLOBALS['wiki']->AddJavascript($script);
 
         if (!isset($value)) {
             if ($this->getRequest()->query->has($this->propertyName)) {
@@ -65,11 +45,9 @@ class TagsField extends EnumField
             }
         }
 
-        $GLOBALS['wiki']->AddJavascriptFile('javascripts/vendor/bootstrap-tagsinput.min.js');
-
         return $this->render('@core/inputs/tags.twig', [
             'value' => $value,
-            'allTags' => $allTags,
+            'allTags' => array_combine($existingTags, $existingTags) ?: [],
         ]);
     }
 

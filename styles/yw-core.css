@@ -795,3 +795,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .yw-hide {
   display: none;
 }
+/* legacy Bootstrap utility name, still toggled by JS and used across templates */
+.hide {
+  display: none !important;
+}

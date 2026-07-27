@@ -1,15 +1,14 @@
 {% extends "@core/layouts/input.twig" %}
 
 {% block input %}
-    <div class="input-group">
-        <input
-            type="text"
-            value="{{ value }}"
-            id="{{ field.name }}"
-            name="{{ field.name }}"
-            class="form-control yeswiki-input-pagetag"
-            size="{{ field.maxChars }}"
-            {% if field.required %}required{% endif %}
-        />
+    {{ include_javascript('javascripts/yw-tags-input.js') }}
+    <div class="yw-tag-input" data-yw-tag-input
+        data-yw-tag-input-options="{{ allTags|json_encode }}">
+        {%- for tag in value|split(',') if tag|trim is not empty -%}
+            <span class="yw-tag-input__chip" data-yw-tag-input-chip data-tag="{{ tag|trim }}">{{ tag|trim }}<button type="button" class="yw-tag-input__chip-remove" data-yw-tag-input-remove aria-label="remove">&times;</button></span>
+        {%- endfor -%}
+        <input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search>
+        <ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
+        <input type="hidden" name="{{ field.name }}" data-yw-tag-input-value value="{{ value }}">
     </div>
 {% endblock %}

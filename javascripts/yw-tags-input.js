@@ -183,16 +183,19 @@
     if (!input) return
     const widget = widgetOf(input)
     const options = staticOptions(widget)
+    const closed = widget.hasAttribute('data-yw-tag-input-closed')
 
-    if (e.key === 'Enter' || (!options && (e.key === ',' || e.key === ';'))) {
+    if (e.key === 'Enter' || (!closed && (e.key === ',' || e.key === ';'))) {
       e.preventDefault()
-      if (options) {
+      if (options && closed) {
+        // closed vocabulary: only a listed option may be added
         const list = widget.querySelector('[data-yw-tag-input-suggestions]')
         const firstSuggestion = list && list.querySelector('[data-yw-tag-input-suggestion]')
         if (firstSuggestion) {
           addTag(widget, firstSuggestion.dataset.id, firstSuggestion.textContent)
         }
       } else {
+        // open vocabulary (with or without suggestions): free-typed tags are fine
         addTag(widget, input.value.replace(/[,;]$/, ''))
       }
       input.value = ''
