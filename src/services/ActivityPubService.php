@@ -33,21 +33,21 @@ class ActivityPubService
 
     public function isEnabled($form)
     {
-        return isset($form['bn_activitypub_enable']) && $form['bn_activitypub_enable'] === '1';
+        return isset($form['activitypub_enable']) && $form['activitypub_enable'] === '1';
     }
 
     public function getFormActorUri($form)
     {
         $parsed = parse_url($this->params->get('base_url'));
 
-        return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['bn_id_nature'];
+        return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['id'];
     }
 
     public function getFormCollectionUri($form, $collectionType)
     {
         $parsed = parse_url($this->params->get('base_url'));
 
-        return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['bn_id_nature'] . '/' . $collectionType;
+        return $parsed['scheme'] . '://' . $parsed['host'] . '/actors/' . $form['id'] . '/' . $collectionType;
     }
 
     public function getActor($form)
@@ -58,8 +58,8 @@ class ActivityPubService
             '@context' => 'https://www.w3.org/ns/activitystreams',
             'id' => $actorUrl,
             'type' => 'Application',
-            'name' => $form['bn_label_nature'],
-            'preferredUsername' => $form['bn_activitypub_username'],
+            'name' => $form['label'],
+            'preferredUsername' => $form['activitypub_username'],
             'inbox' => $actorUrl . '/inbox',
             'outbox' => $actorUrl . '/outbox',
             'followers' => $actorUrl . '/followers',
@@ -67,7 +67,7 @@ class ActivityPubService
             'publicKey' => [
                 'id' => $actorUrl . '#main-key',
                 'owner' => $actorUrl,
-                'publicKeyPem' => $form['bn_activitypub_public_key'],
+                'publicKeyPem' => $form['activitypub_public_key'],
             ],
         ];
 
@@ -174,10 +174,10 @@ class ActivityPubService
 
             case 'Create':
                 $object = $activity['object'];
-                $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
                 $entry['read-only'] = 1; // Prevent modification from the local interface, as the source of truth is the remote actor
                 $entryManager = $this->container->get(EntryManager::class);
-                $entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+                $entryManager->create($form['id'], $entry, false, $object['id']);
                 break;
 
             case 'Update':
@@ -186,7 +186,7 @@ class ActivityPubService
                     $triples = $this->tripleStore->getMatching(null, TripleStore::SOURCE_URL_URI, $object['id'], '=', '=', '=');
                     if (!empty($triples)) {
                         $tag = $triples[0]['resource'];
-                        $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                        $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
                         $entryManager = $this->container->get(EntryManager::class);
                         $entryManager->update($tag, $entry, false);
                     }
@@ -303,22 +303,22 @@ class ActivityPubService
 
             if ($type === 'Create') {
                 if (empty($existingTriples)) {
-                    $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                    $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
                     $entry['read-only'] = 1;
                     // var_dump($entry);
                     // var_dump($object);
                     // exit();
-                    $entryManager->create($form['bn_id_nature'], $entry, false, $object['id']);
+                    $entryManager->create($form['id'], $entry, false, $object['id']);
                     $stats['created']++;
                 } else {
                     $tag = $existingTriples[0]['resource'];
-                    $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                    $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
                     $entryManager->update($tag, $entry, false);
                     $stats['updated']++;
                 }
             } elseif ($type === 'Update' && !empty($existingTriples)) {
                 $tag = $existingTriples[0]['resource'];
-                $entry = $this->semanticTransformer->convertFromSemanticData($form['bn_id_nature'], $object);
+                $entry = $this->semanticTransformer->convertFromSemanticData($form['id'], $object);
                 $entryManager->update($tag, $entry, false);
                 $stats['updated']++;
             }
@@ -328,7 +328,7 @@ class ActivityPubService
         // any local entry whose sourceUrl comes from the same host as the actor
         // but is absent from the current outbox should be removed.
         $actorHost = parse_url($actorUri, PHP_URL_HOST);
-        $localEntries = $entryManager->search(['idtypeannonce' => $form['bn_id_nature']]);
+        $localEntries = $entryManager->search(['idtypeannonce' => $form['id']]);
 
         foreach ($localEntries as $entry) {
             $tag = $entry['id_fiche'];

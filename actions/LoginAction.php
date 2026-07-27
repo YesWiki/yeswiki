@@ -238,7 +238,7 @@ class LoginAction extends YesWikiAction
             // on affiche une erreur sur le NomWiki sinon
             $this->wiki->SetMessage($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
-        } catch (\Exception $ex) {
+        } catch (Exception $ex) {
             // catches AuthController::login()'s BadLoginException (ticket 07's activation
             // gate, already carrying a full user-facing message) along with anything else
             Flash::error($ex->getMessage());

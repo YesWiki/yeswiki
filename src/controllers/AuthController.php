@@ -5,7 +5,6 @@ namespace YesWiki\Core\Controller;
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use Throwable;
 use YesWiki\Core\Entity\CookieData;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
@@ -239,7 +238,7 @@ class AuthController extends YesWikiController
         ) {
             try {
                 $this->accountActivationService->sendActivationLink($userName);
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 throw new BadLoginException(_t('ACCOUNTACTIVATION_BY_EMAIL_WARNING', ['message' => _t('ACCOUNTACTIVATION_BY_EMAIL_MESSAGE_NOT_SENT')]));
             }
             throw new BadLoginException(_t('ACCOUNTACTIVATION_BY_EMAIL_WARNING', ['message' => _t('ACCOUNTACTIVATION_BY_EMAIL_MESSAGE_SENT')]));

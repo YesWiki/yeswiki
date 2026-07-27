@@ -1,9 +1,9 @@
-<div class="BAZ_cadre_fiche id{{ form.bn_id_nature }}">
+<div class="BAZ_cadre_fiche id{{ form.id }}">
   {% if message and not entry['external-data'] %}
     <div class="yw-alert yw-alert--success">
       {% if message == 'ajout_ok' %}
         {{ _t('BAZ_FICHE_ENREGISTREE') }}
-        <a href="{{ url({ params: { vue: 'saisir', id: form.bn_id_nature }}) }}" class="pull-right yw-btn yw-btn--sm yw-btn--primary">
+        <a href="{{ url({ params: { vue: 'saisir', id: form.id }}) }}" class="pull-right yw-btn yw-btn--sm yw-btn--primary">
           {{ _t('BAZ_ADD_NEW_ENTRY') }}
         </a>
       {% endif %}
@@ -24,7 +24,7 @@
         <span class="BAZ_main_fiche_info">
           {{ _t('BAZ_ECRITE') }}
           {{ owner|raw }}
-          <span class="category"> ({{form.bn_label_nature ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.bn_label_nature:'') }})
+          <span class="category"> ({{form.label ~ (externalForm is not empty ? ' <- ' ~ externalForm.external_url ~ externalForm.label:'') }})
           {% if sourceUrl %}- <a href="{{ sourceUrl }}" target="_blank">Source</a>{% endif %}
           <br />          
           <span class="date_creation">

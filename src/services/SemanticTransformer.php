@@ -17,11 +17,11 @@ class SemanticTransformer
 
     public function convertToSemanticData($form, $data): array
     {
-        if (empty($form['bn_sem_template'])) {
+        if (empty($form['sem_template'])) {
             throw new \Exception(_t('BAZAR_SEMANTIC_TYPE_MISSING'));
         }
 
-        $json = $this->templateEngine->renderSandboxedFromStringNoEscape($form['bn_sem_template'], $data);
+        $json = $this->templateEngine->renderSandboxedFromStringNoEscape($form['sem_template'], $data);
         $semanticData = json_decode($json, true);
 
         $semanticData['id'] = $this->params->get('base_url') . $data['id_fiche'];
@@ -37,11 +37,11 @@ class SemanticTransformer
     {
         $form = baz_valeurs_formulaire($formId);
 
-        if (empty($form['bn_sem_reverse_template'])) {
+        if (empty($form['sem_reverse_template'])) {
             throw new \Exception('No reverse semantic template defined for form ' . $formId);
         }
 
-        $json = $this->templateEngine->renderSandboxedFromStringNoEscape($form['bn_sem_reverse_template'], $data);
+        $json = $this->templateEngine->renderSandboxedFromStringNoEscape($form['sem_reverse_template'], $data);
         $fields = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {

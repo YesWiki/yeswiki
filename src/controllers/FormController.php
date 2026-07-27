@@ -33,42 +33,19 @@ class FormController extends YesWikiController
     {
         $forms = $this->formManager->getAll();
 
-        $post = $this->getRequest()->request;
-        // If there are forms to import
-        if ($post->has('imported-form')) {
-            if (!$this->getService(Guard::class)->isAllowed('saisie_formulaire')) {
-                return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_AUTH_NEEDED'], false));
-            }
-            foreach ($post->all('imported-form') as $id => $value) {
-                $value = json_decode($value, true);
-                $existingForms = multiArraySearch($forms, 'bn_label_nature', $value['bn_label_nature']);
-                // If a form with the same name exist, replace it
-                if (count($existingForms) > 0) {
-                    // Replace with ID of existing formulaire
-                    $value['bn_id_nature'] = $existingForms[0]['bn_id_nature'];
-                    $this->formManager->update($value);
-                } else {
-                    $value['bn_id_nature'] = $id;
-                    $this->formManager->create($value);
-                }
-            }
-
-            return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORM_IMPORT_SUCCESSFULL'], false));
-        }
-
         $values = [];
         if (is_array($forms)) {
             foreach ($forms as $form) {
-                $values[$form['bn_id_nature']]['title'] = $form['bn_label_nature'];
-                $values[$form['bn_id_nature']]['description'] = $form['bn_description'];
-                $values[$form['bn_id_nature']]['canEdit'] = !$this->hibernationService->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['bn_id_nature']]['canDelete'] = !$this->hibernationService->isWikiHibernated() && $this->wiki->UserIsAdmin();
-                $values[$form['bn_id_nature']]['isSemantic'] = !empty($form['bn_sem_template']);
-                $values[$form['bn_id_nature']]['isActivityPubEnabled'] = $form['bn_activitypub_enable'] === '1';
-                $values[$form['bn_id_nature']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
+                $values[$form['id']]['title'] = $form['label'];
+                $values[$form['id']]['description'] = $form['description'];
+                $values[$form['id']]['canEdit'] = !$this->hibernationService->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
+                $values[$form['id']]['canDelete'] = !$this->hibernationService->isWikiHibernated() && $this->wiki->UserIsAdmin();
+                $values[$form['id']]['isSemantic'] = !empty($form['sem_template']);
+                $values[$form['id']]['isActivityPubEnabled'] = $form['activitypub_enable'] === '1';
+                $values[$form['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
                     return $field instanceof MapField;
                 }));
-                $values[$form['bn_id_nature']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
+                $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
             }
         }
 

@@ -40,7 +40,7 @@
     <script>
     var sourceForm = {{ form|json_encode|raw }}
     </script>
-    <input type="hidden" id="form-id" value="{{form.bn_id_nature}}"/>
+    <input type="hidden" id="form-id" value="{{form.id}}"/>
     <div id="form-message"><span class="help-block"></span></div>
     {% endif %}
     <div class="duplication-fields hide">{# hide the field while not connected #}

@@ -51,13 +51,13 @@ class BazarListService
         foreach ($formIds as $id) {
             $template = $forms[(int)$id]['template'] ?? [];
             $image_names = array_map(
-                function ($item) {
-                    return $item[1];
+                function ($fieldObject) {
+                    return $fieldObject['name'] ?? '';
                 },
                 array_filter(
                     $template,
-                    function ($item) {
-                        return $item[0] == 'image';
+                    function ($fieldObject) {
+                        return ($fieldObject['type'] ?? '') == 'image';
                     },
                 ),
             );
@@ -239,7 +239,7 @@ class BazarListService
                 // SPECIAL PROPNAME id_typeannonce
                 $filter['title'] = _t('BAZ_TYPE_FICHE');
                 foreach ($formsUsed as $form) {
-                    $filter['nodes'][] = $this->createFilterNode($form['bn_id_nature'], $form['bn_label_nature']);
+                    $filter['nodes'][] = $this->createFilterNode($form['id'], $form['label']);
                 }
                 usort($filter['nodes'], function ($a, $b) {
                     return strcmp($a['label'], $b['label']);
@@ -446,7 +446,7 @@ class BazarListService
     {
         if ($pIDs === null) {
             $vLocalIDs = array_map(function ($pForm) {
-                return $pForm['bn_id_nature'];
+                return $pForm['id'];
             }, $this->formManager->getAll());
             $vExternalIDs = [];
         } else {

@@ -17,9 +17,9 @@
     </label>
     <input
       class="yw-input"
-      name="bn_label_nature"
+      name="label"
       type="text"
-      value="{{ form.bn_label_nature }}"
+      value="{{ form.label }}"
       required
     />
   </div>
@@ -31,9 +31,9 @@
       class="yw-input"
       cols="20"
       rows="3"
-      name="bn_description"
+      name="description"
     >
-      {{- form.bn_description -}}
+      {{- form.description -}}
     </textarea>
   </div>
 
@@ -66,10 +66,12 @@
           id="form-builder-text"
           cols="20"
           rows="25"
-          name="bn_template"
+          name="template"
           required
         >
-          {{- form.bn_template ?? ('[{"type": "texte", "name": "bf_titre", "label": "' ~ _t('BAZ_TITREANNONCE') ~ '", "sub_type": "text", "required": "1"}]') -}}
+          {{- form.template is defined and form.template is not null
+              ? form.template|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES'))
+              : ('[{"type": "texte", "name": "bf_titre", "label": "' ~ _t('BAZ_TITREANNONCE') ~ '", "sub_type": "text", "required": "1"}]') -}}
         </textarea>
       </div>
     </div>
@@ -77,28 +79,28 @@
 
   {% if onlyOneEntryOptionAvailable %}
     <div class="yw-form-group">
-      <label for="bn_only_one_entry">
+      <label for="only_one_entry">
         {% apply spaceless %}
           <input
-            id="bn_only_one_entry"
+            id="only_one_entry"
             type="checkbox"
             value="Y"
-            name="bn_only_one_entry"{{ form.bn_only_one_entry == "Y" ? ' checked' : ''}}
-            onchange="document.getElementById('bn_only_one_entry_message-group').classList.toggle('hide', !this.checked)"
+            name="only_one_entry"{{ form.only_one_entry == "Y" ? ' checked' : ''}}
+            onchange="document.getElementById('only_one_entry_message-group').classList.toggle('hide', !this.checked)"
             />
           <span>{{ _t('BAZ_ONLY_ONE_ENTRY_FOR_THIS_FORM') }}</span>
         {% endapply %}
       </label>
     </div>
-    <div id="bn_only_one_entry_message-group" class="yw-form-group{{ form.bn_only_one_entry == "Y" ? '': ' hide' }}">
+    <div id="only_one_entry_message-group" class="yw-form-group{{ form.only_one_entry == "Y" ? '': ' hide' }}">
       <label class="yw-form-label">
         {{ _t('BAZ_MESSAGE_IF_OTHER_ENTRY_EXIST') }}
       </label>
       <input
         class="yw-input"
-        name="bn_only_one_entry_message"
+        name="only_one_entry_message"
         type="text"
-        value="{{ form.bn_only_one_entry_message }}"
+        value="{{ form.only_one_entry_message }}"
         placeholder="{{ _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM') }}"
       />
     </div>
@@ -123,14 +125,14 @@
         class="yw-input"
         cols="20"
         rows="3"
-        name="bn_condition"
+        name="condition"
       >
-        {{- form.bn_condition -}}
+        {{- form.condition -}}
       </textarea>
     </div>
     <div class="yw-form-group">
       <label>
-        <input type="checkbox" name="bn_activitypub_enable" value="1" {% if form.bn_activitypub_enable %}checked{% endif %}>
+        <input type="checkbox" name="activitypub_enable" value="1" {% if form.activitypub_enable %}checked{% endif %}>
         {{ _t('BAZ_ACTIVITYPUB_ENABLE') }}
       </label>
     </div>
@@ -140,9 +142,9 @@
       </label>
       <input
         class="yw-input"
-        name="bn_activitypub_username"
+        name="activitypub_username"
         type="text"
-        value="{{ form.bn_activitypub_username }}"
+        value="{{ form.activitypub_username }}"
       />
     </div>
     <div class="yw-form-group">
@@ -151,9 +153,9 @@
         class="yw-input"
         cols="20"
         rows="6"
-        name="bn_sem_template"
+        name="sem_template"
       >
-        {{- form.bn_sem_template -}}
+        {{- form.sem_template -}}
       </textarea>
     </div>
     <div class="yw-form-group">
@@ -164,9 +166,9 @@
         class="yw-input"
         cols="20"
         rows="6"
-        name="bn_sem_reverse_template"
+        name="sem_reverse_template"
       >
-        {{- form.bn_sem_reverse_template -}}
+        {{- form.sem_reverse_template -}}
       </textarea>
     </div>
   </div>
@@ -185,8 +187,8 @@
   {% if form %}
   <input
     type="hidden"
-    name="bn_id_nature"
-    value="{{ form.bn_id_nature }}"
+    name="id"
+    value="{{ form.id }}"
   />
   {% endif %}
 </form>

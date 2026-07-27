@@ -118,10 +118,10 @@ class FormTemplateJsonTest extends YesWikiTestCase
         try {
             // legacy `***` input (the import path) is converted on create ...
             $formManager->create([
-                'bn_id_nature' => $formId,
-                'bn_label_nature' => 'FormTemplateJsonTest form',
-                'bn_template' => self::LEGACY_TEMPLATE,
-                'bn_condition' => '',
+                'id' => $formId,
+                'label' => 'FormTemplateJsonTest form',
+                'template' => self::LEGACY_TEMPLATE,
+                'condition' => '',
             ]);
 
             $form = $formManager->getOne($formId);
@@ -131,16 +131,16 @@ class FormTemplateJsonTest extends YesWikiTestCase
             // encoding) ...
             $page = $pageManager->getOne($form['tag'], null, true, true);
             $body = json_decode($page['body'], true);
-            $this->assertIsArray($body['bn_template']);
-            $this->assertCount(4, $body['bn_template']);
-            $this->assertSame('texte', $body['bn_template'][0]['type']);
-            $this->assertSame('bf_titre', $body['bn_template'][0]['name']);
+            $this->assertIsArray($body['template']);
+            $this->assertCount(4, $body['template']);
+            $this->assertSame('texte', $body['template'][0]['type']);
+            $this->assertSame('bf_titre', $body['template'][0]['name']);
 
-            // ... while the in-memory form still exposes it as a JSON string (edit
-            // textarea / API contract), and the parsed positional template is intact
-            $this->assertIsString($form['bn_template']);
-            $this->assertSame($body['bn_template'], json_decode($form['bn_template'], true));
-            $this->assertSame('bf_titre', $form['template'][0][1]);
+            // ... and the in-memory form carries the same native array (ticket 27: the
+            // positional arrays are internal to prepareData(), never on the form)
+            $this->assertIsArray($form['template']);
+            $this->assertSame($body['template'], $form['template']);
+            $this->assertSame('bf_titre', $form['template'][0]['name']);
         } finally {
             if ($formManager->getOne($formId)) {
                 $formManager->delete($formId);

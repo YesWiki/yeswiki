@@ -32,7 +32,7 @@
                     <option value="pages">{{ _t('ADMIN_CONTENT_TYPE_PAGES') }}</option>
                     <option value="bazar">{{ _t('ADMIN_CONTENT_TYPE_ALL_FORMS') }}</option>
                     {% for id, form in forms %}
-                    <option value="{{ id }}">{{ _t('ADMIN_CONTENT_TYPE_FORM')|replace({'{name}': form.bn_label_nature}) }}</option>
+                    <option value="{{ id }}">{{ _t('ADMIN_CONTENT_TYPE_FORM')|replace({'{name}': form.label}) }}</option>
                     {% endfor %}
                     <option value="lists">{{ _t('ADMIN_CONTENT_TYPE_LISTS') }}</option>
                     <option value="special">{{ _t('ADMIN_CONTENT_TYPE_SPECIAL_PAGES') }}</option>

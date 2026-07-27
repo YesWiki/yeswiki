@@ -45,10 +45,21 @@ class MigrateNatureToPages extends YesWikiMigration
             // needs normalizing rather than loosening that check everywhere else
             $row['bn_activitypub_enable'] = (string)($row['bn_activitypub_enable'] ?? '0');
 
+            // ticket 27: create() speaks the plain-English key language now -- translate
+            // the raw legacy nature row at this boundary
+            $row['activitypub_enable'] = $row['bn_activitypub_enable'];
+            $row['activitypub_username'] = $row['bn_activitypub_username'] ?? '';
+            foreach (FormManager::LEGACY_BODY_KEYS as $legacyKey => $key) {
+                if (array_key_exists($legacyKey, $row) && !array_key_exists($key, $row)) {
+                    $row[$key] = $row[$legacyKey];
+                }
+                unset($row[$legacyKey]);
+            }
+
             $formManager->create($row);
 
             if (!empty($existingPrivateKey) && !empty($existingPublicKey)) {
-                $formManager->setActivitypubKeypair($row['bn_id_nature'], $existingPrivateKey, $existingPublicKey);
+                $formManager->setActivitypubKeypair($row['id'], $existingPrivateKey, $existingPublicKey);
             }
         }
     }

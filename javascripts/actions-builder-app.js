@@ -313,8 +313,8 @@ export const appConfig = {
             if (Array.isArray(data) && data[0] != undefined) {
               // copy forms
               data.forEach((form) => {
-                if (form.bn_id_nature != undefined && idsToSearch.includes(form.bn_id_nature)) {
-                  this.loadedForms[form.bn_id_nature] = form
+                if (form.id != undefined && idsToSearch.includes(form.id)) {
+                  this.loadedForms[form.id] = form
                 }
               })
             }

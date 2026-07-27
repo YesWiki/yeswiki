@@ -331,7 +331,7 @@ class EntryController extends YesWikiController
         return $this->render('@core/entries/form.twig', [
             'form' => $form,
             'renderedInputs' => $renderedInputs,
-            'showConditions' => $form['bn_condition'] !== '' && !$post->has('accept_condition'),
+            'showConditions' => $form['condition'] !== '' && !$post->has('accept_condition'),
             'passwordForEditing' => isset($this->config['password_for_editing']) && !empty($this->config['password_for_editing']) && $post->has('password_for_editing') ? $post->get('password_for_editing') : '',
             'incomingUrl' => $incomingUrl,
             'error' => $error,
@@ -532,7 +532,7 @@ class EntryController extends YesWikiController
             }
         }
 
-        if (!empty($form['bn_sem_type'])) {
+        if (!empty($form['sem_type'])) {
             $html['id_fiche'] = $entry['id_fiche'];
             $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
@@ -778,7 +778,7 @@ class EntryController extends YesWikiController
             'error' => '',
             'output' => '',
         ];
-        if (isset($form['bn_only_one_entry']) && $form['bn_only_one_entry'] === 'Y') {
+        if (isset($form['only_one_entry']) && $form['only_one_entry'] === 'Y') {
             $formHasUserField = !empty(array_filter($form['prepared'], function ($field) {
                 return $field instanceof UserField;
             }));
@@ -797,13 +797,13 @@ class EntryController extends YesWikiController
                 $vSearchManager = $this->getService(SearchManager::class);
 
                 $entries = $vSearchManager->search([
-                    'formsIds' => [$form['bn_id_nature']],
+                    'formsIds' => [$form['id']],
                     'user' => $userName,
                 ]);
                 if (!empty($entries)) {
                     $firstEntry = $entries[array_keys($entries)[0]];
-                    $message = !empty($form['bn_only_one_entry_message']) ? $form['bn_only_one_entry_message'] : _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM');
-                    $message = str_replace('{formName}', $form['bn_label_nature'], $message);
+                    $message = !empty($form['only_one_entry_message']) ? $form['only_one_entry_message'] : _t('BAZ_FORM_DEFAULT_MESSAGE_FOR_OTHER_ENTRY_IN_FORM');
+                    $message = str_replace('{formName}', $form['label'], $message);
                     $results['output'] = $this->render('@core/alert-message.twig', [
                         'type' => 'info',
                         'message' => $message,

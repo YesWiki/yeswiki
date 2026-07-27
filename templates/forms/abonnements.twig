@@ -6,7 +6,7 @@
 {% endif %}
 
 <div class="yw-alert yw-alert--info">
-<strong>{{ _t('BAZ_FORM_ACTOR_ID') }}</strong>: @{{ form['bn_activitypub_username'] }}@{{ domain }}
+<strong>{{ _t('BAZ_FORM_ACTOR_ID') }}</strong>: @{{ form['activitypub_username'] }}@{{ domain }}
 </div>
 
 <strong>{{ _t('BAZ_FOLLOW_ACTOR') }}</strong>
@@ -40,14 +40,14 @@
 			<td>
 				<a
 					class="btn btn-default btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'sync', actor: actorUri, idformulaire: form.bn_id_nature }}) }}"
+					href="{{ url({ params: { vue: 'abonnements', action: 'sync', actor: actorUri, idformulaire: form.id }}) }}"
 					title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
 				>
 					<i class="fa fa-retweet icon-white"></i>
 				</a>
 				<a
 					class="btn btn-danger btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.id }}) }}"
 					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
 				>
 					<i class="fa fa-trash icon-white"></i>
@@ -75,7 +75,7 @@
 				{% if actorUri not in following %}
 				<a
 					class="btn btn-default btn-mini btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.bn_id_nature }}) }}"
+					href="{{ url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.id }}) }}"
 					title="{{ _t('BAZ_FOLLOW_BACK') }}"
 				>
 					<i class="fa fa-user-plus icon-white"></i>
@@ -83,7 +83,7 @@
 				{% endif %}
 				<a
 					class="btn btn-danger btn-xs"
-					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.bn_id_nature }}) }}"
+					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.id }}) }}"
 					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?');"
 				>
 					<i class="fa fa-trash icon-white"></i>

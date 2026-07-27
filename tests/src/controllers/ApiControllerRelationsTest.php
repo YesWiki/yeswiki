@@ -41,16 +41,16 @@ class ApiControllerRelationsTest extends YesWikiTestCase
         $GLOBALS['wiki'] = $wiki;
 
         $formManager->create([
-            'bn_id_nature' => self::ENTITY_FORM_ID,
-            'bn_label_nature' => 'ApiControllerRelationsTest entity form',
-            'bn_template' => '',
-            'bn_condition' => '',
+            'id' => self::ENTITY_FORM_ID,
+            'label' => 'ApiControllerRelationsTest entity form',
+            'template' => '',
+            'condition' => '',
         ]);
         $formManager->create([
-            'bn_id_nature' => self::RELATION_FORM_ID,
-            'bn_label_nature' => 'ApiControllerRelationsTest relation form',
-            'bn_template' => '',
-            'bn_condition' => '',
+            'id' => self::RELATION_FORM_ID,
+            'label' => 'ApiControllerRelationsTest relation form',
+            'template' => '',
+            'condition' => '',
         ]);
 
         $originalRelationFormId = $wiki->config['qrcode_config']['relation_form_id'];

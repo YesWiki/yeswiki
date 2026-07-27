@@ -38,7 +38,7 @@ class HttpSignatureService
 
     public function generateSignature($activity, $url, $form)
     {
-        $privateKey = $form['bn_activitypub_private_key'];
+        $privateKey = $form['activitypub_private_key'];
 
         $message = json_encode($activity, JSON_UNESCAPED_SLASHES);
         $digest = $this->getDigest($message);

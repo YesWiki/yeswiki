@@ -157,7 +157,7 @@ class ExternalBazarService
         $vResult = [];
 
         foreach ($vAll as $vForm) {
-            $vKey = $this->getExternalFormIDKey(['url' => $vURL, 'id' => $vForm['bn_id_nature']]);
+            $vKey = $this->getExternalFormIDKey(['url' => $vURL, 'id' => $vForm['id'] ?? $vForm['bn_id_nature'] ?? '']);
 
             $vResult[$vKey] = $vForm;
         }
@@ -306,9 +306,9 @@ class ExternalBazarService
 
         foreach ($vExternalForms as $vExternalForm) {
             $vURL = $vExternalForm['external_url'];
-            $vLocalFormID = $vExternalForm['bn_id_nature'];
-            $vExternalFormID = $vExternalForm['external_bn_id_nature'];
-            $vExternalFormLabel = $vExternalForm['external_bn_label_nature'];
+            $vLocalFormID = $vExternalForm['id'];
+            $vExternalFormID = $vExternalForm['external_id'];
+            $vExternalFormLabel = $vExternalForm['external_label'];
             $vExternalFormIDKey = $vExternalForm['external_form_key'];
 
             $vURLDetails = $this->getURLDetails($vURL, $this->timeCacheToCheckChanges);
@@ -765,32 +765,49 @@ class ExternalBazarService
      */
     private function prepareExtForm(int $localFormId, string $url, array $form): array
     {
+        // Remote wikis speak two dialects: pre-ectoplasme ones serve `bn_*` keys and
+        // positional template arrays; current ones serve plain-English keys and field
+        // objects. Normalize the payload to the new shape first.
+        foreach (FormManager::LEGACY_BODY_KEYS as $legacyKey => $key) {
+            if (array_key_exists($legacyKey, $form) && !array_key_exists($key, $form)) {
+                $form[$key] = $form[$legacyKey];
+            }
+            unset($form[$legacyKey]);
+        }
+        if (!is_array($form['template'] ?? null)) {
+            $form['template'] = json_decode($this->formManager->normalizeTemplate($form['template'] ?? ''), true) ?? [];
+        }
+
         // update FormId
         $form['_isExternal_'] = true;
-        $form['external_bn_id_nature'] = $form['bn_id_nature'];
-        $form['external_bn_label_nature'] = $form['bn_label_nature'];
+        $form['external_id'] = $form['id'];
+        $form['external_label'] = $form['label'];
         $form['external_url'] = $url;
         $urlDetails = $this->getURLDetails($url, 999999); // no reset of cache because just done before
-        $form['bn_id_nature'] = $localFormId;
-        $form['external_form_key'] = $this->getExternalFormIDKey(['url' => $url, 'id' => $form['external_bn_id_nature']]);
+        $form['id'] = $localFormId;
+        $form['external_form_key'] = $this->getExternalFormIDKey(['url' => $url, 'id' => $form['external_id']]);
 
-        // change fields type before prepareData
-        foreach ($form['template'] as $index => $fieldTemplate) {
+        // change fields type before prepareData -- the external field classes read the
+        // original type / remote form address through positional FIELD_* slots, so the
+        // munging happens on the positional wire format and converts back
+        $positionalList = $this->formManager->templateToPositionalList($form['template']);
+        foreach ($positionalList as $index => $fieldTemplate) {
             if (isset(self::CONVERT_FIELD_NAMES[$fieldTemplate[0]])) {
-                $form['template'][$index][self::FIELD_ORIGINAL_TYPE] = $fieldTemplate[0];
-                $form['template'][$index][0] = self::CONVERT_FIELD_NAMES[$fieldTemplate[0]];
-                $form['template'][$index][self::FIELD_JSON_FORM_ADDR] = $this->getFormUrl($urlDetails, $form['external_bn_id_nature']);
+                $positionalList[$index][self::FIELD_ORIGINAL_TYPE] = $fieldTemplate[0];
+                $positionalList[$index][0] = self::CONVERT_FIELD_NAMES[$fieldTemplate[0]];
+                $positionalList[$index][self::FIELD_JSON_FORM_ADDR] = $this->getFormUrl($urlDetails, $form['external_id']);
             } elseif (isset(self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]])) {
-                $form['template'][$index][0] = self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]];
-                $form['template'][$index][ExternalImageField::FIELD_JSON_FORM_ADDR] = $this->getFormUrl($urlDetails, $form['external_bn_id_nature']);
+                $positionalList[$index][0] = self::CONVERT_FIELD_NAMES_FOR_IMAGES[$fieldTemplate[0]];
+                $positionalList[$index][ExternalImageField::FIELD_JSON_FORM_ADDR] = $this->getFormUrl($urlDetails, $form['external_id']);
             }
             // add missing indexes
-            if (count($form['template'][$index]) < 15) {
-                for ($i = count($form['template'][$index]); $i < 16; $i++) {
-                    $form['template'][$index][$i] = '';
+            if (count($positionalList[$index]) < 15) {
+                for ($i = count($positionalList[$index]); $i < 16; $i++) {
+                    $positionalList[$index][$i] = '';
                 }
             }
         }
+        $form['template'] = $this->formManager->positionalListToTemplate($positionalList);
 
         // parse external fields
 

@@ -56,7 +56,7 @@ export default {
       if (extraFields.includes('id_typeannonce')) {
         const options = {}
         Object.keys(this.selectedForms).forEach((key) => {
-          options[key] = this.selectedForms[key].bn_label_nature || key
+          options[key] = this.selectedForms[key].label || key
         })
         // fake a field
         fields.push({

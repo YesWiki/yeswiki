@@ -15,8 +15,8 @@
         <select v-model="searchFormId" class="yw-input input-lg">
           <option value="">{{ _t('BAZ_TOUS_TYPES_FICHES') }}</option>
           {% for form in forms %}
-            <option value="{{ form.bn_id_nature }}">
-              {{ form.bn_label_nature }}
+            <option value="{{ form.id }}">
+              {{ form.label }}
             </option>
           {% endfor %}
         </select>

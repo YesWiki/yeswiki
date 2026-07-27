@@ -142,8 +142,8 @@ class EntryDateService implements EventSubscriberInterface
         $canRegisterMultipleEntries = true;
         if (!empty($entry['id_typeannonce']) && is_scalar($entry['id_typeannonce'])) {
             $form = $this->formManager->getOne(strval($entry['id_typeannonce']));
-            if (!empty($form['bn_only_one_entry'])) {
-                $canRegisterMultipleEntries = ($form['bn_only_one_entry'] !== 'Y');
+            if (!empty($form['only_one_entry'])) {
+                $canRegisterMultipleEntries = ($form['only_one_entry'] !== 'Y');
             }
         }
 

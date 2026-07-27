@@ -27,9 +27,9 @@
                                 name="selectedID">
                             <option value="">{{ _t("BAZ_TOUS_TYPES_FICHES") }}</option>
                             {% for form in forms %}
-                                <option value="{{ form.bn_id_nature }}"
-                                        {% if form.bn_id_nature == selectedID %}selected{% endif %}>
-                                    {{ form.bn_label_nature }}
+                                <option value="{{ form.id }}"
+                                        {% if form.id == selectedID %}selected{% endif %}>
+                                    {{ form.label }}
                                 </option>
                             {% endfor %}
                         </select>

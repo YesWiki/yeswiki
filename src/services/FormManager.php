@@ -3,9 +3,9 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 use YesWiki\Core\Attach;
 use YesWiki\Core\Field\BazarField;
-use YesWiki\Core\Field\ImageField;
 use YesWiki\Wiki;
 
 class FormManager
@@ -89,72 +89,72 @@ class FormManager
         }
     }
 
-    protected function convertWithSpecialParameters($template, $id_nature)
+    /**
+     * Write-side handling of image fields' default image: the designer posts the
+     * default as `filename|data:image/...;base64,...`; the base64 part is written to
+     * files/defaultimage{id}_{name}.jpg and only the filename stays in the stored
+     * field object. Operates on (and returns) the native array of field objects.
+     */
+    protected function convertWithSpecialParameters(array $template, $id)
     {
-        $template_list = $this->parseTemplate($template);
-        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
-            if ($template_list[$temp_index][0] == 'image') {
-                $basePath = $this->getBasePath();
-                $image_comp = $template_list[$temp_index];
-                $default_image_prefix = "defaultimage{$id_nature}_{$image_comp[1]}";
-                $this->cleanCacheDefaultImage($default_image_prefix);
-                $default_image_filename = $basePath . $default_image_prefix . '.jpg';
-                $default_image = explode('|', $image_comp[ImageField::FIELD_IMAGE_DEFAULT]);
-                if (count($default_image) == 2) {
-                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $default_image[0];
-                    $imgext = explode('image/', explode(';', $default_image[1])[0])[1];
-                    $tmpFile = tempnam('cache', 'dfltimg');
-                    $tempFile = $tmpFile . '.' . $imgext;
-                    rename($tmpFile, $tempFile);
-                    try {
-                        $ifp = fopen($tempFile, 'wb');
-                        fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
-                        fclose($ifp);
-                        $this->attach->redimensionner_image($tempFile, $default_image_filename, $image_comp[5], $image_comp[6], 'crop');
-                    } finally {
-                        unlink($tempFile);
-                    }
-                } else {
-                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
-                    if (file_exists($default_image_filename)) {
-                        unlink($default_image_filename);
-                    }
-                }
-                $template_list[$temp_index] = $image_comp;
+        foreach ($template as $index => $fieldObject) {
+            if (($fieldObject['type'] ?? '') !== 'image') {
+                continue;
             }
+            $basePath = $this->getBasePath();
+            $default_image_prefix = "defaultimage{$id}_" . ($fieldObject['name'] ?? '');
+            $this->cleanCacheDefaultImage($default_image_prefix);
+            $default_image_filename = $basePath . $default_image_prefix . '.jpg';
+            $default_image = explode('|', $fieldObject['image_default'] ?? '');
+            if (count($default_image) == 2) {
+                $fieldObject['image_default'] = $default_image[0];
+                $imgext = explode('image/', explode(';', $default_image[1])[0])[1];
+                $tmpFile = tempnam('cache', 'dfltimg');
+                $tempFile = $tmpFile . '.' . $imgext;
+                rename($tmpFile, $tempFile);
+                try {
+                    $ifp = fopen($tempFile, 'wb');
+                    fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
+                    fclose($ifp);
+                    $this->attach->redimensionner_image($tempFile, $default_image_filename, $fieldObject['image_height'] ?? '', $fieldObject['image_width'] ?? '', 'crop');
+                } finally {
+                    unlink($tempFile);
+                }
+            } else {
+                unset($fieldObject['image_default']);
+                if (file_exists($default_image_filename)) {
+                    unlink($default_image_filename);
+                }
+            }
+            $template[$index] = $fieldObject;
         }
 
-        // Always re-encode (not only when an image field was modified): this is also the
-        // normalization point that converts any legacy `***`-syntax input (e.g. a form
-        // imported from an older remote wiki) to the canonical JSON storage format.
-        //
-        // NOTE: unlike the pre-pages version of this method, the return value is NOT
-        // SQL-escaped: callers now json_encode() it into the `pages.body` column, and
-        // PageManager::save() does its own SQL escaping of that JSON string as a whole.
-        // Escaping here too would double-escape and corrupt the stored JSON.
-        return $this->encodeTemplate($template_list);
+        return $template;
     }
 
+    /**
+     * Read-side counterpart: embeds the stored default image back into each image
+     * field object (`image_default` becomes `filename|data:image/jpg;base64,...`) so
+     * the designer and API consumers can display it.
+     */
     protected function prepare_with_special_parameters($form)
     {
         $basePath = $this->getBasePath();
-        $template_list = $this->parseTemplate($form['bn_template']);
-        $modify = false;
-        for ($temp_index = 0; $temp_index < count($template_list); $temp_index++) {
-            if ($template_list[$temp_index][0] == 'image') {
-                $modify = true;
-                $image_comp = $template_list[$temp_index];
-                $default_image_filename = $basePath . "defaultimage{$form['bn_id_nature']}_{$image_comp[1]}.jpg";
-                if (file_exists($default_image_filename)) {
-                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = $image_comp[ImageField::FIELD_IMAGE_DEFAULT] . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
-                } else {
-                    $image_comp[ImageField::FIELD_IMAGE_DEFAULT] = '';
-                }
-                $template_list[$temp_index] = $image_comp;
+        $template = $form['template'];
+        foreach ($template as $index => $fieldObject) {
+            if (($fieldObject['type'] ?? '') !== 'image') {
+                continue;
             }
+            $default_image_filename = $basePath . "defaultimage{$form['id']}_" . ($fieldObject['name'] ?? '') . '.jpg';
+            if (file_exists($default_image_filename)) {
+                $fieldObject['image_default'] = ($fieldObject['image_default'] ?? '') . '|data:image/jpg;base64,' . base64_encode(file_get_contents($default_image_filename));
+            } else {
+                unset($fieldObject['image_default']);
+            }
+            $template[$index] = $fieldObject;
         }
 
-        return [$template_list, $modify];
+        return $template;
     }
 
     /**
@@ -180,9 +180,31 @@ class FormManager
         return $this->resolveTag($newerTag, $aliasHops + 1);
     }
 
+    /**
+     * Legacy `bn_*` body keys => their plain-English replacements (ticket 27,
+     * ADR-0010). The RenameFormBodyKeys migration converts stored latest revisions;
+     * this map is the read-side insurance for anything older (pre-migration bodies,
+     * old form revisions loaded for history views or reverts).
+     */
+    public const LEGACY_BODY_KEYS = [
+        'bn_id_nature' => 'id',
+        'bn_ce_i18n' => 'lang',
+        'bn_label_nature' => 'label',
+        'bn_template' => 'template',
+        'bn_description' => 'description',
+        'bn_sem_context' => 'sem_context',
+        'bn_sem_type' => 'sem_type',
+        'bn_sem_use_template' => 'sem_use_template',
+        'bn_sem_template' => 'sem_template',
+        'bn_sem_reverse_template' => 'sem_reverse_template',
+        'bn_only_one_entry' => 'only_one_entry',
+        'bn_only_one_entry_message' => 'only_one_entry_message',
+        'bn_condition' => 'condition',
+    ];
+
     private function resolveTagFromNumericId(string $id): ?string
     {
-        $jsonExtract = $this->dbService->jsonExtract('body', '$.bn_id_nature');
+        $jsonExtract = $this->dbService->jsonExtract('body', '$.id');
         $sql = "SELECT tag FROM {$this->dbService->prefixTable('pages')}
             WHERE latest = 'Y' AND {$jsonExtract} = '" . $this->dbService->escape((string)(int)$id) . "'
             LIMIT 1";
@@ -193,7 +215,7 @@ class FormManager
 
     private function resolveIdFromTag(string $tag): ?string
     {
-        $jsonExtract = $this->dbService->jsonExtract('body', '$.bn_id_nature');
+        $jsonExtract = $this->dbService->jsonExtract('body', '$.id');
         $sql = "SELECT {$jsonExtract} AS id FROM {$this->dbService->prefixTable('pages')}
             WHERE tag = '" . $this->dbService->escape($tag) . "' AND latest = 'Y'
             LIMIT 1";
@@ -203,31 +225,35 @@ class FormManager
     }
 
     /**
-     * Converts a fetched `pages` row (as returned by PageManager) for a form into the flat,
-     * `bn_*`-keyed array shape every other part of the bazar tool already expects --
-     * unchanged from when forms lived in the `nature` table. ActivityPub credentials, which
-     * live in `metadata.activitypub` (not `body`, so they aren't echoed by generic JSON/API
-     * dumps of a page's body), are merged back in under their historical `bn_activitypub_*`
-     * keys so no consumer needs to know where they're actually stored.
+     * Converts a fetched `pages` row (as returned by PageManager) for a form into the
+     * flat form array (plain-English keys, ADR-0010). ActivityPub credentials, which
+     * live in `metadata.activitypub` (not `body`, so they aren't echoed by generic
+     * JSON/API dumps of a page's body), are merged back in under `activitypub_*` keys
+     * so no consumer needs to know where they're actually stored.
      */
     private function pageToFormArray(array $page): array
     {
         $body = json_decode($page['body'] ?? '', true) ?? [];
         $activitypub = $page['metadatas']['activitypub'] ?? [];
 
-        // Canonical storage keeps the template as a native JSON array inside the body
-        // (no string-in-string double encoding); the in-memory form array exposes it as
-        // a JSON *string* (what the edit textarea and the API historically carry).
-        // Pre-migration bodies still hold a legacy `***`-syntax string: passed through
-        // as-is, parseTemplate()'s legacy branch reads it.
-        if (is_array($body['bn_template'] ?? null)) {
-            $body['bn_template'] = json_encode($body['bn_template'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        // read-side legacy-key insurance (pre-migration bodies, old revisions)
+        foreach (self::LEGACY_BODY_KEYS as $legacyKey => $key) {
+            if (array_key_exists($legacyKey, $body) && !array_key_exists($key, $body)) {
+                $body[$key] = $body[$legacyKey];
+            }
+            unset($body[$legacyKey]);
         }
 
-        $body['bn_activitypub_enable'] = (string)($activitypub['enabled'] ?? '0');
-        $body['bn_activitypub_username'] = $activitypub['username'] ?? '';
-        $body['bn_activitypub_private_key'] = $activitypub['private_key'] ?? null;
-        $body['bn_activitypub_public_key'] = $activitypub['public_key'] ?? null;
+        // the template is a native JSON array of field objects; anything older (a
+        // legacy `***` or JSON string) is normalized through the codec
+        if (!is_array($body['template'] ?? null)) {
+            $body['template'] = json_decode($this->normalizeTemplate($body['template'] ?? ''), true) ?? [];
+        }
+
+        $body['activitypub_enable'] = (string)($activitypub['enabled'] ?? '0');
+        $body['activitypub_username'] = $activitypub['username'] ?? '';
+        $body['activitypub_private_key'] = $activitypub['private_key'] ?? null;
+        $body['activitypub_public_key'] = $activitypub['public_key'] ?? null;
         $body['tag'] = $page['tag'];
 
         return $body;
@@ -252,21 +278,27 @@ class FormManager
         $form = $this->getFromRawData($this->pageToFormArray($page));
 
         $this->cachedForms[$formId] = $form;
-        if (!empty($form['bn_id_nature'])) {
-            $this->cachedForms[$form['bn_id_nature']] = $form;
+        if (!empty($form['id'])) {
+            $this->cachedForms[$form['id']] = $form;
         }
 
         return $form;
     }
 
+    /**
+     * Builds the full in-memory form from raw data (a pageToFormArray() result, or a
+     * POST from the form editor): `template` normalized to the native array of field
+     * objects (with image defaults embedded for display), `prepared` built from it.
+     * The positional arrays feeding the field constructors stay internal -- they are
+     * neither stored on the form nor exposed by the API (ADR-0010).
+     */
     public function getFromRawData($form)
     {
-        list($template_list, $modify) = $this->prepare_with_special_parameters($form);
-        $form['template'] = $template_list;
-        $form['prepared'] = $this->prepareData($form);
-        if ($modify == true) {
-            $form['bn_template'] = $this->encodeTemplate($template_list);
+        if (!is_array($form['template'] ?? null)) {
+            $form['template'] = json_decode($this->normalizeTemplate($form['template'] ?? ''), true) ?? [];
         }
+        $form['template'] = $this->prepare_with_special_parameters($form);
+        $form['prepared'] = $this->prepareData($form);
 
         return $form;
     }
@@ -281,9 +313,9 @@ class FormManager
                     continue;
                 }
                 $form = $this->getFromRawData($this->pageToFormArray($page));
-                if (!empty($form['bn_id_nature'])) {
+                if (!empty($form['id'])) {
                     // save only not empty formId
-                    $this->cachedForms[$form['bn_id_nature']] = $form;
+                    $this->cachedForms[$form['id']] = $form;
                 }
             }
             $this->cacheValidatedForAll = true;
@@ -357,18 +389,18 @@ class FormManager
     private function buildBody(array $data): array
     {
         $body = [
-            'bn_id_nature' => (string)$data['bn_id_nature'],
-            'bn_ce_i18n' => $data['bn_ce_i18n'] ?? 'fr-FR',
-            'bn_label_nature' => $data['bn_label_nature'] ?? '',
-            'bn_template' => $this->templateToStorage($data['bn_template'] ?? ''),
-            'bn_description' => $data['bn_description'] ?? '',
-            'bn_sem_template' => $data['bn_sem_template'] ?? '',
-            'bn_sem_reverse_template' => $data['bn_sem_reverse_template'] ?? '',
-            'bn_only_one_entry' => (isset($data['bn_only_one_entry']) && $data['bn_only_one_entry'] === 'Y') ? 'Y' : 'N',
-            'bn_only_one_entry_message' => empty($data['bn_only_one_entry_message']) ? '' : $data['bn_only_one_entry_message'],
-            'bn_condition' => $data['bn_condition'] ?? '',
+            'id' => (string)$data['id'],
+            'lang' => $data['lang'] ?? 'fr-FR',
+            'label' => $data['label'] ?? '',
+            'template' => $this->templateToStorage($data['template'] ?? ''),
+            'description' => $data['description'] ?? '',
+            'sem_template' => $data['sem_template'] ?? '',
+            'sem_reverse_template' => $data['sem_reverse_template'] ?? '',
+            'only_one_entry' => (isset($data['only_one_entry']) && $data['only_one_entry'] === 'Y') ? 'Y' : 'N',
+            'only_one_entry_message' => empty($data['only_one_entry_message']) ? '' : $data['only_one_entry_message'],
+            'condition' => $data['condition'] ?? '',
         ];
-        foreach (['bn_sem_context', 'bn_sem_type', 'bn_sem_use_template'] as $legacySeedField) {
+        foreach (['sem_context', 'sem_type', 'sem_use_template'] as $legacySeedField) {
             if (isset($data[$legacySeedField])) {
                 $body[$legacySeedField] = $data[$legacySeedField];
             }
@@ -387,7 +419,7 @@ class FormManager
         $enabled = (int)$this->activityPubService->isEnabled($data);
         $activitypub = [
             'enabled' => (string)$enabled,
-            'username' => $data['bn_activitypub_username'] ?? ($existingActivitypub['username'] ?? ''),
+            'username' => $data['activitypub_username'] ?? ($existingActivitypub['username'] ?? ''),
             'private_key' => $existingActivitypub['private_key'] ?? null,
             'public_key' => $existingActivitypub['public_key'] ?? null,
         ];
@@ -400,12 +432,14 @@ class FormManager
         return $activitypub;
     }
 
+    /**
+     * New form tags are lowercase slugs (ADR-0010); existing tags are never rewritten.
+     */
     private function slugify(string $title): string
     {
-        $ascii = @iconv('UTF-8', 'ASCII//TRANSLIT', $title);
-        $slug = preg_replace('/[^A-Za-z0-9]+/', '', $ascii === false ? $title : $ascii);
+        $slug = (new AsciiSlugger())->slug($title)->lower()->toString();
 
-        return $slug !== '' ? $slug : 'Form';
+        return $slug !== '' ? $slug : 'form';
     }
 
     private function encodeBody(array $body): string
@@ -421,15 +455,14 @@ class FormManager
         }
 
         // If ID is not set or if it is already used, find a new ID
-        if (empty($data['bn_id_nature']) || $this->getOne($data['bn_id_nature'])) {
-            $data['bn_id_nature'] = $this->findNewId();
+        if (empty($data['id']) || $this->getOne($data['id'])) {
+            $data['id'] = $this->findNewId();
         }
 
-        // Canonicalize the template to the JSON storage format (converts legacy
-        // `***`-syntax input, e.g. imports from older remote wikis)
-        $data['bn_template'] = $this->normalizeTemplate($data['bn_template'] ?? '');
+        // Canonicalize the template and process any posted default images
+        $data['template'] = $this->convertWithSpecialParameters($this->templateToStorage($data['template'] ?? ''), $data['id']);
 
-        $tag = $this->pageManager->suggestFreeTag($this->slugify($data['bn_label_nature'] ?? ''));
+        $tag = $this->pageManager->suggestFreeTag($this->slugify($data['label'] ?? ''));
 
         // reset cache
         $this->cacheValidatedForAll = false;
@@ -474,19 +507,19 @@ class FormManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
-        $tag = $this->resolveTag((string)$data['bn_id_nature']);
+        $tag = $this->resolveTag((string)$data['id']);
         if ($tag === null) {
-            throw new \Exception("Cannot update form '{$data['bn_id_nature']}': no such form");
+            throw new \Exception("Cannot update form '{$data['id']}': no such form");
         }
 
         $existingPage = $this->pageManager->getOne($tag, null, true, true);
         $existingBody = json_decode($existingPage['body'] ?? '', true) ?? [];
 
-        $data['bn_template'] = $this->convertWithSpecialParameters($data['bn_template'], $data['bn_id_nature']);
+        $data['template'] = $this->convertWithSpecialParameters($this->templateToStorage($data['template'] ?? ''), $data['id']);
 
         // reset cache
         $this->cacheValidatedForAll = false;
-        unset($this->cachedForms[$data['bn_id_nature']], $this->cachedForms[$tag]);
+        unset($this->cachedForms[$data['id']], $this->cachedForms[$tag]);
 
         $body = array_merge($existingBody, $this->buildBody($data));
 
@@ -535,8 +568,8 @@ class FormManager
     {
         $data = $this->getOne($id);
         if (!empty($data)) {
-            unset($data['bn_id_nature']);
-            $data['bn_label_nature'] = $data['bn_label_nature'] . ' (' . _t('BAZ_DUPLICATE') . ')';
+            unset($data['id']);
+            $data['label'] = $data['label'] . ' (' . _t('BAZ_DUPLICATE') . ')';
 
             return $this->create($data);
         }
@@ -764,6 +797,42 @@ class FormManager
     }
 
     /**
+     * Native template (array of field objects) => list of positional arrays. For the
+     * few boundaries that still need the constructors' positional wire format
+     * (ExternalBazarService munging remote payloads, legacy migrations).
+     */
+    public function templateToPositionalList(array $template): array
+    {
+        $list = [];
+        foreach ($template as $fieldObject) {
+            $positional = is_array($fieldObject) && !array_is_list($fieldObject)
+                ? $this->namedToPositional($fieldObject)
+                : (is_array($fieldObject) ? $fieldObject : null);
+            if ($positional !== null) {
+                $list[] = $positional;
+            }
+        }
+
+        return $list;
+    }
+
+    /** Inverse: list of positional arrays => native template (array of field objects). */
+    public function positionalListToTemplate(array $list): array
+    {
+        $template = [];
+        foreach ($list as $positional) {
+            $fieldObject = is_array($positional) && array_is_list($positional)
+                ? $this->positionalToNamed($positional)
+                : (is_array($positional) ? $positional : null);
+            if ($fieldObject !== null) {
+                $template[] = $fieldObject;
+            }
+        }
+
+        return $template;
+    }
+
+    /**
      * Template input (JSON string from the designer/API, legacy `***` syntax from an
      * import, or an already-decoded array) => the native array of named-attribute field
      * objects stored inside the page body.
@@ -782,11 +851,15 @@ class FormManager
     public function prepareData($form)
     {
         $i = 0;
-        $prepared = $result = [];
+        $prepared = [];
 
-        $form['template'] = $form['template'];
-
-        foreach ($form['template'] as $field) {
+        foreach ($form['template'] as $fieldObject) {
+            // the field constructors consume positional arrays through their FIELD_*
+            // constants -- an internal wire format derived here and nowhere exposed
+            $field = $this->namedToPositional($fieldObject);
+            if ($field === null) {
+                continue;
+            }
             $classField = $this->fieldFactory->create($field);
 
             if ($classField) {
@@ -897,7 +970,7 @@ class FormManager
     {
         $forms = $this->getAll();
         foreach ($forms as $form) {
-            if ($form['bn_activitypub_username'] === $username) {
+            if ($form['activitypub_username'] === $username) {
                 return $form;
             }
         }

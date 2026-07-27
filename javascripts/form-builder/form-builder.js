@@ -4,7 +4,7 @@
 // selected field's settings, and a canvas listing the form's fields as cards
 // (drag-to-reorder via the vendored SortableJS, loaded globally as window.Sortable).
 //
-// The designer edits the stored JSON template (`bn_template`, an array of
+// The designer edits the stored JSON template (`template`, an array of
 // named-attribute field objects) directly: converter.js only resolves wiki type
 // keywords to designer configs and back, there is no positional mapping. The
 // #form-builder-text textarea (the "code" tab) is the single source of truth on

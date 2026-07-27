@@ -131,8 +131,11 @@ class PageManager
             return $desiredTag;
         }
 
+        // slugs (generated tags, ADR-0010) suffix as `my-tag-2`; CamelCase-style
+        // user-chosen tags keep the historical bare-number `MyTag2` convention
+        $separator = str_contains($desiredTag, '-') || strtolower($desiredTag) === $desiredTag ? '-' : '';
         for ($suffix = 2; $suffix <= self::MAX_SEQUENTIAL_SUFFIX_ATTEMPTS + 1; $suffix++) {
-            $candidate = $desiredTag . $suffix;
+            $candidate = $desiredTag . $separator . $suffix;
             if (!$this->tagExists($candidate)) {
                 return $candidate;
             }

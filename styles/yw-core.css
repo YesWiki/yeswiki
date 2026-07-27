@@ -627,7 +627,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   display: flex;
   flex-wrap: wrap;
   list-style: none;
-  margin: 0;
+  margin: 1em 0;
   padding: 0;
 }
 .yw-nav li {

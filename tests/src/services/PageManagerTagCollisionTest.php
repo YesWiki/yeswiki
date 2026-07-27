@@ -80,10 +80,10 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
         $entryManager = $wiki->services->get(EntryManager::class);
 
         $formManager->create([
-            'bn_id_nature' => self::BAZAR_FORM_ID,
-            'bn_label_nature' => 'PageManagerTagCollisionTest form',
-            'bn_template' => '',
-            'bn_condition' => '',
+            'id' => self::BAZAR_FORM_ID,
+            'label' => 'PageManagerTagCollisionTest form',
+            'template' => '',
+            'condition' => '',
         ]);
 
         try {

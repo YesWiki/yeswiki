@@ -77,10 +77,10 @@ class NewtextsearchActionTest extends YesWikiTestCase
         $templateRow[1] = self::LIST_ID;
         $templateRow[6] = self::FIELD_NAME;
         $formManager->create([
-            'bn_id_nature' => self::FORM_ID,
-            'bn_label_nature' => 'Newtextsearch regression test form',
-            'bn_template' => implode('***', $templateRow),
-            'bn_condition' => '',
+            'id' => self::FORM_ID,
+            'label' => 'Newtextsearch regression test form',
+            'template' => implode('***', $templateRow),
+            'condition' => '',
         ]);
 
         try {

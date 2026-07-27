@@ -1532,7 +1532,7 @@ class ApiController extends YesWikiController
                 $form = baz_valeurs_formulaire($val['id_typeannonce'] ?? null);
                 $mailSenderForMsg = (string)$request->request->get('email', '');
                 $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->wiki->href('', $val['id_fiche']) . '">'
-                    . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['bn_label_nature'] . ' » '
+                    . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['label'] . ' » '
                     . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->wiki->config['yeswiki_name'] . ' ». ' .
                     ($mailSenderForMsg ? _t('CONTACT_REPLY') . ' <strong>' . $mailSenderForMsg . '</strong> '
                         . _t('CONTACT_REPLY2') : '') . '.</em><br><br>';
@@ -1763,11 +1763,23 @@ class ApiController extends YesWikiController
         return $newFileName;
     }
 
+    /**
+     * The form arrays carry the ActivityPub keypair (merged from page metadata for
+     * internal use); the private key must never leave through the public API.
+     */
+    private function stripFormSecrets(array $form): array
+    {
+        unset($form['activitypub_private_key']);
+
+        return $form;
+    }
+
     #[Route('/api/forms', methods: ['GET'], options: ['acl' => ['public']])]
     #[Route('/api/forms/', methods: ['GET'], options: ['acl' => ['public']])]
     public function getAllForms()
     {
         $forms = $this->getService(FormManager::class)->getAll();
+        $forms = array_map([$this, 'stripFormSecrets'], $forms);
 
         return new ApiResponse(empty($forms) ? null : $forms);
     }
@@ -1784,11 +1796,11 @@ class ApiController extends YesWikiController
 
         $vForm = $this->getService(BazarListService::class)->getForms(['idtypeannonce' => $vFormID])[$vFormID];
 
-        if (!$vForm || !isset($vForm['bn_id_nature'])) {
+        if (!$vForm || !isset($vForm['id'])) {
             throw new NotFoundHttpException();
         }
 
-        return new ApiResponse($vForm);
+        return new ApiResponse($this->stripFormSecrets($vForm));
     }
 
     #[Route('/api/forms/{formId}/entries/{output}/{selectedEntries}', methods: ['GET'], options: ['acl' => ['public']])]
@@ -1964,7 +1976,7 @@ class ApiController extends YesWikiController
                 '@context' => $context,
                 '@id' => $this->wiki->Href('fiche/' . $formId, 'api'),
                 '@type' => ['ldp:Container', 'ldp:BasicContainer'],
-                'dcterms:title' => $form['bn_label_nature'],
+                'dcterms:title' => $form['label'],
                 'ldp:contains' => $resources,
             ],
             Response::HTTP_OK,
@@ -2091,7 +2103,7 @@ class ApiController extends YesWikiController
             return $entry['id_typeannonce'];
         }, $entries));
         $usedForms = array_filter($forms, function ($form) use ($formIds) {
-            return in_array($form['bn_id_nature'], $formIds);
+            return in_array($form['id'], $formIds);
         });
         $usedForms = array_map(function ($f) {
             return $f['prepared'];

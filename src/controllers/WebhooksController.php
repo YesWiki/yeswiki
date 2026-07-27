@@ -221,14 +221,14 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                     if ($formId === 0) {
                         // Check that all forms are semantic
                         foreach ($this->formManager->getAll() as $form) {
-                            if (!$form['bn_sem_type']) {
+                            if (!$form['sem_type']) {
                                 $this->wiki->exit(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
                             }
                         }
                     } elseif ($formId !== 'comments') {
                         // Check that the selected form is semantic
                         $form = $this->formManager->getOne($formId);
-                        if (!$form['bn_sem_type']) {
+                        if (!$form['sem_type']) {
                             $this->wiki->exit(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
                         }
                     }

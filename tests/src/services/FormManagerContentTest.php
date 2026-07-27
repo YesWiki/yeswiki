@@ -14,7 +14,7 @@ require_once 'tests/YesWikiTestCase.php';
 /**
  * Regression/acceptance tests for ticket 05 (forms become Content): forms are now `pages`
  * rows typed via a TYPE_URI='form' triple instead of standalone `nature` rows, keep a
- * stable numeric id (bn_id_nature, embedded in `body`) distinct from their renameable
+ * stable numeric id (id, embedded in `body`) distinct from their renameable
  * `tag`, and get ACLs via `metadata.acls` (ticket 03's mechanism).
  */
 class FormManagerContentTest extends YesWikiTestCase
@@ -43,10 +43,10 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'FormManagerContentTest form',
-                'bn_template' => '',
-                'bn_condition' => '',
+                'id' => self::FORM_ID,
+                'label' => 'FormManagerContentTest form',
+                'template' => '',
+                'condition' => '',
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
@@ -73,10 +73,10 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'FormManagerContentTest form',
-                'bn_template' => '',
-                'bn_condition' => '',
+                'id' => self::FORM_ID,
+                'label' => 'FormManagerContentTest form',
+                'template' => '',
+                'condition' => '',
             ]);
 
             $byId = $formManager->getOne(self::FORM_ID);
@@ -84,7 +84,7 @@ class FormManagerContentTest extends YesWikiTestCase
 
             $byTag = $formManager->getOne($byId['tag']);
             $this->assertIsArray($byTag);
-            $this->assertSame(self::FORM_ID, $byTag['bn_id_nature']);
+            $this->assertSame(self::FORM_ID, $byTag['id']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
         }
@@ -98,24 +98,25 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'SameLabel',
-                'bn_template' => '',
-                'bn_condition' => '',
+                'id' => self::FORM_ID,
+                'label' => 'SameLabel',
+                'template' => '',
+                'condition' => '',
             ]);
             $formManager->create([
-                'bn_id_nature' => self::OTHER_FORM_ID,
-                'bn_label_nature' => 'SameLabel',
-                'bn_template' => '',
-                'bn_condition' => '',
+                'id' => self::OTHER_FORM_ID,
+                'label' => 'SameLabel',
+                'template' => '',
+                'condition' => '',
             ]);
 
             $first = $formManager->getOne(self::FORM_ID);
             $second = $formManager->getOne(self::OTHER_FORM_ID);
 
+            // new form tags are lowercase slugs, collisions suffixed -2 (ADR-0010)
             $this->assertNotSame($first['tag'], $second['tag']);
-            $this->assertSame('SameLabel', $first['tag']);
-            $this->assertSame('SameLabel2', $second['tag']);
+            $this->assertSame('samelabel', $first['tag']);
+            $this->assertSame('samelabel-2', $second['tag']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
             $this->cleanupForm($formManager, $entryManager, self::OTHER_FORM_ID);
@@ -131,10 +132,10 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'FormManagerContentTest acl form',
-                'bn_template' => '',
-                'bn_condition' => '',
+                'id' => self::FORM_ID,
+                'label' => 'FormManagerContentTest acl form',
+                'template' => '',
+                'condition' => '',
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
@@ -155,10 +156,10 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'OriginalTag',
-                'bn_template' => '',
-                'bn_condition' => '',
+                'id' => self::FORM_ID,
+                'label' => 'OriginalTag',
+                'template' => '',
+                'condition' => '',
             ]);
             $oldTag = $formManager->getOne(self::FORM_ID)['tag'];
 
@@ -198,27 +199,27 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'Original label',
-                'bn_template' => '',
-                'bn_condition' => '',
-                'bn_sem_context' => 'https://www.w3.org/ns/activitystreams',
-                'bn_sem_type' => 'Event',
+                'id' => self::FORM_ID,
+                'label' => 'Original label',
+                'template' => '',
+                'condition' => '',
+                'sem_context' => 'https://www.w3.org/ns/activitystreams',
+                'sem_type' => 'Event',
             ]);
 
             // simulate the admin edit form's submission, which doesn't carry
-            // bn_sem_context/bn_sem_type (they aren't exposed in that UI)
+            // sem_context/sem_type (they aren't exposed in that UI)
             $formManager->update([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'Updated label',
-                'bn_template' => '',
-                'bn_condition' => '',
+                'id' => self::FORM_ID,
+                'label' => 'Updated label',
+                'template' => '',
+                'condition' => '',
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
-            $this->assertSame('Updated label', $form['bn_label_nature']);
-            $this->assertSame('https://www.w3.org/ns/activitystreams', $form['bn_sem_context']);
-            $this->assertSame('Event', $form['bn_sem_type']);
+            $this->assertSame('Updated label', $form['label']);
+            $this->assertSame('https://www.w3.org/ns/activitystreams', $form['sem_context']);
+            $this->assertSame('Event', $form['sem_type']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
         }
@@ -233,34 +234,34 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'FormManagerContentTest activitypub form',
-                'bn_template' => '',
-                'bn_condition' => '',
-                'bn_activitypub_enable' => '1',
-                'bn_activitypub_username' => 'someactor',
+                'id' => self::FORM_ID,
+                'label' => 'FormManagerContentTest activitypub form',
+                'template' => '',
+                'condition' => '',
+                'activitypub_enable' => '1',
+                'activitypub_username' => 'someactor',
             ]);
 
             $form = $formManager->getOne(self::FORM_ID);
             $this->assertTrue($activityPubService->isEnabled($form));
-            $this->assertSame('someactor', $form['bn_activitypub_username']);
-            $this->assertNotEmpty($form['bn_activitypub_private_key']);
-            $this->assertNotEmpty($form['bn_activitypub_public_key']);
+            $this->assertSame('someactor', $form['activitypub_username']);
+            $this->assertNotEmpty($form['activitypub_private_key']);
+            $this->assertNotEmpty($form['activitypub_public_key']);
 
             // actor URIs are keyed off the stable numeric id -- unaffected by any future rename
             $this->assertStringEndsWith('/actors/' . self::FORM_ID, $activityPubService->getFormActorUri($form));
 
             // editing the form again (without touching activitypub fields) keeps the same keypair
             $formManager->update([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'FormManagerContentTest activitypub form updated',
-                'bn_template' => '',
-                'bn_condition' => '',
-                'bn_activitypub_enable' => '1',
-                'bn_activitypub_username' => 'someactor',
+                'id' => self::FORM_ID,
+                'label' => 'FormManagerContentTest activitypub form updated',
+                'template' => '',
+                'condition' => '',
+                'activitypub_enable' => '1',
+                'activitypub_username' => 'someactor',
             ]);
             $updatedForm = $formManager->getOne(self::FORM_ID);
-            $this->assertSame($form['bn_activitypub_private_key'], $updatedForm['bn_activitypub_private_key']);
+            $this->assertSame($form['activitypub_private_key'], $updatedForm['activitypub_private_key']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
         }
@@ -281,24 +282,24 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'FormManagerContentTest activitypub restore form',
-                'bn_template' => '',
-                'bn_condition' => '',
-                'bn_activitypub_enable' => '1',
-                'bn_activitypub_username' => 'preexisting',
+                'id' => self::FORM_ID,
+                'label' => 'FormManagerContentTest activitypub restore form',
+                'template' => '',
+                'condition' => '',
+                'activitypub_enable' => '1',
+                'activitypub_username' => 'preexisting',
             ]);
-            $freshlyGeneratedKey = $formManager->getOne(self::FORM_ID)['bn_activitypub_private_key'];
+            $freshlyGeneratedKey = $formManager->getOne(self::FORM_ID)['activitypub_private_key'];
             $this->assertNotSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $freshlyGeneratedKey);
 
             $formManager->setActivitypubKeypair(self::FORM_ID, 'PREVIOUSLY-PUBLISHED-PRIVATE-KEY', 'PREVIOUSLY-PUBLISHED-PUBLIC-KEY');
 
             $form = $formManager->getOne(self::FORM_ID);
-            $this->assertSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $form['bn_activitypub_private_key']);
-            $this->assertSame('PREVIOUSLY-PUBLISHED-PUBLIC-KEY', $form['bn_activitypub_public_key']);
+            $this->assertSame('PREVIOUSLY-PUBLISHED-PRIVATE-KEY', $form['activitypub_private_key']);
+            $this->assertSame('PREVIOUSLY-PUBLISHED-PUBLIC-KEY', $form['activitypub_public_key']);
             // enabled/username, set by create() and untouched by setActivitypubKeypair(), survive
-            $this->assertSame('1', $form['bn_activitypub_enable']);
-            $this->assertSame('preexisting', $form['bn_activitypub_username']);
+            $this->assertSame('1', $form['activitypub_enable']);
+            $this->assertSame('preexisting', $form['activitypub_username']);
         } finally {
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);
         }
@@ -322,10 +323,10 @@ class FormManagerContentTest extends YesWikiTestCase
 
         try {
             $formManager->create([
-                'bn_id_nature' => self::FORM_ID,
-                'bn_label_nature' => 'FormManagerContentTest baz_forms_and_lists_ids form',
-                'bn_template' => '',
-                'bn_condition' => '',
+                'id' => self::FORM_ID,
+                'label' => 'FormManagerContentTest baz_forms_and_lists_ids form',
+                'template' => '',
+                'condition' => '',
             ]);
 
             $result = baz_forms_and_lists_ids();
@@ -346,10 +347,10 @@ class FormManagerContentTest extends YesWikiTestCase
         $entryManager = $wiki->services->get(EntryManager::class);
 
         $formManager->create([
-            'bn_id_nature' => self::FORM_ID,
-            'bn_label_nature' => 'FormManagerContentTest delete form',
-            'bn_template' => '',
-            'bn_condition' => '',
+            'id' => self::FORM_ID,
+            'label' => 'FormManagerContentTest delete form',
+            'template' => '',
+            'condition' => '',
         ]);
         $entryManager->create(self::FORM_ID, [
             'antispam' => 1,

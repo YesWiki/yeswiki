@@ -118,7 +118,7 @@
                             {%- if page.comment_on is not empty -%}
                                 {{- _t("ADMIN_CONTENT_TYPE_COMMENT") -}}
                             {%- elseif page.page_type == 'fiche_bazar' -%}
-                                {{- forms[page.form_id].bn_label_nature ?? _t("ADMIN_CONTENT_TYPE_BAZAR_ID") |replace({'{id}': page.form_id}) -}}
+                                {{- forms[page.form_id].label ?? _t("ADMIN_CONTENT_TYPE_BAZAR_ID") |replace({'{id}': page.form_id}) -}}
                             {%- elseif page.page_type == 'liste' -%}
                                 {{- _t("ADMIN_CONTENT_TYPE_LIST") -}}
                             {%- elseif page.is_special -%}

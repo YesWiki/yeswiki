@@ -73,7 +73,7 @@ class CheckboxEntryField extends CheckboxField
 
         if (!empty($this->name)) {
             $form = $this->services->get(FormManager::class)->getOne($this->name);
-            $this->formName = isset($form['bn_label_nature']) ? ('Fiches ' . $form['bn_label_nature']) : _t('BAZ_NO_FORMS_FOUND');
+            $this->formName = isset($form['label']) ? ('Fiches ' . $form['label']) : _t('BAZ_NO_FORMS_FOUND');
         }
 
         return $this->formName;

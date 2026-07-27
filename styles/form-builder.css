@@ -27,7 +27,7 @@
   border: 1px solid var(--neutral-light-color, #ddd);
   border-radius: 6px;
   padding: 12px;
-  background: #fafafa;
+  background: #dcdcdc;
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -179,7 +179,7 @@
 }
 
 .yw-fb__card {
-  border: 1px solid var(--neutral-light-color, #ddd);
+  border: 1px solid #ddd;
   border-radius: 6px;
   background: #fff;
   cursor: pointer;
@@ -195,6 +195,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
+  background-color: #ddd;
   border-bottom: 1px solid var(--neutral-light-color, #eee);
   font-size: 0.9rem;
 }

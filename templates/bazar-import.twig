@@ -126,7 +126,7 @@
   {{ parent() }}
 {% endblock %}
 
-{% block appendToFormLabel %}{{ _t('BAZ_EXEMPLE_FICHIER_CSV') ~ selectedForm.bn_label_nature}}{% endblock %}
+{% block appendToFormLabel %}{{ _t('BAZ_EXEMPLE_FICHIER_CSV') ~ selectedForm.label}}{% endblock %}
 
 {% block downloadFileName %}modele_{{filename}}{% endblock %}
 {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_IMPORT_CSV') -}}{% endblock %}

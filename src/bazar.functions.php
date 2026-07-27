@@ -105,7 +105,7 @@ function baz_forms_and_lists_ids()
         return $list['title'];
     }, $lists);
     foreach ($GLOBALS['wiki']->services->get(FormManager::class)->getAll() as $form) {
-        $forms[$form['bn_id_nature']] = $form['bn_label_nature'];
+        $forms[$form['id']] = $form['label'];
     }
 
     return ['lists' => $lists, 'forms' => $forms];
@@ -652,39 +652,11 @@ function bazPrepareFormData($form)
 }
 
 /**
- * @deprecated Use FormManager::parseTemplate
- */
-function formulaire_valeurs_template_champs($template)
-{
-    return $GLOBALS['wiki']->services->get(FormManager::class)->parseTemplate($template);
-}
-
-/**
  * @deprecated Use FormManager::findNewId
  */
 function baz_nextId()
 {
     return $GLOBALS['wiki']->services->get(FormManager::class)->findNewId();
-}
-
-/**
- * @deprecated Use BazarField::canEdit
- */
-function testACLsiSaisir($mode, $tableau_template, $valeurs_fiche)
-{
-    $acl = empty($tableau_template[12]) ? '' : $tableau_template[12]; // acl pour l'écriture
-
-    if (isset($valeurs_fiche['id_fiche'])) {
-        $tag = $valeurs_fiche['id_fiche'];
-    } else {
-        $tag = '';
-    }
-    $mode_creation = '';
-    if ($tag == '') {
-        $mode_creation = 'creation';
-    }
-
-    return $mode == 'saisie' && !empty($acl) && !$GLOBALS['wiki']->CheckACL($acl, null, true, $tag, $mode_creation);
 }
 
 /**
@@ -740,7 +712,7 @@ function baz_gestion_formulaire()
 function baz_formulaire_des_formulaires($mode, $form = '')
 {
     if ($form !== '') {
-        return $GLOBALS['wiki']->services->get(FormController::class)->update($form['bn_id_nature']);
+        return $GLOBALS['wiki']->services->get(FormController::class)->update($form['id']);
     }
 
     return $GLOBALS['wiki']->services->get(FormController::class)->create();

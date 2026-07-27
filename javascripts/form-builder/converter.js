@@ -1,6 +1,6 @@
 // converter.js — storage JSON ↔ designer field objects (ticket 26)
 //
-// The stored template (`bn_template`) is a JSON array of named-attribute field
+// The stored template (`template`) is a JSON array of named-attribute field
 // objects: `[{"type": "texte", "name": "bf_titre", "label": "…"}]`. Attribute keys
 // are the FIELD_* constant names of the PHP class handling the type (see
 // FieldFactory::getAttributeIndexToKeyMap()); the designer edits those objects

@@ -1,4 +1,3 @@
-{{ include_javascript('javascripts/forms-import.js') }}
 
 {% set tooltipMessage =  isWikiHibernated ? _t('WIKI_IN_HIBERNATION') : _t('BAZ_NEED_ADMIN_RIGHTS') %}
 
@@ -141,59 +140,4 @@
   </button>
 {% endif %}
 
-<hr>
 
-<strong>{{ _t('BAZ_IMPORT_FORMS_FROM_URL') }}</strong>
-<form action="javascript:undefined" class="">
-	<div class="input-prepend input-append input-group">
-		<span class="add-on input-group-addon">
-      <i class="fa fa-link icon-globe"></i>
-    </span>
-		<input id="url-import-forms" class="yw-input input-xxlarge" {% if not userIsAdmin or isWikiHibernated %}disabled  data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url" />
-		<span class="input-group-btn">
-      <button id="btn-import-forms" {% if not userIsAdmin or isWikiHibernated %}disabled  disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}"{% endif %} class="yw-btn yw-btn--primary" type="submit">{{ _t('BAZ_GO') }} !</button>
-    </span>
-	</div>
-  <p class="text-info">Exemple d'url pour obtenir des formulaires types: <code>https://yeswiki.net/serveur</code></p>
-</form>
-<br>
-<div id="import-forms-result"></div>
-<form id="import-forms-form" action="" class="hide" method="post">
-  <div class="table-responsive">
-    <table id="import-forms-table" class="yw-table">
-      <thead>
-        <tr>
-          <th class="prevent-sorting">
-            <label class="check-all-container">
-              <input data-target="#import-forms-table tbody" type="checkbox" class="selectall">
-              <span></span>
-            </label>
-          </th>
-          <th>{{ _t('BAZ_FORMULAIRE') }}</th>
-          <th>{{ _t('BAZ_ID') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-      </tbody>
-    </table>
-  </div> <!-- /.table-responsive -->
-  <div class="checkbox">
-    <label class="checkbox">
-      <input data-target="#import-forms-table tbody" type="checkbox" class="selectall">
-      <span>{{ _t('BAZ_SELECT_ALL') }}</span>
-    </label>
-  </div>
-  <button id="btn-import-selection" type="submit" class="yw-btn yw-btn--primary">
-    {{ _t('BAZ_IMPORT_SELECTION') }}
-  </button>
-</form>
-<div
-    id="form-translations"
-    data-nbformsfound="{{ _t('BAZ_NBFORMSFOUND') }}"
-    data-noanswers="{{ _t('BAZ_NOANSWERS') }}"
-    data-notvalidurl="{{ _t('BAZ_NOTVALIDURL') }}"
-    data-recuperation="{{ _t('BAZ_RECUPERATION') }}"
-    data-loading="{{ _t('BAZ_LOADING') }}"
-    data-existingmessage="{{ _t('BAZ_EXISTINGMESSAGEFORM') }}"
-    data-existingmessagereplace="{{ _t('BAZ_EXISTINGMESSAGEREPLACEFORM') }}">
-</div>

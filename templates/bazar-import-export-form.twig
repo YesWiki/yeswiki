@@ -14,9 +14,9 @@
             {% endif %}
             {# on dresse la liste des formulaires #}
             {% for form in forms %}
-              <option value="{{ form.bn_id_nature }}"
-                  {{ id == form.bn_id_nature ? ' selected="selected"' }}>
-                {{ form.bn_label_nature }}
+              <option value="{{ form.id }}"
+                  {{ id == form.id ? ' selected="selected"' }}>
+                {{ form.label }}
               </option>
             {% endfor %}
           </select>
@@ -26,7 +26,7 @@
     {% block appendToForm %}
       {% if csv and selectedForm %}
         <em>
-          {% block appendToFormLabel %}{{ _t('BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER') ~ selectedForm.bn_label_nature }}{% endblock %}
+          {% block appendToFormLabel %}{{ _t('BAZ_VISUALISATION_FICHIER_CSV_A_EXPORTER') ~ selectedForm.label }}{% endblock %}
         </em>
         <pre class="precsv">
           {{- csv|raw -}}

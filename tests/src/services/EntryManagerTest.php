@@ -36,10 +36,10 @@ class EntryManagerTest extends YesWikiTestCase
         $entryManager = $wiki->services->get(EntryManager::class);
 
         $formManager->create([
-            'bn_id_nature' => self::FORM_ID,
-            'bn_label_nature' => 'EntryManager regression test form',
-            'bn_template' => '',
-            'bn_condition' => '',
+            'id' => self::FORM_ID,
+            'label' => 'EntryManager regression test form',
+            'template' => '',
+            'condition' => '',
         ]);
 
         // proves getOne() no longer needs the production HTTP bootstrap's global
