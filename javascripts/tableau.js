@@ -1,208 +1,107 @@
-/* Custom filtering function which will search data in column four between two values */
-$.fn.dataTable.ext.search.push(
-  (settings, searchData, index, rowData, counter) => {
-    const table = $(settings.nTable).DataTable()
-    const row = table.rows(index)
-    const node = row.nodes().to$().first()
-    return TableHelper.checkDataForNode(table, node)
-  }
-)
-
+// tableau.js — bazar "tableau" list template glue (ticket 16: vanilla JS on
+// yw-datatable, replacing jQuery DataTables + its custom search plugin).
+// External facet filters (.filter-checkbox in the filters sidebar) plug into
+// yw-datatable via window.ywDatatableRowFilters + the yw-datatable-refresh event;
+// footer sums and the results counter recompute on every yw-datatable-drawn.
 const TableHelper = {
-  tables: {},
-  tablesByIds: {},
+  tables: [],
   checkedFilters: {},
-  updateCheckedFilters() {
-    this.checkedFilters = TableHelper.getCheckedFilters()
-  },
-  getBazarListeContainer(table) {
-    const tableNode = table.tables().nodes().to$()
-    return $(tableNode).closest('.bazar-list')
-  },
   findBazarListFiltersContainer(table) {
-    const bazarlistContainer = this.getBazarListeContainer(table)
-    if (!$(bazarlistContainer).parent().hasClass('results-col')) {
-      return { length: 0 }
-    }
-    return $(bazarlistContainer).parent().siblings('.filters-col').find('.filters')
+    const bazarList = table.closest('.bazar-list')
+    if (!bazarList || !bazarList.parentElement) return null
+    if (!bazarList.parentElement.classList.contains('results-col')) return null
+    const columns = bazarList.parentElement.parentElement
+    const filtersCol = columns ? columns.querySelector('.filters-col') : null
+    return filtersCol ? filtersCol.querySelector('.filters') : null
   },
-  updateNBResults(table) {
-    const filterContainer = this.findBazarListFiltersContainer(table)
-    if (filterContainer.length > 0) {
-      const nbResults = table.rows({ search: 'applied' }).data().length
-      const nbResultInfoNode = $(filterContainer).find('.nb-results')
-      if (nbResultInfoNode.length > 0) {
-        $(nbResultInfoNode).html(nbResults)
-        if (nbResults > 1) {
-          $(filterContainer).find('.result-label').hide()
-          $(filterContainer).find('.results-label').show()
-        } else {
-          $(filterContainer).find('.result-label').show()
-          $(filterContainer).find('.results-label').hide()
-        }
+  updateCheckedFilters() {
+    const res = {}
+    this.tables.forEach((table) => {
+      const filterContainer = this.findBazarListFiltersContainer(table)
+      const tableFilters = {}
+      if (filterContainer) {
+        filterContainer.querySelectorAll('.filter-checkbox:checked').forEach((input) => {
+          const name = input.getAttribute('name')
+          const value = input.getAttribute('value')
+          if (!tableFilters[name]) tableFilters[name] = []
+          tableFilters[name].push(value)
+        })
       }
-    }
+      res[table.id] = tableFilters
+    })
+    this.checkedFilters = res
   },
-  updateTables() {
-    TableHelper.updateCheckedFilters()
-    Object.keys(TableHelper.tables).forEach((key) => {
-      const table = TableHelper.tables[key]
-      table.draw()
+  rowMatchesFilters(table, row) {
+    const checked = this.checkedFilters[table.id] || {}
+    return Object.keys(checked).every((name) => {
+      if (checked[name].length === 0) return true
+      const rowValue = row.getAttribute(`data-${name}`)
+      if (!rowValue || rowValue.length === 0) return false
+      const values = rowValue.split(',')
+      return checked[name].some((wanted) => values.indexOf(wanted) > -1)
+    })
+  },
+  updateNBResults(table, nbResults) {
+    const filterContainer = this.findBazarListFiltersContainer(table)
+    if (!filterContainer) return
+    const nbResultInfoNode = filterContainer.querySelector('.nb-results')
+    if (!nbResultInfoNode) return
+    nbResultInfoNode.textContent = nbResults
+    const single = filterContainer.querySelectorAll('.result-label')
+    const plural = filterContainer.querySelectorAll('.results-label')
+    single.forEach((elParam) => {
+      const el = elParam
+      el.style.display = nbResults > 1 ? 'none' : ''
+    })
+    plural.forEach((elParam) => {
+      const el = elParam
+      el.style.display = nbResults > 1 ? '' : 'none'
     })
   },
   sanitizeValue(val) {
-    let sanitizedValue = val
-    if (Object.prototype.toString.call(val) === '[object Object]') {
-      // because if orthogonal data is defined, valu is an object
-      sanitizedValue = val.display || ''
-    }
-    return (isNaN(sanitizedValue)) ? 1 : Number(sanitizedValue)
+    return Number.isNaN(Number(val)) ? 1 : Number(val)
   },
-  updateFooter(index) {
-    const table = TableHelper.tables[index]
-    if (typeof table !== 'undefined') {
-      const activatedRows = []
-      table.rows({ search: 'applied' }).every(function() {
-        activatedRows.push(this.index())
+  updateFooter(table, matchedRows) {
+    const headerCells = table.tHead ? Array.from(table.tHead.rows[0].cells) : []
+    const footerRow = table.tFoot ? table.tFoot.rows[0] : null
+    if (!footerRow) return
+    headerCells.forEach((th, index) => {
+      if (!th.classList.contains('sum-activated')) return
+      let sum = 0
+      matchedRows.forEach((row) => {
+        const cell = row.cells[index]
+        sum += this.sanitizeValue(cell ? cell.textContent.trim() : '')
       })
-      const activatedCols = []
-      table.columns('.sum-activated').every(function() {
-        activatedCols.push(this.index())
-      })
-      activatedCols.forEach((indexCol) => {
-        let sum = 0
-        activatedRows.forEach((indexRow) => {
-          const value = table.row(indexRow).data()[indexCol]
-          sum += TableHelper.sanitizeValue(value)
-        })
-        $(table.columns(indexCol).footer()).html(sum)
-      })
-    }
-  },
-  initTables() {
-    TableHelper.updateCheckedFilters()
-    $('.table.prevent-auto-init.in-tableau-template').each(function() {
-      const index = Object.keys(TableHelper.tables).length
-      const buttons = []
-      DATATABLE_OPTIONS.buttons.forEach((option) => {
-        buttons.push({
-          ...option,
-          ...{ footer: true },
-          ...{
-            exportOptions: (
-              option.extend != 'print'
-                ? {
-                  orthogonal: 'sort', // use sort data for export
-                  columns(idx, data, node) {
-                    return !$(node).hasClass('not-export-this-col')
-                  }
-                }
-                : {
-                  columns(idx, data, node) {
-                    const isVisible = $(node).data('visible')
-                    return !$(node).hasClass('not-export-this-col') && (
-                      isVisible == undefined || isVisible != false
-                    )
-                  }
-                })
-          }
-        })
-      })
-      const table = $(this).DataTable({
-        ...DATATABLE_OPTIONS,
-        ...{
-          footerCallback(row, data, start, end, display) {
-            TableHelper.updateFooter(index)
-          },
-          buttons
-        }
-      })
-      TableHelper.tables[index] = table
-      TableHelper.tablesByIds[$(table.table(0).node()).prop('id')] = index
-      table.on('draw', () => {
-        TableHelper.updateNBResults(table)
-      })
-      $(`#${$(table.table(0).node()).prop('id')}_wrapper`).on('dblclick', (e) => {
-        e.preventDefault()
-        return false
-      })
+      const footerCell = footerRow.cells[index]
+      if (footerCell) footerCell.textContent = sum
     })
-    TableHelper.updateTables()
+  },
+  refreshTables() {
+    this.updateCheckedFilters()
+    this.tables.forEach((table) => {
+      table.dispatchEvent(new CustomEvent('yw-datatable-refresh'))
+    })
   },
   init() {
-    const helper = this
-    $('.filter-checkbox').on('click', () => {
-      helper.updateTables()
+    this.tables = Array.from(document.querySelectorAll('table.in-tableau-template'))
+    if (this.tables.length === 0) return
+    window.ywDatatableRowFilters = window.ywDatatableRowFilters || {}
+    this.tables.forEach((table) => {
+      window.ywDatatableRowFilters[table.id] = (row) => this.rowMatchesFilters(table, row)
+      table.addEventListener('yw-datatable-drawn', (e) => {
+        this.updateNBResults(table, e.detail.matchedRows.length)
+        this.updateFooter(table, e.detail.matchedRows)
+      })
     })
-    this.initTables()
-  },
-  getCheckedFilters() {
-    const res = {}
-    Object.keys(TableHelper.tables).forEach((key) => {
-      const table = TableHelper.tables[key]
-      const filterContainer = TableHelper.findBazarListFiltersContainer(table)
-      if (filterContainer.length == 0) {
-        res[key] = {}
-      } else {
-        const inputs = $(filterContainer).find('.filter-checkbox:checked')
-        if (inputs.length == 0) {
-          res[key] = {}
-        } else {
-          const tableRes = {}
-          for (let index = 0; index < inputs.length; index++) {
-            const input = inputs[index]
-            const name = $(input).attr('name')
-            const value = $(input).attr('value')
-            if (tableRes.hasOwnProperty(name)) {
-              tableRes[name].push(value)
-            } else {
-              tableRes[name] = [value]
-            }
-          }
-          res[key] = tableRes
-        }
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('.filter-checkbox')) {
+        this.refreshTables()
       }
     })
-    return res
-  },
-  checkDataForNode(table, node) {
-    if (Object.keys(this.checkedFilters).length == 0) {
-      return true
-    }
-    const tableId = $(table.table(0).node()).prop('id')
-    if (tableId.length == 0 || !TableHelper.tablesByIds.hasOwnProperty(tableId)) {
-      return true
-    }
-    const indexTable = TableHelper.tablesByIds[tableId]
-    if (!TableHelper.checkedFilters.hasOwnProperty(indexTable)) {
-      return true
-    }
-    const checkedFilters = TableHelper.checkedFilters[indexTable]
-    if (Object.keys(checkedFilters).length == 0) {
-      return true
-    }
-    for (const name in checkedFilters) {
-      if (checkedFilters[name].length != 0) {
-        const nodeValue = $(node).attr(`data-${name}`)
-        if (typeof nodeValue === 'undefined' || nodeValue.length == 0) {
-          return false
-        }
-        const values = nodeValue.split(',')
-
-        let resultForThisname = false
-        for (let index = 0; index < checkedFilters[name].length; index++) {
-          if (!resultForThisname && values.indexOf(checkedFilters[name][index]) > -1) {
-            resultForThisname = true
-          }
-        }
-        if (!resultForThisname) {
-          return false
-        }
-      }
-    }
-    return true
+    this.refreshTables()
   }
 }
-$(document).ready(() => {
+
+document.addEventListener('DOMContentLoaded', () => {
   TableHelper.init()
 })

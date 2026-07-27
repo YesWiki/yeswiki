@@ -160,7 +160,13 @@
     })
 
     function render() {
-      let rows = allRows.filter((row) => rowMatches(row, searchTerm))
+      // optional external row filter, registered per table id (e.g. the bazar
+      // tableau template's checkbox facet filters)
+      const filters = window.ywDatatableRowFilters || {}
+      const customFilter = table.id ? filters[table.id] : null
+      let rows = allRows.filter(
+        (row) => rowMatches(row, searchTerm) && (!customFilter || customFilter(row))
+      )
 
       if (sortCol !== null) {
         rows = rows.slice().sort((a, b) => compareRows(a, b, sortCol, sortDir))
@@ -192,7 +198,15 @@
           }
         })
       }
+
+      table.dispatchEvent(new CustomEvent('yw-datatable-drawn', {
+        bubbles: true,
+        detail: { matchedRows: rows }
+      }))
     }
+
+    // callers that change external filter state ask for a re-render this way
+    table.addEventListener('yw-datatable-refresh', () => render())
 
     render()
   }

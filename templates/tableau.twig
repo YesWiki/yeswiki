@@ -5,7 +5,7 @@
 , on utilise $params['nbbazarliste'] qui s'incrémente à chaque fois qu'on appelle bazarliste
 pour différencier les différents tableaux table_1 table_2 #}
 
-<table id="table_{{ params.nbbazarliste}}" class="table prevent-auto-init table-condensed display in-tableau-template" data-scroll-x="true">
+<table id="table_{{ params.nbbazarliste}}" class="yw-table in-tableau-template" data-yw-datatable>
   <thead>
     <tr>
       {# Column titles #}
@@ -104,11 +104,10 @@ pour différencier les différents tableaux table_1 table_2 #}
                 <a href="{{ url({tag:entry.id_fiche,handler:'editiframe'}) }}"
                   data-toggle="tooltip"
                   data-placement="left"
-                  class="btn btn-default btn-icon btn-xs modalbox"
+                  class="yw-btn yw-btn--sm btn-icon modalbox"
                   data-size="modal-lg"
                   data-iframe="1"
                   title="{{ _t('MODIFY') }} {{ entry.id_fiche }}"
-                  onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
                   >
                   <i class="fas fa-pencil-alt"></i>
                 </a>
@@ -116,20 +115,19 @@ pour différencier les différents tableaux table_1 table_2 #}
                 <button disabled="disabled"
                   data-toggle="tooltip"
                   data-placement="left"
-                  class="btn btn-default btn-icon btn-xs"
+                  class="yw-btn yw-btn--sm btn-icon"
                   target="blank"
                   title="{{ _t('DENY_WRITE') }}"
                   >
                   <i class="fas fa-pencil-alt"></i>
-                </buttom>
+                </button>
               {% endif %}
               {% if wiki.UserIsAdmin or wiki.UserIsOwner(entry.id_fiche) %}
                 <a href="{{ url({tag:entry.id_fiche,handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}"
                   data-toggle="tooltip"
                   data-placement="left"
-                  class="btn btn-danger btn-icon btn-xs modalbox"
+                  class="yw-btn yw-btn--sm yw-btn--danger btn-icon modalbox"
                   title="{{ _t('DELETE') }} {{ entry.id_fiche }}"
-                  onclick="$(this).tooltip('hide');$(this).attr('title',$(this).data('original-title'));"
                   >
                   <i class="fas fa-trash"></i>
                 </a>
@@ -137,11 +135,11 @@ pour différencier les différents tableaux table_1 table_2 #}
                 <button disabled="disabled"
                   data-toggle="tooltip"
                   data-placement="left"
-                  class="btn btn-danger btn-icon btn-xs"
+                  class="yw-btn yw-btn--sm yw-btn--danger btn-icon"
                   title="{{ _t('DELETEPAGE_NOT_OWNER') }}"
                   >
                   <i class="fas fa-trash"></i>
-                </buttom>
+                </button>
               {% endif %}
             {% endif %}
           </td>
@@ -174,7 +172,5 @@ pour différencier les différents tableaux table_1 table_2 #}
             {{ multidelete.insertButton('bazar-list-'~ params.nbbazarliste,'pages') }}
 {% endif %}
 
-{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
 {{ include_javascript('javascripts/tableau.js') }}
-{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
 {{ include_css('styles/bazar/tableau.css') }}

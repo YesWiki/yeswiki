@@ -1,6 +1,4 @@
-{{ include_javascript('javascripts/vendor/datatables-full/jquery.dataTables.min.js') }}
 {{ include_javascript('javascripts/forms-import.js') }}
-{{ include_css('styles/vendor/datatables-full/dataTables.bootstrap.min.css') }}
 
 {% set tooltipMessage =  isWikiHibernated ? _t('WIKI_IN_HIBERNATION') : _t('BAZ_NEED_ADMIN_RIGHTS') %}
 
@@ -162,7 +160,7 @@
 <div id="import-forms-result"></div>
 <form id="import-forms-form" action="" class="hide" method="post">
   <div class="table-responsive">
-    <table id="import-forms-table" class="table table-condensed table-striped prevent-auto-init">
+    <table id="import-forms-table" class="yw-table">
       <thead>
         <tr>
           <th class="prevent-sorting">
