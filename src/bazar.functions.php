@@ -472,13 +472,12 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
  * Deleted by mistake in the wave-2 dead-code purge while the bazar list templates
  * (liste_liens, material-card, map, tableau, ...) still call it — restored for
  * ticket 07, where the Twig `customValueForEntry` helper delegates here.
- */
-/**
+ *
  * @param array<mixed>|string|null $parameter
  * @param string|null              $field
  * @param array<string,mixed>      $entry
  */
-function getCustomValueForEntry($parameter, $field, $entry, $default)
+function getCustomValueForEntry($parameter, $field, $entry, mixed $default): mixed
 {
     if (is_array($parameter) && !empty($field)) {
         if (isset($entry[$field])) {

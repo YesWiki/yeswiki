@@ -1,10 +1,10 @@
 <?php
 
-use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Admin\Service\AutoUpdateService;
+use YesWiki\Core\YesWikiMigration;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
-use YesWiki\Core\YesWikiMigration;
 
 class CercopitequePostInstall extends YesWikiMigration
 {
@@ -23,7 +23,7 @@ class CercopitequePostInstall extends YesWikiMigration
 
                 $config['favorite_theme'] = 'yeswikicerco';
                 $config['favorite_style'] = $config['favorite_style'] ?? 'gray.css';
-                $config['favorite_squelette'] = $config['favorite_squelette'] ?? 'responsive-1col.tpl.html';
+                $config['favorite_squelette'] = $config['favorite_squelette'] ?? SQUELETTE_PAR_DEFAUT;
                 $config->write();
             }
         }

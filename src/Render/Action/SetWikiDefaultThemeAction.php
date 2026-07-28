@@ -120,10 +120,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
             'preset' => $this->sanitizePost('preset_select'),
         ];
         if (!empty($values['squelette'])) {
-            $values['squelette'] = ThemeManager::normalizeSqueletteName($values['squelette']);
-            if (!str_ends_with($values['squelette'], '.twig')) {
-                $values['squelette'] .= '.twig';
-            }
+            $values['squelette'] = ThemeManager::squeletteFileName($values['squelette']);
         }
         if (!empty($values['style']) && substr($values['style'], -4) !== '.css') {
             $values['style'] .= '.css';

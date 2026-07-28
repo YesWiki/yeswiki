@@ -262,9 +262,16 @@ class TemplateEngine
         $this->addTwigHelper('resizedImage', function ($image, $width, $height, $mode = 'crop', $separator = 'x') {
             return redimensionner_image('files/' . $image, "cache/image_{$width}{$separator}{$height}_" . $image, $width, $height, $mode);
         });
-        // raw passthrough for the odd call shapes (placeholder sources, custom cache names)
-        $this->addTwigHelper('resizeImage', function ($source, $destination, $width, $height, $mode = 'fit') {
+        // raw source->destination passthrough for the odd call shapes (placeholder
+        // sources, custom cache names) -- unlike resizedImage, which derives the
+        // cache name from the files/ image name
+        $this->addTwigHelper('resizeImageTo', function ($source, $destination, $width, $height, $mode = 'fit') {
             return redimensionner_image($source, $destination, $width, $height, $mode);
+        });
+        // strtotime() with the legacy templates' semantics: unparseable or missing
+        // dates become 0 (epoch), never an exception -- entry dates are user data
+        $this->addTwigHelper('timestamp', function ($value) {
+            return (int)strtotime((string)$value);
         });
         $this->addTwigHelper('removeAccents', function ($text) {
             return removeAccents((string)$text);
@@ -366,8 +373,7 @@ class TemplateEngine
     /**
      * Render a template as a complete page: squelette header + <div class="page">
      * content + squelette footer. (Previously named renderInSquelette.).
-     */
-    /**
+     *
      * @param array<string,mixed> $data
      */
     public function renderFullPage(string $templatePath, array $data = []): string

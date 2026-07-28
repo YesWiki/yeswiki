@@ -4,8 +4,35 @@
 {% set nbcol = params.nbcol|default('') is empty ? 4 : params.nbcol %}
 {% set rowcol = {1: 12, 2: 6, 3: 4, 4: 3, 6: 2}[nbcol]|default('') %}
 {% set classes = ['Red', 'Blue-Grey', 'Pink', 'Purple', 'Deep-Purple', 'Indigo', 'Blue', 'Light-Blue', 'Cyan', 'Teal', 'Green', 'Light-Green', 'Lime', 'Yellow', 'Amber', 'Orange', 'Deep-Orange', 'Brown', 'Grey'] %}
-{% if type != 'simple' %}
 {{ info_res|raw }}
+{% set mcjs %}
+document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(action) {
+  action.addEventListener('click', function() {
+    var card = action.parentElement;
+    var icon = action.querySelector('i');
+    if (icon) icon.classList.add('fa-spin-fast');
+
+    if (card.classList.contains('mc-active')) {
+      card.classList.remove('mc-active');
+      window.setTimeout(function() {
+        if (icon) {
+          icon.classList.remove('fa-arrow-left', 'fa-spin-fast');
+          icon.classList.add('fa-bars');
+        }
+      }, 800);
+    } else {
+      card.classList.add('mc-active');
+      window.setTimeout(function() {
+        if (icon) {
+          icon.classList.remove('fa-bars', 'fa-spin-fast');
+          icon.classList.add('fa-arrow-left');
+        }
+      }, 800);
+    }
+  });
+});
+{% endset %}
+{% if type != 'simple' %}
 {% if fiches|length > 0 %}
   <div class="row">
   {% for fiche in fiches %}
@@ -57,33 +84,6 @@
 {% endif %}
 {{ pager_links|raw }}
 {{ include_css('styles/bazar/material-card.css') }}
-{% set mcjs %}
-document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(action) {
-  action.addEventListener('click', function() {
-    var card = action.parentElement;
-    var icon = action.querySelector('i');
-    if (icon) icon.classList.add('fa-spin-fast');
-
-    if (card.classList.contains('mc-active')) {
-      card.classList.remove('mc-active');
-      window.setTimeout(function() {
-        if (icon) {
-          icon.classList.remove('fa-arrow-left', 'fa-spin-fast');
-          icon.classList.add('fa-bars');
-        }
-      }, 800);
-    } else {
-      card.classList.add('mc-active');
-      window.setTimeout(function() {
-        if (icon) {
-          icon.classList.remove('fa-bars', 'fa-spin-fast');
-          icon.classList.add('fa-arrow-left');
-        }
-      }, 800);
-    }
-  });
-});
-{% endset %}
 {{ addJavascript(mcjs) }}
 {% endif %}
 
@@ -126,33 +126,6 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
 
 {{ pager_links|raw }}
 {{ include_css('styles/bazar/material-card.css') }}
-{% set mcjs %}
-document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(action) {
-  action.addEventListener('click', function() {
-    var card = action.parentElement;
-    var icon = action.querySelector('i');
-    if (icon) icon.classList.add('fa-spin-fast');
-
-    if (card.classList.contains('mc-active')) {
-      card.classList.remove('mc-active');
-      window.setTimeout(function() {
-        if (icon) {
-          icon.classList.remove('fa-arrow-left', 'fa-spin-fast');
-          icon.classList.add('fa-bars');
-        }
-      }, 800);
-    } else {
-      card.classList.add('mc-active');
-      window.setTimeout(function() {
-        if (icon) {
-          icon.classList.remove('fa-bars', 'fa-spin-fast');
-          icon.classList.add('fa-arrow-left');
-        }
-      }, 800);
-    }
-  });
-});
-{% endset %}
 {{ addJavascript(mcjs) }}
 {% endif %}
 {{ pager_links|raw }}

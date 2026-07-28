@@ -289,8 +289,7 @@ class AdminContentController extends YesWikiController
             $metadata['style'] = $style . (substr($style, -4) === '.css' ? '' : '.css');
         }
         if (!empty($squelette) && is_string($squelette)) {
-            $squelette = ThemeManager::normalizeSqueletteName($squelette);
-            $metadata['squelette'] = str_ends_with($squelette, '.twig') ? $squelette : $squelette . '.twig';
+            $metadata['squelette'] = ThemeManager::squeletteFileName($squelette);
         }
         if (!empty($preset)) {
             $metadata['favorite_preset'] = $preset . (substr($preset, -4) === '.css' ? '' : '.css');

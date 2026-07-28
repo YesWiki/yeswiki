@@ -4,9 +4,9 @@ To be relevant for news, like displaying news that have a date before today -->
 {% if fiches|length > 0 %}
 {% set imgwidth = 450 %}
 {% set imgheight = 450 %}
-{# tri par ordre chronologique inverse (usort date_compare); '@0' mirrors
-   strtotime(null) === false, which PHP's date() treated as the epoch #}
-{% set fiches = fiches|sort((a, b) => (b.date|default('@0')|date('U')) <=> (a.date|default('@0')|date('U'))) %}
+{# tri par ordre chronologique inverse (usort date_compare); timestamp() maps
+   missing/unparseable dates to 0, like the strtotime() the original used #}
+{% set fiches = fiches|sort((a, b) => timestamp(b.date|default('')) <=> timestamp(a.date|default(''))) %}
 
 <div class="agenda-container">
   {% for fiche in fiches %}
@@ -22,7 +22,7 @@ To be relevant for news, like displaying news that have a date before today -->
         {% endif %}
       </div>
       <fig-caption>
-        {% set fdate = fiche.date|default('@0') %}
+        {% set fdate = '@' ~ timestamp(fiche.date|default('')) %}
         {% set moisfr = fdate|date('M')|replace({'Feb': 'fev', 'Apr': 'avr', 'May': 'mai', 'Jun': 'jui', 'Aug': 'aou'}) %}
 
         <div class="date"><span class="day">{{ fdate|date('d') }}</span><span class="month">{{ moisfr }}</span></div>

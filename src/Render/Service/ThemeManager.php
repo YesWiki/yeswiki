@@ -430,6 +430,17 @@ class ThemeManager implements EventSubscriberInterface
         return preg_replace('/\.tpl\.html$/i', '.twig', $name) ?? $name;
     }
 
+    /**
+     * Canonical stored form of a squelette name: legacy suffix normalized, `.twig`
+     * appended when the name has no suffix (theme-picker selects send bare names).
+     */
+    public static function squeletteFileName(string $name): string
+    {
+        $name = self::normalizeSqueletteName($name);
+
+        return str_ends_with($name, '.twig') ? $name : $name . '.twig';
+    }
+
     public function getUseFallbackTheme(): bool
     {
         return $this->useFallbackTheme;

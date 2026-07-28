@@ -108,11 +108,10 @@ class GererThemesAction extends YesWikiAction implements RegisteredAction
                 if (!empty($presets) && (substr($presets, -4) !== '.css')) {
                     $presets .= '.css';
                 }
-                $squelette = ThemeManager::normalizeSqueletteName((string)$squelette);
                 $this->pageManager->setMetadata($pageTag, [
                     'theme' => $theme,
                     'style' => $style . (substr($style, -4) === '.css' ? '' : '.css'),
-                    'squelette' => str_ends_with($squelette, '.twig') ? $squelette : $squelette . '.twig',
+                    'squelette' => ThemeManager::squeletteFileName((string)$squelette),
                 ] + (
                     !empty($post->get('preset_select'))
                 ? [
