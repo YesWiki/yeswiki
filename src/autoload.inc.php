@@ -40,8 +40,12 @@ spl_autoload_register(function ($className) {
 
     switch ($matches[1]) {
         case 'Core':
-            $basePath = $sourceDir . '/src';
-            break;
+            // Nothing left: ticket 05 moved every YesWiki\Core\<Layer>\* class into a PSR-4
+            // module (Kernel, Content, Identity, Render, Search, Admin). Only the
+            // two-segment YesWiki\Core\X form is still served, by the branch above, for the
+            // handful of bootstrap classes at src/ root. Kept as an explicit no-op so the
+            // absence is deliberate rather than an oversight.
+            return;
         case 'Custom':
             $basePath = 'custom';
             break;
