@@ -134,6 +134,19 @@ class Init
     /**
      * set headers for iframes.
      */
+    /**
+     * Default mail domain derived from the wiki's host ("www.foo.example.org" =>
+     * "example.org"). Was the global getMailDomain() in src/email.inc.php until the
+     * PSR-4 refactor removed it (this is its only caller).
+     */
+    private function deriveMailDomain(string $host): string
+    {
+        $host = preg_replace('/^www\./', '', $host);
+        $parts = explode('.', $host);
+
+        return implode('.', array_slice($parts, -2));
+    }
+
     private function setIframeHeaders()
     {
         // set header for Content-Security-Policy
@@ -592,7 +605,7 @@ class Init
         }
 
         if (empty($yeswikiConfig['mail_domain'] ?? null)) {
-            $yeswikiConfig['mail_domain'] = \getMailDomain(parse_url($yeswikiConfig['base_url'])['host']);
+            $yeswikiConfig['mail_domain'] = $this->deriveMailDomain(parse_url($yeswikiConfig['base_url'])['host'] ?? '');
         }
 
         if (!empty($yeswikiConfig['extra_headers'])) {
