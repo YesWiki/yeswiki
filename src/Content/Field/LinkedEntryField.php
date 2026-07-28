@@ -2,10 +2,9 @@
 
 namespace YesWiki\Content\Field;
 
-use YesWiki\Render\Service\MarkdownFormatterService;
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TabsService;
 
 #[\Field(['listefichesliees', 'listefiches'])]
@@ -101,7 +100,7 @@ class LinkedEntryField extends BazarField
             $query = ((!empty($this->query)) ? $this->query . '|' : '') . $query;
             $action = '{{bazarliste id="' . $this->name . '" query="' . $query . '" '
                 . ((!empty($this->limit)) ? 'nb="' . $this->limit . '" ' : '')
-                . 'template="' . (empty(trim($this->template)) ? 'liste_liens.tpl.html' : $this->template) . '" '
+                . 'template="' . (empty(trim($this->template)) ? 'liste_liens.twig' : $this->template) . '" '
                 . $this->otherParams . '}}';
 
             return $action;

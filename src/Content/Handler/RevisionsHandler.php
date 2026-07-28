@@ -1,12 +1,13 @@
 <?php
 
 namespace YesWiki\Content\Handler;
+
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 
 class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
@@ -44,7 +45,7 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
         $revisions = $pageManager->getRevisions($this->wiki->GetPageTag(), $this->params->get('revisionscount'));
         $entryManager = $this->getService(EntryManager::class);
 
-        return $this->renderInSquelette('@core/handlers/revisions.twig', [
+        return $this->renderFullPage('@core/handlers/revisions.twig', [
             'revisions' => $revisions,
             'revisionsCount' => $revisionsCount,
             'isEntry' => $entryManager->isEntry($this->wiki->GetPageTag()),

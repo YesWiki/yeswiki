@@ -2,9 +2,9 @@
 
 namespace YesWiki\Content\Handler;
 
-use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Search\Service\TagsManager;
 
 /**
  * `/PageName/listpages` -- converted from the procedural handlers/page/listpages.php by ticket 06.
@@ -34,7 +34,6 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-
         // fonctions a inclure
         include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
 
@@ -48,7 +47,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         $class = !empty($get_class) ? $get_class : 'liste';
         $nb = filter_input(INPUT_GET, 'nb', FILTER_SANITIZE_NUMBER_INT) ?: '';
         $tri = filter_input(INPUT_GET, 'tri', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
-        $template = basename(filter_input(INPUT_GET, 'template', FILTER_SANITIZE_SPECIAL_CHARS) ?? 'pages_accordion.tpl.html');
+        $template = basename(filter_input(INPUT_GET, 'template', FILTER_SANITIZE_SPECIAL_CHARS) ?? 'pages_accordion.twig');
         $nbcartrunc = 200;
         $valtemplate = [];
 

@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Exception\ParsingMultipleException;
+use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Field\EnumField;
@@ -116,7 +117,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         if ($dynamic && $template == 'liste_accordeon') {
             $template = 'list';
         }
-        if ($dynamic && in_array($template, ['tableau.tpl.html', 'tableau'])) {
+        if ($dynamic && in_array($template, ['tableau.tpl.html', 'tableau.twig', 'tableau'])) {
             $template = 'table';
         }
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
@@ -425,9 +426,12 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
     /**
      * Data preparation for tableau.twig -- historically done in PHP inside
      * templates/tableau.tpl.html; moved here when tpl.html templates died.
+     *
+     * @param array<string,mixed> $data the uniform bazar template data (fiches, params, info_res, ...)
      */
     private function renderTableau(array $data): string
     {
+        /** @var FormManager $formManager */
         $formManager = $this->getService(FormManager::class);
         $fiches = $data['fiches'];
         $params = $data['params'];
@@ -437,6 +441,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         $icons = [];
         $columnsInfo = [];
         $sanitizedParams = [];
+        /** @var array<mixed> $optionsIfDisplayvaluesinsteadofkeys */
         $optionsIfDisplayvaluesinsteadofkeys = [];
         $sumFieldsIds = [];
 
@@ -542,7 +547,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
                 }
 
                 foreach ($columnTitlesNames as $key => $value) {
-                    if (isset($columnsInfo[$key]) && !empty($value)) {
+                    if (isset($columnsInfo[$key])) {
                         $columnsInfo[$key]['title'] = $value;
                     }
                 }
@@ -603,6 +608,8 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
     /**
      * JS builder for the static (non-dynamic) leaflet map -- historically done in PHP
      * inside templates/map.tpl.html; moved here when tpl.html templates died.
+     *
+     * @param array<string,mixed> $data the uniform bazar template data (fiches, params, info_res, ...)
      */
     private function renderMap(array $data): string
     {
@@ -915,8 +922,12 @@ document.addEventListener(\'DOMContentLoaded\', function() {
         return $output;
     }
 
-    /** One tableau column descriptor per displayable facet of a field (checkbox options may fan out). */
-    private function tableauFieldCols($field, bool $checkboxFieldsInColumns, bool $displayImagesAsThumbnails): array
+    /**
+     * One tableau column descriptor per displayable facet of a field (checkbox options may fan out).
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    private function tableauFieldCols(BazarField $field, bool $checkboxFieldsInColumns, bool $displayImagesAsThumbnails): array
     {
         $propertyName = $field->getPropertyName();
         if (empty($propertyName)) {
@@ -961,7 +972,11 @@ document.addEventListener(\'DOMContentLoaded\', function() {
         ] + ($displayImagesAsThumbnails && $field instanceof ImageField ? ['imageAsThumbnail' => true] : [])];
     }
 
-    private function tableauCollectOptions($field, array &$optionsIfDisplayvaluesinsteadofkeys, array $sanitizedParams): void
+    /**
+     * @param array<mixed> $optionsIfDisplayvaluesinsteadofkeys
+     * @param array<mixed> $sanitizedParams
+     */
+    private function tableauCollectOptions(BazarField $field, array &$optionsIfDisplayvaluesinsteadofkeys, array $sanitizedParams): void
     {
         $propertyName = $field->getPropertyName();
         if ($sanitizedParams['displayvaluesinsteadofkeys']

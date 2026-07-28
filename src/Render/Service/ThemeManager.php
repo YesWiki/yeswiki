@@ -427,7 +427,7 @@ class ThemeManager implements EventSubscriberInterface
      */
     public static function normalizeSqueletteName(string $name): string
     {
-        return preg_replace('/\.tpl\.html$/i', '.twig', $name);
+        return preg_replace('/\.tpl\.html$/i', '.twig', $name) ?? $name;
     }
 
     public function getUseFallbackTheme(): bool

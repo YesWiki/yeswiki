@@ -473,6 +473,11 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
  * (liste_liens, material-card, map, tableau, ...) still call it — restored for
  * ticket 07, where the Twig `customValueForEntry` helper delegates here.
  */
+/**
+ * @param array<mixed>|string|null $parameter
+ * @param string|null              $field
+ * @param array<string,mixed>      $entry
+ */
 function getCustomValueForEntry($parameter, $field, $entry, $default)
 {
     if (is_array($parameter) && !empty($field)) {

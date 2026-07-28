@@ -149,7 +149,7 @@ class Init
             return $host;
         }
 
-        $host = preg_replace('/^www\./', '', $host);
+        $host = preg_replace('/^www\./', '', $host) ?? $host;
         $parts = explode('.', $host);
 
         return implode('.', array_slice($parts, -2));
@@ -472,7 +472,7 @@ class Init
             // dead: the actions-builder wizard's bazarliste/bazaragenda/bazartableau/...
             // entries (docs/actions/bazarliste.yaml and friends) still default-select these
             // exact template names, so they're relocated as-is rather than dropped.
-            'default_bazar_template' => 'liste_accordeon.tpl.html',
+            'default_bazar_template' => 'liste_accordeon.twig',
             'baz_semantic_types_mapping' => [
                 'https://www.w3.org/ns/activitystreams' => 'activitystreams',
             ],

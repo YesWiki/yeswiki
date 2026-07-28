@@ -10,6 +10,6 @@ class HelloHandler extends YesWikiHandler
 
         $pageBody = $this->wiki->page['body'];
 
-        return $this->renderInSquelette('@helloworld/hello.twig', ['body' => $pageBody]);
+        return $this->renderFullPage('@helloworld/hello.twig', ['body' => $pageBody]);
     }
 }

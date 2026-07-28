@@ -2,8 +2,8 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 /**
@@ -40,7 +40,6 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
         $nbcartrunc = 200;
 
@@ -56,7 +55,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
 
         $template = $this->wiki->GetParameter('template');
         if (empty($template) || !file_exists('templates/' . $template)) {
-            $template = 'pages_grid_filter.tpl.html';
+            $template = 'pages_grid_filter.twig';
         }
 
         $params = get_filtertags_parameters_recursive();

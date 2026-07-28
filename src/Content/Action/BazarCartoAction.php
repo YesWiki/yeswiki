@@ -1,9 +1,10 @@
 <?php
 
 namespace YesWiki\Content\Action;
-use YesWiki\Search\Service\SearchManager;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Search\Service\SearchManager;
 
 class BazarCartoAction extends YesWikiAction implements RegisteredAction
 {
@@ -34,7 +35,7 @@ class BazarCartoAction extends YesWikiAction implements RegisteredAction
         $markerSize = $get->get('markersize') ?? $arg['markersize'] ?? null;
         $smallMarker = $get->get('smallmarker') ?? $arg['smallmarker'] ?? $markerSize === 'small' ? '1' : $this->params->get('baz_small_marker');
 
-        // backward compatibility for custom map.tpl.html
+        // backward compatibility for custom static map templates
         // TO remove this part when dynamic is robust AND user of custom templates are really aware of this
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
         $navigation = (!$dynamic) ?
@@ -47,7 +48,7 @@ class BazarCartoAction extends YesWikiAction implements RegisteredAction
             ($arg['fullscreen'] ?? 'true') :
             $this->formatBoolean($arg, true, 'fullscreen');
         $template = (!$dynamic) ?
-            ($arg['template'] ?? 'map.tpl.html') :
+            ($arg['template'] ?? 'map.twig') :
             ($arg['template'] ?? 'map');
         if (strpos($template, 'gogomap') !== false) {
             $template = 'gogocarto';

@@ -3,8 +3,8 @@
 namespace YesWiki\Content\Service;
 
 use Symfony\Component\Yaml\Yaml;
-use YesWiki\Wiki;
 use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 class ActionsBuilderService
 {
@@ -69,16 +69,14 @@ class ActionsBuilderService
         });
 
         // Add custom bazar templates to the list of bazarliste component
-        $bazarlisteTwigFiles = glob('custom/templates/bazar/*.twig');
-        $bazarlisteTplFiles = glob('custom/templates/bazar/*.tpl.html');
-        $bazarlisteCustomTemplates = array_merge($bazarlisteTplFiles, $bazarlisteTwigFiles);
+        $bazarlisteCustomTemplates = glob('custom/templates/bazar/*.twig') ?: [];
         foreach ($bazarlisteCustomTemplates as $k => $v) {
             $bazarlisteCustomTemplates[$k] = str_replace('custom/templates/bazar/', '', $v);
         }
         // bazar templates starting with "fiche" are not list of entries
         $filtered_files = preg_grep('/^(?!fiche)/', $bazarlisteCustomTemplates);
         foreach ($filtered_files as $file) {
-            $name = str_replace(['.tpl.html', '.twig'], '', $file);
+            $name = str_replace('.twig', '', $file);
             $translation = _t('AB_' . $name . '_label');
             // if no translation found, write "Template custom"
             if ($translation == 'AB_' . $name . '_label') {

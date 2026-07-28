@@ -4,10 +4,10 @@ namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Render\Service\HibernationNotice;
-use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Render\Service\HibernationNotice;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Wiki;
 
 /**
@@ -83,7 +83,7 @@ abstract class YesWikiPerformable
         // add some addition globals
         $vUserManager = $this->wiki->services->get(UserManager::class);
         $userName = (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'];
-        $this->twig->addGlobal('user', new class ($vUserManager, $userName) {
+        $this->twig->addGlobal('user', new class($vUserManager, $userName) {
             public string $name;
             private UserManager $userManager;
             private bool $entryResolved = false;
@@ -101,6 +101,7 @@ abstract class YesWikiPerformable
                     $this->entry = $this->userManager->getAssociatedEntry() ?? [];
                     $this->entryResolved = true;
                 }
+
                 return $this->entry;
             }
         });
@@ -108,9 +109,12 @@ abstract class YesWikiPerformable
         return $this->twig->$method($templatePath, $data);
     }
 
-    public function renderInSquelette($templatePath, $data = [])
+    /**
+     * @param array<string,mixed> $data
+     */
+    public function renderFullPage(string $templatePath, array $data = []): string
     {
-        return $this->render($templatePath, $data, 'renderInSquelette');
+        return $this->render($templatePath, $data, 'renderFullPage');
     }
 
     /**

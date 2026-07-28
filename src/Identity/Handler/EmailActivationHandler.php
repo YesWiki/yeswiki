@@ -1,11 +1,12 @@
 <?php
 
 namespace YesWiki\Identity\Handler;
+
+use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Exception\BadActivationKeyException;
 use YesWiki\Identity\Exception\UserNameDoesNotExistException;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 
 class EmailActivationHandler extends YesWikiHandler implements RegisteredHandler
@@ -37,7 +38,7 @@ class EmailActivationHandler extends YesWikiHandler implements RegisteredHandler
                 && $userName == $currentUser['name']
                 && $accountActivationService->isActivated($currentUser['name'])
             ) {
-                return $this->renderInSquelette('@core/alert-message.twig', [
+                return $this->renderFullPage('@core/alert-message.twig', [
                     'type' => 'success',
                     'message' => _t('ACCOUNTACTIVATION_BY_EMAIL_ALREADY_ACTIVATED'),
                 ]);
@@ -45,12 +46,12 @@ class EmailActivationHandler extends YesWikiHandler implements RegisteredHandler
 
             $accountActivationService->activate($userName, $key);
 
-            return $this->renderInSquelette('@core/alert-message.twig', [
+            return $this->renderFullPage('@core/alert-message.twig', [
                 'type' => 'primary',
                 'message' => _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_SUCCESS'),
             ]);
-        } catch (UserNameDoesNotExistException | BadActivationKeyException $th) {
-            return $this->renderInSquelette('@core/alert-message.twig', [
+        } catch (UserNameDoesNotExistException|BadActivationKeyException $th) {
+            return $this->renderFullPage('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ACCOUNTACTIVATION_BY_EMAIL_ACTIVATION_ERROR', ['error' => $th->getMessage()]),
             ]);

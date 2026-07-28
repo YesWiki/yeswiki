@@ -1,9 +1,10 @@
 <?php
 
 namespace YesWiki\Content\Action;
-use YesWiki\Render\Service\TemplateEngine;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\TemplateEngine;
 
 class CalendrierAction extends YesWikiAction implements RegisteredAction
 {
@@ -25,11 +26,12 @@ class CalendrierAction extends YesWikiAction implements RegisteredAction
         }
         $class = (isset($classes) && count($classes) > 0) ? implode(' ', $classes) : null;
 
-        $template = !empty($arg['template']) ? basename($arg['template']) : 'calendar.tpl.html';
+        $template = !empty($arg['template']) ? basename($arg['template']) : 'calendar';
         $dynamic = $this->formatBoolean($arg, false, 'dynamic');
         $templateEngine = $this->getService(TemplateEngine::class);
-        if (($template === 'calendar.tpl.html' && !$templateEngine->hasTemplate("@core/{$template}"))
-            || ($template === 'calendar' && !$templateEngine->hasTemplate("@core/{$template}.tpl.html"))) {
+        // 'calendar' has no static template: without one shipped, it is dynamic-only
+        if (in_array($template, ['calendar', 'calendar.tpl.html', 'calendar.twig'], true)
+            && !$templateEngine->hasTemplate('@core/calendar.twig')) {
             $template = 'calendar';
             $dynamic = true;
         }

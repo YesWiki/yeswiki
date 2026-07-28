@@ -1,9 +1,10 @@
 <?php
 
 namespace YesWiki\Admin\Handler;
-use YesWiki\Kernel\Service\HibernationService;
+
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\HibernationService;
 
 class UpdateHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -29,7 +30,7 @@ class UpdateHandler extends YesWikiHandler implements RegisteredHandler
             $output .= '<div class="alert alert-danger">' . _t('ACLS_RESERVED_FOR_ADMINS') . '</div>';
         }
 
-        return $this->renderInSquelette('@core/handlers/update.twig', [
+        return $this->renderFullPage('@core/handlers/update.twig', [
             'output' => $output,
         ]);
     }

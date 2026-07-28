@@ -50,7 +50,7 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
         } else {
             $template = $this->wiki->GetParameter('template');
             if (empty($template)) {
-                $template = 'pages_list.tpl.html';
+                $template = 'pages_list.twig';
             }
 
             $resultat = explode(',', $pages);

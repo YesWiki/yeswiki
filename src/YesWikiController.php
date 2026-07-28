@@ -32,9 +32,12 @@ abstract class YesWikiController
         return $this->wiki->services->get(TemplateEngine::class)->$method($templatePath, $data);
     }
 
-    protected function renderInSquelette($templatePath, $data = [])
+    /**
+     * @param array<string,mixed> $data
+     */
+    protected function renderFullPage(string $templatePath, array $data = []): string
     {
-        return $this->render($templatePath, $data, 'renderInSquelette');
+        return $this->render($templatePath, $data, 'renderFullPage');
     }
 
     protected function denyAccessUnlessGranted($role, $tag)

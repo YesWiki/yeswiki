@@ -5,25 +5,25 @@ namespace YesWiki\Content\Controller;
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Identity\Exception\UserFieldException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ConditionsCheckingField;
 use YesWiki\Content\Field\LabelField;
-use YesWiki\Identity\Service\AclService;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Content\Service\SemanticTransformer;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Controller\CaptchaController;
+use YesWiki\Identity\Exception\UserFieldException;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Search\Service\SearchManager;
 
 class EntryController extends YesWikiController
 {
@@ -141,7 +141,7 @@ class EntryController extends YesWikiController
                 return $value === $entryId;
             })) < 3 // max 3 levels
         ) {
-            // use a custom template if exists (fiche-FORM_ID.tpl.html or fiche-FORM_ID.twig)
+            // use a custom template if exists (fiche-FORM_ID.twig)
             $customTemplatePath = $this->getCustomTemplatePath($entry);
             if ($customTemplatePath) {
                 $customTemplateValues = $this->getValuesForCustomTemplate($entry, $pLocalForm, $userNameForRendering);
@@ -461,7 +461,6 @@ class EntryController extends YesWikiController
     private function getCustomTemplatePath($entry): ?string
     {
         $templatePaths = [
-            "@core/fiche-{$entry['form_id']}.tpl.html",
             "@core/fiche-{$entry['form_id']}.twig",
         ];
         foreach ($templatePaths as $templatePath) {
@@ -504,7 +503,7 @@ class EntryController extends YesWikiController
             }
 
             if (isset($type)) {
-                $templatePath = $dir_name . '/' . strtolower($type) . '.tpl.html';
+                $templatePath = $dir_name . '/' . strtolower($type) . '.twig';
 
                 return $this->getService(TemplateEngine::class)->hasTemplate($templatePath) ? $templatePath : null;
             }

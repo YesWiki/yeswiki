@@ -1,13 +1,14 @@
 <?php
 
 namespace YesWiki\Render\Action;
-use YesWiki\Render\Service\ThemeSelectorRenderer;
+
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Render\Service\ThemeManager;
-use YesWiki\Core\YesWikiAction;
-use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\ThemeSelectorRenderer;
 
 class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredAction
 {
@@ -118,8 +119,11 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
             'theme' => $this->sanitizePost('theme_select'),
             'preset' => $this->sanitizePost('preset_select'),
         ];
-        if (!empty($values['squelette']) && substr($values['squelette'], -strlen('.tpl.html')) !== '.tpl.html') {
-            $values['squelette'] .= '.tpl.html';
+        if (!empty($values['squelette'])) {
+            $values['squelette'] = ThemeManager::normalizeSqueletteName($values['squelette']);
+            if (!str_ends_with($values['squelette'], '.twig')) {
+                $values['squelette'] .= '.twig';
+            }
         }
         if (!empty($values['style']) && substr($values['style'], -4) !== '.css') {
             $values['style'] .= '.css';

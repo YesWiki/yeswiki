@@ -2,9 +2,9 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Search\Service\TagsManager;
 
 /**
  * `{{listpagestag}}` -- converted from the procedural actions/listpagestag.php by ticket 06.
@@ -40,7 +40,6 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         $tagsManager = $this->wiki->services->get(TagsManager::class);
 
         include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
@@ -54,7 +53,7 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
         $tri = $this->wiki->GetParameter('tri');
         $template = $this->wiki->GetParameter('template');
         if (empty($template)) {
-            $template = 'pages_list.tpl.html';
+            $template = 'pages_list.twig';
         }
 
         $output = '';

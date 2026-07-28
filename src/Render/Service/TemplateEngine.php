@@ -290,7 +290,7 @@ class TemplateEngine
         });
     }
 
-    private function addTwigFilters()
+    private function addTwigFilters(): void
     {
         // ticket 07: the converted bazar-list templates normalize markup with the
         // same regexes their PHP predecessors used
@@ -363,7 +363,14 @@ class TemplateEngine
         return $twig->render('__sem__', $data);
     }
 
-    public function renderInSquelette($templatePath, $data = [])
+    /**
+     * Render a template as a complete page: squelette header + <div class="page">
+     * content + squelette footer. (Previously named renderInSquelette.).
+     */
+    /**
+     * @param array<string,mixed> $data
+     */
+    public function renderFullPage(string $templatePath, array $data = []): string
     {
         $result = '<div class="page">';
         $result .= $this->render($templatePath, $data);
@@ -381,7 +388,7 @@ class TemplateEngine
      */
     public static function resolveLegacyTemplateName(string $templatePath): string
     {
-        return preg_replace('/\.tpl\.html$/i', '.twig', $templatePath);
+        return preg_replace('/\.tpl\.html$/i', '.twig', $templatePath) ?? $templatePath;
     }
 
     public function hasTemplate($templatePath): bool
@@ -389,48 +396,24 @@ class TemplateEngine
         return $this->twigLoader->exists(self::resolveLegacyTemplateName($templatePath));
     }
 
-    // second argument provide namespace, so we when we render '@bazar/bazarliste.twig'
-    // it will look first in custom/templates/bazar/,
-    // then in tools/XXX/templates/bazar/
-    // and finally in tools/bazar/templates/
+    /**
+     * Render a Twig template. The namespace picks the search path: '@core/x.twig'
+     * looks in custom/templates/core/ then templates/, '@myext/x.twig' in the
+     * extension override chain then extensions/myext/templates/.
+     *
+     * @throws TemplateNotFound when no template matches (template names can be
+     *                          stored user data, so this must stay catchable)
+     */
     public function render($templatePath, $data = [])
     {
         $templatePath = self::resolveLegacyTemplateName($templatePath);
-        $method = str_ends_with($templatePath, '.twig') ? 'renderTwig' : 'renderPhp';
-
-        return $this->$method($templatePath, $data);
-    }
-
-    protected function renderTwig($templatePath, $data = [])
-    {
+        if (!$this->twigLoader->exists($templatePath)) {
+            throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $templatePath");
+        }
         $data = array_merge($data, [
             'config' => $this->wiki->config,
         ]);
 
         return $this->twig->render($templatePath, $data);
-    }
-
-    /**
-     * @throws TemplateNotFound
-     */
-    protected function renderPhp($templatePath, $data = [])
-    {
-        if (!$this->hasTemplate($templatePath)) {
-            throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $templatePath");
-        }
-
-        $realTemplatePath = $this->twigLoader->getSourceContext($templatePath)->getPath();
-
-        // extract variables for the template
-        if (!empty($data)) {
-            extract($data);
-        }
-
-        ob_start(); // buffer
-        include $realTemplatePath;
-        $content = ob_get_contents(); // get buffer's content
-        ob_end_clean(); // destroy buffer
-
-        return $content;
     }
 }

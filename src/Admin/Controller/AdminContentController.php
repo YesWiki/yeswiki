@@ -6,12 +6,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Identity\Service\CsrfTokenChecker;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageOperationsService;
-use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Render\Service\ThemeManager;
 
 class AdminContentController extends YesWikiController
 {
@@ -288,8 +288,9 @@ class AdminContentController extends YesWikiController
         if (!empty($style)) {
             $metadata['style'] = $style . (substr($style, -4) === '.css' ? '' : '.css');
         }
-        if (!empty($squelette)) {
-            $metadata['squelette'] = $squelette . (substr($squelette, -9) === '.tpl.html' ? '' : '.tpl.html');
+        if (!empty($squelette) && is_string($squelette)) {
+            $squelette = ThemeManager::normalizeSqueletteName($squelette);
+            $metadata['squelette'] = str_ends_with($squelette, '.twig') ? $squelette : $squelette . '.twig';
         }
         if (!empty($preset)) {
             $metadata['favorite_preset'] = $preset . (substr($preset, -4) === '.css' ? '' : '.css');

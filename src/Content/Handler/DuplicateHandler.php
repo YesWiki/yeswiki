@@ -1,15 +1,16 @@
 <?php
 
 namespace YesWiki\Content\Handler;
-use YesWiki\Identity\Service\AuthenticationService;
+
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\DuplicationManager;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 
 class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
@@ -132,7 +133,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
             $title = '';
         }
 
-        return $this->renderInSquelette('@core/handlers/duplicate.twig', [
+        return $this->renderFullPage('@core/handlers/duplicate.twig', [
             'title' => $title,
             'originalTag' => $this->wiki->GetPageTag(),
             'error' => $error,

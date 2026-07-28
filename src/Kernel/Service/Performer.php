@@ -240,7 +240,7 @@ class Performer
         ];
         if ($objectType == 'handler') {
             // display it with a header and a footer
-            return $this->twig->renderInSquelette('@core/alert-message-with-back.twig', $data);
+            return $this->twig->renderFullPage('@core/alert-message-with-back.twig', $data);
         }
 
         // display it inline

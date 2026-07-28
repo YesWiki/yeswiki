@@ -42,7 +42,7 @@ class MoteurrechercheAction extends YesWikiAction implements RegisteredAction
         // on choisit le template utilisé
         $template = $this->wiki->GetParameter('template');
         if (empty($template)) {
-            $template = 'moteurrecherche_basic.tpl.html';
+            $template = 'moteurrecherche_basic.twig';
         }
 
         // on peut ajouter des classes à la classe par défaut .searchform

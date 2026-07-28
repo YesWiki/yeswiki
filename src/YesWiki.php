@@ -36,35 +36,34 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use Throwable;
-use YesWiki\Core\ApiResponse;
+use YesWiki\Admin\Service\ApiService;
 use YesWiki\Content\Controller\LegacyPageController;
-use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Content\Service\LinkTracker;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
+use YesWiki\Core\ApiResponse;
+use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\InvalidGroupNameException;
-use YesWiki\Kernel\Exception\InvalidInputException;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Admin\Service\ApiService;
-use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Kernel\Exception\InvalidInputException;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
-use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
-use YesWiki\Content\Service\LinkTracker;
-use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Service\MarkdownFormatterService;
-use YesWiki\Search\Service\TagsManager;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
-use YesWiki\Content\Service\TripleStore;
-use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\YesWikiControllerResolver;
+use YesWiki\Search\Service\TagsManager;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
 // time, before anything (Init, the installer, error paths) calls _t()
@@ -1780,7 +1779,7 @@ class Wiki
     }
 
     /**
-     * Shortcut to be used in the old plain PHP Actions and Handlers (instead of using SquelettePhp class).
+     * Shortcut to TemplateEngine::render() that swallows errors into an inline alert.
      */
     public function render($templatePath, $data)
     {
