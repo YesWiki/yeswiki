@@ -61,7 +61,7 @@ define('MIN_SEARCH_KEYWORD_LENGTH', 3);
 // ticket 16: the bundled yw-native `yeswiki` theme replaces margot as fallback)
 define('THEME_PAR_DEFAUT', 'yeswiki');
 define('CSS_PAR_DEFAUT', 'yeswiki.css');
-define('SQUELETTE_PAR_DEFAUT', '1col.tpl.html');
+define('SQUELETTE_PAR_DEFAUT', '1col.twig');
 define('BACKGROUND_IMAGE_PAR_DEFAUT', '');
 // only the page owner and admins may change its theme
 define('SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME', false);

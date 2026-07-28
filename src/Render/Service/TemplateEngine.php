@@ -5,14 +5,14 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Content\Attach;
-use YesWiki\Kernel\Exception\TemplateNotFound;
-use YesWiki\Wiki;
-use YesWiki\Identity\Service\AclService;
-use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Exception\TemplateNotFound;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Wiki;
 
 class TemplateEngine
 {
@@ -118,6 +118,7 @@ class TemplateEngine
         $this->twig->addGlobal('isInIframe', testUrlInIframe());
 
         // Adds Helpers
+        $this->addTwigFilters();
         $this->addTwigHelper('dump', function ($var) {
             if (!empty($this->wiki->config['debug'])) {
                 return dump($var);
@@ -207,6 +208,18 @@ class TemplateEngine
         $this->addTwigHelper('renderAction', function ($name, $params = []) {
             return $this->wiki->services->get(Performer::class)->run($name, 'action', $params);
         });
+        // squelettes: same attribute-string form the historical `{{action attr="…"}}`
+        // squelette syntax used, with Wiki::Action()'s link-tracking semantics
+        $this->addTwigHelper('action', function ($actionString) {
+            return $this->wiki->Action($actionString);
+        });
+        // inline JS registered for the page footer aggregate, like AddJavascript()
+        // calls from the historical PHP templates
+        $this->addTwigHelper('addJavascript', function ($js) {
+            $this->wiki->AddJavascript((string)$js);
+
+            return '';
+        });
         $this->addTwigHelper('reaction', function ($entry, $reactionId) {
             $form = $this->wiki->services->get(FormManager::class)->getOne($entry['form_id']);
             $found = false;
@@ -219,12 +232,71 @@ class TemplateEngine
                 return $form['prepared'][$found]->renderStaticIfPermitted($entry);
             }
         });
+        // bazar list templates: resolve a display parameter (color=, icon=, ...)
+        // for one entry — delegates to getCustomValueForEntry() (bazar.functions.php)
+        $this->addTwigHelper('customValueForEntry', function ($parameter, $field, $entry, $default = '') {
+            return getCustomValueForEntry($parameter, $field, $entry, $default);
+        });
+        // ticket 07 (tpl.html -> Twig): the page-list/layout templates check page
+        // rights inline; these mirror the Wiki calls the PHP templates used
+        $this->addTwigHelper('hasAccess', function ($privilege, $tag = '') {
+            return $this->wiki->HasAccess($privilege, $tag ?: '');
+        });
+        $this->addTwigHelper('userIsAdmin', function () {
+            return (bool)$this->wiki->UserIsAdmin();
+        });
+        $this->addTwigHelper('userIsOwner', function ($tag = '') {
+            return (bool)$this->wiki->UserIsOwner($tag ?: '');
+        });
+        $this->addTwigHelper('absoluteUrl', function () {
+            return getAbsoluteUrl();
+        });
+        // full rendered view of one bazar entry (liste_accordeon expands entries
+        // in place) — delegates to baz_voir_fiche()
+        $this->addTwigHelper('renderEntry', function ($barregestion, $fiche, $form = '') {
+            return baz_voir_fiche($barregestion, $fiche, $form ?: '');
+        });
+        // thumbnail with the historical cache/image_{W}x{H}_{name} naming the bazar
+        // list templates share (agenda uses WxH, blog/trombinoscope W_H -- the
+        // separator is part of each template's stored-cache contract)
+        $this->addTwigHelper('resizedImage', function ($image, $width, $height, $mode = 'crop', $separator = 'x') {
+            return redimensionner_image('files/' . $image, "cache/image_{$width}{$separator}{$height}_" . $image, $width, $height, $mode);
+        });
+        // raw passthrough for the odd call shapes (placeholder sources, custom cache names)
+        $this->addTwigHelper('resizeImage', function ($source, $destination, $width, $height, $mode = 'fit') {
+            return redimensionner_image($source, $destination, $width, $height, $mode);
+        });
+        $this->addTwigHelper('removeAccents', function ($text) {
+            return removeAccents((string)$text);
+        });
+        $this->addTwigHelper('fileExists', function ($path) {
+            return file_exists((string)$path);
+        });
+        // qrcode badge templates: returns the cached SVG path for a payload,
+        // generating it on first use (?refresh=1 regenerates)
+        $this->addTwigHelper('qrCode', function ($content, $prefix = 'qrcode') {
+            $cacheImage = 'cache' . DIRECTORY_SEPARATOR . $prefix . '-' . $this->wiki->getPageTag() . '-' . md5($content) . '.svg';
+            if (!file_exists($cacheImage) || (!empty($_GET['refresh']) && $_GET['refresh'] == '1')) {
+                $this->wiki->services->get(\YesWiki\Content\Service\QrCodeService::class)->generateToFile($content, $cacheImage);
+            }
+
+            return $cacheImage;
+        });
         $this->addTwigHelper('listValues', function ($listId, $parent = null) {
             return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);
         });
         $this->addTwigHelper('fileUrl', function ($fileName) {
             return $this->wiki->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fileName;
         });
+    }
+
+    private function addTwigFilters()
+    {
+        // ticket 07: the converted bazar-list templates normalize markup with the
+        // same regexes their PHP predecessors used
+        $this->twig->addFilter(new \Twig\TwigFilter('preg_replace', function ($subject, $pattern, $replacement) {
+            return preg_replace($pattern, $replacement, (string)$subject);
+        }));
     }
 
     private function addTwigHelper($name, $callback)
@@ -302,9 +374,19 @@ class TemplateEngine
         return $result;
     }
 
+    /**
+     * Template names are stored data ({{bazarliste template="X.tpl.html"}} in page
+     * bodies, per-page metadata): historical .tpl.html names resolve to their Twig
+     * successors since the tpl.html engine died (ticket 07).
+     */
+    public static function resolveLegacyTemplateName(string $templatePath): string
+    {
+        return preg_replace('/\.tpl\.html$/i', '.twig', $templatePath);
+    }
+
     public function hasTemplate($templatePath): bool
     {
-        return $this->twigLoader->exists($templatePath);
+        return $this->twigLoader->exists(self::resolveLegacyTemplateName($templatePath));
     }
 
     // second argument provide namespace, so we when we render '@bazar/bazarliste.twig'
@@ -313,6 +395,7 @@ class TemplateEngine
     // and finally in tools/bazar/templates/
     public function render($templatePath, $data = [])
     {
+        $templatePath = self::resolveLegacyTemplateName($templatePath);
         $method = str_ends_with($templatePath, '.twig') ? 'renderTwig' : 'renderPhp';
 
         return $this->$method($templatePath, $data);

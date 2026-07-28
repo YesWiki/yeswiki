@@ -1,0 +1,119 @@
+{% set nbcardsperpage = params.cardsperpage|default('') is empty ? 4 : params.cardsperpage %}
+{% set entityType = params.entity|default('') is empty ? config.qrcode_config.default_entity_type : params.entity %}
+{% set entityForm = params.entityform|default('') is empty ? config.qrcode_config.default_entity_form : params.entityform %}
+{% set logo = params.logo|default('') is empty ? 'themes/margot/images/favicon.png' : params.logo %}
+{% if fiches|length > 0 %}
+<div class="badge-container">
+    {% for fiche in fiches %}
+          <div class="qrbadge bazar-entry" {{ fiche.html_data|raw }}>
+            {% set qrcodeContent = url({tag: 'QRcodeScan'}) ~ '&id=' ~ entityForm ~ '&' ~ entityType ~ '=' ~ fiche.tag|trim %}
+            {% set cacheImage = qrCode(qrcodeContent, 'qrcodebadge') %}
+          <div class="badge-info">
+            <img class="badge-logo" src="{{ logo }}" alt="badge logo" />
+            <h4 class="badge-title">{{ fiche.bf_titre|trim|raw }}</h4>
+
+            {% if fiche.bf_structure|default('')|trim is not empty %}<div class="badge-organisation">{{ fiche.bf_structure|trim|raw }}</div>{% endif %}
+          </div>
+          <img class="img-qrcode" src="{{ cacheImage }}" alt="qrcode" />
+        </div>
+        {% if loop.index % nbcardsperpage == 0 %}</div><div class="badge-container">{% endif %}
+    {% endfor %}
+    {% if fiches|length % nbcardsperpage == 0 %}</div>{% endif %}
+  </div>
+  <style>
+  .badge-container {width:210mm;height:297mm;margin:0 auto;
+  display: grid;
+  grid-gap:10mm;
+  grid-template-columns: 1fr 1fr;
+  justify-items: center;
+  justify-content: center;
+  }
+  .qrbadge {
+    border:1px solid #ddd;
+    margin: 0 /*30mm 9mm 9mm 9mm*/; 
+    padding: 1mm 1mm 9mm 1mm;
+    display: inline-block;
+    width: 74mm;
+    height: 105mm;
+    overflow:hidden;
+    position: relative;
+    font-size: 10pt;
+  }
+  .badge-info {text-align: left;}
+  .badge-title { font-size: 16pt; color:#61b32e !important; margin: 3mm 0mm; text-transform: capitalize;}
+  .badge-organisation {margin-bottom:1em; font-weight: bold;line-height: 1em;}
+
+.qrbadge {
+  display: grid;
+  align-content: space-between;
+}
+
+.img-qrcode {
+  width: 45mm;
+  height: 45mm;
+  display: block;
+  margin: 0 auto;
+}
+.badge-logo {
+  display: block;
+  margin: 16mm auto 0 auto;
+  width: 15mm;
+}
+
+.badge-info {
+  /* text-align: left; */
+  text-align: center;
+  width: 100%;
+  display: block;
+}
+
+.badge-title {
+  margin: 2mm 0mm 1mm 0mm;
+}
+
+.badge-organisation {
+  margin-bottom: 0em;
+}
+
+.badge-container {
+  width: 158mm;
+  grid-template-columns: 74mm 74mm;
+}
+
+
+  @media print {
+     @page {
+         size: auto;
+         margin: 0;
+       }
+     
+       body {
+         -webkit-print-color-adjust: exact !important;
+         print-color-adjust: exact !important;
+         overflow: visible;
+         margin: 0px;
+       }
+       a[href]::after {
+         content: none;
+       }
+       .footer,
+       #search-form,
+       #yw-topnav,
+       #yw-header,
+       #yw-footer,
+	  .export-links,
+       .debug,
+       .BAZ_fiche_info,
+       .no-print {
+         display: none !important;
+       }
+     .page, #yw-container {padding:0;width:100%;margin:0;}
+     {% if request.get.border|default('') == '0' %}.qrbadge { border:none !important;}{% endif %}
+     .break,.badge-container {
+        page-break-after: always;
+        page-break-inside: avoid;
+        break-after: always;
+      }
+  }
+  </style>
+{% endif %}

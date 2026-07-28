@@ -1,0 +1,34 @@
+{# template parameters (passable on the bazar/bazarliste action) #}
+{% set thumbwidth = params.thumbwidth|default('') is empty ? 155 : params.thumbwidth %}
+{% set thumbheight = params.thumbheight|default('') is empty ? 115 : params.thumbheight %}
+{% set thumbresize = params.thumbresize|default('') is empty ? 'fit' : params.thumbresize %}
+{% set thumbmargin = params.thumbmargin|default('') is empty ? '1' : params.thumbmargin %}
+{% set bigwidth = params.bigwidth|default('') is empty ? 1600 : params.bigwidth %}
+{% set bigheight = params.bigheight|default('') is empty ? 1200 : params.bigheight %}
+{% set bigresize = params.bigresize|default('') is empty ? 'fit' : params.bigresize %}
+{% if fiches|length > 0 %}
+{# unique per bazarliste call on the page (was the nbgalleries counter) #}
+{% set galleryId = params.nbbazarliste %}
+{{ pager_links|raw }}
+<ul id='gallery{{ galleryId }}' class="pbgallery">
+{% for fiche in fiches %}
+    {% if fiche.imagebf_image is defined and fiche.imagebf_image != '' %}
+    <li class="bazar-entry" {{ fiche.html_data|raw }}>
+        <a class="pbgalery-link modalbox" title="{{ fiche.bf_titre }}"
+            href="{{ resizedImage(fiche.imagebf_image, bigwidth, bigheight, bigresize, '_') }}">
+            <img loading="lazy" alt="" data-pb-captionLink="{{ fiche.bf_titre }}[{{ url({tag: fiche.tag, handler: 'iframe'}) }}]" src="{{ resizedImage(fiche.imagebf_image, thumbwidth, thumbheight, thumbresize, '_') }}">
+        </a>
+    </li>
+    {% endif %}
+{% endfor %}
+</ul>
+{{ pager_links|raw }}
+<link rel="stylesheet" href="styles/bazar/photobox.css">
+<style>
+.pbgallery {margin:0;padding:0;}
+#gallery{{ galleryId }} li {margin: {{ thumbmargin }}px}
+</style>
+{# the fullscreen view is yw-core.js's modalbox image mode (ticket 16, replaces
+   the jQuery photobox lightbox — no prev/next navigation, one image per open) #}
+{% endif %}
+{{ pager_links|raw }}

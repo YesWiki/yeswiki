@@ -1,0 +1,56 @@
+{% if fiches|length > 0 %}
+<div class="badge-container">
+    {% for fiche in fiches %}
+          <div class="qrbadge bazar-entry" {{ fiche.html_data|raw }}>
+            {% set titre = fiche.bf_titre|trim %}
+            {% set vcard = 'BEGIN:VCARD\nVERSION:2.1\n'
+                ~ 'FN:' ~ titre ~ '\n'
+                ~ 'N:' ~ titre ~ '\n'
+                ~ (fiche.bf_telephone|default('')|trim is not empty ? 'TEL;HOME;VOICE:' ~ fiche.bf_telephone|trim ~ '\n' : '')
+                ~ (fiche.bf_mail|default('')|trim is not empty ? 'EMAIL;HOME;INTERNET:' ~ fiche.bf_mail|trim ~ '\n' : '')
+                ~ 'URL:' ~ url({tag: fiche.tag}) ~ '\n'
+                ~ 'ADR:;;' ~ fiche.bf_adresse|default('')|trim ~ ';' ~ fiche.bf_ville|default('')|trim ~ ';;' ~ fiche.bf_code_postal|default('')|trim ~ '\n'
+                ~ (fiche.bf_structure|default('')|trim is not empty ? 'ORG:' ~ fiche.bf_structure|trim ~ '\n' : '')
+                ~ 'END:VCARD\n' %}
+            {% set cacheImage = qrCode(vcard) %}
+          <div class="badge-info">
+            <h4 class="badge-title">{{ titre|raw }}</h4>
+
+            {% if fiche.bf_structure|default('')|trim is not empty %}<div class="badge-organisation">{{ fiche.bf_structure|trim|raw }}</div>{% endif %}
+            {% if fiche.bf_fonction|default('')|trim is not empty %}<div class="badge-occupation">{{ fiche.bf_fonction|trim|raw }}</div>{% endif %}
+          </div>
+          <img class="img-qrcode" src="{{ cacheImage }}" alt="qrcode" />
+        </div>
+        {% if loop.index % 4 == 0 %}<div class="break"></div>{% endif %}
+    {% endfor %}
+  </div>
+  <style>
+  .badge-container {width:210mm;margin:0 auto;}
+  .qrbadge {
+    border:1px solid #ddd;
+    margin: 30mm 9mm 9mm 9mm; 
+    padding: 2mm;
+    display: inline-block;
+    width: 85mm;
+    height: 108mm;
+    overflow:hidden;
+    position: relative;
+    font-size: 10pt;
+  }
+  .badge-info {text-align: left;}
+  .badge-title { font-size: 16pt; color:#61b32e !important; margin: 3mm 0mm; }
+  .badge-organisation {margin-bottom:2em; font-weight: bold;}
+  .img-qrcode {position: absolute; width:60mm; height:60mm; bottom: 5mm; left: 12mm;}
+
+  @media print {
+     #yw-header, #yw-footer, #yw-topnav, .footer, #search-form, .export-links { display:none; }
+     .page, #yw-container, .badge-container {padding:0;width:100%;margin:0;}
+     {% if request.get.border|default('') == '0' %}.qrbadge { border:none;}{% endif %}
+     .break {
+        page-break-after: always;
+        page-break-inside: avoid;
+        break-after: always;
+      }
+  }
+  </style>
+{% endif %}

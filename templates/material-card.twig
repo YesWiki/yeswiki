@@ -1,0 +1,158 @@
+{% set modal = params.modal|default('') is empty ? 'non' : params.modal %}
+{% if modal == '1' or modal == 1 %}{% set modal = 'modalbox' %}{% endif %}
+{% set type = params.type|default('') is empty ? 'complexe' : params.type %}
+{% set nbcol = params.nbcol|default('') is empty ? 4 : params.nbcol %}
+{% set rowcol = {1: 12, 2: 6, 3: 4, 4: 3, 6: 2}[nbcol]|default('') %}
+{% set classes = ['Red', 'Blue-Grey', 'Pink', 'Purple', 'Deep-Purple', 'Indigo', 'Blue', 'Light-Blue', 'Cyan', 'Teal', 'Green', 'Light-Green', 'Lime', 'Yellow', 'Amber', 'Orange', 'Deep-Orange', 'Brown', 'Grey'] %}
+{% if type != 'simple' %}
+{{ info_res|raw }}
+{% if fiches|length > 0 %}
+  <div class="row">
+  {% for fiche in fiches %}
+        <div class="col-md-{{ rowcol }} col-sm-6 col-xs-12 bazar-entry material-card-entry" {{ fiche.html_data|raw }}">
+        {% set color = customValueForEntry(params.color|default(null), params.colorfield|default(null), fiche, '') %}
+        <article class="material-card {{ color is not empty ? color|slice(0,1)|upper ~ color|slice(1) : random(classes) }}">
+          <h2>
+                      <span>{{ fiche.bf_titre|raw }}</span>
+                      <strong>
+                          <i class="fa fa-fw fa-star"></i>
+                          {{ fiche.bf_baseline|default('')|raw }}
+                      </strong>
+                  </h2>
+          <div class="mc-content">
+            {% if fiche.imagebf_image|default('') != '' %}
+              <div class="img-container">
+                <img loading="lazy" class="img-responsive" src="{{ resizedImage(fiche.imagebf_image, 800, 800, 'crop') }}" alt="">
+              </div>
+            {% else %}
+              <div class="img-container">
+                <img loading="lazy" class="img-responsive" alt=""
+                src="images/bazar/placeholder-800-800.jpg">
+              </div>
+            {% endif %}
+
+            <div class="mc-description">
+              {{ format(fiche.bf_description|default(''))|raw }}
+            </div>
+          </div>
+          <a class="mc-btn-action">
+            <i class="fa fa-bars"></i>
+          </a>
+          <div class="mc-footer">
+            <h4 class="hide">En savoir plus</h4>
+            <a href="{{ url({tag: fiche.tag}) }}" class="fa fa-fw fa-info-circle"></a>
+            <div class="pull-right">
+              {% if hasAccess('write') %}
+              <a href="{{ url({tag: fiche.tag, handler: 'edit'}) }}" class="fa fa-fw fa-pencil-square-o"></a>
+              {% endif %}
+              {% if userIsAdmin() or userIsOwner() %}
+              <a href="{{ url({tag: fiche.tag, handler: 'deletepage'}) }}" class="fa fa-fw fa-trash modalbox"></a>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      </div>
+  {% endfor %}
+  </div>
+{% endif %}
+{{ pager_links|raw }}
+{{ include_css('styles/bazar/material-card.css') }}
+{% set mcjs %}
+document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(action) {
+  action.addEventListener('click', function() {
+    var card = action.parentElement;
+    var icon = action.querySelector('i');
+    if (icon) icon.classList.add('fa-spin-fast');
+
+    if (card.classList.contains('mc-active')) {
+      card.classList.remove('mc-active');
+      window.setTimeout(function() {
+        if (icon) {
+          icon.classList.remove('fa-arrow-left', 'fa-spin-fast');
+          icon.classList.add('fa-bars');
+        }
+      }, 800);
+    } else {
+      card.classList.add('mc-active');
+      window.setTimeout(function() {
+        if (icon) {
+          icon.classList.remove('fa-bars', 'fa-spin-fast');
+          icon.classList.add('fa-arrow-left');
+        }
+      }, 800);
+    }
+  });
+});
+{% endset %}
+{{ addJavascript(mcjs) }}
+{% endif %}
+
+{% if type == 'simple' %}
+{% if fiches|length > 0 %}
+<div class="row">
+{% for fiche in fiches %}
+  <style>
+  .modal-header {
+      display:none;
+  }
+  </style>
+
+    <div class="col-md-{{ rowcol }} col-sm-6 col-xs-12 bazar-entry material-card-entry" {{ fiche.html_data|raw }}">
+      <a class="{{ modal }}" title="{{ fiche.bf_titre }}" href="{{ url({tag: fiche.tag}) }}">
+      {% set color = customValueForEntry(params.color|default(null), params.colorfield|default(null), fiche, '') %}
+      <article class="material-card {{ color is not empty ? color|slice(0,1)|upper ~ color|slice(1) : random(classes) }}">
+     <h2>
+                    <span>{{ fiche.bf_titre|raw }} </span>
+        </h2>
+        <div class="mc-content">
+          {% if fiche.imagebf_image|default('') != '' %}
+            <div class="img-container">
+              <img loading="lazy" class="img-responsive" src="{{ resizedImage(fiche.imagebf_image, 800, 800, 'crop') }}" alt="">
+            </div>
+          {% else %}
+            <div class="img-container">
+              <img loading="lazy" class="img-responsive" alt=""
+              src="images/bazar/placeholder-800-800.jpg">
+            </div>
+          {% endif %}
+        </div>
+      </article> </a>
+    </div>
+
+{% endfor %}
+</div>
+
+{% endif %}
+
+{{ pager_links|raw }}
+{{ include_css('styles/bazar/material-card.css') }}
+{% set mcjs %}
+document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(action) {
+  action.addEventListener('click', function() {
+    var card = action.parentElement;
+    var icon = action.querySelector('i');
+    if (icon) icon.classList.add('fa-spin-fast');
+
+    if (card.classList.contains('mc-active')) {
+      card.classList.remove('mc-active');
+      window.setTimeout(function() {
+        if (icon) {
+          icon.classList.remove('fa-arrow-left', 'fa-spin-fast');
+          icon.classList.add('fa-bars');
+        }
+      }, 800);
+    } else {
+      card.classList.add('mc-active');
+      window.setTimeout(function() {
+        if (icon) {
+          icon.classList.remove('fa-bars', 'fa-spin-fast');
+          icon.classList.add('fa-arrow-left');
+        }
+      }, 800);
+    }
+  });
+});
+{% endset %}
+{{ addJavascript(mcjs) }}
+{% endif %}
+{{ pager_links|raw }}

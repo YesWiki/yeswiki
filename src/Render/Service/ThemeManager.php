@@ -5,11 +5,11 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Kernel\Entity\Event;
-use YesWiki\Wiki;
-use YesWiki\Identity\Entity\User;
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Kernel\Entity\Event;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Wiki;
 
 class ThemeManager implements EventSubscriberInterface
 {
@@ -137,6 +137,7 @@ class ThemeManager implements EventSubscriberInterface
                             break;
 
                         case 'squelette':
+                            $requestVal = self::normalizeSqueletteName($requestVal);
                             $customPath = basename(realpath(getcwd() . '/custom/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
                             $classicPath = basename(realpath(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $requestVal));
                             $requested[$val] = null;
@@ -145,7 +146,7 @@ class ThemeManager implements EventSubscriberInterface
                             } elseif (file_exists(YESWIKI_SOURCE_DIR . '/themes/' . $requested['theme'] . '/squelettes/' . $classicPath)) {
                                 $requested[$val] = $classicPath;
                             }
-                            if (!preg_match('/\.tpl\.html$/i', $requested[$val] ?? '', $matches)) {
+                            if (!preg_match('/\.twig$/i', $requested[$val] ?? '', $matches)) {
                                 $requested[$val] = null;
                             }
 
@@ -166,7 +167,7 @@ class ThemeManager implements EventSubscriberInterface
                     }
                 }
             }
-            if (!empty($requested['theme']) && !empty($requested['style']) && !empty($requested['squelette']) && preg_match('/\.tpl\.html$/i', $requested['squelette'], $matches)
+            if (!empty($requested['theme']) && !empty($requested['style']) && !empty($requested['squelette']) && preg_match('/\.twig$/i', $requested['squelette'], $matches)
             ) {
                 $this->setFavorite('theme', $requested['theme']);
                 $this->setFavorite('style', $requested['style']);
@@ -314,7 +315,7 @@ class ThemeManager implements EventSubscriberInterface
         $filePath = $themePath . '/squelettes/' . $this->squelette;
 
         if (!((!$this->useFallbackTheme && file_exists('custom/' . $themePath)) || file_exists(YESWIKI_SOURCE_DIR . '/' . $themePath))) {
-            $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
+            $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_THEME_FOLDER') . $this->theme . _t('THEME_MANAGER_NOT_FOUND'),
             ]);
@@ -323,7 +324,7 @@ class ThemeManager implements EventSubscriberInterface
         }
 
         if (!((!$this->useFallbackTheme && file_exists('custom/' . $filePath)) || file_exists(YESWIKI_SOURCE_DIR . '/' . $filePath))) {
-            $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
+            $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_SQUELETTE_FILE') . $this->squelette . _t('THEME_MANAGER_NOT_FOUND'),
             ]);
@@ -334,7 +335,7 @@ class ThemeManager implements EventSubscriberInterface
 
         $fileContent = file_get_contents($filePath);
         if ($fileContent === false) {
-            $this->errorMessage = $this->twig->render('@templates\alert-message.twig', [
+            $this->errorMessage = $this->twig->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('THEME_MANAGER_ERROR_GETTING_FILE') . $filePath,
             ]);
@@ -344,11 +345,12 @@ class ThemeManager implements EventSubscriberInterface
         $this->fileContent = $fileContent;
         $this->fileLoaded = true;
 
-        // On recupere la partie haut du template et on execute les actions wikini
+        // The squelette is a Twig template; `{WIKINI_PAGE}` is a plain-text marker where
+        // the page body goes. The two halves are stored as Twig source and rendered
+        // separately, so footer actions (linkjavascript) run after the page body has
+        // registered its assets.
         $templateCut = explode('{WIKINI_PAGE}', $fileContent);
         $this->templateHeader = $templateCut[0] ?? '';
-        // ADD flash message just before page content
-        $this->templateHeader .= Flash::display();
         $this->templateFooter = (count($templateCut) > 0) ? $templateCut[1] : '';
 
         return true;
@@ -362,7 +364,8 @@ class ThemeManager implements EventSubscriberInterface
     public function renderHeader(): string
     {
         if ($this->fileLoaded || $this->loadTheme()) {
-            return $this->renderActions($this->templateHeader);
+            // flash messages land just before the page content
+            return $this->twig->renderFromString($this->templateHeader) . Flash::display();
         }
 
         return '';
@@ -371,7 +374,7 @@ class ThemeManager implements EventSubscriberInterface
     public function renderFooter(): string
     {
         if ($this->fileLoaded || $this->loadTheme()) {
-            return $this->renderActions($this->templateFooter);
+            return $this->twig->renderFromString($this->templateFooter);
         }
 
         return '';
@@ -409,9 +412,22 @@ class ThemeManager implements EventSubscriberInterface
 
     protected function setFavorite(string $key, $newVal)
     {
+        if ($key === 'squelette' && is_string($newVal)) {
+            // stored page metadata and old configs still say e.g. '1col.tpl.html'
+            $newVal = self::normalizeSqueletteName($newVal);
+        }
         $this->favorites[$key] = (empty($newVal) || !is_string($newVal))
             ? ''
             : $newVal;
+    }
+
+    /**
+     * Squelettes are Twig since the tpl.html engine died; historical `.tpl.html`
+     * names survive in page metadata, wakka.config.php and old theme-switcher URLs.
+     */
+    public static function normalizeSqueletteName(string $name): string
+    {
+        return preg_replace('/\.tpl\.html$/i', '.twig', $name);
     }
 
     public function getUseFallbackTheme(): bool
@@ -425,26 +441,6 @@ class ThemeManager implements EventSubscriberInterface
             && is_string($this->params->get($key)))
             ? $this->params->get($key)
             : $default;
-    }
-
-    private function renderActions(string $text): ?string
-    {
-        if ($act = preg_match_all('/(\\{\\{)(.*?)(\\}\\})/is', $text, $matches)) {
-            $i = 0;
-            $j = 0;
-            foreach ($matches as $valeur) {
-                foreach ($valeur as $val) {
-                    if (isset($matches[2][$j]) && $matches[2][$j] != '') {
-                        $action = $matches[2][$j];
-                        $text = str_replace('{{' . $action . '}}', $this->wiki->Action($action), $text);
-                    }
-                    $j++;
-                }
-                $i++;
-            }
-        }
-
-        return $text;
     }
 
     /**

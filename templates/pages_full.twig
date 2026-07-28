@@ -1,0 +1,9 @@
+<div class="filter-results">
+{% for tag, element in elements %}
+	<div class="filtered-element {{ element.tagnames }}">
+	{{ format('{{include page="' ~ tag ~ '"}}')|raw }}
+	{{ element.tagbadges|raw }}
+	<hr />
+	</div> <!-- /.filter-results -->
+{% endfor %}
+</div>

@@ -1,0 +1,177 @@
+{#
+  Damier : affiche les fiches sous la forme d'un damier de cases alternativement
+  blanches et de couleur. Voir la documentation détaillée des paramètres
+  (pageDessus, pageDessous, nbcol, ordreaffichage, couleur, urldebase,
+  valeurexergue, ombreportee, correspondance, champ, ordre) dans l'historique de
+  templates/damier.tpl.html.
+#}
+{% macro jolie_date(d) %}
+{%- set date = d|split('-') -%}
+{%- set moisnoms = {'01': 'janvier', '02': 'février', '03': 'mars', '04': 'avril', '05': 'mai', '06': 'juin', '07': 'juillet', '08': 'août', '09': 'septembre', '10': 'octobre', '11': 'novembre', '12': 'décembre'} -%}
+{%- if date[2] == '01' -%}1<sup>er</sup>{%- else -%}{{ date[2]|trim('0', 'left') }}{%- endif %} {{ moisnoms[date[1]]|default(date[1]) }} {{ date[0] -}}
+{% endmacro %}
+
+{% macro jolie_heure(t) %}
+{%- set hour = t|split(':') -%}
+{{- hour[0]|trim('0', 'left') }}h{{ hour[1]|default('')|trim('0', 'left') -}}
+{% endmacro %}
+
+{% macro montrer_bouton(fiche, class, creerstylebtn, couleur) %}
+{%- if fiche is not empty -%}
+  {%- set btnstyle = '' -%}
+  {%- if creerstylebtn -%}
+    {%- if class == 'couleur' -%}
+      {%- set btnstyle = ' style="border-color: #ffffff; background-color: #ffffff; color: ' ~ couleur ~ ';"' -%}
+    {%- else -%}
+      {%- set btnstyle = ' style="border-color: ' ~ couleur ~ '; background-color: ' ~ couleur ~ '; color: #ffffff;"' -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- set libelle = fiche.bf_bouton|default('') -%}
+  {%- set lien = null -%}
+  {%- if fiche.bf_lien|default('') != '' -%}
+    {# the tpl.html version prepended $base_url for wiki-internal links, but that
+       variable was undefined inside the function scope so urldebase never applied #}
+    {%- set lien = fiche.bf_lien -%}
+  {%- elseif fiche.fichierbf_fichier|default('') != '' -%}
+    {%- set lien = 'files/' ~ fiche.fichierbf_fichier -%}
+  {%- endif -%}
+  {%- if lien is not null -%}
+    <div class="conteneur-bouton"><br /><a href="{{ lien }}" class="btn btn-reverse-{{ class }}" title="{{ libelle|raw }}"{{ btnstyle|raw }} target="_blank">{{ libelle|raw }}</a></div>
+  {%- endif -%}
+{%- endif -%}
+{% endmacro %}
+
+{% macro montrer_date(fiche, ordre) %}
+{%- import _self as d -%}
+{%- if fiche.bf_debut|default('') != '' -%}
+  {%- set posLieu = ordre|keys|filter(k => ordre[k] == 'lieu')|first -%}
+  {%- set posDate = ordre|keys|filter(k => ordre[k] == 'date')|first -%}
+  {%- set lieu = 0 -%}
+  {%- if posLieu -%}
+    {%- set diff = posLieu - posDate -%}
+    {%- set lieu = diff == -1 ? 1 : (diff == 1 ? 2 : 3) -%}
+  {%- endif -%}
+  {%- set md = fiche.bf_debut|split('T') -%}
+  {%- set start_time = md[1] is defined and md[1] != '' -%}
+  {%- set has_fin = fiche.bf_fin|default('') != '' -%}
+  {%- set mf = has_fin ? fiche.bf_fin|split('T') : ['0'] -%}
+  {%- set jd0 %}{{ d.jolie_date(md[0]) }}{% endset -%}
+  {%- set jh0 %}{% if start_time %}{{ d.jolie_heure(md[1]) }}{% endif %}{% endset -%}
+  {%- if not has_fin -%}
+    {%- set date = (lieu == 1 ? fiche.bf_lieu ~ ', l' : 'L') ~ 'e ' ~ jd0 -%}
+    {%- if start_time -%}{%- set date = date ~ ' à ' ~ jh0 -%}{%- endif -%}
+  {%- else -%}
+    {%- set same_date = md[0] == mf[0] -%}
+    {%- set end_time = mf[1] is defined and mf[1] != '' -%}
+    {%- set jh1 %}{% if end_time %}{{ d.jolie_heure(mf[1]) }}{% endif %}{% endset -%}
+    {%- set same_time = end_time and md[1]|default('') == mf[1] -%}
+    {%- if same_date -%}
+      {%- set date = (lieu == 1 ? fiche.bf_lieu ~ ', l' : 'L') ~ 'e ' ~ jd0 -%}
+      {%- if not start_time -%}
+      {%- elseif not end_time -%}
+        {%- set date = date ~ ' à ' ~ jh0 -%}
+      {%- elseif not same_time -%}
+        {%- set date = date ~ ' – ' ~ jh0 ~ ' - ' ~ jh1 -%}
+      {%- else -%}
+        {%- set date = date ~ ' à ' ~ jh0 -%}
+      {%- endif -%}
+    {%- else -%}
+      {%- set jd1 %}{{ d.jolie_date(mf[0]) }}{% endset -%}
+      {%- if not start_time -%}
+        {%- set date = (lieu == 1 ? fiche.bf_lieu ~ ', d' : 'D') ~ 'u ' ~ jd0 ~ ' au ' ~ jd1 -%}
+      {%- elseif not end_time -%}
+        {%- set date = (lieu == 1 ? fiche.bf_lieu ~ ', d' : 'D') ~ 'u ' ~ jd0 ~ ', ' ~ jh0 ~ ' au ' ~ jd1 -%}
+      {%- else -%}
+        {%- set date = (lieu == 1 ? fiche.bf_lieu ~ ', d' : 'D') ~ 'u ' ~ jd0 ~ ', ' ~ jh0 ~ ' au ' ~ jd1 ~ ', ' ~ jh1 -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+  {%- if lieu == 2 and fiche.bf_lieu|default('') != '' -%}
+    {%- set date = date ~ ' – ' ~ fiche.bf_lieu -%}
+  {%- endif -%}
+  <div class="conteneur-date">{{ date|raw }}</div>
+{%- endif -%}
+{% endmacro %}
+
+{% macro montrer_image(fiche) %}
+{%- if fiche.imagebf_image|default('') != '' -%}
+  <div class="conteneur-image"><img loading="lazy" class="img-rounded" alt="" src="{{ resizedImage(fiche.imagebf_image, 209, 209, 'fit') }}"></div>
+{%- endif -%}
+{% endmacro %}
+
+{% macro montrer_lieu(fiche, ordre) %}
+{%- if fiche.bf_lieu|default('') != '' -%}
+  {%- set posLieu = ordre|keys|filter(k => ordre[k] == 'lieu')|first -%}
+  {%- set posDate = ordre|keys|filter(k => ordre[k] == 'date')|first -%}
+  {%- set show = false -%}
+  {%- if posDate -%}
+    {%- set diff = posLieu - posDate -%}
+    {%- set show = not (diff == -1 or diff == 1) -%}
+  {%- endif -%}
+  {%- if show -%}<div class="conteneur-lieu">{{ fiche.bf_lieu|raw }}</div>{%- endif -%}
+{%- endif -%}
+{% endmacro %}
+
+{% macro montrer_texte(fiche) %}
+{%- if fiche.bf_description|default('') != '' -%}
+  <div class="texte-gauche">{{ fiche.bf_description|raw }}</div>
+{%- endif -%}
+{% endmacro %}
+
+{% macro montrer_titre(fiche) %}
+<div class="conteneur-titre">{{ fiche.bf_titre|raw }}</div>
+{% endmacro %}
+
+{% import _self as damier %}
+{{ include_css('styles/bazar/damier.css') }}
+
+{% set pageDessus = params.pageDessus|default('') is empty ? 'non' : params.pageDessus %}
+{% set pageDessous = params.pageDessous|default('') is empty ? 'non' : params.pageDessous %}
+{% set nbcol = params.nbcol|default('') is empty ? 4 : params.nbcol %}
+{% if nbcol > 6 %}{% set nbcol = 12 %}{% elseif nbcol == 5 %}{% set nbcol = 6 %}{% endif %}
+{% set largeur = (12 / nbcol)|round(0, 'floor') %}
+{% set ordreaffichage = params.ordreaffichage|default('') is empty ? 'image, titre, date, lieu, texte, bouton' : params.ordreaffichage %}
+{% set tabordreaffichage = ordreaffichage|split(',')|map(v => v|trim) %}
+{% set couleur = params.couleur|default('') %}
+{% set stylecouleur = couleur is not empty ? ' style="border-color: ' ~ couleur ~ '; background-color: ' ~ couleur ~ '"' : '' %}
+{% set creerstylebtn = couleur is not empty %}
+{% set valeur_exergue = params.valeurexergue|default('') %}
+
+{% if pageDessus != 'non' %}
+  <div id="text-dessus">
+    {{ format('{{include page="' ~ pageDessus ~ '"}}')|raw }}
+  </div>
+{% endif %}
+
+{% set nbfiches = fiches|length %}
+{% if nbfiches > 0 %}
+  {% for fiche in fiches %}
+    {% set nb = loop.index %}
+    {% set row = (nb / nbcol)|round(0, 'ceil') %}
+    {% set col = nb - (nbcol * (row - 1)) %}
+    {% set class = (row + col) % 2 == 0 ? 'couleur' : 'blanc' %}
+    {% set exergue = valeur_exergue != '' and fiche.bf_exergue|default('') == valeur_exergue %}
+    {% if col == 1 %}<div class="row-fluid row"> <!-- start of grid -->{% endif %}
+    <div class="span{{ largeur }} col-md-{{ largeur }}" style="margin: 0; border: 0; padding: 0;"><!-- start of col -->
+      <div class="cell-{{ class }}{{ exergue ? ' exergue' : '' }}"{{ class == 'couleur' ? stylecouleur|raw : '' }}><!-- start of the div wearing the tile class -->
+        {% for champ in tabordreaffichage %}
+          {%- if champ == 'bouton' %}{{ damier.montrer_bouton(fiche, class, creerstylebtn, couleur) }}
+          {%- elseif champ == 'date' %}{{ damier.montrer_date(fiche, tabordreaffichage) }}
+          {%- elseif champ == 'image' %}{{ damier.montrer_image(fiche) }}
+          {%- elseif champ == 'lieu' %}{{ damier.montrer_lieu(fiche, tabordreaffichage) }}
+          {%- elseif champ == 'texte' %}{{ damier.montrer_texte(fiche) }}
+          {%- elseif champ == 'titre' %}{{ damier.montrer_titre(fiche) }}
+          {%- endif %}
+        {%- endfor %}
+      </div><!-- end of the div wearing the tile class -->
+    </div> <!-- end of col -->
+    {% if nb == nbfiches or col == nbcol %}</div> <!-- end of grid --><p style="line-height: 5px;">&nbsp;</p>{% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if pageDessous != 'non' %}
+  <div id="text-dessous">
+    {{ format('{{include page="' ~ pageDessous ~ '"}}')|raw }}
+  </div>
+{% endif %}
+{{ pager_links|raw }}

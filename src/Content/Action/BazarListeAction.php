@@ -1,15 +1,22 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 use YesWiki\Content\Exception\ParsingMultipleException;
-use YesWiki\Kernel\Exception\TemplateNotFound;
-use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Content\Field\CheckboxField;
+use YesWiki\Content\Field\EmailField;
+use YesWiki\Content\Field\EnumField;
+use YesWiki\Content\Field\ImageField;
+use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Kernel\Exception\TemplateNotFound;
+use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Search\Service\SearchManager;
-use YesWiki\Core\YesWikiAction;
-use YesWiki\Kernel\Performable\RegisteredAction;
 
 class BazarListeAction extends YesWikiAction implements RegisteredAction
 {
@@ -364,7 +371,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         $showNumEntries = count($entries) === 0 || $this->arguments['shownumentries'];
         $templateName = $this->arguments['template'];
         if (strpos($templateName, '.html') === false && strpos($templateName, '.twig') === false) {
-            $templateName = $templateName . '.tpl.html';
+            $templateName = $templateName . '.twig';
             $this->arguments['template'] = $templateName;
         }
         $data = [];
@@ -401,9 +408,566 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         }
 
         try {
+            $templateBaseName = preg_replace('/\.(twig|tpl\.html)$/', '', $templateName);
+            if ($templateBaseName === 'tableau') {
+                return $this->renderTableau($data);
+            }
+            if ($templateBaseName === 'map') {
+                return $this->renderMap($data);
+            }
+
             return $this->render("@core/{$templateName}", $data);
         } catch (TemplateNotFound $e) {
             return '<div class="alert alert-danger">' . $e->getMessage() . '</div>';
+        }
+    }
+
+    /**
+     * Data preparation for tableau.twig -- historically done in PHP inside
+     * templates/tableau.tpl.html; moved here when tpl.html templates died.
+     */
+    private function renderTableau(array $data): string
+    {
+        $formManager = $this->getService(FormManager::class);
+        $fiches = $data['fiches'];
+        $params = $data['params'];
+
+        $prefix = '';
+        $colors = [];
+        $icons = [];
+        $columnsInfo = [];
+        $sanitizedParams = [];
+        $optionsIfDisplayvaluesinsteadofkeys = [];
+        $sumFieldsIds = [];
+
+        if (count($fiches) > 0) {
+            $formId = $fiches[array_key_first($fiches)]['form_id'] ?? null;
+            $form = $formManager->getOne($formId);
+            if (!empty($form)) {
+                $fields = $form['prepared'];
+
+                $listParams = [];
+                foreach (['columntitles', 'columnfieldsids', 'sumfieldsids'] as $paramKey) {
+                    $tmp = (isset($params[$paramKey]) && is_string($params[$paramKey])) ? $params[$paramKey] : '';
+                    $listParams[$paramKey] = array_filter(
+                        array_map('trim', explode(',', trim($tmp))),
+                        function ($name) {
+                            return !empty($name);
+                        }
+                    );
+                }
+                $columnTitlesNames = $listParams['columntitles'];
+                $columnFieldsIdsRaw = $listParams['columnfieldsids'];
+                $sumFieldsIds = $listParams['sumfieldsids'];
+
+                $checkboxFieldsInColumns = $params['checkboxfieldsincolumns'] ?? null;
+                $checkboxFieldsInColumns = !in_array($checkboxFieldsInColumns, ['0', 0, false, 'false', 'non'], true);
+
+                foreach (['displayadmincol', 'displaycreationdate', 'displaylastchangedate', 'displayowner'] as $paramName) {
+                    $paramValue = (!empty($params[$paramName]) && in_array($params[$paramName], ['yes', 'onlyadmins'], true)) ? $params[$paramName] : false;
+                    switch ($paramValue) {
+                        case 'onlyadmins':
+                            $paramValue = $this->wiki->UserIsAdmin();
+                            break;
+                        case 'yes':
+                            $paramValue = true;
+                            break;
+                        default:
+                            $paramValue = false;
+                            break;
+                    }
+                    $sanitizedParams[$paramName] = $paramValue;
+                }
+                foreach (['displayvaluesinsteadofkeys', 'exportallcolumns', 'displayimagesasthumbnails'] as $paramName) {
+                    $sanitizedParams[$paramName] = isset($params[$paramName]) && filter_var($params[$paramName], FILTER_VALIDATE_BOOLEAN);
+                }
+
+                $sanitizedParams['columnswidth'] = [];
+                if (isset($params['columnswidth']) && is_string($params['columnswidth'])) {
+                    foreach (explode(',', $params['columnswidth']) as $columnInfo) {
+                        $columnInfoExtracted = explode('=', $columnInfo);
+                        if (!empty($columnInfoExtracted[0]) && !empty($columnInfoExtracted[1])) {
+                            $sanitizedParams['columnswidth'][$columnInfoExtracted[0]] = $columnInfoExtracted[1];
+                        }
+                    }
+                }
+
+                if (empty($columnFieldsIdsRaw)) {
+                    // if no explicit column list, display all fields
+                    foreach ($fields as $field) {
+                        foreach ($this->tableauFieldCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
+                            $columnsInfo[] = $col;
+                        }
+                        $this->tableauCollectOptions($field, $optionsIfDisplayvaluesinsteadofkeys, $sanitizedParams);
+                    }
+                } else {
+                    foreach ($columnFieldsIdsRaw as $fieldId) {
+                        $field = $formManager->findFieldFromNameOrPropertyName($fieldId, $formId);
+                        if (!empty($field)) {
+                            foreach ($this->tableauFieldCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
+                                $columnsInfo[] = $col;
+                            }
+                            $this->tableauCollectOptions($field, $optionsIfDisplayvaluesinsteadofkeys, $sanitizedParams);
+                        }
+                    }
+                    if ($sanitizedParams['exportallcolumns']) {
+                        $alreadyDefinedPropertyNames = array_map(function ($col) {
+                            return $col['propertyName'];
+                        }, $columnsInfo);
+                        foreach ($fields as $field) {
+                            $fieldPropertyName = $field->getPropertyName();
+                            if (!empty($fieldPropertyName) && !in_array($fieldPropertyName, $alreadyDefinedPropertyNames)) {
+                                foreach ($this->tableauFieldCols($field, $checkboxFieldsInColumns, $sanitizedParams['displayimagesasthumbnails']) as $col) {
+                                    $columnsInfo[] = array_merge($col, ['not-visible' => true]);
+                                }
+                                $this->tableauCollectOptions($field, $optionsIfDisplayvaluesinsteadofkeys, $sanitizedParams);
+                            }
+                        }
+                    }
+                }
+
+                foreach ([
+                    'displaycreationdate' => ['fieldName' => 'created_at', 'translationKey' => 'BAZ_DATE_CREATION'],
+                    'displaylastchangedate' => ['fieldName' => 'updated_at', 'translationKey' => 'BAZ_DATE_MAJ'],
+                    'displayowner' => ['fieldName' => 'owner', 'translationKey' => 'TEMPLATE_OWNER'],
+                ] as $paramName => $extraCol) {
+                    if (!empty($sanitizedParams[$paramName])) {
+                        $columnsInfo[] = [
+                            'propertyName' => $extraCol['fieldName'],
+                            'title' => _t($extraCol['translationKey']),
+                            'key' => null,
+                            'mapFieldId' => null,
+                        ];
+                    }
+                }
+
+                foreach ($columnTitlesNames as $key => $value) {
+                    if (isset($columnsInfo[$key]) && !empty($value)) {
+                        $columnsInfo[$key]['title'] = $value;
+                    }
+                }
+
+                // mask emails and unreadable values for non-admins
+                if (!$this->wiki->UserIsAdmin()) {
+                    foreach ($fiches as $index => $fiche) {
+                        $entryFormId = $fiche['form_id'];
+                        if (strval($entryFormId) != strval(intval($entryFormId))) {
+                            unset($fiches[$index]);
+                        } else {
+                            $entryForm = $formManager->getOne($entryFormId);
+                            if (empty($entryForm['prepared'])) {
+                                unset($fiches[$index]);
+                            } else {
+                                foreach ($entryForm['prepared'] as $field) {
+                                    if (empty($field->getPropertyName())) {
+                                        continue;
+                                    }
+                                    if ($field instanceof EmailField && !$field->canRead($fiches[$index], null)) {
+                                        $fiches[$index][$field->getPropertyName()] = '***@***.***';
+                                    } elseif (empty(trim($field->renderStaticIfPermitted($fiche) ?? ''))) {
+                                        $fiches[$index][$field->getPropertyName()] = '';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                foreach ($fiches as $fiche) {
+                    $colors[$fiche['tag']] = getCustomValueForEntry($params['color'] ?? null, $params['colorfield'] ?? null, $fiche, '');
+                    $icons[$fiche['tag']] = getCustomValueForEntry($params['icon'] ?? null, $params['iconfield'] ?? null, $fiche, '');
+                }
+            } else {
+                $prefix = $this->render('@core/alert-message.twig', [
+                    'type' => 'danger',
+                    'message' => _t('BAZ_NO_FORMS_FOUND'),
+                ]);
+            }
+        }
+
+        return $prefix . $this->render('@core/tableau.twig', [
+            'infoRes' => $data['info_res'],
+            'params' => $params,
+            'columnsInfo' => $columnsInfo,
+            'entries' => $fiches,
+            'sumFieldsIds' => $sumFieldsIds,
+            'displayadmincol' => $sanitizedParams['displayadmincol'] ?? null,
+            'displayvaluesinsteadofkeys' => $sanitizedParams['displayvaluesinsteadofkeys'] ?? null,
+            'optionsIfDisplayvaluesinsteadofkeys' => $optionsIfDisplayvaluesinsteadofkeys,
+            'colors' => $colors,
+            'icons' => $icons,
+            'columnswidth' => $sanitizedParams['columnswidth'] ?? [],
+        ]);
+    }
+
+    /**
+     * JS builder for the static (non-dynamic) leaflet map -- historically done in PHP
+     * inside templates/map.tpl.html; moved here when tpl.html templates died.
+     */
+    private function renderMap(array $data): string
+    {
+        $params = $data['params'];
+        $fiches = $data['fiches'];
+        $output = $data['info_res'];
+        if (count($fiches) === 0) {
+            return $output;
+        }
+        $js = '';
+
+        $this->wiki->AddCSSFile('styles/vendor/leaflet/leaflet.css');
+        $this->wiki->AddCSSFile('styles/bazar/bazarcarto.css');
+        $this->wiki->AddCSSFile('javascripts/vendor/leaflet-draw/leaflet.draw.css');
+        $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
+        $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
+        $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
+        $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-draw/leaflet.draw.js', false, true);
+
+        $output .= '<div id="osmmap' . $params['nbbazarliste'] . '" class="no-dblclick" style="width:' . $params['width'] . '; height:' . $params['height'] . '"></div>';
+
+        if ($params['spider'] == 'true' or $params['spider'] == '1') {
+            $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-spiderfier/oms.min.js');
+            $markersjs = 'var popups = Array();' . "\n" . 'oms = new OverlappingMarkerSpiderfier(map' . $params['nbbazarliste'] . ');' . "\n" .
+            'var popup = new L.Popup();
+        oms.addListener("click", function(marker) {
+            marker.openPopup();
+        });
+        oms.addListener(\'spiderfy\', function(markers) {
+          map' . $params['nbbazarliste'] . '.closePopup();
+        });' . "\n";
+        } elseif ($params['cluster'] == 'true' or $params['cluster'] == '1') {
+            $this->wiki->AddCSSFile('styles/vendor/leaflet-markercluster/leaflet-markercluster.css');
+            $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js');
+            $markersjs = 'var markerscluster = new L.MarkerClusterGroup();' . "\n";
+        } else {
+            $markersjs = '';
+        }
+
+        if ($params['fullscreen'] == 'true' || $params['fullscreen'] == '1') {
+            $params['fullscreen'] = 'true';
+            $this->wiki->AddCSSFile('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css');
+            $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js');
+        } else {
+            $params['fullscreen'] = 'false';
+        }
+
+        $vAllGeometries = $geometriesWithoutMarker = [];
+        $fiche = ['html_data' => ''];
+
+        $vGeolocationField = $params['geolocationfield'] ?? 'bf_geolocation';
+
+        foreach ($fiches as $fiche) {
+            $vGeolocation = $fiche[$vGeolocationField] ?? [];
+
+            $vLatitude = $vGeolocation['latitude'] ?? '';
+            $vLongitude = $vGeolocation['longitude'] ?? '';
+            $vGeometries = $vGeolocation['geometries'] ?? '';
+            $vGeometries = str_replace(
+                '"type":"FeatureCollection"',
+                '"id":"' . $fiche['tag'] . '","type":"FeatureCollection"',
+                $vGeometries
+            );
+
+            // couleur de marqueur
+            $color = getCustomValueForEntry($params['color'], $params['colorfield'], $fiche, $this->wiki->config['baz_marker_color']);
+
+            // icone de marqueur
+            $icon = $params['iconprefix']
+                    . getCustomValueForEntry($params['icon'], $params['iconfield'], $fiche, $this->wiki->config['baz_marker_icon']);
+
+            if (is_numeric($vLatitude) && is_numeric($vLongitude)) {
+                // on genere le point marqueur sur la carte
+                $markersjs .= '
+				i++;
+				var markerLocation = new L.LatLng(' . $vLatitude . ', ' . $vLongitude . ');
+				marker[i] = new L.Marker(
+						markerLocation,
+						{
+								icon: L.divIcon({
+										iconSize: ' . $params['iconSize'] . ',
+										iconAnchor: ' . $params['iconAnchor'] . ',
+										popupAnchor: ' . $params['popupAnchor'] . ',
+										className: \'bazar-marker' . $params['smallmarker'] . '\',
+										html: \'<div class="bazar-entry" '
+                                        . str_replace('\'', '', $fiche['html_data']) . ' style="color:' . $color . ';">'
+                                        . (!empty($icon) ? '<i class="fa-fw ' . $icon . '"></i>' : '')
+                                        . '</div>\'
+								}),
+								title: \'' . addslashes($fiche['bf_titre']) . '\'
+						});
+				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $fiche))) . '\');
+				';
+                if ($params['spider'] == 'true' or $params['spider'] == '1') {
+                    $markersjs .= 'map' . $params['nbbazarliste'] . '.addLayer(marker[i]);' . "\n" . 'oms.addMarker(marker[i]);' . "\n";
+                } elseif ($params['cluster'] == 'true' or $params['cluster'] == '1') {
+                    $markersjs .= 'markerscluster.addLayer(marker[i]);' . "\n";
+                } else {
+                    $markersjs .= 'map' . $params['nbbazarliste'] . '.addLayer(marker[i]);' . "\n";
+                }
+            } elseif (!empty($vGeometries)) {
+                // fake marker for facetted search
+                // TODO: this is way too hacky, need to find a way to search on marker and geometries in a better way
+                $geometriesWithoutMarker[$fiche['tag']] = '<div class="bazar-entry" ' . str_replace('\'', '', $fiche['html_data']) . '></div>';
+            }
+            if (!empty($vGeometries)) {
+                $vAllGeometries[$fiche['tag']] = $vGeometries;
+            }
+        }
+
+        if ($params['cluster'] == 'true' or $params['cluster'] == '1') {
+            $markersjs .= 'map' . $params['nbbazarliste'] . '.addLayer(markerscluster);' . "\n";
+        }
+        $js .=
+                '// Init leaflet map
+		var map' . $params['nbbazarliste'] . ' = new L.Map(\'osmmap' . $params['nbbazarliste'] . '\', {
+				scrollWheelZoom:' . $params['zoom_molette'] . ',
+				zoomControl:' . $params['navigation'] . ',
+		fullscreenControl:' . $params['fullscreen'] . ',
+				iconAnchor:   [6, 20]
+		});';
+
+        // Pas de L.control.layers
+        if (empty($params['providers']) && empty($params['layers'])) {
+            $js .=
+                '
+			var provider = L.tileLayer.provider("' . $params['provider'] . '"' . $params['provider_credentials'] . ');
+			';
+        } else {
+            // Avec un L.control.layers
+            // Si param['provider'] existe, ce sera le baseLayer activé par défaut, sinon ce sera le 1er de la liste $params['providers'].
+            $js .= 'var provider; var baseLayers = {};';
+            if (empty($params['providers'])) {
+                $params['providers'] = [$params['provider']];
+            }
+            foreach ($params['providers'] as $provider) {
+                $js .= 'baseLayers["' . $provider . '"] = L.tileLayer.provider("' . $provider . '");';
+                if (empty($params['provider'])) {
+                    $js .= 'if(provider==null) provider=baseLayers["' . $provider . '"];';
+                } elseif ($provider == $params['provider']) {
+                    $js .= 'provider=baseLayers["' . $provider . '"];';
+                }
+            }
+
+            $js .= 'var layers = {};';
+            if (is_array($params['layers'])) {
+                $leafletajaxIncluded = false;
+                foreach ($params['layers'] as $layer) {
+                    @list($layerLabel, $layerType, $layerOptions, $layerUrl) = explode('|', $layer);
+                    if ($layerUrl == null) {
+                        $layerUrl = $layerOptions;
+                        $layerOptions = null;
+                    }
+                    $layerType = strtolower($layerType);
+                    if (!in_array($layerType, ['tiles', 'geojson'])) {
+                        $js .= 'alert("Erreur paramètre \\"layers\\": le type \\"' . $layerType . '\\" est inconnu")';
+                    }
+                    switch ($layerType) {
+                        case 'tiles':
+                            $js .= 'layers["' . $layerLabel . '"] = L.tileLayer("' . $layerUrl . '");';
+                            break;
+                        case 'geojson':
+                            // URL: Attention au Blocage d’une requête multi-origines (Cross-Origin Request).
+                            // Le plus simple est de recopier les data GeoJson dans une page du Wiki puis de l'appeler avec le handler "/raw".
+                            // STYLE:
+                            //	http://leafletjs.com/reference.html#path-options
+                            //	http://leafletjs.com/reference.html#marker-options
+                            if (!$leafletajaxIncluded) {
+                                $leafletajaxIncluded = true;
+                                $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-ajax/leaflet.ajax.min.js');
+                            }
+
+                            $styleJs = '';
+                            $isVisibleByDefault = false;
+                            if ($layerOptions != null) {
+                                // extract 'visiblebydefault'
+                                if (preg_match_all('/visiblebydefault\\s*;?/i', $layerOptions, $matches)) {
+                                    $isVisibleByDefault = true;
+                                    foreach ($matches[0] as $key => $value) {
+                                        $layerOptions = str_replace($value, '', $layerOptions);
+                                    }
+                                }
+                                $layerOptions = str_replace(';', ',', $layerOptions);
+                                $styleJs .= '
+							style: function (feature, latlng) {
+								// pour les lignes et polygones
+								if( feature.geometry.type=="Point" )
+									return ;
+								return {' . $layerOptions . '};
+							},
+							pointToLayer: function (feature, latlng) {
+								// pour les points
+								// parsing de layerOptions pour distinguer les options de marker et celles pour construire un icon pour le marker.
+								var layerOptions = "' . $layerOptions . '".split(",");
+								var markerOptions = {} , iconClass=null, color=null ;
+								for( opt in layerOptions )
+								{
+									opt = layerOptions[opt].split(":");
+									switch(opt[0].trim()) {
+										case "opacity":
+										case "clickable":
+											// les options pour le marker http://leafletjs.com/reference.html#marker
+											markerOptions[opt[0].trim()] = opt[1].trim();
+											break;
+										case "icon":
+											// pour le html du L.divIcon http://leafletjs.com/reference.html#divicon
+											// supprimer les éventuels apostrhophes
+											iconClass = opt[1].trim().replace(/\'/g, "");
+											break;
+										case "color":
+											// pour le html du L.divIcon
+											color = opt[1].trim();
+											break;
+									}
+								}
+
+								if( iconClass!=null || color!=null ) {
+									// Construit un L.divIcon pour le marker, sinon ce sera par défaut la goutte bleu.
+									markerOptions["icon"] = L.divIcon({
+											iconSize: ' . $params['iconSize'] . ',
+											iconAnchor: ' . $params['iconAnchor'] . ',
+											popupAnchor: ' . $params['popupAnchor'] . ',
+											className: "bazar-marker' . $params['smallmarker'] . '",
+											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" ' . addslashes($fiche['html_data']) . '>" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
+									});
+								}
+
+								return L.marker(latlng, markerOptions);
+							},
+							';
+                            }
+
+                            $js .= 'layers["' . $layerLabel . '"] = L.geoJson.ajax("' . $layerUrl . '",
+						{
+              interactive: false,
+							' . $styleJs . '
+							onEachFeature: function (feature, layer) {
+								//layer.bindPopup(feature.properties.NOM + feature.properties.NOM_QP);
+								var str = "" ;
+								for( var prop in feature.properties){
+									if( prop.toLowerCase() == "url" ) {
+										str+= prop +": <a href=\""+ feature.properties[prop] + "\" target=\"_blank\" >" + feature.properties[prop] +"<br/>";
+									} else {
+										str+= prop +": "+ feature.properties[prop] +"<br/>";
+									}
+								}
+								//layer.bindPopup( str );
+							}
+						} );';
+                            if ($isVisibleByDefault) {
+                                // add layer to the map
+                                $js .= 'layers["' . $layerLabel . '"].addTo(map' . $params['nbbazarliste'] . ');';
+                            }
+                            break;
+                    }
+                }
+            }
+
+            $js .= 'L.control.layers(baseLayers, layers).addTo(map' . $params['nbbazarliste'] . ');';
+        }
+        $geometriesModuleJs = '';
+        if (!empty($vAllGeometries)) {
+            $geometriesModuleJs .= '
+
+    var drawnFeatures = new L.FeatureGroup()
+    map' . $params['nbbazarliste'] . ".addLayer(drawnFeatures)\n";
+            foreach ($vAllGeometries as $id => $g) {
+                $geometriesModuleJs .= "const geo{$id} = " . $g . "\n";
+                $geometriesModuleJs .= 'var popup = \'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $id))) . '\'' . "\n";
+                $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup, '{$id}')\n";
+            }
+            if (!empty($geometriesWithoutMarker)) {
+                $js .= 'L.Control.geometriesPanel = L.Control.extend({
+    onAdd: function(map) {
+        const div = L.DomUtil.create(\'div\', \'info-panel\');
+        div.innerHTML = \'' . implode('', $geometriesWithoutMarker) . '\';
+        div.style.background = \'transparent\';
+        div.style.padding = \'0\';
+
+        // Prevent clicks from reaching the map
+        L.DomEvent.disableClickPropagation(div);
+
+        return div;
+    }
+});
+
+  new L.Control.geometriesPanel({ position: \'topright\' }).addTo(map' . $params['nbbazarliste'] . ');';
+            }
+        }
+        $this->wiki->AddJavascript(
+            '
+import { drawGeometries } from "./javascripts/leaflet-draw.helper.js"
+
+var map' . $params['nbbazarliste'] . ';	
+document.addEventListener(\'DOMContentLoaded\', function() {
+    if (document.getElementById(\'osmmap' . $params['nbbazarliste'] . '\')) {
+		' . $js . '
+		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
+		map' . $params['nbbazarliste'] . '.addLayer(provider);
+		map' . $params['nbbazarliste'] . '.setView(new L.LatLng(' . $params['latitude'] . ', ' . $params['longitude'] . '), ' . $params['zoom'] . ');
+		var i = 0;
+		var marker = Array();
+    ' . $markersjs . '
+    }
+    ' . $geometriesModuleJs . '
+	});',
+            true
+        );
+
+        return $output;
+    }
+
+    /** One tableau column descriptor per displayable facet of a field (checkbox options may fan out). */
+    private function tableauFieldCols($field, bool $checkboxFieldsInColumns, bool $displayImagesAsThumbnails): array
+    {
+        $propertyName = $field->getPropertyName();
+        if (empty($propertyName)) {
+            return [];
+        }
+
+        $fieldLabel = $field->getLabel();
+        if ($field instanceof MapField) {
+            return [[
+                'propertyName' => $propertyName,
+                'title' => $fieldLabel,
+                'key' => null,
+                'mapFieldId' => $propertyName,
+                'multivalues' => false,
+            ]];
+        }
+        if ($field instanceof CheckboxField && $checkboxFieldsInColumns) {
+            $options = $field->getOptions();
+            if (empty($options)) {
+                return [];
+            }
+            $cols = [];
+            foreach ($options as $key => $optionName) {
+                $cols[] = [
+                    'propertyName' => $propertyName,
+                    'title' => "$fieldLabel - $optionName",
+                    'key' => $key,
+                    'mapFieldId' => null,
+                    'multivalues' => false,
+                ];
+            }
+
+            return $cols;
+        }
+
+        return [[
+            'propertyName' => $propertyName,
+            'title' => $fieldLabel,
+            'key' => null,
+            'mapFieldId' => null,
+            'multivalues' => $field instanceof CheckboxField,
+        ] + ($displayImagesAsThumbnails && $field instanceof ImageField ? ['imageAsThumbnail' => true] : [])];
+    }
+
+    private function tableauCollectOptions($field, array &$optionsIfDisplayvaluesinsteadofkeys, array $sanitizedParams): void
+    {
+        $propertyName = $field->getPropertyName();
+        if ($sanitizedParams['displayvaluesinsteadofkeys']
+            && $field instanceof EnumField
+            && !isset($optionsIfDisplayvaluesinsteadofkeys[$propertyName])) {
+            $optionsIfDisplayvaluesinsteadofkeys[$propertyName] = $field->getOptions();
         }
     }
 

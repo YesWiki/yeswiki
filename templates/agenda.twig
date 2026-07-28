@@ -1,0 +1,60 @@
+{% if fiches|length > 0 %}
+{% set imgwidth = 450 %}
+{% set imgheight = 450 %}
+
+<div class="agenda-container">
+  {% for fiche in fiches %}
+  <div class="agenda-entry-container">
+    <figure class="bazar-entry agenda-entry" {{ fiche.html_data|raw }}>
+      <div class="image">
+        {% if fiche.imagebf_image is defined and fiche.imagebf_image != '' %}
+          <img loading="lazy" class="img-responsive" alt=""
+            src="{{ fiche['external-data'] is defined
+              ? fiche['external-data'].baseUrl ~ 'cache/image_' ~ imgwidth ~ 'x' ~ imgheight ~ '_' ~ fiche.imagebf_image
+              : resizedImage(fiche.imagebf_image, imgwidth, imgheight, 'crop') }}"
+              {{ fiche['external-data'] is defined
+                ? 'onerror="this.src=\'' ~ fiche['external-data'].baseUrl ~ 'files/' ~ fiche.imagebf_image ~ '\'"'
+                : '' }}>
+        {% else %}
+          <img loading="lazy" class="trombi-image img-placeholder" alt=""
+               src="javascripts/vendor/placeholder.php?size=300x300&amp;bg=efefef&amp;text=">
+          <i class="trombi-image icon-placeholder fa fa-calendar"></i>
+        {% endif %}
+      </div>
+      <fig-caption>
+        {% set moisfr = fiche.bf_date_debut_evenement|date('M')|replace({'Feb': 'fev', 'Apr': 'avr', 'May': 'mai', 'Jun': 'jui', 'Aug': 'aou'}) %}
+        <div class="date"><span class="day">{{ fiche.bf_date_debut_evenement|slice(8, 2) }}</span><span class="month">{{ moisfr }}</span></div>
+        <h5>{{ fiche.bf_titre|raw }}</h5>
+        {% if fiche.soustitre is defined and fiche.soustitre is not empty %}
+          {% set soustitre = format(fiche.soustitre)|striptags('<br>')|nl2br %}
+            <small class='agenda-subtitle'>
+              {{ (soustitre|slice(0, 280) ~ (soustitre|length > 280 ? '...' : ''))|raw }}
+            </small>
+        {% endif %}
+
+        </p>
+      </fig-caption>
+      {% set useModal = params.modal|default('') == 1 %}
+      <a class="{{ useModal ? 'modalbox' : '' }}"
+         title="{{ fiche.bf_titre|striptags }}"
+         href="{{ fiche.url|raw }}{{ (fiche['external-data'] is defined and useModal) ? '/iframe" data-iframe="1' : '' }}">
+      </a>
+    </figure>
+  </div>
+  {% endfor %}
+</div>
+
+{{ include_css('styles/bazar/agenda.css') }}
+<style>
+  {% set width = params.nbcol|default('') is empty ? 25 : 100 / params.nbcol %}
+  .agenda-entry-container {
+    width: {{ width }}%;
+    padding: 1rem;
+  }
+  @media (max-width: 900px) { .agenda-entry-container { width: 33%; } }
+  @media (max-width: 700px) { .agenda-entry-container { width: 50%; } }
+
+</style>
+
+{% endif %}
+{{ pager_links|raw }}

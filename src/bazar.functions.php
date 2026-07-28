@@ -30,9 +30,9 @@ use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\ListManager;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Content\Service\ListManager;
 use YesWiki\Render\Service\TemplateEngine;
 
 define('BAZ_CHEMIN_UPLOAD', 'files/');
@@ -465,3 +465,40 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     return $output;
 }
 
+/**
+ * Resolves a bazarliste display parameter (color=, icon=, ...) for one entry: when
+ * the parameter is a value-map and a field name is given, pick the entry's matched
+ * value (first match for comma-separated checkbox values), else the default.
+ * Deleted by mistake in the wave-2 dead-code purge while the bazar list templates
+ * (liste_liens, material-card, map, tableau, ...) still call it — restored for
+ * ticket 07, where the Twig `customValueForEntry` helper delegates here.
+ */
+function getCustomValueForEntry($parameter, $field, $entry, $default)
+{
+    if (is_array($parameter) && !empty($field)) {
+        if (isset($entry[$field])) {
+            // pour les checkbox, on teste les differentes valeurs et on renvoie la premiere qui va bien
+            if (!isset($parameter[$entry[$field]]) && strpos($entry[$field], ',') !== false) {
+                $tab = explode(',', $entry[$field]);
+                foreach ($tab as $value) {
+                    if (isset($parameter[$value])) {
+                        // on retourne la premiere valeur trouvee
+                        return $parameter[$value];
+                    }
+                }
+
+                // on n a pas trouve de valeur, on renvoie la valeur par defaut
+                return $default;
+            }
+
+            return isset($parameter[$entry[$field]]) ?
+                $parameter[$entry[$field]] : $default;
+        }
+
+        // si la valeur n existe pas, on met l icone par defaut
+        return $default;
+    }
+
+    // si le parametre n'est pas un tableau, il contient la valeur par defaut
+    return $default;
+}

@@ -1,0 +1,7 @@
+<ul class="filter-results">
+{% for tag, element in elements %}
+	<li class="filtered-element {{ element.tagnames }}">
+		<a href="{{ url({tag: tag}) }}">{{ element.title|raw }}</a>
+	</li>
+{% endfor %}
+</ul>

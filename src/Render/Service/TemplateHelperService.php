@@ -5,8 +5,8 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Wiki;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Wiki;
 
 class TemplateHelperService
 {
@@ -180,7 +180,7 @@ class TemplateHelperService
                 $pathToSquelettes = $directory . DIRECTORY_SEPARATOR . $file . DIRECTORY_SEPARATOR . 'squelettes';
                 if (is_dir($pathToSquelettes) && $dir3 = opendir($pathToSquelettes)) {
                     while (false !== ($file3 = readdir($dir3))) {
-                        if (substr($file3, -9, 9) == '.tpl.html') {
+                        if (str_ends_with($file3, '.twig')) {
                             $tab_themes[$file]['isCustom'] = $isCustom;
                             $tab_themes[$file]['squelette'][$file3] = $this->removeExtension($file3, true);
                         }

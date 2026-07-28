@@ -1,0 +1,33 @@
+{% import "@core/bazar/entry-decoration-macro.twig" as decoration %}
+{{ info_res|raw }}
+{% if fiches|length > 0 %}
+    {{ pager_links|raw }}
+    <div class="panel-group accordion-group no-dblclick" id="accordion{{ params.nbbazarliste }}">
+    {% for vIndex, fiche in fiches %}
+        <div class="bazar-entry panel panel-default collapsed" {{ fiche.html_data|raw }}>
+          <button class="panel-heading collapsed" aria-expanded="false"
+            data-target="#collapse{{ params.nbbazarliste }}_{{ vIndex }}"           
+            data-toggle="collapse">
+            <h4 class="panel-title">
+              {{ decoration.pellet(params, fiche) }}{{ decoration.icon(params, fiche) }}
+              {{ fiche.bf_titre|raw }} </h4>
+              {% if fiche.soustitre is defined and fiche.soustitre is not empty %}
+                  {# format the text but remove tags except <br>; collapse consecutive <br> #}
+                  {% set soustitre = format(fiche.soustitre)|striptags('<br>') %}
+                  {% set soustitre = soustitre|preg_replace('!^\\s*<br */?>!i', '') %}
+                  {% set soustitre = soustitre|preg_replace('#(<br */?>\\s*)+#i', '<br />') %}
+                  <small class='accordion-subtitle'>
+                    {{ (soustitre|slice(0, 280) ~ (soustitre|length > 280 ? '...' : ''))|raw }}
+                  </small>
+              {% endif %}
+          </button>
+          <div id="collapse{{ params.nbbazarliste }}_{{ vIndex }}" class="panel-collapse collapse">
+            <div class="panel-body">            
+              {{ renderEntry(params.barregestion, fiche, forms[fiche.form_id]|default(null))|raw }}
+            </div>
+          </div>
+        </div>
+    {% endfor %}
+    </div>
+    {{ pager_links|raw }}
+{% endif %}

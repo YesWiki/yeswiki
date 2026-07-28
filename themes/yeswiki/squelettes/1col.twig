@@ -1,0 +1,71 @@
+{# Squelette = page-level layout. the WIKINI_PAGE brace marker is plain text, not Twig:
+   ThemeManager splits the file there and renders each half at the right moment, so
+   footer actions (linkjavascript) run after the page body has registered its assets.
+   Wiki actions are reached through the `action()` helper, which takes the same
+   attribute string the historical `{{action attr="…"}}` squelette syntax used. #}
+<!doctype html>
+<html lang="{{ action('configuration param="lang"') }}">
+<head>
+  <!-- HTML Metas -->
+  <meta charset="{{ action('configuration param="charset"') }}">
+  {{ action('metarobots')|raw }}
+  <meta name="keywords" content="{{ action('configuration param="meta_keywords"') }}" />
+  <meta name="description" content="{{ action('configuration param="meta_description"') }}" />
+  <meta name="viewport" content="width=device-width" />
+
+  <!-- Title of the page -->
+  <title>{{ action('configuration param="wakka_name"') }} : {{ action('titrepage')|raw }}</title>
+
+  {{ action('favicon')|raw }}
+  {{ action('linkstyle')|raw }}
+  {{ action('linkrss')|raw }}
+</head>
+
+<body {{ action('parambody')|raw }}>
+
+  <div id="yw-container">
+
+    <a id="yw-a11y-jump-content" class="sr-only sr-only-focusable yw-btn" href="#yw-main">
+      Aller au contenu principal
+    </a>
+
+    <nav id="yw-topnav" class="fixable" role="navigation">
+      <div class="container">
+          <button class="yw-btn btn-menu"><span class="fa fa-bars"></span></button>
+          <div class="navbar-header">
+            <a class="navbar-brand" href="{{ action('configuration param="base_url"') }}{{ action('configuration param="root_page"') }}">
+              {{ action('include page="PageTitre" doubleclic="1"')|raw }}
+            </a>
+          </div>
+          {{ action('include page="PageMenuHaut" class="yw-topnav topnavpage links-container" doubleclic="1" actif="1"')|raw }}
+          {{ action('include page="PageRapideHaut" class="yw-topnav-fast-access pull-right" doubleclic="1" actif="1"')|raw }}
+        </div>
+    </nav>
+
+    <header id="yw-header">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="{{ action('configuration param="base_url"') }}{{ action('configuration param="root_page"') }}">
+          {{ action('include page="PageTitre" doubleclic="1"')|raw }}
+        </a>
+      </div>
+      {{ action('include page="PageHeader" class="yw-headerpage" doubleclic="1"')|raw }}
+    </header>
+
+    <div id="yw-main" role="main" {{ action('doubleclic')|raw }}>
+      <div class="yw-main-content alone">
+        {WIKINI_PAGE}
+      </div>
+    </div>
+
+    {{ action('barreredaction')|raw }}
+
+    <footer id="yw-footer">
+      <div class="container">
+        {{ action('include page="PageFooter" class="footerpage" doubleclic="1"')|raw }}
+      </div> <!-- /.container -->
+    </footer><!-- /#yw-footer -->
+  </div> <!-- /#yw-container -->
+
+  {{ action('linkjavascript')|raw }}
+</body>
+</html>
