@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Core\YesWikiAction;
 
 class CalendrierAction extends YesWikiAction

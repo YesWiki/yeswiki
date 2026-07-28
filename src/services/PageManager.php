@@ -3,9 +3,12 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Wiki;
 use YesWiki\Search\Service\TagsManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\Guard;
+use YesWiki\Identity\Service\UserManager;
 
 class PageManager
 {

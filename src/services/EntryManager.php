@@ -4,12 +4,15 @@ namespace YesWiki\Core\Service;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Exception\ParsingMultipleException;
 use YesWiki\Core\Field\BazarField;
 use YesWiki\Core\Field\ImageField;
 use YesWiki\Wiki;
 use YesWiki\Search\Service\SearchManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\Guard;
+use YesWiki\Identity\Service\UserManager;
 
 class EntryManager
 {

@@ -4,6 +4,8 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
+use YesWiki\Render\Service\ThemeManager;
+use YesWiki\Identity\Service\UserManager;
 
 class LinkTracker
 {

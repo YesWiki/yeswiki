@@ -2,7 +2,7 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FormManager;
 use YesWiki\Test\Core\YesWikiTestCase;

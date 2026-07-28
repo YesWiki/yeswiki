@@ -6,7 +6,7 @@
  */
 
 use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateEngine;
 
 $entryManager = $this->services->get(EntryManager::class);
 

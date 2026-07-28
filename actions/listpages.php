@@ -235,7 +235,7 @@ if ($tree) {
             if ($tree) {
                 $indentStr = str_repeat("\t", $indent);
                 $retour = "$indentStr<ul>\n";
-                $aclService = $wiki->services->get(YesWiki\Core\Service\AclService::class);
+                $aclService = $wiki->services->get(YesWiki\Identity\Service\AclService::class);
                 foreach ($tree as $pageName => $pageData) {
                     if ($aclService->hasAccess('read', $pageName)) {
                         $retour .= "$indentStr\t<li>";
@@ -394,7 +394,7 @@ if ($tree) {
 
     // Display the list itself
     echo "<ul>\n";
-    $aclService = $this->services->get(YesWiki\Core\Service\AclService::class);
+    $aclService = $this->services->get(YesWiki\Identity\Service\AclService::class);
     foreach ($pages as $page) {
         if ($aclService->hasAccess('read', $page['tag'])) {
             echo "\t<li>" . $this->ComposeLinkToPage($page['tag'], false, false, false);

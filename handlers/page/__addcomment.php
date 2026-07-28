@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\HashCashService;
+use YesWiki\Identity\Service\HashCashService;
 
 if (isset($_POST['action']) && $_POST['action'] == 'addcomment') {
     if (!$this->services->get(HashCashService::class)->checkHashcash()) {

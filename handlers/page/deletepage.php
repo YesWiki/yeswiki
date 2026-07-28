@@ -2,7 +2,7 @@
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Core\Service\PageOperationsService;
 use YesWiki\Core\Service\DbService;
 

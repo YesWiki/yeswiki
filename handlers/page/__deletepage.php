@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Core\Service\DbService;
 
 if (($this->UserIsOwner() || $this->UserIsAdmin())

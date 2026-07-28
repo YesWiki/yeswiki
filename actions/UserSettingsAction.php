@@ -2,17 +2,17 @@
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Controller\CaptchaController;
-use YesWiki\Core\Service\CsrfTokenChecker;
-use YesWiki\Core\Service\InputFilter;
-use YesWiki\Core\Service\UserOperationsService;
-use YesWiki\Core\Entity\User;
-use YesWiki\Core\Exception\BadFormatPasswordException;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Controller\CaptchaController;
+use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Service\UserOperationsService;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\ExitException;
-use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
-use YesWiki\Core\Exception\UserNameAlreadyUsedException;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
+use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 class UserSettingsAction extends YesWikiAction

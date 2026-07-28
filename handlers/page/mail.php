@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 
 // {{mail}} page handler (ticket 18, relocated from tools/contact/handlers/page/mail.php).
 // Trimmed to only the "share this page by email" form-rendering branch -- actually

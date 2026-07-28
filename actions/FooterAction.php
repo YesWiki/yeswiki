@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 
 class FooterAction extends YesWikiAction

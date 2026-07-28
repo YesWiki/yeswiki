@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\InputFilter;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Core\Service\AutoUpdateService;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;

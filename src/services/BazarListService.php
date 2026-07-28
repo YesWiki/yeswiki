@@ -574,7 +574,7 @@ class BazarListService
                     throw new \Exception('Invalid external ID ' . $vID['id'] . print_r($vID, true));
                 }
                 if (isset($vID['localFormId']) && (trim($vID['localFormId']) != '') && !$this->isValidID($vID['localFormId'])) {
-                    throw new Exception('Invalid local ID');
+                    throw new \Exception('Invalid local ID');
                 }
 
                 array_push($vResults['externals'], $vID);

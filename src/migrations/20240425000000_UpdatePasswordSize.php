@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\PasswordHasherFactory;
+use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Core\YesWikiMigration;
 
 class UpdatePasswordSize extends YesWikiMigration

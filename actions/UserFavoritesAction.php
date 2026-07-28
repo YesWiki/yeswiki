@@ -1,13 +1,13 @@
 <?php
 
 use YesWiki\Core\Attach;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Field\ImageField;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Core\YesWikiAction;
 
 class UserFavoritesAction extends YesWikiAction

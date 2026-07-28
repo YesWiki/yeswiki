@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\TabsRenderer;
+use YesWiki\Render\Service\TabsRenderer;
 use YesWiki\Core\YesWikiAction;
 
 class TabsAction extends YesWikiAction

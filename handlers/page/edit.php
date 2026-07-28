@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\Service\InputFilter;
-use YesWiki\Core\Service\HibernationNotice;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;

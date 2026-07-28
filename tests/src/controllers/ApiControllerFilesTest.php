@@ -6,11 +6,11 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\ApiController;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\FileManager;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 

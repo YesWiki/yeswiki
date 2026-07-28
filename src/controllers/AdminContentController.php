@@ -6,11 +6,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\PageOperationsService;
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
 
 class AdminContentController extends YesWikiController

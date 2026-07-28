@@ -4,6 +4,7 @@ namespace YesWiki\Core\Service;
 
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\AuthenticationService;
 
 class PageOperationsService extends YesWikiController
 {

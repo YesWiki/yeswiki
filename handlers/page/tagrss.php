@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 
 $oldpagetag = $this->GetPageTag();
 $oldpage = $this->LoadPage($oldpagetag);

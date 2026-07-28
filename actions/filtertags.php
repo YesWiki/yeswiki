@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 
 include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
 $nbcartrunc = 200;

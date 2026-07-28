@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 
 $themeManager = $this->services->get(ThemeManager::class);
 

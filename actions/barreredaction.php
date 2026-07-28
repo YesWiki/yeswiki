@@ -1,8 +1,8 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\HibernationService;
 

@@ -1,11 +1,11 @@
 <?php
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\CsrfTokenChecker;
-use YesWiki\Core\Service\UserOperationsService;
-use YesWiki\Core\Exception\DeleteUserException;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\UserOperationsService;
+use YesWiki\Identity\Exception\DeleteUserException;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\User;
 

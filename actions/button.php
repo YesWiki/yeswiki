@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\LinkTracker;
-use YesWiki\Core\Service\TemplateHelperService;
+use YesWiki\Render\Service\TemplateHelperService;
 
 // adresse vers quoi le bouton pointe
 $link = $this->GetParameter('link');

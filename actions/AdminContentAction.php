@@ -1,9 +1,9 @@
 <?php
 
-use YesWiki\Core\Service\GroupOperationsService;
+use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 
 class AdminContentAction extends YesWikiAction

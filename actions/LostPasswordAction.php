@@ -1,12 +1,12 @@
 <?php
 
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\InputFilter;
-use YesWiki\Core\Entity\User;
-use YesWiki\Core\Exception\BadFormatPasswordException;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 class LostPasswordAction extends YesWikiAction

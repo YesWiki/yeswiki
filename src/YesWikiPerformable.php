@@ -4,10 +4,10 @@ namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Core\Service\HibernationNotice;
+use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\TemplateEngine;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Wiki;
 
 /**

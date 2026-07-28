@@ -2,11 +2,11 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Core\Exception\BadActivationKeyException;
-use YesWiki\Core\Exception\UserNameDoesNotExistException;
-use YesWiki\Core\Service\AccountActivationService;
+use YesWiki\Identity\Exception\BadActivationKeyException;
+use YesWiki\Identity\Exception\UserNameDoesNotExistException;
+use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

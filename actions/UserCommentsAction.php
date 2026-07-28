@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\CommentService;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 class UserCommentsAction extends YesWikiAction

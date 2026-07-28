@@ -1,12 +1,12 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\CaptchaController;
-use YesWiki\Core\Service\InputFilter;
-use YesWiki\Core\Service\ThemeSelectorRenderer;
-use YesWiki\Core\Service\HashCashService;
+use YesWiki\Identity\Controller\CaptchaController;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Render\Service\ThemeSelectorRenderer;
+use YesWiki\Identity\Service\HashCashService;
 use YesWiki\Search\Service\TagsManager;
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 
 $params = $this->services->get(ParameterBagInterface::class);
 if (!$params->get('hide_keywords') && $this->HasAccess('write') && $this->HasAccess('read')) {

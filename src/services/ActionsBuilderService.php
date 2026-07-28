@@ -4,6 +4,7 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\Yaml\Yaml;
 use YesWiki\Wiki;
+use YesWiki\Render\Service\TemplateEngine;
 
 class ActionsBuilderService
 {

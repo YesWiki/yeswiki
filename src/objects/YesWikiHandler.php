@@ -3,7 +3,7 @@
 namespace YesWiki\Core;
 
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 
 abstract class YesWikiHandler extends YesWikiPerformable
 {

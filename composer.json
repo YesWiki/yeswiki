@@ -100,7 +100,9 @@
       "src/ComposerScriptsHelper.php"
     ],
     "psr-4": {
-      "YesWiki\\Search\\": "src/Search/"
+      "YesWiki\\Search\\": "src/Search/",
+      "YesWiki\\Render\\": "src/Render/",
+      "YesWiki\\Identity\\": "src/Identity/"
     }
   }
 }

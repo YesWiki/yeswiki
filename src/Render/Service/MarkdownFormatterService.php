@@ -1,0 +1,108 @@
+<?php
+
+namespace YesWiki\Render\Service;
+
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Environment\EnvironmentInterface;
+use League\CommonMark\Extension\Attributes\AttributesExtension;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
+use League\CommonMark\MarkdownConverter;
+use YesWiki\Render\Formatter\ActionExtension;
+use YesWiki\Render\Formatter\CommentExtension;
+use YesWiki\Render\Formatter\ProgressExtension;
+use YesWiki\Wiki;
+
+
+/**
+ * Renders page content: standard CommonMark/GFM Markdown, plus Twig-like comments
+ * ({# ... #}) and the YesWiki action syntax ({{actionname param="one" ...}}, see
+ * Wiki::Action()).
+ */
+class MarkdownFormatterService
+{
+    private Wiki $wiki;
+    private ?EnvironmentInterface $environment = null;
+
+    public function __construct(Wiki $wiki)
+    {
+        $this->wiki = $wiki;
+    }
+
+    public function format(string $text): string
+    {
+        // a fresh MarkdownConverter (cheap: just a parser/renderer pair wrapping the shared,
+        // expensive-to-build Environment) per call, since actions rendered while parsing
+        // (e.g. recentchanges/listusers, which format() page excerpts themselves) can
+        // re-enter format() - the parser holds per-conversion state that a shared instance
+        // would corrupt, breaking the outer, still-in-progress parse
+        return (string)(new MarkdownConverter($this->getEnvironment()))->convert($text);
+    }
+
+    /**
+     * Renders only the {{action ...}} tags found in $text, discarding everything else.
+     * Used where a snippet of text is known to be either an action or nothing at all
+     * (e.g. RSS/XML output), rather than full page markdown.
+     */
+    public function renderActionsOnly(string $text): string
+    {
+        $wiki = $this->wiki;
+
+        return preg_replace_callback(
+            '/\{\{(.*?)\}\}|./s',
+            function (array $matches) use ($wiki): string {
+                if (!isset($matches[1])) {
+                    return '';
+                }
+
+                return trim($matches[1]) === '' ? '' : $wiki->Action($matches[1]);
+            },
+            trim($text)
+        );
+    }
+
+    private function getEnvironment(): EnvironmentInterface
+    {
+        if ($this->environment === null) {
+            $wiki = $this->wiki;
+
+            $environment = new Environment([
+                'html_input' => $wiki->GetConfigValue('allow_raw_html', true) ? 'allow' : 'escape',
+                'allow_unsafe_links' => false,
+                // GithubFlavoredMarkdownExtension pulls in DisallowedRawHtmlExtension, which by
+                // default escapes <iframe> along with <script>/<style>/etc.; YesWiki pages rely
+                // on embedding iframes (maps, videos...), so the default list (see
+                // yeswiki.config.php's 'disallowed_html_tags') excludes it while keeping the
+                // rest of that denylist. Wiki admins can override it in their own config.
+                'disallowed_raw_html' => [
+                    'disallowed_tags' => $wiki->GetConfigValue('disallowed_html_tags', [
+                        'title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext',
+                    ]),
+                ],
+            ]);
+            $environment->addExtension(new CommonMarkCoreExtension());
+            $environment->addExtension(new GithubFlavoredMarkdownExtension());
+            // supports [text](url "title"){.class #id key="value"} on links (and images)
+            $environment->addExtension(new AttributesExtension());
+            $environment->addExtension(new CommentExtension());
+            $environment->addExtension(new ProgressExtension());
+            $environment->addExtension(new ActionExtension(
+                function (string $action) use ($wiki): string {
+                    return $wiki->Action($action);
+                },
+                function (string $url, string $html, ?string $title, array $attributes) use ($wiki): string {
+                    $options = ['html' => true];
+                    if ($title !== null) {
+                        $options['title'] = $title;
+                    }
+
+                    return $wiki->LinkTo($url, $html, array_merge($options, $attributes));
+                }
+            ));
+
+            $this->environment = $environment;
+        }
+
+        return $this->environment;
+    }
+}

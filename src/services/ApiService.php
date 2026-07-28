@@ -4,8 +4,10 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\RouteCollection;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Wiki;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\UserManager;
 
 class ApiService
 {

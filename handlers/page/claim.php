@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 
 $tag = $this->getPageTag();
 // only do it on existing pages

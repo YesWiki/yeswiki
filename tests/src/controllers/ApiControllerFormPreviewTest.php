@@ -5,8 +5,8 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\ApiController;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 

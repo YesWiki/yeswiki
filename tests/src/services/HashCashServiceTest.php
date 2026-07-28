@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
-use YesWiki\Core\Service\HashCashService;
+use YesWiki\Identity\Service\HashCashService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

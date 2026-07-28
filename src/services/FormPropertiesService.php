@@ -4,16 +4,20 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\UserOperationsService;
-use YesWiki\Core\Exception\UserFieldException;
-use YesWiki\Core\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\UserOperationsService;
+use YesWiki\Identity\Exception\UserFieldException;
+use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Field\CheckboxField;
 use YesWiki\Core\Field\EnumField;
 use YesWiki\Core\Field\FileField;
 use YesWiki\Core\Field\ImageField;
 use YesWiki\Core\Field\TagsField;
 use YesWiki\Wiki;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\UserManager;
 
 /**
  * Applies a form's `entry_*` properties (ADR-0010) to entries: title computation +

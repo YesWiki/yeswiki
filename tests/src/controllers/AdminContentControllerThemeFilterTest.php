@@ -6,7 +6,7 @@ use ReflectionClass;
 use YesWiki\Core\Controller\AdminContentController;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EntryManager;

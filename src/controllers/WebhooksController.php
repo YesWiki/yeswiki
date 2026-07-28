@@ -5,13 +5,13 @@ namespace YesWiki\Core\Controller;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpClient\HttpClient;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\SemanticTransformer;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Wiki;
 

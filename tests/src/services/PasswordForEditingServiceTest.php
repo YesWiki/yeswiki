@@ -4,9 +4,9 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\PasswordForEditingService;
-use YesWiki\Core\Service\TemplateEngine;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\PasswordForEditingService;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
@@ -70,7 +70,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $wiki->request->request->remove('password_for_editing');
         $userManager = $wiki->services->get(UserManager::class);
-        $authenticationService = $wiki->services->get(\YesWiki\Core\Service\AuthenticationService::class);
+        $authenticationService = $wiki->services->get(\YesWiki\Identity\Service\AuthenticationService::class);
 
         do {
             $name = trim($wiki->generateRandomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')

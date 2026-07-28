@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\TemplateHelperService;
+use YesWiki\Render\Service\TemplateHelperService;
 
 // relocated from tools/bazar/actions/include__.php (ticket 24): if the included page is a
 // bazar entry, show the entry instead of formatting the page as plain wiki content.

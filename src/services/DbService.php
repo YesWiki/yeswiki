@@ -56,7 +56,7 @@ class DbService
 
             // Driver-specific initialization
             $this->initDriverSpecific();
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
             if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
                 throw new Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
             } else {

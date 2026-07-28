@@ -2,8 +2,8 @@
 
 namespace YesWiki\Core\Controller;
 
-use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Service\FieldFactory;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\ListManager;

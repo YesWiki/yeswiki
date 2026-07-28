@@ -5,9 +5,9 @@
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
  */
 
-use YesWiki\Core\Service\ThemeSelectorRenderer;
+use YesWiki\Render\Service\ThemeSelectorRenderer;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 
 class GererThemesAction extends YesWikiAction

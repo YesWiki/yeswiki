@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Core\Service\CsrfTokenChecker;
-use YesWiki\Core\Service\GroupOperationsService;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 class EditGroupsAction extends YesWikiAction

@@ -3,9 +3,11 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Wiki;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Identity\Service\UserManager;
 
 class Mailer
 {

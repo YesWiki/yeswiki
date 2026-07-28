@@ -3,7 +3,7 @@
 /**
  * Allow signed-in users to react with icon, emojis or pictures on the page.
  */
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Service\ReactionsFormatter;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\YesWikiAction;

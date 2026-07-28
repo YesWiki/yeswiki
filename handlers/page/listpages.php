@@ -52,7 +52,7 @@ $text = '';
 // affiche le resultat de la recherche
 $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri, $template, $class, $lienedit);
 if ($resultat) {
-    $aclService = $this->services->get(YesWiki\Core\Service\AclService::class);
+    $aclService = $this->services->get(YesWiki\Identity\Service\AclService::class);
     $element = [];
     foreach ($resultat as $page) {
         if ($aclService->hasAccess('read', $page['tag'])) {

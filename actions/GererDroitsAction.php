@@ -5,11 +5,11 @@
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
  */
 
-use YesWiki\Core\Service\GroupOperationsService;
+use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\TemplateHelperService;
+use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 
 class GererDroitsAction extends YesWikiAction

@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use YesWiki\Core\ApiResponse;
-use YesWiki\Core\Service\InputFilter;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiController;
 

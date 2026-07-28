@@ -5,12 +5,12 @@ namespace YesWiki\Core\Controller;
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Core\Exception\UserFieldException;
+use YesWiki\Identity\Exception\UserFieldException;
 use YesWiki\Core\Field\BazarField;
 use YesWiki\Core\Field\ConditionsCheckingField;
 use YesWiki\Core\Field\LabelField;
-use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\EventDispatcher;
 use YesWiki\Core\Service\FavoritesManager;
@@ -20,9 +20,10 @@ use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\Service\SemanticTransformer;
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Controller\CaptchaController;
 
 class EntryController extends YesWikiController
 {

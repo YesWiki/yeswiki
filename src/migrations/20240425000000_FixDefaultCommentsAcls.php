@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;

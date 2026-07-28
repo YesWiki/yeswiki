@@ -8,6 +8,7 @@ use YesWiki\Core\Attach;
 use YesWiki\Core\Field\BazarField;
 use YesWiki\Wiki;
 use YesWiki\Search\Service\SearchManager;
+use YesWiki\Identity\Service\AclService;
 
 class FormManager
 {

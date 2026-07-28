@@ -8,6 +8,7 @@ use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\EnvironmentConfiguration;
 use YesWiki\Core\Service\LanguageService;
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Identity\Entity\User;
 
 /**
  * Web installer, run by Init::doInstall() when the configuration file does not exist

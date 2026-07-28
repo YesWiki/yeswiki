@@ -2,7 +2,7 @@
 
 // ticket 19: relocated from tools/autoupdate/actions/UpdateAction.php.
 
-use YesWiki\Core\Service\InputFilter;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Core\Entity\Messages;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\AutoUpdateService;

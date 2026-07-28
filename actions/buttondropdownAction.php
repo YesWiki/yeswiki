@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\TemplateHelperService;
+use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 
 class ButtondropdownAction extends YesWikiAction

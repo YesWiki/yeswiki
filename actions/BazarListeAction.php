@@ -2,7 +2,7 @@
 
 use YesWiki\Core\Exception\ParsingMultipleException;
 use YesWiki\Core\Exception\TemplateNotFound;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Service\BazarListService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\Paginator;

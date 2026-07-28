@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\YesWikiAction;
 
 class BazarUserPageAction extends YesWikiAction

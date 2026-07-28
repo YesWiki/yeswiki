@@ -1,9 +1,9 @@
 <?php
 
-use YesWiki\Core\Exception\BadActivationKeyException;
-use YesWiki\Core\Exception\UserNameDoesNotExistException;
-use YesWiki\Core\Service\AccountActivationService;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Exception\BadActivationKeyException;
+use YesWiki\Identity\Exception\UserNameDoesNotExistException;
+use YesWiki\Identity\Service\AccountActivationService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiHandler;
 
 class EmailActivationHandler extends YesWikiHandler

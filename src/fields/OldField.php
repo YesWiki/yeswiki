@@ -4,7 +4,7 @@ namespace YesWiki\Core\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * Ensure backwardompatibility with old format field.

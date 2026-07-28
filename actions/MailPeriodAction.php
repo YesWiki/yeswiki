@@ -2,8 +2,8 @@
 
 // ticket 18: relocated from tools/contact/actions/MailPeriodAction.php.
 
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 // TODO create GroupManager

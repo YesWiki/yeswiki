@@ -4,9 +4,9 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\HibernationNotice;
+use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
 

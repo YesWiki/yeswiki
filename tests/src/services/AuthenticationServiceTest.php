@@ -5,12 +5,12 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Entity\User;
-use YesWiki\Core\Service\AccountActivationService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\PasswordHasherFactory;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\PasswordHasherFactory;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -306,7 +306,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
             try {
                 $authenticationService->login($user);
                 $this->fail('login() must throw BadLoginException for an unactivated user when signup_email_activation is on');
-            } catch (\YesWiki\Core\Exception\BadLoginException $th) {
+            } catch (\YesWiki\Identity\Exception\BadLoginException $th) {
                 // expected
             }
 

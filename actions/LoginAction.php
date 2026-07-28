@@ -1,12 +1,12 @@
 <?php
 
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\InputFilter;
-use YesWiki\Core\Exception\LoginException;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Exception\LoginException;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TemplateEngine;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
 class LoginAction extends YesWikiAction

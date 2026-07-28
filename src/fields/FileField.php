@@ -6,12 +6,12 @@ use Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Attach;
-use YesWiki\Core\Service\InputFilter;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EntryDateService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\EventDispatcher;
-use YesWiki\Core\Service\Guard;
+use YesWiki\Identity\Service\Guard;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\HtmlPurifierService;
 

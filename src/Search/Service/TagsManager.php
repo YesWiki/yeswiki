@@ -4,7 +4,7 @@ namespace YesWiki\Search\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TripleStore;

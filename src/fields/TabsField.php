@@ -3,7 +3,7 @@
 namespace YesWiki\Core\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Service\TabsRenderer;
+use YesWiki\Render\Service\TabsRenderer;
 use YesWiki\Core\Service\AssetsManager;
 
 #[\Field(['tabs'])]

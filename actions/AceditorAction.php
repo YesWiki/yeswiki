@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\InputFilter;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Core\Service\ActionsBuilderService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiAction;

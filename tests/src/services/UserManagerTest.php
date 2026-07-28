@@ -6,10 +6,10 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Throwable;
-use YesWiki\Core\Entity\User;
-use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
-use YesWiki\Core\Exception\UserNameAlreadyUsedException;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
+use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

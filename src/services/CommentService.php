@@ -6,6 +6,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Wiki;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\HashCashService;
+use YesWiki\Identity\Service\UserManager;
 
 class CommentService implements EventSubscriberInterface
 {
@@ -477,7 +481,7 @@ class CommentService implements EventSubscriberInterface
                     }
                 }
             }
-        } catch (Throwable $th) {
+        } catch (\Throwable $th) {
         }
         // filter
         $filteredUsers = [];

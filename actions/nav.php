@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\LinkTracker;
-use YesWiki\Core\Service\TemplateHelperService;
+use YesWiki\Render\Service\TemplateHelperService;
 
 // classe css supplémentaire
 $class = $this->GetParameter('class');

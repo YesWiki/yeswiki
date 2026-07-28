@@ -5,8 +5,8 @@ namespace YesWiki\Core;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Contracts\Service\Attribute\Required;
-use YesWiki\Core\Service\AclService;
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Wiki;
 
 abstract class YesWikiController

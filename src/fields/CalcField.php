@@ -98,7 +98,7 @@ class CalcField extends BazarField
                 if (!is_finite($value)) {
                     $value = 0;
                 }
-            } catch (Throwable $th) {
+            } catch (\Throwable $th) {
                 $value = 0;
             }
         }

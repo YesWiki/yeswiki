@@ -2,7 +2,7 @@
 
 namespace YesWiki\Core;
 
-use YesWiki\Core\Service\TemplateHelperService;
+use YesWiki\Render\Service\TemplateHelperService;
 
 abstract class YesWikiAction extends YesWikiPerformable
 {

@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use YesWiki\Wiki;
+use YesWiki\Identity\Service\AclService;
 
 /**
  * Attached files are their own Content type (ticket 17, formerly tools/attach) -- a

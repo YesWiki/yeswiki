@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiMigration;
 
 class MigrateUsersToPages extends YesWikiMigration

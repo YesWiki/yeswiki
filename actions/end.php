@@ -3,7 +3,7 @@
 require_once YESWIKI_SOURCE_DIR . '/src/YesWikiPerformable.php';
 
 use YesWiki\Core\Service\Performer;
-use YesWiki\Core\Service\TemplateHelperService;
+use YesWiki\Render\Service\TemplateHelperService;
 
 // classe css supplémentaire
 $elem = $this->GetParameter('elem');

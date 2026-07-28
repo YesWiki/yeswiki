@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\BazarListService;
 use YesWiki\Core\Service\CSVManager;

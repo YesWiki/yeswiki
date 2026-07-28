@@ -3,11 +3,11 @@
 namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 

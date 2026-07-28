@@ -30,10 +30,10 @@ use YesWiki\Core\Field\EnumField;
 use YesWiki\Core\Field\MapField;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\Guard;
+use YesWiki\Identity\Service\Guard;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\ListManager;
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateEngine;
 
 define('BAZ_CHEMIN_UPLOAD', 'files/');
 

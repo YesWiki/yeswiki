@@ -7,6 +7,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\PerformerException;
 use YesWiki\Wiki;
+use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * Loads and run Handlers, Formatters and Actions

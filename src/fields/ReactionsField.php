@@ -4,7 +4,7 @@ namespace YesWiki\Core\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Service\ReactionsFormatter;
 use YesWiki\Wiki;
 

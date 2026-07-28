@@ -15,6 +15,6 @@ if ($HasAccessRead = $this->HasAccess('read')) {
     if ($this->page) {
         // display page
         echo '<?xml version="1.0" encoding="' . YW_CHARSET . '"?>';
-        echo $this->services->get(YesWiki\Core\Service\MarkdownFormatterService::class)->renderActionsOnly($this->page['body']);
+        echo $this->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->renderActionsOnly($this->page['body']);
     }
 }

@@ -6,6 +6,7 @@ use YesWiki\Core\Field\FileField;
 use YesWiki\Core\Field\ImageField;
 use YesWiki\Core\Field\TextareaField;
 use YesWiki\Wiki;
+use YesWiki\Identity\Service\AclService;
 
 class DuplicationManager
 {

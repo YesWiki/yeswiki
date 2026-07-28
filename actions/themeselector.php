@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\ThemeSelectorRenderer;
+use YesWiki\Render\Service\ThemeSelectorRenderer;
 
 $class = $this->getParameter('class');
 if (

@@ -1,9 +1,9 @@
 <?php
 
-use YesWiki\Core\Controller\CaptchaController;
-use YesWiki\Core\Service\InputFilter;
-use YesWiki\Core\Service\HashCashService;
-use YesWiki\Core\Service\PasswordForEditingService;
+use YesWiki\Identity\Controller\CaptchaController;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Service\HashCashService;
+use YesWiki\Identity\Service\PasswordForEditingService;
 
 if ($this->HasAccess('write') && $this->HasAccess('read')) {
     list($state, $message) = $this->services->get(PasswordForEditingService::class)->isGrantedPasswordForEditing();

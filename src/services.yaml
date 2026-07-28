@@ -25,8 +25,6 @@ services:
   YesWiki\Core\Service\:
     resource: 'services/*'
     exclude:
-      # implementation details of MarkdownFormatterService, not services themselves
-      - 'services/MarkdownFormatter/*'
       # a value object constructed with `new` (its ctor takes the items to paginate),
       # not an injectable service. It lives under services/ only because the current
       # autoloader maps YesWiki\Core\Service\* to that directory; ticket 05's PSR-4
@@ -37,8 +35,21 @@ services:
   # namespace maps to its own directory (YesWiki\Search\Service\X -> src/Search/Service/X.php),
   # which is what PSR-4 requires and what the flat services/ + controllers/ layout could
   # never satisfy. YesWiki\Core\* below keeps its bespoke loader until every module has moved.
-  YesWiki\Search\:
-    resource: 'Search/*'
+  # Module resources are scoped to the layers that actually contain services. Registering a
+  # whole module ('Render/*') pulls in entities, exceptions, value objects and hand-built
+  # extensions, none of which autowire -- Symfony fails on the first scalar or callable
+  # constructor argument. Naming the layers avoids an ever-growing exclude list.
+  YesWiki\Search\Service\:
+    resource: 'Search/Service/*'
+
+  YesWiki\Render\Service\:
+    resource: 'Render/Service/*'
+
+  YesWiki\Identity\Service\:
+    resource: 'Identity/Service/*'
+
+  YesWiki\Identity\Controller\:
+    resource: 'Identity/Controller/*'
 
   YesWiki\Core\Controller\:
     resource: 'controllers/*'
@@ -52,7 +63,7 @@ services:
   YesWiki\Core\Service\CommentService:
     tags:
       - { name: yeswiki.event_subscriber }
-  YesWiki\Core\Service\ThemeManager:
+  YesWiki\Render\Service\ThemeManager:
     tags:
       - { name: yeswiki.event_subscriber }
   YesWiki\Core\Service\WebFinger:

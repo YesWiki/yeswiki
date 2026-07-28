@@ -4,13 +4,13 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\InputFilter;
-use YesWiki\Core\Exception\BadFormatPasswordException;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\PasswordHasherFactory;
+use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Core\Service\TripleStore;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 

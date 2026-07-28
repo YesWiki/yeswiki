@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Render\Service\TemplateEngine;
 
 class SemanticTransformer
 {

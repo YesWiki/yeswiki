@@ -4,9 +4,9 @@ namespace YesWiki\Core\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\HtmlPurifierService;
-use YesWiki\Core\Service\TemplateEngine;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Wiki;
 
 abstract class BazarField implements \JsonSerializable

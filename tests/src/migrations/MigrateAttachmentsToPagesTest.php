@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Core\Migrations;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\FileManager;
 use YesWiki\Core\Service\PageManager;

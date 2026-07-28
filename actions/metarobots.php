@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\TemplateHelperService;
+use YesWiki\Render\Service\TemplateHelperService;
 
 /*
  * Action to add usefull metas to html head

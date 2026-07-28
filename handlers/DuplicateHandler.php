@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Controller\EntryController;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\DuplicationManager;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FormManager;

@@ -5,7 +5,7 @@ namespace YesWiki\Core\Field;
 use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Controller\ApiController;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AclService;
 
 #[\Field(['champs_mail'])]
 class EmailField extends BazarField

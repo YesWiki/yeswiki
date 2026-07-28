@@ -1,10 +1,10 @@
 <?php
 
-use YesWiki\Core\Service\ThemeSelectorRenderer;
+use YesWiki\Render\Service\ThemeSelectorRenderer;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 
 class SetWikiDefaultThemeAction extends YesWikiAction

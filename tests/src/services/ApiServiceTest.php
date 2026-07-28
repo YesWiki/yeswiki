@@ -9,11 +9,11 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Entity\User;
-use YesWiki\Core\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\ApiService;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';

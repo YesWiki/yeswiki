@@ -1,7 +1,7 @@
 <?php
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use YesWiki\Core\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeManager;
 
 $themeManager = $this->services->get(ThemeManager::class);
 $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";

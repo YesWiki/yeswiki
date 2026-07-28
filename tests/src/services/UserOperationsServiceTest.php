@@ -6,12 +6,12 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Throwable;
-use YesWiki\Core\Service\AuthenticationService;
-use YesWiki\Core\Service\GroupOperationsService;
-use YesWiki\Core\Service\UserOperationsService;
-use YesWiki\Core\Entity\User;
-use YesWiki\Core\Exception\DeleteUserException;
-use YesWiki\Core\Service\UserManager;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Identity\Service\UserOperationsService;
+use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Exception\DeleteUserException;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 

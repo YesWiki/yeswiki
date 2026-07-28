@@ -621,7 +621,7 @@ or with a controller throwing `TokenNotFoundException` :
 
 ```
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 $csrfTokenChecker = $this->wiki->services->get(CsrfTokenChecker::class);
 try {
    $csrfTokenChecker->checkToken('tokenId', 'POST', 'tokenNameInForm');
