@@ -8,7 +8,6 @@ parameters:
         - src
         - actions
         - handlers
-        - formatters
         # Only the bundled sample extension is repo content. extensions/* is gitignored
         # (see .gitignore) and community extensions installed there are typically symlinks
         # to a developer's own checkout -- analysing them would make local runs disagree

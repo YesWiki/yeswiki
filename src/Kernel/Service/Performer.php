@@ -7,11 +7,10 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Exception\PerformerException;
 use YesWiki\Wiki;
-use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 
 /**
- * Loads and run Handlers, Formatters and Actions
+ * Loads and run Handlers and Actions
  * Any of these object can be easily customize with before and after callback
  * To create a before callback, use same file name prefixed by "__"
  * To create an after callback, use same file name suffixed by "__"
@@ -23,15 +22,16 @@ use YesWiki\Render\Service\TemplateEngine;
  */
 class Performer
 {
+    // 'formatter' was removed by ticket 06: 'wakka' was the only one that ever existed,
+    // formatters/ held a single after-callback file, and no extension shipped one.
+    // Wiki::Format() now calls MarkdownFormatterService directly.
     public const TYPES = [
         'action' => 'action',
         'handler' => 'handler',
-        'formatter' => 'formatter',
     ];
     public const PATHS = [
         Performer::TYPES['action'] => ['actions/'],
         Performer::TYPES['handler'] => ['handlers/', 'handlers/page/'],
-        Performer::TYPES['formatter'] => ['formatters/'],
     ];
     protected $wiki;
     protected $params;
@@ -40,14 +40,14 @@ class Performer
     // list of all existing object
     protected $objectList;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig, MarkdownFormatterService $markdownFormatter)
+    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig)
     {
         $this->wiki = $wiki;
         $this->params = $params;
         $this->twig = $twig;
 
-        // get the list of all existing objects (actions, handlers, formatters...)
-        // source root (core actions/, handlers/, formatters/) + extensions folders
+        // get the list of all existing objects (actions, handlers)
+        // source root (core actions/, handlers/) + extensions folders
         $folders = array_merge([YESWIKI_SOURCE_DIR . '/'], $wiki->extensions);
         foreach (Performer::TYPES as $type) {
             $this->objectList[$type] = [];
@@ -57,16 +57,6 @@ class Performer
                 }
             }
         }
-
-        // the markdown/action formatter is a real service, not a file under formatters/;
-        // register it as the 'wakka' formatter's main step, keeping whatever before/after
-        // callbacks extensions contributed as formatters/*wakka* files (found just above)
-        $wakka = $this->objectList[self::TYPES['formatter']]['wakka'] ?? [];
-        $this->objectList[self::TYPES['formatter']]['wakka'] = array_merge(
-            ['before_callbacks' => [], 'after_callbacks' => []],
-            $wakka,
-            ['service' => fn (array $vars): string => $markdownFormatter->format((string)($vars['text'] ?? ''))]
-        );
     }
 
     /**

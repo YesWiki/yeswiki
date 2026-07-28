@@ -44,8 +44,9 @@ class ArchitectureTest extends TestCase
         // feature with the rest of the backup code (ticket 05 CP3)
         'Kernel/Service/DbService.php -> Admin\Service\ArchiveService',
         'Kernel/Service/MigrationService.php -> Content\Service\TripleStore',
-        // Performer renders action output; ticket 06 replaces this dispatcher entirely
-        'Kernel/Service/Performer.php -> Render\Service\MarkdownFormatterService',
+        // Performer renders action output; ticket 06 replaces this dispatcher entirely.
+        // Its MarkdownFormatterService edge is gone: ticket 06 removed the formatter object
+        // type, so Performer no longer registers the 'wakka' formatter closure.
         'Kernel/Service/Performer.php -> Render\Service\TemplateEngine',
         // services reaching into a request handler -- ticket 04's remaining inversions
         'Render/Service/TemplateHelperService.php -> Content\Controller\EntryController',

@@ -59,6 +59,7 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
@@ -851,9 +852,15 @@ class Wiki
         return $this->services->get(Performer::class)->run($method, 'handler', []);
     }
 
+    /**
+     * $formatter is vestigial: 'wakka' was the only one that ever existed, formatters/ held
+     * a single after-callback file, and no extension shipped one. Ticket 06 removed the
+     * formatter object type entirely; the parameter stays only so existing callers and
+     * stored content keep working.
+     */
     public function Format($text, $formatter = 'wakka', $pageTag = '')
     {
-        return $this->services->get(Performer::class)->run($formatter, 'formatter', compact('text'));
+        return $this->services->get(MarkdownFormatterService::class)->format((string)$text);
     }
 
     /**

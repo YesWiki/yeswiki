@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Field;
 
+use YesWiki\Render\Service\MarkdownFormatterService;
 use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Kernel\Service\Performer;
@@ -82,11 +83,7 @@ class LinkedEntryField extends BazarField
     {
         $tabsService = $this->getService(TabsService::class);
         $index = $tabsService->saveState();
-        $output = $this->getService(Performer::class)->run(
-            'wakka',
-            'formatter',
-            ['text' => $this->getBazarListAction($entry)]
-        );
+        $output = $this->getService(MarkdownFormatterService::class)->format($this->getBazarListAction($entry));
         $tabsService->resetState($index);
 
         return $output;

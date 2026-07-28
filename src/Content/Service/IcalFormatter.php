@@ -12,7 +12,7 @@ use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\DateField;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Service\DateService;
-use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 class IcalFormatter extends YesWikiController
 {
@@ -22,20 +22,20 @@ class IcalFormatter extends YesWikiController
     protected $entryController;
     protected $geoJSONFormatter;
     protected $params;
-    protected $performer;
+    protected $markdownFormatter;
 
     public function __construct(
         DateService $dateService,
         EntryController $entryController,
         GeoJSONFormatter $geoJSONFormatter,
         ParameterBagInterface $params,
-        Performer $performer
+        MarkdownFormatterService $markdownFormatter
     ) {
         $this->dateService = $dateService;
         $this->entryController = $entryController;
         $this->geoJSONFormatter = $geoJSONFormatter;
         $this->params = $params;
-        $this->performer = $performer;
+        $this->markdownFormatter = $markdownFormatter;
     }
 
     /**
@@ -403,7 +403,7 @@ class IcalFormatter extends YesWikiController
     private function renderAndStripTags(string $input): string
     {
         // render description
-        $renderedInput = $this->performer->run('wakka', 'formatter', ['text' => $input]);
+        $renderedInput = $this->markdownFormatter->format($input);
         $cleanedRendered = strip_tags($renderedInput, '<a>');
         // extract links
         $output = preg_replace('/<a.*href=(?:"|\')([^"\']*)(?:"|\').*>(.*)<\/a>/m', '$2 ($1)', $cleanedRendered);

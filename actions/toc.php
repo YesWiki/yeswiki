@@ -23,48 +23,16 @@ echo '<div class="yw-toc__title yw-collapse-toggle" data-yw-collapse-toggle="#' 
 </div><!-- /.yw-toc__title -->\n
 <div id=\"$collapseId\" class=\"yw-toc__menu yw-collapse" . ($closed == 1 ? '' : ' yw-collapse--open') . "\">\n";
 
-if (!function_exists('translate2toc')) {
-    /**
-     * Parses $text with the same CommonMark engine the wakka formatter uses, and builds
-     * the <li> list of headings. Each heading gets the same "TOC_{level}_{n}" id that
-     * tools/toc/formatters/wakka__.php assigns to the matching rendered <hN> tag.
-     */
-    function translate2toc($text)
-    {
-        $environment = new League\CommonMark\Environment\Environment();
-        $environment->addExtension(new League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension());
-        $environment->addExtension(new League\CommonMark\Extension\GithubFlavoredMarkdownExtension());
-        $document = (new League\CommonMark\Parser\MarkdownParser($environment))->parse($text);
-
-        $output = '';
-        $counters = [];
-        foreach ($document->iterator() as $node) {
-            if (!$node instanceof League\CommonMark\Extension\CommonMark\Node\Block\Heading) {
-                continue;
-            }
-            $level = $node->getLevel();
-            $counters[$level] = ($counters[$level] ?? 0) + 1;
-            $toc = 'TOC_' . $level . '_' . $counters[$level];
-
-            $title = '';
-            foreach ($node->iterator() as $inline) {
-                if ($inline instanceof League\CommonMark\Node\StringContainerInterface) {
-                    $title .= $inline->getLiteral();
-                } elseif ($inline instanceof League\CommonMark\Node\Inline\Newline) {
-                    $title .= ' ';
-                }
-            }
-
-            $output .= '<li class="toc' . $level . '"><a href="#' . $toc . '">'
-                . htmlspecialchars(trim($title), ENT_COMPAT, YW_CHARSET) . "</a></li>\n";
-        }
-
-        return $output;
-    }
+// Heading ids come from the same CommonMark environment that renders the page, so the
+// links here and the anchors in the output cannot drift apart. Ticket 06 removed the
+// previous arrangement -- a counter in formatters/wakka__.php regexing the rendered HTML,
+// mirrored by a second counter in a translate2toc() defined here -- which desynced as soon
+// as any action emitted its own <hN>.
+$tocList = '';
+foreach ($this->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->headings($toc_body) as $heading) {
+    $tocList .= '<li class="toc' . $heading['level'] . '"><a href="#' . htmlspecialchars($heading['id'], ENT_COMPAT, YW_CHARSET) . '">'
+        . htmlspecialchars($heading['title'], ENT_COMPAT, YW_CHARSET) . "</a></li>\n";
 }
-
-// on vérifie qu'il y est au moins un titre pour faire la liste
-$tocList = translate2toc($toc_body);
 if ($tocList !== '') {
     echo "<ul class=\"yw-list-unstyled\">\n" . $tocList . "</ul>\n";
 }

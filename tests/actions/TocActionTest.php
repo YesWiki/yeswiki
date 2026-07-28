@@ -8,12 +8,16 @@ use YesWiki\Test\Core\YesWikiTestCase;
 require_once 'tests/YesWikiTestCase.php';
 
 /**
- * Regression test for ticket 13 (toc absorbed into core): actions/toc.php's server-side
- * static TOC depends on formatters/wakka__.php (formerly tools/toc's own formatter hook)
- * to number each rendered <hN> the same way translate2toc() numbers them from the raw
- * markdown, so the toc's generated links resolve to the right heading. Also confirms the
- * ADR-0005 conversion (yw-* classes, no Bootstrap data-toggle="collapse") and that the
- * dropped tocjs.php's jQuery scrollspy/animate script isn't emitted anymore.
+ * Regression test for ticket 13 (toc absorbed into core), rewritten by ticket 06.
+ *
+ * Heading ids used to be assigned by a counter in formatters/wakka__.php regexing the
+ * rendered HTML, mirrored by a second counter in translate2toc() reading the raw markdown.
+ * Two independent counters meant the links and the anchors could silently drift -- any
+ * action emitting its own <hN> shifted one side only. Both now come from a single
+ * CommonMark HeadingPermalink pass over the AST.
+ *
+ * The assertion is therefore the invariant, not literal id strings: every link the toc box
+ * emits must resolve to an id that actually exists in the rendered page.
  */
 class TocActionTest extends YesWikiTestCase
 {
@@ -24,20 +28,27 @@ class TocActionTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
 
-        $body = "{{toc}}\n\n## First heading\n\nSome text.\n\n## Second heading\n\nMore text.\n";
+        // two headings sharing a title on purpose: the old counter scheme could not tell
+        // them apart in a way the two sides agreed on
+        $body = "{{toc}}\n\n## First heading\n\nSome text.\n\n## Second heading\n\nMore.\n\n## First heading\n\nAgain.\n";
         $pageManager->save(self::PAGE_TAG, $body, '', true);
         $page = $pageManager->getOne(self::PAGE_TAG);
         $wiki->SetPage($page);
 
         $html = $wiki->Format($body);
 
-        // headings get numbered TOC_{level}_{n} ids...
-        $this->assertMatchesRegularExpression('/<h2[^>]*\sid="TOC_2_1"[^>]*>/', $html);
-        $this->assertMatchesRegularExpression('/<h2[^>]*\sid="TOC_2_2"[^>]*>/', $html);
+        // every heading carries an id
+        preg_match_all('/<h[1-6][^>]*\sid="([^"]+)"/', $html, $idMatches);
+        $headingIds = $idMatches[1];
+        $this->assertCount(3, $headingIds, 'each heading must get an id');
+        $this->assertSame($headingIds, array_unique($headingIds), 'duplicate titles must still get distinct ids');
 
-        // ...and the toc box's generated links point at those exact same ids
-        $this->assertStringContainsString('href="#TOC_2_1"', $html);
-        $this->assertStringContainsString('href="#TOC_2_2"', $html);
+        // every toc link resolves to one of them -- the invariant the two-counter scheme could not hold
+        preg_match_all('/<a href="#([^"]+)"/', $html, $linkMatches);
+        $this->assertCount(3, $linkMatches[1], 'the toc must link every heading');
+        foreach ($linkMatches[1] as $target) {
+            $this->assertContains($target, $headingIds, "toc links to #$target but no heading has that id");
+        }
 
         // ADR-0005: no Bootstrap collapse/well classes, no jQuery scrollspy/animate script
         $this->assertStringContainsString('yw-toc', $html);
