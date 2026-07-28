@@ -53,11 +53,21 @@ class ActionRegistryTest extends YesWikiTestCase
         return $performer;
     }
 
-    public function testAnUnconvertedActionIsNotInTheRegistryButStillRuns(): void
+    public function testUnknownNamesAreNotResolved(): void
     {
-        // the two resolution paths coexist during the migration; this is the fallback side
-        $this->assertFalse($this->registry()->has('action', 'toc'));
-        $this->assertContains('toc', $this->performer()->list('action'));
+        $registry = $this->registry();
+
+        $this->assertFalse($registry->has('action', 'no-such-action'));
+        $this->assertNull($registry->get('action', 'no-such-action'));
+    }
+
+    public function testHookFilesAreNotRegisteredAsActions(): void
+    {
+        // `__x.php` / `x__.php` are Performer before/after callbacks, a different mechanism.
+        // Registering one as an action would run it twice: once as itself, once as a hook.
+        foreach ($this->registry()->names('action') as $name) {
+            $this->assertStringNotContainsString('__', $name, "'$name' looks like a hook, not an action");
+        }
     }
 
     public function testConvertedActionsAppearInTheActionListAlongsideScannedOnes(): void
@@ -65,7 +75,7 @@ class ActionRegistryTest extends YesWikiTestCase
         $list = $this->performer()->list('action');
 
         $this->assertContains('favicon', $list, 'a registered action must still be listed');
-        $this->assertContains('toc', $list, 'scanned actions must still be listed');
+        $this->assertContains('toc', $list, 'every converted action must still be listed');
         $this->assertSame($list, array_unique($list), 'an action must not be listed twice');
     }
 

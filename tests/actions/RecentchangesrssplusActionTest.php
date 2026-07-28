@@ -36,14 +36,20 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
 
         $wiki->method = 'xml';
         $output = '';
-        $vars = ['plugin_output_new' => &$output];
 
         try {
             try {
-                $wiki->runFileInBuffer('actions/recentchangesrssplus.php', $vars);
+                // ticket 06 converted this to a registered class; the action still ends in
+                // $this->exit(), which throws in CLI, and run() flushes what it printed into
+                // the shared output before rethrowing
+                $action = new \YesWiki\Content\Action\RecentchangesrssplusAction();
+                $action->setWiki($wiki);
+                $vars = [];
+                $action->setArguments($vars);
+                $action->setOutput($output);
+                $output .= $action->run();
             } catch (ExitException $e) {
-                // recentchangesrssplus.php ends with $this->exit(), which throws in CLI;
-                // $output was already populated by reference before the throw.
+                // $output was populated before the throw
             }
 
             // the restricted page must still appear in the feed (all changes listed)...

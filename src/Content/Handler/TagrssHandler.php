@@ -1,0 +1,109 @@
+<?php
+
+namespace YesWiki\Content\Handler;
+
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Core\YesWikiHandler;
+use YesWiki\Kernel\Performable\RegisteredHandler;
+
+/**
+ * `/PageName/tagrss` -- converted from the procedural handlers/page/tagrss.php by ticket 06.
+ */
+class TagrssHandler extends YesWikiHandler implements RegisteredHandler
+{
+    public static function performableName(): string
+    {
+        return 'tagrss';
+    }
+
+    public function run(): string
+    {
+        ob_start();
+        try {
+            $this->emit();
+        } catch (\Throwable $t) {
+            // handlers commonly end in exit()/redirect, which throw; keep what was already
+            // printed and close the buffer either way (see ticket 06)
+            $this->output .= (string)ob_get_clean();
+
+            throw $t;
+        }
+
+        return (string)ob_get_clean();
+    }
+
+    private function emit(): void
+    {
+
+        $oldpagetag = $this->wiki->GetPageTag();
+        $oldpage = $this->wiki->LoadPage($oldpagetag);
+        $tags = trim((isset($_GET['tags'])) ? $_GET['tags'] : '');
+        $type = (isset($_GET['type'])) ? $_GET['type'] : '';
+        $req = '';
+        $req_from = '';
+        $req_group = '';
+        $textetitre = _t('LATEST_CHANGES_ON') . ' ' . $this->wiki->config['yeswiki_name'];
+
+        // on fait les tableaux pour les tags, puis on met des virgules et des guillemets
+        if (!empty($tags)) {
+            // texte utilisé pour la description du flux RSS
+            $textetitre .= ', contenant les tags ' . $tags;
+
+            $results = $this->wiki->PageList($tags, $type, 20, 'date');
+            if ($results) {
+                header('Content-type: text/xml; charset=UTF-8');
+                $output = '<?xml version="1.0" encoding="UTF-8"?>';
+                if (!($link = $this->wiki->GetParameter('link'))) {
+                    $link = $this->wiki->config['root_page'];
+                }
+                $output .= '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"' .
+                    " xmlns:atom=\"http://www.w3.org/2005/Atom\">\n";
+                $output .= "<channel>\n<title>";
+                if (empty($titrerss)) {
+                    $output .= $textetitre;
+                } else {
+                    $output .= $titrerss;
+                }
+                $output .= "</title>\n";
+                $output .= '<link>' . $this->wiki->config['base_url'] . $link . "</link>\n";
+                $output .= '<description>' . $textetitre . "</description>\n";
+                $output .= '<atom:link href="' . $this->wiki->Href('xml') . "\" rel=\"self\" type=\"application/rss+xml\" />\n";
+                $items = '';
+                $aclService = $this->wiki->services->get(AclService::class);
+                foreach ($results as $page) {
+                    $readAcl = $aclService->hasAccess('read', $page['tag']);
+                    $this->wiki->tag = $page['tag'];
+                    $this->wiki->page = $page;
+                    $items .= "<item>\r\n";
+                    $items .= '<title>' . $page['tag'] . "</title>\r\n";
+                    $items .= '<link>' . $this->wiki->config['base_url'] . $page['tag'] . "</link>\r\n";
+                    $items .= '<description><![CDATA[';
+
+                    if ($readAcl) {
+                        // on enleve les actions recentchangesrssplus pour eviter les boucles infinies
+                        $page['body'] = preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', $page['body']);
+                        $page['body'] = preg_replace("/\{\{rss(.*?)\}\}/s", '', $page['body']);
+                        $texteformat = $this->wiki->Format($page['body'], 'wakka', $page['tag']);
+                    } else {
+                        $texteformat = '<i>' . _t('TAGS_HIDDEN_CONTENT') . '</i>';
+                    }
+
+                    $items .= $texteformat . "]]></description>\r\n";
+                    $items .= '<dc:creator>by ' . htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET) .
+                        "</dc:creator>\r\n";
+                    $items .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time'])) . "</pubDate>\r\n";
+                    $itemurl = $this->wiki->href(false, $page['tag']);
+                    $items .= '<guid>' . $itemurl . "</guid>\n";
+                    $items .= "</item>\r\n";
+                }
+                $this->wiki->tag = $oldpagetag;
+                $this->wiki->page = $oldpage;
+                $oldpage = $this->wiki->LoadPage($oldpagetag);
+                $output .= $items;
+                $output .= "</channel>\n";
+                $output .= "</rss>\n";
+                echo $output;
+            }
+        }
+    }
+}

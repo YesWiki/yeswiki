@@ -1,0 +1,56 @@
+<?php
+
+namespace YesWiki\Render\Action;
+
+use YesWiki\Render\Service\ThemeSelectorRenderer;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Performable\RegisteredAction;
+
+/**
+ * `{{themeselector}}` -- converted from the procedural actions/themeselector.php by ticket 06.
+ *
+ * The body still prints rather than returning, so it runs inside an output buffer in its
+ * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
+ * in the body from discarding output.
+ */
+class ThemeselectorAction extends YesWikiAction implements RegisteredAction
+{
+    public static function performableName(): string
+    {
+        return 'themeselector';
+    }
+
+    public function run(): string
+    {
+        ob_start();
+        try {
+            $this->emit();
+        } catch (\Throwable $t) {
+            // Several of these bodies end in $this->exit(), which throws. The old
+            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
+            // did not discard what had already been printed; keep that by flushing into the
+            // shared output before rethrowing -- and close the buffer either way.
+            $this->output .= (string)ob_get_clean();
+
+            throw $t;
+        }
+
+        return (string)ob_get_clean();
+    }
+
+    private function emit(): void
+    {
+
+        $class = $this->wiki->getParameter('class');
+        if (
+            $this->wiki->UserIsAdmin()
+            && isset($_POST['action']) && ($_POST['action'] === 'setTemplate')
+        ) {
+            $this->wiki->Action('setwikidefaulttheme');
+            // if not redirected by setwikidefaulttheme : redirect
+            $this->wiki->Redirect($this->wiki->href('', $this->wiki->tag));
+        } else {
+            echo $this->wiki->services->get(ThemeSelectorRenderer::class)->showFormThemeSelector('selector', $class);
+        }
+    }
+}

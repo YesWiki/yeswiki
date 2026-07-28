@@ -7,6 +7,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\ActionRegistry;
+use YesWiki\Kernel\Performable\PerformableEvent;
 use YesWiki\Kernel\Exception\PerformerException;
 use YesWiki\Wiki;
 use YesWiki\Render\Service\TemplateEngine;
@@ -42,11 +43,13 @@ class Performer
     // list of all existing object
     protected $objectList;
     protected ActionRegistry $registry;
+    protected EventDispatcher $events;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig, ActionRegistry $registry)
+    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig, ActionRegistry $registry, EventDispatcher $events)
     {
         $this->wiki = $wiki;
         $this->registry = $registry;
+        $this->events = $events;
         $this->params = $params;
         $this->twig = $twig;
 
@@ -175,11 +178,18 @@ class Performer
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('ERROR_NO_ACCESS') . '</div>' . "\n";
         }
 
+        // Extensions hook here rather than by dropping a __name.php next to ours. Dispatched
+        // in run() rather than in runRegistered() so it covers BOTH resolution paths --
+        // extension actions are still found by the scan, and they are exactly who needs this.
+        $prefix = $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::BEFORE);
+
         // A converted action/handler is a real service: resolve it from the registry rather
         // than from the directory scan. Both paths coexist while ticket 06 migrates the 137
         // files a few at a time; the scan goes away with the last of them.
         if ($this->registry->has($objectType, $objectName)) {
-            return $this->runRegistered($objectType, $objectName, $vars, $end_elem);
+            return $prefix
+                . $this->runRegistered($objectType, $objectName, $vars, $end_elem)
+                . $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::AFTER);
         }
 
         // find object
@@ -226,7 +236,8 @@ class Performer
             }
         }
 
-        return $output;
+        return $prefix . $output
+            . $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::AFTER);
     }
 
     /**
@@ -237,6 +248,17 @@ class Performer
     private function runRegistered(string $objectType, string $objectName, array &$vars, bool $end_elem): string
     {
         $output = '';
+
+        // A converted performable still has to run the before/after callbacks the scan found
+        // for it. Returning early without them silently drops every hook the moment its
+        // target converts -- which is how handlers/page/edit__.php (the tag-input widget)
+        // vanished from the edit form. The hooks become Symfony events later in ticket 06;
+        // until then both mechanisms have to coexist here too.
+        $scanned = $this->objectList[$objectType][$objectName] ?? [];
+        foreach ($scanned['before_callbacks'] ?? [] as $callback) {
+            $output .= $this->runScannedCallback($callback, $objectType, $vars, $output);
+        }
+
         $instance = $this->registry->get($objectType, $objectName);
         if ($instance === null) {
             return $this->renderError(ucfirst($objectType) . " $objectName : " . _t('NOT_FOUND'), $objectType);
@@ -266,7 +288,58 @@ class Performer
             return $this->renderError(_t('PERFORMABLE_ERROR') . '<br/>' . $this->wiki->dumpThrowable($t), $objectType);
         }
 
+        foreach ($scanned['after_callbacks'] ?? [] as $callback) {
+            $output .= $this->runScannedCallback($callback, $objectType, $vars, $output);
+        }
+
         return $output;
+    }
+
+    /**
+     * Fire the performable events for one phase and fold the result back in.
+     *
+     * A `before` listener may rewrite $vars -- which is what most of the old before-hooks
+     * actually did; they existed to adjust an argument, not to print.
+     *
+     * @param array<mixed> $vars
+     */
+    private function dispatchPerformableEvent(string $type, string $name, array &$vars, string $phase): string
+    {
+        $event = new PerformableEvent($type, $name, $vars);
+        foreach ($event->eventNames($phase) as $eventName) {
+            $this->events->dispatch($event, $eventName);
+        }
+        if ($phase === PerformableEvent::BEFORE) {
+            $vars = $event->getArguments();
+        }
+
+        return $event->getOutput();
+    }
+
+    /**
+     * Run one scanned before/after callback around a registered performable.
+     *
+     * @param array<string, mixed> $callback
+     * @param array<mixed>         $vars
+     */
+    private function runScannedCallback(array $callback, string $objectType, array &$vars, string &$output): string
+    {
+        if (!empty($callback['isDefinedAsClass'])) {
+            $performable = $this->createPerformable($callback, $vars, $output);
+
+            return (string)$performable->run();
+        }
+
+        $vars['plugin_output_new'] = &$output;
+        $vars = $this->wiki->runFileInBuffer($callback['filePath'], $vars);
+        $produced = $vars['plugin_output_new'];
+        unset($vars['plugin_output_new']);
+
+        // the hook edits $plugin_output_new in place, so it returns the whole output;
+        // hand it back as the new value rather than appending to what is already there
+        $output = '';
+
+        return (string)$produced;
     }
 
     private function renderError($message, $objectType)

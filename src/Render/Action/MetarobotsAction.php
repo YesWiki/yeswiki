@@ -1,0 +1,87 @@
+<?php
+
+namespace YesWiki\Render\Action;
+
+use YesWiki\Render\Service\TemplateHelperService;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Performable\RegisteredAction;
+
+/**
+ * `{{metarobots}}` -- converted from the procedural actions/metarobots.php by ticket 06.
+ *
+ * The body still prints rather than returning, so it runs inside an output buffer in its
+ * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
+ * in the body from discarding output.
+ */
+class MetarobotsAction extends YesWikiAction implements RegisteredAction
+{
+    public static function performableName(): string
+    {
+        return 'metarobots';
+    }
+
+    public function run(): string
+    {
+        ob_start();
+        try {
+            $this->emit();
+        } catch (\Throwable $t) {
+            // Several of these bodies end in $this->exit(), which throws. The old
+            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
+            // did not discard what had already been printed; keep that by flushing into the
+            // shared output before rethrowing -- and close the buffer either way.
+            $this->output .= (string)ob_get_clean();
+
+            throw $t;
+        }
+
+        return (string)ob_get_clean();
+    }
+
+    private function emit(): void
+    {
+
+        /*
+         * Action to add usefull metas to html head
+         */
+
+        if ($this->wiki->GetMethod() != 'show' || empty($this->wiki->page)) {
+            // no index if not with 'show' hander or if page is not existing
+            echo '<meta name="robots" content="noindex, nofollow">' . "\n";
+        } else {
+            if (isset($this->wiki->config['meta']['robots'])) {
+                echo '<meta name="robots" content="'
+                    . $this->wiki->config['meta']['robots'] . '">' . "\n";
+            }
+            // canonical url
+            $url = $this->wiki->href('', $this->wiki->getPageTag());
+            echo '<link rel="canonical" href="' . $url . '">' . "\n";
+
+            // opengraph
+            echo "\n" . '  <!-- opengraph -->' . "\n";
+            echo '  <meta property="og:site_name" content="'
+                . $this->wiki->config['yeswiki_name'] . '" />' . "\n";
+            $utils = $this->wiki->services->get(TemplateHelperService::class);
+            $title = $utils->getTitleFromBody($this->wiki->page);
+            echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['yeswiki_name']) . '" />' . "\n";
+            $desc = htmlspecialchars($utils->getDescriptionFromBody($this->wiki->page, $title), ENT_COMPAT | ENT_HTML5);
+            if ($desc) {
+                echo '  <meta property="og:description" content="' . $desc . '" />' . "\n";
+            }
+            echo '  <meta property="og:type" content="article" />' . "\n";
+            echo '  <meta property="og:url" content="' . $url . '" />' . "\n";
+
+            // open graph image : recommended sizes for FB
+            $w = 1200; // image width
+            $h = 630; // image height
+            if (!empty($this->wiki->page)) {
+                $img = $this->wiki->services->get(TemplateHelperService::class)->getImageFromBody($this->wiki->page, strval($w), strval($h));
+            }
+            if (!empty($img)) {
+                echo '  <meta property="og:image" content="' . $img . '" />' . "\n";
+                echo '  <meta property="og:image:width" content="' . $w . '" />' . "\n";
+                echo '  <meta property="og:image:height" content="' . $h . '" />' . "\n";
+            }
+        }
+    }
+}

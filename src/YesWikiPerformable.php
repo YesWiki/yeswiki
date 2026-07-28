@@ -130,8 +130,14 @@ abstract class YesWikiPerformable
     // Shortcut to call an action within another action
     protected function callAction(string $action, $arguments = []): string
     {
-        // This additional argument helps to prevent infinite loops
-        $arguments['calledBy'] = get_class($this);
+        // This additional argument helps to prevent infinite loops.
+        //
+        // Deliberately the SHORT class name, not get_class(): callers compare it against
+        // literals like 'BazarCartoAction', and once ticket 06 gave these classes namespaces
+        // get_class() started returning the FQCN, so every such comparison silently stopped
+        // matching -- turning {{bazarcarto}} into unbounded recursion. Third time this wave
+        // that get_class() broke on namespacing (after the action name and the ACL key).
+        $arguments['calledBy'] = (new \ReflectionClass($this))->getShortName();
 
         return $this->wiki->Action($action, 0, $arguments);
     }

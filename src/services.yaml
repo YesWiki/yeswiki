@@ -21,8 +21,10 @@ services:
   # implementing RegisteredPerformable; YesWikiPerformableCompilerPass turns the tags into
   # ActionRegistry's name => service-id map.
   _instanceof:
-    YesWiki\Kernel\Performable\RegisteredPerformable:
+    YesWiki\Kernel\Performable\RegisteredAction:
       tags: ['yeswiki.action']
+    YesWiki\Kernel\Performable\RegisteredHandler:
+      tags: ['yeswiki.handler']
 
   YesWiki\Kernel\Performable\ActionRegistry:
     arguments:
@@ -52,11 +54,17 @@ services:
   YesWiki\Search\Service\:
     resource: 'Search/Service/*'
 
+  YesWiki\Search\Action\:
+    resource: 'Search/Action/*'
+
   YesWiki\Render\Service\:
     resource: 'Render/Service/*'
 
   YesWiki\Render\Action\:
     resource: 'Render/Action/*'
+
+  YesWiki\Render\Handler\:
+    resource: 'Render/Handler/*'
 
   YesWiki\Identity\Service\:
     resource: 'Identity/Service/*'
@@ -64,14 +72,32 @@ services:
   YesWiki\Identity\Controller\:
     resource: 'Identity/Controller/*'
 
+  YesWiki\Identity\Action\:
+    resource: 'Identity/Action/*'
+
+  YesWiki\Identity\Handler\:
+    resource: 'Identity/Handler/*'
+
   YesWiki\Content\Service\:
     resource: 'Content/Service/*'
 
   YesWiki\Content\Controller\:
     resource: 'Content/Controller/*'
 
+  YesWiki\Content\Action\:
+    resource: 'Content/Action/*'
+
+  YesWiki\Content\Handler\:
+    resource: 'Content/Handler/*'
+
   YesWiki\Admin\Service\:
     resource: 'Admin/Service/*'
+
+  YesWiki\Admin\Action\:
+    resource: 'Admin/Action/*'
+
+  YesWiki\Admin\Handler\:
+    resource: 'Admin/Handler/*'
 
   YesWiki\Admin\Controller\:
     resource: 'Admin/Controller/*'

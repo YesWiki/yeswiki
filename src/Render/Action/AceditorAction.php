@@ -1,0 +1,43 @@
+<?php
+
+namespace YesWiki\Render\Action;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Content\Service\ActionsBuilderService;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Performable\RegisteredAction;
+
+class AceditorAction extends YesWikiAction implements RegisteredAction
+{
+    /** `{{aceditor}}` in page content -- stated, not inferred from the filename. */
+    public static function performableName(): string
+    {
+        return 'aceditor';
+    }
+
+    public function formatArguments($args): array
+    {
+        return [
+            'name' => $args['name'] ?? 'aceditor',
+            'value' => $args['value'] ?? '',
+            'required' => $args['required'] ?? null,
+            'placeholder' => $args['placeholder'] ?? '',
+            'rows' => $args['rows'] ?? 3,
+            'maxChars' => $args['maxChars'] ?? null,
+            'tempTag' => $args['tempTag'] ?? null, // used in new entry form
+            'saveButton' => $this->formatBoolean($args['saveButton'] ?? null, false),
+        ];
+    }
+
+    public function run(): string
+    {
+        $data = $this->getService(ActionsBuilderService::class)->getData();
+        $pageTags = $this->getService(PageManager::class)->getReadablePageTags();
+
+        return $this->render('@core/aceditor.twig', [
+            'actionsBuilderData' => $data,
+            'pageTags' => $pageTags,
+            'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
+        ]);
+    }
+}

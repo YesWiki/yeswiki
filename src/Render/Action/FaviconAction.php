@@ -3,9 +3,9 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
-use YesWiki\Kernel\Performable\RegisteredPerformable;
+use YesWiki\Kernel\Performable\RegisteredAction;
 
-class FaviconAction extends YesWikiAction implements RegisteredPerformable
+class FaviconAction extends YesWikiAction implements RegisteredAction
 {
     /**
      * `{{favicon}}` in page content. Stated rather than inferred from the filename, which

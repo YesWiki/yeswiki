@@ -1,0 +1,102 @@
+<?php
+
+namespace YesWiki\Content\Action;
+
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Performable\RegisteredAction;
+
+/**
+ * `{{recentchanges}}` -- converted from the procedural actions/recentchanges.php by ticket 06.
+ *
+ * The body still prints rather than returning, so it runs inside an output buffer in its
+ * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
+ * in the body from discarding output.
+ */
+class RecentchangesAction extends YesWikiAction implements RegisteredAction
+{
+    public static function performableName(): string
+    {
+        return 'recentchanges';
+    }
+
+    public function run(): string
+    {
+        ob_start();
+        try {
+            $this->emit();
+        } catch (\Throwable $t) {
+            // Several of these bodies end in $this->exit(), which throws. The old
+            // runFileInBuffer() accumulated output into a by-reference variable, so a throw
+            // did not discard what had already been printed; keep that by flushing into the
+            // shared output before rethrowing -- and close the buffer either way.
+            $this->output .= (string)ob_get_clean();
+
+            throw $t;
+        }
+
+        return (string)ob_get_clean();
+    }
+
+    private function emit(): void
+    {
+        // Which is the max number of pages to be shown ?
+        if ($max = $this->wiki->GetParameter('max')) {
+            if ($max == 'last') {
+                $max = 500;
+            } else {
+                $last = (int)$max;
+            }
+        } elseif ($user = $this->wiki->GetUser()) {
+            $max = $user['changescount'];
+        } else {
+            $max = 500;
+        }
+
+        // si une date est indiquée
+        $period = isset($_GET['period']) ? $_GET['period'] : $this->wiki->GetParameter('period');
+        $dateMin = '';
+        if (in_array($period, ['day', 'week', 'month'], true)) {
+            switch ($period) {
+                case 'day':
+                    $d = strtotime('-1 day');
+                    $dateMin = date('Y-m-d H:i:s', $d);
+                    break;
+                case 'week':
+                    $d = strtotime('-1 week');
+                    $dateMin = date('Y-m-d H:i:s', $d);
+                    break;
+                case 'month':
+                    $d = strtotime('-1 month');
+                    $dateMin = date('Y-m-d H:i:s', $d);
+                    break;
+            }
+        }
+
+        // Show recently changed pages
+        if ($pages = $this->wiki->LoadRecentlyChanged($max, $dateMin)) {
+            $svgIcon = '<img style="vertical-align:baseline;" width="12" src=\'data:image/svg+xml;utf8,<svg height="1792" viewBox="0 0 1792 1792" width="1792" xmlns="http://www.w3.org/2000/svg"><path d="M192 1664h288v-288h-288v288zm352 0h320v-288h-320v288zm-352-352h288v-320h-288v320zm352 0h320v-320h-320v320zm-352-384h288v-288h-288v288zm736 736h320v-288h-320v288zm-384-736h320v-288h-320v288zm768 736h288v-288h-288v288zm-384-352h320v-320h-320v320zm-352-864v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm736 864h288v-320h-288v320zm-384-384h320v-288h-320v288zm384 0h288v-288h-288v288zm32-480v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm384-64v1280q0 52-38 90t-90 38h-1408q-52 0-90-38t-38-90v-1280q0-52 38-90t90-38h128v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h384v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h128q52 0 90 38t38 90z"/></svg>\' alt="' . _t('HISTORY') . '">';
+
+            if ($this->wiki->GetParameter('max')) {
+                foreach ($pages as $i => $page) {
+                    // echo entry
+                    echo '<small><a href="' . $this->wiki->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $page['time'] . '</small> ', $this->wiki->ComposeLinkToPage($page['tag'], '', '', 0),' <small>' . _t('BY') . ' ', $this->wiki->Format($page['user']), "</small><br>\n";
+                }
+            } else {
+                $curday = '';
+                foreach ($pages as $i => $page) {
+                    // day header
+                    list($day, $time) = explode(' ', $page['time']);
+                    if ($day != $curday) {
+                        if ($curday) {
+                            echo "<br>\n";
+                        }
+                        echo '<strong>' . date('d.m.Y', strtotime($day)) . '&nbsp;:</strong><br>' . "\n";
+                        $curday = $day;
+                    }
+                    // echo entry
+                    echo '<small><a href="' . $this->wiki->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $time . '</small> ', $this->wiki->ComposeLinkToPage($page['tag'], '', '', 0),' <small>' . _t('BY') . ' ', $this->wiki->Format($page['user']), "</small><br>\n";
+                }
+            }
+        }
+    }
+}

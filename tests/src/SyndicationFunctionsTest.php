@@ -12,10 +12,9 @@ class SyndicationFunctionsTest extends YesWikiTestCase
 {
     public static function setUpBeforeClass(): void
     {
-        // actions/SyndicationAction.php's own include_once needs YESWIKI_SOURCE_DIR,
-        // only defined once getWiki() has booted bootstrap_paths.php
+        // SyndicationAction is autoloaded now (ticket 06 moved it into the Content module),
+        // but booting the wiki still defines YESWIKI_SOURCE_DIR, which its include_once needs
         self::getWiki();
-        require_once 'actions/SyndicationAction.php';
     }
 
     public function testTruncateLeavesShortTextUntouched()
@@ -58,7 +57,7 @@ class SyndicationFunctionsTest extends YesWikiTestCase
     public function testSyndicationActionFormatArgumentsParsesMapping()
     {
         $wiki = $this->getWiki();
-        $action = new \SyndicationAction();
+        $action = new \YesWiki\Content\Action\SyndicationAction();
         $action->setWiki($wiki);
         $action->setParams($wiki->services->get(\Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface::class));
 

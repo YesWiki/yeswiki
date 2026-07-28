@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core;
 
+use YesWiki\Kernel\Performable\RegisteredPerformable;
 use YesWiki\Render\Service\TemplateHelperService;
 
 abstract class YesWikiAction extends YesWikiPerformable
@@ -13,9 +14,17 @@ abstract class YesWikiAction extends YesWikiPerformable
      */
     protected function checkSecuredACL($adminOnly = true): ?string
     {
-        $actionName = strtolower(get_class($this)); // __greetingaction
-        $actionName = preg_replace('/^__|__$/', '', $actionName); // greetingaction
-        $actionName = preg_replace('/action$/', '', $actionName); // greeting
+        // A registered action states its name; deriving it from get_class() only worked
+        // while these classes had no namespace, because the FQCN would otherwise leak into
+        // the ACL key (ticket 06). The derivation stays as the fallback for actions still
+        // resolved by the directory scan.
+        if ($this instanceof RegisteredPerformable) {
+            $actionName = static::performableName();
+        } else {
+            $actionName = strtolower(get_class($this)); // __greetingaction
+            $actionName = preg_replace('/^__|__$/', '', $actionName); // greetingaction
+            $actionName = preg_replace('/action$/', '', $actionName); // greeting
+        }
         // check access (only admins or follow acl if defined)
         $acl = $this->wiki->GetModuleACL($actionName, 'action');
 
