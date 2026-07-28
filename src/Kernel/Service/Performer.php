@@ -4,30 +4,36 @@ namespace YesWiki\Kernel\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Kernel\Exception\PerformerException;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Performable\PerformableEvent;
-use YesWiki\Kernel\Exception\PerformerException;
-use YesWiki\Wiki;
 use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 /**
- * Loads and run Handlers and Actions
- * Any of these object can be easily customize with before and after callback
- * To create a before callback, use same file name prefixed by "__"
- * To create an after callback, use same file name suffixed by "__"
- * For example:
- *  1) extensions/myext/actions/BazarShowAction.php
- *  2) extensions/other/actions/__BazarShowAction.php
- *  3) extensions/third/actions/BazarShowAction__.php
- * When we run the action 'bazarshow', all 3 files will be executed in following order : 2,1,3.
+ * Runs actions (`{{name}}`) and handlers (`/PageName/name`).
+ *
+ * Two ways to find one, and that is deliberate:
+ *
+ *  - **core** performables are services, resolved by name through ActionRegistry;
+ *  - **extension** performables are still discovered by scanning `actions/` and `handlers/`
+ *    inside each extension, because an extension is installed at runtime and cannot be in
+ *    the compiled container.
+ *
+ * Wave-two ticket 06 removed three things that used to live here:
+ *
+ *  - the `__name.php` / `name__.php` before/after callback convention. Core does not hook
+ *    itself any more -- those callbacks were merged into the classes they wrapped -- and
+ *    extensions hook through PerformableEvent, dispatched below.
+ *  - procedural performables. Every action and handler is a class, so `runFileInBuffer()`
+ *    and its output-buffer dispatch are gone.
+ *  - the `formatter` type. `wakka` was the only one; Wiki::Format() calls
+ *    MarkdownFormatterService directly.
  */
 class Performer
 {
-    // 'formatter' was removed by ticket 06: 'wakka' was the only one that ever existed,
-    // formatters/ held a single after-callback file, and no extension shipped one.
-    // Wiki::Format() now calls MarkdownFormatterService directly.
     public const TYPES = [
         'action' => 'action',
         'handler' => 'handler',
@@ -36,29 +42,32 @@ class Performer
         Performer::TYPES['action'] => ['actions/'],
         Performer::TYPES['handler'] => ['handlers/', 'handlers/page/'],
     ];
+
     protected $wiki;
     protected $params;
     protected $twig;
 
-    // list of all existing object
+    /** Extension-provided performables found by scanning; core ones live in the registry. */
     protected $objectList;
     protected ActionRegistry $registry;
     protected EventDispatcher $events;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig, ActionRegistry $registry, EventDispatcher $events)
-    {
+    public function __construct(
+        Wiki $wiki,
+        ParameterBagInterface $params,
+        TemplateEngine $twig,
+        ActionRegistry $registry,
+        EventDispatcher $events
+    ) {
         $this->wiki = $wiki;
         $this->registry = $registry;
         $this->events = $events;
         $this->params = $params;
         $this->twig = $twig;
 
-        // get the list of all existing objects (actions, handlers)
-        // source root (core actions/, handlers/) + extensions folders
-        $folders = array_merge([YESWIKI_SOURCE_DIR . '/'], $wiki->extensions);
         foreach (Performer::TYPES as $type) {
             $this->objectList[$type] = [];
-            foreach ($folders as $folder) {
+            foreach ($wiki->extensions as $folder) {
                 foreach (Performer::PATHS[$type] as $path) {
                     $this->findObjectInPath($folder . $path, $type);
                 }
@@ -67,57 +76,37 @@ class Performer
     }
 
     /**
-     * Read existing PHP files in the current $dir, and store them inside $this->objectList.
+     * Record the performable classes an extension ships in $dir.
      */
     private function findObjectInPath($dir, $objectType)
     {
-        if (file_exists($dir) && $dh = opendir($dir)) {
-            while (($file = readdir($dh)) !== false) {
-                if (preg_match("/^([a-zA-Z0-9_-]+)(\.class)?\.php$/", $file, $matches)) {
-                    $baseName = $matches[1]; // __GreetingAction
-                    $objectName = strtolower($matches[1]); // __greetingaction
-                    $objectName = preg_replace('/^__|__$/', '', $objectName); // greetingaction
-                    $isDefinedAsClass = false;
-                    if (str_ends_with($baseName, ucfirst($objectType)) || str_ends_with($baseName, ucfirst($objectType) . '__')) {
-                        $objectName = preg_replace("/{$objectType}$/", '', $objectName); // greeting
-                        $isDefinedAsClass = true;
-                    }
-                    $filePath = $dir . $file;
-                    $object = &$this->objectList[$objectType][$objectName];
-                    if (str_starts_with($file, '__')) {
-                        if (!isset($object['before_callbacks'])) {
-                            $object['before_callbacks'] = [];
-                        }
-                        array_unshift($object['before_callbacks'], [
-                            'filePath' => $filePath,
-                            'baseName' => $baseName,
-                            'isDefinedAsClass' => $isDefinedAsClass,
-                        ]);
-                    } elseif (str_ends_with($file, '__.php')) {
-                        if (!isset($object['after_callbacks'])) {
-                            $object['after_callbacks'] = [];
-                        }
-                        array_unshift($object['after_callbacks'], [
-                            'filePath' => $filePath,
-                            'baseName' => $baseName,
-                            'isDefinedAsClass' => $isDefinedAsClass,
-                        ]);
-                    } else {
-                        $object = [
-                            'filePath' => $filePath,
-                            'baseName' => $baseName,
-                            'isDefinedAsClass' => $isDefinedAsClass,
-                            'before_callbacks' => $object['before_callbacks'] ?? [],
-                            'after_callbacks' => $object['after_callbacks'] ?? [],
-                        ];
-                    }
-                }
-            }
+        if (!file_exists($dir) || !($dh = opendir($dir))) {
+            return;
         }
+        while (($file = readdir($dh)) !== false) {
+            if (!preg_match("/^([a-zA-Z0-9_-]+)(\.class)?\.php$/", $file, $matches)) {
+                continue;
+            }
+            $baseName = $matches[1];
+            // `__x.php` / `x__.php` used to mean a before/after callback. The convention is
+            // retired (ticket 06); such a file is now simply not a performable.
+            if (str_starts_with($baseName, '__') || str_ends_with($baseName, '__')) {
+                continue;
+            }
+            if (!str_ends_with($baseName, ucfirst($objectType))) {
+                continue;
+            }
+            $objectName = preg_replace("/{$objectType}$/", '', strtolower($baseName));
+            $this->objectList[$objectType][$objectName] = [
+                'filePath' => $dir . $file,
+                'baseName' => $baseName,
+            ];
+        }
+        closedir($dh);
     }
 
     /**
-     * Create the performable instance described by $object and with the variables used as an execution context.
+     * Build the performable described by $object.
      *
      * @param array $object the object description
      * @param array $vars   the variables defined in the execution context of the object
@@ -139,15 +128,7 @@ class Performer
         }
         if (class_exists($className)) {
             $instance = new $className();
-            $instance->setWiki($this->wiki);
-            $instance->setParams($this->params);
-            $instance->setArguments($vars);
-            $instance->setOutput($output);
-            $instance->setTwig($this->wiki->services->get(TemplateEngine::class));
-
-            // we must save the arguments in the YesWiki object, as YesWiki::getParameter is used in many places
-            // TODO once bazar will be completly rewritten, we should remove this by passing the arguments to the renderers
-            $this->wiki->parameter = &$vars;
+            $this->prepare($instance, $vars, $output);
 
             return $instance;
         }
@@ -155,14 +136,11 @@ class Performer
     }
 
     /**
-     * Run an handler, formatter or actions and all its callback.
+     * Run an action or handler.
      *
      * @param       $objectName the object name
-     * @param       $objectType the type, corresponds to a Performer::TYPES key
-     * @param array $vars       the variables defined in the execution context of the object. It's an array containing the
-     *                          value of each parameter given to the performable, where the names of the parameters are the key, corresponding to
-     *                          the given string value. Per example, by execute the action {{include page="PageTag"}}, this array is initialized
-     *                          with the page "parameter". Then, each execution change the execution context variables for the next one.
+     * @param       $objectType a Performer::TYPES key
+     * @param array $vars       the arguments given to the performable, keyed by parameter name
      *
      * @return string the generated output
      */
@@ -179,126 +157,64 @@ class Performer
         }
 
         // Extensions hook here rather than by dropping a __name.php next to ours. Dispatched
-        // in run() rather than in runRegistered() so it covers BOTH resolution paths --
-        // extension actions are still found by the scan, and they are exactly who needs this.
-        $prefix = $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::BEFORE);
-
-        // A converted action/handler is a real service: resolve it from the registry rather
-        // than from the directory scan. Both paths coexist while ticket 06 migrates the 137
-        // files a few at a time; the scan goes away with the last of them.
-        if ($this->registry->has($objectType, $objectName)) {
-            return $prefix
-                . $this->runRegistered($objectType, $objectName, $vars, $end_elem)
-                . $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::AFTER);
-        }
-
-        // find object
-        $object = isset($this->objectList[$objectType][$objectName]) ? $this->objectList[$objectType][$objectName] : false;
-        if (!$object) {
-            return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('NOT_FOUND') . '</div>' . "\n";
-        }
-
-        // the current output
-        $output = '';
-
-        // execute main file with callbacks
-        $files = array_merge($object['before_callbacks'], [$object], $object['after_callbacks']);
-        foreach ($files as $file) {
-            try {
-                if (!empty($file['service'])) {
-                    $output .= ($file['service'])($vars);
-                } elseif ($file['isDefinedAsClass']) {
-                    $performable = $this->createPerformable($file, $vars, $output);
-                    try {
-                        if ($end_elem) {
-                            $output .= $performable->end();
-                        } else {
-                            $output .= $performable->run();
-                        }
-                    } catch (HttpException $exception) {
-                        return $this->renderError($exception->getMessage(), $objectType);
-                    }
-                } else {
-                    $vars['plugin_output_new'] = &$output;
-                    // need to run them from YesWiki Class so the variable $this (used in all the plain PHP object) refers to YesWiki, not to Performer service
-                    $vars = $this->wiki->runFileInBuffer($file['filePath'], $vars);
-                    $output = &$vars['plugin_output_new'];
-                    unset($vars['plugin_output_new']);
-                }
-            } catch (ExitException $t) {
-                throw $t;
-            } catch (\Throwable $t) {
-                // catch all errors and exceptions thrown by the execution of the performable
-                $message = _t('PERFORMABLE_ERROR');
-                $message .= '<br/>' . $this->wiki->dumpThrowable($t);
-
-                return $this->renderError($message, $objectType);
-            }
-        }
-
-        return $prefix . $output
-            . $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::AFTER);
-    }
-
-    /**
-     * Run a registered (service) performable. Same contract as the scanned path: the
-     * instance is handed the wiki, params, arguments and output, then run() or end().
-     *
-     */
-    private function runRegistered(string $objectType, string $objectName, array &$vars, bool $end_elem): string
-    {
-        $output = '';
-
-        // A converted performable still has to run the before/after callbacks the scan found
-        // for it. Returning early without them silently drops every hook the moment its
-        // target converts -- which is how handlers/page/edit__.php (the tag-input widget)
-        // vanished from the edit form. The hooks become Symfony events later in ticket 06;
-        // until then both mechanisms have to coexist here too.
-        $scanned = $this->objectList[$objectType][$objectName] ?? [];
-        foreach ($scanned['before_callbacks'] ?? [] as $callback) {
-            $output .= $this->runScannedCallback($callback, $objectType, $vars, $output);
-        }
+        // around both resolution paths, since extension performables are the ones being hooked.
+        $output = $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::BEFORE);
 
         $instance = $this->registry->get($objectType, $objectName);
         if ($instance === null) {
-            return $this->renderError(ucfirst($objectType) . " $objectName : " . _t('NOT_FOUND'), $objectType);
+            $object = $this->objectList[$objectType][$objectName] ?? null;
+            if ($object === null) {
+                return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('NOT_FOUND') . '</div>' . "\n";
+            }
         }
-        try {
-            $instance->setWiki($this->wiki);
-            $instance->setParams($this->params);
-            $instance->setArguments($vars);
-            $instance->setOutput($output);
-            $instance->setTwig($this->twig);
 
-            // still needed by Wiki::getParameter(), which plenty of code reads
-            $this->wiki->parameter = &$vars;
+        try {
+            if ($instance === null) {
+                $instance = $this->createPerformable($object, $vars, $output);
+            } else {
+                $this->prepare($instance, $vars, $output);
+            }
 
             // end() is declared on YesWikiAction, not on the YesWikiPerformable base: only
             // graphical-element actions ({{col}}...{{end}}) have a closing form.
-            if ($end_elem && $instance instanceof YesWikiAction) {
-                $output .= $instance->end();
-            } else {
-                $output .= $instance->run();
-            }
+            $output .= ($end_elem && $instance instanceof YesWikiAction)
+                ? $instance->end()
+                : $instance->run();
         } catch (ExitException $t) {
             throw $t;
         } catch (HttpException $exception) {
             return $this->renderError($exception->getMessage(), $objectType);
         } catch (\Throwable $t) {
-            return $this->renderError(_t('PERFORMABLE_ERROR') . '<br/>' . $this->wiki->dumpThrowable($t), $objectType);
+            return $this->renderError(
+                _t('PERFORMABLE_ERROR') . '<br/>' . $this->wiki->dumpThrowable($t),
+                $objectType
+            );
         }
 
-        foreach ($scanned['after_callbacks'] ?? [] as $callback) {
-            $output .= $this->runScannedCallback($callback, $objectType, $vars, $output);
-        }
+        return $output . $this->dispatchPerformableEvent($objectType, $objectName, $vars, PerformableEvent::AFTER);
+    }
 
-        return $output;
+    /**
+     * Hand a performable its execution context.
+     *
+     * @param array<mixed> $vars
+     */
+    private function prepare(object $instance, array &$vars, string &$output): void
+    {
+        $instance->setWiki($this->wiki);
+        $instance->setParams($this->params);
+        $instance->setArguments($vars);
+        $instance->setOutput($output);
+        $instance->setTwig($this->twig);
+
+        // still needed by Wiki::getParameter(), which plenty of code reads
+        $this->wiki->parameter = &$vars;
     }
 
     /**
      * Fire the performable events for one phase and fold the result back in.
      *
-     * A `before` listener may rewrite $vars -- which is what most of the old before-hooks
+     * A `before` listener may rewrite $vars -- which is what most of the retired before-hooks
      * actually did; they existed to adjust an argument, not to print.
      *
      * @param array<mixed> $vars
@@ -314,32 +230,6 @@ class Performer
         }
 
         return $event->getOutput();
-    }
-
-    /**
-     * Run one scanned before/after callback around a registered performable.
-     *
-     * @param array<string, mixed> $callback
-     * @param array<mixed>         $vars
-     */
-    private function runScannedCallback(array $callback, string $objectType, array &$vars, string &$output): string
-    {
-        if (!empty($callback['isDefinedAsClass'])) {
-            $performable = $this->createPerformable($callback, $vars, $output);
-
-            return (string)$performable->run();
-        }
-
-        $vars['plugin_output_new'] = &$output;
-        $vars = $this->wiki->runFileInBuffer($callback['filePath'], $vars);
-        $produced = $vars['plugin_output_new'];
-        unset($vars['plugin_output_new']);
-
-        // the hook edits $plugin_output_new in place, so it returns the whole output;
-        // hand it back as the new value rather than appending to what is already there
-        $output = '';
-
-        return (string)$produced;
     }
 
     private function renderError($message, $objectType)
@@ -358,9 +248,9 @@ class Performer
     }
 
     /**
-     * Retrieves the list of existing objects.
+     * Every available performable of $objectType: core services plus extension classes.
      *
-     * @return array an unordered array of all the available objects
+     * @return list<string>
      */
     public function list($objectType): array
     {

@@ -17,6 +17,16 @@ use YesWiki\Kernel\Performable\RegisteredAction;
  */
 class IncludeAction extends YesWikiAction implements RegisteredAction
 {
+    /**
+     * The three phases below were three files sharing one scope: runFileInBuffer()
+     * extract()ed the parameter array by reference and fed each file's get_defined_vars()
+     * back into it, so the after-callback read what the before-callback and the body had
+     * set. Methods have their own scope, so the two values that are computed rather than
+     * read straight from a parameter travel as properties instead.
+     */
+    private string $incPageName = '';
+    private string $class = 'include';
+
     public static function performableName(): string
     {
         return 'include';
@@ -47,8 +57,6 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
     private function emitBefore(): void
     {
         // merged from actions/__include.php (ticket 06: core does not hook itself)
-        $dblclic = $this->wiki->GetParameter('doubleclic');
-        $actif = $this->wiki->GetParameter('actif');
         $pageincluded = $this->wiki->GetParameter('page');
 
         // if metadata exists to change included page, we take the value of it
@@ -64,15 +72,9 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
                 $this->wiki->page = !empty($includedPage) ? $includedPage : $this->wiki->LoadPage($this->wiki->tag);
             }
         }
-        $clear = $this->wiki->GetParameter('clear');
         $class = $this->wiki->GetParameter('class');
-        if (empty($class)) {
-            $this->wiki->parameter['class'] = 'include';
-            $class = 'include';
-        } else {
-            $this->wiki->parameter['class'] = 'include ' . $class;
-            $class = 'include ' . $class;
-        }
+        $this->wiki->parameter['class'] = empty($class) ? 'include' : 'include ' . $class;
+        $this->class = $this->wiki->parameter['class'];
 
         // Page translation (formerly tools/lang's __include before-callback): filter the
         // included page's body to the visitor's {{lang="xx"}} section and refresh the
@@ -102,6 +104,16 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
     {
         ob_start();
 
+        $incPageName = $this->incPageName;
+        $class = $this->class;
+        // parameters, so still readable the way the shared scope exposed them -- including
+        // $oldpage, which a procedural before-callback (attach's, historically) publishes by
+        // defining it, since those land in $this->wiki->parameter
+        $actif = $this->wiki->GetParameter('actif');
+        $dblclic = $this->wiki->GetParameter('doubleclic');
+        $clear = $this->wiki->GetParameter('clear');
+        $oldpage = $this->wiki->GetParameter('oldpage');
+
         // merged from actions/include__.php (ticket 06: core does not hook itself)
         // relocated from tools/bazar/actions/include__.php (ticket 24): if the included page is a
         // bazar entry, show the entry instead of formatting the page as plain wiki content.
@@ -122,7 +134,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // si le lien correspond à l'url, on rajoute une classe "actif"
         if (!empty($actif) && $actif == '1') {
             $page_active = $this->wiki->tag;
-            if (isset($oldpage) && $oldpage != '') {
+            if ($oldpage != '') {
                 // si utilisation de l'extension attach
                 $page_active = $oldpage;
             }
@@ -172,9 +184,9 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
                 }, $plugin_output_new);
             }
 
-            $dom = new DOMDocument();
+            $dom = new \DOMDocument();
             @$dom->loadHTML($plugin_output_new);
-            $xpath = new DOMXPath($dom);
+            $xpath = new \DOMXPath($dom);
 
             $dropdowns = $xpath->query('*/div/ul/li/ul');
             if (!is_null($dropdowns)) {
@@ -264,7 +276,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
 
 
         // récuperation du nom de la page é inclure
-        $incPageName = trim($this->wiki->GetParameter('page'));
+        $incPageName = $this->incPageName = trim($this->wiki->GetParameter('page'));
 
         /*
         * @todo améliorer le traitement des classes css

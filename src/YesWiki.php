@@ -15,7 +15,6 @@ require_once __DIR__ . '/YesWikiKernel.php';
 require_once __DIR__ . '/YesWikiPerformable.php';
 require_once __DIR__ . '/objects/YesWikiAction.php';
 require_once __DIR__ . '/objects/YesWikiHandler.php';
-require_once __DIR__ . '/objects/YesWikiFormatter.php';
 
 use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Config\FileLocator;
@@ -861,58 +860,6 @@ class Wiki
     public function Format($text, $formatter = 'wakka', $pageTag = '')
     {
         return $this->services->get(MarkdownFormatterService::class)->format((string)$text);
-    }
-
-    /**
-     * Executes a file in a buffer, so we can work on the output variable $plugin_out_new before display.
-     *
-     * This method is used by Performer Service
-     * We need to run this method in YesWiki class, so the variable $this will be referencing YesWiki
-     * in the included file
-     *
-     * @param ___file the file to execute (___ because as we use the extract function, we have to choose a name which
-     * will be not used by users for an performable argument)
-     * @param array vars the variables used as an execution context. 'plugin_output_new' represents the current output
-     * (strange variable name, but it's used in everywhere, so let's keep it... !)
-     *
-     * @return array the execution context variables updated by the execution (with 'plugin_output_new for the current output)
-     */
-    public function runFileInBuffer($___file, array $vars)
-    {
-        $this->parameter = &$vars;
-        extract($this->parameter, EXTR_REFS);
-        unset($vars);
-
-        // the 'plugin_output_new' variable must be passed to $vars
-        assert(isset($plugin_output_new));
-        // add the alias with the property output, more convenient to use
-        $this->output = &$plugin_output_new;
-
-        ob_start();
-        try {
-            include $___file;
-        } catch (\Throwable $throwableToThrow) {
-            // $throwableToThrow is thrown at the of the method because ob_end_clean() and get_defined_vars()
-            // could change the way to catch Throwable at higher levels
-            // for pre actions
-        }
-        $plugin_output_new .= ob_get_contents();
-        ob_end_clean();
-
-        // save the context variables into $updatedVars
-        $updatedVars = get_defined_vars();
-        unset($updatedVars['___file']);
-        unset($updatedVars['throwableToThrow']);
-        // add new variables added to $this->parameter in $updatedVars (already existing vars share the same ref)
-        if (isset($this->parameter)) {
-            $updatedVars = array_merge($updatedVars, $this->parameter);
-        }
-        unset($this->parameter);
-        if (isset($throwableToThrow)) {
-            throw $throwableToThrow;
-        }
-
-        return $updatedVars;
     }
 
     /**

@@ -3,15 +3,16 @@ name: Docker Image
 on:
   push:
     paths:
-      - docker/dockerfile
-      - docker/docker-compose*.yml
+      # the job builds docker/dockerfile-prod, and `COPY . /var/www/html/` pulls in
+      # everything else under docker/ (entrypoint.sh, nginx.conf), so watch the folder
+      - docker/**
       - .github/workflows/docker.yml
 
 jobs:
   build:
     permissions:
       contents: read
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v5
 

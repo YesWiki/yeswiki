@@ -32,6 +32,7 @@ env:
   DB_NAME: yeswiki_test
   DB_USER: root
   DB_PASSWORD: root
+  WIKI_HOST: 127.0.0.1:8080
 
 jobs:
   build:
@@ -63,8 +64,12 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          extensions: mysqli
+          # Everything composer.json declares under ext-*, so `composer install`
+          # and the installer request run against the same extension set.
+          extensions: ctype, curl, fileinfo, filter, gd, iconv, mbstring, mysqli, pdo, zip
           tools: composer:v2
+
+      - run: php -v
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
@@ -72,53 +77,21 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Configure and start Nginx + PHP-FPM
+      # PHP's built-in server is the binary setup-php just put on PATH, so the SAPI
+      # serving the installer is the matrix version by construction. Installing a
+      # distro php<version>-fpm cannot do that: the Ubuntu archive only carries one
+      # PHP version, so two of the three matrix legs had no FPM package to install.
+      - name: Start PHP built-in server
         run: |
-          sudo apt update
-          sudo apt install --no-install-recommends --assume-yes nginx php${{ matrix.php-version }}-fpm
-
-          # Run nginx and PHP-FPM as the runner user to avoid workspace traversal permission issues
-          sudo sed -i 's/^user www-data;/user runner;/' /etc/nginx/nginx.conf
-          sudo sed -i \
-            -e 's/^user = www-data$/user = runner/' \
-            -e 's/^group = www-data$/group = runner/' \
-            -e 's/^listen\.owner = www-data$/listen.owner = runner/' \
-            -e 's/^listen\.group = www-data$/listen.group = runner/' \
-            /etc/php/${{ matrix.php-version }}/fpm/pool.d/www.conf
-
-          cat << 'EOF' > /tmp/nginx-yeswiki.conf
-          server {
-              listen 80;
-              root __WORKSPACE__;
-              index index.php index.html;
-              client_max_body_size 512M;
-              location / {
-                  try_files $uri $uri/ /index.php$is_args$args;
-              }
-              location ~* /(.*/)?private/ {
-                  deny all;
-                  return 403;
-              }
-              location ~ [^/]\.php(/|$) {
-                  fastcgi_split_path_info ^(.+?\.php)(/.*)$;
-                  include fastcgi_params;
-                  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-                  fastcgi_param PATH_INFO $fastcgi_path_info;
-                  fastcgi_pass unix:/run/php/php__PHPVER__-fpm.sock;
-                  fastcgi_intercept_errors on;
-                  fastcgi_request_buffering off;
-                  fastcgi_read_timeout 600;
-              }
-          }
-          EOF
-          sed -i 's|__WORKSPACE__|${{ github.workspace }}|; s|__PHPVER__|${{ matrix.php-version }}|' /tmp/nginx-yeswiki.conf
-          sudo cp /tmp/nginx-yeswiki.conf /etc/nginx/sites-enabled/default
-
           mkdir -p ${{ github.workspace }}/cache ${{ github.workspace }}/private/backups
-          sudo /etc/init.d/php${{ matrix.php-version }}-fpm restart
-          sudo /etc/init.d/nginx restart
-
-      - run: curl http://localhost
+          # Workers > 1 so a request that triggers a sub-request cannot deadlock the server.
+          PHP_CLI_SERVER_WORKERS=4 nohup php -S ${{ env.WIKI_HOST }} -t ${{ github.workspace }} \
+            > ${{ runner.temp }}/php-server.log 2>&1 &
+          for _ in $(seq 20); do
+            curl --silent --fail http://${{ env.WIKI_HOST }} > /dev/null && exit 0
+            sleep 1
+          done
+          echo "server did not come up"; cat ${{ runner.temp }}/php-server.log; exit 1
 
       - name: Setup Wiki
         run: |
@@ -126,7 +99,7 @@ jobs:
             -F "config[default_language]=fr" \
             -F "config[yeswiki_name]=MyTestWiki" \
             -F "config[root_page]=PagePrincipale" \
-            -F "config[base_url]=http://localhost/?" \
+            -F "config[base_url]=http://${{ env.WIKI_HOST }}/?" \
             -F "config[db_host]=127.0.0.1" \
             -F "config[db_database]=${{ env.DB_NAME }}" \
             -F "config[db_user]=${{ env.DB_USER }}" \
@@ -139,7 +112,11 @@ jobs:
             -F "admin_password_conf=ActionTestPassword" \
             -F "admin_email=test@example.com" \
             -F "submit=Continue" \
-            "http://localhost/?PagePrincipale&installAction=install"
+            "http://${{ env.WIKI_HOST }}/?PagePrincipale&installAction=install"
 
       - name: Run test suite
         run: composer test
+
+      - name: Dump server log
+        if: failure()
+        run: cat ${{ runner.temp }}/php-server.log
