@@ -5,8 +5,8 @@ namespace YesWiki\Identity\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Wiki;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Identity\Service\UserManager;
 
 class AclService

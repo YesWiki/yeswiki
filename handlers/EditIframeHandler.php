@@ -3,7 +3,7 @@
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Identity\Service\PasswordForEditingService;
-use YesWiki\Core\Service\Performer;
+use YesWiki\Kernel\Service\Performer;
 use YesWiki\Core\YesWikiHandler;
 
 class EditIframeHandler extends YesWikiHandler

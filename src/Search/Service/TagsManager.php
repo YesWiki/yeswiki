@@ -5,8 +5,8 @@ namespace YesWiki\Search\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\TripleStore;
 
 class TagsManager

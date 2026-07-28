@@ -10,7 +10,7 @@
 //
 // BAZ_CHEMIN ('tools/bazar/') was dropped here in ticket 24. It turned out not to be dead
 // at the time -- the vendored PEAR pagination library still depended on it -- but ticket 02
-// deleted that library outright (replaced by YesWiki\Core\Service\Paginator), so nothing
+// deleted that library outright (replaced by YesWiki\Kernel\Service\Paginator), so nothing
 // refers to BAZ_CHEMIN any more. BAZ_CHEMIN_UPLOAD below is a different, live constant.
 //
 // Ticket 02 (wave two) removed 21 functions from this file: 14 unreachable `baz_*`
@@ -31,7 +31,7 @@ use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Identity\Service\Guard;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Render\Service\TemplateEngine;
 

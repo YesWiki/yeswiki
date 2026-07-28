@@ -5,7 +5,7 @@ if ($user = $this->GetUser()) {
     $curChar = '';
     $curday = '';
     $last_tag = '';
-    $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
+    $dbService = $this->services->get(\YesWiki\Kernel\Service\DbService::class);
     $userCol = $dbService->quoteIdentifier('user');
 
     if ($bydate = $this->GetParameter('bydate')) {

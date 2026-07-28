@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AccountActivationService;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;

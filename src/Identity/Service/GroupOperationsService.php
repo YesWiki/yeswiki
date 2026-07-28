@@ -5,7 +5,7 @@ namespace YesWiki\Identity\Service;
 use YesWiki\Identity\Exception\GroupNameAlreadyUsedException;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\InvalidGroupNameException;
-use YesWiki\Core\Exception\InvalidInputException;
+use YesWiki\Kernel\Exception\InvalidInputException;
 use YesWiki\Identity\Exception\UserNameDoesNotExistException;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AuthenticationService;

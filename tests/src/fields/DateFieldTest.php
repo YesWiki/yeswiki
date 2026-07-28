@@ -10,7 +10,7 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 /**
  * Regression test for ticket 24 (bazar absorbed into core): a blanket namespace
- * rewrite (YesWiki\Bazar\Service\DateService -> YesWiki\Core\Service\DateService)
+ * rewrite (YesWiki\Bazar\Service\DateService -> YesWiki\Kernel\Service\DateService)
  * collapsed DateField's/FileField's deliberate disambiguation between bazar's own
  * DateService (renamed EntryDateService, since it collided with an unrelated,
  * pre-existing core DateService) and that pre-existing core DateService (timezone

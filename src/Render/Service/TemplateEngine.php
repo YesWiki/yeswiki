@@ -5,14 +5,14 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\Attach;
-use YesWiki\Core\Exception\TemplateNotFound;
+use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\ListManager;
-use YesWiki\Core\Service\Performer;
+use YesWiki\Kernel\Service\Performer;
 
 class TemplateEngine
 {

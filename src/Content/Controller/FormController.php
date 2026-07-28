@@ -10,9 +10,9 @@ use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Identity\Service\Guard;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\IcalFormatter;
-use YesWiki\Core\Service\LanguageService;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Content\Service\WebfingerService;
 use YesWiki\Core\YesWikiController;
 

@@ -13,9 +13,9 @@ use YesWiki\Search\Service\SearchManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\Mailer;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Mailer;
 
 class EntryManager
 {

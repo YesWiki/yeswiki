@@ -4,7 +4,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;

@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
-use YesWiki\Core\Controller\ApiController;
+use YesWiki\Admin\Controller\ApiController;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Test\Core\YesWikiTestCase;

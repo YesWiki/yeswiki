@@ -5,7 +5,7 @@ namespace YesWiki\Test\Core\Commands;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Service\ConsoleService;
+use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

@@ -2,7 +2,7 @@
 
 require_once YESWIKI_SOURCE_DIR . '/src/YesWikiPerformable.php';
 
-use YesWiki\Core\Service\Performer;
+use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Service\TemplateHelperService;
 
 // classe css supplémentaire

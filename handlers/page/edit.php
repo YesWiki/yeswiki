@@ -2,7 +2,7 @@
 
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Render\Service\HibernationNotice;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 

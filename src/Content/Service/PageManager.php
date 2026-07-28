@@ -9,9 +9,9 @@ use YesWiki\Search\Service\TagsManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\EventDispatcher;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\HibernationService;
 
 class PageManager
 {

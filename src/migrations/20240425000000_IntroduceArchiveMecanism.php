@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Core\Service\UpdateAdminPagesService;
+use YesWiki\Admin\Service\UpdateAdminPagesService;
 use YesWiki\Core\YesWikiMigration;
 
 class IntroduceArchiveMecanism extends YesWikiMigration

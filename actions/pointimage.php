@@ -74,7 +74,7 @@ if (empty($point_size)) {
 $readonly = $this->GetParameter('readonly');
 
 // get an unique pagename based on the image (tag if a FileManager entry, filename otherwise)
-$dbService = $this->services->get(YesWiki\Core\Service\DbService::class);
+$dbService = $this->services->get(YesWiki\Kernel\Service\DbService::class);
 $baseForPageTag = $isFileTag ? $file : preg_replace('/[^A-Za-z0-9 ]/', '', str_replace('.' . $ext, '', $file));
 $datapagetag = $dbService->escape($this->GetPageTag() . 'PI' . $baseForPageTag);
 

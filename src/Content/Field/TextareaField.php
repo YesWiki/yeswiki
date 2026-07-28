@@ -5,8 +5,8 @@ namespace YesWiki\Content\Field;
 use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Core\Attach;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 
 #[\Field(['textelong'])]
 class TextareaField extends BazarField

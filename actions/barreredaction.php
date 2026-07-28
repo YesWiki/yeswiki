@@ -4,7 +4,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\FavoritesManager;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 
 $user = $this->services->get(AuthenticationService::class)->getLoggedUser();
 if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions') {

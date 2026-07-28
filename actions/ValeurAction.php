@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Core\YesWikiAction;
 
 /**

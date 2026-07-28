@@ -6,7 +6,7 @@ namespace YesWiki\Identity\Service;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPasswordHasherFactory;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Security\MD5PasswordHasher;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 
 class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 {

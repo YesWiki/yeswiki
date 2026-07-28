@@ -3,7 +3,7 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 
 #[\Field(['texte'])]
 class TextField extends BazarField

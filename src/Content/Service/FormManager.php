@@ -9,8 +9,8 @@ use YesWiki\Content\Field\BazarField;
 use YesWiki\Wiki;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
 
 class FormManager
 {

@@ -5,9 +5,9 @@ namespace YesWiki\Content\Controller;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Service\FieldFactory;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\ListManager;
-use YesWiki\Core\Service\Mailer;
+use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Core\YesWikiController;
 
 class ListController extends YesWikiController

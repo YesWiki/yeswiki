@@ -3,9 +3,8 @@
 namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\TestCase;
-use YesWiki\Core\Service\Paginator;
+use YesWiki\Kernel\Service\Paginator;
 
-require_once 'src/services/Paginator.php';
 
 /**
  * Ticket 02 replaced 1706 lines of vendored PEAR Pager with Paginator. These pin the

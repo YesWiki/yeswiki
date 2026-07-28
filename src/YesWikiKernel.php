@@ -8,8 +8,8 @@ use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\Kernel;
-use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Core\YesWikiEventCompilerPass;
 
 /**

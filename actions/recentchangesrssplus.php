@@ -13,7 +13,7 @@ if ($this->GetMethod() != 'xml') {
     return;
 }
 
-$dbService = $this->services->get(YesWiki\Core\Service\DbService::class);
+$dbService = $this->services->get(YesWiki\Kernel\Service\DbService::class);
 $userCol = $dbService->quoteIdentifier('user');
 $bodyExpr = ($dbService->getDriver() === 'sqlite') ? 'substr(body,1,500)' : 'LEFT(body,500)';
 if ($pages = $this->LoadAll("select tag, time, $userCol, owner, $bodyExpr as body from " . $this->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {

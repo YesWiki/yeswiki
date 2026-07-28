@@ -9,7 +9,7 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
-use YesWiki\Core\Exception\ExitException;
+use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\UserManager;

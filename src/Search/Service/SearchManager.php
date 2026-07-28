@@ -6,7 +6,7 @@ use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Identity\Service\Guard;

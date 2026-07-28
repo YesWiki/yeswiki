@@ -4,9 +4,9 @@ namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Core\Controller\ApiController;
+use YesWiki\Admin\Controller\ApiController;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\Mailer;
+use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;

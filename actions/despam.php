@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Content\Service\PageOperationsService;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 
 // TODO
 // -- case pour selectionner tout
@@ -48,7 +48,7 @@ if ($this->UserIsAdmin()) {
         // -- (2) Page de resultats et form. de selection des pages a effacer ----
         //
         if (isset($_POST['from']) && isset($_POST['2'])) {
-            $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
+            $dbService = $this->services->get(\YesWiki\Kernel\Service\DbService::class);
             $requete =
         'select *
               from ' . $this->config['table_prefix'] . 'pages
@@ -68,7 +68,7 @@ if ($this->UserIsAdmin()) {
         echo "<table>\n";
         foreach ($pagesFromSpammer as $i => $page) {
             $req = 'select * from ' . $this->config['table_prefix'] . "pages where tag = '"
-        . $this->services->get(\YesWiki\Core\Service\DbService::class)->escape($page['tag'])
+        . $this->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($page['tag'])
         . "' order by time desc";
             $revisions = $this->LoadAll($req);
 
@@ -153,7 +153,7 @@ if ($this->UserIsAdmin()) {
             foreach ($_POST['rev'] as $rev_id) {
                 echo $rev_id . '<br>';
                 // Selectionne la revision
-                $dbService = $this->services->get(\YesWiki\Core\Service\DbService::class);
+                $dbService = $this->services->get(\YesWiki\Kernel\Service\DbService::class);
                 $revision = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '"
           . $dbService->escape($rev_id) . "' limit 1");
 

@@ -3,11 +3,11 @@
 // ticket 19: relocated from tools/autoupdate/actions/UpdateAction.php.
 
 use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Core\Entity\Messages;
-use YesWiki\Core\Service\ArchiveService;
-use YesWiki\Core\Service\AutoUpdateService;
-use YesWiki\Core\Service\MigrationService;
-use YesWiki\Core\Service\UpdateAdminPagesService;
+use YesWiki\Kernel\Entity\Messages;
+use YesWiki\Admin\Service\ArchiveService;
+use YesWiki\Admin\Service\AutoUpdateService;
+use YesWiki\Kernel\Service\MigrationService;
+use YesWiki\Admin\Service\UpdateAdminPagesService;
 use YesWiki\Core\YesWikiAction;
 
 class UpdateAction extends YesWikiAction

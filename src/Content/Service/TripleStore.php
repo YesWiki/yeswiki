@@ -2,8 +2,8 @@
 
 namespace YesWiki\Content\Service;
 
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
 
 
 class TripleStore

@@ -12,7 +12,7 @@ use Symfony\Component\Routing\RouteCollection;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\ApiService;
+use YesWiki\Admin\Service\ApiService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Wiki;
 

@@ -8,9 +8,9 @@ namespace YesWiki;
 
 use Symfony\Component\Routing\Loader\AttributeClassLoader;
 use Symfony\Component\Routing\Route;
-use YesWiki\Core\Service\ArchiveService;
-use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\Service\EnvironmentConfiguration;
+use YesWiki\Admin\Service\ArchiveService;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\EnvironmentConfiguration;
 
 class AttributeRouteControllerLoader extends AttributeClassLoader
 {
@@ -659,7 +659,7 @@ class Init
      */
     public function doInstall()
     {
-        $controller = new Core\Controller\InstallationController($this->config, $this->configFile);
+        $controller = new Admin\Controller\InstallationController($this->config, $this->configFile);
         $controller->run();
     }
 }

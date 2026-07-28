@@ -4,7 +4,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Content\Service\PageOperationsService;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 
 // get services
 $csrfTokenManager = $this->services->get(CsrfTokenManager::class);

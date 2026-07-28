@@ -30,7 +30,7 @@ $taglist = $params['tags'];
 unset($params['tags']);
 
 // requete avec toutes les pages contenants les mots cles
-$dbService = $this->services->get(YesWiki\Core\Service\DbService::class);
+$dbService = $this->services->get(YesWiki\Kernel\Service\DbService::class);
 $userCol = $dbService->quoteIdentifier('user');
 $req = "SELECT DISTINCT tag, time, $userCol, owner, body
 FROM " . $this->config['table_prefix'] . 'pages, ' . $this->config['table_prefix'] . "triples tags

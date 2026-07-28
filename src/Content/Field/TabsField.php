@@ -4,7 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Render\Service\TabsRenderer;
-use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetsManager;
 
 #[\Field(['tabs'])]
 class TabsField extends LabelField

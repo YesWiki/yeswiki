@@ -3,8 +3,8 @@
 namespace YesWiki\Test\Core\Controller;
 
 use ReflectionClass;
-use YesWiki\Core\Controller\AdminContentController;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Admin\Controller\AdminContentController;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Test\Core\YesWikiTestCase;

@@ -8,7 +8,7 @@
 
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Search\Service\SearchManager;

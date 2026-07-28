@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\DateField;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Core\Service\DateService;
-use YesWiki\Core\Service\Performer;
+use YesWiki\Kernel\Service\DateService;
+use YesWiki\Kernel\Service\Performer;
 
 class IcalFormatter extends YesWikiController
 {

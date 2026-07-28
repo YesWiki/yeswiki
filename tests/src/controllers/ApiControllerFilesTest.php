@@ -5,7 +5,7 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Core\Controller\ApiController;
+use YesWiki\Admin\Controller\ApiController;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\FileManager;

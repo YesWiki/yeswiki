@@ -2,7 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
-use YesWiki\Core\Exception\CurlTimeoutException;
+use YesWiki\Kernel\Exception\CurlTimeoutException;
 
 // use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 // use YesWiki\Wiki;

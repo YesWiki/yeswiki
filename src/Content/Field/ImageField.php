@@ -5,8 +5,8 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Core\Service\AssetsManager;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\HibernationService;
 
 #[\Field(['image'])]
 class ImageField extends FileField

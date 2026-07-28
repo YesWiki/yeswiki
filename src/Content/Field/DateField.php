@@ -3,7 +3,7 @@
 namespace YesWiki\Content\Field;
 
 use Field;
-use YesWiki\Core\Service\DateService as CoreDateService;
+use YesWiki\Kernel\Service\DateService as CoreDateService;
 use YesWiki\Content\Service\EntryDateService;
 
 #[\Field(['jour', 'listedatedeb', 'listedatefin'])]

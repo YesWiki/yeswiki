@@ -4,8 +4,8 @@
 namespace YesWiki\Core\Commands;
 
 use Symfony\Component\Console\Application;
-use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Core\YesWikiLoader;
 
 // boot paths, autoloaders and private/.env before touching the config file, so a
@@ -40,8 +40,14 @@ $wiki = YesWikiLoader::getWiki();
 $application = new Application();
 
 // ... register commands
+// Both the glob and the namespace below are strings, so neither is reachable by a
+// class-name or FQCN rewrite. Wave-two ticket 05 moved commands into module directories
+// (src/Admin/Command/) and this loop kept globbing only src/commands/ -- the commands
+// simply stopped existing, with "Command core:archive is not defined" as the only symptom.
+// Keep each glob and its namespace in step; same trap as FieldFactory's field scan.
 foreach ([
         'core' => YESWIKI_SOURCE_DIR . '/src/commands/*.php',
+        'module' => YESWIKI_SOURCE_DIR . '/src/*/Command/*.php',
         'custom' => YESWIKI_INSTANCE_DIR . '/custom/commands/*.php',
         'extensions' => YESWIKI_SOURCE_DIR . '/extensions/*/commands/*.php',
         'custom-extensions' => YESWIKI_INSTANCE_DIR . '/custom/extensions/*/commands/*.php',
@@ -52,6 +58,11 @@ foreach ([
         switch ($type) {
             case 'core':
                 $className = "\\YesWiki\\Core\\Commands\\$filename";
+                break;
+            case 'module':
+                // src/<Module>/Command/<Class>.php -> \YesWiki\<Module>\Command\<Class>
+                $moduleName = basename(dirname(dirname($filePath)));
+                $className = "\\YesWiki\\{$moduleName}\\Command\\$filename";
                 break;
             case 'custom':
                 $className = "\\YesWiki\\Custom\\Commands\\$filename";

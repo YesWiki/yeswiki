@@ -4,9 +4,9 @@ namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 
 class ListManager
 {

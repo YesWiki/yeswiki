@@ -5,7 +5,7 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Wiki;
 

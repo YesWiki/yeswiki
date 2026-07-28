@@ -2,7 +2,7 @@
 
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Core\YesWikiHandler;

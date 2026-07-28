@@ -3,7 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
-use YesWiki\Core\Service\SsrfUrlValidator;
+use YesWiki\Kernel\Service\SsrfUrlValidator;
 
 class WebfingerService
 {

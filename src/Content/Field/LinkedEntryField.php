@@ -4,7 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Service\Performer;
+use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Service\TabsService;
 
 #[\Field(['listefichesliees', 'listefiches'])]

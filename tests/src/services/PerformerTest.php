@@ -5,7 +5,7 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Service\Performer;
+use YesWiki\Kernel\Service\Performer;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

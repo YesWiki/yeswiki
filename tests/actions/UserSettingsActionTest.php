@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Entity\User;
-use YesWiki\Core\Exception\ExitException;
+use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;

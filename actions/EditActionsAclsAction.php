@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\Performer;
+use YesWiki\Kernel\Service\Performer;
 use YesWiki\Core\YesWikiAction;
 
 class EditActionsAclsAction extends YesWikiAction

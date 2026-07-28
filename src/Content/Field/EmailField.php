@@ -4,7 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Controller\ApiController;
+use YesWiki\Admin\Controller\ApiController;
 use YesWiki\Identity\Service\AclService;
 
 #[\Field(['champs_mail'])]

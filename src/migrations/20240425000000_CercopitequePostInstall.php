@@ -1,9 +1,9 @@
 <?php
 
 use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Core\Service\AutoUpdateService;
-use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Admin\Service\AutoUpdateService;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Core\YesWikiMigration;
 
 class CercopitequePostInstall extends YesWikiMigration

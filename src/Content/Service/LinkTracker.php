@@ -6,8 +6,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Wiki;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HibernationService;
 
 class LinkTracker
 {

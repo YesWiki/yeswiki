@@ -5,10 +5,10 @@ namespace YesWiki\Render\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Core\Entity\Event;
+use YesWiki\Kernel\Entity\Event;
 use YesWiki\Wiki;
 use YesWiki\Identity\Entity\User;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\PageManager;
 
 class ThemeManager implements EventSubscriberInterface

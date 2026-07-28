@@ -5,7 +5,7 @@ namespace YesWiki\Content\Service;
 use YesWiki\Content\Field\ReactionsField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Wiki;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 
 class ReactionManager
 {

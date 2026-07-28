@@ -2,7 +2,7 @@
 
 namespace YesWiki\Test\Actions;
 
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
 

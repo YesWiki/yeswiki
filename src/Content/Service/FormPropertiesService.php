@@ -18,8 +18,8 @@ use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\Service\HtmlPurifierService;
-use YesWiki\Core\Service\Mailer;
+use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\Mailer;
 
 /**
  * Applies a form's `entry_*` properties (ADR-0010) to entries: title computation +

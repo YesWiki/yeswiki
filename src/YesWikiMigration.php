@@ -3,7 +3,7 @@
 namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Wiki;
 
 abstract class YesWikiMigration

@@ -2,7 +2,7 @@
 
 namespace YesWiki\Render\Service;
 
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 
 /**
  * Renders the banner shown while the wiki is hibernated.

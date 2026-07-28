@@ -3,11 +3,11 @@
 namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
-use YesWiki\Core\Entity\PackageCore;
-use YesWiki\Core\Entity\PackageTheme;
-use YesWiki\Core\Entity\PackageTool;
-use YesWiki\Core\Entity\Release;
-use YesWiki\Core\Service\AutoUpdateService;
+use YesWiki\Admin\Entity\PackageCore;
+use YesWiki\Admin\Entity\PackageTheme;
+use YesWiki\Admin\Entity\PackageTool;
+use YesWiki\Admin\Entity\Release;
+use YesWiki\Admin\Service\AutoUpdateService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

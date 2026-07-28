@@ -1,11 +1,11 @@
 <?php
 
 use YesWiki\Content\Exception\ParsingMultipleException;
-use YesWiki\Core\Exception\TemplateNotFound;
+use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Core\Service\Paginator;
+use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 

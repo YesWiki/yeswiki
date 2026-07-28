@@ -2,7 +2,7 @@
 
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiMigration;

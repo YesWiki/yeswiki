@@ -6,9 +6,9 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\ArchiveService;
-use YesWiki\Core\Service\ConfigurationService;
-use YesWiki\Core\Service\ConsoleService;
+use YesWiki\Admin\Service\ArchiveService;
+use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -52,7 +52,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $error = $data['error'] ?? '';
         $this->assertEmpty($error, "There is an error : $error");
         $this->assertArrayNotHasKey('error', $data);
-        $this->assertMatchesRegularExpression('/^.*' . preg_quote(constant("\\YesWiki\\Core\\Service\\ArchiveService::{$locationSuffix}") . '.zip', '/') . '$/', $location);
+        $this->assertMatchesRegularExpression('/^.*' . preg_quote(constant("\\YesWiki\\Admin\\Service\\ArchiveService::{$locationSuffix}") . '.zip', '/') . '$/', $location);
         if (!is_null($nbFiles) && $nbFiles > -1) {
             $this->assertArrayHasKey('files', $data);
             foreach ($filesToFind as $path) {
@@ -68,11 +68,8 @@ class ArchiveServiceTest extends YesWikiTestCase
 
     public static function archiveProvider()
     {
-        if (!class_exists(ArchiveService::class, false)) {
-            include_once 'src/services/ArchiveService.php';
-        }
-        $defaultFoldersToInclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
-        $defaultFoldersToExclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_EXCLUDE');
+        $defaultFoldersToInclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
+        $defaultFoldersToExclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_EXCLUDE');
 
         return [
             'archive only root files' => [
@@ -217,7 +214,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $previousStatus = $params->has('wiki_status') ? $params->get('wiki_status') : null;
         $this->setWikiStatus($configService, $status);
 
-        $defaultFoldersToInclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
+        $defaultFoldersToInclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
 
         $results = $consoleService->startConsoleSync('core:archive', [
             '-f',
@@ -275,7 +272,7 @@ class ArchiveServiceTest extends YesWikiTestCase
         $configService = $services['wiki']->services->get(ConfigurationService::class);
         $consoleService = $services['wiki']->services->get(ConsoleService::class);
 
-        $defaultFoldersToInclude = constant('\\YesWiki\\Core\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
+        $defaultFoldersToInclude = constant('\\YesWiki\\Admin\\Service\\ArchiveService::FOLDERS_TO_INCLUDE');
 
         $consoleParams = [
             '-f',

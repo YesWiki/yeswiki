@@ -9,7 +9,7 @@ require_once __DIR__ . '/email.inc.php';
 require_once __DIR__ . '/bazar.functions.php';
 // defines LanguageService and the global _t() translation function; loaded
 // explicitly because the autoloader may not be registered yet at this point
-require_once __DIR__ . '/services/LanguageService.php';
+require_once __DIR__ . '/Kernel/Service/LanguageService.php';
 require_once __DIR__ . '/YesWikiInit.php';
 require_once __DIR__ . '/YesWikiKernel.php';
 require_once __DIR__ . '/YesWikiPerformable.php';
@@ -40,25 +40,25 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Throwable;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Content\Controller\LegacyPageController;
-use YesWiki\Core\Exception\ExitException;
+use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\InvalidGroupNameException;
-use YesWiki\Core\Exception\InvalidInputException;
+use YesWiki\Kernel\Exception\InvalidInputException;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\ApiService;
-use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Admin\Service\ApiService;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\Service\ConfigurationService;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Identity\Service\GroupOperationsService;
-use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\LanguageService;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Core\Service\Performer;
+use YesWiki\Kernel\Service\Performer;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
@@ -1428,7 +1428,19 @@ class Wiki
             new AttributeRouteControllerLoader()
         );
 
-        $controllersDirs = [__DIR__ . '/controllers'];
+        // Route discovery is directory-driven, so it does not follow a class into a new
+        // namespace: wave-two ticket 05 moved ApiController into src/Admin/Controller/ and
+        // every /api/* route silently disappeared -- the only symptom was an endpoint
+        // answering with an empty body. Module controller directories must be scanned too.
+        // Same trap as FieldFactory's field scan and the console's command glob.
+        $controllersDirs = [];
+        // src/controllers/ is emptied as modules migrate (ticket 05) and eventually removed
+        if (is_dir(__DIR__ . '/controllers')) {
+            $controllersDirs[] = __DIR__ . '/controllers';
+        }
+        foreach (glob(__DIR__ . '/*/Controller', GLOB_ONLYDIR) ?: [] as $moduleControllersDir) {
+            $controllersDirs[] = $moduleControllersDir;
+        }
         foreach ($this->extensions as $extensionPath) {
             $controllersDir = $extensionPath . 'controllers';
             if (is_dir($controllersDir)) {

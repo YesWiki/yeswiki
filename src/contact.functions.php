@@ -3,7 +3,7 @@
 // ticket 18: relocated from tools/contact/libs/contact.functions.php.
 
 use YesWiki\Identity\Service\GroupManager;
-use YesWiki\Core\Service\Mailer;
+use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Identity\Service\UserManager;
 
 function FindMailFromWikiPage($wikipage, $nbactionmail)

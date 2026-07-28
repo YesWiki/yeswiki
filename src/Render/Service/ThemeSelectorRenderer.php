@@ -4,7 +4,7 @@ namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiController;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 
 class ThemeSelectorRenderer extends YesWikiController
 {

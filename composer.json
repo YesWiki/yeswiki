@@ -103,7 +103,9 @@
       "YesWiki\\Search\\": "src/Search/",
       "YesWiki\\Render\\": "src/Render/",
       "YesWiki\\Identity\\": "src/Identity/",
-      "YesWiki\\Content\\": "src/Content/"
+      "YesWiki\\Content\\": "src/Content/",
+      "YesWiki\\Admin\\": "src/Admin/",
+      "YesWiki\\Kernel\\": "src/Kernel/"
     }
   }
 }

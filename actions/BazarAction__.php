@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\WebhooksController;
+use YesWiki\Admin\Controller\WebhooksController;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 

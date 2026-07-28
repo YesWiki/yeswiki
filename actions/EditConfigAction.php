@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Core\YesWikiAction;
 
 class EditConfigAction extends YesWikiAction

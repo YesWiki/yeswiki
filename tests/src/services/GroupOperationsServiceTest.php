@@ -10,7 +10,7 @@ use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Identity\Exception\GroupNameAlreadyUsedException;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\InvalidGroupNameException;
-use YesWiki\Core\Exception\InvalidInputException;
+use YesWiki\Kernel\Exception\InvalidInputException;
 use YesWiki\Identity\Exception\UserNameDoesNotExistException;
 use YesWiki\Test\Core\YesWikiTestCase;
 

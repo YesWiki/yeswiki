@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\YesWikiAction;
 

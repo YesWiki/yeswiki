@@ -9,7 +9,7 @@ namespace YesWiki\Core;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
-use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Kernel\Service\EventDispatcher;
 
 class YesWikiEventCompilerPass implements CompilerPassInterface
 {

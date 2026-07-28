@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Core\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\ConfigurationService;
+use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 

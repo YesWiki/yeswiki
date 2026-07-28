@@ -7,13 +7,13 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Attach;
 use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Identity\Service\Guard;
-use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\HtmlPurifierService;
 
 #[\Field(['fichier'])]
 class FileField extends BazarField

@@ -3,7 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use YesWiki\Core\Entity\Event;
+use YesWiki\Kernel\Entity\Event;
 use YesWiki\Wiki;
 use YesWiki\Search\Service\SearchManager;
 

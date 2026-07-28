@@ -4,7 +4,7 @@ namespace YesWiki\Content\Service;
 
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Core\Service\SsrfUrlValidator;
+use YesWiki\Kernel\Service\SsrfUrlValidator;
 
 class HttpSignatureService
 {

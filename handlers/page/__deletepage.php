@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Identity\Service\CsrfTokenChecker;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 
 if (($this->UserIsOwner() || $this->UserIsAdmin())
     && isset($_GET['eraselink'])

@@ -2,7 +2,7 @@
 
 namespace YesWiki\Render\Service;
 
-use YesWiki\Core\Field\Tabsfield;
+use YesWiki\Content\Field\TabsField;
 use YesWiki\Core\YesWikiController;
 
 class TabsRenderer extends YesWikiController
@@ -36,7 +36,7 @@ class TabsRenderer extends YesWikiController
     /**
      * open tabs.
      *
-     * @param array|Tabsfield $data
+     * @param array|TabsField $data
      *
      * @return string $output
      */
@@ -44,7 +44,7 @@ class TabsRenderer extends YesWikiController
     {
         $showFirst = false;
         $selectedtab = 1;
-        if ($data instanceof Tabsfield && in_array($mode, ['view', 'form'])) {
+        if ($data instanceof TabsField && in_array($mode, ['view', 'form'])) {
             if ($mode == 'view') {
                 $titles = $data->getViewTitles();
                 $this->tabsService->setViewTitles($data);

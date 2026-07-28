@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Core\YesWikiAction;
 
 class NuageTagAction extends YesWikiAction

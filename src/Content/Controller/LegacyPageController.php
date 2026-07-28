@@ -4,7 +4,7 @@ namespace YesWiki\Content\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use YesWiki\Core\Exception\ExitException;
+use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Core\YesWikiController;
 
 /**

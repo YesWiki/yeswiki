@@ -6,9 +6,9 @@
  */
 
 use YesWiki\Identity\Service\GroupOperationsService;
-use YesWiki\Core\Service\DbService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 

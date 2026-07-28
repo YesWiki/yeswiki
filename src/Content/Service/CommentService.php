@@ -4,15 +4,15 @@ namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use YesWiki\Core\Entity\Event;
+use YesWiki\Kernel\Entity\Event;
 use YesWiki\Wiki;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\HashCashService;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\EventDispatcher;
-use YesWiki\Core\Service\Mailer;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\Mailer;
 
 class CommentService implements EventSubscriberInterface
 {

@@ -7,7 +7,7 @@ use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\UserManager;

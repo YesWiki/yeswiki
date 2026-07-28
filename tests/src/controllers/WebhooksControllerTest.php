@@ -4,8 +4,8 @@ namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Controller\WebhooksController;
-use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Admin\Controller\WebhooksController;
+use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 

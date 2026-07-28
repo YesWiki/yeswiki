@@ -3,7 +3,7 @@
 // ticket 18: relocated from tools/contact/actions/mailinglist.php.
 // action permettant d'inscrire ou desinscrire massivement des mails a une newsletter
 
-use YesWiki\Core\Service\Mailer;
+use YesWiki\Kernel\Service\Mailer;
 
 include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
 

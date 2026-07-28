@@ -3,7 +3,7 @@
 /**
  * Admin backups.
  */
-use YesWiki\Core\Service\ArchiveService;
+use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
 
 class AdminBackupsAction extends YesWikiAction

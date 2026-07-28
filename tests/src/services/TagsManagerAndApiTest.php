@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Core\Service;
 
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Core\Controller\ApiController;
+use YesWiki\Admin\Controller\ApiController;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;

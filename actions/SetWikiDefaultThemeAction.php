@@ -1,9 +1,9 @@
 <?php
 
 use YesWiki\Render\Service\ThemeSelectorRenderer;
-use YesWiki\Core\Service\ConfigurationFileProvider;
-use YesWiki\Core\Service\ConfigurationService;
-use YesWiki\Core\Service\HibernationService;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 

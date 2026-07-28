@@ -22,15 +22,6 @@ services:
   # convention of aliasing the PSR container interface to service_container.
   Psr\Container\ContainerInterface: '@service_container'
 
-  YesWiki\Core\Service\:
-    resource: 'services/*'
-    exclude:
-      # a value object constructed with `new` (its ctor takes the items to paginate),
-      # not an injectable service. It lives under services/ only because the current
-      # autoloader maps YesWiki\Core\Service\* to that directory; ticket 05's PSR-4
-      # move gives it a more honest home.
-      - 'services/Paginator.php'
-
   # Wave-two ticket 05: modules migrate to Composer PSR-4 one at a time. A module's
   # namespace maps to its own directory (YesWiki\Search\Service\X -> src/Search/Service/X.php),
   # which is what PSR-4 requires and what the flat services/ + controllers/ layout could
@@ -39,6 +30,13 @@ services:
   # whole module ('Render/*') pulls in entities, exceptions, value objects and hand-built
   # extensions, none of which autowire -- Symfony fails on the first scalar or callable
   # constructor argument. Naming the layers avoids an ever-growing exclude list.
+  YesWiki\Kernel\Service\:
+    resource: 'Kernel/Service/*'
+    exclude:
+      # a value object constructed with `new` -- its constructor takes the items to
+      # paginate, so autowiring it fails
+      - 'Kernel/Service/Paginator.php'
+
   YesWiki\Search\Service\:
     resource: 'Search/Service/*'
 
@@ -57,13 +55,16 @@ services:
   YesWiki\Content\Controller\:
     resource: 'Content/Controller/*'
 
-  YesWiki\Core\Controller\:
-    resource: 'controllers/*'
+  YesWiki\Admin\Service\:
+    resource: 'Admin/Service/*'
+
+  YesWiki\Admin\Controller\:
+    resource: 'Admin/Controller/*'
     # the web installer runs before the container exists (no config file, no database)
-    exclude: 'controllers/InstallationController.php'
+    exclude: 'Admin/Controller/InstallationController.php'
 
   # the bootstrap initializes languages before the container exists; serve that same instance
-  YesWiki\Core\Service\LanguageService:
+  YesWiki\Kernel\Service\LanguageService:
     factory: [null, 'getInstance']
 
   YesWiki\Content\Service\CommentService:
@@ -78,6 +79,6 @@ services:
     tags:
       - { name: yeswiki.event_subscriber }
   # outgoing webhooks on comment/entry events (ticket 20)
-  YesWiki\Core\Controller\WebhooksController:
+  YesWiki\Admin\Controller\WebhooksController:
     tags:
       - { name: yeswiki.event_subscriber }
