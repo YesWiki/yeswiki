@@ -691,7 +691,6 @@ return [
     'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'Cet ouvrage est publi & eacute; எச்.ஏ.',
     'TAGS_BY' => 'Par',
     'TAGS_ABOUT_THIS_EBOOK' => 'செய்தி சுர் cet ouvrage',
-    'TAGS_DOWNLOAD_EPUB' => '.epub',
     'TAGS_DOWNLOAD_PDF' => '.pdf',
     'TAGS_DOWNLOAD' => 'Télécharger',
     'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'கான்டெனு என் லிக்னே சுர் லா பக்கம்',

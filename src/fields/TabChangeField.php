@@ -3,7 +3,7 @@
 namespace YesWiki\Core\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Controller\TabsController;
+use YesWiki\Core\Service\TabsRenderer;
 
 #[\Field(['tabchange'])]
 class TabChangeField extends LabelField
@@ -31,7 +31,7 @@ class TabChangeField extends LabelField
             return '';
         }
 
-        return $this->getService(TabsController::class)->changeTab('form');
+        return $this->getService(TabsRenderer::class)->changeTab('form');
     }
 
     protected function renderStatic($entry)
@@ -40,7 +40,7 @@ class TabChangeField extends LabelField
             return '';
         }
 
-        return $this->getService(TabsController::class)->changeTab('view');
+        return $this->getService(TabsRenderer::class)->changeTab('view');
     }
 
     public function getFormChange()

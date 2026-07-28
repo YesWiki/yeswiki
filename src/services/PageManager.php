@@ -3,13 +3,14 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Wiki;
+use YesWiki\Search\Service\TagsManager;
 
 class PageManager
 {
     protected $aclService;
-    protected $authController;
+    protected $authenticationService;
     protected $dbService;
     protected $eventDispatcher;
     protected $params;
@@ -24,7 +25,7 @@ class PageManager
 
     public function __construct(
         AclService $aclService,
-        AuthController $authController,
+        AuthenticationService $authenticationService,
         DbService $dbService,
         EventDispatcher $eventDispatcher,
         ParameterBagInterface $params,
@@ -35,7 +36,7 @@ class PageManager
         Wiki $wiki
     ) {
         $this->aclService = $aclService;
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
         $this->dbService = $dbService;
         $this->eventDispatcher = $eventDispatcher;
         $this->params = $params;
@@ -471,7 +472,7 @@ class PageManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $user = $this->authController->getLoggedUserName();
+        $user = $this->authenticationService->getLoggedUserName();
 
         // check bypass of rights or write privilege
         $rights = $bypass_acls || ($comment_on ? $this->aclService->hasAccess(
@@ -501,7 +502,7 @@ class PageManager
                 ]];
 
                 // current user is owner; if user is logged in! otherwise, no owner.
-                if ($this->authController->getLoggedUser()) {
+                if ($this->authenticationService->getLoggedUser()) {
                     $owner = $user;
                 } else {
                     $owner = '';
@@ -652,7 +653,7 @@ class PageManager
             "'" . $this->dbService->escape($tag) . "'",
             $this->dbService->now(),
             "'" . $this->dbService->escape($oldPage['owner']) . "'",
-            "'" . $this->dbService->escape($this->authController->getLoggedUserName()) . "'",
+            "'" . $this->dbService->escape($this->authenticationService->getLoggedUserName()) . "'",
             "'Y'",
             "'" . $this->dbService->escape($oldPage['body']) . "'",
             "''",
@@ -673,7 +674,7 @@ class PageManager
                 'body' => $oldPage['body'],
                 'comment_on' => $oldPage['comment_on'] ?? '',
                 'owner' => $oldPage['owner'],
-                'user' => $this->authController->getLoggedUserName(),
+                'user' => $this->authenticationService->getLoggedUserName(),
             ],
         ]);
 
@@ -756,7 +757,7 @@ class PageManager
     private function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');
+        $this->wiki->LogAdministrativeAction($this->authenticationService->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');
 
         return $result;
     }

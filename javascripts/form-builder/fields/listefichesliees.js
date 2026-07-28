@@ -41,8 +41,5 @@ export default {
     write_access: writeConf
   },
   advancedAttributes: ['read_access', 'write_access', 'template', 'link_type', 'other_params', 'query', 'add_entry_btn_label'],
-  disabledAttributes: ['required', 'default'],
-  renderInput() {
-    return { field: '' }
-  }
+  disabledAttributes: ['required', 'default']
 }

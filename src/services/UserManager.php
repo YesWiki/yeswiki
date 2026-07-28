@@ -10,14 +10,15 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\GroupController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\GroupOperationsService;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Wiki;
+use YesWiki\Search\Service\SearchManager;
 
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
@@ -437,7 +438,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     /**
      * delete a user
-     * SHOULD NOT BE USE DIRECTLY => use UserController->delete().
+     * SHOULD NOT BE USE DIRECTLY => use UserOperationsService->delete().
      *
      * @throws DeleteUserException
      */
@@ -481,7 +482,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     {
         // aclService could  not be loaded in __construct because AclService already loads UserManager
         try {
-            $members = $this->wiki->services->get(GroupController::class)->getMembers($groupName);
+            $members = $this->wiki->services->get(GroupOperationsService::class)->getMembers($groupName);
         } catch (GroupNameDoesNotExistException $th) {
             $members = [];
         }
@@ -495,7 +496,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function getAssociatedEntry($user = '')
     {
         if (empty($user)) {
-            $user = $this->wiki->services->get(AuthController::class)->getLoggedUser();
+            $user = $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
             if (empty($user['name'])) {
                 return null;
             }
@@ -614,35 +615,35 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     /* ~~~~~~~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~~~~~ */
 
     /**
-     * @deprecated Use AuthController::getLoggedUser
+     * @deprecated Use AuthenticationService::getLoggedUser
      */
     public function getLoggedUser()
     {
-        return $this->wiki->services->get(AuthController::class)->getLoggedUser();
+        return $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
     }
 
     /**
-     * @deprecated Use AuthController::getLoggedUserName
+     * @deprecated Use AuthenticationService::getLoggedUserName
      */
     public function getLoggedUserName()
     {
-        return $this->wiki->services->get(AuthController::class)->getLoggedUserName();
+        return $this->wiki->services->get(AuthenticationService::class)->getLoggedUserName();
     }
 
     /**
-     * @deprecated Use AuthController::login
+     * @deprecated Use AuthenticationService::login
      */
     public function login($user, $remember = 0)
     {
-        $this->wiki->services->get(AuthController::class)->login($user, $remember);
+        $this->wiki->services->get(AuthenticationService::class)->login($user, $remember);
     }
 
     /**
-     * @deprecated Use AuthController::logout
+     * @deprecated Use AuthenticationService::logout
      */
     public function logout()
     {
-        $this->wiki->services->get(AuthController::class)->logout();
+        $this->wiki->services->get(AuthenticationService::class)->logout();
     }
 
     private function arrayToUser(?array $page): ?User

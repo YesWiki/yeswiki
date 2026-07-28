@@ -4,8 +4,8 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PasswordHasherFactory;
@@ -84,7 +84,7 @@ class LoginRelatedActionsTest extends YesWikiTestCase
         $action = new \LostPasswordAction();
         $action->setWiki($wiki);
         $reflection = new \ReflectionClass($action);
-        foreach (['authController' => AuthController::class, 'securityController' => SecurityController::class, 'hibernationService' => HibernationService::class, 'tripleStore' => TripleStore::class, 'userManager' => UserManager::class] as $property => $serviceClass) {
+        foreach (['authenticationService' => AuthenticationService::class, 'inputFilter' => InputFilter::class, 'hibernationService' => HibernationService::class, 'tripleStore' => TripleStore::class, 'userManager' => UserManager::class] as $property => $serviceClass) {
             $prop = $reflection->getProperty($property);
             $prop->setValue($action, $wiki->services->get($serviceClass));
         }

@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Controller\CaptchaController;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Service\HashCashService;
 use YesWiki\Core\Service\PasswordForEditingService;
 
@@ -16,7 +16,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read')) {
 
     if (
         $this->config['use_hashcash']
-        && isset($_POST['submit']) && $_POST['submit'] == SecurityController::EDIT_PAGE_SUBMIT_VALUE
+        && isset($_POST['submit']) && $_POST['submit'] == InputFilter::EDIT_PAGE_SUBMIT_VALUE
         && !$this->services->get(HashCashService::class)->checkHashcash()
     ) {
         $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>' . _t('HASHCASH_ERROR_PAGE_UNSAVED') . '</div>';

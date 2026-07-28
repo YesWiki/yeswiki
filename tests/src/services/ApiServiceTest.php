@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
@@ -41,7 +41,7 @@ class ApiServiceTest extends TestCase
         ?string $bearerToken = null,
         ?string $bearerUserName = null
     ): ApiService {
-        $authController = $this->createMock(AuthController::class);
+        $authenticationService = $this->createMock(AuthenticationService::class);
         $aclService = $this->createStub(AclService::class);
         $aclService->method('check')->willReturn($aclCheckReturns);
 
@@ -49,9 +49,9 @@ class ApiServiceTest extends TestCase
         if (!empty($bearerUserName)) {
             $user = $this->createStub(User::class);
             $userManager->method('getOneByName')->with($bearerUserName)->willReturn($user);
-            $authController->expects($this->once())->method('login')->with($user);
+            $authenticationService->expects($this->once())->method('login')->with($user);
         } else {
-            $authController->expects($this->never())->method('login');
+            $authenticationService->expects($this->never())->method('login');
         }
 
         $apiAllowedKeys = ['public' => $apiAllowedKeysPublic];
@@ -72,7 +72,7 @@ class ApiServiceTest extends TestCase
             ? Request::create('/')
             : Request::create('/', 'GET', [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer ' . $bearerToken]);
 
-        return new ApiService($authController, $params, $aclService, $userManager, $wiki);
+        return new ApiService($authenticationService, $params, $aclService, $userManager, $wiki);
     }
 
     public function testGroupRestrictedRouteIsNotBypassedByPublicApiMode()

@@ -7,9 +7,9 @@ require_once __DIR__ . '/constants.php';
 require_once __DIR__ . '/urlutils.inc.php';
 require_once __DIR__ . '/email.inc.php';
 require_once __DIR__ . '/bazar.functions.php';
-// defines LanguageController and the global _t() translation function; loaded
+// defines LanguageService and the global _t() translation function; loaded
 // explicitly because the autoloader may not be registered yet at this point
-require_once __DIR__ . '/controllers/LanguageController.php';
+require_once __DIR__ . '/services/LanguageService.php';
 require_once __DIR__ . '/YesWikiInit.php';
 require_once __DIR__ . '/YesWikiKernel.php';
 require_once __DIR__ . '/YesWikiPerformable.php';
@@ -20,6 +20,7 @@ require_once __DIR__ . '/objects/YesWikiFormatter.php';
 use Symfony\Component\Config\ConfigCache;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -38,9 +39,6 @@ use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Throwable;
 use YesWiki\Core\ApiResponse;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\GroupController;
-use YesWiki\Core\Controller\LanguageController;
 use YesWiki\Core\Controller\LegacyPageController;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
@@ -50,15 +48,18 @@ use YesWiki\Core\Service\AccountActivationService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\ApiService;
 use YesWiki\Core\Service\AssetsManager;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\EventDispatcher;
+use YesWiki\Core\Service\GroupOperationsService;
 use YesWiki\Core\Service\HibernationService;
+use YesWiki\Core\Service\LanguageService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\Performer;
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\TripleStore;
@@ -67,7 +68,7 @@ use YesWiki\Core\YesWikiControllerResolver;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
 // time, before anything (Init, the installer, error paths) calls _t()
-LanguageController::getInstance()->initialize();
+LanguageService::getInstance()->initialize();
 
 class Wiki
 {
@@ -88,6 +89,16 @@ class Wiki
     // lazily populated RouteCollection - always read it through getRoutes()
     public $routes = [];
     public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
+    /**
+     * The service container, assigned from the kernel in boot().
+     *
+     * Annotated rather than natively typed on purpose: a native non-nullable type would
+     * make any read before boot() a runtime Error instead of the null it returns today.
+     * The annotation is what lets PHPStan see through the ~158 `services->get()` call
+     * sites; both it and the property go away with the locator in ticket 08.
+     *
+     * @var ContainerInterface|null
+     */
     public $services;
     public $actionObjects = []; // keep track of actions performed
     public $pageCacheFormatted = [];
@@ -1014,16 +1025,16 @@ class Wiki
      * @return string the ACL associated with the group $gname
      *
      * @see UserIsInGroup to check if a user belongs to some group
-     *  @deprecated Use GroupController::getMembers instead
+     *  @deprecated Use GroupOperationsService::getMembers instead
      */
     public function GetGroupACL($group)
     {
         if (array_key_exists($group, $this->_groupsCache)) {
             return $this->_groupsCache[$group];
         }
-        $groupController = $this->services->get(GroupController::class);
+        $groupOperationsService = $this->services->get(GroupOperationsService::class);
         try {
-            return $this->_groupsCache[$group] = implode("\n", $groupController->getMembers($group));
+            return $this->_groupsCache[$group] = implode("\n", $groupOperationsService->getMembers($group));
         } catch (GroupNameDoesNotExistException $th) {
             return [];
         }
@@ -1042,19 +1053,19 @@ class Wiki
      *             1001 if $gname is not named with alphanumeric chars
      *
      * @see GetGroupACL
-     * @deprecated Use GroupController::update and GroupController::create instead
+     * @deprecated Use GroupOperationsService::update and GroupOperationsService::create instead
      */
     public function SetGroupACL($gname, $acl)
     {
-        $groupController = $this->services->get(GroupController::class);
+        $groupOperationsService = $this->services->get(GroupOperationsService::class);
         $acl = str_replace(["\r\n", "\r"], "\n", $acl);
         $members = explode("\n", $acl);
         $members = array_map('trim', $members);
         try {
-            if ($groupController->groupExists($gname)) {
-                $groupController->update($gname, $members);
+            if ($groupOperationsService->groupExists($gname)) {
+                $groupOperationsService->update($gname, $members);
             } else {
-                $groupController->create($gname, $members);
+                $groupOperationsService->create($gname, $members);
             }
         } catch (InvalidGroupNameException $th) {
             return 1001;
@@ -1068,13 +1079,13 @@ class Wiki
     /**
      * @return array The list of all group names
      *
-     *  @deprecated Use GroupController::getAll instead
+     *  @deprecated Use GroupOperationsService::getAll instead
      */
     public function GetGroupsList()
     {
-        $groupController = $this->services->get(GroupController::class);
+        $groupOperationsService = $this->services->get(GroupOperationsService::class);
 
-        return $groupController->getAll();
+        return $groupOperationsService->getAll();
     }
 
     /**
@@ -1268,7 +1279,7 @@ class Wiki
             $this->Redirect($this->href('', $this->config['root_page']));
         }
 
-        $this->services->get(AuthController::class)->connectUser();
+        $this->services->get(AuthenticationService::class)->connectUser();
 
         // Is this a special page ?
         if (in_array($tag, ['api', 'doc'])) {
@@ -1723,27 +1734,27 @@ class Wiki
     private function loadLanguages()
     {
         // This must be done after service initialization, as it uses services
-        $languageController = $this->services->get(LanguageController::class);
-        $languageController->loadPreferredLanguage($this, $this->tag);
+        $languageService = $this->services->get(LanguageService::class);
+        $languageService->loadPreferredLanguage($this, $this->tag);
 
         // translations
         foreach ($this->extensions as $k => $pluginBase) {
             // language files : first default language, then preferred language
             if (file_exists($pluginBase . 'lang/' . $k . '_fr.inc.php')) {
                 $returnedArray = include $pluginBase . 'lang/' . $k . '_fr.inc.php';
-                $languageController->loadTranslations($returnedArray);
+                $languageService->loadTranslations($returnedArray);
             }
             if (file_exists($pluginBase . 'lang/' . $k . 'js_fr.inc.php')) {
                 $returnedArray = include $pluginBase . 'lang/' . $k . 'js_fr.inc.php';
-                $languageController->loadTranslations($returnedArray, true);
+                $languageService->loadTranslations($returnedArray, true);
             }
             if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php')) {
                 $returnedArray = include $pluginBase . 'lang/' . $k . '_' . $GLOBALS['prefered_language'] . '.inc.php';
-                $languageController->loadTranslations($returnedArray);
+                $languageService->loadTranslations($returnedArray);
             }
             if ($GLOBALS['prefered_language'] != 'fr' && file_exists($pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php')) {
                 $returnedArray = include $pluginBase . 'lang/' . $k . 'js_' . $GLOBALS['prefered_language'] . '.inc.php';
-                $languageController->loadTranslations($returnedArray, true);
+                $languageService->loadTranslations($returnedArray, true);
             }
         }
     }
@@ -2099,35 +2110,35 @@ class Wiki
     }
 
     /**
-     * @deprecated Use AuthController::getLoggedUser instead
+     * @deprecated Use AuthenticationService::getLoggedUser instead
      */
     public function GetUser()
     {
-        return $this->services->get(AuthController::class)->getLoggedUser();
+        return $this->services->get(AuthenticationService::class)->getLoggedUser();
     }
 
     /**
-     * @deprecated Use AuthController::getLoggedUserName instead
+     * @deprecated Use AuthenticationService::getLoggedUserName instead
      */
     public function GetUserName()
     {
-        return $this->services->get(AuthController::class)->getLoggedUserName();
+        return $this->services->get(AuthenticationService::class)->getLoggedUserName();
     }
 
     /**
-     * @deprecated Use AuthController::login instead
+     * @deprecated Use AuthenticationService::login instead
      */
     public function SetUser($user, $remember = 0)
     {
-        return $this->services->get(AuthController::class)->login($user, $remember);
+        return $this->services->get(AuthenticationService::class)->login($user, $remember);
     }
 
     /**
-     * @deprecated Use AuthController::logout instead
+     * @deprecated Use AuthenticationService::logout instead
      */
     public function LogoutUser()
     {
-        return $this->services->get(AuthController::class)->logout();
+        return $this->services->get(AuthenticationService::class)->logout();
     }
 
     /**
@@ -2244,11 +2255,11 @@ class Wiki
      * @param string $name
      * @param string $value
      *
-     * @deprecated Use AuthController::setPersistentCookie instead
+     * @deprecated Use AuthenticationService::setPersistentCookie instead
      */
     public function SetSessionCookie($name, $value)
     {
-        $this->services->get(AuthController::class)->setPersistentCookie($name, $value, 0);
+        $this->services->get(AuthenticationService::class)->setPersistentCookie($name, $value, 0);
         $_COOKIE[$name] = $value;
     }
 
@@ -2257,24 +2268,24 @@ class Wiki
      * @param string   $value
      * @param bool|int $remember
      *
-     * @deprecated Use AuthController::setPersistentCookie instead
+     * @deprecated Use AuthenticationService::setPersistentCookie instead
      */
     public function SetPersistentCookie($name, $value, $remember = 0)
     {
-        $authController = $this->services->get(AuthController::class);
+        $authenticationService = $this->services->get(AuthenticationService::class);
 
-        $authController->setPersistentCookie($name, $value, $authController->getExpirationTimeStamp(new DateTime(), $remember == 1));
+        $authenticationService->setPersistentCookie($name, $value, $authenticationService->getExpirationTimeStamp(new DateTime(), $remember == 1));
         $_COOKIE[$name] = $value;
     }
 
     /**
      * @param string $name
      *
-     * @deprecated Use AuthController::deleteOldCookie instead
+     * @deprecated Use AuthenticationService::deleteOldCookie instead
      */
     public function DeleteCookie($name)
     {
-        $this->services->get(AuthController::class)->deleteOldCookie($name);
+        $this->services->get(AuthenticationService::class)->deleteOldCookie($name);
     }
 
     /**

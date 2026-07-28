@@ -820,7 +820,6 @@ return [
     'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'Cet ouvrage est publié sous licence Creative Commons BY SA.',
     'TAGS_BY' => 'Par',
     'TAGS_ABOUT_THIS_EBOOK' => 'Information sur cet ouvrage',
-    'TAGS_DOWNLOAD_EPUB' => '.epub',
     'TAGS_DOWNLOAD_PDF' => '.pdf',
     'TAGS_DOWNLOAD' => 'Télécharger',
     'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Contenu en ligne sur la page',
@@ -2328,6 +2327,7 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
     'FORM_BUILDER_INVALID_JSON' => 'Le code du formulaire n\'est pas du JSON valide : corrigez-le dans l\'onglet code',
     'FORM_BUILDER_LABEL_LABEL' => 'Étiquette',
     'FORM_BUILDER_NAME_LABEL' => 'Identifiant',
+    'FORM_BUILDER_NO_PREVIEW' => 'Aperçu indisponible pour ce champ',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatoire',
 
     // form edit page sections (ticket 27)

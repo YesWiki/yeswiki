@@ -6,7 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\ApiController;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\FileManager;
 use YesWiki\Core\Service\PageManager;
@@ -46,7 +46,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     public function testUploadThenDownloadEnforcesOwningPageAclByDefault(Wiki $wiki)
     {
         $controller = $wiki->services->get(ApiController::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the write path');
@@ -58,7 +58,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $tag = null;
 
         try {
-            $authController->login($admin);
+            $authenticationService->login($admin);
 
             $request = Request::create('/api/files', 'POST', ['pageTag' => self::PRIVATE_PAGE_TAG]);
             $request->files->set('upFile', $uploadedFile);
@@ -72,11 +72,11 @@ class ApiControllerFilesTest extends YesWikiTestCase
 
             // the new file entry's read ACL was seeded from the private owning page --
             // an anonymous/non-admin request must be denied, not silently served
-            $authController->logout();
+            $authenticationService->logout();
             $this->expectException(\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException::class);
             $controller->downloadFile(Request::create("/api/files/$tag/download"), $tag);
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             if ($tag !== null) {
                 $fileManager->delete($tag);
             }
@@ -90,7 +90,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     public function testPublicOptOutAllowsAnonymousDownload(Wiki $wiki)
     {
         $controller = $wiki->services->get(ApiController::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $aclService = $wiki->services->get(AclService::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
@@ -102,7 +102,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $tag = null;
 
         try {
-            $authController->login($admin);
+            $authenticationService->login($admin);
 
             $request = Request::create('/api/files', 'POST', ['pageTag' => self::PRIVATE_PAGE_TAG]);
             $request->files->set('upFile', $uploadedFile);
@@ -113,11 +113,11 @@ class ApiControllerFilesTest extends YesWikiTestCase
             // explicit public opt-out: override the seeded (private) ACL to '*'
             $aclService->save($tag, 'read', '*');
 
-            $authController->logout();
+            $authenticationService->logout();
             $downloadResponse = $controller->downloadFile(Request::create("/api/files/$tag/download"), $tag);
             $this->assertSame(200, $downloadResponse->getStatusCode());
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             if ($tag !== null) {
                 $fileManager->delete($tag);
             }
@@ -131,7 +131,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     public function testGetFilesOnlyListsFilesTheRequesterCanRead(Wiki $wiki)
     {
         $controller = $wiki->services->get(ApiController::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
 
@@ -142,7 +142,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $tag = null;
 
         try {
-            $authController->login($admin);
+            $authenticationService->login($admin);
             $request = Request::create('/api/files', 'POST', ['pageTag' => self::PRIVATE_PAGE_TAG]);
             $request->files->set('upFile', $uploadedFile);
             $response = $controller->uploadFile($request);
@@ -152,12 +152,12 @@ class ApiControllerFilesTest extends YesWikiTestCase
             $asAdmin = json_decode($listResponse->getContent(), true);
             $this->assertNotEmpty($asAdmin, 'the admin who uploaded it must see it in the search results');
 
-            $authController->logout();
+            $authenticationService->logout();
             $listResponseAnon = $controller->getFiles(Request::create('/api/files', 'GET', ['search' => 'unique-listing-marker']));
             $asAnon = json_decode($listResponseAnon->getContent(), true);
             $this->assertEmpty($asAnon, 'an anonymous requester must not see a file from a private page');
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             if ($tag !== null) {
                 $fileManager->delete($tag);
             }

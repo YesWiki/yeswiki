@@ -725,7 +725,6 @@ return [
     'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'Lan hau Creative Commons BY SA lizentziapean argitaratzen da.',
     'TAGS_BY' => 'Nork',
     'TAGS_ABOUT_THIS_EBOOK' => 'Lan honi buruzko informazioa',
-    'TAGS_DOWNLOAD_EPUB' => '.epub',
     'TAGS_DOWNLOAD_PDF' => '.pdf',
     'TAGS_DOWNLOAD' => 'Deskargatu',
     'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'On line edukiak orrialdean',
@@ -2045,6 +2044,7 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
     'FORM_BUILDER_INVALID_JSON' => 'Formularioaren kodea ez da baliozko JSON: zuzendu kode fitxan',
     'FORM_BUILDER_LABEL_LABEL' => 'Etiketa',
     'FORM_BUILDER_NAME_LABEL' => 'Identifikatzailea',
+    'FORM_BUILDER_NO_PREVIEW' => 'Ez dago aurrebistarik eremu honetarako',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Beharrezkoa',
 
     // form edit page sections (ticket 27)

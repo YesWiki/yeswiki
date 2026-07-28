@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\YesWikiAction;
 
 class AdminTagAction extends YesWikiAction

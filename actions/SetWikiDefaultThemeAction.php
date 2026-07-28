@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\ThemeController;
+use YesWiki\Core\Service\ThemeSelectorRenderer;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\HibernationService;
@@ -10,7 +10,7 @@ use YesWiki\Core\YesWikiAction;
 class SetWikiDefaultThemeAction extends YesWikiAction
 {
     protected $hibernationService;
-    protected $themeController;
+    protected $themeSelectorRenderer;
     protected $themeManager;
 
     public function run()
@@ -29,7 +29,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
         }
 
         $this->hibernationService = $this->getService(HibernationService::class);
-        $this->themeController = $this->getService(ThemeController::class);
+        $this->themeSelectorRenderer = $this->getService(ThemeSelectorRenderer::class);
         $this->themeManager = $this->getService(ThemeManager::class);
 
         $themes = $this->getTemplatesList();
@@ -38,7 +38,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
 
         if ($this->getRequest()->request->get('action') === 'setTemplate') {
             if ($this->hibernationService->isWikiHibernated()) {
-                return $this->hibernationService->getMessageWhenHibernated();
+                return $this->getMessageWhenHibernated();
             }
             $params = $this->checkParamActionSetTemplate($themes);
 
@@ -74,7 +74,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction
             $params['favoriteStyle'] = $config->favorite_style;
         }
 
-        return $this->themeController->renderWithThemeSelector(
+        return $this->themeSelectorRenderer->renderWithThemeSelector(
             '@core/set-default-theme.twig',
             $params
         );

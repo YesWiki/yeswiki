@@ -1,9 +1,9 @@
 <?php
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\CsrfTokenController;
-use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Core\Service\UserOperationsService;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
@@ -11,9 +11,9 @@ use YesWiki\User;
 
 class UsersTableAction extends YesWikiAction
 {
-    protected $authController;
-    protected $csrfTokenController;
-    protected $userController;
+    protected $authenticationService;
+    protected $csrfTokenChecker;
+    protected $userOperationsService;
     protected $userManager;
 
     public function formatArguments($arg)
@@ -33,10 +33,10 @@ class UsersTableAction extends YesWikiAction
     public function run()
     {
         // get Services
-        $this->authController = $this->getService(AuthController::class);
-        $this->userController = $this->getService(UserController::class);
+        $this->authenticationService = $this->getService(AuthenticationService::class);
+        $this->userOperationsService = $this->getService(UserOperationsService::class);
         $this->userManager = $this->getService(UserManager::class);
-        $this->csrfTokenController = $this->getService(CsrfTokenController::class);
+        $this->csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
 
         $isAdmin = $this->wiki->UserIsAdmin();
 
@@ -82,7 +82,7 @@ class UsersTableAction extends YesWikiAction
         }
 
         // connected user
-        $connectedUser = $this->authController->getLoggedUser();
+        $connectedUser = $this->authenticationService->getLoggedUser();
         $connectedUserName = empty($connectedUser['name']) ? '' : $connectedUser['name'];
 
         return $this->render('@core/users-table.twig', [
@@ -124,7 +124,7 @@ class UsersTableAction extends YesWikiAction
             $userName = in_array($username, [false, null], true) ? '' : htmlspecialchars(strip_tags($userName));
             try {
                 $rawUserName = str_replace(['&#039;', '&#39;'], ['\'', '\''], $userName);
-                $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-delete', false);
+                $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token-delete', false);
                 $user = $this->userManager->getOneByName($rawUserName);
                 if (empty($user)) {
                     return $this->render('@core/alert-message.twig', [
@@ -133,7 +133,7 @@ class UsersTableAction extends YesWikiAction
                     ]);
                 }
                 try {
-                    $this->userController->delete($user);
+                    $this->userOperationsService->delete($user);
 
                     return $this->render('@core/alert-message.twig', [
                         'type' => 'success',

@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Controller;
 
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\FieldFactory;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\ListManager;
@@ -14,20 +15,20 @@ class ListController extends YesWikiController
     protected $listManager;
     protected $hibernationService;
     protected $aclService;
-    protected $authController;
+    protected $authenticationService;
     protected $fieldFactory;
 
     public function __construct(
         ListManager $listManager,
         HibernationService $hibernationService,
         AclService $aclService,
-        AuthController $authController,
+        AuthenticationService $authenticationService,
         FieldFactory $fieldFactory
     ) {
         $this->listManager = $listManager;
         $this->hibernationService = $hibernationService;
         $this->aclService = $aclService;
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
         $this->fieldFactory = $fieldFactory;
     }
 
@@ -55,7 +56,7 @@ class ListController extends YesWikiController
 
         return $this->render('@core/lists/list_table.twig', [
             'lists' => $lists,
-            'loggedUser' => $this->authController->getLoggedUser(),
+            'loggedUser' => $this->authenticationService->getLoggedUser(),
             'canCreate' => !$this->hibernationService->isWikiHibernated(),
         ]);
     }

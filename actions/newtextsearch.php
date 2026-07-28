@@ -11,7 +11,7 @@ use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Search\Service\SearchManager;
 
 // On récupére ou initialise toutes le varible comme pour textsearch
 // label à afficher devant la zone de saisie

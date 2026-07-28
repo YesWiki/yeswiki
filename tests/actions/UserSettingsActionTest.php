@@ -6,7 +6,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\UserManager;
@@ -72,7 +72,7 @@ class UserSettingsActionTest extends YesWikiTestCase
     private function checkdisplayFormConnected(Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $users = $userManager->getAll();
 
         // use first user
@@ -83,11 +83,11 @@ class UserSettingsActionTest extends YesWikiTestCase
         $this->ensureCacheFolderIsWritable();
 
         // login
-        $authController->login($user);
+        $authenticationService->login($user);
 
         $output = $wiki->Format('{{usersettings}}');
         // logout
-        $authController->logout();
+        $authenticationService->logout();
         $this->assertInstanceOf(User::class, $user);
 
         $rexExpStr = '/.*' . implode('\s*', explode(' ', preg_quote('<input type="hidden" name="usersettings_action" value="update', '/'))) . '.*/';
@@ -172,7 +172,7 @@ class UserSettingsActionTest extends YesWikiTestCase
     public function testSignup($suffix, $expectedResult, Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $params = $wiki->services->get(ParameterBagInterface::class);
         if ($params->get('use_captcha')) {
             // is currently not possible to test with captach activated
@@ -215,7 +215,7 @@ class UserSettingsActionTest extends YesWikiTestCase
             unset($_POST['confpassword']);
             unset($_POST['usersettings_action']);
             $user = $userManager->getOneByName($name);
-            $connectedUser = $authController->getLoggedUser();
+            $connectedUser = $authenticationService->getLoggedUser();
             // clean user before tests
             if (!empty($user['name'])) {
                 $userManager->delete($user);

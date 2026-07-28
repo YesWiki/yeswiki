@@ -3,6 +3,7 @@
 namespace YesWiki\Core\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\YesWikiController;
 
 /**
@@ -177,7 +178,7 @@ class CaptchaController extends YesWikiController
     {
         if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
             $post = $this->getRequest()->request;
-            if (($mode != 'entry' && $post->get('submit') == SecurityController::EDIT_PAGE_SUBMIT_VALUE)
+            if (($mode != 'entry' && $post->get('submit') == InputFilter::EDIT_PAGE_SUBMIT_VALUE)
                 || ($mode == 'entry' && !empty($post->get('bf_titre')))) {
                 /**
                  * @var string $error message if error

@@ -1,11 +1,11 @@
 <?php
 
-namespace YesWiki\Test\Core\Controller;
+namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Service\AccountActivationService;
 use YesWiki\Core\Service\HibernationService;
@@ -16,21 +16,21 @@ use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
 
-#[CoversMethod(AuthController::class, 'login')]
-#[CoversMethod(AuthController::class, 'logout')]
-#[CoversMethod(AuthController::class, 'checkPassword')]
-#[CoversMethod(AuthController::class, 'getLoggedUser')]
-#[CoversMethod(AuthController::class, 'getLoggedUserName')]
-class AuthControllerTest extends YesWikiTestCase
+#[CoversMethod(AuthenticationService::class, 'login')]
+#[CoversMethod(AuthenticationService::class, 'logout')]
+#[CoversMethod(AuthenticationService::class, 'checkPassword')]
+#[CoversMethod(AuthenticationService::class, 'getLoggedUser')]
+#[CoversMethod(AuthenticationService::class, 'getLoggedUserName')]
+class AuthenticationServiceTest extends YesWikiTestCase
 {
     public const CHARS_FOR_EMAIL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     public const CHARS_FOR_PASSWORD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_';
     public const UPPER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    public function testAuthControllerExisting(): Wiki
+    public function testAuthenticationServiceExisting(): Wiki
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(AuthController::class));
+        $this->assertTrue($wiki->services->has(AuthenticationService::class));
 
         // a real PHP session is needed to exercise the session-id side effects of login();
         // YesWikiLoader deliberately skips session_start() when bootstrapping for tests
@@ -66,69 +66,69 @@ class AuthControllerTest extends YesWikiTestCase
         ];
     }
 
-    #[Depends('testAuthControllerExisting')]
+    #[Depends('testAuthenticationServiceExisting')]
     public function testCheckPassword(Wiki $wiki)
     {
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         ['user' => $user, 'password' => $password] = $this->createRandomUser($wiki);
 
         try {
-            $this->assertTrue($authController->checkPassword($password, $user));
-            $this->assertFalse($authController->checkPassword($password . 'wrong', $user));
+            $this->assertTrue($authenticationService->checkPassword($password, $user));
+            $this->assertFalse($authenticationService->checkPassword($password . 'wrong', $user));
         } finally {
             $userManager->delete($user);
         }
     }
 
-    #[Depends('testAuthControllerExisting')]
+    #[Depends('testAuthenticationServiceExisting')]
     public function testLoginSetsSessionAndLogoutClearsIt(Wiki $wiki)
     {
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         ['user' => $user] = $this->createRandomUser($wiki);
 
         try {
-            $authController->login($user);
+            $authenticationService->login($user);
 
             $this->assertSame($user['name'], $_SESSION['user']['name'] ?? null);
             $this->assertNotEmpty($_SESSION['user']['lastConnection'] ?? null);
-            $this->assertSame($user['name'], $authController->getLoggedUserName());
-            $loggedUser = $authController->getLoggedUser();
+            $this->assertSame($user['name'], $authenticationService->getLoggedUserName());
+            $loggedUser = $authenticationService->getLoggedUser();
             $this->assertIsArray($loggedUser);
             $this->assertSame($user['name'], $loggedUser['name']);
 
-            $authController->logout();
+            $authenticationService->logout();
 
             $this->assertArrayNotHasKey('user', $_SESSION);
-            $this->assertSame('', $authController->getLoggedUser());
+            $this->assertSame('', $authenticationService->getLoggedUser());
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             $userManager->delete($user);
         }
     }
 
-    #[Depends('testAuthControllerExisting')]
+    #[Depends('testAuthenticationServiceExisting')]
     public function testSwitchingIdentityCleansSensitiveSessionDataButSameUserReloginDoesNot(Wiki $wiki)
     {
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         ['user' => $userA] = $this->createRandomUser($wiki);
         ['user' => $userB] = $this->createRandomUser($wiki);
 
         try {
-            $authController->login($userA);
+            $authenticationService->login($userA);
             $_SESSION['_csrf'] = ['dummy-token-id' => 'dummy-token-value'];
 
             // re-logging in as the SAME user must NOT wipe unrelated session data
-            $authController->login($userA);
+            $authenticationService->login($userA);
             $this->assertArrayHasKey('_csrf', $_SESSION);
 
             // logging in as a DIFFERENT user must clear it
-            $authController->login($userB);
+            $authenticationService->login($userB);
             $this->assertArrayNotHasKey('_csrf', $_SESSION);
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             $userManager->delete($userA);
             $userManager->delete($userB);
         }
@@ -139,16 +139,16 @@ class AuthControllerTest extends YesWikiTestCase
      * regenerated whenever the authenticated identity actually changes
      * (anonymous -> user, or user A -> user B), but must stay stable across
      * repeated calls for the same already-logged-in user, as happens on
-     * every request via AuthController::connectUser().
+     * every request via AuthenticationService::connectUser().
      *
-     * AuthController::login() only regenerates the session id when
+     * AuthenticationService::login() only regenerates the session id when
      * `!$this->wiki->isCli()`, and phpunit always runs under the CLI SAPI,
      * so this test builds a minimal non-CLI stand-in for `$wiki` (skipping
      * its heavy real constructor) to reach that branch, while every other
      * collaborator (UserManager, PasswordHasherFactory, ...) is the real,
      * DI-provided one from the bootstrapped test wiki.
      */
-    #[Depends('testAuthControllerExisting')]
+    #[Depends('testAuthenticationServiceExisting')]
     public function testLoginRegeneratesSessionIdOnlyOnIdentityChange(Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
@@ -168,7 +168,7 @@ class AuthControllerTest extends YesWikiTestCase
                 return false;
             }
         };
-        $authController = new AuthController(
+        $authenticationService = new AuthenticationService(
             $wiki->services->get(AccountActivationService::class),
             $wiki->services->get(HibernationService::class),
             $wiki->services->get(ParameterBagInterface::class),
@@ -181,43 +181,43 @@ class AuthControllerTest extends YesWikiTestCase
             unset($_SESSION['user']);
 
             $idAnonymous = session_id();
-            $authController->login($userA);
+            $authenticationService->login($userA);
             $idAfterFirstLogin = session_id();
             $this->assertNotSame($idAnonymous, $idAfterFirstLogin, 'logging in from anonymous must regenerate the session id');
 
-            $authController->login($userA);
+            $authenticationService->login($userA);
             $idAfterSameUserRelogin = session_id();
             $this->assertSame($idAfterFirstLogin, $idAfterSameUserRelogin, 're-confirming the same logged-in user must not regenerate the session id');
 
-            $authController->login($userB);
+            $authenticationService->login($userB);
             $idAfterSwitch = session_id();
             $this->assertNotSame($idAfterSameUserRelogin, $idAfterSwitch, 'switching to a different user must regenerate the session id');
         } finally {
             // logout() (unlike login()) touches $this->wiki->request via cleanOldFormatCookie(),
             // which the non-CLI stand-in above does not have, so clean up through the real,
-            // fully-wired AuthController instance instead - $_SESSION is a shared superglobal.
-            $wiki->services->get(AuthController::class)->logout();
+            // fully-wired AuthenticationService instance instead - $_SESSION is a shared superglobal.
+            $wiki->services->get(AuthenticationService::class)->logout();
             $userManager->delete($userA);
             $userManager->delete($userB);
         }
     }
 
-    #[Depends('testAuthControllerExisting')]
+    #[Depends('testAuthenticationServiceExisting')]
     public function testLoginDoesNotTouchSessionIdInCliMode(Wiki $wiki)
     {
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         ['user' => $user] = $this->createRandomUser($wiki);
 
         try {
             unset($_SESSION['user']);
             $idBefore = session_id();
-            $authController->login($user);
+            $authenticationService->login($user);
             $idAfter = session_id();
 
             $this->assertSame($idBefore, $idAfter, 'phpunit runs under the CLI SAPI, so login() must not touch the session id');
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             $userManager->delete($user);
         }
     }
@@ -226,12 +226,12 @@ class AuthControllerTest extends YesWikiTestCase
      * Regression test for ticket 07 (accountactivationbyemail absorbed into core):
      * login() must block an unactivated user's login when signup_email_activation is on,
      * and let an activated one through. The compiled container's ParameterBag is frozen
-     * (can't be mutated at runtime), so this constructs an AuthController with a decorator
+     * (can't be mutated at runtime), so this constructs an AuthenticationService with a decorator
      * that only overrides signup_email_activation, delegating everything else to the real
-     * bag -- the same "construct AuthController directly with a stand-in dependency"
+     * bag -- the same "construct AuthenticationService directly with a stand-in dependency"
      * approach testLoginRegeneratesSessionIdOnlyOnIdentityChange already uses.
      */
-    #[Depends('testAuthControllerExisting')]
+    #[Depends('testAuthenticationServiceExisting')]
     public function testLoginIsBlockedForAnUnactivatedUserWhenActivationIsOn(Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
@@ -291,7 +291,7 @@ class AuthControllerTest extends YesWikiTestCase
             }
         };
 
-        $authController = new AuthController(
+        $authenticationService = new AuthenticationService(
             $accountActivationService,
             $wiki->services->get(HibernationService::class),
             $forcedParams,
@@ -304,17 +304,17 @@ class AuthControllerTest extends YesWikiTestCase
             $this->assertFalse($accountActivationService->isActivated($user['name']));
 
             try {
-                $authController->login($user);
+                $authenticationService->login($user);
                 $this->fail('login() must throw BadLoginException for an unactivated user when signup_email_activation is on');
             } catch (\YesWiki\Core\Exception\BadLoginException $th) {
                 // expected
             }
 
             $accountActivationService->activate($user['name'], '', true);
-            $authController->login($user); // must not throw now
+            $authenticationService->login($user); // must not throw now
             $this->assertSame($user['name'], $_SESSION['user']['name'] ?? null);
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             $userManager->delete($userManager->getOneByName($user['name']));
         }
     }

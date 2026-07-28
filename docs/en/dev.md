@@ -621,10 +621,10 @@ or with a controller throwing `TokenNotFoundException` :
 
 ```
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Controller\CsrfTokenController;
-$csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
+use YesWiki\Core\Service\CsrfTokenChecker;
+$csrfTokenChecker = $this->wiki->services->get(CsrfTokenChecker::class);
 try {
-   $csrfTokenController->checkToken('tokenId', 'POST', 'tokenNameInForm');
+   $csrfTokenChecker->checkToken('tokenId', 'POST', 'tokenNameInForm');
    ... code if OK
 } catch (TokenNotFoundException $th) {
    $errorMessage = $th->getMessage();

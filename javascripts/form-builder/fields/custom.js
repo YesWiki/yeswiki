@@ -12,8 +12,5 @@ export default {
       `${i + 1}`, { label: `Param ${i + 1}`, value: '' }
     ])
   ),
-  disabledAttributes: ['name', 'label', 'required', 'default'],
-  renderInput() {
-    return { field: '' }
-  }
+  disabledAttributes: ['name', 'label', 'required', 'default']
 }

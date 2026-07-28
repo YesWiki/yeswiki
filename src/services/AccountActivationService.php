@@ -30,13 +30,13 @@ class AccountActivationService
     protected $userManager;
     protected $wiki;
 
-    // PageManager is deliberately NOT constructor-injected: it depends on AuthController,
-    // and AuthController depends on this service (for the login-time activation gate) --
+    // PageManager is deliberately NOT constructor-injected: it depends on AuthenticationService,
+    // and AuthenticationService depends on this service (for the login-time activation gate) --
     // constructor-injecting it here would be circular. Fetched late via
     // $this->wiki->services->get(), the same workaround used elsewhere in this codebase for
-    // this exact PageManager/AuthController/UserManager triangle (see UserManager's own
+    // this exact PageManager/AuthenticationService/UserManager triangle (see UserManager's own
     // constructor comment). Mailer is late-bound for the same reason (it depends on
-    // AuthController too).
+    // AuthenticationService too).
     public function __construct(
         ParameterBagInterface $params,
         TemplateEngine $templateEngine,

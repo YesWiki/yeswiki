@@ -6,8 +6,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Core\Service\CsrfTokenChecker;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\PageOperationsService;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
 
@@ -161,7 +163,7 @@ class AdminContentController extends YesWikiController
 
         // CSRF check
         try {
-            $this->getService(CsrfTokenController::class)
+            $this->getService(CsrfTokenChecker::class)
                 ->checkToken('main', 'POST', 'csrf-token', false);
         } catch (TokenNotFoundException $e) {
             return $this->htmlResponse(
@@ -217,7 +219,7 @@ class AdminContentController extends YesWikiController
     private function bulkDelete(array $pageTags, array &$success, array &$errors): void
     {
         $pageManager = $this->getService(PageManager::class);
-        $pageController = $this->getService(PageController::class);
+        $pageOperationsService = $this->getService(PageOperationsService::class);
         $dbService = $this->getService(DbService::class);
 
         foreach ($pageTags as $tag) {
@@ -233,7 +235,7 @@ class AdminContentController extends YesWikiController
                         . " WHERE to_tag = '" . $dbService->escape($tag) . "'"
                     );
                 }
-                $pageController->delete($tag);
+                $pageOperationsService->delete($tag);
                 $success[] = $tag;
             } catch (\Throwable $th) {
                 $errors[] = $tag . ': ' . $th->getMessage();

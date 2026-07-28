@@ -15,9 +15,6 @@ export default {
       label: _t('BAZ_FORM_EDIT_INSCRIPTIONLISTE_MAILINGLIST'),
       value: ''
     }
-  },
-  // disabledAttributes: [],
-  renderInput() {
-    return { field: '<input type="checkbox"/>' }
   }
+  // disabledAttributes: [],
 }

@@ -1,12 +1,11 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
-use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Wiki;
 
-class ReactionsController extends YesWikiController
+class ReactionsFormatter extends YesWikiController
 {
     protected $reactionManager;
 

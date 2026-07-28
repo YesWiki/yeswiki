@@ -19,7 +19,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-namespace YesWiki\Core\Controller {
+namespace YesWiki\Core\Service {
     /**
      * Language detection and translation loading.
      *
@@ -33,7 +33,7 @@ namespace YesWiki\Core\Controller {
      * lang/*.inc.php files merge into those arrays directly and many templates and
      * actions read them, so they are the shared state, not this class.
      */
-    class LanguageController
+    class LanguageService
     {
         public const SUPPORTED_LANGUAGES = ['ca', 'en', 'es', 'fr', 'nl', 'pt', 'ro'];
 
@@ -275,7 +275,7 @@ namespace YesWiki\Core\Controller {
 }
 
 namespace {
-    use YesWiki\Core\Controller\LanguageController;
+    use YesWiki\Core\Service\LanguageService;
 
     /**
      * Translate the text in the page's language.
@@ -290,6 +290,6 @@ namespace {
      */
     function _t($textkey, $params = [])
     {
-        return LanguageController::getInstance()->translate($textkey, $params);
+        return LanguageService::getInstance()->translate($textkey, $params);
     }
 }

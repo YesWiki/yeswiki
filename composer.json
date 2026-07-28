@@ -7,6 +7,7 @@
   "prefer-stable": true,
   "scripts": {
     "test": "bash tests/tests.sh",
+    "analyse": "phpstan analyse --no-progress",
     "post-install-cmd": [
       "YesWiki\\Core\\ComposerScriptsHelper::postInstall"
     ],
@@ -75,6 +76,7 @@
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.4",
+    "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^12",
     "symfony/var-dumper": "^7.4"
   },
@@ -96,6 +98,9 @@
   "autoload": {
     "classmap": [
       "src/ComposerScriptsHelper.php"
-    ]
+    ],
+    "psr-4": {
+      "YesWiki\\Search\\": "src/Search/"
+    }
   }
 }

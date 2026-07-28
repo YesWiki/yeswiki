@@ -22,6 +22,7 @@ use YesWiki\Core\Exception\InvalidGroupNameException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Exception\UserNameDoesNotExistException;
+use YesWiki\Core\Field\BazarField;
 use YesWiki\Core\Field\TextareaField;
 use YesWiki\Core\Service\AccountActivationService;
 use YesWiki\Core\Service\AclService;
@@ -41,13 +42,20 @@ use YesWiki\Core\Service\HtmlPurifierService;
 use YesWiki\Core\Service\Mailer;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ReactionManager;
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\Service\SemanticTransformer;
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Core\Service\GeoJSONFormatter;
+use YesWiki\Core\Service\GroupOperationsService;
+use YesWiki\Core\Service\IcalFormatter;
+use YesWiki\Core\Service\PageOperationsService;
+use YesWiki\Core\Service\UserOperationsService;
 
 class ApiController extends YesWikiController
 {
@@ -179,13 +187,13 @@ class ApiController extends YesWikiController
     public function deleteUser($userId)
     {
         $this->denyAccessUnlessAdmin();
-        $userController = $this->getService(UserController::class);
+        $userOperationsService = $this->getService(UserOperationsService::class);
         $userManager = $this->getService(UserManager::class);
 
         $result = [];
         try {
-            $csrfTokenController = $this->getService(CsrfTokenController::class);
-            $csrfTokenController->checkToken('main', 'POST', 'csrfToken', false);
+            $csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
+            $csrfTokenChecker->checkToken('main', 'POST', 'csrfToken', false);
             $user = $userManager->getOneByName($userId);
             if (empty($user)) {
                 $code = Response::HTTP_BAD_REQUEST;
@@ -194,7 +202,7 @@ class ApiController extends YesWikiController
                     'error' => 'not existing user',
                 ];
             } else {
-                $userController->delete($user);
+                $userOperationsService->delete($user);
                 $code = Response::HTTP_OK;
                 $result = [
                     'deleted' => [$userId],
@@ -227,7 +235,7 @@ class ApiController extends YesWikiController
     public function createUser()
     {
         $this->denyAccessUnlessAdmin();
-        $userController = $this->getService(UserController::class);
+        $userOperationsService = $this->getService(UserOperationsService::class);
         $userManager = $this->getService(UserManager::class);
 
         $post = $this->getRequest()->request;
@@ -245,7 +253,7 @@ class ApiController extends YesWikiController
             ];
         } else {
             try {
-                $user = $userController->create([
+                $user = $userOperationsService->create([
                     'name' => $postName,
                     'email' => $postEmail,
                     'password' => $this->wiki->generateRandomString(30),
@@ -316,12 +324,12 @@ class ApiController extends YesWikiController
             return new ApiResponse(['error' => _t('LOGIN_WRONG_USER')], Response::HTTP_UNAUTHORIZED);
         }
 
-        $authController = $this->getService(AuthController::class);
-        if (!$authController->checkPassword($post->get('password'), $user)) {
+        $authenticationService = $this->getService(AuthenticationService::class);
+        if (!$authenticationService->checkPassword($post->get('password'), $user)) {
             return new ApiResponse(['error' => _t('LOGIN_WRONG_PASSWORD')], Response::HTTP_UNAUTHORIZED);
         }
 
-        $authController->login($user);
+        $authenticationService->login($user);
 
         return new ApiResponse([
             'user' => $user->getName(),
@@ -337,7 +345,7 @@ class ApiController extends YesWikiController
     #[Route('/api/auth/me', options: ['acl' => ['public']])]
     public function getMyAuth()
     {
-        $loggedUser = $this->getService(AuthController::class)->getLoggedUser();
+        $loggedUser = $this->getService(AuthenticationService::class)->getLoggedUser();
         if (!$loggedUser) {
             return new ApiResponse(['error' => _t('LOGIN_NO_CONNECTED_USER')], Response::HTTP_UNAUTHORIZED);
         }
@@ -402,9 +410,9 @@ class ApiController extends YesWikiController
     public function deleteGroup(string $group_name)
     {
         $this->denyAccessUnlessAdmin();
-        $groupController = $this->getService(GroupController::class);
+        $groupOperationsService = $this->getService(GroupOperationsService::class);
         try {
-            $groupController->delete($group_name);
+            $groupOperationsService->delete($group_name);
             $code = Response::HTTP_OK;
             $result = [
                 'deleted' => [$group_name],
@@ -430,7 +438,7 @@ class ApiController extends YesWikiController
     public function createGroup()
     {
         $this->denyAccessUnlessAdmin();
-        $groupController = $this->getService(GroupController::class);
+        $groupOperationsService = $this->getService(GroupOperationsService::class);
 
         $post = $this->getRequest()->request;
         $postName = $post->get('name', '');
@@ -444,7 +452,7 @@ class ApiController extends YesWikiController
             try {
                 $group_name = $postName;
                 $users = $post->has('users') ? $post->all('users') : [];
-                $result = $groupController->create($group_name, $users);
+                $result = $groupOperationsService->create($group_name, $users);
                 $code = Response::HTTP_OK;
             } catch (GroupNameAlreadyUsedException $th) {
                 $code = Response::HTTP_UNPROCESSABLE_ENTITY;
@@ -488,12 +496,12 @@ class ApiController extends YesWikiController
     public function updateGroup(string $group_name)
     {
         $this->denyAccessUnlessAdmin();
-        $groupController = $this->getService(GroupController::class);
+        $groupOperationsService = $this->getService(GroupOperationsService::class);
 
         $post = $this->getRequest()->request;
         try {
             $users = $post->has('users') ? $post->all('users') : [];
-            $result = $groupController->update($group_name, $users);
+            $result = $groupOperationsService->update($group_name, $users);
             $code = Response::HTTP_OK;
         } catch (InvalidGroupNameException $th) {
             $code = Response::HTTP_UNPROCESSABLE_ENTITY;
@@ -530,19 +538,19 @@ class ApiController extends YesWikiController
     public function getAllGroups()
     {
         $this->denyAccessUnlessAdmin();
-        $groupController = $this->getService(GroupController::class);
+        $groupOperationsService = $this->getService(GroupOperationsService::class);
 
-        return new ApiResponse($groupController->getAll());
+        return new ApiResponse($groupOperationsService->getAll());
     }
 
     #[Route('/api/groups/{group_name}', methods: ['GET'], options: ['acl' => ['public']])]
     public function getGroup(string $group_name)
     {
         $this->denyAccessUnlessAdmin();
-        $groupController = $this->getService(GroupController::class);
+        $groupOperationsService = $this->getService(GroupOperationsService::class);
 
         try {
-            $result = $groupController->getMembers($group_name);
+            $result = $groupOperationsService->getMembers($group_name);
             $code = Response::HTTP_OK;
         } catch (GroupNameDoesNotExistException $th) {
             $code = Response::HTTP_NOT_FOUND;
@@ -738,7 +746,7 @@ class ApiController extends YesWikiController
     public function deletePage($tag)
     {
         $pageManager = $this->getService(PageManager::class);
-        $pageController = $this->getService(PageController::class);
+        $pageOperationsService = $this->getService(PageOperationsService::class);
         $dbService = $this->getService(DbService::class);
 
         $result = [
@@ -756,7 +764,7 @@ class ApiController extends YesWikiController
                     if (!$pageManager->isOrphaned($tag)) {
                         $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '{$dbService->escape($tag)}'");
                     }
-                    $done = $pageController->delete($tag);
+                    $done = $pageOperationsService->delete($tag);
                     if (!$done || !empty($pageManager->getOne($tag, null, false))) {
                         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
                     } else {
@@ -794,8 +802,8 @@ class ApiController extends YesWikiController
         $result = [];
         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
         try {
-            $csrfTokenController = $this->wiki->services->get(CsrfTokenController::class);
-            $csrfTokenController->checkToken('main', 'POST', 'csrfToken', false);
+            $csrfTokenChecker = $this->wiki->services->get(CsrfTokenChecker::class);
+            $csrfTokenChecker->checkToken('main', 'POST', 'csrfToken', false);
         } catch (TokenNotFoundException $th) {
             $code = Response::HTTP_UNAUTHORIZED;
             $result = [
@@ -1023,7 +1031,7 @@ class ApiController extends YesWikiController
             );
         }
         if (empty($username)) {
-            $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
+            $username = $this->getService(AuthenticationService::class)->getLoggedUser()['name'];
         }
         $value = $this->getRequest()->request->get('value', []);
         if (is_array($value)) {
@@ -1161,12 +1169,12 @@ class ApiController extends YesWikiController
             $username = (empty($rawUsername) || !is_string($rawUsername)) ? '' : htmlspecialchars(strip_tags($rawUsername));
             if (empty($username)) {
                 if (!$this->wiki->UserIsAdmin()) {
-                    $username = $this->getService(AuthController::class)->getLoggedUser()['name'];
+                    $username = $this->getService(AuthenticationService::class)->getLoggedUser()['name'];
                 } else {
                     $username = null;
                 }
             }
-            $currentUser = $this->getService(AuthController::class)->getLoggedUser();
+            $currentUser = $this->getService(AuthenticationService::class)->getLoggedUser();
             if (!$this->wiki->UserIsAdmin() && $currentUser['name'] != $username) {
                 $apiResponse = new ApiResponse(
                     ['error' => 'Not authorized to access a triple of another user if not admin !'],
@@ -1736,7 +1744,7 @@ class ApiController extends YesWikiController
     private function checkTokenForGetCacheUrlImageViaPost(int $width, int $height, string $mode): string
     {
         $csrfTokenManager = $this->getService(CsrfTokenManager::class);
-        $csrfTokenController = $this->getService(CsrfTokenController::class);
+        $csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
 
         $tokenId = str_replace(
             ['{width}', '{height}', '{mode}'],
@@ -1744,11 +1752,18 @@ class ApiController extends YesWikiController
             self::POST_CACHE_URLIMAGE_TOKEN_ID
         );
 
-        if ($csrfTokenController->checkToken($tokenId, 'POST', 'csrftoken', false)) {
-            $csrfTokenManager->removeToken($tokenId);
-
-            return $csrfTokenManager->getToken($tokenId)->getValue();
+        if (!$csrfTokenChecker->checkToken($tokenId, 'POST', 'csrftoken', false)) {
+            // Falling through here used to return null from a `: string` method, i.e. a
+            // TypeError -- an \Error, so neither of the caller's catches (TokenNotFoundException
+            // -> 401, \Exception -> 400) caught it and a bad token produced an uncaught 500.
+            // It failed closed, but it crashed instead of erroring. Throw the exception the
+            // caller already maps to 401, as the other two routes in this controller do.
+            throw new TokenNotFoundException('invalid csrftoken for ' . self::POST_CACHE_URLIMAGE_TOKEN_ID);
         }
+
+        $csrfTokenManager->removeToken($tokenId);
+
+        return $csrfTokenManager->getToken($tokenId)->getValue();
     }
 
     private function getCacheFileName(string $filename, int $width, int $height, string $mode): string
@@ -1782,6 +1797,69 @@ class ApiController extends YesWikiController
         $forms = array_map([$this, 'stripFormSecrets'], $forms);
 
         return new ApiResponse(empty($forms) ? null : $forms);
+    }
+
+    /**
+     * Live preview backing the form designer's field cards: each field object of the
+     * posted template goes through the very path the entry form uses
+     * (FormManager::prepareData + BazarField::renderInputIfPermitted), so a card shows
+     * the real Twig markup of the input instead of a JS look-alike.
+     *
+     * Every posted item yields exactly one `previews` entry -- an empty string when the
+     * field cannot be built or its rendering throws -- so the designer maps the answer
+     * positionally back onto its cards. Fields are prepared one at a time on purpose:
+     * prepareData() silently drops typeless entries, which would shift every index after
+     * them.
+     *
+     * `styles` carries the stylesheet links the input templates registered while
+     * rendering (date.css, leaflet.css, ...); the designer page has no other way to know
+     * about them, and the previews would show up unstyled without them.
+     *
+     * Declared here rather than on FormController because routed controllers are
+     * instantiated by YesWikiControllerResolver with `new $class()`: only a controller
+     * with a no-argument constructor can back a route.
+     */
+    #[Route('/api/forms/preview', methods: ['POST'], options: ['acl' => ['@admins']])]
+    public function previewFormTemplate(Request $request)
+    {
+        $template = json_decode((string)$request->request->get('template', ''), true);
+        if (!is_array($template)) {
+            return new ApiResponse(['error' => _t('FORM_BUILDER_INVALID_JSON')], 400);
+        }
+
+        $cssLength = strlen($GLOBALS['css'] ?? '');
+        $previews = [];
+        // a field rendering may echo instead of returning (old-style extension fields):
+        // keep any stray output out of the JSON body
+        ob_start();
+        try {
+            foreach ($template as $fieldObject) {
+                $previews[] = $this->renderFieldPreview($fieldObject);
+            }
+        } finally {
+            ob_end_clean();
+        }
+
+        return new ApiResponse([
+            'previews' => $previews,
+            'styles' => substr($GLOBALS['css'] ?? '', $cssLength),
+        ]);
+    }
+
+    /** One template field object => its entry-form input HTML, or '' if unrenderable. */
+    private function renderFieldPreview($fieldObject): string
+    {
+        if (!is_array($fieldObject) || empty($fieldObject['type'])) {
+            return '';
+        }
+        try {
+            $prepared = $this->getService(FormManager::class)->prepareData(['template' => [$fieldObject]]);
+            $field = reset($prepared);
+
+            return $field instanceof BazarField ? (string)$field->renderInputIfPermitted(null) : '';
+        } catch (\Throwable $th) {
+            return '';
+        }
     }
 
     #[Route('/api/forms/{formId}', methods: ['GET'], options: ['acl' => ['public']])]

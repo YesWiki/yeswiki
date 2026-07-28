@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\DuplicationManager;
@@ -12,13 +12,13 @@ use YesWiki\Core\YesWikiHandler;
 
 class DuplicateHandler extends YesWikiHandler
 {
-    protected $authController;
+    protected $authenticationService;
     protected $entryController;
     protected $duplicationManager;
 
     public function run()
     {
-        $this->authController = $this->getService(AuthController::class);
+        $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->entryController = $this->getService(EntryController::class);
         $this->duplicationManager = $this->getService(DuplicationManager::class);
         $title = $error = '';

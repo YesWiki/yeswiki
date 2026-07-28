@@ -2,7 +2,7 @@
 
 namespace YesWiki\Core\Service;
 
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Field\BazarField;
 use YesWiki\Core\Field\EmailField;
 use YesWiki\Wiki;
@@ -10,20 +10,20 @@ use YesWiki\Wiki;
 class Guard
 {
     protected $aclService;
-    protected $authController;
+    protected $authenticationService;
     protected $formManager;
     protected $userManager;
     protected $wiki;
 
     public function __construct(
         AclService $aclService,
-        AuthController $authController,
+        AuthenticationService $authenticationService,
         FormManager $formManager,
         UserManager $userManager,
         Wiki $wiki
     ) {
         $this->aclService = $aclService;
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
         $this->formManager = $formManager;
         $this->userManager = $userManager;
         $this->wiki = $wiki;
@@ -32,7 +32,7 @@ class Guard
     // TODO remove this method and use YesWiki::HasAccess
     public function isAllowed($action = 'saisie_fiche', $ownerId = ''): bool
     {
-        $loggedUserName = $this->authController->getLoggedUserName();
+        $loggedUserName = $this->authenticationService->getLoggedUserName();
         $isOwner = $ownerId === $loggedUserName || $ownerId === '';
 
         // Admins are allowed all actions
@@ -113,7 +113,7 @@ class Guard
     // password: never surfaced via any generic page-read path (current view, history,
     // diffs, exports), not even to the account's own owner or an admin -- no legitimate
     // UI ever needs to display a raw hash back to anyone (password changes go through
-    // AuthController::setPassword(), not by reading the old hash). activation_status/
+    // AuthenticationService::setPassword(), not by reading the old hash). activation_status/
     // activation_key (ticket 07, accountactivationbyemail absorbed into core) get the same
     // treatment -- AccountActivationService's own internal (ACL-bypassing) reads are how
     // the admin users-table UI and the activation gate itself see the true values, the
@@ -170,11 +170,11 @@ class Guard
             return $page['owner'] === $userName;
         }
         // check if user is logged in
-        if (!$this->authController->getLoggedUser()) {
+        if (!$this->authenticationService->getLoggedUser()) {
             return false;
         }
         // check if user is owner
-        if ($page['owner'] == $this->authController->getLoggedUserName()) {
+        if ($page['owner'] == $this->authenticationService->getLoggedUserName()) {
             return true;
         }
 

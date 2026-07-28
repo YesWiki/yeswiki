@@ -12,7 +12,7 @@ namespace YesWiki\Core;
 
 use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Service\FileManager;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\TemplateHelperService;
@@ -884,7 +884,7 @@ class Attach
     {
         $path = $this->GetUploadPath();
         $rawFileName = empty($rawFileName)
-            ? $this->wiki->services->get(SecurityController::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
+            ? $this->wiki->services->get(InputFilter::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
             : $rawFileName;
         $filename = $path . '/' . basename($rawFileName);
         if (!empty($rawFileName) && file_exists($filename)) {

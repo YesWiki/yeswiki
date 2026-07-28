@@ -3,8 +3,8 @@
 /**
  * Allow signed-in users to react with icon, emojis or pictures on the page.
  */
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\ReactionsController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\ReactionsFormatter;
 use YesWiki\Core\Service\ReactionManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -40,23 +40,23 @@ class ReactionsAction extends YesWikiAction
             $idreaction = URLify::slug($this->arguments['title']);
         }
 
-        $user = $this->getService(AuthController::class)->getLoggedUser();
+        $user = $this->getService(AuthenticationService::class)->getLoggedUser();
         $username = empty($user['name']) ? '' : $user['name'];
 
-        $reactionsController = $this->getService(ReactionsController::class);
-        list('labels' => $labels, 'ids' => $ids) = $reactionsController->formatReactionsLabels(
+        $reactionsFormatter = $this->getService(ReactionsFormatter::class);
+        list('labels' => $labels, 'ids' => $ids) = $reactionsFormatter->formatReactionsLabels(
             $this->arguments['labels'],
             empty($this->arguments['labels']) ? ReactionManager::DEFAULT_IDS : null,
         );
 
-        $images = $reactionsController->formatImages(
+        $images = $reactionsFormatter->formatImages(
             $ids,
             $this->arguments['images'],
             ReactionManager::DEFAULT_IMAGES
         );
 
         $pageTag = $this->wiki->GetPageTag();
-        list('reactions' => $reactionItems, 'userReactions' => $userReactions) = $reactionsController->getReactionItems(
+        list('reactions' => $reactionItems, 'userReactions' => $userReactions) = $reactionsFormatter->getReactionItems(
             $pageTag,
             $username,
             $idreaction,

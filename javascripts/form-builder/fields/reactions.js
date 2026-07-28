@@ -1,4 +1,4 @@
-import { readConf, writeConf, escapeHtml } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -39,8 +39,5 @@ export default {
   },
   disabledAttributes: [
     'label', 'required'
-  ],
-  renderInput(field) {
-    return { field: `<i class="far fa-thumbs-up"></i> ${escapeHtml(field.label_reaction || _t('BAZ_ACTIVATE_REACTIONS'))}` }
-  }
+  ]
 }

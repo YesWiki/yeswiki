@@ -4,7 +4,7 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\CommentService;
 use YesWiki\Core\Service\PageManager;
@@ -44,13 +44,13 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     {
         $wiki->config['use_hashcash'] = true;
         $wiki->request->request->remove('hashcash_value');
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the comment path');
 
         try {
-            $authController->login($admin);
+            $authenticationService->login($admin);
             $commentService = $wiki->services->get(CommentService::class);
 
             $result = $commentService->addCommentIfAuthorized([
@@ -61,7 +61,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
             $this->assertSame(400, $result['code']);
             $this->assertSame(_t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'), $result['error']);
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
         }
     }
 
@@ -70,7 +70,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     {
         $wiki->config['use_hashcash'] = false;
         $wiki->request->request->remove('hashcash_value');
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the comment path');
@@ -81,7 +81,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
         $GLOBALS['wiki'] = $wiki;
 
         try {
-            $authController->login($admin);
+            $authenticationService->login($admin);
             $commentService = $wiki->services->get(CommentService::class);
 
             $result = $commentService->addCommentIfAuthorized([
@@ -91,7 +91,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
 
             $this->assertNotSame(_t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'), $result['error'] ?? null);
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             unset($GLOBALS['wiki']);
         }
     }

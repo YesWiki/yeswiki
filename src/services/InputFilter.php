@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use YesWiki\Core\YesWikiController;
 
@@ -10,8 +10,12 @@ use YesWiki\Core\YesWikiController;
  * CaptchaController): a generic, dependency-free input-sanitization utility that
  * doesn't belong to any single security sub-concern, plus the edit-page submit-value
  * constant referenced across the whole codebase.
+ *
+ * Was `SecurityController` until wave-two ticket 03: it declares no route and its only
+ * public method is filterInput(), so "controller" described where the file sat rather
+ * than what the class does.
  */
-class SecurityController extends YesWikiController
+class InputFilter extends YesWikiController
 {
     // this value cannot be changed because use by extensions
     public const EDIT_PAGE_SUBMIT_VALUE = 'Sauver';

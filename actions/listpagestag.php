@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 
 $tagsManager = $this->services->get(TagsManager::class);
 

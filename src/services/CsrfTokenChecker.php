@@ -1,14 +1,13 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Controller\SecurityController;
 use YesWiki\Core\YesWikiController;
 
-class CsrfTokenController extends YesWikiController
+class CsrfTokenChecker extends YesWikiController
 {
     protected $csrfTokenManager;
 
@@ -34,10 +33,10 @@ class CsrfTokenController extends YesWikiController
         }
         switch ($inputType) {
             case 'GET':
-                $inputToken = $this->getService(SecurityController::class)->filterInput(INPUT_GET, $inputKey, FILTER_DEFAULT, true);
+                $inputToken = $this->getService(InputFilter::class)->filterInput(INPUT_GET, $inputKey, FILTER_DEFAULT, true);
                 break;
             case 'POST':
-                $inputToken = $this->getService(SecurityController::class)->filterInput(INPUT_POST, $inputKey, FILTER_DEFAULT, true);
+                $inputToken = $this->getService(InputFilter::class)->filterInput(INPUT_POST, $inputKey, FILTER_DEFAULT, true);
                 break;
 
             default:

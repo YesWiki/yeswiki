@@ -6,6 +6,7 @@ use YesWiki\Core\Attach;
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Field\EnumField;
 use YesWiki\Wiki;
+use YesWiki\Search\Service\SearchManager;
 
 class BazarListService
 {

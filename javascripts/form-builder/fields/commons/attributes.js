@@ -70,13 +70,6 @@ export const searchableConf = {
   options: { '': _t('NO'), 1: _t('YES') }
 }
 
-// escape a value interpolated into a renderInput() preview HTML string
-export function escapeHtml(value) {
-  const div = document.createElement('div')
-  div.textContent = String(value ?? '')
-  return div.innerHTML
-}
-
 // Opens the iframed list editor in a remote modal and resolves its postmessage
 // answer (same contract as the old builder: the editor posts list_created /
 // list_updated back). Listens via addEventListener so concurrent handlers on

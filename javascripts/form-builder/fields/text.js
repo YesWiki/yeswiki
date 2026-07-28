@@ -1,4 +1,4 @@
-import { readConf, writeConf, escapeHtml } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -55,16 +55,5 @@ export default {
     }
     api.onChange('sub_type', applySubtype)
     applySubtype()
-  },
-  renderInput(fieldData) {
-    let string = `<input type="${escapeHtml(fieldData.sub_type)}"`
-    if (fieldData.sub_type === 'url') {
-      string += ` placeholder="${escapeHtml(fieldData.default || '')}"/>`
-    } else if (fieldData.sub_type === 'range' || fieldData.sub_type === 'number') {
-      string += ` min="${escapeHtml(fieldData.size || '')}" max="${escapeHtml(fieldData.max_chars || '')}"/>`
-    } else {
-      string += ` value="${escapeHtml(fieldData.default ?? '')}"/>`
-    }
-    return { field: string }
   }
 }

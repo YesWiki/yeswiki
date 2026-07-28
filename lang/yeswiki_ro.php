@@ -725,7 +725,6 @@ return [
     'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'Cartea este publicată sub licență Creative Commons BY SA.',
     'TAGS_BY' => 'De',
     'TAGS_ABOUT_THIS_EBOOK' => 'Informaţii despre această carte',
-    'TAGS_DOWNLOAD_EPUB' => '.epub',
     'TAGS_DOWNLOAD_PDF' => '.pdf',
     'TAGS_DOWNLOAD' => 'Descărca',
     'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Conținut online pe pagină',

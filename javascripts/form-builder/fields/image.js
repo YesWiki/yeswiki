@@ -30,9 +30,6 @@ export default {
     read_access: readConf,
     write_access: writeConf
   },
-  advancedAttributes: ['read_access', 'write_access', 'thumbnail_height', 'thumbnail_width', 'image_height', 'image_width', 'max_size'],
+  advancedAttributes: ['read_access', 'write_access', 'thumbnail_height', 'thumbnail_width', 'image_height', 'image_width', 'max_size']
   // disabledAttributes: [],
-  renderInput() {
-    return { field: '<input type="file"/>' }
-  }
 }

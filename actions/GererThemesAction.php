@@ -5,7 +5,7 @@
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
  */
 
-use YesWiki\Core\Controller\ThemeController;
+use YesWiki\Core\Service\ThemeSelectorRenderer;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
@@ -13,7 +13,7 @@ use YesWiki\Core\YesWikiAction;
 class GererThemesAction extends YesWikiAction
 {
     protected $pageManager;
-    protected $themeController;
+    protected $themeSelectorRenderer;
     protected $themeManager;
 
     public function run()
@@ -27,7 +27,7 @@ class GererThemesAction extends YesWikiAction
 
         // get services
         $this->pageManager = $this->getService(PageManager::class);
-        $this->themeController = $this->getService(ThemeController::class);
+        $this->themeSelectorRenderer = $this->getService(ThemeSelectorRenderer::class);
         $this->themeManager = $this->getService(ThemeManager::class);
 
         $errorMessage = '';
@@ -58,7 +58,7 @@ class GererThemesAction extends YesWikiAction
             }
         }
 
-        return $this->themeController->renderWithThemeSelector(
+        return $this->themeSelectorRenderer->renderWithThemeSelector(
             '@core/gerer-themes-action.twig',
             compact([
                 'errorMessage',

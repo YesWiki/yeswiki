@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\PageController;
+use YesWiki\Core\Service\PageOperationsService;
 use YesWiki\Core\Service\HibernationService;
 
 // TODO
@@ -140,7 +140,7 @@ if ($this->UserIsAdmin()) {
                 // Effacement de la page en utilisant la méthode adéquate
                 // (si DeleteOrphanedPage ne convient pas, soit on créé
                 // une autre, soit on la modifie
-                if ($this->services->get(PageController::class)->delete($page)) {
+                if ($this->services->get(PageOperationsService::class)->delete($page)) {
                     $deletedPages .= $page . ', ';
                 }
             }

@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Exception\ExternalBazarServiceException;
 use YesWiki\Core\Field\ExternalImageField;
 use YesWiki\Wiki;
+use YesWiki\Search\Service\SearchManager;
 
 class ExternalBazarService
 {

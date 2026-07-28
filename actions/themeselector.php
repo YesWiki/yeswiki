@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\ThemeController;
+use YesWiki\Core\Service\ThemeSelectorRenderer;
 
 $class = $this->getParameter('class');
 if (
@@ -11,5 +11,5 @@ if (
     // if not redirected by setwikidefaulttheme : redirect
     $this->Redirect($this->href('', $this->tag));
 } else {
-    echo $this->services->get(ThemeController::class)->showFormThemeSelector('selector', $class);
+    echo $this->services->get(ThemeSelectorRenderer::class)->showFormThemeSelector('selector', $class);
 }

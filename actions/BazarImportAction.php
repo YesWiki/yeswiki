@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\CsrfTokenChecker;
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\BazarListService;
 use YesWiki\Core\Service\CSVManager;
@@ -106,7 +106,7 @@ class BazarImportAction extends YesWikiAction
                 break;
 
             case 'importentries':
-                $this->getService(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token', false);
+                $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false);
                 $vID = $this->bazarListService->getTheID($this->arguments['id']);
 
                 if ($vID['isExternal']) {

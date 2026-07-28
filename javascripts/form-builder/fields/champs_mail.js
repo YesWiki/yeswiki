@@ -1,4 +1,4 @@
-import { readConf, writeConf, escapeHtml } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -66,8 +66,5 @@ export default {
     }
     api.onChange('show_contact_form', applyButtonMode)
     applyButtonMode()
-  },
-  renderInput(fieldData) {
-    return { field: `<input id="${escapeHtml(fieldData.name)}" type="email" value="" />` }
   }
 }

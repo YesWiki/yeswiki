@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use YesWiki\Core\ApiResponse;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\YesWikiController;
 
@@ -94,7 +94,7 @@ class ArchiveController extends YesWikiController
     public function manageArchiveAction(?string $id = null)
     {
         try {
-            $action = $this->getService(SecurityController::class)->filterInput(INPUT_POST, 'action', FILTER_DEFAULT, true);
+            $action = $this->getService(InputFilter::class)->filterInput(INPUT_POST, 'action', FILTER_DEFAULT, true);
             switch ($action) {
                 case 'delete':
                     $post = $this->getRequest()->request;

@@ -12,7 +12,7 @@ define('MINIMUM_PHP_VERSION_FOR_CORE', '8.2.0');
 // operational constants
 
 // YesWiki Charset
-// YW_CHARSET définie dans LanguageController::initialize()
+// YW_CHARSET définie dans LanguageService::initialize()
 
 // constant for parsing rules
 define('WN_UPPER', '[A-Z]'); // \xC0-\xD6\xD8-\xDE]");

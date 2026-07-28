@@ -5,7 +5,7 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\CaptchaController;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
@@ -15,7 +15,7 @@ require_once 'tests/ForcedParameterBag.php';
 
 /**
  * Regression tests for ticket 15 (security-core-split): checkCaptchaBeforeSave() was merged
- * into CaptchaController from the former SecurityController, alongside the pre-existing
+ * into CaptchaController from the former InputFilter, alongside the pre-existing
  * captcha image/hash logic it already owned.
  */
 #[CoversMethod(CaptchaController::class, 'checkCaptchaBeforeSave')]
@@ -46,7 +46,7 @@ class CaptchaControllerTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
         $this->assertFalse($wiki->UserIsAdmin(), 'test must run as a non-admin for checkCaptchaBeforeSave() to evaluate captcha');
-        $wiki->request->request->set('submit', SecurityController::EDIT_PAGE_SUBMIT_VALUE);
+        $wiki->request->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
 
         try {
             [$state, $error] = $this->buildController($wiki, false)->checkCaptchaBeforeSave();
@@ -61,7 +61,7 @@ class CaptchaControllerTest extends YesWikiTestCase
     public function testFailsWhenCaptchaMissing()
     {
         $wiki = $this->getWiki();
-        $wiki->request->request->set('submit', SecurityController::EDIT_PAGE_SUBMIT_VALUE);
+        $wiki->request->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
         $wiki->request->request->remove('captcha');
         $wiki->request->request->remove('captcha_hash');
 
@@ -82,7 +82,7 @@ class CaptchaControllerTest extends YesWikiTestCase
         $hash = $captchaController->generateHash();
         $word = $this->findWordForHash($captchaController, $hash);
 
-        $wiki->request->request->set('submit', SecurityController::EDIT_PAGE_SUBMIT_VALUE);
+        $wiki->request->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
         $wiki->request->request->set('captcha_hash', $hash);
 
         try {

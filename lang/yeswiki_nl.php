@@ -682,7 +682,6 @@ return [
     'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'Dit werk wordt gepubliceerd onder licentie van Creative Commons BY SA.',
     'TAGS_BY' => 'Door',
     'TAGS_ABOUT_THIS_EBOOK' => 'Informatie over dit werk',
-    'TAGS_DOWNLOAD_EPUB' => '.epub',
     'TAGS_DOWNLOAD_PDF' => '.pdf',
     'TAGS_NO_EBOOK_METADATAS' => 'Deze pagina beschikt niet over de nodige metagegevens om het Ebook aan te maken.',
     'TAGS_NO_EBOOK_FOUND' => 'Geen Ebook gevonden.',

@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EntryManager;
@@ -10,14 +10,14 @@ use YesWiki\Core\YesWikiHandler;
 class IframeHandler extends YesWikiHandler
 {
     protected $assetsManager;
-    protected $authController;
+    protected $authenticationService;
     protected $entryController;
     protected $favoritesManager;
 
     public function run()
     {
         $this->assetsManager = $this->getService(AssetsManager::class);
-        $this->authController = $this->getService(AuthController::class);
+        $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->entryController = $this->getService(EntryController::class);
         $this->favoritesManager = $this->getService(FavoritesManager::class);
         $output = '';
@@ -117,7 +117,7 @@ class IframeHandler extends YesWikiHandler
     {
         $output = '';
         // on ajoute le bouton pour les favoris
-        $user = $this->authController->getLoggedUser();
+        $user = $this->authenticationService->getLoggedUser();
         if (!empty($user) && $this->favoritesManager->areFavoritesActivated()) {
             $currentuser = $user['name'];
             $tag = $this->wiki->GetPageTag();

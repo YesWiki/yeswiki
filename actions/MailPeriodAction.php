@@ -2,7 +2,7 @@
 
 // ticket 18: relocated from tools/contact/actions/MailPeriodAction.php.
 
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -10,15 +10,15 @@ use YesWiki\Core\YesWikiAction;
 
 class MailPeriodAction extends YesWikiAction
 {
-    protected $authController;
+    protected $authenticationService;
     protected $userManager;
 
     public function run()
     {
-        $this->authController = $this->getService(AuthController::class);
+        $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->userManager = $this->getService(UserManager::class);
-        $user = $this->authController->getLoggedUser();
-        $userName = $this->authController->getLoggedUserName();
+        $user = $this->authenticationService->getLoggedUser();
+        $userName = $this->authenticationService->getLoggedUserName();
         $periods = [
             'day' => ['label' => _t('CONTACT_DAILY')],
             'week' => ['label' => _t('CONTACT_WEEKLY')],

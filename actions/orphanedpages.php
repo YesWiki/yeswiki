@@ -4,7 +4,7 @@
 List all orphaned pages BUT bazar records
 */
 
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 
 $tagsManager = $this->services->get(TagsManager::class);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -10,10 +10,6 @@ use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\BadLoginException;
 use YesWiki\Core\Exception\BadUserConnectException;
-use YesWiki\Core\Service\AccountActivationService;
-use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\PasswordHasherFactory;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Wiki;
 
@@ -39,7 +35,7 @@ trait LimitationsTrait
     }
 }
 
-class AuthController extends YesWikiController
+class AuthenticationService extends YesWikiController
 {
     use LimitationsTrait;
 
@@ -317,7 +313,7 @@ class AuthController extends YesWikiController
      */
     public function connectFirstAdmin(): ?User
     {
-        $firstAdminName = $this->wiki->services->get(UserController::class)->getFirstAdmin();
+        $firstAdminName = $this->wiki->services->get(UserOperationsService::class)->getFirstAdmin();
         if (empty($firstAdminName)) {
             return null;
         }

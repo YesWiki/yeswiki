@@ -6,6 +6,7 @@ use PDO;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory;
 use YesWiki\Core\Service\ConfigurationService;
 use YesWiki\Core\Service\EnvironmentConfiguration;
+use YesWiki\Core\Service\LanguageService;
 use YesWiki\Core\YesWikiLoader;
 
 /**
@@ -64,7 +65,7 @@ class InstallationController
     {
         // no Wiki object exists yet: hand the configuration (which may carry an
         // environment-forced default_language) to the language detection directly
-        LanguageController::getInstance()->loadPreferredLanguage((object)['config' => $config]);
+        LanguageService::getInstance()->loadPreferredLanguage((object)['config' => $config]);
 
         $this->config = $config;
         $this->configFile = $configFile;
@@ -322,7 +323,7 @@ class InstallationController
         }
         $this->pass(_t('CHECKING_THE_ADMIN_PASSWORD_CONFIRMATION'));
 
-        // same rule as UserController::sanitizeName()
+        // same rule as UserOperationsService::sanitizeName()
         if (
             empty($this->adminName)
             || !is_string($this->adminName)

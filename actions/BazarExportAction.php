@@ -3,7 +3,7 @@
 use YesWiki\Core\Service\BazarListService;
 use YesWiki\Core\Service\CSVManager;
 use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarExportAction extends YesWikiAction

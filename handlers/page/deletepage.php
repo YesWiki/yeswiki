@@ -2,13 +2,13 @@
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\Controller\CsrfTokenController;
-use YesWiki\Core\Controller\PageController;
+use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Core\Service\PageOperationsService;
 use YesWiki\Core\Service\DbService;
 
 // get services
 $csrfTokenManager = $this->services->get(CsrfTokenManager::class);
-$csrfTokenController = $this->services->get(CsrfTokenController::class);
+$csrfTokenChecker = $this->services->get(CsrfTokenChecker::class);
 
 // get the GET parameter 'incomingurl' for the incoming url
 if (!empty($_REQUEST['incomingurl'])) {
@@ -46,8 +46,8 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
             $msg .= "</form></span>\n";
         } else {
             try {
-                $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
-                $hasBeenDeleted = $this->services->get(PageController::class)->delete($tag);
+                $csrfTokenChecker->checkToken('main', 'POST', 'csrf-token', false);
+                $hasBeenDeleted = $this->services->get(PageOperationsService::class)->delete($tag);
                 if ($hasBeenDeleted) {
                     $msg = str_replace('{tag}', $tag, _t('DELETEPAGE_MESSAGE'));
                     // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
@@ -82,7 +82,7 @@ if ($this->UserIsOwner() || $this->UserIsAdmin()) {
         ) {
             // a trouble occured, invald token ?
             try {
-                $csrfTokenController->checkToken('main', 'POST', 'csrf-token', false);
+                $csrfTokenChecker->checkToken('main', 'POST', 'csrf-token', false);
             } catch (TokenNotFoundException $th) {
                 $msg .= $this->render('@core/alert-message.twig', [
                     'type' => 'danger',

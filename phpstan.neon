@@ -1,0 +1,34 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 8
+
+    paths:
+        - src
+        - actions
+        - handlers
+        - formatters
+        # Only the bundled sample extension is repo content. extensions/* is gitignored
+        # (see .gitignore) and community extensions installed there are typically symlinks
+        # to a developer's own checkout -- analysing them would make local runs disagree
+        # with CI, which has none of them, and would flag code this wave is explicitly not
+        # responsible for adapting.
+        - extensions/helloworld
+        - tests
+
+    excludePaths:
+        analyseAndScan:
+            - tests/e2e
+            - extensions/*/node_modules
+
+    # src/vendor/ held two hand-vendored libraries that had to be scanned-but-not-analysed.
+    # Ticket 02 deleted both (PHPePub with the epub feature, Pager rewritten in-repo as
+    # YesWiki\Core\Service\Paginator), so only a captcha font remains there and no
+    # scanDirectories entry is needed.
+
+    bootstrapFiles:
+        - phpstan/bootstrap.php
+
+    stubFiles:
+        - phpstan/symfony-container.stub

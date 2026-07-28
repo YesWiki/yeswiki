@@ -1,30 +1,28 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\InvalidGroupNameException;
 use YesWiki\Core\Exception\InvalidInputException;
 use YesWiki\Core\Exception\UserNameDoesNotExistException;
-use YesWiki\Core\Service\GroupManager;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 
-class GroupController extends YesWikiController
+class GroupOperationsService extends YesWikiController
 {
     protected $groupManager;
     protected $userManager;
-    protected $authController;
+    protected $authenticationService;
 
     public function __construct(
         GroupManager $groupManager,
         UserManager $userManager,
-        AuthController $authController
+        AuthenticationService $authenticationService
     ) {
         $this->groupManager = $groupManager;
         $this->userManager = $userManager;
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
     }
 
     private function isNameValid(string $name): bool
@@ -226,7 +224,7 @@ class GroupController extends YesWikiController
             throw new GroupNameDoesNotExistException(_t('GROUP_NAME_DOES_NOT_EXIST'));
         }
         if ($groupName == ADMIN_GROUP) {
-            $currentUser = $this->authController->getLoggedUser()['name'];
+            $currentUser = $this->authenticationService->getLoggedUser()['name'];
             if (in_array($currentUser, $members)) {
                 throw new InvalidInputException(_t('USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN'));
             }
@@ -281,7 +279,7 @@ class GroupController extends YesWikiController
     public function update(string $groupName, array $members): void
     {
         if ($groupName == ADMIN_GROUP) {
-            $currentUser = $this->authController->getLoggedUser()['name'];
+            $currentUser = $this->authenticationService->getLoggedUser()['name'];
             if (!in_array($currentUser, $members)) {
                 throw new InvalidInputException(_t('USER_CANNOT_REMOVE_THEIRSELF_FROM_ADMIN'));
             }

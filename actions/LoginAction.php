@@ -1,8 +1,8 @@
 <?php
 
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Exception\LoginException;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\TemplateEngine;
@@ -11,10 +11,10 @@ use YesWiki\Core\YesWikiAction;
 
 class LoginAction extends YesWikiAction
 {
-    protected $authController;
+    protected $authenticationService;
     protected $pageManager;
     protected $templateEngine;
-    protected $securityController;
+    protected $inputFilter;
     protected $userManager;
 
     public function formatArguments($arg)
@@ -81,9 +81,9 @@ class LoginAction extends YesWikiAction
     public function run()
     {
         // get services
-        $this->authController = $this->getService(AuthController::class);
+        $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->pageManager = $this->getService(PageManager::class);
-        $this->securityController = $this->getService(SecurityController::class);
+        $this->inputFilter = $this->getService(InputFilter::class);
         $this->userManager = $this->getService(UserManager::class);
 
         $action = $this->getRequest()->get('action', '');
@@ -145,7 +145,7 @@ class LoginAction extends YesWikiAction
 
     private function renderForm(string $action): string
     {
-        $user = $this->authController->getLoggedUser();
+        $user = $this->authenticationService->getLoggedUser();
         $connected = !empty($user);
         $error = '';
         $pageMenuUserContent = '';
@@ -183,7 +183,7 @@ class LoginAction extends YesWikiAction
 
     private function login()
     {
-        $incomingurl = $this->securityController->filterInput(INPUT_POST, 'incomingurl', FILTER_SANITIZE_URL, false, 'string');
+        $incomingurl = $this->inputFilter->filterInput(INPUT_POST, 'incomingurl', FILTER_SANITIZE_URL, false, 'string');
         if (empty($incomingurl)) {
             $incomingurl = $this->arguments['incomingurl'];
         }
@@ -221,12 +221,12 @@ class LoginAction extends YesWikiAction
                 throw new LoginException(_t('LOGIN_WRONG_USER'));
             }
 
-            $password = $this->securityController->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string');
-            if (!$this->authController->checkPassword($password, $user)) {
+            $password = $this->inputFilter->filterInput(INPUT_POST, 'password', FILTER_UNSAFE_RAW, false, 'string');
+            if (!$this->authenticationService->checkPassword($password, $user)) {
                 throw new LoginException(_t('LOGIN_WRONG_PASSWORD'));
             }
-            $remember = $this->securityController->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, false, 'bool');
-            $this->authController->login($user, $remember);
+            $remember = $this->inputFilter->filterInput(INPUT_POST, 'remember', FILTER_VALIDATE_BOOL, false, 'bool');
+            $this->authenticationService->login($user, $remember);
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
             if ((($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user['name'])) {
@@ -239,7 +239,7 @@ class LoginAction extends YesWikiAction
             $this->wiki->SetMessage($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
         } catch (Exception $ex) {
-            // catches AuthController::login()'s BadLoginException (ticket 07's activation
+            // catches AuthenticationService::login()'s BadLoginException (ticket 07's activation
             // gate, already carrying a full user-facing message) along with anything else
             Flash::error($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
@@ -248,7 +248,7 @@ class LoginAction extends YesWikiAction
 
     private function logout()
     {
-        $this->authController->logout();
+        $this->authenticationService->logout();
         $this->wiki->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
         $this->wiki->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $this->arguments['loggedouturl'])));
         $this->wiki->exit();

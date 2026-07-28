@@ -79,13 +79,13 @@ class Performer
                     $objectName = strtolower($matches[1]); // __greetingaction
                     $objectName = preg_replace('/^__|__$/', '', $objectName); // greetingaction
                     $isDefinedAsClass = false;
-                    if (endsWith($baseName, ucfirst($objectType)) || endsWith($baseName, ucfirst($objectType) . '__')) {
+                    if (str_ends_with($baseName, ucfirst($objectType)) || str_ends_with($baseName, ucfirst($objectType) . '__')) {
                         $objectName = preg_replace("/{$objectType}$/", '', $objectName); // greeting
                         $isDefinedAsClass = true;
                     }
                     $filePath = $dir . $file;
                     $object = &$this->objectList[$objectType][$objectName];
-                    if (startsWith($file, '__')) {
+                    if (str_starts_with($file, '__')) {
                         if (!isset($object['before_callbacks'])) {
                             $object['before_callbacks'] = [];
                         }
@@ -94,7 +94,7 @@ class Performer
                             'baseName' => $baseName,
                             'isDefinedAsClass' => $isDefinedAsClass,
                         ]);
-                    } elseif (endsWith($file, '__.php')) {
+                    } elseif (str_ends_with($file, '__.php')) {
                         if (!isset($object['after_callbacks'])) {
                             $object['after_callbacks'] = [];
                         }

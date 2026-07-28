@@ -3,14 +3,14 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Wiki;
 
 class Mailer
 {
     protected $wiki;
-    protected $authController;
+    protected $authenticationService;
     protected $dbService;
     protected $params;
     protected $templateEngine;
@@ -18,14 +18,14 @@ class Mailer
 
     public function __construct(
         Wiki $wiki,
-        AuthController $authController,
+        AuthenticationService $authenticationService,
         DbService $dbService,
         ParameterBagInterface $params,
         TemplateEngine $templateEngine,
         UserManager $userManager
     ) {
         $this->wiki = $wiki;
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
         $this->dbService = $dbService;
         $this->params = $params;
         $this->templateEngine = $templateEngine;
@@ -168,7 +168,7 @@ class Mailer
             ]
         );
         $user = $this->userManager->getOneByEmail($email);
-        $currentUser = $this->authController->getLoggedUser();
+        $currentUser = $this->authenticationService->getLoggedUser();
         if (!empty($user['name'])) {
             $userName = $user['name'];
         } elseif (empty($currentUser)) {

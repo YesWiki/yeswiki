@@ -1,4 +1,4 @@
-import { readConf, writeConf, escapeHtml } from './commons/attributes.js'
+import { readConf, writeConf } from './commons/attributes.js'
 
 export default {
   field: {
@@ -78,12 +78,5 @@ export default {
     ['ratio', 'maxwidth', 'maxheight'].forEach((attr) => api.onChange(attr, packOptions))
     api.onChange('displayvideo', applyVisibility)
     applyVisibility()
-  },
-  renderInput(field) {
-    return {
-      field: field.displayvideo === 'displayvideo'
-        ? '<input type="text" disabled value="https://framatube.org/w/pAQiVCgv2CsLg79KKXUoMw"/>'
-        : `<input type="url" placeholder="${escapeHtml(field.default || '')}"/>`
-    }
   }
 }

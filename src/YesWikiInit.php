@@ -469,7 +469,6 @@ class Init
             'BAZ_TYPE_AFFICHAGE_LISTE' => 'jma',
             'BAZ_DATE_VIDE' => false,
             'BAZ_NOMBRE_RES_PAR_PAGE' => 50,
-            'BAZ_MODE_DIVISION' => 'Jumping',
             'BAZ_DELTA' => 12,
             'BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE' => 6,
             'BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL' => 7,

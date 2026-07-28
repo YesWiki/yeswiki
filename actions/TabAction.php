@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\TabsController;
+use YesWiki\Core\Service\TabsRenderer;
 use YesWiki\Core\YesWikiAction;
 
 class TabAction extends YesWikiAction
@@ -13,11 +13,11 @@ class TabAction extends YesWikiAction
 
     public function run()
     {
-        return $this->getService(TabsController::class)->openATab();
+        return $this->getService(TabsRenderer::class)->openATab();
     }
 
     public function end(): string
     {
-        return $this->getService(TabsController::class)->closeATab();
+        return $this->getService(TabsRenderer::class)->closeATab();
     }
 }

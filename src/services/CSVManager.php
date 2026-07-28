@@ -11,6 +11,7 @@ use YesWiki\Core\Field\ImageField;
 use YesWiki\Core\Field\MapField;
 use YesWiki\Core\Field\TagsField;
 use YesWiki\Wiki;
+use YesWiki\Search\Service\SearchManager;
 
 class CSVManager
 {

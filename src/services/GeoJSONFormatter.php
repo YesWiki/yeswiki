@@ -1,9 +1,8 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use YesWiki\Core\Field\MapField;
-use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\YesWikiController;
 
 class GeoJSONFormatter extends YesWikiController

@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\Controller\CsrfTokenController;
-use YesWiki\Core\Controller\GroupController;
+use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Core\Service\GroupOperationsService;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 
@@ -9,7 +9,7 @@ class EditGroupsAction extends YesWikiAction
 {
     public function run()
     {
-        $groupController = $this->getService(GroupController::class);
+        $groupOperationsService = $this->getService(GroupOperationsService::class);
         $userManager = $this->getService(UserManager::class);
 
         if (!$this->wiki->UserIsAdmin()) {
@@ -40,18 +40,18 @@ class EditGroupsAction extends YesWikiAction
                 try {
                     $this->confirmToken();
                     if (!empty($post->get('action-view'))) {
-                        $currentGroupAcl = $groupController->getMembers($selectedGroupName);
+                        $currentGroupAcl = $groupOperationsService->getMembers($selectedGroupName);
                     } elseif (!empty($post->get('action-create'))) {
-                        $groupController->create($selectedGroupName, []);
+                        $groupOperationsService->create($selectedGroupName, []);
                         $type = 'success';
                         $message = str_replace('{group}', $selectedGroupName, _t('GROUP_CREATED'));
                     } elseif (!empty($post->get('action-update'))) {
                         $members = array_map('trim', $post->all('members'));
-                        $groupController->update($selectedGroupName, $members);
+                        $groupOperationsService->update($selectedGroupName, $members);
                         $message = str_replace('{group}', $selectedGroupName, _t('GROUP_SAVED'));
                         $type = 'success';
                     } elseif (!empty($post->get('action-delete'))) {
-                        $groupController->delete($selectedGroupName);
+                        $groupOperationsService->delete($selectedGroupName);
                         $message = str_replace('{group}', $selectedGroupName, _t('GROUP_DELETED'));
                         $type = 'success';
                         $selectedGroupName = '';
@@ -63,15 +63,15 @@ class EditGroupsAction extends YesWikiAction
             }
         }
 
-        if ($groupController->groupExists($selectedGroupName)) {
-            $currentGroupAcl = $groupController->getMembers($selectedGroupName);
+        if ($groupOperationsService->groupExists($selectedGroupName)) {
+            $currentGroupAcl = $groupOperationsService->getMembers($selectedGroupName);
         }
 
         if (!empty($message)) {
             $error_message = ['type' => $type, 'message' => $message];
         }
 
-        $list = $groupController->getAll();
+        $list = $groupOperationsService->getAll();
         sort($list);
         $users = array_map(function ($user) { return $user['name']; }, $userManager->getAll());
         sort($users);
@@ -90,6 +90,6 @@ class EditGroupsAction extends YesWikiAction
 
     protected function confirmToken()
     {
-        $this->getService(CsrfTokenController::class)->checkToken('main', 'POST', 'confirmToken', false);
+        $this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'confirmToken', false);
     }
 }

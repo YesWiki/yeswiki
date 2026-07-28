@@ -70,8 +70,5 @@ export default {
     if (typeof titles === 'string' && titles.includes('|')) {
       api.setValue('form_titles', titles.replace(/\|/g, ','))
     }
-  },
-  renderInput() {
-    return { field: '' }
   }
 }

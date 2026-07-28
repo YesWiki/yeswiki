@@ -1,13 +1,11 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
 
-class ThemeController extends YesWikiController
+class ThemeSelectorRenderer extends YesWikiController
 {
     protected $params;
     protected $hibernationService;
@@ -99,7 +97,7 @@ class ThemeController extends YesWikiController
 
         // page list
         $tablistWikinames = $this->wiki->LoadAll(
-            "SELECT DISTINCT tag FROM " . $this->wiki->GetConfigValue('table_prefix') . "pages WHERE latest='Y'"
+            'SELECT DISTINCT tag FROM ' . $this->wiki->GetConfigValue('table_prefix') . "pages WHERE latest='Y'"
         );
         $listWikinames = [];
         foreach ($tablistWikinames as $tag) {

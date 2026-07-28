@@ -10,14 +10,15 @@ use YesWiki\Core\Field\BazarField;
 use YesWiki\Core\Field\ConditionsCheckingField;
 use YesWiki\Core\Field\LabelField;
 use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\EventDispatcher;
-use YesWiki\Core\Service\FormPropertiesService;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\FormManager;
+use YesWiki\Core\Service\FormPropertiesService;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\Service\SemanticTransformer;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\TripleStore;
@@ -26,7 +27,7 @@ use YesWiki\Core\YesWikiController;
 class EntryController extends YesWikiController
 {
     protected $aclService;
-    protected $authController;
+    protected $authenticationService;
     protected $captchaController;
     protected $config;
     protected $entryManager;
@@ -43,7 +44,7 @@ class EntryController extends YesWikiController
 
     public function __construct(
         AclService $aclService,
-        AuthController $authController,
+        AuthenticationService $authenticationService,
         CaptchaController $captchaController,
         EntryManager $entryManager,
         EventDispatcher $eventDispatcher,
@@ -56,7 +57,7 @@ class EntryController extends YesWikiController
         TripleStore $tripleStore,
     ) {
         $this->aclService = $aclService;
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
         $this->captchaController = $captchaController;
         $this->config = $config->all();
         $this->entryManager = $entryManager;
@@ -219,7 +220,7 @@ class EntryController extends YesWikiController
             $_GET['vue'] = 'consulter';
         }
 
-        $user = $this->authController->getLoggedUser();
+        $user = $this->authenticationService->getLoggedUser();
         if (!empty($user) && $this->favoritesManager->areFavoritesActivated() && (testUrlInIframe() == 'iframe')) {
             $currentuser = $user['name'];
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $entryId);
@@ -786,7 +787,7 @@ class EntryController extends YesWikiController
         ];
         if (isset($form['only_one_entry']) && $form['only_one_entry'] === 'Y') {
             $formHasUserField = $this->getService(FormPropertiesService::class)->createsUser($form);
-            $loggerUser = $this->authController->getLoggedUser();
+            $loggerUser = $this->authenticationService->getLoggedUser();
             if (!$formHasUserField && empty($loggerUser)) {
                 // forbidden : ask to connect
                 $results['output'] = $this->render('@core/alert-message.twig', [

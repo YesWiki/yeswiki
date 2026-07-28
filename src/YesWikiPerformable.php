@@ -4,6 +4,7 @@ namespace YesWiki\Core;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
+use YesWiki\Core\Service\HibernationNotice;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Core\Service\UserManager;
@@ -192,6 +193,6 @@ abstract class YesWikiPerformable
      */
     protected function getMessageWhenHibernated(): string
     {
-        return $this->wiki->services->get(HibernationService::class)->getMessageWhenHibernated();
+        return $this->wiki->services->get(HibernationNotice::class)->getMessageWhenHibernated();
     }
 }

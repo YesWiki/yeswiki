@@ -1,12 +1,11 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use YesWiki\Core\Field\Tabsfield;
-use YesWiki\Core\Service\TabsService;
 use YesWiki\Core\YesWikiController;
 
-class TabsController extends YesWikiController
+class TabsRenderer extends YesWikiController
 {
     protected $tabsService;
 

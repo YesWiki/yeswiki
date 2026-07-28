@@ -814,7 +814,6 @@ return [
     'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'This work is published under a Creative Commons BY SA licence.',
     'TAGS_BY' => 'By',
     'TAGS_ABOUT_THIS_EBOOK' => 'Information about this book',
-    'TAGS_DOWNLOAD_EPUB' => '.epub',
     'TAGS_DOWNLOAD_PDF' => '.pdf',
     'TAGS_DOWNLOAD' => 'Download',
     'TAGS_NO_EBOOK_METADATAS' => 'This page does not have the metadata required to create the ebook.',
@@ -2230,6 +2229,7 @@ which returns 1 if bf_type == first_loop otherwise 0).',
     'FORM_BUILDER_INVALID_JSON' => 'The template code is not valid JSON: fix it in the code tab',
     'FORM_BUILDER_LABEL_LABEL' => 'Label',
     'FORM_BUILDER_NAME_LABEL' => 'Identifier',
+    'FORM_BUILDER_NO_PREVIEW' => 'No preview available for this field',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Required',
 
     // form edit page sections (ticket 27)

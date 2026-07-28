@@ -1,12 +1,12 @@
 <?php
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\FavoritesManager;
 use YesWiki\Core\Service\HibernationService;
 
-$user = $this->services->get(AuthController::class)->getLoggedUser();
+$user = $this->services->get(AuthenticationService::class)->getLoggedUser();
 if ((!empty($user) || $this->HasAccess('write')) && $this->method != 'revisions') {
     // on récupére la page et ses valeurs associées
     $page = $this->GetParameter('page');

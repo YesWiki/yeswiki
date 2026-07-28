@@ -8,19 +8,22 @@
 // same unconditional, always-available guarantee holds without depending on an 'bazar'
 // entry in $wiki->extensions.
 //
-// BAZ_CHEMIN ('tools/bazar/') was dropped here -- but it turned out NOT to be dead: an
-// initial grep only covering src/actions/handlers missed src/vendor/Pager/*.php (the PEAR
-// pagination library BazarListeAction uses), whose require_once/classfile-loading logic
-// depended on this exact constant. Fixed at the point of discovery by switching those
-// files to __DIR__-relative paths instead of resurrecting the constant here. Every other
-// constant and function below has at least one real caller elsewhere in core.
+// BAZ_CHEMIN ('tools/bazar/') was dropped here in ticket 24. It turned out not to be dead
+// at the time -- the vendored PEAR pagination library still depended on it -- but ticket 02
+// deleted that library outright (replaced by YesWiki\Core\Service\Paginator), so nothing
+// refers to BAZ_CHEMIN any more. BAZ_CHEMIN_UPLOAD below is a different, live constant.
+//
+// Ticket 02 (wave two) removed 21 functions from this file: 14 unreachable `baz_*`
+// @deprecated wrappers, 5 further unreachable @deprecated wrappers (validateForm,
+// searchResultstoArray, displayResultList, getAllParameters, getAllParameters_carto),
+// and startsWith/endsWith, superseded by PHP 8's str_starts_with/str_ends_with. What
+// remains has at least one real caller; the survivors fold into their owning module in
+// ticket 05.
 
 use function Symfony\Component\String\u;
 
 use YesWiki\Core\Attach;
 use YesWiki\Core\Controller\EntryController;
-use YesWiki\Core\Controller\FormController;
-use YesWiki\Core\Controller\ListController;
 use YesWiki\Core\Exception\ParsingMultipleException;
 use YesWiki\Core\Field\DateField;
 use YesWiki\Core\Field\EnumField;
@@ -30,7 +33,6 @@ use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\Guard;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\ListManager;
-use YesWiki\Core\Service\SearchManager;
 use YesWiki\Core\Service\TemplateEngine;
 
 define('BAZ_CHEMIN_UPLOAD', 'files/');
@@ -303,23 +305,6 @@ function genere_nom_wiki($nom, $occurence = 1)
     return genere_nom_wiki($nom, $occurence);
 }
 
-function startsWith($haystack, $needle)
-{
-    $length = strlen($needle);
-
-    return substr($haystack, 0, $length) === $needle;
-}
-
-function endsWith($haystack, $needle)
-{
-    $length = strlen($needle);
-    if ($length == 0) {
-        return true;
-    }
-
-    return substr($haystack, -$length) === $needle;
-}
-
 // pour verifier la presence d une valeur dans une fiche, en vue de lui faire une icone ou couleur personnalisee
 function getCustomValueForEntry($parameter, $field, $entry, $default)
 {
@@ -523,111 +508,6 @@ function afficher_image(
 }
 
 /**
- * @deprecated Use EntryManager::create
- */
-function baz_insertion_fiche($data)
-{
-    $data['antispam'] = 1;
-
-    return $GLOBALS['wiki']->services->get(EntryManager::class)->create($data['tag'], $data);
-}
-
-/**
- * @deprecated Use EntryManager::update
- */
-function baz_mise_a_jour_fiche($data)
-{
-    return $GLOBALS['wiki']->services->get(EntryManager::class)->update($data['tag'], $data);
-}
-
-/**
- * @deprecated Use EntryManager::delete
- */
-function baz_suppression($idFiche)
-{
-    return $GLOBALS['wiki']->services->get(EntryManager::class)->delete($idFiche);
-}
-
-/**
- * @deprecated Use EntryManager::getOne
- */
-function baz_valeurs_fiche($idFiche)
-{
-    return $GLOBALS['wiki']->services->get(EntryManager::class)->getOne($idFiche);
-}
-
-/**
- * @deprecated Use SearchManager::search
- */
-function baz_requete_recherche_fiches(
-    $tableau_criteres = '',
-    $tri = '',
-    $id = '',
-    $categorie_fiche = '',
-    $statut = 1,
-    $personne = '',
-    $nb_limite = '',
-    $motcles = true,
-    $q = '',
-    $facettesearch = 'OR'
-) {
-    if ($id === '') {
-        $id = [];
-    }
-
-    $fiches = $GLOBALS['wiki']->services->get(SearchManager::class)->search([
-        'queries' => $tableau_criteres,
-        'formsIds' => $id, // Types de fiches (par ID de formulaire)
-        'user' => $personne, // N'affiche que les fiches d'un utilisateur
-        'keywords' => $q, // Mots-clés pour la recherche fulltext
-        'searchOperator' => $facettesearch, // Opérateur à appliquer aux mots-clés
-    ]);
-
-    // Re-encode fiche as Wiki page
-    return array_map(function ($fiche) {
-        return ['body' => json_encode($fiche)];
-    }, $fiches);
-}
-
-/**
- * @deprecated Use EntryManager::validate
- */
-function validateForm($data)
-{
-    try {
-        $GLOBALS['wiki']->services->get(EntryManager::class)->validate($data);
-
-        return ['result' => true];
-    } catch (Exception $e) {
-        return ['result' => false, 'error' => $e->getMessage()];
-    }
-}
-
-/**
- * @deprecated
- */
-function searchResultstoArray($pages, $params, $formtab = '')
-{
-    $fiches = [];
-
-    foreach ($pages as $page) {
-        $fiche = $GLOBALS['wiki']->services->get(EntryManager::class)->decode($page['body']);
-        $GLOBALS['wiki']->services->get(EntryManager::class)->appendDisplayData($fiche, false, $params['correspondance'] ?? '', $page);
-        $fiches[$fiche['tag']] = $fiche;
-    }
-
-    return $fiches;
-}
-
-/**
- * @deprecated Use EntryManager::formatDataBeforeSave
- */
-function baz_requete_bazar_fiche($data)
-{
-    return $GLOBALS['wiki']->services->get(EntryManager::class)->formatDataBeforeSave($data);
-}
-
-/**
  * @deprecated Use FormManager::getOne, FormManager::getMany or FormManager::getAll
  */
 function baz_valeurs_formulaire($idformulaire = [])
@@ -644,22 +524,6 @@ function baz_valeurs_formulaire($idformulaire = [])
 }
 
 /**
- * @deprecated Use FormManager::prepareData
- */
-function bazPrepareFormData($form)
-{
-    return $GLOBALS['wiki']->services->get(FormManager::class)->prepareData($form);
-}
-
-/**
- * @deprecated Use FormManager::findNewId
- */
-function baz_nextId()
-{
-    return $GLOBALS['wiki']->services->get(FormManager::class)->findNewId();
-}
-
-/**
  * @deprecated Use ListManager::getOne or ListManager::getAll
  */
 function baz_valeurs_liste($idliste = '')
@@ -670,80 +534,6 @@ function baz_valeurs_liste($idliste = '')
     }
 
     return $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
-}
-
-/**
- * @deprecated Use ListController
- */
-function baz_gestion_listes()
-{
-    if ($_GET['action'] == BAZ_ACTION_MODIFIER_LISTE) {
-        return $GLOBALS['wiki']->services->get(ListController::class)->update($_GET['idliste']);
-    } elseif ($_GET['action'] == BAZ_ACTION_NOUVELLE_LISTE) {
-        return $GLOBALS['wiki']->services->get(ListController::class)->create();
-    } elseif ($_GET['action'] == BAZ_ACTION_SUPPRIMER_LISTE) {
-        return $GLOBALS['wiki']->services->get(ListController::class)->delete($_GET['idliste']);
-    }
-
-    return $GLOBALS['wiki']->services->get(ListController::class)->displayAll();
-}
-
-/**
- * @deprecated Use FormController
- */
-function baz_gestion_formulaire()
-{
-    if ($_GET['action'] === 'modif') {
-        return $GLOBALS['wiki']->services->get(FormController::class)->update($_GET['idformulaire']);
-    } elseif ($_GET['action'] === 'new') {
-        return $GLOBALS['wiki']->services->get(FormController::class)->create();
-    } elseif ($_GET['action'] === 'empty') {
-        return $GLOBALS['wiki']->services->get(FormController::class)->clear($_GET['idformulaire']);
-    } elseif ($_GET['action'] === 'delete') {
-        return $GLOBALS['wiki']->services->get(FormController::class)->delete($_GET['idformulaire']);
-    }
-
-    return $GLOBALS['wiki']->services->get(FormController::class)->displayAll();
-}
-
-/**
- * @deprecated Use FormController::create or FormController::update
- */
-function baz_formulaire_des_formulaires($mode, $form = '')
-{
-    if ($form !== '') {
-        return $GLOBALS['wiki']->services->get(FormController::class)->update($form['id']);
-    }
-
-    return $GLOBALS['wiki']->services->get(FormController::class)->create();
-}
-
-/**
- * @deprecated Use FormController::selectForm, FormController::create or FormController::update
- */
-function baz_formulaire($mode, $url = '', $valeurs = '')
-{
-    switch ($mode) {
-        case BAZ_CHOISIR_TYPE_FICHE:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->selectForm();
-        case BAZ_ACTION_NOUVEAU:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->create($_GET['form_id'] ?? $_GET['id'] ?? $_POST['form_id']);
-        case BAZ_ACTION_MODIFIER:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['tag'] ?? $_POST['form_id']);
-    }
-}
-
-/**
- * @deprecated Use FormController::create or FormController::update
- */
-function baz_afficher_formulaire_fiche($mode, $url = '', $valeurs = '')
-{
-    switch ($mode) {
-        case BAZ_ACTION_NOUVEAU:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->create($_GET['form_id'] ?? $_GET['id'] ?? $_POST['form_id']);
-        case BAZ_ACTION_MODIFIER:
-            return $GLOBALS['wiki']->services->get(EntryController::class)->update($_GET['tag'] ?? $_POST['form_id']);
-    }
 }
 
 /**
@@ -772,36 +562,3 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
     return $output;
 }
 
-/**
- * @deprecated Use WikiAction::formatArguments
- */
-function getAllParameters($wiki)
-{
-    return [];
-}
-
-/**
- * @deprecated Use WikiAction::formatArguments
- */
-function getAllParameters_carto($wiki)
-{
-    return [];
-}
-
-/**
- * @deprecated Call BazarListeAction
- */
-function displayResultList($entries, $params = [], $info_nb = true)
-{
-    $entryController = $GLOBALS['wiki']->services->get(EntryController::class);
-
-    return $entryController->renderBazarList($entries, $params, $info_nb);
-}
-
-/**
- * @deprecated Call BazarListeAction
- */
-function baz_rechercher($typeannonce = '', $categorienature = '')
-{
-    return $GLOBALS['wiki']->Action('bazarliste', 0, ['idtypeannonce' => $typeannonce]);
-}

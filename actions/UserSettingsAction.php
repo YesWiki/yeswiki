@@ -2,11 +2,11 @@
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Controller\CaptchaController;
-use YesWiki\Core\Controller\CsrfTokenController;
-use YesWiki\Core\Controller\SecurityController;
-use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Service\CsrfTokenChecker;
+use YesWiki\Core\Service\InputFilter;
+use YesWiki\Core\Service\UserOperationsService;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\ExitException;
@@ -28,10 +28,10 @@ class UserSettingsAction extends YesWikiAction
         'resetpass',
     ];
 
-    private $authController;
+    private $authenticationService;
     private $captchaController;
-    private $csrfTokenController;
-    private $userController;
+    private $csrfTokenChecker;
+    private $userOperationsService;
     private $userManager;
 
     private $action;
@@ -69,10 +69,10 @@ class UserSettingsAction extends YesWikiAction
 
     private function getServices()
     {
-        $this->authController = $this->getService(AuthController::class);
-        $this->csrfTokenController = $this->getService(CsrfTokenController::class);
+        $this->authenticationService = $this->getService(AuthenticationService::class);
+        $this->csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
         $this->captchaController = $this->getService(CaptchaController::class);
-        $this->userController = $this->getService(UserController::class);
+        $this->userOperationsService = $this->getService(UserOperationsService::class);
         $this->userManager = $this->getService(UserManager::class);
     }
 
@@ -110,7 +110,7 @@ class UserSettingsAction extends YesWikiAction
                 }
             }
         } else {
-            $userFromSession = $this->authController->getLoggedUser();
+            $userFromSession = $this->authenticationService->getLoggedUser();
             $user = isset($userFromSession['name']) ? $this->userManager->getOneByName($userFromSession['name']) : null;
             if ($user) { // Trying to instanciate $user from the session cooky)
                 $this->userLoggedIn = true;
@@ -178,14 +178,14 @@ class UserSettingsAction extends YesWikiAction
             'name' => $this->wantedUserName,
             'email' => $this->wantedEmail,
             'captcha' => $captcha,
-            'regexUserName' => UserController::PATTERN_USER_NAME,
+            'regexUserName' => UserOperationsService::PATTERN_USER_NAME,
         ]);
     }
 
     private function logout()
     {
         // User wants to log out
-        $this->authController->logout();
+        $this->authenticationService->logout();
         $this->wiki->SetMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
         $this->wiki->Redirect($this->wiki->href());
     }
@@ -195,13 +195,13 @@ class UserSettingsAction extends YesWikiAction
         if ($this->adminIsActing && !empty($this->wantedUserName)) {
             // Admin trying to delete user
             try {
-                $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-delete', false);
+                $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token-delete', false);
                 if (empty($user)) {
                     $this->errorUpdate = _t('USERSETTINGS_USER_NOT_DELETED') . ' user not found';
 
                     return null;
                 }
-                $this->userController->delete($user);
+                $this->userOperationsService->delete($user);
                 $user = null;
                 // forward
                 $this->wiki->SetMessage(_t('USER_DELETED') . ' !');
@@ -216,13 +216,13 @@ class UserSettingsAction extends YesWikiAction
     {
         if ($this->adminIsActing || $this->userLoggedIn) {
             try {
-                $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-update', false);
+                $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token-update', false);
 
                 $sanitizedPost = array_map(function ($item) {
                     return is_scalar($item) ? $item : '';
                 }, $post);
 
-                $this->userController->update(
+                $this->userOperationsService->update(
                     $user,
                     $sanitizedPost
                 );
@@ -231,7 +231,7 @@ class UserSettingsAction extends YesWikiAction
 
                 if (!empty($user)) {
                     if ($this->userLoggedIn) { // In case it's the user trying to update oneself, need to reset the cookies
-                        $this->authController->login($user);
+                        $this->authenticationService->login($user);
                     }
                     // forward
                     $this->wiki->SetMessage(_t('USER_PARAMETERS_SAVED') . ' !');
@@ -259,20 +259,20 @@ class UserSettingsAction extends YesWikiAction
     {
         if ($this->userLoggedIn) {
             // User wants to change password
-            if (!$this->authController->checkPassword($post['oldpass'], $user)) { // check password first
+            if (!$this->authenticationService->checkPassword($post['oldpass'], $user)) { // check password first
                 $this->errorPasswordChange = _t('USER_WRONG_PASSWORD') . ' !';
             } else { // user properly typed his old password in
                 // check token
                 try {
-                    $this->csrfTokenController->checkToken('main', 'POST', 'csrf-token-changepass', false);
+                    $this->csrfTokenChecker->checkToken('main', 'POST', 'csrf-token-changepass', false);
 
                     $password = $post['password'];
-                    $this->authController->setPassword($user, $password);
+                    $this->authenticationService->setPassword($user, $password);
                     $this->wiki->SetMessage(_t('USER_PASSWORD_CHANGED') . ' !');
                     // reload $user
                     $user = $this->userManager->getOneByName($user['name']);
                     if (!empty($user)) {
-                        $this->authController->login($user);
+                        $this->authenticationService->login($user);
                     }
                     $this->wiki->Redirect($this->wiki->href());
                 } catch (TokenNotFoundException $th) {
@@ -314,17 +314,17 @@ class UserSettingsAction extends YesWikiAction
                 if (!empty($emptyInputsParametersNames)) {
                     $this->error = str_replace('{parameters}', implode(',', $emptyInputsParametersNames), _t('USERSETTINGS_SIGNUP_MISSING_INPUT'));
                 } elseif (
-                    $this->authController->checkPasswordValidateRequirements($password)
+                    $this->authenticationService->checkPasswordValidateRequirements($password)
                     && $post['confpassword'] !== $password
                 ) {
                     $this->error = _t('USER_PASSWORDS_NOT_IDENTICAL') . '.';
                 } else { // Password is correct
-                    $_POST['submit'] = SecurityController::EDIT_PAGE_SUBMIT_VALUE;
+                    $_POST['submit'] = InputFilter::EDIT_PAGE_SUBMIT_VALUE;
                     list($state, $error) = $this->captchaController->checkCaptchaBeforeSave();
                     if (!$state) {
                         $this->error = $error;
                     } else {
-                        $user = $this->userController->create([
+                        $user = $this->userOperationsService->create([
                             'changescount' => 100,
                             'doubleclickedit' => 'Y',
                             'email' => $post['email'] ?? '',
@@ -334,7 +334,7 @@ class UserSettingsAction extends YesWikiAction
                             'show_comments' => 'N',
                         ]);
                         if (!empty($user)) {
-                            $this->authController->login($user);
+                            $this->authenticationService->login($user);
                             $this->wiki->Redirect($this->wiki->href()); // forward
                         }
                         $this->error = _t('USER_CREATION_FAILED') . '.';

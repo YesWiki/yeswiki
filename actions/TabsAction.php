@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\TabsController;
+use YesWiki\Core\Service\TabsRenderer;
 use YesWiki\Core\YesWikiAction;
 
 class TabsAction extends YesWikiAction
@@ -25,7 +25,7 @@ class TabsAction extends YesWikiAction
 
     public function run()
     {
-        return $this->getService(TabsController::class)->openTabs('action', array_merge(
+        return $this->getService(TabsRenderer::class)->openTabs('action', array_merge(
             $this->arguments,
             ['btnClass' => $this->arguments['btncolor'] . ' ' . $this->arguments['btnsize']]
         ));
@@ -33,6 +33,6 @@ class TabsAction extends YesWikiAction
 
     public function end(): string
     {
-        return $this->getService(TabsController::class)->closeTabs();
+        return $this->getService(TabsRenderer::class)->closeTabs();
     }
 }

@@ -4,14 +4,12 @@
 // and : https://icalendar.org/RFC-Specifications/iCalendar-RFC-7986/
 // https://icalendar.org/iCalendar-RFC-5545/3-6-1-event-component.html
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Response;
+use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Field\DateField;
-use YesWiki\Core\Service\DateService;
-use YesWiki\Core\Service\EntryDateService;
-use YesWiki\Core\Service\Performer;
 use YesWiki\Core\YesWikiController;
 
 class IcalFormatter extends YesWikiController

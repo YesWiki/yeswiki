@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\GroupController;
+use YesWiki\Core\Service\GroupOperationsService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\ThemeManager;
@@ -18,7 +18,7 @@ class AdminContentAction extends YesWikiAction
         }
 
         $dbService = $this->getService(DbService::class);
-        $groupController = $this->getService(GroupController::class);
+        $groupOperationsService = $this->getService(GroupOperationsService::class);
         $themeManager = $this->getService(ThemeManager::class);
         $hibernationService = $this->getService(HibernationService::class);
 
@@ -38,7 +38,7 @@ class AdminContentAction extends YesWikiAction
         $owners = array_column($ownersRows ?? [], 'owner');
 
         // Groups for ACL selectors
-        $groups = $groupController->getAll();
+        $groups = $groupOperationsService->getAll();
 
         // Templates for the theme bulk-action modal
         $templates = $themeManager->getTemplates();

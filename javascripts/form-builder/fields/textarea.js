@@ -30,5 +30,4 @@ export default {
   },
   advancedAttributes: ['placeholder', 'read_access', 'write_access', 'syntax', 'num_rows']
   // disabledAttributes: [],
-  // renderInput(fieldData) {},
 }

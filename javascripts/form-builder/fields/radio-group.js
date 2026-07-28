@@ -28,5 +28,4 @@ export default {
   advancedAttributes: ['read_access', 'write_access', 'queries', 'display_method'],
   // disabledAttributes: [],
   editorSetup: enumEditorSetup
-  // renderInput(fieldData) {},
 }

@@ -307,7 +307,7 @@ class TemplateEngine
     // and finally in tools/bazar/templates/
     public function render($templatePath, $data = [])
     {
-        $method = endsWith($templatePath, '.twig') ? 'renderTwig' : 'renderPhp';
+        $method = str_ends_with($templatePath, '.twig') ? 'renderTwig' : 'renderPhp';
 
         return $this->$method($templatePath, $data);
     }

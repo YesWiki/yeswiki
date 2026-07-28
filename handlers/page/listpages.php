@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 
 // fonctions a inclure
 include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';

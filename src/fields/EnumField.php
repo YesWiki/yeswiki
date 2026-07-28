@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Service\ExternalBazarService;
 use YesWiki\Core\Service\ListManager;
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Search\Service\SearchManager;
 use YesWiki\Wiki;
 
 abstract class EnumField extends BazarField

@@ -24,8 +24,21 @@ services:
 
   YesWiki\Core\Service\:
     resource: 'services/*'
-    # implementation details of MarkdownFormatterService, not services themselves
-    exclude: 'services/MarkdownFormatter/*'
+    exclude:
+      # implementation details of MarkdownFormatterService, not services themselves
+      - 'services/MarkdownFormatter/*'
+      # a value object constructed with `new` (its ctor takes the items to paginate),
+      # not an injectable service. It lives under services/ only because the current
+      # autoloader maps YesWiki\Core\Service\* to that directory; ticket 05's PSR-4
+      # move gives it a more honest home.
+      - 'services/Paginator.php'
+
+  # Wave-two ticket 05: modules migrate to Composer PSR-4 one at a time. A module's
+  # namespace maps to its own directory (YesWiki\Search\Service\X -> src/Search/Service/X.php),
+  # which is what PSR-4 requires and what the flat services/ + controllers/ layout could
+  # never satisfy. YesWiki\Core\* below keeps its bespoke loader until every module has moved.
+  YesWiki\Search\:
+    resource: 'Search/*'
 
   YesWiki\Core\Controller\:
     resource: 'controllers/*'
@@ -33,7 +46,7 @@ services:
     exclude: 'controllers/InstallationController.php'
 
   # the bootstrap initializes languages before the container exists; serve that same instance
-  YesWiki\Core\Controller\LanguageController:
+  YesWiki\Core\Service\LanguageService:
     factory: [null, 'getInstance']
 
   YesWiki\Core\Service\CommentService:

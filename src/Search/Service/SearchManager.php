@@ -1,10 +1,17 @@
 <?php
 
-namespace YesWiki\Core\Service;
+namespace YesWiki\Search\Service;
 
 use YesWiki\Core\Field\CheckboxField;
 use YesWiki\Core\Field\EnumField;
 use YesWiki\Wiki;
+use YesWiki\Core\Service\AclService;
+use YesWiki\Core\Service\DbService;
+use YesWiki\Core\Service\EntryManager;
+use YesWiki\Core\Service\FormManager;
+use YesWiki\Core\Service\Guard;
+use YesWiki\Core\Service\PageManager;
+use YesWiki\Core\Service\UserManager;
 
 class SearchManager
 {
@@ -396,7 +403,7 @@ class SearchManager
                     $vFindInSetNot = false; // Should not be used or not yet implemented
                     break;
                 default:
-                    throw new Exception($vOperator . ' is not recognized');
+                    throw new \Exception($vOperator . ' is not recognized');
 
                     return [];
             }
@@ -1322,7 +1329,7 @@ class SearchManager
      *                OR
      *                old string format bf_field=toto1|bf_field2!=tata
      *
-     * @return the string representing the query
+     * @return string the string representing the query
      */
     public function queryToString($pQuery)
     {
@@ -1566,7 +1573,7 @@ class SearchManager
 
         switch ($this->isRegExp($pString)) {
             case 0:
-                throw new Exception($pString . ' is not a regexp');
+                throw new \Exception($pString . ' is not a regexp');
 
                 return '';
                 break;

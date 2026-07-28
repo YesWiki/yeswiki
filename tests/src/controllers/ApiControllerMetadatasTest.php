@@ -6,7 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\ApiController;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -40,13 +40,13 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     {
         $controller = $wiki->services->get(ApiController::class);
         $pageManager = $wiki->services->get(PageManager::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the write path');
 
         try {
-            $authController->login($admin);
+            $authenticationService->login($admin);
 
             $request = Request::create('/api/pages/' . self::PAGE_TAG . '/metadatas', 'POST', [
                 'metadatas' => ['theme' => 'margot', 'squelette' => '1col.tpl.html'],
@@ -68,7 +68,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
             $this->assertSame('margot', $merged['theme'], 'previous metadata must survive a partial update');
             $this->assertSame('light.css', $merged['style']);
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
         }
     }
 
@@ -76,19 +76,19 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     public function testSavePageMetadatasRejectsEmptyMetadatas(Wiki $wiki)
     {
         $controller = $wiki->services->get(ApiController::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
 
         try {
-            $authController->login($admin);
+            $authenticationService->login($admin);
 
             $request = Request::create('/api/pages/' . self::PAGE_TAG . '/metadatas', 'POST', []);
             $response = $controller->savePageMetadatas($request, self::PAGE_TAG);
 
             $this->assertSame(400, $response->getStatusCode());
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
         }
     }
 }

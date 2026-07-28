@@ -28,6 +28,16 @@ yarn-install: yarn.lock ## Install npm vendors according to the current yarn.loc
 test: ## Launch unit tests
 	./vendor/bin/phpunit --do-not-cache-result --stderr tests
 
+## —— Static analysis ————————————————————
+analyse: ## Run PHPStan (level 8, errors outside phpstan-baseline.neon fail)
+	./vendor/bin/phpstan analyse --no-progress
+
+analyse-baseline: ## Regenerate phpstan-baseline.neon (it may shrink, never grow)
+	./vendor/bin/phpstan analyse --no-progress --generate-baseline=phpstan-baseline.neon
+
+wave-counters: ## Report the ectoplasme wave-two progress counters
+	php phpstan/wave-counters.php
+
 ## —— Linters & Formatters ———————————————
 lint: lint-php lint-js lint-other ## run all linters and formatters
 

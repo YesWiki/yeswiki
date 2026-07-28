@@ -4,8 +4,8 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\UserOperationsService;
 use YesWiki\Core\Exception\UserFieldException;
 use YesWiki\Core\Exception\UserNameAlreadyUsedException;
 use YesWiki\Core\Field\CheckboxField;
@@ -317,10 +317,10 @@ class FormPropertiesService
         $config = $form['entry_creates_user'];
 
         $value = $entry[self::USER_PROPERTY_NAME] ?? '';
-        $authController = $this->getService(AuthController::class);
+        $authenticationService = $this->getService(AuthenticationService::class);
         $userManager = $this->getService(UserManager::class);
         $request = $this->wiki->request;
-        $loggedUser = $authController->getLoggedUser();
+        $loggedUser = $authenticationService->getLoggedUser();
         $message = null;
         if (!empty($loggedUser)) {
             $associatedUser = $userManager->getOneByName($loggedUser['name']);
@@ -379,7 +379,7 @@ class FormPropertiesService
         $addToGroup = trim((string)($config['add_to_group'] ?? ''));
         $mailingList = trim((string)($config['mailing_list'] ?? ''));
 
-        $userController = $this->getService(UserController::class);
+        $userOperationsService = $this->getService(UserOperationsService::class);
         $userManager = $this->getService(UserManager::class);
         $mailer = $this->getService(Mailer::class);
         $request = $this->wiki->request;
@@ -433,7 +433,7 @@ class FormPropertiesService
             }
 
             try {
-                $userController->create([
+                $userOperationsService->create([
                     'name' => $wikiName,
                     'email' => $entry[$emailField],
                     'password' => $entry['mot_de_passe_wikini'],
@@ -477,11 +477,11 @@ class FormPropertiesService
     private function updateEmailIfNeeded(string $userName, ?string $email, bool $autoUpdateMail): void
     {
         if ($autoUpdateMail && !empty($userName) && !empty($email)) {
-            $authController = $this->getService(AuthController::class);
-            $userController = $this->getService(UserController::class);
+            $authenticationService = $this->getService(AuthenticationService::class);
+            $userOperationsService = $this->getService(UserOperationsService::class);
             $userManager = $this->getService(UserManager::class);
             $user = $userManager->getOneByName($userName);
-            $loggedUser = $authController->getLoggedUser();
+            $loggedUser = $authenticationService->getLoggedUser();
             if (
                 !empty($user)
                 && (
@@ -491,7 +491,7 @@ class FormPropertiesService
                 && $user['email'] !== $email
             ) {
                 try {
-                    $userController->update($user, ['email' => $email]);
+                    $userOperationsService->update($user, ['email' => $email]);
                 } catch (UserNameAlreadyUsedException $ex) {
                     throw new UserFieldException(_t('BAZ_USER_FIELD_EXISTING_USER_BY_EMAIL'));
                 } catch (\Exception $ex) {

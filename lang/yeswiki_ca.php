@@ -681,7 +681,6 @@ return [
     'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'Aquesta obra es publica amb llicència Creative Commons BY SA.',
     'TAGS_BY' => 'Per',
     'TAGS_ABOUT_THIS_EBOOK' => 'Informació sobre aquesta obra',
-    'TAGS_DOWNLOAD_EPUB' => '.epub',
     'TAGS_DOWNLOAD_PDF' => '.pdf',
     'TAGS_NO_EBOOK_METADATAS' => 'Aquesta pàgina no inclou les metadades necessàries per crear l\'ebook.',
     'TAGS_NO_EBOOK_FOUND' => 'No s\'ha trobat cap ebook.',
@@ -1720,6 +1719,7 @@ return [
     'FORM_BUILDER_INVALID_JSON' => 'El codi del formulari no és JSON vàlid: corregiu-lo a la pestanya de codi',
     'FORM_BUILDER_LABEL_LABEL' => 'Etiqueta',
     'FORM_BUILDER_NAME_LABEL' => 'Identificador',
+    'FORM_BUILDER_NO_PREVIEW' => 'Vista prèvia no disponible per a aquest camp',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatori',
 
     // form edit page sections (ticket 27)

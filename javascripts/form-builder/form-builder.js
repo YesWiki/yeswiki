@@ -191,6 +191,7 @@ function boot() {
   container.append(errorEl, sidebar, canvasEl)
 
   renderPalette()
+  initPreviewStyles()
   if (!loadFromTextarea()) {
     showError(`${_t('FORM_BUILDER_INVALID_JSON')}`)
     fields = []
@@ -280,6 +281,143 @@ function addFromPalette(type, index = fields.length) {
   selectField(added[0].id)
 }
 
+// ---------------------------------------------------------------- previews
+// A card body shows the field exactly as the entry form will render it: the
+// designer posts its template to `api/forms/preview`, which runs every field
+// object through FormManager::prepareData + BazarField::renderInputIfPermitted
+// and answers with the real Twig markup, positionally aligned with what was sent.
+//
+// Previews are cached per field id so rebuilding a card (every keystroke goes
+// through refreshCard) never blanks it: the stale markup stays on screen, dimmed,
+// until the answer for that field lands.
+
+const PREVIEW_DEBOUNCE = 300
+
+const previewHtml = {} // field id -> last markup rendered by the server
+const previewRequests = {} // field id -> id of the last request that asked for it
+const previewStyles = new Set() // hrefs already present in <head>
+let previewTimer = null
+let previewRequestId = 0
+let previewPendingAll = false
+let previewPendingIds = new Set()
+
+function previewHolder(field) {
+  return canvasEl.querySelector(`[data-fb-id="${field.id}"] .yw-fb__card-preview`)
+}
+
+// The previews live inside the form-edit <form>: their controls must never be
+// submitted with it, block its validation, or duplicate its element ids.
+function neutralizePreview(holder) {
+  holder.querySelectorAll('script, link').forEach((node) => node.remove())
+  holder.querySelectorAll('input, select, textarea, button').forEach((control) => {
+    control.disabled = true // eslint-disable-line no-param-reassign
+    control.removeAttribute('name')
+    control.removeAttribute('required')
+  })
+  holder.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'))
+  holder.querySelectorAll('[for]').forEach((node) => node.removeAttribute('for'))
+}
+
+// some inputs draw nothing by themselves — a hidden field, or a widget the entry
+// form builds in JS the designer does not run — and would leave a blank card body
+function hasVisiblePreview(holder) {
+  return holder.textContent.trim() !== ''
+    || holder.querySelector('input:not([type="hidden"]), select, textarea, img, svg, canvas, iframe') !== null
+}
+
+function paintPreview(holder, field) {
+  holder.innerHTML = previewHtml[field.id] ?? '' // eslint-disable-line no-param-reassign
+  neutralizePreview(holder)
+  if (!hasVisiblePreview(holder)) {
+    // eslint-disable-next-line no-param-reassign
+    holder.innerHTML = `<em class="yw-fb__card-nopreview">${esc(_t('FORM_BUILDER_NO_PREVIEW'))}</em>`
+  }
+  holder.classList.remove('yw-fb__card-preview--pending')
+}
+
+function initPreviewStyles() {
+  document.querySelectorAll('link[href]').forEach((link) => previewStyles.add(link.getAttribute('href')))
+}
+
+// stylesheets the input templates registered server-side (date.css, file.css,
+// leaflet.css, …) — the designer page never loads them on its own
+function addPreviewStyles(html) {
+  if (!html) return
+  const holder = document.createElement('div')
+  holder.innerHTML = html
+  holder.querySelectorAll('link[href]').forEach((link) => {
+    const href = link.getAttribute('href')
+    if (previewStyles.has(href)) return
+    previewStyles.add(href)
+    document.head.append(link)
+  })
+}
+
+function forgetStalePreviews() {
+  const alive = new Set(fields.map((field) => field.id))
+  Object.keys(previewHtml).forEach((id) => {
+    if (!alive.has(id)) {
+      delete previewHtml[id]
+      delete previewRequests[id]
+    }
+  })
+}
+
+// `ids` null asks for every field, otherwise only the listed ones (an attribute
+// edit changes one card). Calls coalesce until the debounce elapses.
+function schedulePreviews(ids = null) {
+  if (ids === null) previewPendingAll = true
+  else ids.forEach((id) => previewPendingIds.add(id))
+  clearTimeout(previewTimer)
+  previewTimer = setTimeout(runPreviews, PREVIEW_DEBOUNCE)
+}
+
+async function runPreviews() {
+  const targets = previewPendingAll
+    ? fields.slice()
+    : fields.filter((field) => previewPendingIds.has(field.id))
+  previewPendingAll = false
+  previewPendingIds = new Set()
+  if (targets.length === 0) return
+
+  previewRequestId += 1
+  const requestId = previewRequestId
+  targets.forEach((field) => {
+    previewRequests[field.id] = requestId
+    previewHolder(field)?.classList.add('yw-fb__card-preview--pending')
+  })
+
+  const template = serializeFields(targets.map(({ type, data }) => ({ type, data })), registry)
+  let payload
+  try {
+    const response = await fetch(wiki.url('?api/forms/preview'), {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: new URLSearchParams({ template })
+    })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    payload = await response.json()
+  } catch (error) {
+    // keep whatever the cards already show rather than blanking the canvas
+    console.error('form designer: field preview request failed', error)
+    targets.forEach((field) => {
+      if (previewRequests[field.id] === requestId) {
+        previewHolder(field)?.classList.remove('yw-fb__card-preview--pending')
+      }
+    })
+    return
+  }
+
+  addPreviewStyles(payload.styles)
+  targets.forEach((field, index) => {
+    // a later edit already asked for this field again: its answer wins
+    if (previewRequests[field.id] !== requestId) return
+    previewHtml[field.id] = payload.previews?.[index] ?? ''
+    const holder = previewHolder(field)
+    if (holder) paintPreview(holder, field)
+  })
+}
+
 // ---------------------------------------------------------------- canvas
 
 function initCanvasSort() {
@@ -302,42 +440,17 @@ function initCanvasSort() {
   })
 }
 
-function defaultPreview(type, data) {
-  switch (type) {
-    case 'textarea':
-      return `<textarea rows="${esc(data.num_rows || 3)}" placeholder="${esc(data.placeholder || '')}"></textarea>`
-    case 'select':
-      return `<select><option>${esc(data.linked_object || '')}</option></select>`
-    case 'checkbox-group':
-      return `<label><input type="checkbox"/> ${esc(data.linked_object || '…')}</label>`
-    case 'radio-group':
-      return `<label><input type="radio"/> ${esc(data.linked_object || '…')}</label>`
-    case 'date':
-      return '<input type="date"/>'
-    case 'file':
-      return '<input type="file"/>'
-    default:
-      return '<input type="text"/>'
-  }
-}
-
-function cardPreview(field) {
-  const config = configFor(field.type)
-  let html
-  if (config.renderInput) {
-    html = config.renderInput(field.data)?.field ?? ''
-  } else {
-    html = defaultPreview(field.type, field.data)
-  }
-  return html
-}
-
 function renderCanvas() {
   canvasEl.innerHTML = ''
   if (fields.length === 0) {
     canvasEl.append(el(`<div class="yw-fb__empty" data-fb-keep>${_t('FORM_BUILDER_EMPTY')}</div>`))
   }
   fields.forEach((field) => canvasEl.append(renderCard(field)))
+  forgetStalePreviews()
+  // cards rebuilt from the cache paint instantly; the ones never previewed yet
+  // (just added, duplicated, or reloaded from the code tab) need a render
+  const missing = fields.filter((field) => previewHtml[field.id] === undefined).map((field) => field.id)
+  if (missing.length > 0) schedulePreviews(missing)
 }
 
 function renderCard(field) {
@@ -357,10 +470,12 @@ function renderCard(field) {
       </span>
     </div>
     <div class="yw-fb__card-body">
-      <div class="yw-fb__card-preview">${cardPreview(field)}</div>
-      ${field.data.hint ? `<small class="yw-fb__card-hint">${esc(field.data.hint)}</small>` : ''}
+      <div class="yw-fb__card-preview yw-fb__card-preview--pending"></div>
     </div>
   </div>`)
+
+  const holder = card.querySelector('.yw-fb__card-preview')
+  if (previewHtml[field.id] !== undefined) paintPreview(holder, field)
 
   card.addEventListener('click', (event) => {
     const action = event.target.closest('[data-fb-action]')?.getAttribute('data-fb-action')
@@ -518,6 +633,7 @@ function renderSettings() {
     else field.data[name] = serialized
     syncToTextarea()
     refreshCard(field)
+    schedulePreviews([field.id])
   }
 
   const api = {

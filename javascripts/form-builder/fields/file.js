@@ -26,9 +26,4 @@ export default {
   },
   advancedAttributes: ['read_access', 'write_access', 'max_size', 'authorized_exts_label']
   // disabledAttributes: [],
-  // renderInput(field) {
-  //   return {
-  //     field: `<input type="file"/>`,
-  //   }
-  // }
 }

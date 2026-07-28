@@ -4,8 +4,8 @@ namespace YesWiki\Core\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\ReactionsController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\ReactionsFormatter;
 use YesWiki\Wiki;
 
 #[\Field(['reactions'])]
@@ -54,7 +54,7 @@ class ReactionsField extends BazarField
     protected $images;
     protected $imagesPath;
     protected $options;
-    protected $reactionsController;
+    protected $reactionsFormatter;
     protected $wiki;
 
     /*
@@ -68,7 +68,7 @@ class ReactionsField extends BazarField
     {
         parent::__construct($values, $services);
 
-        $this->reactionsController = $services->get(ReactionsController::class);
+        $this->reactionsFormatter = $services->get(ReactionsFormatter::class);
         $this->wiki = $services->get(Wiki::class);
         $this->imagesPath = null;
         $this->options = array_map('_t', self::DEFAULT_OPTIONS);
@@ -93,7 +93,7 @@ class ReactionsField extends BazarField
             ? trim($values[self::FIELD_LABELS])
             : '';
 
-        list('labels' => $this->labels, 'ids' => $this->ids) = $this->reactionsController->formatReactionsLabels(
+        list('labels' => $this->labels, 'ids' => $this->ids) = $this->reactionsFormatter->formatReactionsLabels(
             $labels,
             empty($this->ids)
                 ? (
@@ -120,12 +120,12 @@ class ReactionsField extends BazarField
             return '';
         }
 
-        $user = $this->getService(AuthController::class)->getLoggedUser();
+        $user = $this->getService(AuthenticationService::class)->getLoggedUser();
         $username = empty($user['name']) ? '' : $user['name'];
 
         $imagesPath = $this->getImagesPath();
         list('reactions' => $reactionItems, 'userReactions' => $userReactions, 'oldIdsUserReactions' => $oldIdsUserReactions) =
-            $this->reactionsController->getReactionItems(
+            $this->reactionsFormatter->getReactionItems(
                 $currentEntryTag,
                 $username,
                 $this->name,
@@ -151,7 +151,7 @@ class ReactionsField extends BazarField
     public function getImagesPath(): array
     {
         if (is_null($this->imagesPath)) {
-            $this->imagesPath = $this->reactionsController->formatImages(
+            $this->imagesPath = $this->reactionsFormatter->formatImages(
                 $this->ids,
                 $this->images,
                 array_map(function ($reactionsData) {

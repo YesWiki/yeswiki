@@ -24,8 +24,5 @@ export default {
   disabledAttributes: [
     'required', 'default'
   ],
-  editorHint: _t('BAZ_FORM_CALC_HINT', { br: '<BR>' }),
-  renderInput() {
-    return { field: '' }
-  }
+  editorHint: _t('BAZ_FORM_CALC_HINT', { br: '<BR>' })
 }

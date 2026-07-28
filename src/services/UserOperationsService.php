@@ -1,22 +1,17 @@
 <?php
 
-namespace YesWiki\Core\Controller;
+namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Exception\UserEmailAlreadyUsedException;
-use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TripleStore;
-use YesWiki\Core\Service\UserManager;
 use YesWiki\Core\YesWikiController;
 
-class UserController extends YesWikiController
+class UserOperationsService extends YesWikiController
 {
-    use LimitationsTrait; // can be used here because included via AuthController
+    use LimitationsTrait; // can be used here because included via AuthenticationService
 
     public const DEFAULT_NAME_MAX_LENGTH = 80;
     public const DEFAULT_EMAIL_MAX_LENGTH = 254;
@@ -37,9 +32,9 @@ class UserController extends YesWikiController
 
     private $limitations;
 
-    protected $authController;
+    protected $authenticationService;
     protected $dbService;
-    protected $groupController;
+    protected $groupOperationsService;
     protected $pageManager;
     protected $params;
     protected $hibernationService;
@@ -47,18 +42,18 @@ class UserController extends YesWikiController
     protected $userManager;
 
     public function __construct(
-        AuthController $authController,
+        AuthenticationService $authenticationService,
         DbService $dbService,
-        GroupController $groupController,
+        GroupOperationsService $groupOperationsService,
         PageManager $pageManager,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
         TripleStore $tripleStore,
         UserManager $userManager
     ) {
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
         $this->dbService = $dbService;
-        $this->groupController = $groupController;
+        $this->groupOperationsService = $groupOperationsService;
         $this->pageManager = $pageManager;
         $this->params = $params;
         $this->hibernationService = $hibernationService;
@@ -138,7 +133,7 @@ class UserController extends YesWikiController
         $this->userManager->update($user, $newValues);
         if (isset($newValues['password'])) {
             $user = $this->userManager->getOneByName($user['name']);
-            $this->authController->setPassword($user, $newValues['password']);
+            $this->authenticationService->setPassword($user, $newValues['password']);
         }
 
         return true;
@@ -240,7 +235,7 @@ class UserController extends YesWikiController
      */
     private function isRunner(User $user): bool
     {
-        $loggedUser = $this->authController->getLoggedUser();
+        $loggedUser = $this->authenticationService->getLoggedUser();
 
         return !empty($loggedUser) && ($loggedUser['name'] == $user['name']);
     }
@@ -263,7 +258,7 @@ class UserController extends YesWikiController
                 if (strtolower($group) === ADMIN_GROUP) {
                     throw new DeleteUserException(_t('USER_DELETE_LONE_MEMBER_OF_GROUP') . " ($group).");
                 }
-                $this->groupController->delete($group);
+                $this->groupOperationsService->delete($group);
             }
         }
     }
@@ -297,7 +292,7 @@ class UserController extends YesWikiController
                     $groupName = substr($group['resource'], $prefixLen);
                     $remainingMembers = array_filter(array_map('trim', preg_split('/[\\r\\n]+/', $newValue)));
                     if (empty($remainingMembers) && strtolower($groupName) !== ADMIN_GROUP) {
-                        $this->groupController->delete($groupName);
+                        $this->groupOperationsService->delete($groupName);
                     } elseif (!in_array($this->tripleStore->update(
                         $group['resource'],
                         $group['property'],

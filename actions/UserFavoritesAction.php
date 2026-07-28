@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Attach;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Field\ImageField;
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FavoritesManager;
@@ -13,7 +13,7 @@ use YesWiki\Core\YesWikiAction;
 class UserFavoritesAction extends YesWikiAction
 {
     protected $attach;
-    protected $authController;
+    protected $authenticationService;
     protected $entryManager;
     protected $favoritesManager;
     protected $formManager;
@@ -30,7 +30,7 @@ class UserFavoritesAction extends YesWikiAction
     public function run()
     {
         // get Services
-        $this->authController = $this->getService(AuthController::class);
+        $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->entryManager = $this->getService(EntryManager::class);
         $this->favoritesManager = $this->getService(FavoritesManager::class);
         $this->formManager = $this->getService(FormManager::class);
@@ -38,7 +38,7 @@ class UserFavoritesAction extends YesWikiAction
         $this->templateEngine = $this->getService(TemplateEngine::class);
         $this->attach = new Attach($this->wiki);
 
-        $user = $this->authController->getLoggedUser();
+        $user = $this->authenticationService->getLoggedUser();
         $currentUser = empty($user) ? null : $user['name'];
 
         $favorites = empty($currentUser) ? [] : $this->favoritesManager->getUserFavorites($currentUser);

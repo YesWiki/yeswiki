@@ -4,6 +4,7 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Core\Service\HibernationNotice;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\TemplateEngine;
 use YesWiki\Test\Core\ForcedParameterBag;
@@ -14,10 +15,11 @@ require_once 'tests/ForcedParameterBag.php';
 
 /**
  * Regression tests for ticket 15 (security-core-split): HibernationService is the new,
- * standalone home for the hibernation check formerly bundled inside SecurityController.
+ * standalone home for the hibernation check formerly bundled inside SecurityController
+ * (renamed to InputFilter by wave-two ticket 03).
  */
 #[CoversMethod(HibernationService::class, 'isWikiHibernated')]
-#[CoversMethod(HibernationService::class, 'getMessageWhenHibernated')]
+#[CoversMethod(HibernationNotice::class, 'getMessageWhenHibernated')]
 class HibernationServiceTest extends YesWikiTestCase
 {
     private function buildService($wiki, string $wikiStatus): HibernationService
@@ -25,7 +27,7 @@ class HibernationServiceTest extends YesWikiTestCase
         $realParams = $wiki->services->get(ParameterBagInterface::class);
         $forcedParams = new ForcedParameterBag($realParams, ['wiki_status' => $wikiStatus]);
 
-        return new HibernationService($forcedParams, $wiki->services->get(TemplateEngine::class));
+        return new HibernationService($forcedParams);
     }
 
     public function testIsWikiHibernatedForEachStatus()
@@ -40,11 +42,31 @@ class HibernationServiceTest extends YesWikiTestCase
         }
     }
 
-    public function testGetMessageWhenHibernatedRendersHibernationNotice()
+    public function testGetMessageWhenHibernatedRendersHibernationNotice(): void
     {
         $wiki = $this->getWiki();
-        $message = $this->buildService($wiki, 'hibernate')->getMessageWhenHibernated();
+        // ticket 04 split the rendering out: HibernationService answers the question and
+        // depends on nothing, HibernationNotice renders the banner.
+        $templateEngine = $wiki->services?->get(TemplateEngine::class);
+        $this->assertInstanceOf(TemplateEngine::class, $templateEngine);
 
-        $this->assertStringContainsString(_t('WIKI_IN_HIBERNATION'), $message);
+        $notice = new HibernationNotice($this->buildService($wiki, 'hibernate'), $templateEngine);
+
+        $this->assertStringContainsString(_t('WIKI_IN_HIBERNATION'), $notice->getMessageWhenHibernated());
+    }
+
+    public function testHibernationServiceDependsOnNothingButParameters(): void
+    {
+        // Guards the fix: every low-level core service asks isWikiHibernated(), so a new
+        // dependency here is depended on by the whole core and re-closes the 12 cycles
+        // ticket 04 removed.
+        $ctor = (new \ReflectionClass(HibernationService::class))->getConstructor();
+        $this->assertNotNull($ctor);
+        $types = array_map(
+            static fn (\ReflectionParameter $p): string => (string)$p->getType(),
+            $ctor->getParameters()
+        );
+
+        $this->assertSame([ParameterBagInterface::class], $types);
     }
 }

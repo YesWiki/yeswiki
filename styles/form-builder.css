@@ -25,11 +25,11 @@
   flex: 0 0 340px;
   max-width: 340px;
   position: sticky;
-  top: 8px;
+  top: 58px;
   border: 1px solid var(--neutral-light-color, #ddd);
   border-radius: 6px;
   padding: 12px;
-  background: #dcdcdc;
+  background: #f1f1f1;
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -208,7 +208,7 @@
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  background-color: #ddd;
+  background-color: #f0f0f0;
   border-bottom: 1px solid var(--neutral-light-color, #eee);
   font-size: 0.9rem;
 }
@@ -268,20 +268,34 @@
   pointer-events: none; /* previews are inert */
 }
 
-.yw-fb__card-preview input,
-.yw-fb__card-preview textarea,
-.yw-fb__card-preview select {
-  max-width: 100%;
-  border: 1px solid var(--neutral-light-color, #ddd);
-  border-radius: 4px;
-  padding: 3px 6px;
-  background: #fcfcfc;
+/* the card body holds the field's real entry-form markup, served by
+   `api/forms/preview` — it keeps the site's own input styling, only trimmed of
+   the vertical rhythm a full form needs and dimmed while it is being refreshed */
+.yw-fb__card-preview {
+  overflow-x: auto;
+  transition: opacity 0.15s ease;
 }
 
-.yw-fb__card-hint {
-  display: block;
+.yw-fb__card-preview--pending {
+  opacity: 0.45;
+}
+
+.yw-fb__card-preview .yw-form-group {
+  margin: 0;
+}
+
+.yw-fb__card-preview :disabled {
+  /* disabled only keeps the previews out of the surrounding form's submission
+     and validation — they should not look unavailable */
+  opacity: 1;
+  cursor: default;
+  color: inherit;
+  background-color: #fcfcfc;
+}
+
+.yw-fb__card-nopreview {
   color: var(--neutral-color, #777);
-  margin-top: 4px;
+  font-size: 0.85rem;
 }
 
 /* dragged palette clone inside the canvas */

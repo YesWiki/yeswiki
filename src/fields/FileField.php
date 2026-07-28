@@ -6,7 +6,7 @@ use Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Attach;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Service\AssetsManager;
 use YesWiki\Core\Service\EntryDateService;
 use YesWiki\Core\Service\EntryManager;
@@ -79,7 +79,7 @@ class FileField extends BazarField
                 if ($this->isAllowedToDeleteFile($entry, $value)) {
                     if (substr($value, 0, strlen($this->defineFilePrefix($entry))) == $this->defineFilePrefix($entry)) {
                         $attach = $this->getAttach();
-                        $rawFileName = $this->getService(SecurityController::class)->filterInput(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string');
+                        $rawFileName = $this->getService(InputFilter::class)->filterInput(INPUT_GET, 'delete_file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string');
                         if (!empty($rawFileName)) {
                             $attach->fmDelete($rawFileName);
                         }

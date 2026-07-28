@@ -1,10 +1,10 @@
 <?php
 
 use YesWiki\Core\Controller\EntryController;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\YesWikiHandler;
 
 class __EditHandler extends YesWikiHandler
@@ -46,7 +46,7 @@ class __EditHandler extends YesWikiHandler
             // save new tag if authorized
             $post = $this->getRequest()->request;
             if (
-                $post->get('submit') == SecurityController::EDIT_PAGE_SUBMIT_VALUE
+                $post->get('submit') == InputFilter::EDIT_PAGE_SUBMIT_VALUE
                 && $post->has('pagetags')
                 && $post->get('antispam') == 1
             ) {

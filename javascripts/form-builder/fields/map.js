@@ -60,8 +60,5 @@ export default {
       )
     }
     partNames.forEach((attr) => api.onChange(attr, pack))
-  },
-  renderInput() {
-    return { field: _t('BAZ_FORM_EDIT_MAP_FIELD') }
   }
 }

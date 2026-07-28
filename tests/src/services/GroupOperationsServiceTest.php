@@ -1,12 +1,12 @@
 <?php
 
-namespace YesWiki\Test\Core\Controller;
+namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Controller\GroupController;
-use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Service\GroupOperationsService;
+use YesWiki\Core\Service\UserOperationsService;
 use YesWiki\Core\Exception\GroupNameAlreadyUsedException;
 use YesWiki\Core\Exception\GroupNameDoesNotExistException;
 use YesWiki\Core\Exception\InvalidGroupNameException;
@@ -16,24 +16,24 @@ use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 
-#[CoversMethod(GroupController::class, '__construct')]
-#[CoversMethod(GroupController::class, 'create')]
-#[CoversMethod(GroupController::class, 'getMembers')]
-#[CoversMethod(GroupController::class, 'delete')]
-#[CoversMethod(GroupController::class, 'add')]
-#[CoversMethod(GroupController::class, 'update')]
-#[CoversMethod(GroupController::class, 'removeMembers')]
-class GroupControllerTest extends YesWikiTestCase
+#[CoversMethod(GroupOperationsService::class, '__construct')]
+#[CoversMethod(GroupOperationsService::class, 'create')]
+#[CoversMethod(GroupOperationsService::class, 'getMembers')]
+#[CoversMethod(GroupOperationsService::class, 'delete')]
+#[CoversMethod(GroupOperationsService::class, 'add')]
+#[CoversMethod(GroupOperationsService::class, 'update')]
+#[CoversMethod(GroupOperationsService::class, 'removeMembers')]
+class GroupOperationsServiceTest extends YesWikiTestCase
 {
     public const INVALID_CHAR = '+-_*=.:,?';
     public const CHARS_FOR_GROUP = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-    public function testGroupControllerExisting(): GroupController
+    public function testGroupOperationsServiceExisting(): GroupOperationsService
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(GroupController::class));
+        $this->assertTrue($wiki->services->has(GroupOperationsService::class));
 
-        return $wiki->services->get(GroupController::class);
+        return $wiki->services->get(GroupOperationsService::class);
     }
 
     public static function dataProviderTestCreate()
@@ -43,9 +43,9 @@ class GroupControllerTest extends YesWikiTestCase
         $valid_group_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
         $new_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
 
-        $userController = $wiki->services->get(UserController::class);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $user_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $userController->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
+        $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
 
         // groupname, error type, members
         return [
@@ -56,13 +56,13 @@ class GroupControllerTest extends YesWikiTestCase
         ];
     }
 
-    #[Depends('testGroupControllerExisting')]
+    #[Depends('testGroupOperationsServiceExisting')]
     #[DataProvider('dataProviderTestCreate')]
     public function testCreate(
         string $groupname,
         int $result_type,
         array $members,
-        GroupController $groupcontroller
+        GroupOperationsService $groupcontroller
     ) {
         if ($result_type == 0) {
             $groupcontroller->create($groupname, $members);
@@ -79,10 +79,10 @@ class GroupControllerTest extends YesWikiTestCase
         }
     }
 
-    #[Depends('testGroupControllerExisting')]
+    #[Depends('testGroupOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[DataProvider('dataProviderTestCreate')]
-    public function testGetMembers(string $groupname, int $result_type, array $members, GroupController $groupcontroller)
+    public function testGetMembers(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller)
     {
         if ($result_type == 0) {
             $groupcontroller->create($groupname, $members);
@@ -100,10 +100,10 @@ class GroupControllerTest extends YesWikiTestCase
         }
     }
 
-    #[Depends('testGroupControllerExisting')]
+    #[Depends('testGroupOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[DataProvider('dataProviderTestCreate')]
-    public function testDelete(string $groupname, int $result_type, array $members, GroupController $groupcontroller)
+    public function testDelete(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller)
     {
         if ($result_type == 0) {
             $groupcontroller->create($groupname, []);
@@ -136,15 +136,15 @@ class GroupControllerTest extends YesWikiTestCase
         $user_name = $wiki->generateRandomString(10);
         $user_name_1 = $wiki->generateRandomString(10);
 
-        $userController = $wiki->services->get(UserController::class);
-        $userController->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
-        $userController->create(['name' => $user_name_1, 'email' => $new_valid_group . '@example.com', 'password' => $user_name]);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
+        $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
+        $userOperationsService->create(['name' => $user_name_1, 'email' => $new_valid_group . '@example.com', 'password' => $user_name]);
 
-        $groupController = $wiki->services->get(GroupController::class);
-        $groupController->create($valid_group_name, [$user_name_1]);
-        $groupController->create($new_valid_group, [$user_name_1]);
-        $groupController->create($third_valid_group, [$user_name_1, '@' . $valid_group_name]);
-        $groupController->create($fourth_valid_group, [$user_name_1, '@' . $third_valid_group]);
+        $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
+        $groupOperationsService->create($valid_group_name, [$user_name_1]);
+        $groupOperationsService->create($new_valid_group, [$user_name_1]);
+        $groupOperationsService->create($third_valid_group, [$user_name_1, '@' . $valid_group_name]);
+        $groupOperationsService->create($fourth_valid_group, [$user_name_1, '@' . $third_valid_group]);
 
         // groupname, error type, members
         return [
@@ -157,10 +157,10 @@ class GroupControllerTest extends YesWikiTestCase
         ];
     }
 
-    #[Depends('testGroupControllerExisting')]
+    #[Depends('testGroupOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[DataProvider('dataProviderTestAdd')]
-    public function testAdd(string $groupname, int $result_type, array $members, GroupController $groupcontroller)
+    public function testAdd(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller)
     {
         if ($result_type == 0) {
             $groupcontroller->add($groupname, $members);
@@ -189,13 +189,13 @@ class GroupControllerTest extends YesWikiTestCase
         $user_name = $wiki->generateRandomString(10);
         $user_name_1 = $wiki->generateRandomString(10);
 
-        $userController = $wiki->services->get(UserController::class);
-        $userController->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
-        $userController->create(['name' => $user_name_1, 'email' => $new_valid_group . '@example.com', 'password' => $user_name]);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
+        $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
+        $userOperationsService->create(['name' => $user_name_1, 'email' => $new_valid_group . '@example.com', 'password' => $user_name]);
 
-        $groupController = $wiki->services->get(GroupController::class);
-        $groupController->create($new_valid_group, [$user_name_1, $user_name]);
-        $groupController->create($valid_group_name, [$user_name_1, $user_name, '@' . $new_valid_group]);
+        $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
+        $groupOperationsService->create($new_valid_group, [$user_name_1, $user_name]);
+        $groupOperationsService->create($valid_group_name, [$user_name_1, $user_name, '@' . $new_valid_group]);
 
         // groupname, error type, members
         return [
@@ -206,10 +206,10 @@ class GroupControllerTest extends YesWikiTestCase
         ];
     }
 
-    #[Depends('testGroupControllerExisting')]
+    #[Depends('testGroupOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[DataProvider('dataProviderTestRemoveMembers')]
-    public function testRemoveMembers(string $groupname, int $result_type, array $members, GroupController $groupcontroller)
+    public function testRemoveMembers(string $groupname, int $result_type, array $members, GroupOperationsService $groupcontroller)
     {
         if ($result_type == 0) {
             $groupcontroller->remove($groupname, $members);

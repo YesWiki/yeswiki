@@ -4,15 +4,26 @@ namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 
+/**
+ * Is the wiki hibernated?
+ *
+ * Deliberately depends on nothing but the parameter bag. Almost every low-level service
+ * asks this question -- AclService, PageManager, UserManager, EntryManager, TemplateEngine
+ * and a dozen more -- so whatever this class depends on is effectively depended on by the
+ * whole core.
+ *
+ * It used to inject TemplateEngine so it could render its own hibernation banner, which
+ * made a bottom-of-the-graph status check reach back up into rendering and closed 12
+ * dependency cycles on its own (wave-two ticket 04). Rendering now lives in
+ * HibernationNotice. Keep this class dependency-free.
+ */
 class HibernationService
 {
     protected $params;
-    protected $templateEngine;
 
-    public function __construct(ParameterBagInterface $params, TemplateEngine $templateEngine)
+    public function __construct(ParameterBagInterface $params)
     {
         $this->params = $params;
-        $this->templateEngine = $templateEngine;
     }
 
     /**
@@ -26,15 +37,10 @@ class HibernationService
     }
 
     /**
-     * get alert message when hibernated.
+     * The message body shown while hibernated, as text. Rendering it is HibernationNotice's job.
      */
-    public function getMessageWhenHibernated(): string
+    public function getHibernationMessageText(): string
     {
-        $message = [
-            'type' => 'info',
-            'message' => _t('WIKI_IN_HIBERNATION') . '<br/>',
-        ];
-
-        return $this->templateEngine->render('@core/alert-message-with-back.twig', $message);
+        return _t('WIKI_IN_HIBERNATION') . '<br/>';
     }
 }

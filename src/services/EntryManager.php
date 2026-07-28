@@ -4,17 +4,18 @@ namespace YesWiki\Core\Service;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Exception\ParsingMultipleException;
 use YesWiki\Core\Field\BazarField;
 use YesWiki\Core\Field\ImageField;
 use YesWiki\Wiki;
+use YesWiki\Search\Service\SearchManager;
 
 class EntryManager
 {
     protected $wiki;
     protected $mailer;
-    protected $authController;
+    protected $authenticationService;
     protected $pageManager;
     protected $tripleStore;
     protected $aclService;
@@ -38,7 +39,7 @@ class EntryManager
     public function __construct(
         Wiki $wiki,
         Mailer $mailer,
-        AuthController $authController,
+        AuthenticationService $authenticationService,
         PageManager $pageManager,
         TripleStore $tripleStore,
         AclService $aclService,
@@ -52,7 +53,7 @@ class EntryManager
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
         $this->pageManager = $pageManager;
         $this->tripleStore = $tripleStore;
         $this->aclService = $aclService;
@@ -337,13 +338,13 @@ class EntryManager
 
         // on change provisoirement d'utilisateur
         if (isset($GLOBALS['utilisateur_wikini'])) {
-            $olduser = $this->authController->getLoggedUser();
-            $this->authController->logout();
+            $olduser = $this->authenticationService->getLoggedUser();
+            $this->authenticationService->logout();
 
             // On s'identifie de facon a attribuer la propriete de la fiche a
             // l'utilisateur qui vient d etre cree
             $user = $this->userManager->getOneByName($GLOBALS['utilisateur_wikini']);
-            $this->authController->login($user);
+            $this->authenticationService->login($user);
         }
 
         $ignoreAcls = true;
@@ -394,10 +395,10 @@ class EntryManager
 
         // on remet l'utilisateur initial s'il y en avait un
         if (isset($GLOBALS['utilisateur_wikini']) && !empty($olduser)) {
-            $this->authController->logout();
+            $this->authenticationService->logout();
             $oldUserClass = $this->userManager->getOneByName($olduser['name']);
             if (!empty($oldUserClass)) {
-                $this->authController->login($oldUserClass, $olduser['remember'] ?? 1);
+                $this->authenticationService->login($oldUserClass, $olduser['remember'] ?? 1);
             }
         }
 
@@ -613,7 +614,7 @@ class EntryManager
 
         $this->pageManager->deleteOrphaned($tag);
         $this->wiki->LogAdministrativeAction(
-            $this->authController->getLoggedUserName(),
+            $this->authenticationService->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
@@ -1152,7 +1153,7 @@ class EntryManager
     private function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->wiki->LogAdministrativeAction($this->authController->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');
+        $this->wiki->LogAdministrativeAction($this->authenticationService->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');
 
         return $result;
     }

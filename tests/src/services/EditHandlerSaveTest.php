@@ -4,7 +4,7 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\Service\UserManager;
@@ -37,7 +37,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
     public function testDisplaySavePreviewAndConflictDetection(Wiki $wiki)
     {
         $pageManager = $wiki->services->get(PageManager::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
         $pageManager->save(self::PAGE_TAG, 'original content', '', true);
@@ -45,7 +45,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
 
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
-        $authController->login($admin);
+        $authenticationService->login($admin);
 
         $wiki->tag = self::PAGE_TAG;
         $wiki->page = $page;
@@ -92,7 +92,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
             $this->assertSame('NEW SAVED CONTENT', trim($stillSaved['body']), 'a stale save must be rejected, not silently overwrite');
         } finally {
             $pageManager->deleteOrphaned(self::PAGE_TAG);
-            $authController->logout();
+            $authenticationService->logout();
             unset($GLOBALS['wiki']);
         }
     }

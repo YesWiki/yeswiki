@@ -718,7 +718,6 @@ return [
     'TAGS_PUBLISHED_UNDER_CREATIVE_COMMONS_BY_SA' => 'Esta obra está publicada bajo la licencia Creative Commons BY SA.',
     'TAGS_BY' => 'Por',
     'TAGS_ABOUT_THIS_EBOOK' => 'Información sobre esta obra',
-    'TAGS_DOWNLOAD_EPUB' => '.epub',
     'TAGS_DOWNLOAD_PDF' => '.pdf',
     'TAGS_DOWNLOAD' => 'Descargar',
     'TAGS_CONTENT_VISIBLE_ONLINE_FROM_PAGE' => 'Contenido web en la página',
@@ -2001,6 +2000,7 @@ return [
     'FORM_BUILDER_INVALID_JSON' => 'El código del formulario no es JSON válido: corríjalo en la pestaña de código',
     'FORM_BUILDER_LABEL_LABEL' => 'Etiqueta',
     'FORM_BUILDER_NAME_LABEL' => 'Identificador',
+    'FORM_BUILDER_NO_PREVIEW' => 'Vista previa no disponible para este campo',
     'FORM_BUILDER_REQUIRED_LABEL' => 'Obligatorio',
 
     // form edit page sections (ticket 27)

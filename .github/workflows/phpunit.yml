@@ -13,13 +13,19 @@ on:
     branches: [doryphore, ectoplasme]
     paths:
       - 'composer.lock'
-      - '*.php'
+      # '*.php' matched root-level files only -- GitHub's glob '*' does not cross '/',
+      # so no change under src/, actions/, handlers/ or tests/ ever triggered this
+      # workflow. '**.php' is what was meant.
+      - '**.php'
       - '.github/workflows/*.yml'
   pull_request:
     branches: [doryphore, doryphore-dev, ectoplasme]
     paths:
       - 'composer.lock'
-      - '*.php'
+      # '*.php' matched root-level files only -- GitHub's glob '*' does not cross '/',
+      # so no change under src/, actions/, handlers/ or tests/ ever triggered this
+      # workflow. '**.php' is what was meant.
+      - '**.php'
       - '.github/workflows/*.yml'
 
 env:

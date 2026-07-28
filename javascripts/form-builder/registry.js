@@ -3,7 +3,9 @@
 // Each config declares: `field` (palette entry: label/icon), `attributes` (settings
 // panel definition, keys = the storage attribute keys of the stored JSON template),
 // `advancedAttributes`, `disabledAttributes`, `defaultIdentifier`, optional `set`
-// (multi-field palette entry), `editorHint`, `editorSetup(api)`, `renderInput(data)`.
+// (multi-field palette entry), `editorHint`, `editorSetup(api)`. There is no client
+// side preview hook: the canvas cards show the field's real entry-form markup, served
+// by `api/forms/preview` (FormController::previewTemplate).
 //
 // Extensions can add their own configs before the engine boots via
 // window.formBuilderFields (same contract as the old builder's field modules).

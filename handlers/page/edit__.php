@@ -2,10 +2,10 @@
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\CaptchaController;
-use YesWiki\Core\Controller\SecurityController;
-use YesWiki\Core\Controller\ThemeController;
+use YesWiki\Core\Service\InputFilter;
+use YesWiki\Core\Service\ThemeSelectorRenderer;
 use YesWiki\Core\Service\HashCashService;
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\Service\ThemeManager;
 
 $params = $this->services->get(ParameterBagInterface::class);
@@ -43,7 +43,7 @@ if (!$params->get('hide_keywords') && $this->HasAccess('write') && $this->HasAcc
 
 if ($this->HasAccess('write') && $this->HasAccess('read')) {
     // Edition
-    if (!isset($_POST['submit']) || $_POST['submit'] != SecurityController::EDIT_PAGE_SUBMIT_VALUE) {
+    if (!isset($_POST['submit']) || $_POST['submit'] != InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
         if ($this->config['use_hashcash']) {
             $hashCash = $this->services->get(HashCashService::class);
             $hashCashCode = $hashCash->getJavascriptCode();
@@ -80,7 +80,7 @@ if ((!isset($this->config['hide_action_template']) or (isset($this->config['hide
         '        <h3 class="yw-modal__title">' . _t('TEMPLATE_CUSTOM_GRAPHICS') . ' ' . $this->GetPageTag() . '</h3>' . "\n" .
         '      </div>' . "\n" .
         '      <div class="yw-modal__body">' . "\n";
-    $selecteur .= $this->services->get(ThemeController::class)->showFormThemeSelector('edit');
+    $selecteur .= $this->services->get(ThemeSelectorRenderer::class)->showFormThemeSelector('edit');
     $selecteur .= '
       </div>' . "\n" .
         '      <div class="yw-modal__footer">' . "\n" .

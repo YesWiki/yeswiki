@@ -5,6 +5,7 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Core\Entity\Event;
 use YesWiki\Wiki;
+use YesWiki\Search\Service\SearchManager;
 
 class EntryDateService implements EventSubscriberInterface
 {

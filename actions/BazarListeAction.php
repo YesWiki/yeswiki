@@ -1,11 +1,12 @@
 <?php
 
-use YesWiki\Core\Controller\AuthController;
 use YesWiki\Core\Exception\ParsingMultipleException;
 use YesWiki\Core\Exception\TemplateNotFound;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\BazarListService;
 use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Core\Service\Paginator;
+use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarListeAction extends YesWikiAction
@@ -140,7 +141,7 @@ class BazarListeAction extends YesWikiAction
 
             // sélectionner seulement les fiches d'un utilisateur
             'user' => $arg['user'] ?? ((isset($arg['filteruserasowner']) && $arg['filteruserasowner'] == 'true') ?
-                $this->getService(AuthController::class)->getLoggedUserName() : null),
+                $this->getService(AuthenticationService::class)->getLoggedUserName() : null),
 
             // identifiant du formulaire (plusieures valeurs possibles, séparées par des virgules)
             'idtypeannonce' => $arg['id'] ?? $arg['idtypeannonce'] ?? $get->get('id') ?? null,
@@ -307,7 +308,7 @@ class BazarListeAction extends YesWikiAction
             if (isset($this->arguments['zoom'])) {
                 $this->arguments['zoom'] = intval($this->arguments['zoom']);
             }
-            $currentUser = $this->getService(AuthController::class)->getLoggedUser();
+            $currentUser = $this->getService(AuthenticationService::class)->getLoggedUser();
 
             return $this->render("@core/entries/index-dynamic-templates/{$this->arguments['template']}.twig", [
                 'param' => $this->arguments, // DEPRECATED but still there for retro-compatibility: use params (plural)
@@ -367,28 +368,28 @@ class BazarListeAction extends YesWikiAction
         $data['forms'] = $pForms;
 
         if (!empty($this->arguments['pagination']) && $this->arguments['pagination'] > 0) {
-            require_once YESWIKI_SOURCE_DIR . '/src/vendor/Pager/Pager.php';
-            $tab = $this->getRequest()->query->all();
-            unset($tab['wiki']);
-            $pager = &Pager::factory([
-                'mode' => $this->params->get('BAZ_MODE_DIVISION'),
-                'perPage' => $this->arguments['pagination'],
-                'delta' => $this->params->get('BAZ_DELTA'),
-                'httpMethod' => 'GET',
-                'path' => $this->wiki->getBaseUrl(),
-                'extraVars' => $tab,
-                'altNext' => _t('BAZ_SUIVANT'),
-                'altPrev' => _t('BAZ_PRECEDENT'),
-                'nextImg' => _t('BAZ_SUIVANT'),
-                'prevImg' => _t('BAZ_PRECEDENT'),
-                'itemData' => $data['fiches'],
-                'curPageSpanPre' => '<li class="active"><a>',
-                'curPageSpanPost' => '</a></li>',
-                'useSessions' => false,
-                'closeSession' => false,
+            $query = $this->getRequest()->query->all();
+            // Preserved from the PEAR-Pager call this replaced (ticket 02), including the
+            // `wiki` strip -- which looks like it drops the page tag outside rewrite mode,
+            // but changing URL semantics is out of scope for a dead-code purge.
+            unset($query['wiki']);
+            $paginationUrl = $this->wiki->getBaseUrl() . '/' . basename((string)($_SERVER['PHP_SELF'] ?? 'index.php'));
+
+            $paginator = new Paginator(
+                $data['fiches'],
+                (int)$this->arguments['pagination'],
+                Paginator::pageFromQuery($query),
+                (int)$this->params->get('BAZ_DELTA')
+            );
+
+            $data['fiches'] = $paginator->getPageData();
+            $links = $paginator->renderLinks($paginationUrl, $query, [
+                'prev' => _t('BAZ_PRECEDENT'),
+                'next' => _t('BAZ_SUIVANT'),
             ]);
-            $data['fiches'] = $pager->getPageData();
-            $data['pager_links'] = '<div class="bazar_numero text-center"><ul class="pagination">' . $pager->links . '</ul></div>';
+            $data['pager_links'] = $links === ''
+                ? ''
+                : '<div class="bazar_numero yw-text-center"><ul class="yw-pagination">' . $links . '</ul></div>';
         }
 
         try {

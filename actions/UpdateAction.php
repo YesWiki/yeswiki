@@ -2,7 +2,7 @@
 
 // ticket 19: relocated from tools/autoupdate/actions/UpdateAction.php.
 
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Entity\Messages;
 use YesWiki\Core\Service\ArchiveService;
 use YesWiki\Core\Service\AutoUpdateService;
@@ -21,7 +21,7 @@ class UpdateAction extends YesWikiAction
 
     public function run()
     {
-        $vSecurityController = $this->getService(SecurityController::class);
+        $vSecurityController = $this->getService(InputFilter::class);
         $vUpdateService = $this->getService(AutoUpdateService::class);
         $vMigrationService = $this->getService(MigrationService::class);
         $vArchiveService = $this->getService(ArchiveService::class);

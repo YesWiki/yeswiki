@@ -39,8 +39,5 @@ export default {
   disabledAttributes: [
     'required', 'default', 'name', 'label'
   ],
-  editorHint: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT', { br: '<BR>' }),
-  renderInput() {
-    return { field: '' }
-  }
+  editorHint: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_HINT', { br: '<BR>' })
 }

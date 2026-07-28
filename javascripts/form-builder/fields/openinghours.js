@@ -13,8 +13,5 @@ export default {
     read_access: readConf,
     write_access: writeConf
   },
-  advancedAttributes: ['read_access', 'write_access'],
-  renderInput() {
-    return { field: '<input type="date"/>' }
-  }
+  advancedAttributes: ['read_access', 'write_access']
 }

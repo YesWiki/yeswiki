@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Service\AutoUpdateService;
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Core\Service\ConfigurationService;
@@ -10,7 +10,7 @@ class CercopitequePostInstall extends YesWikiMigration
 {
     public function run()
     {
-        $previousVersion = $this->getService(SecurityController::class)->filterInput(INPUT_GET, 'previous_version', FILTER_DEFAULT, true);
+        $previousVersion = $this->getService(InputFilter::class)->filterInput(INPUT_GET, 'previous_version', FILTER_DEFAULT, true);
         if ($previousVersion === 'cercopitheque') {
             $config = $this->getService(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
             $config->load();

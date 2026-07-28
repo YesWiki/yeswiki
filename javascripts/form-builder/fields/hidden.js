@@ -1,5 +1,3 @@
-import { escapeHtml } from './commons/attributes.js'
-
 export default {
   field: {
     label: _t('FORM_BUILDER_HIDDEN_LABEL'),
@@ -9,8 +7,5 @@ export default {
   },
   defaultIdentifier: 'bf_cache',
   attributes: {},
-  disabledAttributes: ['required'],
-  renderInput(field) {
-    return { field: `<em>${_t('FORM_BUILDER_HIDDEN_LABEL')} — ${escapeHtml(field.default || '')}</em>` }
-  }
+  disabledAttributes: ['required']
 }

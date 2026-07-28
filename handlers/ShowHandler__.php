@@ -2,7 +2,7 @@
 
 use YesWiki\Core\Service\AclService;
 use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\YesWikiHandler;
 
 class ShowHandler__ extends YesWikiHandler

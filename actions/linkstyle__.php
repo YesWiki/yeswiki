@@ -2,8 +2,9 @@
 <?php
 
 // relocated from tools/tags/actions/linkstyle__.php (ticket 10): tags.css covers the
-// tag cloud, epub export selection UI, and the rss-icon, loaded on every page like the
-// rest of this file's styles
+// tag cloud and the rss-icon, loaded on every page like the rest of this file's styles.
+// (The epub export selection UI this also used to mention was already gone; wave-two
+// ticket 02 deleted the last of it -- the handler and the vendored PHPePub library.)
 $this->AddCSSFile('styles/actions/tags-nuage.css');
 
 // relocated from tools/attach/actions/linkstyle__.php (ticket 17): attached-file display

@@ -5,7 +5,7 @@
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
  */
 
-use YesWiki\Core\Controller\GroupController;
+use YesWiki\Core\Service\GroupOperationsService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\HibernationService;
@@ -17,7 +17,7 @@ class GererDroitsAction extends YesWikiAction
     protected $dbService;
     protected $hibernationService;
     protected $utils;
-    protected $groupController;
+    protected $groupOperationsService;
 
     public function run()
     {
@@ -32,7 +32,7 @@ class GererDroitsAction extends YesWikiAction
         $this->dbService = $this->getService(DbService::class);
         $this->hibernationService = $this->getService(HibernationService::class);
         $this->utils = $this->getService(TemplateHelperService::class);
-        $this->groupController = $this->getService(GroupController::class);
+        $this->groupOperationsService = $this->getService(GroupOperationsService::class);
 
         $request = $this->getRequest();
         list('success' => $success, 'error' => $error) = $this->manageChangeRights($request->request->all());
@@ -62,7 +62,7 @@ class GererDroitsAction extends YesWikiAction
             $pageEtDroits[] = $this->utils->recupDroits($pages);
         }
 
-        $groups = $this->groupController->getAll();
+        $groups = $this->groupOperationsService->getAll();
 
         return $this->render(
             '@core/gerer-droits-action.twig',

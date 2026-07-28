@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\CsrfTokenController;
+use YesWiki\Core\Service\CsrfTokenChecker;
 use YesWiki\Core\Service\DbService;
 
 if (($this->UserIsOwner() || $this->UserIsAdmin())
@@ -10,7 +10,7 @@ if (($this->UserIsOwner() || $this->UserIsAdmin())
     && ($_GET['confirme'] === 'oui')
 ) {
     try {
-        if ($this->services->get(CsrfTokenController::class)->checkToken('main', 'POST', 'csrf-token', false)) {
+        if ($this->services->get(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false)) {
             $tag = $this->GetPageTag();
             $dbService = $this->services->get(DbService::class);
             $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '" . $dbService->escape($tag) . "'");

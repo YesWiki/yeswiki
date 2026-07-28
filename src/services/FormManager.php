@@ -7,6 +7,7 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 use YesWiki\Core\Attach;
 use YesWiki\Core\Field\BazarField;
 use YesWiki\Wiki;
+use YesWiki\Search\Service\SearchManager;
 
 class FormManager
 {

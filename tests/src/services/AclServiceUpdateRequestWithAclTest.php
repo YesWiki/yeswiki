@@ -12,7 +12,7 @@ require_once 'tests/YesWikiTestCase.php';
 /**
  * Regression test for second-order SQL injection in AclService::updateRequestWithACL().
  *
- * A self-registered user's name is only restricted by UserController::PATTERN_USER_NAME,
+ * A self-registered user's name is only restricted by UserOperationsService::PATTERN_USER_NAME,
  * which allows double-quote, space, '(' and ')' (it only excludes ! # @ < > \ /). The raw
  * name is escaped when INSERTed (UserManager::create), so it's stored verbatim, including
  * any '"'. updateRequestWithACL() then reloads that name and used to concatenate it raw
@@ -49,7 +49,7 @@ class AclServiceUpdateRequestWithAclTest extends YesWikiTestCase
         $userManager->create(self::MALICIOUS_NAME, self::TEST_EMAIL, 'Aa1!aaaaRegression');
 
         // simulate this user being logged in, the way AclService::updateRequestWithACL()
-        // observes it (via AuthController::getLoggedUser() -> $_SESSION['user'])
+        // observes it (via AuthenticationService::getLoggedUser() -> $_SESSION['user'])
         $previousSessionUser = $_SESSION['user'] ?? null;
         $_SESSION['user'] = ['name' => self::MALICIOUS_NAME, 'lastConnection' => time()];
 

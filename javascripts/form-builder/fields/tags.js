@@ -11,9 +11,6 @@ export default {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },
     read_access: readConf,
     write_access: writeConf
-  },
-  // disabledAttributes: [],
-  renderInput() {
-    return { field: '<input/>' }
   }
+  // disabledAttributes: [],
 }

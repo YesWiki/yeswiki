@@ -1,6 +1,7 @@
 <?php
 
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
+use YesWiki\Core\Service\HibernationNotice;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\LinkTracker;
 use YesWiki\Core\Service\PageManager;
@@ -34,16 +35,16 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
             'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
             'preview' => true,
             'bodyPreview' => $this->Format($body),
-            'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE,
+            'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
         ]);
         $this->SetInclusions($temp);
     } else {
-        if ($submit == SecurityController::EDIT_PAGE_SUBMIT_VALUE && $this->page && $this->page['id'] != $request->request->get('previous')) {
+        if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE && $this->page && $this->page['id'] != $request->request->get('previous')) {
             $error = _t('EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER');
             $submit = false;
         }
 
-        if ($submit == SecurityController::EDIT_PAGE_SUBMIT_VALUE) {
+        if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
             // SAVE AND REDIRECT
             $body = str_replace("\r", '', $body);
             // teste si la nouvelle page est differente de la précédente
@@ -86,7 +87,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
                 'passwordForEditing' => $passwordForEditing,
                 'cancelUrl' => $cancelUrl,
                 'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
-                'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE,
+                'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
                 'preview' => false,
             ]);
         }
@@ -94,7 +95,7 @@ if ($this->HasAccess('write') && $this->HasAccess('read') && !$isWikiHibernated)
 } else {
     $output .= '<i>' . _t('EDIT_NO_WRITE_ACCESS') . "</i>\n";
     if ($isWikiHibernated) {
-        $output .= $this->services->get(HibernationService::class)->getMessageWhenHibernated();
+        $output .= $this->services->get(HibernationNotice::class)->getMessageWhenHibernated();
     }
 }
 

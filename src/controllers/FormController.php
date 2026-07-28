@@ -6,24 +6,27 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\Field\MapField;
 use YesWiki\Core\Service\ActivityPubService;
+use YesWiki\Core\Service\CsrfTokenChecker;
 use YesWiki\Core\Service\FormManager;
 use YesWiki\Core\Service\FormPropertiesService;
 use YesWiki\Core\Service\Guard;
 use YesWiki\Core\Service\HibernationService;
+use YesWiki\Core\Service\IcalFormatter;
+use YesWiki\Core\Service\LanguageService;
 use YesWiki\Core\Service\WebfingerService;
 use YesWiki\Core\YesWikiController;
 
 class FormController extends YesWikiController
 {
-    protected $csrfTokenController;
+    protected $csrfTokenChecker;
     protected $formManager;
     protected $hibernationService;
     protected $activityPubService;
     protected $webfingerService;
 
-    public function __construct(FormManager $formManager, HibernationService $hibernationService, CsrfTokenController $csrfTokenController, ActivityPubService $activityPubService, WebfingerService $webfingerService)
+    public function __construct(FormManager $formManager, HibernationService $hibernationService, CsrfTokenChecker $csrfTokenChecker, ActivityPubService $activityPubService, WebfingerService $webfingerService)
     {
-        $this->csrfTokenController = $csrfTokenController;
+        $this->csrfTokenChecker = $csrfTokenChecker;
         $this->formManager = $formManager;
         $this->hibernationService = $hibernationService;
         $this->activityPubService = $activityPubService;
@@ -87,7 +90,7 @@ class FormController extends YesWikiController
             },
             ARRAY_FILTER_USE_KEY,
         );
-        $this->getService(LanguageController::class)->loadTranslations($designerKeys, true);
+        $this->getService(LanguageService::class)->loadTranslations($designerKeys, true);
     }
 
     /**
@@ -210,7 +213,7 @@ class FormController extends YesWikiController
     {
         if ($this->wiki->UserIsAdmin()) {
             try {
-                $this->csrfTokenController->checkToken('main', 'POST', 'confirmDeleteToken', false);
+                $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmDeleteToken', false);
                 $this->formManager->clear($id);
                 $this->formManager->delete($id);
 
@@ -227,7 +230,7 @@ class FormController extends YesWikiController
     {
         if ($this->wiki->UserIsAdmin()) {
             try {
-                $this->csrfTokenController->checkToken('main', 'POST', 'confirmEmptyToken', false);
+                $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmEmptyToken', false);
                 $this->formManager->clear($id);
 
                 return $this->wiki->redirect($this->wiki->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_VIDE'], false));

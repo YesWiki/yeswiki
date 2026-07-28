@@ -3,7 +3,7 @@
 namespace YesWiki\Core\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Controller\TabsController;
+use YesWiki\Core\Service\TabsRenderer;
 use YesWiki\Core\Service\AssetsManager;
 
 #[\Field(['tabs'])]
@@ -14,7 +14,7 @@ class TabsField extends LabelField
     private $moveSubmitButtonToLastTab;
     private $tabsClass;
     private $btnClass;
-    protected $tabsController;
+    protected $tabsRenderer;
 
     protected const FIELD_FORM_TITLES = 1;
     protected const FIELD_VIEW_TITLES = 3;
@@ -32,7 +32,7 @@ class TabsField extends LabelField
         $this->moveSubmitButtonToLastTab = ($values[self::FIELD_MOVE_SUBMIT_BUTTON_TO_LAST_TAB] === 'moveSubmit');
         $this->btnClass = (in_array($values[self::FIELD_BTN_COLOR], ['btn-primary', 'btn-secondary-1', 'btn-secondary-2'], true) ? $values[self::FIELD_BTN_COLOR] : 'btn-primary') .
           ($values[self::FIELD_BTN_SIZE] === 'btn-xs' ? ' btn-xs' : '');
-        $this->tabsController = $this->getService(TabsController::class);
+        $this->tabsRenderer = $this->getService(TabsRenderer::class);
         // does not call prepareText in constuct only in render (lazy loading)
         $this->formText = '';
         $this->viewText = '';
@@ -50,7 +50,7 @@ class TabsField extends LabelField
 
     protected function prepareText($mode): ?string
     {
-        return $this->tabsController->openTabs($mode, $this);
+        return $this->tabsRenderer->openTabs($mode, $this);
     }
 
     protected function renderInput($entry)

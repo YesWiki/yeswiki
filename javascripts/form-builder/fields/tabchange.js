@@ -24,8 +24,5 @@ export default {
     br: '<BR>',
     'tabs-field-label': _t('BAZ_FORM_EDIT_TABS'),
     'tabchange-field-label': _t('BAZ_FORM_EDIT_TABCHANGE')
-  }),
-  renderInput() {
-    return { field: '' }
-  }
+  })
 }

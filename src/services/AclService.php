@@ -3,12 +3,12 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Wiki;
 
 class AclService
 {
-    protected $authController;
+    protected $authenticationService;
     protected $wiki;
     protected $dbService;
     protected $hibernationService;
@@ -19,13 +19,13 @@ class AclService
 
     public function __construct(
         Wiki $wiki,
-        AuthController $authController,
+        AuthenticationService $authenticationService,
         DbService $dbService,
         UserManager $userManager,
         ParameterBagInterface $params,
         HibernationService $hibernationService
     ) {
-        $this->authController = $authController;
+        $this->authenticationService = $authenticationService;
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->userManager = $userManager;
@@ -227,7 +227,7 @@ class AclService
             "'" . $this->dbService->escape($tag) . "'",
             $this->dbService->now(),
             "'" . $this->dbService->escape($current['owner']) . "'",
-            "'" . $this->dbService->escape($this->authController->getLoggedUserName()) . "'",
+            "'" . $this->dbService->escape($this->authenticationService->getLoggedUserName()) . "'",
             "'Y'",
             "'" . $this->dbService->escape($current['body']) . "'",
             "''",
@@ -259,7 +259,7 @@ class AclService
 
         // set default to current user
         if (!$user) {
-            $loggedUser = $this->authController->getLoggedUser();
+            $loggedUser = $this->authenticationService->getLoggedUser();
             $user = $loggedUser['name'] ?? '';
         }
 
@@ -315,7 +315,7 @@ class AclService
     public function check($acl, $user = null, $adminCheck = true, $tag = '', $mode = '', $formerGroups = [])
     {
         if (!$user) {
-            $user = $this->authController->getLoggedUser();
+            $user = $this->authenticationService->getLoggedUser();
             $username = !empty($user['name']) ? $user['name'] : null;
         } else {
             $username = $user;
@@ -414,7 +414,7 @@ class AclService
         // needed ACL
         $neededACL = ['*'];
         // connected ?
-        $user = $this->authController->getLoggedUser();
+        $user = $this->authenticationService->getLoggedUser();
         if (!empty($user)) {
             $userName = $user['name'];
             $neededACL[] = '+';

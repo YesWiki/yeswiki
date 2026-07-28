@@ -2,7 +2,7 @@
 
 use YesWiki\Core\Service\EntryManager;
 use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiMigration;
 
 class BazarChangeModelForGeolocation extends YesWikiMigration

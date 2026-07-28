@@ -19,5 +19,4 @@ export default {
   },
   advancedAttributes: ['read_access', 'write_access', 'default']
   // disabledAttributes: [],
-  // renderInput(fieldData) {},
 }

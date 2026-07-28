@@ -17,7 +17,7 @@ require_once 'tests/ForcedParameterBag.php';
 /**
  * Regression tests for ticket 15 (security-core-split): PasswordForEditingService is the
  * new, standalone home for the shared-editing-password gate previously bundled inside
- * SecurityController.
+ * SecurityController (renamed to InputFilter by wave-two ticket 03).
  */
 #[CoversMethod(PasswordForEditingService::class, 'isGrantedPasswordForEditing')]
 class PasswordForEditingServiceTest extends YesWikiTestCase
@@ -70,7 +70,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $wiki->request->request->remove('password_for_editing');
         $userManager = $wiki->services->get(UserManager::class);
-        $authController = $wiki->services->get(\YesWiki\Core\Controller\AuthController::class);
+        $authenticationService = $wiki->services->get(\YesWiki\Core\Service\AuthenticationService::class);
 
         do {
             $name = trim($wiki->generateRandomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
@@ -80,14 +80,14 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         $user = $userManager->getOneByName($name);
 
         try {
-            $authController->login($user);
+            $authenticationService->login($user);
 
             [$state, $message] = $this->buildService($wiki, 'sesame')->isGrantedPasswordForEditing();
 
             $this->assertTrue($state, 'a logged-in user must bypass the shared editing password');
             $this->assertSame('', $message);
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             $userManager->delete($user);
         }
     }

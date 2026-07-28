@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarCartoAction extends YesWikiAction

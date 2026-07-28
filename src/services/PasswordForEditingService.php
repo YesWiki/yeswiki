@@ -3,7 +3,7 @@
 namespace YesWiki\Core\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Wiki;
 
 class PasswordForEditingService
@@ -40,8 +40,8 @@ class PasswordForEditingService
     {
         return $this->params->has('password_for_editing')
             && !empty($this->params->get('password_for_editing'))
-            // AuthController not loaded in constructor to prevent circular references
-            && !$this->wiki->services->get(AuthController::class)->getLoggedUser();
+            // AuthenticationService not loaded in constructor to prevent circular references
+            && !$this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
     }
 
     /**

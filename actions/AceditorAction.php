@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Service\ActionsBuilderService;
 use YesWiki\Core\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
@@ -29,7 +29,7 @@ class AceditorAction extends YesWikiAction
         return $this->render('@core/aceditor.twig', [
             'actionsBuilderData' => $data,
             'pageTags' => $pageTags,
-            'saveValue' => SecurityController::EDIT_PAGE_SUBMIT_VALUE,
+            'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
         ]);
     }
 }

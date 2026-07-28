@@ -3,9 +3,9 @@
 namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Core\Controller\AuthController;
+use YesWiki\Core\Service\AuthenticationService;
 use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TagsManager;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\Service\TripleStore;
 use YesWiki\Core\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -36,7 +36,7 @@ class TagsWidgetTest extends YesWikiTestCase
     {
         $pageManager = $wiki->services->get(PageManager::class);
         $tripleStore = $wiki->services->get(TripleStore::class);
-        $authController = $wiki->services->get(AuthController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
         $pageManager->save(self::PAGE_TAG, 'body content', '', true);
@@ -47,7 +47,7 @@ class TagsWidgetTest extends YesWikiTestCase
 
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
-        $authController->login($admin);
+        $authenticationService->login($admin);
 
         $wiki->tag = self::PAGE_TAG;
         $wiki->page = $pageManager->getOne(self::PAGE_TAG);
@@ -66,7 +66,7 @@ class TagsWidgetTest extends YesWikiTestCase
             $tripleStore->delete(self::PAGE_TAG, TagsManager::TAG_PROPERTY, null, '', '');
             $tripleStore->delete('TagsWidgetRegressionOtherPage', TagsManager::TAG_PROPERTY, null, '', '');
             $pageManager->deleteOrphaned(self::PAGE_TAG);
-            $authController->logout();
+            $authenticationService->logout();
         }
     }
 }

@@ -1,14 +1,14 @@
 <?php
 
-namespace YesWiki\Test\Core\Controller;
+namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Throwable;
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\GroupController;
-use YesWiki\Core\Controller\UserController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\GroupOperationsService;
+use YesWiki\Core\Service\UserOperationsService;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\DeleteUserException;
 use YesWiki\Core\Service\UserManager;
@@ -17,44 +17,44 @@ use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
 
-#[CoversMethod(UserController::class, '__construct')]
-#[CoversMethod(UserController::class, 'getFirstAdmin')]
-#[CoversMethod(UserController::class, 'delete')]
-#[CoversMethod(UserController::class, 'deleteGroupsWhereUserIsAlone')]
-#[CoversMethod(UserController::class, 'create')]
-#[CoversMethod(UserController::class, 'sanitizeName')]
-class UserControllerTest extends YesWikiTestCase
+#[CoversMethod(UserOperationsService::class, '__construct')]
+#[CoversMethod(UserOperationsService::class, 'getFirstAdmin')]
+#[CoversMethod(UserOperationsService::class, 'delete')]
+#[CoversMethod(UserOperationsService::class, 'deleteGroupsWhereUserIsAlone')]
+#[CoversMethod(UserOperationsService::class, 'create')]
+#[CoversMethod(UserOperationsService::class, 'sanitizeName')]
+class UserOperationsServiceTest extends YesWikiTestCase
 {
     public const CHARS_FOR_EMAIL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     public const CHARS_FOR_PASSWORD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_';
     public const UPPER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    public function testUserControllerExisting(): Wiki
+    public function testUserOperationsServiceExisting(): Wiki
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(UserController::class));
+        $this->assertTrue($wiki->services->has(UserOperationsService::class));
         $this->assertTrue($wiki->services->has(UserManager::class));
 
         return $wiki;
     }
 
-    #[Depends('testUserControllerExisting')]
+    #[Depends('testUserOperationsServiceExisting')]
     public function testGetFirstAdmin(Wiki $wiki): string
     {
-        $userController = $wiki->services->get(UserController::class);
-        $firstAdmin = $userController->getFirstAdmin();
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
+        $firstAdmin = $userOperationsService->getFirstAdmin();
         $this->assertNotEmpty($firstAdmin);
 
         return $firstAdmin;
     }
 
-    #[Depends('testUserControllerExisting')]
+    #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
     #[DataProvider('dataProviderTestDelete')]
     public function testDelete(string $connexionMode, bool $expectedResult, Wiki $wiki, string $firstAdmin)
     {
-        $authController = $wiki->services->get(AuthController::class);
-        $userController = $wiki->services->get(UserController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
         // create a user
@@ -73,32 +73,32 @@ class UserControllerTest extends YesWikiTestCase
 
         switch ($connexionMode) {
             case '!@admins':
-                $authController->login($user);
+                $authenticationService->login($user);
                 break;
             case '@admins':
                 $adminUser = $userManager->getOneByName($firstAdmin);
-                $authController->login($adminUser);
+                $authenticationService->login($adminUser);
                 break;
             case '!+':
             default:
-                $authController->logout();
+                $authenticationService->logout();
                 break;
         }
 
         $exceptionThrown = false;
         try {
-            $userController->delete($user);
+            $userOperationsService->delete($user);
         } catch (DeleteUserException $ex) {
             $exceptionThrown = true;
         }
 
         $userDeleted = $userManager->getOneByName($name);
 
-        // delete it after call to UserController::delete
+        // delete it after call to UserOperationsService::delete
         if (!empty($userDeleted)) {
             $userManager->delete($userDeleted);
         }
-        $authController->logout();
+        $authenticationService->logout();
 
         // check tests
         if ($expectedResult) {
@@ -133,7 +133,7 @@ class UserControllerTest extends YesWikiTestCase
         ];
     }
 
-    #[Depends('testUserControllerExisting')]
+    #[Depends('testUserOperationsServiceExisting')]
     #[DataProvider('dataProviderTestCreate')]
     public function testCreate(
         string $name,
@@ -144,7 +144,7 @@ class UserControllerTest extends YesWikiTestCase
         bool $otherException,
         Wiki $wiki
     ) {
-        $userController = $wiki->services->get(UserController::class);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
         $users = $userManager->getAll();
@@ -181,7 +181,7 @@ class UserControllerTest extends YesWikiTestCase
         $emailAlreadyExist = false;
         $exceptionMessage = '';
         try {
-            $userController->create($newValues);
+            $userOperationsService->create($newValues);
             $user = $userManager->getOneByName($name);
         } catch (UserNameAlreadyUsedException $ex) {
             $userNameAlreadyExist = true;
@@ -232,13 +232,13 @@ class UserControllerTest extends YesWikiTestCase
      * Deleting a user who is the sole member of a non-admin group must
      * automatically delete that group and then delete the user.
      */
-    #[Depends('testUserControllerExisting')]
+    #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
     public function testDeleteUserAloneInNonAdminGroupDeletesGroupToo(Wiki $wiki, string $firstAdmin)
     {
-        $authController = $wiki->services->get(AuthController::class);
-        $groupController = $wiki->services->get(GroupController::class);
-        $userController = $wiki->services->get(UserController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
         // Create a test user
@@ -255,44 +255,44 @@ class UserControllerTest extends YesWikiTestCase
         // Create a group with only this user as member
         do {
             $groupName = $wiki->generateRandomString(8, self::UPPER_CHARS);
-        } while ($groupController->groupExists($groupName));
-        $groupController->create($groupName, [$name]);
+        } while ($groupOperationsService->groupExists($groupName));
+        $groupOperationsService->create($groupName, [$name]);
 
         // Log in as admin and delete the user
         $adminUser = $userManager->getOneByName($firstAdmin);
-        $authController->login($adminUser);
+        $authenticationService->login($adminUser);
 
         $exceptionThrown = false;
         try {
-            $userController->delete($user);
+            $userOperationsService->delete($user);
         } catch (DeleteUserException $ex) {
             $exceptionThrown = true;
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             // cleanup if test failed
             if (!empty($userManager->getOneByName($name))) {
                 $userManager->delete($userManager->getOneByName($name));
             }
-            if ($groupController->groupExists($groupName)) {
-                $groupController->delete($groupName);
+            if ($groupOperationsService->groupExists($groupName)) {
+                $groupOperationsService->delete($groupName);
             }
         }
 
         $this->assertFalse($exceptionThrown, 'delete() should not throw when user is sole member of a non-admin group');
         $this->assertNull($userManager->getOneByName($name), 'User should have been deleted');
-        $this->assertFalse($groupController->groupExists($groupName), 'Group should have been auto-deleted');
+        $this->assertFalse($groupOperationsService->groupExists($groupName), 'Group should have been auto-deleted');
     }
 
     /**
      * Deleting a user who is the sole member of the admins group must
      * still throw DeleteUserException to prevent admin lockout.
      */
-    #[Depends('testUserControllerExisting')]
+    #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
     public function testDeleteUserAloneInAdminsGroupThrows(Wiki $wiki, string $firstAdmin)
     {
-        $authController = $wiki->services->get(AuthController::class);
-        $userController = $wiki->services->get(UserController::class);
+        $authenticationService = $wiki->services->get(AuthenticationService::class);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
         // Create a second admin to be able to log in and attempt deletion
@@ -327,15 +327,15 @@ class UserControllerTest extends YesWikiTestCase
         // Use the newly created user (not yet admin) — will fail with "not admin" first.
         // So log in as the first admin themselves and try to delete themselves → USER_CANT_DELETE_ONESELF.
         // The lone-admin guard is tested indirectly: we verify the exception type is DeleteUserException.
-        $authController->login($adminUser);
+        $authenticationService->login($adminUser);
 
         $exceptionThrown = false;
         try {
-            $userController->delete($adminUser);
+            $userOperationsService->delete($adminUser);
         } catch (DeleteUserException $ex) {
             $exceptionThrown = true;
         } finally {
-            $authController->logout();
+            $authenticationService->logout();
             if (!empty($userManager->getOneByName($name))) {
                 $userManager->delete($userManager->getOneByName($name));
             }
@@ -364,13 +364,13 @@ class UserControllerTest extends YesWikiTestCase
         ];
     }
 
-    #[Depends('testUserControllerExisting')]
+    #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testCreate')]
     #[Depends('testDelete')]
     #[DataProvider('dataProviderTestSanitizeName')]
     public function testSanitizeName($name, string $char, int $length, bool $otherException, Wiki $wiki)
     {
-        $userController = $wiki->services->get(UserController::class);
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
         switch ($name) {
             case 'newRandom':
@@ -400,7 +400,7 @@ class UserControllerTest extends YesWikiTestCase
         $exceptionThrown = false;
         $exceptionMessage = '';
         try {
-            $userController->create([
+            $userOperationsService->create([
                 'name' => $name,
                 'email' => $email,
                 'password' => $password,

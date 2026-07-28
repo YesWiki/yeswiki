@@ -2,7 +2,7 @@
 
 use YesWiki\Core\Controller\EntryController;
 use YesWiki\Core\Service\BazarListService;
-use YesWiki\Core\Service\SearchManager;
+use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiHandler;
 
 // TODO use Symfony XmlEncoder instead

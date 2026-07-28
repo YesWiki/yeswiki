@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\Controller\AuthController;
-use YesWiki\Core\Controller\SecurityController;
+use YesWiki\Core\Service\AuthenticationService;
+use YesWiki\Core\Service\InputFilter;
 use YesWiki\Core\Entity\User;
 use YesWiki\Core\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\HibernationService;
@@ -11,10 +11,10 @@ use YesWiki\Core\YesWikiAction;
 
 class LostPasswordAction extends YesWikiAction
 {
-    protected $authController;
+    protected $authenticationService;
     protected $errorType;
     protected $typeOfRendering;
-    protected $securityController;
+    protected $inputFilter;
     protected $hibernationService;
     protected $tripleStore;
     protected $userManager;
@@ -22,8 +22,8 @@ class LostPasswordAction extends YesWikiAction
     public function run()
     {
         // get services
-        $this->authController = $this->getService(AuthController::class);
-        $this->securityController = $this->getService(SecurityController::class);
+        $this->authenticationService = $this->getService(AuthenticationService::class);
+        $this->inputFilter = $this->getService(InputFilter::class);
         $this->hibernationService = $this->getService(HibernationService::class);
         $this->tripleStore = $this->getService(TripleStore::class);
         $this->userManager = $this->getService(UserManager::class);
@@ -36,7 +36,7 @@ class LostPasswordAction extends YesWikiAction
         if ($request->request->has('subStep') && !$request->query->has('a')) {
             try {
                 $user = $this->manageSubStep(
-                    $this->securityController->filterInput(INPUT_POST, 'subStep', FILTER_SANITIZE_NUMBER_INT, false, 'int')
+                    $this->inputFilter->filterInput(INPUT_POST, 'subStep', FILTER_SANITIZE_NUMBER_INT, false, 'int')
                 );
             } catch (\Exception $ex) {
                 $this->typeOfRendering = 'directDangerMessage';
@@ -46,8 +46,8 @@ class LostPasswordAction extends YesWikiAction
         } elseif ($request->query->get('a') === 'recover' && !empty($request->query->get('email'))) {
             $this->typeOfRendering = 'directDangerMessage';
             $message = _t('LOGIN_INVALID_KEY');
-            $hash = $this->securityController->filterInput(INPUT_GET, 'email', FILTER_DEFAULT, true);
-            $encodedUser = $this->securityController->filterInput(INPUT_GET, 'u', FILTER_DEFAULT, true);
+            $hash = $this->inputFilter->filterInput(INPUT_GET, 'email', FILTER_DEFAULT, true);
+            $encodedUser = $this->inputFilter->filterInput(INPUT_GET, 'u', FILTER_DEFAULT, true);
             if (empty($hash)) {
                 $this->errorType = 'invalidKey';
             } elseif ($this->checkEmailKey($hash, base64_decode($encodedUser))) {
@@ -83,7 +83,7 @@ class LostPasswordAction extends YesWikiAction
                 if (isset($hash)) {
                     $key = $hash;
                 } else {
-                    $key = $this->securityController->filterInput(INPUT_POST, 'key', FILTER_DEFAULT, true);
+                    $key = $this->inputFilter->filterInput(INPUT_POST, 'key', FILTER_DEFAULT, true);
                 }
 
                 return $this->render('@core/lost-password-recover-form.twig', [
@@ -118,7 +118,7 @@ class LostPasswordAction extends YesWikiAction
         switch ($subStep) {
             case 1:
                 // we just submitted an email or username for verification
-                $email = $this->securityController->filterInput(INPUT_POST, 'email', FILTER_DEFAULT, true);
+                $email = $this->inputFilter->filterInput(INPUT_POST, 'email', FILTER_DEFAULT, true);
                 if (empty($email)) {
                     $this->errorType = 'emptyEmail';
                     $this->typeOfRendering = 'emailForm';
@@ -139,7 +139,7 @@ class LostPasswordAction extends YesWikiAction
                 if (empty($post->get('userID')) || empty($post->get('key'))) {
                     $this->wiki->Redirect($this->wiki->Href('', $this->params->get('root_page')));
                 }
-                $userName = $this->securityController->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
+                $userName = $this->inputFilter->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
                 $user = $this->userManager->getOneByName($userName);
                 $this->typeOfRendering = 'recoverForm';
                 if (empty($post->get('pw0')) || empty($post->get('pw1')) || (strcmp($post->get('pw0'), $post->get('pw1')) != 0) || (trim($post->get('pw0')) == '')) {
@@ -148,8 +148,8 @@ class LostPasswordAction extends YesWikiAction
                 } else {
                     if (!empty($user)) {
                         try {
-                            $key = $this->securityController->filterInput(INPUT_POST, 'key', FILTER_DEFAULT, true);
-                            $pw0 = $this->securityController->filterInput(INPUT_POST, 'pw0', FILTER_DEFAULT, true);
+                            $key = $this->inputFilter->filterInput(INPUT_POST, 'key', FILTER_DEFAULT, true);
+                            $pw0 = $this->inputFilter->filterInput(INPUT_POST, 'pw0', FILTER_DEFAULT, true);
                             $this->resetPassword(
                                 $user['name'],
                                 $key,
@@ -163,7 +163,7 @@ class LostPasswordAction extends YesWikiAction
                         $this->typeOfRendering = 'recoverSuccess';
                         // get $user a new time to have the new password
                         $user = $this->userManager->getOneByName($userName);
-                        $this->authController->login($user);
+                        $this->authenticationService->login($user);
                     } else { // Not able to load the user from DB
                         $this->errorType = 'userNotFound';
                     }
@@ -206,8 +206,8 @@ class LostPasswordAction extends YesWikiAction
         // it. checkPasswordValidateRequirements() throws BadFormatPasswordException, already
         // caught by manageSubStep()'s case 2 (the catch clause was already there, unreachable
         // until now).
-        $this->authController->checkPasswordValidateRequirements($password);
-        $this->authController->setPassword($user, $password);
+        $this->authenticationService->checkPasswordValidateRequirements($password);
+        $this->authenticationService->setPassword($user, $password);
         // Was able to update password => Remove the key from triples table
         // (only one active key per user, so no need to match the exact value)
         $this->tripleStore->delete($user['name'], UserManager::KEY_VOCABULARY, null, '', '');
