@@ -136,11 +136,19 @@ class Init
      */
     /**
      * Default mail domain derived from the wiki's host ("www.foo.example.org" =>
-     * "example.org"). Was the global getMailDomain() in src/email.inc.php until the
-     * PSR-4 refactor removed it (this is its only caller).
+     * "example.org"). The last-two-labels heuristic only makes sense for DNS names:
+     * IP literals (a bare-IP dev/CI wiki would otherwise yield garbage like "0.1"
+     * from 127.0.0.1) are kept whole. Was the global getMailDomain() in
+     * src/email.inc.php until the PSR-4 refactor removed it (this is its only
+     * caller).
      */
     private function deriveMailDomain(string $host): string
     {
+        if (filter_var($host, FILTER_VALIDATE_IP) !== false
+            || filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) !== false) {
+            return $host;
+        }
+
         $host = preg_replace('/^www\./', '', $host);
         $parts = explode('.', $host);
 
