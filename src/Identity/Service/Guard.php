@@ -3,11 +3,11 @@
 namespace YesWiki\Identity\Service;
 
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Core\Field\BazarField;
-use YesWiki\Core\Field\EmailField;
+use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Field\EmailField;
 use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Identity\Service\UserManager;
 
 class Guard

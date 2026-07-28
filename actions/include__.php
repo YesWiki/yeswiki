@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Render\Service\TemplateHelperService;
 
 // relocated from tools/bazar/actions/include__.php (ticket 24): if the included page is a

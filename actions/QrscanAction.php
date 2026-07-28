@@ -11,7 +11,7 @@
  * @see     https://yeswiki.net
  */
 
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
 
 class QrscanAction extends YesWikiAction

@@ -1,13 +1,13 @@
 <?php
 
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Core\Controller\EntryController;
+use YesWiki\Content\Controller\EntryController;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\DuplicationManager;
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\ListManager;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\DuplicationManager;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\ListManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 
 class DuplicateHandler extends YesWikiHandler

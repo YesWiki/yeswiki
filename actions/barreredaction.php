@@ -3,7 +3,7 @@
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\FavoritesManager;
+use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Core\Service\HibernationService;
 
 $user = $this->services->get(AuthenticationService::class)->getLoggedUser();

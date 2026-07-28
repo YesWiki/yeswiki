@@ -3,7 +3,7 @@
 use YesWiki\Core\Service\ConfigurationFileProvider;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\ConfigurationService;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 
 class FixDefaultCommentsAcls extends YesWikiMigration

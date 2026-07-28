@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 
 // relocated from tools/bazar/handlers/page/show__.php (ticket 24): if the page is a bazar
 // entry, replace the hidden aceditor "body" field with the entry's own JSON data so edits

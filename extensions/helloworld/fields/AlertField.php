@@ -4,7 +4,7 @@ namespace YesWiki\HelloWorld\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Field\BazarField;
+use YesWiki\Content\Field\BazarField;
 
 /**
  * Display an alert box with the text given in the second row

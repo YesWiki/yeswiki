@@ -9,7 +9,7 @@ use YesWiki\Core\Entity\Event;
 use YesWiki\Wiki;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 
 class ThemeManager implements EventSubscriberInterface
 {

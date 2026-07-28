@@ -9,7 +9,7 @@ use YesWiki\Identity\Exception\UserNameDoesNotExistException;
 use YesWiki\Wiki;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Core\Service\Mailer;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\UserManager;
 
 /**

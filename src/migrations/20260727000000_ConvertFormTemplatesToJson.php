@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
 
 /**

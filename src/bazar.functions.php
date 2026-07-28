@@ -23,16 +23,16 @@
 use function Symfony\Component\String\u;
 
 use YesWiki\Core\Attach;
-use YesWiki\Core\Controller\EntryController;
-use YesWiki\Core\Exception\ParsingMultipleException;
-use YesWiki\Core\Field\DateField;
-use YesWiki\Core\Field\EnumField;
-use YesWiki\Core\Field\MapField;
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Exception\ParsingMultipleException;
+use YesWiki\Content\Field\DateField;
+use YesWiki\Content\Field\EnumField;
+use YesWiki\Content\Field\MapField;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\ListManager;
+use YesWiki\Content\Service\ListManager;
 use YesWiki\Render\Service\TemplateEngine;
 
 define('BAZ_CHEMIN_UPLOAD', 'files/');

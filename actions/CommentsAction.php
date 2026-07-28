@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\CommentService;
+use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 
 class CommentsAction extends YesWikiAction

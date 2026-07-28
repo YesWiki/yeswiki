@@ -6,6 +6,8 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Controller\InstallationController;
 use YesWiki\Core\Entity\Messages;
 use YesWiki\Wiki;
+use YesWiki\Content\Service\LinkTracker;
+use YesWiki\Content\Service\PageManager;
 
 class UpdateAdminPagesService
 {

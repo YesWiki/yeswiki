@@ -4,8 +4,8 @@ namespace YesWiki\Test\Core\Service;
 
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 

@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiMigration;
 
 class DropColumnsFromNature extends YesWikiMigration

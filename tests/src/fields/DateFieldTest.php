@@ -4,8 +4,8 @@ namespace YesWiki\Test\Core\Field;
 
 require_once 'tests/YesWikiTestCase.php';
 
-use YesWiki\Core\Field\DateField;
-use YesWiki\Core\Service\EntryDateService;
+use YesWiki\Content\Field\DateField;
+use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 /**

@@ -7,7 +7,7 @@ use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\ApiController;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;

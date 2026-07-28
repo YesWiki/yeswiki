@@ -1,10 +1,10 @@
 <?php
 
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Core\Controller\EntryController;
+use YesWiki\Content\Controller\EntryController;
 use YesWiki\Core\Service\AssetsManager;
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\FavoritesManager;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Core\YesWikiHandler;
 
 class IframeHandler extends YesWikiHandler

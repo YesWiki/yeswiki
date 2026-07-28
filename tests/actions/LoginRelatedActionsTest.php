@@ -9,7 +9,7 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Identity\Service\PasswordHasherFactory;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;

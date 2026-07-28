@@ -4,9 +4,9 @@ namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Search\Service\TagsManager;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;

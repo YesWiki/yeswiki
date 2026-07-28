@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Core\Controller\WebhooksController;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 
 /**

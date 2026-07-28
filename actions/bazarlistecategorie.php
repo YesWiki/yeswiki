@@ -5,7 +5,7 @@
  * sous forme de liste accordeon (ou autre template).
  */
 
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Render\Service\TemplateEngine;
 
 $entryManager = $this->services->get(EntryManager::class);

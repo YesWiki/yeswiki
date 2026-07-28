@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Core\Service\BazarListService;
-use YesWiki\Core\Service\CSVManager;
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Service\BazarListService;
+use YesWiki\Content\Service\CSVManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 

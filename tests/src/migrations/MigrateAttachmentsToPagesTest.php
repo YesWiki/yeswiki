@@ -5,8 +5,8 @@ namespace YesWiki\Test\Core\Migrations;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\FileManager;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\FileManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

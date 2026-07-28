@@ -308,12 +308,12 @@ _[Original documentation on the yeswiki.net site (fr)](https://yeswiki.net/?Tuto
    - rename it if you do not want to replace the original field (please rename the name of the class in the file by replacing `class DateField` with `class FileName`)
 3. Replace `YesWiki\Core\Field;` namespace in the file with `YesWiki\Custom\Field` namespace;
 4. Set up inheritance:
-   - if we keep `extends BazarField`, make sure that there is `use YesWiki\Core\Field\BazarField;` in the file
+   - if we keep `extends BazarField`, make sure that there is `use YesWiki\Content\Field\BazarField;` in the file
    - if you want to inherit from another class write `extends OtherField` and make sure that the file has this: `use YesWiki\Core\Field\OtherField;`
    - finally, when replacing a field of the heart, it is advisable to make an inheritance from the original field. In our example it would give:
 
 ```php
-use YesWiki\Core\Field\DateField as CoreDateField;
+use YesWiki\Content\Field\DateField as CoreDateField;
 
 class DateField extends CoreDateField
 {

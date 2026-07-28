@@ -9,7 +9,7 @@
  * @license  GNU AFFERO GENERAL PUBLIC LICENSE version 3
  * @link     https://yeswiki.net
  */
-use YesWiki\Core\Service\QrCodeService;
+use YesWiki\Content\Service\QrCodeService;
 use YesWiki\Core\YesWikiAction;
 
 class QrcodeAction extends YesWikiAction

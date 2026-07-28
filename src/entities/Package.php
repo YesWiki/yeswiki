@@ -2,6 +2,8 @@
 
 namespace YesWiki\Core\Entity;
 
+use YesWiki\Content\Entity\Files;
+
 abstract class Package extends Files
 {
     public const PREFIX_FILENAME = 'yeswiki_';

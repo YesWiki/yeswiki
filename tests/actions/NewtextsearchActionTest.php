@@ -2,10 +2,10 @@
 
 namespace YesWiki\Test\Actions;
 
-use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\ListManager;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\ListManager;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

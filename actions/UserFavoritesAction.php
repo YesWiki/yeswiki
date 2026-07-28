@@ -2,11 +2,11 @@
 
 use YesWiki\Core\Attach;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Core\Field\ImageField;
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\FavoritesManager;
-use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Field\ImageField;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FavoritesManager;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Core\YesWikiAction;
 

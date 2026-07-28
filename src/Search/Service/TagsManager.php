@@ -7,7 +7,7 @@ use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\TripleStore;
 
 class TagsManager
 {

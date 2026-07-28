@@ -5,6 +5,7 @@ namespace YesWiki\Core\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\Entity\Messages;
 use YesWiki\Wiki;
+use YesWiki\Content\Service\TripleStore;
 
 // This is a simple mecanism to perform migrations
 // See src/migrations/README.md for how to create a new migration

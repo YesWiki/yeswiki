@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\Controller\EntryController;
-use YesWiki\Core\Service\BazarListService;
+use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Service\BazarListService;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiHandler;
 

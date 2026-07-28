@@ -1,8 +1,8 @@
 <?php
 
 use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Core\Service\ActionsBuilderService;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\ActionsBuilderService;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 
 class AceditorAction extends YesWikiAction

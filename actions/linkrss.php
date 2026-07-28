@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 
 $displayLastChanges = $this->services->get(PageManager::class)->getOne('DerniersChangementsRSS') && $this->HasAccess('read', 'DerniersChangementsRSS');
 $displayLastComments = $this->services->get(PageManager::class)->getOne('DerniersCommentairesRSS') && $this->HasAccess('read', 'DerniersCommentairesRSS');

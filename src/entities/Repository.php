@@ -2,6 +2,8 @@
 
 namespace YesWiki\Core\Entity;
 
+use YesWiki\Content\Entity\Files;
+
 class Repository extends PackageCollection
 {
     public const INDEX_FILENAME = 'packages.json';

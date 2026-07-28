@@ -4,7 +4,7 @@
 
 use League\HTMLToMarkdown\HtmlConverter;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 

@@ -12,8 +12,8 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Core\Service\DbService;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\UserManager;
 
 class UserOperationsService extends YesWikiController

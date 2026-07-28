@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\Service\FileManager;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\FileManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 
 /**

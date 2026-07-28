@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Core\Service;
 
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 

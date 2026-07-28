@@ -1,9 +1,9 @@
 <?php
 
-use YesWiki\Core\Controller\EntryController;
+use YesWiki\Content\Controller\EntryController;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Core\YesWikiHandler;
 

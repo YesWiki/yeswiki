@@ -3,7 +3,7 @@
 /**
  * Show all user's reaction.
  */
-use YesWiki\Core\Service\ReactionManager;
+use YesWiki\Content\Service\ReactionManager;
 use YesWiki\Core\YesWikiAction;
 
 class UserReactionsAction extends YesWikiAction

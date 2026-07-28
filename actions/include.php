@@ -11,7 +11,7 @@
     -- valeur "show" :  ajoute un lien "[édition]" en haut é droite de la boite
 */
 
-use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Content\Service\LinkTracker;
 
 // récuperation du nom de la page é inclure
 $incPageName = trim($this->GetParameter('page'));

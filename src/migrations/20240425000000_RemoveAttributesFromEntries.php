@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiMigration;
 
 class RemoveAttributesFromEntries extends YesWikiMigration

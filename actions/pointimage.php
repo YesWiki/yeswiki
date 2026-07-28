@@ -5,7 +5,7 @@
 // javascripts/pointimage.js. `file=` now accepts either a legacy raw filename or a
 // FileManager tag (same dual-path convention as Attach::CheckParams()).
 
-use YesWiki\Core\Service\FileManager;
+use YesWiki\Content\Service\FileManager;
 
 // Get the action's parameters :
 

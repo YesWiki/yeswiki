@@ -2,9 +2,9 @@
 
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\LinkTracker;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\LinkTracker;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 
 class RevisionsHandler extends YesWikiHandler

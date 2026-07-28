@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 
 $entryManager = $this->services->get(EntryManager::class);
 

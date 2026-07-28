@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\SemanticTransformer;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\SemanticTransformer;
 
 // relocated from tools/bazar/handlers/page/__show.php (ticket 24): if the page is a bazar
 // entry and was requested with an Accept header asking for JSON/JSON-LD, respond with the

@@ -5,7 +5,7 @@ Permet de faire une redirection vers une autre pages Wiki du site
 Parametres : page : nom wiki de la page vers laquelle ont doit rediriger (obligatoire)
 exemple : {{redirect page="BacASable"}}
 */
-use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Content\Service\LinkTracker;
 
 $redirPageName = $this->GetParameter('page');
 

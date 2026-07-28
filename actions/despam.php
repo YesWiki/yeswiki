@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\PageOperationsService;
+use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\Service\HibernationService;
 
 // TODO

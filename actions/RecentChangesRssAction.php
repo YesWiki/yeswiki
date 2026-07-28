@@ -1,7 +1,7 @@
 <?php
 
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 
 class RecentChangesRssAction extends YesWikiAction

@@ -9,9 +9,9 @@ use YesWiki\Core\Exception\TemplateNotFound;
 use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\AssetsManager;
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\ListManager;
+use YesWiki\Content\Service\ListManager;
 use YesWiki\Core\Service\Performer;
 
 class TemplateEngine

@@ -1,8 +1,8 @@
 <?php
 
-use YesWiki\Core\Service\ActivityPubService;
-use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\WebfingerService;
+use YesWiki\Content\Service\ActivityPubService;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\WebfingerService;
 use YesWiki\Core\YesWikiAction;
 
 class BazarFollowAction extends YesWikiAction

@@ -3,7 +3,7 @@
 /**
  * Admin all reactions.
  */
-use YesWiki\Core\Service\ReactionManager;
+use YesWiki\Content\Service\ReactionManager;
 use YesWiki\Core\YesWikiAction;
 
 class AdminReactionsAction extends YesWikiAction

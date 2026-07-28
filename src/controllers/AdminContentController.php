@@ -8,8 +8,8 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\PageOperationsService;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiController;
 
@@ -448,7 +448,7 @@ class AdminContentController extends YesWikiController
     private function getForms(): array
     {
         try {
-            return $this->getService(\YesWiki\Core\Service\FormManager::class)->getAll();
+            return $this->getService(\YesWiki\Content\Service\FormManager::class)->getAll();
         } catch (\Throwable $e) {
             return [];
         }

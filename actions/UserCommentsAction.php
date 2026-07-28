@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\CommentService;
+use YesWiki\Content\Service\CommentService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
 

@@ -1,7 +1,7 @@
 <?php
 
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiMigration;
 
 /**

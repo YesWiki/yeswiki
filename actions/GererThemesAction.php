@@ -6,7 +6,7 @@
  */
 
 use YesWiki\Render\Service\ThemeSelectorRenderer;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 

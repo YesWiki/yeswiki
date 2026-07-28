@@ -1,9 +1,9 @@
 <?php
 
-use YesWiki\Core\Controller\EntryController;
-use YesWiki\Core\Controller\FormController;
-use YesWiki\Core\Controller\ListController;
-use YesWiki\Core\Service\BazarListService;
+use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Controller\FormController;
+use YesWiki\Content\Controller\ListController;
+use YesWiki\Content\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
 
 class BazarAction extends YesWikiAction

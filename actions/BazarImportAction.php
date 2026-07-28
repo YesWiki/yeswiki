@@ -1,11 +1,11 @@
 <?php
 
 use YesWiki\Identity\Service\CsrfTokenChecker;
-use YesWiki\Core\Controller\EntryController;
-use YesWiki\Core\Service\BazarListService;
-use YesWiki\Core\Service\CSVManager;
-use YesWiki\Core\Service\ExternalBazarService;
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Service\BazarListService;
+use YesWiki\Content\Service\CSVManager;
+use YesWiki\Content\Service\ExternalBazarService;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 
 class BazarImportAction extends YesWikiAction

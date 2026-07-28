@@ -4,7 +4,7 @@ namespace YesWiki\Test\Core\Field;
 
 require_once 'tests/YesWikiTestCase.php';
 
-use YesWiki\Core\Field\TextareaField;
+use YesWiki\Content\Field\TextareaField;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 /**

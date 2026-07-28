@@ -2,8 +2,8 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

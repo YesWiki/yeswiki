@@ -2,15 +2,15 @@
 
 namespace YesWiki\Search\Service;
 
-use YesWiki\Core\Field\CheckboxField;
-use YesWiki\Core\Field\EnumField;
+use YesWiki\Content\Field\CheckboxField;
+use YesWiki\Content\Field\EnumField;
 use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Identity\Service\Guard;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\UserManager;
 
 class SearchManager

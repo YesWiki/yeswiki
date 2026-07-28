@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\LinkTracker;
+use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Render\Service\TemplateHelperService;
 
 // classe css supplémentaire

@@ -3,8 +3,8 @@
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Core\Service\HibernationService;
-use YesWiki\Core\Service\LinkTracker;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\LinkTracker;
+use YesWiki\Content\Service\PageManager;
 
 // on initialise la sortie:
 $output = '';

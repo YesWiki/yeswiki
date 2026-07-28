@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\QrCodeService;
+use YesWiki\Content\Service\QrCodeService;
 use YesWiki\Core\YesWikiHandler;
 
 class ShareHandler__ extends YesWikiHandler

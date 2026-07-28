@@ -4,7 +4,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Exception\LoginException;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;

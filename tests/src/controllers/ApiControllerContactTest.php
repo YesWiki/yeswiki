@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Core\Controller\ApiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\Mailer;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 

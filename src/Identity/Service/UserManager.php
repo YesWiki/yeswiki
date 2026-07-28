@@ -21,12 +21,12 @@ use YesWiki\Wiki;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\Service\DbService;
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\Service\HibernationService;
 use YesWiki\Core\Service\Mailer;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\PasswordHasherFactory;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\TripleStore;
 
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {

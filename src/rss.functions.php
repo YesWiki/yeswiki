@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\EntryManager;
+use YesWiki\Content\Service\EntryManager;
 
 if (!function_exists('rssdiff')) {
     function rssdiff($tag, $idfirst, $idlast)

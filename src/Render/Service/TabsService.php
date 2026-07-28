@@ -2,7 +2,7 @@
 
 namespace YesWiki\Render\Service;
 
-use YesWiki\Core\Field\TabsField;
+use YesWiki\Content\Field\TabsField;
 
 class TabsService
 {

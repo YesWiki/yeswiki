@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\CommentService;
+use YesWiki\Content\Service\CommentService;
 
 $commentService = $this->services->get(CommentService::class);
 $result = $commentService->addCommentIfAuthorized($_POST);

@@ -2,11 +2,11 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Core\Service\ActivityPubService;
-use YesWiki\Core\Service\EntryManager;
-use YesWiki\Core\Service\FormManager;
-use YesWiki\Core\Service\PageManager;
-use YesWiki\Core\Service\TripleStore;
+use YesWiki\Content\Service\ActivityPubService;
+use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';

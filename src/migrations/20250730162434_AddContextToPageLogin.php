@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
 
 class AddContextToPageLogin extends YesWikiMigration

@@ -51,6 +51,12 @@ services:
   YesWiki\Identity\Controller\:
     resource: 'Identity/Controller/*'
 
+  YesWiki\Content\Service\:
+    resource: 'Content/Service/*'
+
+  YesWiki\Content\Controller\:
+    resource: 'Content/Controller/*'
+
   YesWiki\Core\Controller\:
     resource: 'controllers/*'
     # the web installer runs before the container exists (no config file, no database)
@@ -60,15 +66,15 @@ services:
   YesWiki\Core\Service\LanguageService:
     factory: [null, 'getInstance']
 
-  YesWiki\Core\Service\CommentService:
+  YesWiki\Content\Service\CommentService:
     tags:
       - { name: yeswiki.event_subscriber }
   YesWiki\Render\Service\ThemeManager:
     tags:
       - { name: yeswiki.event_subscriber }
-  YesWiki\Core\Service\WebFinger:
+  YesWiki\Content\Service\WebFinger:
     autowire: false
-  YesWiki\Core\Service\EntryDateService:
+  YesWiki\Content\Service\EntryDateService:
     tags:
       - { name: yeswiki.event_subscriber }
   # outgoing webhooks on comment/entry events (ticket 20)

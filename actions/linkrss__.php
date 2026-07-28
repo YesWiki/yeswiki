@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Service\FormManager;
+use YesWiki\Content\Service\FormManager;
 
 // relocated from tools/bazar/actions/linkrss__.php (ticket 24)
 $forms = $this->services->get(FormManager::class)->getAll();

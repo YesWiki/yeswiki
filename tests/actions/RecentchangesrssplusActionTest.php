@@ -4,7 +4,7 @@ namespace YesWiki\Test\Actions;
 
 use YesWiki\Core\Exception\ExitException;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Core\Service\PageManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
