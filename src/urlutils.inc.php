@@ -117,34 +117,6 @@ function testUrlInIframe($url = '')
     return $iframe ? 'iframe' : '';
 }
 
-function testRefererUrlInIframe()
-{
-    $url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-    $iframe = preg_match('/\/(edit)?iframe/Ui', $url);
-
-    return $iframe ? 'iframe' : '';
-}
-
-/**
- * Test si une URL est locale.
- *
- * @param string $pURL l'url à tester
- *
- * @return bool true if URL is local, false otherwise
- */
-function isLocalUrl($pURL)
-{
-    $vParsed = parse_url($pURL);
-
-    if ($vParsed === false) {
-        return true;
-    } elseif ($vParsed['scheme'] . '://' . $vParsed['host'] . ':' . $vParsed['port'] == getRootUrl()) {
-        return true;
-    }
-
-    return false;
-}
-
 /**
  * Résout une URL en une URL absolue en se basant sur une URL de référence.
  *

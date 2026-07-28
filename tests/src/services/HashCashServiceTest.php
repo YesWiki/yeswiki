@@ -43,9 +43,10 @@ class HashCashServiceTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $wiki->config['use_hashcash'] = true;
 
-        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
+        // ticket 05 (CP3) folded src/wp-hashcash.lib into HashCashService; the secret
+        // file path is no longer a global constant
         $secretValue = 'test-secret-' . uniqid();
-        file_put_contents(HASHCASH_SECRET_FILE, $secretValue);
+        file_put_contents(YESWIKI_SOURCE_DIR . '/cache/hashcash.key', $secretValue);
 
         try {
             $wiki->request->request->set('hashcash_value', $secretValue);

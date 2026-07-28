@@ -4,7 +4,7 @@ namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;

@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 

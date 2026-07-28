@@ -1,40 +1,5 @@
 <?php
 
-use YesWiki\Core\Attach;
-
-/** afficher_image_attach() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut.
- * @param   string  nom du fichier image
- * @param   string  label pour l'image
- * @param   string  classes html supplementaires
- * @param   int    largeur en pixel de la vignette
- * @param   int    hauteur en pixel de la vignette
- * @param   int    largeur en pixel de l'image redimensionnee
- * @param   int    hauteur en pixel de l'image redimensionnee
- *
- * @return html affichage a l'ecran
- */
-function afficher_image_attach($idfiche, $nom_image, $label, $class, $largeur_vignette, $hauteur_vignette)
-{
-    $oldpage = $GLOBALS['wiki']->GetPageTag();
-    $GLOBALS['wiki']->tag = $idfiche;
-    $GLOBALS['wiki']->page['time'] = date('YmdHis');
-    $GLOBALS['wiki']->setParameter('desc', $label);
-    $GLOBALS['wiki']->setParameter('file', $nom_image);
-    $GLOBALS['wiki']->setParameter('class', $class);
-    $GLOBALS['wiki']->setParameter('width', $largeur_vignette);
-    $GLOBALS['wiki']->setParameter('height', $hauteur_vignette);
-    $attach = new Attach($GLOBALS['wiki']);
-    ob_start();
-    $attach->doAttach();
-    $output = ob_get_contents();
-    ob_end_clean();
-    $GLOBALS['wiki']->tag = $oldpage;
-
-    $output = preg_replace('/width=\".*\".*height=\".*\"/U', '', $output);
-    preg_match_all('/(\<img.*\/\>)/U', $output, $matches);
-
-    return isset($matches[0][0]) ? $matches[0][0] : false;
-}
 
 function sanitizeEntity($string)
 {

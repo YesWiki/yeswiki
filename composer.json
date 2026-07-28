@@ -27,6 +27,7 @@
     "ext-mbstring": "*",
     "ext-mysqli": "*",
     "ext-pcre": "*",
+    "ext-pdo": "*",
     "ext-zip": "^1.0",
     "caxy/php-htmldiff": "^0.1.13",
     "endroid/qr-code": "^6.0",
@@ -107,5 +108,10 @@
       "YesWiki\\Admin\\": "src/Admin/",
       "YesWiki\\Kernel\\": "src/Kernel/"
     }
+  },
+  "suggest": {
+    "ext-pdo_mysql": "Required to run YesWiki on MySQL/MariaDB",
+    "ext-pdo_sqlite": "Required to run YesWiki on SQLite",
+    "ext-pdo_pgsql": "Required to run YesWiki on PostgreSQL"
   }
 }

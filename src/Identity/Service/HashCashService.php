@@ -6,11 +6,55 @@ use YesWiki\Wiki;
 
 class HashCashService
 {
+    /** How long a generated secret stays valid. */
+    private const REFRESH = 60 * 60 * 4;
+
     protected $wiki;
 
     public function __construct(Wiki $wiki)
     {
         $this->wiki = $wiki;
+    }
+
+    /**
+     * Absorbed from src/wp-hashcash.lib by wave-two ticket 05 (CP3). That file declared
+     * eight global constants and three global functions; only two constants and two
+     * functions were ever used, all of them from this class, and every method here opened
+     * with a `require_once` of it. Five constants and hashcash_verbage() were dead.
+     */
+    private function secretFile(): string
+    {
+        return YESWIKI_SOURCE_DIR . '/cache/hashcash.key';
+    }
+
+    /**
+     * Produce a random string of length $length, avoiding any value in $exclude.
+     *
+     * @param list<string> $exclude
+     */
+    private function randomString(int $length, array $exclude = []): string
+    {
+        if ($length < 1) {
+            return '';
+        }
+        $str = '';
+        while (in_array($str, $exclude) || strlen($str) < $length) {
+            $str = '';
+            while (strlen($str) < $length) {
+                $str .= chr(rand(65, 90) + rand(0, 1) * 32);
+            }
+        }
+
+        return $str;
+    }
+
+    /** The current secret key. */
+    private function secretValue(): string
+    {
+        // the original guarded this with function_exists('file_get_contents') and a
+        // fopen/fread fallback -- that function has been unconditionally available for
+        // the entire life of PHP 5+, let alone the ^8.3 this requires
+        return (string)file_get_contents($this->secretFile());
     }
 
     /**
@@ -24,25 +68,23 @@ class HashCashService
         if (empty($this->wiki->config['use_hashcash'])) {
             return true;
         }
-        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
         $value = $this->wiki->request->request->get('hashcash_value');
 
-        return isset($value) && $value == hashcash_field_value();
+        return isset($value) && $value == $this->secretValue();
     }
 
     public function getJavascriptCode($formId = 'ACEditor')
     {
-        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
-        if (!file_exists(HASHCASH_SECRET_FILE)) {
-            $handle = fopen(HASHCASH_SECRET_FILE, 'w');
+        if (!file_exists($this->secretFile())) {
+            $handle = fopen($this->secretFile(), 'w');
             fclose($handle);
         }
         // UPDATE RANDOM SECRET
-        $curr = @file_get_contents(HASHCASH_SECRET_FILE);
-        if (empty($curr) || (time() - @filemtime(HASHCASH_SECRET_FILE)) > HASHCASH_REFRESH) {
-            if (is_writable(HASHCASH_SECRET_FILE)) {
+        $curr = @file_get_contents($this->secretFile());
+        if (empty($curr) || (time() - @filemtime($this->secretFile())) > self::REFRESH) {
+            if (is_writable($this->secretFile())) {
                 // update our secret
-                $fp = fopen(HASHCASH_SECRET_FILE, 'w');
+                $fp = fopen($this->secretFile(), 'w');
                 fwrite($fp, rand(21474836, 2126008810));
                 fclose($fp);
             }
@@ -61,11 +103,10 @@ class HashCashService
      */
     public function getEnableScript(string $formId): string
     {
-        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
 
         $formId = htmlspecialchars(strip_tags($formId));
-        $fieldId = hashcash_random_string(rand(6, 18));
-        $enableFunctionName = hashcash_random_string(rand(6, 18));
+        $fieldId = $this->randomString(rand(6, 18));
+        $enableFunctionName = $this->randomString(rand(6, 18));
         $keyUrl = $this->wiki->Href('', 'api/hashcash/key');
 
         return <<<JS
@@ -135,17 +176,16 @@ class HashCashService
 
     /**
      * The actual proof-of-work puzzle served at GET ?api/hashcash/key: obfuscated JS that
-     * evaluates to the current secret (see wp-hashcash.lib's hashcash_field_value()), so a
+     * evaluates to the current secret (see secretValue() above), so a
      * real browser (but not a naive spam bot) ends up posting the right hashcash_value.
      * Equivalent of the old tools/security/wp-hashcash-getkey.php, served directly by URL.
      */
     public function getKeyScript(): string
     {
-        require_once YESWIKI_SOURCE_DIR . '/src/wp-hashcash.lib';
 
         $expired = [];
 
-        $functionName = hashcash_random_string(rand(6, 18));
+        $functionName = $this->randomString(rand(6, 18));
         $expired[] = $functionName;
 
         $js = "function $functionName (){";
@@ -155,10 +195,10 @@ class HashCashService
             /* Addition of n times of field value / n, + modulus:
             Time guarantee:  100 iterations or less */
             case 0:
-                $eax = hashcash_random_string(rand(8, 10), $expired);
+                $eax = $this->randomString(rand(8, 10), $expired);
                 $expired[] = $eax;
 
-                $val = intval(hashcash_field_value());
+                $val = intval($this->secretValue());
                 $inc = rand(intval($val / 100), $val - 1);
                 $n = floor($val / $inc);
                 $r = $val % $inc;
@@ -175,16 +215,16 @@ class HashCashService
                 /* Conversion from binary:
                 Time guarantee:  log(n) iterations or less */
             case 1:
-                $eax = hashcash_random_string(rand(8, 10), $expired);
+                $eax = $this->randomString(rand(8, 10), $expired);
                 $expired[] = $eax;
 
-                $ebx = hashcash_random_string(rand(8, 10), $expired);
+                $ebx = $this->randomString(rand(8, 10), $expired);
                 $expired[] = $ebx;
 
-                $ecx = hashcash_random_string(rand(8, 10), $expired);
+                $ecx = $this->randomString(rand(8, 10), $expired);
                 $expired[] = $ecx;
 
-                $val = hashcash_field_value();
+                $val = intval($this->secretValue());
                 $binval = strrev(base_convert($val, 10, 2));
                 $js .= "var $eax = \"$binval\"; ";
                 $js .= "var $ebx = 0; ";
@@ -202,7 +242,7 @@ class HashCashService
                 /* Multiplication of square roots:
                 Time guarantee:  constant time */
             case 2:
-                $val = hashcash_field_value();
+                $val = intval($this->secretValue());
                 $sqrt = floor(sqrt($val));
                 $r = $val - ($sqrt * $sqrt);
                 $js .= "return $sqrt * $sqrt + $r; ";
@@ -211,7 +251,7 @@ class HashCashService
                 /* Sum of random numbers to the final value:
                 Time guarantee:  log(n) expected value */
             case 3:
-                $val = hashcash_field_value();
+                $val = intval($this->secretValue());
                 $js .= 'return ';
 
                 $i = 0;
@@ -240,13 +280,13 @@ class HashCashService
         }
 
         // libs function encapsulation
-        $libsName = hashcash_random_string(rand(6, 18), $expired);
+        $libsName = $this->randomString(rand(6, 18), $expired);
         $expired[] = $libsName;
 
         $libs = "function $libsName(){";
 
         // write bytes to javascript, xor with key
-        $dataName = hashcash_random_string(rand(6, 18), $expired);
+        $dataName = $this->randomString(rand(6, 18), $expired);
         $expired[] = $dataName;
 
         $libs .= "var $dataName = new Array(" . count($js) . '); ';

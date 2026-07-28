@@ -22,7 +22,7 @@
 
 use function Symfony\Component\String\u;
 
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\DateField;
@@ -305,37 +305,6 @@ function genere_nom_wiki($nom, $occurence = 1)
     return genere_nom_wiki($nom, $occurence);
 }
 
-// pour verifier la presence d une valeur dans une fiche, en vue de lui faire une icone ou couleur personnalisee
-function getCustomValueForEntry($parameter, $field, $entry, $default)
-{
-    if (is_array($parameter) && !empty($field)) {
-        if (isset($entry[$field])) {
-            // pour les checkbox, on teste les differentes valeurs et on renvoie la premiere qui va bien
-            if (!isset($parameter[$entry[$field]]) && strpos($entry[$field], ',') !== false) {
-                $tab = explode(',', $entry[$field]);
-                foreach ($tab as $value) {
-                    if (isset($parameter[$value])) {
-                        // on retourne la premiere valeur trouvee
-                        return $parameter[$value];
-                    }
-                }
-
-                // on n a pas trouve de valeur, on renvoie la valeur par defaut
-                return $default;
-            }
-
-            return isset($parameter[$entry[$field]]) ?
-                $parameter[$entry[$field]] : $default;
-        }
-
-        // si la valeur n existe pas, on met l icone par defaut
-        return $default;
-    }
-
-    // si le parametre n'est pas un tableau, il contient la valeur par defaut
-    return $default;
-}
-
 // tri par ordre desire
 function champCompare($a, $b)
 {
@@ -359,15 +328,6 @@ function getMultipleParameters($param, $firstseparator = ',', $secondseparator =
     }
 
     return $tabparam;
-}
-
-function getConfigValue($key, $default = false, $cfg = '')
-{
-    if (isset($cfg[$key]) and !empty($cfg[$key])) {
-        return $cfg[$key];
-    }
-
-    return $default;
 }
 
 function sanitizeFilename($string = '')
@@ -449,63 +409,6 @@ function copyUrlToLocalFile($url, $localPath)
 }
 
 /* ~~~~~~~~~~~~ DEPRECATED ~~~~~~~~~~~~~~ */
-
-/** afficher_image() - genere une image en cache (gestion taille et vignettes) et l'affiche comme il faut.
- *
- * @param    string champ de la base
- * @param    string nom du fichier image
- * @param    string  label pour l'image
- * @param    string classes html supplementaires
- * @param    int        largeur en pixel de la vignette
- * @param    int        hauteur en pixel de la vignette
- * @param    int        largeur en pixel de l'image redimensionnee
- * @param    int        hauteur en pixel de l'image redimensionnee
- *
- * @return void
- *
- * @deprecated use $wiki->render('@core/display-image.twig') instead
- */
-function afficher_image(
-    $champ,
-    $nom_image,
-    $label,
-    $class,
-    $largeur_vignette,
-    $hauteur_vignette,
-    $largeur_image,
-    $hauteur_image,
-    $method = 'fit',
-    $show_vignette = true
-) {
-    // l'image initiale existe t'elle et est bien avec une extension jpg ou png et bien formatee
-    $destimg = sanitizeFilename($nom_image);
-    $wiki = $GLOBALS['wiki'];
-    $authorizedExts = $wiki->config['authorized-extensions'];
-    $url_base = $wiki->GetBaseUrl() . '/';
-    // If we have a full URL, remove the base URL first
-    $nom_image = str_replace($url_base . BAZ_CHEMIN_UPLOAD, '', $nom_image);
-    $ext = pathinfo($nom_image)['extension'];
-
-    $attach = new Attach($wiki);
-    $imagePath = $attach->GetUploadPath() . '/' . $nom_image;
-    $attach->file = $imagePath;
-
-    if (file_exists($imagePath)
-       && $attach->isPicture()) {
-        return $wiki->render('@core/display-image.twig', [
-            'baseUrl' => $url_base,
-            'imageFullPath' => $imagePath,
-            'fieldName' => $champ,
-            'thumbnailHeight' => $hauteur_vignette,
-            'thumbnailWidth' => $largeur_vignette,
-            'imageHeight' => $hauteur_image,
-            'imageWidth' => $largeur_image,
-            'class' => $class,
-            'mode' => $method,
-            'showThumbnail' => $show_vignette,
-        ]);
-    }
-}
 
 /**
  * @deprecated Use FormManager::getOne, FormManager::getMany or FormManager::getAll

@@ -3,7 +3,7 @@
 // {{filemanager}} page handler (ticket 17, relocated from tools/attach/handlers/page/filemanager.php).
 // Manages files linked via the {{attach}} action. Requires actions/attach.php.
 
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 
 ob_start();
 ?>

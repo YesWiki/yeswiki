@@ -5,7 +5,7 @@ namespace YesWiki\Content\Field;
 use Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Content\Service\EntryDateService;

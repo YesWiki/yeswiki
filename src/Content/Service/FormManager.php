@@ -4,7 +4,7 @@ namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Wiki;
 use YesWiki\Search\Service\SearchManager;

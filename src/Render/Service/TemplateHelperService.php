@@ -3,7 +3,7 @@
 namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Wiki;
 use YesWiki\Content\Service\EntryManager;

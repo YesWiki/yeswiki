@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Core;
+namespace YesWiki\Content;
 
 // Classe de gestion de l'action {{attach}} (ticket 17: a proper autoloaded class under
 // YesWiki\Core -- resolved by src/autoload.inc.php's own fallback autoloader, same as
@@ -791,14 +791,6 @@ class Attach
         }
 
         return sprintf($retstring, $size, $sys['prefix'][$i]);
-    }
-
-    /**
-     * Affiche la liste des fichiers, modifiee pour utilisation dans une action {{filemanager}}.
-     */
-    public function fmShowAction($trash = false)
-    {
-        $this->fmShow($trash, true);
     }
 
     /**

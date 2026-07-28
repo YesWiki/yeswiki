@@ -8,6 +8,8 @@ use Exception;
 use PDO;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\ArchiveService;
+use YesWiki\Kernel\Database\SqlDialect;
+use YesWiki\Kernel\Database\SqlDialectFactory;
 
 class DbService
 {
@@ -17,12 +19,15 @@ class DbService
     protected $queryLog;
     protected $driver;
     protected $readCache = [];
+    /** Per-driver SQL fragments; see YesWiki\Kernel\Database\SqlDialect. */
+    protected SqlDialect $dialect;
 
     public function __construct(ParameterBagInterface $params)
     {
         $this->params = $params;
         $this->queryLog = [];
         $this->driver = $this->params->has('db_driver') ? $this->params->get('db_driver') : 'mysql';
+        $this->dialect = SqlDialectFactory::forDriver((string)$this->driver);
 
         $this->initSqlConnection();
     }
@@ -150,14 +155,7 @@ class DbService
      */
     public function now(): string
     {
-        switch ($this->driver) {
-            case 'sqlite':
-                return "datetime('now')";
-            case 'pgsql':
-            case 'mysql':
-            default:
-                return 'NOW()';
-        }
+        return $this->dialect->now();
     }
 
     /**
@@ -169,15 +167,7 @@ class DbService
      */
     public function dateSubDays(int $days): string
     {
-        switch ($this->driver) {
-            case 'sqlite':
-                return "datetime('now', '-" . intval($days) . " days')";
-            case 'pgsql':
-                return "NOW() - INTERVAL '" . intval($days) . " days'";
-            case 'mysql':
-            default:
-                return "DATE_SUB(NOW(), INTERVAL " . intval($days) . " DAY)";
-        }
+        return $this->dialect->dateSubDays($days);
     }
 
     /**
@@ -189,15 +179,7 @@ class DbService
      */
     public function dateSubHours(int $hours): string
     {
-        switch ($this->driver) {
-            case 'sqlite':
-                return "datetime('now', '-" . intval($hours) . " hours')";
-            case 'pgsql':
-                return "NOW() - INTERVAL '" . intval($hours) . " hours'";
-            case 'mysql':
-            default:
-                return "DATE_SUB(NOW(), INTERVAL " . intval($hours) . " HOUR)";
-        }
+        return $this->dialect->dateSubHours($hours);
     }
 
     /**
@@ -210,20 +192,7 @@ class DbService
      */
     public function jsonExtract(string $column, string $path): string
     {
-        switch ($this->driver) {
-            case 'sqlite':
-                // SQLite's json_extract throws error on non-JSON, so wrap with json_valid check
-                return "(CASE WHEN json_valid($column) THEN json_extract($column, '$path') ELSE NULL END)";
-            case 'pgsql':
-                // PostgreSQL uses ->> operator to extract as text
-                // Convert $.fieldname to just fieldname
-                $field = preg_replace('/^\$\./', '', $path);
-                return "(CASE WHEN $column ~ '^\\s*\\{' THEN ($column::jsonb ->> '$field') ELSE NULL END)";
-            case 'mysql':
-            default:
-                // MySQL needs JSON_UNQUOTE to get unquoted strings
-                return "JSON_UNQUOTE(JSON_EXTRACT($column, '$path'))";
-        }
+        return $this->dialect->jsonExtract($column, $path);
     }
 
     /**
@@ -237,19 +206,7 @@ class DbService
      */
     public function groupConcat(string $column, ?string $orderBy = null): string
     {
-        $orderBy = $orderBy ?? $column;
-        switch ($this->driver) {
-            case 'pgsql':
-                return "STRING_AGG(DISTINCT $column, ',' ORDER BY $orderBy)";
-            case 'sqlite':
-                // SQLite's GROUP_CONCAT doesn't support ORDER BY, and DISTINCT
-                // cannot be combined with an explicit separator; it already
-                // defaults to ',' so the default separator is used here.
-                return "GROUP_CONCAT(DISTINCT $column)";
-            case 'mysql':
-            default:
-                return "GROUP_CONCAT(DISTINCT $column ORDER BY $orderBy SEPARATOR ',')";
-        }
+        return $this->dialect->groupConcat($column, $orderBy);
     }
 
     /**
@@ -261,14 +218,7 @@ class DbService
      */
     public function quoteIdentifier(string $identifier): string
     {
-        switch ($this->driver) {
-            case 'mysql':
-                return '`' . $identifier . '`';
-            case 'sqlite':
-            case 'pgsql':
-            default:
-                return '"' . $identifier . '"';
-        }
+        return $this->dialect->quoteIdentifier($identifier);
     }
 
     /**
@@ -279,16 +229,7 @@ class DbService
      */
     public function collateClause(): string
     {
-        switch ($this->driver) {
-            case 'sqlite':
-                return ' COLLATE NOCASE';
-            case 'pgsql':
-                // PostgreSQL doesn't use COLLATE for case-insensitive; use ILIKE instead
-                return '';
-            case 'mysql':
-            default:
-                return ' COLLATE utf8mb4_unicode_ci';
-        }
+        return $this->dialect->collateClause();
     }
 
     /**
@@ -300,16 +241,7 @@ class DbService
      */
     public function regexpOperator(bool $not = false): string
     {
-        $notPrefix = $not ? 'NOT ' : '';
-
-        switch ($this->driver) {
-            case 'pgsql':
-                return $not ? '!~' : '~';
-            case 'sqlite':
-            case 'mysql':
-            default:
-                return $notPrefix . 'REGEXP';
-        }
+        return $this->dialect->regexpOperator($not);
     }
 
     /**
@@ -323,36 +255,7 @@ class DbService
      */
     public function findInSet(string $needle, string $haystack, bool $not = false): string
     {
-        $notPrefix = $not ? 'NOT ' : '';
-
-        switch ($this->driver) {
-            case 'sqlite':
-                // SQLite doesn't have FIND_IN_SET, use LIKE with delimiters
-                // We check if the value appears at the start, middle, or end of the list
-                if ($not) {
-                    return "(($haystack NOT LIKE $needle || ',%') AND " .
-                           "($haystack NOT LIKE '%,' || $needle || ',%') AND " .
-                           "($haystack NOT LIKE '%,' || $needle) AND " .
-                           "($haystack != $needle))";
-                } else {
-                    return "(($haystack LIKE $needle || ',%') OR " .
-                           "($haystack LIKE '%,' || $needle || ',%') OR " .
-                           "($haystack LIKE '%,' || $needle) OR " .
-                           "($haystack = $needle))";
-                }
-
-            case 'pgsql':
-                // PostgreSQL: use ANY with string_to_array
-                if ($not) {
-                    return "($needle != ALL(string_to_array($haystack, ',')))";
-                } else {
-                    return "($needle = ANY(string_to_array($haystack, ',')))";
-                }
-
-            case 'mysql':
-            default:
-                return "{$notPrefix}FIND_IN_SET($needle, $haystack)";
-        }
+        return $this->dialect->findInSet($needle, $haystack, $not);
     }
 
     public function getLink()
@@ -707,183 +610,6 @@ class DbService
     // ========================================================================
 
     /**
-     * Returns the SQL data type for a varchar/string column.
-     *
-     * @param int|null $length The max length (null for unlimited text)
-     * @return string SQL type
-     */
-    public function typeVarchar(?int $length = null): string
-    {
-        if ($length === null) {
-            return 'TEXT';
-        }
-
-        switch ($this->driver) {
-            case 'sqlite':
-                return 'TEXT';
-            case 'pgsql':
-            case 'mysql':
-            default:
-                return "VARCHAR($length)";
-        }
-    }
-
-    /**
-     * Returns the SQL data type for an integer column.
-     *
-     * @param bool $unsigned Whether the integer is unsigned (MySQL only)
-     * @return string SQL type
-     */
-    public function typeInt(bool $unsigned = false): string
-    {
-        switch ($this->driver) {
-            case 'sqlite':
-                return 'INTEGER';
-            case 'pgsql':
-                return 'INTEGER';
-            case 'mysql':
-            default:
-                return $unsigned ? 'INT UNSIGNED' : 'INT';
-        }
-    }
-
-    /**
-     * Returns the SQL data type for a small integer (tinyint).
-     *
-     * @return string SQL type
-     */
-    public function typeSmallInt(): string
-    {
-        switch ($this->driver) {
-            case 'sqlite':
-                return 'INTEGER';
-            case 'pgsql':
-                return 'SMALLINT';
-            case 'mysql':
-            default:
-                return 'TINYINT(1)';
-        }
-    }
-
-    /**
-     * Returns the SQL data type for a datetime/timestamp column.
-     *
-     * @return string SQL type
-     */
-    public function typeDatetime(): string
-    {
-        switch ($this->driver) {
-            case 'sqlite':
-                return 'TEXT';
-            case 'pgsql':
-                return 'TIMESTAMP';
-            case 'mysql':
-            default:
-                return 'DATETIME';
-        }
-    }
-
-    /**
-     * Returns the SQL data type for a text/longtext column.
-     *
-     * @param bool $long Whether to use longtext (MySQL only)
-     * @return string SQL type
-     */
-    public function typeText(bool $long = false): string
-    {
-        switch ($this->driver) {
-            case 'sqlite':
-            case 'pgsql':
-                return 'TEXT';
-            case 'mysql':
-            default:
-                return $long ? 'LONGTEXT' : 'TEXT';
-        }
-    }
-
-    /**
-     * Returns the auto-increment column definition.
-     * Note: For SQLite, AUTOINCREMENT must be part of PRIMARY KEY.
-     *
-     * @param bool $isPrimaryKey Whether this is also the primary key
-     * @return string SQL column definition part
-     */
-    public function autoIncrement(bool $isPrimaryKey = true): string
-    {
-        switch ($this->driver) {
-            case 'sqlite':
-                return $isPrimaryKey ? 'INTEGER PRIMARY KEY AUTOINCREMENT' : 'INTEGER AUTOINCREMENT';
-            case 'pgsql':
-                return $isPrimaryKey ? 'SERIAL PRIMARY KEY' : 'SERIAL';
-            case 'mysql':
-            default:
-                $pk = $isPrimaryKey ? ' PRIMARY KEY' : '';
-                return "INT UNSIGNED NOT NULL AUTO_INCREMENT$pk";
-        }
-    }
-
-    /**
-     * Returns an ENUM type or equivalent CHECK constraint.
-     *
-     * @param string $columnName The column name (needed for CHECK constraint)
-     * @param array $values The allowed values
-     * @return string SQL type definition
-     */
-    public function typeEnum(string $columnName, array $values): string
-    {
-        $quotedValues = array_map(fn($v) => "'$v'", $values);
-        $valuesList = implode(', ', $quotedValues);
-
-        switch ($this->driver) {
-            case 'sqlite':
-                return "TEXT CHECK(" . $this->quoteIdentifier($columnName) . " IN ($valuesList))";
-            case 'pgsql':
-                return "VARCHAR(1) CHECK(" . $this->quoteIdentifier($columnName) . " IN ($valuesList))";
-            case 'mysql':
-            default:
-                return "ENUM($valuesList)";
-        }
-    }
-
-    /**
-     * Returns the table options clause (charset, engine, etc.).
-     *
-     * @return string SQL table options or empty string
-     */
-    public function tableOptions(): string
-    {
-        switch ($this->driver) {
-            case 'mysql':
-                return ' CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ENGINE=InnoDB';
-            case 'sqlite':
-            case 'pgsql':
-            default:
-                return '';
-        }
-    }
-
-    /**
-     * Returns whether the database driver requires separate CREATE INDEX statements.
-     * MySQL can have indexes inline, SQLite/PostgreSQL need separate statements.
-     *
-     * @return bool
-     */
-    public function needsSeparateIndexStatements(): bool
-    {
-        return $this->driver !== 'mysql';
-    }
-
-    /**
-     * Returns whether the database supports FULLTEXT indexes.
-     *
-     * @return bool
-     */
-    public function supportsFulltext(): bool
-    {
-        return $this->driver === 'mysql';
-    }
-
-    /**
      * get SQL content : backup method ; prefer mysqldump way if available.
      * Note: This method generates MySQL-compatible SQL dumps.
      * For SQLite, consider using file copy instead.
@@ -933,7 +659,6 @@ class DbService
             /*!40103 SET TIME_ZONE='+00:00' */;
             
             -- --------------------------------------------------------
-
 
             SQL;
 

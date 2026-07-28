@@ -1,6 +1,6 @@
 <?php
 
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Service\EntryManager;

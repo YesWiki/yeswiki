@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Core\ApiResponse;
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Identity\Exception\GroupNameAlreadyUsedException;

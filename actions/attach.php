@@ -4,7 +4,7 @@
 // `file=`/`attachfile=` is a FileManager file-entry tag (see src/Attach.php's
 // CheckParams()); see docs/actions/attach.yaml for the full argument list.
 
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 
 $att = new Attach($this);
 $att->doAttach();

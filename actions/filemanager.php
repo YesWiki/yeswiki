@@ -3,7 +3,7 @@
 // {{filemanager}} action (ticket 17, relocated from tools/attach/actions/filemanager.php).
 // Manages files linked via the {{attach}} action. Requires actions/attach.php.
 
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 
 if ($this->HasAccess('write')) {
     $att = new Attach($this);

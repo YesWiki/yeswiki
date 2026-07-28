@@ -2,7 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Wiki;
 

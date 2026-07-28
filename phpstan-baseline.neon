@@ -8194,708 +8194,6 @@ parameters:
 			path: src/ApiResponse.php
 
 		-
-			message: '#^Access to private property stefangabos\\Zebra_Image\\Zebra_Image\:\:\$source_type\.$#'
-			identifier: property.private
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Binary operation "\*" between string\|null and int\<1, max\> results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Cannot use array destructuring on array\<int\|string, int\|string\>\|false\.$#'
-			identifier: offsetAccess.nonArray
-			count: 2
-			path: src/Attach.php
-
-		-
-			message: '#^Comparison operation "\<" between 1 and 0 is always false\.$#'
-			identifier: smaller.alwaysFalse
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Comparison operation "\>\=" between 1 and 0 is always true\.$#'
-			identifier: greaterOrEqual.alwaysTrue
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Function YesWiki\\Core\\ByNameByRevFile\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Function YesWiki\\Core\\ByNameByRevFile\(\) has parameter \$f1 with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Function YesWiki\\Core\\ByNameByRevFile\(\) has parameter \$f2 with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Inner named functions are not supported by PHPStan\. Consider refactoring to an anonymous function, class method, or a top\-level\-defined function\. See issue \#165 \(https\://github\.com/phpstan/phpstan/issues/165\) for more details\.$#'
-			identifier: function.inner
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:CheckParams\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:GetCachePath\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:GetFullFilename\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:GetFullFilename\(\) has parameter \$newName with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:GetScriptPath\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:GetUploadPath\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:GetUploadPath\(\) invoked with 1 parameter, 0 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:__construct\(\) has parameter \$wiki with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:calculer_nom_fichier_vignette\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:calculer_nom_fichier_vignette\(\) has parameter \$fullFilename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:calculer_nom_fichier_vignette\(\) has parameter \$height with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:calculer_nom_fichier_vignette\(\) has parameter \$width with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:convertDate\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:convertDate\(\) has parameter \$date with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:decodeLongFilename\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:decodeLongFilename\(\) has parameter \$filename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:doAttach\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:doFileManager\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:doFileManager\(\) has parameter \$isAction with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:doFileManagerAction\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fileUrl\(\) has parameter \$fullFilename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmDelete\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmEmptyTrash\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmErase\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmGetFiles\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmGetFiles\(\) has parameter \$trash with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmRestore\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmShow\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmShow\(\) has parameter \$trash with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmShowAction\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:fmShowAction\(\) has parameter \$trash with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:getDate\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:getResizedFilename\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:getResizedFilename\(\) has parameter \$fullFilename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:getResizedFilename\(\) has parameter \$height with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:getResizedFilename\(\) has parameter \$width with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:isAudio\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:isFlashvideo\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:isPDF\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:isPicture\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:isPicture\(\) has parameter \$file with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:isVideo\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:isWma\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:mkdir_recursif\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:mkdir_recursif\(\) has parameter \$dir with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:parseDate\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:parseDate\(\) has parameter \$sDate with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:parse_size\(\) should return int but returns float\.$#'
-			identifier: return.type
-			count: 2
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:redimensionner_image\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:redimensionner_image\(\) has parameter \$hauteur with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:redimensionner_image\(\) has parameter \$image_dest with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:redimensionner_image\(\) has parameter \$image_src with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:redimensionner_image\(\) has parameter \$largeur with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:redimensionner_image\(\) has parameter \$mode with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:sanitizeFilename\(\) should return string but returns string\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:searchFiles\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:searchFiles\(\) has parameter \$filepattern with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:searchFiles\(\) has parameter \$start_dir with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsAudio\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsAudio\(\) has parameter \$fullFilename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsImage\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsImage\(\) has parameter \$fullFilename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsLink\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsLink\(\) has parameter \$fullFilename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsPDF\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsPDF\(\) has parameter \$fullFilename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsVideo\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showAsVideo\(\) has parameter \$fullFilename with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:showFileNotExits\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:size_readable\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:sortByNameRevFile\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Method YesWiki\\Core\\Attach\:\:sortByNameRevFile\(\) has parameter \$files with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Negated boolean expression is always false\.$#'
-			identifier: booleanNot.alwaysFalse
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Offset ''extension'' might not exist on array\{dirname\?\: string, basename\: string, extension\?\: string, filename\: string\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Offset ''uri'' might not exist on array\{timed_out\: bool, blocked\: bool, eof\: bool, unread_bytes\: int, stream_type\: string, wrapper_type\: string, wrapper_data\: mixed, mode\: string, \.\.\.\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 2
-			path: src/Attach.php
-
-		-
-			message: '#^Parameter \#1 \$dir_handle of function readdir expects resource\|null, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Parameter \#1 \$num of function round expects float\|int, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Parameter \#1 \$path of function basename expects string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Parameter \#1 \$string of function rtrim expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Parameter \#2 \$array of function array_map expects array, list\<string\>\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Parameter \#2 \$callback of function usort expects callable\(T, T\)\: int, ''ByNameByRevFile'' given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Parameter \#2 \$exponent of function pow expects float\|int, int\<0, max\>\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Parameter \#2 \$to of function rename expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$attachConfig has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$attachErr has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$caption has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$classes has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$data has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$desc has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$displayPDF has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$file has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$fileTag has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$height has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$isAudio has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$isPDF has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$isPicture has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$isSafeMode has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$isWma has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$legend has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$link has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$nofullimagelink has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$pageId has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$params has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$width has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Property YesWiki\\Core\\Attach\:\:\$wiki has no type specified\.$#'
-			identifier: missingType.property
-			count: 1
-			path: src/Attach.php
-
-		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
-			count: 2
-			path: src/Attach.php
-
-		-
-			message: '#^Variable \$sourceImageHeight might not be defined\.$#'
-			identifier: variable.undefined
-			count: 3
-			path: src/Attach.php
-
-		-
-			message: '#^Variable \$sourceImageWidth might not be defined\.$#'
-			identifier: variable.undefined
-			count: 3
-			path: src/Attach.php
-
-		-
 			message: '#^Call to function is_string\(\) with non\-falsy\-string will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -9008,6 +8306,696 @@ parameters:
 			identifier: variable.undefined
 			count: 1
 			path: src/ComposerScriptsHelper.php
+
+		-
+			message: '#^Access to private property stefangabos\\Zebra_Image\\Zebra_Image\:\:\$source_type\.$#'
+			identifier: property.private
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Binary operation "\*" between string\|null and int\<1, max\> results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Cannot use array destructuring on array\<int\|string, int\|string\>\|false\.$#'
+			identifier: offsetAccess.nonArray
+			count: 2
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Comparison operation "\<" between 1 and 0 is always false\.$#'
+			identifier: smaller.alwaysFalse
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 1 and 0 is always true\.$#'
+			identifier: greaterOrEqual.alwaysTrue
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Function YesWiki\\Content\\ByNameByRevFile\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Function YesWiki\\Content\\ByNameByRevFile\(\) has parameter \$f1 with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Function YesWiki\\Content\\ByNameByRevFile\(\) has parameter \$f2 with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Inner named functions are not supported by PHPStan\. Consider refactoring to an anonymous function, class method, or a top\-level\-defined function\. See issue \#165 \(https\://github\.com/phpstan/phpstan/issues/165\) for more details\.$#'
+			identifier: function.inner
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:CheckParams\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:GetCachePath\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:GetFullFilename\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:GetFullFilename\(\) has parameter \$newName with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:GetScriptPath\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:GetUploadPath\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:GetUploadPath\(\) invoked with 1 parameter, 0 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:__construct\(\) has parameter \$wiki with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:calculer_nom_fichier_vignette\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:calculer_nom_fichier_vignette\(\) has parameter \$fullFilename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:calculer_nom_fichier_vignette\(\) has parameter \$height with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:calculer_nom_fichier_vignette\(\) has parameter \$width with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:convertDate\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:convertDate\(\) has parameter \$date with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:decodeLongFilename\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:decodeLongFilename\(\) has parameter \$filename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:doAttach\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:doFileManager\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:doFileManager\(\) has parameter \$isAction with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:doFileManagerAction\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fileUrl\(\) has parameter \$fullFilename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fmDelete\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fmEmptyTrash\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fmErase\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fmGetFiles\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fmGetFiles\(\) has parameter \$trash with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fmRestore\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fmShow\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:fmShow\(\) has parameter \$trash with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:getDate\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:getResizedFilename\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:getResizedFilename\(\) has parameter \$fullFilename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:getResizedFilename\(\) has parameter \$height with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:getResizedFilename\(\) has parameter \$width with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:isAudio\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:isFlashvideo\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:isPDF\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:isPicture\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:isPicture\(\) has parameter \$file with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:isVideo\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:isWma\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:mkdir_recursif\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:mkdir_recursif\(\) has parameter \$dir with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:parseDate\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:parseDate\(\) has parameter \$sDate with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:parse_size\(\) should return int but returns float\.$#'
+			identifier: return.type
+			count: 2
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:redimensionner_image\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:redimensionner_image\(\) has parameter \$hauteur with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:redimensionner_image\(\) has parameter \$image_dest with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:redimensionner_image\(\) has parameter \$image_src with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:redimensionner_image\(\) has parameter \$largeur with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:redimensionner_image\(\) has parameter \$mode with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:sanitizeFilename\(\) should return string but returns string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:searchFiles\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:searchFiles\(\) has parameter \$filepattern with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:searchFiles\(\) has parameter \$start_dir with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsAudio\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsAudio\(\) has parameter \$fullFilename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsImage\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsImage\(\) has parameter \$fullFilename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsLink\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsLink\(\) has parameter \$fullFilename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsPDF\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsPDF\(\) has parameter \$fullFilename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsVideo\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showAsVideo\(\) has parameter \$fullFilename with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:showFileNotExits\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:size_readable\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:sortByNameRevFile\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Method YesWiki\\Content\\Attach\:\:sortByNameRevFile\(\) has parameter \$files with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Offset ''extension'' might not exist on array\{dirname\?\: string, basename\: string, extension\?\: string, filename\: string\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Offset ''uri'' might not exist on array\{timed_out\: bool, blocked\: bool, eof\: bool, unread_bytes\: int, stream_type\: string, wrapper_type\: string, wrapper_data\: mixed, mode\: string, \.\.\.\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Parameter \#1 \$dir_handle of function readdir expects resource\|null, resource\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Parameter \#1 \$num of function round expects float\|int, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Parameter \#1 \$path of function basename expects string, string\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Parameter \#1 \$string of function rtrim expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Parameter \#2 \$array of function array_map expects array, list\<string\>\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Parameter \#2 \$callback of function usort expects callable\(T, T\)\: int, ''ByNameByRevFile'' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Parameter \#2 \$exponent of function pow expects float\|int, int\<0, max\>\|false given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Parameter \#2 \$to of function rename expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$attachConfig has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$attachErr has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$caption has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$classes has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$data has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$desc has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$displayPDF has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$file has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$fileTag has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$height has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$isAudio has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$isPDF has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$isPicture has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$isSafeMode has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$isWma has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$legend has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$link has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$nofullimagelink has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$pageId has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$params has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$width has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Property YesWiki\\Content\\Attach\:\:\$wiki has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 2
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Variable \$sourceImageHeight might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: src/Content/Attach.php
+
+		-
+			message: '#^Variable \$sourceImageWidth might not be defined\.$#'
+			identifier: variable.undefined
+			count: 3
+			path: src/Content/Attach.php
 
 		-
 			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
@@ -19720,30 +19708,6 @@ parameters:
 			path: src/Identity/Service/HashCashService.php
 
 		-
-			message: '#^Constant HASHCASH_REFRESH not found\.$#'
-			identifier: constant.notFound
-			count: 1
-			path: src/Identity/Service/HashCashService.php
-
-		-
-			message: '#^Constant HASHCASH_SECRET_FILE not found\.$#'
-			identifier: constant.notFound
-			count: 5
-			path: src/Identity/Service/HashCashService.php
-
-		-
-			message: '#^Function hashcash_field_value not found\.$#'
-			identifier: function.notFound
-			count: 5
-			path: src/Identity/Service/HashCashService.php
-
-		-
-			message: '#^Function hashcash_random_string not found\.$#'
-			identifier: function.notFound
-			count: 9
-			path: src/Identity/Service/HashCashService.php
-
-		-
 			message: '#^Method YesWiki\\Identity\\Service\\HashCashService\:\:getJavascriptCode\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -19764,6 +19728,12 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Identity\\Service\\HashCashService\:\:strToLongs\(\) has parameter \$s with no type specified\.$#'
 			identifier: missingType.parameter
+			count: 1
+			path: src/Identity/Service/HashCashService.php
+
+		-
+			message: '#^Parameter \#1 \$num of function base_convert expects string, int given\.$#'
+			identifier: argument.type
 			count: 1
 			path: src/Identity/Service/HashCashService.php
 
@@ -21016,6 +20986,12 @@ parameters:
 			path: src/Kernel/Service/DbService.php
 
 		-
+			message: '#^Cannot cast array\|bool\|float\|int\|string\|UnitEnum\|null to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: src/Kernel/Service/DbService.php
+
+		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 3
@@ -21174,12 +21150,6 @@ parameters:
 		-
 			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:query\(\) has parameter \$query with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: src/Kernel/Service/DbService.php
-
-		-
-			message: '#^Method YesWiki\\Kernel\\Service\\DbService\:\:typeEnum\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: src/Kernel/Service/DbService.php
 
@@ -25869,6 +25839,12 @@ parameters:
 			path: src/YesWikiInit.php
 
 		-
+			message: '#^Function getMailDomain not found\.$#'
+			identifier: function.notFound
+			count: 1
+			path: src/YesWikiInit.php
+
+		-
 			message: '#^If condition is always true\.$#'
 			identifier: if.alwaysTrue
 			count: 1
@@ -26235,72 +26211,6 @@ parameters:
 			path: src/bazar.functions.php
 
 		-
-			message: '#^Function afficher_image\(\) has parameter \$champ with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$class with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$hauteur_image with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$hauteur_vignette with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$label with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$largeur_image with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$largeur_vignette with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$method with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$nom_image with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) has parameter \$show_vignette with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function afficher_image\(\) with return type void returns mixed but should not return anything\.$#'
-			identifier: return.void
-			count: 1
-			path: src/bazar.functions.php
-
-		-
 			message: '#^Function baz_a_le_droit\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -26422,60 +26332,6 @@ parameters:
 
 		-
 			message: '#^Function genere_nom_wiki\(\) has parameter \$occurence with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getConfigValue\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getConfigValue\(\) has parameter \$cfg with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getConfigValue\(\) has parameter \$default with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getConfigValue\(\) has parameter \$key with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getCustomValueForEntry\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getCustomValueForEntry\(\) has parameter \$default with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getCustomValueForEntry\(\) has parameter \$entry with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getCustomValueForEntry\(\) has parameter \$field with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^Function getCustomValueForEntry\(\) has parameter \$parameter with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: src/bazar.functions.php
@@ -26661,36 +26517,6 @@ parameters:
 			path: src/bazar.functions.php
 
 		-
-			message: '#^Offset ''extension'' might not exist on array\{dirname\?\: string, basename\: string, extension\?\: string, filename\: string\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(int        hauteur en pixel de l''image redimensionnee\)\: Unexpected token "hauteur", expected variable at offset 480 on line 10$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(int        hauteur en pixel de la vignette\)\: Unexpected token "hauteur", expected variable at offset 357 on line 8$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(int        largeur en pixel de l''image redimensionnee\)\: Unexpected token "largeur", expected variable at offset 413 on line 9$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(int        largeur en pixel de la vignette\)\: Unexpected token "largeur", expected variable at offset 301 on line 7$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/bazar.functions.php
-
-		-
 			message: '''
 				#^PHPDoc tag @param has invalid value \(int nombre d'iteration pour la fonction recursive \(1 par defaut\)
 
@@ -26712,30 +26538,6 @@ parameters:
 
 		-
 			message: '#^PHPDoc tag @param has invalid value \(string  chaine de caracteres avec de potentiels accents a enlever\)\: Unexpected token "chaine", expected variable at offset 262 on line 6$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string  label pour l''image\)\: Unexpected token "label", expected variable at offset 209 on line 5$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string champ de la base\)\: Unexpected token "champ", expected variable at offset 130 on line 3$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string classes html supplementaires\)\: Unexpected token "classes", expected variable at offset 248 on line 6$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/bazar.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string nom du fichier image\)\: Unexpected token "nom", expected variable at offset 167 on line 4$#'
 			identifier: phpDoc.parseError
 			count: 1
 			path: src/bazar.functions.php
@@ -26989,18 +26791,6 @@ parameters:
 		-
 			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
 			identifier: function.impossibleType
-			count: 1
-			path: src/email.inc.php
-
-		-
-			message: '#^Function getMailDomain\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/email.inc.php
-
-		-
-			message: '#^Function getMailDomain\(\) has parameter \$pHost with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: src/email.inc.php
 
@@ -27605,50 +27395,14 @@ parameters:
 			path: src/tags.functions.php
 
 		-
-			message: '#^Function afficher_image_attach\(\) has invalid return type html\.$#'
-			identifier: class.notFound
+			message: '#^Function afficher_image not found\.$#'
+			identifier: function.notFound
 			count: 1
 			path: src/tags.functions.php
 
 		-
-			message: '#^Function afficher_image_attach\(\) has parameter \$class with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^Function afficher_image_attach\(\) has parameter \$hauteur_vignette with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^Function afficher_image_attach\(\) has parameter \$idfiche with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^Function afficher_image_attach\(\) has parameter \$label with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^Function afficher_image_attach\(\) has parameter \$largeur_vignette with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^Function afficher_image_attach\(\) has parameter \$nom_image with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^Function afficher_image_attach\(\) should return html but returns string\|false\.$#'
-			identifier: return.type
+			message: '#^Function afficher_image_attach not found\.$#'
+			identifier: function.notFound
 			count: 1
 			path: src/tags.functions.php
 
@@ -27755,48 +27509,6 @@ parameters:
 			path: src/tags.functions.php
 
 		-
-			message: '#^PHPDoc tag @param has invalid value \(int    hauteur en pixel de l''image redimensionnee\)\: Unexpected token "hauteur", expected variable at offset 426 on line 8$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(int    hauteur en pixel de la vignette\)\: Unexpected token "hauteur", expected variable at offset 313 on line 6$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(int    largeur en pixel de l''image redimensionnee\)\: Unexpected token "largeur", expected variable at offset 364 on line 7$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(int    largeur en pixel de la vignette\)\: Unexpected token "largeur", expected variable at offset 262 on line 5$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string  classes html supplementaires\)\: Unexpected token "classes", expected variable at offset 214 on line 4$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string  label pour l''image\)\: Unexpected token "label", expected variable at offset 175 on line 3$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^PHPDoc tag @param has invalid value \(string  nom du fichier image\)\: Unexpected token "nom", expected variable at offset 134 on line 2$#'
-			identifier: phpDoc.parseError
-			count: 1
-			path: src/tags.functions.php
-
-		-
 			message: '#^Parameter \#1 \$array of function array_slice expects array, list\<string\>\|false given\.$#'
 			identifier: argument.type
 			count: 1
@@ -27815,33 +27527,9 @@ parameters:
 			path: src/tags.functions.php
 
 		-
-			message: '#^Parameter \#2 \$subject of function preg_match_all expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function preg_replace expects array\<float\|int\|string\>\|string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/tags.functions.php
-
-		-
-			message: '#^Result of function afficher_image \(void\) is used\.$#'
-			identifier: function.void
-			count: 1
-			path: src/tags.functions.php
-
-		-
 			message: '#^Cannot access offset ''path'' on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\|false\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 2
-			path: src/urlutils.inc.php
-
-		-
-			message: '#^Function testRefererUrlInIframe\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
 			path: src/urlutils.inc.php
 
 		-
@@ -27853,24 +27541,6 @@ parameters:
 		-
 			message: '#^Function testUrlInIframe\(\) has parameter \$url with no type specified\.$#'
 			identifier: missingType.parameter
-			count: 1
-			path: src/urlutils.inc.php
-
-		-
-			message: '#^Offset ''host'' might not exist on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: src/urlutils.inc.php
-
-		-
-			message: '#^Offset ''port'' might not exist on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 1
-			path: src/urlutils.inc.php
-
-		-
-			message: '#^Offset ''scheme'' might not exist on array\{scheme\?\: string, host\?\: string, port\?\: int\<0, 65535\>, user\?\: string, pass\?\: string, path\?\: string, query\?\: string, fragment\?\: string\}\.$#'
-			identifier: offsetAccess.notFound
 			count: 1
 			path: src/urlutils.inc.php
 
@@ -30824,12 +30494,6 @@ parameters:
 			message: '#^Cannot call method get\(\) on Symfony\\Component\\DependencyInjection\\ContainerInterface\|null\.$#'
 			identifier: method.nonObject
 			count: 3
-			path: tests/src/services/HashCashServiceTest.php
-
-		-
-			message: '#^Constant HASHCASH_SECRET_FILE not found\.$#'
-			identifier: constant.notFound
-			count: 1
 			path: tests/src/services/HashCashServiceTest.php
 
 		-

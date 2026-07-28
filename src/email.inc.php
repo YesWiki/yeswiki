@@ -134,15 +134,6 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
     }
 }
 
-function getMailDomain($pHost)
-{
-    $vHost = preg_replace('/^www\./', '', $pHost);
-    $vParts = explode('.', $vHost);
-    $vDomain = implode('.', array_slice($vParts, -2));
-
-    return $vDomain;
-}
-
 function getSMTPSecure($pPort = null)
 {
     if (!empty($pPort)) {

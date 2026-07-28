@@ -4,7 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Core\Attach;
+use YesWiki\Content\Attach;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 
