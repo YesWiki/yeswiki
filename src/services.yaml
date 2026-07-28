@@ -17,6 +17,18 @@ services:
   YesWiki\Wiki:
     synthetic: true
 
+  # Ticket 06: actions and handlers that have become real services tag themselves by
+  # implementing RegisteredPerformable; YesWikiPerformableCompilerPass turns the tags into
+  # ActionRegistry's name => service-id map.
+  _instanceof:
+    YesWiki\Kernel\Performable\RegisteredPerformable:
+      tags: ['yeswiki.action']
+
+  YesWiki\Kernel\Performable\ActionRegistry:
+    arguments:
+      $container: '@service_container'
+      $map: []
+
   # Allow autowiring services that need the container itself (e.g. to fetch a
   # service lazily and break a circular dependency), matching Symfony's own
   # convention of aliasing the PSR container interface to service_container.
@@ -42,6 +54,9 @@ services:
 
   YesWiki\Render\Service\:
     resource: 'Render/Service/*'
+
+  YesWiki\Render\Action\:
+    resource: 'Render/Action/*'
 
   YesWiki\Identity\Service\:
     resource: 'Identity/Service/*'

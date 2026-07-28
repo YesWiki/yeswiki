@@ -11,6 +11,7 @@ use Symfony\Component\HttpKernel\Kernel;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
 use YesWiki\Core\YesWikiEventCompilerPass;
+use YesWiki\Core\YesWikiPerformableCompilerPass;
 
 /**
  * Owns the DI container build/compile/cache lifecycle for a Wiki instance.
@@ -69,6 +70,7 @@ class YesWikiKernel extends Kernel
     protected function build(ContainerBuilder $container): void
     {
         $container->addCompilerPass(new YesWikiEventCompilerPass());
+        $container->addCompilerPass(new YesWikiPerformableCompilerPass());
 
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__));
         $loader->load('services.yaml');

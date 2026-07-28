@@ -1,10 +1,22 @@
 <?php
 
-use YesWiki\Core\YesWikiAction;
+namespace YesWiki\Render\Action;
 
-class FaviconAction extends YesWikiAction
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Performable\RegisteredPerformable;
+
+class FaviconAction extends YesWikiAction implements RegisteredPerformable
 {
-    public function run()
+    /**
+     * `{{favicon}}` in page content. Stated rather than inferred from the filename, which
+     * is what let this class finally have a namespace (ticket 06).
+     */
+    public static function performableName(): string
+    {
+        return 'favicon';
+    }
+
+    public function run(): string
     {
         $favicon = $this->wiki->getConfigValue('favicon');
 

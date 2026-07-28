@@ -5,6 +5,8 @@ namespace YesWiki\Kernel\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Exception\PerformerException;
 use YesWiki\Wiki;
 use YesWiki\Render\Service\TemplateEngine;
@@ -39,10 +41,12 @@ class Performer
 
     // list of all existing object
     protected $objectList;
+    protected ActionRegistry $registry;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig)
+    public function __construct(Wiki $wiki, ParameterBagInterface $params, TemplateEngine $twig, ActionRegistry $registry)
     {
         $this->wiki = $wiki;
+        $this->registry = $registry;
         $this->params = $params;
         $this->twig = $twig;
 
@@ -171,6 +175,13 @@ class Performer
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('ERROR_NO_ACCESS') . '</div>' . "\n";
         }
 
+        // A converted action/handler is a real service: resolve it from the registry rather
+        // than from the directory scan. Both paths coexist while ticket 06 migrates the 137
+        // files a few at a time; the scan goes away with the last of them.
+        if ($this->registry->has($objectType, $objectName)) {
+            return $this->runRegistered($objectType, $objectName, $vars, $end_elem);
+        }
+
         // find object
         $object = isset($this->objectList[$objectType][$objectName]) ? $this->objectList[$objectType][$objectName] : false;
         if (!$object) {
@@ -218,6 +229,46 @@ class Performer
         return $output;
     }
 
+    /**
+     * Run a registered (service) performable. Same contract as the scanned path: the
+     * instance is handed the wiki, params, arguments and output, then run() or end().
+     *
+     */
+    private function runRegistered(string $objectType, string $objectName, array &$vars, bool $end_elem): string
+    {
+        $output = '';
+        $instance = $this->registry->get($objectType, $objectName);
+        if ($instance === null) {
+            return $this->renderError(ucfirst($objectType) . " $objectName : " . _t('NOT_FOUND'), $objectType);
+        }
+        try {
+            $instance->setWiki($this->wiki);
+            $instance->setParams($this->params);
+            $instance->setArguments($vars);
+            $instance->setOutput($output);
+            $instance->setTwig($this->twig);
+
+            // still needed by Wiki::getParameter(), which plenty of code reads
+            $this->wiki->parameter = &$vars;
+
+            // end() is declared on YesWikiAction, not on the YesWikiPerformable base: only
+            // graphical-element actions ({{col}}...{{end}}) have a closing form.
+            if ($end_elem && $instance instanceof YesWikiAction) {
+                $output .= $instance->end();
+            } else {
+                $output .= $instance->run();
+            }
+        } catch (ExitException $t) {
+            throw $t;
+        } catch (HttpException $exception) {
+            return $this->renderError($exception->getMessage(), $objectType);
+        } catch (\Throwable $t) {
+            return $this->renderError(_t('PERFORMABLE_ERROR') . '<br/>' . $this->wiki->dumpThrowable($t), $objectType);
+        }
+
+        return $output;
+    }
+
     private function renderError($message, $objectType)
     {
         $data = [
@@ -244,6 +295,9 @@ class Performer
             throw new PerformerException("Invalid type $objectType");
         }
 
-        return array_unique(array_keys($this->objectList[$objectType]));
+        return array_values(array_unique(array_merge(
+            array_keys($this->objectList[$objectType]),
+            $this->registry->names($objectType)
+        )));
     }
 }

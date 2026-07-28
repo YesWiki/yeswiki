@@ -29,6 +29,8 @@ styles/vendor/
 # SEO
 robots.txt
 
+phpstan*
+
 # YesWiki stuff
 .env
 .php-version
