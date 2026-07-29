@@ -63,12 +63,30 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        $html = '<a href="http://www.facebook.com/sharer.php?u=' . urlencode($this->getService(UrlFormatter::class)->href()) . '&amp;t=' . urlencode($this->getService(PageContext::class)->getTag()) . '" title="' . _t('TEMPLATE_SHARE_FACEBOOK') . '" class="bouton_share"><img loading="lazy" src="src/assets/images/share/facebook.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_FACEBOOK') . '" /></a>' . "\n";
-        $html .= '<a href="http://twitter.com/home?status=' . urlencode(_t('TEMPLATE_SHARE_MUST_READ') . $this->getService(UrlFormatter::class)->href()) . '" title="' . _t('TEMPLATE_SHARE_TWITTER') . '" class="bouton_share"><img loading="lazy" src="src/assets/images/share/twitter.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_TWITTER') . '" /></a>' . "\n";
-        $html .= '<a href="http://www.netvibes.com/share?title=' . urlencode($this->getService(PageContext::class)->getTag()) . '&amp;url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '" title="' . _t('TEMPLATE_SHARE_NETVIBES') . '" class="bouton_share"><img loading="lazy" src="src/assets/images/share/netvibes.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_NETVIBES') . '" /></a>' . "\n";
-        $html .= '<a href="http://del.icio.us/post?url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '&amp;title=' . urlencode($this->getService(PageContext::class)->getTag()) . '" title="' . _t('TEMPLATE_SHARE_DELICIOUS') . '" class="bouton_share"><img loading="lazy" src="src/assets/images/share/delicious.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_DELICIOUS') . '" /></a>' . "\n";
-        $html .= '<a href="http://www.google.com/reader/link?title=' . urlencode($this->getService(PageContext::class)->getTag()) . '&amp;url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '" title="' . _t('TEMPLATE_SHARE_GOOGLEREADER') . '" class="bouton_share"><img loading="lazy" src="src/assets/images/share/google.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_GOOGLEREADER') . '" /></a>' . "\n";
-        $html .= '<a href="' . $this->getService(UrlFormatter::class)->href('mail') . '" title="' . _t('TEMPLATE_SHARE_MAIL') . '" class="bouton_share"><img loading="lazy" src="src/assets/images/share/email.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_MAIL') . '" /></a>' . "\n";
+        $url = $this->getService(UrlFormatter::class)->href();
+        $tag = $this->getService(PageContext::class)->getTag();
+        $shareText = _t('TEMPLATE_SHARE_MUST_READ') . $url;
+        // icon classes come from the bundled FontAwesome 5 Free brands set
+        $targets = [
+            ['href' => 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode($url), 'icon' => 'fab fa-facebook-f', 'label' => _t('TEMPLATE_SHARE_FACEBOOK')],
+            ['href' => 'https://twitter.com/intent/tweet?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'fab fa-twitter', 'label' => _t('TEMPLATE_SHARE_TWITTER')],
+            ['href' => 'https://mastodonshare.com/?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'fab fa-mastodon', 'label' => _t('TEMPLATE_SHARE_MASTODON')],
+            ['href' => 'https://www.linkedin.com/sharing/share-offsite/?url=' . urlencode($url), 'icon' => 'fab fa-linkedin-in', 'label' => _t('TEMPLATE_SHARE_LINKEDIN')],
+            ['href' => 'https://wa.me/?text=' . urlencode($shareText), 'icon' => 'fab fa-whatsapp', 'label' => _t('TEMPLATE_SHARE_WHATSAPP')],
+            ['href' => 'https://t.me/share/url?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'fab fa-telegram-plane', 'label' => _t('TEMPLATE_SHARE_TELEGRAM')],
+            // the by-mail share is the wiki's own sendmail handler, not an external network
+            ['href' => $this->getService(UrlFormatter::class)->href('sendmail'), 'icon' => 'fas fa-envelope', 'label' => _t('TEMPLATE_SHARE_MAIL')],
+        ];
+        $html = '<div class="yw-share-buttons">' . "\n";
+        foreach ($targets as $target) {
+            $external = str_starts_with($target['href'], 'https://');
+            $html .= '<a href="' . htmlspecialchars($target['href'], ENT_QUOTES) . '"'
+                . ' class="bouton_share" title="' . htmlspecialchars($target['label'], ENT_QUOTES) . '"'
+                . ' aria-label="' . htmlspecialchars($target['label'], ENT_QUOTES) . '"'
+                . ($external ? ' target="_blank" rel="noopener noreferrer"' : '')
+                . '><i class="' . $target['icon'] . ' fa-2x" aria-hidden="true"></i></a>' . "\n";
+        }
+        $html .= '</div>' . "\n";
         $html .= '<br /><br />' . "\n";
         $html .= '<div class="yw-alert yw-alert--info">' . _t('TEMPLATE_SHARE_INCLUDE_CODE') . '</div>' . "\n";
         $html .= "<pre id=\"htmlsharecode\">\n";
@@ -89,7 +107,7 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
 
         // si l'on est dans une requete ajax, pas besoin de titre, et pas besoin de charger tout le html
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            echo mb_convert_encoding('<div class="page">' . "\n" . $html . "\n" . '<div>', 'UTF-8', 'ISO-8859-1');
+            echo '<div class="page">' . "\n" . $html . "\n" . '</div>';
         } else {
             echo $this->getService(TemplateEngine::class)->header();
             echo "<div class=\"page\">\n<h2>" . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' ' . $this->getService(PageContext::class)->getTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n</div>\n";

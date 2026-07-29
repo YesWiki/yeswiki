@@ -29,6 +29,7 @@
       mode: 'wysiwyg',
       lang,
       minHeight,
+      width: '100%',
       placeholder: textarea.getAttribute('placeholder') || '',
       toolbar: [
         'headings', 'bold', 'italic', 'strike', '|',

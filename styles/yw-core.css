@@ -1369,3 +1369,19 @@ ul.nav-tabs li.active a {
   color: var(--primary-color);
   border-bottom: 2px solid var(--primary-color);
 }
+
+/* /PageName/share: the social share icon row (ShareHandler) */
+.yw-share-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin: 0.5rem 0 1rem;
+}
+.yw-share-buttons .bouton_share {
+  color: inherit;
+  opacity: 0.8;
+}
+.yw-share-buttons .bouton_share:hover,
+.yw-share-buttons .bouton_share:focus-visible {
+  opacity: 1;
+}
