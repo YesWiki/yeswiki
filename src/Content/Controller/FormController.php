@@ -218,7 +218,7 @@ class FormController extends YesWikiController
         if ($this->getService(AclService::class)->isAdmin()) {
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmDeleteToken', false);
-                $this->formManager->clear($id);
+                // delete() removes the form's entries itself
                 $this->formManager->delete($id);
 
                 return $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', ['vue' => 'formulaire', 'msg' => 'BAZ_FORMULAIRE_ET_FICHES_SUPPRIMES'], false));

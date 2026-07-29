@@ -617,6 +617,37 @@ class FormManager
         return false;
     }
 
+    /**
+     * Delete every entry of a form, keeping the form itself -- the "empty this form"
+     * admin action.
+     *
+     * This existed as a call site without an implementation: FormController::empty() and
+     * ::delete() both called it, so both fataled with "Call to undefined method". delete()
+     * removes the entries itself, so its call was redundant as well as fatal.
+     *
+     * @param int|string $id the form's numeric id
+     *
+     * @return int the number of entries deleted
+     */
+    public function clear($id): int
+    {
+        if ($this->hibernationService->isWikiHibernated()) {
+            throw new \Exception(_t('WIKI_IN_HIBERNATION'));
+        }
+
+        if (strval(intval($id)) != strval($id)) {
+            return 0;
+        }
+
+        $deleted = 0;
+        foreach ($this->getEntryTagsForForm((string)$id) as $entryTag) {
+            $this->entryManager->delete($entryTag, true);
+            $deleted++;
+        }
+
+        return $deleted;
+    }
+
     public function delete($id)
     {
         if ($this->hibernationService->isWikiHibernated()) {
