@@ -3,6 +3,8 @@
 namespace YesWiki\Test\Core\Service;
 
 use Symfony\Component\HttpFoundation\Request;
+use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Search\Api\TagApiController;
 use YesWiki\Search\Service\TagsManager;
@@ -29,15 +31,23 @@ class TagsManagerAndApiTest extends YesWikiTestCase
     {
         $wiki = self::getWiki();
         self::$tripleStore = $wiki->services->get(TripleStore::class);
-        self::$tripleStore->create(self::TAG_A, TagsManager::TAG_PROPERTY, 'regressionapple', '', '');
-        self::$tripleStore->create(self::TAG_A, TagsManager::TAG_PROPERTY, 'regressionapricot', '', '');
-        self::$tripleStore->create(self::TAG_B, TagsManager::TAG_PROPERTY, 'regressionbanana', '', '');
+        // seed through TagsManager, not the triples: since ticket 09 the page's own body
+        // is the source of truth and the triples are the index it maintains
+        $pageManager = $wiki->services->get(PageManager::class);
+        $tagsManager = $wiki->services->get(TagsManager::class);
+        $pageManager->save(self::TAG_A, [PageBody::CONTENT => 'page a'], '', true);
+        $pageManager->save(self::TAG_B, [PageBody::CONTENT => 'page b'], '', true);
+        $tagsManager->save(self::TAG_A, 'regressionapple,regressionapricot');
+        $tagsManager->save(self::TAG_B, 'regressionbanana');
     }
 
     public static function tearDownAfterClass(): void
     {
         self::$tripleStore->delete(self::TAG_A, TagsManager::TAG_PROPERTY, null, '', '');
         self::$tripleStore->delete(self::TAG_B, TagsManager::TAG_PROPERTY, null, '', '');
+        $pageManager = self::getWiki()->services->get(PageManager::class);
+        $pageManager->deleteOrphaned(self::TAG_A);
+        $pageManager->deleteOrphaned(self::TAG_B);
     }
 
     public function testGetAllHonorsThePageArgument(): void

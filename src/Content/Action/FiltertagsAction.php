@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -14,6 +13,7 @@ use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Search\Service\TagsManager;
 
 /**
  * `{{filtertags}}` -- converted from the procedural actions/filtertags.php by ticket 06.
@@ -116,11 +116,9 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
                 $this->getService(InclusionStack::class)->register($page['tag']);
                 $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format(PageBody::content($page['body']))), $nbcartrunc);
                 $this->getService(InclusionStack::class)->unregisterLast();
-                $pagetags = $this->getService(TripleStore::class)->getAll($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
-                foreach ($pagetags as $tag) {
-                    $tag['value'] = stripslashes($tag['value']);
-                    $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
-                    $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . $tag['value'] . '</span>&nbsp;';
+                foreach (TagsManager::keywordsOf($page) as $keyword) {
+                    $element[$page['tag']]['tagnames'] .= sanitizeEntity($keyword) . ' ';
+                    $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . htmlspecialchars($keyword, ENT_QUOTES) . '</span>&nbsp;';
                 }
             }
         }

@@ -2,12 +2,29 @@
 
 namespace YesWiki\Search\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 
+/**
+ * Page keywords.
+ *
+ * Since ticket 09 the keywords of a page live in that page's own row, under
+ * `body.keywords` -- they were the last "fact about a page" stored outside the page,
+ * which made a page's data non-atomic with the page and forced every reader to join
+ * `triples`.
+ *
+ * The `TAG_PROPERTY` triples are still written, but they are now a **derived reverse
+ * index** (keyword -> pages), rebuilt from the body on every write and never the source
+ * of truth. They stay because four things genuinely need an index rather than a scan:
+ * the tag cloud, `getPagesByTags()`'s AND-semantics across several keywords, the admin
+ * content table's SQL-side aggregation, and the whole-wiki keyword vocabulary. If the
+ * index and a body ever disagree, the body wins -- `reindexAll()` rebuilds the lot.
+ */
 class TagsManager
 {
     public const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
@@ -16,13 +33,53 @@ class TagsManager
     protected $hibernationService;
     protected $tripleStore;
     protected $params;
+    protected ContainerInterface $container;
 
-    public function __construct(DbService $dbService, TripleStore $tripleStore, ParameterBagInterface $params, HibernationService $hibernationService)
-    {
+    public function __construct(
+        DbService $dbService,
+        TripleStore $tripleStore,
+        ParameterBagInterface $params,
+        HibernationService $hibernationService,
+        ContainerInterface $container
+    ) {
         $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;
         $this->params = $params;
         $this->hibernationService = $hibernationService;
+        $this->container = $container;
+    }
+
+    /**
+     * Split a user-typed, comma-separated keyword list into stored keywords: trimmed,
+     * blanks dropped, duplicates dropped, order preserved.
+     *
+     * @return list<string>
+     */
+    public static function parseList(?string $list): array
+    {
+        $keywords = [];
+        foreach (explode(',', (string)$list) as $keyword) {
+            $keyword = trim($keyword);
+            if ($keyword !== '' && !in_array($keyword, $keywords, true)) {
+                $keywords[] = $keyword;
+            }
+        }
+
+        return $keywords;
+    }
+
+    /**
+     * The keywords of a decoded page body.
+     *
+     * @param array<string, mixed>|null $page
+     *
+     * @return list<string>
+     */
+    public static function keywordsOf(?array $page): array
+    {
+        $keywords = $page['body'][PageBody::KEYWORDS] ?? [];
+
+        return is_array($keywords) ? array_values(array_filter($keywords, 'is_string')) : [];
     }
 
     public function deleteAll($page)
@@ -30,73 +87,120 @@ class TagsManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        // on recupere les anciens tags de la page courante
-        $tabtagsexistants = $this->tripleStore->getAll($page, self::TAG_PROPERTY, '', '');
-        if (is_array($tabtagsexistants)) {
-            foreach ($tabtagsexistants as $tab) {
-                $this->tripleStore->delete($page, self::TAG_PROPERTY, $tab['value'], '', '');
-            }
-        }
+        // the body goes away with the page; only the derived index needs clearing
+        $this->tripleStore->delete($page, self::TAG_PROPERTY, null, '', '');
     }
 
+    /**
+     * Replace a page's keywords. Writes the page's body -- the source of truth -- and
+     * then rebuilds that page's slice of the reverse index.
+     *
+     * @param string $liste_tags comma-separated, as typed in the edit form
+     */
     public function save($page, $liste_tags)
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        // TODO check if we need to escape here, or if we can do that in the tripleStore methods
-        $tags = explode(',', $this->dbService->escape($liste_tags));
 
-        // on recupere les anciens tags de la page courante
-        $tabtagsexistants = $this->tripleStore->getAll($page, self::TAG_PROPERTY, '', '');
-        if (is_array($tabtagsexistants)) {
-            foreach ($tabtagsexistants as $tab) {
-                $tags_restants_a_effacer[] = $tab['value'];
+        $keywords = self::parseList($liste_tags);
+        $pageManager = $this->container->get(PageManager::class);
+        $stored = $pageManager->getOne($page, null, false, true);
+        if ($stored) {
+            $body = $stored['body'] ?? [];
+            if (self::keywordsOf($stored) !== $keywords) {
+                if (empty($keywords)) {
+                    unset($body[PageBody::KEYWORDS]);
+                } else {
+                    $body[PageBody::KEYWORDS] = $keywords;
+                }
+                $pageManager->save($page, $body, '', true);
             }
         }
 
-        // on ajoute le tag s il n existe pas déjà
-        foreach ($tags as $tag) {
-            trim($tag);
-            if ($tag != '') {
-                if (!$this->tripleStore->exist($page, self::TAG_PROPERTY, htmlspecialchars($tag), '', '')) {
-                    $this->tripleStore->create($page, self::TAG_PROPERTY, htmlspecialchars($tag), '', '');
-                }
-                // on supprime ce tag du tableau des tags restants a effacer
-                if (isset($tags_restants_a_effacer)) {
-                    unset($tags_restants_a_effacer[array_search($tag, $tags_restants_a_effacer)]);
-                }
-            }
-        }
+        $this->reindex($page, $keywords);
+    }
 
-        // on supprime les tags restants a effacer
-        if (isset($tags_restants_a_effacer)) {
-            foreach ($tags_restants_a_effacer as $tag) {
-                $this->tripleStore->delete($page, self::TAG_PROPERTY, $tag, '', '');
-            }
+    /**
+     * Rewrite one page's entries in the reverse index to match the given keywords.
+     *
+     * @param list<string> $keywords
+     */
+    public function reindex(string $page, array $keywords): void
+    {
+        $this->tripleStore->delete($page, self::TAG_PROPERTY, null, '', '');
+        foreach ($keywords as $keyword) {
+            $this->tripleStore->create($page, self::TAG_PROPERTY, $keyword, '', '');
         }
     }
 
     /**
-     * @param string $page if empty, every distinct tag value in the whole wiki is
-     *                     returned; otherwise only the given page's own tags
+     * Rebuild the reverse index for ordinary wiki pages from the current revision of
+     * each. The repair path when the index and the bodies disagree, and what the
+     * ticket-09 migration calls once keywords have moved into the bodies.
+     *
+     * Scoped to untyped Content on purpose. A bazar entry's tags are an ordinary form
+     * field whose name the webmaster chose, written to both the entry body and the index
+     * by TagsField -- this method cannot reconstruct them without introspecting every
+     * form, so it leaves their index rows alone rather than deleting what it can't rebuild.
+     *
+     * @return int the number of pages indexed
+     */
+    public function reindexAll(): int
+    {
+        $pages = trim($this->dbService->prefixTable('pages'));
+        $triples = trim($this->dbService->prefixTable('triples'));
+        $untyped = "NOT EXISTS (SELECT 1 FROM {$triples} t WHERE t.resource = p.tag"
+            . " AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "')";
+
+        $rows = $this->dbService->loadAll(
+            "SELECT p.tag AS tag, p.body AS body FROM {$pages} p"
+            . " WHERE p.latest = 'Y' AND p.comment_on = '' AND {$untyped}"
+        );
+
+        $this->dbService->query(
+            "DELETE FROM {$triples} WHERE property = '" . $this->dbService->escape(self::TAG_PROPERTY) . "'"
+            . " AND resource IN (SELECT p.tag FROM {$pages} p WHERE p.latest = 'Y' AND {$untyped})"
+        );
+
+        $indexed = 0;
+        foreach ($rows as $row) {
+            $keywords = self::keywordsOf(['body' => PageBody::decode($row['body'] ?? null)]);
+            if (empty($keywords)) {
+                continue;
+            }
+            foreach ($keywords as $keyword) {
+                $this->tripleStore->create((string)$row['tag'], self::TAG_PROPERTY, $keyword, '', '');
+            }
+            $indexed++;
+        }
+
+        return $indexed;
+    }
+
+    /**
+     * @param string $page if empty, every distinct keyword in the whole wiki is returned
+     *                     (from the index); otherwise the given page's own keywords, read
+     *                     from its body
      */
     public function getAll($page = '')
     {
         if ($page == '') {
-            // TODO use tripleStore service
             $sql = 'SELECT DISTINCT value FROM' . $this->dbService->prefixTable('triples') . "WHERE property='" . self::TAG_PROPERTY . "'";
 
             return $this->dbService->loadAll($sql);
         }
 
-        return $this->tripleStore->getAll($page, self::TAG_PROPERTY, '', '');
+        $stored = $this->container->get(PageManager::class)->getOne($page, null, true, true);
+
+        // the row shape callers expect (they array_column(..., 'value') it)
+        return array_map(fn (string $keyword) => ['value' => $keyword, 'resource' => $page], self::keywordsOf($stored));
     }
 
     /**
-     * Live-search: distinct tag values matching $search (substring, case-insensitive),
+     * Live-search: distinct keywords matching $search (substring, case-insensitive),
      * paginated. Backs GET /api/tags -- unlike getAll(''), this never loads the whole
-     * tag vocabulary at once.
+     * vocabulary at once. Served from the reverse index, which is what an index is for.
      *
      * @return array{tags: string[], total: int}
      */
@@ -121,9 +225,9 @@ class TagsManager
     }
 
     /**
-     * Every (id, value, resource) tag triple in the wiki, for the admin tag-management
-     * page (AdminTagAction) -- unlike getAll()/search(), this exposes the triple id,
-     * needed to target individual rows for deleteByIds().
+     * Every (id, value, resource) index row, for the admin keyword-management page
+     * (AdminTagAction) -- unlike getAll()/search(), this exposes the row id, which is how
+     * that page targets individual page/keyword pairs for removeByIds().
      */
     public function getAllTriples(): array
     {
@@ -134,22 +238,48 @@ class TagsManager
     }
 
     /**
-     * Deletes specific tag triples by id (AdminTagAction's bulk "delete from all pages").
-     * $ids is cast to int individually -- triples.id is always numeric, so this is both
-     * simpler and safer than escaping a comma-joined string as a single SQL literal
-     * (which is what silently broke multi-id deletes before this method existed: `id IN
-     * ('3,5,7')` never matches more than one row).
+     * Remove the page/keyword pairs identified by these index-row ids (AdminTagAction's
+     * bulk "delete from all pages").
+     *
+     * Since ticket 09 this has to go through the pages themselves: deleting only the
+     * index rows would leave the keywords in the bodies, and the next reindex would
+     * bring them all back.
+     *
+     * @param array<array-key, int|string> $ids
      */
-    public function deleteByIds(array $ids): void
+    public function removeByIds(array $ids): void
     {
         $ids = array_filter(array_map('intval', $ids));
         if (empty($ids)) {
             return;
         }
-        $this->dbService->query(
-            'DELETE FROM ' . $this->dbService->prefixTable('triples')
+
+        $rows = $this->dbService->loadAll(
+            'SELECT resource, value FROM ' . $this->dbService->prefixTable('triples')
             . " WHERE property='" . self::TAG_PROPERTY . "' AND id IN (" . implode(',', $ids) . ')'
         );
+
+        $toRemove = [];
+        foreach ($rows as $row) {
+            $toRemove[(string)$row['resource']][] = (string)$row['value'];
+        }
+
+        $pageManager = $this->container->get(PageManager::class);
+        foreach ($toRemove as $page => $keywords) {
+            $stored = $pageManager->getOne($page, null, false, true);
+            if (!$stored) {
+                continue;
+            }
+            $remaining = array_values(array_diff(self::keywordsOf($stored), $keywords));
+            $body = $stored['body'] ?? [];
+            if (empty($remaining)) {
+                unset($body[PageBody::KEYWORDS]);
+            } else {
+                $body[PageBody::KEYWORDS] = $remaining;
+            }
+            $pageManager->save($page, $body, '', true);
+            $this->reindex($page, $remaining);
+        }
     }
 
     public function getPagesByTags($tags = '', $type = '', $nb = '', $tri = '')
@@ -179,9 +309,6 @@ class TagsManager
         }
         // recuperation des pages wikis
         $sql = 'SELECT * FROM ' . $this->dbService->prefixTable('pages');
-        if (!empty($taglist)) {
-            $sql .= ' INNER JOIN ' . $this->dbService->prefixTable('triples') . ' as tags ON tag=tags.resource';
-        }
         $sql .= " WHERE latest='Y' AND comment_on='' AND tag NOT LIKE 'LogDesActionsAdministratives%' ";
 
         if ($type == 'wiki') {

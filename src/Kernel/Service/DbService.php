@@ -288,8 +288,10 @@ class DbService
 
     public function escape($string)
     {
-        // PDO::quote adds quotes around the string, so we strip them
-        $quoted = $this->link->quote($string);
+        // PDO::quote adds quotes around the string, so we strip them.
+        // Cast first: callers legitimately pass null for an absent filter (e.g.
+        // TripleStore::delete() with no value), and PDO::quote(null) is deprecated.
+        $quoted = $this->link->quote((string)$string);
         return substr($quoted, 1, -1);
     }
 

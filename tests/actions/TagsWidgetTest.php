@@ -41,7 +41,7 @@ class TagsWidgetTest extends YesWikiTestCase
         $userManager = $wiki->services->get(UserManager::class);
 
         $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'body content'], '', true);
-        $tripleStore->create(self::PAGE_TAG, TagsManager::TAG_PROPERTY, 'widgettesttag', '', '');
+        $wiki->services->get(TagsManager::class)->save(self::PAGE_TAG, 'widgettesttag');
         // a tag on an unrelated page: must NOT leak into this page's widget markup --
         // that's exactly the "dump every tag" behavior this ticket removed
         $tripleStore->create('TagsWidgetRegressionOtherPage', TagsManager::TAG_PROPERTY, 'unrelatedtag', '', '');

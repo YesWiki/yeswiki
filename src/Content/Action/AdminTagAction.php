@@ -25,7 +25,7 @@ class AdminTagAction extends YesWikiAction implements RegisteredAction
             if ($this->getService(HibernationService::class)->isWikiHibernated()) {
                 throw new \Exception(_t('WIKI_IN_HIBERNATION'));
             }
-            $tagsManager->deleteByIds(explode(',', $this->getRequest()->query->get('delete_tag')));
+            $tagsManager->removeByIds(explode(',', $this->getRequest()->query->get('delete_tag')));
         }
 
         $rows = $tagsManager->getAllTriples();
