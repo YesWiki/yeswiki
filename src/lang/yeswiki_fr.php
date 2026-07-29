@@ -880,7 +880,6 @@ return [
     'ACEDITOR_UNDERLINE' => 'Souligné ( Ctrl-u )',
     'ACEDITOR_STRIKE' => 'Barré ( Ctrl-y )',
     'ACEDITOR_LINE' => 'Insère une ligne horizontale',
-    'ACEDITOR_LINK' => 'Lien',
     'ACEDITOR_LINK_PROMPT' => 'Entrez l\'adresse URL',
     'ACEDITOR_LIST' => 'Liste à puce',
     'ACEDITOR_NEWPAGE' => 'Créer une page',

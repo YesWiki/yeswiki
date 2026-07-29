@@ -53,6 +53,13 @@ class TagsWidgetTest extends YesWikiTestCase
         $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($pageManager->getOne(self::PAGE_TAG));
         $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
+        // the footer's debug query-log dump (admin + debug config + loaded theme) would
+        // append this test's own INSERT statements to the page and trip the
+        // assertStringNotContainsString below -- render without it
+        $runtimeConfig = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class);
+        $previousDebug = $runtimeConfig['debug'] ?? null;
+        $runtimeConfig['debug'] = false;
+
         try {
             $output = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
 
@@ -63,6 +70,7 @@ class TagsWidgetTest extends YesWikiTestCase
             $this->assertStringContainsString('yw-tags-input.js', $output);
             $this->assertMatchesRegularExpression('/hx-get="[^"]*api\/tags"/', $output, 'the search input must query GET /api/tags via htmx');
         } finally {
+            $runtimeConfig['debug'] = $previousDebug;
             $tripleStore->delete(self::PAGE_TAG, TagsManager::TAG_PROPERTY, null, '', '');
             $tripleStore->delete('TagsWidgetRegressionOtherPage', TagsManager::TAG_PROPERTY, null, '', '');
             $pageManager->deleteOrphaned(self::PAGE_TAG);

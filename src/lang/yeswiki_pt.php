@@ -107,7 +107,6 @@ return [
     'RESET_PASSWORD' => 'Redefinição de senha',
     'NO_PERMISSIONS_TO_EXECUTE_THIS_ACTION' => 'você não tem as permissões para executar esta ação',
     'WHAT_YOU_SEARCH' => 'O que você deseja pesquisar',
-    'SEARCH' => 'Pesquisar',
     'SEARCH_RESULT_OF' => 'Resultado(s) da pesquisa',
     'NO_RESULT_FOR' => 'Sem resultados',
     'ERROR_ACTION_TRAIL' => 'Erro Ação {{trail ...}}',

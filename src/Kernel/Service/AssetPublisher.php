@@ -26,6 +26,7 @@ class AssetPublisher
     public const PUBLISHED_PREFIX = 'cache/assets/';
 
     protected const ALLOWED_PREFIXES = [
+        'src/assets/',
         'styles/',
         'javascripts/',
         'themes/',

@@ -276,7 +276,7 @@ namespace YesWiki\Kernel\Service {
             // this file changed when ticket 05 moved it from src/services/ to
             // src/Kernel/Service/, and a dirname(__DIR__, 2) silently started resolving to
             // src/lang instead of lang/. Relative __DIR__ arithmetic breaks on any move.
-            return YESWIKI_SOURCE_DIR . '/lang';
+            return YESWIKI_SOURCE_DIR . '/src/lang';
         }
     }
 }

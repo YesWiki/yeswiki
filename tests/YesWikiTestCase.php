@@ -100,6 +100,26 @@ class YesWikiTestCase extends TestCase
      * Narrow a nullable user lookup: tests that just created or fetched a user call this
      * to assert the lookup succeeded and get a non-null User for typed service calls.
      */
+    /** @var int|null output-buffer depth at test start (see tearDown) */
+    private $obLevelAtSetUp;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->obLevelAtSetUp = ob_get_level();
+    }
+
+    protected function tearDown(): void
+    {
+        // a caught mid-render crash can leave the render pipeline's output buffer open;
+        // the NEXT test's captured page then swallows stray output (debug SQL, warnings)
+        // and fails on content it never produced. Normalize the depth between tests.
+        while ($this->obLevelAtSetUp !== null && ob_get_level() > $this->obLevelAtSetUp) {
+            ob_end_clean();
+        }
+        parent::tearDown();
+    }
+
     protected static function requireUser(?User $user): User
     {
         if ($user === null) {

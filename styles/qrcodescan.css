@@ -81,7 +81,7 @@
 }
 
 .stepper--vertical__circle {
-  background: url('../images/step-circle-icon_zkr7qg.svg');
+  background: url('../src/assets/images/step-circle-icon.svg');
   width: 60px;
   height: 60px;
   display: -webkit-box;
@@ -150,7 +150,7 @@
   display: none;
 }
 .stepper__row--disabled .stepper--vertical__circle {
-  background: url('../images/step-circle-icon--disabled_xakuwy.svg');
+  background: url('../src/assets/images/step-circle-icon--disabled.svg');
   opacity: 0.4;
 }
 .stepper__row--disabled .stepper--vertical__circle__text {

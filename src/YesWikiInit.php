@@ -518,7 +518,7 @@ class Init
             // rendering (baz_marker_icon/baz_marker_icon_prefix) is a FontAwesome icon,
             // not an image file; this key is only consulted if an admin opts into a
             // custom marker image.
-            'baz_marker_image_file' => 'images/bazar/marker.png',
+            'baz_marker_image_file' => 'src/assets/images/bazar/marker.png',
             'baz_external_service' => [
                 'cache_time_to_check_changes' => 60, // seconds
                 'cache_time_to_check_deletion' => 86400, // seconds (1 day)

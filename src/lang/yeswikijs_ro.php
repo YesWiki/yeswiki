@@ -138,5 +138,4 @@ Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
     // relocated from tools/contact/lang/contactjs_ro.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'Acest câmp este obligatoriu.',
     'CONTACT_EMAIL_NOT_VALID' => 'E-mailul introdus nu este valid.',
-
 ];

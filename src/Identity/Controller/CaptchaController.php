@@ -128,7 +128,7 @@ class CaptchaController extends YesWikiController
         $this->words = self::DEFAULT_TEXTS;
         $this->updateWordsFromConfig();
         $this->imageWidth = $this->getImageWidth();
-        $this->fontFile = YESWIKI_SOURCE_DIR . '/src/vendor/fonts/agenda__.ttf';
+        $this->fontFile = YESWIKI_SOURCE_DIR . '/src/assets/fonts/agenda__.ttf';
     }
 
     /**

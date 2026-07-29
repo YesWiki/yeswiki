@@ -47,7 +47,7 @@
   margin: 0 0 1px;
   padding: 5px 15px;
   cursor: pointer;
-  background: #222 url('../images/alert-overlay.png') repeat-x;
+  background: #222;
   color: #fff;
   text-decoration: none;
   border-radius: 5px;
