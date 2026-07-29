@@ -128,5 +128,7 @@ export function legacyIconToSprite(classString, extraClass = '') {
     return null
   }
   const cls = ('yw-icon ' + extraClass).trim()
-  return `<svg class="${cls}" aria-hidden="true"><use href="src/assets/icons.svg#${legacyIconMap[faName]}"/></svg>`
+  // base-absolute so the ref survives path-shaped page URLs (/PageTag/edit)
+  const base = (typeof wiki !== 'undefined' && wiki.baseUrl) ? wiki.baseUrl.replace(/\?+$/, '') : ''
+  return `<svg class="${cls}" aria-hidden="true"><use href="${base}src/assets/icons.svg#${legacyIconMap[faName]}"/></svg>`
 }

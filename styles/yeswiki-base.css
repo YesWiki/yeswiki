@@ -62,11 +62,14 @@ ul.fake-ul {
 
 /* Adds edit icon after link tag */
 a[data-missing-tag]::after {
-  content: '\f303';
-  font-family: 'Font Awesome 5 Free';
-  font-weight: 900;
+  content: '';
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
   margin-left: 0.4em;
-  font-size: 0.8em;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' /%3E%3Cpath d='M13.5 6.5l4 4' /%3E%3C/svg%3E")
+    no-repeat center / contain;
 }
 
 /* Page absentes */

@@ -233,7 +233,7 @@ class TemplateEngine
         $this->twig->addFunction(new \Twig\TwigFunction('icon', function ($name, $extraClass = '') {
             $class = trim('yw-icon ' . $extraClass);
 
-            return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="src/assets/icons.svg#' . htmlspecialchars($name, ENT_QUOTES) . '"/></svg>';
+            return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="' . htmlspecialchars($this->spriteUrl(), ENT_QUOTES) . '#' . htmlspecialchars($name, ENT_QUOTES) . '"/></svg>';
         }, ['is_safe' => ['html']]));
         $this->addTwigHelper('addJavascript', function ($js) {
             $this->assetsManager->AddJavascript((string)$js);
@@ -342,11 +342,23 @@ class TemplateEngine
             if (isset($map[$key])) {
                 $class = trim('yw-icon ' . $extraClass);
 
-                return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="src/assets/icons.svg#' . htmlspecialchars($map[$key], ENT_QUOTES) . '"/></svg>';
+                return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="' . htmlspecialchars($this->spriteUrl(), ENT_QUOTES) . '#' . htmlspecialchars($map[$key], ENT_QUOTES) . '"/></svg>';
             }
         }
 
         return null;
+    }
+
+    /**
+     * Base-absolute URL of the Tabler sprite. A bare "src/assets/icons.svg" would
+     * resolve against the current page path and 404 on path-shaped URLs
+     * (rewrite-mode handlers like /PageTag/edit).
+     */
+    private function spriteUrl(): string
+    {
+        $baseUrl = (string)$this->container->get(RuntimeConfig::class)->getValue('base_url');
+
+        return rtrim($baseUrl, '?') . 'src/assets/icons.svg';
     }
 
     private function addTwigHelper($name, $callback)
