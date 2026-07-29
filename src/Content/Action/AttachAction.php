@@ -44,8 +44,7 @@ class AttachAction extends YesWikiAction implements RegisteredAction
         // `file=`/`attachfile=` is a FileManager file-entry tag (see src/Attach.php's
         // CheckParams()); see docs/actions/attach.yaml for the full argument list.
 
-
-        $att = new Attach($this->wiki);
+        $att = new Attach($this->wiki->services);
         $att->doAttach();
         unset($att);
     }

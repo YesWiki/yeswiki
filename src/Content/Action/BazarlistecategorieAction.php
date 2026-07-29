@@ -118,7 +118,7 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
                     // lien de suppression visible pour le super admin
                     if (baz_a_le_droit('supp_fiche', $fiche['owner'])) {
                         $fiche['lien_suppression'] = '<a class="modalbox" href="'
-                            . $this->getService(UrlFormatter::class)->href('deletepage', $fiche['tag'], 'incoming=' . urlencode($this->wiki->getAbsolutePath())) . '"></a>' . "\n";
+                            . $this->getService(UrlFormatter::class)->href('deletepage', $fiche['tag'], 'incoming=' . urlencode($this->getService(UrlFormatter::class)->href())) . '"></a>' . "\n";
                     }
                     if (baz_a_le_droit('modif_fiche', $fiche['owner'])) {
                         $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('edit', $fiche['tag']) . '"></a>' . "\n";

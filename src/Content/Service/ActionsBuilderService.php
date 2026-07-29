@@ -2,20 +2,20 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Yaml\Yaml;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Wiki;
 
 class ActionsBuilderService
 {
     protected $data;
     protected $renderer;
-    protected $wiki;
+    protected ContainerInterface $container;
 
-    public function __construct(TemplateEngine $renderer, Wiki $wiki)
+    public function __construct(TemplateEngine $renderer, ContainerInterface $container)
     {
         $this->renderer = $renderer;
-        $this->wiki = $wiki;
+        $this->container = $container;
     }
 
     // ---------------------
@@ -104,7 +104,7 @@ class ActionsBuilderService
         // add extra components
         $extraComponents = [];
         $files = [];
-        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $pluginName => $pluginPath) {
+        foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $pluginName => $pluginPath) {
             $files = glob($pluginPath . 'javascripts/components/actions-builder/*.js');
             foreach ($files as $filePath) {
                 $filename = pathinfo($filePath)['filename'];

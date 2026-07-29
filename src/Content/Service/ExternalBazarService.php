@@ -2,12 +2,12 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Exception\ExternalBazarServiceException;
 use YesWiki\Content\Field\ExternalImageField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Search\Service\SearchManager;
-use YesWiki\Wiki;
 
 class ExternalBazarService
 {
@@ -55,20 +55,20 @@ class ExternalBazarService
     protected $entryManager;
     protected $importService;
     protected $params;
-    protected $wiki;
+    protected ContainerInterface $container;
 
     private $aURLDetailsCache;
     private $aAlreadyRefreshedURLs;
     private $aAlreadyCheckingDeletionsURLs;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         ParameterBagInterface $params,
         FormManager $formManager,
         EntryManager $entryManager,
         ImportService $importService
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->params = $params;
         $this->formManager = $formManager;
         $this->importService = $importService;
@@ -89,7 +89,7 @@ class ExternalBazarService
     {
         // to prevent DDOS attack refresh only for admins
         return true;
-        if ($pRefresh == null || !$pRefresh || !$this->wiki->services->get(AclService::class)->isAdmin()) {
+        if ($pRefresh == null || !$pRefresh || !$this->container->get(AclService::class)->isAdmin()) {
             return false;
         }
 
@@ -261,8 +261,8 @@ class ExternalBazarService
             $diffTime = -hrtime(true);
         }
 
-        $vSearchManager = $this->wiki->services->get(SearchManager::class);
-        $vBazarListService = $this->wiki->services->get(BazarListService::class);
+        $vSearchManager = $this->container->get(SearchManager::class);
+        $vBazarListService = $this->container->get(BazarListService::class);
 
         // Merge les paramètres passé avec des paramètres par défaut
         $pParams = array_merge(
@@ -684,7 +684,7 @@ class ExternalBazarService
 
             foreach ($entries as $key => $entry) {
                 if (isset($entriesList) && isset($entry['tag']) && !isset($entriesList[$entry['tag']])) {
-                    if ($this->debug && $this->wiki->services->get(AclService::class)->isAdmin()) {
+                    if ($this->debug && $this->container->get(AclService::class)->isAdmin()) {
                         trigger_error('Deleting ' . $entry['tag'] . ' from ' . $cache_file);
                     }
                     unset($entries[$key]);
@@ -1036,7 +1036,7 @@ class ExternalBazarService
         if ($beginning > 1) {
             $noticeMessage = substr($pJSON, 0, $beginning);
             $pJSON = substr($pJSON, $beginning);
-            if ($this->debug && $this->wiki->services->get(AclService::class)->isAdmin()) {
+            if ($this->debug && $this->container->get(AclService::class)->isAdmin()) {
                 trigger_error($noticeMessage . ' from ' . $pFrom);
             }
         }

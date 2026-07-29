@@ -46,7 +46,7 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
         $this->formManager = $this->getService(FormManager::class);
         $this->pageManager = $this->getService(PageManager::class);
         $this->templateEngine = $this->getService(TemplateEngine::class);
-        $this->attach = new Attach($this->wiki);
+        $this->attach = new Attach($this->wiki->services);
 
         $user = $this->authenticationService->getLoggedUser();
         $currentUser = empty($user) ? null : $user['name'];

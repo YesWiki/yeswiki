@@ -43,7 +43,6 @@ class PageManager
         TagsManager $tagsManager,
         TripleStore $tripleStore,
         UserManager $userManager,
-        Wiki $wiki,
         ContainerInterface $container
     ) {
         $this->aclService = $aclService;
@@ -56,7 +55,6 @@ class PageManager
         $this->tagsManager = $tagsManager;
         $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
-        $this->wiki = $wiki;
 
         $this->ownersCache = [];
         $this->pageCache = [];
@@ -590,7 +588,7 @@ class PageManager
     public function getOwner($tag = '', $time = '')
     {
         if (!$tag = trim($tag)) {
-            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $tag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
 
         if (!isset($this->ownersCache[$tag])) {
@@ -739,9 +737,9 @@ class PageManager
 
         // not possible to init the EntryManager, UserManager or Guard in the constructor
         // because of circular reference problem
-        $entryManager = $this->wiki->services->get(EntryManager::class);
-        $userManager = $this->wiki->services->get(UserManager::class);
-        $guard = $this->wiki->services->get(Guard::class);
+        $entryManager = $this->container->get(EntryManager::class);
+        $userManager = $this->container->get(UserManager::class);
+        $guard = $this->container->get(Guard::class);
         $allEntriesTags = empty($tag) ? $entryManager->getAllEntriesTags()
             : ($entryManager->isEntry($tag) ? [$tag] : null);
         $allUserTags = empty($tag) ? $userManager->getAllUserTags()

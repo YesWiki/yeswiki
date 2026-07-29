@@ -4,24 +4,24 @@ namespace YesWiki\Content\Service;
 
 use Caxy\HtmlDiff\HtmlDiff;
 use Caxy\HtmlDiff\HtmlDiffConfig;
+use Psr\Container\ContainerInterface;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Render\Service\MarkdownFormatterService;
-use YesWiki\Wiki;
 
 class DiffService
 {
     protected $entryController;
     protected $entryManager;
     protected $pageManager;
-    protected $wiki;
+    protected ContainerInterface $container;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         PageManager $pageManager,
         EntryManager $entryManager,
         EntryController $entryController
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->pageManager = $pageManager;
         $this->entryManager = $entryManager;
         $this->entryController = $entryController;
@@ -73,7 +73,7 @@ class DiffService
         // move all complex actions (bazarliste etc...) into pre html so they are not fomatted
         $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page['body']);
 
-        return $this->wiki->services->get(MarkdownFormatterService::class)->format($code);
+        return $this->container->get(MarkdownFormatterService::class)->format($code);
     }
 
     public function formatJsonCodeIntoHtmlTable($page)

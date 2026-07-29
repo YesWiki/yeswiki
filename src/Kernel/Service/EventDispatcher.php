@@ -2,21 +2,21 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher as SymfonyEventDispatcher;
 use YesWiki\Kernel\Entity\Event;
-use YesWiki\Wiki;
 
 class EventDispatcher extends SymfonyEventDispatcher
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected ThrowableFormatter $throwableFormatter;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         ThrowableFormatter $throwableFormatter
     ) {
         parent::__construct();
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->throwableFormatter = $throwableFormatter;
     }
 
@@ -27,7 +27,7 @@ class EventDispatcher extends SymfonyEventDispatcher
 
             return [];
         } catch (\Throwable $th) {
-            $errors = ($this->wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin()) ? ['exception' => [
+            $errors = ($this->container->get(\YesWiki\Identity\Service\AclService::class)->isAdmin()) ? ['exception' => [
                 'message' => $this->throwableFormatter->hideServerPath($th->getMessage()),
                 'file' => $this->throwableFormatter->hideServerPath($th->getFile()),
                 'line' => $th->getLine(),

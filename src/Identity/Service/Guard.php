@@ -5,7 +5,6 @@ namespace YesWiki\Identity\Service;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Wiki;
 
 class Guard
 {
@@ -13,20 +12,17 @@ class Guard
     protected $authenticationService;
     protected $formManager;
     protected $userManager;
-    protected $wiki;
 
     public function __construct(
         AclService $aclService,
         AuthenticationService $authenticationService,
         FormManager $formManager,
-        UserManager $userManager,
-        Wiki $wiki
+        UserManager $userManager
     ) {
         $this->aclService = $aclService;
         $this->authenticationService = $authenticationService;
         $this->formManager = $formManager;
         $this->userManager = $userManager;
-        $this->wiki = $wiki;
     }
 
     // TODO remove this method and use YesWiki::HasAccess

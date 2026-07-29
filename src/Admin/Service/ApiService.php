@@ -8,7 +8,6 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
-use YesWiki\Wiki;
 
 class ApiService
 {
@@ -16,18 +15,16 @@ class ApiService
     protected $params;
     protected $aclService;
     protected $userManager;
-    protected $wiki;
 
     protected CurrentRequest $currentRequest;
 
-    public function __construct(AuthenticationService $authenticationService, ParameterBagInterface $params, AclService $aclService, UserManager $userManager, Wiki $wiki, CurrentRequest $currentRequest)
+    public function __construct(AuthenticationService $authenticationService, ParameterBagInterface $params, AclService $aclService, UserManager $userManager, CurrentRequest $currentRequest)
     {
         $this->currentRequest = $currentRequest;
         $this->authenticationService = $authenticationService;
         $this->aclService = $aclService;
         $this->params = $params;
         $this->userManager = $userManager;
-        $this->wiki = $wiki;
     }
 
     public function isAuthorized(array $requestParams, RouteCollection $routes)

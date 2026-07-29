@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Identity\Service\AclService;
@@ -19,7 +20,7 @@ use YesWiki\Wiki;
 
 class CommentService implements EventSubscriberInterface
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $aclService;
     protected $dbService;
     protected $eventDispatcher;
@@ -34,7 +35,7 @@ class CommentService implements EventSubscriberInterface
     protected UrlFormatter $urlFormatter;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         DbService $dbService,
         AclService $aclService,
         EventDispatcher $eventDispatcher,
@@ -46,7 +47,7 @@ class CommentService implements EventSubscriberInterface
         UrlFormatter $urlFormatter
     ) {
         $this->urlFormatter = $urlFormatter;
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
         $this->eventDispatcher = $eventDispatcher;
@@ -70,14 +71,14 @@ class CommentService implements EventSubscriberInterface
 
     public function addCommentIfAuthorized($content, $idComment = '')
     {
-        if (!$this->wiki->services->get(AuthenticationService::class)->getLoggedUser()) {
+        if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
             return [
                 'code' => 401,
                 'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
             ];
         }
         if ($this->aclService->hasAccess('comment', $content['pagetag']) && $this->pageManager->getOne($content['pagetag'])) {
-            if (!$this->wiki->services->get(HashCashService::class)->checkHashcash()) {
+            if (!$this->container->get(HashCashService::class)->checkHashcash()) {
                 return [
                     'code' => 400,
                     'error' => _t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'),
@@ -87,7 +88,7 @@ class CommentService implements EventSubscriberInterface
                 $newComment = true;
                 // find number
                 $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
-                    . ' FROM ' . $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . 'pages'
+                    . ' FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . 'pages'
                     . " WHERE comment_on != ''";
                 if ($lastComment = $this->dbService->loadSingle($sql)) {
                     $num = $lastComment['comment_id'] + 1;
@@ -151,7 +152,7 @@ class CommentService implements EventSubscriberInterface
             return [
                 'code' => 200,
                 'success' => _t('COMMENT_PUBLISHED'),
-                'html' => $this->wiki->services->get(TemplateEngine::class)->renderSafely('@core/comment.twig', ['comment' => $com]),
+                'html' => $this->container->get(TemplateEngine::class)->renderSafely('@core/comment.twig', ['comment' => $com]),
             ] + $errors;
         }
 
@@ -211,7 +212,7 @@ class CommentService implements EventSubscriberInterface
      */
     public function loadComments($tag, bool $bypassAcls = false, $username = null)
     {
-        $query = 'SELECT * FROM ' . $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix'] . 'pages WHERE ';
+        $query = 'SELECT * FROM ' . $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix'] . 'pages WHERE ';
         if (empty($tag)) {
             $query .= "comment_on != '' ";
         } else {
@@ -255,7 +256,7 @@ class CommentService implements EventSubscriberInterface
                 $com['comments'][$i]['tag'] = $comment['tag'];
                 $com['comments'][$i]['commentOn'] = $comment['comment_on'];
                 $com['comments'][$i]['rawbody'] = $comment['body'];
-                $com['comments'][$i]['body'] = $this->wiki->services->get(MarkdownFormatterService::class)->format($comment['body']);
+                $com['comments'][$i]['body'] = $this->container->get(MarkdownFormatterService::class)->format($comment['body']);
                 $this->setUserData($comment, 'user', $com['comments'][$i]);
                 $this->setUserData($comment, 'owner', $com['comments'][$i]);
                 $com['comments'][$i]['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
@@ -270,7 +271,7 @@ class CommentService implements EventSubscriberInterface
             }
         }
 
-        return $this->wiki->services->get(TemplateEngine::class)->renderSafely('@core/comment-list.twig', $com);
+        return $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-list.twig', $com);
     }
 
     public function getCommentsCount($tag)
@@ -341,8 +342,8 @@ class CommentService implements EventSubscriberInterface
             $data["link$key"] = $this->urlFormatter->href('', $comment[$key]);
             $data["{$key}color"] = $this->genColorCodeFromText($comment[$key]);
             $data["{$key}picture"] =
-                !empty($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_avatar'])
-                ? $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_avatar']
+                !empty($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_avatar'])
+                ? $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_avatar']
                 : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='" . str_replace('#', '%23', $data["{$key}color"]) . "' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
         }
     }
@@ -350,7 +351,7 @@ class CommentService implements EventSubscriberInterface
     public function getCommentForm($tag)
     {
         $options = [];
-        if (!$this->wiki->services->get(AuthenticationService::class)->getLoggedUser()) {
+        if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
             $options['alerts'][] = [
                 'class' => 'info',
                 'text' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
@@ -358,13 +359,13 @@ class CommentService implements EventSubscriberInterface
         } else {
             if ($this->aclService->hasAccess('comment', $tag)) {
                 $hashCashCode = '';
-                if ($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash']) {
-                    $hashCash = $this->wiki->services->get(HashCashService::class);
+                if ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash']) {
+                    $hashCash = $this->container->get(HashCashService::class);
                     $hashCashCode = $hashCash->getJavascriptCode('post-comment');
                 }
                 $page = $this->pageManager->getOne($tag);
                 $commentOn = !empty($page['comment_on']) ? $page['comment_on'] : $page['tag'];
-                $tempTag = ($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
+                $tempTag = ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
                 $options = [
                     'pagetag' => $commentOn,
                     'formlink' => $this->urlFormatter->href('comments', 'api'),
@@ -379,7 +380,7 @@ class CommentService implements EventSubscriberInterface
             }
         }
 
-        return $this->wiki->services->get(TemplateEngine::class)->renderSafely('@core/comment-form.twig', $options);
+        return $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-form.twig', $options);
     }
 
     public function renderCommentsForPage($tag, $showOnlyOnce = true)
@@ -392,7 +393,7 @@ class CommentService implements EventSubscriberInterface
         if ($showOnlyOnce && in_array($tag, $this->pagesWhereCommentWereRendered)) {
             return '';
         }
-        $aclsService = $this->wiki->services->get(AclService::class);
+        $aclsService = $this->container->get(AclService::class);
         $hasAccessComment = $aclsService->hasAccess('comment', $tag);
         $HasAccessRead = $aclsService->HasAccess('read', $tag);
 
@@ -410,10 +411,10 @@ class CommentService implements EventSubscriberInterface
                 : [
                     'commentsClosed' => false,
                     'coms' => $coms,
-                    'user' => ($hasAccessComment) ? null : $this->wiki->services->get(AuthenticationService::class)->getLoggedUser(),
+                    'user' => ($hasAccessComment) ? null : $this->container->get(AuthenticationService::class)->getLoggedUser(),
                     'form' => ($hasAccessComment) ? $this->getCommentForm($tag) : '',
                 ];
-            $output = $this->wiki->services->get(TemplateEngine::class)->renderSafely('@core/comment-for-page.twig', $options);
+            $output = $this->container->get(TemplateEngine::class)->renderSafely('@core/comment-for-page.twig', $options);
         }
 
         // indicate that those comments on page were already rendered once

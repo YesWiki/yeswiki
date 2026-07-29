@@ -136,7 +136,7 @@ class ImageApiController extends YesWikiController
 
     private function getCacheFileName(string $filename, int $width, int $height, string $mode): string
     {
-        $attach = new Attach($this->wiki);
+        $attach = new Attach($this->wiki->services);
         $newFileName = $attach->getResizedFilename("files/$filename", $width, $height, $mode);
         if (file_exists($newFileName)) {
             return $newFileName;

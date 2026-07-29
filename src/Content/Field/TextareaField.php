@@ -167,7 +167,7 @@ class TextareaField extends BazarField
         if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
             $entryCreationTime = $this->getEntryCreationTime($entry);
             foreach ($matches[0] as $key => $value) {
-                $attach = new Attach($wiki);
+                $attach = new Attach($wiki->services);
                 $attach->file = $matches[2][$key];
                 $previousTag = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
                 $previousPage = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
@@ -229,7 +229,7 @@ class TextareaField extends BazarField
                     $fileName = $this->sanitizeFileName($fileName);
                 }
 
-                $attach = new Attach($wiki);
+                $attach = new Attach($wiki->services);
                 $attach->file = $fileName;
 
                 // fake page

@@ -73,7 +73,7 @@ class ApiServiceTest extends TestCase
             ? Request::create('/')
             : Request::create('/', 'GET', [], [], [], ['HTTP_AUTHORIZATION' => 'Bearer ' . $bearerToken]));
 
-        return new ApiService($authenticationService, $params, $aclService, $userManager, $wiki, $currentRequest);
+        return new ApiService($authenticationService, $params, $aclService, $userManager, $currentRequest);
     }
 
     public function testGroupRestrictedRouteIsNotBypassedByPublicApiMode()

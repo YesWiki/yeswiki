@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -10,19 +11,19 @@ use YesWiki\Wiki;
 class ImportFilesManager
 {
     protected $uploadPath;
-    protected $wiki;
+    protected ContainerInterface $container;
 
     protected UrlFormatter $urlFormatter;
 
     /**
      * ImportManager constructor.
      *
-     * @param Wiki $wiki the injected Wiki instance
+     * @param ContainerInterface $container service container
      */
-    public function __construct(Wiki $wiki, UrlFormatter $urlFormatter)
+    public function __construct(ContainerInterface $container, UrlFormatter $urlFormatter)
     {
         $this->urlFormatter = $urlFormatter;
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->uploadPath = null;
     }
 
@@ -37,7 +38,7 @@ class ImportFilesManager
             return $this->uploadPath;
         }
 
-        $attachConfig = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config'];
+        $attachConfig = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config'];
 
         if (!is_array($attachConfig)) {
             $attachConfig = [];
@@ -106,7 +107,7 @@ class ImportFilesManager
         if (!empty($wikiPage['tag'])) { // classic wiki page
             $fields[] = 'body';
         } elseif (!empty($wikiPage['tag'])) { // bazar entry
-            $formManager = $this->wiki->services->get(FormManager::class);
+            $formManager = $this->container->get(FormManager::class);
             $form = $formManager->getOne($wikiPage['form_id']);
             // find fields that are textareas
             foreach ($form['prepared'] as $field) {
@@ -129,9 +130,9 @@ class ImportFilesManager
     public function findDirectLinkAttachements($tag = '')
     {
         if (empty(trim($tag))) {
-            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $tag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
-        $rawContent = $this->wiki->services->get(PageManager::class)->getOne($tag)['body'];
+        $rawContent = $this->container->get(PageManager::class)->getOne($tag)['body'];
         $regex = '#\{\{attach.*file="(.*)".*\}\}#Ui';
         preg_match_all(
             $regex,
@@ -243,11 +244,11 @@ class ImportFilesManager
      */
     public function downloadHiddenAttachment($remoteUrl, $pageTag, $lastPageUpdate, $filename, $overwrite = false)
     {
-        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($pageTag);
-        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage(['tag' => $pageTag, 'time' => $lastPageUpdate]);
+        $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($pageTag);
+        $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage(['tag' => $pageTag, 'time' => $lastPageUpdate]);
 
         $remoteFileUrl = $remoteUrl . '?' . $pageTag . '/download&file=' . $filename;
-        $att = new Attach($this->wiki);
+        $att = new Attach($this->container);
         $att->file = $filename;
         $newFilename = $att->GetFullFilename(true);
 

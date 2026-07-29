@@ -2,19 +2,19 @@
 
 namespace YesWiki\Content\Service;
 
-use YesWiki\Wiki;
+use Psr\Container\ContainerInterface;
 
 // Get more data about an entry
 class EntryExtraFieldsService
 {
     public const EXTRA_FIELDS = ['comments', 'comments_count', 'reactions', 'reactions_count', 'triples', 'linked_data'];
 
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $entryId;
 
-    public function __construct(Wiki $wiki)
+    public function __construct(ContainerInterface $container)
     {
-        $this->wiki = $wiki;
+        $this->container = $container;
     }
 
     public function setEntryId($entryId)
@@ -40,12 +40,12 @@ class EntryExtraFieldsService
 
     public function getReactions()
     {
-        return $this->wiki->services->get(ReactionManager::class)->getReactions($this->entryId, [], '', true);
+        return $this->container->get(ReactionManager::class)->getReactions($this->entryId, [], '', true);
     }
 
     public function getReactionsCount()
     {
-        $reactions = $this->wiki->services->get(ReactionManager::class)->getReactions($this->entryId, [], '', true);
+        $reactions = $this->container->get(ReactionManager::class)->getReactions($this->entryId, [], '', true);
         // The format of getReactions is not easy to use in a template, so we transform it
         // bf_my_reaction: { like: { label: "I like", icon: "..", count: 5 }, dislike: { ... } }
         $result = [];
@@ -68,24 +68,24 @@ class EntryExtraFieldsService
 
     public function getComments()
     {
-        return $this->wiki->services->get(CommentService::class)->loadCommentsRecursive($this->entryId);
+        return $this->container->get(CommentService::class)->loadCommentsRecursive($this->entryId);
     }
 
     public function getCommentsCount()
     {
-        return $this->wiki->services->get(CommentService::class)->getCommentsCount($this->entryId);
+        return $this->container->get(CommentService::class)->getCommentsCount($this->entryId);
     }
 
     public function getTriples()
     {
-        return $this->wiki->services->get(TripleStore::class)->getMatching($this->entryId, null, null, '=');
+        return $this->container->get(TripleStore::class)->getMatching($this->entryId, null, null, '=');
     }
 
     public function getLinkedData(): array
     {
         $fields = [];
-        $entryManager = $this->wiki->services->get(EntryManager::class);
-        $formManager = $this->wiki->services->get(FormManager::class);
+        $entryManager = $this->container->get(EntryManager::class);
+        $formManager = $this->container->get(FormManager::class);
 
         $entry = $entryManager->getOne($this->entryId);
         $entryFields = $formManager->findTypeOfFields($entry['form_id'], ['SelectEntryField', 'CheckboxEntryField']);

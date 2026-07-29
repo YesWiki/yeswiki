@@ -3,6 +3,7 @@
 namespace YesWiki\Identity\Service;
 
 use DateTime;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Core\YesWikiController;
@@ -58,20 +59,22 @@ class AuthenticationService extends YesWikiController
         return \YesWiki\YesWikiKernel::isCli();
     }
 
+    protected ContainerInterface $container;
+
     public function __construct(
         AccountActivationService $accountActivationService,
         HibernationService $hibernationService,
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
         UserManager $userManager,
-        Wiki $wiki
+        ContainerInterface $container
     ) {
         $this->accountActivationService = $accountActivationService;
         $this->hibernationService = $hibernationService;
         $this->params = $params;
         $this->passwordHasherFactory = $passwordHasherFactory;
         $this->userManager = $userManager;
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->initLimitations();
     }
 
@@ -165,7 +168,7 @@ class AuthenticationService extends YesWikiController
                 empty($_SESSION['user']['name'])
                 || empty($data['user']['name'])
                 || $data['user']['name'] != $_SESSION['user']['name']
-                || !$this->wiki->services->get(AclService::class)->isAdmin($data['user']['name'])
+                || !$this->container->get(AclService::class)->isAdmin($data['user']['name'])
             ) {
                 // do not disconnect admin during update
                 $this->logout();
@@ -231,11 +234,11 @@ class AuthenticationService extends YesWikiController
         if (
             $userName !== null
             // cheapest, most-likely-to-short-circuit check first: skip every other check
-            // (including $this->wiki->services->get(AclService::class)->isAdmin(), which needs a fully-bootstrapped Wiki)
+            // (including $this->container->get(AclService::class)->isAdmin(), which needs a fully-bootstrapped Wiki)
             // entirely when the feature is off, its default
             && in_array($this->params->get('signup_email_activation'), [1, true, '1', 'true'], true)
             && !$this->hasLoginExtensions()
-            && !$this->wiki->services->get(AclService::class)->isAdmin($userName)
+            && !$this->container->get(AclService::class)->isAdmin($userName)
             && !$this->accountActivationService->isActivated($userName)
             && (empty($GLOBALS['utilisateur_wikini']) || $GLOBALS['utilisateur_wikini'] != $userName)
         ) {
@@ -320,7 +323,7 @@ class AuthenticationService extends YesWikiController
      */
     public function connectFirstAdmin(): ?User
     {
-        $firstAdminName = $this->wiki->services->get(UserOperationsService::class)->getFirstAdmin();
+        $firstAdminName = $this->container->get(UserOperationsService::class)->getFirstAdmin();
         if (empty($firstAdminName)) {
             return null;
         }
@@ -339,9 +342,9 @@ class AuthenticationService extends YesWikiController
      */
     private function hasLoginExtensions(): bool
     {
-        return array_key_exists('logincas', $this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
-            || array_key_exists('loginldap', $this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
-            || array_key_exists('login-sso', $this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all());
+        return array_key_exists('logincas', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
+            || array_key_exists('loginldap', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
+            || array_key_exists('login-sso', $this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all());
     }
 
     private function updateSessionCookieExpires(int $expires)
@@ -362,7 +365,7 @@ class AuthenticationService extends YesWikiController
     public function deleteOldCookie(string $name)
     {
         setcookie($name, '', [
-            'path' => $this->wiki->CookiePath,
+            'path' => $this->params->get('cookie_path'),
             'domain' => '',
             'secure' => $this->getRequest()->isSecure(),
             'httponly' => true,

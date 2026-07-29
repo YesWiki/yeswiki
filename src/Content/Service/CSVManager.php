@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Field\CheckboxEntryField;
 use YesWiki\Content\Field\CheckboxField;
@@ -13,14 +14,13 @@ use YesWiki\Content\Field\TagsField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
-use YesWiki\Wiki;
 
 class CSVManager
 {
     protected $debug;
     protected $entryManager;
     protected $formManager;
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $importdone;
     protected $errormsg;
 
@@ -32,14 +32,14 @@ class CSVManager
     public function __construct(
         EntryManager $entryManager,
         FormManager $formManager,
-        Wiki $wiki,
+        ContainerInterface $container,
         UrlFormatter $urlFormatter,
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
-        $this->wiki = $wiki;
-        $this->debug = (bool)$this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
+        $this->container = $container;
+        $this->debug = (bool)$this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
         $this->importdone = false;
         $this->errormsg = [];
     }
@@ -125,7 +125,7 @@ class CSVManager
         array $pParams,
         ?array $pOptions = null,
     ): ?array {
-        $vBazarListService = $this->wiki->services->get(BazarListService::class);
+        $vBazarListService = $this->container->get(BazarListService::class);
 
         $vID = $vBazarListService->getTheID($pFormID);
 
@@ -158,9 +158,9 @@ class CSVManager
         ));
 
         if (!$vFakeMode) {
-            $vSearchManager = $this->wiki->services->get(SearchManager::class);
+            $vSearchManager = $this->container->get(SearchManager::class);
 
-            $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+            $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
             $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $request->query->all());
             $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $request->get('q'), $request->get('keywords'));
 
@@ -392,7 +392,7 @@ class CSVManager
      */
     public function extractCSVfromCSVFile($pFormId, $filesData, bool $detectColumnsOnHeaders = true, $pForm = null)
     {
-        $vBazarListService = $this->wiki->services->get(BazarListService::class);
+        $vBazarListService = $this->container->get(BazarListService::class);
 
         $vID = $vBazarListService->getTheID($pFormId);
 
@@ -659,7 +659,7 @@ class CSVManager
                         $datetime = \DateTime::createFromFormat(
                             'd/m/Y H:i:s',
                             $value,
-                            new \DateTimeZone($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['timezone']),
+                            new \DateTimeZone($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['timezone']),
                         );
                         $value = $datetime->getTimestamp();
                     }
@@ -673,10 +673,10 @@ class CSVManager
         $entry['form_id'] = $formId;
         $entry['created_at'] = date('Y-m-d H:i:s', $entry['datetime_create'] ?? time());
         $entry['updated_at'] = date('Y-m-d H:i:s', $entry['datetime_latest'] ?? time());
-        if ($this->wiki->services->get(AclService::class)->isAdmin()) {
+        if ($this->container->get(AclService::class)->isAdmin()) {
             $entry['status'] = 1;
         } else {
-            $entry['status'] = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_ETAT_VALIDATION'];
+            $entry['status'] = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_ETAT_VALIDATION'];
         }
         foreach ($skipFields as $field) {
             if (isset($entry[$field])) {
@@ -789,7 +789,7 @@ class CSVManager
 
         // reject the download outright if the destination extension is not an authorized image extension
         // (renameUrlToSanitizedFilename only strips path/traversal characters, not the extension)
-        $imageExtPreg = $this->wiki->services->get(ParameterBagInterface::class)->get('attach_config')['ext_images'];
+        $imageExtPreg = $this->container->get(ParameterBagInterface::class)->get('attach_config')['ext_images'];
         if (!preg_match("/({$imageExtPreg})$/i", $nomimage)) {
             $this->errormsg[] = _t('BAZ_BAD_IMAGE_FILE_EXTENSION');
 
@@ -847,7 +847,7 @@ class CSVManager
 
         // reject the download outright if the destination extension is not in the upload allowlist
         $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-        $authorizedExtensions = array_keys($this->wiki->services->get(ParameterBagInterface::class)->get('authorized-extensions'));
+        $authorizedExtensions = array_keys($this->container->get(ParameterBagInterface::class)->get('authorized-extensions'));
         if ($extension === '' || !in_array($extension, $authorizedExtensions, true)) {
             $this->errormsg[] = _t('BAZ_NOT_AUTHORIZED_FILE');
 
@@ -918,7 +918,7 @@ class CSVManager
      */
     public function sendCsvOrZip($pFormIDs, array $pParams, string $zipFileName = 'yeswiki-csv-exports.zip')
     {
-        $vBazarListService = $this->wiki->services->get(BazarListService::class);
+        $vBazarListService = $this->container->get(BazarListService::class);
 
         $vFormIDs = $vBazarListService->getIDs($pFormIDs);
 
@@ -933,7 +933,7 @@ class CSVManager
         }
 
         foreach ($vFormIDs['externals'] as $vFormID) {
-            $vFilename = $this->buildExportFilename($this->wiki->services->get(ExternalBazarService::class)->getExternalFormIDKey($vFormID));
+            $vFilename = $this->buildExportFilename($this->container->get(ExternalBazarService::class)->getExternalFormIDKey($vFormID));
 
             $csvFiles[$vFilename] = $this->arrayToCSV(
                 $this->getCSVfromFormId(['locals' => [], 'externals' => [$vFormID]], $pParams),

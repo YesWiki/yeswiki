@@ -90,6 +90,8 @@ class YesWikiKernel extends Kernel
         $container->setParameter('host', $fullDomain['host'] ?? '');
         $container->setParameter('mail_domain', $this->wiki->config['mail_domain']);
         $container->setParameter('max-upload-size', FileManager::uploadMaxSizeFromConfig($this->wiki->config['max_file_size'] ?? null));
+        // derived from base_url by Init pre-boot; a config change that would move it also invalidates this cache
+        $container->setParameter('cookie_path', $this->wiki->CookiePath);
 
         // load every extension's services/parameters into the same container.
         // NB.: the wiki.php/vendor/autoload.php/libs/{key}.api.php includes that used to be

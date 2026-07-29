@@ -2,11 +2,11 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Search\Service\SearchManager;
-use YesWiki\Wiki;
 
 class BazarListService
 {
@@ -14,16 +14,16 @@ class BazarListService
     protected $entryExtraFields;
     protected $externalBazarService;
     protected $formManager;
-    protected $wiki;
+    protected ContainerInterface $container;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         EntryManager $entryManager,
         EntryExtraFieldsService $entryExtrafields,
         ExternalBazarService $externalBazarService,
         FormManager $formManager,
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->entryManager = $entryManager;
         $this->entryExtraFields = $entryExtrafields;
         $this->externalBazarService = $externalBazarService;
@@ -44,7 +44,7 @@ class BazarListService
 
     private function replaceDefaultImage($options, $forms, $entries): array
     {
-        $attach = new Attach($this->wiki);
+        $attach = new Attach($this->container);
         $basePath = $attach->GetUploadPath();
         $basePath = $basePath . (substr($basePath, -1) != '/' ? '/' : '');
         $formIds = array_keys($forms) ?? [];
@@ -102,7 +102,7 @@ class BazarListService
         $vExternalIDs = $vIDs['externals'];
 
         if (count($vLocalIDs) > 0 || count($vExternalIDs) == 0) {
-            $vSearchManager = $this->wiki->services->get(SearchManager::class);
+            $vSearchManager = $this->container->get(SearchManager::class);
 
             $vLocalEntries = $vSearchManager->search(
                 array_merge(
@@ -133,7 +133,7 @@ class BazarListService
 
         // filter entries on datefilter parameter
         if (!empty($pOptions['datefilter'])) {
-            $vEntries = $this->wiki->services->get(EntryController::class)->filterEntriesOnDate($vEntries, $pOptions['datefilter']);
+            $vEntries = $this->container->get(EntryController::class)->filterEntriesOnDate($vEntries, $pOptions['datefilter']);
         }
 
         // Sort entries
@@ -335,7 +335,7 @@ class BazarListService
     // => ['field1' => ['3', '4'], 'field2' => ['web']]
     private function parseCheckedFiltersInURLForNonDynamic()
     {
-        $facette = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->query->get('facette');
+        $facette = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->query->get('facette');
         if (empty($facette)) {
             return [];
         }

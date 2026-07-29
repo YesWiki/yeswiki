@@ -2,16 +2,16 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Content\Field\ReactionsField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Wiki;
 
 class ReactionManager
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $dbService;
     protected $entryManager;
     protected $formManager;
@@ -28,13 +28,13 @@ class ReactionManager
     protected $cachedReactions;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         TripleStore $tripleStore,
         DbService $dbService,
         EntryManager $entryManager,
         FormManager $formManager
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->dbService = $dbService;
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
@@ -127,7 +127,7 @@ class ReactionManager
 
     public function getActionParametersFromPage($page, $idReaction = null)
     {
-        $p = $this->wiki->services->get(PageManager::class)->getOne($page);
+        $p = $this->container->get(PageManager::class)->getOne($page);
         if (!empty($p)) {
             $params = [];
             $this->appendParamsFromActionDefinition($params, $p['body']);
@@ -214,7 +214,7 @@ class ReactionManager
                     foreach ($images as $i => $img) {
                         $image = empty($img)
                             ? ''
-                            : trim($this->wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely('@core/_reactions_images.twig', [
+                            : trim($this->container->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely('@core/_reactions_images.twig', [
                                 'image' => $img,
                                 'id' => 'image',
                             ]));
@@ -283,7 +283,7 @@ class ReactionManager
                 $labels[$id] = $rawLabels[$k];
                 $images[$id] = empty($rawImages[$k])
                     ? ''
-                    : trim($this->wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely('@core/_reactions_images.twig', [
+                    : trim($this->container->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely('@core/_reactions_images.twig', [
                         'image' => $rawImages[$k],
                         'id' => $id,
                     ]));
@@ -304,7 +304,7 @@ class ReactionManager
 
     public function addUserReaction($pageTag, $values)
     {
-        if (!$this->wiki->services->get(AuthenticationService::class)->getLoggedUser()) {
+        if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
             throw new \Exception('Unauthorized');
         }
 
@@ -331,8 +331,8 @@ class ReactionManager
             throw new \Exception('Reaction value not specified');
         }
 
-        $connectedUser = $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
-        if (!$this->wiki->services->get(AclService::class)->isAdmin() && (empty($connectedUser) || $connectedUser['name'] !== $user)) {
+        $connectedUser = $this->container->get(AuthenticationService::class)->getLoggedUser();
+        if (!$this->container->get(AclService::class)->isAdmin() && (empty($connectedUser) || $connectedUser['name'] !== $user)) {
             throw new \Exception('Unauthorized');
         }
 

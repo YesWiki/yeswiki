@@ -7,11 +7,9 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
-use YesWiki\Wiki;
 
 class ListManager
 {
-    protected $wiki;
     protected $dbService;
     protected $htmlPurifierService;
     protected $pageManager;
@@ -25,7 +23,6 @@ class ListManager
     protected AclService $aclService;
 
     public function __construct(
-        Wiki $wiki,
         DbService $dbService,
         HtmlPurifierService $htmlPurifierService,
         PageManager $pageManager,
@@ -34,7 +31,6 @@ class ListManager
         TripleStore $tripleStore,
         AclService $aclService
     ) {
-        $this->wiki = $wiki;
         $this->aclService = $aclService;
         $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;

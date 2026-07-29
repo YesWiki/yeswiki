@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -59,7 +60,7 @@ class TranslationAction extends YesWikiAction implements RegisteredAction
 
         $wikireq = $_GET['wiki'] ?? null;
 
-        $currentMethod = empty($this->wiki->method) ? '' : '/' . $this->wiki->method;
+        $currentMethod = $this->getService(PageContext::class)->getRawMethod() === '' ? '' : '/' . $this->getService(PageContext::class)->getRawMethod();
         $currentTag = (strpos($wikireq, '/') !== false)
                 ? substr($wikireq, 0, -strlen($currentMethod))
                 : $wikireq;
@@ -76,7 +77,7 @@ class TranslationAction extends YesWikiAction implements RegisteredAction
             unset($_GET['lang']);
         }
         // Todo : utiliser template
-        echo '<a href="' . $this->getService(UrlFormatter::class)->href($wikireq === $currentTag ? '' : $this->wiki->method, $currentTag, $queries, false) . '">' . $img . '</a>';
+        echo '<a href="' . $this->getService(UrlFormatter::class)->href($wikireq === $currentTag ? '' : $this->getService(PageContext::class)->getRawMethod(), $currentTag, $queries, false) . '">' . $img . '</a>';
 
         if (isset($previousLang)) {
             $_GET['lang'] = $previousLang;

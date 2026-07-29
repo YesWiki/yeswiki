@@ -5,16 +5,14 @@ namespace YesWiki\Content\Service;
 use YesWiki\Kernel\Exception\CurlTimeoutException;
 
 // use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-// use YesWiki\Wiki;
-
+//
 class ImportService
 {
     // protected $wiki;
     // protected $params;
 
-    public function __construct(/* Wiki $wiki, ParameterBagInterface $params */)
+    public function __construct(/* ParameterBagInterface $params */)
     {
-        // $this->wiki = $wiki;
         // $this->params = $params;
     }
 

@@ -2,27 +2,27 @@
 
 namespace YesWiki\Admin\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Controller\InstallationController;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Entity\Messages;
-use YesWiki\Wiki;
 
 class UpdateAdminPagesService
 {
-    private $wiki;
+    private ContainerInterface $container;
     private $linkTracker;
     private $pageManager;
     private $params;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         LinkTracker $linkTracker,
         PageManager $pageManager,
         ParameterBagInterface $params
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->linkTracker = $linkTracker;
         $this->pageManager = $pageManager;
         $this->params = $params;
@@ -30,7 +30,7 @@ class UpdateAdminPagesService
 
     public function updateAll(): Messages
     {
-        return $this->update($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['admin_pages_to_update'] ?? []);
+        return $this->update($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['admin_pages_to_update'] ?? []);
     }
 
     /**

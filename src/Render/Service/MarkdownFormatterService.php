@@ -14,6 +14,7 @@ use League\CommonMark\MarkdownConverter;
 use League\CommonMark\Node\Inline\Newline;
 use League\CommonMark\Node\StringContainerInterface;
 use League\CommonMark\Parser\MarkdownParser;
+use Psr\Container\ContainerInterface;
 use YesWiki\Render\Formatter\ActionExtension;
 use YesWiki\Render\Formatter\CommentExtension;
 use YesWiki\Render\Formatter\ProgressExtension;
@@ -26,16 +27,17 @@ use YesWiki\Wiki;
  */
 class MarkdownFormatterService
 {
-    private Wiki $wiki;
     private ContentAssetScanner $assetScanner;
     private ActionRunner $actionRunner;
     private LinkRenderer $linkRenderer;
     private ?EnvironmentInterface $environment = null;
     private ?EnvironmentInterface $structureEnvironment = null;
 
-    public function __construct(Wiki $wiki, ContentAssetScanner $assetScanner, ActionRunner $actionRunner, LinkRenderer $linkRenderer)
+    protected ContainerInterface $container;
+
+    public function __construct(ContainerInterface $container, ContentAssetScanner $assetScanner, ActionRunner $actionRunner, LinkRenderer $linkRenderer)
     {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->assetScanner = $assetScanner;
         $this->actionRunner = $actionRunner;
         $this->linkRenderer = $linkRenderer;
@@ -150,10 +152,10 @@ class MarkdownFormatterService
     private function getEnvironment(): EnvironmentInterface
     {
         if ($this->environment === null) {
-            $wiki = $this->wiki;
+            $container = $this->container;
 
             $environment = new Environment([
-                'html_input' => $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('allow_raw_html', true) ? 'allow' : 'escape',
+                'html_input' => $container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('allow_raw_html', true) ? 'allow' : 'escape',
                 'allow_unsafe_links' => false,
                 // GithubFlavoredMarkdownExtension pulls in DisallowedRawHtmlExtension, which by
                 // default escapes <iframe> along with <script>/<style>/etc.; YesWiki pages rely
@@ -167,7 +169,7 @@ class MarkdownFormatterService
                     'fragment_prefix' => 'toc',
                 ],
                 'disallowed_raw_html' => [
-                    'disallowed_tags' => $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('disallowed_html_tags', [
+                    'disallowed_tags' => $container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('disallowed_html_tags', [
                         'title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext',
                     ]),
                 ],

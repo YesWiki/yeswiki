@@ -6,20 +6,17 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
-use YesWiki\Wiki;
 
 class ConsoleService
 {
     protected const CONSOLE_BIN = 'src/commands/console';
 
-    protected $wiki;
     protected $params;
     protected $executableFinder;
     protected $phpBinaryFinder;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params)
+    public function __construct(ParameterBagInterface $params)
     {
-        $this->wiki = $wiki;
         $this->params = $params;
         $this->executableFinder = new ExecutableFinder();
         $this->phpBinaryFinder = new PhpExecutableFinder();

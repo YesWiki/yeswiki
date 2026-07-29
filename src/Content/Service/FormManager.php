@@ -2,15 +2,15 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Field\BazarField;
-use YesWiki\Wiki;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Search\Service\SearchManager;
 
 class FormManager
 {
@@ -29,7 +29,6 @@ class FormManager
     // (which should never happen, but shouldn't be trusted blindly either) can't hang
     private const MAX_ALIAS_HOPS = 10;
 
-    protected $wiki;
     protected $dbService;
     protected $activityPubService;
     protected $httpSignatureService;
@@ -44,8 +43,10 @@ class FormManager
     protected $cacheValidatedForAll;
     protected $attach;
 
+    protected ContainerInterface $container;
+
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         DbService $dbService,
         EntryManager $entryManager,
         FieldFactory $fieldFactory,
@@ -57,7 +58,7 @@ class FormManager
         TripleStore $tripleStore,
         AclService $aclService,
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->dbService = $dbService;
         $this->activityPubService = $activityPubService;
         $this->httpSignatureService = $httpSignatureService;
@@ -71,7 +72,7 @@ class FormManager
         $this->cachedForms = [];
         $this->cacheValidatedForAll = false;
         $this->hibernationService = $hibernationService;
-        $this->attach = new Attach($this->wiki);
+        $this->attach = new Attach($this->container);
     }
 
     protected function getBasePath()

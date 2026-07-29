@@ -4,7 +4,6 @@ namespace YesWiki\Content\Service;
 
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Wiki;
 
 class ReactionsFormatter extends YesWikiController
 {
@@ -14,12 +13,10 @@ class ReactionsFormatter extends YesWikiController
 
     public function __construct(
         ReactionManager $reactionManager,
-        Wiki $wiki,
         UrlFormatter $urlFormatter
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->reactionManager = $reactionManager;
-        $this->wiki = $wiki;
     }
 
     /**

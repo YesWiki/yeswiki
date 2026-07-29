@@ -2,6 +2,7 @@
 
 namespace YesWiki\Render\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Tamtamchik\SimpleFlash\Flash;
@@ -11,7 +12,6 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Wiki;
 
 class ThemeManager implements EventSubscriberInterface
 {
@@ -61,7 +61,7 @@ class ThemeManager implements EventSubscriberInterface
     protected $twig;
     protected $useFallbackTheme;
     protected $utils;
-    protected $wiki;
+    protected ContainerInterface $container;
 
     public static function getSubscribedEvents()
     {
@@ -71,14 +71,14 @@ class ThemeManager implements EventSubscriberInterface
     }
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         TemplateEngine $twig,
         PageManager $pageManager,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
         TemplateHelperService $utils
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->errorMessage = '';
         $this->favorites = [
             'theme' => '',
@@ -122,7 +122,7 @@ class ThemeManager implements EventSubscriberInterface
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
             $requested = [];
             $keysToVerify = ['theme', 'squelette', 'style', 'preset'];
-            $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+            $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
             foreach ($keysToVerify as $val) {
                 $requested[$val] = null;
                 $requestVal = $request->get($val);
@@ -488,7 +488,7 @@ class ThemeManager implements EventSubscriberInterface
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
-        if (!$this->wiki->services->get(AclService::class)->isAdmin()) {
+        if (!$this->container->get(AclService::class)->isAdmin()) {
             return ['status' => false, 'message' => 'User is not admin'];
         }
         if (!file_exists($path . DIRECTORY_SEPARATOR . $filename)) {
@@ -517,7 +517,7 @@ class ThemeManager implements EventSubscriberInterface
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->services->get(AuthenticationService::class)->getLoggedUser()) {
+        if (!$this->container->get(AuthenticationService::class)->getLoggedUser()) {
             return ['status' => false, 'message' => 'Not connected user', 'errorCode' => 0];
         }
 
@@ -532,7 +532,7 @@ class ThemeManager implements EventSubscriberInterface
         }
         $fileContent .= "}\r\n";
 
-        if (file_exists($path . DIRECTORY_SEPARATOR . $filename) && !$this->wiki->services->get(AclService::class)->isAdmin()) {
+        if (file_exists($path . DIRECTORY_SEPARATOR . $filename) && !$this->container->get(AclService::class)->isAdmin()) {
             return ['status' => false, 'message' => 'File already existing but user not admin', 'errorCode' => 2];
         }
         // check if folder exists
@@ -959,7 +959,7 @@ class ThemeManager implements EventSubscriberInterface
     public function saveMetadataIfNeeded(Event $event)
     {
         $data = $event->getData();
-        $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+        $request = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
         $post = $request->request;
         $query = $request->query;
         if (!empty($data['data']['tag'])

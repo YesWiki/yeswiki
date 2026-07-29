@@ -22,7 +22,6 @@ class AclService
     protected $cache;
 
     public function __construct(
-        Wiki $wiki,
         AuthenticationService $authenticationService,
         DbService $dbService,
         UserManager $userManager,
@@ -31,7 +30,6 @@ class AclService
         ContainerInterface $container
     ) {
         $this->authenticationService = $authenticationService;
-        $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->userManager = $userManager;
         $this->params = $params;
@@ -72,7 +70,7 @@ class AclService
         }
 
         if (!$tag = trim($tag)) {
-            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $tag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
 
         return $this->container->get(PageManager::class)->getOwner($tag)
@@ -298,7 +296,7 @@ class AclService
     {
         // set default to current page
         if ($tag == null || !$tag = trim($tag)) {
-            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $tag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
 
         // set default to current user
@@ -413,7 +411,7 @@ class AclService
                         // paranoiac: avoid line = '@'
                         if ($gname) {
                             if (in_array($gname, $formerGroups)) {
-                                $this->wiki->setMessage('Error group ' . $gname . ' inside same groups, inception was a bad movie');
+                                $this->container->get(\YesWiki\Kernel\Service\FlashMessageService::class)->setMessage('Error group ' . $gname . ' inside same groups, inception was a bad movie');
                                 $result = false;
                             } else {
                                 if (!empty($username)

@@ -51,7 +51,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
     private function emit(): void
     {
         $user = $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
-        if ((!empty($user) || $this->getService(AclService::class)->hasAccess('write')) && $this->wiki->method != 'revisions') {
+        if ((!empty($user) || $this->getService(AclService::class)->hasAccess('write')) && $this->getService(PageContext::class)->getRawMethod() != 'revisions') {
             // on récupére la page et ses valeurs associées
             $page = $this->getService(PerformableArguments::class)->get('page');
             if (empty($page)) {

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Search\Service;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Service\EntryManager;
@@ -12,11 +13,10 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Wiki;
 
 class SearchManager
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $dbService;
     protected $aclService;
 
@@ -24,11 +24,11 @@ class SearchManager
     public const MISSING_FIELD = '_MISSING_FIELD_';
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         DbService $dbService,
         AclService $aclService,
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
     }
@@ -658,7 +658,7 @@ class SearchManager
 
         // So, first, let's get all the forms used in the request for later use
 
-        $vFormManager = $this->wiki->services->get(FormManager::class);
+        $vFormManager = $this->container->get(FormManager::class);
 
         $vForms = $vFormManager->getMany($vFormIDs);
 
@@ -939,7 +939,7 @@ class SearchManager
                                     . 'FROM ' . $this->dbService->prefixTable('pages') . ' p '
                                     . 'JOIN ' . $this->dbService->prefixTable('triples') . ' t ON '
                                         . 't.resource = p.tag AND '
-                                        . 't.value = \'' . $this->wiki->services->get(EntryManager::class)::TRIPLES_ENTRY_ID . '\' AND '
+                                        . 't.value = \'' . $this->container->get(EntryManager::class)::TRIPLES_ENTRY_ID . '\' AND '
                                         . 't.property = \'http://outils-reseaux.org/_vocabulary/type\' '
                                     . 'WHERE '
                                         . ($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ')
@@ -1038,17 +1038,17 @@ class SearchManager
             return $searchResults;
         }
         $results = $this->dbService->loadAll($requete);
-        $debug = (bool)$this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
+        $debug = (bool)$this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
 
-        $vPageManager = $this->wiki->services->get(PageManager::class);
-        $vEntryManager = $this->wiki->services->get(EntryManager::class);
+        $vPageManager = $this->container->get(PageManager::class);
+        $vEntryManager = $this->container->get(EntryManager::class);
 
         foreach ($results as $page) {
             // save owner to reduce sql calls
             $vPageManager->cacheOwner($page);
             // not possible to init the Guard in the constructor because of circular reference problem
             $filteredPage = (!$this->aclService->isAdmin() && $useGuard)
-                ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
+                ? $this->container->get(Guard::class)->checkAcls($page, $page['tag'])
                 : $page;
             $data = $vEntryManager->getDataFromPage($filteredPage, false, $debug, $params['correspondance'] ?? '');
             $data['-is-external-'] = '0';
@@ -1190,10 +1190,10 @@ class SearchManager
                             if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
                                 switch ($matches[1]) {
                                     case 'user.name':
-                                        $vValue = $this->wiki->services->get(AuthenticationService::class)->getLoggedUserName();
+                                        $vValue = $this->container->get(AuthenticationService::class)->getLoggedUserName();
                                         break;
                                     case 'user.entry.tag':
-                                        $vUserManager = $this->wiki->services->get(UserManager::class);
+                                        $vUserManager = $this->container->get(UserManager::class);
                                         $entry = $vUserManager->getAssociatedEntry();
                                         if (!empty($entry)) {
                                             $vValue = $entry['tag'];
@@ -1242,7 +1242,7 @@ class SearchManager
      */
     public function getMinSearchKeywordLength()
     {
-        $vMinimumSearchKeywordLength = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('min_search_keyword_length');
+        $vMinimumSearchKeywordLength = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('min_search_keyword_length');
 
         if (empty($vMinimumSearchKeywordLength)) {
             $vMinimumSearchKeywordLength = MIN_SEARCH_KEYWORD_LENGTH;

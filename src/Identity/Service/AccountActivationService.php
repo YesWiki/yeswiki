@@ -2,6 +2,7 @@
 
 namespace YesWiki\Identity\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Exception\BadActivationKeyException;
@@ -9,7 +10,6 @@ use YesWiki\Identity\Exception\UserNameDoesNotExistException;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Wiki;
 
 /**
  * accountactivationbyemail, absorbed into core (ticket 07): activation status/key are
@@ -31,12 +31,12 @@ class AccountActivationService
     protected $params;
     protected $templateEngine;
     protected $userManager;
-    protected $wiki;
+    protected ContainerInterface $container;
 
     // PageManager is deliberately NOT constructor-injected: it depends on AuthenticationService,
     // and AuthenticationService depends on this service (for the login-time activation gate) --
     // constructor-injecting it here would be circular. Fetched late via
-    // $this->wiki->services->get(), the same workaround used elsewhere in this codebase for
+    // $this->container->get(), the same workaround used elsewhere in this codebase for
     // this exact PageManager/AuthenticationService/UserManager triangle (see UserManager's own
     // constructor comment). Mailer is late-bound for the same reason (it depends on
     // AuthenticationService too).
@@ -46,14 +46,14 @@ class AccountActivationService
         ParameterBagInterface $params,
         TemplateEngine $templateEngine,
         UserManager $userManager,
-        Wiki $wiki,
+        ContainerInterface $container,
         UrlFormatter $urlFormatter
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->params = $params;
         $this->templateEngine = $templateEngine;
         $this->userManager = $userManager;
-        $this->wiki = $wiki;
+        $this->container = $container;
     }
 
     /**
@@ -108,7 +108,7 @@ class AccountActivationService
         }
 
         $link = $this->getActivationLink($user['name']);
-        $mailer = $this->wiki->services->get(Mailer::class);
+        $mailer = $this->container->get(Mailer::class);
 
         $baseUrl = $this->getBaseUrl();
         $context = ['userName' => $user['name'], 'baseUrl' => $baseUrl, 'link' => $link];
@@ -204,7 +204,7 @@ class AccountActivationService
      */
     private function readBody(string $tag): ?array
     {
-        $page = $this->wiki->services->get(PageManager::class)->getOne($tag, null, true, true);
+        $page = $this->container->get(PageManager::class)->getOne($tag, null, true, true);
         if (!$page) {
             return null;
         }
@@ -225,7 +225,7 @@ class AccountActivationService
      */
     protected function writeActivationFields(string $tag, array $fields): void
     {
-        $pageManager = $this->wiki->services->get(PageManager::class);
+        $pageManager = $this->container->get(PageManager::class);
         $body = $this->readBody($tag);
         if ($body === null) {
             throw new \Exception("Cannot set activation fields on '$tag': no such user");

@@ -2,25 +2,25 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Wiki;
 
 class DuplicationManager
 {
     protected $uploadPath;
-    protected $wiki;
+    protected ContainerInterface $container;
 
     /**
      * DuplicationManager constructor.
      *
-     * @param Wiki $wiki the injected Wiki instance
+     * @param ContainerInterface $container service container
      */
-    public function __construct(Wiki $wiki)
+    public function __construct(ContainerInterface $container)
     {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->uploadPath = $this->getLocalFileUploadPath();
     }
 
@@ -31,7 +31,7 @@ class DuplicationManager
      */
     private function getLocalFileUploadPath()
     {
-        $attachConfig = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config'];
+        $attachConfig = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config'];
 
         if (!is_array($attachConfig)) {
             $attachConfig = [];
@@ -56,9 +56,9 @@ class DuplicationManager
     private function getUploadFieldsFromEntry($id)
     {
         $fields = [];
-        $entry = $this->wiki->services->get(EntryManager::class)->getOne($id);
+        $entry = $this->container->get(EntryManager::class)->getOne($id);
         if (!empty($entry['tag'])) { // bazar entry
-            $formManager = $this->wiki->services->get(FormManager::class);
+            $formManager = $this->container->get(FormManager::class);
             $form = $formManager->getOne($entry['form_id']);
             // find fields that are textareas
             foreach ($form['prepared'] as $field) {
@@ -123,7 +123,7 @@ class DuplicationManager
                 }
             }
         }
-        $fileUrlRegex = '#' . preg_quote(str_replace('?', '', $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url']), '#') .
+        $fileUrlRegex = '#' . preg_quote(str_replace('?', '', $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url']), '#') .
             '(' . $this->uploadPath . '/.*\.[a-zA-Z0-9]{1,16}\b([-a-zA-Z0-9!@:%_\+.~\#?&\/\/=]*))#Ui';
         preg_match_all(
             $fileUrlRegex,
@@ -152,12 +152,12 @@ class DuplicationManager
     {
         $files = [];
         if (empty(trim($tag))) {
-            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $tag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
-        if ($this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
+        if ($this->container->get(EntryManager::class)->isEntry($tag)) {
             // bazar
             $fields = $this->getUploadFieldsFromEntry($tag);
-            $entry = $this->wiki->services->get(EntryManager::class)->getOne($tag);
+            $entry = $this->container->get(EntryManager::class)->getOne($tag);
             foreach ($fields as $f) {
                 if ($f instanceof ImageField || $f instanceof FileField) {
                     if (!empty($fi = $this->findFilesInUploadField($entry[$f->getPropertyName()]))) {
@@ -169,8 +169,8 @@ class DuplicationManager
                     }
                 }
             }
-        } elseif (!$this->wiki->services->get(ListManager::class)->isList($tag)) { // page
-            $wikiText = $this->wiki->services->get(PageManager::class)->getOne($tag)['body'];
+        } elseif (!$this->container->get(ListManager::class)->isList($tag)) { // page
+            $wikiText = $this->container->get(PageManager::class)->getOne($tag)['body'];
             if ($fi = $this->findFilesInWikiText($tag, $wikiText)) {
                 $files = array_merge($files, $fi);
             }
@@ -214,10 +214,10 @@ class DuplicationManager
         if ($data['type'] != 'page' && empty($data['newTitle'])) {
             throw new \Exception(_t('EMPTY_PAGE_TITLE'));
         }
-        if (!$this->wiki->services->get(AclService::class)->isAdmin()) {
+        if (!$this->container->get(AclService::class)->isAdmin()) {
             throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
         }
-        $page = $this->wiki->services->get(PageManager::class)->getOne($data['newTag']);
+        $page = $this->container->get(PageManager::class)->getOne($data['newTag']);
         if ($page) {
             throw new \Exception($data['newTag'] . ' ' . _t('ALREADY_EXISTING'));
         }
@@ -230,19 +230,19 @@ class DuplicationManager
 
     public function duplicateLocally($data)
     {
-        if (!$this->wiki->services->get(AclService::class)->isAdmin()) {
+        if (!$this->container->get(AclService::class)->isAdmin()) {
             throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
         }
         switch ($data['type']) {
             case 'list':
-                $list = $this->wiki->services->get(ListManager::class)->getOne($data['originalTag']);
-                $this->wiki->services->get(ListManager::class)->create($data['newTitle'], $list['label'], $data['newTag']);
+                $list = $this->container->get(ListManager::class)->getOne($data['originalTag']);
+                $this->container->get(ListManager::class)->create($data['newTitle'], $list['label'], $data['newTag']);
                 break;
 
             case 'entry':
                 $files = $this->duplicateFiles($data['originalTag'], $data['newTag']);
-                $entry = $this->wiki->services->get(EntryManager::class)->getOne($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
-                $fields = $this->getUploadFieldsFromEntry($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
+                $entry = $this->container->get(EntryManager::class)->getOne($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
+                $fields = $this->getUploadFieldsFromEntry($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
                 foreach ($fields as $f) {
                     foreach ($files as $fi) {
                         $entry[$f->getPropertyName()] = str_replace($fi['originalFile'], $fi['duplicatedFile'], $entry[$f->getPropertyName()]);
@@ -251,28 +251,28 @@ class DuplicationManager
                 $entry['tag'] = $data['newTag'];
                 $entry['bf_titre'] = $data['newTitle'];
                 $entry['antispam'] = 1;
-                $this->wiki->services->get(EntryManager::class)->create($entry['form_id'], $entry);
+                $this->container->get(EntryManager::class)->create($entry['form_id'], $entry);
                 break;
 
             default:
             case 'page':
-                $newBody = ($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'];
+                $newBody = ($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'];
                 $files = $this->duplicateFiles($data['originalTag'], $data['newTag']);
                 foreach ($files as $f) {
                     $newBody = str_replace($f['originalFile'], $f['duplicatedFile'], $newBody);
                 }
-                $this->wiki->services->get(PageManager::class)->save($data['newTag'], $newBody);
+                $this->container->get(PageManager::class)->save($data['newTag'], $newBody);
                 break;
         }
 
         // duplicate acls
         foreach (['read', 'write', 'comment'] as $privilege) {
-            $values = $this->wiki->services->get(AclService::class)->load(
-                $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(),
+            $values = $this->container->get(AclService::class)->load(
+                $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(),
                 $privilege
             );
 
-            $this->wiki->services->get(AclService::class)->save(
+            $this->container->get(AclService::class)->save(
                 $data['newTag'],
                 $privilege,
                 $values['list']
@@ -281,21 +281,21 @@ class DuplicationManager
 
         // duplicate metadata (versioned pages.metadata column, not a triple -- see
         // PageManager::getMetadata()/setMetadata())
-        $originalMetadata = $this->wiki->services->get(PageManager::class)->getMetadata($data['originalTag']);
+        $originalMetadata = $this->container->get(PageManager::class)->getMetadata($data['originalTag']);
         if (!empty($originalMetadata)) {
-            $this->wiki->services->get(PageManager::class)->setMetadata($data['newTag'], $originalMetadata);
+            $this->container->get(PageManager::class)->setMetadata($data['newTag'], $originalMetadata);
         }
 
         // duplicate tags (TODO: is there more duplicable triples?)
-        $values = $this->wiki->services->get(TripleStore::class)->getAll($data['originalTag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+        $values = $this->container->get(TripleStore::class)->getAll($data['originalTag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
         foreach ($values as $val) {
-            $this->wiki->services->get(TripleStore::class)->create($data['newTag'], 'http://outils-reseaux.org/_vocabulary/tag', $val['value'], '', '');
+            $this->container->get(TripleStore::class)->create($data['newTag'], 'http://outils-reseaux.org/_vocabulary/tag', $val['value'], '', '');
         }
     }
 
     public function importDistantContent($tag, $request)
     {
-        if ($this->wiki->services->get(PageManager::class)->getOne($tag)) {
+        if ($this->container->get(PageManager::class)->getOne($tag)) {
             throw new \Exception(_t('ACEDITOR_LINK_PAGE_ALREADY_EXISTS'));
         }
         $req = $request->request->all();
@@ -308,15 +308,15 @@ class DuplicationManager
             $this->downloadFile($fileUrl, $req['originalTag'], $tag);
         }
 
-        $newUrl = explode('/?', $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url'])[0];
+        $newUrl = explode('/?', $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url'])[0];
         $newBody = str_replace($req['sourceUrl'], $newUrl, $req['originalContent']);
         if ($req['type'] === 'page') {
-            $this->wiki->services->get(PageManager::class)->save($tag, $newBody);
+            $this->container->get(PageManager::class)->save($tag, $newBody);
         } elseif ($req['type'] === 'entry') {
             $entry = json_decode($newBody, true);
             $entry['tag'] = $tag;
             $entry['antispam'] = 1;
-            $this->wiki->services->get(EntryManager::class)->create($entry['form_id'], $entry, false, $req['sourceUrl']);
+            $this->container->get(EntryManager::class)->create($entry['form_id'], $entry, false, $req['sourceUrl']);
         }
     }
 

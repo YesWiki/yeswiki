@@ -2,8 +2,8 @@
 
 namespace YesWiki\Identity\Service;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Wiki;
 
 class HashCashService
 {
@@ -12,12 +12,12 @@ class HashCashService
     /** How long a generated secret stays valid. */
     private const REFRESH = 60 * 60 * 4;
 
-    protected $wiki;
+    protected ContainerInterface $container;
 
-    public function __construct(Wiki $wiki, UrlFormatter $urlFormatter)
+    public function __construct(ContainerInterface $container, UrlFormatter $urlFormatter)
     {
         $this->urlFormatter = $urlFormatter;
-        $this->wiki = $wiki;
+        $this->container = $container;
     }
 
     /**
@@ -69,10 +69,10 @@ class HashCashService
      */
     public function checkHashcash(): bool
     {
-        if (empty($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'])) {
+        if (empty($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'])) {
             return true;
         }
-        $value = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get('hashcash_value');
+        $value = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get('hashcash_value');
 
         return isset($value) && $value == $this->secretValue();
     }

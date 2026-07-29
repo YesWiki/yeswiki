@@ -156,7 +156,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
         ['user' => $userA] = $this->createRandomUser($wiki);
         ['user' => $userB] = $this->createRandomUser($wiki);
 
-        $authenticationService = new class($wiki->services->get(AccountActivationService::class), $wiki->services->get(HibernationService::class), $wiki->services->get(ParameterBagInterface::class), $wiki->services->get(PasswordHasherFactory::class), $userManager, $wiki) extends AuthenticationService {
+        $authenticationService = new class($wiki->services->get(AccountActivationService::class), $wiki->services->get(HibernationService::class), $wiki->services->get(ParameterBagInterface::class), $wiki->services->get(PasswordHasherFactory::class), $userManager, $wiki->services) extends AuthenticationService {
             protected function isCli(): bool
             {
                 return false;
@@ -294,7 +294,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
             $forcedParams,
             $wiki->services->get(PasswordHasherFactory::class),
             $userManager,
-            $wiki
+            $wiki->services
         );
 
         try {

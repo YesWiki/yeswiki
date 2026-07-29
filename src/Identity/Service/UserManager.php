@@ -3,6 +3,7 @@
 namespace YesWiki\Identity\Service;
 
 use Exception;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
@@ -23,11 +24,10 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
-use YesWiki\Wiki;
 
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $dbService;
     protected $passwordHasherFactory;
     protected $hibernationService;
@@ -51,12 +51,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     // already depends on UserManager directly, and AclService depends on UserManager too
     // (its '+' registered-users ACL case calls getOneByName()) -- constructor-injecting
     // either back into UserManager would be a circular dependency. Fetched late via
-    // $this->wiki->services->get() instead, the same workaround isInGroup() already uses
+    // $this->container->get() instead, the same workaround isInGroup() already uses
     // for AclService below.
     protected UrlFormatter $urlFormatter;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         DbService $dbService,
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
@@ -65,7 +65,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         UrlFormatter $urlFormatter
     ) {
         $this->urlFormatter = $urlFormatter;
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->dbService = $dbService;
         $this->passwordHasherFactory = $passwordHasherFactory;
         $this->hibernationService = $hibernationService;
@@ -104,7 +104,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             return null;
         }
 
-        $page = $this->wiki->services->get(PageManager::class)->getOne($name, null, true, true);
+        $page = $this->container->get(PageManager::class)->getOne($name, null, true, true);
         $user = $this->arrayToUser($page);
         if ($user !== null && is_string($password) && $user['password'] !== $password) {
             return null;
@@ -146,7 +146,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         // table; kept for signature compatibility but not honored -- every User object
         // requires the full PROPS_LIST anyway (see User::__construct()), and decoding a
         // JSON body doesn't offer a meaningful partial-fetch optimization to replace it with.
-        $pageManager = $this->wiki->services->get(PageManager::class);
+        $pageManager = $this->container->get(PageManager::class);
         $users = [];
         foreach ($this->getAllUserTags() as $tag) {
             $user = $this->arrayToUser($pageManager->getOne($tag, null, true, true));
@@ -226,7 +226,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new \Exception("'password' parameter of UserManager->create should not be empty!");
         }
 
-        $tag = $this->wiki->services->get(PageManager::class)->suggestFreeTag($wikiName);
+        $tag = $this->container->get(PageManager::class)->suggestFreeTag($wikiName);
 
         $hasher = $this->passwordHasherFactory->getPasswordHasher($this->arrayToDraftUser($userAsArray));
         $hashedPassword = $hasher->hash($plainPassword);
@@ -256,7 +256,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             return;
         }
 
-        $tag = $this->wiki->services->get(PageManager::class)->suggestFreeTag($name);
+        $tag = $this->container->get(PageManager::class)->suggestFreeTag($name);
         $body = $this->buildBody($legacyRow);
 
         $this->persistNewUserPage($tag, $body);
@@ -264,7 +264,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
     private function persistNewUserPage(string $tag, array $body): bool
     {
-        $pageManager = $this->wiki->services->get(PageManager::class);
+        $pageManager = $this->container->get(PageManager::class);
         $saved = $pageManager->save($tag, $this->encodeBody($body), '', true);
         if ($saved !== 0) {
             return false;
@@ -288,7 +288,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         // the wiki's default_write_acl is '*' (everyone) -- without this override, anyone
         // could edit any other user's account page. Late-bound: see the constructor note
         // on why AclService can't be injected directly.
-        $this->wiki->services->get(AclService::class)->save($tag, 'write', "%\n@admins");
+        $this->container->get(AclService::class)->save($tag, 'write', "%\n@admins");
 
         return true;
     }
@@ -349,7 +349,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         ], false);
 
         // Send the email
-        if (!boolval($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['contact_disable_email_for_password'])) {
+        if (!boolval($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['contact_disable_email_for_password'])) {
             $pieces = parse_url($this->params->get('base_url'));
             $domain = isset($pieces['host']) ? $pieces['host'] : '';
 
@@ -364,7 +364,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 
             // fetched lazily, not constructor-injected: Mailer itself depends on
             // UserManager, so a constructor dependency would be circular (ticket 18)
-            $this->wiki->services->get(Mailer::class)->send(
+            $this->container->get(Mailer::class)->send(
                 $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
                 $this->params->get('BAZ_ADRESSE_MAIL_ADMIN'),
                 $user['email'],
@@ -431,7 +431,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
 
         if (count($authorizedKeys) > 0) {
-            $pageManager = $this->wiki->services->get(PageManager::class);
+            $pageManager = $this->container->get(PageManager::class);
             $page = $pageManager->getOne($user['name'], null, true, true);
             if ($page) {
                 $body = json_decode($page['body'] ?? '', true) ?? [];
@@ -457,7 +457,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         try {
-            $this->wiki->services->get(PageManager::class)->deleteOrphaned($user['name']);
+            $this->container->get(PageManager::class)->deleteOrphaned($user['name']);
         } catch (\Exception $ex) {
             throw new DeleteUserException(_t('USER_DELETE_QUERY_FAILED') . '.');
         }
@@ -491,12 +491,12 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     {
         // aclService could  not be loaded in __construct because AclService already loads UserManager
         try {
-            $members = $this->wiki->services->get(GroupOperationsService::class)->getMembers($groupName);
+            $members = $this->container->get(GroupOperationsService::class)->getMembers($groupName);
         } catch (GroupNameDoesNotExistException $th) {
             $members = [];
         }
 
-        return $this->wiki->services->get(AclService::class)->check(implode("\n", $members), $username, $admincheck, '', '', $formerGroups);
+        return $this->container->get(AclService::class)->check(implode("\n", $members), $username, $admincheck, '', '', $formerGroups);
     }
 
     /**
@@ -505,7 +505,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     public function getAssociatedEntry($user = '')
     {
         if (empty($user)) {
-            $user = $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
+            $user = $this->container->get(AuthenticationService::class)->getLoggedUser();
             if (empty($user['name'])) {
                 return null;
             }
@@ -514,8 +514,8 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (array_key_exists($user, $this->associatedEntryCache)) {
             return $this->associatedEntryCache[$user];
         }
-        $vFormManager = $this->wiki->services->get(FormManager::class);
-        $vSearchManager = $this->wiki->services->get(SearchManager::class);
+        $vFormManager = $this->container->get(FormManager::class);
+        $vSearchManager = $this->container->get(SearchManager::class);
         $formsIds = array_keys($vFormManager->getAll());
         // in case if a username is generated from a bazar entry, nomwiki should be the right id
         $entry = $vSearchManager->search([
@@ -561,7 +561,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         }
         try {
             $user->setPassword($newHashedPassword);
-            $pageManager = $this->wiki->services->get(PageManager::class);
+            $pageManager = $this->container->get(PageManager::class);
             $page = $pageManager->getOne($user['name'], null, true, true);
             if ($page) {
                 $body = json_decode($page['body'] ?? '', true) ?? [];
@@ -570,7 +570,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             }
         } catch (\Throwable $th) {
             // only throw error in debug mode
-            if ($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug')) {
+            if ($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug')) {
                 throw $th;
             }
         }
@@ -628,7 +628,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function getLoggedUser()
     {
-        return $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
+        return $this->container->get(AuthenticationService::class)->getLoggedUser();
     }
 
     /**
@@ -636,7 +636,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function getLoggedUserName()
     {
-        return $this->wiki->services->get(AuthenticationService::class)->getLoggedUserName();
+        return $this->container->get(AuthenticationService::class)->getLoggedUserName();
     }
 
     /**
@@ -644,7 +644,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function login($user, $remember = 0)
     {
-        $this->wiki->services->get(AuthenticationService::class)->login($user, $remember);
+        $this->container->get(AuthenticationService::class)->login($user, $remember);
     }
 
     /**
@@ -652,7 +652,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      */
     public function logout()
     {
-        $this->wiki->services->get(AuthenticationService::class)->logout();
+        $this->container->get(AuthenticationService::class)->logout();
     }
 
     private function arrayToUser(?array $page): ?User

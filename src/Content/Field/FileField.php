@@ -339,7 +339,7 @@ class FileField extends BazarField
         if (is_null($this->attach)) {
             $wiki = $this->getWiki();
 
-            $this->attach = new Attach($wiki);
+            $this->attach = new Attach($wiki->services);
         }
 
         return $this->attach;

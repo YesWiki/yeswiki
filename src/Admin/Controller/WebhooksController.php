@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Controller;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpClient\HttpClient;
@@ -17,7 +18,6 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Wiki;
 
 /**
  * Outgoing webhooks on comment and bazar-entry events (ticket 20, formerly the
@@ -63,16 +63,19 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
     protected $tripleStore;
     protected $userManager;
 
+    protected ContainerInterface $container;
+
     public function __construct(
+        ContainerInterface $container,
         AclService $aclService,
         EntryManager $entryManager,
         FormManager $formManager,
         ParameterBagInterface $params,
         SemanticTransformer $semanticTransformer,
         TripleStore $tripleStore,
-        UserManager $userManager,
-        Wiki $wiki
+        UserManager $userManager
     ) {
+        $this->container = $container;
         $this->aclService = $aclService;
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
@@ -80,7 +83,6 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         $this->semanticTransformer = $semanticTransformer;
         $this->tripleStore = $tripleStore;
         $this->userManager = $userManager;
-        $this->wiki = $wiki;
         $this->debugMode = null;
     }
 
@@ -138,7 +140,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
 
     protected function showComments(): bool
     {
-        return $this->wiki->services->has(EventDispatcher::class);
+        return $this->container->has(EventDispatcher::class);
     }
 
     private function getDebugMode(): bool

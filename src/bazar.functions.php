@@ -345,7 +345,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
 {
     $wiki = $GLOBALS['wiki'];
     if (file_exists($image_src)) {
-        $attach = new Attach($wiki);
+        $attach = new Attach($wiki->services);
 
         // force new name
         $image_dest = $attach->getResizedFilename($image_src, $largeur, $hauteur, $method);

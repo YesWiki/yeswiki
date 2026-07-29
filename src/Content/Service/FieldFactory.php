@@ -3,20 +3,20 @@
 namespace YesWiki\Content\Service;
 
 use Field;
-use YesWiki\Wiki;
+use Psr\Container\ContainerInterface;
 
 class FieldFactory
 {
-    protected $wiki;
+    protected ContainerInterface $container;
 
     protected $availableFields;
 
     /** @var array per-type cache of ['byIndex' => [int => string], 'byKey' => [string => int]] */
     protected $attributeMaps = [];
 
-    public function __construct(Wiki $wiki)
+    public function __construct(ContainerInterface $container)
     {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->loadAvailableField();
     }
 
@@ -26,7 +26,7 @@ class FieldFactory
         require_once YESWIKI_SOURCE_DIR . '/src/annotations/Field.php';
 
         // Core's own field types -- not discoverable through the extensions loop below
-        // since core isn't itself an entry in $wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() (populated only from
+        // since core isn't itself an entry in $container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() (populated only from
         // extension directories), mirroring how TemplateEngine registers the @core Twig
         // namespace outside its own extensions loop.
         //
@@ -36,7 +36,7 @@ class FieldFactory
         // silently finding nothing. Keep the two halves in step.
         $this->scanFieldsDir(YESWIKI_SOURCE_DIR . '/src/Content/Field', 'YesWiki\\Content\\Field\\');
 
-        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionKey => $extensionDir) {
+        foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionKey => $extensionDir) {
             $extensionName = ucfirst($extensionKey);
             if ($extensionName === 'Helloworld') {
                 $extensionName = 'HelloWorld';
@@ -84,7 +84,7 @@ class FieldFactory
     public function create(array $values)
     {
         if (!empty($this->availableFields[$values[0]])) {
-            return new $this->availableFields[$values[0]]($values, $this->wiki->services);
+            return new $this->availableFields[$values[0]]($values, $this->container);
         }
 
         return false;

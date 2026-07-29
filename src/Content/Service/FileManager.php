@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Wiki;
 
@@ -24,7 +25,7 @@ class FileManager
     // is meaningless (anyone who guesses/knows the filename could just fetch it by URL).
     public const STORAGE_DIR = 'private/files';
 
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $tripleStore;
     protected $pageManager;
     protected $aclService;
@@ -32,12 +33,12 @@ class FileManager
     private array $fileTagCache = [];
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         TripleStore $tripleStore,
         PageManager $pageManager,
         AclService $aclService
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->tripleStore = $tripleStore;
         $this->pageManager = $pageManager;
         $this->aclService = $aclService;
@@ -65,7 +66,7 @@ class FileManager
      */
     public function uploadMaxSize(): int
     {
-        return self::uploadMaxSizeFromConfig($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('max_file_size'));
+        return self::uploadMaxSizeFromConfig($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('max_file_size'));
     }
 
     /**

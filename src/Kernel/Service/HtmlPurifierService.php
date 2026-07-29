@@ -5,7 +5,6 @@ namespace YesWiki\Kernel\Service;
 use enshrined\svgSanitize\Sanitizer;
 use HTMLPurifier;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Wiki;
 
 class HtmlPurifierService
 {
@@ -13,14 +12,12 @@ class HtmlPurifierService
 
     protected $params;
     protected $sanitizer;
-    protected $wiki;
     private $purifier;
     private $antixss;
 
-    public function __construct(Wiki $wiki, ParameterBagInterface $params)
+    public function __construct(ParameterBagInterface $params)
     {
         $this->params = $params;
-        $this->wiki = $wiki;
         $this->purifier = null;  // will load HtmlPurifier library
         $this->antixss = null;   // will load antiXSS library
         $this->sanitizer = null; // will load svgSanitize library

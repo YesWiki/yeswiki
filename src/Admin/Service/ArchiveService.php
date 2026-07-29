@@ -12,7 +12,6 @@ use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Wiki;
 
 class ArchiveService
 {
@@ -75,7 +74,6 @@ class ArchiveService
     protected $dbService;
     protected $params;
     protected $hibernationService;
-    protected $wiki;
 
     protected UrlFormatter $urlFormatter;
 
@@ -85,7 +83,6 @@ class ArchiveService
         DbService $dbService,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        Wiki $wiki,
         UrlFormatter $urlFormatter
     ) {
         $this->urlFormatter = $urlFormatter;
@@ -94,7 +91,6 @@ class ArchiveService
         $this->dbService = $dbService;
         $this->params = $params;
         $this->hibernationService = $hibernationService;
-        $this->wiki = $wiki;
     }
 
     /**

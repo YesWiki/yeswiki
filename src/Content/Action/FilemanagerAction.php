@@ -45,7 +45,7 @@ class FilemanagerAction extends YesWikiAction implements RegisteredAction
         // Manages files linked via the {{attach}} action. Requires actions/attach.php.
 
         if ($this->getService(AclService::class)->hasAccess('write')) {
-            $att = new Attach($this->wiki);
+            $att = new Attach($this->wiki->services);
             $att->doFileManagerAction();
             unset($att);
         } else {

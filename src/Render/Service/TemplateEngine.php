@@ -2,6 +2,7 @@
 
 namespace YesWiki\Render\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Content\Attach;
@@ -18,7 +19,7 @@ use YesWiki\Wiki;
 
 class TemplateEngine
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $twigLoader;
     protected $twig;
     protected $assetsManager;
@@ -27,14 +28,14 @@ class TemplateEngine
     protected UrlFormatter $urlFormatter;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         ParameterBagInterface $config,
         AssetsManager $assetsManager,
         CsrfTokenManager $csrfTokenManager,
         UrlFormatter $urlFormatter
     ) {
         $this->urlFormatter = $urlFormatter;
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->assetsManager = $assetsManager;
         $this->csrfTokenManager = $csrfTokenManager;
         // Default paths (main namespace): the instance dir then the source tree. There are no
@@ -47,7 +48,7 @@ class TemplateEngine
             $this->twigLoader->addPath('custom/templates/', 'custom');
         }
         // Extensions templates paths (added by priority order)
-        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionName => $pluginInfo) {
+        foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionName => $pluginInfo) {
             // Ability to override an extension template from the custom folder
             $paths = ["custom/templates/$extensionName/"];
             // Ability to override an extension template from the legacy directories, should not be used anymore for new templates.
@@ -69,7 +70,7 @@ class TemplateEngine
             $paths[] = YESWIKI_SOURCE_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/';
 
             // Ability to override an extension template from another extension
-            foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
+            foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
                 $paths[] = "custom/extensions/$otherExtensionName/templates/$extensionName/";
                 $paths[] = $otherExtensionPath . "templates/$extensionName/";
             }
@@ -90,7 +91,7 @@ class TemplateEngine
         $corePaths = [];
         $corePaths[] = 'custom/templates/core/';
         // Ability to override an extension template from another extensioncore
-        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
+        foreach ($this->container->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
             $corePaths[] = $otherExtensionPath . 'templates/core/';
         }
         $corePaths[] = YESWIKI_SOURCE_DIR . '/templates/';
@@ -107,7 +108,7 @@ class TemplateEngine
         ]);
 
         // Adds Globals
-        $wikiRequest = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+        $wikiRequest = $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
         $this->twig->addGlobal('request', [
             'get' => $wikiRequest->query->all(),
             'post' => $wikiRequest->request->all(),
@@ -120,13 +121,13 @@ class TemplateEngine
         $this->twig->addGlobal('user', [
             'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
         ]);
-        $this->twig->addGlobal('config', $this->wiki->services->get(RuntimeConfig::class)->all());
+        $this->twig->addGlobal('config', $this->container->get(RuntimeConfig::class)->all());
         $this->twig->addGlobal('isInIframe', testUrlInIframe());
 
         // Adds Helpers
         $this->addTwigFilters();
         $this->addTwigHelper('dump', function ($var) {
-            if (!empty($this->wiki->services->get(RuntimeConfig::class)['debug'])) {
+            if (!empty($this->container->get(RuntimeConfig::class)['debug'])) {
                 return dump($var);
             }
 
@@ -154,7 +155,7 @@ class TemplateEngine
             return $this->urlFormatter->href($iframe, $options['tag'], $options['params'], false);
         });
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
-            return $this->wiki->services->get(MarkdownFormatterService::class)->format($text, $formatter);
+            return $this->container->get(MarkdownFormatterService::class)->format($text, $formatter);
         });
         $this->addTwigHelper('include_javascript', function ($file, $first = false, $module = false) {
             $this->assetsManager->AddJavascriptFile($file, $first, $module);
@@ -190,12 +191,12 @@ class TemplateEngine
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
 
             $basePath = $this->urlFormatter->getBaseUrl() . '/';
-            $attach = new Attach($this->wiki);
+            $attach = new Attach($this->container);
             $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
-            $safeRefresh = !$this->wiki->services->get(HibernationService::class)->isWikiHibernated()
+            $safeRefresh = !$this->container->get(HibernationService::class)->isWikiHibernated()
                 && file_exists($image_dest)
                 && filter_var($options['refresh'], FILTER_VALIDATE_BOOL)
-                && $this->wiki->services->get(AclService::class)->isAdmin();
+                && $this->container->get(AclService::class)->isAdmin();
             if (!file_exists($image_dest) || $safeRefresh) {
                 $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
@@ -209,15 +210,15 @@ class TemplateEngine
             return $basePath . $image_dest;
         });
         $this->addTwigHelper('hasAcl', function ($acl, $tag = '', $adminCheck = true) {
-            return $this->wiki->services->get(AclService::class)->check($acl, null, $adminCheck, $tag);
+            return $this->container->get(AclService::class)->check($acl, null, $adminCheck, $tag);
         });
         $this->addTwigHelper('renderAction', function ($name, $params = []) {
-            return $this->wiki->services->get(Performer::class)->run($name, 'action', $params);
+            return $this->container->get(Performer::class)->run($name, 'action', $params);
         });
         // squelettes: same attribute-string form the historical `{{action attr="…"}}`
         // squelette syntax used, with Wiki::Action()'s link-tracking semantics
         $this->addTwigHelper('action', function ($actionString) {
-            return $this->wiki->services->get(ActionRunner::class)->action($actionString);
+            return $this->container->get(ActionRunner::class)->action($actionString);
         });
         // inline JS registered for the page footer aggregate, like AddJavascript()
         // calls from the historical PHP templates
@@ -227,7 +228,7 @@ class TemplateEngine
             return '';
         });
         $this->addTwigHelper('reaction', function ($entry, $reactionId) {
-            $form = $this->wiki->services->get(FormManager::class)->getOne($entry['form_id']);
+            $form = $this->container->get(FormManager::class)->getOne($entry['form_id']);
             $found = false;
             foreach ($form['prepared'] as $i => $element) {
                 if ($reactionId == $element->getPropertyName()) {
@@ -246,13 +247,13 @@ class TemplateEngine
         // ticket 07 (tpl.html -> Twig): the page-list/layout templates check page
         // rights inline; these mirror the Wiki calls the PHP templates used
         $this->addTwigHelper('hasAccess', function ($privilege, $tag = '') {
-            return $this->wiki->services->get(AclService::class)->hasAccess($privilege, $tag ?: '');
+            return $this->container->get(AclService::class)->hasAccess($privilege, $tag ?: '');
         });
         $this->addTwigHelper('userIsAdmin', function () {
-            return (bool)$this->wiki->services->get(AclService::class)->isAdmin();
+            return (bool)$this->container->get(AclService::class)->isAdmin();
         });
         $this->addTwigHelper('userIsOwner', function ($tag = '') {
-            return $this->wiki->services->get(AclService::class)->isOwner($tag ?: '');
+            return $this->container->get(AclService::class)->isOwner($tag ?: '');
         });
         $this->addTwigHelper('absoluteUrl', function () {
             return getAbsoluteUrl();
@@ -288,15 +289,15 @@ class TemplateEngine
         // qrcode badge templates: returns the cached SVG path for a payload,
         // generating it on first use (?refresh=1 regenerates)
         $this->addTwigHelper('qrCode', function ($content, $prefix = 'qrcode') {
-            $cacheImage = 'cache' . DIRECTORY_SEPARATOR . $prefix . '-' . $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '-' . md5($content) . '.svg';
+            $cacheImage = 'cache' . DIRECTORY_SEPARATOR . $prefix . '-' . $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '-' . md5($content) . '.svg';
             if (!file_exists($cacheImage) || (!empty($_GET['refresh']) && $_GET['refresh'] == '1')) {
-                $this->wiki->services->get(\YesWiki\Content\Service\QrCodeService::class)->generateToFile($content, $cacheImage);
+                $this->container->get(\YesWiki\Content\Service\QrCodeService::class)->generateToFile($content, $cacheImage);
             }
 
             return $cacheImage;
         });
         $this->addTwigHelper('listValues', function ($listId, $parent = null) {
-            return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);
+            return $this->container->get(ListManager::class)->getOne($listId, $parent);
         });
         $this->addTwigHelper('fileUrl', function ($fileName) {
             return $this->urlFormatter->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fileName;
@@ -394,15 +395,15 @@ class TemplateEngine
     /** The configured header action's output (historic Wiki::Header()). */
     public function header(): string
     {
-        return $this->wiki->services->get(ActionRunner::class)
-            ->action((string)$this->wiki->services->get(RuntimeConfig::class)->getValue('header_action'), true);
+        return $this->container->get(ActionRunner::class)
+            ->action((string)$this->container->get(RuntimeConfig::class)->getValue('header_action'), true);
     }
 
     /** The configured footer action's output (historic Wiki::Footer()). */
     public function footer(): string
     {
-        return $this->wiki->services->get(ActionRunner::class)
-            ->action((string)$this->wiki->services->get(RuntimeConfig::class)->getValue('footer_action'), true);
+        return $this->container->get(ActionRunner::class)
+            ->action((string)$this->container->get(RuntimeConfig::class)->getValue('footer_action'), true);
     }
 
     /** Opening tag of a wiki-target form (historic Wiki::FormOpen()). */
@@ -460,7 +461,7 @@ class TemplateEngine
             throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $templatePath");
         }
         $data = array_merge($data, [
-            'config' => $this->wiki->services->get(RuntimeConfig::class)->all(),
+            'config' => $this->container->get(RuntimeConfig::class)->all(),
         ]);
 
         return $this->twig->render($templatePath, $data);

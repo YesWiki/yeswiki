@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Exception;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Exception\ParsingMultipleException;
@@ -17,11 +18,10 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
-use YesWiki\Wiki;
 
 class EntryManager
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $mailer;
     protected $authenticationService;
     protected $pageManager;
@@ -48,7 +48,7 @@ class EntryManager
     protected UrlFormatter $urlFormatter;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         Mailer $mailer,
         AuthenticationService $authenticationService,
         PageManager $pageManager,
@@ -65,7 +65,7 @@ class EntryManager
         UrlFormatter $urlFormatter,
     ) {
         $this->urlFormatter = $urlFormatter;
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->mailer = $mailer;
         $this->authenticationService = $authenticationService;
         $this->pageManager = $pageManager;
@@ -136,8 +136,7 @@ class EntryManager
         }
 
         $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
-        $debug = (bool)$this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
-        //  $debug = $this->wiki->isDebugEnabled ();
+        $debug = (bool)$this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
         $data = $this->getDataFromPage($page, $semantic, $debug);
 
         return $data;
@@ -159,7 +158,7 @@ class EntryManager
 
                 // Keep only the fields defined in the form definition
 
-                $form = $this->wiki->services->get(FormManager::class)->getOne($pFormID);
+                $form = $this->container->get(FormManager::class)->getOne($pFormID);
 
                 $vAuthorizedFields = [];
 
@@ -214,7 +213,7 @@ class EntryManager
             $data = $this->removeUnknownFields($data['form_id'], $data);
 
             // Keep only the fields defined in the form definition
-            $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);
+            $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
 
             $vRegisteredData = [...$data];
             /* CORRECT BUG FOR RECURRENT EVENT
@@ -340,7 +339,7 @@ class EntryManager
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);
+        $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
 
         // replace the field values which are restricted at reading and writing with default values
         $data = $this->assignRestrictedFields($data, [], $form);
@@ -393,7 +392,7 @@ class EntryManager
             // Form properties needing the saved page: entry ACLs (+ the author's
             // comments-toggle choice) and presentation metadata -- they write to the
             // page's metadata, not into the entry body (ADR-0010)
-            $formProperties = $this->wiki->services->get(FormPropertiesService::class);
+            $formProperties = $this->container->get(FormPropertiesService::class);
             $formProperties->applyEntryAcls($form, $data, true);
             $formProperties->applyEntryMetadatas($form, $data);
         }
@@ -465,7 +464,7 @@ class EntryManager
         $this->validate($data, self::VALIDATE_FLAG_ANTISPAM);
 
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);
+        $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
 
         // replace the field values which are restricted at reading and writing
         $data = $this->assignRestrictedFields($data, $previousData, $form);
@@ -491,7 +490,7 @@ class EntryManager
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
         $this->pageManager->save($data['tag'], json_encode($data), '');
 
-        $formProperties = $this->wiki->services->get(FormPropertiesService::class);
+        $formProperties = $this->container->get(FormPropertiesService::class);
         $formProperties->applyEntryAcls($form, $data);
         $formProperties->applyEntryMetadatas($form, $data);
 
@@ -594,7 +593,7 @@ class EntryManager
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         // not possible to init the Guard in the constructor because of circular reference problem
-        if ($this->wiki->services->get(Guard::class)->isAllowed('valider_fiche')) {
+        if ($this->container->get(Guard::class)->isAllowed('valider_fiche')) {
             if ($accepted) {
                 $this->dbService->query('UPDATE ' . $this->dbService->prefixTable('fiche') . " SET bf_statut_fiche=1 WHERE bf_id_fiche='" . $this->dbService->escape($entryId) . "'");
             } else {
@@ -623,7 +622,7 @@ class EntryManager
             throw new \Exception("Not existing entry : $tag");
         }
 
-        $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['form_id']);
+        $form = $this->container->get(FormManager::class)->getOne($fiche['form_id']);
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
 
@@ -689,10 +688,10 @@ class EntryManager
     {
         // Let's set the value of form_id
 
-        $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->get('form_id');
+        $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : $this->container->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->get('form_id');
 
         // not possible to init the formManager in the constructor because of circular reference problem
-        $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);
+        $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
         if (empty($form)) {
             throw new \Exception('No form with id: ' . $data['form_id']);
         }
@@ -720,7 +719,7 @@ class EntryManager
             }
         }
 
-        $formProperties = $this->wiki->services->get(FormPropertiesService::class);
+        $formProperties = $this->container->get(FormPropertiesService::class);
 
         // Account creation (entry_creates_user): must run before title/tag generation
         // so the created user's name is available (owner attribution, `user` ACLs)
@@ -864,7 +863,7 @@ class EntryManager
                 foreach ($vCorrespondances as $vKey => $vData) {
                     if (isset($vKey)) {
                         if (isset($pEntry[$vData])) {
-                            $pEntry[$vKey] = $this->wiki->services->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($pPage, $pEntry, $vData);
+                            $pEntry[$vKey] = $this->container->get(Guard::class)->isFieldDataAuthorizedForCorrespondance($pPage, $pEntry, $vData);
                         }
                     } else {
                         echo '<div class="alert alert-danger">' . _t('BAZ_CORRESPONDANCE_ERROR') . '</div>';
@@ -911,7 +910,7 @@ class EntryManager
         // Données sémantiques
         if ($pSemantic) {
             // not possible to init the formManager in the constructor because of circular reference problem
-            $form = $this->wiki->services->get(FormManager::class)->getOne($pFiche['form_id']);
+            $form = $this->container->get(FormManager::class)->getOne($pFiche['form_id']);
             $pFiche['semantic'] = $this->semanticTransformer->convertToSemanticData($form, $pFiche);
         }
     }
@@ -988,7 +987,7 @@ class EntryManager
      */
     private function getFormsFromIds($formsIds): array
     {
-        $formManager = $this->wiki->services->get(FormManager::class); // not load in contruct to prevent circular loading
+        $formManager = $this->container->get(FormManager::class); // not load in contruct to prevent circular loading
         if (!empty($formsIds)) {
             if (is_scalar($formsIds)) {
                 $formsIds = [$formsIds];
@@ -1227,7 +1226,7 @@ class EntryManager
             'YesWiki\Content\Field\MapField', 'YesWiki\Content\Field\HiddenField', 'YesWiki\Content\Field\FileField', 'YesWiki\Content\Field\ImageField', 'YesWiki\Content\Field\LabelField', 'YesWiki\Content\Field\LinkField', 'YesWiki\Content\Field\TextareaField',
         ];
         if (is_array($fiche) && isset($fiche['form_id'])) {
-            $form = isset($formtab[$fiche['form_id']]) ? $formtab[$fiche['form_id']] : $this->wiki->services->get(FormManager::class)->getOne($fiche['form_id']);
+            $form = isset($formtab[$fiche['form_id']]) ? $formtab[$fiche['form_id']] : $this->container->get(FormManager::class)->getOne($fiche['form_id']);
             foreach ($fiche as $key => $value) {
                 if (!empty($value)) {
                     if (

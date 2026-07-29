@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
@@ -9,11 +10,10 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\ThemeManager;
-use YesWiki\Wiki;
 
 class LinkTracker
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $dbService;
     protected $hibernationService;
     protected InclusionStack $inclusionStack;
@@ -24,9 +24,9 @@ class LinkTracker
     public $enabled;
     public $links;
 
-    public function __construct(Wiki $wiki, DbService $dbService, PageManager $pageManager, UserManager $userManager, ParameterBagInterface $params, HibernationService $hibernationService, InclusionStack $inclusionStack)
+    public function __construct(ContainerInterface $container, DbService $dbService, PageManager $pageManager, UserManager $userManager, ParameterBagInterface $params, HibernationService $hibernationService, InclusionStack $inclusionStack)
     {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->dbService = $dbService;
         $this->pageManager = $pageManager;
         $this->userManager = $userManager;
@@ -72,7 +72,7 @@ class LinkTracker
 
     public function add($tag)
     {
-        if ($this->track() && $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() !== $tag) {
+        if ($this->track() && $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() !== $tag) {
             $this->links[] = $tag;
         }
     }
@@ -87,7 +87,7 @@ class LinkTracker
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $fromTag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+        $fromTag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
 
         // Delete old links for this page
         $this->dbService->query('DELETE FROM ' . $this->dbService->prefixTable('links') . "WHERE from_tag = '" . $this->dbService->escape($fromTag) . "'");
@@ -116,18 +116,18 @@ class LinkTracker
     public function registerLinks(array $page, bool $trackMetadata = false, bool $refreshPreviousTag = true): array
     {
         if ($refreshPreviousTag) {
-            $previousTag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-            $previousPage = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+            $previousTag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $previousPage = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
             $previousInclusions = $this->inclusionStack->replace();
         }
         $this->clear();
-        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($page['tag'] ?? null);
-        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($page);
+        $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($page['tag'] ?? null);
+        $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($page);
         $this->start();
-        $this->inclusionStack->register($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
+        $this->inclusionStack->register($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
         $body = $this->preventTrackingActions($page['body']);
         $body = $this->preventNotTrackingActions($body);
-        $this->wiki->services->get(MarkdownFormatterService::class)->format($body);
+        $this->container->get(MarkdownFormatterService::class)->format($body);
         if (!empty($page['owner'])) {
             $ownerPage = $this->pageManager->getOne($page['owner']);
             if (!empty($ownerPage)) {
@@ -146,7 +146,7 @@ class LinkTracker
         }
         $this->stop();
         $childrenTags = array_filter($this->getAll(), function ($tag) {
-            return $tag !== $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            return $tag !== $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         });
         $this->links = $childrenTags;
         $this->persist();
@@ -155,8 +155,8 @@ class LinkTracker
 
         if ($refreshPreviousTag) {
             if (!empty($previousTag) && !empty($previousPage)) {
-                $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
-                $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($previousPage);
+                $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
+                $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($previousPage);
             }
             $this->inclusionStack->replace($previousInclusions);
         }

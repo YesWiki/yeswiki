@@ -28,7 +28,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         $realParams = $wiki->services->get(ParameterBagInterface::class);
         $forcedParams = new ForcedParameterBag($realParams, ['password_for_editing' => $password]);
 
-        return new PasswordForEditingService($wiki, $forcedParams, $wiki->services->get(TemplateEngine::class));
+        return new PasswordForEditingService($wiki->services, $forcedParams, $wiki->services->get(TemplateEngine::class));
     }
 
     public function testNotActivatedWhenPasswordForEditingIsEmpty()

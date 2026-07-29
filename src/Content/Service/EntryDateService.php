@@ -2,14 +2,14 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Kernel\Entity\Event;
-use YesWiki\Wiki;
 use YesWiki\Search\Service\SearchManager;
 
 class EntryDateService implements EventSubscriberInterface
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $entryManager;
     protected $formManager;
     protected $followedIds;
@@ -24,11 +24,11 @@ class EntryDateService implements EventSubscriberInterface
     }
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         EntryManager $entryManager,
         FormManager $formManager
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->entryManager = $entryManager;
         $this->followedIds = [];
         $this->formManager = $formManager;
@@ -98,7 +98,7 @@ class EntryDateService implements EventSubscriberInterface
      */
     protected function deleteLinkedEntries(array $entry)
     {
-        $vSearchManager = $this->wiki->services->get(SearchManager::class);
+        $vSearchManager = $this->container->get(SearchManager::class);
 
         $entryId = $entry['tag'];
         $formId = $entry['form_id'];

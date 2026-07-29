@@ -2,16 +2,16 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Wiki;
 
 class Mailer
 {
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $authenticationService;
     protected $dbService;
     protected $params;
@@ -19,14 +19,14 @@ class Mailer
     protected $userManager;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         AuthenticationService $authenticationService,
         DbService $dbService,
         ParameterBagInterface $params,
         TemplateEngine $templateEngine,
         UserManager $userManager
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->authenticationService = $authenticationService;
         $this->dbService = $dbService;
         $this->params = $params;
@@ -60,7 +60,7 @@ class Mailer
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
                 'entry' => $data,
-                'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['tag'], '', true, $userName),
+                'entryHTML' => $this->container->get(EntryController::class)->view($data['tag'], '', true, $userName),
                 'baseUrl' => $baseUrl,
             ]
         );
@@ -83,7 +83,7 @@ class Mailer
         $text = $this->templateEngine->render(
             '@core/notify-admins-list-deleted-email-text.twig',
             [
-                'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->wiki->services->get(CurrentRequest::class)->get()->getClientIp(),
+                'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->container->get(CurrentRequest::class)->get()->getClientIp(),
                 'userName' => $this->authenticationService->getLoggedUserName(),
             ]
         );
@@ -91,7 +91,7 @@ class Mailer
             '@core/notify-admins-list-deleted-email-html.twig',
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
-                'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->wiki->services->get(CurrentRequest::class)->get()->getClientIp(),
+                'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->container->get(CurrentRequest::class)->get()->getClientIp(),
                 'userName' => $this->authenticationService->getLoggedUserName(),
                 'baseUrl' => $baseUrl,
             ]
@@ -104,7 +104,7 @@ class Mailer
 
     private function getAdminsList(): array
     {
-        $adminsAcl = $this->wiki->services->get(\YesWiki\Identity\Service\GroupOperationsService::class)->getMembersText(ADMIN_GROUP);
+        $adminsAcl = $this->container->get(\YesWiki\Identity\Service\GroupOperationsService::class)->getMembersText(ADMIN_GROUP);
         $admins = [];
         foreach (explode("\n", $adminsAcl) as $line) {
             $line = trim($line);
@@ -189,7 +189,7 @@ class Mailer
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
                 'entry' => $data,
-                'entryHTML' => $this->wiki->services->get(EntryController::class)->view($data['tag'], '', true, $userName),
+                'entryHTML' => $this->container->get(EntryController::class)->view($data['tag'], '', true, $userName),
                 'baseUrl' => $baseUrl,
                 'mailCustomMessage' => $this->params->has('mail_custom_message') ? $this->params->get('mail_custom_message') : null,
                 'previousEntry' => $previousEntry,

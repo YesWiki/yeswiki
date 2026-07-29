@@ -6,10 +6,11 @@ namespace YesWiki\Content;
 // YesWiki\Core -- resolved by src/autoload.inc.php's own fallback autoloader, same as
 // ApiResponse/YesWikiController -- instead of a bare global-namespace class manually
 // `include`d with an `if (!class_exists(...))` guard at every one of its ~11 call sites.
-// Deliberately still plain `new Attach($wiki)`, NOT a DI-managed singleton service: its
+// Deliberately still plain `new Attach($container)`, NOT a DI-managed singleton service: its
 // design is stateful per invocation (CheckParams()/doAttach() write onto $this), which is
 // only safe with a fresh instance per {{attach}} tag/caller, exactly as before.
 
+use Psr\Container\ContainerInterface;
 use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\FileManager;
@@ -23,7 +24,7 @@ use YesWiki\Render\Service\TemplateHelperService;
 
 class Attach
 {
-    public $wiki = ''; // objet wiki courant
+    protected ContainerInterface $container;
     public $attachConfig = []; // configuration de l'action
     public $file = ''; // nom du fichier
     // ticket 17: set by CheckParams() when 'file'/'attachfile' resolves to a FileManager
@@ -53,10 +54,10 @@ class Attach
     /**
      * Constructeur. Met les valeurs par defaut aux parametres de configuration.
      */
-    public function __construct(&$wiki)
+    public function __construct(ContainerInterface $container)
     {
-        $this->wiki = $wiki;
-        $this->params = $this->wiki->services->get(ParameterBagInterface::class);
+        $this->container = $container;
+        $this->params = $this->container->get(ParameterBagInterface::class);
         $this->attachConfig = $this->params->get('attach_config');
 
         if (!is_array($this->attachConfig)) {
@@ -67,7 +68,7 @@ class Attach
             $this->attachConfig['max_file_size'] = $this->params->get('max-upload-size');
         }
 
-        $safemode = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('no_safe_mode');
+        $safemode = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('no_safe_mode');
         if (empty($safemode)) {
             if (version_compare(phpversion(), '5.3', '<')) {
                 // le safe_mode n'existe que pour php < 5.3
@@ -106,7 +107,7 @@ class Attach
      */
     public function GetScriptPath()
     {
-        return $this->wiki->services->get(UrlFormatter::class)->getBaseUrl() . '/';
+        return $this->container->get(UrlFormatter::class)->getBaseUrl() . '/';
         // if (preg_match("/.(php)$/i", $_SERVER["PHP_SELF"])) {
         //     $a = explode('/', $_SERVER["PHP_SELF"]);
         //     $a[count($a) - 1] = '';
@@ -128,7 +129,7 @@ class Attach
         if ($this->isSafeMode) {
             $path = $this->attachConfig['upload_path'];
         } else {
-            $path = $this->attachConfig['upload_path'] . '/' . $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $path = $this->attachConfig['upload_path'] . '/' . $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
             if (!is_dir($path)) {
                 $this->mkdir_recursif($path);
             }
@@ -145,7 +146,7 @@ class Attach
         if ($this->isSafeMode) {
             $path = $this->attachConfig['cache_path'];
         } else {
-            $path = $this->attachConfig['cache_path'] . '/' . $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $path = $this->attachConfig['cache_path'] . '/' . $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
             if (!is_dir($path)) {
                 $this->mkdir_recursif($path);
             }
@@ -170,10 +171,10 @@ class Attach
     {
         // use current date if page has no date that could arrive when using page 'root' via Actions Builder
         $pagedate = $this->convertDate(
-            isset(($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['time'])
-                ? ($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['time']
+            isset(($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['time'])
+                ? ($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['time']
                 : (
-                    $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() == 'root'
+                    $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() == 'root'
                     ? date('Y-m-d H:i:s')
                     : null // error
                 )
@@ -191,7 +192,7 @@ class Attach
         }
         // recuperation du chemin d'upload
         $path = $this->GetUploadPath($this->isSafeMode);
-        $page_tag = $file['page'] ? $file['page'] : $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+        $page_tag = $file['page'] ? $file['page'] : $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         // generation du nom ou recherche de fichier ?
         if ($newName) {
             $full_file_name = $file['name'] . '_' . $pagedate . '_' . $this->getDate() . '.' . $file['ext'];
@@ -201,7 +202,7 @@ class Attach
                 $full_file_name = $path . '/' . $full_file_name;
             }
         } else {
-            $isActionBuilderPreview = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() == 'root';
+            $isActionBuilderPreview = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() == 'root';
             // recherche du fichier
             if ($isActionBuilderPreview) {
                 // bazar action builder, preview action
@@ -354,7 +355,7 @@ class Attach
             $afile['name'] = $m[1];
             // suppression du nom de la page si safe_mode=on
             if ($this->isSafeMode) {
-                $afile['name'] = preg_replace('`^(' . $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . ')_(.*)$`i', '$2', $afile['name']);
+                $afile['name'] = preg_replace('`^(' . $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . ')_(.*)$`i', '$2', $afile['name']);
             }
             $afile['datepage'] = $m[2];
             $afile['dateupload'] = $m[3];
@@ -399,9 +400,9 @@ class Attach
     public function CheckParams()
     {
         // recuperation des parametres necessaire
-        $this->file = htmlspecialchars($this->wiki->services->get(PerformableArguments::class)->get('attachfile'));
+        $this->file = htmlspecialchars($this->container->get(PerformableArguments::class)->get('attachfile'));
         if (empty($this->file)) {
-            $this->file = htmlspecialchars($this->wiki->services->get(PerformableArguments::class)->get('file'));
+            $this->file = htmlspecialchars($this->container->get(PerformableArguments::class)->get('file'));
         }
         // ticket 17: {{attach}}'s own file= is now a FileManager tag, not a raw
         // filename -- resolve it here so doAttach()/showAsX() below can serve it
@@ -410,31 +411,31 @@ class Attach
         // anything that isn't a known file tag -- other internal callers (tag-cloud
         // thumbnails, farm imports, ...) still set $this->file to a raw filename
         // directly and never go through CheckParams()/this resolution at all.
-        $fileManager = $this->wiki->services->get(FileManager::class);
+        $fileManager = $this->container->get(FileManager::class);
         if ($fileManager->isFileTag($this->file)) {
             $entry = $fileManager->getOne($this->file);
             $this->fileTag = $this->file;
             $this->file = $entry['original_filename'];
         }
 
-        $this->desc = $this->wiki->services->get(PerformableArguments::class)->get('attachdesc');
+        $this->desc = $this->container->get(PerformableArguments::class)->get('attachdesc');
         if (empty($this->desc)) {
-            $this->desc = $this->wiki->services->get(PerformableArguments::class)->get('desc');
+            $this->desc = $this->container->get(PerformableArguments::class)->get('desc');
         }
         $this->desc = htmlentities(strip_tags($this->desc)); // avoid XSS
 
-        $this->link = $this->wiki->services->get(PerformableArguments::class)->get('attachlink'); // url de lien - uniquement si c'est une image
+        $this->link = $this->container->get(PerformableArguments::class)->get('attachlink'); // url de lien - uniquement si c'est une image
         if (empty($this->link)) {
-            $this->link = $this->wiki->services->get(PerformableArguments::class)->get('link');
+            $this->link = $this->container->get(PerformableArguments::class)->get('link');
         }
 
-        $this->caption = $this->wiki->services->get(PerformableArguments::class)->get('caption'); // texte de la vignette (au survol)
-        $this->legend = $this->wiki->services->get(PerformableArguments::class)->get('legend'); // texte de la vignette (en dessous)
-        $this->nofullimagelink = $this->wiki->services->get(PerformableArguments::class)->get('nofullimagelink');
-        $this->height = $this->wiki->services->get(PerformableArguments::class)->get('height');
-        $this->width = $this->wiki->services->get(PerformableArguments::class)->get('width');
-        $this->displayPDF = $this->wiki->services->get(PerformableArguments::class)->get('displaypdf');
-        $this->data = $this->wiki->services->get(TemplateHelperService::class)->getDataParameter();
+        $this->caption = $this->container->get(PerformableArguments::class)->get('caption'); // texte de la vignette (au survol)
+        $this->legend = $this->container->get(PerformableArguments::class)->get('legend'); // texte de la vignette (en dessous)
+        $this->nofullimagelink = $this->container->get(PerformableArguments::class)->get('nofullimagelink');
+        $this->height = $this->container->get(PerformableArguments::class)->get('height');
+        $this->width = $this->container->get(PerformableArguments::class)->get('width');
+        $this->displayPDF = $this->container->get(PerformableArguments::class)->get('displaypdf');
+        $this->data = $this->container->get(TemplateHelperService::class)->getDataParameter();
 
         // test de validité des parametres
         if (empty($this->file)) {
@@ -447,26 +448,26 @@ class Attach
             $this->attachErr = '<div class="alert alert-danger"><strong>' . _t('ATTACH_ACTION_ATTACH') . '</strong> : ' . _t('ATTACH_PARAM_HEIGHT_NOT_NUMERIC') . '.</div>' . "\n";
         }
 
-        if ($this->wiki->services->get(PerformableArguments::class)->get('class')) {
-            $array_classes = explode(' ', $this->wiki->services->get(PerformableArguments::class)->get('class'));
+        if ($this->container->get(PerformableArguments::class)->get('class')) {
+            $array_classes = explode(' ', $this->container->get(PerformableArguments::class)->get('class'));
             foreach ($array_classes as $c) {
                 $this->classes .= ' ' . trim($c);
             }
         }
 
-        $size = $this->wiki->services->get(PerformableArguments::class)->get('size');
+        $size = $this->container->get(PerformableArguments::class)->get('size');
         switch ($size) {
             case 'small':
-                $this->width = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-small-width'];
-                $this->height = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-small-height'];
+                $this->width = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-small-width'];
+                $this->height = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-small-height'];
                 break;
             case 'medium':
-                $this->width = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-medium-width'];
-                $this->height = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-medium-height'];
+                $this->width = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-medium-width'];
+                $this->height = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-medium-height'];
                 break;
             case 'big':
-                $this->width = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-big-width'];
-                $this->height = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-big-height'];
+                $this->width = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-big-width'];
+                $this->height = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-big-height'];
                 break;
         }
 
@@ -489,7 +490,7 @@ class Attach
     private function fileUrl($fullFilename, bool $forceDownload = false): string
     {
         if (!empty($this->fileTag)) {
-            $url = $this->wiki->services->get(UrlFormatter::class)->href('', 'api/files/' . $this->fileTag . '/download', [], false);
+            $url = $this->container->get(UrlFormatter::class)->href('', 'api/files/' . $this->fileTag . '/download', [], false);
 
             return $forceDownload ? $url . '?download=1' : $url;
         }
@@ -545,11 +546,11 @@ class Attach
             );
         if (!empty($this->link)) {
             // create link if needed
-            $linkParts = $this->wiki->services->get(UrlFormatter::class)->extractLinkParts($this->link);
+            $linkParts = $this->container->get(UrlFormatter::class)->extractLinkParts($this->link);
             if ($linkParts) {
-                $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
+                $this->container->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
             }
-            $link = '<a href="' . $this->wiki->services->get(UrlFormatter::class)->generateLink($this->link) . '"' . $classDataForLinks . '>';
+            $link = '<a href="' . $this->container->get(UrlFormatter::class)->generateLink($this->link) . '"' . $classDataForLinks . '>';
         } else {
             if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
                 $link = '<a href="' . $this->fileUrl($fullFilename, true) . '"' . $classDataForLinks . '>';
@@ -588,7 +589,7 @@ class Attach
     // Affiche le fichier liee comme un fichier video
     public function showAsVideo($fullFilename)
     {
-        $output = $this->wiki->services->get(MarkdownFormatterService::class)->format(
+        $output = $this->container->get(MarkdownFormatterService::class)->format(
             '{{player url="' . $this->fileUrl($fullFilename) . '" type="video" ' .
                 'height="' . (!empty($this->height) ? $this->height : '300px') . '" ' .
                 'width="' . (!empty($this->width) ? $this->width : '400px') . '"}}'
@@ -599,7 +600,7 @@ class Attach
     // Affiche le fichier liee comme un fichier audio
     public function showAsAudio($fullFilename)
     {
-        $output = $this->wiki->services->get(MarkdownFormatterService::class)->format('{{player url="' . $this->fileUrl($fullFilename) . '" type="audio"}}');
+        $output = $this->container->get(MarkdownFormatterService::class)->format('{{player url="' . $this->fileUrl($fullFilename) . '" type="audio"}}');
         echo $output;
     }
 
@@ -607,10 +608,10 @@ class Attach
     public function showAsPDF($fullFilename)
     {
         // Defines parameters for pdf action
-        $this->wiki->services->get(PerformableArguments::class)->set('url', $this->fileUrl($fullFilename));
-        if (empty($this->wiki->services->get(PerformableArguments::class)->get('hauteurmax')) && empty($this->wiki->services->get(PerformableArguments::class)->get('largeurmax'))) {
-            $this->wiki->services->get(PerformableArguments::class)->set('hauteurmax', $this->wiki->services->get(PerformableArguments::class)->get('height'));
-            $this->wiki->services->get(PerformableArguments::class)->set('largeurmax', $this->wiki->services->get(PerformableArguments::class)->get('width'));
+        $this->container->get(PerformableArguments::class)->set('url', $this->fileUrl($fullFilename));
+        if (empty($this->container->get(PerformableArguments::class)->get('hauteurmax')) && empty($this->container->get(PerformableArguments::class)->get('largeurmax'))) {
+            $this->container->get(PerformableArguments::class)->set('hauteurmax', $this->container->get(PerformableArguments::class)->get('height'));
+            $this->container->get(PerformableArguments::class)->set('largeurmax', $this->container->get(PerformableArguments::class)->get('width'));
         }
         // position
         $newclass = '';
@@ -631,12 +632,12 @@ class Attach
 
         // define class
         if ($newclass != '') {
-            $this->wiki->services->get(PerformableArguments::class)->set('class', $newclass);
+            $this->container->get(PerformableArguments::class)->set('class', $newclass);
         }
 
         // Call pdf actions
-        $params = $this->wiki->services->get(PerformableArguments::class)->all();
-        echo $this->wiki->services->get(ActionRunner::class)->action('pdf', false, $params);
+        $params = $this->container->get(PerformableArguments::class)->all();
+        echo $this->container->get(ActionRunner::class)->action('pdf', false, $params);
     }
 
     // showUpdateLink() is gone (ticket 17): it linked to tools/attach/handlers/page/
@@ -667,7 +668,7 @@ class Attach
         // no longer web-servable directly -- the legacy GetFullFilename() search is only
         // reached for the raw-filename fallback (see CheckParams()'s own doc comment)
         $fullFilename = !empty($this->fileTag)
-            ? $this->wiki->services->get(FileManager::class)->getPhysicalPath($this->fileTag)
+            ? $this->container->get(FileManager::class)->getPhysicalPath($this->fileTag)
             : $this->GetFullFilename();
         // test d'existance du fichier
         if (empty($fullFilename) || !file_exists($fullFilename)) {
@@ -783,7 +784,7 @@ class Attach
      */
     public function fmShow($trash = false, bool $isAction = false)
     {
-        $method = ($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod() != 'show' ? $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod() : '');
+        $method = ($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod() != 'show' ? $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod() : '');
 
         $files = $this->fmGetFiles($trash);
         if (is_array($files)) {
@@ -796,11 +797,11 @@ class Attach
                 ]);
             }, $files);
         }
-        echo $this->wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely($isAction
+        echo $this->container->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely($isAction
             ? '@core/attach-filemanager.twig'
             : '@core/attach-filemanager-handler.twig', [
-                'tag' => $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(),
-                'method' => ($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod() != 'show' ? $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod() : ''),
+                'tag' => $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(),
+                'method' => ($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod() != 'show' ? $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod() : ''),
                 'trash' => $trash,
                 'files' => $files,
             ]);
@@ -813,7 +814,7 @@ class Attach
     {
         $path = $this->GetUploadPath();
         if ($this->isSafeMode) {
-            $filePattern = '^' . $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '_.*_\d{14}_\d{14}\..*';
+            $filePattern = '^' . $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '_.*_\d{14}_\d{14}\..*';
         } else {
             $filePattern = '^.*_\d{14}_\d{14}\..*';
         }
@@ -861,7 +862,7 @@ class Attach
     {
         $path = $this->GetUploadPath();
         $rawFileName = empty($rawFileName)
-            ? $this->wiki->services->get(InputFilter::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
+            ? $this->container->get(InputFilter::class)->filterInput(INPUT_GET, 'file', FILTER_SANITIZE_FULL_SPECIAL_CHARS, false, 'string')
             : $rawFileName;
         $filename = $path . '/' . basename($rawFileName);
         if (!empty($rawFileName) && file_exists($filename)) {
@@ -943,7 +944,7 @@ class Attach
         $file = $this->decodeLongFilename($fullFilename);
         if (!empty($file['name'])) {
             if ($this->isSafeMode) {
-                $currentTag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+                $currentTag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
                 $prefixFileName = substr($file['realname'], 0, strlen($currentTag)) == $currentTag ? $currentTag . '_' : '';
                 $file_vignette = $file['path'] . '/' . $prefixFileName . $file['name'] . '_vignette_' . $width . '_' . $height . '_' . $file['datepage'] . '_' . $file['dateupload'] . '.' . $file['ext'];
             } else {

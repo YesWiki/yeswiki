@@ -2,32 +2,32 @@
 
 namespace YesWiki\Render\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Wiki;
 
 class TemplateHelperService
 {
     protected $params;
-    protected $wiki;
+    protected ContainerInterface $container;
 
     protected UrlFormatter $urlFormatter;
     protected PerformableArguments $performableArguments;
 
     public function __construct(
         ParameterBagInterface $params,
-        Wiki $wiki,
+        ContainerInterface $container,
         UrlFormatter $urlFormatter,
         PerformableArguments $performableArguments
     ) {
         $this->performableArguments = $performableArguments;
         $this->urlFormatter = $urlFormatter;
         $this->params = $params;
-        $this->wiki = $wiki;
+        $this->container = $container;
     }
 
     /**
@@ -97,11 +97,11 @@ class TemplateHelperService
         $attach = $this->getAttach();
 
         // current page
-        $previousTag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-        $previousPage = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+        $previousTag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+        $previousPage = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
         // fake page
-        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
-        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($page);
+        $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
+        $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($page);
         if ($extractFullFileName) {
             if (!empty($fileName)) {
                 $attach->file = $fileName;
@@ -132,15 +132,15 @@ class TemplateHelperService
 
         // reset params
         unset($attach);
-        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
-        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
+        $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
+        $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
 
         return empty($image) ? '' : $image;
     }
 
     protected function getAttach(): Attach
     {
-        return new Attach($this->wiki);
+        return new Attach($this->container);
     }
 
     /**
@@ -317,11 +317,11 @@ class TemplateHelperService
     {
         $acls = [
             'page' => $page['tag'],
-            'lire' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_read_acl'),
+            'lire' => $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_read_acl'),
             'lire_default' => true,
-            'ecrire' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_write_acl'),
+            'ecrire' => $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_write_acl'),
             'ecrire_default' => true,
-            'comment' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_comment_acl'),
+            'comment' => $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_comment_acl'),
             'comment_default' => true,
         ];
         if (!empty($page['acl_read'])) {
@@ -349,7 +349,7 @@ class TemplateHelperService
      */
     public function getTitleFromBody($page): string
     {
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->container->get(EntryManager::class);
 
         if (!isset($page['body']) || !isset($page['tag'])) {
             return '';
@@ -368,11 +368,11 @@ class TemplateHelperService
             } else {
                 preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
                 if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                    $title = $this->wiki->services->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
+                    $title = $this->container->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
                 } else {
                     preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
                     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                        $title = $this->wiki->services->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
+                        $title = $this->container->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
                     }
                 }
             }
@@ -392,7 +392,7 @@ class TemplateHelperService
      */
     public function getDescriptionFromBody($page, $title, $length = 300)
     {
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->container->get(EntryManager::class);
 
         if (!isset($page['body'])) {
             return '';
@@ -407,10 +407,10 @@ class TemplateHelperService
                 }
             }
             if ($desc == '') {
-                $desc = $this->wiki->services->get(EntryController::class)->view($entry, '', 0);
+                $desc = $this->container->get(EntryController::class)->view($entry, '', 0);
             }
         }
-        // $desc = $this->wiki->services->get(MarkdownFormatterService::class)->format($page['body'], 'wakka', $page["tag"]);
+        // $desc = $this->container->get(MarkdownFormatterService::class)->format($page['body'], 'wakka', $page["tag"]);
 
         // no javascript
         $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);

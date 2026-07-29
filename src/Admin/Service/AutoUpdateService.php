@@ -2,10 +2,10 @@
 
 namespace YesWiki\Admin\Service;
 
+use Psr\Container\ContainerInterface;
 use YesWiki\Admin\Entity\PackageCollection;
 use YesWiki\Admin\Entity\Repository;
 use YesWiki\Kernel\Entity\Messages;
-use YesWiki\Wiki;
 
 class AutoUpdateService
 {
@@ -13,12 +13,12 @@ class AutoUpdateService
     public const DEFAULT_VERS = 'Cercopitheque'; // Pour gérer les vielles version de YesWiki
     public $repository;
 
-    private $wiki;
+    private ContainerInterface $container;
 
     public function __construct(
-        Wiki $wiki
+        ContainerInterface $container
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
     }
 
     /**
@@ -55,8 +55,8 @@ class AutoUpdateService
     {
         $repositoryAddress = $this::DEFAULT_REPO;
 
-        if (isset($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'])) {
-            $repositoryAddress = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'];
+        if (isset($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'])) {
+            $repositoryAddress = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'];
         }
 
         if (substr($repositoryAddress, -1, 1) !== '/') {
@@ -75,8 +75,8 @@ class AutoUpdateService
     private function getYesWikiVersion()
     {
         $version = $this::DEFAULT_VERS;
-        if (isset($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'])) {
-            $version = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'];
+        if (isset($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'])) {
+            $version = $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'];
         }
 
         return strtolower($version);

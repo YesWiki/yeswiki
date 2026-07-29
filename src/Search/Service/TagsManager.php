@@ -3,25 +3,22 @@
 namespace YesWiki\Search\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Wiki;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Content\Service\TripleStore;
 
 class TagsManager
 {
     public const TAG_PROPERTY = 'http://outils-reseaux.org/_vocabulary/tag';
 
-    protected $wiki;
     protected $dbService;
     protected $hibernationService;
     protected $tripleStore;
     protected $params;
 
-    public function __construct(Wiki $wiki, DbService $dbService, TripleStore $tripleStore, ParameterBagInterface $params, HibernationService $hibernationService)
+    public function __construct(DbService $dbService, TripleStore $tripleStore, ParameterBagInterface $params, HibernationService $hibernationService)
     {
-        $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;
         $this->params = $params;
