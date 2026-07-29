@@ -67,13 +67,13 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
           </a>
           <div class="mc-footer">
             <h4 class="hide">En savoir plus</h4>
-            <a href="{{ url({tag: fiche.tag}) }}" class="fa fa-fw fa-info-circle"></a>
+            <a href="{{ url({tag: fiche.tag}) }}">{{ icon('info-circle') }}</a>
             <div class="pull-right">
               {% if hasAccess('write') %}
-              <a href="{{ url({tag: fiche.tag, handler: 'edit'}) }}" class="fa fa-fw fa-pencil-square-o"></a>
+              <a href="{{ url({tag: fiche.tag, handler: 'edit'}) }}">{{ icon('edit') }}</a>
               {% endif %}
               {% if userIsAdmin() or userIsOwner() %}
-              <a href="{{ url({tag: fiche.tag, handler: 'deletepage'}) }}" class="fa fa-fw fa-trash modalbox"></a>
+              <a href="{{ url({tag: fiche.tag, handler: 'deletepage'}) }}" class="modalbox">{{ icon('trash') }}</a>
               {% endif %}
             </div>
           </div>

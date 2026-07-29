@@ -31,7 +31,7 @@
 
     <nav id="yw-topnav" class="fixable" role="navigation">
       <div class="container">
-          <button class="yw-btn btn-menu"><span class="fa fa-bars"></span></button>
+          <button class="yw-btn btn-menu">{{ icon('menu-2') }}</button>
           <div class="navbar-header">
             <a class="navbar-brand" href="{{ action('configuration param="base_url"') }}{{ action('configuration param="root_page"') }}">
               {{ action('include page="PageTitre" doubleclic="1"')|raw }}
