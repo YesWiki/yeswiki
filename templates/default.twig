@@ -3,7 +3,7 @@
         {% if connected %}
             {% block connected %}
                 <h5>
-                    <i class="fa fa-user"></i>&nbsp;{{ _t("LOGIN_CONNECTED_AS") }} {{ user }}
+                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg>&nbsp;{{ _t("LOGIN_CONNECTED_AS") }} {{ user }}
                 </h5>
                 <ul class="login-actions">
                     {% block loginActions %}
@@ -21,7 +21,7 @@
                             {% block logoutLink %}
                                 <a href="{{ incomingurl ~ (incomingurl matches '/\\?/' ? '&' : '?') }}action=logout&context={{ context }}"
                                    class="{% block logoutLinkClass %}login-signout-link{% endblock %}"
-                                   title="{{ _t("LOGIN_LOGOUT") }}"><i class="fas fa-sign-out-alt"></i> {{ _t("LOGIN_LOGOUT") }}</a>
+                                   title="{{ _t("LOGIN_LOGOUT") }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#logout"/></svg> {{ _t("LOGIN_LOGOUT") }}</a>
                             {% endblock %}
                         </li>
                     {% endblock %}

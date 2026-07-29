@@ -4,7 +4,7 @@
 
         <div class="input-prepend input-group">
             <span class="add-on input-group-addon">
-                <i class="icon-calendar fa fa-calendar"></i>
+                <svg class="yw-icon icon-calendar" aria-hidden="true"><use href="src/assets/icons.svg#calendar"/></svg>
             </span>
             <input
                 type="date"
@@ -21,7 +21,7 @@
         </div>
         <div class="select-time {% if not hasTime %}hide{% endif %} input-prepend input-group">
             <span class="add-on input-group-addon">
-                <i class="icon-time fa fa-clock"></i>
+                <svg class="yw-icon icon-time" aria-hidden="true"><use href="src/assets/icons.svg#clock"/></svg>
             </span>
             <select class="yw-input select-hour" name="{{ field.name }}_hour">
                 {% for i in range(low=0, high=23, step=1) %}

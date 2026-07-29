@@ -13,7 +13,7 @@
 <form action="" method="post" class="">
 	<div class="input-prepend input-append input-group">
 		<span class="add-on input-group-addon">
-			<i class="fa fa-link icon-globe"></i>
+			<svg class="yw-icon icon-globe" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg>
 		</span>
 		<input name="actor_handle" class="yw-input input-xxlarge" placeholder="{{ _t('BAZ_FOLLOW_ACTOR_INFO') }}" />
 		<span class="input-group-btn">
@@ -43,14 +43,14 @@
 					href="{{ url({ params: { vue: 'abonnements', action: 'sync', actor: actorUri, idformulaire: form.id }}) }}"
 					title="{{ _t('BAZ_SYNC_ACTOR_POSTS') }}"
 				>
-					<i class="fa fa-retweet icon-white"></i>
+					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#repeat"/></svg>
 				</a>
 				<a
 					class="btn btn-danger btn-xs"
 					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'following', idformulaire: form.id }}) }}"
 					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNEMENT') }} ?');"
 				>
-					<i class="fa fa-trash icon-white"></i>
+					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
 				</a>
 		</td>
 	</tr>
@@ -78,7 +78,7 @@
 					href="{{ url({ params: { vue: 'abonnements', action: 'add', actor: actorUri, type: 'following', idformulaire: form.id }}) }}"
 					title="{{ _t('BAZ_FOLLOW_BACK') }}"
 				>
-					<i class="fa fa-user-plus icon-white"></i>
+					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>
 				</a>
 				{% endif %}
 				<a
@@ -86,7 +86,7 @@
 					href="{{ url({ params: { vue: 'abonnements', action: 'remove', actor: actorUri, type: 'followers', idformulaire: form.id }}) }}"
 					onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_ABONNE') }} ?');"
 				>
-					<i class="fa fa-trash icon-white"></i>
+					<svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
 				</a>
 		</td>
 	</tr>

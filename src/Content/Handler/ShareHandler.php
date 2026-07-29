@@ -66,16 +66,16 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         $url = $this->getService(UrlFormatter::class)->href();
         $tag = $this->getService(PageContext::class)->getTag();
         $shareText = _t('TEMPLATE_SHARE_MUST_READ') . $url;
-        // icon classes come from the bundled FontAwesome 5 Free brands set
+        // icon names refer to the Tabler sprite (src/assets/icons.svg)
         $targets = [
-            ['href' => 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode($url), 'icon' => 'fab fa-facebook-f', 'label' => _t('TEMPLATE_SHARE_FACEBOOK')],
-            ['href' => 'https://twitter.com/intent/tweet?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'fab fa-twitter', 'label' => _t('TEMPLATE_SHARE_TWITTER')],
-            ['href' => 'https://mastodonshare.com/?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'fab fa-mastodon', 'label' => _t('TEMPLATE_SHARE_MASTODON')],
-            ['href' => 'https://www.linkedin.com/sharing/share-offsite/?url=' . urlencode($url), 'icon' => 'fab fa-linkedin-in', 'label' => _t('TEMPLATE_SHARE_LINKEDIN')],
-            ['href' => 'https://wa.me/?text=' . urlencode($shareText), 'icon' => 'fab fa-whatsapp', 'label' => _t('TEMPLATE_SHARE_WHATSAPP')],
-            ['href' => 'https://t.me/share/url?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'fab fa-telegram-plane', 'label' => _t('TEMPLATE_SHARE_TELEGRAM')],
+            ['href' => 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode($url), 'icon' => 'brand-facebook', 'label' => _t('TEMPLATE_SHARE_FACEBOOK')],
+            ['href' => 'https://twitter.com/intent/tweet?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'brand-x', 'label' => _t('TEMPLATE_SHARE_TWITTER')],
+            ['href' => 'https://mastodonshare.com/?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'brand-mastodon', 'label' => _t('TEMPLATE_SHARE_MASTODON')],
+            ['href' => 'https://www.linkedin.com/sharing/share-offsite/?url=' . urlencode($url), 'icon' => 'brand-linkedin', 'label' => _t('TEMPLATE_SHARE_LINKEDIN')],
+            ['href' => 'https://wa.me/?text=' . urlencode($shareText), 'icon' => 'brand-whatsapp', 'label' => _t('TEMPLATE_SHARE_WHATSAPP')],
+            ['href' => 'https://t.me/share/url?url=' . urlencode($url) . '&text=' . urlencode($tag), 'icon' => 'brand-telegram', 'label' => _t('TEMPLATE_SHARE_TELEGRAM')],
             // the by-mail share is the wiki's own sendmail handler, not an external network
-            ['href' => $this->getService(UrlFormatter::class)->href('sendmail'), 'icon' => 'fas fa-envelope', 'label' => _t('TEMPLATE_SHARE_MAIL')],
+            ['href' => $this->getService(UrlFormatter::class)->href('sendmail'), 'icon' => 'mail', 'label' => _t('TEMPLATE_SHARE_MAIL')],
         ];
         $html = '<div class="yw-share-buttons">' . "\n";
         foreach ($targets as $target) {
@@ -84,7 +84,7 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
                 . ' class="bouton_share" title="' . htmlspecialchars($target['label'], ENT_QUOTES) . '"'
                 . ' aria-label="' . htmlspecialchars($target['label'], ENT_QUOTES) . '"'
                 . ($external ? ' target="_blank" rel="noopener noreferrer"' : '')
-                . '><i class="' . $target['icon'] . ' fa-2x" aria-hidden="true"></i></a>' . "\n";
+                . '><svg class="yw-icon yw-icon--2x" aria-hidden="true"><use href="src/assets/icons.svg#' . $target['icon'] . '"/></svg></a>' . "\n";
         }
         $html .= '</div>' . "\n";
         $html .= '<br /><br />' . "\n";

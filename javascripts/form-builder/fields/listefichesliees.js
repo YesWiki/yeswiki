@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_LINKEDENTRIES_LABEL'),
     name: 'listefichesliees',
     attrs: { type: 'listefichesliees' },
-    icon: '<i class="fas fa-th-list"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#list-details"/></svg>'
   },
   attributes: {
     name: { label: _t('BAZ_FORM_EDIT_LISTEFICHES_FORMID_LABEL'), value: '' },

@@ -5,12 +5,12 @@
     <div class="input-group file-or-url-input">
         {% if value %}
             {% if isUrl %}
-                <span class="url-indicator"><i class="fa fa-link"></i></span>
+                <span class="url-indicator"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg></span>
             {% endif %}
             <a href="{{ fileUrl }}" data-id="{{ field.name }}" target="_blank" {% if not isUrl %}download="{{ shortFileName }}"{% endif %}>{{ shortFileName }}</a>
             &nbsp;-&nbsp;
             <label class="yw-btn yw-btn--sm">
-                <i class="fa fa-pencil-alt"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
                 {{ _t('BAZ_MODIFIER_FICHIER') }}
                 {% set style = 'display:none;' %}
                 {{ block('inputblock') }}
@@ -23,7 +23,7 @@
              {% else %}
                 <button class="yw-btn yw-btn--sm yw-btn--danger" disabled="disabled"
                     data-toggle="tooltip" data-placement="bottom" title="{{ _t('BAZ_DROIT_INSUFFISANT') }}">
-                    <i class="fa fa-trash"></i>
+                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
                     {{ _t('BAZ_SUPPRIMER') }}
                 </button>
             {% endif %}
@@ -38,12 +38,12 @@
                 <ul class="yw-nav" role="tablist">
                     <li role="presentation" class="active">
                         <a href="#{{ field.propertyName }}-upload" aria-controls="{{ field.propertyName }}-upload" role="tab" data-toggle="tab">
-                            <i class="fa fa-upload"></i> {{ _t('BAZ_UPLOAD_FILE') }}
+                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#upload"/></svg> {{ _t('BAZ_UPLOAD_FILE') }}
                         </a>
                     </li>
                     <li role="presentation">
                         <a href="#{{ field.propertyName }}-url" aria-controls="{{ field.propertyName }}-url" role="tab" data-toggle="tab">
-                            <i class="fa fa-link"></i> {{ _t('BAZ_URL') }}
+                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg> {{ _t('BAZ_URL') }}
                         </a>
                     </li>
                 </ul>

@@ -29,15 +29,15 @@
           </td>
           <td>
             <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_RECHERCHER') }}" href="{{ url({ params: { vue: 'consulter', action: 'recherche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
-              <i class="fa fa-search icon-search"></i>
+              <svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#search"/></svg>
             </a>
             <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}" href="{{ url({ params: { vue: 'saisir', action: 'saisir_fiche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
-              <i class="fa fa-plus icon-plus"></i>
+              <svg class="yw-icon icon-plus" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
             </a>
           </td>
           <td>
             <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_RSS') }}" href="{{ url({ handler: 'rss', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-              <i class="fa fa-signal"></i>
+              <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chart-bar"/></svg>
             </a>
             <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/csv'}) }}" data-toggle="tooltip" data-placement="bottom">
               CSV
@@ -76,32 +76,32 @@
             <div class="create-actions">
             {% if form.canEdit %}
             <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CLONE_FORM') }}" href="{{ url({ params: { vue: 'formulaire', action: 'clone', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-              <i class="far fa-clone"></i>
+              <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg>
             </a>
             {% else %}
               <button type="button" class="yw-btn yw-btn--sm" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
-                <i class="far fa-clone"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg>
               </button>
             {% endif %}
             {% if form.canEdit %}
               <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_MODIFIER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'modif', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-                <i class="fa fa-pencil-alt"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               </a>
             {% else %}
               <button type="button" class="yw-btn yw-btn--sm" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
-                <i class="fa fa-pencil-alt"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               </button>
             {% endif %}
             {% if form.isActivityPubEnabled %}
               <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_GESTION_ABONNEMENTS') }}" href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-                <i class="fa fa-user-plus"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>
               </a>
             {% endif %}
             {% if form.bookmarklet %}
               {# entry_bookmarklet configured: the install widget lives here now, not in
                  the entry form (ticket 27, ADR-0010) #}
               <a class="yw-btn yw-btn--sm" title="{{ _t('FORM_EDIT_BOOKMARKLET') }}" data-toggle="collapse" href="#bookmarklet-{{ key }}" data-placement="bottom">
-                <i class="fa fa-bookmark"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#bookmark"/></svg>
               </a>
             {% endif %}
             </div>
@@ -118,17 +118,17 @@
             <div class="erase-actions">
             {% if form.canDelete %}
               <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
-                <i class="fas fa-eraser"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eraser"/></svg>
               </a>
               <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_delete', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
-                <i class="fa fa-trash"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
               </a>
             {% else %}
               <button type="button" class="yw-btn yw-btn--sm yw-btn--danger" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
-                <i class="fas fa-eraser"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eraser"/></svg>
               </button>
               <button type="button" class="yw-btn yw-btn--sm yw-btn--danger" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
-                <i class="fa fa-trash"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
               </button>
             {% endif %}
             </div>
@@ -147,7 +147,7 @@
 {% if userIsAdmin and not isWikiHibernated %}
   <a class="yw-btn yw-btn--primary" href="{{ url({ params: { vue: 'formulaire', action: 'new' }}) }}">
     {% block createformbutton %}
-      <i class="fa fa-plus icon-plus icon-white"></i>
+      <svg class="yw-icon icon-plus icon-white" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
       {{ _t('BAZ_NOUVEAU_FORMULAIRE') }}
     {% endblock createformbutton %}
   </a>

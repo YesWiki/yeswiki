@@ -6,10 +6,10 @@
     {{ value }}
     {% if isLoggedUser %}
         <a class="btn btn-xs btn-default" href="{{ editUrl }}">
-            <i class="fa fa-pencil-alt"></i>{{ _t('BAZ_EDIT_MY_ENTRY') }}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>{{ _t('BAZ_EDIT_MY_ENTRY') }}
         </a>
         <a  class="btn btn-xs btn-default" href="{{ settingsUrl }}">
-            <i class="fa fa-lock"></i>{{ _t('BAZ_CHANGE_PWD') }}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#lock"/></svg>{{ _t('BAZ_CHANGE_PWD') }}
         </a>
     {% endif %}
 {% endblock %}

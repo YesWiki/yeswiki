@@ -19,12 +19,12 @@
     <small>{{ _t('SYNDICATION_SOURCE') ~ ' : ' ~ page.source }}</small>
     {% endif %}
     {% if page.linkToEntry is not empty %}
-    <a class="bazar-actions" href="{{ page.linkToEntry }}" title="{{ _t('BAZ_SEE_ENTRY') }}"><i class="fa fa-eye"></i></a>
-    <a class="bazar-actions" href="{{ page.linkToEntry ~ '/edit' }}" title="{{ _t('BAZ_MODIFIER_LA_FICHE') }}"><i class="fas fa-edit"></i></a>
-    <a class="bazar-actions text-danger" href="{{ page.linkToEntry ~ '/deletepage' }}" title="{{ _t('BAZ_SUPPRIMER_LA_FICHE') }}"><i class="fa fa-trash"></i></a>
+    <a class="bazar-actions" href="{{ page.linkToEntry }}" title="{{ _t('BAZ_SEE_ENTRY') }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eye"/></svg></a>
+    <a class="bazar-actions" href="{{ page.linkToEntry ~ '/edit' }}" title="{{ _t('BAZ_MODIFIER_LA_FICHE') }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#edit"/></svg></a>
+    <a class="bazar-actions text-danger" href="{{ page.linkToEntry ~ '/deletepage' }}" title="{{ _t('BAZ_SUPPRIMER_LA_FICHE') }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg></a>
     {% endif %}
     {% if page.mappingInput is not empty %}
-    <a class="bazar-actions" href="{{ url({ params: { mapping: page.mappingInput|e('url') }}) }}" title="{{ _t('SYNDICATION_COPY_IN_WIKI') }}"><i class="fa fa-plus"></i></a>
+    <a class="bazar-actions" href="{{ url({ params: { mapping: page.mappingInput|e('url') }}) }}" title="{{ _t('SYNDICATION_COPY_IN_WIKI') }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg></a>
     {% endif %}
   </h3>
   <div class="description_rss">{{ page.description|raw }}</div>

@@ -3,7 +3,7 @@ export default {
     label: _t('FORM_BUILDER_HIDDEN_LABEL'),
     name: 'hidden',
     attrs: { type: 'hidden' },
-    icon: '<i class="fas fa-eye-slash"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eye-off"/></svg>'
   },
   defaultIdentifier: 'bf_cache',
   attributes: {},

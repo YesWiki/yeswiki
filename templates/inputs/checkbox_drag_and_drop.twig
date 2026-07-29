@@ -6,7 +6,7 @@
 	<div class="col-lg-4 export-table-container">
 		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_AVAILABLE_ITEM') }}<img loading="lazy" class="tooltip_aide" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO')  ~ "'+'." }}" alt="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ITEM_INFO')  ~ "'+'." }}" src="src/assets/images/bazar/aide.png" width="16" height="16" /></h4>
 		<div class="input-group input-prepend input-append">
-			<span class="input-group-addon add-on"><i class="fas fa-filter"></i></span>
+			<span class="input-group-addon add-on"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#filter"/></svg></span>
 			<input class="checkbox-filter-input yw-input input-sm" type="text" id="filter-{{field.propertyName}}" value="" placeholder="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_FILTER_ITEM') }}" style="background: var(--neutral-light-color);;"/>
 			<span class="input-group-btn add-on">
 				<button class="yw-btn yw-btn--sm btn-erase-filter" type="button">&times;</button>
@@ -17,7 +17,7 @@
 			{{ options|length - nb_selected }}</span></span>
 	<h5>{{ formName }}
 		<a class="pull-right yw-btn yw-btn--sm yw-btn--success checkbox-select-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}" href="#">
-		  <i class="fas fa-plus"></i> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}</a>
+		  <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ADD_ALL') }}</a>
 	</h5>
 	<div class="clearfix"></div>
 	  <div style="max-height:{{ height ?? 300 }}px;overflow:auto;">
@@ -28,23 +28,23 @@
 					{% set selected = false %}
 					{% block li_item %}
 					<li class="list-group-item">						
-						<span class="pull-left {{ not selected ? 'hide ' }}movable btn btn-default btn-xs"><i class="fas fa-arrows-alt-v"></i></span>
+						<span class="pull-left {{ not selected ? 'hide ' }}movable btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrows-vertical"/></svg></span>
 						<div class="checkbox-icons-up-down{{ not selected ? ' hide ' }}">
-							<div class="checkbox-icons-up btn btn-default btn-xs"><i class="fas fa-chevron-up"></i></div>
-							<div class="checkbox-icons-down btn btn-default btn-xs"><i class="fas fa-chevron-down"></i></div>
+							<div class="checkbox-icons-up btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-up"/></svg></div>
+							<div class="checkbox-icons-down btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-down"/></svg></div>
 						</div>
 						<div class="checkbox-icon-column-left">
-							<span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><i class="fas fa-arrows-alt-h"></i></span>
+							<span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrows-horizontal"/></svg></span>
 							{%~ block link_for_entry ~%}
 							{%~ endblock ~%}
 						</div>
 						<input type="checkbox" id="{{ field.propertyName }}_{{ item_id }}" value="1" name="{{ field.propertyName  }}[{{ item_id }}]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
 						<span class="list-item-text">{{ item|striptags }}</span>
 						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
-							<i class="fas fa-plus"></i>
+							<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
 						</a>
 						<a class="btn btn-xs btn-danger remove-page-item{{ not selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
-							<i class="fas fa-minus"></i>
+							<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#minus"/></svg>
 						</a>
 					</li>
 					{% endblock %}
@@ -60,7 +60,7 @@
 	<div class="col-lg-8 import-table-container">
 		<h4>{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_YOUR') }} {{ name }}<img loading="lazy" class="tooltip_aide" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO') }}" alt="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_ORDER_ITEM_INFO') }}" src="src/assets/images/bazar/aide.png" width="16" height="16" />
 		<a class="pull-right yw-btn yw-btn--sm yw-btn--danger checkbox-remove-all" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL') }}" href="#">
-		  <i class="fas fa-minus"></i> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL') }}
+		  <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#minus"/></svg> {{ _t('BAZ_DRAG_n_DROP_CHECKBOX_REMOVE_ALL') }}
 		</a></h4>
 		<div class="clearfix"></div>
 		<div class="well" style="max-height:{{ height ? height + 110 : 410}}px;overflow:auto;">

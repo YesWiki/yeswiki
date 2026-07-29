@@ -52,7 +52,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
             $output .= '<form id="ajax-mail-form-handler" class="ajax-mail-form" data-page-tag="' . htmlspecialchars($this->getService(PageContext::class)->getTag()) . '" data-field="' . $field . '">
                 <div class="form-group">
                   <div class="input-group">
-                    <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
+                    <div class="input-group-addon"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg></div>
                     <input required class="form-control" type="email" name="email" value=""
                         placeholder="' . _t('CONTACT_YOUR_MAIL') . '" />
                   </div>
@@ -66,7 +66,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
                         placeholder="' . _t('CONTACT_YOUR_MESSAGE') . '"></textarea>
                 </div>
                 <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
-                  <i class="fa fa-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
+                  <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
                 </button>
             </form>';
         } elseif ($aclService->hasAccess('read') && $this->getService(AuthenticationService::class)->getLoggedUser()) {
@@ -77,14 +77,14 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
             <form id="ajax-mail-form-handler" class="ajax-mail-form" data-page-tag="' . htmlspecialchars($this->getService(PageContext::class)->getTag()) . '">
               <div class="form-group">
                 <div class="input-group">
-                  <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
+                  <div class="input-group-addon"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg></div>
                   <input required class="form-control" type="email" name="email" value=""
                         placeholder="' . _t('CONTACT_YOUR_MAIL') . '" />
                 </div>
               </div>
               <div class="form-group">
                 <div class="input-group">
-                  <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
+                  <div class="input-group-addon"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg></div>
                   <input required class="form-control" type="email" name="mail"
                             value="" placeholder="' . _t('CONTACT_TO_PLACEHOLDER') . '" />
                 </div>
@@ -94,7 +94,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
                       value="" placeholder="' . _t('CONTACT_SUBJECT') . '" />
               </div>
               <button class="btn btn-lg btn-block btn-primary mail-submit" type="submit" name="submit">
-                <i class="fa fa-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
               </button>
               <input type="hidden" name="type" value="mail" />
             </form>';

@@ -1,6 +1,6 @@
 {% if first == true %}
 <div id="yeswiki-comments-{{ tag }}" class="yeswiki-page-comments">
-	<p><strong><i class="fa fa-comments"></i> {{ _t('COMMENTS') }}</strong></p>
+	<p><strong><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#messages"/></svg> {{ _t('COMMENTS') }}</strong></p>
 {% endif %}
 	{% for idcom, comment in comments %}
 	  {% include '@core/comment.twig' with comment %}

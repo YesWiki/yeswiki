@@ -116,7 +116,7 @@
 
             <div class="yw-form-group">
                 <button type="button" id="acf-reset" class="yw-btn yw-btn--sm">
-                    <i class="fa fa-times"></i> {{ _t('YW_CANCEL') }}
+                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg> {{ _t('YW_CANCEL') }}
                 </button>
             </div>
 
@@ -128,7 +128,7 @@
        -------------------------------------------------------- #}
     <div class="admin-content-table-wrap">
         <div id="table-spinner" class="htmx-indicator admin-content-spinner">
-            <i class="fa fa-spinner fa-spin fa-2x yw-text-muted"></i>
+            <svg class="yw-icon yw-icon--spin yw-icon--2x yw-text-muted" aria-hidden="true"><use href="src/assets/icons.svg#loader-2"/></svg>
         </div>
 
     <div id="admin-content-table-container"
@@ -151,14 +151,14 @@
                 data-yw-modal-target="#modal-acls"
                 id="btn-bulk-acls"
                 onclick="adminContent.populateModal('acls')">
-            <i class="fa fa-lock"></i> {{ _t('ADMIN_CONTENT_ACL_LABEL') }}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#lock"/></svg> {{ _t('ADMIN_CONTENT_ACL_LABEL') }}
         </button>
 
         <button type="button" class="yw-btn yw-btn--info yw-btn--sm"
                 data-yw-modal-target="#modal-theme"
                 id="btn-bulk-theme"
                 onclick="adminContent.populateModal('theme')">
-            <i class="fa fa-paint-brush"></i> {{ _t('ADMIN_CONTENT_BULK_THEME') }}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#brush"/></svg> {{ _t('ADMIN_CONTENT_BULK_THEME') }}
         </button>
         {% endif %}
 
@@ -166,11 +166,11 @@
                 data-yw-modal-target="#modal-delete"
                 id="btn-bulk-delete"
                 onclick="adminContent.populateModal('delete')">
-            <i class="fa fa-trash"></i> {{ _t('DELETE') }}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg> {{ _t('DELETE') }}
         </button>
 
         <button type="button" class="yw-btn yw-btn--sm" onclick="adminContent.clearSelection()">
-            <i class="fa fa-times-circle"></i> {{ _t('YW_CANCEL') }}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#circle-x"/></svg> {{ _t('YW_CANCEL') }}
         </button>
     </div>
 
@@ -185,7 +185,7 @@
                 <div class="yw-modal__header">
                     <button type="button" class="yw-close" data-yw-dismiss="modal">&times;</button>
                     <h4 class="yw-modal__title">
-                        <i class="fa fa-trash yw-text-danger"></i> {{ _t('DELETE') }}
+                        <svg class="yw-icon yw-text-danger" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg> {{ _t('DELETE') }}
                     </h4>
                 </div>
                 <form hx-post="{{ bulkApiUrl }}"
@@ -194,7 +194,7 @@
                       id="form-delete">
                     <div class="yw-modal__body">
                         <div class="yw-alert yw-alert--danger">
-                            <i class="fa fa-exclamation-triangle"></i>
+                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#alert-triangle"/></svg>
                             <strong>{{ _t('ADMIN_CONTENT_IRREVERSIBLE_ACTION') }}</strong> —
                             {{ _t('ADMIN_CONTENT_DELETE_WARNING') }}
                         </div>
@@ -208,7 +208,7 @@
                     <div class="yw-modal__footer">
                         <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
                         <button type="submit" class="yw-btn yw-btn--danger">
-                            <i class="fa fa-trash"></i> {{ _t('DELETE') }}
+                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg> {{ _t('DELETE') }}
                         </button>
                     </div>
                 </form>
@@ -223,7 +223,7 @@
                 <div class="yw-modal__header">
                     <button type="button" class="yw-close" data-yw-dismiss="modal">&times;</button>
                     <h4 class="yw-modal__title">
-                        <i class="fa fa-lock yw-text-warning"></i> {{ _t('ADMIN_CONTENT_EDIT_ACL_TITLE') }}
+                        <svg class="yw-icon yw-text-warning" aria-hidden="true"><use href="src/assets/icons.svg#lock"/></svg> {{ _t('ADMIN_CONTENT_EDIT_ACL_TITLE') }}
                     </h4>
                 </div>
                 <form hx-post="{{ bulkApiUrl }}"
@@ -293,7 +293,7 @@
                     <div class="yw-modal__footer">
                         <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
                         <button type="submit" class="yw-btn yw-btn--warning">
-                            <i class="fa fa-save"></i> {{ _t('ACLS_UPDATE') }}
+                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#device-floppy"/></svg> {{ _t('ACLS_UPDATE') }}
                         </button>
                     </div>
                 </form>
@@ -308,7 +308,7 @@
                 <div class="yw-modal__header">
                     <button type="button" class="yw-close" data-yw-dismiss="modal">&times;</button>
                     <h4 class="yw-modal__title">
-                        <i class="fa fa-paint-brush yw-text-info"></i> {{ _t('GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES') }}
+                        <svg class="yw-icon yw-text-info" aria-hidden="true"><use href="src/assets/icons.svg#brush"/></svg> {{ _t('GERERTHEMES_MODIFY_THEME_FOR_SELECTED_PAGES') }}
                     </h4>
                 </div>
                 <form hx-post="{{ bulkApiUrl }}"
@@ -366,7 +366,7 @@
                     <div class="yw-modal__footer">
                         <button type="button" class="yw-btn" data-yw-dismiss="modal">{{ _t('YW_CANCEL') }}</button>
                         <button type="submit" class="yw-btn yw-btn--info">
-                            <i class="fa fa-save"></i> {{ _t('ACLS_UPDATE') }}
+                            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#device-floppy"/></svg> {{ _t('ACLS_UPDATE') }}
                         </button>
                     </div>
                 </form>

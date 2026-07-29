@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_GEO_LABEL'),
     name: 'map',
     attrs: { type: 'map' },
-    icon: '<i class="fas fa-map-marked-alt"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#map-2"/></svg>'
   },
   defaultIdentifier: 'bf_geolocation',
   attributes: {

@@ -284,11 +284,15 @@ class TemplateHelperService
         if (empty($icon)) {
             return '';
         }
-        if (preg_match('/\s/', $icon)) {
-            return '<i class="' . $icon . '"></i>';
+        // Tabler sprite name, or a historic FontAwesome class string that maps onto it
+        $sprite = $this->container->get(TemplateEngine::class)->legacyIconToSprite($icon);
+        if ($sprite !== null) {
+            return $sprite;
         }
 
-        return '<i class="icon-' . $icon . ' fa fa-' . $icon . '"></i>';
+        // unmapped stored value: emit it as-is (renders only if the site still ships a
+        // matching icon css)
+        return '<i class="' . $icon . '"></i>';
     }
 
     public function postFormat($output)

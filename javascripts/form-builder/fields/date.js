@@ -5,7 +5,7 @@ export default {
     label: _t('FORM_BUILDER_DATE_LABEL'),
     name: 'date',
     attrs: { type: 'date' },
-    icon: '<i class="far fa-calendar-alt"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar-event"/></svg>'
   },
   defaultIdentifier: 'bf_date_debut_evenement',
   attributes: {

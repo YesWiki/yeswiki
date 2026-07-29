@@ -1,7 +1,7 @@
 {% extends "@core/default.twig" %}
 
 {% block connected %}
-    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle {{ btnclass }}"><i class="fa fa-user"></i> {{ user }} <span class="caret"></span></button>
+    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle {{ btnclass }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg> {{ user }} <span class="caret"></span></button>
     <ul class="dropdown-menu">
         {{ block('loginActions') }}
     </ul>
@@ -22,7 +22,7 @@
 {% endblock %}
 
 {% block notConnected %}
-    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle {{ btnclass }}"><i class="fa fa-user"></i> {{ _t('LOGIN_LOGIN') }} <span class="caret"></span></button>
+    <button data-toggle="dropdown" class="btn btn-default dropdown-toggle {{ btnclass }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg> {{ _t('LOGIN_LOGIN') }} <span class="caret"></span></button>
     <div class="dropdown-menu">
         {{ block('form') }}
     </div>

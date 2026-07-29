@@ -14,7 +14,7 @@
                 download{{ shortFileName ? '='~ shortFileName  : ''}}
             {% endif %}>
         {% if isUrl|default(false) %}
-            <i class="fa fa-external-link-alt"></i> {{ _t('BAZ_OPEN_LINK') }}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#external-link"/></svg> {{ _t('BAZ_OPEN_LINK') }}
         {% else %}
             {{ _t('TAGS_DOWNLOAD') }}
         {% endif %}

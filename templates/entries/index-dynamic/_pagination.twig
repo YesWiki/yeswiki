@@ -1,7 +1,7 @@
 {% block pagination %}
   <ul class="pagination" v-if="pagination && entriesToDisplay.length > 0 && pages.length > 1">
     <li @click="currentPage = 0" :class="{disabled: currentPage == 0}">
-      <i class="fa fa-chevron-left"></i>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-left"/></svg>
     </li>
     <template v-for="page in pages">
       <li v-if="page == 'divider'">...</li>
@@ -10,7 +10,7 @@
       </li>
     </template>          
     <li @click="currentPage = pages.length - 1" :class="{disabled: currentPage == pages.length - 1}">
-      <i class="fa fa-chevron-right"></i>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-right"/></svg>
     </li>
   </ul>
 {% endblock %}

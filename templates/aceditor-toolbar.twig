@@ -70,7 +70,7 @@
 <div class="btn-group">
   <a class="yw-btn aceditor-btn aceditor-btn-help" data-remote="true"
      href="{{ url({ tag: 'ReglesDeFormatage' }) }}" title="{{ _t('ACEDITOR_HELP') }}">
-    <i class="fa fa-question-circle"></i>
+    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#help-circle"/></svg>
   </a>
 </div>
 
@@ -90,14 +90,14 @@
     INLINE_CODE: { yeswiki: ['`', '`'], html: ['<code>', '</code>'] },
     COMMENT: { yeswiki: ['{#', '#}'] },
 
-    BOLD: { yeswiki: ['**', '**'], icon: "fa fa-bold" },
-    ITALIC: { yeswiki: ['//', '//'], icon: "fa fa-italic" },
-    UNDERLINE: { yeswiki: ['__', '__'], icon: "fa fa-underline" },
-    STRIKE: { yeswiki: ['@@', '@@'], icon: "fa fa-strikethrough" },
-    LIST: { yeswiki: [' - ', ''], icon: "fa fa-list" },
-    LINE: { yeswiki: ['\n------\n', ''], icon: "fa fa-minus icon-minus" },
-    LINK: { icon: "fa fa-link" },
-    NEWPAGE: { icon: "fa fa-plus-square" },
+    BOLD: { yeswiki: ['**', '**'], icon: "bold" },
+    ITALIC: { yeswiki: ['//', '//'], icon: "italic" },
+    UNDERLINE: { yeswiki: ['__', '__'], icon: "underline" },
+    STRIKE: { yeswiki: ['@@', '@@'], icon: "strikethrough" },
+    LIST: { yeswiki: [' - ', ''], icon: "list" },
+    LINE: { yeswiki: ['\n------\n', ''], icon: "minus" },
+    LINK: { icon: "link" },
+    NEWPAGE: { icon: "square-plus" },
   } %}
 
   {% set syntax = DELIMITERS[name|upper] %}
@@ -106,7 +106,7 @@
   <a title="{{ label }}" class="{{ btnClass }} aceditor-btn aceditor-btn-{{ name }}"
      data-lft="{{ syntax.yeswiki|first }}" data-rgt="{{ syntax.yeswiki|last }}">
     {% if syntax.icon %}
-      <i class="{{ syntax.icon }}"></i>
+      {{ icon(syntax.icon) }}
     {% else %}
       {{ (syntax.html|first ~ label ~ syntax.html|last)|raw }}
     {% endif %}

@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_IMAGE_LABEL'),
     name: 'image',
     attrs: { type: 'image' },
-    icon: '<i class="fas fa-image"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#photo"/></svg>'
   },
   defaultIdentifier: 'bf_image',
   attributes: {

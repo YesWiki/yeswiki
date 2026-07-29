@@ -42,7 +42,7 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
           <h2>
                       <span>{{ fiche.bf_titre|raw }}</span>
                       <strong>
-                          <i class="fa fa-fw fa-star"></i>
+                          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#star"/></svg>
                           {{ fiche.bf_baseline|default('')|raw }}
                       </strong>
                   </h2>
@@ -63,7 +63,7 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
             </div>
           </div>
           <a class="mc-btn-action">
-            <i class="fa fa-bars"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#menu-2"/></svg>
           </a>
           <div class="mc-footer">
             <h4 class="hide">En savoir plus</h4>

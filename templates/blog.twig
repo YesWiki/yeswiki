@@ -29,7 +29,7 @@
 				{% if showdate %}
 				<small>
 					<a href="{{ fiche.url|raw }}/revisions">
-						<i class="far fa-calendar-alt"></i>
+						<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar-event"/></svg>
 					</a>
 					&nbsp;{{ fiche.updated_at|date('d.m.Y') }}
 				</small>
@@ -68,7 +68,7 @@
 				{% if showdate %}
 				<small>
 					<a href="{{ fiche.url|raw }}/revisions">
-						<i class="far fa-calendar-alt"></i>
+						<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar-event"/></svg>
 					</a>
 					&nbsp;{{ fiche.updated_at|date('d.m.Y') }}
 				</small>

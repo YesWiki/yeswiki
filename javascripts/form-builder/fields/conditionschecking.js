@@ -3,13 +3,13 @@ export default {
     label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_LABEL'),
     name: 'conditionschecking',
     attrs: { type: 'conditionschecking' },
-    icon: '<i class="fas fa-project-diagram"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#sitemap"/></svg>'
   },
   // Define an entire group of fields to be added to the stage at a time.
   set: {
     label: _t('BAZ_FORM_EDIT_CONDITIONS_CHECKING_MAIN_LABEL'),
     name: 'conditionschecking',
-    icon: '<i class="fas fa-project-diagram"></i>',
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#sitemap"/></svg>',
     fields: [
       {
         type: 'conditionschecking',

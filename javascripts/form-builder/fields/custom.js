@@ -3,7 +3,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_CUSTOM_LABEL'),
     name: 'custom',
     attrs: { type: 'custom' },
-    icon: '<i class="fas fa-question-circle"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#help-circle"/></svg>'
   },
   // unknown types keep their positional values as numeric string keys in the
   // stored JSON; expose them as generic params

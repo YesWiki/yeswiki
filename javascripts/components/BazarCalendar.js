@@ -349,7 +349,7 @@ const BazarCalendar = {
     <div class="bazar-list-dynamic-template-container">
       <!-- SideNav to display entry -->
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
-        <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
+        <div class="btn-close" @click="selectedEntry = null"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg></div>
         <div v-html="selectedEntry.html_render"></div>
       </div>
       <ButtonIcs v-if="this.params.showicalbutton" :bazarcalendar="this"/> 

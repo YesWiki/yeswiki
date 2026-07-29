@@ -94,7 +94,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
         if (!$paramPhrase) {
             echo $this->getService(TemplateEngine::class)->formOpen('', '', 'get');
             echo '<div class="input-prepend input-append input-group input-group-lg">
-                  <span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
+                  <span class="add-on input-group-addon"><svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#search"/></svg></span>
                   <input name="phrase" type="text" class="form-control" placeholder="' . (($label) ? $label : '') . '" size="', $size, '" value="', $phrase, '" >
                   <span class="input-group-btn">
                   <input type="submit" class="btn btn-primary btn-lg" value="', $button, '" />

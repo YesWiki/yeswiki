@@ -5,7 +5,7 @@
         {% if connected %}
           {{ title }} <small><span class="max-reaction">{{maxReaction}}</span> {{_t('REACTION_NB_REACTIONS_LEFT')}}</small>
         {% else %}
-          {{ _t('REACTION_TO_ALLOW_REACTION') }}, <a href="#LoginModal" class="yw-btn" data-toggle="modal"><i class="fas fa-user"></i> 
+          {{ _t('REACTION_TO_ALLOW_REACTION') }}, <a href="#LoginModal" class="yw-btn" data-toggle="modal"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg> 
           {{ _t('REACTION_PLEASE_LOGIN') }}</a>
         {% endif %}
       {% endblock title %}

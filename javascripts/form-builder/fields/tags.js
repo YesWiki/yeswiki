@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_TAGS_LABEL'),
     name: 'tags',
     attrs: { type: 'tags' },
-    icon: '<i class="fas fa-tags"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#tags"/></svg>'
   },
   attributes: {
     hint: { label: _t('BAZ_FORM_EDIT_HELP'), value: '' },

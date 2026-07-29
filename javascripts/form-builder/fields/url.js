@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_URL_LABEL'),
     name: 'url',
     attrs: { type: 'url' },
-    icon: '<i class="fas fa-link"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg>'
   },
   attributes: {
     displayvideo: {

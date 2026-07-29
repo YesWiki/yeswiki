@@ -14,7 +14,7 @@
     "postinstall": "./src/extract-files-from-node-modules.sh && yarn build-theme"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.15.4",
+    "@tabler/icons": "^3.46.0",
     "ace-builds": "^1",
     "docsify": "5.0.0-rc.4",
     "docsify-copy-code": "^2.1.1",

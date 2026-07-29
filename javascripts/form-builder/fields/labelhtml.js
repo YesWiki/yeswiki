@@ -3,7 +3,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_CUSTOM_HTML_LABEL'),
     name: 'labelhtml',
     attrs: { type: 'labelhtml' },
-    icon: '<i class="fas fa-code"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#code"/></svg>'
   },
   attributes: {
     label: {

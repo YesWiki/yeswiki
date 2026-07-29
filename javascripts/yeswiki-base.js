@@ -199,7 +199,7 @@ function checkAll(state) {
         const link = document.createElement('a')
         link.href = href
         link.className = 'yw-btn yw-btn--block'
-        link.innerHTML = '<i class="fa fa-pencil-alt"></i> '
+        link.innerHTML = '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg> '
         link.appendChild(
           document.createTextNode(`${_t('YESWIKIMODAL_EDIT_MSG')} ${pagewiki}`)
         )

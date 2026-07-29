@@ -28,8 +28,8 @@
                     aria-expanded="false">
                 <span v-html="currentSort.label"></span>
                 <template v-if="currentSort.label">
-                    <i v-if="currentSort.order == 'asc'" class="fas fa-arrow-down"></i>
-                    <i v-else class="fas fa-arrow-up"></i>
+                    <svg class="yw-icon" aria-hidden="true" v-if="currentSort.order == 'asc'"><use href="src/assets/icons.svg#arrow-down"/></svg>
+                    <svg class="yw-icon" aria-hidden="true" v-else><use href="src/assets/icons.svg#arrow-up"/></svg>
                 </template>
                 <span class="caret"></span>
             </button>
@@ -38,8 +38,8 @@
                     <a href="#" @click.prevent="currentSort = sort">
                         {{ _t("BAZ_SORT_BY") }}
                         <span v-html="sort.label"></span>
-                        <i v-if="sort.order == 'asc'" class="fas fa-arrow-down"></i>
-                        <i v-else class="fas fa-arrow-up"></i>
+                        <svg class="yw-icon" aria-hidden="true" v-if="sort.order == 'asc'"><use href="src/assets/icons.svg#arrow-down"/></svg>
+                        <svg class="yw-icon" aria-hidden="true" v-else><use href="src/assets/icons.svg#arrow-up"/></svg>
                     </a>
                 </li>
             </ul>

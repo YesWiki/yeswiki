@@ -30,11 +30,11 @@
         {{ label }}
         <span class="sort-icon{% if isActive %} active{% endif %}">
             {%- if isActive -%}
-                {%- if currentDir == 'asc' -%}<i class="fa fa-sort-up"></i>
-                {%- else -%}<i class="fa fa-sort-down"></i>
+                {%- if currentDir == 'asc' -%}<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#caret-up"/></svg>
+                {%- else -%}<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#caret-down"/></svg>
             {%- endif -%}
         {%- else -%}
-            <i class="fa fa-sort yw-text-muted"></i>
+            <svg class="yw-icon yw-text-muted" aria-hidden="true"><use href="src/assets/icons.svg#arrows-sort"/></svg>
         {%- endif -%}
     </span>
 </a>
@@ -85,7 +85,7 @@
             {% if pages is empty %}
                 <tr>
                     <td colspan="7" class="yw-text-center yw-text-muted admin-content-no-results">
-                        <i class="fa fa-search"></i> {{ _t("ADMIN_CONTENT_NO_RESULTS") }}
+                        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#search"/></svg> {{ _t("ADMIN_CONTENT_NO_RESULTS") }}
                     </td>
                 </tr>
             {% else %}
@@ -139,13 +139,13 @@
                                 <strong>{{ _t("TEMPLATE_OWNER") }}: {{ page.owner ? page.owner|e : _t("ADMIN_CONTENT_NO_OWNER") }}</strong>
                             </div>
                             <div title="{{ _t("ACLS_READ") }}">
-                                <i class="fa fa-eye yw-text-muted"></i> {{ _self.aclText(page.acl_read) }}
+                                <svg class="yw-icon yw-text-muted" aria-hidden="true"><use href="src/assets/icons.svg#eye"/></svg> {{ _self.aclText(page.acl_read) }}
                             </div>
                             <div title="{{ _t("ACLS_WRITE") }}">
-                                <i class="fa fa-pencil-alt yw-text-muted"></i> {{ _self.aclText(page.acl_write) }}
+                                <svg class="yw-icon yw-text-muted" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg> {{ _self.aclText(page.acl_write) }}
                             </div>
                             <div title="{{ _t("COMMENTS") }}">
-                                <i class="fa fa-comment yw-text-muted"></i> {{ _self.aclText(page.acl_comment) }}
+                                <svg class="yw-icon yw-text-muted" aria-hidden="true"><use href="src/assets/icons.svg#message-circle"/></svg> {{ _self.aclText(page.acl_comment) }}
                             </div>
                         </td>
                         <td class="col-theme">

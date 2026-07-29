@@ -4,8 +4,8 @@
     <img loading="lazy" class="img-responsive" src="{{image}}" alt="" />
 {% elseif image matches "/\\p{S}/u" %}
     <span class="reaction-emoji">{{image}}</span>
-{% elseif image matches "/^(fa[srb]? fa-*)/i" %}
-    <i class="reaction-fa-icons {{image}}"></i>
+{% elseif iconFromLegacy(image) %}
+    {{ iconFromLegacy(image, 'reaction-fa-icons yw-icon--lg') }}
 {% else %}
     <div class="alert alert-danger">{{ _t('REACTION_BAD_IMAGE_FORMAT') }}</div>
 {% endif %}

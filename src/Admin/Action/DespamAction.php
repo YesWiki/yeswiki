@@ -125,7 +125,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 "title=\"Voir la fiche {$page['tag']} ({$page['time']})\" " .
                 'class="btn btn-xs btn-default modalbox" ' .
                 'data-size="modal-lg" ' .
-                'data-iframe="1"><i class="fas fa-eye"></i></a>' .
+                'data-iframe="1"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eye"/></svg></a>' .
                 "</td>\n";
                     echo '<td>' .
                 '<input name="suppr[]" value="' . $page['tag'] . '" type="checkbox" /> [Suppr.!]' .
@@ -148,7 +148,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                   'title="' . _t('BAZ_SEE_ENTRY') . " {$page['tag']} ({$revision['time']})\" " .
                   'class="btn btn-xs btn-default modalbox" ' .
                   'data-size="modal-lg" ' .
-                  'data-iframe="1"><i class="fas fa-eye"></i></a>' .
+                  'data-iframe="1"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eye"/></svg></a>' .
                   "</td></tr>\n";
                     }
                     echo "</table>\n";

@@ -12,9 +12,8 @@ copy_js() { sed '/^[[:space:]]*\/\/#[[:space:]]*sourceMappingURL=/d' "$1" > "$2"
 # Copy a CSS file while stripping sourceMappingURL comments
 copy_css() { sed '/^[[:space:]]*\/\*#[[:space:]]*sourceMappingURL=/d' "$1" > "$2"; }
 
-# Fontawesome
-mkdir -p styles/vendor/fontawesome && cp -f -r node_modules/@fortawesome/fontawesome-free/webfonts styles/vendor/fontawesome
-mkdir -p styles/vendor/fontawesome/css && copy_css node_modules/@fortawesome/fontawesome-free/css/all.min.css styles/vendor/fontawesome/css/all.min.css
+# Tabler icon sprite (curated, committed): regenerate in case icon-map.json moved ahead
+node src/build-icon-sprite.mjs
 #  Vue 3 (global build for browser usage)
 mkdir -p javascripts/vendor/vue && copy_js node_modules/vue/dist/vue.global.js javascripts/vendor/vue/vue.js
 copy_js node_modules/vue/dist/vue.global.prod.js javascripts/vendor/vue/vue.min.js

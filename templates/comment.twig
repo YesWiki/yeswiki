@@ -19,13 +19,13 @@
 	<input type="hidden" class="comment-body" name="body" value="{{ comment.rawbody }}" />
 	<div class="comment-links">
 		{% if comment.linkcomment %}
-		<a href="{{ comment.linkcomment }}" class="btn-answer-comment btn btn-xs btn-default"><i class="fas fa-comment"></i> {{ _t('ANSWER')}}</a>
+		<a href="{{ comment.linkcomment }}" class="btn-answer-comment btn btn-xs btn-default"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#message-circle"/></svg> {{ _t('ANSWER')}}</a>
 		{% endif %}	
 		{% if comment.linkeditcomment %}
-		<a href="{{ comment.linkeditcomment }}" class="btn-edit-comment btn btn-xs btn-default"><i class="fas fa-edit"></i> {{ _t('MODIFY')}}</a>
+		<a href="{{ comment.linkeditcomment }}" class="btn-edit-comment btn btn-xs btn-default"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#edit"/></svg> {{ _t('MODIFY')}}</a>
 		{% endif %}	
 		{% if comment.linkdeletecomment %}
-		<a href="{{ comment.linkdeletecomment }}" class="btn-delete-comment btn btn-xs btn-danger"><i class="fas fa-trash"></i> {{ _t('DELETE')}}</a>
+		<a href="{{ comment.linkdeletecomment }}" class="btn-delete-comment btn btn-xs btn-danger"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg> {{ _t('DELETE')}}</a>
 		{% endif %}	
 	</div>
 	<div class="form-comment"></div>

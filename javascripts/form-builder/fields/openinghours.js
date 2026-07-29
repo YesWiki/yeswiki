@@ -5,7 +5,7 @@ export default {
     label: "Horaires d'ouverture",
     name: 'openinghours',
     attrs: { type: 'openinghours' },
-    icon: '<i class="far fa-calendar-alt"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar-event"/></svg>'
   },
   defaultIdentifier: 'horaires_ouverture',
   attributes: {

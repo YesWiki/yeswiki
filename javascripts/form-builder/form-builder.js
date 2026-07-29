@@ -256,7 +256,7 @@ function renderPalette() {
 // narrow screens: the sidebar is a right-side drawer behind a floating button
 function initDrawer() {
   const toggle = el(`<button type="button" class="yw-btn yw-btn--primary yw-fb__drawer-toggle"
-    aria-expanded="false" title="${esc(_t('FORM_BUILDER_ADD_FIELDS'))}"><i class="fa fa-plus"></i></button>`)
+    aria-expanded="false" title="${esc(_t('FORM_BUILDER_ADD_FIELDS'))}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg></button>`)
   toggle.addEventListener('click', () => {
     const open = container.classList.toggle('yw-fb--drawer-open')
     toggle.setAttribute('aria-expanded', open ? 'true' : 'false')
@@ -465,8 +465,8 @@ function renderCard(field) {
       ${field.data.name ? `<code class="yw-fb__card-name">${esc(field.data.name)}</code>` : ''}
       ${field.data.required === '1' ? '<span class="yw-fb__card-required">*</span>' : ''}
       <span class="yw-fb__card-actions">
-        <button type="button" class="yw-fb__card-action" data-fb-action="duplicate" title="${_t('FORM_BUILDER_DUPLICATE')}"><i class="far fa-copy"></i></button>
-        <button type="button" class="yw-fb__card-action" data-fb-action="delete" title="${_t('FORM_BUILDER_DELETE')}"><i class="far fa-trash-alt"></i></button>
+        <button type="button" class="yw-fb__card-action" data-fb-action="duplicate" title="${_t('FORM_BUILDER_DUPLICATE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg></button>
+        <button type="button" class="yw-fb__card-action" data-fb-action="delete" title="${_t('FORM_BUILDER_DELETE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg></button>
       </span>
     </div>
     <div class="yw-fb__card-body">

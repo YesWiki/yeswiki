@@ -210,7 +210,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             $searchUrl = $this->getService(UrlFormatter::class)->href('', 'api/tags');
             $html = '
-        	<i class="fas fa-tags"></i> <strong>' . _t('TAGS_TAGS') . '</strong>
+        	<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#tags"/></svg> <strong>' . _t('TAGS_TAGS') . '</strong>
         	<div class="yw-tag-input" data-yw-tag-input>' . $chips . '
         		<input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search
         		       name="search" autocomplete="off" placeholder="' . _t('TAGS_ADD_TAGS') . '"

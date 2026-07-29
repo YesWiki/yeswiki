@@ -42,7 +42,7 @@
                                     data-key="{{ key }}"
                                     onclick="javascript:deleteCSSPreset(this,'{{ _t('TEMPLATE_DELETE_CSS_PRESET') }} {{ key }} ?',
                                     '{{ url({tag:"api/templates/custom-presets/#{key}"}) }}');">
-                                    <i class="fas fa-trash"></i>
+                                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
                                 </button>
                             {% endif %}  
                         </li>

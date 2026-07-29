@@ -75,7 +75,7 @@
         data-iframe="1"
         :title="`{{ _t('MODIFY') }} ${entryId}`"
         >
-        <i class="fas fa-pencil-alt"></i>
+        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
       </a>
       <a v-if="candelete"
         :href="`{{ url({tag:'${entryId}',handler:'deletepage',params:{incomingurl:url({handler:''})}}) }}`"
@@ -84,7 +84,7 @@
         class="yw-btn yw-btn--sm yw-btn--danger btn-icon modalbox"
         :title="`{{ _t('DELETE') }} ${entryId}`"
         >
-        <i class="fas fa-trash"></i>
+        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
       </a>
       <button
         v-else-if="!isExternal"
@@ -94,7 +94,7 @@
         class="yw-btn yw-btn--sm yw-btn--danger btn-icon"
         title="{{ _t('DELETEPAGE_NOT_OWNER') }}"
         >
-        <i class="fas fa-trash"></i>
+        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
       </button>
     </template>
     <template #creationdatetranslate>{{ _t('BAZ_DATE_CREATION') }}</template>

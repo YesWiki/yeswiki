@@ -151,7 +151,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                     data-toggle="tooltip"
                     data-placement="left"
                     class="btn btn-icon favorites pull-right $extraClass">
-                        <i class="$iconClass fa-star"></i>
+                        <svg class="yw-icon $iconClass" aria-hidden="true"><use href="src/assets/icons.svg#star"/></svg>
                 </a>
             HTML;
         }
@@ -159,7 +159,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         if ($this->getRequest()->query->get('share') == '1') {
             $output .= '<a class="btn btn-sm btn-default link-share modalbox pull-right" href="'
                 . $this->getService(UrlFormatter::class)->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
-                . $this->getService(PageContext::class)->getTag() . '"><i class="fa fa-share-alt"></i>' . _t('TEMPLATE_SHARE')
+                . $this->getService(PageContext::class)->getTag() . '"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#share"/></svg>' . _t('TEMPLATE_SHARE')
                 . '</a>';
         }
 

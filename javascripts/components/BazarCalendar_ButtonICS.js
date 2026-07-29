@@ -38,6 +38,6 @@ export default {
   },
   template: `
     <a class="btn btn-primary btn-xs ical-export-button" target="blank" :href="this.href" :title="title" @mouseover="updateHref">
-      <i class="fa fa-plus"></i>&nbsp;<i class="fa fa-calendar"></i>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>&nbsp;<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calendar"/></svg>
     </a>`
 }

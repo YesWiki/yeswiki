@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_REACTIONS_FIELD'),
     name: 'reactions',
     attrs: { type: 'reactions' },
-    icon: '<i class="far fa-thumbs-up"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#thumb-up"/></svg>'
   },
   attributes: {
     label_reaction: {

@@ -37,7 +37,7 @@ export default {
         <!-- Chevron to expand children -->
         <button type="button" @click="expanded = !expanded" 
                 class="btn btn-icon btn-primary input-group-addon btn-expand" >
-          <i :class="expanded ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+          <svg class="yw-icon" aria-hidden="true"><use :href="expanded ? 'src/assets/icons.svg#chevron-up' : 'src/assets/icons.svg#chevron-down'"/></svg>
         </button>
         <!-- Label -->
         <input type="text" v-model="node.label" placeholder="${_t('LIST_TEXT')}" 
@@ -52,7 +52,7 @@ export default {
         <!-- Delete Icon -->
         <button type="button" @click="$emit('delete', node)" 
                 class="btn btn-danger btn-icon input-group-addon">
-          <i class="fa fa-trash icon-trash"></i>
+          <svg class="yw-icon icon-trash" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
         </button>
       </div>
       <div v-show="depth == 0 || expanded" class="list-node-children" 
@@ -66,7 +66,7 @@ export default {
         <div class="list-new-node input-group input-prepend">
           <button type="button" @click="addChildNode" 
                   class="btn btn-neutral btn-icon input-group-addon btn-add-child" >
-            <i class="fa fa-plus"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
           </button>
           <input type="text" v-model="newNodeLabel" 
                  :placeholder="depth > 0 ? '${_t('LIST_ADD_CHILD_NODE')}' : '${_t('LIST_ADD_NODE')}'" 

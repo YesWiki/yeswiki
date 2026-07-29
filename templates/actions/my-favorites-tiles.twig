@@ -22,7 +22,7 @@
                             onerror="javascripts:this.src='{{ "files/#{favorite.image}" }}';this.removeAttribute('onerror');"
                         >
                     {% else %}
-                        <i class="trombi-image icon-placeholder far fa-question-circle"></i>
+                        <svg class="yw-icon trombi-image icon-placeholder" aria-hidden="true"><use href="src/assets/icons.svg#help-circle"/></svg>
                     {% endif %}
                 </div>
 
@@ -38,7 +38,7 @@
                     data-user="{{ currentUser }}"
                     data-linkedFavoriteid="favoriteTile{{favorite.resource}}"
                     class="btn btn-icon btn-default btn-xs favorites user-favorite">
-                    <i class="fas fa-star"></i>
+                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#star"/></svg>
                 </a>
             </div>
         {% endfor %}

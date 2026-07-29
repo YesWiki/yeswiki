@@ -5,8 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_TEXT_LABEL'),
     name: 'text',
     attrs: { type: 'text' },
-    icon:
-      '<svg height="512pt" viewBox="0 -90 512 512" width="512pt" xmlns="http://www.w3.org/2000/svg"><path d="m452 0h-392c-33.085938 0-60 26.914062-60 60v212c0 33.085938 26.914062 60 60 60h392c33.085938 0 60-26.914062 60-60v-212c0-33.085938-26.914062-60-60-60zm20 272c0 11.027344-8.972656 20-20 20h-392c-11.027344 0-20-8.972656-20-20v-212c0-11.027344 8.972656-20 20-20h392c11.027344 0 20 8.972656 20 20zm-295-151v131h-40v-131h-57v-40h152v40zm40 91h40v40h-40zm80 0h40v40h-40zm80 0h40v40h-40zm0 0"/></svg>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#cursor-text"/></svg>'
   },
   attributes: {
     size: { label: _t('BAZ_FORM_EDIT_TEXT_SIZE'), value: '' },

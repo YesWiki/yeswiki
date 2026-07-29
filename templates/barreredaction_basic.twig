@@ -5,7 +5,7 @@
       href="{{ linkedit }}"
       class="link-edit"
     >
-      <i class="fa fa-pencil-alt"></i><span>{{ _t('TEMPLATE_EDIT_THIS_PAGE') }}</span>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg><span>{{ _t('TEMPLATE_EDIT_THIS_PAGE') }}</span>
     </a>
   {% endif %}
   {% if userIsAdminOrOwner %}
@@ -14,7 +14,7 @@
       href="{{ url({handler:'filemanager'}) }}"
       class="link-filemanager"
     >
-      <i class="fa fa-folder-open"></i>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#folder-open"/></svg>
     </a>
   {% endif %}
   {#<span class="dropup">#}
@@ -28,7 +28,7 @@
       aria-haspopup="true"
       aria-expanded="false" #}
     >
-      <i class="fas fa-copy"></i><span>{{ _t('TEMPLATE_DUPLICATE') }}</span>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg><span>{{ _t('TEMPLATE_DUPLICATE') }}</span>
       {#<span class="caret"></span>#}
     </a>
   {% endif %}
@@ -57,7 +57,7 @@
       class="link-deletepage modalbox"
       title="{{ _t('TEMPLATE_DELETE_PAGE') ~ ' ' ~ page }}"
     >
-      <i class="fa fa-trash"></i><span>{{ _t('TEMPLATE_DELETE') }}</span>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg><span>{{ _t('TEMPLATE_DELETE') }}</span>
     </a>
   {% endif %}
   {% if time is defined %}
@@ -66,7 +66,7 @@
       href="{{ linkrevisions }}"
       class="link-revisions"
     >
-      <i class="fa fa-history"></i><span>{{ _t('TEMPLATE_LAST_UPDATE') }} {{ time }}</span>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#history"/></svg><span>{{ _t('TEMPLATE_LAST_UPDATE') }} {{ time }}</span>
     </a>
   {% endif %}
   {% if linkacls is defined %}
@@ -75,7 +75,7 @@
       href="{{ linkacls }}"
       title="{{ _t('TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS') ~ ' ' ~ page }}"
     >
-      <i class="fa fa-unlock-alt"></i><span>{{ owner ?? ''}}</span>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#lock-open"/></svg><span>{{ owner ?? ''}}</span>
     </a>
   {% endif %}
   {% if linkclosecomments is defined %}
@@ -84,7 +84,7 @@
       href="{{ linkclosecomments }}"
       title="{{ _t('TEMPLATE_CLICK_TO_CLOSE_COMMENTS') }}"
     >
-      <i class="fas fa-comment-slash"></i><span>{{ _t('TEMPLATE_CLOSE_COMMENTS') }}</span>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#message-circle-off"/></svg><span>{{ _t('TEMPLATE_CLOSE_COMMENTS') }}</span>
     </a>
   {% endif %}
   {% if linkopencomments is defined %}
@@ -97,7 +97,7 @@
         aria-haspopup="true"
         aria-expanded="false"
       >
-        <i class="fas fa-comment"></i><span>{{ _t('TEMPLATE_OPEN_COMMENTS') }}</span>
+        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#message-circle"/></svg><span>{{ _t('TEMPLATE_OPEN_COMMENTS') }}</span>
         <span class="caret"></span>
       </a>
       <ul class="dropdown-menu" aria-labelledby="opencommentsdropup">
@@ -121,7 +121,7 @@
     href="{{ linkshare }}"
     class="link-share modalbox"
   >
-		<i class="fa fa-share-alt"></i><span>{{ _t('TEMPLATE_SHARE') }}</span>
+		<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#share"/></svg><span>{{ _t('TEMPLATE_SHARE') }}</span>
 	</a>
   {% if currentuser is not empty %}
     {{ include_javascript('javascripts/favorites.js') }}
@@ -132,7 +132,7 @@
       data-toggle="tooltip"
       data-placement="top"
       class="btn btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
-      <i class="{{ (isUserFavorite) ? 'fas' : 'far' }} fa-star"></i>
+      {{ (isUserFavorite) ? icon('star-filled') : icon('star') }}
       <span class="sr-only sr-only-focusable">{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}</span>
     </a>
   {% endif %}

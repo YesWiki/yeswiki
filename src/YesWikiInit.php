@@ -501,7 +501,7 @@ class Init
             'BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT' => null,
             'baz_map_center_lat' => '46.22763',
             'baz_map_center_lon' => '2.213749',
-            'baz_marker_icon_prefix' => 'fa fa-',
+            'baz_marker_icon_prefix' => '',
             'baz_provider' => 'OpenStreetMap.Mapnik',
             'baz_provider_id' => '',
             'baz_provider_pass' => '',
@@ -515,7 +515,7 @@ class Init
             'baz_wheel_zoom' => 'false',
             // marker.png itself has never actually existed anywhere in the repo -- a
             // pre-existing gap, not introduced by this relocation. The default marker
-            // rendering (baz_marker_icon/baz_marker_icon_prefix) is a FontAwesome icon,
+            // rendering (baz_marker_icon/baz_marker_icon_prefix) is a sprite icon name,
             // not an image file; this key is only consulted if an admin opts into a
             // custom marker image.
             'baz_marker_image_file' => 'src/assets/images/bazar/marker.png',

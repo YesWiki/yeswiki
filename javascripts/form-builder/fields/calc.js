@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_CALC_LABEL'),
     name: 'calc',
     attrs: { type: 'calc' },
-    icon: '<i class="fas fa-calculator"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#calculator"/></svg>'
   },
   attributes: {
     display_text: {

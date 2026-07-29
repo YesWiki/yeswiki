@@ -7,7 +7,7 @@ export default {
   },
   template: `
     <div class="spinner-loader" :style="{height: spinnerHeight}">
-      <i class="fas fa-4x fa-circle-notch fa-spin"></i>
+      <svg class="yw-icon yw-icon--2x yw-icon--spin" aria-hidden="true"><use href="src/assets/icons.svg#loader-2"/></svg>
     </div>
   `
 }

@@ -16,7 +16,7 @@
                 <input type="hidden" name="{{ "#{field.propertyName}_data[isRecurrent]" }}" value="1" v-if="isRecurrent"/>
                 <input type="hidden" :value="nbmax" name="{{ "#{field.propertyName}_data[nbmax]" }}" v-if="isRecurrent" />
                 <span class="add-on input-group-addon" title="{{ _t('EVENTS_REPETITIONS') }}" data-toggle="tooltip" data-placement="bottom">
-                    <i class="fas fa-redo-alt"></i>
+                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-forward-up"/></svg>
                 </span>
                 <select 
                     class="yw-input select-allday"
@@ -44,7 +44,7 @@
                         {{ _t('EVENT_UP_TO_DATE') }}
                     </span>
                     <span class="add-on input-group-addon">
-                        <i class="icon-calendar fa fa-calendar"></i>
+                        <svg class="yw-icon icon-calendar" aria-hidden="true"><use href="src/assets/icons.svg#calendar"/></svg>
                     </span>
                     <input
                         type="date"

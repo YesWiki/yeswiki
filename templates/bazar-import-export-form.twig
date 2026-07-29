@@ -35,7 +35,7 @@
         {# on cree le lien vers ce fichier #}
         <a href="#" id="btnCSV" 
             class="yw-btn btn-neutral link-csv-file">
-          <i class="fa fa-download"></i>
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg>
             {% block appendToFormButtonLabel %}{{- _t('BAZ_TELECHARGER_FICHIER_EXPORT_CSV') -}}{% endblock %}
         </a>
       {% endif %}

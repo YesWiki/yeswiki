@@ -2,6 +2,6 @@
 
 {% block link_for_entry %}
 <a class="btn btn-default btn-xs view-page-item modalbox" data-size="modal-lg" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SEE_ITEM') ~ " " ~ item|striptags }}" href="{{ url({tag:item_id}) }}">
-	<i class="fas fa-eye"></i>
+	<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eye"/></svg>
 </a>
 {% endblock %}

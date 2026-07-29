@@ -701,7 +701,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 										className: \'bazar-marker' . $params['smallmarker'] . '\',
 										html: \'<div class="bazar-entry" '
                                         . str_replace('\'', '', $fiche['html_data']) . ' style="color:' . $color . ';">'
-                                        . (!empty($icon) ? '<i class="fa-fw ' . $icon . '"></i>' : '')
+                                        . (!empty($icon) ? ($this->getService(\YesWiki\Render\Service\TemplateEngine::class)->legacyIconToSprite($icon) ?? '<i class="' . $icon . '"></i>') : '')
                                         . '</div>\'
 								}),
 								title: \'' . addslashes($fiche['bf_titre']) . '\'

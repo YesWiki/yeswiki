@@ -3,7 +3,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_TABCHANGE'),
     name: 'tabchange',
     attrs: { type: 'tabchange' },
-    icon: '<i class="fas fa-stop"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#player-stop"/></svg>'
   },
   attributes: {
     form_change: {

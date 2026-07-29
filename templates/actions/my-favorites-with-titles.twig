@@ -12,7 +12,7 @@
                     data-placement="right"
                     data-linkedFavoriteid="favoriteLi{{favorite.resource}}"
                     class="btn btn-icon btn-default btn-xs favorites user-favorite">
-                    <i class="fas fa-star"></i>
+                    <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#star"/></svg>
                 </a>
                 <a href="{{ url({tag:favorite.resource}) }}" class="modalbox" data-size="modal-lg" title="{{ favorite.title ?? favorite.resource }}">
                     {{ favorite.title ?? favorite.resource }}

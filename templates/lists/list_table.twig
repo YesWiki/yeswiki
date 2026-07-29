@@ -36,12 +36,12 @@
         <td>
           {% if list.canDuplicate %}
           <a class="yw-btn yw-btn--sm" href="{{ url({ params: { vue: 'listes', action: 'duplicate', idliste: key }}) }}">
-            <i class="far fa-clone"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg>
           </a>
           {% endif %}
           {% if list.canEdit %}
           <a class="yw-btn yw-btn--sm" href="{{ url({ params: { vue: 'listes', action: 'modif_liste', idliste: key }}) }}">
-            <i class="fa fa-pencil-alt"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
           </a>
           {% endif %}
           {% if list.canDelete %}
@@ -50,7 +50,7 @@
             href="{{ url({ params: { vue: 'listes', action: 'supprimer_liste', idliste: key }}) }}"
             onclick="javascript:return confirm('{{ _t('BAZ_CONFIRM_SUPPRIMER_LISTE') }} ?');"
           >
-            <i class="fa fa-trash icon-white"></i>
+            <svg class="yw-icon icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
           </a>
           {% endif %}
       </td>
@@ -62,7 +62,7 @@
 {% endif %}
 
 <a href="{{ url({ params: { vue: 'listes', action: 'saisir_liste'}})|raw }}" class="yw-btn yw-btn--primary" {% if not canCreate %} disabled data-toggle="tooltip" data-placement="bottom" title="{{ _t('WIKI_IN_HIBERNATION') }}" {% endif %}>
-	<i class="fa fa-plus icon-plus icon-white"></i>
+	<svg class="yw-icon icon-plus icon-white" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
 	{{ _t('BAZ_NOUVELLE_LISTE') }}
 </a>
 
@@ -74,7 +74,7 @@
 <form action="javascript:undefined" class="">
 	<div class="input-prepend input-append input-group">
 		<span class="add-on input-group-addon">
-			<i class="fa fa-link icon-globe"></i>
+			<svg class="yw-icon icon-globe" aria-hidden="true"><use href="src/assets/icons.svg#link"/></svg>
 		</span>
 		<input id="url-import-lists" class="yw-input input-xxlarge" {% if not loggedUser %} disabled {% endif %} placeholder="{{ _t('BAZ_URL_IMPORT_LISTS_INFO') }}" type="url"/>
 		<span class="input-group-btn">

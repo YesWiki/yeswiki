@@ -51,7 +51,7 @@ function successHandler(data) {
         const caption = `<figcaption><strong>En écoute : ${cardData.bf_titre}</strong></figcaption>`
         const audio = `<audio id="audio-player" controls autoplay src="${song}"></audio>`
         const download = `<a style="display:block" download href="${song}">`
-          + '<i class="fas fa-download"></i> Télécharger</a>'
+          + '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'
         player.innerHTML = `<figure>${caption}${audio}${download}</figure>`
       })
   }

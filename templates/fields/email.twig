@@ -6,7 +6,7 @@
             handler:'mail',
             params:{field:field.propertyName}
             }) }}">
-            <i class="fa fa-envelope"></i> {{ _t('BAZ_CONTACT_BY_MAIL') }}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg> {{ _t('BAZ_CONTACT_BY_MAIL') }}
         </a>
     {% else %}
         <a href="mailto:{{ value }}" class="BAZ_lien_mail">{{ value }}</a></span>

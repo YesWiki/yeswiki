@@ -5,7 +5,7 @@ export default {
     label: _t('FORM_BUILDER_FILE_LABEL'),
     name: 'file',
     attrs: { type: 'file' },
-    icon: '<i class="fas fa-paperclip"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#paperclip"/></svg>'
   },
   defaultIdentifier: 'fichier',
   attributes: {

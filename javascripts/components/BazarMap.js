@@ -2,6 +2,7 @@ import LeafletMarkerCluster from './LeafletMarkerCluster.js'
 import SpinnerLoader from './SpinnerLoader.js'
 import LMap from './LMap.js'
 import { drawGeometries } from '../leaflet-draw.helper.js'
+import { legacyIconToSprite } from '../yw-icon-map.js'
 
 const BazarMapComponent = {
   props: ['params'],
@@ -38,7 +39,7 @@ const BazarMapComponent = {
           forceSeparateButton: true,
           title: _t('BAZ_FULLSCREEN'), // change the title of the button, default Full Screen
           titleCancel: _t('BAZ_BACK_TO_NORMAL_VIEW'), // change the title of the button when fullscreen is on, default Exit Full Screen
-          // content: '<i class="fa fa-expand-alt"></i>', // change the content of the button, can be HTML, default null
+          // content: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#maximize"/></svg>', // change the content of the button, can be HTML, default null
           forceSeparateButton: true // force seperate button to detach from zoom buttons, default false
         },
         maxZoom: 18
@@ -186,7 +187,7 @@ const BazarMapComponent = {
 		          </div>
 		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" `
                 + `${isLink ? `href="${url}"` : ''} style="color: ${entry.color}" ${modalData}>
-		            <i class="${entry.icon || 'fa fa-bullseye'}"></i>
+		            ${legacyIconToSprite(entry.icon) || (entry.icon ? `<i class="${entry.icon}"></i>` : legacyIconToSprite('bullseye'))}
 		          </${tagName}>`
             })
           )
@@ -446,7 +447,7 @@ const BazarMapComponent = {
 
       <!-- SideNav to display entry -->
       <div v-if="selectedEntry && this.params.entrydisplay == 'sidebar'" class="entry-container">
-        <div class="btn-close" @click="selectedEntry = null"><i class="fa fa-times"></i></div>
+        <div class="btn-close" @click="selectedEntry = null"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg></div>
         <div v-html="selectedEntry.html_render"></div>
       </div>`
     // popup content

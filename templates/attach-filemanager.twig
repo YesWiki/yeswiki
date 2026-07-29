@@ -3,14 +3,14 @@
     <a
       href="{{ url({tag:tag,handler:method}) ~ '#fmtab' ~ tag }}"
       title="{{ _t('ATTACH_FILE_MANAGEMENT') }}">
-      <i class="fa fa-file icon-file"></i>&nbsp;{{ _t('ATTACH_FILE_MANAGEMENT') }}
+      <svg class="yw-icon icon-file" aria-hidden="true"><use href="src/assets/icons.svg#file"/></svg>&nbsp;{{ _t('ATTACH_FILE_MANAGEMENT') }}
     </a>
   </li>
 	<li {% if trash %} class="active"{% endif %}>
     <a
       href="{{ url({tag:tag,handler:method,params:{do:'trash'}}) ~ '#fmtab' ~ tag }}"
       title="{{ _t('ATTACH_TRASH') }}">
-      <i class="fa fa-trash icon-trash"></i>&nbsp;{{ _t('ATTACH_TRASH') }}</a>
+      <svg class="yw-icon icon-trash" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>&nbsp;{{ _t('ATTACH_TRASH') }}</a>
     </li>
 </ul>
 {% if files is empty %}
@@ -57,7 +57,7 @@
                 href="{{ url({tag:tag,handler:method,params:{do:'restore',file:file.realname}}) }}"
                 title="{{ _t('ATTACH_RESTORE') }}"
               >
-                <i class="fas fa-redo"></i>&nbsp;{{ _t('ATTACH_RESTORE') }}
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-forward-up"/></svg>&nbsp;{{ _t('ATTACH_RESTORE') }}
               </a>
             {% endif %}
             {# lien de suppression #}
@@ -65,7 +65,7 @@
               class="yw-btn yw-btn--sm yw-btn--danger btn-icon"
               href="{{ url({tag:tag,handler:method,params:{do: (trash ? 'erase' : 'del'),file:file.realname}}) }}"
               title="{{ _t('DELETE') }}">
-              <i class="{{ trash ? 'fa fa-remove icon-remove' : 'fa fa-trash icon-trash' }} icon-white"></i>
+              {{ trash ? icon('x') : icon('trash') }}
             </a>
           </td>
         </tr>
@@ -77,7 +77,7 @@
       <a
         href="{{ url({tag:tag,handler:method,params:{do:'emptytrash'}}) }}"
         class="yw-btn yw-btn--danger pull-right">
-        <i class="fa fa-remove icon-remove icon-white"></i>&nbsp;{{ _t('ATTACH_EMPTY_TRASH') }}
+        <svg class="yw-icon icon-remove icon-white" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg>&nbsp;{{ _t('ATTACH_EMPTY_TRASH') }}
       </a>
       <strong>{{ _t('CAUTION') }} :</strong> {{ _t('ATTACH_EMPTY_TRASH_NOTICE') }}
       <div class="clearfix"></div>

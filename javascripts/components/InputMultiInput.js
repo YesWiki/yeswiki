@@ -61,14 +61,14 @@ export default {
         <!-- Remove Button -->
         <div class="yw-form-group btn-close-container">
           <button class="btn btn-default btn-icon" @click="removeElement(element)">
-            <i class="btn-remove-group fa fa-times"></i>
+            <svg class="yw-icon btn-remove-group" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg>
           </button>
         </div>
       </div>
       <!-- Add Button -->
       <button @click="addElement" class="btn btn-info btn-icon btn-add-element">
         <span v-if="config['btn-label-add']">{{ config['btn-label-add'] }}</span>
-        <i v-else class="fa fa-plus"></i>
+        <svg class="yw-icon" aria-hidden="true" v-else><use href="src/assets/icons.svg#plus"/></svg>
       </button>
       <input-hint :config="config"></input-hint>
     </div>`

@@ -33,10 +33,10 @@
         const addLabel = escHtml(labelAddPoint)
         image.insertAdjacentHTML('beforeend', `
           <a class="yw-btn yw-btn--sm yw-btn--primary btn-add-point" href="#">
-            <i class="fa fa-plus"></i> ${addLabel}
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg> ${addLabel}
           </a>
           <a class="yw-btn yw-btn--sm yw-btn--default yw-pull-right btn-edit-points" href="${editUrl}">
-            <i class="fa fa-pencil-alt"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
           </a>
         `)
       }
@@ -107,7 +107,7 @@
         e.preventDefault()
         cancelBtn.classList.remove('btn-cancel', 'yw-btn--danger')
         cancelBtn.classList.add('btn-add-point', 'yw-btn--primary')
-        cancelBtn.innerHTML = `<i class="fa fa-plus"></i> ${escHtml(labelAddPoint)}`
+        cancelBtn.innerHTML = `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg> ${escHtml(labelAddPoint)}`
         if (image) image.style.cursor = 'default'
         return
       }
@@ -157,7 +157,7 @@
         if (btnAddPoint) {
           btnAddPoint.classList.remove('btn-cancel', 'yw-btn--danger')
           btnAddPoint.classList.add('btn-add-point', 'yw-btn--primary')
-          btnAddPoint.innerHTML = `<i class="fa fa-plus"></i> ${escHtml(labelAddPoint)}`
+          btnAddPoint.innerHTML = `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg> ${escHtml(labelAddPoint)}`
         }
 
         if (modal) modal.classList.add('yw-modal--open')

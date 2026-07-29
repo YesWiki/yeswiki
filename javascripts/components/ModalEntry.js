@@ -21,7 +21,7 @@ export default {
       <div class="yw-modal__dialog">
         <div class="yw-modal__content">
           <div class="yw-modal__body entry-container">
-            <div class="btn-close" data-yw-dismiss="modal"><i class="fa fa-times"></i></div>
+            <div class="btn-close" data-yw-dismiss="modal"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#x"/></svg></div>
             <div v-if="entry.html_render" v-html="entry.html_render"></div>
             <div v-else>
               <spinner-loader height="500"></spinner-loader>

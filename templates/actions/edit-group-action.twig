@@ -31,23 +31,23 @@
 					{% set selected = false %}
 					{% block li_item %}
 					<li class="list-group-item">						
-						<span class="pull-left {{ not selected ? 'hide ' }}movable btn btn-default btn-xs"><i class="fas fa-arrows-alt-v"></i></span>
+						<span class="pull-left {{ not selected ? 'hide ' }}movable btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrows-vertical"/></svg></span>
 						<div class="checkbox-icons-up-down{{ not selected ? ' hide ' }}">
-							<div class="checkbox-icons-up btn btn-default btn-xs"><i class="fas fa-chevron-up"></i></div>
-							<div class="checkbox-icons-down btn btn-default btn-xs"><i class="fas fa-chevron-down"></i></div>
+							<div class="checkbox-icons-up btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-up"/></svg></div>
+							<div class="checkbox-icons-down btn btn-default btn-xs"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-down"/></svg></div>
 						</div>
 						<div class="checkbox-icon-column-left">
-							<span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><i class="fas fa-arrows-alt-h"></i></span>
+							<span class="movable-h btn btn-default btn-xs{{ selected ? ' hide ' }}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrows-horizontal"/></svg></span>
 							{%~ block link_for_entry ~%}
 							{%~ endblock ~%}
 						</div>
 						<input type="checkbox" id="{{ field.propertyName }}_{{ item }}" value="{{ item }}" name="members[]" class="element_checkbox hide"{{ selected ? ' checked' }}><span style="display:none;"></span>
 						<span class="list-item-text">{{ item|striptags }}</span>
 						<a class="btn btn-xs btn-success select-page-item{{ selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_SELECT_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FOR_THE_LIST') }}" href="#">
-							<i class="fas fa-plus"></i>
+							<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
 						</a>
 						<a class="btn btn-xs btn-danger remove-page-item{{ not selected ? ' hide ' }}" title="{{ _t('BAZ_DRAG_n_DROP_CHECKBOX_DELETE_ITEM') ~ " " ~ item|e ~ " " ~ _t('BAZ_DRAG_n_DROP_CHECKBOX_FROM_THE_LIST') }}" href="#">
-							<i class="fas fa-minus"></i>
+							<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#minus"/></svg>
 						</a>
 					</li>
 					{% endblock %}

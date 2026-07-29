@@ -5,7 +5,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_EMAIL_LABEL'),
     name: 'champs_mail',
     attrs: { type: 'champs_mail' },
-    icon: '<i class="fas fa-envelope"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail"/></svg>'
   },
   defaultIdentifier: 'bf_mail',
   attributes: {

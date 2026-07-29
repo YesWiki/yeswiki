@@ -221,6 +221,20 @@ class TemplateEngine
         });
         // inline JS registered for the page footer aggregate, like AddJavascript()
         // calls from the historical PHP templates
+        // stored data (reaction images, bazar marker icons...) may still carry historic
+        // FontAwesome class strings: render them through the sprite when a mapping exists
+        $this->twig->addFunction(new \Twig\TwigFunction('iconFromLegacy', function ($classString, $extraClass = '') {
+            return $this->legacyIconToSprite(is_string($classString) ? $classString : null, $extraClass);
+        }, ['is_safe' => ['html']]));
+
+        // Tabler sprite icon (src/assets/icons.svg): icon('trash'), icon('star', 'yw-icon--lg').
+        // Registered is_safe: the produced markup is fully escaped here, so templates can
+        // write {{ icon('x') }} without |raw
+        $this->twig->addFunction(new \Twig\TwigFunction('icon', function ($name, $extraClass = '') {
+            $class = trim('yw-icon ' . $extraClass);
+
+            return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="src/assets/icons.svg#' . htmlspecialchars($name, ENT_QUOTES) . '"/></svg>';
+        }, ['is_safe' => ['html']]));
         $this->addTwigHelper('addJavascript', function ($js) {
             $this->assetsManager->AddJavascript((string)$js);
 
@@ -310,6 +324,29 @@ class TemplateEngine
         $this->twig->addFilter(new \Twig\TwigFilter('preg_replace', function ($subject, $pattern, $replacement) {
             return preg_replace($pattern, $replacement, (string)$subject);
         }));
+    }
+
+    /**
+     * Render a historic FontAwesome class string ("fas fa-heart") through the Tabler
+     * sprite, or null when nothing in the string maps (see src/icon-map.json).
+     */
+    public function legacyIconToSprite(?string $classString, string $extraClass = ''): ?string
+    {
+        static $map = null;
+        if ($map === null) {
+            $map = json_decode((string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/icon-map.json'), true) ?: [];
+            unset($map['__comment']);
+        }
+        foreach (explode(' ', (string)$classString) as $part) {
+            $key = str_starts_with($part, 'fa-') ? substr($part, 3) : $part;
+            if (isset($map[$key])) {
+                $class = trim('yw-icon ' . $extraClass);
+
+                return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="src/assets/icons.svg#' . htmlspecialchars($map[$key], ENT_QUOTES) . '"/></svg>';
+            }
+        }
+
+        return null;
     }
 
     private function addTwigHelper($name, $callback)

@@ -169,7 +169,7 @@ class AdminPagesApiController extends YesWikiController
                 ->checkToken('main', 'POST', 'csrf-token', false);
         } catch (TokenNotFoundException $e) {
             return $this->htmlResponse(
-                '<div class="alert alert-danger"><i class="fa fa-ban"></i> ' . htmlspecialchars($e->getMessage()) . '</div>',
+                '<div class="alert alert-danger"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#ban"/></svg> ' . htmlspecialchars($e->getMessage()) . '</div>',
                 403
             );
         }

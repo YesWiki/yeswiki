@@ -17,12 +17,12 @@
 		            <td>
 		            {% if hasAccess('write', page.tag) %}
 		                <a class="yw-btn yw-btn--sm" href="{{ url({tag: page.tag, handler: 'edit'}) }}">
-            					  <i class="fa fa-pencil-alt icon-pencil"></i> {{ _t('TEMPLATE_MODIFY') }}
+            					  <svg class="yw-icon icon-pencil" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg> {{ _t('TEMPLATE_MODIFY') }}
             				</a>
 		            {% endif %}
 		            {% if userIsAdmin() or userIsOwner() %}
 		                <a class="yw-btn yw-btn--sm yw-btn--danger" href="{{ url({tag: page.tag, handler: 'deletepage'}) }}"  onclick="javascript:return confirm('{{ _t('TEMPLATE_CONFIRM_DELETE_PAGE') }} ?');">
-            					  <i class="fa fa-trash icon-trash icon-white"></i>
+            					  <svg class="yw-icon icon-trash icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
             				</a>
 		            {% endif %}
 		            </td>

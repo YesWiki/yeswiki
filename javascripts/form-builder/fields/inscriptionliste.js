@@ -3,7 +3,7 @@ export default {
     label: _t('BAZ_FORM_EDIT_SUBSCRIBE_LIST_LABEL'),
     name: 'inscriptionliste',
     attrs: { type: 'inscriptionliste' },
-    icon: '<i class="fas fa-mail-bulk"></i>'
+    icon: '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#mail-forward"/></svg>'
   },
   attributes: {
     mailer_email: { label: _t('BAZ_FORM_EDIT_INSCRIPTIONLISTE_EMAIL_LABEL'), value: '' },

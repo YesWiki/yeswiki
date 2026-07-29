@@ -37,7 +37,7 @@
             :disabled="updating || currentArchiveUid.length > 0 || archiving" 
             data-tooltip="toggle" 
             title="{{ _t('ADMIN_BACKUPS_CREATE') }}">
-          <i class="fas fa-play"></i> {{ _t('ADMIN_BACKUPS_START') }}
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#player-play"/></svg> {{ _t('ADMIN_BACKUPS_START') }}
         </button>
         <button
             v-if="currentArchiveUid.length > 0 && archiving"
@@ -46,7 +46,7 @@
             :disabled="stoppingArchive" 
             data-tooltip="toggle" 
             title="{{ _t('ADMIN_BACKUPS_STOP_BACKUP') }}">
-          <i class="fas fa-stop"></i> {{ _t('ADMIN_BACKUPS_STOP') }}
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#player-stop"/></svg> {{ _t('ADMIN_BACKUPS_STOP') }}
         </button>
       </div>
     </fieldset>
@@ -72,7 +72,7 @@
       title="{{ _t('RELOAD') }}"
       :disabled="updating"
       >
-      <i class="fas fa-redo-alt"></i>
+      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-forward-up"/></svg>
     </div>
     <h2>{{ _t('ADMIN_BACKUPS_ARCHIVES_LIST') }}</h2>
     <div class="clearfix"></div>
@@ -95,13 +95,13 @@
         <div class="archive-item archive-filename" v-html="archive.filename"></div>
         <div class="archive-item" v-html="formatFileSize(archive.size)"></div>
         <div class="archive-item">
-          <i v-if="archive.type == 'only_files' || archive.type == 'full'" class="fas fa-copy" data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}"></i>
+          <svg class="yw-icon" aria-hidden="true" v-if="archive.type == 'only_files' || archive.type == 'full'"   data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_FILES') }}"><use href="src/assets/icons.svg#copy"/></svg>
           <strong v-if="archive.type == 'full'">+</strong>
-          <i v-if="archive.type == 'only_db' || archive.type == 'full'" class="fas fa-database" data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}"></i>
+          <svg class="yw-icon" aria-hidden="true" v-if="archive.type == 'only_db' || archive.type == 'full'"   data-toggle="tooltip" title="{{ _t('ADMIN_BACKUPS_ARCHIVE_TYPE_ONLY_DATABASES') }}"><use href="src/assets/icons.svg#database"/></svg>
         </div>
         <div class="archive-item">
           <a :href="downloadUrl(archive)" class="btn btn-xs btn-primary" data-tooltip="toggle" title="{{ _t('DOWNLOAD') }}">
-            <i class="fas fa-download"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg>
           </a>
           <button 
               class="btn btn-xs btn-danger" 
@@ -109,10 +109,10 @@
               data-tooltip="toggle" 
               title="{{ _t('DELETE') }}"
               :disabled="updating">
-            <i class="fa fa-trash"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
           </button>
           <button class="btn btn-xs btn-warning" @click="restoreArchive(archive)" data-tooltip="toggle" :title="{{ _t('ADMIN_BACKUPS_RESTORE')|json_encode }}" :disabled="updating">
-            <i class="fas fa-undo-alt"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-back-up"/></svg>
           </button>
         </div>
         <div class="archive-item" @click="toggleSelectedArchive(archive.filename)">

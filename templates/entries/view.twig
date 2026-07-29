@@ -48,19 +48,19 @@
             data-toggle="tooltip"
             data-placement="right"
             class="btn btn-icon btn-default btn-xs favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
-            <i class="{{ (isUserFavorite) ? 'fas' : 'far' }} fa-star"></i>
+            {{ (isUserFavorite) ? icon('star-filled') : icon('star') }}
           </a>
         {% endif %}
         {% if canShow %}
           <a class="yw-btn yw-btn--sm btn-entry-action" href="{{ entry['external-data'] ? entry.url : url({ tag: entryId }) }}">
-            <i class="fa fa-eye"></i>
+            <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eye"/></svg>
             <span>{{ _t('BAZ_SEE_ENTRY') }}</span>
           </a>
         {% endif %}
         {% if not entry['external-data'] %}
           {% if canEdit %}
             <a class="yw-btn yw-btn--sm btn-entry-action" href="{{ url({ tag: entryId, handler: 'edit' }) }}">
-              <i class="fa fa-pencil-alt icon-pencil"></i>
+              <svg class="yw-icon icon-pencil" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               <span>{{ _t('BAZ_MODIFIER') }}</span>
             </a>
           {% endif %}
@@ -74,7 +74,7 @@
               aria-haspopup="true"
               aria-expanded="false"
             >
-              <i class="fas fa-copy"></i><span>{{ _t('TEMPLATE_DUPLICATE') }}</span>
+              <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg><span>{{ _t('TEMPLATE_DUPLICATE') }}</span>
               <span class="caret"></span>
             </a>
             <ul class="dropdown-menu" aria-labelledby="duplicate-dropup">
@@ -100,7 +100,7 @@
             <a class="yw-btn yw-btn--sm yw-btn--danger btn-entry-action modalbox"
               href="{{ url({ tag: entryId, handler: 'deletepage', params: { incomingurl: incomingUrl|url_encode }}) }}"
               data-confirm-text="{{ _t('BAZ_CONFIRM_SUPPRIMER_FICHE') }}">
-              <i class="fa fa-trash icon-trash icon-white"></i>
+              <svg class="yw-icon icon-trash icon-white" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
               <span>{{ _t('BAZ_SUPPRIMER') }}</span>
             </a>
           {% endif %}

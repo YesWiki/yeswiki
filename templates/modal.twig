@@ -4,7 +4,7 @@
 
 {% block connected %}
     <a href="#LoginModal" role="button" class="navbar-btn {{ not nobtn ? 'yw-btn ' ~ btnclass : '' }}" data-toggle="modal" data-tooltip="tooltip" data-placement="bottom" aria-label="{{ _t('LOGIN_MY_OPTIONS')}}" title="{{ _t('LOGIN_MY_OPTIONS')}}">
-        <i class="fa fa-user"></i> {{ user }}
+        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg> {{ user }}
     </a>
     <div class="yw-modal" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel">
         <div class="yw-modal__dialog">
@@ -31,7 +31,7 @@
 
 {% block notConnected %}
     <a href="#LoginModal" role="button" class="btn-icon navbar-btn {{ not nobtn ? 'yw-btn ' ~ btnclass : '' }}" data-toggle="modal" data-placement="bottom" title="{{ _t('LOGIN_LOGIN') }}" data-tooltip="tooltip" aria-label="{{ _t('LOGIN_LOGIN')}}">
-        <i class="fa fa-user"></i><span class="login-text"> {{ _t('LOGIN_LOGIN') }}</span>
+        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user"/></svg><span class="login-text"> {{ _t('LOGIN_LOGIN') }}</span>
     </a>
     <div class="yw-modal" id="LoginModal" tabindex="-1" role="dialog" aria-labelledby="LoginModalLabel">
         <div class="yw-modal__dialog yw-modal__dialog--sm">

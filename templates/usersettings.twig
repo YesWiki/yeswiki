@@ -1,4 +1,4 @@
-{% if adminIsActing %} <a href="{{ url({tag: 'GererUtilisateurs'}) }}" class="btn btn-primary pull-right"><i class="fa fa-arrow-left"></i> {{ _t('USER_GOTOADMIN') }}</a>{% endif %}
+{% if adminIsActing %} <a href="{{ url({tag: 'GererUtilisateurs'}) }}" class="btn btn-primary pull-right"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#arrow-left"/></svg> {{ _t('USER_GOTOADMIN') }}</a>{% endif %}
 <h2>{{ _t('USER_SETTINGS') }}{% if adminIsActing %} — {{ user.name }}{% endif %}</h2>
 
 {% if errorUpdate is not empty %}

@@ -21,7 +21,7 @@
           {# pattern inspired from RFC 5322  #}
         </div>
         <div class="yw-form-group">
-          <button class="yw-btn yw-btn--sm yw-btn--primary create-user" title="{{ _t('USERSTABLE_CREATE_USER_HINT') }}" data-toggle="tooltip" data-placement="bottom"><i class="fa fa-user-plus"></i>&nbsp;{{ _t('USERSTABLE_CREATE_USER') }}</button>
+          <button class="yw-btn yw-btn--sm yw-btn--primary create-user" title="{{ _t('USERSTABLE_CREATE_USER_HINT') }}" data-toggle="tooltip" data-placement="bottom"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>&nbsp;{{ _t('USERSTABLE_CREATE_USER') }}</button>
         </div>
       </div>
     </form>
@@ -64,13 +64,13 @@
             {% if userIsTheOneConnected %} 
               <a href="{{ url({tag:'ParametresUtilisateur'}) }}"
                 class="yw-btn yw-btn--sm btn-icon yw-btn--primary" role="button" title="{{ _t('MODIFY') }}">
-                <i class="fa fa-pencil-alt"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               </a>
             {% elseif isAdmin %}
               {# not the current user, then can be modified #} 
               <a href="{{ url({tag:'ParametresUtilisateur',params:{user:user.name,from:tag}}) }}"
                 class="yw-btn yw-btn--sm btn-icon yw-btn--warning" role="button" title="{{ _t('MODIFY') }}">
-                <i class="fa fa-pencil-alt"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
               </a>
             {% endif %}
             {% if isAdmin and not userIsTheOneConnected %}
@@ -81,7 +81,7 @@
                 class="yw-btn yw-btn--sm btn-icon yw-btn--danger" 
                 data-name="{{ user.name }}"
                 title="{{ _t('USER_DELETE') }}">
-                <i class="fa fa-trash"></i>
+                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
               </a>
             {% endif %}
           </td>

@@ -65,7 +65,7 @@ function successHandler(data) {
           const caption = `<figcaption><strong>En écoute : ${cardData.bf_titre}</strong></figcaption>`
           const audio = `<audio id="audio-player" controls autoplay autobuffer src="${song}"></audio>`
           const download = `<a style="display:block" download href="${song}">`
-            + '<i class="fas fa-download"></i> Télécharger</a>'
+            + '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'
           player.innerHTML = `<figure>${caption}${audio}${download}</figure>`
           const activeSelector = '#multimedia-playlist .yw-list-group__item--active'
           document.querySelectorAll(activeSelector).forEach((el) => {
@@ -74,7 +74,7 @@ function successHandler(data) {
           const songButton = '<button type="button"'
             + ' class="song yw-list-group__item yw-list-group__item--active"'
             + ` data-url="${song}">`
-            + `<i class="fa fa-music"></i> ${cardData.bf_titre}`
+            + `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#music"/></svg> ${cardData.bf_titre}`
             + '</button>'
           document.getElementById('multimedia-playlist').insertAdjacentHTML('beforeend', songButton)
         }

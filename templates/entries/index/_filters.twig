@@ -21,7 +21,7 @@
     {% if params.filtertext %}
       <div class="input-group filtertext">
         <span class="input-group-addon">
-          <i class="fa fa-filter"></i>
+          <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#filter"/></svg>
         </span>
         <input type="text" class="yw-input filter-bazar" id="inputBazarFilter{{ listId }}"
                placeholder="{{ _t('BAZAR_FILTER') }}" data-target="bazar-list-{{ listId }}"/>
