@@ -10,7 +10,7 @@ if (!function_exists('rssdiff')) {
         // TODO : cache ?
 
         if ($idfirst == $idlast) {
-            $previousdiff = $wiki->LoadSingle(
+            $previousdiff = $wiki->services->get(YesWiki\Kernel\Service\DbService::class)->loadSingle(
                 'select id from '
                 . $wiki->config['table_prefix']
                 . "pages where tag = '"
@@ -24,8 +24,8 @@ if (!function_exists('rssdiff')) {
             }
         }
 
-        $pageA = $wiki->LoadPageById($idfirst);
-        $pageB = $wiki->LoadPageById($idlast);
+        $pageA = $wiki->services->get(YesWiki\Content\Service\PageManager::class)->getById($idfirst);
+        $pageB = $wiki->services->get(YesWiki\Content\Service\PageManager::class)->getById($idlast);
 
         $entryManager = $wiki->services->get(EntryManager::class);
         if ($entryManager->isEntry($tag)) {

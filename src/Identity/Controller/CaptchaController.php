@@ -4,6 +4,7 @@ namespace YesWiki\Identity\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -177,7 +178,7 @@ class CaptchaController extends YesWikiController
      */
     public function checkCaptchaBeforeSave(string $mode = 'page'): array
     {
-        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
+        if (!$this->getService(AclService::class)->isAdmin() && $this->params->get('use_captcha')) {
             $post = $this->getRequest()->request;
             if (($mode != 'entry' && $post->get('submit') == InputFilter::EDIT_PAGE_SUBMIT_VALUE)
                 || ($mode == 'entry' && !empty($post->get('bf_titre')))) {
@@ -213,7 +214,7 @@ class CaptchaController extends YesWikiController
      */
     public function renderCaptcha(string &$output)
     {
-        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
+        if (!$this->getService(AclService::class)->isAdmin() && $this->params->get('use_captcha')) {
             $champsCaptcha = $this->renderCaptchaField();
             $matches = [];
             if (preg_match_all('/(\<div class="form-actions">.*<button type=\"submit\" name=\"submit\")/Uis', $output, $matches)) {
@@ -234,7 +235,7 @@ class CaptchaController extends YesWikiController
     public function renderCaptchaField(): string
     {
         $champsCaptcha = '';
-        if (!$this->wiki->UserIsAdmin() && $this->params->get('use_captcha')) {
+        if (!$this->getService(AclService::class)->isAdmin() && $this->params->get('use_captcha')) {
             // afficher les champs de formulaire et de l'image
             $hash = $this->generateHash();
             $champsCaptcha = $this->render(

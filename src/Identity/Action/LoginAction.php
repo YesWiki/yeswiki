@@ -12,6 +12,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 
 class LoginAction extends YesWikiAction implements RegisteredAction
@@ -163,7 +164,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
         if ($connected) {
             $pageMenuUser = $this->pageManager->getOne('PageMenuUser');
             if (!empty($pageMenuUser)) {
-                $pageMenuUserContent = $this->wiki->Format('{{include page="PageMenuUser"}}');
+                $pageMenuUserContent = $this->getService(MarkdownFormatterService::class)->format('{{include page="PageMenuUser"}}');
             }
             if ($this->arguments['profileurl'] == 'WikiName') {
                 $this->arguments['profileurl'] = $this->getService(UrlFormatter::class)->href('edit', $user['name']);

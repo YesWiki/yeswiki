@@ -1,11 +1,13 @@
 <?php
 
 namespace YesWiki\Content\Action;
-/**
+
+/*
  * Show all user's reaction.
  */
 use YesWiki\Content\Service\ReactionManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 class UserReactionsAction extends YesWikiAction implements RegisteredAction
@@ -18,7 +20,7 @@ class UserReactionsAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        if ($user = $this->wiki->GetUser()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             $userReactions = $this->wiki->services->get(ReactionManager::class)->getReactions('', [], $user['name']);
 
             return $this->render('@core/user-reactions.twig', [

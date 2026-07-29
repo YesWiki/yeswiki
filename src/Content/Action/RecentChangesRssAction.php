@@ -5,6 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
@@ -32,7 +33,7 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         }
         require_once YESWIKI_SOURCE_DIR . '/src/rss.functions.php';
         $max = 50;
-        if ($user = $this->wiki->GetUser()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             $max = $user['changescount'];
         }
 

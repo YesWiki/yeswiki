@@ -2,9 +2,11 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Render\Service\ThemeManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Render\Service\ThemeManager;
 
 /**
  * `{{linkstyle}}` -- converted from the procedural actions/linkstyle.php by ticket 06.
@@ -52,25 +54,25 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
         // tag cloud and the rss-icon, loaded on every page like the rest of this file's styles.
         // (The epub export selection UI this also used to mention was already gone; wave-two
         // ticket 02 deleted the last of it -- the handler and the vendored PHPePub library.)
-        $this->wiki->AddCSSFile('styles/actions/tags-nuage.css');
+        $this->getService(AssetsManager::class)->AddCSSFile('styles/actions/tags-nuage.css');
 
         // relocated from tools/attach/actions/linkstyle__.php (ticket 17): attached-file display
         // (figures/captions/zoom), pointimage markers, background-image, embedded pdf/video sizing.
         // Trimmed of qq-uploader (dead, superseded by the /api/files upload route) and Bootstrap
         // .popover/jPlayer rules (converted to yw-popover / native <audio>/<video>).
-        $this->wiki->AddCSSFile('styles/actions/attach.css');
+        $this->getService(AssetsManager::class)->AddCSSFile('styles/actions/attach.css');
 
         // relocated from tools/bazar/actions/linkstyle__.php (ticket 24): styles for bazar entries,
         // the calendar view, and the google/leaflet map display.
-        $this->wiki->AddCSSFile('styles/bazar/bazar.css');
+        $this->getService(AssetsManager::class)->AddCSSFile('styles/bazar/bazar.css');
 
         // if exists and not empty, add the 'PageCss' yeswiki page's content to the styles
         // (the PageCss content must respect the CSS syntax). Inlined via AddCSS() rather than
         // linked from the /raw handler: raw.php serves text/plain, and browsers in standards
         // mode reject a <link rel="stylesheet"> whose response isn't text/css.
-        $pageCss = $this->wiki->LoadPage('PageCss');
+        $pageCss = $this->getService(PageManager::class)->getOne('PageCss');
         if ($pageCss && !empty($pageCss['body'])) {
-            $this->wiki->AddCSS($pageCss['body']);
+            $this->getService(AssetsManager::class)->AddCSS($pageCss['body']);
         }
 
         // This GLOBALS is populated from AddCSS and AddCSSFile, we add it at the end
@@ -87,18 +89,17 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         $themeManager = $this->wiki->services->get(ThemeManager::class);
         $favoriteStyle = $themeManager->getFavoriteStyle();
         // ticket 16: Bootstrap CSS is not loaded anymore — the yw-* design system
         // (yeswiki-base.css + yw-core.css) is the only core-provided styling
 
         // styles par defaut de yeswiki
-        echo $this->wiki->LinkCSSFile('styles/yeswiki-base.css');
+        echo $this->getService(AssetsManager::class)->LinkCSSFile('styles/yeswiki-base.css');
 
         // yw-* core design system (ADR-0004): namespaced under yw-*, safe to load
         // alongside Bootstrap/a theme without class collisions
-        echo $this->wiki->LinkCSSFile('styles/yw-core.css');
+        echo $this->getService(AssetsManager::class)->LinkCSSFile('styles/yw-core.css');
 
         // presets activated and path ?
         $favoritePreset = $themeManager->getFavoritePreset();
@@ -125,7 +126,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
         // on ajoute le style css selectionne du theme
         if ($favoriteStyle != 'none') {
             if (substr($favoriteStyle, -4, 4) == '.css') {
-                echo $this->wiki->LinkCSSFile($styleFile, '', '', 'id="mainstyle"');
+                echo $this->getService(AssetsManager::class)->LinkCSSFile($styleFile, '', '', 'id="mainstyle"');
             }
         }
 
@@ -134,12 +135,12 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
             && $presetsActivated
             && substr($favoritePreset, -4, 4) == '.css'
         ) {
-            echo $this->wiki->LinkCSSFile($presetFile);
+            echo $this->getService(AssetsManager::class)->LinkCSSFile($presetFile);
         }
 
         // on ajoute les icones de fontawesome
         if (empty($this->wiki->config['fontawesome']) || $this->wiki->config['fontawesome'] != '0') {
-            echo $this->wiki->LinkCSSFile('styles/vendor/fontawesome/css/all.min.css');
+            echo $this->getService(AssetsManager::class)->LinkCSSFile('styles/vendor/fontawesome/css/all.min.css');
         }
 
         // si l'action propose d'autres css a ajouter, on les ajoute
@@ -151,7 +152,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
                 if (file_exists('custom/' . $style)) {
                     $style = 'custom/' . $style;
                 }
-                $this->wiki->AddCSSFile($style);
+                $this->getService(AssetsManager::class)->AddCSSFile($style);
             }
         }
 
@@ -160,7 +161,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
         $customCssDir = is_dir($customCssPath) ? opendir($customCssPath) : false;
         while ($customCssDir && ($file = readdir($customCssDir)) !== false) {
             if (substr($file, -4, 4) == '.css') {
-                $this->wiki->AddCSSFile($customCssPath . '/' . $file);
+                $this->getService(AssetsManager::class)->AddCSSFile($customCssPath . '/' . $file);
             }
         }
 
@@ -169,7 +170,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
         if (!empty($favoriteBackgroundImage)) {
             $imgextension = strtolower(substr($favoriteBackgroundImage, -4, 4));
             if ($imgextension == '.jpg') {
-                $this->wiki->AddCSS(<<<CSS
+                $this->getService(AssetsManager::class)->AddCSS(<<<CSS
                     body {
                         background-image: url("files/backgrounds/$favoriteBackgroundImage");
                         background-repeat:no-repeat;
@@ -185,7 +186,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
                     }
                 CSS);
             } elseif ($imgextension == '.png') {
-                $this->wiki->AddCSS(<<<CSS
+                $this->getService(AssetsManager::class)->AddCSS(<<<CSS
                     body {
                         background-image: url("files/backgrounds/$favoriteBackgroundImage");
                     }

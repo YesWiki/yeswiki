@@ -79,12 +79,12 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction
 
     private function subscribeUserToGroup($userName, $group): void
     {
-        $this->getService(GroupOperationsService::class)->setMembersFromAclText($group, $this->wiki->GetGroupACL($group) . "\n" . $userName);
+        $this->getService(GroupOperationsService::class)->setMembersFromAclText($group, $this->getService(GroupOperationsService::class)->getMembersText($group) . "\n" . $userName);
     }
 
     private function unsubscribeUserFromGroup($userName, $group): void
     {
-        $newgroup = str_replace($userName, '', $this->wiki->GetGroupACL($group));
+        $newgroup = str_replace($userName, '', $this->getService(GroupOperationsService::class)->getMembersText($group));
         $newgroup = explode("\n", $newgroup);
         $newgroup = array_map('trim', $newgroup);
         $newgroup = array_filter($newgroup);

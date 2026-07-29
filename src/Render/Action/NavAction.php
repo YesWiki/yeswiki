@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
@@ -91,7 +92,7 @@ class NavAction extends YesWikiAction implements RegisteredAction
                     $method = $linkParts['method'];
                     $params = $linkParts['params'];
                     $url = $this->getService(UrlFormatter::class)->href($method, $linkParts['tag'], $params);
-                    if ($hideIfNoAccess == 'true' && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
+                    if ($hideIfNoAccess == 'true' && isset($linkParts['tag']) && !$this->getService(AclService::class)->hasAccess('read', $linkParts['tag'])) {
                         $haveAccess = false;
                     }
                 } else {

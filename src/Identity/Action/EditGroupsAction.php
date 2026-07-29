@@ -1,10 +1,12 @@
 <?php
 
 namespace YesWiki\Identity\Action;
+
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 class EditGroupsAction extends YesWikiAction implements RegisteredAction
@@ -20,7 +22,7 @@ class EditGroupsAction extends YesWikiAction implements RegisteredAction
         $groupOperationsService = $this->getService(GroupOperationsService::class);
         $userManager = $this->getService(UserManager::class);
 
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => 'EditGroupsAction : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),

@@ -16,7 +16,7 @@ class QrcodeActionTest extends YesWikiTestCase
     public function testQrcodeTagRendersImgWithGeneratedFile()
     {
         $wiki = $this->getWiki();
-        $html = $wiki->Format('{{qrcode text="hello world"}}');
+        $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{qrcode text="hello world"}}');
 
         $this->assertMatchesRegularExpression('/<img src="cache[^"]+\.svg" alt="hello world" class="qrcode-img"/', $html);
 
@@ -28,7 +28,7 @@ class QrcodeActionTest extends YesWikiTestCase
     public function testQrcodeTagWithoutTextRendersCoreAlert()
     {
         $wiki = $this->getWiki();
-        $html = $wiki->Format('{{qrcode}}');
+        $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{qrcode}}');
 
         $this->assertStringContainsString('yw-alert', $html);
         $this->assertStringContainsString('yw-alert--danger', $html);

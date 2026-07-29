@@ -5,6 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -73,8 +74,8 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $displayLastChanges = $this->wiki->services->get(PageManager::class)->getOne('DerniersChangementsRSS') && $this->wiki->HasAccess('read', 'DerniersChangementsRSS');
-        $displayLastComments = $this->wiki->services->get(PageManager::class)->getOne('DerniersCommentairesRSS') && $this->wiki->HasAccess('read', 'DerniersCommentairesRSS');
+        $displayLastChanges = $this->wiki->services->get(PageManager::class)->getOne('DerniersChangementsRSS') && $this->getService(AclService::class)->hasAccess('read', 'DerniersChangementsRSS');
+        $displayLastComments = $this->wiki->services->get(PageManager::class)->getOne('DerniersCommentairesRSS') && $this->getService(AclService::class)->hasAccess('read', 'DerniersCommentairesRSS');
 
         if ($displayLastChanges || $displayLastComments) {
             echo "\n" . '  <!-- RSS links -->' . "\n";

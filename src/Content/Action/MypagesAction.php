@@ -2,7 +2,9 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -40,15 +42,15 @@ class MypagesAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        if ($user = $this->wiki->GetUser()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             echo '<b>' . _t('LIST_OF_PAGES_WHERE_YOU_ARE_THE_OWNER') . ".</b><br /><br />\n";
 
             $my_pages_count = 0;
             $curChar = '';
 
-            if ($pages = $this->wiki->LoadAllPages()) {
+            if ($pages = $this->getService(PageManager::class)->getAll()) {
                 foreach ($pages as $page) {
-                    if ($this->wiki->GetUserName() == $page['owner'] && !preg_match('/^Comment/', $page['tag'])) {
+                    if ($this->getService(AuthenticationService::class)->getLoggedUserName() == $page['owner'] && !preg_match('/^Comment/', $page['tag'])) {
                         // XXX: strtoupper is locale dependent
                         $firstChar = strtoupper($page['tag'][0]);
                         if (!preg_match('/' . WN_UPPER . '/', $firstChar)) {

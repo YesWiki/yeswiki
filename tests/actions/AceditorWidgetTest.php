@@ -33,7 +33,7 @@ class AceditorWidgetTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testAceditorTagRendersWithoutError(Wiki $wiki)
     {
-        $output = $wiki->Format('{{aceditor}}');
+        $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
         $this->assertStringContainsString('aceditor-container', $output);
         $this->assertStringNotContainsStringIgnoringCase('unable to find template', $output);
     }
@@ -41,7 +41,7 @@ class AceditorWidgetTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testWidgetDoesNotDependOnBootstrapJsComponents(Wiki $wiki)
     {
-        $output = $wiki->Format('{{aceditor}}');
+        $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
 
         $this->assertStringNotContainsString('bootstrap-tagsinput', $output);
         // the toolbar's own dropdowns (Format/Actions menus) must be yw-dropdown,
@@ -54,8 +54,8 @@ class AceditorWidgetTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testGlobalAssetsIncludeRebuiltWidget(Wiki $wiki)
     {
-        $wiki->Format('{{aceditor}}');
-        $js = $wiki->Format('{{linkjavascript}}');
+        $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
+        $js = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{linkjavascript}}');
 
         $this->assertStringContainsString('javascripts/aceditor.js', $js);
         unset($GLOBALS['wiki']);

@@ -3,6 +3,7 @@
 namespace YesWiki\Admin\Handler;
 
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\HibernationService;
 
@@ -22,7 +23,7 @@ class UpdateHandler extends YesWikiHandler implements RegisteredHandler
 
         $output = '';
 
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isAdmin()) {
             $res = [];
             exec('./yeswicli migrate', $res);
             $output .= implode('<br>', $res);

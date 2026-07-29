@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
 
 /**
  * `{{desabonnement}}` -- converted from the procedural actions/desabonnement.php by ticket 06.
@@ -80,7 +81,7 @@ class DesabonnementAction extends YesWikiAction implements RegisteredAction
 
             echo $this->wiki->render("@core/$template", $listelements);
 
-            $this->wiki->addJavascriptFile('javascripts/contact.js');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
         }
     }
 }

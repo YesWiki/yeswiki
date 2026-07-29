@@ -35,7 +35,7 @@ class TocActionTest extends YesWikiTestCase
         $page = $pageManager->getOne(self::PAGE_TAG);
         $wiki->SetPage($page);
 
-        $html = $wiki->Format($body);
+        $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($body);
 
         // every heading carries an id
         preg_match_all('/<h[1-6][^>]*\sid="([^"]+)"/', $html, $idMatches);

@@ -101,7 +101,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     public function testTheRouteDispatchesThroughTheWholeApiPipeline(Wiki $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
-        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
+        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user: the route is @admins only');
 
         $authenticationService = $wiki->services->get(AuthenticationService::class);

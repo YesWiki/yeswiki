@@ -24,6 +24,7 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\SearchManager;
 
@@ -206,13 +207,13 @@ class EntryController extends YesWikiController
         array_shift($this->parentsEntries);
 
         // Format owner
-        $owner = $this->wiki->GetPageOwner($entryId) ?? $this->wiki->GetUserName();
+        $owner = $this->getService(PageManager::class)->getOwner($entryId) ?? $this->getService(AuthenticationService::class)->getLoggedUserName();
         $isOwnerIpAddress = preg_replace('/([0-9]|\.)/', '', $owner) == '';
         if ($isOwnerIpAddress || !$owner) {
             $owner = _t('BAZ_UNKNOWN_USER');
         }
         if (!empty($this->config['sso_config']) && isset($this->config['sso_config']['bazar_user_entry_id']) && $this->pageManager->getOne($owner)) {
-            $owner = $this->wiki->Format('[[' . $this->wiki->GetPageOwner($entryId) . ' ' . $this->wiki->GetPageOwner($entryId) . ']]');
+            $owner = $this->getService(MarkdownFormatterService::class)->format('[[' . $this->getService(PageManager::class)->getOwner($entryId) . ' ' . $this->getService(PageManager::class)->getOwner($entryId) . ']]');
         }
 
         // remake $_GET['message'] for BazarAction__ like in webhooks extension
@@ -243,9 +244,9 @@ class EntryController extends YesWikiController
             'isUserFavorite' => $isUserFavorite ?? false,
             'canShow' => $this->wiki->GetPageTag() != $entry['tag'], // hide if we are already in the show page
             'canEdit' => !$this->hibernationService->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
-            'canDelete' => !$this->hibernationService->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->getService(AclService::class)->isOwner($entryId)) && !isset($entry['read-only']),
-            'canDuplicate' => $this->wiki->UserIsAdmin($userNameForRendering) && !isset($entry['read-only']),
-            'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
+            'canDelete' => !$this->hibernationService->isWikiHibernated() && ($this->getService(AclService::class)->isAdmin($userNameForRendering) || $this->getService(AclService::class)->isOwner($entryId)) && !isset($entry['read-only']),
+            'canDuplicate' => $this->getService(AclService::class)->isAdmin($userNameForRendering) && !isset($entry['read-only']),
+            'isAdmin' => $this->getService(AclService::class)->isAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
             'sourceUrl' => $sourceUrl,
             'incomingUrl' => $this->getRequest()->query->get('incomingurl', getAbsoluteUrl()),
@@ -797,7 +798,7 @@ class EntryController extends YesWikiController
                     'message' => _t('BAZ_USER_SHOULD_BE_CONNECTED_TO_ACCES_THIS_FORM'),
                 ]);
                 $pageLogin = $this->pageManager->GetOne('PageLogin');
-                $results['output'] .= $this->wiki->format(!empty($pageLogin) ? '{{include page="PageLogin"}}' : '{{login}}');
+                $results['output'] .= $this->getService(MarkdownFormatterService::class)->format(!empty($pageLogin) ? '{{include page="PageLogin"}}' : '{{login}}');
             } elseif (!empty($loggerUser)) {
                 $userName = $loggerUser['name'];
 

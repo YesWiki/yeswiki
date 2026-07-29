@@ -5,8 +5,8 @@ namespace YesWiki\Content\Service;
 use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TextareaField;
-use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Wiki;
 
 class DuplicationManager
 {
@@ -214,7 +214,7 @@ class DuplicationManager
         if ($data['type'] != 'page' && empty($data['newTitle'])) {
             throw new \Exception(_t('EMPTY_PAGE_TITLE'));
         }
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->wiki->services->get(AclService::class)->isAdmin()) {
             throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
         }
         $page = $this->wiki->services->get(PageManager::class)->getOne($data['newTag']);
@@ -230,7 +230,7 @@ class DuplicationManager
 
     public function duplicateLocally($data)
     {
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->wiki->services->get(AclService::class)->isAdmin()) {
             throw new \Exception(_t('ONLY_ADMINS_CAN_DUPLICATE') . '.');
         }
         switch ($data['type']) {

@@ -5,6 +5,7 @@ namespace YesWiki\Content\Service;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\HashCashService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Entity\Event;
@@ -12,6 +13,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Wiki;
 
@@ -68,13 +70,13 @@ class CommentService implements EventSubscriberInterface
 
     public function addCommentIfAuthorized($content, $idComment = '')
     {
-        if (!$this->wiki->getUser()) {
+        if (!$this->wiki->services->get(AuthenticationService::class)->getLoggedUser()) {
             return [
                 'code' => 401,
                 'error' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
             ];
         }
-        if ($this->wiki->HasAccess('comment', $content['pagetag']) && $this->wiki->Loadpage($content['pagetag'])) {
+        if ($this->aclService->hasAccess('comment', $content['pagetag']) && $this->pageManager->getOne($content['pagetag'])) {
             if (!$this->wiki->services->get(HashCashService::class)->checkHashcash()) {
                 return [
                     'code' => 400,
@@ -87,7 +89,7 @@ class CommentService implements EventSubscriberInterface
                 $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
                     . ' FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'pages'
                     . " WHERE comment_on != ''";
-                if ($lastComment = $this->wiki->LoadSingle($sql)) {
+                if ($lastComment = $this->dbService->loadSingle($sql)) {
                     $num = $lastComment['comment_id'] + 1;
                 } else {
                     $num = '1';
@@ -105,7 +107,7 @@ class CommentService implements EventSubscriberInterface
                 ];
             }
             // store new comment
-            $this->wiki->SavePage($idComment, $body, $content['pagetag']);
+            $this->pageManager->save($idComment, $body, $content['pagetag']);
             if ($newComment) {
                 // default ACLs for comments : visible for all, writable by owner, commentable like parent.
                 $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
@@ -116,7 +118,7 @@ class CommentService implements EventSubscriberInterface
                 $this->aclService->save($idComment, 'comment', $parentCommentAcl);
             }
 
-            $comment = $this->wiki->LoadPage($idComment);
+            $comment = $this->pageManager->getOne($idComment);
             $com['tag'] = $comment['tag'];
             $com['commentOn'] = $comment['comment_on'];
             $com['rawbody'] = $comment['body'];
@@ -125,16 +127,16 @@ class CommentService implements EventSubscriberInterface
             $oldPageArray = $GLOBALS['wiki']->page;
             $GLOBALS['wiki']->tag = $comment['tag'];
             $GLOBALS['wiki']->page = $comment;
-            $com['body'] = $GLOBALS['wiki']->Format($comment['body']);
+            $com['body'] = $GLOBALS['wiki']->services->get(MarkdownFormatterService::class)->format($comment['body']);
             $GLOBALS['wiki']->tag = $oldPage;
             $GLOBALS['wiki']->page = $oldPageArray;
             $this->setUserData($comment, 'user', $com);
             $this->setUserData($comment, 'owner', $com);
             $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
-            if ($this->wiki->HasAccess('comment', $comment['tag'])) {
+            if ($this->aclService->hasAccess('comment', $comment['tag'])) {
                 $com['linkcomment'] = $this->urlFormatter->href('pages/' . $comment['tag'] . '/comments', 'api');
             }
-            if ($this->aclService->isOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
+            if ($this->aclService->isOwner($comment['tag']) || $this->aclService->isAdmin()) {
                 $com['linkeditcomment'] = $this->urlFormatter->href('edit', $comment['tag']);
                 $com['linkdeletecomment'] = $this->urlFormatter->href("comments/{$comment['tag']}/delete", 'api');
                 // $this->urlFormatter->href('deletepage', $comment['tag']);
@@ -222,7 +224,7 @@ class CommentService implements EventSubscriberInterface
         // remove current comment to prevent infinite loop
         $query .= "AND tag != '{$this->dbService->escape($tag)}' ";
         $query .= "AND latest = 'Y' " . 'ORDER BY substring(tag, 8) + 0';
-        $comments = array_filter($this->wiki->LoadAll($query), function ($comment) {
+        $comments = array_filter($this->dbService->loadAll($query), function ($comment) {
             return !empty($comment['tag']);
         });
 
@@ -253,14 +255,14 @@ class CommentService implements EventSubscriberInterface
                 $com['comments'][$i]['tag'] = $comment['tag'];
                 $com['comments'][$i]['commentOn'] = $comment['comment_on'];
                 $com['comments'][$i]['rawbody'] = $comment['body'];
-                $com['comments'][$i]['body'] = $this->wiki->Format($comment['body']);
+                $com['comments'][$i]['body'] = $this->wiki->services->get(MarkdownFormatterService::class)->format($comment['body']);
                 $this->setUserData($comment, 'user', $com['comments'][$i]);
                 $this->setUserData($comment, 'owner', $com['comments'][$i]);
                 $com['comments'][$i]['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
-                if ($this->wiki->HasAccess('comment', $comment['tag'])) {
+                if ($this->aclService->hasAccess('comment', $comment['tag'])) {
                     $com['comments'][$i]['linkcomment'] = $this->urlFormatter->href('pages/' . $comment['tag'] . '/comments', 'api');
                 }
-                if ($this->aclService->isOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
+                if ($this->aclService->isOwner($comment['tag']) || $this->aclService->isAdmin()) {
                     $com['comments'][$i]['linkeditcomment'] = $this->urlFormatter->href('edit', $comment['tag']);
                     $com['comments'][$i]['linkdeletecomment'] = $this->urlFormatter->href('comments/' . $comment['tag'] . '/delete', 'api');
                 }
@@ -348,13 +350,13 @@ class CommentService implements EventSubscriberInterface
     public function getCommentForm($tag)
     {
         $options = [];
-        if (!$this->wiki->getUser()) {
+        if (!$this->wiki->services->get(AuthenticationService::class)->getLoggedUser()) {
             $options['alerts'][] = [
                 'class' => 'info',
                 'text' => _t('USER_MUST_BE_LOGGED_TO_COMMENT'),
             ];
         } else {
-            if ($this->wiki->HasAccess('comment', $tag)) {
+            if ($this->aclService->hasAccess('comment', $tag)) {
                 $hashCashCode = '';
                 if ($this->wiki->config['use_hashcash']) {
                     $hashCash = $this->wiki->services->get(HashCashService::class);
@@ -408,7 +410,7 @@ class CommentService implements EventSubscriberInterface
                 : [
                     'commentsClosed' => false,
                     'coms' => $coms,
-                    'user' => ($hasAccessComment) ? null : $this->wiki->GetUser(),
+                    'user' => ($hasAccessComment) ? null : $this->wiki->services->get(AuthenticationService::class)->getLoggedUser(),
                     'form' => ($hasAccessComment) ? $this->getCommentForm($tag) : '',
                 ];
             $output = $this->wiki->render('@core/comment-for-page.twig', $options);

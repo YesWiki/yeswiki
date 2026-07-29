@@ -4,10 +4,10 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
@@ -46,7 +46,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
         $wiki->request->request->remove('hashcash_value');
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
-        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
+        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the comment path');
 
         try {
@@ -72,7 +72,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
         $wiki->request->request->remove('hashcash_value');
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
-        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
+        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the comment path');
 
         // addCommentIfAuthorized()'s success path renders the new comment via $GLOBALS['wiki'],

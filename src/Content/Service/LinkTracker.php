@@ -7,6 +7,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Wiki;
 
@@ -126,7 +127,7 @@ class LinkTracker
         $this->inclusionStack->register($this->wiki->tag);
         $body = $this->preventTrackingActions($page['body']);
         $body = $this->preventNotTrackingActions($body);
-        $this->wiki->Format($body);
+        $this->wiki->services->get(MarkdownFormatterService::class)->format($body);
         if (!empty($page['owner'])) {
             $ownerPage = $this->pageManager->getOne($page['owner']);
             if (!empty($ownerPage)) {

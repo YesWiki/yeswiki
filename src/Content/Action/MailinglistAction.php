@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -50,7 +51,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
         $list = $this->wiki->GetParameter('list');
         if (empty($list)) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_PARAMETER_LIST_REQUIRED') . '.</div>';
-        } elseif ($this->wiki->UserIsAdmin()) {
+        } elseif ($this->getService(AclService::class)->isAdmin()) {
             echo '<h2>' . _('CONTACT_MAILS_TO_ADD_OR_REMOVE') . ' ' . $list . '</h2>';
 
             // les mails formates sont prets a etre envoyes

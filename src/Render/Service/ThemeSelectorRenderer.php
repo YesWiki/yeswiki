@@ -4,6 +4,8 @@ namespace YesWiki\Render\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 
 class ThemeSelectorRenderer extends YesWikiController
@@ -97,7 +99,7 @@ class ThemeSelectorRenderer extends YesWikiController
         }
 
         // page list
-        $tablistWikinames = $this->wiki->LoadAll(
+        $tablistWikinames = $this->wiki->services->get(DbService::class)->loadAll(
             'SELECT DISTINCT tag FROM ' . $this->wiki->GetConfigValue('table_prefix') . "pages WHERE latest='Y'"
         );
         $listWikinames = [];
@@ -125,7 +127,7 @@ class ThemeSelectorRenderer extends YesWikiController
             'class' => $formclass,
             'bgselector' => $bgselector,
             'listWikinames' => $listWikinames,
-            'showAdminActions' => $this->wiki->UserIsAdmin(),
+            'showAdminActions' => $this->wiki->services->get(AclService::class)->isAdmin(),
             'themeSelectorTranslation' => array_map('_t', $ts),
             'customCSSPresetsPath' => ThemeManager::CUSTOM_CSS_PRESETS_PATH,
             'customCSSPresetsPrefix' => ThemeManager::CUSTOM_CSS_PRESETS_PREFIX,

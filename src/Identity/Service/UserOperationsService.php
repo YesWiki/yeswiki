@@ -3,18 +3,15 @@
 namespace YesWiki\Identity\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
+use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
-use YesWiki\Core\YesWikiController;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Content\Service\PageManager;
-use YesWiki\Content\Service\TripleStore;
-use YesWiki\Identity\Service\UserManager;
 
 class UserOperationsService extends YesWikiController
 {
@@ -193,7 +190,7 @@ class UserOperationsService extends YesWikiController
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->wiki->services->get(AclService::class)->isAdmin()) {
             throw new DeleteUserException(_t('USER_MUST_BE_ADMIN_TO_DELETE') . '.');
         }
         if ($this->isRunner($user)) {
@@ -214,7 +211,7 @@ class UserOperationsService extends YesWikiController
      */
     public function getFirstAdmin(): string
     {
-        $admins = $this->wiki->GetGroupACL(ADMIN_GROUP);
+        $admins = $this->groupOperationsService->getMembersText(ADMIN_GROUP);
         $admins = str_replace(["\r\n", "\r"], "\n", $admins);
         $admins = explode("\n", $admins);
         foreach ($admins as $line) {
@@ -257,7 +254,7 @@ class UserOperationsService extends YesWikiController
     {
         $grouptab = $this->userManager->groupsWhereIsMember($user, false);
         foreach ($grouptab as $group) {
-            $groupmembers = $this->wiki->GetGroupACL($group);
+            $groupmembers = $this->groupOperationsService->getMembersText($group);
             $groupmembers = str_replace(["\r\n", "\r"], "\n", $groupmembers);
             $groupmembers = explode("\n", $groupmembers);
             $groupmembers = array_unique(array_filter(array_map('trim', $groupmembers)));

@@ -13,9 +13,11 @@ use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
@@ -348,7 +350,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 
         // TODO put in all bazar templates
 
-        $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
 
         return $this->render('@core/entries/index.twig', [
             'listId' => $GLOBALS['_BAZAR_']['nbbazarliste'],
@@ -473,7 +475,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
                     $paramValue = (!empty($params[$paramName]) && in_array($params[$paramName], ['yes', 'onlyadmins'], true)) ? $params[$paramName] : false;
                     switch ($paramValue) {
                         case 'onlyadmins':
-                            $paramValue = $this->wiki->UserIsAdmin();
+                            $paramValue = $this->getService(AclService::class)->isAdmin();
                             break;
                         case 'yes':
                             $paramValue = true;
@@ -554,7 +556,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
                 }
 
                 // mask emails and unreadable values for non-admins
-                if (!$this->wiki->UserIsAdmin()) {
+                if (!$this->getService(AclService::class)->isAdmin()) {
                     foreach ($fiches as $index => $fiche) {
                         $entryFormId = $fiche['form_id'];
                         if (strval($entryFormId) != strval(intval($entryFormId))) {
@@ -622,18 +624,18 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         }
         $js = '';
 
-        $this->wiki->AddCSSFile('styles/vendor/leaflet/leaflet.css');
-        $this->wiki->AddCSSFile('styles/bazar/bazarcarto.css');
-        $this->wiki->AddCSSFile('javascripts/vendor/leaflet-draw/leaflet.draw.css');
-        $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
-        $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
-        $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
-        $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-draw/leaflet.draw.js', false, true);
+        $this->getService(AssetsManager::class)->AddCSSFile('styles/vendor/leaflet/leaflet.css');
+        $this->getService(AssetsManager::class)->AddCSSFile('styles/bazar/bazarcarto.css');
+        $this->getService(AssetsManager::class)->AddCSSFile('javascripts/vendor/leaflet-draw/leaflet.draw.css');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/leaflet/leaflet.min.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/leaflet-providers/leaflet-providers.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/leaflet-draw/leaflet.draw.js', false, true);
 
         $output .= '<div id="osmmap' . $params['nbbazarliste'] . '" class="no-dblclick" style="width:' . $params['width'] . '; height:' . $params['height'] . '"></div>';
 
         if ($params['spider'] == 'true' or $params['spider'] == '1') {
-            $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-spiderfier/oms.min.js');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/leaflet-spiderfier/oms.min.js');
             $markersjs = 'var popups = Array();' . "\n" . 'oms = new OverlappingMarkerSpiderfier(map' . $params['nbbazarliste'] . ');' . "\n" .
             'var popup = new L.Popup();
         oms.addListener("click", function(marker) {
@@ -643,8 +645,8 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
           map' . $params['nbbazarliste'] . '.closePopup();
         });' . "\n";
         } elseif ($params['cluster'] == 'true' or $params['cluster'] == '1') {
-            $this->wiki->AddCSSFile('styles/vendor/leaflet-markercluster/leaflet-markercluster.css');
-            $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js');
+            $this->getService(AssetsManager::class)->AddCSSFile('styles/vendor/leaflet-markercluster/leaflet-markercluster.css');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/leaflet-markercluster/leaflet-markercluster.min.js');
             $markersjs = 'var markerscluster = new L.MarkerClusterGroup();' . "\n";
         } else {
             $markersjs = '';
@@ -652,8 +654,8 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 
         if ($params['fullscreen'] == 'true' || $params['fullscreen'] == '1') {
             $params['fullscreen'] = 'true';
-            $this->wiki->AddCSSFile('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css');
-            $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js');
+            $this->getService(AssetsManager::class)->AddCSSFile('styles/vendor/leaflet-fullscreen/leaflet-fullscreen.css');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/leaflet-fullscreen/leaflet-fullscreen.js');
         } else {
             $params['fullscreen'] = 'false';
         }
@@ -780,7 +782,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
                             //	http://leafletjs.com/reference.html#marker-options
                             if (!$leafletajaxIncluded) {
                                 $leafletajaxIncluded = true;
-                                $this->wiki->AddJavascriptFile('javascripts/vendor/leaflet-ajax/leaflet.ajax.min.js');
+                                $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/leaflet-ajax/leaflet.ajax.min.js');
                             }
 
                             $styleJs = '';
@@ -900,7 +902,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
   new L.Control.geometriesPanel({ position: \'topright\' }).addTo(map' . $params['nbbazarliste'] . ');';
             }
         }
-        $this->wiki->AddJavascript(
+        $this->getService(AssetsManager::class)->AddJavascript(
             '
 import { drawGeometries } from "./javascripts/leaflet-draw.helper.js"
 

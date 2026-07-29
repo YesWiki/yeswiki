@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
@@ -25,7 +26,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
 
     public function run()
     {
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ERROR_NO_ACCESS') . ' setwikidefaulttheme',

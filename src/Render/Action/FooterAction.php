@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\ThrowableFormatter;
@@ -47,7 +48,7 @@ class FooterAction extends YesWikiAction implements RegisteredAction
                 }
 
                 // SQL queries maybe contain classified informations, so let's keep them for admins
-                if (!$this->wiki->UserIsAdmin()) {
+                if (!$this->getService(AclService::class)->isAdmin()) {
                     $debug_log_sql_queries = _t('LOGS_ARE_FOR_ADMINS_ONLY');
                 }
 

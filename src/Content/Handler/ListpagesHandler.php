@@ -2,9 +2,13 @@
 
 namespace YesWiki\Content\Handler;
 
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\TagsManager;
 
 /**
@@ -55,15 +59,15 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         $output = '';
 
         // creation de la liste des mots cles a filtrer
-        $this->wiki->AddJavascriptFile('javascripts/tag.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/tag.js');
         $tab_selected_tags = explode(',', $tags);
         $selectiontags = " AND value IN ('" . implode("','", $tab_selected_tags) . "')";
 
         // on recupere tous les tags existants
         $sql = 'SELECT DISTINCT value FROM ' . $this->wiki->config['table_prefix'] . "triples WHERE property='http://outils-reseaux.org/_vocabulary/tag' ORDER BY value ASC";
-        $tab_tous_les_tags = $this->wiki->LoadAll($sql);
+        $tab_tous_les_tags = $this->getService(DbService::class)->loadAll($sql);
         $tab_tag = [];
-        if (is_array($tab_tous_les_tags)) {
+        if ($tab_tous_les_tags !== []) {
             foreach ($tab_tous_les_tags as $tag) {
                 $tag['value'] = stripslashes($tag['value']);
                 if (in_array($tag['value'], $tab_selected_tags)) {
@@ -72,12 +76,9 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
                     $tab_tag[] = '&nbsp;<a class="tag-label label label-info" href="' . $this->getService(UrlFormatter::class)->href('listpages', $this->wiki->GetPageTag(), 'tags=' . urlencode($tag['value'])) . '">' . $tag['value'] . '</a>' . "\n";
                 }
             }
-            $outputselecttag = '';
-            if (!empty($tab_tag)) {
-                $outputselecttag .= '<strong><i class="icon icon-tags"></i> ' . _t('TAGS_FILTER') . ' : </strong>';
-                foreach ($tab_tag as $tag) {
-                    $outputselecttag .= $tag;
-                }
+            $outputselecttag = '<strong><i class="icon icon-tags"></i> ' . _t('TAGS_FILTER') . ' : </strong>';
+            foreach ($tab_tag as $tag) {
+                $outputselecttag .= $tag;
             }
         }
 
@@ -97,8 +98,8 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
                     $element[$page['tag']]['time'] = $page['time'];
                     $element[$page['tag']]['title'] = get_title_from_body($page);
                     $element[$page['tag']]['image'] = get_image_from_body($page);
-                    $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->wiki->Format($page['body'], 'wakka', $page['tag'])), $nbcartrunc);
-                    $pagetags = $this->wiki->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+                    $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format($page['body'])), $nbcartrunc);
+                    $pagetags = $this->getService(TripleStore::class)->getAll($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
                     foreach ($pagetags as $tag) {
                         $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
                         $element[$page['tag']]['tagbadges'] .= '<span class="tag-label label label-primary">' . $tag['value'] . '</span>&nbsp;';
@@ -122,7 +123,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         $output .= (!empty($tab_selected_tags) ? ' ' . _t('TAGS_WITH_KEYWORD') . ' ' . implode(' ' . _t('TAGS_WITH_KEYWORD_SEPARATOR') . ' ', array_map(function ($tagName) {
             return '<span class="tag-label label label-info">' . $tagName . '</span>';
         }, $tab_selected_tags)) : '') . '.';
-        $output .= $this->wiki->Format('{{rss tags="' . $tags . '" class="pull-right"}}') . "\n";
+        $output .= $this->getService(MarkdownFormatterService::class)->format('{{rss tags="' . $tags . '" class="pull-right"}}') . "\n";
         $output .= '</div>' . "\n" . $text;
 
         echo $this->wiki->Header();

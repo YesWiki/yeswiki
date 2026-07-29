@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -33,14 +34,14 @@ class NuageTagAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        $this->wiki->AddJavascriptFile('javascripts/tag.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/tag.js');
 
         $selectiontags = $this->buildSelectionTagsClause($this->arguments['tags']);
         $tablePrefix = $this->wiki->config['table_prefix'];
 
         // on récupère le nb maximum et le nb minimum d'occurences
         $sql = 'SELECT COUNT(value) AS nb FROM ' . $tablePrefix . 'triples WHERE property="' . self::TAG_PROPERTY . '" ' . $selectiontags . ' GROUP BY value';
-        $min_max = $this->wiki->LoadAll($sql);
+        $min_max = $this->getService(DbService::class)->loadAll($sql);
         $min = 100000000;
         $max = 0;
         foreach ($min_max as $tab_min_max) {
@@ -58,10 +59,10 @@ class NuageTagAction extends YesWikiAction implements RegisteredAction
 
         // on récupère tous les tags existants
         $sql = 'SELECT value, resource FROM ' . $tablePrefix . 'triples WHERE property="' . self::TAG_PROPERTY . '" ' . $selectiontags . ' ORDER BY value ASC, resource ASC';
-        $tab_tous_les_tags = $this->wiki->LoadAll($sql);
+        $tab_tous_les_tags = $this->getService(DbService::class)->loadAll($sql);
 
         $output = '';
-        if (is_array($tab_tous_les_tags)) {
+        if ($tab_tous_les_tags !== []) {
             $i = 1;
             $nb_pages = 0;
             $liste_page = '';

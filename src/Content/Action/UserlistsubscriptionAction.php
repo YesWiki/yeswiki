@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 /**
@@ -46,7 +47,7 @@ class UserlistsubscriptionAction extends YesWikiAction implements RegisteredActi
         // echoed shape as listsubscription.php -- see that file's comment.
 
         // valable que pour les utilisateurs connectes
-        if ($user = $this->wiki->GetUser()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             if ($user['email'] != '') {
                 // recuperation des parametres
                 $list = $this->wiki->GetParameter('list');

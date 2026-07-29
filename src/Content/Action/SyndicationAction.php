@@ -8,6 +8,7 @@ use League\HTMLToMarkdown\HtmlConverter;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
@@ -72,7 +73,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction
 
     public function run(): ?string
     {
-        $mappingToBazar = !empty($this->arguments['mapping']) && $this->wiki->userIsAdmin();
+        $mappingToBazar = !empty($this->arguments['mapping']) && $this->getService(AclService::class)->isAdmin();
         if ($mappingToBazar) {
             $this->addToBazar();
             if (empty($this->arguments['mapping']['id'])) {

@@ -9,6 +9,7 @@ use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -255,16 +256,16 @@ class AdminContentController extends YesWikiController
         foreach ($pageTags as $tag) {
             try {
                 if ($mode === 'default') {
-                    $this->wiki->DeleteAcl($tag);
+                    $this->getService(AclService::class)->delete($tag);
                 } else {
                     if (!empty($newRead)) {
-                        $this->wiki->SaveAcl($tag, 'read', $newRead, $appendAcl);
+                        $this->getService(AclService::class)->save($tag, 'read', $newRead, $appendAcl);
                     }
                     if (!empty($newWrite)) {
-                        $this->wiki->SaveAcl($tag, 'write', $newWrite, $appendAcl);
+                        $this->getService(AclService::class)->save($tag, 'write', $newWrite, $appendAcl);
                     }
                     if (!empty($newComment)) {
-                        $this->wiki->SaveAcl($tag, 'comment', $this->filterCommentAcl($newComment), $appendAcl);
+                        $this->getService(AclService::class)->save($tag, 'comment', $this->filterCommentAcl($newComment), $appendAcl);
                     }
                 }
                 $success[] = $tag;

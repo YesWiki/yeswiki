@@ -386,7 +386,7 @@ class PageManager
         SQL;
 
         // append request to filter on acls during the request
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->aclService->isAdmin()) {
             $aclRequest = $this->aclService->updateRequestWithACL();
             $sqlRequest .= !empty($aclRequest) ? ' AND ' . $aclRequest : '';
         }
@@ -727,7 +727,7 @@ class PageManager
      */
     private function checkEntriesACL(array $pages, ?string $tag = null, ?string $userNameForCheckingACL = null): array
     {
-        if ($this->wiki->UserIsAdmin($userNameForCheckingACL)) {
+        if ($this->aclService->isAdmin($userNameForCheckingACL)) {
             // do not check following tests to be faster because admins can see anything
             return $pages;
         }

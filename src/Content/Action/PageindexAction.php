@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\LinkRenderer;
 
 /**
@@ -40,7 +41,7 @@ class PageindexAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        if ($pages = $this->wiki->LoadAll('SELECT tag FROM ' . $this->wiki->config['table_prefix'] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' ORDER BY tag')) {
+        if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag FROM ' . $this->wiki->config['table_prefix'] . 'pages WHERE latest = \'Y\' AND comment_on=\'\' ORDER BY tag')) {
             foreach ($pages as $page) {
                 // XXX: strtoupper is locale dependent
                 $firstChar = strtoupper($page['tag'][0]);

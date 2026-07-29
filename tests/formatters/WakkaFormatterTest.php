@@ -18,7 +18,7 @@ class WakkaFormatterTest extends YesWikiTestCase
     public function testMarkdownImageIsSafe(string $markdown, ?string $expectedSrc)
     {
         $wiki = $this->getWiki();
-        $html = $wiki->Format($markdown);
+        $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($markdown);
 
         // no <img> tag should ever carry an event-handler attribute or a javascript:/data: src,
         // regardless of how the rest of the markdown was (mis)parsed
@@ -81,7 +81,7 @@ class WakkaFormatterTest extends YesWikiTestCase
         $payload = str_repeat('[', 60000);
 
         $start = microtime(true);
-        $wiki->Format($payload);
+        $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($payload);
         $elapsed = microtime(true) - $start;
 
         $this->assertLessThan(

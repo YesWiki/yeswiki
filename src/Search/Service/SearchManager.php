@@ -4,14 +4,15 @@ namespace YesWiki\Search\Service;
 
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
-use YesWiki\Wiki;
-use YesWiki\Identity\Service\AclService;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Identity\Service\Guard;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Wiki;
 
 class SearchManager
 {
@@ -924,7 +925,7 @@ class SearchManager
 
         // Optionnaly, filter on read ACL
 
-        if (!$this->wiki->UserIsAdmin() && $filterOnReadACL) {
+        if (!$this->aclService->isAdmin() && $filterOnReadACL) {
             $vWhereRequest .= ($vWhereRequest != '' ? ' AND ' : '') . $this->aclService->updateRequestWithACL();
         }
 
@@ -1046,7 +1047,7 @@ class SearchManager
             // save owner to reduce sql calls
             $vPageManager->cacheOwner($page);
             // not possible to init the Guard in the constructor because of circular reference problem
-            $filteredPage = (!$this->wiki->UserIsAdmin() && $useGuard)
+            $filteredPage = (!$this->aclService->isAdmin() && $useGuard)
                 ? $this->wiki->services->get(Guard::class)->checkAcls($page, $page['tag'])
                 : $page;
             $data = $vEntryManager->getDataFromPage($filteredPage, false, $debug, $params['correspondance'] ?? '');
@@ -1189,7 +1190,7 @@ class SearchManager
                             if (preg_match('/^\[(.*)\]$/', $vValue, $matches)) {
                                 switch ($matches[1]) {
                                     case 'user.name':
-                                        $vValue = $this->wiki->getUserName();
+                                        $vValue = $this->wiki->services->get(AuthenticationService::class)->getLoggedUserName();
                                         break;
                                     case 'user.entry.tag':
                                         $vUserManager = $this->wiki->services->get(UserManager::class);

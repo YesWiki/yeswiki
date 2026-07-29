@@ -126,7 +126,7 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 
         return true;
     } catch (Exception $e) {
-        if ($GLOBALS['wiki']->UserIsAdmin()) {
+        if ($GLOBALS['wiki']->services->get(YesWiki\Identity\Service\AclService::class)->isAdmin()) {
             echo $e->errorMessage();
         }
 

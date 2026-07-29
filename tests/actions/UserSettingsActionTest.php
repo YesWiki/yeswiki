@@ -52,7 +52,7 @@ class UserSettingsActionTest extends YesWikiTestCase
     private function checkdisplayFormNotConnected(Wiki $wiki)
     {
         $this->ensureCacheFolderIsWritable();
-        $output = $wiki->Format('{{usersettings}}');
+        $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
         $rexExpStr = '/.*' . implode('\s*', explode(' ', preg_quote('<input type="hidden" name="usersettings_action" value="signup" />', '/'))) . '.*/';
         $this->assertMatchesRegularExpression($rexExpStr, $output, '`usersettings_action` input badly set in user-signup-form.twig !');
 
@@ -85,7 +85,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         // login
         $authenticationService->login($user);
 
-        $output = $wiki->Format('{{usersettings}}');
+        $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
         // logout
         $authenticationService->logout();
         $this->assertInstanceOf(User::class, $user);
@@ -130,7 +130,7 @@ class UserSettingsActionTest extends YesWikiTestCase
 
         $this->ensureCacheFolderIsWritable();
 
-        $output = $wiki->Format('{{usersettings}}');
+        $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
 
         $rexExpStr = '/.*' . implode(
             '\s*',
@@ -204,7 +204,7 @@ class UserSettingsActionTest extends YesWikiTestCase
 
             $exitExceptionCaught = false;
             try {
-                $output = $wiki->Format('{{usersettings}}');
+                $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
             } catch (ExitException $e) {
                 $exitExceptionCaught = true;
             }

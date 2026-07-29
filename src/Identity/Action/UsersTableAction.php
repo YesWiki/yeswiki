@@ -1,15 +1,18 @@
 <?php
 
 namespace YesWiki\Identity\Action;
+
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Exception\DeleteUserException;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
-use YesWiki\Identity\Service\UserOperationsService;
-use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\YesWikiAction;
-use YesWiki\User;
+use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\User;
 
 class UsersTableAction extends YesWikiAction implements RegisteredAction
 {
@@ -46,11 +49,11 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction
         $this->userManager = $this->getService(UserManager::class);
         $this->csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
 
-        $isAdmin = $this->wiki->UserIsAdmin();
+        $isAdmin = $this->getService(AclService::class)->isAdmin();
 
         if ($isAdmin) {
             // adds the activate/inactivate column (accountactivationbyemail, ticket 07)
-            $this->wiki->AddJavascriptFile('javascripts/users-table-addon.js');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/users-table-addon.js');
         }
 
         // manage POST actions

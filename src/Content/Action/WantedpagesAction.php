@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Render\Service\LinkRenderer;
@@ -40,7 +41,7 @@ class WantedpagesAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        if ($pages = $this->wiki->LoadWantedPages()) {
+        if ($pages = $this->getService(PageManager::class)->getWanted()) {
             echo "<ul>\n";
             foreach ($pages as $page) {
                 echo '	<li>', $page['tag'];

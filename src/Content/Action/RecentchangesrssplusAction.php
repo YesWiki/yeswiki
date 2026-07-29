@@ -3,9 +3,13 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{recentchangesrssplus}}` -- converted from the procedural actions/recentchangesrssplus.php by ticket 06.
@@ -41,7 +45,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
 
     private function emit(): void
     {
-        if ($user = $this->wiki->GetUser()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             $max = $user['changescount'];
         } else {
             $max = 20;
@@ -54,10 +58,10 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
             return;
         }
 
-        $dbService = $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class);
+        $dbService = $this->wiki->services->get(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
         $bodyExpr = ($dbService->getDriver() === 'sqlite') ? 'substr(body,1,500)' : 'LEFT(body,500)';
-        if ($pages = $this->wiki->LoadAll("select tag, time, $userCol, owner, $bodyExpr as body from " . $this->wiki->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
+        if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, $bodyExpr as body from " . $this->wiki->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
             if (!($link = $this->wiki->GetParameter('link'))) {
                 $link = $this->wiki->config['root_page'];
             }
@@ -72,7 +76,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
 
             $items = '';
             foreach ($pages as $i => $page) {
-                $readAcl = $this->wiki->HasAccess('read', $page['tag']);
+                $readAcl = $this->getService(AclService::class)->hasAccess('read', $page['tag']);
                 $tag = $readAcl ? $page['tag'] : substr($page['tag'], 0, 3) . '___';
 
                 list($day, $time) = explode(' ', $page['time']);
@@ -80,7 +84,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
                 list($hh, $mm, $ss) = explode(':', $time);
 
                 $body = $readAcl
-                    ? htmlspecialchars($this->wiki->Format($page['body'], 'wakka', $page['tag']), ENT_COMPAT, YW_CHARSET)
+                    ? htmlspecialchars($this->getService(MarkdownFormatterService::class)->format($page['body']), ENT_COMPAT, YW_CHARSET)
                     : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>';
 
                 $items .= "<item>\n";

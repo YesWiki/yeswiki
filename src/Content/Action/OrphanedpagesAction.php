@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Render\Service\LinkRenderer;
@@ -49,7 +50,7 @@ class OrphanedpagesAction extends YesWikiAction implements RegisteredAction
 
         if ($pages = $tagsManager->getPagesByTags('', 'wiki', '', '')) {
             foreach ($pages as $page) {
-                if ($this->wiki->IsOrphanedPage($page['tag'])) {
+                if ($this->getService(PageManager::class)->isOrphaned($page['tag'])) {
                     echo $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0), "<br />\n";
                 }
             }

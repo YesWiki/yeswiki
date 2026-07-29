@@ -2,9 +2,12 @@
 
 namespace YesWiki\Content\Handler;
 
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `/PageName/mail` -- converted from the procedural handlers/page/mail.php by ticket 06.
@@ -34,7 +37,6 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-
         // {{mail}} page handler (ticket 18, relocated from tools/contact/handlers/page/mail.php).
         // Trimmed to only the "share this page by email" form-rendering branch -- actually
         // sending mail now goes through POST /api/contact/mail (ApiController::sendContactMail()),
@@ -65,7 +67,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
                   <i class="fa fa-envelope"></i>&nbsp;' . _t('CONTACT_SEND_MESSAGE') . '
                 </button>
             </form>';
-        } elseif ($aclService->hasAccess('read') && $this->wiki->GetUser()) {
+        } elseif ($aclService->hasAccess('read') && $this->getService(AuthenticationService::class)->getLoggedUser()) {
             // sinon on affiche le formulaire d'envoi de mail
             // si on est identifie
             // on verifie si l'on est bien identifie comme admin, pour eviter le spam
@@ -98,16 +100,16 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
             // on affiche le formulaire d'identification sinon
             $output .= $this->wiki->render('@core/alert-message.twig', [
                 'type' => 'danger',
-                'message' => ($this->wiki->GetUser())
+                'message' => ($this->getService(AuthenticationService::class)->getLoggedUser())
                     ? _t('LOGIN_NOT_AUTORIZED')
                     : (_t('CONTACT_HANDLER_MAIL_FOR_CONNECTED') . '<br />'
                         . _t('CONTACT_LOGIN_IF_CONNECTED')),
             ]);
-            $output .= $this->wiki->Format('{{login}}') . "\n";
+            $output .= $this->getService(MarkdownFormatterService::class)->format('{{login}}') . "\n";
         }
 
-        if ($aclService->hasAccess('read') && ($this->wiki->GetUser() || !empty($field))) {
-            $this->wiki->addJavascriptFile('javascripts/contact.js');
+        if ($aclService->hasAccess('read') && ($this->getService(AuthenticationService::class)->getLoggedUser() || !empty($field))) {
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
         }
 
         // affichage a l'ecran

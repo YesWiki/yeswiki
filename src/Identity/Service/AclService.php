@@ -43,6 +43,25 @@ class AclService
         $this->cache = [];
     }
 
+    /** @var array<string, bool> per-request memo, user name => is admin */
+    protected $isAdminCache = [];
+
+    /**
+     * Whether $user (default: the logged-in user) belongs to the admins group
+     * (historic Wiki::UserIsAdmin()).
+     */
+    public function isAdmin(?string $user = null): bool
+    {
+        if ($user === null) {
+            $user = $this->authenticationService->getLoggedUserName();
+        }
+        if (!array_key_exists($user, $this->isAdminCache)) {
+            $this->isAdminCache[$user] = $this->userManager->isInGroup(ADMIN_GROUP, $user, false);
+        }
+
+        return $this->isAdminCache[$user];
+    }
+
     /**
      * Whether the logged-in user owns the page $tag (default: the current page).
      */
@@ -346,7 +365,7 @@ class AclService
             $username = $user;
         }
 
-        if ($adminCheck && !empty($username) && $this->wiki->UserIsAdmin($username)) {
+        if ($adminCheck && !empty($username) && $this->isAdmin($username)) {
             return true;
         }
 
@@ -444,7 +463,7 @@ class AclService
             $userName = $user['name'];
             $neededACL[] = '+';
             $neededACL[] = $userName;
-            $groups = $this->wiki->GetGroupsList();
+            $groups = $this->container->get(GroupOperationsService::class)->getAll();
             foreach ($groups as $group) {
                 if (!empty($userName) && $this->userManager->isInGroup($group, $userName, true)) {
                     $neededACL[] = '@' . $group;

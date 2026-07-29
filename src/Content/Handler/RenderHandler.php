@@ -4,6 +4,7 @@ namespace YesWiki\Content\Handler;
 
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `/PageName/render` -- converted from the procedural handlers/page/render.php by ticket 06.
@@ -35,11 +36,11 @@ class RenderHandler extends YesWikiHandler implements RegisteredHandler
     {
         $output = '<body class="yeswiki-render">' . "\n"
             . '<div class="container">' . "\n"
-            . '<div class="yeswiki-page-widget page-widget page" ' . $this->wiki->Format('{{doubleclic iframe="1"}}') . '>' . "\n";
+            . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}') . '>' . "\n";
 
         $this->wiki->page['body'] = strip_tags($_GET['content']); // fake Page for actions and handlers, all html is striped
 
-        $output .= $this->wiki->Format($this->wiki->page['body']);
+        $output .= $this->getService(MarkdownFormatterService::class)->format($this->wiki->page['body']);
         $output .= '</div><!-- end .page-widget -->' . "\n";
         // ajout des en-têtes en pieds de page
 

@@ -2,9 +2,12 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{listpages}}` -- converted from the procedural actions/listpages.php by ticket 06.
@@ -71,7 +74,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             $sort = 'tag';
         }
         if ($owner == 'owner') {
-            $owner = $this->wiki->GetPageOwner();
+            $owner = $this->getService(PageManager::class)->getOwner();
         }
         if (($owner && $sort == 'owner') || ($user && $sort == 'user')) {
             $sort = 'tag';
@@ -95,13 +98,13 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             $exclude = [];
         }
         if ($user == 'user') {
-            $user = $this->wiki->GetPageOwner();
+            $user = $this->getService(PageManager::class)->getOwner();
         }
 
         $prefix = $this->wiki->GetConfigValue('table_prefix');
 
         // treatment
-        $dbService = $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class);
+        $dbService = $this->wiki->services->get(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
 
         if ($tree) {
@@ -139,8 +142,8 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                     $links[$tree] = [];
             } // switch
             if ($sort != 'tag') {
-                $sql .= ' WHERE a.tag = "' . $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($tree) . '" AND a.latest = "Y" LIMIT 1';
-                if (!$rootData = $this->wiki->LoadSingle($sql)) {
+                $sql .= ' WHERE a.tag = "' . $this->wiki->services->get(DbService::class)->escape($tree) . '" AND a.latest = "Y" LIMIT 1';
+                if (!$rootData = $this->getService(DbService::class)->loadSingle($sql)) {
                     echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' ListPages</strong> : ' . _('THE_PAGE') . ' ' . htmlspecialchars($tree, ENT_COMPAT, YW_CHARSET) . ' ' . _t('DOESNT_EXIST') . ' !</div>';
 
                     return;
@@ -157,11 +160,11 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
 
             // to avoid many loops and computing several time the lists needed for the request,
             // we store them into variables
-            $from = '"' . $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($tree) . '"';
-            $exclude[] = $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($tree);
+            $from = sprintf('"%s"', $this->wiki->services->get(DbService::class)->escape($tree));
+            $exclude[] = $this->wiki->services->get(DbService::class)->escape($tree);
             $exclude_str = '"' . implode('", "', $exclude) . '"';
             for ($i = 1; $i <= $levels; $i++) {
-                if ($from) {
+                if ($from !== '') {
                     if ($owner) {
                         $sql = 'SELECT from_tag, to_tag, a.tag IS NOT NULL page_exists'
                             . ($sort == 'time' ? ', a.time' : '');
@@ -176,7 +179,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                         $sql .= ' WHERE from_tag IN (' . $from . ')'
                             . ' AND to_tag NOT IN (' . $from . ')'
                             . ' AND to_tag = a.tag'
-                            . ' AND a.owner = "' . $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($owner) . '"'
+                            . ' AND a.owner = "' . $this->wiki->services->get(DbService::class)->escape($owner) . '"'
                             . ' AND a.latest = "Y"';
                     } else {
                         $sql = 'SELECT from_tag, to_tag, a.tag IS NOT NULL page_exists';
@@ -229,11 +232,11 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                         break;
                 } // switch
 
-                if ($pages = $this->wiki->LoadAll($sql)) {
-                    $from = '';
+                if ($pages = $this->getService(DbService::class)->loadAll($sql)) {
+                    $fromTags = [];
                     $newworkingon = [];
                     foreach ($pages as $page) {
-                        $to_tag = '"' . $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($page['to_tag']) . '"';
+                        $to_tag = '"' . $this->wiki->services->get(DbService::class)->escape($page['to_tag']) . '"';
                         $workingon[$page['from_tag']][$page['to_tag']] = ['page_exists' => $page['page_exists'], 'haslinksto' => []];
                         if ($sort != 'tag') {
                             $workingon[$page['from_tag']][$page['to_tag']][$sort] = $page[$sort];
@@ -248,7 +251,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                             } // switch
                         }
                         if ($page['page_exists']) {
-                            $from .= ($from ? ', ' : '') . $to_tag;
+                            $fromTags[] = $to_tag;
                             // if several pages link to the same page, only display the tree once
                             // (for the first appearing time)
                             if (!isset($newworkingon[$page['to_tag']])) {
@@ -257,6 +260,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                         }
                         $exclude_str .= ', ' . $to_tag;
                     }
+                    $from = implode(', ', $fromTags);
                     if (!$workingon = $newworkingon) {
                         // no page had link to still non-referrenced pages, we can stop here
                         break;
@@ -347,9 +351,9 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                     LEFT JOIN ' . $prefix . 'users ON b.user = name
                     LEFT JOIN ' . $prefix . 'pages user_page ON name = user_page.tag AND user_page.latest = "Y"'
                     . ($owner ? '' : ' LEFT JOIN ' . $prefix . 'pages owner_page ON b.owner = owner_page.tag AND owner_page.latest = "Y"')
-                    . ' WHERE a.user = "' . $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($user) . '"'
+                    . ' WHERE a.user = "' . $this->wiki->services->get(DbService::class)->escape($user) . '"'
                     . ' AND a.tag = b.tag AND b.latest = "Y"'
-                    . ($owner ? ' AND b.owner = "' . $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($owner) . '"' : '');
+                    . ($owner ? ' AND b.owner = "' . $this->wiki->services->get(DbService::class)->escape($owner) . '"' : '');
             } elseif ($owner) {
                 if ($sort == 'user') {
                     $sql = "SELECT a.tag, a.time,
@@ -360,7 +364,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                 } else {
                     $sql = 'SELECT tag, time FROM ' . $prefix . 'pages a';
                 }
-                $sql .= ' WHERE a.owner = "' . $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($owner) . '" AND a.latest = "Y"';
+                $sql .= ' WHERE a.owner = "' . $this->wiki->services->get(DbService::class)->escape($owner) . '" AND a.latest = "Y"';
             } else {
                 if ($sort == 'user') {
                     $sql = "SELECT a.tag, a.owner,
@@ -396,12 +400,12 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             }
 
             // retrieving the pages
-            $pages = $this->wiki->LoadAll($sql);
+            $pages = $this->getService(DbService::class)->loadAll($sql);
 
             // Display
             // Header
             if ($user) {
-                echo _t('PAGE_LIST_WHERE') . ' ' . $this->wiki->Format($user) . ' ' . _t('HAS_PARTICIPATED');
+                echo _t('PAGE_LIST_WHERE') . ' ' . $this->getService(MarkdownFormatterService::class)->format($user) . ' ' . _t('HAS_PARTICIPATED');
                 if ($owner) {
                     echo ' ' . _t('INCLUDING') . ' ' . $this->getService(LinkRenderer::class)->link($owner) . ' ' . _t('IS_THE_OWNER');
                 }

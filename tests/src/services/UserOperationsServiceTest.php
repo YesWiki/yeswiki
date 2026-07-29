@@ -315,7 +315,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
         // so we just test the guard: add target user to admins group solely by checking
         // the exception is triggered when user is alone in any group named 'admins'.
         // Since we cannot safely remove firstAdmin, we skip if this would lock out.
-        $adminsAcl = $wiki->GetGroupACL(ADMIN_GROUP);
+        $adminsAcl = $wiki->services->get(GroupOperationsService::class)->getMembersText(ADMIN_GROUP);
         $adminsAcl = array_unique(array_filter(array_map('trim', explode("\n", str_replace(["\r\n", "\r"], "\n", $adminsAcl)))));
         if (count($adminsAcl) !== 1) {
             $this->markTestSkipped('Cannot safely test: admins group has more than one member.');

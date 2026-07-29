@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 #[\Field(['labelhtml'])]
 class LabelField extends BazarField
@@ -47,7 +48,7 @@ class LabelField extends BazarField
         if ($this->useWikiSyntax) {
             $content = str_replace('<br/>', "\n", $this->formText);
 
-            return $this->getWiki()->Format($content);
+            return $this->getService(MarkdownFormatterService::class)->format($content);
         }
 
         return $this->formText;
@@ -58,7 +59,7 @@ class LabelField extends BazarField
         if ($this->useWikiSyntax) {
             $content = str_replace('<br/>', "\n", $this->viewText);
 
-            return $this->getWiki()->Format($content);
+            return $this->getService(MarkdownFormatterService::class)->format($content);
         }
 
         return $this->viewText;

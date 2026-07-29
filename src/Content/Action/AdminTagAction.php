@@ -1,10 +1,12 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Search\Service\TagsManager;
-use YesWiki\Core\YesWikiAction;
-use YesWiki\Kernel\Performable\RegisteredAction;
 
 class AdminTagAction extends YesWikiAction implements RegisteredAction
 {
@@ -16,7 +18,7 @@ class AdminTagAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        $isAdmin = $this->wiki->UserIsAdmin();
+        $isAdmin = $this->getService(AclService::class)->isAdmin();
         $tagsManager = $this->getService(TagsManager::class);
 
         if ($isAdmin && $this->getRequest()->query->has('delete_tag')) {

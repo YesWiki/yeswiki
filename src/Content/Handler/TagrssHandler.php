@@ -2,10 +2,13 @@
 
 namespace YesWiki\Content\Handler;
 
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Search\Service\TagsManager;
 
 /**
  * `/PageName/tagrss` -- converted from the procedural handlers/page/tagrss.php by ticket 06.
@@ -36,7 +39,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
     private function emit(): void
     {
         $oldpagetag = $this->wiki->GetPageTag();
-        $oldpage = $this->wiki->LoadPage($oldpagetag);
+        $oldpage = $this->getService(PageManager::class)->getOne($oldpagetag);
         $tags = trim((isset($_GET['tags'])) ? $_GET['tags'] : '');
         $type = (isset($_GET['type'])) ? $_GET['type'] : '';
         $req = '';
@@ -49,7 +52,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
             // texte utilisé pour la description du flux RSS
             $textetitre .= ', contenant les tags ' . $tags;
 
-            $results = $this->wiki->PageList($tags, $type, 20, 'date');
+            $results = $this->getService(TagsManager::class)->getPagesByTags($tags, $type, 20, 'date');
             if ($results) {
                 header('Content-type: text/xml; charset=UTF-8');
                 $output = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -81,9 +84,9 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
 
                     if ($readAcl) {
                         // on enleve les actions recentchangesrssplus pour eviter les boucles infinies
-                        $page['body'] = preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', $page['body']);
-                        $page['body'] = preg_replace("/\{\{rss(.*?)\}\}/s", '', $page['body']);
-                        $texteformat = $this->wiki->Format($page['body'], 'wakka', $page['tag']);
+                        $page['body'] = (string)preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', strval($page['body'] ?? ''));
+                        $page['body'] = (string)preg_replace("/\{\{rss(.*?)\}\}/s", '', $page['body']);
+                        $texteformat = $this->getService(MarkdownFormatterService::class)->format($page['body']);
                     } else {
                         $texteformat = '<i>' . _t('TAGS_HIDDEN_CONTENT') . '</i>';
                     }
@@ -98,7 +101,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                 }
                 $this->wiki->tag = $oldpagetag;
                 $this->wiki->page = $oldpage;
-                $oldpage = $this->wiki->LoadPage($oldpagetag);
+                $oldpage = $this->getService(PageManager::class)->getOne($oldpagetag);
                 $output .= $items;
                 $output .= "</channel>\n";
                 $output .= "</rss>\n";

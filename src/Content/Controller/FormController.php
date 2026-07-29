@@ -11,7 +11,9 @@ use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\IcalFormatter;
 use YesWiki\Content\Service\WebfingerService;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
@@ -44,7 +46,7 @@ class FormController extends YesWikiController
                 $values[$form['id']]['title'] = $form['label'];
                 $values[$form['id']]['description'] = $form['description'];
                 $values[$form['id']]['canEdit'] = !$this->hibernationService->isWikiHibernated() && $this->getService(Guard::class)->isAllowed('saisie_formulaire');
-                $values[$form['id']]['canDelete'] = !$this->hibernationService->isWikiHibernated() && $this->wiki->UserIsAdmin();
+                $values[$form['id']]['canDelete'] = !$this->hibernationService->isWikiHibernated() && $this->getService(AclService::class)->isAdmin();
                 $values[$form['id']]['isSemantic'] = !empty($form['sem_template']);
                 $values[$form['id']]['isActivityPubEnabled'] = $form['activitypub_enable'] === '1';
                 $values[$form['id']]['isGeo'] = !empty(array_filter($form['prepared'], function ($field) {
@@ -58,7 +60,7 @@ class FormController extends YesWikiController
         return $this->render('@core/forms/forms_table.twig', [
             'message' => $message,
             'forms' => $values,
-            'userIsAdmin' => $this->wiki->UserIsAdmin(),
+            'userIsAdmin' => $this->getService(AclService::class)->isAdmin(),
             'isWikiHibernated' => $this->hibernationService->isWikiHibernated(),
         ]);
     }
@@ -130,7 +132,7 @@ class FormController extends YesWikiController
 
     public function create()
     {
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isAdmin()) {
             $form = null;
             $post = $this->getRequest()->request;
             if ($post->has('valider')) {
@@ -212,7 +214,7 @@ class FormController extends YesWikiController
 
     public function delete($id)
     {
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isAdmin()) {
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmDeleteToken', false);
                 $this->formManager->clear($id);
@@ -229,7 +231,7 @@ class FormController extends YesWikiController
 
     public function empty($id)
     {
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isAdmin()) {
             try {
                 $this->csrfTokenChecker->checkToken('main', 'POST', 'confirmEmptyToken', false);
                 $this->formManager->clear($id);
@@ -260,7 +262,7 @@ class FormController extends YesWikiController
 
         $post = $this->getRequest()->request;
         if ($post->has('actor_handle')) {
-            if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
+            if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
                 return $this->wiki->redirect($this->getService(UrlFormatter::class)->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
             }
 
@@ -288,7 +290,7 @@ class FormController extends YesWikiController
 
     public function addFollowing($id, $actorUri)
     {
-        if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
+        if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->wiki->redirect($this->getService(UrlFormatter::class)->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 
@@ -301,7 +303,7 @@ class FormController extends YesWikiController
 
     public function removeFollowing($id, $actorUri)
     {
-        if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
+        if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->wiki->redirect($this->getService(UrlFormatter::class)->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 
@@ -326,7 +328,7 @@ class FormController extends YesWikiController
 
     public function syncActorPosts($id, $actorUri)
     {
-        if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
+        if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->wiki->redirect($this->getService(UrlFormatter::class)->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 
@@ -345,7 +347,7 @@ class FormController extends YesWikiController
 
     public function removeFollower($id, $actorUri)
     {
-        if (!$this->wiki->UserIsAdmin() || $this->hibernationService->isWikiHibernated()) {
+        if (!$this->getService(AclService::class)->isAdmin() || $this->hibernationService->isWikiHibernated()) {
             return $this->wiki->redirect($this->getService(UrlFormatter::class)->href('', '', ['vue' => 'abonnements', 'action' => 'list', 'msg' => 'BAZ_NEED_ADMIN_RIGHTS', 'idformulaire' => $id], false));
         }
 
@@ -375,8 +377,8 @@ class FormController extends YesWikiController
 
     private function getGroupsListIfEnabled(): ?array
     {
-        return $this->wiki->UserIsAdmin()
-            ? $this->wiki->GetGroupsList()
+        return $this->getService(AclService::class)->isAdmin()
+            ? $this->getService(GroupOperationsService::class)->getAll()
             : null;
     }
 }

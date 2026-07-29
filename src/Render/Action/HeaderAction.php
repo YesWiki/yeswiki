@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -32,7 +33,7 @@ class HeaderAction extends YesWikiAction implements RegisteredAction
             return $output;
         }
         if (!$themeLoaded) {
-            if ($this->wiki->UserIsAdmin()) {
+            if ($this->getService(AclService::class)->isAdmin()) {
                 $output = '<style>.alert-error-message{border: red solid 4px;background-color: #FAA;padding: 2px;color:gray;}</style>' . "\n";
                 $output .= '<div class="alert-error-message alert">' . "\n";
                 $output .= $themeManager->getErrorMessage();

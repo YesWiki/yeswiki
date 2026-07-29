@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Handler;
 
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 
 /**
@@ -33,7 +34,7 @@ class RawHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        if ($this->wiki->HasAccess('read')) {
+        if ($this->getService(AclService::class)->hasAccess('read')) {
             if (!$this->wiki->page) {
                 return;
             }

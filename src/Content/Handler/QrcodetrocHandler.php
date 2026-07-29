@@ -1,8 +1,10 @@
 <?php
 
 namespace YesWiki\Content\Handler;
+
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\AssetsManager;
 
 class QrcodetrocHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -31,13 +33,14 @@ class QrcodetrocHandler extends YesWikiHandler implements RegisteredHandler
         $output = '';
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->wiki->Header());
-        $output .= $header[0] . '<body>'."\n";
-        $output .= '<main id="canvas-qrcodetroc" data-form="'.htmlspecialchars($form).'" data-formuser="'.htmlspecialchars($formuser).'" data-relation="'.htmlspecialchars($relation).'" data-refresh="'.htmlspecialchars($refresh).'"></main>';
-        $this->wiki->addJavascriptFile('javascripts/vendor/p5.min.js');
-        $this->wiki->addJavascriptFile('javascripts/qrcodetroc-visualisation.js');
+        $output .= $header[0] . '<body>' . "\n";
+        $output .= '<main id="canvas-qrcodetroc" data-form="' . htmlspecialchars($form) . '" data-formuser="' . htmlspecialchars($formuser) . '" data-relation="' . htmlspecialchars($relation) . '" data-refresh="' . htmlspecialchars($refresh) . '"></main>';
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/p5.min.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/qrcodetroc-visualisation.js');
 
         // on recupere juste les javascripts et la fin des balises body et html
         $output .= preg_replace('/^.+<script/Us', '<script', $this->wiki->Footer());
-        return ($output);
+
+        return $output;
     }
 }

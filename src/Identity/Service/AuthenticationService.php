@@ -5,18 +5,14 @@ namespace YesWiki\Identity\Service;
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Kernel\Entity\CookieData;
+use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\BadLoginException;
 use YesWiki\Identity\Exception\BadUserConnectException;
-use YesWiki\Core\YesWikiController;
-use YesWiki\Wiki;
-use YesWiki\Identity\Service\AccountActivationService;
+use YesWiki\Kernel\Entity\CookieData;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Identity\Service\PasswordHasherFactory;
-use YesWiki\Identity\Service\UserManager;
-use YesWiki\Identity\Service\UserOperationsService;
+use YesWiki\Wiki;
 
 // this trait should be into src/traits/LimitationsTrait folder
 // with namespace namespace YesWiki\Core\Trait; but it is not working for old php version previous php 8
@@ -163,7 +159,7 @@ class AuthenticationService extends YesWikiController
                 empty($_SESSION['user']['name'])
                 || empty($data['user']['name'])
                 || $data['user']['name'] != $_SESSION['user']['name']
-                || !$this->wiki->UserIsAdmin($data['user']['name'])
+                || !$this->wiki->services->get(AclService::class)->isAdmin($data['user']['name'])
             ) {
                 // do not disconnect admin during update
                 $this->logout();
@@ -229,11 +225,11 @@ class AuthenticationService extends YesWikiController
         if (
             $userName !== null
             // cheapest, most-likely-to-short-circuit check first: skip every other check
-            // (including $this->wiki->UserIsAdmin(), which needs a fully-bootstrapped Wiki)
+            // (including $this->wiki->services->get(AclService::class)->isAdmin(), which needs a fully-bootstrapped Wiki)
             // entirely when the feature is off, its default
             && in_array($this->params->get('signup_email_activation'), [1, true, '1', 'true'], true)
             && !$this->hasLoginExtensions()
-            && !$this->wiki->UserIsAdmin($userName)
+            && !$this->wiki->services->get(AclService::class)->isAdmin($userName)
             && !$this->accountActivationService->isActivated($userName)
             && (empty($GLOBALS['utilisateur_wikini']) || $GLOBALS['utilisateur_wikini'] != $userName)
         ) {

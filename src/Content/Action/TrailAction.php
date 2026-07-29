@@ -2,10 +2,12 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{trail}}` -- converted from the procedural actions/trail.php by ticket 06.
@@ -71,13 +73,13 @@ class TrailAction extends YesWikiAction implements RegisteredAction
 
         */
 
-        // echo $this->wiki->Format("===Action Trail===");
+        // echo $this->getService(MarkdownFormatterService::class)->format("===Action Trail===");
         $sommaire = $this->wiki->GetParameter('toc');
         if (!$sommaire) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_TRAIL') . '</strong> : ' . _t('INDICATE_THE_PARAMETER_TOC') . '.</div>' . "\n";
         } else {
             // chargement de la page sommaire
-            $tocPage = $this->wiki->LoadPage($sommaire);
+            $tocPage = $this->getService(PageManager::class)->getOne($sommaire);
             if (!$tocPage) {
                 echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_TRAIL') . '</strong> : ' . _t('THE_PAGE') . ' ', $this->getService(LinkRenderer::class)->link($sommaire), ' ' . _t('DOESNT_EXIST') . ' !</div>' . "\n";
 
@@ -110,14 +112,14 @@ class TrailAction extends YesWikiAction implements RegisteredAction
             // ecriture des liens Page Précedente/sommaire/page suivante
             if ($currentPageIndex > 0) {
                 $PrevPage = $pages[$currentPageIndex - 1];
-                $btnPrev = '<li class="previous"><span class="trail_button">' . $this->wiki->Format("&larr; $PrevPage") . "</span></li>\n";
+                $btnPrev = '<li class="previous"><span class="trail_button">' . $this->getService(MarkdownFormatterService::class)->format("&larr; $PrevPage") . "</span></li>\n";
             } else {
                 $btnPrev = '';
             }
             $btnTOC = '<li><span class="trail_button">' . $this->getService(LinkRenderer::class)->linkToPage($sommaire) . "</span></li>\n";
             if ($currentPageIndex < (count($pages) - 1)) {
                 $NextPage = $pages[$currentPageIndex + 1];
-                $btnNext = '<li class="next"><span class="trail_button">' . $this->wiki->Format("$NextPage &rarr;") . "</span></li>\n";
+                $btnNext = '<li class="next"><span class="trail_button">' . $this->getService(MarkdownFormatterService::class)->format("$NextPage &rarr;") . "</span></li>\n";
             } else {
                 $btnNext = '';
             }

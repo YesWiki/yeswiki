@@ -3,7 +3,9 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\LinkRenderer;
 
 /**
@@ -40,18 +42,18 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        if ($user = $this->wiki->GetUser()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             $my_edits_count = 0;
             $curChar = '';
             $curday = '';
             $last_tag = '';
-            $dbService = $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class);
+            $dbService = $this->wiki->services->get(DbService::class);
             $userCol = $dbService->quoteIdentifier('user');
 
             if ($bydate = $this->wiki->GetParameter('bydate')) {
                 echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE') . ".</b><br /><br />\n";
 
-                if ($pages = $this->wiki->LoadAll('SELECT tag, time FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->wiki->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {
+                if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag, time FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->getService(AuthenticationService::class)->getLoggedUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {
                     foreach ($pages as $page) {
                         $edited_pages[$page['tag']] = $page['time'];
                     }
@@ -84,7 +86,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
             } else {
                 echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_NAME') . ".</b><br /><br />\n";
 
-                if ($pages = $this->wiki->LoadAll('SELECT tag, time FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->wiki->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC")) {
+                if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag, time FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->getService(AuthenticationService::class)->getLoggedUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC")) {
                     foreach ($pages as $page) {
                         if ($last_tag != $page['tag']) {
                             $last_tag = $page['tag'];

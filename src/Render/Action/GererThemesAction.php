@@ -9,6 +9,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
@@ -27,7 +28,7 @@ class GererThemesAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ACLS_RESERVED_FOR_ADMINS'),

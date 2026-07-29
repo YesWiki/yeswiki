@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Handler;
 
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 
 /**
@@ -33,14 +34,14 @@ class XmlHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        /**
+        /*
          * handlers/page/xml.php.
          *
          * Permet d'obtenir le contenu d'une page au format xml.
          */
         header('Content-type: text/xml; charset=' . YW_CHARSET);
 
-        if ($HasAccessRead = $this->wiki->HasAccess('read')) {
+        if ($HasAccessRead = $this->getService(AclService::class)->hasAccess('read')) {
             // TODO : Return an empty xml ?
             // TODO : Return an error read (noaccess) xml ?
             // TODO : why only serve the body and not all page's properties ?

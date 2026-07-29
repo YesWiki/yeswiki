@@ -26,7 +26,7 @@ class CoreAssetsTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testYwCoreCssIsLoadedWithoutBootstrap(Wiki $wiki)
     {
-        $output = $wiki->Format('{{linkstyle}}');
+        $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{linkstyle}}');
         $this->assertStringContainsString('styles/yw-core.css', $output);
         $this->assertStringNotContainsString('bootstrap', $output, 'ticket 16: Bootstrap CSS must not load anymore.');
     }
@@ -34,7 +34,7 @@ class CoreAssetsTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testHtmxAndYwCoreJsAreLoadedGlobally(Wiki $wiki)
     {
-        $output = $wiki->Format('{{linkjavascript}}');
+        $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{linkjavascript}}');
         $this->assertStringContainsString('javascripts/vendor/htmx/htmx.min.js', $output);
         $this->assertStringContainsString('javascripts/yw-core.js', $output);
         $this->assertStringContainsString('javascripts/yw-datatable.js', $output);

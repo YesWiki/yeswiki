@@ -6,6 +6,7 @@ use YesWiki\Content\Attach;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `/PageName/filemanager` -- converted from the procedural handlers/page/filemanager.php by ticket 06.
@@ -42,12 +43,12 @@ class FilemanagerHandler extends YesWikiHandler implements RegisteredHandler
         ?>
         <div class="page">
             <?php
-            if ($this->getService(AclService::class)->isOwner() || $this->wiki->UserIsAdmin()) {
+            if ($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin()) {
                 $att = new Attach($this->wiki);
                 $att->doFileManager();
                 unset($att);
             } else {
-                echo $this->wiki->Format('//' . _t('FILEMANAGER_ACTION_NEED_ACCESS') . '//');
+                echo $this->getService(MarkdownFormatterService::class)->format('//' . _t('FILEMANAGER_ACTION_NEED_ACCESS') . '//');
             }
         ?>
         </div>

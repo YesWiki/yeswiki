@@ -153,7 +153,7 @@ class TemplateEngine
             return $this->urlFormatter->href($iframe, $options['tag'], $options['params'], false);
         });
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
-            return $this->wiki->Format($text, $formatter);
+            return $this->wiki->services->get(MarkdownFormatterService::class)->format($text, $formatter);
         });
         $this->addTwigHelper('include_javascript', function ($file, $first = false, $module = false) {
             $this->assetsManager->AddJavascriptFile($file, $first, $module);
@@ -194,7 +194,7 @@ class TemplateEngine
             $safeRefresh = !$this->wiki->services->get(HibernationService::class)->isWikiHibernated()
                 && file_exists($image_dest)
                 && filter_var($options['refresh'], FILTER_VALIDATE_BOOL)
-                && $this->wiki->UserIsAdmin();
+                && $this->wiki->services->get(AclService::class)->isAdmin();
             if (!file_exists($image_dest) || $safeRefresh) {
                 $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
@@ -221,7 +221,7 @@ class TemplateEngine
         // inline JS registered for the page footer aggregate, like AddJavascript()
         // calls from the historical PHP templates
         $this->addTwigHelper('addJavascript', function ($js) {
-            $this->wiki->AddJavascript((string)$js);
+            $this->assetsManager->AddJavascript((string)$js);
 
             return '';
         });
@@ -245,10 +245,10 @@ class TemplateEngine
         // ticket 07 (tpl.html -> Twig): the page-list/layout templates check page
         // rights inline; these mirror the Wiki calls the PHP templates used
         $this->addTwigHelper('hasAccess', function ($privilege, $tag = '') {
-            return $this->wiki->HasAccess($privilege, $tag ?: '');
+            return $this->wiki->services->get(AclService::class)->hasAccess($privilege, $tag ?: '');
         });
         $this->addTwigHelper('userIsAdmin', function () {
-            return (bool)$this->wiki->UserIsAdmin();
+            return (bool)$this->wiki->services->get(AclService::class)->isAdmin();
         });
         $this->addTwigHelper('userIsOwner', function ($tag = '') {
             return $this->wiki->services->get(AclService::class)->isOwner($tag ?: '');

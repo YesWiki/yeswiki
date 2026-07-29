@@ -17,6 +17,7 @@ use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateHelperService;
 
 class Attach
@@ -586,7 +587,7 @@ class Attach
     // Affiche le fichier liee comme un fichier video
     public function showAsVideo($fullFilename)
     {
-        $output = $this->wiki->format(
+        $output = $this->wiki->services->get(MarkdownFormatterService::class)->format(
             '{{player url="' . $this->fileUrl($fullFilename) . '" type="video" ' .
                 'height="' . (!empty($this->height) ? $this->height : '300px') . '" ' .
                 'width="' . (!empty($this->width) ? $this->width : '400px') . '"}}'
@@ -597,7 +598,7 @@ class Attach
     // Affiche le fichier liee comme un fichier audio
     public function showAsAudio($fullFilename)
     {
-        $output = $this->wiki->format('{{player url="' . $this->fileUrl($fullFilename) . '" type="audio"}}');
+        $output = $this->wiki->services->get(MarkdownFormatterService::class)->format('{{player url="' . $this->fileUrl($fullFilename) . '" type="audio"}}');
         echo $output;
     }
 

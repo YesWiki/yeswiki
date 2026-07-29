@@ -3,11 +3,11 @@
 namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\Depends;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Search\Service\TagsManager;
 use YesWiki\Content\Service\TripleStore;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -45,13 +45,13 @@ class TagsWidgetTest extends YesWikiTestCase
         // that's exactly the "dump every tag" behavior this ticket removed
         $tripleStore->create('TagsWidgetRegressionOtherPage', TagsManager::TAG_PROPERTY, 'unrelatedtag', '', '');
 
-        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
+        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
         $authenticationService->login($admin);
 
         $wiki->tag = self::PAGE_TAG;
         $wiki->page = $pageManager->getOne(self::PAGE_TAG);
-        $wiki->LoadPage(self::PAGE_TAG);
+        $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
         try {
             $output = $wiki->Method('edit');

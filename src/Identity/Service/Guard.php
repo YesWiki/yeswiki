@@ -2,13 +2,10 @@
 
 namespace YesWiki\Identity\Service;
 
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EmailField;
-use YesWiki\Wiki;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Identity\Service\UserManager;
+use YesWiki\Wiki;
 
 class Guard
 {
@@ -77,7 +74,7 @@ class Guard
      */
     public function checkAcls($page, $tag, ?string $userNameForCheckingACL = null)
     {
-        if ($this->wiki->UserIsAdmin($userNameForCheckingACL) || $this->isPageOwner($page, $userNameForCheckingACL)) {
+        if ($this->aclService->isAdmin($userNameForCheckingACL) || $this->isPageOwner($page, $userNameForCheckingACL)) {
             // Pas de controle si proprietaire ou administrateur
             return $page;
         }
@@ -148,7 +145,7 @@ class Guard
         }
 
         $fieldsToHide = self::USER_ALWAYS_HIDDEN_FIELDS;
-        if (!$this->wiki->UserIsAdmin($userNameForCheckingACL) && !$this->isPageOwner($page, $userNameForCheckingACL)) {
+        if (!$this->aclService->isAdmin($userNameForCheckingACL) && !$this->isPageOwner($page, $userNameForCheckingACL)) {
             $fieldsToHide = array_merge($fieldsToHide, self::USER_OWNER_OR_ADMIN_ONLY_FIELDS);
         }
 
@@ -193,7 +190,7 @@ class Guard
      */
     public function isFieldDataAuthorizedForCorrespondance(?array $page, ?array $entry, $fieldName)
     {
-        if (!$this->wiki->UserIsAdmin()
+        if (!$this->aclService->isAdmin()
                 && !$this->isPageOwner($page)
                 && !empty($fieldName)
                 && isset($entry[$fieldName])

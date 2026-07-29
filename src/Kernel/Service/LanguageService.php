@@ -134,9 +134,9 @@ namespace YesWiki\Kernel\Service {
             $getLang = (isset($_GET['lang']) && in_array($_GET['lang'], $availableLanguages)) ? $_GET['lang'] : '';
 
             $pageMetadataLang = '';
-            if ($page != '') {
+            if ($page != '' && $wiki instanceof \YesWiki\Wiki) {
                 // page's metadata lang
-                $wiki->metadatas = $wiki->GetMetaDatas($page);
+                $wiki->metadatas = $wiki->services->get(\YesWiki\Content\Service\PageManager::class)->getMetadata($page);
                 if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $availableLanguages)) {
                     $pageMetadataLang = $wiki->metadatas['lang'];
                 }

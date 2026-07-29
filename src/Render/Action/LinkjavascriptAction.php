@@ -3,9 +3,10 @@
 namespace YesWiki\Render\Action;
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Render\Service\ThemeManager;
 
 /**
  * `{{linkjavascript}}` -- converted from the procedural actions/linkjavascript.php by ticket 06.
@@ -41,7 +42,6 @@ class LinkjavascriptAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         $themeManager = $this->wiki->services->get(ThemeManager::class);
         $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 
@@ -81,31 +81,31 @@ class LinkjavascriptAction extends YesWikiAction implements RegisteredAction
         if (isset($scripts) && is_array($scripts)) {
             asort($scripts);
             foreach ($scripts as $val) {
-                $this->wiki->addJavascriptFile($val);
+                $this->getService(AssetsManager::class)->AddJavascriptFile($val);
             }
         }
 
         // s'il n'y a pas le javascript de yeswiki dans le theme, on le rajoute
         if (!$yeswikijs) {
-            $this->wiki->addJavascriptFile('javascripts/yeswiki-base.js');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/yeswiki-base.js');
         }
 
         // htmx + yw-* core design system (ADR-0004/0005): loaded on every page so
         // core interactions can rely on them without each surface opting in itself
-        $this->wiki->addJavascriptFile('javascripts/vendor/htmx/htmx.min.js');
-        $this->wiki->addJavascriptFile('javascripts/yw-core.js');
-        $this->wiki->addJavascriptFile('javascripts/yw-datatable.js');
-        $this->wiki->addJavascriptFile('javascripts/yw-autocomplete.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/htmx/htmx.min.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/yw-core.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/yw-datatable.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/yw-autocomplete.js');
 
         // ajoute la méthode pour les traductions js
-        $this->wiki->addJavascriptFile('javascripts/yeswiki-base-no-defer.js', true);
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/yeswiki-base-no-defer.js', true);
 
         // add javascript files which are included in the custom javascript directory
         $customJsPath = 'custom/javascripts';
         $customJsDir = is_dir($customJsPath) ? opendir($customJsPath) : false;
         while ($customJsDir && ($file = readdir($customJsDir)) !== false) {
             if (substr($file, -3, 3) == '.js') {
-                $this->wiki->addJavascriptFile($customJsPath . '/' . $file);
+                $this->getService(AssetsManager::class)->AddJavascriptFile($customJsPath . '/' . $file);
             }
         }
 

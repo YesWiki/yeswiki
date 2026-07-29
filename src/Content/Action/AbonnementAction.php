@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
 
 /**
  * `{{abonnement}}` -- converted from the procedural actions/abonnement.php by ticket 06.
@@ -80,7 +81,7 @@ class AbonnementAction extends YesWikiAction implements RegisteredAction
 
             echo $this->wiki->render("@core/$template", $listelements);
 
-            $this->wiki->addJavascriptFile('javascripts/contact.js');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace YesWiki\Admin\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
@@ -20,7 +21,7 @@ class AdminContentAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ACLS_RESERVED_FOR_ADMINS'),

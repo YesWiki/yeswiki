@@ -6,13 +6,17 @@ use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\TagsManager;
 
 /**
@@ -53,7 +57,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         // entry's data directly instead of rendering the page as HTML.
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
-        if ($entryManager->isEntry($this->wiki->GetPageTag()) && $this->wiki->HasAccess('read')) {
+        if ($entryManager->isEntry($this->wiki->GetPageTag()) && $this->getService(AclService::class)->hasAccess('read')) {
             if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
                 $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
                 $contentType = $semantic ? 'application/ld+json' : 'application/json';
@@ -71,12 +75,12 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     $this->wiki->exit(json_encode($fiche));
                 }
             } else {
-                $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
+                $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
             }
         }
 
         // Verification de securite
-        $this->wiki->addJavascriptFile('javascripts/tag.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/tag.js');
 
         // Page translation (formerly tools/lang's __show before-callback): keep only the
         // {{lang="xx"}} section matching the visitor's language, if the page uses markers
@@ -106,7 +110,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
         if ($entryManager->isEntry($this->wiki->GetPageTag())) {
-            $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
 
             $fiche = $entryManager->getOne($this->wiki->GetPageTag());
 
@@ -138,15 +142,15 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             $GLOBALS['template-error'] = '';
         }
 
-        if (!$this->wiki->HasAccess('read')) {
-            if ($contenu = $this->wiki->LoadPage('PageLogin')) {
+        if (!$this->getService(AclService::class)->hasAccess('read')) {
+            if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 $output = '<body class="login-body">' . "\n"
                     . '<div class="container">' . "\n"
-                    . '<div class="yeswiki-page-widget page-widget page" ' . $this->wiki->Format('{{doubleclic iframe="1"}}') . '>' . "\n";
+                    . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}') . '>' . "\n";
                 $output .= '<div class="yw-alert yw-alert--danger">' .
                     _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
                     '</div>' . "\n";
-                $output .= $this->wiki->Format('{{include page="PageLogin"}}');
+                $output .= $this->getService(MarkdownFormatterService::class)->format('{{include page="PageLogin"}}');
                 $output .= '</div><!-- end .page-widget -->' . "\n";
                 $output .= '</div><!-- end .container -->' . "\n";
                 $output = $this->wiki->Header() . $output;
@@ -158,7 +162,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     '<div class="alert alert-danger alert-error">' .
                         _t('LOGIN_NOT_AUTORIZED') . ', ' . _t('LOGIN_PLEASE_REGISTER') . '.' .
                         '</div>' . "\n" .
-                        $this->wiki->Format('{{login context="login-page" signupurl="0"}}'),
+                        $this->getService(MarkdownFormatterService::class)->format('{{login context="login-page" signupurl="0"}}'),
                     $plugin_output_new
                 );
             }
@@ -198,17 +202,17 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         ob_start();
 
         echo '<div class="page"';
-        echo (($user = $this->wiki->GetUser()) && ($user['doubleclickedit'] == 'N') || !$this->wiki->HasAccess('write')) ? '' : ' ondblclick="doubleClickEdit(event);"';
+        echo (($user = $this->getService(AuthenticationService::class)->getLoggedUser()) && ($user['doubleclickedit'] == 'N') || !$this->getService(AclService::class)->hasAccess('write')) ? '' : ' ondblclick="doubleClickEdit(event);"';
         echo '>' . "\n";
         if (!empty($_SESSION['redirects'])) {
             $trace = $_SESSION['redirects'];
             $tag = $trace[count($trace) - 1];
-            $prevpage = $this->wiki->LoadPage($tag);
-            echo '<div class="redirectfrom"><em>(' . str_replace('{linkFrom}', $this->getService(LinkRenderer::class)->link($prevpage['tag'], 'edit'), _t('REDIRECTED_FROM')) . ")</em></div>\n";
+            $prevpage = $this->getService(PageManager::class)->getOne($tag);
+            echo '<div class="redirectfrom"><em>(' . str_replace('{linkFrom}', $this->getService(LinkRenderer::class)->link($prevpage['tag'] ?? '', 'edit'), _t('REDIRECTED_FROM')) . ")</em></div>\n";
             unset($_SESSION['redirects'][count($trace) - 1]);
         }
 
-        if ($HasAccessRead = $this->wiki->HasAccess('read')) {
+        if ($HasAccessRead = $this->getService(AclService::class)->hasAccess('read')) {
             if (!$this->wiki->page) {
                 echo str_replace(
                     ['{beginLink}', '{endLink}'],
@@ -220,7 +224,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 if ($this->wiki->page['comment_on']) {
                     echo '<div class="commentinfo">' . str_replace(
                         ['{tag}', '{user}', '{time}'],
-                        [$this->getService(LinkRenderer::class)->linkToPage($this->wiki->page['comment_on'], '', '', 0), $this->wiki->Format($this->wiki->page['user']), $this->wiki->page['time']],
+                        [$this->getService(LinkRenderer::class)->linkToPage($this->wiki->page['comment_on'], '', '', 0), $this->getService(MarkdownFormatterService::class)->format($this->wiki->page['user']), $this->wiki->page['time']],
                         _t('COMMENT_INFO')
                     ) . '</div>';
                 }
@@ -229,8 +233,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     echo '<div class="alert alert-info">' . "\n";
                     echo str_replace(['{link}', '{time}'], ["<a href=\"{$this->getService(UrlFormatter::class)->href()}\">{$this->wiki->GetPageTag()}</a>", $this->wiki->page['time']], _t('REVISION_IS_ARCHIVE_OF_TAG_ON_TIME'));
                     // if this is an old revision, display some buttons
-                    if ($this->wiki->HasAccess('write')) {
-                        $latest = $this->wiki->LoadPage($this->wiki->tag); ?>
+                    if ($this->getService(AclService::class)->hasAccess('write')) {
+                        $latest = $this->getService(PageManager::class)->getOne($this->wiki->tag); ?>
                         <?php
                         $time = isset($_GET['time']) ? $_GET['time'] : '';
                         echo $this->wiki->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get'); ?>
@@ -250,7 +254,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     $entryController = $this->wiki->services->get(EntryController::class);
                     echo $entryController->view($this->wiki->GetPageTag(), $this->wiki->page['time'] ?? null);
                 } else {
-                    echo $this->wiki->Format($this->wiki->page['body'], 'wakka', $this->wiki->GetPageTag());
+                    echo $this->getService(MarkdownFormatterService::class)->format($this->wiki->page['body']);
                 }
                 $this->getService(InclusionStack::class)->unregisterLast();
             }

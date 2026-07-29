@@ -2,8 +2,11 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{includepages}}` -- converted from the procedural actions/includepages.php by ticket 06.
@@ -54,8 +57,12 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
             }
 
             $resultat = explode(',', $pages);
+            $element = [];
             foreach ($resultat as $page) {
-                $page = $this->wiki->LoadPage(trim($page));
+                $page = $this->getService(PageManager::class)->getOne(trim($page));
+                if (!is_array($page)) {
+                    continue;
+                }
                 $element[$page['tag']]['tagnames'] = '';
                 $element[$page['tag']]['tagbadges'] = '';
                 $element[$page['tag']]['body'] = $page['body'];
@@ -64,8 +71,8 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
                 $element[$page['tag']]['time'] = $page['time'];
                 $element[$page['tag']]['title'] = get_title_from_body($page);
                 $element[$page['tag']]['image'] = get_image_from_body($page);
-                $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->wiki->Format($page['body'], 'wakka', $page['tag'])), $nbcartrunc);
-                $pagetags = $this->wiki->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
+                $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format($page['body'])), $nbcartrunc);
+                $pagetags = $this->getService(TripleStore::class)->getAll($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
                 foreach ($pagetags as $tag) {
                     $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';
                     $element[$page['tag']]['tagbadges'] .= '<span class="label label-info">' . $tag['value'] . '</span>&nbsp;';

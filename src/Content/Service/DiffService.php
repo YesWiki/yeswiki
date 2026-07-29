@@ -5,6 +5,7 @@ namespace YesWiki\Content\Service;
 use Caxy\HtmlDiff\HtmlDiff;
 use Caxy\HtmlDiff\HtmlDiffConfig;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Wiki;
 
 class DiffService
@@ -72,7 +73,7 @@ class DiffService
         // move all complex actions (bazarliste etc...) into pre html so they are not fomatted
         $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page['body']);
 
-        return $this->wiki->Format($code, 'wakka', $page['tag']);
+        return $this->wiki->services->get(MarkdownFormatterService::class)->format($code);
     }
 
     public function formatJsonCodeIntoHtmlTable($page)

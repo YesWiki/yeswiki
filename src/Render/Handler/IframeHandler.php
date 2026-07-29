@@ -5,11 +5,14 @@ namespace YesWiki\Render\Handler;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 class IframeHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -37,12 +40,12 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                 ["<a href=\"{$this->getService(UrlFormatter::class)->href('editiframe')}\">", '</a>'],
                 _t('NOT_FOUND_PAGE')
             );
-        } elseif ($this->wiki->HasAccess('read')) {
+        } elseif ($this->getService(AclService::class)->hasAccess('read')) {
             $entryManager = $this->wiki->services->get(EntryManager::class);
 
             $output .= '<body class="yeswiki-iframe-body">' . "\n"
                 . '<div class="container">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page" ' . $this->wiki->Format('{{doubleclic iframe="1"}}')
+                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}')
                 . '>' . "\n";
 
             if ($entryManager->isEntry($this->wiki->GetPageTag())) {
@@ -56,19 +59,19 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
             // on recupere les entetes html mais pas ce qu'il y a dans le body
             $output .= '<body class="yeswiki-iframe-body login-body">' . "\n"
                 . '<div class="container">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page" ' . $this->wiki->Format('{{doubleclic iframe="1"}}')
+                . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}')
                 . '>' . "\n";
 
-            if ($contenu = $this->wiki->LoadPage('PageLogin')) {
+            if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $output .= $this->replaceLinksWithIframeIfNeeded($this->wiki->Format($contenu['body']));
+                $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format($contenu['body']));
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $output .= '<div class="vertical-center white-bg">' . "\n"
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
                     . '</div>' . "\n"
-                    . $this->replaceLinksWithIframeIfNeeded($this->wiki->Format('{{login signupurl="0"}}' . "\n\n"))
+                    . $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format('{{login signupurl="0"}}' . "\n\n"))
                     . '</div><!-- end .vertical-center -->' . "\n";
             }
         }
@@ -78,10 +81,10 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
 
         // on affiche la barre de modification, si on ajoute &edit=1 à l'url de l'iframe
         if ($this->getRequest()->query->get('edit') == '1') {
-            $output .= $this->wiki->Format('{{barreredaction}}');
+            $output .= $this->getService(MarkdownFormatterService::class)->format('{{barreredaction}}');
         }
         $output .= '</div><!-- end .container -->' . "\n";
-        $this->wiki->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
         // on recupere les entetes html mais pas ce qu'il y a dans le body
         $header = explode('<body', $this->wiki->Header());
@@ -101,7 +104,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
     {
         $output = '';
         // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
-        $this->wiki->AddJavascriptFile('javascripts/bazar.js', true, true);
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
         $valjson = $this->wiki->page['body'];
         $tab_valeurs = json_decode($valjson, true);
         if (YW_CHARSET != 'UTF-8') {
@@ -159,7 +162,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         }
 
         // affichage de la page formatée
-        $output .= $this->replaceLinksWithIframeIfNeeded($this->wiki->Format($this->wiki->page['body'], 'wakka', $this->wiki->GetPageTag()));
+        $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format($this->wiki->page['body']));
 
         return $output;
     }

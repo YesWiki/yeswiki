@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
@@ -90,7 +91,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
         }
 
         $hideIfNoAccess = $this->wiki->GetParameter('hideifnoaccess');
-        if ($hideIfNoAccess == 'true' && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
+        if ($hideIfNoAccess == 'true' && isset($linkParts['tag']) && !$this->getService(AclService::class)->hasAccess('read', $linkParts['tag'])) {
             echo '';
         } elseif (empty($link)) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('TEMPLATE_ACTION_BUTTON') . '</strong> : ' . _t('TEMPLATE_LINK_PARAMETER_REQUIRED') . '.</div>' . "\n";

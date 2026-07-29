@@ -614,7 +614,7 @@ class EntryManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$forceEvenIfNotOwner && !$this->wiki->UserIsAdmin() && !$this->aclService->isOwner($tag)) {
+        if (!$forceEvenIfNotOwner && !$this->aclService->isAdmin() && !$this->aclService->isOwner($tag)) {
             throw new \Exception(_t('DELETEPAGE_NOT_DELETED') . _t('DELETEPAGE_NOT_OWNER'));
         }
 
@@ -776,7 +776,7 @@ class EntryManager
         $data['created_at'] = $data['created_at'] ?? $result['firsttime'] ?? date('Y-m-d H:i:s', time());
 
         // Entry status
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->aclService->isAdmin()) {
             $data['status'] = '1';
         } else {
             $data['status'] = $this->params->get('BAZ_ETAT_VALIDATION');
@@ -1070,7 +1070,7 @@ class EntryManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->aclService->isAdmin()) {
             return [];
         }
 

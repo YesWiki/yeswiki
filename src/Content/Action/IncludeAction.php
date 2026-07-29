@@ -4,11 +4,14 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\LinkTracker;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateHelperService;
 
 /**
@@ -71,8 +74,8 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             if ($this->wiki->tag == trim($oldpageincluded)) { // case /attach/actions/___include before this
                 // redo tools\attach\actions\__include.php without changing oldpage
                 $this->wiki->tag = trim($pageincluded);
-                $includedPage = $this->wiki->GetCachedPage($this->wiki->tag);
-                $this->wiki->page = !empty($includedPage) ? $includedPage : $this->wiki->LoadPage($this->wiki->tag);
+                $includedPage = $this->getService(PageManager::class)->getCached($this->wiki->tag);
+                $this->wiki->page = !empty($includedPage) ? $includedPage : $this->getService(PageManager::class)->getOne($this->wiki->tag);
             }
         }
         $class = $this->wiki->GetParameter('class');
@@ -83,7 +86,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // included page's body to the visitor's {{lang="xx"}} section and refresh the
         // page cache so the include action below renders the filtered version
         require_once YESWIKI_SOURCE_DIR . '/src/lang.functions.php';
-        $langIncludedPage = $this->wiki->LoadPage(trim($this->wiki->GetParameter('page')));
+        $langIncludedPage = $this->getService(PageManager::class)->getOne(trim($this->wiki->GetParameter('page')));
         if (!empty($langIncludedPage['body'])) {
             $langFilteredBody = filterBodyByLanguage(
                 $langIncludedPage['body'],
@@ -93,7 +96,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             if ($langFilteredBody !== $langIncludedPage['body']) {
                 $langIncludedPage['body'] = $langFilteredBody;
                 // Hack : mise a jour du cache avec la nouvelle version.
-                $this->wiki->CachePage($langIncludedPage);
+                $this->getService(PageManager::class)->cache($langIncludedPage);
             }
         }
     }
@@ -128,7 +131,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         }
 
         // si la page inclue n'existe pas, on propose de la créer
-        if (!$incPage = $this->wiki->LoadPage($incPageName)) {
+        if (!$incPage = $this->getService(PageManager::class)->getOne($incPageName)) {
             $plugin_output_new = $this->getService(LinkRenderer::class)->linkTo($incPageName);
 
             return $plugin_output_new . (string)ob_get_clean();
@@ -159,7 +162,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // rajoute le javascript pour le double clic si la configuration l'autorise, si le parametre est activé et les droits en écriture existent
         if (
             !empty($this->wiki->config['allow_doubleclic']) && in_array($this->wiki->config['allow_doubleclic'], ['1', 'yes', true])
-            && !empty($dblclic) && $dblclic == '1' && $this->wiki->HasAccess('write', $incPageName)
+            && !empty($dblclic) && $dblclic == '1' && $this->getService(AclService::class)->hasAccess('write', $incPageName)
         ) {
             $actiondblclic = ' ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '\';"';
         } else {
@@ -306,16 +309,16 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             }
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('IMPOSSIBLE_FOR_THIS_PAGE') . ' ' . $incPageName . ' ' . _t('TO_INCLUDE_ITSELF')
                  . ($i ? ':<br /><strong>' . _t('INCLUSIONS_CHAIN') . '</strong> : ' . $pg . ' > ' . $err : '') . '</div>' . "\n"; // si $i = 0, alors c'est une page qui s'inclut elle-méme directement...
-        } elseif (!$this->wiki->HasAccess('read', $incPageName) && $this->wiki->GetParameter('auth') != 'noError') {
+        } elseif (!$this->getService(AclService::class)->hasAccess('read', $incPageName) && $this->wiki->GetParameter('auth') != 'noError') {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> :  ' . _t('READING_OF_INCLUDED_PAGE') . ' ' . $incPageName . ' ' . _t('NOT_ALLOWED') . '.</div>' . "\n";
-        } elseif (!$incPage = $this->wiki->LoadPage($incPageName)) {
+        } elseif (!$incPage = $this->getService(PageManager::class)->getOne($incPageName)) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('INCLUDED_PAGE') . ' ' . $incPageName . ' ' . _t('DOESNT_EXIST') . '...</div>' . "\n";
         }
         // Affichage de la page quand il n'y a pas d'erreur
-        elseif ($this->wiki->HasAccess('read', $incPageName)) {
+        elseif ($this->getService(AclService::class)->hasAccess('read', $incPageName)) {
             $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($incPageName);
             $this->getService(InclusionStack::class)->register($incPageName);
-            $output = $this->wiki->Format($incPage['body']);
+            $output = $this->getService(MarkdownFormatterService::class)->format($incPage['body']);
             if (isset($classes)) {
                 if ($this->wiki->GetParameter('edit') == 'show') {
                     $editLink = '<div class="include_editlink"><a href="' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '">[' . _t('EDITION') . "]</a></div>\n";

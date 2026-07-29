@@ -3,11 +3,11 @@
 namespace YesWiki\Kernel\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Wiki;
-use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 class Mailer
 {
@@ -84,7 +84,7 @@ class Mailer
             '@core/notify-admins-list-deleted-email-text.twig',
             [
                 'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
-                'userName' => $this->wiki->GetUserName(),
+                'userName' => $this->authenticationService->getLoggedUserName(),
             ]
         );
         $html = $this->templateEngine->render(
@@ -92,7 +92,7 @@ class Mailer
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
                 'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
-                'userName' => $this->wiki->GetUserName(),
+                'userName' => $this->authenticationService->getLoggedUserName(),
                 'baseUrl' => $baseUrl,
             ]
         );
@@ -104,14 +104,14 @@ class Mailer
 
     private function getAdminsList(): array
     {
-        $adminsAcl = $this->wiki->GetGroupACL(ADMIN_GROUP);
+        $adminsAcl = $this->wiki->services->get(\YesWiki\Identity\Service\GroupOperationsService::class)->getMembersText(ADMIN_GROUP);
         $admins = [];
         foreach (explode("\n", $adminsAcl) as $line) {
             $line = trim($line);
             if (!empty($line)
                 && substr($line, 0, 1) != '#'
                 && substr($line, 0, 1) != '@') {
-                $adminUser = $this->wiki->LoadUser($line);
+                $adminUser = $this->userManager->getOneByName($line);
                 if (!empty($adminUser)) {
                     $admins[] = $adminUser;
                 }

@@ -61,7 +61,7 @@ class EmailField extends BazarField
 
         // TODO add JS libraries with Twig
         if ($this->showContactForm) {
-            $GLOBALS['wiki']->addJavascriptFile('javascripts/contact.js');
+            $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
         }
 
         return $this->render('@core/fields/email.twig', [

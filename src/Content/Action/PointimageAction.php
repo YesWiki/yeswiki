@@ -3,9 +3,13 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Service\FileManager;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{pointimage}}` -- converted from the procedural actions/pointimage.php by ticket 06.
@@ -113,7 +117,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         $readonly = $this->wiki->GetParameter('readonly');
 
         // get an unique pagename based on the image (tag if a FileManager entry, filename otherwise)
-        $dbService = $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class);
+        $dbService = $this->wiki->services->get(DbService::class);
         $baseForPageTag = $isFileTag ? $file : preg_replace('/[^A-Za-z0-9 ]/', '', str_replace('.' . $ext, '', $file));
         $datapagetag = $dbService->escape($this->wiki->GetPageTag() . 'PI' . $baseForPageTag);
 
@@ -126,13 +130,13 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
             && isset($_POST['color']) && !empty($_POST['color'])) {
             $pagetag = $dbService->escape(str_replace($this->wiki->config['base_url'], '', $_POST['pagetag']));
             $chaine = "\n\n~~\"\"<!--" . $_POST['image_x'] . '-' . $_POST['image_y'] . '-' . $_POST['color'] . '--><!--title-->' . $_POST['title'] . "<!--/title-->\"\"\n\"\"<!--desc-->\"\"" . $_POST['description'] . "\"\"<!--/desc-->\n\"\"~~";
-            $donneesbody = $this->wiki->LoadSingle('SELECT * FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE tag = '" . $pagetag . "'and latest = 'Y' limit 1");
-            $this->wiki->SavePage($pagetag, $donneesbody['body'] . $chaine, '', true);
+            $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE tag = '" . $pagetag . "'and latest = 'Y' limit 1");
+            $this->getService(PageManager::class)->save($pagetag, ($donneesbody['body'] ?? '') . $chaine, '', true);
             $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
         }
 
         // get the data for the image
-        $donneesbody = $this->wiki->LoadSingle('SELECT * FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE tag = '" . $datapagetag . "'and latest = 'Y' limit 1");
+        $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE tag = '" . $datapagetag . "'and latest = 'Y' limit 1");
 
         // search for markers info
         preg_match_all('/~~(.*)~~/msU', $donneesbody['body'] ?? '', $locations);
@@ -145,7 +149,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
                 $marker['y'] = round($elements[2]);
                 $marker['color'] = $elements[3];
                 $marker['title'] = $elements[4];
-                $marker['description'] = $this->wiki->Format($elements[5]);
+                $marker['description'] = $this->getService(MarkdownFormatterService::class)->format($elements[5]);
             }
 
             if (count($marker) == 5) {
@@ -199,15 +203,15 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         	</div><!-- /.yw-modal -->' . "\n";
 
         // adds the javascript just one time
-        $this->wiki->addJavascriptFile('javascripts/pointimage.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/pointimage.js');
 
         // output the image on the page
 
         echo $modal . '<div class="pointimage-container no-dblclick" data-readonly="' . ((!empty($readonly) && $readonly == 1) ? 'true' : 'false') . '" data-markerscolor=\'' . $colors . '\' data-markerslabel=\'' . $labels . '\' data-markersize="' . $point_size . '" data-pagetag="' . $this->getService(UrlFormatter::class)->href('', $datapagetag) . '">' . "\n";
         if (isset($size)) {
-            echo $this->wiki->Format('{{attach file="' . $file . '" desc="image ' . $file . '" size="original" class="pointimage-image" nofullimagelink="1"}}');
+            echo $this->getService(MarkdownFormatterService::class)->format('{{attach file="' . $file . '" desc="image ' . $file . '" size="original" class="pointimage-image" nofullimagelink="1"}}');
         } else {
-            echo $this->wiki->Format('{{attach file="' . $file . '" desc="image ' . $file . '"' . (!empty($width) ? ' width="' . $width . '"' : '') . (!empty($height) ? ' height="' . $height . '"' : '') . ' class="pointimage-image" nofullimagelink="1"}}');
+            echo $this->getService(MarkdownFormatterService::class)->format('{{attach file="' . $file . '" desc="image ' . $file . '"' . (!empty($width) ? ' width="' . $width . '"' : '') . (!empty($height) ? ' height="' . $height . '"' : '') . ' class="pointimage-image" nofullimagelink="1"}}');
         }
         echo $listofmarkers;
         echo '</div> <!-- /.pointimage-container -->' . "\n";

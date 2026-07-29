@@ -6,6 +6,7 @@ use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{recentlycommented}}` -- converted from the procedural actions/recentlycommented.php by ticket 06.
@@ -57,7 +58,7 @@ class RecentlycommentedAction extends YesWikiAction implements RegisteredAction
             if ($this->wiki->GetParameter('max')) {
                 foreach ($pages as $page) {
                     // echo entry
-                    echo '(',$page['comment_time'],') <a href="',$this->getService(UrlFormatter::class)->href('', $page['tag'], 'show_comments=1'),'#',$page['comment_tag'],'">',$page['tag'],'</a> . . . . ' . _t('LAST_COMMENT') . ' ' . _t('BY') . ' ',$this->wiki->Format($page['comment_user']),"<br />\n";
+                    echo '(',$page['comment_time'],') <a href="',$this->getService(UrlFormatter::class)->href('', $page['tag'], 'show_comments=1'),'#',$page['comment_tag'],'">',$page['tag'],'</a> . . . . ' . _t('LAST_COMMENT') . ' ' . _t('BY') . ' ',$this->getService(MarkdownFormatterService::class)->format($page['comment_user']),"<br />\n";
                 }
             } else {
                 $curday = '';
@@ -73,7 +74,7 @@ class RecentlycommentedAction extends YesWikiAction implements RegisteredAction
                     }
 
                     // echo entry
-                    echo '&nbsp;&nbsp;&nbsp;(',$time,') <a href="',$this->getService(UrlFormatter::class)->href('', $page['tag'], 'show_comments=1'),'#',$page['comment_tag'],'">',$page['tag'],'</a> . . . . ' . _t('LAST_COMMENT') . ' ' . _t('BY') . ' ',$this->wiki->Format($page['comment_user']),"<br />\n";
+                    echo '&nbsp;&nbsp;&nbsp;(',$time,') <a href="',$this->getService(UrlFormatter::class)->href('', $page['tag'], 'show_comments=1'),'#',$page['comment_tag'],'">',$page['tag'],'</a> . . . . ' . _t('LAST_COMMENT') . ' ' . _t('BY') . ' ',$this->getService(MarkdownFormatterService::class)->format($page['comment_user']),"<br />\n";
                 }
             }
         } else {

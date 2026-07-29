@@ -45,7 +45,7 @@ class CaptchaControllerTest extends YesWikiTestCase
     public function testAlwaysPassesWhenCaptchaDisabled()
     {
         $wiki = $this->getWiki();
-        $this->assertFalse($wiki->UserIsAdmin(), 'test must run as a non-admin for checkCaptchaBeforeSave() to evaluate captcha');
+        $this->assertFalse($wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin(), 'test must run as a non-admin for checkCaptchaBeforeSave() to evaluate captcha');
         $wiki->request->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
 
         try {

@@ -7,9 +7,11 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\SearchManager;
 
 /**
@@ -66,7 +68,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
         // prefixe des tables pour ce wiki
         $prefixe = $this->wiki->config['table_prefix'];
         // prefixe des tables pour ce wiki
-        $user = $this->wiki->GetUser();
+        $user = $this->getService(AuthenticationService::class)->getLoggedUser();
         // nombre de pages dont on affiche une partie du contenu
         $maxDisplayedPages = 25;
 
@@ -210,11 +212,11 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
 
                 // affichage des résultats en liste
                 if (empty($separator)) {
-                    echo $this->wiki->Format('---- --- **' . _t('SEARCH_RESULTS') . ' [""' . $phrase . '""] :---**');
+                    echo $this->getService(MarkdownFormatterService::class)->format('---- --- **' . _t('SEARCH_RESULTS') . ' [""' . $phrase . '""] :---**');
                     echo '<ol>';
                     $counter = 0;
                     foreach ($resultat as $i => $page) {
-                        if ($this->wiki->HasAccess('read', $page['tag'])) {
+                        if ($this->getService(AclService::class)->hasAccess('read', $page['tag'])) {
                             $lien = $this->getService(LinkRenderer::class)->linkToPage($page['tag']);
                             echo '<li><h4 style="margin-bottom:0.2rem;">', $lien, '</h4>';
                             $extract = '';
@@ -224,7 +226,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
                                     $extract = displayNewSearchResult($renderedEntry, $phrase, $needles);
                                 }
                                 if (empty($extract)) {
-                                    $extract = displayNewSearchResult($this->wiki->Format($page['body'], 'wakka', $page['tag']), $phrase, $needles);
+                                    $extract = displayNewSearchResult($this->getService(MarkdownFormatterService::class)->format($page['body']), $phrase, $needles);
                                 }
                                 $counter++;
                             }
@@ -238,7 +240,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
                     $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
                     echo '<p>' . _t('SEARCH_RESULT_OF') . ' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
                     foreach ($resultat as $i => $line) {
-                        if ($this->wiki->HasAccess('read', $line['tag'])) {
+                        if ($this->getService(AclService::class)->hasAccess('read', $line['tag'])) {
                             echo (($i > 0) ? $separator : '') . $this->getService(LinkRenderer::class)->linkToPage($line['tag']);
                         }
                     }
@@ -246,7 +248,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
                 }
                 $GLOBALS['js'] = $js;
             } else {
-                echo $this->wiki->Format('---- --- **' . _t('NO_SEARCH_RESULT') . '.**');
+                echo $this->getService(MarkdownFormatterService::class)->format('---- --- **' . _t('NO_SEARCH_RESULT') . '.**');
             }
         }
     }

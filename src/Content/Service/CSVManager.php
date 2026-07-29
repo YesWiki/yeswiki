@@ -10,6 +10,7 @@ use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Field\TagsField;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Wiki;
@@ -672,7 +673,7 @@ class CSVManager
         $entry['form_id'] = $formId;
         $entry['created_at'] = date('Y-m-d H:i:s', $entry['datetime_create'] ?? time());
         $entry['updated_at'] = date('Y-m-d H:i:s', $entry['datetime_latest'] ?? time());
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->wiki->services->get(AclService::class)->isAdmin()) {
             $entry['status'] = 1;
         } else {
             $entry['status'] = $this->wiki->config['BAZ_ETAT_VALIDATION'];

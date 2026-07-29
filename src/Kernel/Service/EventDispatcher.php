@@ -27,7 +27,7 @@ class EventDispatcher extends SymfonyEventDispatcher
 
             return [];
         } catch (\Throwable $th) {
-            $errors = ($this->wiki->userIsAdmin()) ? ['exception' => [
+            $errors = ($this->wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin()) ? ['exception' => [
                 'message' => $this->throwableFormatter->hideServerPath($th->getMessage()),
                 'file' => $this->throwableFormatter->hideServerPath($th->getFile()),
                 'line' => $th->getLine(),

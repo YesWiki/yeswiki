@@ -13,6 +13,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -46,14 +47,14 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
             // if no read access to the page
             if ($content = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $error .= $this->wiki->Format($content['body']);
+                $error .= $this->getService(MarkdownFormatterService::class)->format($content['body']);
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $error .= '<div class="vertical-center white-bg">' . "\n"
                     . '<div class="alert alert-danger alert-error">' . "\n"
                     . _t('LOGIN_NOT_AUTORIZED') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.' . "\n"
                     . '</div>' . "\n"
-                    . $this->wiki->Format('{{login signupurl="0"}}' . "\n\n")
+                    . $this->getService(MarkdownFormatterService::class)->format('{{login signupurl="0"}}' . "\n\n")
                     . '</div><!-- end .vertical-center -->' . "\n";
             }
         } elseif (!empty($this->getRequest()->request->all())) {
@@ -78,7 +79,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                     'message' => $th->getMessage(),
                 ]);
             }
-        } elseif (!$toExternalWiki && !$this->wiki->UserIsAdmin()) {
+        } elseif (!$toExternalWiki && !$this->getService(AclService::class)->isAdmin()) {
             $error .= $this->render('@templates\alert-message-with-back.twig', [
                 'type' => 'warning',
                 'message' => _t('ONLY_ADMINS_CAN_DUPLICATE') . '.',

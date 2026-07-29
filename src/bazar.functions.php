@@ -295,7 +295,7 @@ function genere_nom_wiki($nom, $occurence = 1)
     if ($occurence == 0) {
         // pour occurence = 0 on ne teste pas l'existance de la page
         return $nom;
-    } elseif (!is_array($GLOBALS['wiki']->LoadPage($nom))) {
+    } elseif (!is_array($GLOBALS['wiki']->services->get(YesWiki\Content\Service\PageManager::class)->getOne($nom))) {
         // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
         return $nom;
     }
@@ -354,7 +354,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
             && file_exists($image_dest)
             && isset($_GET['refresh'])
             && $_GET['refresh'] == 1
-            && $wiki->UserIsAdmin()) {
+            && $wiki->services->get(YesWiki\Identity\Service\AclService::class)->isAdmin()) {
             unlink($image_dest);
         }
         if (!file_exists($image_dest)) {

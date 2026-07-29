@@ -49,7 +49,7 @@ abstract class YesWikiController
 
     protected function denyAccessUnlessAdmin()
     {
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->getService(AclService::class)->isAdmin()) {
             throw new AccessDeniedHttpException();
         }
     }

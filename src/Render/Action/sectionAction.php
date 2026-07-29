@@ -1,10 +1,12 @@
 <?php
 
 namespace YesWiki\Render\Action;
+
 use YesWiki\Content\Attach;
-use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\TemplateHelperService;
 
 class SectionAction extends YesWikiAction implements RegisteredAction
 {
@@ -128,9 +130,9 @@ class SectionAction extends YesWikiAction implements RegisteredAction
 
         if ($this->check_end_elem('section')) {
             // specify the role to be checked ( *, +, %, @admins)
-            $role = $this->arguments['visibility'] ?? '';
+            $role = strval($this->arguments['visibility'] ?? '');
             $role = empty($role) ? $role : str_replace('\\n', "\n", $role);
-            $visible = !$role || $GLOBALS['wiki']->CheckACL($role, null, false);
+            $visible = !$role || $this->getService(AclService::class)->check($role, null, false);
             $class = ($backgroundimg ? 'background-image' : '')
                 . ($patternId && !$patternborder ? ' with-bg-pattern' : '')
                 . ($patternborder ? ' pattern-border' : '')

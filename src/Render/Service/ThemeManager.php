@@ -7,6 +7,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Wiki;
@@ -486,7 +488,7 @@ class ThemeManager implements EventSubscriberInterface
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
         $path = self::CUSTOM_CSS_PRESETS_PATH;
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->wiki->services->get(AclService::class)->isAdmin()) {
             return ['status' => false, 'message' => 'User is not admin'];
         }
         if (!file_exists($path . DIRECTORY_SEPARATOR . $filename)) {
@@ -515,7 +517,7 @@ class ThemeManager implements EventSubscriberInterface
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->getUser()) {
+        if (!$this->wiki->services->get(AuthenticationService::class)->getLoggedUser()) {
             return ['status' => false, 'message' => 'Not connected user', 'errorCode' => 0];
         }
 
@@ -530,7 +532,7 @@ class ThemeManager implements EventSubscriberInterface
         }
         $fileContent .= "}\r\n";
 
-        if (file_exists($path . DIRECTORY_SEPARATOR . $filename) && !$this->wiki->UserIsAdmin()) {
+        if (file_exists($path . DIRECTORY_SEPARATOR . $filename) && !$this->wiki->services->get(AclService::class)->isAdmin()) {
             return ['status' => false, 'message' => 'File already existing but user not admin', 'errorCode' => 2];
         }
         // check if folder exists

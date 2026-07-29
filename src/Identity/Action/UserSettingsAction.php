@@ -10,6 +10,7 @@ use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\InputFilter;
@@ -100,7 +101,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         $this->wantedUserName = htmlspecialchars($get['user'] ?? '');
         $this->wantedEmail = filter_var($get['email'] ?? '', FILTER_SANITIZE_EMAIL);
         $user = null;
-        if ($this->wiki->UserIsAdmin() && (
+        if ($this->getService(AclService::class)->isAdmin() && (
             !empty($this->wantedUserName)
             || !empty($this->wantedEmail)
         )) {

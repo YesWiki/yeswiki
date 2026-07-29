@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core;
 
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredPerformable;
 use YesWiki\Render\Service\TemplateHelperService;
@@ -30,7 +31,7 @@ abstract class YesWikiAction extends YesWikiPerformable
         $acl = $this->getService(ModuleAclService::class)->getModuleAcl($actionName, 'action');
 
         // For admin actions, if the acl is defined with not secured values or not defined
-        if ($adminOnly && in_array($acl, ['*', '+', '', '%']) && !$this->wiki->UserIsAdmin()) {
+        if ($adminOnly && in_array($acl, ['*', '+', '', '%']) && !$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => "Action $actionName : " . _t('BAZ_NEED_ADMIN_RIGHTS'),

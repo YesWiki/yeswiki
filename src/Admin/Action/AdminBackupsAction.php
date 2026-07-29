@@ -1,11 +1,13 @@
 <?php
 
 namespace YesWiki\Admin\Action;
-/**
+
+/*
  * Admin backups.
  */
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 class AdminBackupsAction extends YesWikiAction implements RegisteredAction
@@ -18,7 +20,7 @@ class AdminBackupsAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => get_class($this) . ' : ' . _t('BAZ_NEED_ADMIN_RIGHTS'),

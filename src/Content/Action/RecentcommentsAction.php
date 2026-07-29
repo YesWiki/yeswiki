@@ -6,6 +6,7 @@ use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{recentcomments}}` -- converted from the procedural actions/recentcomments.php by ticket 06.
@@ -67,7 +68,7 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction
                 }
 
                 // echo entry
-                echo '&nbsp;&nbsp;&nbsp;(',$comment['time'],') <a href="',$this->getService(UrlFormatter::class)->href('', $comment['comment_on'], 'show_comments=1'),'#',$comment['tag'],'">',$comment['comment_on'],'</a> . . . . ',$this->wiki->Format($comment['user']),"<br />\n";
+                echo '&nbsp;&nbsp;&nbsp;(',$comment['time'],') <a href="',$this->getService(UrlFormatter::class)->href('', $comment['comment_on'], 'show_comments=1'),'#',$comment['tag'],'">',$comment['comment_on'],'</a> . . . . ',$this->getService(MarkdownFormatterService::class)->format($comment['user']),"<br />\n";
             }
         } else {
             echo '<i>' . _t('NO_RECENT_COMMENTS') . '.</i>';

@@ -2,8 +2,11 @@
 
 namespace YesWiki\Content\Handler;
 
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -44,11 +47,11 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
             if (
                 !empty($_GET['action'])
                 && in_array($_GET['action'], $availableActions)
-                && ($this->wiki->UserIsAdmin() || $this->getService(AclService::class)->isOwner($tag))
+                && ($this->getService(AclService::class)->isAdmin() || $this->getService(AclService::class)->isOwner($tag))
             ) {
                 $aclsService = $this->wiki->services->get(AclService::class);
                 $commentsAcls = $aclsService->load($tag, 'comment');
-                $wikiGroups = $this->wiki->GetGroupsList();
+                $wikiGroups = $this->getService(GroupOperationsService::class)->getAll();
                 switch ($_GET['action']) {
                     case 'opencomments':
                         if (
@@ -73,8 +76,8 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
             }
 
             // only claim ownership if this page has no owner, and if user is logged in.
-            if (!$this->wiki->GetPageOwner() && $this->wiki->GetUser()) {
-                $this->wiki->SetPageOwner($tag, $this->wiki->GetUserName());
+            if (!$this->getService(PageManager::class)->getOwner() && $this->getService(AuthenticationService::class)->getLoggedUser()) {
+                $this->getService(PageManager::class)->setOwner($tag, $this->getService(AuthenticationService::class)->getLoggedUserName());
                 $this->getService(FlashMessageService::class)->setMessage(_t('YW_YOU_ARE_NOW_OWNER_OF_PAGE'));
             }
         }

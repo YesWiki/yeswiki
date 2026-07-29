@@ -44,6 +44,19 @@ class GroupOperationsService extends YesWikiController
     }
 
     /**
+     * The group's members as historic ACL text, one name per line -- "" when the
+     * group does not exist (historic Wiki::GetGroupACL()).
+     */
+    public function getMembersText(string $group): string
+    {
+        try {
+            return implode("\n", $this->getMembers($group));
+        } catch (GroupNameDoesNotExistException $th) {
+            return '';
+        }
+    }
+
+    /**
      * Create or update a group from an ACL-style newline-separated member list
      * (historic Wiki::SetGroupACL()).
      *

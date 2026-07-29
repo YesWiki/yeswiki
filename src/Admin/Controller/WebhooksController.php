@@ -164,7 +164,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
 
             return $object->$method($param1, $param2, $param3);
         } catch (\Throwable $th) {
-            if ($this->getDebugMode() && $this->wiki->UserIsAdmin()) {
+            if ($this->getDebugMode() && $this->getService(AclService::class)->isAdmin()) {
                 throw $th;
             }
             $functionName = $isMethod
@@ -189,7 +189,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
 
     public function viewWebhooksForm(): string
     {
-        if (!empty($_POST['url']) && $this->wiki->UserIsAdmin()) {
+        if (!empty($_POST['url']) && $this->getService(AclService::class)->isAdmin()) {
             $this->registerWebhooks();
         }
 

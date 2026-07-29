@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{liensjavascripts}}` -- converted from the procedural actions/liensjavascripts.php by ticket 06.
@@ -39,6 +40,6 @@ class LiensjavascriptsAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        echo $this->wiki->Format('{{linkjavascript}}');
+        echo $this->getService(MarkdownFormatterService::class)->format('{{linkjavascript}}');
     }
 }

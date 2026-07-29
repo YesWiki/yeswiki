@@ -10,15 +10,18 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\HashCashService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\PasswordForEditingService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\HibernationNotice;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 use YesWiki\Search\Service\TagsManager;
@@ -56,7 +59,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     private function emitBefore(): void
     {
         // merged from handlers/page/__edit.php (ticket 06: core does not hook itself)
-        if ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read')) {
+        if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             list($state, $message) = $this->wiki->services->get(PasswordForEditingService::class)->isGrantedPasswordForEditing();
             if (!$state) {
                 echo $this->wiki->Header() .
@@ -111,7 +114,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     }
                 });";
 
-                $this->wiki->AddJavascript($js);
+                $this->getService(AssetsManager::class)->AddJavascript($js);
             }
         }
 
@@ -120,8 +123,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $_POST['body'] = '======' . $_GET['body'] . '======';
         }
 
-        $this->wiki->addJavascriptFile('javascripts/change-theme.js');
-        $this->wiki->addJavascriptFile('javascripts/template-edit.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/change-theme.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/template-edit.js');
 
         // merged from handlers/__EditHandler.php (ticket 06: core does not hook itself)
         // relocated from tools/bazar/handlers/__EditHandler.php (ticket 24): if the page
@@ -131,7 +134,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
 
-        if ($this->wiki->HasAccess('write') && $entryManager->isEntry($this->wiki->GetPageTag())) {
+        if ($this->getService(AclService::class)->hasAccess('write') && $entryManager->isEntry($this->wiki->GetPageTag())) {
             $plugin_output_new = '<div class="page">';
             ob_start();
             $plugin_output_new .= $this->isWikiHibernated()
@@ -169,7 +172,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             // display: the live-search tag-input widget (javascripts/yw-tags-input.js)
             // queries GET /api/tags itself as the user types -- no tag list to dump here
             if ($aclService->hasAccess('read')) {
-                $this->wiki->AddJavascriptFile('javascripts/yw-tags-input.js');
+                $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/yw-tags-input.js');
             }
         }
     }
@@ -185,7 +188,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         // merged from handlers/page/edit__.php (ticket 06: core does not hook itself)
         $params = $this->wiki->services->get(ParameterBagInterface::class);
-        if (!$params->get('hide_keywords') && $this->wiki->HasAccess('write') && $this->wiki->HasAccess('read')) {
+        if (!$params->get('hide_keywords') && $this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             // on recupere les tags de la page courante
             $tagsManager = $this->wiki->services->get(TagsManager::class);
             $tabtagsexistants = $tagsManager->getAll($this->wiki->GetPageTag());
@@ -217,7 +220,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $plugin_output_new = str_replace($target, $target . $html, $plugin_output_new);
         }
 
-        if ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read')) {
+        if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             // Edition
             if (!isset($_POST['submit']) || $_POST['submit'] != InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
                 if ($this->wiki->config['use_hashcash']) {
@@ -244,7 +247,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         // personnalisation graphique que dans le cas ou on est autorise
         if ((!isset($this->wiki->config['hide_action_template']) or (isset($this->wiki->config['hide_action_template']) && !$this->wiki->config['hide_action_template']))
-            && ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->wiki->UserIsAdmin() || $this->getService(AclService::class)->isOwner()))))
+            && ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->getService(AclService::class)->isAdmin() || $this->getService(AclService::class)->isOwner()))))
         ) {
             // graphical options : theme and background image
             $selecteur = '
@@ -300,7 +303,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         }
         $plugin_output_new = str_replace($target, $target . $html, $plugin_output_new);
 
-        if (!$this->wiki->HasAccess('write')) {
+        if (!$this->getService(AclService::class)->hasAccess('write')) {
             $output = '';
             // on recupere les entetes html mais pas ce qu'il y a dans le body
             $header = explode('<body', $this->wiki->Header());
@@ -309,7 +312,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $output .= '<div class="yw-alert yw-alert--danger">'
                 . _t('LOGIN_NOT_AUTORIZED_EDIT') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.'
                 . '</div><!-- end .alert -->' . "\n"
-                . $this->wiki->Format('{{login signupurl="0"}}' . "\n\n")
+                . $this->getService(MarkdownFormatterService::class)->format('{{login signupurl="0"}}' . "\n\n")
                 . '</div><!-- end .page -->' . "\n";
             // on recupere juste les javascripts et la fin des balises body et html
             $output .= preg_replace('/^.+<script/Us', '<script', $this->wiki->Footer());
@@ -330,7 +333,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         // YesWikiPerformable-derived actions/handlers)
         $request = $this->wiki->request;
 
-        if ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read') && !$isWikiHibernated) {
+        if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && !$isWikiHibernated) {
             $submit = $request->request->get('submit') ?: false;
 
             // fetch fields
@@ -349,7 +352,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'cancelUrl' => $cancelUrl,
                     'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
                     'preview' => true,
-                    'bodyPreview' => $this->wiki->Format($body),
+                    'bodyPreview' => $this->getService(MarkdownFormatterService::class)->format($body),
                     'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
                 ]);
                 $this->getService(InclusionStack::class)->replace($temp);
@@ -371,7 +374,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $body = $body;
 
                         // add page (revisions)
-                        $this->wiki->SavePage($this->wiki->tag, $body, !empty($this->wiki->page['comment_on']) ? $this->wiki->page['comment_on'] : '');
+                        $this->getService(PageManager::class)->save($this->wiki->tag, $body, !empty($this->wiki->page['comment_on']) ? $this->wiki->page['comment_on'] : '');
 
                         // now we render it internally so we can write the updated link table.
                         $page = $this->wiki->services->get(PageManager::class)->getOne($this->wiki->tag);
@@ -390,7 +393,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
                     // append a comment?
                     if ($request->query->has('appendcomment') || $request->request->has('appendcomment')) {
-                        $body = trim($body) . "\n\n----\n\n-- " . $this->wiki->GetUserName() . ' (' . date('c') . ')';
+                        $body = trim($body) . "\n\n----\n\n-- " . $this->getService(AuthenticationService::class)->getLoggedUserName() . ' (' . date('c') . ')';
                     }
 
                     $passwordForEditing = !empty($this->wiki->config['password_for_editing']) && $request->request->has('password_for_editing');

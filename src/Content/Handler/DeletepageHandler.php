@@ -4,6 +4,7 @@ namespace YesWiki\Content\Handler;
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
@@ -47,7 +48,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
     private function emitBefore(): void
     {
         // merged from handlers/page/__deletepage.php (ticket 06: core does not hook itself)
-        if (($this->getService(AclService::class)->isOwner() || $this->wiki->UserIsAdmin())
+        if (($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin())
             && isset($_GET['eraselink'])
             && $_GET['eraselink'] === 'oui'
             && isset($_GET['confirme'])
@@ -78,7 +79,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
         $redirectToIncoming = false;
         $hasBeenDeleted = false;
 
-        if ($this->getService(AclService::class)->isOwner() || $this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin()) {
             $incomingUrlParam = '';
             $cancelUrl = $this->getService(UrlFormatter::class)->href();
             if (!empty($incomingurl)) {
@@ -91,7 +92,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                 }
             }
 
-            if ($this->wiki->IsOrphanedPage($this->wiki->GetPageTag())) {
+            if ($this->getService(PageManager::class)->isOrphaned($this->wiki->GetPageTag())) {
                 $tag = $this->wiki->GetPageTag();
                 if (!isset($_GET['confirme']) || !($_GET['confirme'] == 'oui')) {
                     $msg = '<form action="' . $this->getService(UrlFormatter::class)->href('deletepage', '', 'confirme=oui' . $incomingUrlParam);

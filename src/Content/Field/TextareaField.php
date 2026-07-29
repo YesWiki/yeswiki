@@ -5,6 +5,7 @@ namespace YesWiki\Content\Field;
 use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attach;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 
@@ -60,9 +61,9 @@ class TextareaField extends BazarField
         $vditorLang = null;
         // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
-            $wiki->AddCSSFile('styles/vendor/vditor/index.css');
-            $wiki->AddJavascriptFile('javascripts/vendor/vditor/index.min.js');
-            $wiki->AddJavascriptFile('javascripts/vditor-textarea.js');
+            $this->getService(AssetsManager::class)->AddCSSFile('styles/vendor/vditor/index.css');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/vditor/index.min.js');
+            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vditor-textarea.js');
 
             $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
         }
@@ -111,10 +112,10 @@ class TextareaField extends BazarField
                 $oldPage = $GLOBALS['wiki']->GetPageTag();
                 $oldPageArray = $GLOBALS['wiki']->page;
                 $GLOBALS['wiki']->tag = $entry['tag'];
-                $GLOBALS['wiki']->page = $GLOBALS['wiki']->LoadPage($GLOBALS['wiki']->tag);
+                $GLOBALS['wiki']->page = $GLOBALS['wiki']->services->get(\YesWiki\Content\Service\PageManager::class)->getOne($GLOBALS['wiki']->tag);
                 $GLOBALS['wiki']->page['body'] = $value;
 
-                $value = $GLOBALS['wiki']->Format($value);
+                $value = $GLOBALS['wiki']->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($value);
                 // if the textarea have some actions which return "", they are replaced by '' otherwise it crashed
                 // because they're by wakka as a beginning of HTML code
                 // the user still insert HTML code in the textarea with "" because the "" block is interpretated before

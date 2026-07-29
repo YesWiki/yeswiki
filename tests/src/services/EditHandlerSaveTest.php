@@ -4,10 +4,10 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -43,13 +43,13 @@ class EditHandlerSaveTest extends YesWikiTestCase
         $pageManager->save(self::PAGE_TAG, 'original content', '', true);
         $page = $pageManager->getOne(self::PAGE_TAG);
 
-        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
+        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
         $authenticationService->login($admin);
 
         $wiki->tag = self::PAGE_TAG;
         $wiki->page = $page;
-        $wiki->LoadPage(self::PAGE_TAG);
+        $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
         // the edit form renders {{aceditor}}, whose ActionsBuilderService::getData()
         // calls bazar's baz_forms_and_lists_ids(), which reads $GLOBALS['wiki'] --

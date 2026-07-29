@@ -4,8 +4,10 @@ namespace YesWiki\Content\Service;
 
 use YesWiki\Content\Field\ReactionsField;
 use YesWiki\Content\Field\TextareaField;
-use YesWiki\Wiki;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Wiki;
 
 class ReactionManager
 {
@@ -125,7 +127,7 @@ class ReactionManager
 
     public function getActionParametersFromPage($page, $idReaction = null)
     {
-        $p = $this->wiki->LoadPage($page);
+        $p = $this->wiki->services->get(PageManager::class)->getOne($page);
         if (!empty($p)) {
             $params = [];
             $this->appendParamsFromActionDefinition($params, $p['body']);
@@ -302,7 +304,7 @@ class ReactionManager
 
     public function addUserReaction($pageTag, $values)
     {
-        if (!$this->wiki->getUser()) {
+        if (!$this->wiki->services->get(AuthenticationService::class)->getLoggedUser()) {
             throw new \Exception('Unauthorized');
         }
 
@@ -329,8 +331,8 @@ class ReactionManager
             throw new \Exception('Reaction value not specified');
         }
 
-        $connectedUser = $this->wiki->getUser();
-        if (!$this->wiki->UserIsAdmin() && (empty($connectedUser) || $connectedUser['name'] !== $user)) {
+        $connectedUser = $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
+        if (!$this->wiki->services->get(AclService::class)->isAdmin() && (empty($connectedUser) || $connectedUser['name'] !== $user)) {
             throw new \Exception('Unauthorized');
         }
 

@@ -1,18 +1,20 @@
 <?php
 
 namespace YesWiki\Identity\Action;
-/**
+
+/*
  * Cette action à pour but de gérer massivement les droits sur les pages d'un wiki.
  * Les pages s'affichent et sont modifiées en fonction du squelette qu'elles utilisent (définis par l'utilisateur).
  */
 
-use YesWiki\Identity\Service\GroupOperationsService;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Render\Service\TemplateHelperService;
-use YesWiki\Core\YesWikiAction;
-use YesWiki\Kernel\Performable\RegisteredAction;
 
 class GererDroitsAction extends YesWikiAction implements RegisteredAction
 {
@@ -30,7 +32,7 @@ class GererDroitsAction extends YesWikiAction implements RegisteredAction
     public function run()
     {
         // action réservée aux admins
-        if (!$this->wiki->UserIsAdmin()) {
+        if (!$this->getService(AclService::class)->isAdmin()) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => _t('ACLS_RESERVED_FOR_ADMINS'),
@@ -56,7 +58,7 @@ class GererDroitsAction extends YesWikiAction implements RegisteredAction
         $aclReadExpr = $this->dbService->jsonExtract("$pagesTableName.metadata", '$.acls.read');
         $aclWriteExpr = $this->dbService->jsonExtract("$pagesTableName.metadata", '$.acls.write');
         $aclCommentExpr = $this->dbService->jsonExtract("$pagesTableName.metadata", '$.acls.comment');
-        $liste_pages = $this->wiki->Query(<<<SQL
+        $liste_pages = $this->getService(DbService::class)->query(<<<SQL
     SELECT tag,
     $aclReadExpr AS acl_read,
     $aclWriteExpr AS acl_write,
@@ -113,23 +115,23 @@ class GererDroitsAction extends YesWikiAction implements RegisteredAction
             } elseif (is_array($post['selectpage'])) {
                 foreach (array_filter($post['selectpage'], 'is_string') as $page_cochee) {
                     if ($post['typemaj'] === 'default') {
-                        $this->wiki->DeleteAcl($page_cochee);
+                        $this->getService(AclService::class)->delete($page_cochee);
                     } else {
                         $appendAcl = ($post['typemaj'] === 'ajouter');
                         if (!empty($post['newlire_advanced'])) {
-                            $this->wiki->SaveAcl($page_cochee, 'read', $post['newlire_advanced'], $appendAcl);
+                            $this->getService(AclService::class)->save($page_cochee, 'read', $post['newlire_advanced'], $appendAcl);
                         } elseif (!empty($post['newlire'])) {
-                            $this->wiki->SaveAcl($page_cochee, 'read', $post['newlire'], $appendAcl);
+                            $this->getService(AclService::class)->save($page_cochee, 'read', $post['newlire'], $appendAcl);
                         }
                         if (!empty($post['newecrire_advanced'])) {
-                            $this->wiki->SaveAcl($page_cochee, 'write', $post['newecrire_advanced'], $appendAcl);
+                            $this->getService(AclService::class)->save($page_cochee, 'write', $post['newecrire_advanced'], $appendAcl);
                         } elseif (!empty($post['newecrire'])) {
-                            $this->wiki->SaveAcl($page_cochee, 'write', $post['newecrire'], $appendAcl);
+                            $this->getService(AclService::class)->save($page_cochee, 'write', $post['newecrire'], $appendAcl);
                         }
                         if (!empty($post['newcomment_advanced'])) {
-                            $this->wiki->SaveAcl($page_cochee, 'comment', $this->filterCommentRightsBeforeSave($post['newcomment_advanced']), $appendAcl);
+                            $this->getService(AclService::class)->save($page_cochee, 'comment', $this->filterCommentRightsBeforeSave($post['newcomment_advanced']), $appendAcl);
                         } elseif (!empty($post['newcomment'])) {
-                            $this->wiki->SaveAcl($page_cochee, 'comment', $this->filterCommentRightsBeforeSave($post['newcomment']), $appendAcl);
+                            $this->getService(AclService::class)->save($page_cochee, 'comment', $this->filterCommentRightsBeforeSave($post['newcomment']), $appendAcl);
                         }
                     }
                 }

@@ -1,6 +1,5 @@
 <?php
 
-
 function sanitizeEntity($string)
 {
     return preg_replace('~&([a-z]{1,2})(?:acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml|caron);~i', '$1', htmlentities(html_entity_decode($string), ENT_QUOTES, YW_CHARSET));
@@ -90,11 +89,11 @@ function get_title_from_body($page)
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-            $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+            $title = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
         } else {
             preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
             if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+                $title = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
             } else {
                 $title = $page['tag'];
             }
@@ -135,11 +134,11 @@ function get_image_from_body($page)
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
             if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                $image = $GLOBALS['wiki']->Format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim(str_replace('\\', '', $image[1][0])) . '" />""');
+                $image = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim(str_replace('\\', '', $image[1][0])) . '" />""');
             } else {
                 preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
                 if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                    $image = $GLOBALS['wiki']->Format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim($image[1][0]) . '" />""');
+                    $image = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim($image[1][0]) . '" />""');
                 } else {
                     $image = '';
                 }

@@ -6,8 +6,8 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Admin\Controller\ApiController;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
@@ -42,7 +42,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
-        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
+        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
         $this->assertNotFalse($admin, 'need an existing admin user to exercise the write path');
 
         try {
@@ -78,7 +78,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
         $controller = $wiki->services->get(ApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
-        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->UserIsAdmin($u['name'])));
+        $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
 
         try {
             $authenticationService->login($admin);

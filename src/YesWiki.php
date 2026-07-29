@@ -40,18 +40,13 @@ use YesWiki\Admin\Service\ApiService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\ReferrerService;
-use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiControllerResolver;
-use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Service\AccountActivationService;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
-use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
@@ -59,10 +54,8 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
-use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
-use YesWiki\Search\Service\TagsManager;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
 // time, before anything (Init, the installer, error paths) calls _t()
@@ -213,7 +206,7 @@ class Wiki
                     AND a.time < b.time
                     AND b.time < $dateExpr;
             SQL;
-            $ids = $this->LoadAll($sql);
+            $ids = $this->service(DbService::class)->loadAll($sql);
 
             if (count($ids)) {
                 // there are some versions to remove from DB
@@ -225,7 +218,7 @@ class Wiki
                 $sql .= ')';
 
                 // ... and send it !
-                $this->Query($sql);
+                $this->service(DbService::class)->query($sql);
             }
         }
     }
@@ -275,17 +268,6 @@ class Wiki
     }
 
     /**
-     * $formatter is vestigial: 'wakka' was the only one that ever existed, formatters/ held
-     * a single after-callback file, and no extension shipped one. Ticket 06 removed the
-     * formatter object type entirely; the parameter stays only so existing callers and
-     * stored content keep working.
-     */
-    public function Format($text, $formatter = 'wakka', $pageTag = '')
-    {
-        return $this->service(MarkdownFormatterService::class)->format((string)$text);
-    }
-
-    /**
      * Ajout d'un parametre.
      *
      * @param string $parameter nom du parametre
@@ -305,62 +287,6 @@ class Wiki
 
     // COMMENTS
     // ACCESS CONTROL
-    /**
-     * @param string $group
-     *                      The name of a group
-     *
-     * @return string the ACL associated with the group $gname
-     *
-     * @see UserIsInGroup to check if a user belongs to some group
-     *  @deprecated Use GroupOperationsService::getMembers instead
-     */
-    public function GetGroupACL($group)
-    {
-        if (array_key_exists($group, $this->_groupsCache)) {
-            return $this->_groupsCache[$group];
-        }
-        $groupOperationsService = $this->service(GroupOperationsService::class);
-        try {
-            return $this->_groupsCache[$group] = implode("\n", $groupOperationsService->getMembers($group));
-        } catch (GroupNameDoesNotExistException $th) {
-            return [];
-        }
-    }
-
-    /**
-     * @return array The list of all group names
-     *
-     *  @deprecated Use GroupOperationsService::getAll instead
-     */
-    public function GetGroupsList()
-    {
-        $groupOperationsService = $this->service(GroupOperationsService::class);
-
-        return $groupOperationsService->getAll();
-    }
-
-    /**
-     * Checks if a given user is administrator.
-     *
-     * @param string $user
-     *                     The name of the user (defaults to the current user if not given)
-     *
-     * @return bool true iff the user is an administrator
-     */
-    public function UserIsAdmin($user = null)
-    {
-        static $cache = [];
-
-        if ($user === null) {
-            $user = $this->getUserName();
-        }
-        if (!array_key_exists($user, $cache)) {
-            $cache[$user] = $this->service(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
-        }
-
-        return $cache[$user];
-    }
-
     /**
      * Checks if a $user satisfies the ACL to access a certain $module.
      *
@@ -678,46 +604,6 @@ class Wiki
     }
 
     /**
-     * @deprecated Use AssetsManager service instead
-     */
-    public function AddCSS($style)
-    {
-        return $this->service(AssetsManager::class)->AddCSS($style);
-    }
-
-    /**
-     * @deprecated Use AssetsManager service instead
-     */
-    public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
-    {
-        return $this->service(AssetsManager::class)->AddCSSFile($file, $conditionstart, $conditionend);
-    }
-
-    /**
-     * @deprecated Use AssetsManager service instead
-     */
-    public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
-    {
-        return $this->service(AssetsManager::class)->LinkCSSFile($file, $conditionstart, $conditionend);
-    }
-
-    /**
-     * @deprecated Use AssetsManager service instead
-     */
-    public function AddJavascript($script, $module = false)
-    {
-        return $this->service(AssetsManager::class)->AddJavascript($script, $module);
-    }
-
-    /**
-     * @deprecated Use AssetsManager service instead
-     */
-    public function AddJavascriptFile($file, $first = false, $module = false)
-    {
-        return $this->service(AssetsManager::class)->AddJavascriptFile($file, $first, $module);
-    }
-
-    /**
      * Load extensions from a directory.
      *
      * @return void
@@ -921,217 +807,5 @@ class Wiki
         } catch (\Exception $e) {
             return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': ' . $e->getMessage() . '</div>' . "\n";
         }
-    }
-
-    /*
-     * RETRO-COMPATIBILITY
-     */
-
-    /**
-     * @deprecated Use DbService::query instead
-     */
-    public function Query($query)
-    {
-        return $this->service(DbService::class)->query($query);
-    }
-
-    /**
-     * @deprecated Use DbService::loadSingle instead
-     */
-    public function LoadSingle($query)
-    {
-        return $this->service(DbService::class)->loadSingle($query);
-    }
-
-    /**
-     * @deprecated Use DbService::loadAll instead
-     */
-    public function LoadAll($query)
-    {
-        return $this->service(DbService::class)->loadAll($query);
-    }
-
-    /**
-     * @deprecated Use PageManager::getOne instead
-     */
-    public function LoadPage($tag, $time = '', $cache = 1)
-    {
-        return $this->service(PageManager::class)->getOne($tag, $time, $cache);
-    }
-
-    /**
-     * @deprecated Use PageManager::getCached instead
-     */
-    public function GetCachedPage($tag)
-    {
-        return $this->service(PageManager::class)->getCached($tag);
-    }
-
-    /**
-     * @deprecated Use PageManager::cache instead
-     */
-    public function CachePage($page, $pageTag = null)
-    {
-        return $this->service(PageManager::class)->cache($page, $pageTag);
-    }
-
-    /**
-     * @deprecated Use PageManager::getById instead
-     */
-    public function LoadPageById($id)
-    {
-        return $this->service(PageManager::class)->getById($id);
-    }
-
-    /**
-     * @deprecated Use PageManager::getRecentlyChanged instead
-     */
-    public function LoadRecentlyChanged($limit = 50, $minDate = '')
-    {
-        return $this->service(PageManager::class)->getRecentlyChanged($limit, $minDate);
-    }
-
-    /**
-     * @deprecated Use PageManager::getAll instead
-     */
-    public function LoadAllPages()
-    {
-        return $this->service(PageManager::class)->getAll();
-    }
-
-    /**
-     * @deprecated Use PageManager::getWanted instead
-     */
-    public function LoadWantedPages()
-    {
-        return $this->service(PageManager::class)->getWanted();
-    }
-
-    /**
-     * @deprecated Use PageManager::isOrphaned instead
-     */
-    public function IsOrphanedPage($tag)
-    {
-        return $this->service(PageManager::class)->isOrphaned($tag);
-    }
-
-    /**
-     * @deprecated Use PageManager::save instead
-     */
-    public function SavePage($tag, $body, $comment_on = '', $bypass_acls = false)
-    {
-        return $this->service(PageManager::class)->save($tag, $body, $comment_on, $bypass_acls);
-    }
-
-    /**
-     * @deprecated Use PageManager::getOwner instead
-     */
-    public function GetPageOwner($tag = '', $time = '')
-    {
-        return $this->service(PageManager::class)->getOwner($tag, $time);
-    }
-
-    /**
-     * @deprecated Use PageManager::save instead
-     */
-    public function SetPageOwner($tag, $user)
-    {
-        return $this->service(PageManager::class)->setOwner($tag, $user);
-    }
-
-    /**
-     * @deprecated Use PageManager::getMetadata instead
-     */
-    public function GetMetaDatas($tag)
-    {
-        return $this->service(PageManager::class)->getMetadata($tag);
-    }
-
-    /**
-     * @deprecated Use TagsManager::getPagesByTags instead
-     */
-    public function PageList($tags = '', $type = '', $nb = '', $tri = '')
-    {
-        return $this->service(TagsManager::class)->getPagesByTags($tags, $type, $nb, $tri);
-    }
-
-    /**
-     * @deprecated Use TripleStore::getAll instead
-     */
-    public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        return $this->service(TripleStore::class)->getAll($resource, $property, $re_prefix, $prop_prefix);
-    }
-
-    /**
-     * @deprecated Use UserManager::getOneByName instead
-     */
-    public function LoadUser($name, $password = 0)
-    {
-        return $this->service(UserManager::class)->getOneByName($name, $password);
-    }
-
-    /**
-     * @deprecated Use UserManager::getAll instead
-     */
-    public function LoadUsers()
-    {
-        return $this->service(UserManager::class)->getAll();
-    }
-
-    /**
-     * @deprecated Use AuthenticationService::getLoggedUser instead
-     */
-    public function GetUser()
-    {
-        return $this->service(AuthenticationService::class)->getLoggedUser();
-    }
-
-    /**
-     * @deprecated Use AuthenticationService::getLoggedUserName instead
-     */
-    public function GetUserName()
-    {
-        return $this->service(AuthenticationService::class)->getLoggedUserName();
-    }
-
-    /**
-     * @deprecated Use AclService::load
-     */
-    public function LoadAcl($tag, $privilege, $useDefaults = true)
-    {
-        return $this->service(AclService::class)->load($tag, $privilege, $useDefaults);
-    }
-
-    /**
-     * @deprecated Use AclService::save
-     */
-    public function SaveAcl($tag, $privilege, $list, $appendAcl = false)
-    {
-        return $this->service(AclService::class)->save($tag, $privilege, $list, $appendAcl);
-    }
-
-    /**
-     * @deprecated Use AclService::delete
-     */
-    public function DeleteAcl($tag, $privileges = ['read', 'write', 'comment'])
-    {
-        return $this->service(AclService::class)->delete($tag, $privileges);
-    }
-
-    /**
-     * @deprecated Use AclService::hasAccess
-     */
-    public function HasAccess($privilege, $tag = '', $user = '')
-    {
-        return $this->service(AclService::class)->hasAccess($privilege, $tag, $user);
-    }
-
-    /**
-     * @deprecated Use AclService::check
-     */
-    public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
-    {
-        return $this->service(AclService::class)->check($acl, $user, $admincheck, $tag, $mode);
     }
 }

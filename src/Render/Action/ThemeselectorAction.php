@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
@@ -44,7 +45,7 @@ class ThemeselectorAction extends YesWikiAction implements RegisteredAction
     {
         $class = $this->wiki->getParameter('class');
         if (
-            $this->wiki->UserIsAdmin()
+            $this->getService(AclService::class)->isAdmin()
             && isset($_POST['action']) && ($_POST['action'] === 'setTemplate')
         ) {
             $this->getService(ActionRunner::class)->action('setwikidefaulttheme');

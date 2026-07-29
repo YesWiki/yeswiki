@@ -8,6 +8,7 @@ use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
 use YesWiki\Admin\Service\UpdateAdminPagesService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -60,8 +61,8 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         $vIsReadOnly = $vArchiveService->isReadOnly();
 
         $vAction = $vSecurityController->filterInput(INPUT_GET, 'action', FILTER_DEFAULT, true);
-        if (empty($vAction) || !$this->wiki->UserIsAdmin() || $vIsReadOnly) {
-            $vIsAdmin = $this->wiki->UserIsAdmin();
+        if (empty($vAction) || !$this->getService(AclService::class)->isAdmin() || $vIsReadOnly) {
+            $vIsAdmin = $this->getService(AclService::class)->isAdmin();
             $vIsDesignatedUpdateInstance = $vUpdateService->isDesignatedUpdateInstance();
 
             // Base action, display current status of software, extension and themes

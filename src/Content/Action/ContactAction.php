@@ -1,10 +1,12 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 // ticket 18: relocated from tools/contact/actions/ContactAction.php.
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
 
 include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
 
@@ -48,7 +50,7 @@ class ContactAction extends YesWikiAction implements RegisteredAction
             'pageTag' => $this->wiki->GetPageTag(),
         ]);
 
-        $this->wiki->addJavascriptFile('javascripts/contact.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
 
         return $this->render('@core/' . $this->arguments['template'], $options);
     }

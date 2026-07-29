@@ -277,7 +277,7 @@ class FormPropertiesService
     {
         // `user` or `#` mean the entry's creator gets the right
         if ($right === 'user' || $right === '#') {
-            return $entry['nomwiki'] ?? $this->wiki->GetUserName();
+            return $entry['nomwiki'] ?? $this->wiki->services->get(AuthenticationService::class)->getLoggedUserName();
         }
 
         return $right;
@@ -348,10 +348,10 @@ class FormPropertiesService
                         _t('BAZ_USER_FIELD_ALREADY_CONNECTED')
                     );
                 }
-                if ($value !== $loggedUser['name'] && $this->wiki->UserIsAdmin()) {
+                if ($value !== $loggedUser['name'] && $this->aclService->isAdmin()) {
                     $associatedUser = $userManager->getOneByName($value);
                 }
-                if ($value === $loggedUser['name'] || ($this->wiki->UserIsAdmin() && !empty($associatedUser['email']))) {
+                if ($value === $loggedUser['name'] || ($this->aclService->isAdmin() && !empty($associatedUser['email']))) {
                     $autoUpdate = in_array($config['update_email'] ?? '', [true, '1', 1], true);
                     $message = (!empty($message) ? $message . "\n" : '') . ($autoUpdate ? str_replace(
                         '{email}',
@@ -366,7 +366,7 @@ class FormPropertiesService
             'value' => $value,
             'creationMode' => empty($entry[self::USER_PROPERTY_NAME]),
             'message' => $message,
-            'userIsAdmin' => $this->wiki->UserIsAdmin(),
+            'userIsAdmin' => $this->aclService->isAdmin(),
             'userName' => $loggedUser['name'] ?? null,
             'userEmail' => $loggedUser['email'] ?? null,
             'emailField' => $config['email_field'] ?? '',
@@ -403,7 +403,7 @@ class FormPropertiesService
         $isImport = isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] === 'import';
 
         if (
-            $this->wiki->UserIsAdmin()
+            $this->aclService->isAdmin()
             && in_array($request->request->get(self::USER_PROPERTY_NAME . self::FORCE_LABEL, false), [true, 'true', 1, '1'], true)
         ) {
             // force entry creation but do not create user if existing for this email
@@ -500,7 +500,7 @@ class FormPropertiesService
             if (
                 !empty($user)
                 && (
-                    $this->wiki->UserIsAdmin()
+                    $this->aclService->isAdmin()
                     || (!empty($loggedUser) && $user['name'] === $loggedUser['name'])
                 )
                 && $user['email'] !== $email
@@ -523,7 +523,7 @@ class FormPropertiesService
         }
         $groups = explode(',', $addToGroup);
         $groupsNames = [];
-        $existingsGroups = $this->wiki->GetGroupsList();
+        $existingsGroups = $this->groupOperationsService->getAll();
         $formManager = $this->getService(FormManager::class);
         $userManager = $this->getService(UserManager::class);
         foreach ($groups as $group) {
@@ -554,7 +554,7 @@ class FormPropertiesService
         foreach ($groupsNames as $groupName) {
             $previousACL = !in_array($groupName, $existingsGroups, true)
                 ? ''
-                : $this->wiki->GetGroupACL($groupName) . "\n";
+                : $this->groupOperationsService->getMembersText($groupName) . "\n";
             $this->groupOperationsService->setMembersFromAclText($groupName, $previousACL . $wikiName);
         }
     }

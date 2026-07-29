@@ -3,7 +3,9 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetsManager;
 
 /**
  * `{{listsubscription}}` -- converted from the procedural actions/listsubscription.php by ticket 06.
@@ -49,7 +51,7 @@ class ListsubscriptionAction extends YesWikiAction implements RegisteredAction
         // as before rather than "fixed" into a still-non-functional visible form.
 
         // valable que pour les utilisateurs connectes
-        if ($user = $this->wiki->GetUser()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             if ($user['email'] != '') {
                 // recuperation des parametres
                 $list = $this->wiki->GetParameter('list');
@@ -58,7 +60,7 @@ class ListsubscriptionAction extends YesWikiAction implements RegisteredAction
         				<form id="ajax-abonne-form" class="form-mail" data-page-tag="' . htmlspecialchars($this->wiki->GetPageTag()) . '">
         					' . $list . ' : ' . "\n" .
                         '</form>' . "\n";
-                    $this->wiki->addJavascriptFile('javascripts/contact.js');
+                    $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
                 } else {
                     echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_LISTSUBSCRIPTION') . '</strong> : ' . _t('CONTACT_LIST_REQUIRED') . '.</div>';
                 }

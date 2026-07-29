@@ -57,6 +57,7 @@ use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Search\Service\TagsManager;
@@ -341,7 +342,7 @@ class ApiController extends YesWikiController
 
         return new ApiResponse([
             'user' => $user->getName(),
-            'isAdmin' => $this->wiki->UserIsAdmin(),
+            'isAdmin' => $this->getService(AclService::class)->isAdmin(),
         ]);
     }
 
@@ -360,7 +361,7 @@ class ApiController extends YesWikiController
 
         return new ApiResponse([
             'user' => $loggedUser['name'],
-            'isAdmin' => $this->wiki->UserIsAdmin(),
+            'isAdmin' => $this->getService(AclService::class)->isAdmin(),
         ]);
     }
 
@@ -387,7 +388,7 @@ class ApiController extends YesWikiController
             // 07) are read through AccountActivationService's own internal fetch, not from
             // $user itself -- activation_status is Field-ACL-hidden on the generic body a
             // page-read would otherwise return
-            $filtered['isAdmin'] = $this->wiki->UserIsAdmin($user['name']);
+            $filtered['isAdmin'] = $this->getService(AclService::class)->isAdmin($user['name']);
             $filtered['activatedStatus'] = $accountActivationService->isActivated($user['name']);
 
             return $filtered;
@@ -599,7 +600,7 @@ class ApiController extends YesWikiController
     #[Route('/api/comments/{tag}', methods: ['DELETE'], options: ['acl' => ['+']])]
     public function deleteComment($tag)
     {
-        if ($this->getService(AclService::class)->isOwner($tag) || $this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isOwner($tag) || $this->getService(AclService::class)->isAdmin()) {
             $commentService = $this->getService(CommentService::class);
             $errors = $commentService->delete($tag);
 
@@ -678,7 +679,7 @@ class ApiController extends YesWikiController
             $page['html'] = $entryController->view($page['tag'], $page['time'], false);
             $page['code'] = $diffService->formatJsonCodeIntoHtmlTable($page);
         } else {
-            $page['html'] = $this->wiki->Format($page['body'], 'wakka', $page['tag']);
+            $page['html'] = $this->getService(MarkdownFormatterService::class)->format($page['body']);
             $page['code'] = $page['body'];
         }
 
@@ -769,7 +770,7 @@ class ApiController extends YesWikiController
             } else {
                 $tag = isset($page['tag']) ? $page['tag'] : $tag;
                 $result['notDeleted'] = [$tag];
-                if ($this->getService(AclService::class)->isOwner($tag) || $this->wiki->UserIsAdmin()) {
+                if ($this->getService(AclService::class)->isOwner($tag) || $this->getService(AclService::class)->isAdmin()) {
                     if (!$pageManager->isOrphaned($tag)) {
                         $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '{$dbService->escape($tag)}'");
                     }
@@ -863,8 +864,8 @@ class ApiController extends YesWikiController
     #[Route('/api/reactions/{idreaction}/{id}/{page}/{username}', methods: ['DELETE'], options: ['acl' => ['+']])]
     public function deleteReaction($idreaction, $id, $page, $username)
     {
-        if ($user = $this->wiki->getUser()) {
-            if ($username == $user['name'] || $this->wiki->UserIsAdmin()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
+            if ($username == $user['name'] || $this->getService(AclService::class)->isAdmin()) {
                 $reactionManager = $this->getService(ReactionManager::class);
                 if ($reactionManager->deleteUserReaction($page, $idreaction, $id, $username)) {
                     return new ApiResponse(
@@ -906,8 +907,8 @@ class ApiController extends YesWikiController
     public function addReactionFromUser()
     {
         $post = $this->getRequest()->request;
-        if ($user = $this->wiki->getUser()) {
-            if ($post->get('username') == $user['name'] || $this->wiki->UserIsAdmin()) {
+        if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
+            if ($post->get('username') == $user['name'] || $this->getService(AclService::class)->isAdmin()) {
                 $reactionid = $post->get('reactionid');
                 $pagetag = $post->get('pagetag');
                 $reactionIdValue = $post->get('id');
@@ -1177,14 +1178,14 @@ class ApiController extends YesWikiController
             $rawUsername = $bag->get('user');
             $username = (empty($rawUsername) || !is_string($rawUsername)) ? '' : htmlspecialchars(strip_tags($rawUsername));
             if (empty($username)) {
-                if (!$this->wiki->UserIsAdmin()) {
+                if (!$this->getService(AclService::class)->isAdmin()) {
                     $username = $this->getService(AuthenticationService::class)->getLoggedUser()['name'];
                 } else {
                     $username = null;
                 }
             }
             $currentUser = $this->getService(AuthenticationService::class)->getLoggedUser();
-            if (!$this->wiki->UserIsAdmin() && $currentUser['name'] != $username) {
+            if (!$this->getService(AclService::class)->isAdmin() && $currentUser['name'] != $username) {
                 $apiResponse = new ApiResponse(
                     ['error' => 'Not authorized to access a triple of another user if not admin !'],
                     Response::HTTP_UNAUTHORIZED
@@ -1588,7 +1589,7 @@ class ApiController extends YesWikiController
                 if ($entryManager->isEntry($pageTag)) {
                     $renderedPage = $this->getService(EntryController::class)->view($pageTag);
                 } else {
-                    $renderedPage = $this->wiki->Format($page['body'] ?? '', 'wakka', $pageTag);
+                    $renderedPage = $this->getService(MarkdownFormatterService::class)->format($page['body'] ?? '');
                 }
                 $messageHtml = html_entity_decode($renderedPage);
                 $messageTxt = strip_tags($messageHtml);
@@ -2235,7 +2236,7 @@ class ApiController extends YesWikiController
                 // when the field is a TextareaField with the SYNTAX_WIKI syntax, transform the field value into HTML
                 $field = $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $entry['form_id']);
                 if ($field && $field->getType() == 'textelong' && $field->getSyntax() == TextareaField::SYNTAX_WIKI) {
-                    $entry[$fieldName] = $this->wiki->Format($entry[$fieldName]);
+                    $entry[$fieldName] = $this->getService(MarkdownFormatterService::class)->format($entry[$fieldName]);
                 }
                 // handle specific fields like comments, reactions
                 if (!isset($entry[$fieldName]) || (is_string($entry[$fieldName]) && trim($entry[$fieldName]) == '')) {

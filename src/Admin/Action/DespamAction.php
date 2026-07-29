@@ -4,9 +4,12 @@ namespace YesWiki\Admin\Action;
 
 use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
  * `{{despam}}` -- converted from the procedural actions/despam.php by ticket 06.
@@ -59,7 +62,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
         // si le champ a été laisse vide et validé
 
         // Action réservée aux admins
-        if ($this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isAdmin()) {
             if (empty($_POST['spammer']) && empty($_POST['from']) && !isset($_POST['clean'])) {
                 echo "<div class=\"action_erasespam\">\n" .
               '<form method="post" action="' . $despam_url . "\" name=\"selection\">\n" .
@@ -87,7 +90,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 // -- (2) Page de resultats et form. de selection des pages a effacer ----
                 //
                 if (isset($_POST['from']) && isset($_POST['2'])) {
-                    $dbService = $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class);
+                    $dbService = $this->wiki->services->get(DbService::class);
                     $requete =
                 'select *
                       from ' . $this->wiki->config['table_prefix'] . 'pages
@@ -99,7 +102,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 '<h2>' . str_replace('{x}', $_POST['from'], _t('DESPAM_CLEAN_SPAMMED_PAGES')) . "</h2>\n";
                 }
                 // echo $requete;
-                $pagesFromSpammer = $this->wiki->LoadAll($requete);
+                $pagesFromSpammer = $this->getService(DbService::class)->loadAll($requete);
                 // Affichage des pages pour validation
                 echo "<div class=\"action_erasespam\">\n";
                 echo $title;
@@ -107,9 +110,9 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 echo "<table>\n";
                 foreach ($pagesFromSpammer as $i => $page) {
                     $req = 'select * from ' . $this->wiki->config['table_prefix'] . "pages where tag = '"
-                . $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class)->escape($page['tag'])
+                . $this->wiki->services->get(DbService::class)->escape($page['tag'])
                 . "' order by time desc";
-                    $revisions = $this->wiki->LoadAll($req);
+                    $revisions = $this->getService(DbService::class)->loadAll($req);
 
                     echo "<tr>\n" .
                 '<td>' .
@@ -148,7 +151,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                     }
                     echo "</table>\n";
                     unset($revision1);
-                    echo // " . . . . ",$this->wiki->Format($page["user"]),"</p>\n",
+                    echo // " . . . . ",$this->getService(MarkdownFormatterService::class)->format($page["user"]),"</p>\n",
               "</td>\n",
                     "</tr>\n",
                     '';
@@ -192,9 +195,12 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                     foreach ($_POST['rev'] as $rev_id) {
                         echo $rev_id . '<br>';
                         // Selectionne la revision
-                        $dbService = $this->wiki->services->get(\YesWiki\Kernel\Service\DbService::class);
-                        $revision = $this->wiki->LoadSingle('select * from ' . $this->wiki->config['table_prefix'] . "pages where id = '"
+                        $dbService = $this->wiki->services->get(DbService::class);
+                        $revision = $this->getService(DbService::class)->loadSingle('select * from ' . $this->wiki->config['table_prefix'] . "pages where id = '"
                   . $dbService->escape($rev_id) . "' limit 1");
+                        if (!is_array($revision)) {
+                            continue;
+                        }
 
                         // Fait de la derniere version de cette revision
                         // une version archivee
@@ -203,12 +209,12 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                   "SET latest = 'N' " .
                   "WHERE latest = 'Y' " .
                   "AND tag = '" . $dbService->escape($revision['tag']) . "'";
-                        $this->wiki->Query($requeteUpdate);
+                        $this->getService(DbService::class)->query($requeteUpdate);
                         $restoredPages .= $revision['tag'] . ', ';
 
                         // add new revision
                         $userCol = $dbService->quoteIdentifier('user');
-                        $this->wiki->Query('INSERT INTO ' . $this->wiki->config['table_prefix'] . 'pages ' .
+                        $this->getService(DbService::class)->query('INSERT INTO ' . $this->wiki->config['table_prefix'] . 'pages ' .
                   "(tag, time, owner, $userCol, latest, body, body_r) VALUES (" .
                   "'" . $dbService->escape($revision['tag']) . "', " .
                   $dbService->now() . ', ' .

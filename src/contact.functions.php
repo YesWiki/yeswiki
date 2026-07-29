@@ -3,8 +3,8 @@
 // ticket 18: relocated from tools/contact/libs/contact.functions.php.
 
 use YesWiki\Identity\Service\GroupManager;
-use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\Mailer;
 
 function FindMailFromWikiPage($wikipage, $nbactionmail)
 {
@@ -94,11 +94,11 @@ function getPageTitle($page)
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-            $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+            $title = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
         } else {
             preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
             if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                $title = $GLOBALS['wiki']->Format(trim($titles[1][0]));
+                $title = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
             } else {
                 $title = $page['tag'];
             }
@@ -148,10 +148,10 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         // get page name
         $page = preg_replace(['/^Mail/', '/' . ucfirst($period) . '$/'], '', $group);
         $_GET['period'] = $period;
-        $page = $GLOBALS['wiki']->LoadPage($page);
+        $page = $GLOBALS['wiki']->services->get(YesWiki\Content\Service\PageManager::class)->getOne($page);
 
         // send emails to all group members
-        $groupmembers = $GLOBALS['wiki']->GetGroupACL($group);
+        $groupmembers = $GLOBALS['wiki']->services->get(YesWiki\Identity\Service\GroupOperationsService::class)->getMembersText($group);
         $groupmembers = explode("\n", $groupmembers);
         $groupmembers = array_map('trim', $groupmembers);
 
@@ -159,7 +159,7 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         if (empty($subject)) {
             $subject = $mailheader . ' ' . getPageTitle($page) . ' (' . $sub . ' ' . date('d.m.Y') . ')';
         }
-        $message_html = $GLOBALS['wiki']->Format('{{include page="' . $page['tag'] . '"}}');
+        $message_html = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{include page="' . $page['tag'] . '"}}');
         $message_html = preg_replace(
             '/(\<\!\-\- mailperiod start \-\-\>.*\<\!\-\- mailperiod end \-\-\>)/Uims',
             '',
@@ -167,7 +167,7 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         );
         $message_txt = nl2br(strip_tags($message_html));
         foreach ($groupmembers as $member) {
-            $user = $GLOBALS['wiki']->LoadUser($member);
+            $user = $GLOBALS['wiki']->services->get(UserManager::class)->getOneByName($member);
             if (!empty($user['email'])) {
                 $mailer->send($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $user['email'], $subject, $message_txt, $message_html);
             }
@@ -178,7 +178,7 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
 function sendEmailsToSubscribers($period = '', $subject = '')
 {
     // on recupere tous les groupes et on les trie par periode
-    $groups = $GLOBALS['wiki']->GetGroupsList();
+    $groups = $GLOBALS['wiki']->services->get(YesWiki\Identity\Service\GroupOperationsService::class)->getAll();
     $groups = array_filter($groups, 'filterMailGroups');
 
     // envois journaliers

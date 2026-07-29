@@ -364,11 +364,11 @@ class TemplateHelperService
             } else {
                 preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
                 if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                    $title = $this->wiki->Format(trim($titles[1][0]));
+                    $title = $this->wiki->services->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
                 } else {
                     preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
                     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                        $title = $this->wiki->Format(trim($titles[1][0]));
+                        $title = $this->wiki->services->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
                     }
                 }
             }
@@ -406,7 +406,7 @@ class TemplateHelperService
                 $desc = $this->wiki->services->get(EntryController::class)->view($entry, '', 0);
             }
         }
-        // $desc = $this->wiki->Format($page['body'], 'wakka', $page["tag"]);
+        // $desc = $this->wiki->services->get(MarkdownFormatterService::class)->format($page['body'], 'wakka', $page["tag"]);
 
         // no javascript
         $desc = preg_replace('~<\s*\bscript\b[^>]*>(.*?)<\s*\/\s*script\s*>~Uis', '', $desc);

@@ -4,6 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Wiki;
 
 abstract class RadioField extends EnumField
@@ -36,7 +37,7 @@ abstract class RadioField extends EnumField
             default:
                 $options = $this->getOptions();
                 if ($this->displayFilterLimit && (count($options) > $this->displayFilterLimit)) {
-                    $this->wiki->AddJavascriptFile('javascripts/inputs/filter-entries.js');
+                    $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/filter-entries.js');
                 }
 
                 return $this->render('@core/inputs/radio.twig', [
