@@ -8,6 +8,14 @@ YesWiki is a wiki engine. The `ectoplasme` branch is its next MAJOR version: a s
 Anything stored as a row in the `pages` table: an ordinary wiki page, a form definition (formerly the `nature` table), or a user account (formerly the `users` table). Distinguished by a triple `(resource=tag, property=TripleStore::TYPE_URI, value=<type>)` in the `triples` table — the existing mechanism already used to mark bazar entries (`value='fiche_bazar'`, see `EntryManager::TRIPLES_ENTRY_ID`) and extended by [PR #1333](https://github.com/YesWiki/yeswiki/pull/1333) to mark forms; there is no `type` column on `pages` itself.
 _Avoid_: Page (when the type could be a form or user), record, entity, "type column" (it's a triple, not a column).
 
+**Content type**:
+Which kind of Content a row is: `entry`, `page`, `user`, `file` (plus `liste`). Declared per row by the `TripleStore::TYPE_URI` triple, and named on a form's body by `content_type` (`ContentTypeSchema`) to say which core structure that form describes. Page, User and File are forms like any other — same designer, same template, same storage (ADR-0011).
+_Avoid_: "nature" (the retired table), "kind", treating `entry` as the only type with a template.
+
+**Locked field**:
+A field in a Content type's mandatory core structure — Page's `title`/`content`/`keywords`, User's `username`/`password`/`email`, File's `original_filename`/`stored_filename`/`uploaded_from`. It cannot be deleted or retyped; its label, help text, order and Field ACL are ordinary and editable, and webmaster-added fields sit beside it in the same list. Locked-ness is declared in `ContentTypeSchema`, never stored as an attribute on the field — a stored flag would be clearable through the very write vectors it has to survive (ADR-0011).
+_Avoid_: "system field", "read-only field" (only deletion and retyping are barred), "required field" (that is the separate `required` attribute a visitor's input must satisfy).
+
 **Tag**:
 The globally unique identifier of a piece of Content, regardless of its type. A wiki page, a form, and a user account all draw from the same tag namespace — creating a user named `JohnDoe` is only possible if no page or form already holds that tag. Helper functions resolve collisions by suggesting an alternative tag rather than silently namespacing by type. *Generated* tags (bazar entries, new forms) are lowercase slugs (`l-ete-a-nantes`, collisions suffixed `-2`); *user-chosen* tags (usernames, hand-created pages) are kept exactly as typed — usernames are never slugified. Existing tags are never rewritten.
 _Avoid_: Name, key, CamelCase id generation (`genere_nom_wiki` is retired for generated tags).
@@ -29,7 +37,7 @@ A per-field (not per-page) read/write access-control list, using the same ACL sy
 _Avoid_: Private field, restricted field (both used informally in existing bazar code/UI, but "Field ACL" is the precise mechanism name).
 
 **Form template**:
-The JSON array of field objects stored under `template` in a form's body — the schema of the inputs a visitor fills when creating an entry, and nothing else. Attribute keys are the `FIELD_*` constant names of the handling field class. Form-level behavior (title computation, entry ACLs, presentation, account creation, bookmarklet) never lives here — those are Form properties.
+The JSON array of field objects stored under `template` in a form's body — the schema of the inputs filled when creating that form's Content, and nothing else. Since ticket 10 that Content may be a page, a user or a file as well as an entry, and some of its fields may be locked (see **Locked field**) — what has *not* widened is what a template is for. Attribute keys are the `FIELD_*` constant names of the handling field class. Form-level behavior (title computation, entry ACLs, presentation, account creation, bookmarklet) never lives here — those are Form properties.
 _Avoid_: `***` syntax (legacy, read-only), `bn_template` (renamed), "prepared json" (ambiguous — see Prepared fields), pseudo-field / special field (retired concept).
 
 **Form property**:

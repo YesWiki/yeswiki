@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use YesWiki\Content\Attach;
+use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
@@ -255,6 +256,16 @@ class FormManager
             $body['template'] = json_decode($this->normalizeTemplate($body['template'] ?? ''), true) ?? [];
         }
 
+        // Locked fields are enforced on read as well as on write: a stored template can
+        // arrive without them by a route that never touches this service -- reverting a
+        // form page to a pre-lock revision, a migration, a direct PageManager::save().
+        // Enforcing here means such a template presents complete and is persisted
+        // complete by the next ordinary write (ticket 10).
+        $body['template'] = ContentTypeSchema::enforce(
+            $body['template'],
+            $body[ContentTypeSchema::CONTENT_TYPE] ?? null
+        );
+
         $body['activitypub_enable'] = (string)($activitypub['enabled'] ?? '0');
         $body['activitypub_username'] = $activitypub['username'] ?? '';
         $body['activitypub_private_key'] = $activitypub['private_key'] ?? null;
@@ -393,11 +404,13 @@ class FormManager
      */
     private function buildBody(array $data): array
     {
+        $contentType = $this->resolveContentType($data);
         $body = [
             'id' => (string)$data['id'],
             'lang' => $data['lang'] ?? 'fr-FR',
             'label' => $data['label'] ?? '',
-            'template' => $this->templateToStorage($data['template'] ?? ''),
+            ContentTypeSchema::CONTENT_TYPE => $contentType,
+            'template' => $this->templateToStorage($data['template'] ?? '', $contentType),
             'description' => $data['description'] ?? '',
             // entry_title_template can never be empty (ADR-0010): the historical
             // implicit convention (a visitor-typed bf_titre field) is its default
@@ -470,7 +483,11 @@ class FormManager
         }
 
         // Canonicalize the template and process any posted default images
-        $data['template'] = $this->convertWithSpecialParameters($this->templateToStorage($data['template'] ?? ''), $data['id']);
+        $data[ContentTypeSchema::CONTENT_TYPE] = $this->resolveContentType($data);
+        $data['template'] = $this->convertWithSpecialParameters(
+            $this->templateToStorage($data['template'] ?? '', $data[ContentTypeSchema::CONTENT_TYPE]),
+            $data['id']
+        );
 
         $tag = $this->pageManager->suggestFreeTag($this->slugify($data['label'] ?? ''));
 
@@ -525,7 +542,11 @@ class FormManager
         $existingPage = $this->pageManager->getOne($tag, null, true, true);
         $existingBody = $existingPage['body'] ?? [];
 
-        $data['template'] = $this->convertWithSpecialParameters($this->templateToStorage($data['template'] ?? ''), $data['id']);
+        $data[ContentTypeSchema::CONTENT_TYPE] = $this->resolveContentType($data, $existingBody);
+        $data['template'] = $this->convertWithSpecialParameters(
+            $this->templateToStorage($data['template'] ?? '', $data[ContentTypeSchema::CONTENT_TYPE]),
+            $data['id']
+        );
 
         // reset cache
         $this->cacheValidatedForAll = false;
@@ -855,7 +876,7 @@ class FormManager
      * import, or an already-decoded array) => the native array of named-attribute field
      * objects stored inside the page body.
      */
-    private function templateToStorage($template): array
+    private function templateToStorage($template, ?string $contentType = null): array
     {
         // arrays go through the same positional round-trip canonicalization as
         // string input (empty-slot dropping, key resolution) — no bypass
@@ -863,7 +884,30 @@ class FormManager
             $template = json_encode($template, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
-        return json_decode($this->normalizeTemplate($template), true) ?? [];
+        $stored = json_decode($this->normalizeTemplate($template), true) ?? [];
+
+        // Every write vector -- the designer, the API, CSV import, duplication, a
+        // hand-edited template -- lands here, so this is where a Content type's locked
+        // fields are put back if they went missing (ticket 10).
+        return ContentTypeSchema::enforce($stored, $contentType);
+    }
+
+    /**
+     * Which Content type a form describes. Immutable once a form has one: retyping a
+     * User form into an ordinary entry form would be a way to unlock its core fields.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $existingBody
+     */
+    private function resolveContentType(array $data, array $existingBody = []): string
+    {
+        $existing = $existingBody[ContentTypeSchema::CONTENT_TYPE] ?? null;
+        if (ContentTypeSchema::isKnownType($existing)) {
+            return (string)$existing;
+        }
+        $requested = $data[ContentTypeSchema::CONTENT_TYPE] ?? null;
+
+        return ContentTypeSchema::isKnownType($requested) ? (string)$requested : ContentTypeSchema::TYPE_ENTRY;
     }
 
     public function prepareData($form)
