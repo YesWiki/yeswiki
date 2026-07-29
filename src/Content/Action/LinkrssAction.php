@@ -7,6 +7,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{linkrss}}` -- converted from the procedural actions/linkrss.php by ticket 06.
@@ -59,12 +60,12 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
                 foreach ($forms as $form) {
                     $liste .= '  <link rel="alternate" type="application/rss+xml" '
                         . 'title="' . htmlspecialchars($form['label'] ?? '') . '" '
-                        . 'href="' . $this->wiki->href('rss', $this->wiki->getPageTag(), 'id=' . $form['id']) . '">' . "\n";
+                        . 'href="' . $this->getService(UrlFormatter::class)->href('rss', $this->wiki->getPageTag(), 'id=' . $form['id']) . '">' . "\n";
                 }
             }
 
             echo '  <link rel="alternate" type="application/rss+xml" title="' . htmlspecialchars(_t('BAZ_FLUX_RSS_GENERAL')) . '" '
-                . 'href="' . $this->wiki->href('rss') . '">' . "\n" . $liste;
+                . 'href="' . $this->getService(UrlFormatter::class)->href('rss') . '">' . "\n" . $liste;
         }
 
         return $plugin_output_new . (string)ob_get_clean();
@@ -79,10 +80,10 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
             echo "\n" . '  <!-- RSS links -->' . "\n";
         }
         if ($displayLastChanges) {
-            echo '  <link rel="alternate" type="application/rss+xml" title="' . _t('TEMPLATE_RSS_LAST_CHANGES') . '" href="' . $this->wiki->href('xml', 'DerniersChangementsRSS') . '" />' . "\n";
+            echo '  <link rel="alternate" type="application/rss+xml" title="' . _t('TEMPLATE_RSS_LAST_CHANGES') . '" href="' . $this->getService(UrlFormatter::class)->href('xml', 'DerniersChangementsRSS') . '" />' . "\n";
         }
         if ($displayLastComments) {
-            echo '  <link rel="alternate" type="application/rss+xml" title="' . _t('TEMPLATE_RSS_LAST_COMMENTS') . '" href="' . $this->wiki->href('xml', 'DerniersCommentairesRSS') . '" />' . "\n";
+            echo '  <link rel="alternate" type="application/rss+xml" title="' . _t('TEMPLATE_RSS_LAST_COMMENTS') . '" href="' . $this->getService(UrlFormatter::class)->href('xml', 'DerniersCommentairesRSS') . '" />' . "\n";
         }
     }
 }

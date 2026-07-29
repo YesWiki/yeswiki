@@ -3,9 +3,10 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Content\Service\LinkTracker;
-use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateHelperService;
 
 /**
  * `{{nav}}` -- converted from the procedural actions/nav.php by ticket 06.
@@ -41,7 +42,6 @@ class NavAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         // classe css supplémentaire
         $class = $this->wiki->GetParameter('class');
         $class = ((!empty($class)) ? $class : 'yw-nav');
@@ -84,13 +84,13 @@ class NavAction extends YesWikiAction implements RegisteredAction
             if (empty($links[$key])) {
                 $url = '';
             } else {
-                $linkParts = $this->wiki->extractLinkParts($links[$key]);
+                $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($links[$key]);
                 [$url, $method, $params] = ['', '', ''];
                 if ($linkParts) {
                     $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
                     $method = $linkParts['method'];
                     $params = $linkParts['params'];
-                    $url = $this->wiki->href($method, $linkParts['tag'], $params);
+                    $url = $this->getService(UrlFormatter::class)->href($method, $linkParts['tag'], $params);
                     if ($hideIfNoAccess == 'true' && isset($linkParts['tag']) && !$GLOBALS['wiki']->HasAccess('read', $linkParts['tag'])) {
                         $haveAccess = false;
                     }
@@ -100,7 +100,7 @@ class NavAction extends YesWikiAction implements RegisteredAction
             }
             // class="active" if the url have the same url than the current one (independently of the method and the params)
             if ($haveAccess) {
-                $listclass = ($url == $this->wiki->href($method, $this->wiki->GetPageTag(), $params)) ? ' class="active"' : '';
+                $listclass = ($url == $this->getService(UrlFormatter::class)->href($method, $this->wiki->GetPageTag(), $params)) ? ' class="active"' : '';
                 $listlinks .= '<li' . $listclass . '><a href="' . $url . '">'
                     . (isset($icons[$key]) ? $icons[$key] : '')
                     . $title . '</a></li>' . "\n";

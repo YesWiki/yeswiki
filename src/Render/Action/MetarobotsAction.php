@@ -2,9 +2,10 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateHelperService;
 
 /**
  * `{{metarobots}}` -- converted from the procedural actions/metarobots.php by ticket 06.
@@ -40,7 +41,6 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         /*
          * Action to add usefull metas to html head
          */
@@ -54,7 +54,7 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
                     . $this->wiki->config['meta']['robots'] . '">' . "\n";
             }
             // canonical url
-            $url = $this->wiki->href('', $this->wiki->getPageTag());
+            $url = $this->getService(UrlFormatter::class)->href('', $this->wiki->getPageTag());
             echo '<link rel="canonical" href="' . $url . '">' . "\n";
 
             // opengraph

@@ -2,15 +2,14 @@
 
 namespace YesWiki\Identity\Service;
 
-use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Exception\BadActivationKeyException;
 use YesWiki\Identity\Exception\UserNameDoesNotExistException;
-use YesWiki\Wiki;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Kernel\Service\Mailer;
-use YesWiki\Content\Service\PageManager;
-use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 /**
  * accountactivationbyemail, absorbed into core (ticket 07): activation status/key are
@@ -41,12 +40,16 @@ class AccountActivationService
     // this exact PageManager/AuthenticationService/UserManager triangle (see UserManager's own
     // constructor comment). Mailer is late-bound for the same reason (it depends on
     // AuthenticationService too).
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         ParameterBagInterface $params,
         TemplateEngine $templateEngine,
         UserManager $userManager,
-        Wiki $wiki
+        Wiki $wiki,
+        UrlFormatter $urlFormatter
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->params = $params;
         $this->templateEngine = $templateEngine;
         $this->userManager = $userManager;
@@ -56,7 +59,7 @@ class AccountActivationService
     /**
      * @throws UserNameDoesNotExistException
      * @throws BadActivationKeyException
-     * @throws Exception
+     * @throws \Exception
      */
     public function activate(string $userName, string $key, bool $force = false): void
     {
@@ -77,7 +80,7 @@ class AccountActivationService
 
     /**
      * @throws UserNameDoesNotExistException
-     * @throws Exception
+     * @throws \Exception
      */
     public function inactivate(string $userName): void
     {
@@ -92,16 +95,16 @@ class AccountActivationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function sendActivationLink(?string $userName): string
     {
         if (empty($userName)) {
-            throw new Exception('Cannot send an activation email for an empty userName');
+            throw new \Exception('Cannot send an activation email for an empty userName');
         }
         $user = $this->userManager->getOneByName($userName);
         if (empty($user['name'])) {
-            throw new Exception("Cannot send an activation email for a non-existent user ($userName)");
+            throw new \Exception("Cannot send an activation email for a non-existent user ($userName)");
         }
 
         $link = $this->getActivationLink($user['name']);
@@ -178,7 +181,7 @@ class AccountActivationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     protected function getActivationLink(string $userName): string
     {
@@ -190,7 +193,7 @@ class AccountActivationService
             self::BODY_KEY_KEY => $key . UserManager::KEY_VALUE_SEPARATOR . time(),
         ]);
 
-        return $this->wiki->Href('emailactivation', $this->params->get('root_page'), [
+        return $this->urlFormatter->href('emailactivation', $this->params->get('root_page'), [
             'username' => $userName,
             'key' => $key,
         ], false);
@@ -218,14 +221,14 @@ class AccountActivationService
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     protected function writeActivationFields(string $tag, array $fields): void
     {
         $pageManager = $this->wiki->services->get(PageManager::class);
         $body = $this->readBody($tag);
         if ($body === null) {
-            throw new Exception("Cannot set activation fields on '$tag': no such user");
+            throw new \Exception("Cannot set activation fields on '$tag': no such user");
         }
         $body = array_merge($body, $fields);
 

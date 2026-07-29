@@ -59,7 +59,6 @@ use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
-use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
@@ -232,14 +231,6 @@ class Wiki
     }
 
     // HTTP/REQUEST/LINK RELATED
-    /**
-     * @deprecated Use UrlFormatter::getBaseUrl instead
-     */
-    public function getBaseUrl()
-    {
-        return $this->service(UrlFormatter::class)->getBaseUrl();
-    }
-
     public function Redirect($url)
     {
         header("Location: $url");
@@ -254,104 +245,6 @@ class Wiki
         // caller of Wiki::exit()/Wiki::Redirect() gets this for free; Run()'s catch(ExitException)
         // is what decides what to do with it for each dispatch path.
         throw new ExitException($message);
-    }
-
-    /**
-     * @deprecated Use UrlFormatter::miniHref instead
-     */
-    public function MiniHref($method = null, $tag = null)
-    {
-        return $this->service(UrlFormatter::class)->miniHref($method, $tag);
-    }
-
-    /**
-     * @deprecated Use UrlFormatter::href instead
-     */
-    public function Href($method = null, $tag = null, $params = null, $htmlspchars = true)
-    {
-        return $this->service(UrlFormatter::class)->href($method, $tag, $params, $htmlspchars);
-    }
-
-    /**
-     * @deprecated Use UrlFormatter::generateLink instead
-     */
-    public function generateLink(mixed $link): ?string
-    {
-        return $this->service(UrlFormatter::class)->generateLink($link);
-    }
-
-    /**
-     * @deprecated Use UrlFormatter::extractLinkParts instead
-     */
-    public function extractLinkParts($link): ?array
-    {
-        return $this->service(UrlFormatter::class)->extractLinkParts($link);
-    }
-
-    /**
-     * @deprecated Use LinkRenderer::linkTo instead
-     */
-    public function ComposeLinkToPage($tag, $method = '', $text = '', $track = 1)
-    {
-        return $this->LinkTo($tag, $text, ['method' => $method, 'track' => $track]);
-    }
-
-    /**
-     * @deprecated Use LinkRenderer::linkTo instead
-     */
-    public function Link($tag, $method = null, $params = null, $text = null, $track = 1, $forcedLink = false)
-    {
-        return $this->LinkTo($tag, $text, [
-            'method' => $method,
-            'params' => $params,
-            'track' => $track,
-            'class' => $forcedLink ? 'forced-link' : '', // Cannot find any use of this forced-link...
-        ]);
-    }
-
-    /**
-     * Create an HTML link.
-     *
-     * LinkTo("WikiPage")
-     * LinkTo("WikiPage", "My page", ["track" => false])
-     * LinkTo("WikiPage", "", ["method" => "xml"])
-     * LinkTo("WikiPage/edit?params=2", "ma page")
-     * LinkTo("https://test.fr", "mon lien", ["class" => "yeah"])
-     *
-     * @param string $link    $url, or wiki $tag
-     * @param string $text
-     * @param array  $options Array of HTML options. You can also provide 'track' and 'method'
-     *
-     * @return string HTML link
-     */
-    /**
-     * @param string       $link
-     * @param string       $text
-     * @param array<mixed> $options
-     *
-     * @return string
-     *
-     * @deprecated Use LinkRenderer::linkTo instead
-     */
-    public function LinkTo($link, $text = '', $options = [])
-    {
-        return $this->service(LinkRenderer::class)->linkTo($link, $text, $options);
-    }
-
-    /**
-     * @deprecated Use LinkRenderer::paramsForNewPageLink instead
-     */
-    public function ParamsForNewPageLink()
-    {
-        return $this->service(LinkRenderer::class)->paramsForNewPageLink();
-    }
-
-    /**
-     * @deprecated Use UrlFormatter::isWikiName instead
-     */
-    public function IsWikiName($text, $type = WN_CAMEL_CASE_EVOLVED)
-    {
-        return $this->service(UrlFormatter::class)->isWikiName($text, $type);
     }
 
     public function Header()
@@ -552,7 +445,7 @@ class Wiki
         }
 
         if (!$this->tag = trim($tag)) {
-            $this->Redirect($this->href('', $this->config['root_page']));
+            $this->Redirect($this->service(UrlFormatter::class)->href('', $this->config['root_page']));
         }
 
         $this->service(AuthenticationService::class)->connectUser();

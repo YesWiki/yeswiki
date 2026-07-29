@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\TemplateHelperService;
 
@@ -103,7 +104,7 @@ class Attach
      */
     public function GetScriptPath()
     {
-        return $this->wiki->getBaseUrl() . '/';
+        return $this->wiki->services->get(UrlFormatter::class)->getBaseUrl() . '/';
         // if (preg_match("/.(php)$/i", $_SERVER["PHP_SELF"])) {
         //     $a = explode('/', $_SERVER["PHP_SELF"]);
         //     $a[count($a) - 1] = '';
@@ -486,7 +487,7 @@ class Attach
     private function fileUrl($fullFilename, bool $forceDownload = false): string
     {
         if (!empty($this->fileTag)) {
-            $url = $this->wiki->href('', 'api/files/' . $this->fileTag . '/download', [], false);
+            $url = $this->wiki->services->get(UrlFormatter::class)->href('', 'api/files/' . $this->fileTag . '/download', [], false);
 
             return $forceDownload ? $url . '?download=1' : $url;
         }
@@ -542,11 +543,11 @@ class Attach
             );
         if (!empty($this->link)) {
             // create link if needed
-            $linkParts = $this->wiki->extractLinkParts($this->link);
+            $linkParts = $this->wiki->services->get(UrlFormatter::class)->extractLinkParts($this->link);
             if ($linkParts) {
                 $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
             }
-            $link = '<a href="' . $this->wiki->generateLink($this->link) . '"' . $classDataForLinks . '>';
+            $link = '<a href="' . $this->wiki->services->get(UrlFormatter::class)->generateLink($this->link) . '"' . $classDataForLinks . '>';
         } else {
             if (empty($this->nofullimagelink) or !$this->nofullimagelink) {
                 $link = '<a href="' . $this->fileUrl($fullFilename, true) . '"' . $classDataForLinks . '>';

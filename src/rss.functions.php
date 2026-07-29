@@ -46,11 +46,11 @@ if (!function_exists('rssdiff')) {
         $output .= "<br />\n";
         $output .= "<br />\n";
         $output .= '<b>' . _t('RSS_COMPARISON_OF') . ' <a href="'
-            . $wiki->href('', $tag, 'time='
+            . $wiki->services->get(YesWiki\Kernel\Service\UrlFormatter::class)->href('', $tag, 'time='
             . urlencode($pageA['time']))
             . '">' . $pageA['time']
             . '</a> ' . _t('RSS_TO') . ' <a href="'
-            . $wiki->href('', $tag, 'time=' . urlencode($pageB['time']))
+            . $wiki->services->get(YesWiki\Kernel\Service\UrlFormatter::class)->href('', $tag, 'time=' . urlencode($pageB['time']))
             . '">'
             . $pageB['time']
             . "</a></b><br />\n";

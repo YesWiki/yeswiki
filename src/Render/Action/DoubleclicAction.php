@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{doubleclic}}` -- converted from the procedural actions/doubleclic.php by ticket 06.
@@ -45,9 +46,9 @@ class DoubleclicAction extends YesWikiAction implements RegisteredAction
             $method = $isIframe ? 'editiframe' : 'edit';
             // javascript du double clic (on peut passer en parametre une page wiki au editer en doublecliquant)
             if (!empty($page)) {
-                echo 'ondblclick="document.location=\'' . $this->wiki->href($method, $page) . '\';" ';
+                echo 'ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href($method, $page) . '\';" ';
             } else {
-                echo 'ondblclick="document.location=\'' . $this->wiki->href($method) . '\';" ';
+                echo 'ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href($method) . '\';" ';
             }
         }
     }

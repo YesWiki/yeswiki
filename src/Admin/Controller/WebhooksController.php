@@ -5,14 +5,15 @@ namespace YesWiki\Admin\Controller;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpClient\HttpClient;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Content\Service\TripleStore;
-use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
 /**
@@ -340,7 +341,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
         // If no field is marked as an actor, take the current logged-in user
         if (!$actor) {
             $user = $this->userManager->getLoggedUser();
-            $actor = $this->wiki->href('', !empty($user['name']) ? $user['name'] : _t('WEBHOOKS_ANONYMOUS_USER'));
+            $actor = $this->getService(UrlFormatter::class)->href('', !empty($user['name']) ? $user['name'] : _t('WEBHOOKS_ANONYMOUS_USER'));
         }
         // If a base URL is defined in the configs, replace the yeswiki base URL with it
         if ($this->params->has('webhooks_activitypub_actors_base_url')

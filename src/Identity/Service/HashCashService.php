@@ -2,17 +2,21 @@
 
 namespace YesWiki\Identity\Service;
 
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
 class HashCashService
 {
+    protected UrlFormatter $urlFormatter;
+
     /** How long a generated secret stays valid. */
     private const REFRESH = 60 * 60 * 4;
 
     protected $wiki;
 
-    public function __construct(Wiki $wiki)
+    public function __construct(Wiki $wiki, UrlFormatter $urlFormatter)
     {
+        $this->urlFormatter = $urlFormatter;
         $this->wiki = $wiki;
     }
 
@@ -90,7 +94,7 @@ class HashCashService
             }
         }
 
-        $scriptUrl = $this->wiki->Href('', 'api/hashcash', ['formid' => $formId]);
+        $scriptUrl = $this->urlFormatter->href('', 'api/hashcash', ['formid' => $formId]);
 
         return '<script type="text/javascript" src="' . $scriptUrl . '"></script><span id="hashcash-text" style="display:none" class="pull-right">' . _t('HASHCASH_ANTISPAM_ACTIVATED') . '</span>';
     }
@@ -103,11 +107,10 @@ class HashCashService
      */
     public function getEnableScript(string $formId): string
     {
-
         $formId = htmlspecialchars(strip_tags($formId));
         $fieldId = $this->randomString(rand(6, 18));
         $enableFunctionName = $this->randomString(rand(6, 18));
-        $keyUrl = $this->wiki->Href('', 'api/hashcash/key');
+        $keyUrl = $this->urlFormatter->href('', 'api/hashcash/key');
 
         return <<<JS
             addLoadEvent({$enableFunctionName});
@@ -182,7 +185,6 @@ class HashCashService
      */
     public function getKeyScript(): string
     {
-
         $expired = [];
 
         $functionName = $this->randomString(rand(6, 18));

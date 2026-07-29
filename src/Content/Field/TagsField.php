@@ -3,8 +3,8 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Search\Service\TagsManager;
 use YesWiki\Content\Service\TripleStore;
+use YesWiki\Search\Service\TagsManager;
 
 #[\Field(['tags'])]
 class TagsField extends EnumField
@@ -85,7 +85,7 @@ class TagsField extends EnumField
         if (count($tags) > 0 && !empty($tags[0])) {
             sort($tags);
             $tags = array_map(function ($tag) {
-                return '<a class="tag-label label label-info" href="' . $GLOBALS['wiki']->href('listpages', $GLOBALS['wiki']->GetPageTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
+                return '<a class="tag-label label label-info" href="' . $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\UrlFormatter::class)->href('listpages', $GLOBALS['wiki']->GetPageTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
             return $this->render('@core/fields/tags.twig', [

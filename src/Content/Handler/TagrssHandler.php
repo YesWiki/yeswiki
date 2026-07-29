@@ -2,9 +2,10 @@
 
 namespace YesWiki\Content\Handler;
 
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `/PageName/tagrss` -- converted from the procedural handlers/page/tagrss.php by ticket 06.
@@ -34,7 +35,6 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-
         $oldpagetag = $this->wiki->GetPageTag();
         $oldpage = $this->wiki->LoadPage($oldpagetag);
         $tags = trim((isset($_GET['tags'])) ? $_GET['tags'] : '');
@@ -67,7 +67,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                 $output .= "</title>\n";
                 $output .= '<link>' . $this->wiki->config['base_url'] . $link . "</link>\n";
                 $output .= '<description>' . $textetitre . "</description>\n";
-                $output .= '<atom:link href="' . $this->wiki->Href('xml') . "\" rel=\"self\" type=\"application/rss+xml\" />\n";
+                $output .= '<atom:link href="' . $this->getService(UrlFormatter::class)->href('xml') . "\" rel=\"self\" type=\"application/rss+xml\" />\n";
                 $items = '';
                 $aclService = $this->wiki->services->get(AclService::class);
                 foreach ($results as $page) {
@@ -92,7 +92,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                     $items .= '<dc:creator>by ' . htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET) .
                         "</dc:creator>\r\n";
                     $items .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($page['time'])) . "</pubDate>\r\n";
-                    $itemurl = $this->wiki->href(false, $page['tag']);
+                    $itemurl = $this->getService(UrlFormatter::class)->href(false, $page['tag']);
                     $items .= '<guid>' . $itemurl . "</guid>\n";
                     $items .= "</item>\r\n";
                 }

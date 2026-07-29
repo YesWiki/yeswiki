@@ -1,14 +1,14 @@
 <?php
 
 namespace YesWiki\Content\Action;
-use YesWiki\Content\Service\TripleStore;
-use YesWiki\Admin\Controller\WebhooksController;
+
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Controller\ListController;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class BazarAction extends YesWikiAction implements RegisteredAction
 {
@@ -70,12 +70,12 @@ class BazarAction extends YesWikiAction implements RegisteredAction
 
         // YesWiki pages links, like "HomePage" or "HomePage/xml"
         if (!empty($redirecturl)) {
-            $wikiLink = $this->wiki->extractLinkParts((substr($redirecturl, 0, 1) == '?') ? substr($redirecturl, 1) : $redirecturl);
+            $wikiLink = $this->getService(UrlFormatter::class)->extractLinkParts((substr($redirecturl, 0, 1) == '?') ? substr($redirecturl, 1) : $redirecturl);
             if ($wikiLink) {// General URL
                 $tag = $wikiLink['tag'];
                 $method = $wikiLink['method'];
-                $params = $wikiLink['params'] ?? [];
-                $redirecturl = $this->wiki->Href($method, $tag, $params, false);
+                $params = $wikiLink['params'];
+                $redirecturl = $this->getService(UrlFormatter::class)->href($method, $tag, $params, false);
             }
         }
 

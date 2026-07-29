@@ -12,6 +12,7 @@ use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
 class TemplateEngine
@@ -22,12 +23,16 @@ class TemplateEngine
     protected $assetsManager;
     protected $csrfTokenManager;
 
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         Wiki $wiki,
         ParameterBagInterface $config,
         AssetsManager $assetsManager,
-        CsrfTokenManager $csrfTokenManager
+        CsrfTokenManager $csrfTokenManager,
+        UrlFormatter $urlFormatter
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->wiki = $wiki;
         $this->assetsManager = $assetsManager;
         $this->csrfTokenManager = $csrfTokenManager;
@@ -145,7 +150,7 @@ class TemplateEngine
                 $iframe = !empty($options['handler']) ? $options['handler'] : testUrlInIframe();
             }
 
-            return $this->wiki->Href($iframe, $options['tag'], $options['params'], false);
+            return $this->urlFormatter->href($iframe, $options['tag'], $options['params'], false);
         });
         $this->addTwigHelper('format', function ($text, $formatter = 'wakka') {
             return $this->wiki->Format($text, $formatter);
@@ -183,7 +188,7 @@ class TemplateEngine
             }
             $options = array_merge(['mode' => 'fit', 'refresh' => false], $options);
 
-            $basePath = $this->wiki->getBaseUrl() . '/';
+            $basePath = $this->urlFormatter->getBaseUrl() . '/';
             $attach = new Attach($this->wiki);
             $image_dest = $attach->getResizedFilename($options['fileName'], $options['width'], $options['height'], $options['mode']);
             $safeRefresh = !$this->wiki->services->get(HibernationService::class)->isWikiHibernated()
@@ -293,7 +298,7 @@ class TemplateEngine
             return $this->wiki->services->get(ListManager::class)->getOne($listId, $parent);
         });
         $this->addTwigHelper('fileUrl', function ($fileName) {
-            return $this->wiki->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fileName;
+            return $this->urlFormatter->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $fileName;
         });
     }
 
@@ -361,7 +366,7 @@ class TemplateEngine
         );
         $twig->addExtension(new \Twig\Extension\SandboxExtension($policy, true));
 
-        $baseUrl = $this->wiki->getBaseUrl();
+        $baseUrl = $this->urlFormatter->getBaseUrl();
         $uploadPath = BAZ_CHEMIN_UPLOAD;
         $twig->addFunction(new \Twig\TwigFunction('fileUrl', function (string $fileName) use ($baseUrl, $uploadPath): string {
             return $baseUrl . '/' . $uploadPath . $fileName;

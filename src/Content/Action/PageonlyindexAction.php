@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{pageonlyindex}}` -- converted from the procedural actions/pageonlyindex.php by ticket 06.
@@ -61,7 +62,7 @@ class PageonlyindexAction extends YesWikiAction implements RegisteredAction
                     $curChar = $firstChar;
                 }
 
-                echo $this->wiki->ComposeLinkToPage($page['tag'], '', '', false),"<br />\n";
+                echo $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', false),"<br />\n";
             }
         } else {
             echo '<i>' . _t('NO_PAGE_FOUND') . '.</i>';

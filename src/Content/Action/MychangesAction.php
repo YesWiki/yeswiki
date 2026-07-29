@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{mychanges}}` -- converted from the procedural actions/mychanges.php by ticket 06.
@@ -50,7 +51,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
             if ($bydate = $this->wiki->GetParameter('bydate')) {
                 echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE') . ".</b><br /><br />\n";
 
-                if ($pages = $this->wiki->LoadAll("SELECT tag, time FROM " . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->wiki->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {
+                if ($pages = $this->wiki->LoadAll('SELECT tag, time FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->wiki->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {
                     foreach ($pages as $page) {
                         $edited_pages[$page['tag']] = $page['time'];
                     }
@@ -69,7 +70,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
                         }
 
                         // echo entry
-                        echo "&nbsp;&nbsp;&nbsp;($time) (",$this->wiki->ComposeLinkToPage($page['tag'], 'revisions', 'history', 0),') ',$this->wiki->ComposeLinkToPage($page['tag'], '', '', 0),"<br />\n";
+                        echo "&nbsp;&nbsp;&nbsp;($time) (",$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history', 0),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0),"<br />\n";
 
                         $my_edits_count++;
                     }
@@ -83,7 +84,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
             } else {
                 echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_NAME') . ".</b><br /><br />\n";
 
-                if ($pages = $this->wiki->LoadAll("SELECT tag, time FROM " . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->wiki->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC")) {
+                if ($pages = $this->wiki->LoadAll('SELECT tag, time FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->wiki->GetUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY tag ASC, time DESC")) {
                     foreach ($pages as $page) {
                         if ($last_tag != $page['tag']) {
                             $last_tag = $page['tag'];
@@ -102,7 +103,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
                             }
 
                             // echo entry
-                            echo '&nbsp;&nbsp;&nbsp;(',$page['time'],') (',$this->wiki->ComposeLinkToPage($page['tag'], 'revisions', 'history', 0),') ',$this->wiki->ComposeLinkToPage($page['tag'], '', '', 0),"<br />\n";
+                            echo '&nbsp;&nbsp;&nbsp;(',$page['time'],') (',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', 'history', 0),') ',$this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0),"<br />\n";
 
                             $my_edits_count++;
                         }

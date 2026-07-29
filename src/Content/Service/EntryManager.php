@@ -15,6 +15,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Wiki;
 
@@ -44,6 +45,8 @@ class EntryManager
     public const VALIDATE_FLAG_FORM_ID = 1 << 2;
     public const VALIDATE_FLAG_ALL = self::VALIDATE_FLAG_ANTISPAM | self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID;
 
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         Wiki $wiki,
         Mailer $mailer,
@@ -59,7 +62,9 @@ class EntryManager
         HibernationService $hibernationService,
         ActivityPubService $activityPubService,
         AdministrativeLogService $administrativeLogService,
+        UrlFormatter $urlFormatter,
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->wiki = $wiki;
         $this->mailer = $mailer;
         $this->authenticationService = $authenticationService;
@@ -900,7 +905,7 @@ class EntryManager
         // pFiche URL
         if (!isset($pFiche['url'])) {
             // could already be defined for entries from external json
-            $pFiche['url'] = $this->wiki->Href('', $pFiche['tag']);
+            $pFiche['url'] = $this->urlFormatter->href('', $pFiche['tag']);
         }
 
         // Données sémantiques

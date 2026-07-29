@@ -17,6 +17,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\Paginator;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
 class BazarListeAction extends YesWikiAction implements RegisteredAction
@@ -389,7 +390,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             // `wiki` strip -- which looks like it drops the page tag outside rewrite mode,
             // but changing URL semantics is out of scope for a dead-code purge.
             unset($query['wiki']);
-            $paginationUrl = $this->wiki->getBaseUrl() . '/' . basename((string)($_SERVER['PHP_SELF'] ?? 'index.php'));
+            $paginationUrl = $this->getService(UrlFormatter::class)->getBaseUrl() . '/' . basename((string)($_SERVER['PHP_SELF'] ?? 'index.php'));
 
             $paginator = new Paginator(
                 $data['fiches'],

@@ -17,6 +17,7 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
@@ -200,7 +201,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     . '</span>';
             }
 
-            $searchUrl = $this->wiki->Href('', 'api/tags');
+            $searchUrl = $this->getService(UrlFormatter::class)->href('', 'api/tags');
             $html = '
         	<i class="fas fa-tags"></i> <strong>' . _t('TAGS_TAGS') . '</strong>
         	<div class="yw-tag-input" data-yw-tag-input>' . $chips . '
@@ -283,11 +284,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         // cas des pages speciales
         if (isset($_SERVER['HTTP_REFERER'])) {
             $pagetag = str_replace($this->wiki->config['base_url'], '', $_SERVER['HTTP_REFERER']);
-            if ($this->wiki->IsWikiName($pagetag) && in_array(
+            if ($this->getService(UrlFormatter::class)->isWikiName($pagetag) && in_array(
                 $pagetag,
                 ['PageFooter', 'PageHeader', 'PageTitre', 'PageRapideHaut', 'PageMenuHaut', 'PageMenu']
             )) {
-                $hidden = '<input type="hidden" name="returnto" value="' . $this->wiki->href('', $pagetag) . '" />' . "\n";
+                $hidden = '<input type="hidden" name="returnto" value="' . $this->getService(UrlFormatter::class)->href('', $pagetag) . '" />' . "\n";
             }
         }
 
@@ -336,7 +337,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $previous = $request->request->get('previous') ?: (isset($this->wiki->page['id']) ? $this->wiki->page['id'] : null);
             $body = $request->request->get('body') ?: (isset($this->wiki->page['body']) ? $this->wiki->page['body'] : null);
 
-            $cancelUrl = addslashes($this->wiki->href(testUrlInIframe()));
+            $cancelUrl = addslashes($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
 
             // PREVIEW
             if ($submit == 'preview') {
@@ -364,7 +365,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     // teste si la nouvelle page est differente de la précédente
                     if (isset($this->wiki->page['body']) && rtrim($body) == rtrim($this->wiki->page['body'])) {
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
-                        $this->wiki->Redirect($this->wiki->href(testUrlInIframe()));
+                        $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                     } else {
                         // l'encodage de la base est en iso-8859-1, voir s'il faut convertir
                         $body = $body;
@@ -378,9 +379,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
                         // forward
                         if ($this->wiki->page['comment_on']) {
-                            $this->wiki->Redirect($this->wiki->href(testUrlInIframe(), $this->wiki->page['comment_on']) . '#' . $this->wiki->tag);
+                            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), $this->wiki->page['comment_on']) . '#' . $this->wiki->tag);
                         } else {
-                            $this->wiki->Redirect($this->wiki->href(testUrlInIframe()));
+                            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                         }
                     }
                     $this->wiki->exit(); // we shall have been redirected, but exit for safety

@@ -11,6 +11,8 @@ use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `/PageName/deletepage` -- converted from the procedural handlers/page/deletepage.php by ticket 06.
@@ -78,10 +80,10 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
 
         if ($this->getService(AclService::class)->isOwner() || $this->wiki->UserIsAdmin()) {
             $incomingUrlParam = '';
-            $cancelUrl = $this->wiki->Href();
+            $cancelUrl = $this->getService(UrlFormatter::class)->href();
             if (!empty($incomingurl)) {
                 $withoutExtraParams = strtok($incomingurl, '&');
-                if ($withoutExtraParams != $this->wiki->Href()) {
+                if ($withoutExtraParams != $this->getService(UrlFormatter::class)->href()) {
                     // put the incoming url parameter only if the incoming page is not the one deleted
                     // if the delete page is loaded in a modal box, the incoming page is the modal caller (cf yeswiki-base.js)
                     $incomingUrlParam = '&incomingurl=' . urlencode($incomingurl);
@@ -92,9 +94,9 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
             if ($this->wiki->IsOrphanedPage($this->wiki->GetPageTag())) {
                 $tag = $this->wiki->GetPageTag();
                 if (!isset($_GET['confirme']) || !($_GET['confirme'] == 'oui')) {
-                    $msg = '<form action="' . $this->wiki->Href('deletepage', '', 'confirme=oui' . $incomingUrlParam);
+                    $msg = '<form action="' . $this->getService(UrlFormatter::class)->href('deletepage', '', 'confirme=oui' . $incomingUrlParam);
                     $msg .= '" method="post" style="display: inline">' . "\n";
-                    $msg .= str_replace('{tag}', $this->wiki->Link($tag), _t('DELETEPAGE_CONFIRM')) . "\n";
+                    $msg .= str_replace('{tag}', $this->getService(LinkRenderer::class)->link($tag), _t('DELETEPAGE_CONFIRM')) . "\n";
                     $msg .= '</br></br>';
                     $msg .= '<input type="hidden" name="csrf-token" value="' . htmlentities($csrfTokenManager->getToken('main')) . '">';
                     $msg .= '<input type="submit" class="btn btn-danger" value="' . _t('DELETEPAGE_DELETE') . '" ';
@@ -153,17 +155,17 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                 $dbService = $this->wiki->services->get(DbService::class);
                 $linkedFrom = $dbService->loadAll('SELECT DISTINCT from_tag FROM ' . $dbService->prefixTable('links')
                     . " WHERE to_tag = '" . $dbService->escape($this->wiki->GetPageTag()) . "'");
-                $msg .= '<p>' . str_replace('{tag}', $this->wiki->ComposeLinkToPage($this->wiki->tag, '', '', 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
+                $msg .= '<p>' . str_replace('{tag}', $this->getService(LinkRenderer::class)->linkToPage($this->wiki->tag, '', '', 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
                 $msg .= "<ul>\n";
                 foreach ($linkedFrom as $page) {
-                    $msg .= '<li>' . $this->wiki->ComposeLinkToPage($page['from_tag'], '', '', 0) . "</li>\n";
+                    $msg .= '<li>' . $this->getService(LinkRenderer::class)->linkToPage($page['from_tag'], '', '', 0) . "</li>\n";
                 }
 
                 $msg .= "</ul>\n";
                 // eraselink=oui will delete the page links in handlers/page/__deletepage.php
-                $msg .= '</br><form action="' . $this->wiki->Href('deletepage', '', 'confirme=oui&eraselink=oui' . $incomingUrlParam);
+                $msg .= '</br><form action="' . $this->getService(UrlFormatter::class)->href('deletepage', '', 'confirme=oui&eraselink=oui' . $incomingUrlParam);
                 $msg .= '" method="post" style="display: inline">' . "\n";
-                $msg .= str_replace('{tag}', $this->wiki->Link($this->wiki->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
+                $msg .= str_replace('{tag}', $this->getService(LinkRenderer::class)->link($this->wiki->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
                 $msg .= '</br></br>';
                 $msg .= '<input type="hidden" name="csrf-token" value="' . htmlentities($csrfTokenManager->getToken('main')) . '">';
                 $msg .= '<input type="submit" value="' . _t('DELETEPAGE_DELETE') . '" class="btn btn-danger" ';
@@ -184,7 +186,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
             } else {
                 // it's the current page which has been deleted (and not from a modal box), redirect to the homepage
                 $this->getService(FlashMessageService::class)->setMessage($msg);
-                $this->wiki->Redirect($this->wiki->href('', $this->wiki->config['root_page']));
+                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->wiki->config['root_page']));
             }
         }
 

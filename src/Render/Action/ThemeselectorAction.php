@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 
@@ -48,7 +49,7 @@ class ThemeselectorAction extends YesWikiAction implements RegisteredAction
         ) {
             $this->getService(ActionRunner::class)->action('setwikidefaulttheme');
             // if not redirected by setwikidefaulttheme : redirect
-            $this->wiki->Redirect($this->wiki->href('', $this->wiki->tag));
+            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->wiki->tag));
         } else {
             echo $this->wiki->services->get(ThemeSelectorRenderer::class)->showFormThemeSelector('selector', $class);
         }

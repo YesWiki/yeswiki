@@ -7,6 +7,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 
@@ -65,7 +66,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
                     $config->hide_action_template = '1';
                 }
                 $config->write();
-                $this->wiki->Redirect($this->wiki->href('', $this->wiki->tag));
+                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->wiki->tag));
             }
         }
 

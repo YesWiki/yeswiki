@@ -3,16 +3,21 @@
 namespace YesWiki\Content\Service;
 
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
 class ReactionsFormatter extends YesWikiController
 {
     protected $reactionManager;
 
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         ReactionManager $reactionManager,
-        Wiki $wiki
+        Wiki $wiki,
+        UrlFormatter $urlFormatter
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->reactionManager = $reactionManager;
         $this->wiki = $wiki;
     }
@@ -58,7 +63,7 @@ class ReactionsFormatter extends YesWikiController
         $images = [];
         foreach ($ids as $k => $id) {
             $sanitizedImageFilename = empty($rawImages[$k]) ? '' : basename($rawImages[$k]);
-            $baseUrl = $this->wiki->getBaseUrl();
+            $baseUrl = $this->urlFormatter->getBaseUrl();
             $images[$k] = empty($rawImages[$k]) // if ids are default ones, we have some images
                 ? (
                     (array_key_exists($id, $defaultImages))

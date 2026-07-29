@@ -3,13 +3,14 @@
 namespace YesWiki\Search\Action;
 
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Identity\Service\AclService;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Search\Service\SearchManager;
 
 /**
  * `{{newtextsearch}}` -- converted from the procedural actions/newtextsearch.php by ticket 06.
@@ -50,7 +51,6 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
          * INFORMATION D'UTILISATION
          * Utilisation {{newtextsearch}} en lieu eet place de {{textsearch}}.
          **/
-
 
         // On récupére ou initialise toutes le varible comme pour textsearch
         // label à afficher devant la zone de saisie
@@ -215,7 +215,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
                     $counter = 0;
                     foreach ($resultat as $i => $page) {
                         if ($this->wiki->HasAccess('read', $page['tag'])) {
-                            $lien = $this->wiki->ComposeLinkToPage($page['tag']);
+                            $lien = $this->getService(LinkRenderer::class)->linkToPage($page['tag']);
                             echo '<li><h4 style="margin-bottom:0.2rem;">', $lien, '</h4>';
                             $extract = '';
                             if ($counter < $maxDisplayedPages) {
@@ -239,7 +239,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
                     echo '<p>' . _t('SEARCH_RESULT_OF') . ' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
                     foreach ($resultat as $i => $line) {
                         if ($this->wiki->HasAccess('read', $line['tag'])) {
-                            echo (($i > 0) ? $separator : '') . $this->wiki->ComposeLinkToPage($line['tag']);
+                            echo (($i > 0) ? $separator : '') . $this->getService(LinkRenderer::class)->linkToPage($line['tag']);
                         }
                     }
                     echo '</p>', "\n";

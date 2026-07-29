@@ -140,6 +140,28 @@ class LinkRenderer
      *
      * @return array<mixed>
      */
+    /**
+     * Positional tag/method/text convenience over linkTo() (historic ComposeLinkToPage()).
+     */
+    public function linkToPage(mixed $tag, mixed $method = '', mixed $text = '', mixed $track = 1): string
+    {
+        return $this->linkTo((string)$tag, (string)$text, ['method' => $method, 'track' => $track]);
+    }
+
+    /**
+     * Positional tag/method/params/text convenience over linkTo() (historic Link()).
+     */
+    public function link(mixed $tag, mixed $method = null, mixed $params = null, mixed $text = null, mixed $track = 1, bool $forcedLink = false): string
+    {
+        return $this->linkTo((string)$tag, (string)$text, [
+            'method' => $method,
+            'params' => $params,
+            'track' => $track,
+            'class' => $forcedLink ? 'forced-link' : '',
+        ]);
+    }
+
+    /** @return array<mixed> */
     public function paramsForNewPageLink(): array
     {
         $result = ['newpage' => 1];

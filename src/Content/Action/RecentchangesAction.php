@@ -4,6 +4,8 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{recentchanges}}` -- converted from the procedural actions/recentchanges.php by ticket 06.
@@ -79,7 +81,7 @@ class RecentchangesAction extends YesWikiAction implements RegisteredAction
             if ($this->wiki->GetParameter('max')) {
                 foreach ($pages as $i => $page) {
                     // echo entry
-                    echo '<small><a href="' . $this->wiki->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $page['time'] . '</small> ', $this->wiki->ComposeLinkToPage($page['tag'], '', '', 0),' <small>' . _t('BY') . ' ', $this->wiki->Format($page['user']), "</small><br>\n";
+                    echo '<small><a href="' . $this->getService(UrlFormatter::class)->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $page['time'] . '</small> ', $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0),' <small>' . _t('BY') . ' ', $this->wiki->Format($page['user']), "</small><br>\n";
                 }
             } else {
                 $curday = '';
@@ -94,7 +96,7 @@ class RecentchangesAction extends YesWikiAction implements RegisteredAction
                         $curday = $day;
                     }
                     // echo entry
-                    echo '<small><a href="' . $this->wiki->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $time . '</small> ', $this->wiki->ComposeLinkToPage($page['tag'], '', '', 0),' <small>' . _t('BY') . ' ', $this->wiki->Format($page['user']), "</small><br>\n";
+                    echo '<small><a href="' . $this->getService(UrlFormatter::class)->href('revisions', $page['tag']) . '">' . $svgIcon . '</a>&nbsp;' . $time . '</small> ', $this->getService(LinkRenderer::class)->linkToPage($page['tag'], '', '', 0),' <small>' . _t('BY') . ' ', $this->wiki->Format($page['user']), "</small><br>\n";
                 }
             }
         }

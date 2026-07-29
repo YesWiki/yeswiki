@@ -1,11 +1,13 @@
 <?php
 
 namespace YesWiki\Content\Handler;
+
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\BazarListService;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Search\Service\SearchManager;
 
 // TODO use Symfony XmlEncoder instead
 // https://symfony.com/doc/current/components/serializer.html#the-xmlencoder
@@ -132,7 +134,7 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
                         '<![CDATA[' . preg_replace(
                             '/data-id=".*"/Ui',
                             '',
-                            $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($vRSSEntry), $this->wiki->href('', $vRSSEntry['tag'])))
+                            $this->sanitize($this->updateRelativeLinks($this->getService(EntryController::class)->view($vRSSEntry), $this->getService(UrlFormatter::class)->href('', $vRSSEntry['tag'])))
                         ) . ']]>'
                     );
                     $xml .= "\r\n        ";

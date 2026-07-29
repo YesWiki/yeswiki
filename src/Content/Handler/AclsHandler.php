@@ -7,6 +7,8 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `/PageName/acls` -- converted from the procedural handlers/page/acls.php by ticket 06.
@@ -56,7 +58,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
 
                   // redirect back to page
                   $this->getService(FlashMessageService::class)->setMessage($message . ' !');
-                  $this->wiki->Redirect($this->wiki->Href());
+                  $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
               } else {
                   // load acls
                   $readACL = $this->wiki->LoadAcl($this->wiki->GetPageTag(), 'read');
@@ -64,7 +66,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
                   $commentACL = $this->wiki->LoadAcl($this->wiki->GetPageTag(), 'comment');
 
                   // show form?>
-              <h3><?php echo _t('YW_ACLS_LIST') . ' ' . $this->wiki->ComposeLinkToPage($this->wiki->GetPageTag()); ?></h3><!-- Access Control Lists for-->
+              <h3><?php echo _t('YW_ACLS_LIST') . ' ' . $this->getService(LinkRenderer::class)->linkToPage($this->wiki->GetPageTag()); ?></h3><!-- Access Control Lists for-->
 
               <?php echo $this->wiki->FormOpen('acls', '', 'post', 'form-horizontal'); ?>
               <div class="form-group">
@@ -115,7 +117,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
                     <?php if ($this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
                         echo 'disabled data-toggle="tooltip" data-placement="bottom" title="' . _t('WIKI_IN_HIBERNATION') . '"';
                     } ?> /><!-- Store ACLs-->
-                  <input type="button" value="<?php echo _t('YW_CANCEL'); ?>" onclick="if(history.length>1){history.back();}else{location.href='<?php echo $this->wiki->Href(); ?>';}" class="btn btn-default btn-xs" /><!-- Cancel -->
+                  <input type="button" value="<?php echo _t('YW_CANCEL'); ?>" onclick="if(history.length>1){history.back();}else{location.href='<?php echo $this->getService(UrlFormatter::class)->href(); ?>';}" class="btn btn-default btn-xs" /><!-- Cancel -->
                 </div>
               </div>
 

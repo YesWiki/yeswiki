@@ -11,6 +11,8 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Search\Service\TagsManager;
 
 /**
@@ -202,7 +204,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             $trace = $_SESSION['redirects'];
             $tag = $trace[count($trace) - 1];
             $prevpage = $this->wiki->LoadPage($tag);
-            echo '<div class="redirectfrom"><em>(' . str_replace('{linkFrom}', $this->wiki->Link($prevpage['tag'], 'edit'), _t('REDIRECTED_FROM')) . ")</em></div>\n";
+            echo '<div class="redirectfrom"><em>(' . str_replace('{linkFrom}', $this->getService(LinkRenderer::class)->link($prevpage['tag'], 'edit'), _t('REDIRECTED_FROM')) . ")</em></div>\n";
             unset($_SESSION['redirects'][count($trace) - 1]);
         }
 
@@ -210,7 +212,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             if (!$this->wiki->page) {
                 echo str_replace(
                     ['{beginLink}', '{endLink}'],
-                    ["<a href=\"{$this->wiki->href('edit')}\">", '</a>'],
+                    ["<a href=\"{$this->getService(UrlFormatter::class)->href('edit')}\">", '</a>'],
                     _t('NOT_FOUND_PAGE')
                 );
             } else {
@@ -218,14 +220,14 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 if ($this->wiki->page['comment_on']) {
                     echo '<div class="commentinfo">' . str_replace(
                         ['{tag}', '{user}', '{time}'],
-                        [$this->wiki->ComposeLinkToPage($this->wiki->page['comment_on'], '', '', 0), $this->wiki->Format($this->wiki->page['user']), $this->wiki->page['time']],
+                        [$this->getService(LinkRenderer::class)->linkToPage($this->wiki->page['comment_on'], '', '', 0), $this->wiki->Format($this->wiki->page['user']), $this->wiki->page['time']],
                         _t('COMMENT_INFO')
                     ) . '</div>';
                 }
 
                 if ($this->wiki->page['latest'] == 'N') {
                     echo '<div class="alert alert-info">' . "\n";
-                    echo str_replace(['{link}', '{time}'], ["<a href=\"{$this->wiki->href()}\">{$this->wiki->GetPageTag()}</a>", $this->wiki->page['time']], _t('REVISION_IS_ARCHIVE_OF_TAG_ON_TIME'));
+                    echo str_replace(['{link}', '{time}'], ["<a href=\"{$this->getService(UrlFormatter::class)->href()}\">{$this->wiki->GetPageTag()}</a>", $this->wiki->page['time']], _t('REVISION_IS_ARCHIVE_OF_TAG_ON_TIME'));
                     // if this is an old revision, display some buttons
                     if ($this->wiki->HasAccess('write')) {
                         $latest = $this->wiki->LoadPage($this->wiki->tag); ?>

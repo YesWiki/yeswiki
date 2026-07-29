@@ -12,6 +12,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -37,7 +38,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 'type' => 'warning',
                 'message' => str_replace(
                     ['{beginLink}', '{endLink}'],
-                    ["<a href=\"{$this->wiki->href('')}\">", '</a>'],
+                    ["<a href=\"{$this->getService(UrlFormatter::class)->href('')}\">", '</a>'],
                     _t('NOT_FOUND_PAGE')
                 ),
             ]);
@@ -60,15 +61,15 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 $data = $this->duplicationManager->checkPostData($this->getRequest()->request->all());
                 $this->duplicationManager->duplicateLocally($data);
                 if ($data['duplicate-action'] == 'edit') {
-                    $this->wiki->Redirect($this->wiki->href('edit', $data['newTag']));
+                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('edit', $data['newTag']));
 
                     return;
                 } elseif ($data['duplicate-action'] == 'return') {
-                    $this->wiki->Redirect($this->wiki->href());
+                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
 
                     return;
                 }
-                $this->wiki->Redirect($this->wiki->href('', $data['newTag']));
+                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $data['newTag']));
 
                 return;
             } catch (\Throwable $th) {
@@ -137,7 +138,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
             'title' => $title,
             'originalTag' => $this->wiki->GetPageTag(),
             'error' => $error,
-            'sourceUrl' => $this->wiki->href(),
+            'sourceUrl' => $this->getService(UrlFormatter::class)->href(),
             'proposedTag' => $proposedTag ?? '',
             'attachments' => $attachments ?? [],
             'pageTitle' => $pageTitle ?? '',

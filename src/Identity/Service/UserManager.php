@@ -10,23 +10,20 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
-use YesWiki\Wiki;
-use YesWiki\Search\Service\SearchManager;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Content\Service\FormManager;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
-use YesWiki\Content\Service\PageManager;
-use YesWiki\Identity\Service\PasswordHasherFactory;
-use YesWiki\Content\Service\TripleStore;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Search\Service\SearchManager;
+use YesWiki\Wiki;
 
 class UserManager implements UserProviderInterface, PasswordUpgraderInterface
 {
@@ -56,14 +53,18 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     // either back into UserManager would be a circular dependency. Fetched late via
     // $this->wiki->services->get() instead, the same workaround isInGroup() already uses
     // for AclService below.
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         Wiki $wiki,
         DbService $dbService,
         ParameterBagInterface $params,
         PasswordHasherFactory $passwordHasherFactory,
         HibernationService $hibernationService,
-        TripleStore $tripleStore
+        TripleStore $tripleStore,
+        UrlFormatter $urlFormatter
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->passwordHasherFactory = $passwordHasherFactory;
@@ -341,7 +342,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         $this->tripleStore->create($user['name'], self::KEY_VOCABULARY, $hashedKey . self::KEY_VALUE_SEPARATOR . time(), '', '');
 
         // Generate the recovery link
-        $link = $this->wiki->Href('', 'MotDePassePerdu', [
+        $link = $this->urlFormatter->href('', 'MotDePassePerdu', [
             'a' => 'recover',
             'email' => $hashedKey,
             'u' => base64_encode($user['name']),

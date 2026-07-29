@@ -5,6 +5,7 @@ namespace YesWiki\Render\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\ThrowableFormatter;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 
 class HeaderAction extends YesWikiAction implements RegisteredAction
@@ -25,7 +26,7 @@ class HeaderAction extends YesWikiAction implements RegisteredAction
             $output = '<style>.alert-error-message{border: red solid 4px;background-color: #FE8;padding: 2px;color:gray;}</style>' . "\n";
             $output .= '<div class="alert-error-message alert">' . "\n";
             $output .= _t('PERFORMABLE_ERROR') . '<br/>' . $this->getService(ThrowableFormatter::class)->dump($t) . '<br/>';
-            $output .= '<a href="' . $this->wiki->Href() . '">Return</a>' . "\n";
+            $output .= '<a href="' . $this->getService(UrlFormatter::class)->href() . '">Return</a>' . "\n";
             $output .= '</div>';
 
             return $output;
@@ -36,7 +37,7 @@ class HeaderAction extends YesWikiAction implements RegisteredAction
                 $output .= '<div class="alert-error-message alert">' . "\n";
                 $output .= $themeManager->getErrorMessage();
                 $text = _t('THEME_MANAGER_CLICK_TO_INSTALL') . THEME_PAR_DEFAUT . _t('THEME_MANAGER_AND_REPAIR');
-                $output .= '<b><a href="' . $this->wiki->Href(
+                $output .= '<b><a href="' . $this->getService(UrlFormatter::class)->href(
                     '',
                     'GererMisesAJour',
                     ['action' => 'upgrade', 'package' => THEME_PAR_DEFAUT]

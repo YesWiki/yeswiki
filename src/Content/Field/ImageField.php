@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 #[\Field(['image'])]
 class ImageField extends FileField
@@ -91,7 +92,7 @@ class ImageField extends FileField
                 'value' => $value,
                 'isUrl' => true,
                 'downloadUrl' => $value,
-                'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . urlencode($value), false),
+                'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $wiki->GetPageTag(), 'suppr_image=' . urlencode($value), false),
                 'image' => '<img src="' . htmlspecialchars($value) . '" class="img-responsive" alt="" />',
                 'isDefaultImage' => false,
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
@@ -130,9 +131,9 @@ class ImageField extends FileField
                     'value' => $img,
                     'isUrl' => false,
                     'downloadUrl' => $this->getBasePath() . $img,
-                    'deleteUrl' => empty($entry) ? '' : $wiki->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $img, false),
+                    'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $wiki->GetPageTag(), 'suppr_image=' . $img, false),
                     'image' => $this->getWiki()->render('@core/display-image.twig', [
-                        'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',
+                        'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl() . '/',
                         'imageFullPath' => $this->getBasePath() . $img,
                         'fieldName' => $this->name,
                         'thumbnailHeight' => $this->thumbnailHeight,
@@ -267,7 +268,7 @@ class ImageField extends FileField
 
         if (isset($value) && $value != '' && file_exists($this->getBasePath() . $value)) {
             return $this->getWiki()->render('@core/display-image.twig', [
-                'baseUrl' => $this->getWiki()->GetBaseUrl() . '/',
+                'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl() . '/',
                 'imageFullPath' => $this->getBasePath() . $value,
                 'fieldName' => $this->name,
                 'thumbnailHeight' => $this->thumbnailHeight,
@@ -310,7 +311,7 @@ class ImageField extends FileField
     {
         $fileFieldData = parent::jsonSerialize();
         unset($fileFieldData['readLabel']);
-        $baseUrl = $this->getWiki()->getBaseUrl();
+        $baseUrl = $this->getService(UrlFormatter::class)->getBaseUrl();
 
         return array_merge(
             $fileFieldData,

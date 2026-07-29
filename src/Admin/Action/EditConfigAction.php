@@ -1,10 +1,12 @@
 <?php
 
 namespace YesWiki\Admin\Action;
-use YesWiki\Kernel\Service\ConfigurationFileProvider;
-use YesWiki\Kernel\Service\ConfigurationService;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class EditConfigAction extends YesWikiAction implements RegisteredAction
 {
@@ -132,7 +134,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction
         $output = '';
         if ($this->arguments['saving']) {
             $this->save();
-            $this->wiki->Redirect($this->wiki->Href('', '', [self::SAVED_NAME => '1'], false));
+            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', '', [self::SAVED_NAME => '1'], false));
         } elseif ($this->arguments['saved']) {
             $output .= $this->render('@core/alert-message.twig', [
                 'type' => 'info',

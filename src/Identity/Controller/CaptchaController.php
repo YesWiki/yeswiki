@@ -3,8 +3,9 @@
 namespace YesWiki\Identity\Controller;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * this class defines methods to generate captcha with a service.
@@ -239,7 +240,7 @@ class CaptchaController extends YesWikiController
             $champsCaptcha = $this->render(
                 '@core/captcha-field.twig',
                 [
-                    'baseUrl' => $this->wiki->getBaseUrl(),
+                    'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl(),
                     'crypt' => $hash,
                     'cryptBase64' => base64_encode($hash),
                 ]

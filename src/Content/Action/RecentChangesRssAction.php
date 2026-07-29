@@ -1,10 +1,13 @@
 <?php
 
 namespace YesWiki\Content\Action;
-use YesWiki\Identity\Service\AclService;
+
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 
 class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
 {
@@ -25,7 +28,7 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
     {
         if ($this->wiki->GetMethod() != 'xml') {
             return _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ' .
-                $this->wiki->Link($this->wiki->getPageTag(), 'xml', null, $this->wiki->Href('xml'));
+                $this->getService(LinkRenderer::class)->link($this->wiki->getPageTag(), 'xml', null, $this->getService(UrlFormatter::class)->href('xml'));
         }
         require_once YESWIKI_SOURCE_DIR . '/src/rss.functions.php';
         $max = 50;
@@ -66,8 +69,8 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
         } else {
             $langParam = [];
         }
-        $link = $this->wiki->Href(false, $this->arguments['link'], $langParam, false);
-        $xmlUrl = $this->wiki->Href('xml', '', $langParam, false);
+        $link = $this->getService(UrlFormatter::class)->href(false, $this->arguments['link'], $langParam, false);
+        $xmlUrl = $this->getService(UrlFormatter::class)->href('xml', '', $langParam, false);
         $yeswikiName = htmlspecialchars(
             $this->params->get('yeswiki_name'),
             ENT_COMPAT,
@@ -104,10 +107,10 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
                     ENT_COMPAT,
                     YW_CHARSET
                 );
-                $itemurl = $this->wiki->href(false, $tag, ['time' => $rawTime] + $langParam);
+                $itemurl = $this->getService(UrlFormatter::class)->href(false, $tag, ['time' => $rawTime] + $langParam);
                 $description = htmlspecialchars(
-                    _t('RSS_CHANGE_OF') . ' ' . ($readAcl ? $this->wiki->ComposeLinkToPage($page['tag']) : $tag)
-                    . ($readAcl ? ' (' . $this->wiki->ComposeLinkToPage($page['tag'], 'revisions', _t('RSS_HISTORY')) . ')' : '')
+                    _t('RSS_CHANGE_OF') . ' ' . ($readAcl ? $this->getService(LinkRenderer::class)->linkToPage($page['tag']) : $tag)
+                    . ($readAcl ? ' (' . $this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'revisions', _t('RSS_HISTORY')) . ')' : '')
                     . ' --- ' . _t('BY') . " $user" . ($readAcl ? rssdiff($page['tag'], $firstpage['id'], $lastpage['id']) : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>')
                 );
                 $items[] = compact(['tag', 'user', 'formatedDate', 'description', 'itemurl']);

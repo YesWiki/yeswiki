@@ -1,15 +1,17 @@
 <?php
 
 namespace YesWiki\Identity\Action;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\InputFilter;
+
+use YesWiki\Content\Service\TripleStore;
+use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
-use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Content\Service\TripleStore;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class LostPasswordAction extends YesWikiAction implements RegisteredAction
 {
@@ -145,7 +147,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                 // we are submitting a new password (only for encrypted)
                 $post = $this->getRequest()->request;
                 if (empty($post->get('userID')) || empty($post->get('key'))) {
-                    $this->wiki->Redirect($this->wiki->Href('', $this->params->get('root_page')));
+                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->params->get('root_page')));
                 }
                 $userName = $this->inputFilter->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
                 $user = $this->userManager->getOneByName($userName);
@@ -190,9 +192,9 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
      * @param string $userName The user login
      * @param string $key      The password recovery key (sent by email)
      *
-     * @throws BadFormatPasswordException if $password doesn't meet the site's password policy
-     *
      * @return bool True if OK or false if any problems
+     *
+     * @throws BadFormatPasswordException if $password doesn't meet the site's password policy
      */
     private function resetPassword(string $userName, string $key, string $password)
     {
@@ -252,6 +254,6 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
             return false;
         }
 
-        return (time() - (int) $issuedAt) <= UserManager::KEY_TTL;
+        return (time() - (int)$issuedAt) <= UserManager::KEY_TTL;
     }
 }

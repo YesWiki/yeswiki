@@ -1,12 +1,14 @@
 <?php
 
 namespace YesWiki\Admin\Action;
+
+use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
-use YesWiki\Core\YesWikiAction;
-use YesWiki\Kernel\Performable\RegisteredAction;
 
 class AdminContentAction extends YesWikiAction implements RegisteredAction
 {
@@ -57,8 +59,8 @@ class AdminContentAction extends YesWikiAction implements RegisteredAction
             'forms' => $forms,
             'templates' => $templates,
             'isHibernated' => $hibernationService->isWikiHibernated(),
-            'apiUrl' => $this->wiki->Href('', 'api/admin/pages'),
-            'bulkApiUrl' => $this->wiki->Href('', 'api/admin/pages/bulk'),
+            'apiUrl' => $this->getService(UrlFormatter::class)->href('', 'api/admin/pages'),
+            'bulkApiUrl' => $this->getService(UrlFormatter::class)->href('', 'api/admin/pages/bulk'),
         ]);
     }
 }

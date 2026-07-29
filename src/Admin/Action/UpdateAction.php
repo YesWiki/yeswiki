@@ -13,6 +13,7 @@ use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\MigrationService;
 use YesWiki\Kernel\Service\ThrowableFormatter;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class UpdateAction extends YesWikiAction implements RegisteredAction
 {
@@ -143,7 +144,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                         $vMessages->add($vUpgradeMessages);
 
                         // Reload the page to perform postInstall operation with the new code
-                        $this->wiki->redirect($this->wiki->href('', '', [
+                        $this->wiki->redirect($this->getService(UrlFormatter::class)->href('', '', [
                             'action' => 'post_install',
                             'messages' => json_encode($vMessages->toArray()),
                             'previous_version' => YESWIKI_VERSION,

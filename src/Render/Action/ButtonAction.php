@@ -3,9 +3,10 @@
 namespace YesWiki\Render\Action;
 
 use YesWiki\Content\Service\LinkTracker;
-use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateHelperService;
 
 /**
  * `{{button}}` -- converted from the procedural actions/button.php by ticket 06.
@@ -41,7 +42,6 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         // adresse vers quoi le bouton pointe
         $link = $this->wiki->GetParameter('link');
 
@@ -51,13 +51,13 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
             $this->wiki->setParameter('link', $link);
         }
 
-        $linkParts = $this->wiki->extractLinkParts($link);
+        $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($link);
         if ($linkParts) {
-            $link = $this->wiki->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
+            $link = $this->getService(UrlFormatter::class)->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
             $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
         }
         // change short yeswiki urls in real links
-        $link = $this->wiki->generateLink($link);
+        $link = $this->getService(UrlFormatter::class)->generateLink($link);
 
         // texte genere a l'interieur du bouton
         $text = $this->wiki->GetParameter('text');

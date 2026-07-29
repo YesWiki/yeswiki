@@ -19,6 +19,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Wiki;
 
@@ -37,6 +38,8 @@ class FormPropertiesService
 
     /** The historical implicit title convention: a visitor-typed bf_titre field. */
     public const DEFAULT_TITLE_TEMPLATE = '{{bf_titre}}';
+
+    protected UrlFormatter $urlFormatter;
 
     /** Every entry_* form property except entry_title_template (which is required). */
     public const OPTIONAL_PROPERTIES = [
@@ -57,7 +60,9 @@ class FormPropertiesService
         AclService $aclService,
         PageManager $pageManager,
         GroupOperationsService $groupOperationsService,
+        UrlFormatter $urlFormatter,
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->wiki = $wiki;
         $this->params = $params;
         $this->aclService = $aclService;
@@ -412,7 +417,7 @@ class FormPropertiesService
             $this->updateEmailIfNeeded($wikiName, $entry[$emailField] ?? null, $autoUpdateMail);
         } else {
             $wikiName = $entry[$nameField] ?? '';
-            if (!$this->wiki->IsWikiName($wikiName)) {
+            if (!$this->urlFormatter->isWikiName($wikiName)) {
                 // usernames are NEVER slugified (ADR-0010) -- the historical wikiname
                 // generation stays for generated usernames
                 $wikiName = genere_nom_wiki($wikiName, 0);

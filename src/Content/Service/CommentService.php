@@ -11,6 +11,7 @@ use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Wiki;
 
@@ -28,6 +29,8 @@ class CommentService implements EventSubscriberInterface
     protected $templateEngine;
     protected $commentsActivated;
 
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         Wiki $wiki,
         DbService $dbService,
@@ -37,8 +40,10 @@ class CommentService implements EventSubscriberInterface
         PageManager $pageManager,
         ParameterBagInterface $params,
         TemplateEngine $templateEngine,
-        UserManager $userManager
+        UserManager $userManager,
+        UrlFormatter $urlFormatter
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->wiki = $wiki;
         $this->dbService = $dbService;
         $this->aclService = $aclService;
@@ -127,12 +132,12 @@ class CommentService implements EventSubscriberInterface
             $this->setUserData($comment, 'owner', $com);
             $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
             if ($this->wiki->HasAccess('comment', $comment['tag'])) {
-                $com['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
+                $com['linkcomment'] = $this->urlFormatter->href('pages/' . $comment['tag'] . '/comments', 'api');
             }
             if ($this->aclService->isOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
-                $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
-                $com['linkdeletecomment'] = $this->wiki->href("comments/{$comment['tag']}/delete", 'api');
-                // $this->wiki->href('deletepage', $comment['tag']);
+                $com['linkeditcomment'] = $this->urlFormatter->href('edit', $comment['tag']);
+                $com['linkdeletecomment'] = $this->urlFormatter->href("comments/{$comment['tag']}/delete", 'api');
+                // $this->urlFormatter->href('deletepage', $comment['tag']);
             }
             $com['reponses'] = $this->getCommentList($comment['tag'], false);
             $com['parentPage'] = $this->getParentPage($comment['tag']);
@@ -253,11 +258,11 @@ class CommentService implements EventSubscriberInterface
                 $this->setUserData($comment, 'owner', $com['comments'][$i]);
                 $com['comments'][$i]['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));
                 if ($this->wiki->HasAccess('comment', $comment['tag'])) {
-                    $com['comments'][$i]['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
+                    $com['comments'][$i]['linkcomment'] = $this->urlFormatter->href('pages/' . $comment['tag'] . '/comments', 'api');
                 }
                 if ($this->aclService->isOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
-                    $com['comments'][$i]['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
-                    $com['comments'][$i]['linkdeletecomment'] = $this->wiki->href('comments/' . $comment['tag'] . '/delete', 'api');
+                    $com['comments'][$i]['linkeditcomment'] = $this->urlFormatter->href('edit', $comment['tag']);
+                    $com['comments'][$i]['linkdeletecomment'] = $this->urlFormatter->href('comments/' . $comment['tag'] . '/delete', 'api');
                 }
                 $com['comments'][$i]['reponses'] = $this->getCommentList($comment['tag'], false);
             }
@@ -331,7 +336,7 @@ class CommentService implements EventSubscriberInterface
     {
         if (in_array($key, ['user', 'owner'], true) && !empty($comment[$key])) {
             $data[$key] = $comment[$key];
-            $data["link$key"] = $this->wiki->href('', $comment[$key]);
+            $data["link$key"] = $this->urlFormatter->href('', $comment[$key]);
             $data["{$key}color"] = $this->genColorCodeFromText($comment[$key]);
             $data["{$key}picture"] =
                 !empty($this->wiki->config['default_comment_avatar'])
@@ -360,7 +365,7 @@ class CommentService implements EventSubscriberInterface
                 $tempTag = ($this->wiki->config['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
                 $options = [
                     'pagetag' => $commentOn,
-                    'formlink' => $this->wiki->href('comments', 'api'),
+                    'formlink' => $this->urlFormatter->href('comments', 'api'),
                     'hashcash' => $hashCashCode,
                     'tempTag' => $tempTag,
                 ];

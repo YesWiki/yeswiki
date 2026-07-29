@@ -29,14 +29,16 @@ class MarkdownFormatterService
     private Wiki $wiki;
     private ContentAssetScanner $assetScanner;
     private ActionRunner $actionRunner;
+    private LinkRenderer $linkRenderer;
     private ?EnvironmentInterface $environment = null;
     private ?EnvironmentInterface $structureEnvironment = null;
 
-    public function __construct(Wiki $wiki, ContentAssetScanner $assetScanner, ActionRunner $actionRunner)
+    public function __construct(Wiki $wiki, ContentAssetScanner $assetScanner, ActionRunner $actionRunner, LinkRenderer $linkRenderer)
     {
         $this->wiki = $wiki;
         $this->assetScanner = $assetScanner;
         $this->actionRunner = $actionRunner;
+        $this->linkRenderer = $linkRenderer;
     }
 
     public function format(string $text): string
@@ -184,17 +186,18 @@ class MarkdownFormatterService
             $environment->addExtension(new CommentExtension());
             $environment->addExtension(new ProgressExtension());
             $actionRunner = $this->actionRunner;
+            $linkRenderer = $this->linkRenderer;
             $environment->addExtension(new ActionExtension(
                 function (string $action) use ($actionRunner): string {
                     return $actionRunner->action($action);
                 },
-                function (string $url, string $html, ?string $title, array $attributes) use ($wiki): string {
+                function (string $url, string $html, ?string $title, array $attributes) use ($linkRenderer): string {
                     $options = ['html' => true];
                     if ($title !== null) {
                         $options['title'] = $title;
                     }
 
-                    return $wiki->LinkTo($url, $html, array_merge($options, $attributes));
+                    return $linkRenderer->linkTo($url, $html, array_merge($options, $attributes));
                 }
             ));
 

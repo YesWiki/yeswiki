@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{mypages}}` -- converted from the procedural actions/mypages.php by ticket 06.
@@ -62,7 +63,7 @@ class MypagesAction extends YesWikiAction implements RegisteredAction
                             $curChar = $firstChar;
                         }
 
-                        echo $this->wiki->ComposeLinkToPage($page['tag']),"<br />\n";
+                        echo $this->getService(LinkRenderer::class)->linkToPage($page['tag']),"<br />\n";
 
                         $my_pages_count++;
                     }

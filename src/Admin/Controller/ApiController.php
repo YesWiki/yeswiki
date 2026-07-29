@@ -56,6 +56,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\StringUtilService;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Search\Service\SearchManager;
 use YesWiki\Search\Service\TagsManager;
@@ -68,7 +69,7 @@ class ApiController extends YesWikiController
     {
         $output = '<h1>YesWiki API</h1>';
 
-        $urlUser = $this->wiki->Href('', 'api/users');
+        $urlUser = $this->getService(UrlFormatter::class)->href('', 'api/users');
         $output .= '<h2>' . _t('USERS') . '</h2>' . "\n" .
             '<h4>' . _t('LIST') . ' ' . _t('USERS') . '</h4>' . "\n" .
             '<p><code>GET ' . $urlUser . '</code></p>' . "\n" .
@@ -79,7 +80,7 @@ class ApiController extends YesWikiController
             '<h4>' . _t('DELETE') . ' ' . _t('USER') . '</h4>' . "\n" .
             '<p><code>POST ' . $urlUser . '/{userId}/delete</code></p>' . "\n";
 
-        $urlGroup = $this->wiki->Href('', 'api/groups');
+        $urlGroup = $this->getService(UrlFormatter::class)->href('', 'api/groups');
         $output .= '<h2>' . _t('GROUPS') . '</h2>' . "\n" .
             '<h4>' . _t('LIST') . ' ' . _t('GROUPS') . '</h4>' . "\n" .
             '<p><code>GET ' . $urlGroup . '</code></p>' . "\n" .
@@ -93,34 +94,34 @@ class ApiController extends YesWikiController
             '<p><code>POST ' . $urlGroup . '/{group_name}/update</code></p>' . "\n" .
             '<p><code> users[0]=…&users[1]</code></p>' . "\n";
 
-        $urlTags = $this->wiki->Href('', 'api/tags');
+        $urlTags = $this->getService(UrlFormatter::class)->href('', 'api/tags');
         $output .= '<h2>' . _t('TAGS_TAGS') . '</h2>' . "\n" .
             '<p><code>GET ' . $urlTags . '?search=…&page=…&perpage=…</code><br>Search tags (paginated, empty search returns everything)</p>';
 
-        $urlPages = $this->wiki->Href('', 'api/pages');
+        $urlPages = $this->getService(UrlFormatter::class)->href('', 'api/pages');
         $output .= '<h2>' . _t('PAGES') . '</h2>' . "\n" .
             '<p><code>GET ' . $urlPages . '</code><br>Get all pages</p>';
-        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}');
+        $urlPages = $this->getService(UrlFormatter::class)->href('', 'api/pages/{pageTag}');
         $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s informations, with raw and html contents</p>';
 
-        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/comments');
+        $urlPages = $this->getService(UrlFormatter::class)->href('', 'api/pages/{pageTag}/comments');
         $output .= '<p><code>GET ' . $urlPages . '</code><br>Get indicated page\'s comments</p>';
 
-        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}');
+        $urlPages = $this->getService(UrlFormatter::class)->href('', 'api/pages/{pageTag}');
         $output .= '<p><code>POST ' . $urlPages . '</code><br>Save body content into indicated page (requires write access), params: body=…</p>';
 
-        $urlPages = $this->wiki->Href('', 'api/pages/{pageTag}/duplicate');
+        $urlPages = $this->getService(UrlFormatter::class)->href('', 'api/pages/{pageTag}/duplicate');
         $output .= '<p><code>POST ' . $urlPages . '</code><br>Duplicate an external page into this YesWiki pageTag</p>';
 
-        $urlComments = $this->wiki->Href('', 'api/comments');
+        $urlComments = $this->getService(UrlFormatter::class)->href('', 'api/comments');
         $output .= '<h2>' . _t('COMMENTS') . '</h2>' . "\n" .
             '<p><code>GET ' . $urlComments . '</code></p>';
 
-        $urlTriples = $this->wiki->Href('', 'api/triples/{resource}', ['property' => 'http://outils-reseaux.org/_vocabulary/type', 'user' => 'username'], false);
+        $urlTriples = $this->getService(UrlFormatter::class)->href('', 'api/triples/{resource}', ['property' => 'http://outils-reseaux.org/_vocabulary/type', 'user' => 'username'], false);
         $output .= '<h2>' . _t('TRIPLES') . '</h2>' . "\n" .
             '<p><code>GET ' . $urlTriples . '</code></p>';
 
-        $urlArchives = $this->wiki->Href('', 'api/archives');
+        $urlArchives = $this->getService(UrlFormatter::class)->href('', 'api/archives');
         $output .= '<h2>' . _t('ARCHIVES') . '</h2>' . "\n" .
             '<p>' . _t('ONLY_FOR_ADMINS') . '</p>' .
             '<p><code>GET ' . $urlArchives . '</code></p>' .
@@ -128,22 +129,22 @@ class ApiController extends YesWikiController
             '<p><code>POST ' . $urlArchives . '</code></p>' .
             '<p><code>POST ' . $urlArchives . '/{id}</code></p>';
 
-        $urlCustomPresets = $this->wiki->Href('', 'api/templates/custom-presets/{presetFilename}');
+        $urlCustomPresets = $this->getService(UrlFormatter::class)->href('', 'api/templates/custom-presets/{presetFilename}');
         $output .= '<h2>' . _t('TEMPLATES') . '</h2>' . "\n" .
             '<p><code>POST ' . $urlCustomPresets . '</code><br>' . _t('TEMPLATE_ADD_CSS_PRESET_API_HINT') . '.</p>' .
             '<p><code>DELETE ' . $urlCustomPresets . '</code><br>' . _t('TEMPLATE_DELETE_CSS_PRESET_API_HINT') . '.</p>';
 
-        $urlRelations = $this->wiki->Href('', 'api/relations/{type}');
+        $urlRelations = $this->getService(UrlFormatter::class)->href('', 'api/relations/{type}');
         $output .= '<h2>' . _t('QRCODE_EXTENSION') . '</h2>' . "\n" .
             '<p><code>GET ' . $urlRelations . '</code><br>' . _t('QRCODE_DOC_GET_RELATIONS') . '.</p>' .
-            '<p><code>POST ' . $this->wiki->Href('', 'api/relations') . '</code><br>' . _t('QRCODE_DOC_POST_RELATIONS') . '.</p>';
+            '<p><code>POST ' . $this->getService(UrlFormatter::class)->href('', 'api/relations') . '</code><br>' . _t('QRCODE_DOC_POST_RELATIONS') . '.</p>';
 
         $output .= '<h2>' . _t('ATTACH_EXTENSION') . '</h2>' . "\n" .
-            '<p><code>POST ' . $this->wiki->Href('', 'api/files') . '</code><br>' . _t('ATTACH_DOC_POST_FILES') . '.</p>' .
-            '<p><code>GET ' . $this->wiki->Href('', 'api/files/{tag}/download') . '</code><br>' . _t('ATTACH_DOC_GET_DOWNLOAD') . '.</p>' .
-            '<p><code>GET ' . $this->wiki->Href('', 'api/files') . '</code><br>' . _t('ATTACH_DOC_GET_FILES') . '.</p>' .
+            '<p><code>POST ' . $this->getService(UrlFormatter::class)->href('', 'api/files') . '</code><br>' . _t('ATTACH_DOC_POST_FILES') . '.</p>' .
+            '<p><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/files/{tag}/download') . '</code><br>' . _t('ATTACH_DOC_GET_DOWNLOAD') . '.</p>' .
+            '<p><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/files') . '</code><br>' . _t('ATTACH_DOC_GET_FILES') . '.</p>' .
             '<p><b>' .
-            "<code>GET {$this->wiki->href('', 'api/images/{filename}/cache/{width}/{height}/{mode}', ['csrftoken' => 'xxxx'], false)}</code></b><br />" .
+            "<code>GET {$this->getService(UrlFormatter::class)->href('', 'api/images/{filename}/cache/{width}/{height}/{mode}', ['csrftoken' => 'xxxx'], false)}</code></b><br />" .
             nl2br(_t('ATTACH_GET_URLIMAGE_CACHE_API_HELP')) . '</p>';
 
         $output .= $this->getBazarDocumentation();
@@ -1380,7 +1381,7 @@ class ApiController extends YesWikiController
         }
 
         return new ApiResponse(
-            ['success' => $this->wiki->Href('', $entry['tag'])],
+            ['success' => $this->getService(UrlFormatter::class)->href('', $entry['tag'])],
             Response::HTTP_CREATED
         );
     }
@@ -1547,7 +1548,7 @@ class ApiController extends YesWikiController
                 }
                 $form = baz_valeurs_formulaire($val['form_id'] ?? null);
                 $mailSenderForMsg = (string)$request->request->get('email', '');
-                $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->wiki->href('', $val['tag']) . '">'
+                $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->getService(UrlFormatter::class)->href('', $val['tag']) . '">'
                     . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['label'] . ' » '
                     . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->wiki->config['yeswiki_name'] . ' ». ' .
                     ($mailSenderForMsg ? _t('CONTACT_REPLY') . ' <strong>' . $mailSenderForMsg . '</strong> '
@@ -2060,7 +2061,7 @@ class ApiController extends YesWikiController
         return new ApiResponse(
             [
                 '@context' => $context,
-                '@id' => $this->wiki->Href('fiche/' . $formId, 'api'),
+                '@id' => $this->getService(UrlFormatter::class)->href('fiche/' . $formId, 'api'),
                 '@type' => ['ldp:Container', 'ldp:BasicContainer'],
                 'dcterms:title' => $form['label'],
                 'ldp:contains' => $resources,
@@ -2083,7 +2084,7 @@ class ApiController extends YesWikiController
         }
 
         $resources = array_map(function ($triple) {
-            return $this->wiki->Href('', $triple['resource']);
+            return $this->getService(UrlFormatter::class)->href('', $triple['resource']);
         }, $triples);
 
         return new ApiResponse($resources);
@@ -2120,7 +2121,7 @@ class ApiController extends YesWikiController
         }
 
         return new ApiResponse(
-            ['success' => $this->wiki->Href('', $entry['tag'])],
+            ['success' => $this->getService(UrlFormatter::class)->href('', $entry['tag'])],
             Response::HTTP_CREATED
         );
     }
@@ -2138,7 +2139,7 @@ class ApiController extends YesWikiController
 
         return new Response('', Response::HTTP_CREATED, [
             'Link: <http://www.w3.org/ns/ldp#Resource>; rel="type"',
-            'Location: ' . $this->wiki->Href('', $entry['tag']),
+            'Location: ' . $this->getService(UrlFormatter::class)->href('', $entry['tag']),
         ]);
     }
 
@@ -2267,127 +2268,127 @@ class ApiController extends YesWikiController
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/forms') . '</code></b><br />
         Retourne la liste de tous les formulaires Bazar.
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/forms/{formId}') . '</code></b><br />
         Retourne les informations sur le formulaire <code>formId</code>.
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', '{pageTag}') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', '{pageTag}') . '</code></b><br />
         Si le header <code>Accept</code> est <code>application/json</code>, retourne la fiche au format JSON.<br />
         Si le header <code>Accept</code> est <code>application/ld+json</code>, retourne la fiche au format JSON-LD.<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>PUT ' . $this->wiki->href('', '{pageTag}') . '</code></b><br />
+        <b><code>PUT ' . $this->getService(UrlFormatter::class)->href('', '{pageTag}') . '</code></b><br />
         Si le header <code>Content-Type</code> est <code>application/json</code>, modifie la fiche selon le JSON fourni.<br />
         Si le header <code>Content-Type</code> est <code>application/ld+json</code>, modifie la fiche selon le JSON-LD fourni.<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>DELETE ' . $this->wiki->href('', '{pageTag}') . '</code></b><br />
+        <b><code>DELETE ' . $this->getService(UrlFormatter::class)->href('', '{pageTag}') . '</code></b><br />
         Supprime la fiche Bazar.
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/entries') . '</code></b><br />
         Obtenir la liste des fiches de tous les formulaires Bazar.<br />
         Si le header <code>Accept</code> est <code>application/ld+json</code>, le JSON retourné sera au format sémantique (container LDP)
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/forms/{formId}/entries') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code><br />
         Si le header <code>Accept</code> est <code>application/ld+json</code>, le JSON retourné sera au format sémantique (container LDP)
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/json-ld') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/forms/{formId}/entries/json-ld') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format sémantique (container LDP)<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/html') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/forms/{formId}/entries/html') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/geojson') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/forms/{formId}/entries/geojson') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format geojson<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries/ical') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/forms/{formId}/entries/ical') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> au format ical<br />
         Il est possible de filtrer sur les dates en ajoutant à l\'url <code>&datefilter=>-6M</code> (exemple pour les dates plus récentes que 6 mois)<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/forms/{formId}/entries&fields=bf_titre') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/forms/{formId}/entries&fields=bf_titre') . '</code></b><br />
         Obtenir la liste de toutes les fiches du formulaire <code>formId</code> en ne gardant que les titres (il est possible de spécifier d\autres champs en séparant leur nom par des \',\')<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>POST ' . $this->wiki->href('', 'api/entries/{formId}') . '</code></b><br />
+        <b><code>POST ' . $this->getService(UrlFormatter::class)->href('', 'api/entries/{formId}') . '</code></b><br />
         Créer une nouvelle fiche en utilisant le formulaire <code>formId</code><br />
         Si le header <code>Content-Type</code> est <code>application/ld+json</code>, un JSON sémantique est attendu.
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries/html') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/entries/html') . '</code></b><br />
         Obtenir la liste de toutes les fiches au format json, avec la représentation html de la fiche dans le champ <code>html_output</code><br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries/bazarlist') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/entries/bazarlist') . '</code></b><br />
         Obtenir les données nécessaires à bazarliste dynamic au format json<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>POST ' . $this->wiki->href('', 'api/entries/{formId}/json-ld') . '</code></b><br />
+        <b><code>POST ' . $this->getService(UrlFormatter::class)->href('', 'api/entries/{formId}/json-ld') . '</code></b><br />
         Créer une nouvelle fiche de type <code>formId</code> au format sémantique<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries/geojson') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/entries/geojson') . '</code></b><br />
         Obtenir la liste de toutes les fiches au format geojson<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries/ical') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/entries/ical') . '</code></b><br />
         Obtenir la liste de toutes les fiches au format ical<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entries/{output}&fields=bf_titre') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/entries/{output}&fields=bf_titre') . '</code></b><br />
         Obtenir la liste de toutes les fiches au format spécifié en ne gardant que les titres (il est possible de spécifier d\'autres champs en séparant leur nom par des \',\' ex: <code>&field=bf_titre,url</code>)<br />
         </p>';
 
         $output .= '
         <p>
-        <b><code>GET ' . $this->wiki->href('', 'api/entry/url/{sourceUrl}') . '</code></b><br />
+        <b><code>GET ' . $this->getService(UrlFormatter::class)->href('', 'api/entry/url/{sourceUrl}') . '</code></b><br />
         Retourne l\'URL de la page Wiki synchronisée avec <code>sourceUrl</code><br />
         </p>';
 

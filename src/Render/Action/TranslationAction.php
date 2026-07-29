@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{translation}}` -- converted from the procedural actions/translation.php by ticket 06.
@@ -74,7 +75,7 @@ class TranslationAction extends YesWikiAction implements RegisteredAction
             unset($_GET['lang']);
         }
         // Todo : utiliser template
-        echo '<a href="' . $this->wiki->Href($wikireq === $currentTag ? '' : $this->wiki->method, $currentTag, $queries, false) . '">' . $img . '</a>';
+        echo '<a href="' . $this->getService(UrlFormatter::class)->href($wikireq === $currentTag ? '' : $this->wiki->method, $currentTag, $queries, false) . '">' . $img . '</a>';
 
         if (isset($previousLang)) {
             $_GET['lang'] = $previousLang;

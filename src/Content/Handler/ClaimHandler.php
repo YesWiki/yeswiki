@@ -6,6 +6,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `/PageName/claim` -- converted from the procedural handlers/page/claim.php by ticket 06.
@@ -78,6 +79,6 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        $this->wiki->Redirect($this->wiki->href());
+        $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
     }
 }

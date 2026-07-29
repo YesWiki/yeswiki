@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{listpages}}` -- converted from the procedural actions/listpages.php by ticket 06.
@@ -122,13 +123,13 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                 case 'owner':
                     $sql = 'SELECT a.owner, b.tag IS NOT NULL owner_has_ownpage'
                         . ' FROM ' . $prefix . 'pages a'
-                        . " LEFT JOIN " . $prefix . "pages b ON a.owner = b.tag AND b.latest = 'Y'";
+                        . ' LEFT JOIN ' . $prefix . "pages b ON a.owner = b.tag AND b.latest = 'Y'";
                     break;
                 case 'user':
                     $sql = "SELECT a.$userCol AS user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage"
                         . ' FROM ' . $prefix . 'pages a'
-                        . " LEFT JOIN " . $prefix . "users u ON a.$userCol = u.name"
-                        . " LEFT JOIN " . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
+                        . ' LEFT JOIN ' . $prefix . "users u ON a.$userCol = u.name"
+                        . ' LEFT JOIN ' . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
                     break;
                 case 'time':
                     $sql = 'SELECT a.time'
@@ -167,8 +168,8 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                         if ($sort == 'user') {
                             $sql .= ", a.$userCol AS user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage"
                                 . ' FROM ' . $prefix . 'links, ' . $prefix . 'pages a'
-                                . " LEFT JOIN " . $prefix . "users u ON a.$userCol = u.name"
-                                . " LEFT JOIN " . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
+                                . ' LEFT JOIN ' . $prefix . "users u ON a.$userCol = u.name"
+                                . ' LEFT JOIN ' . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
                         } else {
                             $sql .= ' FROM ' . $prefix . 'links, ' . $prefix . 'pages a';
                         }
@@ -183,22 +184,22 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                             case 'owner':
                                 $sql .= ', a.owner, b.tag IS NOT NULL owner_has_ownpage'
                                     . ' FROM ' . $prefix . 'links'
-                                    . " LEFT JOIN " . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'"
-                                    . " LEFT JOIN " . $prefix . "pages b ON a.owner = b.tag AND b.latest = 'Y'";
+                                    . ' LEFT JOIN ' . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'"
+                                    . ' LEFT JOIN ' . $prefix . "pages b ON a.owner = b.tag AND b.latest = 'Y'";
                                 break;
                             case 'user':
                                 $sql .= ", a.$userCol AS user, u.name IS NOT NULL user_is_registered, b.tag IS NOT NULL user_has_ownpage"
                                     . ' FROM ' . $prefix . 'links'
-                                    . " LEFT JOIN " . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'"
-                                    . " LEFT JOIN " . $prefix . "users u ON a.$userCol = u.name"
-                                    . " LEFT JOIN " . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
+                                    . ' LEFT JOIN ' . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'"
+                                    . ' LEFT JOIN ' . $prefix . "users u ON a.$userCol = u.name"
+                                    . ' LEFT JOIN ' . $prefix . "pages b ON u.name = b.tag AND b.latest = 'Y'";
                                 break;
                             case 'time':
                                 $sql .= ', a.time';
                                 // no break
                             default:
                                 $sql .= ' FROM ' . $prefix . 'links'
-                                    . " LEFT JOIN " . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'";
+                                    . ' LEFT JOIN ' . $prefix . "pages a ON to_tag = a.tag AND a.latest = 'Y'";
                         } // switch
                         $sql .= ' WHERE from_tag IN (' . $from . ')'
                             . ' AND to_tag NOT IN (' . $exclude_str . ')';
@@ -275,20 +276,21 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                         $indentStr = str_repeat("\t", $indent);
                         $retour = "$indentStr<ul>\n";
                         $aclService = $wiki->services->get(\YesWiki\Identity\Service\AclService::class);
+                        $linkRenderer = $wiki->services->get(LinkRenderer::class);
                         foreach ($tree as $pageName => $pageData) {
                             if ($aclService->hasAccess('read', $pageName)) {
                                 $retour .= "$indentStr\t<li>";
                                 if ($pageData['page_exists']) {
-                                    $retour .= $wiki->ComposeLinkToPage($pageName, false, false, false);
+                                    $retour .= $linkRenderer->linkToPage($pageName, false, false, false);
                                     switch ($show) {
                                         case 'owner':
                                             $retour .= ' . . . . ' . _t('BELONGING_TO') . ' : ';
                                             if ($pageData['owner']) {
                                                 if ($pageData['owner_has_ownpage']) {
-                                                    $retour .= $wiki->ComposeLinkToPage($pageData['owner'], false, false, false);
+                                                    $retour .= $linkRenderer->linkToPage($pageData['owner'], false, false, false);
                                                 } else {
                                                     $retour .= '<span class="forced-link missingpage">' . $pageData['owner'] . '</span>';
-                                                    $retour .= $wiki->ComposeLinkToPage($pageData['owner'], 'edit', '?', false);
+                                                    $retour .= $linkRenderer->linkToPage($pageData['owner'], 'edit', '?', false);
                                                 }
                                             } else {
                                                 $retour .= _t('UNKNOWN');
@@ -298,10 +300,10 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                                             $retour .= ' . . . . ' . _t('LAST_CHANGE_BY') . ' : ';
                                             if ($pageData['user_is_registered']) {
                                                 if ($pageData['user_has_ownpage']) {
-                                                    $retour .= $wiki->ComposeLinkToPage($pageData['user'], false, false, false);
+                                                    $retour .= $linkRenderer->linkToPage($pageData['user'], false, false, false);
                                                 } else {
                                                     $retour .= '<span class="forced-link missingpage">' . $pageData['user'] . '</span>';
-                                                    $retour .= $wiki->ComposeLinkToPage($pageData['user'], 'edit', '?', false);
+                                                    $retour .= $linkRenderer->linkToPage($pageData['user'], 'edit', '?', false);
                                                 }
                                             } else {
                                                 $retour .= $pageData['user'];
@@ -318,7 +320,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                                     }
                                 } else {
                                     $retour .= '<span class="forced-link missingpage">' . $pageName . '</span>'
-                                        . $wiki->ComposeLinkToPage($pageName, 'edit', '?', false);
+                                        . $linkRenderer->linkToPage($pageName, 'edit', '?', false);
                                 }
                                 $retour .= "</li>\n";
                             }
@@ -352,8 +354,8 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                 if ($sort == 'user') {
                     $sql = "SELECT a.tag, a.time,
                         a.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage
-                        FROM " . $prefix . "pages a
-                        LEFT JOIN " . $prefix . "users ON a.$userCol = name
+                        FROM " . $prefix . 'pages a
+                        LEFT JOIN ' . $prefix . "users ON a.$userCol = name
                         LEFT JOIN " . $prefix . "pages user_page ON name = user_page.tag AND user_page.latest = 'Y'";
                 } else {
                     $sql = 'SELECT tag, time FROM ' . $prefix . 'pages a';
@@ -364,8 +366,8 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                     $sql = "SELECT a.tag, a.owner,
                         owner_page.tag IS NOT NULL owner_has_ownpage,
                         a.$userCol, name IS NOT NULL user_is_registered, user_page.tag IS NOT NULL user_has_ownpage
-                        FROM " . $prefix . "pages a
-                        LEFT JOIN " . $prefix . "users ON a.$userCol = name
+                        FROM " . $prefix . 'pages a
+                        LEFT JOIN ' . $prefix . "users ON a.$userCol = name
         		LEFT JOIN " . $prefix . "pages user_page ON name = user_page.tag AND user_page.latest = 'Y'
         		LEFT JOIN " . $prefix . "pages owner_page ON a.owner = owner_page.tag AND owner_page.latest = 'Y'";
                 } else {
@@ -401,7 +403,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             if ($user) {
                 echo _t('PAGE_LIST_WHERE') . ' ' . $this->wiki->Format($user) . ' ' . _t('HAS_PARTICIPATED');
                 if ($owner) {
-                    echo ' ' . _t('INCLUDING') . ' ' . $this->wiki->Link($owner) . ' ' . _t('IS_THE_OWNER');
+                    echo ' ' . _t('INCLUDING') . ' ' . $this->getService(LinkRenderer::class)->link($owner) . ' ' . _t('IS_THE_OWNER');
                 }
                 if ($exclude) {
                     echo ' (' . _t('EXCLUDING_EXCLUSIONS') . ')';
@@ -413,7 +415,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                     return;
                 }
             } elseif ($owner) {
-                echo _t('LIST_PAGES_BELONGING_TO') . ' ' . $this->wiki->Link($owner);
+                echo _t('LIST_PAGES_BELONGING_TO') . ' ' . $this->getService(LinkRenderer::class)->link($owner);
                 if ($exclude) {
                     echo ' (' . _t('EXCLUDING_EXCLUSIONS') . ')';
                 }
@@ -436,15 +438,15 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             $aclService = $this->wiki->services->get(\YesWiki\Identity\Service\AclService::class);
             foreach ($pages as $page) {
                 if ($aclService->hasAccess('read', $page['tag'])) {
-                    echo "\t<li>" . $this->wiki->ComposeLinkToPage($page['tag'], false, false, false);
+                    echo "\t<li>" . $this->getService(LinkRenderer::class)->linkToPage($page['tag'], false, false, false);
                     if (!$owner) {
                         echo ' . . . . ';
                         if ($page['owner']) {
                             if ($page['owner_has_ownpage']) {
-                                echo $this->wiki->ComposeLinkToPage($page['owner'], false, false, false);
+                                echo $this->getService(LinkRenderer::class)->linkToPage($page['owner'], false, false, false);
                             } else {
                                 echo '<span class="forced-link missingpage">' . $page['owner'] . '</span>';
-                                echo $this->wiki->ComposeLinkToPage($page['owner'], 'edit', '?', false);
+                                echo $this->getService(LinkRenderer::class)->linkToPage($page['owner'], 'edit', '?', false);
                             }
                         } else {
                             echo _t('UNKNOWN');
@@ -459,10 +461,10 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                             echo ' <strong>' . _t('BY') . '</strong> ';
                             if ($page['user_is_registered']) {
                                 if ($page['user_has_ownpage']) {
-                                    echo $this->wiki->ComposeLinkToPage($page['user'], false, false, false);
+                                    echo $this->getService(LinkRenderer::class)->linkToPage($page['user'], false, false, false);
                                 } else {
                                     echo '<span class="forced-link missingpage">' . $page['user'] . '</span>';
-                                    echo $this->wiki->ComposeLinkToPage($page['user'], 'edit', '?', false);
+                                    echo $this->getService(LinkRenderer::class)->linkToPage($page['user'], 'edit', '?', false);
                                 }
                             } else {
                                 echo htmlspecialchars($page['user'], ENT_COMPAT, YW_CHARSET);

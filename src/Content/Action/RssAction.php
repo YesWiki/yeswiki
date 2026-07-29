@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{rss}}` -- converted from the procedural actions/rss.php by ticket 06.
@@ -46,7 +47,7 @@ class RssAction extends YesWikiAction implements RegisteredAction
         }
 
         if ($this->wiki->GetMethod() != 'rss' && $this->wiki->GetMethod() != 'xml' && $this->wiki->GetMethod() != 'tagrss') { // on affiche un lien dans la page si on n'est pas en xml
-            echo '<a class="' . $class . ' rss-icon" href="' . $this->wiki->Href('tagrss', $this->wiki->GetPageTag(), 'tags=' . $tags) . '" title="' . _t('TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS') . ' : ' . $tags . '">
+            echo '<a class="' . $class . ' rss-icon" href="' . $this->getService(UrlFormatter::class)->href('tagrss', $this->wiki->GetPageTag(), 'tags=' . $tags) . '" title="' . _t('TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS') . ' : ' . $tags . '">
         		</a>' . "\n";
 
             return;

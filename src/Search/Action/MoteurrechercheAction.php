@@ -4,6 +4,7 @@ namespace YesWiki\Search\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{moteurrecherche}}` -- converted from the procedural actions/moteurrecherche.php by ticket 06.
@@ -51,7 +52,7 @@ class MoteurrechercheAction extends YesWikiAction implements RegisteredAction
         $searchelements['iconclass'] = ($this->wiki->GetParameter('iconclass') ? ' ' . $this->wiki->GetParameter('iconclass') : '');
 
         // on peut changer l'url de recherche
-        $searchelements['url'] = ($this->wiki->GetParameter('url') ? $this->wiki->GetParameter('url') : $this->wiki->href('show', 'RechercheTexte'));
+        $searchelements['url'] = ($this->wiki->GetParameter('url') ? $this->wiki->GetParameter('url') : $this->getService(UrlFormatter::class)->href('show', 'RechercheTexte'));
 
         // si une recherche a été effectuée, on garde les mots clés
         $searchelements['phrase'] = htmlspecialchars(isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : '');

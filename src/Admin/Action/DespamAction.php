@@ -3,9 +3,10 @@
 namespace YesWiki\Admin\Action;
 
 use YesWiki\Content\Service\PageOperationsService;
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{despam}}` -- converted from the procedural actions/despam.php by ticket 06.
@@ -41,7 +42,6 @@ class DespamAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         // TODO
         // -- case pour selectionner tout
         // -- attention au cas ou la version mais aussi la page est effacee
@@ -51,7 +51,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
         //    pas les pages si elle est rechargee
         // -- test pour savoir si quelque chose a bien ete efface
 
-        $despam_url = $this->wiki->href('', $this->wiki->GetPageTag());
+        $despam_url = $this->getService(UrlFormatter::class)->href('', $this->wiki->GetPageTag());
 
         // -- (1) Formulaire d'accueil de l'action -------------------------------
         //
@@ -116,7 +116,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 $page['tag'] . ' ' .
                 '(' . $page['time'] . ') ' .
                 ' par ' . $page['user'] . ' ' .
-                '<a href="' . $this->wiki->Href('iframe', $page['tag'], ['time' => urlencode($page['time'])]) . '" ' .
+                '<a href="' . $this->getService(UrlFormatter::class)->href('iframe', $page['tag'], ['time' => urlencode($page['time'])]) . '" ' .
                 "title=\"Voir la fiche {$page['tag']} ({$page['time']})\" " .
                 'class="btn btn-xs btn-default modalbox" ' .
                 'data-size="modal-lg" ' .
@@ -139,7 +139,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                         }
                         echo '<tr><td><input name=  "rev[]" value="' . $revision['id'] . '" type="checkbox" /></td><td>';
                         echo str_replace(['{time}', '{user}'], [$revision['time'], $revision['user']], _t('DESPAM_RESTORE_FROM')) . ' ' .
-                  '<a href="' . $this->wiki->Href('iframe', $page['tag'], ['time' => urlencode($revision['time'])]) . '" ' .
+                  '<a href="' . $this->getService(UrlFormatter::class)->href('iframe', $page['tag'], ['time' => urlencode($revision['time'])]) . '" ' .
                   'title="' . _t('BAZ_SEE_ENTRY') . " {$page['tag']} ({$revision['time']})\" " .
                   'class="btn btn-xs btn-default modalbox" ' .
                   'data-size="modal-lg" ' .

@@ -41,8 +41,11 @@ class AssetsManager
 
     protected $wiki;
 
-    public function __construct(Wiki $wiki)
+    protected UrlFormatter $urlFormatter;
+
+    public function __construct(Wiki $wiki, UrlFormatter $urlFormatter)
     {
+        $this->urlFormatter = $urlFormatter;
         $this->wiki = $wiki;
     }
 
@@ -85,7 +88,7 @@ class AssetsManager
             // no ?v= : the published path already embeds the version
             return <<<HTML
                 $conditionstart
-                <link rel="stylesheet" href="{$this->wiki->getBaseUrl()}/{$published}" $attrs>
+                <link rel="stylesheet" href="{$this->urlFormatter->getBaseUrl()}/{$published}" $attrs>
                 $conditionend
             HTML;
         }
@@ -93,7 +96,7 @@ class AssetsManager
         // NB: the source-tree check covers files absent from the instance docroot - the
         // URL still works there thanks to AssetPublisher's direct-path interception
         if ($isUrl || !empty($file) && (file_exists($file) || file_exists(YESWIKI_SOURCE_DIR . '/' . $file))) {
-            $href = $isUrl ? $file : "{$this->wiki->getBaseUrl()}/{$file}";
+            $href = $isUrl ? $file : "{$this->urlFormatter->getBaseUrl()}/{$file}";
             $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
 
             return <<<HTML
@@ -136,14 +139,14 @@ class AssetsManager
                 return;
             }
             // no ?v= : the published path already embeds the version
-            $publishedSrc = "{$this->wiki->getBaseUrl()}/$published";
+            $publishedSrc = "{$this->urlFormatter->getBaseUrl()}/$published";
         }
 
         if ($publishedSrc !== null || (!empty($file) && file_exists($file))) {
             // include local files
             $code = $publishedSrc !== null
                 ? "<script src='$publishedSrc'"
-                : "<script src='{$this->wiki->getBaseUrl()}/$file$rev'";
+                : "<script src='{$this->urlFormatter->getBaseUrl()}/$file$rev'";
             if (!str_contains($GLOBALS['js'], $code) || $first) {
                 if (!$first) {
                     $code .= ' defer';

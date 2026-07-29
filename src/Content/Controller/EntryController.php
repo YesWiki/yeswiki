@@ -22,6 +22,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\SearchManager;
@@ -304,7 +305,7 @@ class EntryController extends YesWikiController
                         : (
                             !empty($redirectUrl)
                             ? $redirectUrl
-                            : $this->wiki->Href(
+                            : $this->getService(UrlFormatter::class)->href(
                                 testUrlInIframe(),
                                 '',
                                 [
@@ -368,7 +369,7 @@ class EntryController extends YesWikiController
                     : (
                         !empty($redirectUrl)
                         ? $redirectUrl
-                        : $this->wiki->Href(testUrlInIframe(), '', [
+                        : $this->getService(UrlFormatter::class)->href(testUrlInIframe(), '', [
                             'vue' => 'consulter',
                             'action' => 'voir_fiche',
                             'tag' => $entry['tag'],
@@ -415,7 +416,7 @@ class EntryController extends YesWikiController
                     $this->triggerDeletedEvent($entryId, $entry);
                     if ($redirectAfter) {
                         Flash::success(_t('BAZ_FICHE_SUPPRIMEE') . " ($entryId)");
-                        $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
+                        $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['vue' => 'consulter'], false));
                     }
 
                     return true;
@@ -423,7 +424,7 @@ class EntryController extends YesWikiController
             } catch (\Throwable $th) {
                 if ($redirectAfter) {
                     Flash::error(_t('DELETEPAGE_NOT_DELETED') . " ($entryId) : {$th->getMessage()}");
-                    $this->wiki->Redirect($this->wiki->Href('', 'BazaR', ['vue' => 'consulter'], false));
+                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', 'BazaR', ['vue' => 'consulter'], false));
                 }
                 throw new \Exception($th->getMessage(), $th->getCode(), $th);
             }

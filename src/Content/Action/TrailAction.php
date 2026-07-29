@@ -4,6 +4,8 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{trail}}` -- converted from the procedural actions/trail.php by ticket 06.
@@ -77,7 +79,7 @@ class TrailAction extends YesWikiAction implements RegisteredAction
             // chargement de la page sommaire
             $tocPage = $this->wiki->LoadPage($sommaire);
             if (!$tocPage) {
-                echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_TRAIL') . '</strong> : ' . _t('THE_PAGE') . ' ', $this->wiki->Link($sommaire), ' ' . _t('DOESNT_EXIST') . ' !</div>' . "\n";
+                echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_TRAIL') . '</strong> : ' . _t('THE_PAGE') . ' ', $this->getService(LinkRenderer::class)->link($sommaire), ' ' . _t('DOESNT_EXIST') . ' !</div>' . "\n";
 
                 return;
             }
@@ -92,7 +94,7 @@ class TrailAction extends YesWikiAction implements RegisteredAction
                     // recuperation du 1er mot
                     $line = preg_replace("/^(\[\[.*\]\]|" . WN_CHAR . "+)\s*(.*)$/", '$1', $line);
                     // ajout a la liste des pages si le 1er mot est un lien force ou un mot wiki
-                    if (preg_match("/\[\[.*\]\]/", $line, $match) | $this->wiki->IsWikiName($line)) {
+                    if (preg_match("/\[\[.*\]\]/", $line, $match) | $this->getService(UrlFormatter::class)->isWikiName($line)) {
                         $pages[] = $line;
                         // regarde si la page ajoute a la liste est la page courante
                         if (strcasecmp($this->wiki->GetPageTag(), $line) == 0) {
@@ -112,7 +114,7 @@ class TrailAction extends YesWikiAction implements RegisteredAction
             } else {
                 $btnPrev = '';
             }
-            $btnTOC = '<li><span class="trail_button">' . $this->wiki->ComposeLinkToPage($sommaire) . "</span></li>\n";
+            $btnTOC = '<li><span class="trail_button">' . $this->getService(LinkRenderer::class)->linkToPage($sommaire) . "</span></li>\n";
             if ($currentPageIndex < (count($pages) - 1)) {
                 $NextPage = $pages[$currentPageIndex + 1];
                 $btnNext = '<li class="next"><span class="trail_button">' . $this->wiki->Format("$NextPage &rarr;") . "</span></li>\n";

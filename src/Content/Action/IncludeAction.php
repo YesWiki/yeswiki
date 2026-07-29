@@ -7,6 +7,8 @@ use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\TemplateHelperService;
 
 /**
@@ -127,7 +129,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
 
         // si la page inclue n'existe pas, on propose de la créer
         if (!$incPage = $this->wiki->LoadPage($incPageName)) {
-            $plugin_output_new = $this->wiki->LinkTo($incPageName);
+            $plugin_output_new = $this->getService(LinkRenderer::class)->linkTo($incPageName);
 
             return $plugin_output_new . (string)ob_get_clean();
         }
@@ -159,7 +161,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             !empty($this->wiki->config['allow_doubleclic']) && in_array($this->wiki->config['allow_doubleclic'], ['1', 'yes', true])
             && !empty($dblclic) && $dblclic == '1' && $this->wiki->HasAccess('write', $incPageName)
         ) {
-            $actiondblclic = ' ondblclick="document.location=\'' . $this->wiki->Href('edit', $incPageName) . '\';"';
+            $actiondblclic = ' ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '\';"';
         } else {
             $actiondblclic = '';
         }
@@ -316,7 +318,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             $output = $this->wiki->Format($incPage['body']);
             if (isset($classes)) {
                 if ($this->wiki->GetParameter('edit') == 'show') {
-                    $editLink = '<div class="include_editlink"><a href="' . $this->wiki->Href('edit', $incPageName) . '">[' . _t('EDITION') . "]</a></div>\n";
+                    $editLink = '<div class="include_editlink"><a href="' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '">[' . _t('EDITION') . "]</a></div>\n";
                 } else {
                     $editLink = '';
                 }

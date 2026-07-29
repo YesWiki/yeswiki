@@ -9,6 +9,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -41,7 +42,7 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
                 Flash::error(_t('DENY_WRITE'));
             }
 
-            return $this->wiki->Redirect($this->wiki->Href());
+            return $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
         }
         $revisionsCount = $pageManager->countRevisions($this->wiki->GetPageTag());
         // Limit to 30 revisions otherwise the UI is too crowded

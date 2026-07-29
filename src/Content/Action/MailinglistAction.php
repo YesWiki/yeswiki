@@ -2,9 +2,10 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{mailinglist}}` -- converted from the procedural actions/mailinglist.php by ticket 06.
@@ -43,7 +44,6 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
         // ticket 18: relocated from tools/contact/actions/mailinglist.php.
         // action permettant d'inscrire ou desinscrire massivement des mails a une newsletter
 
-
         include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
 
         // recuperation des parametres
@@ -72,7 +72,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
                         echo '<br />';
                     }
                     echo '</div>
-        			<a href="' . $this->wiki->href() . '" title="' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '">' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '</a>';
+        			<a href="' . $this->getService(UrlFormatter::class)->href() . '" title="' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '">' . _t('CONTACT_SUBMIT_OTHER_EMAILS') . '</a>';
                 }
             }
             // la liste des mails non formatee est disponible
@@ -82,7 +82,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
                 preg_match_all($regEx, $_POST['mailinglist'], $emails);
                 if (is_array($emails) && count($emails[0]) > 0) {
                     sort($emails[0]);
-                    echo '<form id="ajax-mailing-form" method="post" action="' . $this->wiki->href() . '">
+                    echo '<form id="ajax-mailing-form" method="post" action="' . $this->getService(UrlFormatter::class)->href() . '">
         			<div class="well" style="width:600px; height:150px; overflow:auto; ">';
 
                     foreach ($emails[0] as $email) {
@@ -93,16 +93,16 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
         			<strong>' . _t('CONTACT_FOR_ALL_THOSE_EMAILS') . ' : </strong><input class="btn button_save" type="submit" name="action_mails" value="' . _t('CONTACT_BTN_UNSUBSCRIBE') . '" />
         			<input class="btn button_cancel" type="submit" name="action_mails" value="' . _t('CONTACT_BTN_UNSUBSCRIBE') . '" />
         			</form><br /><br />
-        			<a href="' . $this->wiki->href() . '" title="' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '">' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '</a>';
+        			<a href="' . $this->getService(UrlFormatter::class)->href() . '" title="' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '">' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '</a>';
                 } else {
                     echo '<div class="yw-alert yw-alert--danger">' . _t('CONTACT_NO_EMAILS_FOUND_IN_THIS_TEXT') . '.</div>
-        			<a href="' . $this->wiki->href() . '" title="' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '">' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '</a>';
+        			<a href="' . $this->getService(UrlFormatter::class)->href() . '" title="' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '">' . _t('CONTACT_TRY_WITH_OTHER_EMAILS') . '</a>';
                 }
             }
             // rien n'a ete fait, on propose un formulaire pour ajouter les mails
             else {
                 echo '<div class="yw-alert yw-alert--info">' . _t('CONTACT_ENTER_TEXT_WITH_EMAILS_INSIDE') . '.</div>
-        		<form id="ajax-mailing-form" method="post" action="' . $this->wiki->href() . '">
+        		<form id="ajax-mailing-form" method="post" action="' . $this->getService(UrlFormatter::class)->href() . '">
         			<label style="display:inline-block;width:200px;text-align:right;">' . _t('CONTACT_YOUR_EMAIL_LIST') . '</label>
         			<textarea name="mailinglist" rows="6" cols="20" style="width:600px;height:150px;"></textarea>
         			<input class="btn button_save" style="margin:10px 0 10px 205px;" type="submit" name="submit" value="' . _t('CONTACT_EXTRACT_EMAILS_FROM_TEXT') . '" />

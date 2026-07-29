@@ -4,6 +4,7 @@ namespace YesWiki\Content\Service;
 
 use YesWiki\Content\Attach;
 use YesWiki\Content\Field\TextareaField;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
 class ImportFilesManager
@@ -11,13 +12,16 @@ class ImportFilesManager
     protected $uploadPath;
     protected $wiki;
 
+    protected UrlFormatter $urlFormatter;
+
     /**
      * ImportManager constructor.
      *
      * @param Wiki $wiki the injected Wiki instance
      */
-    public function __construct(Wiki $wiki)
+    public function __construct(Wiki $wiki, UrlFormatter $urlFormatter)
     {
+        $this->urlFormatter = $urlFormatter;
         $this->wiki = $wiki;
         $this->uploadPath = null;
     }
@@ -218,7 +222,7 @@ class ImportFilesManager
 
         if ($transform) {
             foreach ($contentKeys as $key) {
-                $wikiPage[$key] = preg_replace($wikiRegex, '="' . $this->wiki->getBaseUrl() . '${trail}"', $wikiPage[$key]);
+                $wikiPage[$key] = preg_replace($wikiRegex, '="' . $this->urlFormatter->getBaseUrl() . '${trail}"', $wikiPage[$key]);
             }
         }
 

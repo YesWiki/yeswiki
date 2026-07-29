@@ -9,6 +9,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{barreredaction}}` -- converted from the procedural actions/barreredaction.php by ticket 06.
@@ -57,7 +58,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
                 $time = $content['time'];
             }
             $options['page'] = $page;
-            $options['linkpage'] = $this->wiki->href('', $page);
+            $options['linkpage'] = $this->getService(UrlFormatter::class)->href('', $page);
 
             // on choisit le template utilisé
             $template = $this->wiki->GetParameter('template');
@@ -71,13 +72,13 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
             if ($this->wiki->HasAccess('write')) {
                 // on ajoute le lien d'édition si l'action est autorisée
                 if ($this->wiki->HasAccess('write', $page) && !$this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
-                    $options['linkedit'] = $this->wiki->href('edit', $page);
+                    $options['linkedit'] = $this->getService(UrlFormatter::class)->href('edit', $page);
                 }
 
                 if ($time) {
                     // hack to hide E_STRICT error if no timezone set
                     date_default_timezone_set(@date_default_timezone_get());
-                    $options['linkrevisions'] = $this->wiki->href('revisions', $page);
+                    $options['linkrevisions'] = $this->getService(UrlFormatter::class)->href('revisions', $page);
                     $options['time'] = date(_t('TEMPLATE_DATE_FORMAT'), strtotime($time));
                 }
 
@@ -97,29 +98,29 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
                     if ($this->getService(AclService::class)->isOwner($page) || $this->wiki->UserIsAdmin()) {
                         $options['owner'] .= ' - ' . _t('TEMPLATE_PERMISSIONS');
                         if (!$this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
-                            $options['linkacls'] = $this->wiki->href('acls', $page);
-                            $options['linkdeletepage'] = $this->wiki->href('deletepage', $page);
+                            $options['linkacls'] = $this->getService(UrlFormatter::class)->href('acls', $page);
+                            $options['linkdeletepage'] = $this->getService(UrlFormatter::class)->href('deletepage', $page);
                         }
                         $aclsService = $this->wiki->services->get(AclService::class);
                         $hasAccessComment = $aclsService->hasAccess('comment');
                         $options['wikigroups'] = $this->wiki->GetGroupsList();
                         if ($this->wiki->services->get(ParameterBagInterface::class)->get('comments_activated')) {
                             if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
-                                $options['linkclosecomments'] = $this->wiki->href('claim', $page, ['action' => 'closecomments'], false);
+                                $options['linkclosecomments'] = $this->getService(UrlFormatter::class)->href('claim', $page, ['action' => 'closecomments'], false);
                             } else {
-                                $options['linkopencomments'] = $this->wiki->href('claim', $page, ['action' => 'opencomments'], false);
+                                $options['linkopencomments'] = $this->getService(UrlFormatter::class)->href('claim', $page, ['action' => 'opencomments'], false);
                             }
                         }
                     } elseif (!$owner && $this->wiki->GetUser()) {
                         $options['owner'] .= ' - ' . _t('TEMPLATE_CLAIM');
                         if (!$this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
-                            $options['linkacls'] = $this->wiki->href('claim', $page);
+                            $options['linkacls'] = $this->getService(UrlFormatter::class)->href('claim', $page);
                         }
                     }
                 }
             }
-            $options['linkduplicate'] = $this->wiki->href('duplicate', $page);
-            $options['linkshare'] = $this->wiki->href('share', $page);
+            $options['linkduplicate'] = $this->getService(UrlFormatter::class)->href('duplicate', $page);
+            $options['linkshare'] = $this->getService(UrlFormatter::class)->href('share', $page);
             $options['userIsOwner'] = $this->getService(AclService::class)->isOwner($page);
             $options['userIsAdmin'] = $this->wiki->UserIsAdmin();
             $options['userIsAdminOrOwner'] = $this->wiki->UserIsAdmin() || $this->getService(AclService::class)->isOwner($page);

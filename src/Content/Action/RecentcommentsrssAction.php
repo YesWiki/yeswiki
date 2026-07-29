@@ -5,6 +5,8 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{recentcommentsrss}}` -- converted from the procedural actions/recentcommentsrss.php by ticket 06.
@@ -42,7 +44,7 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
     {
         if ($this->wiki->GetMethod() != 'xml') {
             echo _t('TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ';
-            echo $this->wiki->Link($this->wiki->Href('xml'));
+            echo $this->getService(LinkRenderer::class)->link($this->getService(UrlFormatter::class)->href('xml'));
 
             return;
         }
@@ -57,7 +59,7 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
         }
 
         $title = _t('LATEST_COMMENTS_ON') . ' ' . $this->wiki->GetConfigValue('yeswiki_name');
-        $rssLink = $this->wiki->Href('', $link);
+        $rssLink = $this->getService(UrlFormatter::class)->href('', $link);
         $rssDescription = _t('LATEST_COMMENTS_ON') . ' '
             . $this->wiki->GetConfigValue('yeswiki_name');
 
@@ -76,12 +78,12 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
                 $output .= '<title>' . htmlspecialchars($comment['comment_on'] . ' -- ' . $comment['user'], ENT_COMPAT, YW_CHARSET) . "</title>\n";
                 $output .= '<dc:creator>' . htmlspecialchars($comment['user'], ENT_COMPAT, YW_CHARSET) . "</dc:creator>\n";
                 $output .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($comment['time'])) . "</pubDate>\n";
-                $output .= '<description>' . htmlspecialchars('<h3>Commentaire sur ' . $this->wiki->ComposeLinkToPage($comment['comment_on'], ENT_COMPAT, YW_CHARSET) . '</h3>');
+                $output .= '<description>' . htmlspecialchars('<h3>Commentaire sur ' . $this->getService(LinkRenderer::class)->linkToPage($comment['comment_on'], ENT_COMPAT, YW_CHARSET) . '</h3>');
                 $output .= '<pre>' . htmlspecialchars($comment['body'], ENT_COMPAT, YW_CHARSET) . "</pre> </description>\n";
                 // notice for later: before introducing Format()ed comments, think to spam and recursive calls to {{recentcommentsrss}} (RegisterInclusion() etc.)
-                $itemurl = $this->wiki->Href('', $comment['comment_on'], 'show_comments=1') . '#' . htmlspecialchars(rawurlencode($comment['tag']), ENT_COMPAT, YW_CHARSET);
+                $itemurl = $this->getService(UrlFormatter::class)->href('', $comment['comment_on'], 'show_comments=1') . '#' . htmlspecialchars(rawurlencode($comment['tag']), ENT_COMPAT, YW_CHARSET);
                 $output .= '<link>' . $itemurl . "</link>\n";
-                $permalink = $this->wiki->href(false, $comment['tag'], 'time=' . htmlspecialchars(rawurlencode($comment['time']), ENT_COMPAT, YW_CHARSET));
+                $permalink = $this->getService(UrlFormatter::class)->href(false, $comment['tag'], 'time=' . htmlspecialchars(rawurlencode($comment['time']), ENT_COMPAT, YW_CHARSET));
                 $output .= '<guid>' . $permalink . "</guid>\n";
                 $output .= "</item>\n";
             }

@@ -4,6 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{wantedpages}}` -- converted from the procedural actions/wantedpages.php by ticket 06.
@@ -43,9 +44,9 @@ class WantedpagesAction extends YesWikiAction implements RegisteredAction
             echo "<ul>\n";
             foreach ($pages as $page) {
                 echo '	<li>', $page['tag'];
-                echo $this->wiki->ComposeLinkToPage($page['tag'], 'edit', '?', false);
+                echo $this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'edit', '?', false);
                 echo ' (';
-                echo $this->wiki->ComposeLinkToPage($page['tag'], 'backlinks', $page['count'], false);
+                echo $this->getService(LinkRenderer::class)->linkToPage($page['tag'], 'backlinks', $page['count'], false);
                 echo ")</li>\n";
             }
             echo "</ul>\n";

@@ -11,6 +11,7 @@ use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 
 class AdminContentController extends YesWikiController
@@ -146,7 +147,7 @@ class AdminContentController extends YesWikiController
             'defaultSquelette' => $themeManager->getFavoriteSquelette(),
             'defaultStyle' => $themeManager->getFavoriteStyle(),
             'defaultPreset' => $themeManager->getFavoritePreset(),
-            'apiUrl' => $this->wiki->Href('', 'api/admin/pages'),
+            'apiUrl' => $this->getService(UrlFormatter::class)->href('', 'api/admin/pages'),
         ]);
 
         return new Response($html, 200, ['Content-Type' => 'text/html; charset=utf-8']);

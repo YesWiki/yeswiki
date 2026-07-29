@@ -15,6 +15,7 @@ use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 #[\Field(['fichier'])]
 class FileField extends BazarField
@@ -109,7 +110,7 @@ class FileField extends BazarField
                 'isUrl' => false,
                 'shortFileName' => $this->getShortFileName($value),
                 'fileUrl' => $this->getBasePath() . $value,
-                'deleteUrl' => empty($entry) ? '' : $this->getWiki()->href('edit', $entry['tag'], ['delete_file' => $value], false),
+                'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $entry['tag'], ['delete_file' => $value], false),
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
             ]
         );
@@ -204,8 +205,8 @@ class FileField extends BazarField
             return $this->render('@core/fields/file.twig', [
                 'value' => $value,
                 'fileUrl' => ($shortFileName == $value)
-                    ? $this->getWiki()->getBaseUrl() . '/' . $basePath . $value
-                    : $this->getWiki()->Href('download', $entry['tag'] . '_' . $this->getPropertyName(), ['file' => $value], false),
+                    ? $this->getService(UrlFormatter::class)->getBaseUrl() . '/' . $basePath . $value
+                    : $this->getService(UrlFormatter::class)->href('download', $entry['tag'] . '_' . $this->getPropertyName(), ['file' => $value], false),
                 'shortFileName' => $shortFileName,
                 'isUrl' => false,
             ]);

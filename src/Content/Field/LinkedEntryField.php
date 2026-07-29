@@ -4,6 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TabsService;
 
@@ -67,7 +68,7 @@ class LinkedEntryField extends BazarField
     {
         $output = $this->renderSecuredBazarList($entry);
         $addEntryBtnLabel = $this->addEntryBtnLabel;
-        $addEntryLink = $this->getWiki()->href(
+        $addEntryLink = $this->getService(UrlFormatter::class)->href(
             'iframe',
             'BazaR',
             'context=addentry&voirmenu=0&vue=saisir&' . $this->linkedId . '=' . $entry['tag'] . '&id=' . $this->name,

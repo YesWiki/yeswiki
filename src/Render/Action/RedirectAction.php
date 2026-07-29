@@ -5,6 +5,8 @@ namespace YesWiki\Render\Action;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{redirect}}` -- converted from the procedural actions/redirect.php by ticket 06.
@@ -60,12 +62,12 @@ class RedirectAction extends YesWikiAction implements RegisteredAction
 
                 if (in_array(strtolower($redirPageName), $_SESSION['redirects'])) {
                     echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_REDIRECT') . '</strong> : ' . _t('CIRCULAR_REDIRECTION_FROM_PAGE') . " $redirPageName ( "
-                    . $this->wiki->ComposeLinkToPage($redirPageName, 'edit', call_user_func('_t', 'CLICK_HERE')) . ')</div>' . "\n";
+                    . $this->getService(LinkRenderer::class)->linkToPage($redirPageName, 'edit', call_user_func('_t', 'CLICK_HERE')) . ')</div>' . "\n";
                 } else {
-                    $this->wiki->Redirect($this->wiki->Href('', $redirPageName));
+                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $redirPageName));
                 }
             } else {
-                echo '<span style="color: red; weight: bold">' . _t('PRESENCE_OF_REDIRECTION_TO') . ' "' . $this->wiki->Link($redirPageName) . '"</span>';
+                echo '<span style="color: red; weight: bold">' . _t('PRESENCE_OF_REDIRECTION_TO') . ' "' . $this->getService(LinkRenderer::class)->link($redirPageName) . '"</span>';
             }
         }
     }

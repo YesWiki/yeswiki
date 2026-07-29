@@ -4,6 +4,8 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\LinkRenderer;
 
 /**
  * `{{recentchangesrssplus}}` -- converted from the procedural actions/recentchangesrssplus.php by ticket 06.
@@ -47,7 +49,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
 
         if ($this->wiki->GetMethod() != 'xml') {
             echo _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ';
-            echo $this->wiki->Link($this->wiki->getPageTag(), 'xml', null, $this->wiki->Href('xml'));
+            echo $this->getService(LinkRenderer::class)->link($this->wiki->getPageTag(), 'xml', null, $this->getService(UrlFormatter::class)->href('xml'));
 
             return;
         }

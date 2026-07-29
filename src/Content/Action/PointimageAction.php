@@ -5,6 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `{{pointimage}}` -- converted from the procedural actions/pointimage.php by ticket 06.
@@ -44,7 +45,6 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         // Bootstrap modal/popover + jQuery converted to vanilla JS per ADR-0005 -- see
         // javascripts/pointimage.js. `file=` now accepts either a legacy raw filename or a
         // FileManager tag (same dual-path convention as Attach::CheckParams()).
-
 
         // Get the action's parameters :
 
@@ -128,7 +128,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
             $chaine = "\n\n~~\"\"<!--" . $_POST['image_x'] . '-' . $_POST['image_y'] . '-' . $_POST['color'] . '--><!--title-->' . $_POST['title'] . "<!--/title-->\"\"\n\"\"<!--desc-->\"\"" . $_POST['description'] . "\"\"<!--/desc-->\n\"\"~~";
             $donneesbody = $this->wiki->LoadSingle('SELECT * FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE tag = '" . $pagetag . "'and latest = 'Y' limit 1");
             $this->wiki->SavePage($pagetag, $donneesbody['body'] . $chaine, '', true);
-            $this->wiki->Redirect($this->wiki->Href());
+            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
         }
 
         // get the data for the image
@@ -179,7 +179,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         	        <h4 class="yw-modal__title">' . _t('ATTACH_ADD_MARKER') . '</h4>
         	        <button type="button" class="yw-close" data-yw-dismiss="modal" aria-hidden="true">&times;</button>
         	      </div>
-        	      <form class="form-pointimage" method="post" action="' . $this->wiki->href() . '">
+        	      <form class="form-pointimage" method="post" action="' . $this->getService(UrlFormatter::class)->href() . '">
         	      <div class="yw-modal__body">
         	      	<div class="yw-form-group markers-choice"></div>
         	     	<div class="yw-form-group">
@@ -203,7 +203,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
 
         // output the image on the page
 
-        echo $modal . '<div class="pointimage-container no-dblclick" data-readonly="' . ((!empty($readonly) && $readonly == 1) ? 'true' : 'false') . '" data-markerscolor=\'' . $colors . '\' data-markerslabel=\'' . $labels . '\' data-markersize="' . $point_size . '" data-pagetag="' . $this->wiki->Href('', $datapagetag) . '">' . "\n";
+        echo $modal . '<div class="pointimage-container no-dblclick" data-readonly="' . ((!empty($readonly) && $readonly == 1) ? 'true' : 'false') . '" data-markerscolor=\'' . $colors . '\' data-markerslabel=\'' . $labels . '\' data-markersize="' . $point_size . '" data-pagetag="' . $this->getService(UrlFormatter::class)->href('', $datapagetag) . '">' . "\n";
         if (isset($size)) {
             echo $this->wiki->Format('{{attach file="' . $file . '" desc="image ' . $file . '" size="original" class="pointimage-image" nofullimagelink="1"}}');
         } else {

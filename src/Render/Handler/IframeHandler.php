@@ -1,13 +1,15 @@
 <?php
 
 namespace YesWiki\Render\Handler;
-use YesWiki\Identity\Service\AuthenticationService;
+
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class IframeHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -32,7 +34,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         if (!$this->wiki->page) {
             echo str_replace(
                 ['{beginLink}', '{endLink}'],
-                ["<a href=\"{$this->wiki->href('editiframe')}\">", '</a>'],
+                ["<a href=\"{$this->getService(UrlFormatter::class)->href('editiframe')}\">", '</a>'],
                 _t('NOT_FOUND_PAGE')
             );
         } elseif ($this->wiki->HasAccess('read')) {
@@ -151,7 +153,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         // on ajoute un bouton de partage, si &share=1 est présent dans l'url
         if ($this->getRequest()->query->get('share') == '1') {
             $output .= '<a class="btn btn-sm btn-default link-share modalbox pull-right" href="'
-                . $this->wiki->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
+                . $this->getService(UrlFormatter::class)->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
                 . $this->wiki->GetPageTag() . '"><i class="fa fa-share-alt"></i>' . _t('TEMPLATE_SHARE')
                 . '</a>';
         }

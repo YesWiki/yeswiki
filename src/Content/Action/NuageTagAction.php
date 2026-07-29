@@ -1,9 +1,11 @@
 <?php
 
 namespace YesWiki\Content\Action;
-use YesWiki\Kernel\Service\DbService;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class NuageTagAction extends YesWikiAction implements RegisteredAction
 {
@@ -24,7 +26,7 @@ class NuageTagAction extends YesWikiAction implements RegisteredAction
         return [
             'class' => empty($class) ? '' : ' ' . $class,
             'tags' => empty($tags) ? [] : array_filter(array_map('trim', explode(' ', $tags)), 'strlen'),
-            'nbclasses' => empty($nbclasses) ? 6 : (int) $nbclasses,
+            'nbclasses' => empty($nbclasses) ? 6 : (int)$nbclasses,
             'tri' => $args['tri'] ?? '',
         ];
     }
@@ -65,7 +67,7 @@ class NuageTagAction extends YesWikiAction implements RegisteredAction
             $liste_page = '';
             $tag_precedent = '';
             $tab_tag = [];
-            $tab_tous_les_tags['dummy']['value'] = 'fin'; //on ajoute un element au tableau pour boucler une derniere fois
+            $tab_tous_les_tags['dummy']['value'] = 'fin'; // on ajoute un element au tableau pour boucler une derniere fois
             $tab_tous_les_tags['dummy']['resource'] = 'fin';
             foreach ($tab_tous_les_tags as $tab_les_tags) {
                 $tagstripped = stripslashes($tab_les_tags['value']);
@@ -76,7 +78,7 @@ class NuageTagAction extends YesWikiAction implements RegisteredAction
                 $resourceEscaped = htmlspecialchars($tab_les_tags['resource']);
                 if ($tagstripped == $tag_precedent || $tag_precedent == '') {
                     $nb_pages++;
-                    $liste_page .= '<li class="pagewiki-link"><a class="link_pagewiki" href="' . htmlspecialchars($this->wiki->href('', $tab_les_tags['resource'])) . '">' . $resourceEscaped . '</a></li>';
+                    $liste_page .= '<li class="pagewiki-link"><a class="link_pagewiki" href="' . htmlspecialchars($this->getService(UrlFormatter::class)->href('', $tab_les_tags['resource'])) . '">' . $resourceEscaped . '</a></li>';
                 } else {
                     // on affiche les informations pour ce tag
                     if ($nb_pages > 1) {
@@ -85,13 +87,13 @@ class NuageTagAction extends YesWikiAction implements RegisteredAction
                         $texte_page = _t('TAGS_ONE_PAGE');
                     }
                     $tagPrecedentEscaped = htmlspecialchars($tag_precedent);
-                    $texte_liste = '<li class="tag-list">' . "\n" . '<a class="tag-link size' . ceil($nb_pages / $mult) . '" id="j' . $i . '" data-title="' . htmlspecialchars('<button class="btn-close-popover pull-right close" type="button">&times;</button>' . $texte_page . ' ' . _t('TAGS_CONTAINING_TAG') . ' : <a href="' . htmlspecialchars($this->wiki->href('listpages', $this->wiki->GetPageTag(), 'tags=' . $tag_precedent, ENT_QUOTES, $this->wiki->config['charset'])) . '" class="tag-label label label-primary">' . $tagPrecedentEscaped . '</a>') . '" data-content="' . htmlspecialchars('<ul class="unstyled list-unstyled">' . $liste_page . '</ul>', ENT_QUOTES, $this->wiki->config['charset']) . '">' . $tagPrecedentEscaped . '</a>' . "\n";
+                    $texte_liste = '<li class="tag-list">' . "\n" . '<a class="tag-link size' . ceil($nb_pages / $mult) . '" id="j' . $i . '" data-title="' . htmlspecialchars('<button class="btn-close-popover pull-right close" type="button">&times;</button>' . $texte_page . ' ' . _t('TAGS_CONTAINING_TAG') . ' : <a href="' . htmlspecialchars($this->getService(UrlFormatter::class)->href('listpages', $this->wiki->GetPageTag(), 'tags=' . $tag_precedent, true)) . '" class="tag-label label label-primary">' . $tagPrecedentEscaped . '</a>') . '" data-content="' . htmlspecialchars('<ul class="unstyled list-unstyled">' . $liste_page . '</ul>', ENT_QUOTES, $this->wiki->config['charset']) . '">' . $tagPrecedentEscaped . '</a>' . "\n";
                     $texte_liste .= '</li>' . "\n";
                     $tab_tag[] = $texte_liste;
 
                     // on reinitialise les variables
                     $nb_pages = 1;
-                    $liste_page = '<li><a class="pagewiki-link" href="' . htmlspecialchars($this->wiki->href('', $tab_les_tags['resource'])) . '">' . $resourceEscaped . '</a></li>' . "\n";
+                    $liste_page = '<li><a class="pagewiki-link" href="' . htmlspecialchars($this->getService(UrlFormatter::class)->href('', $tab_les_tags['resource'])) . '">' . $resourceEscaped . '</a></li>' . "\n";
                     $i++;
                 }
                 $tag_precedent = $tagstripped;

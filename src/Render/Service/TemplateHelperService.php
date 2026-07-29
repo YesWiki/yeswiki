@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
 class TemplateHelperService
@@ -13,10 +14,14 @@ class TemplateHelperService
     protected $params;
     protected $wiki;
 
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         ParameterBagInterface $params,
-        Wiki $wiki
+        Wiki $wiki,
+        UrlFormatter $urlFormatter
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->params = $params;
         $this->wiki = $wiki;
     }
@@ -76,7 +81,7 @@ class TemplateHelperService
                 && is_string($opengraphImage)
                 && file_exists($opengraphImage)
             ) {
-                $image = "{$this->wiki->getBaseUrl()}/$opengraphImage";
+                $image = "{$this->urlFormatter->getBaseUrl()}/$opengraphImage";
             }
         }
 
@@ -113,10 +118,10 @@ class TemplateHelperService
                     );
 
                     if (!empty($resizedImage)) {
-                        $image = "{$this->wiki->getBaseUrl()}/$resizedImage";
+                        $image = "{$this->urlFormatter->getBaseUrl()}/$resizedImage";
                     }
                 } else {
-                    $image = "{$this->wiki->getBaseUrl()}/$imageDest";
+                    $image = "{$this->urlFormatter->getBaseUrl()}/$imageDest";
                 }
             }
         }

@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\HashCashService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
  * `/PageName/addcomment` -- converted from the procedural handlers/page/addcomment.php by ticket 06.
@@ -44,7 +45,7 @@ class AddcommentHandler extends YesWikiHandler implements RegisteredHandler
         if (isset($_POST['action']) && $_POST['action'] == 'addcomment') {
             if (!$this->wiki->services->get(HashCashService::class)->checkHashcash()) {
                 $this->getService(FlashMessageService::class)->setMessage(_t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'));
-                $this->wiki->redirect($this->wiki->href());
+                $this->wiki->redirect($this->getService(UrlFormatter::class)->href());
             }
         }
     }
@@ -60,6 +61,6 @@ class AddcommentHandler extends YesWikiHandler implements RegisteredHandler
             $this->getService(FlashMessageService::class)->setMessage($result['success']);
         }
         // redirect to page
-        $this->wiki->redirect($this->wiki->href('', '', '#post-comment'));
+        $this->wiki->redirect($this->getService(UrlFormatter::class)->href('', '', '#post-comment'));
     }
 }

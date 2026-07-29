@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 class ApiController extends YesWikiController
 {
@@ -36,8 +37,8 @@ class ApiController extends YesWikiController
     {
         $output = '<h2>Extension Hello World</h2>';
 
-        $urlHello = $this->wiki->Href('', 'api/hello/test');
-        $urlHelloTest = $this->wiki->Href('', 'api/hello/{test}');
+        $urlHello = $this->getService(UrlFormatter::class)->href('', 'api/hello/test');
+        $urlHelloTest = $this->getService(UrlFormatter::class)->href('', 'api/hello/{test}');
         $output .= 'The following code :<br />';
         $output .= 'GET <code>' . $urlHelloTest . '</code><br />';
         $output .= 'gives :<br />';

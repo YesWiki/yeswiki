@@ -6,12 +6,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Process\Process;
 use YesWiki\Admin\Exception\StopArchiveException;
-use YesWiki\Wiki;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Wiki;
 
 class ArchiveService
 {
@@ -76,14 +77,18 @@ class ArchiveService
     protected $hibernationService;
     protected $wiki;
 
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         ConfigurationService $configurationService,
         ConsoleService $consoleService,
         DbService $dbService,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        Wiki $wiki
+        Wiki $wiki,
+        UrlFormatter $urlFormatter
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->configurationService = $configurationService;
         $this->consoleService = $consoleService;
         $this->dbService = $dbService;
@@ -542,7 +547,7 @@ class ArchiveService
                     'seconds' => $seconds,
                     'type' => $matches[7] ?? 'full',
                     'size' => filesize("$privatePath/$filename"),
-                    'link' => $this->wiki->Href('', "api/archives/$filename"),
+                    'link' => $this->urlFormatter->href('', "api/archives/$filename"),
                 ];
             }
         }

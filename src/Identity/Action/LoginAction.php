@@ -11,6 +11,7 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
 class LoginAction extends YesWikiAction implements RegisteredAction
@@ -31,7 +32,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
     {
         $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0') || $this->wiki->GetConfigValue('noSignupButton', false);
         $incomingurl = !empty($arg['incomingurl'])
-            ? $this->wiki->generateLink($arg['incomingurl'])
+            ? $this->getService(UrlFormatter::class)->generateLink($arg['incomingurl'])
         : $this->getIncomingUrlFromRequest();
         $this->templateEngine = $this->getService(TemplateEngine::class);
 
@@ -40,42 +41,42 @@ class LoginAction extends YesWikiAction implements RegisteredAction
             // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
             'context' => $arg['context'] ?? $this->wiki->tag,
             'signupurl' => $noSignupButton ? '0' : (
-                $this->wiki->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametresUtilisateur'))
+                $this->getService(UrlFormatter::class)->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametresUtilisateur'))
             ),
 
             'profileurl' => empty($arg['profileurl'])
-                ? $this->wiki->Href('', 'ParametresUtilisateur')
+                ? $this->getService(UrlFormatter::class)->href('', 'ParametresUtilisateur')
                 : (
                     $arg['profileurl'] == 'WikiName'
                     ? 'WikiName'
-                    : $this->wiki->generateLink($arg['profileurl'])
+                    : $this->getService(UrlFormatter::class)->generateLink($arg['profileurl'])
                 ),
 
             'incomingurl' => $incomingurl,
 
             'loggedinurl' => empty($arg['loggedinurl'])
                 ? $incomingurl
-                : $this->wiki->generateLink($arg['loggedinurl']),
+                : $this->getService(UrlFormatter::class)->generateLink($arg['loggedinurl']),
 
             'loggedouturl' => empty($arg['loggedouturl'])
                 ? $incomingurl
-                : $this->wiki->generateLink($arg['loggedouturl']),
+                : $this->getService(UrlFormatter::class)->generateLink($arg['loggedouturl']),
 
             'userpage' => !empty($arg['userpage'])
                 ? (
                     $arg['userpage'] == 'user'
                     ? 'user'
-                    : $this->wiki->generateLink($arg['userpage'])
+                    : $this->getService(UrlFormatter::class)->generateLink($arg['userpage'])
                 )
                 : (
                     ($this->getRequest()->get('action') == 'logout')
-                    ? preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $incomingurl))
+                    ? preg_replace('/(&|\\\?)$/m', '', (string)preg_replace('/(&|\\\?)action=logout(&)?/', '$1', (string)$incomingurl))
                     : $incomingurl
                 ),
 
-            'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? (!empty($arg['lostpasswordurl']) ? $this->wiki->generateLink($arg['lostpasswordurl']) :
+            'lostpasswordurl' => !boolval($this->params->get('contact_disable_email_for_password')) ? (!empty($arg['lostpasswordurl']) ? $this->getService(UrlFormatter::class)->generateLink($arg['lostpasswordurl']) :
             // TODO : check page name for other languages
-            $this->wiki->Href('', 'MotDePassePerdu')) : '',
+            $this->getService(UrlFormatter::class)->href('', 'MotDePassePerdu')) : '',
 
             'class' => !empty($arg['class']) ? $arg['class'] : '',
             'btnclass' => !empty($arg['btnclass']) ? $arg['btnclass'] : '',
@@ -165,7 +166,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
                 $pageMenuUserContent = $this->wiki->Format('{{include page="PageMenuUser"}}');
             }
             if ($this->arguments['profileurl'] == 'WikiName') {
-                $this->arguments['profileurl'] = $this->wiki->Href('edit', $user['name']);
+                $this->arguments['profileurl'] = $this->getService(UrlFormatter::class)->href('edit', $user['name']);
             }
         } elseif ($action == 'checklogged') {
             $error = _t('LOGIN_COOKIES_ERROR');
@@ -240,7 +241,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
             if ((($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user['name'])) {
-                $this->wiki->Redirect($this->wiki->Href('', $user['name']));
+                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $user['name']));
             } else {
                 $this->wiki->Redirect($this->arguments['loggedinurl']);
             }

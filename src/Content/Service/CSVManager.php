@@ -10,8 +10,9 @@ use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Field\TagsField;
-use YesWiki\Wiki;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
+use YesWiki\Wiki;
 
 class CSVManager
 {
@@ -22,6 +23,8 @@ class CSVManager
     protected $importdone;
     protected $errormsg;
 
+    protected UrlFormatter $urlFormatter;
+
     /**
      * contructor.
      */
@@ -29,7 +32,9 @@ class CSVManager
         EntryManager $entryManager,
         FormManager $formManager,
         Wiki $wiki,
+        UrlFormatter $urlFormatter,
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
         $this->wiki = $wiki;
@@ -210,7 +215,7 @@ class CSVManager
                     $value = md5($value);
                 } elseif (($header['field'] instanceof ImageField) || ($header['field'] instanceof FileField)) {
                     // ajoute l'URL de base aux images et fichiers
-                    $value = $this->wiki->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
+                    $value = $this->urlFormatter->getBaseUrl() . '/' . BAZ_CHEMIN_UPLOAD . $value;
                 } elseif (
                     $header['field'] instanceof EnumField
                     && !($header['field'] instanceof TagsField)

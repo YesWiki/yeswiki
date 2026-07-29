@@ -1,14 +1,16 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 // ticket 23: relocated from tools/syndication/actions/SyndicationAction.php.
 
 use League\HTMLToMarkdown\HtmlConverter;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Search\Service\SearchManager;
 
 include_once YESWIKI_SOURCE_DIR . '/src/syndication.functions.php';
 
@@ -172,7 +174,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction
                                 $feedItem['linkToEntry'] = $feedItem['mappingInput'] = '';
                                 $entryExists = multiArraySearch($entries, $this->arguments['mapping']['url'], $feedItem['url']);
                                 if (!empty($entryExists)) {
-                                    $feedItem['linkToEntry'] = $this->wiki->href('', $entryExists[0]['tag']);
+                                    $feedItem['linkToEntry'] = $this->getService(UrlFormatter::class)->href('', $entryExists[0]['tag']);
                                 } else {
                                     $entry = [];
                                     $converter = new HtmlConverter(['strip_tags' => true]); // we will convert html to md, but safe
@@ -280,7 +282,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction
                 $entryManager = $this->getService(EntryManager::class);
                 $entryManager->create($data['form_id'], $data, false, $data['bf_url']);
                 Flash::success(_t('SYNDICATION_ENTRY_SAVED', ['title' => $data['bf_titre']]));
-                $this->wiki->redirect($this->wiki->href());
+                $this->wiki->redirect($this->getService(UrlFormatter::class)->href());
             }
         }
     }

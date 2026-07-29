@@ -12,6 +12,7 @@ use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\DateField;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Service\DateService;
+use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 class IcalFormatter extends YesWikiController
@@ -24,13 +25,17 @@ class IcalFormatter extends YesWikiController
     protected $params;
     protected $markdownFormatter;
 
+    protected UrlFormatter $urlFormatter;
+
     public function __construct(
         DateService $dateService,
         EntryController $entryController,
         GeoJSONFormatter $geoJSONFormatter,
         ParameterBagInterface $params,
-        MarkdownFormatterService $markdownFormatter
+        MarkdownFormatterService $markdownFormatter,
+        UrlFormatter $urlFormatter
     ) {
+        $this->urlFormatter = $urlFormatter;
         $this->dateService = $dateService;
         $this->entryController = $entryController;
         $this->geoJSONFormatter = $geoJSONFormatter;
@@ -192,9 +197,9 @@ class IcalFormatter extends YesWikiController
             . '//YesWiki ' . $this->params->get('yeswiki_version')
             . ' ' . $this->params->get('yeswiki_release') . "//EN\r\n");
         if (!empty($formId) && intval($formId) == $formId) {
-            $header .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'SOURCE:' . $this->wiki->Href('forms/' . $formId . '/entries/ical', 'api') . "\r\n");
+            $header .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'SOURCE:' . $this->urlFormatter->href('forms/' . $formId . '/entries/ical', 'api') . "\r\n");
         } else {
-            $header .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'SOURCE:' . $this->wiki->Href('entries/ical', 'api') . "\r\n");
+            $header .= $this->splitAtnthChar(self::MAX_CHARS_BY_LINE, 'SOURCE:' . $this->urlFormatter->href('entries/ical', 'api') . "\r\n");
         }
 
         $footer = "END:VCALENDAR\r\n";
