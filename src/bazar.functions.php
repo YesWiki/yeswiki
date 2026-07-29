@@ -4,7 +4,7 @@
 // libs/bazar.fonct.retrocompatibility.php} (ticket 24). Bazar's own wiki.php used to load
 // these constants/functions unconditionally as a per-extension bootstrap file (see
 // YesWiki::includeExtensionsBootstrapFiles()); since bazar is core now, this file is
-// required directly from src/YesWiki.php alongside urlutils.inc.php/email.inc.php so the
+// required directly from src/YesWikiRuntime.php alongside urlutils.inc.php/email.inc.php so the
 // same unconditional, always-available guarantee holds without depending on an 'bazar'
 // entry in the ExtensionRegistry service.
 //

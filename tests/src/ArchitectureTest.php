@@ -178,6 +178,14 @@ class ArchitectureTest extends TestCase
     public function testEveryApiRouteLivesInAResourceApiController(): void
     {
         $misplaced = [];
+        // root-level src files (the composition root, legacy procedural files) are scanned
+        // too: an /api route declared there would silently escape the module convention
+        $rootFiles = glob(self::SRC . '/*.php') ?: [];
+        foreach ($rootFiles as $file) {
+            if (preg_match("/#\\[Route\\('\\/?api(?:\\/|')/", (string)file_get_contents($file))) {
+                $misplaced[] = substr($file, strlen(self::SRC) + 1);
+            }
+        }
         foreach (self::MODULES as $module) {
             foreach ($this->phpFilesIn(self::SRC . '/' . $module) as $file) {
                 $text = (string)file_get_contents($file);

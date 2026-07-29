@@ -200,7 +200,9 @@ class EntryApiController extends YesWikiController
     {
         $request = $this->getRequest();
         if (strpos($request->headers->get('content-type', ''), 'application/ld+json') !== false) {
-            $this->createSemanticEntry($formId);
+            // pre-split ApiController fell through here and created the entry twice,
+            // discarding the semantic response
+            return $this->createSemanticEntry($formId);
         }
 
         $postData = $request->request->all();

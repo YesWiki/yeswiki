@@ -135,12 +135,6 @@ class LinkRenderer
     }
 
     /**
-     * Query parameters a "create this missing page" edit link must carry so the new
-     * page inherits the current theme/squelette/style (historic ParamsForNewPageLink()).
-     *
-     * @return array<mixed>
-     */
-    /**
      * Positional tag/method/text convenience over linkTo() (historic ComposeLinkToPage()).
      */
     public function linkToPage(mixed $tag, mixed $method = '', mixed $text = '', mixed $track = 1): string
@@ -161,7 +155,12 @@ class LinkRenderer
         ]);
     }
 
-    /** @return array<mixed> */
+    /**
+     * Query parameters a "create this missing page" edit link must carry so the new
+     * page inherits the current theme/squelette/style (historic ParamsForNewPageLink()).
+     *
+     * @return array<mixed>
+     */
     public function paramsForNewPageLink(): array
     {
         $result = ['newpage' => 1];

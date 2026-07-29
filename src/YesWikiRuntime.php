@@ -68,7 +68,7 @@ LanguageService::getInstance()->initialize();
  * The per-request runtime: bootstraps configuration, extensions, the DI container
  * and languages, then dispatches the request (historic YesWiki\Wiki, ticket 08 --
  * every service responsibility it used to carry now lives in a real service; what
- * remains here is kernel lifecycle and dispatch only).
+ * remains here is kernel lifecycle, dispatch, and the maintenance sweep).
  */
 class YesWikiRuntime
 {
