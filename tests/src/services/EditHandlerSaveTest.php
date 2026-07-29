@@ -60,19 +60,19 @@ class EditHandlerSaveTest extends YesWikiTestCase
         try {
             // display form (no submit)
             $_POST = [];
-            $wiki->request = Request::createFromGlobals();
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
             $output = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             $this->assertStringContainsString('aceditor-container', $output, 'the edit form must render');
 
             // preview
             $_POST = ['submit' => 'preview', 'body' => 'preview body **bold**', 'previous' => $page['id']];
-            $wiki->request = Request::createFromGlobals();
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
             $output = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             $this->assertStringContainsString('<strong>bold</strong>', $output, 'preview must format the submitted body');
 
             // real save
             $_POST = ['submit' => 'Sauver', 'body' => 'NEW SAVED CONTENT', 'previous' => $page['id']];
-            $wiki->request = Request::createFromGlobals();
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
             $redirected = false;
             try {
                 $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
@@ -85,7 +85,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
 
             // stale-edit conflict: submitting against the OLD 'previous' id again must not overwrite
             $_POST = ['submit' => 'Sauver', 'body' => 'CONFLICTING CONTENT', 'previous' => $page['id']];
-            $wiki->request = Request::createFromGlobals();
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
             $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($reloaded);
             $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             $stillSaved = $pageManager->getOne(self::PAGE_TAG);

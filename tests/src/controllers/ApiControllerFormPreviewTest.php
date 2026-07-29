@@ -105,16 +105,16 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
         $this->assertNotFalse($admin, 'need an existing admin user: the route is @admins only');
 
         $authenticationService = $wiki->services->get(AuthenticationService::class);
-        $previousRequest = $wiki->request;
+        $previousRequest = $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
         $previousWikiParam = $_GET['wiki'] ?? null;
         $previousMethod = $_SERVER['REQUEST_METHOD'] ?? null; // unset under CLI
         $runSpecialPages = new \ReflectionMethod($wiki, 'RunSpecialPages');
 
         try {
             $authenticationService->login($admin);
-            $wiki->request = Request::create('/?api/forms/preview', 'POST', [
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::create('/?api/forms/preview', 'POST', [
                 'template' => json_encode([['type' => 'texte', 'name' => 'bf_titre', 'label' => 'Titre', 'sub_type' => 'text']]),
-            ]);
+            ]));
             $_GET['wiki'] = 'api/forms/preview';
             $_SERVER['REQUEST_METHOD'] = 'POST';
 
@@ -126,7 +126,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
             }
         } finally {
             $authenticationService->logout();
-            $wiki->request = $previousRequest;
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace($previousRequest);
             if ($previousWikiParam === null) {
                 unset($_GET['wiki']);
             } else {

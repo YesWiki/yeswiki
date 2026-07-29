@@ -287,7 +287,7 @@ class UserSettingsActionTest extends YesWikiTestCase
      */
     private function refreshRequest(Wiki $wiki)
     {
-        $wiki->request = Request::createFromGlobals();
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
     }
 
     /**

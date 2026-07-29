@@ -43,7 +43,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     public function testAddCommentIfAuthorizedRejectsWithoutFatalingWhenHashcashEnabledAndValueMissing(Wiki $wiki)
     {
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = true;
-        $wiki->request->request->remove('hashcash_value');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
@@ -69,7 +69,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     public function testAddCommentIfAuthorizedAcceptsWhenHashcashDisabled(Wiki $wiki)
     {
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = false;
-        $wiki->request->request->remove('hashcash_value');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));

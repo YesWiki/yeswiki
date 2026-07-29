@@ -115,7 +115,7 @@ class FormPropertiesService
                         $replacement = $field->getOptions()[$fieldValue] ?? '';
                     } elseif ($field instanceof ImageField) {
                         $filenameKey = 'filename-' . $field->getPropertyName();
-                        $request = $this->wiki->request;
+                        $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
                         if (!empty($request->request->get($filenameKey))) {
                             $replacement = sanitizeFilename($request->request->get($filenameKey));
                             if (empty($replacement)) {
@@ -232,7 +232,7 @@ class FormPropertiesService
      */
     private function resolveCommentsChoice(array $form, array $entry): string
     {
-        $choice = $this->wiki->request->request->get(self::COMMENTS_TOGGLE_POST_KEY, '');
+        $choice = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get(self::COMMENTS_TOGGLE_POST_KEY, '');
 
         $commentsType = $this->getCommentsType();
         if (in_array($commentsType, ['', 'yeswiki'], true) && $choice === self::COMMENT_YES) {
@@ -334,7 +334,7 @@ class FormPropertiesService
         $value = $entry[self::USER_PROPERTY_NAME] ?? '';
         $authenticationService = $this->getService(AuthenticationService::class);
         $userManager = $this->getService(UserManager::class);
-        $request = $this->wiki->request;
+        $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
         $loggedUser = $authenticationService->getLoggedUser();
         $message = null;
         if (!empty($loggedUser)) {
@@ -397,7 +397,7 @@ class FormPropertiesService
         $userOperationsService = $this->getService(UserOperationsService::class);
         $userManager = $this->getService(UserManager::class);
         $mailer = $this->getService(Mailer::class);
-        $request = $this->wiki->request;
+        $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
 
         $value = $entry[self::USER_PROPERTY_NAME] ?? '';
         $isImport = isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] === 'import';

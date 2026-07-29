@@ -5,8 +5,8 @@ namespace YesWiki\Content\Service;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\EnumField;
-use YesWiki\Wiki;
 use YesWiki\Search\Service\SearchManager;
+use YesWiki\Wiki;
 
 class BazarListService
 {
@@ -335,7 +335,7 @@ class BazarListService
     // => ['field1' => ['3', '4'], 'field2' => ['web']]
     private function parseCheckedFiltersInURLForNonDynamic()
     {
-        $facette = $this->wiki->request->query->get('facette');
+        $facette = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->query->get('facette');
         if (empty($facette)) {
             return [];
         }

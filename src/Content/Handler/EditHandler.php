@@ -335,7 +335,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         // bare-script handler: $this->wiki is the Wiki instance itself, which exposes the current
         // request as a public property, not via a getRequest() helper (that's only on
         // YesWikiPerformable-derived actions/handlers)
-        $request = $this->wiki->request;
+        $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
 
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && !$isWikiHibernated) {
             $submit = $request->request->get('submit') ?: false;

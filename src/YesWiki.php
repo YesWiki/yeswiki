@@ -47,6 +47,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
@@ -277,11 +278,12 @@ class Wiki
         if (in_array($tag, ['api', 'doc'])) {
             $this->RunSpecialPages();
         } else {
-            $this->request->attributes->set('_controller', LegacyPageController::class);
-            $this->request->attributes->set('_tag', $this->tag);
-            $this->request->attributes->set('_method', $this->method);
+            $request = $this->service(CurrentRequest::class)->get();
+            $request->attributes->set('_controller', LegacyPageController::class);
+            $request->attributes->set('_tag', $this->tag);
+            $request->attributes->set('_method', $this->method);
 
-            $this->handleWithHttpKernel($this->request)->send();
+            $this->handleWithHttpKernel($request)->send();
 
             // action redirect: aucune redirection n'a eu lieu, effacer la liste des redirections precedentes
             if (!empty($_SESSION['redirects'])) {
@@ -302,7 +304,7 @@ class Wiki
             }
         }
         $context = new RequestContext();
-        $context->fromRequest($this->request);
+        $context->fromRequest($this->service(CurrentRequest::class)->get());
 
         // Use query string as the path (part before '&')
         $extract = explode('&', $context->getQueryString());
@@ -335,8 +337,9 @@ class Wiki
             // TODO put this elsewhere ?
             $attributes = $matcher->match($context->getPathInfo());
             if ($this->service(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
-                $this->request->attributes->add($attributes);
-                $response = $this->handleWithHttpKernel($this->request);
+                $request = $this->service(CurrentRequest::class)->get();
+                $request->attributes->add($attributes);
+                $response = $this->handleWithHttpKernel($request);
             } else {
                 $response = new Response('Not enough access rights', Response::HTTP_UNAUTHORIZED);
             }
@@ -647,6 +650,7 @@ class Wiki
         $this->config = $parameterBag->all();
         // one storage: element writes through either side stay visible in both
         $this->service(RuntimeConfig::class)->bind($this->config);
+        $this->service(CurrentRequest::class)->replace($this->request);
     }
 
     /**

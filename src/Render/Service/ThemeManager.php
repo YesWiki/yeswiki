@@ -122,7 +122,7 @@ class ThemeManager implements EventSubscriberInterface
             // Sinon, on récupère premièrement les valeurs passées en REQUEST, ou deuxièmement les métasdonnées présentes pour la page, ou troisièmement les valeurs du fichier de configuration
             $requested = [];
             $keysToVerify = ['theme', 'squelette', 'style', 'preset'];
-            $request = $this->wiki->request;
+            $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
             foreach ($keysToVerify as $val) {
                 $requested[$val] = null;
                 $requestVal = $request->get($val);
@@ -959,7 +959,7 @@ class ThemeManager implements EventSubscriberInterface
     public function saveMetadataIfNeeded(Event $event)
     {
         $data = $event->getData();
-        $request = $this->wiki->request;
+        $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
         $post = $request->request;
         $query = $request->query;
         if (!empty($data['data']['tag'])

@@ -72,7 +72,7 @@ class HashCashService
         if (empty($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'])) {
             return true;
         }
-        $value = $this->wiki->request->request->get('hashcash_value');
+        $value = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->get('hashcash_value');
 
         return isset($value) && $value == $this->secretValue();
     }

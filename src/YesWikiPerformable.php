@@ -151,7 +151,7 @@ abstract class YesWikiPerformable
 
     protected function getRequest(): Request
     {
-        return $this->wiki->request;
+        return $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
     }
 
     // Can be extended to format the arguments

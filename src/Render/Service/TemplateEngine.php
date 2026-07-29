@@ -107,7 +107,7 @@ class TemplateEngine
         ]);
 
         // Adds Globals
-        $wikiRequest = $this->wiki->request;
+        $wikiRequest = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
         $this->twig->addGlobal('request', [
             'get' => $wikiRequest->query->all(),
             'post' => $wikiRequest->request->all(),

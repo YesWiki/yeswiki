@@ -160,7 +160,7 @@ class CSVManager
         if (!$vFakeMode) {
             $vSearchManager = $this->wiki->services->get(SearchManager::class);
 
-            $request = $this->wiki->request;
+            $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
             $vQuery = $vSearchManager->aggregateQueries($pParams['query'] ?? null, $request->query->all());
             $vKeywords = $vSearchManager->aggregateKeywords($arg['keywords'] ?? null, $request->get('q'), $request->get('keywords'));
 

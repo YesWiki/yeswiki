@@ -24,7 +24,7 @@ abstract class YesWikiController
 
     protected function getRequest(): Request
     {
-        return $this->wiki->request;
+        return $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
     }
 
     protected function render($templatePath, $data = [], $method = 'render')

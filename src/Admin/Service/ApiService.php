@@ -4,10 +4,11 @@ namespace YesWiki\Admin\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\RouteCollection;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\CurrentRequest;
+use YesWiki\Wiki;
 
 class ApiService
 {
@@ -17,8 +18,11 @@ class ApiService
     protected $userManager;
     protected $wiki;
 
-    public function __construct(AuthenticationService $authenticationService, ParameterBagInterface $params, AclService $aclService, UserManager $userManager, Wiki $wiki)
+    protected CurrentRequest $currentRequest;
+
+    public function __construct(AuthenticationService $authenticationService, ParameterBagInterface $params, AclService $aclService, UserManager $userManager, Wiki $wiki, CurrentRequest $currentRequest)
     {
+        $this->currentRequest = $currentRequest;
         $this->authenticationService = $authenticationService;
         $this->aclService = $aclService;
         $this->params = $params;
@@ -69,8 +73,8 @@ class ApiService
      * */
     private function getAuthorizationHeader()
     {
-        $headers = $this->wiki->request->headers->get('authorization')
-            ? trim($this->wiki->request->headers->get('authorization'))
+        $headers = $this->currentRequest->get()->headers->get('authorization')
+            ? trim($this->currentRequest->get()->headers->get('authorization'))
             : null;
 
         return $headers;

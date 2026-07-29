@@ -20,7 +20,7 @@ class HashCashServiceTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = false;
-        $wiki->request->request->remove('hashcash_value');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');
 
         $hashCashService = $wiki->services->get(HashCashService::class);
 
@@ -31,7 +31,7 @@ class HashCashServiceTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = true;
-        $wiki->request->request->remove('hashcash_value');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');
 
         $hashCashService = $wiki->services->get(HashCashService::class);
 
@@ -49,15 +49,15 @@ class HashCashServiceTest extends YesWikiTestCase
         file_put_contents(YESWIKI_SOURCE_DIR . '/cache/hashcash.key', $secretValue);
 
         try {
-            $wiki->request->request->set('hashcash_value', $secretValue);
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('hashcash_value', $secretValue);
             $hashCashService = $wiki->services->get(HashCashService::class);
 
             $this->assertTrue($hashCashService->checkHashcash());
 
-            $wiki->request->request->set('hashcash_value', $secretValue . '-wrong');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('hashcash_value', $secretValue . '-wrong');
             $this->assertFalse($hashCashService->checkHashcash());
         } finally {
-            $wiki->request->request->remove('hashcash_value');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');
         }
     }
 }

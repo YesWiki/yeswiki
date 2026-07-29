@@ -34,7 +34,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
     public function testNotActivatedWhenPasswordForEditingIsEmpty()
     {
         $wiki = $this->getWiki();
-        $wiki->request->request->remove('password_for_editing');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('password_for_editing');
 
         [$state, $message] = $this->buildService($wiki, '')->isGrantedPasswordForEditing();
 
@@ -45,7 +45,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
     public function testDeniedWithoutRequestPasswordThenGrantedWithCorrectOne()
     {
         $wiki = $this->getWiki();
-        $wiki->request->request->remove('password_for_editing');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('password_for_editing');
         $service = $this->buildService($wiki, 'sesame');
 
         [$state, $message] = $service->isGrantedPasswordForEditing();
@@ -53,23 +53,23 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         $this->assertNotEmpty($message);
 
         try {
-            $wiki->request->request->set('password_for_editing', 'wrong');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('password_for_editing', 'wrong');
             [$state] = $service->isGrantedPasswordForEditing();
             $this->assertFalse($state);
 
-            $wiki->request->request->set('password_for_editing', 'sesame');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('password_for_editing', 'sesame');
             [$state, $message] = $service->isGrantedPasswordForEditing();
             $this->assertTrue($state);
             $this->assertSame('', $message);
         } finally {
-            $wiki->request->request->remove('password_for_editing');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('password_for_editing');
         }
     }
 
     public function testAlreadyLoggedInUserBypassesPasswordGate()
     {
         $wiki = $this->getWiki();
-        $wiki->request->request->remove('password_for_editing');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('password_for_editing');
         $userManager = $wiki->services->get(UserManager::class);
         $authenticationService = $wiki->services->get(\YesWiki\Identity\Service\AuthenticationService::class);
 

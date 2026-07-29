@@ -689,7 +689,7 @@ class EntryManager
     {
         // Let's set the value of form_id
 
-        $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : $this->wiki->request->get('form_id');
+        $data['form_id'] = isset($data['form_id']) ? $data['form_id'] : $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->get('form_id');
 
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->wiki->services->get(FormManager::class)->getOne($data['form_id']);

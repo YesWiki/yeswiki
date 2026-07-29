@@ -46,7 +46,7 @@ class CaptchaControllerTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
         $this->assertFalse($wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin(), 'test must run as a non-admin for checkCaptchaBeforeSave() to evaluate captcha');
-        $wiki->request->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
 
         try {
             [$state, $error] = $this->buildController($wiki, false)->checkCaptchaBeforeSave();
@@ -54,16 +54,16 @@ class CaptchaControllerTest extends YesWikiTestCase
             $this->assertTrue($state);
             $this->assertNull($error);
         } finally {
-            $wiki->request->request->remove('submit');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('submit');
         }
     }
 
     public function testFailsWhenCaptchaMissing()
     {
         $wiki = $this->getWiki();
-        $wiki->request->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
-        $wiki->request->request->remove('captcha');
-        $wiki->request->request->remove('captcha_hash');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('captcha');
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('captcha_hash');
 
         try {
             [$state, $error] = $this->buildController($wiki, true)->checkCaptchaBeforeSave();
@@ -71,7 +71,7 @@ class CaptchaControllerTest extends YesWikiTestCase
             $this->assertFalse($state);
             $this->assertSame(_t('CAPTCHA_ERROR_PAGE_UNSAVED'), $error);
         } finally {
-            $wiki->request->request->remove('submit');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('submit');
         }
     }
 
@@ -82,23 +82,23 @@ class CaptchaControllerTest extends YesWikiTestCase
         $hash = $captchaController->generateHash();
         $word = $this->findWordForHash($captchaController, $hash);
 
-        $wiki->request->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
-        $wiki->request->request->set('captcha_hash', $hash);
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('submit', InputFilter::EDIT_PAGE_SUBMIT_VALUE);
+        $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('captcha_hash', $hash);
 
         try {
-            $wiki->request->request->set('captcha', $word . '-definitely-wrong');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('captcha', $word . '-definitely-wrong');
             [$state, $error] = $captchaController->checkCaptchaBeforeSave();
             $this->assertFalse($state);
             $this->assertSame(_t('CAPTCHA_ERROR_WRONG_WORD'), $error);
 
-            $wiki->request->request->set('captcha', $word);
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->set('captcha', $word);
             [$state, $error] = $captchaController->checkCaptchaBeforeSave();
             $this->assertTrue($state);
             $this->assertEmpty($error);
         } finally {
-            $wiki->request->request->remove('submit');
-            $wiki->request->request->remove('captcha');
-            $wiki->request->request->remove('captcha_hash');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('submit');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('captcha');
+            $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('captcha_hash');
         }
     }
 }

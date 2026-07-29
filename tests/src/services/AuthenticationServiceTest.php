@@ -179,7 +179,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
             $idAfterSwitch = session_id();
             $this->assertNotSame($idAfterSameUserRelogin, $idAfterSwitch, 'switching to a different user must regenerate the session id');
         } finally {
-            // logout() (unlike login()) touches $this->wiki->request via cleanOldFormatCookie(),
+            // logout() (unlike login()) touches $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get() via cleanOldFormatCookie(),
             // which the non-CLI stand-in above does not have, so clean up through the real,
             // fully-wired AuthenticationService instance instead - $_SESSION is a shared superglobal.
             $wiki->services->get(AuthenticationService::class)->logout();
