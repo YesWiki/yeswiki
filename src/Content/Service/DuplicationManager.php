@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TextareaField;
@@ -170,7 +171,7 @@ class DuplicationManager
                 }
             }
         } elseif (!$this->container->get(ListManager::class)->isList($tag)) { // page
-            $wikiText = $this->container->get(PageManager::class)->getOne($tag)['body'];
+            $wikiText = PageBody::content($this->container->get(PageManager::class)->getOne($tag)['body'] ?? []);
             if ($fi = $this->findFilesInWikiText($tag, $wikiText)) {
                 $files = array_merge($files, $fi);
             }
@@ -256,12 +257,12 @@ class DuplicationManager
 
             default:
             case 'page':
-                $newBody = ($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'];
+                $newBody = PageBody::content(($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'] ?? []);
                 $files = $this->duplicateFiles($data['originalTag'], $data['newTag']);
                 foreach ($files as $f) {
                     $newBody = str_replace($f['originalFile'], $f['duplicatedFile'], $newBody);
                 }
-                $this->container->get(PageManager::class)->save($data['newTag'], $newBody);
+                $this->container->get(PageManager::class)->save($data['newTag'], [PageBody::CONTENT => $newBody]);
                 break;
         }
 
@@ -309,9 +310,11 @@ class DuplicationManager
         }
 
         $newUrl = explode('/?', $this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url'])[0];
+        // $req comes from the HTTP request : originalContent is still the remote wiki's
+        // raw content (markup for a page, a JSON field map for an entry)
         $newBody = str_replace($req['sourceUrl'], $newUrl, $req['originalContent']);
         if ($req['type'] === 'page') {
-            $this->container->get(PageManager::class)->save($tag, $newBody);
+            $this->container->get(PageManager::class)->save($tag, [PageBody::CONTENT => $newBody]);
         } elseif ($req['type'] === 'entry') {
             $entry = json_decode($newBody, true);
             $entry['tag'] = $tag;

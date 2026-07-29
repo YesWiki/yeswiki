@@ -2,9 +2,9 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -144,13 +144,13 @@ class FormPropertiesTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $entryManager = $wiki->services->get(EntryManager::class);
 
-        $data = $entryManager->decode(json_encode([
+        $data = $entryManager->decode([
             'id_fiche' => 'OldEntry',
             'id_typeannonce' => '42',
             'bf_titre' => 'Old title',
             'date_creation_fiche' => '2020-01-01 00:00:00',
             'statut_fiche' => '1',
-        ]));
+        ]);
 
         $this->assertSame('OldEntry', $data['tag']);
         $this->assertSame('42', $data['form_id']);

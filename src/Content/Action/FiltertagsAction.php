@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
@@ -102,16 +103,18 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         // affichage des resultats
         foreach ($pages as $page) {
             if ($aclService->hasAccess('read', $page['tag'])) {
+                // rows come straight from the query above, so the body is still encoded here
+                $page['body'] = PageBody::decode($page['body']);
                 $element[$page['tag']]['tagnames'] = '';
                 $element[$page['tag']]['tagbadges'] = '';
-                $element[$page['tag']]['body'] = $page['body'];
+                $element[$page['tag']]['body'] = PageBody::content($page['body']);
                 $element[$page['tag']]['owner'] = $page['owner'];
                 $element[$page['tag']]['user'] = $page['user'];
                 $element[$page['tag']]['time'] = $page['time'];
                 $element[$page['tag']]['title'] = get_title_from_body($page);
                 $element[$page['tag']]['image'] = get_image_from_body($page);
                 $this->getService(InclusionStack::class)->register($page['tag']);
-                $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format($page['body'])), $nbcartrunc);
+                $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format(PageBody::content($page['body']))), $nbcartrunc);
                 $this->getService(InclusionStack::class)->unregisterLast();
                 $pagetags = $this->getService(TripleStore::class)->getAll($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
                 foreach ($pagetags as $tag) {

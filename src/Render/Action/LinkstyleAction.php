@@ -2,6 +2,7 @@
 
 namespace YesWiki\Render\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -73,7 +74,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
         // mode reject a <link rel="stylesheet"> whose response isn't text/css.
         $pageCss = $this->getService(PageManager::class)->getOne('PageCss');
         if ($pageCss && !empty($pageCss['body'])) {
-            $this->getService(AssetsManager::class)->AddCSS($pageCss['body']);
+            $this->getService(AssetsManager::class)->AddCSS(PageBody::content($pageCss['body']));
         }
 
         // This GLOBALS is populated from AddCSS and AddCSSFile, we add it at the end

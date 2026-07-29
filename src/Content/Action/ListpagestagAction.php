@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -71,9 +72,11 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
             foreach ($resultat as $page) {
                 // on inclue pas la page en elle meme, sinon boucle infinie
                 if ($page['tag'] != $this->getService(PageContext::class)->getTag()) {
+                    // rows come straight from SQL, so the body is still encoded here
+                    $page['body'] = PageBody::decode($page['body']);
                     $element[$page['tag']]['tagnames'] = '';
                     $element[$page['tag']]['tagbadges'] = '';
-                    $element[$page['tag']]['body'] = $page['body'];
+                    $element[$page['tag']]['body'] = PageBody::content($page['body']);
                     $element[$page['tag']]['owner'] = $page['owner'];
                     $element[$page['tag']]['user'] = $page['user'];
                     $element[$page['tag']]['time'] = $page['time'];

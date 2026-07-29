@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Api\PageApiController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
@@ -30,7 +31,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
         $this->assertTrue($wiki->services->has(PageApiController::class));
 
         $pageManager = $wiki->services->get(PageManager::class);
-        $pageManager->save(self::PAGE_TAG, 'content', '', true);
+        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'content'], '', true);
 
         return $wiki;
     }

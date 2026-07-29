@@ -208,7 +208,8 @@ class AccountActivationService
         if (!$page) {
             return null;
         }
-        $body = json_decode($page['body'] ?? '', true);
+        // PageManager returns the body already decoded (ticket 09)
+        $body = $page['body'] ?? [];
 
         return is_array($body) ? $body : [];
     }
@@ -232,7 +233,7 @@ class AccountActivationService
         }
         $body = array_merge($body, $fields);
 
-        $pageManager->save($tag, json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), '', true);
+        $pageManager->save($tag, $body, '', true);
     }
 
     private function getBaseUrl(): string

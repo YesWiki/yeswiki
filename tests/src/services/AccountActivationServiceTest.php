@@ -2,10 +2,10 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Exception\BadActivationKeyException;
 use YesWiki\Identity\Exception\UserNameDoesNotExistException;
 use YesWiki\Identity\Service\AccountActivationService;
-use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -37,9 +37,9 @@ class AccountActivationServiceTest extends YesWikiTestCase
     private function plantActivationKey(PageManager $pageManager, string $name, string $key, int $issuedAt): void
     {
         $page = $pageManager->getOne($name, null, true, true);
-        $body = json_decode($page['body'], true);
+        $body = $page['body'];
         $body[AccountActivationService::BODY_KEY_KEY] = $key . ':' . $issuedAt;
-        $pageManager->save($name, json_encode($body), '', true);
+        $pageManager->save($name, $body, '', true);
     }
 
     public function testNewUserStartsNotActivated()
@@ -195,12 +195,12 @@ class AccountActivationServiceTest extends YesWikiTestCase
 
             // generic page-read path, viewed as the owner: still hidden
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
-            $bodyAsOwner = json_decode($asOwner['body'], true);
+            $bodyAsOwner = $asOwner['body'];
             $this->assertSame('', $bodyAsOwner[AccountActivationService::BODY_KEY_STATUS]);
 
             // as an unrelated third party: also hidden
             $asOther = $pageManager->getOne($name, null, false, false, self::OTHER_VIEWER);
-            $bodyAsOther = json_decode($asOther['body'], true);
+            $bodyAsOther = $asOther['body'];
             $this->assertSame('', $bodyAsOther[AccountActivationService::BODY_KEY_STATUS]);
         } finally {
             $this->cleanupUser($userManager, $name);
@@ -238,7 +238,7 @@ class AccountActivationServiceTest extends YesWikiTestCase
     private function readRawActivationKey(PageManager $pageManager, string $name): string
     {
         $page = $pageManager->getOne($name, null, true, true);
-        $body = json_decode($page['body'], true);
+        $body = $page['body'];
 
         return $body[AccountActivationService::BODY_KEY_KEY] ?? '';
     }

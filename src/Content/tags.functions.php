@@ -81,17 +81,20 @@ function utf8_special_decode($matches)
 
 function get_title_from_body($page)
 {
+    // the body is a decoded array (ticket 09) : an entry carries its title as a key
+    // ('bf_titre' on legacy bodies), a page its markup under 'content'
+    $body = $page['body'] ?? [];
+    $content = YesWiki\Content\Entity\PageBody::content($body);
     // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2, on met la PageWiki sinon
-    preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
-    if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-        $title = preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]);
-    // preg_replace("/\\\\u([a-f0-9]{4})/e", "iconv('UCS-4LE','UTF-8',pack('V', hexdec('U$1')))", $titles[1][0]));
+    $entryTitle = $body[YesWiki\Content\Entity\PageBody::TITLE] ?? $body['bf_titre'] ?? '';
+    if ($entryTitle != '') {
+        $title = $entryTitle;
     } else {
-        preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
+        preg_match_all("/\={6}(.*)\={6}/U", $content, $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
             $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
         } else {
-            preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
+            preg_match_all('/={5}(.*)={5}/U', $content, $titles);
             if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
                 $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
             } else {
@@ -114,29 +117,23 @@ function encodingFromUTF8($matches)
 // inherited unchanged, not introduced by this relocation
 function get_image_from_body($page)
 {
-    preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $page['body'], $images);
+    // decoded body (ticket 09) : markup under 'content', an entry's image field as a key
+    $body = $page['body'] ?? [];
+    $content = YesWiki\Content\Entity\PageBody::content($body);
+    preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $content, $images);
     if (is_array($images[0]) && isset($images[0][0]) && $images[0][0] != '') {
         preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
         $image = afficher_image_attach($page['tag'], $attachimg[1][0], $attachimg[3][0], 'filtered-image', 300, 225);
     } else {
-        preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
-        if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-            $imagefile = mb_convert_encoding(
-                preg_replace_callback(
-                    '/\\\\u([a-f0-9]{4})/',
-                    'encodingFromUTF8',
-                    $image[1][0]
-                ),
-                'ISO-8859-1',
-                'UTF-8'
-            );
+        $imagefile = $body['imagebf_image'] ?? '';
+        if ($imagefile != '') {
             $image = afficher_image('bf_image', 'files/' . $imagefile, 'cache/' . $imagefile, 'filtered-image img-responsive', '', '', 300, 225);
         } else {
-            preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
+            preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $content, $image);
             if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
                 $image = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim(str_replace('\\', '', $image[1][0])) . '" />""');
             } else {
-                preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
+                preg_match_all("/\<img.*src=\"(.*)\"/U", $content, $image);
                 if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
                     $image = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim($image[1][0]) . '" />""');
                 } else {

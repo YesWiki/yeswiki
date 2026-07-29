@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -46,7 +47,7 @@ class TocAction extends YesWikiAction implements RegisteredAction
 
         $tag = $this->getService(PageContext::class)->getTag();
         $page = $this->getService(PageManager::class)->getOne($tag);
-        $toc_body = $page['body'] ?? '';
+        $toc_body = PageBody::content($page['body'] ?? []);
         $class = $this->getService(PerformableArguments::class)->get('class');
         $closed = $this->getService(PerformableArguments::class)->get('closed');
         $title = $this->getService(PerformableArguments::class)->get('title');

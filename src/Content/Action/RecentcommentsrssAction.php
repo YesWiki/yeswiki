@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -83,7 +84,8 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
                 $output .= '<dc:creator>' . htmlspecialchars($comment['user'], ENT_COMPAT, YW_CHARSET) . "</dc:creator>\n";
                 $output .= '<pubDate>' . gmdate('D, d M Y H:i:s \G\M\T', strtotime($comment['time'])) . "</pubDate>\n";
                 $output .= '<description>' . htmlspecialchars('<h3>Commentaire sur ' . $this->getService(LinkRenderer::class)->linkToPage($comment['comment_on'], ENT_COMPAT, YW_CHARSET) . '</h3>');
-                $output .= '<pre>' . htmlspecialchars($comment['body'], ENT_COMPAT, YW_CHARSET) . "</pre> </description>\n";
+                // getRecentComments() returns raw rows, so the body is still encoded here
+                $output .= '<pre>' . htmlspecialchars(PageBody::content(PageBody::decode($comment['body'])), ENT_COMPAT, YW_CHARSET) . "</pre> </description>\n";
                 // notice for later: before introducing Format()ed comments, think to spam and recursive calls to {{recentcommentsrss}} (RegisterInclusion() etc.)
                 $itemurl = $this->getService(UrlFormatter::class)->href('', $comment['comment_on'], 'show_comments=1') . '#' . htmlspecialchars(rawurlencode($comment['tag']), ENT_COMPAT, YW_CHARSET);
                 $output .= '<link>' . $itemurl . "</link>\n";

@@ -33,6 +33,9 @@ class PageContext
     /**
      * The page record loaded for the current request, or null before one is set.
      *
+     * Its `body` is a decoded body (see YesWiki\Content\Entity\PageBody), never the JSON
+     * text held in the column: whoever sets the record decodes it first (ticket 09).
+     *
      * @return array<mixed>|null
      */
     public function getPage(): ?array

@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Api\FileApiController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
@@ -36,7 +37,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
         $this->assertTrue($wiki->services->has(FileApiController::class));
 
         $pageManager = $wiki->services->get(PageManager::class);
-        $pageManager->save(self::PRIVATE_PAGE_TAG, 'content', '', true);
+        $pageManager->save(self::PRIVATE_PAGE_TAG, [PageBody::CONTENT => 'content'], '', true);
         $wiki->services->get(AclService::class)->save(self::PRIVATE_PAGE_TAG, 'read', '@admins');
 
         return $wiki;

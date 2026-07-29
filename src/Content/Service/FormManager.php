@@ -238,7 +238,7 @@ class FormManager
      */
     private function pageToFormArray(array $page): array
     {
-        $body = json_decode($page['body'] ?? '', true) ?? [];
+        $body = $page['body'] ?? [];
         $activitypub = $page['metadatas']['activitypub'] ?? [];
 
         // read-side legacy-key insurance (pre-migration bodies, old revisions)
@@ -457,11 +457,6 @@ class FormManager
         return $slug !== '' ? $slug : 'form';
     }
 
-    private function encodeBody(array $body): string
-    {
-        return json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    }
-
     // TODO Pass a Form object instead of a raw array
     public function create($data)
     {
@@ -482,7 +477,7 @@ class FormManager
         // reset cache
         $this->cacheValidatedForAll = false;
 
-        $saved = $this->pageManager->save($tag, $this->encodeBody($this->buildBody($data)), '', true);
+        $saved = $this->pageManager->save($tag, $this->buildBody($data), '', true);
 
         if ($saved === 0) {
             $this->pageManager->setMetadata($tag, ['activitypub' => $this->buildActivitypubMetadata($data, [])]);
@@ -528,7 +523,7 @@ class FormManager
         }
 
         $existingPage = $this->pageManager->getOne($tag, null, true, true);
-        $existingBody = json_decode($existingPage['body'] ?? '', true) ?? [];
+        $existingBody = $existingPage['body'] ?? [];
 
         $data['template'] = $this->convertWithSpecialParameters($this->templateToStorage($data['template'] ?? ''), $data['id']);
 
@@ -546,7 +541,7 @@ class FormManager
             }
         }
 
-        $saved = $this->pageManager->save($tag, $this->encodeBody($body), '', true);
+        $saved = $this->pageManager->save($tag, $body, '', true);
 
         $this->pageManager->setMetadata($tag, [
             'activitypub' => $this->buildActivitypubMetadata($data, $existingPage['metadatas']['activitypub'] ?? []),

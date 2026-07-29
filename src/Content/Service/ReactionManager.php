@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\ReactionsField;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Identity\Service\AclService;
@@ -130,7 +131,7 @@ class ReactionManager
         $p = $this->container->get(PageManager::class)->getOne($page);
         if (!empty($p)) {
             $params = [];
-            $this->appendParamsFromActionDefinition($params, $p['body']);
+            $this->appendParamsFromActionDefinition($params, PageBody::content($p['body'] ?? []));
             if (!empty($params)) {
                 if ($idReaction != null && isset($params[$idReaction])) {
                     return [$idReaction => $params[$idReaction]];

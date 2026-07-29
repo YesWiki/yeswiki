@@ -75,8 +75,7 @@ class Guard
             return $page;
         }
         if ($page) {
-            $valjson = $page['body'];
-            $valeur = json_decode($valjson, true);
+            $valeur = $page['body'] ?? [];
 
             if ($valeur) {
                 $form = $this->formManager->getOne($valeur['form_id']);
@@ -94,10 +93,7 @@ class Guard
                             $valeur[$field] = '';
                             // on vide le champ
                         }
-                        // $valeur = array_map(function($value){
-                        //     return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
-                        // }, $valeur);
-                        $page['body'] = json_encode($valeur);
+                        $page['body'] = $valeur;
                     }
                 }
             }
@@ -135,7 +131,7 @@ class Guard
         if (empty($page['body'])) {
             return $page;
         }
-        $valeur = json_decode($page['body'], true);
+        $valeur = $page['body'];
         if (!is_array($valeur)) {
             return $page;
         }
@@ -153,7 +149,7 @@ class Guard
             }
         }
         if ($modified) {
-            $page['body'] = json_encode($valeur);
+            $page['body'] = $valeur;
         }
 
         return $page;

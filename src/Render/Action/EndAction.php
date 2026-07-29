@@ -2,6 +2,7 @@
 
 namespace YesWiki\Render\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
@@ -53,7 +54,7 @@ class EndAction extends YesWikiAction implements RegisteredAction
             return;
         }
         $pagetag = $this->getService(PageContext::class)->getTag();
-        $body = isset($this->getService(PageContext::class)->getPage()['body']) ? $this->getService(PageContext::class)->getPage()['body'] : '';
+        $body = PageBody::content($this->getService(PageContext::class)->getPage()['body'] ?? []);
         // teste s'il y a bien un element de fermeture associé avant d'ouvrir une balise
         if (!isset($GLOBALS['check_' . $pagetag])) {
             $GLOBALS['check_' . $pagetag] = [];

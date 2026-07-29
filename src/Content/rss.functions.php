@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 
 if (!function_exists('rssdiff')) {
@@ -28,12 +29,23 @@ if (!function_exists('rssdiff')) {
         $pageB = $services->get(YesWiki\Content\Service\PageManager::class)->getById($idlast);
 
         $entryManager = $services->get(EntryManager::class);
+        // getById() hands back a decoded body (ticket 09) : an entry is diffed field by
+        // field (this used to split the stored JSON on `,"`), a page line by line
         if ($entryManager->isEntry($tag)) {
-            $bodyA = explode(',"', $pageA['body']);
-            $bodyB = explode(',"', $pageB['body']);
+            $toPairs = function (array $body): array {
+                $pairs = [];
+                foreach ($body as $key => $value) {
+                    $pairs[] = json_encode((string)$key, PageBody::JSON_FLAGS)
+                        . ':' . json_encode($value, PageBody::JSON_FLAGS);
+                }
+
+                return $pairs;
+            };
+            $bodyA = $toPairs($pageA['body'] ?? []);
+            $bodyB = $toPairs($pageB['body'] ?? []);
         } else {
-            $bodyA = explode("\n", $pageA['body']);
-            $bodyB = explode("\n", $pageB['body']);
+            $bodyA = explode("\n", PageBody::content($pageA['body'] ?? []));
+            $bodyB = explode("\n", PageBody::content($pageB['body'] ?? []));
         }
 
         $added = array_diff($bodyA, $bodyB);

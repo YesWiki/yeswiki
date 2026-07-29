@@ -4,6 +4,7 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
@@ -33,7 +34,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
         $this->assertTrue($wiki->services->has(CommentService::class));
 
         $pageManager = $wiki->services->get(PageManager::class);
-        $pageManager->save(self::PAGE_TAG, 'content', '', true);
+        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'content'], '', true);
         $wiki->services->get(AclService::class)->save(self::PAGE_TAG, 'comment', '*');
 
         return $wiki;

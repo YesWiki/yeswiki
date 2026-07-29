@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Handler;
 
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\DuplicationManager;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
@@ -50,7 +51,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
             // if no read access to the page
             if ($content = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $error .= $this->getService(MarkdownFormatterService::class)->format($content['body']);
+                $error .= $this->getService(MarkdownFormatterService::class)->format(PageBody::content($content['body']));
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $error .= '<div class="vertical-center white-bg">' . "\n"
@@ -92,7 +93,8 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 if ($toExternalWiki) {
                     $pageTitle = $originalContent['bf_titre'];
                     $proposedTag = $this->getService(PageContext::class)->getTag();
-                    $originalContent = $this->getService(PageContext::class)->getPage()['body'];
+                    // the receiving wiki json_decodes this field back into an entry
+                    $originalContent = PageBody::encode($this->getService(PageContext::class)->getPage()['body']);
                     $form = $this->getService(FormManager::class)->getOne($this->getService(EntryManager::class)->getOne($proposedTag)['form_id']);
                 } else {
                     $pageTitle = $originalContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
@@ -115,7 +117,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 } else {
                     $proposedTag = genere_nom_wiki($this->getService(PageContext::class)->getTag() . ' ' . _t('DUPLICATE'));
                 }
-                $originalContent = $this->getService(PageContext::class)->getPage()['body'];
+                $originalContent = PageBody::content($this->getService(PageContext::class)->getPage()['body']);
             }
             $attachments = $this->duplicationManager->findFiles($this->getService(PageContext::class)->getPage()['tag']);
             $totalSize = 0;

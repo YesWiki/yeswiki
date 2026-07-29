@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
@@ -80,12 +81,12 @@ class UserManagerContentTest extends YesWikiTestCase
             // generic page-read path (bypassAcls=false), viewed as the owner: password is
             // STILL hidden -- no legitimate UI ever needs to show a hash back to anyone
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
-            $bodyAsOwner = json_decode($asOwner['body'], true);
+            $bodyAsOwner = $asOwner['body'];
             $this->assertSame('', $bodyAsOwner['password']);
 
             // as an unrelated third party: also hidden
             $asOther = $pageManager->getOne($name, null, false, false, self::OTHER_VIEWER);
-            $bodyAsOther = json_decode($asOther['body'], true);
+            $bodyAsOther = $asOther['body'];
             $this->assertSame('', $bodyAsOther['password']);
         } finally {
             $this->cleanupUser($userManager, $name);
@@ -105,12 +106,12 @@ class UserManagerContentTest extends YesWikiTestCase
             $userManager->create($name, 'umct-fieldacl@example.tld', 'Aa1!aaaaRegression');
 
             $asOther = $pageManager->getOne($name, null, false, false, self::OTHER_VIEWER);
-            $bodyAsOther = json_decode($asOther['body'], true);
+            $bodyAsOther = $asOther['body'];
             $this->assertSame('', $bodyAsOther['email'], 'email must be hidden from an unrelated viewer');
             $this->assertSame('', $bodyAsOther['doubleclickedit'], 'account preferences must be hidden from an unrelated viewer');
 
             $asOwner = $pageManager->getOne($name, null, false, false, $name);
-            $bodyAsOwner = json_decode($asOwner['body'], true);
+            $bodyAsOwner = $asOwner['body'];
             $this->assertSame('umct-fieldacl@example.tld', $bodyAsOwner['email'], 'email must stay visible to the account owner');
 
             // motto and signuptime are public regardless of viewer
@@ -143,7 +144,7 @@ class UserManagerContentTest extends YesWikiTestCase
             // redact the password -- not just the current one
             $historicalAsOther = $pageManager->getOne($name, $firstRevisionTime, false, false, self::OTHER_VIEWER);
             $this->assertNotNull($historicalAsOther, 'sanity: the historical revision is fetchable');
-            $historicalBody = json_decode($historicalAsOther['body'], true);
+            $historicalBody = $historicalAsOther['body'];
             $this->assertSame('', $historicalBody['password'], 'password must be redacted on a historical revision too');
             $this->assertNotEmpty($originalHash, 'sanity: there really was a hash to hide');
         } finally {
@@ -198,7 +199,7 @@ class UserManagerContentTest extends YesWikiTestCase
 
         try {
             // an ordinary page already holds this tag -- not another user
-            $pageManager->save($collidingTag, 'existing page content', '', true);
+            $pageManager->save($collidingTag, [PageBody::CONTENT => 'existing page content'], '', true);
 
             $created = $userManager->create($collidingTag, 'umct-collision@example.tld', 'Aa1!aaaaRegression');
 

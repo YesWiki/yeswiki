@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\Depends;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -39,7 +40,7 @@ class TagsWidgetTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        $pageManager->save(self::PAGE_TAG, 'body content', '', true);
+        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'body content'], '', true);
         $tripleStore->create(self::PAGE_TAG, TagsManager::TAG_PROPERTY, 'widgettesttag', '', '');
         // a tag on an unrelated page: must NOT leak into this page's widget markup --
         // that's exactly the "dump every tag" behavior this ticket removed

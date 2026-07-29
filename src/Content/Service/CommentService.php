@@ -5,6 +5,7 @@ namespace YesWiki\Content\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\HashCashService;
@@ -107,7 +108,7 @@ class CommentService implements EventSubscriberInterface
                 ];
             }
             // store new comment
-            $this->pageManager->save($idComment, $body, $content['pagetag']);
+            $this->pageManager->save($idComment, [PageBody::CONTENT => $body], $content['pagetag']);
             if ($newComment) {
                 // default ACLs for comments : visible for all, writable by owner, commentable like parent.
                 $parentCommentAcl = $this->aclService->load($content['pagetag'], 'comment', false);
@@ -121,13 +122,13 @@ class CommentService implements EventSubscriberInterface
             $comment = $this->pageManager->getOne($idComment);
             $com['tag'] = $comment['tag'];
             $com['commentOn'] = $comment['comment_on'];
-            $com['rawbody'] = $comment['body'];
+            $com['rawbody'] = PageBody::content($comment['body']);
             // Do the page change in any case (useful for attach or grid)
             $oldPage = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
             $oldPageArray = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
             $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($comment['tag']);
             $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($comment);
-            $com['body'] = $GLOBALS['yeswikiServices']->get(MarkdownFormatterService::class)->format($comment['body']);
+            $com['body'] = $GLOBALS['yeswikiServices']->get(MarkdownFormatterService::class)->format($com['rawbody']);
             $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($oldPage);
             $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($oldPageArray);
             $this->setUserData($comment, 'user', $com);
@@ -254,8 +255,9 @@ class CommentService implements EventSubscriberInterface
             foreach ($comments as $i => $comment) {
                 $com['comments'][$i]['tag'] = $comment['tag'];
                 $com['comments'][$i]['commentOn'] = $comment['comment_on'];
-                $com['comments'][$i]['rawbody'] = $comment['body'];
-                $com['comments'][$i]['body'] = $this->container->get(MarkdownFormatterService::class)->format($comment['body']);
+                // loadComments() reads the rows straight from SQL, so the body is still stored text
+                $com['comments'][$i]['rawbody'] = PageBody::content(PageBody::decode($comment['body']));
+                $com['comments'][$i]['body'] = $this->container->get(MarkdownFormatterService::class)->format($com['comments'][$i]['rawbody']);
                 $this->setUserData($comment, 'user', $com['comments'][$i]);
                 $this->setUserData($comment, 'owner', $com['comments'][$i]);
                 $com['comments'][$i]['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
@@ -135,7 +136,11 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
             $pagetag = $dbService->escape(str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_POST['pagetag']));
             $chaine = "\n\n~~\"\"<!--" . $_POST['image_x'] . '-' . $_POST['image_y'] . '-' . $_POST['color'] . '--><!--title-->' . $_POST['title'] . "<!--/title-->\"\"\n\"\"<!--desc-->\"\"" . $_POST['description'] . "\"\"<!--/desc-->\n\"\"~~";
             $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = '" . $pagetag . "'and latest = 'Y' limit 1");
-            $this->getService(PageManager::class)->save($pagetag, ($donneesbody['body'] ?? '') . $chaine, '', true);
+            // raw row, so the body is still encoded; the markers append to the markup and
+            // whatever else the marker page's body carries travels with it
+            $markersBody = PageBody::decode($donneesbody['body'] ?? null);
+            $markersBody[PageBody::CONTENT] = PageBody::content($markersBody) . $chaine;
+            $this->getService(PageManager::class)->save($pagetag, $markersBody, '', true);
             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
         }
 
@@ -143,7 +148,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = '" . $datapagetag . "'and latest = 'Y' limit 1");
 
         // search for markers info
-        preg_match_all('/~~(.*)~~/msU', $donneesbody['body'] ?? '', $locations);
+        preg_match_all('/~~(.*)~~/msU', PageBody::content(PageBody::decode($donneesbody['body'] ?? null)), $locations);
         $markers = [];
         foreach ($locations[1] as $location) {
             // extract all informations if present

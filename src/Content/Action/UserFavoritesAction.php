@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Action;
 
 use YesWiki\Content\Attach;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
@@ -107,14 +108,15 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
 
     private function get_image_from_body($page)
     {
+        $body = PageBody::content($page['body']);
         // on cherche les actions attach avec image, puis les images bazar
-        preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $page['body'], $images);
+        preg_match_all("/\{\{attach.*file=\".*\.(?i)(jpg|png|gif|bmp).*\}\}/U", $body, $images);
         if (is_array($images[0]) && isset($images[0][0]) && $images[0][0] != '') {
             preg_match_all("/.*file=\"(.*\.(?i)(jpg|png|gif|bmp))\".*desc=\"(.*)\".*\}\}/U", $images[0][0], $attachimg);
 
             return $this->getFileName($page, $attachimg[1][0]);
         }
-        preg_match_all('/"imagebf_image":"(.*)"/U', $page['body'], $image);
+        preg_match_all('/"imagebf_image":"(.*)"/U', $body, $image);
         if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
             $imagefile = mb_convert_encoding(
                 preg_replace_callback(
@@ -128,11 +130,11 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
 
             return $imagefile;
         }
-        preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
+        preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $body, $image);
         if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
             return $image[1][0];
         }
-        preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
+        preg_match_all("/\<img.*src=\"(.*)\"/U", $body, $image);
         if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
             return $image[1][0];
         }

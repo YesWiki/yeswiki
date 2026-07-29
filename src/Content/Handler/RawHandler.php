@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Handler;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
@@ -41,7 +42,7 @@ class RawHandler extends YesWikiHandler implements RegisteredHandler
             }
             header('Content-type: text/plain; charset=' . YW_CHARSET);
             // display raw page
-            echo $this->getService(PageContext::class)->getPage()['body'];
+            echo PageBody::content($this->getService(PageContext::class)->getPage()['body']);
         } else {
             return;
         }

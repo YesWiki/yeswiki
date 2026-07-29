@@ -6,6 +6,7 @@ use Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Attach;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FileManager;
@@ -295,7 +296,7 @@ class FileField extends BazarField
         $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
         $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
             'tag' => $tag,
-            'body' => '{##}',
+            'body' => [PageBody::CONTENT => '{##}'],
             'time' => date('YmdHis'),
             'owner' => '',
             'user' => '',

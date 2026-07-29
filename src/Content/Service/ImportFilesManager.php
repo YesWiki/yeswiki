@@ -4,6 +4,7 @@ namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attach;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -131,7 +132,7 @@ class ImportFilesManager
         if (empty(trim($tag))) {
             $tag = $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
-        $rawContent = $this->container->get(PageManager::class)->getOne($tag)['body'];
+        $rawContent = PageBody::content($this->container->get(PageManager::class)->getOne($tag)['body'] ?? []);
         $regex = '#\{\{attach.*file="(.*)".*\}\}#Ui';
         preg_match_all(
             $regex,

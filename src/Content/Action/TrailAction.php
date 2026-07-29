@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
@@ -89,7 +90,7 @@ class TrailAction extends YesWikiAction implements RegisteredAction
             }
             // analyse de la page sommaire pour récupérer la liste des pages
             // recuperation de la liste
-            if (preg_match_all("/\n[\t ]+(.*)/", $tocPage['body'], $tocListe)) {
+            if (preg_match_all("/\n[\t ]+(.*)/", PageBody::content($tocPage['body']), $tocListe)) {
                 // analyse de chaque ligne de la liste pour recupérer la page cible
                 $currentPageIndex = null;
                 foreach ($tocListe[1] as $line) {

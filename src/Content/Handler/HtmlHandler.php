@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Handler;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
@@ -48,7 +49,8 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
             $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
-            $this->getService(PageContext::class)->setPageField('body', '""' . baz_voir_fiche(0, $fiche) . '""');
+            // the rendered entry replaces the whole body, prose included (ticket 09)
+            $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => '""' . baz_voir_fiche(0, $fiche) . '""']);
         }
     }
 
@@ -61,7 +63,7 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
                 return;
             }
             // affichage de la page formatee
-            echo "<div class=\"page\">\n" . $this->getService(MarkdownFormatterService::class)->format($this->getService(PageContext::class)->getPage()['body']) . "\n</div>\n";
+            echo "<div class=\"page\">\n" . $this->getService(MarkdownFormatterService::class)->format(PageBody::content($this->getService(PageContext::class)->getPage()['body'])) . "\n</div>\n";
         } else {
             return;
         }

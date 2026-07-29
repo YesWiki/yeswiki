@@ -269,7 +269,9 @@ class AclService
             "'" . $this->dbService->escape($current['owner']) . "'",
             "'" . $this->dbService->escape($this->authenticationService->getLoggedUserName()) . "'",
             "'Y'",
-            "'" . $this->dbService->escape($current['body']) . "'",
+            // raw SQL row, so the body is still the stored JSON text -- carry it forward
+            // verbatim rather than decoding and re-encoding it
+            "'" . $this->dbService->escape((string)$current['body']) . "'",
             "''",
             "'" . $this->dbService->escape(json_encode($metadata)) . "'",
         ];

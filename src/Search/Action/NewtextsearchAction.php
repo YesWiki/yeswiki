@@ -3,6 +3,7 @@
 namespace YesWiki\Search\Action;
 
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
@@ -229,7 +230,8 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
                                     $extract = displayNewSearchResult($renderedEntry, $phrase, $needles);
                                 }
                                 if (empty($extract)) {
-                                    $extract = displayNewSearchResult($this->getService(MarkdownFormatterService::class)->format($page['body']), $phrase, $needles);
+                                    // rows come straight from the query above, so the body is still encoded here
+                                    $extract = displayNewSearchResult($this->getService(MarkdownFormatterService::class)->format(PageBody::content(PageBody::decode($page['body']))), $phrase, $needles);
                                 }
                                 $counter++;
                             }

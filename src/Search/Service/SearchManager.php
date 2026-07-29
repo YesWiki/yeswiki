@@ -3,6 +3,7 @@
 namespace YesWiki\Search\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Service\EntryManager;
@@ -1044,6 +1045,9 @@ class SearchManager
         $vEntryManager = $this->container->get(EntryManager::class);
 
         foreach ($results as $page) {
+            // raw SQL rows, so the bodies are still the stored JSON text -- decode before
+            // handing them to anything that expects the one shape (ticket 09)
+            $page['body'] = PageBody::decode($page['body'] ?? null);
             // save owner to reduce sql calls
             $vPageManager->cacheOwner($page);
             // not possible to init the Guard in the constructor because of circular reference problem

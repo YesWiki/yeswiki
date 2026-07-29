@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Handler;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
@@ -78,6 +79,8 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                 $aclService = $this->getService(AclService::class);
                 foreach ($results as $page) {
                     $readAcl = $aclService->hasAccess('read', $page['tag']);
+                    // rows straight out of the pages table, so the body is still encoded
+                    $page['body'] = PageBody::decode($page['body'] ?? null);
                     $this->getService(PageContext::class)->setTag($page['tag']);
                     $this->getService(PageContext::class)->setPage($page);
                     $items .= "<item>\r\n";
@@ -87,9 +90,9 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
 
                     if ($readAcl) {
                         // on enleve les actions recentchangesrssplus pour eviter les boucles infinies
-                        $page['body'] = (string)preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', strval($page['body'] ?? ''));
-                        $page['body'] = (string)preg_replace("/\{\{rss(.*?)\}\}/s", '', $page['body']);
-                        $texteformat = $this->getService(MarkdownFormatterService::class)->format($page['body']);
+                        $content = (string)preg_replace("/\{\{recentchangesrss(.*?)\}\}/s", '', PageBody::content($page['body']));
+                        $content = (string)preg_replace("/\{\{rss(.*?)\}\}/s", '', $content);
+                        $texteformat = $this->getService(MarkdownFormatterService::class)->format($content);
                     } else {
                         $texteformat = '<i>' . _t('TAGS_HIDDEN_CONTENT') . '</i>';
                     }

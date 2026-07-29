@@ -4,6 +4,7 @@ namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
@@ -125,7 +126,7 @@ class LinkTracker
         $this->container->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($page);
         $this->start();
         $this->inclusionStack->register($this->container->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
-        $body = $this->preventTrackingActions($page['body']);
+        $body = $this->preventTrackingActions(PageBody::content($page['body'] ?? []));
         $body = $this->preventNotTrackingActions($body);
         $this->container->get(MarkdownFormatterService::class)->format($body);
         if (!empty($page['owner'])) {

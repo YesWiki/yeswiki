@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Core\Controller;
 
 use YesWiki\Admin\Api\AdminPagesApiController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\ThemeManager;
@@ -42,9 +43,9 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
         $filterTheme = $favoriteTheme === 'colibris' ? 'margot' : 'colibris';
 
         try {
-            $pageManager->save(self::THEMED_TAG, 'themed page', '', true);
+            $pageManager->save(self::THEMED_TAG, [PageBody::CONTENT => 'themed page'], '', true);
             $pageManager->setMetadata(self::THEMED_TAG, ['theme' => $filterTheme]);
-            $pageManager->save(self::UNTHEMED_TAG, 'untheme page', '', true);
+            $pageManager->save(self::UNTHEMED_TAG, [PageBody::CONTENT => 'untheme page'], '', true);
 
             [$whereClause] = $this->buildWhere($controller, $dbService, $filterTheme);
 

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
@@ -223,7 +224,9 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                   "'" . $dbService->escape($revision['owner']) . "', " .
                   "'" . $dbService->escape('despam') . "', " .
                   "'Y', " .
-                  "'" . $dbService->escape(chop($revision['body'])) . "', " .
+                  // the revision is a raw row, so its body is re-encoded rather than copied
+                  // over verbatim: a row left in the legacy shape lands in the new one
+                  "'" . $dbService->escape(PageBody::encode(PageBody::decode($revision['body']))) . "', " .
                   "'')");
                     }
                 }

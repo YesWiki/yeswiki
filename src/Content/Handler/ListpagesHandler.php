@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Handler;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
@@ -93,15 +94,17 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
             $element = [];
             foreach ($resultat as $page) {
                 if ($aclService->hasAccess('read', $page['tag'])) {
+                    // rows straight out of the pages table, so the body is still encoded
+                    $body = PageBody::decode($page['body']);
                     $element[$page['tag']]['tagnames'] = '';
                     $element[$page['tag']]['tagbadges'] = '';
-                    $element[$page['tag']]['body'] = $page['body'];
+                    $element[$page['tag']]['body'] = PageBody::content($body);
                     $element[$page['tag']]['owner'] = $page['owner'];
                     $element[$page['tag']]['user'] = $page['user'];
                     $element[$page['tag']]['time'] = $page['time'];
                     $element[$page['tag']]['title'] = get_title_from_body($page);
                     $element[$page['tag']]['image'] = get_image_from_body($page);
-                    $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format($page['body'])), $nbcartrunc);
+                    $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format(PageBody::content($body))), $nbcartrunc);
                     $pagetags = $this->getService(TripleStore::class)->getAll($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
                     foreach ($pagetags as $tag) {
                         $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Actions;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\PageManager;
@@ -57,10 +58,10 @@ class NewtextsearchActionTest extends YesWikiTestCase
 
         // a "secret" page, unrelated to the search phrase, that only a successful SQL
         // injection (boolean-oracle condition) could surface in the results
-        $pageManager->save(self::SECRET_PAGE_TAG, self::SECRET_MARKER, '', true);
+        $pageManager->save(self::SECRET_PAGE_TAG, [PageBody::CONTENT => self::SECRET_MARKER], '', true);
         // a legitimate page the search phrase genuinely matches, proving the fix doesn't
         // break normal search (and that the fixture actually exercises the query)
-        $pageManager->save(self::CONTROL_PAGE_TAG, self::LIST_LABEL, '', true);
+        $pageManager->save(self::CONTROL_PAGE_TAG, [PageBody::CONTENT => self::LIST_LABEL], '', true);
 
         // malicious list option id : breaks out of the "body LIKE '...'" string, OR-injects
         // a second condition true only if a page's body contains the secret marker (the

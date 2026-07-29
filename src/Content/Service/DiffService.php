@@ -6,6 +6,7 @@ use Caxy\HtmlDiff\HtmlDiff;
 use Caxy\HtmlDiff\HtmlDiffConfig;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 class DiffService
@@ -44,8 +45,8 @@ class DiffService
                 $textA = $this->formatPageWithOnlySimpleActions($pageA);
                 $textB = $this->formatPageWithOnlySimpleActions($pageB);
             } else {
-                $textA = $pageA['body'];
-                $textB = $pageB['body'];
+                $textA = PageBody::content($pageA['body'] ?? []);
+                $textB = PageBody::content($pageB['body'] ?? []);
             }
         }
 
@@ -71,14 +72,16 @@ class DiffService
         }
         $regexpr .= ".*?\}\})/s";
         // move all complex actions (bazarliste etc...) into pre html so they are not fomatted
-        $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', $page['body']);
+        $code = preg_replace($regexpr, '""<pre class="ignored-action">$1</pre>""', PageBody::content($page['body'] ?? []));
 
         return $this->container->get(MarkdownFormatterService::class)->format($code);
     }
 
     public function formatJsonCodeIntoHtmlTable($page)
     {
-        $result = json_decode($page['body'], true) ?? [];
+        // the body arrives already decoded (PageManager, or the empty-revision stand-in
+        // PageApiController builds for a page's very first revision)
+        $result = $page['body'] ?? [];
         ksort($result);
         $html = "<table class='entry-code'><tbody>";
         foreach ($result as $key => $value) {

@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Handler;
 
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\PageManager;
@@ -66,7 +67,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
 
             if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format($contenu['body']));
+                $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format(PageBody::content($contenu['body'])));
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $output .= '<div class="vertical-center white-bg">' . "\n"
@@ -107,8 +108,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         $output = '';
         // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
         $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
-        $valjson = ($this->getService(PageContext::class)->getPage() ?? [])['body'];
-        $tab_valeurs = json_decode($valjson, true);
+        $tab_valeurs = ($this->getService(PageContext::class)->getPage() ?? [])['body'];
         if (YW_CHARSET != 'UTF-8') {
             $tab_valeurs = array_map(function ($value) {
                 return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
@@ -164,7 +164,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         }
 
         // affichage de la page formatée
-        $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format(($this->getService(PageContext::class)->getPage() ?? [])['body']));
+        $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format(PageBody::content(($this->getService(PageContext::class)->getPage() ?? [])['body'])));
 
         return $output;
     }

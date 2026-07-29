@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Handler;
 
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
@@ -90,12 +91,14 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         // {{lang="xx"}} section matching the visitor's language, if the page uses markers
         require_once YESWIKI_SOURCE_DIR . '/src/Kernel/lang.functions.php';
         $pageContext = $this->getService(PageContext::class);
-        if (!empty(($pageContext->getPage() ?? [])['body'])) {
-            $pageContext->setPageField('body', filterBodyByLanguage(
-                $pageContext->getPage()['body'],
+        $body = ($pageContext->getPage() ?? [])['body'] ?? [];
+        if (!empty(PageBody::content($body))) {
+            $body[PageBody::CONTENT] = filterBodyByLanguage(
+                PageBody::content($body),
                 $GLOBALS['prefered_language'],
                 $this->getService(RuntimeConfig::class)['default_language']
-            ));
+            );
+            $pageContext->setPageField('body', $body);
         }
     }
 
@@ -259,7 +262,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     $entryController = $this->getService(EntryController::class);
                     echo $entryController->view($this->getService(PageContext::class)->getTag(), $this->getService(PageContext::class)->getPage()['time'] ?? null);
                 } else {
-                    echo $this->getService(MarkdownFormatterService::class)->format($this->getService(PageContext::class)->getPage()['body']);
+                    echo $this->getService(MarkdownFormatterService::class)->format(PageBody::content($this->getService(PageContext::class)->getPage()['body']));
                 }
                 $this->getService(InclusionStack::class)->unregisterLast();
             }

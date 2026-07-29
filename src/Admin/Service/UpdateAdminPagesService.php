@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Controller\InstallationController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Entity\Messages;
@@ -85,7 +86,7 @@ class UpdateAdminPagesService
                     $pageContent = str_replace('\\\'', '\'', $pageContent);
                     $pageContent = str_replace('{{rootPage}}', $this->params->get('root_page'), $pageContent);
                     $pageContent = str_replace('{{url}}', $this->params->get('base_url'), $pageContent);
-                    if ($this->pageManager->save($page, $pageContent) !== 0) {
+                    if ($this->pageManager->save($page, [PageBody::CONTENT => $pageContent]) !== 0) {
                         $output .= (!empty($output) ? ', ' : '') . _t('NO_RIGHT_TO_WRITE_IN_THIS_PAGE') . $page;
                     } else {
                         // save links

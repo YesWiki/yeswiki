@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
@@ -65,15 +66,16 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
                 if (!is_array($page)) {
                     continue;
                 }
+                $body = PageBody::content($page['body']);
                 $element[$page['tag']]['tagnames'] = '';
                 $element[$page['tag']]['tagbadges'] = '';
-                $element[$page['tag']]['body'] = $page['body'];
+                $element[$page['tag']]['body'] = $body;
                 $element[$page['tag']]['owner'] = $page['owner'];
                 $element[$page['tag']]['user'] = $page['user'];
                 $element[$page['tag']]['time'] = $page['time'];
                 $element[$page['tag']]['title'] = get_title_from_body($page);
                 $element[$page['tag']]['image'] = get_image_from_body($page);
-                $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format($page['body'])), $nbcartrunc);
+                $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->getService(MarkdownFormatterService::class)->format($body)), $nbcartrunc);
                 $pagetags = $this->getService(TripleStore::class)->getAll($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
                 foreach ($pagetags as $tag) {
                     $element[$page['tag']]['tagnames'] .= sanitizeEntity($tag['value']) . ' ';

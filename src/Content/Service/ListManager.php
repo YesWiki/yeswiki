@@ -64,7 +64,7 @@ class ListManager
 
             return null;
         }
-        $data = $this->loadJson($page['body'], $id);
+        $data = $this->loadBody($page['body'], $id);
         if ($parent != null) {
             $this->cachedLists[$id] = $data;
         }
@@ -84,9 +84,14 @@ class ListManager
         return $data;
     }
 
-    private function loadJson(string $json, $id): array
+    /**
+     * @param array<array-key, mixed> $body
+     *
+     * @return array<string, mixed>
+     */
+    private function loadBody(array $body, string $id): array
     {
-        $data = $this->convertDataStructure(json_decode($json, true));
+        $data = $this->convertDataStructure($body);
         $data['id'] = $id;
 
         return $data;
@@ -130,13 +135,13 @@ class ListManager
         $id = $id ?? genere_nom_wiki('List ' . $title);
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
-        $json = json_encode([
+        $body = [
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ]);
-        $this->pageManager->save($id, $json);
+        ];
+        $this->pageManager->save($id, $body);
 
-        $data = $this->loadJson($json, $id);
+        $data = $this->loadBody($body, $id);
         $this->cachedLists[$id] = $data;
 
         $this->tripleStore->create($id, TripleStore::TYPE_URI, self::TRIPLES_LIST_ID, '', '');
@@ -151,13 +156,13 @@ class ListManager
         }
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
-        $json = json_encode([
+        $body = [
             'title' => $title,
             'nodes' => $this->sanitizeHMTL($nodes),
-        ]);
-        $this->pageManager->save($id, $json);
+        ];
+        $this->pageManager->save($id, $body);
 
-        $data = $this->loadJson($json, $id);
+        $data = $this->loadBody($body, $id);
         $this->cachedLists[$id] = $data;
     }
 

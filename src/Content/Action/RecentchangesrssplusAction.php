@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -64,8 +65,10 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
 
         $dbService = $this->getService(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
-        $bodyExpr = ($dbService->getDriver() === 'sqlite') ? 'substr(body,1,500)' : 'LEFT(body,500)';
-        if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, $bodyExpr as body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
+        // the 500 first characters used to be cut in SQL (LEFT/substr on body); on a JSON
+        // body that would truncate the container rather than the prose, so the cut moved
+        // onto the decoded markup below
+        if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
             if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
                 $link = $this->getService(RuntimeConfig::class)['root_page'];
             }
@@ -87,8 +90,9 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
                 $day = preg_replace('/-/', ' ', $day);
                 list($hh, $mm, $ss) = explode(':', $time);
 
+                $markup = mb_substr(PageBody::content(PageBody::decode($page['body'])), 0, 500);
                 $body = $readAcl
-                    ? htmlspecialchars($this->getService(MarkdownFormatterService::class)->format($page['body']), ENT_COMPAT, YW_CHARSET)
+                    ? htmlspecialchars($this->getService(MarkdownFormatterService::class)->format($markup), ENT_COMPAT, YW_CHARSET)
                     : '<br><div><i>' . _t('RSS_HIDDEN_CONTENT') . '</i></div>';
 
                 $items .= "<item>\n";

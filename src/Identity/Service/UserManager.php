@@ -265,7 +265,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     private function persistNewUserPage(string $tag, array $body): bool
     {
         $pageManager = $this->container->get(PageManager::class);
-        $saved = $pageManager->save($tag, $this->encodeBody($body), '', true);
+        $saved = $pageManager->save($tag, $body, '', true);
         if ($saved !== 0) {
             return false;
         }
@@ -314,11 +314,6 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
     private function valueOrDefault(array $fields, string $key, string $default)
     {
         return (isset($fields[$key]) && $fields[$key] !== '') ? $fields[$key] : $default;
-    }
-
-    private function encodeBody(array $body): string
-    {
-        return json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /** Part of the Password recovery process: Handles the password recovery email process.
@@ -434,11 +429,11 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $pageManager = $this->container->get(PageManager::class);
             $page = $pageManager->getOne($user['name'], null, true, true);
             if ($page) {
-                $body = json_decode($page['body'] ?? '', true) ?? [];
+                $body = $page['body'] ?? [];
                 foreach ($authorizedKeys as $key) {
                     $body[$key] = $newValues[$key];
                 }
-                $pageManager->save($user['name'], $this->encodeBody($body), '', true);
+                $pageManager->save($user['name'], $body, '', true);
             }
         }
 
@@ -564,9 +559,9 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             $pageManager = $this->container->get(PageManager::class);
             $page = $pageManager->getOne($user['name'], null, true, true);
             if ($page) {
-                $body = json_decode($page['body'] ?? '', true) ?? [];
+                $body = $page['body'] ?? [];
                 $body['password'] = $newHashedPassword;
-                $pageManager->save($user['name'], $this->encodeBody($body), '', true);
+                $pageManager->save($user['name'], $body, '', true);
             }
         } catch (\Throwable $th) {
             // only throw error in debug mode
@@ -660,8 +655,10 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         if (empty($page) || !isset($page['tag'])) {
             return null;
         }
-        $body = json_decode($page['body'] ?? '', true);
-        if (!is_array($body)) {
+        // PageManager hands the body back decoded; a page with no body at all is not an
+        // account (this used to be json_decode('') === null)
+        $body = $page['body'] ?? [];
+        if (!is_array($body) || empty($body)) {
             return null;
         }
 

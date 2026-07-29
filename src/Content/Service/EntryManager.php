@@ -6,6 +6,7 @@ use Exception;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\AdministrativeLogService;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ImageField;
@@ -273,12 +274,20 @@ class EntryManager
         return $data;
     }
 
-    /** format data as in sql.
+    /**
+     * Escape a search term the way it appears *inside* a stored body, for the SQL
+     * REGEXP/LIKE patterns SearchManager matches against the JSON text.
+     *
+     * The flags must be PageBody's: bodies are written by PageBody::encode() with
+     * unescaped unicode, so escaping the term to `\u00e9` here would never match the
+     * `é` actually stored (ticket 09).
+     *
      * @return string $formatedValue
      */
     private function convertToRawJSONStringForREGEXP(string $rawValue): string
     {
-        $valueJSON = substr(json_encode($rawValue), 1, strlen(json_encode($rawValue)) - 2);
+        $encoded = (string)json_encode($rawValue, PageBody::JSON_FLAGS);
+        $valueJSON = substr($encoded, 1, strlen($encoded) - 2);
         $formattedValue = str_replace(['\\', '\''], ['\\\\', '\\\''], $valueJSON);
 
         return $this->dbService->escape($formattedValue);
@@ -372,7 +381,7 @@ class EntryManager
         // on sauve les valeurs d'une fiche dans une PageWiki, retourne 0 si succès
         $saved = $this->pageManager->save(
             $data['tag'],
-            json_encode($data),
+            $data,
             '',
             $ignoreAcls, // Ignore les ACLs
             $data['updated_at']
@@ -488,7 +497,7 @@ class EntryManager
         // get the sendmail and remove it before saving
         $sendmail = $this->removeSendmail($data);
         // on sauve les valeurs d'une fiche dans une PageWiki, pour garder l'historique
-        $this->pageManager->save($data['tag'], json_encode($data), '');
+        $this->pageManager->save($data['tag'], $data, '');
 
         $formProperties = $this->container->get(FormPropertiesService::class);
         $formProperties->applyEntryAcls($form, $data);
@@ -656,9 +665,15 @@ class EntryManager
         'statut_fiche' => 'status',
     ];
 
+    /**
+     * Normalizes an already-decoded entry body (ticket 09: `pages.body` is a JSON object
+     * for every Content type, and PageManager hands it back decoded).
+     *
+     * @param array<string, mixed>|null $body
+     */
     public function decode($body)
     {
-        $data = json_decode($body, true);
+        $data = $body;
         if (is_iterable($data)) {
             foreach (self::LEGACY_ENTRY_KEYS as $legacyKey => $key) {
                 if (array_key_exists($legacyKey, $data) && !array_key_exists($key, $data)) {
@@ -1122,7 +1137,8 @@ class EntryManager
 
         $entriesIds = [];
         foreach ($pages as $page) {
-            $entry = $this->decode($page['body']);
+            // raw SQL rows here, so the body is still stored text
+            $entry = $this->decode(PageBody::decode($page['body']));
 
             foreach ($attributesNames as $attributeName) {
                 if ($mode === 'rename') {
@@ -1152,12 +1168,11 @@ class EntryManager
                     return mb_convert_encoding($value, 'UTF-8', 'ISO-8859-1');
                 }, $entry);
             }
-            $body = json_encode($entry);
             if ($applyOnAllRevisions) {
-                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET body = '" . $this->dbService->escape(chop($body)) . "'" .
+                $this->dbService->query('UPDATE' . $this->dbService->prefixTable('pages') . "SET body = '" . $this->dbService->escape(PageBody::encode($entry)) . "'" .
                     " WHERE id = '" . $this->dbService->escape($page['id']) . "';");
             } else {
-                $this->pageManager->save($entry['tag'], $body);
+                $this->pageManager->save($entry['tag'], $entry);
             }
         }
 

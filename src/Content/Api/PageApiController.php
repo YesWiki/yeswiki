@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\DiffService;
 use YesWiki\Content\Service\DuplicationManager;
 use YesWiki\Content\Service\EntryManager;
@@ -63,14 +64,14 @@ class PageApiController extends YesWikiController
             $page['html'] = $entryController->view($page['tag'], $page['time'], false);
             $page['code'] = $diffService->formatJsonCodeIntoHtmlTable($page);
         } else {
-            $page['html'] = $this->getService(MarkdownFormatterService::class)->format($page['body']);
-            $page['code'] = $page['body'];
+            $page['code'] = PageBody::content($page['body']);
+            $page['html'] = $this->getService(MarkdownFormatterService::class)->format($page['code']);
         }
 
         if ($request->get('includeDiff')) {
             $prevVersion = $pageManager->getPreviousRevision($page);
             if (!$prevVersion) {
-                $prevVersion = ['tag' => $tag, 'body' => '', 'time' => null];
+                $prevVersion = ['tag' => $tag, 'body' => [], 'time' => null];
             }
             $page['commit_diff_html'] = $diffService->getPageDiff($prevVersion, $page, true);
             $page['commit_diff_code'] = $diffService->getPageDiff($prevVersion, $page, false);
@@ -94,7 +95,7 @@ class PageApiController extends YesWikiController
         }
 
         $pageManager = $this->getService(PageManager::class);
-        $pageManager->save($tag, strval($body));
+        $pageManager->save($tag, [PageBody::CONTENT => strval($body)]);
 
         $page = $pageManager->getOne($tag);
 

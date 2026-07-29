@@ -87,16 +87,20 @@ function check_parameters_mail($type, $mail_sender, $name_sender, $mail_receiver
 
 function getPageTitle($page)
 {
+    // the body is a decoded array (ticket 09) : an entry carries its title as a key
+    // ('bf_titre' on legacy bodies), a page its markup under 'content'
+    $body = $page['body'] ?? [];
+    $content = YesWiki\Content\Entity\PageBody::content($body);
     // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2, on met la PageWiki sinon
-    preg_match_all('/"bf_titre":"(.*)"/U', $page['body'], $titles);
-    if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-        $title = preg_replace_callback('/\\\\u([a-f0-9]{4})/', 'utf8_special_decode', $titles[1][0]);
+    $entryTitle = $body[YesWiki\Content\Entity\PageBody::TITLE] ?? $body['bf_titre'] ?? '';
+    if ($entryTitle != '') {
+        $title = $entryTitle;
     } else {
-        preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
+        preg_match_all("/\={6}(.*)\={6}/U", $content, $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
             $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
         } else {
-            preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
+            preg_match_all('/={5}(.*)={5}/U', $content, $titles);
             if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
                 $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
             } else {

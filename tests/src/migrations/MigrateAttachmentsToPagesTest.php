@@ -3,6 +3,7 @@
 namespace YesWiki\Test\Core\Migrations;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
@@ -76,7 +77,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         // (qq.lib.php's "simplefilename"), never the raw on-disk name with its
         // page-tag prefix and timestamp suffix -- see recoverOriginalFilename()'s doc
         $body = '{{attach file="my_report.txt" desc="report"}}';
-        $pageManager->save(self::OWNER_PAGE_TAG, $body, '', true);
+        $pageManager->save(self::OWNER_PAGE_TAG, [PageBody::CONTENT => $body], '', true);
         $aclService->save(self::OWNER_PAGE_TAG, 'read', '@admins');
 
         $fixtureDir = sys_get_temp_dir() . '/MigrateAttachmentsToPagesTest-' . uniqid();
@@ -112,8 +113,8 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
 
             $rewritePageBodies->invoke($migration, $renameMapByOwnerPage, $pageManager);
             $rewritten = $pageManager->getOne(self::OWNER_PAGE_TAG, null, true, true);
-            $this->assertStringContainsString('file="' . $newTag . '"', $rewritten['body']);
-            $this->assertStringNotContainsString('file="my_report.txt"', $rewritten['body']);
+            $this->assertStringContainsString('file="' . $newTag . '"', PageBody::content($rewritten['body']));
+            $this->assertStringNotContainsString('file="my_report.txt"', PageBody::content($rewritten['body']));
         } finally {
             if (!is_null($newTag)) {
                 $fileManager->delete($newTag);
@@ -137,8 +138,8 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
         $otherPageTag = self::OWNER_PAGE_TAG . 'Other';
 
-        $pageManager->save(self::OWNER_PAGE_TAG, '{{attach file="shared.txt"}}', '', true);
-        $pageManager->save($otherPageTag, '{{attach file="shared.txt"}}', '', true);
+        $pageManager->save(self::OWNER_PAGE_TAG, [PageBody::CONTENT => '{{attach file="shared.txt"}}'], '', true);
+        $pageManager->save($otherPageTag, [PageBody::CONTENT => '{{attach file="shared.txt"}}'], '', true);
 
         $migration = new \MigrateAttachmentsToPages();
         $migration->setServices($wiki->services);
@@ -154,8 +155,8 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         try {
             $rewritePageBodies->invoke($migration, $renameMapByOwnerPage, $pageManager);
 
-            $ownerBody = $pageManager->getOne(self::OWNER_PAGE_TAG, null, true, true)['body'];
-            $otherBody = $pageManager->getOne($otherPageTag, null, true, true)['body'];
+            $ownerBody = PageBody::content($pageManager->getOne(self::OWNER_PAGE_TAG, null, true, true)['body']);
+            $otherBody = PageBody::content($pageManager->getOne($otherPageTag, null, true, true)['body']);
             $this->assertStringContainsString('file="tag-for-owner-page"', $ownerBody);
             $this->assertStringContainsString('file="tag-for-other-page"', $otherBody);
         } finally {

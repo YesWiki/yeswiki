@@ -2,8 +2,9 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Identity\Service\AclService;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -30,7 +31,7 @@ class PageManagerGetReadablePageTagsTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
         $aclService = $wiki->services->get(AclService::class);
 
-        $pageManager->save(self::RESTRICTED_TAG, 'secret content', '', true);
+        $pageManager->save(self::RESTRICTED_TAG, [PageBody::CONTENT => 'secret content'], '', true);
         $aclService->save(self::RESTRICTED_TAG, 'read', '@admins');
         unset($_SESSION['user']);
 

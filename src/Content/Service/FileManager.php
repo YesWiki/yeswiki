@@ -115,7 +115,9 @@ class FileManager
             return null;
         }
 
-        return array_merge(['tag' => $tag], $this->pageManager->getMetadata($tag) ?? []);
+        // a file's attributes are body fields (ADR-0002's ticket-09 amendment); metadata
+        // still holds this Content's ACLs, which are not part of the file entry
+        return array_merge(['tag' => $tag], $page['body'] ?? []);
     }
 
     public function getPhysicalPath(string $tag): ?string
@@ -139,21 +141,21 @@ class FileManager
     {
         $tag = $this->pageManager->suggestFreeTag($this->slugForTag($originalFilename));
 
-        $saved = $this->pageManager->save($tag, '', '', true);
+        // a file's own attributes are its data, so they live in the body -- metadata is
+        // presentation and access only (ADR-0002's ticket-09 amendment)
+        $saved = $this->pageManager->save($tag, [
+            'original_filename' => $originalFilename,
+            'stored_filename' => $storedFilename,
+            'size' => $size,
+            'mime_type' => $mimeType,
+            'uploaded_from' => $ownerPageTag,
+        ], '', true);
         if ($saved !== 0) {
             throw new \Exception("Could not save new file entry for '$originalFilename'.");
         }
 
         $this->tripleStore->create($tag, TripleStore::TYPE_URI, self::TRIPLES_FILE_TYPE, '', '');
         $this->fileTagCache[$tag] = true;
-
-        $this->pageManager->setMetadata($tag, [
-            'original_filename' => $originalFilename,
-            'stored_filename' => $storedFilename,
-            'size' => $size,
-            'mime_type' => $mimeType,
-            'uploaded_from' => $ownerPageTag,
-        ]);
 
         $readAcl = $this->aclService->load($ownerPageTag, 'read');
         if (!empty($readAcl['list'])) {

@@ -130,7 +130,7 @@ class FormTemplateJsonTest extends YesWikiTestCase
             // ... the page body stores a NATIVE json array (no string-in-string double
             // encoding) ...
             $page = $pageManager->getOne($form['tag'], null, true, true);
-            $body = json_decode($page['body'], true);
+            $body = $page['body'];
             $this->assertIsArray($body['template']);
             $this->assertCount(4, $body['template']);
             $this->assertSame('texte', $body['template'][0]['type']);

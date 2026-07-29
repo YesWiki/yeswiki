@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredPerformable;
@@ -59,7 +60,7 @@ abstract class YesWikiAction extends YesWikiPerformable
         if (!isset($GLOBALS["check_$pagetag"][$action_name])) {
             $GLOBALS["check_$pagetag"][$action_name] =
                 $this->getService(TemplateHelperService::class)
-                    ->checkGraphicalElements($action_name, $pagetag, ($this->getService(PageContext::class)->getPage() ?? [])['body'] ?? '');
+                    ->checkGraphicalElements($action_name, $pagetag, PageBody::content(($this->getService(PageContext::class)->getPage() ?? [])['body'] ?? []));
         }
 
         return $GLOBALS["check_$pagetag"][$action_name];

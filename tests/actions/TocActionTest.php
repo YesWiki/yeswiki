@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Actions;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -31,7 +32,7 @@ class TocActionTest extends YesWikiTestCase
         // two headings sharing a title on purpose: the old counter scheme could not tell
         // them apart in a way the two sides agreed on
         $body = "{{toc}}\n\n## First heading\n\nSome text.\n\n## Second heading\n\nMore.\n\n## First heading\n\nAgain.\n";
-        $pageManager->save(self::PAGE_TAG, $body, '', true);
+        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => $body], '', true);
         $page = $pageManager->getOne(self::PAGE_TAG);
         $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($page);
 

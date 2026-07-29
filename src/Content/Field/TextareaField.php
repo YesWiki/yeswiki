@@ -5,6 +5,7 @@ namespace YesWiki\Content\Field;
 use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attach;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -113,7 +114,7 @@ class TextareaField extends BazarField
                 $oldPageArray = $pageContext->getPage();
                 $pageContext->setTag($entry['tag']);
                 $pageContext->setPage($this->getService(\YesWiki\Content\Service\PageManager::class)->getOne($pageContext->getTag()));
-                $pageContext->setPageField('body', $value);
+                $pageContext->setPageField('body', [PageBody::CONTENT => $value]);
 
                 $value = $this->getService(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($value);
                 // if the textarea have some actions which return "", they are replaced by '' otherwise it crashed
@@ -173,7 +174,7 @@ class TextareaField extends BazarField
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($matches[3][$key]);
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
                     'tag' => $matches[3][$key],
-                    'body' => '{##}',
+                    'body' => [PageBody::CONTENT => '{##}'],
                     'time' => date('YmdHis'),
                     'owner' => '',
                     'user' => '',
@@ -183,7 +184,7 @@ class TextareaField extends BazarField
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
                 $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
                     'tag' => $entry['tag'],
-                    'body' => (string)json_encode($entry),
+                    'body' => $entry,
                     'time' => $entryCreationTime,
                     'owner' => '',
                     'user' => '',

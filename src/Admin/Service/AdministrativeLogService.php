@@ -2,6 +2,7 @@
 
 namespace YesWiki\Admin\Service;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\DbService;
@@ -82,8 +83,9 @@ class AdministrativeLogService
     protected function appendContentToPage(string $content, string $tag): int
     {
         $page = $this->pageManager->getOne($tag);
-        $body = empty($page['body']) ? '' : $page['body'];
-        $this->pageManager->save($tag, $body . $content, '', true);
+        $body = $page['body'] ?? [];
+        $body[PageBody::CONTENT] = PageBody::content($body) . $content;
+        $this->pageManager->save($tag, $body, '', true);
 
         // now we render it internally so we can write the updated link table.
         $page = $this->pageManager->getOne($tag);

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -22,14 +23,14 @@ class PageManagerMetadataTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
-            $pageManager->save(self::TAG, 'first body', '', true);
+            $pageManager->save(self::TAG, [PageBody::CONTENT => 'first body'], '', true);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
 
             // a plain content edit (no metadata change) must not wipe out metadata
-            $pageManager->save(self::TAG, 'second body', '', true);
+            $pageManager->save(self::TAG, [PageBody::CONTENT => 'second body'], '', true);
             $page = $pageManager->getOne(self::TAG);
 
-            $this->assertSame('second body', $page['body']);
+            $this->assertSame('second body', PageBody::content($page['body']));
             $this->assertSame('margot', $page['metadatas']['theme'] ?? null);
         } finally {
             $pageManager->deleteOrphaned(self::TAG);
@@ -46,7 +47,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
             // that column, so revisions created within the same wall-clock second are
             // ambiguous to look up individually -- force real gaps so every revision below
             // gets a distinct time, same as real edits a moment apart would
-            $pageManager->save(self::TAG, 'v1 body', '', true);
+            $pageManager->save(self::TAG, [PageBody::CONTENT => 'v1 body'], '', true);
             sleep(1);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
             $v1 = $pageManager->getOne(self::TAG);
@@ -76,7 +77,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
-            $pageManager->save(self::TAG, 'body', '', true);
+            $pageManager->save(self::TAG, [PageBody::CONTENT => 'body'], '', true);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot', 'style' => 'default.css']);
             $pageManager->setMetadata(self::TAG, ['theme' => 'colibris']);
 
@@ -98,7 +99,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
-            $pageManager->save(self::TAG, 'body', '', true);
+            $pageManager->save(self::TAG, [PageBody::CONTENT => 'body'], '', true);
 
             $metadata = $pageManager->getMetadata(self::TAG);
 
@@ -114,7 +115,7 @@ class PageManagerMetadataTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
-            $pageManager->save(self::TAG, 'body', '', true);
+            $pageManager->save(self::TAG, [PageBody::CONTENT => 'body'], '', true);
             $pageManager->setMetadata(self::TAG, ['theme' => 'margot']);
             $revisionsAfterFirstSet = count($pageManager->getRevisions(self::TAG));
 

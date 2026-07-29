@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
@@ -91,13 +92,14 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         require_once YESWIKI_SOURCE_DIR . '/src/Kernel/lang.functions.php';
         $langIncludedPage = $this->getService(PageManager::class)->getOne(trim($this->getService(PerformableArguments::class)->get('page')));
         if (!empty($langIncludedPage['body'])) {
+            $langBody = PageBody::content($langIncludedPage['body']);
             $langFilteredBody = filterBodyByLanguage(
-                $langIncludedPage['body'],
+                $langBody,
                 $GLOBALS['prefered_language'],
                 $this->getService(RuntimeConfig::class)['default_language']
             );
-            if ($langFilteredBody !== $langIncludedPage['body']) {
-                $langIncludedPage['body'] = $langFilteredBody;
+            if ($langFilteredBody !== $langBody) {
+                $langIncludedPage['body'][PageBody::CONTENT] = $langFilteredBody;
                 // Hack : mise a jour du cache avec la nouvelle version.
                 $this->getService(PageManager::class)->cache($langIncludedPage);
             }
@@ -321,7 +323,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         elseif ($this->getService(AclService::class)->hasAccess('read', $incPageName)) {
             $this->getService(LinkTracker::class)->forceAddIfNotIncluded($incPageName);
             $this->getService(InclusionStack::class)->register($incPageName);
-            $output = $this->getService(MarkdownFormatterService::class)->format($incPage['body']);
+            $output = $this->getService(MarkdownFormatterService::class)->format(PageBody::content($incPage['body']));
             if (isset($classes)) {
                 if ($this->getService(PerformableArguments::class)->get('edit') == 'show') {
                     $editLink = '<div class="include_editlink"><a href="' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '">[' . _t('EDITION') . "]</a></div>\n";

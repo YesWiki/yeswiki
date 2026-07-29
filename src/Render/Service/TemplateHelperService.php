@@ -6,6 +6,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
@@ -43,24 +44,24 @@ class TemplateHelperService
     {
         $image = '';
         if (isset($page['body'])) {
+            // the body is a decoded array (ticket 09): the wiki markup lives under
+            // `content`, an entry's image field is a key of its own
+            $body = $page['body'];
+            $content = PageBody::content($body);
             // on cherche les actions attach avec image, puis les images bazar
             $images = [];
-            preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png))\".*\}\}/U", $page['body'], $images);
+            preg_match("/\{\{attach.*file=\"(.*\.(?i)(jpe?g|png))\".*\}\}/U", $content, $images);
             if (!empty($images[1])) {
                 $image = $this->getResizedFilename($images[1], $page, $page['tag'], $width, $height, true);
             } else {
-                $images = [];
-                if (preg_match('/"imagebf_image":"(.*)"/U', $page['body'], $images)
-                        && !empty($images[1])) {
-                    $imageFileName = json_decode('"' . $images[1] . '"', true);
-                    if (!empty($imageFileName)) {
-                        if (file_exists("files/$imageFileName")) {
-                            $image = $this->getResizedFilename("files/$imageFileName", $page, $page['tag'], $width, $height, false);
-                        }
+                $imageFileName = $body['imagebf_image'] ?? '';
+                if (!empty($imageFileName)) {
+                    if (file_exists("files/$imageFileName")) {
+                        $image = $this->getResizedFilename("files/$imageFileName", $page, $page['tag'], $width, $height, false);
                     }
                 } else {
                     $images = [];
-                    if (preg_match("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $page['body'], $images)
+                    if (preg_match("/<img.*src=\"(.*\.(jpe?g|png))\"/U", $content, $images)
                         && !empty($images[1])) {
                         if (file_exists('files/' . basename($images[1][0]))) {
                             $image = $this->getResizedFilename('files/' . basename($images[1]), $page, $page['tag'], $width, $height, false);
@@ -366,15 +367,17 @@ class TemplateHelperService
                 $title = $entry['bf_titre'];
             }
         } else {
+            // the markup lives under `content` in the decoded body (ticket 09)
+            $content = PageBody::content($page['body']);
             // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
-            if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $page['body'], $titles)) {
+            if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $content, $titles)) {
                 $title = $titles[1];
             } else {
-                preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
+                preg_match_all("/\={6}(.*)\={6}/U", $content, $titles);
                 if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
                     $title = $this->container->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
                 } else {
-                    preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
+                    preg_match_all('/={5}(.*)={5}/U', $content, $titles);
                     if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
                         $title = $this->container->get(MarkdownFormatterService::class)->format(trim($titles[1][0]));
                     }

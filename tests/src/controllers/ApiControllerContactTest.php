@@ -5,6 +5,7 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Api\ContactApiController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\Mailer;
@@ -42,10 +43,10 @@ class ApiControllerContactTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
         $aclService = $wiki->services->get(AclService::class);
 
-        $pageManager->save(self::PRIVATE_PAGE_TAG, '{{contact mail="test@example.com"}}', '', true);
+        $pageManager->save(self::PRIVATE_PAGE_TAG, [PageBody::CONTENT => '{{contact mail="test@example.com"}}'], '', true);
         $aclService->save(self::PRIVATE_PAGE_TAG, 'read', '@admins');
 
-        $pageManager->save(self::PUBLIC_PAGE_TAG, '{{contact mail="test@example.com"}}', '', true);
+        $pageManager->save(self::PUBLIC_PAGE_TAG, [PageBody::CONTENT => '{{contact mail="test@example.com"}}'], '', true);
         $aclService->save(self::PUBLIC_PAGE_TAG, 'read', '*');
 
         return $wiki;

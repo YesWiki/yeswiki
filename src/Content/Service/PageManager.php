@@ -5,6 +5,7 @@ namespace YesWiki\Content\Service;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\AdministrativeLogService;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
@@ -87,6 +88,7 @@ class PageManager
                 // not always-latest, so reverting/reading an old revision sees that
                 // revision's metadata (ACLs, theme, ...), not the current one
                 $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
+                $page['body'] = PageBody::decode($page['body'] ?? null);
             }
 
             if (!$bypassAcls) {
@@ -248,6 +250,7 @@ class PageManager
         $page = $this->dbService->loadSingle('select * from' . $this->dbService->prefixTable('pages') . "where id = '" . $this->dbService->escape($id) . "' limit 1");
         if ($page) {
             $page['metadatas'] = $this->decodeMetadata($page['metadata'] ?? null);
+            $page['body'] = PageBody::decode($page['body'] ?? null);
         }
         if (!$bypassAcls) {
             $page = $this->checkEntriesACL([$page], $page['tag'])[0];
@@ -314,12 +317,18 @@ class PageManager
 
     public function getPreviousRevision($page)
     {
-        return $this->checkEntriesACL([$this->dbService->loadSingle("
+        $previous = $this->dbService->loadSingle("
             SELECT * FROM {$this->dbService->prefixTable('pages')} 
             WHERE tag = '{$this->dbService->escape($page['tag'])}' AND time < '{$page['time']}'
             ORDER BY time DESC
             LIMIT 1
-        ")], $page['tag'])[0];
+        ");
+        if ($previous) {
+            $previous['metadatas'] = $this->decodeMetadata($previous['metadata'] ?? null);
+            $previous['body'] = PageBody::decode($previous['body'] ?? null);
+        }
+
+        return $this->checkEntriesACL([$previous], $page['tag'])[0];
     }
 
     public function countRevisions($page)
@@ -411,11 +420,6 @@ class PageManager
         return null;
     }
 
-    public function searchFullText($phrase): array
-    {
-        return $this->dbService->loadAll('select * from' . $this->dbService->prefixTable('pages') . "where latest = 'Y' and (body LIKE '%" . $this->dbService->escape($phrase) . "%' OR tag LIKE '%" . $this->dbService->escape($phrase) . "%')");
-    }
-
     public function getWanted(): array
     {
         $r = 'SELECT l.to_tag AS tag, COUNT(l.from_tag) AS count FROM ' . $this->dbService->prefixTable('links') . ' as l LEFT JOIN ' . $this->dbService->prefixTable('pages') . ' as p ON l.to_tag = p.tag WHERE p.tag IS NULL GROUP BY l.to_tag ORDER BY count DESC, tag ASC';
@@ -462,20 +466,22 @@ class PageManager
      * SavePage
      * Sauvegarde un contenu dans une page donnee.
      *
-     * @param string $body
-     *                            Contenu a sauvegarder dans la page
-     * @param string $tag
-     *                            Nom de la page
-     * @param string $comment_on
-     *                            Indication si c'est un commentaire
-     * @param bool   $bypass_acls
-     *                            Indication si on bypasse les droits d'ecriture
-     * @param bool   $forcedDate
-     *                            if null use current date for page creation time, otherwise use this value
+     * @param string                  $body
+     *                                             Contenu a sauvegarder dans la page
+     * @param string                  $tag
+     *                                             Nom de la page
+     * @param string                  $comment_on
+     *                                             Indication si c'est un commentaire
+     * @param bool                    $bypass_acls
+     *                                             Indication si on bypasse les droits d'ecriture
+     * @param bool                    $forcedDate
+     *                                             if null use current date for page creation time, otherwise use this value
+     * @param array<array-key, mixed> $body        decoded body -- one shape for every Content type
+     *                                             (ticket 09). Wiki markup goes under `content`.
      *
      * @return int Code d'erreur : 0 (succes), 1 (l'utilisateur n'a pas les droits)
      */
-    public function save($tag, $body, $comment_on = '', $bypass_acls = false, $forcedDate = null): int
+    public function save($tag, array $body, $comment_on = '', $bypass_acls = false, $forcedDate = null): int
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -524,8 +530,10 @@ class PageManager
                     $comment_on = $oldPage['comment_on'];
                 }
 
-                // don't save if body didn't change
-                if (rtrim($oldPage['body']) == rtrim($body)) {
+                // don't save if body didn't change. Compared decoded and key-order-blind:
+                // a string compare on JSON would both invent revisions out of a re-encode
+                // that only moved keys around, and miss genuine no-ops.
+                if (PageBody::equals($oldPage['body'], $body)) {
                     return 0;
                 }
             }
@@ -548,7 +556,7 @@ class PageManager
                 "'" . $this->dbService->escape($owner) . "'",
                 "'" . $this->dbService->escape($user) . "'",
                 "'Y'",
-                "'" . $this->dbService->escape(chop($body)) . "'",
+                "'" . $this->dbService->escape(PageBody::encode($body)) . "'",
                 "''",
                 // metadata (ACLs, theme, ...) isn't part of this edit -- carry the previous
                 // revision's value forward unchanged, same as owner/comment_on above (or the
@@ -663,7 +671,7 @@ class PageManager
             "'" . $this->dbService->escape($oldPage['owner']) . "'",
             "'" . $this->dbService->escape($this->authenticationService->getLoggedUserName()) . "'",
             "'Y'",
-            "'" . $this->dbService->escape($oldPage['body']) . "'",
+            "'" . $this->dbService->escape(PageBody::encode($oldPage['body'])) . "'",
             "''",
             "'" . $this->dbService->escape($this->encodeMetadata($metadata)) . "'",
         ];

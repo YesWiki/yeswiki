@@ -2,6 +2,7 @@
 
 namespace YesWiki\Test\Core\Service;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
@@ -36,7 +37,7 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
-            $pageManager->save(self::TAKEN_TAG, 'existing page content', '', true);
+            $pageManager->save(self::TAKEN_TAG, [PageBody::CONTENT => 'existing page content'], '', true);
 
             $this->assertTrue($pageManager->tagExists(self::TAKEN_TAG));
             $suggested = $pageManager->suggestFreeTag(self::TAKEN_TAG);
@@ -55,8 +56,8 @@ class PageManagerTagCollisionTest extends YesWikiTestCase
         $pageManager = $wiki->services->get(PageManager::class);
 
         try {
-            $pageManager->save(self::TAKEN_TAG, 'v1', '', true);
-            $pageManager->save(self::TAKEN_TAG . '2', 'v2 -- also already taken', '', true);
+            $pageManager->save(self::TAKEN_TAG, [PageBody::CONTENT => 'v1'], '', true);
+            $pageManager->save(self::TAKEN_TAG . '2', [PageBody::CONTENT => 'v2 -- also already taken'], '', true);
 
             $suggested = $pageManager->suggestFreeTag(self::TAKEN_TAG);
 

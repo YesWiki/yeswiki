@@ -4,6 +4,7 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
@@ -40,7 +41,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
 
-        $pageManager->save(self::PAGE_TAG, 'original content', '', true);
+        $pageManager->save(self::PAGE_TAG, [PageBody::CONTENT => 'original content'], '', true);
         $page = $pageManager->getOne(self::PAGE_TAG);
 
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
@@ -81,7 +82,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
             }
             $this->assertTrue($redirected, 'a successful save must redirect');
             $reloaded = $pageManager->getOne(self::PAGE_TAG);
-            $this->assertSame('NEW SAVED CONTENT', trim($reloaded['body']));
+            $this->assertSame('NEW SAVED CONTENT', trim(PageBody::content($reloaded['body'])));
 
             // stale-edit conflict: submitting against the OLD 'previous' id again must not overwrite
             $_POST = ['submit' => 'Sauver', 'body' => 'CONFLICTING CONTENT', 'previous' => $page['id']];
@@ -89,7 +90,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
             $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($reloaded);
             $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             $stillSaved = $pageManager->getOne(self::PAGE_TAG);
-            $this->assertSame('NEW SAVED CONTENT', trim($stillSaved['body']), 'a stale save must be rejected, not silently overwrite');
+            $this->assertSame('NEW SAVED CONTENT', trim(PageBody::content($stillSaved['body'])), 'a stale save must be rejected, not silently overwrite');
         } finally {
             $pageManager->deleteOrphaned(self::PAGE_TAG);
             $authenticationService->logout();

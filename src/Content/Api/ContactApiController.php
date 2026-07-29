@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\ApiResponse;
@@ -80,7 +81,7 @@ class ContactApiController extends YesWikiController
                 $themeManager = $this->getService(ThemeManager::class);
                 $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
                 $fileContent = file_exists($chemin) ? file_get_contents($chemin) : '{WIKINI_PAGE}';
-                $body = str_replace('{WIKINI_PAGE}', $page['body'] ?? '', $fileContent);
+                $body = str_replace('{WIKINI_PAGE}', PageBody::content($page['body'] ?? []), $fileContent);
                 $nbActionMail = $request->request->get('nbactionmail');
                 $mailReceiver = !empty($nbActionMail) ? FindMailFromWikiPage($body, $nbActionMail) : false;
                 if ($mailReceiver) {
@@ -101,7 +102,7 @@ class ContactApiController extends YesWikiController
                 if ($entryManager->isEntry($pageTag)) {
                     $renderedPage = $this->getService(EntryController::class)->view($pageTag);
                 } else {
-                    $renderedPage = $this->getService(MarkdownFormatterService::class)->format($page['body'] ?? '');
+                    $renderedPage = $this->getService(MarkdownFormatterService::class)->format(PageBody::content($page['body'] ?? []));
                 }
                 $messageHtml = html_entity_decode($renderedPage);
                 $messageTxt = strip_tags($messageHtml);

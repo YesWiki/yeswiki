@@ -1,5 +1,6 @@
 <?php
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
@@ -157,7 +158,8 @@ class MigrateAttachmentsToPages extends YesWikiMigration
     {
         foreach ($renameMapByOwnerPage as $ownerPageTag => $renameMap) {
             $page = $pageManager->getOne($ownerPageTag, null, true, true);
-            if (empty($page) || empty($page['body']) || strpos($page['body'], 'file="') === false) {
+            $markup = empty($page) ? '' : PageBody::content($page['body']);
+            if ($markup === '' || strpos($markup, 'file="') === false) {
                 continue;
             }
 
@@ -167,11 +169,13 @@ class MigrateAttachmentsToPages extends YesWikiMigration
                 return strlen($b) <=> strlen($a);
             });
 
-            $newBody = $page['body'];
+            $newMarkup = $markup;
             foreach ($renameMap as $originalFilename => $newTag) {
-                $newBody = str_replace('file="' . $originalFilename . '"', 'file="' . $newTag . '"', $newBody);
+                $newMarkup = str_replace('file="' . $originalFilename . '"', 'file="' . $newTag . '"', $newMarkup);
             }
-            if ($newBody !== $page['body']) {
+            if ($newMarkup !== $markup) {
+                $newBody = $page['body'];
+                $newBody[PageBody::CONTENT] = $newMarkup;
                 $pageManager->save($ownerPageTag, $newBody, '', true);
             }
         }

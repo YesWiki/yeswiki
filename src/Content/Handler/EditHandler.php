@@ -4,6 +4,7 @@ namespace YesWiki\Content\Handler;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
@@ -343,7 +344,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             // fetch fields
             $previous = $request->request->get('previous') ?: (isset($this->getService(PageContext::class)->getPage()['id']) ? $this->getService(PageContext::class)->getPage()['id'] : null);
-            $body = $request->request->get('body') ?: (isset($this->getService(PageContext::class)->getPage()['body']) ? $this->getService(PageContext::class)->getPage()['body'] : null);
+            // the editor edits prose: the posted field is markup, the fallback is the
+            // `content` attribute of the loaded page's body (ticket 09)
+            $body = (string)($request->request->get('body') ?: (isset($this->getService(PageContext::class)->getPage()['body']) ? PageBody::content($this->getService(PageContext::class)->getPage()['body']) : null));
 
             $cancelUrl = addslashes($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
 
@@ -371,15 +374,16 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     // SAVE AND REDIRECT
                     $body = str_replace("\r", '', $body);
                     // teste si la nouvelle page est differente de la précédente
-                    if (isset($this->getService(PageContext::class)->getPage()['body']) && rtrim($body) == rtrim($this->getService(PageContext::class)->getPage()['body'])) {
+                    if (isset($this->getService(PageContext::class)->getPage()['body']) && rtrim($body) == rtrim(PageBody::content($this->getService(PageContext::class)->getPage()['body']))) {
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
                         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                     } else {
-                        // l'encodage de la base est en iso-8859-1, voir s'il faut convertir
-                        $body = $body;
-
-                        // add page (revisions)
-                        $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $body, !empty($this->getService(PageContext::class)->getPage()['comment_on']) ? $this->getService(PageContext::class)->getPage()['comment_on'] : '');
+                        // add page (revisions). The editor edits prose, which is one
+                        // attribute of the page's body (ticket 09) -- the rest of the body
+                        // (keywords, webmaster fields) rides along untouched.
+                        $newBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
+                        $newBody[PageBody::CONTENT] = $body;
+                        $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, !empty($this->getService(PageContext::class)->getPage()['comment_on']) ? $this->getService(PageContext::class)->getPage()['comment_on'] : '');
 
                         // now we render it internally so we can write the updated link table.
                         $page = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag());

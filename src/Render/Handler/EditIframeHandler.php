@@ -3,6 +3,7 @@
 namespace YesWiki\Render\Handler;
 
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
@@ -66,7 +67,7 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
 
             if ($contenu = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
-                $output .= replaceLinksWithIframe($this->getService(MarkdownFormatterService::class)->format($contenu['body']));
+                $output .= replaceLinksWithIframe($this->getService(MarkdownFormatterService::class)->format(PageBody::content($contenu['body'])));
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $output .= '<div class="vertical-center white-bg">' . "\n"
