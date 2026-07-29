@@ -68,13 +68,23 @@ writeFileSync(
     'export const legacyIconMap = ' +
     JSON.stringify(jsMap, null, 2) +
     '\n' +
+    '// every id present in the sprite (the map values + the generator EXTRAS)\n' +
+    'const spriteNames = new Set(' +
+    JSON.stringify(
+      names
+        .map((ref) =>
+          ref.includes(':') ? `${ref.split(':')[1]}-${ref.split(':')[0]}` : ref,
+        )
+        .map((id) => id.replace(/-outline$/, '')),
+    ) +
+    ')\n' +
     `export function legacyIconToSprite(classString, extraClass = '') {\n` +
-    `  const faName = String(classString || '').split(/\\s+/).map((c) => c.replace(/^fa-/, '')).find((c) => legacyIconMap[c])\n` +
-    `  if (!faName) {\n    return null\n  }\n` +
+    `  const symbol = String(classString || '').split(/\\s+/).map((c) => c.replace(/^fa-/, '')).map((c) => legacyIconMap[c] || (spriteNames.has(c) ? c : null)).find(Boolean)\n` +
+    `  if (!symbol) {\n    return null\n  }\n` +
     `  const cls = ('yw-icon ' + extraClass).trim()\n` +
     `  // base-absolute so the ref survives path-shaped page URLs (/PageTag/edit)\n` +
     `  const base = (typeof wiki !== 'undefined' && wiki.baseUrl) ? wiki.baseUrl.replace(/\\?+$/, '') : ''\n` +
-    '  return `<svg class="${cls}" aria-hidden="true"><use href="${base}src/assets/icons.svg#${legacyIconMap[faName]}"/></svg>`\n' +
+    '  return `<svg class="${cls}" aria-hidden="true"><use href="${base}src/assets/icons.svg#${symbol}"/></svg>`\n' +
     '}\n',
 )
 console.log(

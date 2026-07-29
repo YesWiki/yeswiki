@@ -327,22 +327,27 @@ class TemplateEngine
     }
 
     /**
-     * Render a historic FontAwesome class string ("fas fa-heart") through the Tabler
-     * sprite, or null when nothing in the string maps (see src/icon-map.json).
+     * Render an icon name through the Tabler sprite: accepts a sprite symbol name
+     * directly ("gauge") or a historic FontAwesome class string ("fas fa-heart",
+     * mapped via src/icon-map.json). Null when nothing resolves.
      */
     public function legacyIconToSprite(?string $classString, string $extraClass = ''): ?string
     {
-        static $map = null;
+        static $map = null, $spriteNames = null;
         if ($map === null) {
             $map = json_decode((string)file_get_contents(YESWIKI_SOURCE_DIR . '/src/icon-map.json'), true) ?: [];
             unset($map['__comment']);
+            // ids actually present in the sprite: the map's values + the
+            // generator's EXTRAS (see src/build-icon-sprite.mjs)
+            $spriteNames = array_fill_keys($map, true) + ['star-filled' => true, 'cursor-text' => true];
         }
         foreach (explode(' ', (string)$classString) as $part) {
             $key = str_starts_with($part, 'fa-') ? substr($part, 3) : $part;
-            if (isset($map[$key])) {
+            $symbol = $map[$key] ?? (isset($spriteNames[$key]) ? $key : null);
+            if ($symbol !== null) {
                 $class = trim('yw-icon ' . $extraClass);
 
-                return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="' . htmlspecialchars($this->spriteUrl(), ENT_QUOTES) . '#' . htmlspecialchars($map[$key], ENT_QUOTES) . '"/></svg>';
+                return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="' . htmlspecialchars($this->spriteUrl(), ENT_QUOTES) . '#' . htmlspecialchars($symbol, ENT_QUOTES) . '"/></svg>';
             }
         }
 

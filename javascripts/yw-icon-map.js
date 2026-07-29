@@ -122,13 +122,15 @@ export const legacyIconMap = {
   "whatsapp": "brand-whatsapp",
   "wrench": "tool"
 }
+// every id present in the sprite (the map values + the generator EXTRAS)
+const spriteNames = new Set(["alert-triangle","arrow-back-up","arrow-down","arrow-forward-up","arrow-left","arrow-right","arrow-up","arrows-horizontal","arrows-sort","arrows-vertical","ban","bold","bookmark","brand-facebook","brand-linkedin","brand-mastodon","brand-telegram","brand-whatsapp","brand-x","briefcase","brush","building-warehouse","calculator","calendar","calendar-event","caret-down","caret-up","chart-bar","chevron-down","chevron-left","chevron-right","chevron-up","circle-check","circle-plus","circle-x","clock","code","copy","cursor-text","database","device-floppy","download","edit","eraser","external-link","eye","eye-off","file","star-filled","filter","folder-open","gauge","heart","help","help-circle","history","home","icons","info-circle","italic","key","link","list","list-details","loader-2","lock","lock-open","login","logout","mail","mail-forward","map-2","maximize","menu-2","message-circle","message-circle-off","messages","minus","music","paperclip","pencil","photo","player-play","player-stop","plus","refresh","repeat","rss","search","settings","share","sitemap","square-plus","stack-2","star","strikethrough","tags","target","thumb-up","tool","trash","underline","upload","user","user-circle","user-plus","users","world","x"])
 export function legacyIconToSprite(classString, extraClass = '') {
-  const faName = String(classString || '').split(/\s+/).map((c) => c.replace(/^fa-/, '')).find((c) => legacyIconMap[c])
-  if (!faName) {
+  const symbol = String(classString || '').split(/\s+/).map((c) => c.replace(/^fa-/, '')).map((c) => legacyIconMap[c] || (spriteNames.has(c) ? c : null)).find(Boolean)
+  if (!symbol) {
     return null
   }
   const cls = ('yw-icon ' + extraClass).trim()
   // base-absolute so the ref survives path-shaped page URLs (/PageTag/edit)
   const base = (typeof wiki !== 'undefined' && wiki.baseUrl) ? wiki.baseUrl.replace(/\?+$/, '') : ''
-  return `<svg class="${cls}" aria-hidden="true"><use href="${base}src/assets/icons.svg#${legacyIconMap[faName]}"/></svg>`
+  return `<svg class="${cls}" aria-hidden="true"><use href="${base}src/assets/icons.svg#${symbol}"/></svg>`
 }

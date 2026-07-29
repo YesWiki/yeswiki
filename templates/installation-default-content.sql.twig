@@ -81,7 +81,7 @@ Vous trouverez un formulaire permettant
 {{editconfig}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererDroits',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
-{{button class="btn-primary btn-xs pull-right" hideifnoaccess="true" icon="fas fa-arrow-right" link="GererDroitsActions" text="Droits des actions/handlers" }}
+{{button class="yw-btn--primary yw-btn--sm pull-right" hideifnoaccess="true" icon="arrow-right" link="GererDroitsActions" text="Droits des actions/handlers" }}
 #### Gérer les droits des pages
 {{gererdroits}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererDroitsActions',  [[ now ]], '//Droits d''accès//
@@ -121,8 +121,8 @@ Vous trouverez un formulaire permettant
 {{admintag}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('GererThemes',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
-{{button class="btn-info" link="LookWiki" text="Personnaliser le look de ce wiki (couleurs, police...)" }}
-{{button class="btn-info pull-right" link="PageCss" text="Ajouter du code CSS (zone sensible)" title="Cette page ne peut contenir QUE du Css / voir le document" }}
+{{button class="yw-btn--info" link="LookWiki" text="Personnaliser le look de ce wiki (couleurs, police...)" }}
+{{button class="yw-btn--info pull-right" link="PageCss" text="Ajouter du code CSS (zone sensible)" title="Cette page ne peut contenir QUE du Css / voir le document" }}
 
 ------
 
@@ -140,8 +140,8 @@ Vous trouverez un formulaire permettant
 {{userstable}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('LookWiki',  [[ now ]], '{{nav links="GererSite, GererDroits, GererThemes, GererUtilisateurs, GererConfig, GererMisesAJour, GererSauvegardes" titles="Gestion du site, Droits, Look, Utilisateurices, Fichier de conf, MAJ / extensions, Sauvegardes"}}
 
-{{button class="btn-info btn-block" link="LookWiki" text="Personnaliser le thème de ce wiki (couleurs, police...)" }}
-{{button class="btn-default btn-block" link="PageCss" text="Ajouter du code CSS (zone sensible)" title="Cette page ne peut contenir QUE du Css / voir le document" }}
+{{button class="yw-btn--info yw-btn--block" link="LookWiki" text="Personnaliser le thème de ce wiki (couleurs, police...)" }}
+{{button class="yw-btn--block" link="PageCss" text="Ajouter du code CSS (zone sensible)" title="Cette page ne peut contenir QUE du Css / voir le document" }}
 
 
 # Personnaliser l''apparence
@@ -158,9 +158,8 @@ Pour plus dinformations sur les possibiltés de personnalisation graphique [cons
 ### Choix du squelette	
 **1col.twig** (squelette par defaut)
 ### Choix du style
-**Margot.css** : Barre de menu colorée
-**Margot-fun.css** : design de la barre de menu sous forme donglets et formes géométriques sur les titres de page
-**Light.css** : Barre de menu blanche
+**yeswiki.css** : Barre de menu blanche (style par defaut)
+**colored-navbar.css** : Barre de menu colorée
 {{end elem="col"}}
 {{col size="4"}}
 ## Configuration graphique
@@ -185,47 +184,39 @@ Ce bandeau de couleur a été créé grâce au composant de mise en forme nommé
 {{end elem="section"}}
 
 ### Boutons
-{{button link="config/root_page" class="btn btn-default" text="btn-default"}}
-{{button link="config/root_page" class="btn btn-primary" text="btn-primary"}}
-{{button link="config/root_page" class="btn btn-secondary-1" text="btn-secondary-1"}}
-{{button link="config/root_page" class="btn btn-secondary-2" text="btn-secondary-2"}}
-{{button link="config/root_page" class="btn btn-success" text="btn-success"}}
-{{button link="config/root_page" class="btn btn-info" text="btn-info"}}
+{{button link="config/root_page" text="yw-btn"}}
+{{button link="config/root_page" class="yw-btn--primary" text="yw-btn--primary"}}
+{{button link="config/root_page" class="yw-btn--info" text="yw-btn--info"}}
+{{button link="config/root_page" class="yw-btn--success" text="yw-btn--success"}}
+{{button link="config/root_page" class="yw-btn--warning" text="yw-btn--warning"}}
+{{button link="config/root_page" class="yw-btn--danger" text="yw-btn--danger"}}
 
 ### Etiquettes
-{{label}}Label-default{{end elem="label"}}
-{{label class="label-primary"}}label-primary{{end elem="label"}}   
-{{label class="label-secondary-1"}}label-secondary-1{{end elem="label"}}   
-{{label class="label-secondary-2"}}label-secondary-2{{end elem="label"}}
-{{label class="label-success"}}label-success{{end elem="label"}}  
-{{label class="label-info"}}label-info{{end elem="label"}}  
-{{label class="label-warning"}}label-warning{{end elem="label"}}  
-{{label class="label-danger"}}label-danger{{end elem="label"}}
+{{label}}yw-label{{end elem="label"}}
+{{label class="yw-label--primary"}}yw-label--primary{{end elem="label"}}
+{{label class="yw-label--info"}}yw-label--info{{end elem="label"}}
+{{label class="yw-label--success"}}yw-label--success{{end elem="label"}}
+{{label class="yw-label--warning"}}yw-label--warning{{end elem="label"}}
+{{label class="yw-label--danger"}}yw-label--danger{{end elem="label"}}
 
 ### Encadrés
 {{panel title="Titre default" type="collapsed"}}
-Contenu panel-default
+Contenu yw-panel
 {{end elem="panel"}}
-{{panel class="panel-primary" title="Titre primary" type="collapsible"}}
-Contenu panel-primary
-{{end elem="panel"}}
-{{panel class="panel-secondary-1" title="Titre secondary-1"}}
-Contenu panel-secondary-1
-{{end elem="panel"}}
-{{panel class="panel-secondary-2" title="Titre secondary-2"}}
-Contenu panel-secondary-2
+{{panel class="yw-panel--primary" title="Titre primary" type="collapsible"}}
+Contenu yw-panel--primary
 {{end elem="panel"}}
 
 ### Accordéons
 {{accordion}}
-{{panel class="panel-success" title="Titre success"}}
-Contenu panel-success
+{{panel class="yw-panel--success" title="Titre success"}}
+Contenu yw-panel--success
 {{end elem="panel"}}
-{{panel class="panel-warning" title="Titre warning"}}
-Contenu panel-warning
+{{panel class="yw-panel--warning" title="Titre warning"}}
+Contenu yw-panel--warning
 {{end elem="panel"}}
-{{panel class="panel-danger" title="Titre danger"}}
-Contenu panel-danger
+{{panel class="yw-panel--danger" title="Titre danger"}}
+Contenu yw-panel--danger
 {{end elem="panel"}}
 {{end elem="accordion"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('MesContenus',  [[ now ]], '# Mes contenus
@@ -424,12 +415,12 @@ Si vous souhaitez simplement être tenu·e informé·e des nouveautés de l''out
 
 Yeswiki repose sur le bénévolat et le don. [En contribuant (même juste un peu)](https://www.helloasso.com/associations/yeswiki/formulaires/1) vous permettez de maintenir les serveurs et de développer de nouvelles fonctionnalités. Merci', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageRapideHaut',  [[ now ]], '{{moteurrecherche template="moteurrecherche_button.twig"}}
-{{buttondropdown icon="cog" caret="0" title="Gestion du site"}}
- - {{button nobtn="1" icon="fa fa-tachometer-alt" text="Tableau de bord" link="TableauDeBord"}}
- - {{button nobtn="1" icon="fa fa-question" text="Documentation" link="doc"}}
- - {{button nobtn="1" icon="fa fa-wrench" text="Gestion du site" link="GererSite"}}
- - {{button nobtn="1" icon="fas fa-user" text="Mes contenus" link="MesContenus"}}
- - {{button nobtn="1" icon="fa fa-briefcase" text="Formulaires" link="BazaR"}}
+{{buttondropdown icon="settings" caret="0" title="Gestion du site"}}
+ - {{button nobtn="1" icon="gauge" text="Tableau de bord" link="TableauDeBord"}}
+ - {{button nobtn="1" icon="help" text="Documentation" link="doc"}}
+ - {{button nobtn="1" icon="tool" text="Gestion du site" link="GererSite"}}
+ - {{button nobtn="1" icon="user" text="Mes contenus" link="MesContenus"}}
+ - {{button nobtn="1" icon="briefcase" text="Formulaires" link="BazaR"}}
 {{end elem="buttondropdown"}}
 {{login template="modal.twig"}}', '', '{{WikiName}}', '{{WikiName}}', 'Y', 'page', ''),
 ('PageTitre',  [[ now ]], '{{configuration param="yeswiki_name" }}
@@ -483,7 +474,7 @@ Et cette partie de code sera à placer juste au dessus du paragraphe cible
 Placez votre texte dans une section (voir composant) et choisissez votre alignement (gauche, centré, droite, justifié)
 
 #### Utiliser des icônes Emoji
-Il est possible de copier des icônes dans des sites sources puis de les coller dans votre wiki. ""<a href="http://getemoji.com" target="_blank" class="btn btn-primary btn-xs">Par exemple sur ce site</a>""
+Il est possible de copier des icônes dans des sites sources puis de les coller dans votre wiki. ""<a href="http://getemoji.com" target="_blank" class="yw-btn yw-btn--primary yw-btn--sm">Par exemple sur ce site</a>""
 
 #### Afficher une barre de progression
 &#x5B;10%] donne [10%]

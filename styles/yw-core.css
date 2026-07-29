@@ -19,7 +19,7 @@
   --neutral-color: #4e5056;
   --neutral-soft-color: #57575c;
   --neutral-light-color: #f2f2f2;
-  --main-text-fontsize: 17px;
+  --main-text-fontsize: 15px;
   --main-text-fontfamily: 'Nunito', sans-serif;
   --main-title-fontfamily: 'Nunito', sans-serif;
   --success-color: #3cab3b;
@@ -28,7 +28,9 @@
 }
 
 html {
-  font-size: 15px !important; /* the base the whole UI computes rem units from */
+  font-size: var(
+    --main-text-fontsize
+  ) !important; /* the base the whole UI computes rem units from */
 }
 
 /* Mise en forme */
@@ -88,6 +90,10 @@ span.missingpage,
   margin-bottom: 30px;
 }
 
+.page > section:first-child {
+  margin-top: -20px;
+}
+
 #form_graphical_options .preset-settings-container {
   display: none;
 }
@@ -125,8 +131,9 @@ span.missingpage,
 }
 
 .footer {
-  margin: 18px 0;
+  margin: 1rem 0;
   padding: 0;
+  font-size: 0.85em;
   text-align: center;
 }
 
@@ -918,6 +925,10 @@ td.users-table-break-word {
   padding: 3px 8px;
   font-size: 12px;
 }
+.yw-btn--block {
+  display: block;
+  width: 100%;
+}
 .yw-btn--primary {
   background: var(--primary-color);
   border-color: var(--primary-color);
@@ -1433,6 +1444,27 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   border-color: var(--warning-color);
   background: color-mix(in srgb, var(--warning-color) 15%, #fff);
 }
+.yw-panel--primary {
+  border-color: var(--primary-color);
+}
+.yw-panel--primary > .yw-panel__heading {
+  border-color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 15%, #fff);
+}
+.yw-panel--success {
+  border-color: var(--success-color);
+}
+.yw-panel--success > .yw-panel__heading {
+  border-color: var(--success-color);
+  background: color-mix(in srgb, var(--success-color) 15%, #fff);
+}
+.yw-panel--danger {
+  border-color: var(--danger-color);
+}
+.yw-panel--danger > .yw-panel__heading {
+  border-color: var(--danger-color);
+  background: color-mix(in srgb, var(--danger-color) 15%, #fff);
+}
 .yw-panel__title {
   margin: 0;
   font-size: 14px;
@@ -1504,6 +1536,9 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 }
 .yw-label--success {
   background: var(--success-color);
+}
+.yw-label--info {
+  background: var(--secondary-color-2, var(--primary-color));
 }
 
 /* ---- Nav (ticket 12: replaces Bootstrap's .nav/.nav-tabs) ---- */
