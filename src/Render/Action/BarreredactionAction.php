@@ -3,12 +3,12 @@
 namespace YesWiki\Render\Action;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\FavoritesManager;
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\HibernationService;
 
 /**
  * `{{barreredaction}}` -- converted from the procedural actions/barreredaction.php by ticket 06.
@@ -44,7 +44,6 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         $user = $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
         if ((!empty($user) || $this->wiki->HasAccess('write')) && $this->wiki->method != 'revisions') {
             // on récupére la page et ses valeurs associées
@@ -86,7 +85,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
                 if ($content) {
                     $owner = $this->wiki->GetPageOwner($page);
                     // message
-                    if ($this->wiki->UserIsOwner($page)) {
+                    if ($this->getService(AclService::class)->isOwner($page)) {
                         $options['owner'] = _t('TEMPLATE_OWNER') . ' : ' . _t('TEMPLATE_YOU');
                     } elseif ($owner) {
                         $options['owner'] = _t('TEMPLATE_OWNER') . ' : ' . $owner;
@@ -95,7 +94,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
                     }
 
                     // if current user is owner or admin
-                    if ($this->wiki->UserIsOwner($page) || $this->wiki->UserIsAdmin()) {
+                    if ($this->getService(AclService::class)->isOwner($page) || $this->wiki->UserIsAdmin()) {
                         $options['owner'] .= ' - ' . _t('TEMPLATE_PERMISSIONS');
                         if (!$this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
                             $options['linkacls'] = $this->wiki->href('acls', $page);
@@ -121,9 +120,9 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
             }
             $options['linkduplicate'] = $this->wiki->href('duplicate', $page);
             $options['linkshare'] = $this->wiki->href('share', $page);
-            $options['userIsOwner'] = $this->wiki->UserIsOwner($page);
+            $options['userIsOwner'] = $this->getService(AclService::class)->isOwner($page);
             $options['userIsAdmin'] = $this->wiki->UserIsAdmin();
-            $options['userIsAdminOrOwner'] = $this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($page);
+            $options['userIsAdminOrOwner'] = $this->wiki->UserIsAdmin() || $this->getService(AclService::class)->isOwner($page);
             $favoritesManager = $this->wiki->services->get(FavoritesManager::class);
             if (!empty($user) && $favoritesManager->areFavoritesActivated()) {
                 $options['currentuser'] = $user['name'];

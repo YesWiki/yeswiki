@@ -4,8 +4,9 @@ namespace YesWiki\Content\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Content\Service\ReferrerService;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Exception\ExitException;
 
 /**
  * Adapter so ordinary wiki tag/method pages (Performer-dispatched actions/handlers/formatters -
@@ -22,7 +23,7 @@ class LegacyPageController extends YesWikiController
         $method = $request->attributes->get('_method');
 
         $this->wiki->SetPage($this->wiki->LoadPage($tag, isset($_REQUEST['time']) ? $_REQUEST['time'] : ''));
-        $this->wiki->LogReferrer();
+        $this->getService(ReferrerService::class)->log();
 
         ob_start();
         try {

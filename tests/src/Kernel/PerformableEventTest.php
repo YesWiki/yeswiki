@@ -4,6 +4,7 @@ namespace YesWiki\Test\Kernel;
 
 use YesWiki\Kernel\Performable\PerformableEvent;
 use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -65,7 +66,7 @@ class PerformableEventTest extends YesWikiTestCase
      */
     public function testTheBundledExtensionHooksACoreActionThroughEvents(): void
     {
-        $output = $this->getWiki()->Action('greeting');
+        $output = $this->getWiki()->services->get(ActionRunner::class)->action('greeting');
 
         $this->assertStringContainsString(
             'added by the action callback',

@@ -3,10 +3,11 @@
 namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Wiki;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Wiki;
 
 class ListManager
 {
@@ -21,6 +22,7 @@ class ListManager
     public const TRIPLES_LIST_ID = 'liste';
 
     protected $cachedLists;
+    protected AclService $aclService;
 
     public function __construct(
         Wiki $wiki,
@@ -29,9 +31,11 @@ class ListManager
         PageManager $pageManager,
         ParameterBagInterface $params,
         HibernationService $hibernationService,
-        TripleStore $tripleStore
+        TripleStore $tripleStore,
+        AclService $aclService
     ) {
         $this->wiki = $wiki;
+        $this->aclService = $aclService;
         $this->dbService = $dbService;
         $this->tripleStore = $tripleStore;
         $this->pageManager = $pageManager;
@@ -170,7 +174,7 @@ class ListManager
             throw new \Exception('List ID not specified');
         }
 
-        if (!$GLOBALS['wiki']->UserIsAdmin() && !$GLOBALS['wiki']->UserIsOwner($id)) {
+        if (!$GLOBALS['wiki']->UserIsAdmin() && !$this->aclService->isOwner($id)) {
             throw new \Exception('Unauthorized');
         }
 

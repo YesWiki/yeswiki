@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
@@ -69,7 +70,7 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
             <generator>YesWiki " . YESWIKI_VERSION . '</generator>
         ';
 
-        if ($comments = $this->wiki->LoadRecentComments($max)) {
+        if ($comments = $this->getService(CommentService::class)->getRecentComments($max)) {
             foreach ($comments as $comment) {
                 $output .= "<item>\n";
                 $output .= '<title>' . htmlspecialchars($comment['comment_on'] . ' -- ' . $comment['user'], ENT_COMPAT, YW_CHARSET) . "</title>\n";

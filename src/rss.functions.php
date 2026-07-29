@@ -55,7 +55,7 @@ if (!function_exists('rssdiff')) {
             . $pageB['time']
             . "</a></b><br />\n";
 
-        $wiki->RegisterInclusion($tag);
+        $wiki->services->get(YesWiki\Kernel\Service\InclusionStack::class)->register($tag);
         if ($added) {
             // remove blank lines
             $output .= "<br />\n<b>" . _t('RSS_ADDS') . ":</b><br />\n";
@@ -67,7 +67,7 @@ if (!function_exists('rssdiff')) {
             $output .= '<div class="deletions">' . implode("\n", $deleted) . '</div>';
         }
 
-        $wiki->UnregisterLastInclusion();
+        $wiki->services->get(YesWiki\Kernel\Service\InclusionStack::class)->unregisterLast();
 
         if (!$added && !$deleted) {
             $output .= "<br />\n" . _t('RSS_NO_DIFF') . '.';

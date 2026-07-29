@@ -4,6 +4,7 @@ namespace YesWiki\Content\Service;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ImageField;
@@ -30,6 +31,7 @@ class EntryManager
     protected $semanticTransformer;
     protected $hibernationService;
     protected $activityPubService;
+    protected AdministrativeLogService $administrativeLogService;
     protected $params;
     protected $searchManager;
 
@@ -56,6 +58,7 @@ class EntryManager
         SearchManager $searchManager,
         HibernationService $hibernationService,
         ActivityPubService $activityPubService,
+        AdministrativeLogService $administrativeLogService,
     ) {
         $this->wiki = $wiki;
         $this->mailer = $mailer;
@@ -70,6 +73,7 @@ class EntryManager
         $this->searchManager = $searchManager;
         $this->hibernationService = $hibernationService;
         $this->activityPubService = $activityPubService;
+        $this->administrativeLogService = $administrativeLogService;
         $this->cachedEntriestags = [];
     }
 
@@ -605,7 +609,7 @@ class EntryManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$forceEvenIfNotOwner && !$this->wiki->UserIsAdmin() && !$this->wiki->UserIsOwner($tag)) {
+        if (!$forceEvenIfNotOwner && !$this->wiki->UserIsAdmin() && !$this->aclService->isOwner($tag)) {
             throw new \Exception(_t('DELETEPAGE_NOT_DELETED') . _t('DELETEPAGE_NOT_OWNER'));
         }
 
@@ -619,7 +623,7 @@ class EntryManager
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
 
         $this->pageManager->deleteOrphaned($tag);
-        $this->wiki->LogAdministrativeAction(
+        $this->administrativeLogService->log(
             $this->authenticationService->getLoggedUserName(),
             'Suppression de la page ->""' . $tag . '""'
         );
@@ -1159,7 +1163,7 @@ class EntryManager
     private function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->wiki->LogAdministrativeAction($this->authenticationService->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');
+        $this->administrativeLogService->log($this->authenticationService->getLoggedUserName(), 'Duplication de la fiche ""' . $sourceTag . '"" vers la fiche ""' . $destinationTag . '""');
 
         return $result;
     }

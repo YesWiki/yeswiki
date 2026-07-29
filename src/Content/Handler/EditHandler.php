@@ -2,23 +2,25 @@
 
 namespace YesWiki\Content\Handler;
 
-use YesWiki\Render\Service\ThemeManager;
-use YesWiki\Render\Service\ThemeSelectorRenderer;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Search\Service\TagsManager;
-use YesWiki\Content\Service\EntryManager;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Identity\Service\PasswordForEditingService;
-use YesWiki\Identity\Service\HashCashService;
-use YesWiki\Identity\Controller\CaptchaController;
-use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Render\Service\HibernationNotice;
-use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Controller\CaptchaController;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\HashCashService;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Identity\Service\PasswordForEditingService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Render\Service\HibernationNotice;
+use YesWiki\Render\Service\ThemeManager;
+use YesWiki\Render\Service\ThemeSelectorRenderer;
+use YesWiki\Search\Service\TagsManager;
 
 /**
  * `/PageName/edit` -- converted from the procedural handlers/page/edit.php by ticket 06.
@@ -241,7 +243,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         // personnalisation graphique que dans le cas ou on est autorise
         if ((!isset($this->wiki->config['hide_action_template']) or (isset($this->wiki->config['hide_action_template']) && !$this->wiki->config['hide_action_template']))
-            && ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner()))))
+            && ($this->wiki->HasAccess('write') && $this->wiki->HasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->wiki->UserIsAdmin() || $this->getService(AclService::class)->isOwner()))))
         ) {
             // graphical options : theme and background image
             $selecteur = '
@@ -318,7 +320,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-
         // on initialise la sortie:
         $output = '';
 
@@ -339,8 +340,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             // PREVIEW
             if ($submit == 'preview') {
-                $temp = $this->wiki->SetInclusions(); // a priori, ça ne sert à rien, mais on ne sait jamais...
-                $this->wiki->RegisterInclusion($this->wiki->GetPageTag()); // on simule totalement un affichage normal
+                $temp = $this->getService(InclusionStack::class)->replace(); // a priori, ça ne sert à rien, mais on ne sait jamais...
+                $this->getService(InclusionStack::class)->register($this->wiki->GetPageTag()); // on simule totalement un affichage normal
                 $output .= $this->wiki->render('@core/handlers/edit.twig', [
                     'previous' => $previous,
                     'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
@@ -350,7 +351,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'bodyPreview' => $this->wiki->Format($body),
                     'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
                 ]);
-                $this->wiki->SetInclusions($temp);
+                $this->getService(InclusionStack::class)->replace($temp);
             } else {
                 if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE && $this->wiki->page && $this->wiki->page['id'] != $request->request->get('previous')) {
                     $error = _t('EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER');
@@ -362,7 +363,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     $body = str_replace("\r", '', $body);
                     // teste si la nouvelle page est differente de la précédente
                     if (isset($this->wiki->page['body']) && rtrim($body) == rtrim($this->wiki->page['body'])) {
-                        $this->wiki->SetMessage(_t('EDIT_NO_CHANGE_MSG'));
+                        $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
                         $this->wiki->Redirect($this->wiki->href(testUrlInIframe()));
                     } else {
                         // l'encodage de la base est en iso-8859-1, voir s'il faut convertir

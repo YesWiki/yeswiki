@@ -5,6 +5,7 @@ namespace YesWiki\Test\Kernel;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Action\FaviconAction;
+use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -81,7 +82,7 @@ class ActionRegistryTest extends YesWikiTestCase
 
     public function testTheActionStillRendersThroughWikiAction(): void
     {
-        $output = $this->getWiki()->Action('favicon');
+        $output = $this->getWiki()->services->get(ActionRunner::class)->action('favicon');
 
         $this->assertStringContainsString('<link rel="icon"', $output);
     }

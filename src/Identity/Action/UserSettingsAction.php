@@ -1,21 +1,23 @@
 <?php
 
 namespace YesWiki\Identity\Action;
+
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Controller\CaptchaController;
-use YesWiki\Identity\Service\CsrfTokenChecker;
-use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\BadFormatPasswordException;
-use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
 use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\UserOperationsService;
+use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\FlashMessageService;
 
 class UserSettingsAction extends YesWikiAction implements RegisteredAction
 {
@@ -105,7 +107,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 $this->adminIsActing = true;
                 $user = $this->userManager->getOneByName($this->wantedUserName);
                 if (empty($user)) { // Did not find the user in DB
-                    $this->wiki->SetMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
+                    $this->getService(FlashMessageService::class)->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
                 }
                 $this->referrer = filter_var($get['from'] ?? '', FILTER_SANITIZE_URL);
             } elseif (!empty($this->wantedEmail)) {
@@ -114,7 +116,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 $user = $this->userManager->getOneByEmail($this->wantedEmail); // In this case we need to load the right user
 
                 if (empty($user)) { // Did not find the user in DB
-                    $this->wiki->SetMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
+                    $this->getService(FlashMessageService::class)->setMessage(_t('USER_TRYING_TO_MODIFY_AN_INEXISTANT_USER') . ' !');
                 }
             }
         } else {
@@ -194,7 +196,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     {
         // User wants to log out
         $this->authenticationService->logout();
-        $this->wiki->SetMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
+        $this->getService(FlashMessageService::class)->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
         $this->wiki->Redirect($this->wiki->href());
     }
 
@@ -212,7 +214,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 $this->userOperationsService->delete($user);
                 $user = null;
                 // forward
-                $this->wiki->SetMessage(_t('USER_DELETED') . ' !');
+                $this->getService(FlashMessageService::class)->setMessage(_t('USER_DELETED') . ' !');
                 $this->wiki->Redirect($this->wiki->href('', $this->referrer));
             } catch (TokenNotFoundException $th) {
                 $this->errorUpdate = _t('USERSETTINGS_USER_NOT_DELETED') . ' ' . $th->getMessage();
@@ -242,7 +244,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                         $this->authenticationService->login($user);
                     }
                     // forward
-                    $this->wiki->SetMessage(_t('USER_PARAMETERS_SAVED') . ' !');
+                    $this->getService(FlashMessageService::class)->setMessage(_t('USER_PARAMETERS_SAVED') . ' !');
                     if ($this->userLoggedIn) { // In case it's the usther trying to update oneself
                         $this->wiki->Redirect($this->wiki->href());
                     } else { // That's the admin acting, we need to pass the user on
@@ -276,7 +278,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
 
                     $password = $post['password'];
                     $this->authenticationService->setPassword($user, $password);
-                    $this->wiki->SetMessage(_t('USER_PASSWORD_CHANGED') . ' !');
+                    $this->getService(FlashMessageService::class)->setMessage(_t('USER_PASSWORD_CHANGED') . ' !');
                     // reload $user
                     $user = $this->userManager->getOneByName($user['name']);
                     if (!empty($user)) {

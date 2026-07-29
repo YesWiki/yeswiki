@@ -5,6 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\InclusionStack;
 
 /**
  * `{{filtertags}}` -- converted from the procedural actions/filtertags.php by ticket 06.
@@ -72,7 +73,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         $userCol = $dbService->quoteIdentifier('user');
         $req = "SELECT DISTINCT tag, time, $userCol, owner, body
         FROM " . $this->wiki->config['table_prefix'] . 'pages, ' . $this->wiki->config['table_prefix'] . "triples tags
-        WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (" . $taglist . ") AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag' AND tags.resource = tag AND tag NOT IN ('" . implode("','", $this->wiki->GetAllInclusions()) . "') ORDER BY tag ASC";
+        WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (" . $taglist . ") AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag' AND tags.resource = tag AND tag NOT IN ('" . implode("','", $this->getService(InclusionStack::class)->getAll()) . "') ORDER BY tag ASC";
         $pages = $this->wiki->LoadAll($req);
 
         echo '<div class="well well-sm no-dblclick controls">' . "\n" . '<div class="pull-right muted"><span class="nbfilteredelements">' . count($pages) . '</span> ' . _t('TAGS_RESULTS') . '</div>';
@@ -102,9 +103,9 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
                 $element[$page['tag']]['time'] = $page['time'];
                 $element[$page['tag']]['title'] = get_title_from_body($page);
                 $element[$page['tag']]['image'] = get_image_from_body($page);
-                $this->wiki->RegisterInclusion($page['tag']);
+                $this->getService(InclusionStack::class)->register($page['tag']);
                 $element[$page['tag']]['desc'] = tokenTruncate(strip_tags($this->wiki->Format($page['body'], 'wakka', $page['tag'])), $nbcartrunc);
-                $this->wiki->UnregisterLastInclusion();
+                $this->getService(InclusionStack::class)->unregisterLast();
                 $pagetags = $this->wiki->GetAllTriplesValues($page['tag'], 'http://outils-reseaux.org/_vocabulary/tag', '', '');
                 foreach ($pagetags as $tag) {
                     $tag['value'] = stripslashes($tag['value']);

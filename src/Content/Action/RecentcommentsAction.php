@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
@@ -51,7 +52,7 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction
         }
 
         // Show recent comments
-        if ($comments = $this->wiki->LoadRecentComments($max)) {
+        if ($comments = $this->getService(CommentService::class)->getRecentComments($max)) {
             $curday = '';
             foreach ($comments as $comment) {
                 // day header

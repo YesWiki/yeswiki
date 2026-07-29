@@ -46,6 +46,7 @@ class Performer
     protected $wiki;
     protected $params;
     protected $twig;
+    protected ThrowableFormatter $throwableFormatter;
 
     /** Extension-provided performables found by scanning; core ones live in the registry. */
     protected $objectList;
@@ -57,13 +58,15 @@ class Performer
         ParameterBagInterface $params,
         TemplateEngine $twig,
         ActionRegistry $registry,
-        EventDispatcher $events
+        EventDispatcher $events,
+        ThrowableFormatter $throwableFormatter
     ) {
         $this->wiki = $wiki;
         $this->registry = $registry;
         $this->events = $events;
         $this->params = $params;
         $this->twig = $twig;
+        $this->throwableFormatter = $throwableFormatter;
 
         foreach (Performer::TYPES as $type) {
             $this->objectList[$type] = [];
@@ -152,6 +155,8 @@ class Performer
         $objectName = strtolower($objectName);
 
         // Check if user is allowed to use this particular action or handler (see EditHandlersAclsAction EditActionsAclsAction)
+        // Still through Wiki: ModuleAclService lives in Identity and Kernel may depend on
+        // no feature module (ArchitectureTest); resolved when the dispatcher moves (ticket 08 D)
         if (!$this->wiki->CheckModuleACL($objectName, $objectType)) {
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('ERROR_NO_ACCESS') . '</div>' . "\n";
         }
@@ -186,7 +191,7 @@ class Performer
             return $this->renderError($exception->getMessage(), $objectType);
         } catch (\Throwable $t) {
             return $this->renderError(
-                _t('PERFORMABLE_ERROR') . '<br/>' . $this->wiki->dumpThrowable($t),
+                _t('PERFORMABLE_ERROR') . '<br/>' . $this->throwableFormatter->dump($t),
                 $objectType
             );
         }

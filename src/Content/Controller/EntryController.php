@@ -22,6 +22,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\SearchManager;
 
@@ -241,7 +242,7 @@ class EntryController extends YesWikiController
             'isUserFavorite' => $isUserFavorite ?? false,
             'canShow' => $this->wiki->GetPageTag() != $entry['tag'], // hide if we are already in the show page
             'canEdit' => !$this->hibernationService->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
-            'canDelete' => !$this->hibernationService->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->wiki->UserIsOwner($entryId)) && !isset($entry['read-only']),
+            'canDelete' => !$this->hibernationService->isWikiHibernated() && ($this->wiki->UserIsAdmin($userNameForRendering) || $this->getService(AclService::class)->isOwner($entryId)) && !isset($entry['read-only']),
             'canDuplicate' => $this->wiki->UserIsAdmin($userNameForRendering) && !isset($entry['read-only']),
             'isAdmin' => $this->wiki->UserIsAdmin($userNameForRendering),
             'renderedEntry' => $renderedEntry,
@@ -771,7 +772,7 @@ class EntryController extends YesWikiController
             );
         }
 
-        return $this->wiki->Action('bazarliste', 0, $params);
+        return $this->getService(ActionRunner::class)->action('bazarliste', false, $params);
     }
 
     /**

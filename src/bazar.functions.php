@@ -458,7 +458,7 @@ function baz_voir_fiche($danslappli, $idfiche, $form = '')
         return $GLOBALS['wiki']->services->get(TemplateEngine::class)
             ->render('@core/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('PERFORMABLE_ERROR') . '<br/>' . $GLOBALS['wiki']->dumpThrowable($t),
+                'message' => _t('PERFORMABLE_ERROR') . '<br/>' . $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\ThrowableFormatter::class)->dump($t),
             ]);
     }
 

@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\FlashMessageService;
 
 /**
  * `{{parambody}}` -- converted from the procedural actions/parambody.php by ticket 06.
@@ -42,7 +43,7 @@ class ParambodyAction extends YesWikiAction implements RegisteredAction
         // attributs du body
         $toastDuration = !empty($this->wiki->config['toast_duration']) ? $this->wiki->config['toast_duration'] : '3000';
         $toastClass = !empty($this->wiki->config['toast_class']) ? $this->wiki->config['toast_class'] : 'alert alert-secondary-1';
-        $body_attr = ($message = $this->wiki->GetMessage()) ? "onload=\"toastMessage('" . addslashes($message) . "', " . $toastDuration . ", '" . $toastClass . "');\" " : '';
+        $body_attr = ($message = $this->getService(FlashMessageService::class)->getMessage()) ? "onload=\"toastMessage('" . addslashes($message) . "', " . $toastDuration . ", '" . $toastClass . "');\" " : '';
         echo $body_attr;
     }
 }

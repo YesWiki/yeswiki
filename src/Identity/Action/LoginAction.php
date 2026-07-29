@@ -1,15 +1,17 @@
 <?php
 
 namespace YesWiki\Identity\Action;
+
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Exception\LoginException;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Identity\Exception\LoginException;
-use YesWiki\Content\Service\PageManager;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Render\Service\TemplateEngine;
 
 class LoginAction extends YesWikiAction implements RegisteredAction
 {
@@ -244,7 +246,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
             }
         } catch (LoginException $ex) {
             // on affiche une erreur sur le NomWiki sinon
-            $this->wiki->SetMessage($ex->getMessage());
+            $this->getService(FlashMessageService::class)->setMessage($ex->getMessage());
             $this->wiki->Redirect($incomingurl);
         } catch (\Exception $ex) {
             // catches AuthenticationService::login()'s BadLoginException (ticket 07's activation
@@ -257,7 +259,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
     private function logout()
     {
         $this->authenticationService->logout();
-        $this->wiki->SetMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
+        $this->getService(FlashMessageService::class)->setMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
         $this->wiki->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $this->arguments['loggedouturl'])));
         $this->wiki->exit();
     }

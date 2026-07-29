@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core;
 
+use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredPerformable;
 use YesWiki\Render\Service\TemplateHelperService;
 
@@ -26,7 +27,7 @@ abstract class YesWikiAction extends YesWikiPerformable
             $actionName = preg_replace('/action$/', '', $actionName); // greeting
         }
         // check access (only admins or follow acl if defined)
-        $acl = $this->wiki->GetModuleACL($actionName, 'action');
+        $acl = $this->getService(ModuleAclService::class)->getModuleAcl($actionName, 'action');
 
         // For admin actions, if the acl is defined with not secured values or not defined
         if ($adminOnly && in_array($acl, ['*', '+', '', '%']) && !$this->wiki->UserIsAdmin()) {
@@ -34,7 +35,7 @@ abstract class YesWikiAction extends YesWikiPerformable
                 'type' => 'danger',
                 'message' => "Action $actionName : " . _t('BAZ_NEED_ADMIN_RIGHTS'),
             ]);
-        } elseif (!$this->wiki->CheckModuleACL($actionName, 'action')) {
+        } elseif (!$this->getService(ModuleAclService::class)->checkModuleAcl($actionName, 'action')) {
             return $this->render('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => "Action $actionName : " . _t('NOT_AUTORIZED') . '.',
@@ -44,11 +45,9 @@ abstract class YesWikiAction extends YesWikiPerformable
         return null;
     }
 
-
     /**
      * This function check for corresponding "end" element and store result in
      * $GLOBALS['check ' . $pagetag]['$element_name'].
-     * @param $action_name
      *
      * @return false if wrong number of closing element found
      */
@@ -60,12 +59,14 @@ abstract class YesWikiAction extends YesWikiPerformable
                 $this->wiki->services->get(TemplateHelperService::class)
                     ->checkGraphicalElements($action_name, $pagetag, $this->wiki->page['body'] ?? '');
         }
+
         return $GLOBALS["check_$pagetag"][$action_name];
     }
 
     protected function generate_error_msg(string $action_name): string
     {
         $action_name = strtoupper($action_name);
+
         return '<div class="yw-alert yw-alert--danger"><strong>'
             . _t("TEMPLATE_ACTION_$action_name") . '</strong> : '
             . _t("TEMPLATE_ELEM_{$action_name}_NOT_CLOSED") . '.</div>' . "\n";

@@ -598,7 +598,7 @@ class ApiController extends YesWikiController
     #[Route('/api/comments/{tag}', methods: ['DELETE'], options: ['acl' => ['+']])]
     public function deleteComment($tag)
     {
-        if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isOwner($tag) || $this->wiki->UserIsAdmin()) {
             $commentService = $this->getService(CommentService::class);
             $errors = $commentService->delete($tag);
 
@@ -768,7 +768,7 @@ class ApiController extends YesWikiController
             } else {
                 $tag = isset($page['tag']) ? $page['tag'] : $tag;
                 $result['notDeleted'] = [$tag];
-                if ($this->wiki->UserIsOwner($tag) || $this->wiki->UserIsAdmin()) {
+                if ($this->getService(AclService::class)->isOwner($tag) || $this->wiki->UserIsAdmin()) {
                     if (!$pageManager->isOrphaned($tag)) {
                         $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '{$dbService->escape($tag)}'");
                     }

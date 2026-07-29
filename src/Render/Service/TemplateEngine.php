@@ -211,7 +211,7 @@ class TemplateEngine
         // squelettes: same attribute-string form the historical `{{action attr="…"}}`
         // squelette syntax used, with Wiki::Action()'s link-tracking semantics
         $this->addTwigHelper('action', function ($actionString) {
-            return $this->wiki->Action($actionString);
+            return $this->wiki->services->get(ActionRunner::class)->action($actionString);
         });
         // inline JS registered for the page footer aggregate, like AddJavascript()
         // calls from the historical PHP templates
@@ -246,7 +246,7 @@ class TemplateEngine
             return (bool)$this->wiki->UserIsAdmin();
         });
         $this->addTwigHelper('userIsOwner', function ($tag = '') {
-            return (bool)$this->wiki->UserIsOwner($tag ?: '');
+            return $this->wiki->services->get(AclService::class)->isOwner($tag ?: '');
         });
         $this->addTwigHelper('absoluteUrl', function () {
             return getAbsoluteUrl();

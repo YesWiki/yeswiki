@@ -6,6 +6,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
+use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -86,7 +87,7 @@ class NewtextsearchActionTest extends YesWikiTestCase
         try {
             // the phrase matches the malicious option's *label*, so $result['key'] (the
             // malicious id) gets concatenated into the query, per searchInFormOptions()
-            $html = $wiki->Action('newtextsearch', 1, ['phrase' => self::LIST_LABEL]);
+            $html = $wiki->services->get(ActionRunner::class)->action('newtextsearch', true, ['phrase' => self::LIST_LABEL]);
 
             $this->assertStringNotContainsString(
                 self::SECRET_PAGE_TAG,

@@ -9,12 +9,15 @@ use YesWiki\Wiki;
 class EventDispatcher extends SymfonyEventDispatcher
 {
     protected $wiki;
+    protected ThrowableFormatter $throwableFormatter;
 
     public function __construct(
-        Wiki $wiki
+        Wiki $wiki,
+        ThrowableFormatter $throwableFormatter
     ) {
         parent::__construct();
         $this->wiki = $wiki;
+        $this->throwableFormatter = $throwableFormatter;
     }
 
     public function yesWikiDispatch(string $eventName, array $data = []): array
@@ -25,10 +28,10 @@ class EventDispatcher extends SymfonyEventDispatcher
             return [];
         } catch (\Throwable $th) {
             $errors = ($this->wiki->userIsAdmin()) ? ['exception' => [
-                'message' => $this->wiki->hideServerPath($th->getMessage()),
-                'file' => $this->wiki->hideServerPath($th->getFile()),
+                'message' => $this->throwableFormatter->hideServerPath($th->getMessage()),
+                'file' => $this->throwableFormatter->hideServerPath($th->getFile()),
                 'line' => $th->getLine(),
-                'trace' => $this->wiki->hideServerPath($th->getTraceAsString()),
+                'trace' => $this->throwableFormatter->hideServerPath($th->getTraceAsString()),
             ]] : [];
 
             return $errors;

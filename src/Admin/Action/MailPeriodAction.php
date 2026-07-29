@@ -1,11 +1,13 @@
 <?php
 
 namespace YesWiki\Admin\Action;
+
 // ticket 18: relocated from tools/contact/actions/MailPeriodAction.php.
 
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\UserManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 // TODO create GroupManager
@@ -77,7 +79,7 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction
 
     private function subscribeUserToGroup($userName, $group): void
     {
-        $this->wiki->SetGroupACL($group, $this->wiki->GetGroupACL($group) . "\n" . $userName);
+        $this->getService(GroupOperationsService::class)->setMembersFromAclText($group, $this->wiki->GetGroupACL($group) . "\n" . $userName);
     }
 
     private function unsubscribeUserFromGroup($userName, $group): void
@@ -87,7 +89,7 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction
         $newgroup = array_map('trim', $newgroup);
         $newgroup = array_filter($newgroup);
         $newgroup = implode("\n", $newgroup);
-        $this->wiki->SetGroupACL($group, $newgroup);
+        $this->getService(GroupOperationsService::class)->setMembersFromAclText($group, $newgroup);
     }
 
     private function unsubscribUserFromAllGroups($userName, $periods)

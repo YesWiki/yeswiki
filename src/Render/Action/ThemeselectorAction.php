@@ -2,9 +2,10 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Render\Service\ThemeSelectorRenderer;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Render\Service\ThemeSelectorRenderer;
 
 /**
  * `{{themeselector}}` -- converted from the procedural actions/themeselector.php by ticket 06.
@@ -40,13 +41,12 @@ class ThemeselectorAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         $class = $this->wiki->getParameter('class');
         if (
             $this->wiki->UserIsAdmin()
             && isset($_POST['action']) && ($_POST['action'] === 'setTemplate')
         ) {
-            $this->wiki->Action('setwikidefaulttheme');
+            $this->getService(ActionRunner::class)->action('setwikidefaulttheme');
             // if not redirected by setwikidefaulttheme : redirect
             $this->wiki->Redirect($this->wiki->href('', $this->wiki->tag));
         } else {

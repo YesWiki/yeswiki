@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Service;
 
+use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -12,17 +13,20 @@ class PageOperationsService extends YesWikiController
     protected $entryController;
     protected $entryManager;
     protected $pageManager;
+    protected AdministrativeLogService $administrativeLogService;
 
     public function __construct(
         AuthenticationService $authenticationService,
         EntryController $entryController,
         EntryManager $entryManager,
-        PageManager $pageManager
+        PageManager $pageManager,
+        AdministrativeLogService $administrativeLogService
     ) {
         $this->authenticationService = $authenticationService;
         $this->entryController = $entryController;
         $this->entryManager = $entryManager;
         $this->pageManager = $pageManager;
+        $this->administrativeLogService = $administrativeLogService;
     }
 
     /**
@@ -39,7 +43,7 @@ class PageOperationsService extends YesWikiController
             return $this->entryController->delete($tag);
         }
         $this->pageManager->deleteOrphaned($tag);
-        $this->wiki->LogAdministrativeAction($this->authenticationService->getLoggedUserName(), 'Suppression de la page ->""' . $tag . '""');
+        $this->administrativeLogService->log($this->authenticationService->getLoggedUserName(), 'Suppression de la page ->""' . $tag . '""');
 
         return true;
     }

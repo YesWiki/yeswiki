@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
@@ -51,7 +52,7 @@ class RecentlycommentedAction extends YesWikiAction implements RegisteredAction
         }
 
         // Show recently commented pages
-        if ($pages = $this->wiki->LoadRecentlyCommented($max)) {
+        if ($pages = $this->getService(CommentService::class)->getRecentlyCommented($max)) {
             if ($this->wiki->GetParameter('max')) {
                 foreach ($pages as $page) {
                     // echo entry

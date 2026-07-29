@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Service\ConsoleService;
+use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Wiki;
 
 class DbCommand extends Command
@@ -199,7 +200,7 @@ class DbCommand extends Command
                 return Command::SUCCESS;
             }
         } catch (\Throwable $ex) {
-            $output->writeln('System error when testing mysqldump : ' . $this->wiki->dumpThrowable($ex));
+            $output->writeln('System error when testing mysqldump : ' . $this->wiki->services->get(ThrowableFormatter::class)->dump($ex));
         }
         $output->writeln('NOK');
 

@@ -4,6 +4,7 @@ namespace YesWiki\Content\Handler;
 
 use YesWiki\Content\Attach;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 
 /**
@@ -37,12 +38,11 @@ class FilemanagerHandler extends YesWikiHandler implements RegisteredHandler
         // {{filemanager}} page handler (ticket 17, relocated from tools/attach/handlers/page/filemanager.php).
         // Manages files linked via the {{attach}} action. Requires actions/attach.php.
 
-
         ob_start();
         ?>
         <div class="page">
             <?php
-            if ($this->wiki->UserIsOwner() || $this->wiki->UserIsAdmin()) {
+            if ($this->getService(AclService::class)->isOwner() || $this->wiki->UserIsAdmin()) {
                 $att = new Attach($this->wiki);
                 $att->doFileManager();
                 unset($att);

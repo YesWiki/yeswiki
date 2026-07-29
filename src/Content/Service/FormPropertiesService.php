@@ -4,22 +4,23 @@ namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\UserOperationsService;
-use YesWiki\Identity\Exception\UserFieldException;
-use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Field\FileField;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\TagsField;
-use YesWiki\Wiki;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Identity\Entity\User;
+use YesWiki\Identity\Exception\UserFieldException;
+use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 /**
  * Applies a form's `entry_*` properties (ADR-0010) to entries: title computation +
@@ -48,17 +49,20 @@ class FormPropertiesService
     protected $params;
     protected $aclService;
     protected $pageManager;
+    protected GroupOperationsService $groupOperationsService;
 
     public function __construct(
         Wiki $wiki,
         ParameterBagInterface $params,
         AclService $aclService,
         PageManager $pageManager,
+        GroupOperationsService $groupOperationsService,
     ) {
         $this->wiki = $wiki;
         $this->params = $params;
         $this->aclService = $aclService;
         $this->pageManager = $pageManager;
+        $this->groupOperationsService = $groupOperationsService;
     }
 
     private function getService(string $className)
@@ -546,7 +550,7 @@ class FormPropertiesService
             $previousACL = !in_array($groupName, $existingsGroups, true)
                 ? ''
                 : $this->wiki->GetGroupACL($groupName) . "\n";
-            $this->wiki->SetGroupACL($groupName, $previousACL . $wikiName);
+            $this->groupOperationsService->setMembersFromAclText($groupName, $previousACL . $wikiName);
         }
     }
 

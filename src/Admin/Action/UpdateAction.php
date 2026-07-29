@@ -1,16 +1,18 @@
 <?php
 
 namespace YesWiki\Admin\Action;
+
 // ticket 19: relocated from tools/autoupdate/actions/UpdateAction.php.
 
-use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Admin\Service\AutoUpdateService;
-use YesWiki\Kernel\Service\MigrationService;
 use YesWiki\Admin\Service\UpdateAdminPagesService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\MigrationService;
+use YesWiki\Kernel\Service\ThrowableFormatter;
 
 class UpdateAction extends YesWikiAction implements RegisteredAction
 {
@@ -175,7 +177,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                     break;
             }
         } catch (\Throwable $pThrowable) {
-            $vMessages->add(_t('PERFORMABLE_ERROR') . $this->wiki->dumpThrowable($pThrowable), 'AU_ERROR');
+            $vMessages->add(_t('PERFORMABLE_ERROR') . $this->getService(ThrowableFormatter::class)->dump($pThrowable), 'AU_ERROR');
         }
 
         // Display result of action, with a list of success/error messages

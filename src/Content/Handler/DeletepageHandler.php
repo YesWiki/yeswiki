@@ -4,11 +4,13 @@ namespace YesWiki\Content\Handler;
 
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Content\Service\PageOperationsService;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\FlashMessageService;
 
 /**
  * `/PageName/deletepage` -- converted from the procedural handlers/page/deletepage.php by ticket 06.
@@ -43,7 +45,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
     private function emitBefore(): void
     {
         // merged from handlers/page/__deletepage.php (ticket 06: core does not hook itself)
-        if (($this->wiki->UserIsOwner() || $this->wiki->UserIsAdmin())
+        if (($this->getService(AclService::class)->isOwner() || $this->wiki->UserIsAdmin())
             && isset($_GET['eraselink'])
             && $_GET['eraselink'] === 'oui'
             && isset($_GET['confirme'])
@@ -63,7 +65,6 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-
         // get services
         $csrfTokenManager = $this->wiki->services->get(CsrfTokenManager::class);
         $csrfTokenChecker = $this->wiki->services->get(CsrfTokenChecker::class);
@@ -75,7 +76,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
         $redirectToIncoming = false;
         $hasBeenDeleted = false;
 
-        if ($this->wiki->UserIsOwner() || $this->wiki->UserIsAdmin()) {
+        if ($this->getService(AclService::class)->isOwner() || $this->wiki->UserIsAdmin()) {
             $incomingUrlParam = '';
             $cancelUrl = $this->wiki->Href();
             if (!empty($incomingurl)) {
@@ -178,11 +179,11 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
 
         if ($hasBeenDeleted) {
             if ($redirectToIncoming) {
-                $this->wiki->SetMessage($msg);
+                $this->getService(FlashMessageService::class)->setMessage($msg);
                 $this->wiki->Redirect($incomingurl);
             } else {
                 // it's the current page which has been deleted (and not from a modal box), redirect to the homepage
-                $this->wiki->SetMessage($msg);
+                $this->getService(FlashMessageService::class)->setMessage($msg);
                 $this->wiki->Redirect($this->wiki->href('', $this->wiki->config['root_page']));
             }
         }

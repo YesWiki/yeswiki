@@ -3,17 +3,19 @@
 namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Wiki;
-use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Render\Service\ThemeManager;
+use YesWiki\Wiki;
 
 class LinkTracker
 {
     protected $wiki;
     protected $dbService;
     protected $hibernationService;
+    protected InclusionStack $inclusionStack;
     protected $pageManager;
     protected $userManager;
     protected $params;
@@ -21,7 +23,7 @@ class LinkTracker
     public $enabled;
     public $links;
 
-    public function __construct(Wiki $wiki, DbService $dbService, PageManager $pageManager, UserManager $userManager, ParameterBagInterface $params, HibernationService $hibernationService)
+    public function __construct(Wiki $wiki, DbService $dbService, PageManager $pageManager, UserManager $userManager, ParameterBagInterface $params, HibernationService $hibernationService, InclusionStack $inclusionStack)
     {
         $this->wiki = $wiki;
         $this->dbService = $dbService;
@@ -29,6 +31,7 @@ class LinkTracker
         $this->userManager = $userManager;
         $this->params = $params;
         $this->hibernationService = $hibernationService;
+        $this->inclusionStack = $inclusionStack;
 
         $this->enabled = false;
         $this->links = [];
@@ -56,7 +59,7 @@ class LinkTracker
 
     public function forceAddIfNotIncluded(string $tag): bool
     {
-        $inclusions = $this->wiki->GetAllInclusions();
+        $inclusions = $this->inclusionStack->getAll();
         if ($inclusions && count($inclusions) < 2 && !in_array($tag, $this->links)) {
             $this->links[] = $tag;
 
@@ -114,13 +117,13 @@ class LinkTracker
         if ($refreshPreviousTag) {
             $previousTag = $this->wiki->tag;
             $previousPage = $this->wiki->page;
-            $previousInclusions = $this->wiki->SetInclusions();
+            $previousInclusions = $this->inclusionStack->replace();
         }
         $this->clear();
         $this->wiki->tag = $page['tag'] ?? null;
         $this->wiki->setPage($page);
         $this->start();
-        $this->wiki->RegisterInclusion($this->wiki->tag);
+        $this->inclusionStack->register($this->wiki->tag);
         $body = $this->preventTrackingActions($page['body']);
         $body = $this->preventNotTrackingActions($body);
         $this->wiki->Format($body);
@@ -146,7 +149,7 @@ class LinkTracker
         });
         $this->links = $childrenTags;
         $this->persist();
-        $this->wiki->UnregisterLastInclusion();
+        $this->inclusionStack->unregisterLast();
         $this->clear();
 
         if ($refreshPreviousTag) {
@@ -154,7 +157,7 @@ class LinkTracker
                 $this->wiki->tag = $previousTag;
                 $this->wiki->setPage($previousPage);
             }
-            $this->wiki->SetInclusions($previousInclusions);
+            $this->inclusionStack->replace($previousInclusions);
         }
 
         return $childrenTags;

@@ -36,10 +36,8 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
-use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Admin\Service\ApiService;
 use YesWiki\Content\Controller\LegacyPageController;
-use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\ReferrerService;
 use YesWiki\Content\Service\TripleStore;
@@ -56,12 +54,9 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
-use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
-use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\LinkRenderer;
@@ -150,22 +145,6 @@ class Wiki
         return $service;
     }
 
-    /**
-     * @deprecated Use ThrowableFormatter::dump instead
-     */
-    public function dumpThrowable($pThrowable)
-    {
-        return $this->service(ThrowableFormatter::class)->dump($pThrowable);
-    }
-
-    /**
-     * @deprecated Use ThrowableFormatter::hideServerPath instead
-     */
-    public function hideServerPath($pPath)
-    {
-        return $this->service(ThrowableFormatter::class)->hideServerPath($pPath);
-    }
-
     // VARIABLES
     public function GetPageTag()
     {
@@ -203,62 +182,6 @@ class Wiki
     }
 
     // inclusions
-    /**
-     * @param string $pageTag
-     *
-     * @return int
-     *
-     * @deprecated Use InclusionStack::register instead
-     */
-    public function RegisterInclusion($pageTag)
-    {
-        return $this->service(InclusionStack::class)->register($pageTag);
-    }
-
-    /**
-     * @return string|null
-     *
-     * @deprecated Use InclusionStack::unregisterLast instead
-     */
-    public function UnregisterLastInclusion()
-    {
-        return $this->service(InclusionStack::class)->unregisterLast();
-    }
-
-    /**
-     * @param string $pageTag
-     *
-     * @return bool
-     *
-     * @deprecated Use InclusionStack::isIncludedBy instead
-     */
-    public function IsIncludedBy($pageTag)
-    {
-        return $this->service(InclusionStack::class)->isIncludedBy($pageTag);
-    }
-
-    /**
-     * @return list<string>
-     *
-     * @deprecated Use InclusionStack::getAll instead
-     */
-    public function GetAllInclusions()
-    {
-        return $this->service(InclusionStack::class)->getAll();
-    }
-
-    /**
-     * @param list<string> $pile
-     *
-     * @return list<string>
-     *
-     * @deprecated Use InclusionStack::replace instead
-     */
-    public function SetInclusions($pile = [])
-    {
-        return $this->service(InclusionStack::class)->replace($pile);
-    }
-
     public function SetPage($page)
     {
         if (!empty($page)) {
@@ -267,20 +190,6 @@ class Wiki
                 $this->tag = $this->page['tag'];
             }
         }
-    }
-
-    /**
-     * @param string $user
-     * @param string $content
-     * @param string $page
-     *
-     * @return int
-     *
-     * @deprecated Use AdministrativeLogService::log instead
-     */
-    public function LogAdministrativeAction($user, $content, $page = '')
-    {
-        return $this->service(AdministrativeLogService::class)->log($user, $content, $page);
     }
 
     /**
@@ -323,22 +232,6 @@ class Wiki
     }
 
     // HTTP/REQUEST/LINK RELATED
-    /**
-     * @deprecated Use FlashMessageService::setMessage instead
-     */
-    public function SetMessage($message)
-    {
-        $this->service(FlashMessageService::class)->setMessage($message);
-    }
-
-    /**
-     * @deprecated Use FlashMessageService::getMessage instead
-     */
-    public function GetMessage()
-    {
-        return $this->service(FlashMessageService::class)->getMessage();
-    }
-
     /**
      * @deprecated Use UrlFormatter::getBaseUrl instead
      */
@@ -463,12 +356,12 @@ class Wiki
 
     public function Header()
     {
-        return $this->Action($this->GetConfigValue('header_action'), 1);
+        return $this->service(ActionRunner::class)->action((string)$this->GetConfigValue('header_action'), true);
     }
 
     public function Footer()
     {
-        return $this->Action($this->GetConfigValue('footer_action'), 1);
+        return $this->service(ActionRunner::class)->action((string)$this->GetConfigValue('footer_action'), true);
     }
 
     // FORMS
@@ -483,54 +376,6 @@ class Wiki
     }
 
     // REFERRERS
-    /**
-     * @deprecated Use ReferrerService::log instead
-     */
-    public function LogReferrer($tag = '', $referrer = '')
-    {
-        $this->service(ReferrerService::class)->log($tag, $referrer);
-    }
-
-    /**
-     * @deprecated Use ReferrerService::purge instead
-     */
-    public function PurgeReferrers()
-    {
-        $this->service(ReferrerService::class)->purge();
-    }
-
-    /**
-     * Executes an "action" module and returns the generated output.
-     *
-     * @param string $action
-     *                                  The name of the action and its eventual parameters,
-     *                                  as it appears in the page between "{{" and "}}"
-     * @param bool   $forceLinkTracking
-     *                                  By default, the link tracking will be disabled
-     *                                  during the call of an action. Set this value to <code>true</code> to allow it.
-     * @param array  $vars
-     *                                  An array of additionnal parameters to give to the action, in the form
-     *                                  array( 'param' => 'value').
-     *                                  This allows you to call Action() internally, setting $action to the name of the action
-     *                                  you want to call and it's parameters in an array, wich is more efficient than
-     *                                  the pattern-matching algorithm used to extract the parameters from $action.
-     *
-     * @return string the output generated by the action
-     */
-    /**
-     * @deprecated Use ActionRunner::action instead
-     *
-     * @param string       $action
-     * @param bool|int     $forceLinkTracking
-     * @param array<mixed> $vars
-     *
-     * @return string
-     */
-    public function Action($action, $forceLinkTracking = 0, $vars = [])
-    {
-        return $this->service(ActionRunner::class)->action($action, (bool)$forceLinkTracking, $vars);
-    }
-
     public function Method($method)
     {
         return $this->service(Performer::class)->run($method, 'handler', []);
@@ -566,48 +411,7 @@ class Wiki
     }
 
     // COMMENTS
-    /**
-     * Charge les derniers commentaires de toutes les pages.
-     *
-     * @param int $limit
-     *                   Nombre de commentaires charges.
-     *                   0 par d?faut (ie tous les commentaires).
-     *
-     * @return array tableau contenant chaque commentaire et ses
-     *               proprietes associees
-     *
-     * @todo Ajouter le parametre $start pour permettre une pagination
-     *       des commentaires : ->LoadRecentComments(10, 10)
-     */
-    /**
-     * @deprecated Use CommentService::getRecentComments instead
-     *
-     * @param int $limit
-     *
-     * @return array<mixed>
-     */
-    public function LoadRecentComments($limit = 0)
-    {
-        return $this->service(CommentService::class)->getRecentComments($limit);
-    }
-
-    /**
-     * @deprecated Use CommentService::getRecentlyCommented instead
-     */
-    public function LoadRecentlyCommented($limit = 50)
-    {
-        return $this->service(CommentService::class)->getRecentlyCommented($limit);
-    }
-
     // ACCESS CONTROL
-    /**
-     * @deprecated Use AclService::isOwner instead
-     */
-    public function UserIsOwner($tag = '')
-    {
-        return $this->service(AclService::class)->isOwner((string)$tag);
-    }
-
     /**
      * @param string $group
      *                      The name of a group
@@ -628,26 +432,6 @@ class Wiki
         } catch (GroupNameDoesNotExistException $th) {
             return [];
         }
-    }
-
-    /**
-     * Sets a new ACL to a given group.
-     *
-     * @param string $gname
-     *                      The name of a group
-     * @param string $acl
-     *                      The new ACL to associate with the group $gname
-     *
-     * @return int 0 if successful, a triple error code or a specific error code:
-     *             1000 if the new value would define the group recursively
-     *             1001 if $gname is not named with alphanumeric chars
-     *
-     * @see GetGroupACL
-     * @deprecated Use GroupOperationsService::update and GroupOperationsService::create instead
-     */
-    public function SetGroupACL($gname, $acl)
-    {
-        return $this->service(GroupOperationsService::class)->setMembersFromAclText($gname, $acl);
     }
 
     /**
@@ -685,36 +469,6 @@ class Wiki
     }
 
     /**
-     * Loads the module (handlers) ACL for a certain module.
-     *
-     * @param string $module     The name of the module
-     * @param string $moduleType The type of module: 'action' or 'handler'
-     *
-     * @return string the ACL string  for the given module or "*" if not found
-     */
-    public function GetModuleACL($module, $moduleType)
-    {
-        return $this->service(ModuleAclService::class)->getModuleAcl($module, $moduleType);
-    }
-
-    /**
-     * Sets the $acl for a given $module.
-     *
-     * @param string $module
-     *                            The name of the module
-     * @param string $module_type
-     *                            The type of module ('action' or 'handler')
-     * @param string $acl
-     *                            The new ACL for that module
-     *
-     * @return int 0 on success, > 0 on error
-     */
-    public function SetModuleACL($module, $module_type, $acl)
-    {
-        return $this->service(ModuleAclService::class)->setModuleAcl($module, $module_type, $acl);
-    }
-
-    /**
      * Checks if a $user satisfies the ACL to access a certain $module.
      *
      * @param string $module
@@ -739,7 +493,7 @@ class Wiki
     public function Maintenance()
     {
         // purge referrers
-        $this->PurgeReferrers();
+        $this->service(ReferrerService::class)->purge();
         // purge old page revisions
         $this->PurgePages();
         // purge expired password recovery keys

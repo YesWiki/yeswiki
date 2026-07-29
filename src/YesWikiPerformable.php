@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Wiki;
@@ -87,6 +88,7 @@ abstract class YesWikiPerformable
             public string $name;
             private UserManager $userManager;
             private bool $entryResolved = false;
+            /** @var array<mixed>|null */
             private ?array $entry = null;
 
             public function __construct(UserManager $userManager, string $name)
@@ -95,6 +97,7 @@ abstract class YesWikiPerformable
                 $this->name = $name;
             }
 
+            /** @return array<mixed> */
             public function getEntry(): array
             {
                 if (!$this->entryResolved) {
@@ -102,7 +105,7 @@ abstract class YesWikiPerformable
                     $this->entryResolved = true;
                 }
 
-                return $this->entry;
+                return $this->entry ?? [];
             }
         });
 
@@ -143,7 +146,7 @@ abstract class YesWikiPerformable
         // that get_class() broke on namespacing (after the action name and the ACL key).
         $arguments['calledBy'] = (new \ReflectionClass($this))->getShortName();
 
-        return $this->wiki->Action($action, 0, $arguments);
+        return $this->getService(ActionRunner::class)->action($action, false, $arguments);
     }
 
     protected function getRequest(): Request

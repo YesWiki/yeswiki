@@ -15,6 +15,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\TemplateHelperService;
 
 class Attach
@@ -632,7 +633,7 @@ class Attach
 
         // Call pdf actions
         $params = $this->wiki->parameter;
-        echo $this->wiki->Action('pdf', 0, $params);
+        echo $this->wiki->services->get(ActionRunner::class)->action('pdf', false, $params);
     }
 
     // showUpdateLink() is gone (ticket 17): it linked to tools/attach/handlers/page/

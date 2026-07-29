@@ -2,13 +2,13 @@
 
 namespace YesWiki\Content\Controller;
 
+use YesWiki\Content\Service\FieldFactory;
+use YesWiki\Content\Service\ListManager;
+use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Content\Service\FieldFactory;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Content\Service\ListManager;
 use YesWiki\Kernel\Service\Mailer;
-use YesWiki\Core\YesWikiController;
 
 class ListController extends YesWikiController
 {
@@ -48,7 +48,7 @@ class ListController extends YesWikiController
 
         foreach ($lists as $key => $list) {
             $lists[$key]['canEdit'] = !$this->hibernationService->isWikiHibernated() && $this->wiki->HasAccess('write', $key);
-            $lists[$key]['canDelete'] = !$this->hibernationService->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($key));
+            $lists[$key]['canDelete'] = !$this->hibernationService->isWikiHibernated() && ($this->wiki->UserIsAdmin() || $this->getService(AclService::class)->isOwner($key));
             // Small trick : create a fake SelectListField so we can reuse the code to compute the options
             $field = $this->fieldFactory->create(['liste', $list['id'], '', '', '', '', '', '', '', '', '', '', '', '', '', '']);
             $lists[$key]['options'] = $field->getOptions();

@@ -129,7 +129,7 @@ class CommentService implements EventSubscriberInterface
             if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                 $com['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
             }
-            if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
+            if ($this->aclService->isOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
                 $com['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
                 $com['linkdeletecomment'] = $this->wiki->href("comments/{$comment['tag']}/delete", 'api');
                 // $this->wiki->href('deletepage', $comment['tag']);
@@ -255,7 +255,7 @@ class CommentService implements EventSubscriberInterface
                 if ($this->wiki->HasAccess('comment', $comment['tag'])) {
                     $com['comments'][$i]['linkcomment'] = $this->wiki->href('pages/' . $comment['tag'] . '/comments', 'api');
                 }
-                if ($this->wiki->UserIsOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
+                if ($this->aclService->isOwner($comment['tag']) || $this->wiki->UserIsAdmin()) {
                     $com['comments'][$i]['linkeditcomment'] = $this->wiki->href('edit', $comment['tag']);
                     $com['comments'][$i]['linkdeletecomment'] = $this->wiki->href('comments/' . $comment['tag'] . '/delete', 'api');
                 }

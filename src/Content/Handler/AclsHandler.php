@@ -2,9 +2,11 @@
 
 namespace YesWiki\Content\Handler;
 
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\HibernationService;
 
 /**
  * `/PageName/acls` -- converted from the procedural handlers/page/acls.php by ticket 06.
@@ -34,12 +36,11 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-
         ob_start();
         ?>
         <div class="page">
           <?php
-          if ($this->wiki->page && ($this->wiki->UserIsOwner() || $this->wiki->UserIsAdmin())) {
+          if ($this->wiki->page && ($this->getService(AclService::class)->isOwner() || $this->wiki->UserIsAdmin())) {
               if ($_POST) {
                   // store lists
                   $this->wiki->SaveAcl($this->wiki->GetPageTag(), 'read', $_POST['read_acl']);
@@ -54,7 +55,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
                   }
 
                   // redirect back to page
-                  $this->wiki->SetMessage($message . ' !');
+                  $this->getService(FlashMessageService::class)->setMessage($message . ' !');
                   $this->wiki->Redirect($this->wiki->Href());
               } else {
                   // load acls

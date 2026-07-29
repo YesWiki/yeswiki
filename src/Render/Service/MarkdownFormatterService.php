@@ -6,19 +6,18 @@ use League\CommonMark\Environment\Environment;
 use League\CommonMark\Environment\EnvironmentInterface;
 use League\CommonMark\Extension\Attributes\AttributesExtension;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\CommonMark\Node\Block\Heading;
 use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkExtension;
 use League\CommonMark\Extension\HeadingPermalink\HeadingPermalinkProcessor;
-use League\CommonMark\Extension\CommonMark\Node\Block\Heading;
+use League\CommonMark\MarkdownConverter;
 use League\CommonMark\Node\Inline\Newline;
 use League\CommonMark\Node\StringContainerInterface;
 use League\CommonMark\Parser\MarkdownParser;
-use League\CommonMark\MarkdownConverter;
 use YesWiki\Render\Formatter\ActionExtension;
 use YesWiki\Render\Formatter\CommentExtension;
 use YesWiki\Render\Formatter\ProgressExtension;
 use YesWiki\Wiki;
-
 
 /**
  * Renders page content: standard CommonMark/GFM Markdown, plus Twig-like comments
@@ -29,13 +28,15 @@ class MarkdownFormatterService
 {
     private Wiki $wiki;
     private ContentAssetScanner $assetScanner;
+    private ActionRunner $actionRunner;
     private ?EnvironmentInterface $environment = null;
     private ?EnvironmentInterface $structureEnvironment = null;
 
-    public function __construct(Wiki $wiki, ContentAssetScanner $assetScanner)
+    public function __construct(Wiki $wiki, ContentAssetScanner $assetScanner, ActionRunner $actionRunner)
     {
         $this->wiki = $wiki;
         $this->assetScanner = $assetScanner;
+        $this->actionRunner = $actionRunner;
     }
 
     public function format(string $text): string
@@ -59,16 +60,16 @@ class MarkdownFormatterService
      */
     public function renderActionsOnly(string $text): string
     {
-        $wiki = $this->wiki;
+        $actionRunner = $this->actionRunner;
 
         return preg_replace_callback(
             '/\{\{(.*?)\}\}|./s',
-            function (array $matches) use ($wiki): string {
+            function (array $matches) use ($actionRunner): string {
                 if (!isset($matches[1])) {
                     return '';
                 }
 
-                return trim($matches[1]) === '' ? '' : $wiki->Action($matches[1]);
+                return trim($matches[1]) === '' ? '' : $actionRunner->action($matches[1]);
             },
             trim($text)
         );
@@ -182,9 +183,10 @@ class MarkdownFormatterService
             $environment->addExtension(new AttributesExtension());
             $environment->addExtension(new CommentExtension());
             $environment->addExtension(new ProgressExtension());
+            $actionRunner = $this->actionRunner;
             $environment->addExtension(new ActionExtension(
-                function (string $action) use ($wiki): string {
-                    return $wiki->Action($action);
+                function (string $action) use ($actionRunner): string {
+                    return $actionRunner->action($action);
                 },
                 function (string $url, string $html, ?string $title, array $attributes) use ($wiki): string {
                     $options = ['html' => true];

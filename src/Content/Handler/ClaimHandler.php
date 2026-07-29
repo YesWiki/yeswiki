@@ -2,9 +2,10 @@
 
 namespace YesWiki\Content\Handler;
 
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\FlashMessageService;
 
 /**
  * `/PageName/claim` -- converted from the procedural handlers/page/claim.php by ticket 06.
@@ -34,7 +35,6 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-
         $tag = $this->wiki->getPageTag();
         // only do it on existing pages
         if ($this->wiki->page) {
@@ -43,7 +43,7 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
             if (
                 !empty($_GET['action'])
                 && in_array($_GET['action'], $availableActions)
-                && ($this->wiki->UserIsAdmin() || $this->wiki->UserIsOwner($tag))
+                && ($this->wiki->UserIsAdmin() || $this->getService(AclService::class)->isOwner($tag))
             ) {
                 $aclsService = $this->wiki->services->get(AclService::class);
                 $commentsAcls = $aclsService->load($tag, 'comment');
@@ -55,17 +55,17 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
                             && (in_array($_GET['list'], $wikiGroups, true) || $_GET['list'] == '+')
                         ) {
                             $aclsService->save($tag, 'comment', $_GET['list']);
-                            $this->wiki->SetMessage(_t('YW_COMMENTS_ARE_NOW_OPEN'));
+                            $this->getService(FlashMessageService::class)->setMessage(_t('YW_COMMENTS_ARE_NOW_OPEN'));
                         } else {
-                            $this->wiki->SetMessage(_t('YW_PROBLEM_WITH_ACLS_LIST'));
+                            $this->getService(FlashMessageService::class)->setMessage(_t('YW_PROBLEM_WITH_ACLS_LIST'));
                         }
                         break;
                     case 'closecomments':
                         if ($commentsAcls != null) {
                             $aclsService->save($tag, 'comment', 'comments-closed');
-                            $this->wiki->SetMessage(_t('YW_COMMENTS_ARE_NOW_CLOSED'));
+                            $this->getService(FlashMessageService::class)->setMessage(_t('YW_COMMENTS_ARE_NOW_CLOSED'));
                         } else {
-                            $this->wiki->SetMessage(_t('YW_COMMENTS_ALREADY_CLOSED'));
+                            $this->getService(FlashMessageService::class)->setMessage(_t('YW_COMMENTS_ALREADY_CLOSED'));
                         }
                         break;
                 }
@@ -74,7 +74,7 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
             // only claim ownership if this page has no owner, and if user is logged in.
             if (!$this->wiki->GetPageOwner() && $this->wiki->GetUser()) {
                 $this->wiki->SetPageOwner($tag, $this->wiki->GetUserName());
-                $this->wiki->SetMessage(_t('YW_YOU_ARE_NOW_OWNER_OF_PAGE'));
+                $this->getService(FlashMessageService::class)->setMessage(_t('YW_YOU_ARE_NOW_OWNER_OF_PAGE'));
             }
         }
 

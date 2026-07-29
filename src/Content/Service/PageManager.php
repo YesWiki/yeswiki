@@ -2,16 +2,18 @@
 
 namespace YesWiki\Content\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Wiki;
-use YesWiki\Search\Service\TagsManager;
+use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Search\Service\TagsManager;
+use YesWiki\Wiki;
 
 class PageManager
 {
@@ -28,6 +30,8 @@ class PageManager
 
     protected $ownersCache; // different cache because to set at the same time to prevent infinite loop
     protected $pageCache;
+    /** lazily fetches AdministrativeLogService: it depends on PageManager, so injecting it directly would be a constructor cycle */
+    protected ContainerInterface $container;
 
     public function __construct(
         AclService $aclService,
@@ -39,9 +43,11 @@ class PageManager
         TagsManager $tagsManager,
         TripleStore $tripleStore,
         UserManager $userManager,
-        Wiki $wiki
+        Wiki $wiki,
+        ContainerInterface $container
     ) {
         $this->aclService = $aclService;
+        $this->container = $container;
         $this->authenticationService = $authenticationService;
         $this->dbService = $dbService;
         $this->eventDispatcher = $eventDispatcher;
@@ -763,7 +769,7 @@ class PageManager
     private function duplicate($sourceTag, $destinationTag): bool
     {
         $result = false;
-        $this->wiki->LogAdministrativeAction($this->authenticationService->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');
+        $this->container->get(AdministrativeLogService::class)->log($this->authenticationService->getLoggedUserName(), 'Duplication de la page ""' . $sourceTag . '"" vers la page ""' . $destinationTag . '""');
 
         return $result;
     }

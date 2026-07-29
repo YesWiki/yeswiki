@@ -2,15 +2,16 @@
 
 namespace YesWiki\Content\Handler;
 
-use YesWiki\Search\Service\TagsManager;
-use YesWiki\Identity\Service\AclService;
-use YesWiki\Content\Service\SemanticTransformer;
-use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\SemanticTransformer;
 use YesWiki\Core\YesWikiHandler;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Search\Service\TagsManager;
 
 /**
  * `/PageName/show` -- converted from the procedural handlers/page/show.php by ticket 06.
@@ -191,7 +192,6 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
     {
         // V?rification de s?curit?
 
-
         // Generate page before displaying the header, so that it might interract with the header
         ob_start();
 
@@ -242,7 +242,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 }
 
                 // display page
-                $this->wiki->RegisterInclusion($this->wiki->GetPageTag());
+                $this->getService(InclusionStack::class)->register($this->wiki->GetPageTag());
                 $entryManager = $this->wiki->services->get(EntryManager::class);
                 if ($entryManager->isEntry($this->wiki->page['tag'])) {
                     $entryController = $this->wiki->services->get(EntryController::class);
@@ -250,7 +250,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 } else {
                     echo $this->wiki->Format($this->wiki->page['body'], 'wakka', $this->wiki->GetPageTag());
                 }
-                $this->wiki->UnregisterLastInclusion();
+                $this->getService(InclusionStack::class)->unregisterLast();
             }
         } else {
             echo '<i>' . _t('LOGIN_NOT_AUTORIZED') . '</i>'; // to sync with /handlers/page/show__.php

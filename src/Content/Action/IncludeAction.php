@@ -2,11 +2,12 @@
 
 namespace YesWiki\Content\Action;
 
-use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Render\Service\TemplateHelperService;
 
 /**
  * `{{include}}` -- converted from the procedural actions/include.php by ticket 06.
@@ -274,7 +275,6 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             -- valeur "show" :  ajoute un lien "[édition]" en haut é droite de la boite
         */
 
-
         // récuperation du nom de la page é inclure
         $incPageName = $this->incPageName = trim($this->wiki->GetParameter('page'));
 
@@ -295,8 +295,8 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         //
         if (empty($incPageName)) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('MISSING_PAGE_PARAMETER') . '.</div>' . "\n";
-        } elseif ($this->wiki->IsIncludedBy($incPageName)) {
-            $inclusions = $this->wiki->GetAllInclusions();
+        } elseif ($this->getService(InclusionStack::class)->isIncludedBy($incPageName)) {
+            $inclusions = $this->getService(InclusionStack::class)->getAll();
             $pg = strtolower($incPageName); // on l'effectue avant le for sinon il sera recalculé é chaque pas
             $err = '[[' . $pg . ']]';
             for ($i = 0; $inclusions[$i] != $pg; $i++) {
@@ -312,7 +312,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // Affichage de la page quand il n'y a pas d'erreur
         elseif ($this->wiki->HasAccess('read', $incPageName)) {
             $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($incPageName);
-            $this->wiki->RegisterInclusion($incPageName);
+            $this->getService(InclusionStack::class)->register($incPageName);
             $output = $this->wiki->Format($incPage['body']);
             if (isset($classes)) {
                 if ($this->wiki->GetParameter('edit') == 'show') {
@@ -325,7 +325,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             } else {
                 echo $output;
             }
-            $this->wiki->UnregisterLastInclusion();
+            $this->getService(InclusionStack::class)->unregisterLast();
         }
     }
 }

@@ -1,9 +1,12 @@
 <?php
 
 namespace YesWiki\Identity\Action;
-use YesWiki\Kernel\Service\Performer;
+
+use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Performer;
 
 class EditActionsAclsAction extends YesWikiAction implements RegisteredAction
 {
@@ -38,19 +41,18 @@ class EditActionsAclsAction extends YesWikiAction implements RegisteredAction
 
         $post = $this->getRequest()->request;
         if ($post->count() > 0 && !empty($post->get('actionname'))) { // save ACL's
-            $result = $wiki->SetModuleACL($name = $post->get('actionname'), 'action', $post->get('acl'));
+            $result = $this->getService(ModuleAclService::class)->setModuleAcl($name = strval($post->get('actionname')), 'action', strval($post->get('acl')));
             if ($result) {
                 return $res . _t('ERROR_WHILE_SAVING_ACL') . ' ' . ucfirst($name) . ' (' . _t('ERROR_CODE') . ' ' . $result . ')<br />';
-            } else {
-                $wiki->LogAdministrativeAction($wiki->GetUserName(), _t('NEW_ACL_FOR_ACTION') . ' ' . ucfirst($name) . ' : ' . $post->get('acl') . "\n");
-
-                return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_ACTION') . ' ' . ucfirst($name) . '.<br />';
             }
+            $this->getService(AdministrativeLogService::class)->log($wiki->GetUserName(), _t('NEW_ACL_FOR_ACTION') . ' ' . ucfirst($name) . ' : ' . $post->get('acl') . "\n");
+
+            return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_ACTION') . ' ' . ucfirst($name) . '.<br />';
         } elseif (!empty($this->getRequest()->query->get('actionname')) && in_array($name = $this->getRequest()->query->get('actionname'), $list)) {
             $res .= $wiki->FormOpen();
             $res .= '<br />' . _t('EDIT_RIGHTS_FOR_ACTION') . ' <strong>' . ucfirst($name) . '</strong>:';
             $res .= '<input type="hidden" name="actionname" value="' . $name . '" />';
-            $res .= '<textarea class="form-control" name="acl" rows="3">' . $wiki->GetModuleACL($name, 'action') . '</textarea><br />';
+            $res .= '<textarea class="form-control" name="acl" rows="3">' . $this->getService(ModuleAclService::class)->getModuleAcl($name, 'action') . '</textarea><br />';
             $res .= '<input type="submit" value="' . _t('SAVE') . '" class="btn btn-primary" accesskey="s" />';
 
             return $res . $wiki->FormClose();

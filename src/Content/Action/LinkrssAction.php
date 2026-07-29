@@ -5,6 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 /**
@@ -53,7 +54,7 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
         $forms = $this->wiki->services->get(FormManager::class)->getAll();
         $liste = '';
 
-        if ($this->wiki->CheckModuleACL('rss', 'handler')) {
+        if ($this->getService(ModuleAclService::class)->checkModuleAcl('rss', 'handler')) {
             if (is_array($forms) && count($forms) > 0) {
                 foreach ($forms as $form) {
                     $liste .= '  <link rel="alternate" type="application/rss+xml" '
@@ -71,7 +72,6 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         $displayLastChanges = $this->wiki->services->get(PageManager::class)->getOne('DerniersChangementsRSS') && $this->wiki->HasAccess('read', 'DerniersChangementsRSS');
         $displayLastComments = $this->wiki->services->get(PageManager::class)->getOne('DerniersCommentairesRSS') && $this->wiki->HasAccess('read', 'DerniersCommentairesRSS');
 
