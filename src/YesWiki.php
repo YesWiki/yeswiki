@@ -72,22 +72,17 @@ LanguageService::getInstance()->initialize();
 class Wiki
 {
     public $config;
-    public $dblink;
     public $metadatas; // todo use PageManager or method instead of public var
     public $method;
     public $page;
     public $tag;
     public $parameter = [];
     public $request;
-    // current output used for actions/handlers/formatters
-    public $output;
-    public $VERSION;
     public $CookiePath = '/';
     public $inclusions = [];
     public $extensions = [];
     // lazily populated RouteCollection - always read it through getRoutes()
     public $routes = [];
-    public $user; // depreciated TODO remove it for ectoplasme : replaced by userManager
     /**
      * The service container, assigned from the kernel in boot().
      *
@@ -100,7 +95,6 @@ class Wiki
      */
     public $services;
     public $actionObjects = []; // keep track of actions performed
-    public $pageCacheFormatted = [];
     public $_groupsCache = [];
     public $_actionsAclsCache = [];
 
@@ -149,14 +143,6 @@ class Wiki
         return str_replace($vRootPath, '', $pPath);
     }
 
-    // MISC
-    public function GetMicroTime()
-    {
-        list($usec, $sec) = explode(' ', microtime());
-
-        return (float)$usec + (float)$sec;
-    }
-
     // VARIABLES
     public function GetPageTag()
     {
@@ -184,11 +170,6 @@ class Wiki
         return isset($this->config[$name])
             ? is_array($this->config[$name]) ? $this->config[$name] : trim($this->config[$name])
             : ($default != null ? $default : '');
-    }
-
-    public function GetYesWikiName()
-    {
-        return $this->GetConfigValue('yeswiki_name');
     }
 
     public function isCli(): bool
@@ -221,21 +202,6 @@ class Wiki
     public function UnregisterLastInclusion()
     {
         return array_shift($this->inclusions);
-    }
-
-    /**
-     * Renvoie le nom de la page en cours d'inclusion.
-     *
-     * @example // dans le cas d'une action comme l'ActionEcrivezMoi
-     *          if($inc = $this->CurrentInclusion() && strtolower($this->GetPageTag()) != $inc)
-     *          echo 'Cette action ne peut etre appelee depuis une page inclue';
-     *
-     * @return string le nom (tag) de la page (en minuscules)
-     *                false si la pile est vide
-     */
-    public function GetCurrentInclusion()
-    {
-        return isset($this->inclusions[0]) ? $this->inclusions[0] : false;
     }
 
     /**
@@ -777,16 +743,6 @@ class Wiki
         }
     }
 
-    public function LoadReferrers($tag = '')
-    {
-        $whereClause = '';
-        if ($tag = trim($tag)) {
-            $whereClause = "where page_tag = '" . $this->services->get(DbService::class)->escape($tag) . "'";
-        }
-
-        return $this->LoadAll('select referrer, count(referrer) as num from ' . $this->config['table_prefix'] . 'referrers ' . $whereClause . ' group by referrer order by num desc');
-    }
-
     public function PurgeReferrers()
     {
         if (($days = $this->GetConfigValue('referrers_purge_time')) && !$this->services->get(HibernationService::class)->isWikiHibernated()) {
@@ -942,15 +898,6 @@ class Wiki
         // load tags of pages
         // return $this->LoadAll("select comment_on as tag, max(time) as time, tag as comment_tag, user from ".$this->config['table_prefix']."pages where comment_on != '' group by comment_on order by time desc");
         return $pages;
-    }
-
-    public function UserWantsComments()
-    {
-        if (!$user = $this->GetUser()) {
-            return false;
-        }
-
-        return $user['show_comments'] == 'Y';
     }
 
     // ACCESS CONTROL
@@ -1688,7 +1635,6 @@ class Wiki
 
         // need to be executed after the container is compiled because the %paramName% are resolved there
         $this->config = $this->services->getParameterBag()->all();
-        $this->dblink = $this->services->get(DbService::class)->getLink();
     }
 
     /**
@@ -1851,14 +1797,6 @@ class Wiki
     }
 
     /**
-     * @deprecated Use PageManager::getLinkingTo instead
-     */
-    public function LoadPagesLinkingTo($tag)
-    {
-        return $this->services->get(PageManager::class)->getLinkingTo($tag);
-    }
-
-    /**
      * @deprecated Use PageManager::getRecentlyChanged instead
      */
     public function LoadRecentlyChanged($limit = 50, $minDate = '')
@@ -1875,22 +1813,6 @@ class Wiki
     }
 
     /**
-     * @deprecated Use PageManager::getCreateTime instead
-     */
-    public function GetPageCreateTime($pageTag)
-    {
-        return $this->services->get(PageManager::class)->getCreateTime($pageTag);
-    }
-
-    /**
-     * @deprecated Use PageManager::searchFullText instead
-     */
-    public function FullTextSearch($phrase)
-    {
-        return $this->services->get(PageManager::class)->searchFullText($phrase);
-    }
-
-    /**
      * @deprecated Use PageManager::getWanted instead
      */
     public function LoadWantedPages()
@@ -1899,27 +1821,11 @@ class Wiki
     }
 
     /**
-     * @deprecated Use PageManager::getOrphaned instead
-     */
-    public function LoadOrphanedPages()
-    {
-        return $this->services->get(PageManager::class)->getOrphaned();
-    }
-
-    /**
      * @deprecated Use PageManager::isOrphaned instead
      */
     public function IsOrphanedPage($tag)
     {
         return $this->services->get(PageManager::class)->isOrphaned($tag);
-    }
-
-    /**
-     * @deprecated Use PageManager::deletedOrphaned instead
-     */
-    public function DeleteOrphanedPage($tag)
-    {
-        return $this->services->get(PageManager::class)->deleteOrphaned($tag);
     }
 
     /**
@@ -1955,59 +1861,11 @@ class Wiki
     }
 
     /**
-     * @deprecated Use PageManager::setMetadata instead
-     */
-    public function SaveMetaDatas($tag, $metadata)
-    {
-        return $this->services->get(PageManager::class)->setMetadata($tag, $metadata);
-    }
-
-    /**
-     * @deprecated Use TagsManager::deleteAll instead
-     */
-    public function DeleteAllTags($page)
-    {
-        return $this->services->get(TagsManager::class)->deleteAll($page);
-    }
-
-    /**
-     * @deprecated Use TagsManager::save instead
-     */
-    public function SaveTags($page, $liste_tags)
-    {
-        return $this->services->get(TagsManager::class)->save($page, $liste_tags);
-    }
-
-    /**
-     * @deprecated Use TagsManager::getAll instead
-     */
-    public function GetAllTags($page = '')
-    {
-        return $this->services->get(TagsManager::class)->getAll($page);
-    }
-
-    /**
      * @deprecated Use TagsManager::getPagesByTags instead
      */
     public function PageList($tags = '', $type = '', $nb = '', $tri = '')
     {
         return $this->services->get(TagsManager::class)->getPagesByTags($tags, $type, $nb, $tri);
-    }
-
-    /**
-     * @deprecated Use TripleStore::getOne instead
-     */
-    public function GetTripleValue($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        return $this->services->get(TripleStore::class)->getOne($resource, $property, $re_prefix, $prop_prefix);
-    }
-
-    /**
-     * @deprecated Use TripleStore::getMatching instead
-     */
-    public function GetMatchingTriples($resource = null, $property = null, $value = null, $res_op = 'LIKE', $prop_op = '=')
-    {
-        return $this->services->get(TripleStore::class)->getMatching($resource, $property, $value, $res_op, $prop_op);
     }
 
     /**
@@ -2019,51 +1877,11 @@ class Wiki
     }
 
     /**
-     * @deprecated Use TripleStore::exist instead
-     */
-    public function TripleExists($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        return $this->services->get(TripleStore::class)->exist($resource, $property, $value, $re_prefix, $prop_prefix);
-    }
-
-    /**
-     * @deprecated Use TripleStore::create instead
-     */
-    public function InsertTriple($resource, $property, $value, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        return $this->services->get(TripleStore::class)->create($resource, $property, $value, $re_prefix, $prop_prefix);
-    }
-
-    /**
-     * @deprecated Use TripleStore::update instead
-     */
-    public function UpdateTriple($resource, $property, $oldvalue, $newvalue, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        return $this->services->get(TripleStore::class)->update($resource, $property, $oldvalue, $newvalue, $re_prefix, $prop_prefix);
-    }
-
-    /**
-     * @deprecated Use TripleStore::delete instead
-     */
-    public function DeleteTriple($resource, $property, $value = null, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
-    {
-        return $this->services->get(TripleStore::class)->delete($resource, $property, $value, $re_prefix, $prop_prefix);
-    }
-
-    /**
      * @deprecated Use UserManager::getOneByName instead
      */
     public function LoadUser($name, $password = 0)
     {
         return $this->services->get(UserManager::class)->getOneByName($name, $password);
-    }
-
-    /**
-     * @deprecated Use UserManager::getOneByEmail instead
-     */
-    public function loadUserByEmail($mail, $password = 0)
-    {
-        return $this->services->get(UserManager::class)->getOneByEmail($mail, $password);
     }
 
     /**
@@ -2088,22 +1906,6 @@ class Wiki
     public function GetUserName()
     {
         return $this->services->get(AuthenticationService::class)->getLoggedUserName();
-    }
-
-    /**
-     * @deprecated Use AuthenticationService::login instead
-     */
-    public function SetUser($user, $remember = 0)
-    {
-        return $this->services->get(AuthenticationService::class)->login($user, $remember);
-    }
-
-    /**
-     * @deprecated Use AuthenticationService::logout instead
-     */
-    public function LogoutUser()
-    {
-        return $this->services->get(AuthenticationService::class)->logout();
     }
 
     /**
@@ -2160,104 +1962,5 @@ class Wiki
     public function StopLinkTracking()
     {
         return $this->services->get(LinkTracker::class)->stop();
-    }
-
-    /**
-     * @deprecated Use LinkTracker::track
-     */
-    public function LinkTracking($newState = null)
-    {
-        return $this->services->get(LinkTracker::class)->track($newState);
-    }
-
-    /**
-     * @deprecated Use LinkTracker::add
-     */
-    public function TrackLinkTo($tag)
-    {
-        return $this->services->get(LinkTracker::class)->add($tag);
-    }
-
-    /**
-     * @deprecated Use LinkTracker::getAll
-     */
-    public function GetLinkTable()
-    {
-        return $this->services->get(LinkTracker::class)->getAll();
-    }
-
-    /**
-     * @deprecated Use LinkTracker::persist
-     */
-    public function WriteLinkTable()
-    {
-        return $this->services->get(LinkTracker::class)->persist();
-    }
-
-    /**
-     * @deprecated Use LinkTracker::clear
-     */
-    public function ClearLinkTable()
-    {
-        return $this->services->get(LinkTracker::class)->clear();
-    }
-
-    /**
-     * @param string $group
-     *                      The name of a group
-     *
-     * @return bool true iff the user is in the given $group
-     *
-     * @deprecated Use UserManager::isInGroup instead
-     */
-    public function UserIsInGroup($group, $user = null, $admincheck = true)
-    {
-        return $this->services->get(UserManager::class)->isInGroup($group, $user, $admincheck);
-    }
-
-    // COOKIES
-    /**
-     * @param string $name
-     * @param string $value
-     *
-     * @deprecated Use AuthenticationService::setPersistentCookie instead
-     */
-    public function SetSessionCookie($name, $value)
-    {
-        $this->services->get(AuthenticationService::class)->setPersistentCookie($name, $value, 0);
-        $_COOKIE[$name] = $value;
-    }
-
-    /**
-     * @param string   $name
-     * @param string   $value
-     * @param bool|int $remember
-     *
-     * @deprecated Use AuthenticationService::setPersistentCookie instead
-     */
-    public function SetPersistentCookie($name, $value, $remember = 0)
-    {
-        $authenticationService = $this->services->get(AuthenticationService::class);
-
-        $authenticationService->setPersistentCookie($name, $value, $authenticationService->getExpirationTimeStamp(new DateTime(), $remember == 1));
-        $_COOKIE[$name] = $value;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @deprecated Use AuthenticationService::deleteOldCookie instead
-     */
-    public function DeleteCookie($name)
-    {
-        $this->services->get(AuthenticationService::class)->deleteOldCookie($name);
-    }
-
-    /**
-     * @deprecated no replacement
-     */
-    public function GetCookie($name)
-    {
-        return $_COOKIE[$name];
     }
 }
