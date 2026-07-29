@@ -15,6 +15,10 @@ const srcDir = dirname(fileURLToPath(import.meta.url))
 const map = JSON.parse(readFileSync(join(srcDir, 'icon-map.json'), 'utf8'))
 // icons needed beyond the legacy map (filled variants render as `${name}-filled`)
 const EXTRAS = ['filled:star', 'cursor-text']
+// sprite ids whose Tabler source icon has a different name — e.g. the magnifier
+// ships as "loupe" because adblock cosmetic filters hide elements whose
+// attributes mention "#search"
+const RENAMES = { loupe: 'search' }
 
 const names = [
   ...new Set([
@@ -36,7 +40,7 @@ const symbols = names.map((ref) => {
     'icons',
     'icons',
     style,
-    `${base}.svg`,
+    `${RENAMES[base] ?? base}.svg`,
   )
   const svg = readFileSync(file, 'utf8')
   const inner = svg
