@@ -9,6 +9,7 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `/PageName/mail` -- converted from the procedural handlers/page/mail.php by ticket 06.
@@ -99,7 +100,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
             </form>';
         } else {
             // on affiche le formulaire d'identification sinon
-            $output .= $this->wiki->render('@core/alert-message.twig', [
+            $output .= $this->getService(TemplateEngine::class)->renderSafely('@core/alert-message.twig', [
                 'type' => 'danger',
                 'message' => ($this->getService(AuthenticationService::class)->getLoggedUser())
                     ? _t('LOGIN_NOT_AUTORIZED')
@@ -114,8 +115,8 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
         }
 
         // affichage a l'ecran
-        echo $this->wiki->Header();
+        echo $this->getService(TemplateEngine::class)->header();
         echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
-        echo $this->wiki->Footer();
+        echo $this->getService(TemplateEngine::class)->footer();
     }
 }

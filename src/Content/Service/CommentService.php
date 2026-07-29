@@ -151,7 +151,7 @@ class CommentService implements EventSubscriberInterface
             return [
                 'code' => 200,
                 'success' => _t('COMMENT_PUBLISHED'),
-                'html' => $this->wiki->render('@core/comment.twig', ['comment' => $com]),
+                'html' => $this->wiki->services->get(TemplateEngine::class)->renderSafely('@core/comment.twig', ['comment' => $com]),
             ] + $errors;
         }
 
@@ -270,7 +270,7 @@ class CommentService implements EventSubscriberInterface
             }
         }
 
-        return $this->wiki->render('@core/comment-list.twig', $com);
+        return $this->wiki->services->get(TemplateEngine::class)->renderSafely('@core/comment-list.twig', $com);
     }
 
     public function getCommentsCount($tag)
@@ -379,7 +379,7 @@ class CommentService implements EventSubscriberInterface
             }
         }
 
-        return $this->wiki->render('@core/comment-form.twig', $options);
+        return $this->wiki->services->get(TemplateEngine::class)->renderSafely('@core/comment-form.twig', $options);
     }
 
     public function renderCommentsForPage($tag, $showOnlyOnce = true)
@@ -413,7 +413,7 @@ class CommentService implements EventSubscriberInterface
                     'user' => ($hasAccessComment) ? null : $this->wiki->services->get(AuthenticationService::class)->getLoggedUser(),
                     'form' => ($hasAccessComment) ? $this->getCommentForm($tag) : '',
                 ];
-            $output = $this->wiki->render('@core/comment-for-page.twig', $options);
+            $output = $this->wiki->services->get(TemplateEngine::class)->renderSafely('@core/comment-for-page.twig', $options);
         }
 
         // indicate that those comments on page were already rendered once

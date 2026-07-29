@@ -30,7 +30,7 @@ class EditActionsAclsAction extends YesWikiAction implements RegisteredAction
         $wiki = &$this->wiki;
         $list = $wiki->services->get(Performer::class)->list('action');
         sort($list);
-        $res = $wiki->FormOpen('', '', 'get');
+        $res = $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->formOpen('', '', 'get');
         $res .= _t('ACTION_RIGHTS') . ' <select name="actionname">';
         foreach ($list as $action) {
             $res .= '<option value="' . $action . '"';
@@ -39,7 +39,7 @@ class EditActionsAclsAction extends YesWikiAction implements RegisteredAction
             }
             $res .= '>' . ucfirst($action) . '</option>';
         }
-        $res .= '</select> <input type="submit" class="btn btn-default" value="' . _t('SEE') . '" />' . $wiki->FormClose();
+        $res .= '</select> <input type="submit" class="btn btn-default" value="' . _t('SEE') . '" />' . $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->formClose();
 
         $post = $this->getRequest()->request;
         if ($post->count() > 0 && !empty($post->get('actionname'))) { // save ACL's
@@ -51,13 +51,13 @@ class EditActionsAclsAction extends YesWikiAction implements RegisteredAction
 
             return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_ACTION') . ' ' . ucfirst($name) . '.<br />';
         } elseif (!empty($this->getRequest()->query->get('actionname')) && in_array($name = $this->getRequest()->query->get('actionname'), $list)) {
-            $res .= $wiki->FormOpen();
+            $res .= $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->formOpen();
             $res .= '<br />' . _t('EDIT_RIGHTS_FOR_ACTION') . ' <strong>' . ucfirst($name) . '</strong>:';
             $res .= '<input type="hidden" name="actionname" value="' . $name . '" />';
             $res .= '<textarea class="form-control" name="acl" rows="3">' . $this->getService(ModuleAclService::class)->getModuleAcl($name, 'action') . '</textarea><br />';
             $res .= '<input type="submit" value="' . _t('SAVE') . '" class="btn btn-primary" accesskey="s" />';
 
-            return $res . $wiki->FormClose();
+            return $res . $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->formClose();
         }
 
         return $res;

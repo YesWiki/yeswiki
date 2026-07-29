@@ -214,7 +214,7 @@ class ReactionManager
                     foreach ($images as $i => $img) {
                         $image = empty($img)
                             ? ''
-                            : trim($this->wiki->render('@core/_reactions_images.twig', [
+                            : trim($this->wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely('@core/_reactions_images.twig', [
                                 'image' => $img,
                                 'id' => 'image',
                             ]));
@@ -283,7 +283,7 @@ class ReactionManager
                 $labels[$id] = $rawLabels[$k];
                 $images[$id] = empty($rawImages[$k])
                     ? ''
-                    : trim($this->wiki->render('@core/_reactions_images.twig', [
+                    : trim($this->wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely('@core/_reactions_images.twig', [
                         'image' => $rawImages[$k],
                         'id' => $id,
                     ]));

@@ -13,6 +13,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -64,17 +65,11 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 $data = $this->duplicationManager->checkPostData($this->getRequest()->request->all());
                 $this->duplicationManager->duplicateLocally($data);
                 if ($data['duplicate-action'] == 'edit') {
-                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('edit', $data['newTag']));
-
-                    return;
+                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('edit', $data['newTag']));
                 } elseif ($data['duplicate-action'] == 'return') {
-                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
-
-                    return;
+                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
                 }
-                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $data['newTag']));
-
-                return;
+                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $data['newTag']));
             } catch (\Throwable $th) {
                 $error .= $this->render('@templates\alert-message-with-back.twig', [
                     'type' => 'warning',

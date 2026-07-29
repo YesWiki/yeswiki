@@ -9,6 +9,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -76,7 +77,7 @@ class ListController extends YesWikiController
                 ]);
             }
 
-            $this->wiki->Redirect(
+            $this->getService(Redirector::class)->redirect(
                 $this->getService(UrlFormatter::class)->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
             );
         }
@@ -106,7 +107,7 @@ class ListController extends YesWikiController
                     ]);
                 }
 
-                $this->wiki->Redirect(
+                $this->getService(Redirector::class)->redirect(
                     $this->getService(UrlFormatter::class)->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
                 );
             } else {
@@ -127,7 +128,7 @@ class ListController extends YesWikiController
             $this->getService(Mailer::class)->notifyAdminsListDeleted($id);
         }
 
-        $this->wiki->Redirect(
+        $this->getService(Redirector::class)->redirect(
             $this->getService(UrlFormatter::class)->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
         );
     }

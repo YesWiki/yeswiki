@@ -10,8 +10,10 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `/PageName/acls` -- converted from the procedural handlers/page/acls.php by ticket 06.
@@ -61,7 +63,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
 
                   // redirect back to page
                   $this->getService(FlashMessageService::class)->setMessage($message . ' !');
-                  $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
+                  $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
               } else {
                   // load acls
                   $readACL = $this->getService(AclService::class)->load($this->getService(PageContext::class)->getTag(), 'read');
@@ -71,7 +73,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
                   // show form?>
               <h3><?php echo _t('YW_ACLS_LIST') . ' ' . $this->getService(LinkRenderer::class)->linkToPage($this->getService(PageContext::class)->getTag()); ?></h3><!-- Access Control Lists for-->
 
-              <?php echo $this->wiki->FormOpen('acls', '', 'post', 'form-horizontal'); ?>
+              <?php echo $this->getService(TemplateEngine::class)->formOpen('acls', '', 'post', 'form-horizontal'); ?>
               <div class="form-group">
                 <label class="control-label col-sm-3"><?php echo _t('YW_ACLS_READ'); ?> : </label>
                 <div class="controls col-sm-9">
@@ -125,7 +127,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
               </div>
 
           <?php
-              echo $this->wiki->FormClose();
+              echo $this->getService(TemplateEngine::class)->formClose();
               }
           } else {
               echo '<div class="alert alert-danger">' . _t('YW_CANNOT_CHANGE_ACLS') . '</div>';
@@ -136,8 +138,8 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
         <?php
 
         $content = ob_get_clean();
-        echo $this->wiki->Header();
+        echo $this->getService(TemplateEngine::class)->header();
         echo $content;
-        echo $this->wiki->Footer();
+        echo $this->getService(TemplateEngine::class)->footer();
     }
 }

@@ -52,10 +52,9 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Render\Service\ActionRunner;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
 
 // base translations and language detection (also defines YW_CHARSET); runs at load
@@ -144,13 +143,6 @@ class Wiki
             : ($default != null ? $default : '');
     }
 
-    public function isCli(): bool
-    {
-        // NB: 'cli-server' (php -S) is deliberately NOT considered CLI: it serves real web
-        // requests with cookies, REMOTE_ADDR and sendable headers
-        return in_array(php_sapi_name(), ['cli', 'phpdbg'], true);
-    }
-
     /**
      * Make the purge of page versions that are older than the last version older than "pages_purge_time"
      * This method permits to allways keep a not latest version that is older than that period.
@@ -188,50 +180,6 @@ class Wiki
                 $this->service(DbService::class)->query($sql);
             }
         }
-    }
-
-    // HTTP/REQUEST/LINK RELATED
-    public function Redirect($url)
-    {
-        header("Location: $url");
-        $this->exit();
-    }
-
-    public function exit(string $message = '')
-    {
-        // Always throw rather than calling PHP's exit()/die(): a real process exit mid-request
-        // would skip kernel.response/kernel.terminate once dispatch goes through a real
-        // Symfony\Component\HttpKernel\HttpKernel (see Wiki::handleWithHttpKernel()). Every
-        // caller of Wiki::exit()/Wiki::Redirect() gets this for free; Run()'s catch(ExitException)
-        // is what decides what to do with it for each dispatch path.
-        throw new ExitException($message);
-    }
-
-    public function Header()
-    {
-        return $this->service(ActionRunner::class)->action((string)$this->GetConfigValue('header_action'), true);
-    }
-
-    public function Footer()
-    {
-        return $this->service(ActionRunner::class)->action((string)$this->GetConfigValue('footer_action'), true);
-    }
-
-    // FORMS
-    public function FormOpen($method = '', $tag = '', $formMethod = 'post', $class = '')
-    {
-        return $this->render('@core/_form-open.twig', compact(['method', 'tag', 'formMethod', 'class']));
-    }
-
-    public function FormClose()
-    {
-        return "</form>\n";
-    }
-
-    // REFERRERS
-    public function Method($method)
-    {
-        return $this->service(Performer::class)->run($method, 'handler', []);
     }
 
     // COMMENTS
@@ -297,7 +245,7 @@ class Wiki
             // empty-tag redirect below, or RunSpecialPages' early exits): reproduce the
             // historical exit($message) behavior for web requests, keep throwing under CLI
             // where tests/console rely on catching it
-            if ($this->isCli()) {
+            if (YesWikiKernel::isCli()) {
                 throw $th;
             }
             echo $th->getMessage();
@@ -320,7 +268,7 @@ class Wiki
         }
 
         if (!$this->tag = trim($tag)) {
-            $this->Redirect($this->service(UrlFormatter::class)->href('', $this->config['root_page']));
+            $this->service(Redirector::class)->redirect($this->service(UrlFormatter::class)->href('', $this->config['root_page']));
         }
 
         $this->service(AuthenticationService::class)->connectUser();
@@ -370,7 +318,7 @@ class Wiki
             } else {
                 $response = new Response(_t('ROUTE_BAD_CONFIGURED'), Response::HTTP_BAD_REQUEST);
                 $response->send();
-                $this->exit();
+                throw new ExitException('');
             }
         } elseif (count($extract) > 1) {
             array_shift($extract);
@@ -750,17 +698,5 @@ class Wiki
         }
 
         $this->service(ThemeManager::class)->loadTemplates($metadata);
-    }
-
-    /**
-     * Shortcut to TemplateEngine::render() that swallows errors into an inline alert.
-     */
-    public function render($templatePath, $data)
-    {
-        try {
-            return $this->service(TemplateEngine::class)->render($templatePath, $data);
-        } catch (\Exception $e) {
-            return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': ' . $e->getMessage() . '</div>' . "\n";
-        }
     }
 }

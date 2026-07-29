@@ -1,11 +1,13 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 use YesWiki\Content\Service\ActivityPubService;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\WebfingerService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Redirector;
 
 class BazarFollowAction extends YesWikiAction implements RegisteredAction
 {
@@ -29,7 +31,7 @@ class BazarFollowAction extends YesWikiAction implements RegisteredAction
 
             $interactionUrl = $webfingerService->getInteractionUrl($post->get('actor_handle'), $formActorUri);
 
-            return $this->wiki->redirect($interactionUrl);
+            return $this->getService(Redirector::class)->redirect($interactionUrl);
         }
 
         $activityPubEnabled = $activityPubService->isEnabled($form);

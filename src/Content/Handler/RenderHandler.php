@@ -6,6 +6,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `/PageName/render` -- converted from the procedural handlers/page/render.php by ticket 06.
@@ -46,10 +47,10 @@ class RenderHandler extends YesWikiHandler implements RegisteredHandler
         // ajout des en-têtes en pieds de page
 
         // on recupere les entetes html mais pas ce qu'il y a dans le body
-        $header = explode('<body', $this->wiki->Header());
+        $header = explode('<body', $this->getService(TemplateEngine::class)->header());
         $output = $header[0] . $output;
         // on recupere juste les javascripts et la fin des balises body et html
-        $output .= preg_replace('/^.+<script/Us', '<script', $this->wiki->Footer());
+        $output .= preg_replace('/^.+<script/Us', '<script', $this->getService(TemplateEngine::class)->footer());
         echo $output;
     }
 }

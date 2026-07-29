@@ -9,6 +9,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
@@ -105,7 +106,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
             // Définition du type de document et de son encodage.
             header('Content-Type: text/xml; charset=ISO-8859-1');
             echo $output;
-            $this->wiki->exit();
+            $this->getService(Redirector::class)->terminate();
         }
     }
 }

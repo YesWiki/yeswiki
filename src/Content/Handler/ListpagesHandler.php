@@ -11,6 +11,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
 
 /**
@@ -108,7 +109,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
                     }
                 }
             }
-            $text .= $this->wiki->render("@core/$template", ['elements' => $element]);
+            $text .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", ['elements' => $element]);
             $nb_total = count($element);
         } else {
             $nb_total = 0;
@@ -128,8 +129,8 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         $output .= $this->getService(MarkdownFormatterService::class)->format('{{rss tags="' . $tags . '" class="pull-right"}}') . "\n";
         $output .= '</div>' . "\n" . $text;
 
-        echo $this->wiki->Header();
+        echo $this->getService(TemplateEngine::class)->header();
         echo "<div class=\"page\">\n$output\n$outputselecttag\n<hr class=\"hr_clear\" />\n</div>\n";
-        echo $this->wiki->Footer();
+        echo $this->getService(TemplateEngine::class)->footer();
     }
 }

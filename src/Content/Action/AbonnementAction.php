@@ -7,6 +7,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `{{abonnement}}` -- converted from the procedural actions/abonnement.php by ticket 06.
@@ -81,7 +82,7 @@ class AbonnementAction extends YesWikiAction implements RegisteredAction
             $listelements['demand'] = 'abonnement';
             $listelements['placeholder'] = _t('CONTACT_SUBSCRIBE');
 
-            echo $this->wiki->render("@core/$template", $listelements);
+            echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $listelements);
 
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
         }

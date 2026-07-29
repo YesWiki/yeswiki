@@ -8,6 +8,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateEngine;
 
 #[\Field(['image'])]
 class ImageField extends FileField
@@ -132,7 +133,7 @@ class ImageField extends FileField
                     'isUrl' => false,
                     'downloadUrl' => $this->getBasePath() . $img,
                     'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . $img, false),
-                    'image' => $this->getWiki()->render('@core/display-image.twig', [
+                    'image' => $this->getService(TemplateEngine::class)->renderSafely('@core/display-image.twig', [
                         'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl() . '/',
                         'imageFullPath' => $this->getBasePath() . $img,
                         'fieldName' => $this->name,
@@ -267,7 +268,7 @@ class ImageField extends FileField
         }
 
         if (isset($value) && $value != '' && file_exists($this->getBasePath() . $value)) {
-            return $this->getWiki()->render('@core/display-image.twig', [
+            return $this->getService(TemplateEngine::class)->renderSafely('@core/display-image.twig', [
                 'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl() . '/',
                 'imageFullPath' => $this->getBasePath() . $value,
                 'fieldName' => $this->name,

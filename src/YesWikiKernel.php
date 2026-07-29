@@ -24,6 +24,13 @@ use YesWiki\Kernel\Service\StringUtilService;
  */
 class YesWikiKernel extends Kernel
 {
+    /** Historic Wiki::isCli(). NB: 'cli-server' (php -S) is deliberately NOT considered
+     * CLI: it serves real web requests with cookies, REMOTE_ADDR and sendable headers. */
+    public static function isCli(): bool
+    {
+        return in_array(php_sapi_name(), ['cli', 'phpdbg'], true);
+    }
+
     private Wiki $wiki;
 
     public function __construct(Wiki $wiki, string $environment)

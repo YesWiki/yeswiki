@@ -61,13 +61,13 @@ class EditHandlerSaveTest extends YesWikiTestCase
             // display form (no submit)
             $_POST = [];
             $wiki->request = Request::createFromGlobals();
-            $output = $wiki->Method('edit');
+            $output = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             $this->assertStringContainsString('aceditor-container', $output, 'the edit form must render');
 
             // preview
             $_POST = ['submit' => 'preview', 'body' => 'preview body **bold**', 'previous' => $page['id']];
             $wiki->request = Request::createFromGlobals();
-            $output = $wiki->Method('edit');
+            $output = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             $this->assertStringContainsString('<strong>bold</strong>', $output, 'preview must format the submitted body');
 
             // real save
@@ -75,7 +75,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
             $wiki->request = Request::createFromGlobals();
             $redirected = false;
             try {
-                $wiki->Method('edit');
+                $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             } catch (ExitException $e) {
                 $redirected = true;
             }
@@ -87,7 +87,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
             $_POST = ['submit' => 'Sauver', 'body' => 'CONFLICTING CONTENT', 'previous' => $page['id']];
             $wiki->request = Request::createFromGlobals();
             $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($reloaded);
-            $wiki->Method('edit');
+            $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
             $stillSaved = $pageManager->getOne(self::PAGE_TAG);
             $this->assertSame('NEW SAVED CONTENT', trim($stillSaved['body']), 'a stale save must be rejected, not silently overwrite');
         } finally {

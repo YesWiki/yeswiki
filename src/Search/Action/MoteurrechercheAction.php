@@ -6,6 +6,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `{{moteurrecherche}}` -- converted from the procedural actions/moteurrecherche.php by ticket 06.
@@ -58,6 +59,6 @@ class MoteurrechercheAction extends YesWikiAction implements RegisteredAction
         // si une recherche a été effectuée, on garde les mots clés
         $searchelements['phrase'] = htmlspecialchars(isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : '');
 
-        echo $this->wiki->render("@core/$template", $searchelements);
+        echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $searchelements);
     }
 }

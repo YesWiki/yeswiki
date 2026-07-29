@@ -54,7 +54,7 @@ class TagsWidgetTest extends YesWikiTestCase
         $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
         try {
-            $output = $wiki->Method('edit');
+            $output = $wiki->services->get(\YesWiki\Kernel\Service\Performer::class)->run('edit', 'handler', []);
 
             $this->assertStringContainsString('data-yw-tag-input', $output, 'the live-search widget root is missing');
             $this->assertStringContainsString('data-tag="widgettesttag"', $output, 'this page\'s own tag must render as a chip');

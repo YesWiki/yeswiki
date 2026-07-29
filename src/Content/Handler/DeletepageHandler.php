@@ -13,9 +13,11 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `/PageName/deletepage` -- converted from the procedural handlers/page/deletepage.php by ticket 06.
@@ -125,13 +127,13 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                                 );
                             }
                         } else {
-                            $msg = $this->wiki->render('@core/alert-message-with-back.twig', [
+                            $msg = $this->getService(TemplateEngine::class)->renderSafely('@core/alert-message-with-back.twig', [
                                 'type' => 'danger',
                                 'message' => _t('DELETEPAGE_NOT_DELETED'),
                             ]);
                         }
                     } catch (TokenNotFoundException $th) {
-                        $msg = $this->wiki->render('@core/alert-message-with-back.twig', [
+                        $msg = $this->getService(TemplateEngine::class)->renderSafely('@core/alert-message-with-back.twig', [
                             'type' => 'danger',
                             'message' => _t('DELETEPAGE_NOT_DELETED') . ' ' . $th->getMessage(),
                         ]);
@@ -148,7 +150,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                     try {
                         $csrfTokenChecker->checkToken('main', 'POST', 'csrf-token', false);
                     } catch (TokenNotFoundException $th) {
-                        $msg .= $this->wiki->render('@core/alert-message.twig', [
+                        $msg .= $this->getService(TemplateEngine::class)->renderSafely('@core/alert-message.twig', [
                             'type' => 'danger',
                             'message' => _t('DELETEPAGE_NOT_DELETED') . ' ' . $th->getMessage(),
                         ]);
@@ -185,18 +187,18 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
         if ($hasBeenDeleted) {
             if ($redirectToIncoming) {
                 $this->getService(FlashMessageService::class)->setMessage($msg);
-                $this->wiki->Redirect($incomingurl);
+                $this->getService(Redirector::class)->redirect((string)$incomingurl);
             } else {
                 // it's the current page which has been deleted (and not from a modal box), redirect to the homepage
                 $this->getService(FlashMessageService::class)->setMessage($msg);
-                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->getService(RuntimeConfig::class)['root_page']));
+                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->getService(RuntimeConfig::class)['root_page']));
             }
         }
 
-        echo $this->wiki->Header();
+        echo $this->getService(TemplateEngine::class)->header();
         echo "<div class=\"page\">\n";
         echo $msg;
         echo "</div>\n";
-        echo $this->wiki->Footer();
+        echo $this->getService(TemplateEngine::class)->footer();
     }
 }

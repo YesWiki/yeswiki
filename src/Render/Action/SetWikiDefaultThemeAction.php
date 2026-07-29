@@ -9,6 +9,7 @@ use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
@@ -68,7 +69,7 @@ class SetWikiDefaultThemeAction extends YesWikiAction implements RegisteredActio
                     $config->hide_action_template = '1';
                 }
                 $config->write();
-                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag()));
+                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag()));
             }
         }
 

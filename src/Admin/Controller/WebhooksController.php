@@ -14,6 +14,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
@@ -215,7 +216,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             if ($_POST['url'][$i]) {
                 // Check that URL is valid
                 if (!$this->is_valid_url(trim($_POST['url'][$i]))) {
-                    $this->wiki->exit(_t('WEBHOOKS_ERROR_INVALID_URL'));
+                    $this->getService(Redirector::class)->terminate(_t('WEBHOOKS_ERROR_INVALID_URL'));
                 }
 
                 $formId = ($_POST['form'][$i] !== 'comments') ? intval($_POST['form'][$i]) : 'comments';
@@ -225,14 +226,14 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
                         // Check that all forms are semantic
                         foreach ($this->formManager->getAll() as $form) {
                             if (!$form['sem_type']) {
-                                $this->wiki->exit(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
+                                $this->getService(Redirector::class)->terminate(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
                             }
                         }
                     } elseif ($formId !== 'comments') {
                         // Check that the selected form is semantic
                         $form = $this->formManager->getOne($formId);
                         if (!$form['sem_type']) {
-                            $this->wiki->exit(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
+                            $this->getService(Redirector::class)->terminate(_t('WEBHOOKS_ERROR_FORM_NOT_SEMANTIC'));
                         }
                     }
                 }

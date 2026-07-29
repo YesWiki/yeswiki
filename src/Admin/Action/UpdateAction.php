@@ -13,8 +13,10 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\MigrationService;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateEngine;
 
 class UpdateAction extends YesWikiAction implements RegisteredAction
 {
@@ -97,7 +99,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         if (!$vUpdateService->isDesignatedUpdateInstance()) {
             $vMessages->add('AU_NOT_DESIGNATED_UPDATE_INSTANCE', 'AU_ERROR');
 
-            return $this->wiki->render('@core/update-result.twig', [
+            return $this->getService(TemplateEngine::class)->renderSafely('@core/update-result.twig', [
                 'messages' => $vMessages->toArray(),
                 'action' => $vAction,
             ]);
@@ -145,7 +147,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
                         $vMessages->add($vUpgradeMessages);
 
                         // Reload the page to perform postInstall operation with the new code
-                        $this->wiki->redirect($this->getService(UrlFormatter::class)->href('', '', [
+                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', [
                             'action' => 'post_install',
                             'messages' => json_encode($vMessages->toArray()),
                             'previous_version' => YESWIKI_VERSION,
@@ -183,7 +185,7 @@ class UpdateAction extends YesWikiAction implements RegisteredAction
         }
 
         // Display result of action, with a list of success/error messages
-        return $this->wiki->render('@core/update-result.twig', [
+        return $this->getService(TemplateEngine::class)->renderSafely('@core/update-result.twig', [
             'messages' => $vMessages->toArray(),
             'action' => $vAction,
         ]);

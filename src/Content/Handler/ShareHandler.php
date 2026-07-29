@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `/PageName/share` -- converted from the procedural handlers/page/share.php by ticket 06.
@@ -90,9 +91,9 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             echo mb_convert_encoding('<div class="page">' . "\n" . $html . "\n" . '<div>', 'UTF-8', 'ISO-8859-1');
         } else {
-            echo $this->wiki->Header();
+            echo $this->getService(TemplateEngine::class)->header();
             echo "<div class=\"page\">\n<h2>" . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' ' . $this->getService(PageContext::class)->getTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n</div>\n";
-            echo $this->wiki->Footer();
+            echo $this->getService(TemplateEngine::class)->footer();
         }
     }
 }

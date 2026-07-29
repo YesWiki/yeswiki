@@ -20,10 +20,12 @@ use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 use YesWiki\Search\Service\TagsManager;
@@ -64,10 +66,10 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             list($state, $message) = $this->wiki->services->get(PasswordForEditingService::class)->isGrantedPasswordForEditing();
             if (!$state) {
-                echo $this->wiki->Header() .
+                echo $this->getService(TemplateEngine::class)->header() .
                     $message .
-                    $this->wiki->Footer();
-                $this->wiki->exit();
+                    $this->getService(TemplateEngine::class)->footer();
+                $this->getService(Redirector::class)->terminate();
             }
 
             if (
@@ -146,11 +148,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             ob_end_clean();
             $plugin_output_new .= '</div>';
 
-            $plugin_output_new = $this->wiki->Header() . $plugin_output_new;
-            $plugin_output_new .= $this->wiki->Footer();
+            $plugin_output_new = $this->getService(TemplateEngine::class)->header() . $plugin_output_new;
+            $plugin_output_new .= $this->getService(TemplateEngine::class)->footer();
 
             // we use die so that the script stop there and the default handler of wiki isn't called
-            $this->wiki->exit($plugin_output_new);
+            $this->getService(Redirector::class)->terminate($plugin_output_new);
         }
 
         // get services
@@ -308,7 +310,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         if (!$this->getService(AclService::class)->hasAccess('write')) {
             $output = '';
             // on recupere les entetes html mais pas ce qu'il y a dans le body
-            $header = explode('<body', $this->wiki->Header());
+            $header = explode('<body', $this->getService(TemplateEngine::class)->header());
             $output .= $header[0] . '<body class="login-body">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page">' . "\n";
             $output .= '<div class="yw-alert yw-alert--danger">'
@@ -317,8 +319,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 . $this->getService(MarkdownFormatterService::class)->format('{{login signupurl="0"}}' . "\n\n")
                 . '</div><!-- end .page -->' . "\n";
             // on recupere juste les javascripts et la fin des balises body et html
-            $output .= preg_replace('/^.+<script/Us', '<script', $this->wiki->Footer());
-            $this->wiki->exit($output);
+            $output .= preg_replace('/^.+<script/Us', '<script', $this->getService(TemplateEngine::class)->footer());
+            $this->getService(Redirector::class)->terminate($output);
         }
 
         return $plugin_output_new . (string)ob_get_clean();
@@ -348,7 +350,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             if ($submit == 'preview') {
                 $temp = $this->getService(InclusionStack::class)->replace(); // a priori, ça ne sert à rien, mais on ne sait jamais...
                 $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag()); // on simule totalement un affichage normal
-                $output .= $this->wiki->render('@core/handlers/edit.twig', [
+                $output .= $this->getService(TemplateEngine::class)->renderSafely('@core/handlers/edit.twig', [
                     'previous' => $previous,
                     'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
                     'cancelUrl' => $cancelUrl,
@@ -370,7 +372,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     // teste si la nouvelle page est differente de la précédente
                     if (isset($this->getService(PageContext::class)->getPage()['body']) && rtrim($body) == rtrim($this->getService(PageContext::class)->getPage()['body'])) {
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
-                        $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
+                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                     } else {
                         // l'encodage de la base est en iso-8859-1, voir s'il faut convertir
                         $body = $body;
@@ -384,12 +386,12 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
                         // forward
                         if (($this->getService(PageContext::class)->getPage() ?? [])['comment_on']) {
-                            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), ($this->getService(PageContext::class)->getPage() ?? [])['comment_on']) . '#' . $this->getService(PageContext::class)->getTag());
+                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), ($this->getService(PageContext::class)->getPage() ?? [])['comment_on']) . '#' . $this->getService(PageContext::class)->getTag());
                         } else {
-                            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
+                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                         }
                     }
-                    $this->wiki->exit(); // we shall have been redirected, but exit for safety
+                // (unreachable: redirect() above always throws)
                 } else {
                     // RENDER FORM
 
@@ -400,7 +402,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
                     $passwordForEditing = !empty($this->getService(RuntimeConfig::class)['password_for_editing']) && $request->request->has('password_for_editing');
 
-                    $output .= $this->wiki->render('@core/handlers/edit.twig', [
+                    $output .= $this->getService(TemplateEngine::class)->renderSafely('@core/handlers/edit.twig', [
                         'error' => $error ?? null,
                         'previous' => $previous,
                         'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
@@ -424,7 +426,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         // Header - // Footer
         if (!testUrlInIframe()) {
-            echo $this->wiki->Header() . $output . $this->wiki->Footer();
+            echo $this->getService(TemplateEngine::class)->header() . $output . $this->getService(TemplateEngine::class)->footer();
         } else {
             echo $output;
         }

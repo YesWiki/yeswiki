@@ -15,10 +15,12 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
 
 /**
@@ -72,9 +74,9 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 if ($semantic) {
                     $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['form_id']);
                     $semanticFiche = $this->wiki->services->get(SemanticTransformer::class)->convertToSemanticData($form, $fiche);
-                    $this->wiki->exit(json_encode($semanticFiche));
+                    $this->getService(Redirector::class)->terminate((string)json_encode($semanticFiche));
                 } else {
-                    $this->wiki->exit(json_encode($fiche));
+                    $this->getService(Redirector::class)->terminate((string)json_encode($fiche));
                 }
             } else {
                 $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
@@ -156,8 +158,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 $output .= $this->getService(MarkdownFormatterService::class)->format('{{include page="PageLogin"}}');
                 $output .= '</div><!-- end .page-widget -->' . "\n";
                 $output .= '</div><!-- end .container -->' . "\n";
-                $output = $this->wiki->Header() . $output;
-                $output .= $this->wiki->Footer();
+                $output = $this->getService(TemplateEngine::class)->header() . $output;
+                $output .= $this->getService(TemplateEngine::class)->footer();
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $output = str_replace(
@@ -169,7 +171,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     $plugin_output_new
                 );
             }
-            $this->wiki->exit($output);
+            $this->getService(Redirector::class)->terminate($output);
         }
 
         // merged from handlers/ShowHandler__.php (ticket 06: core does not hook itself)
@@ -240,10 +242,10 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                         $latest = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag()); ?>
                         <?php
                         $time = isset($_GET['time']) ? $_GET['time'] : '';
-                        echo $this->wiki->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get'); ?>
+                        echo $this->getService(TemplateEngine::class)->formOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get'); ?>
                         <input type="hidden" name="time" value="<?php echo htmlspecialchars($time, ENT_QUOTES, YW_CHARSET); ?>" />
                         <input class="btn btn-primary" type="submit" value="<?php echo _t('EDIT_ARCHIVED_REVISION'); ?>" />
-                        <?php echo $this->wiki->FormClose(); ?>
+                        <?php echo $this->getService(TemplateEngine::class)->formClose(); ?>
         <?php
                     }
 
@@ -275,8 +277,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         // get the content buffer and display the page
         $content = ob_get_clean();
-        echo $this->wiki->Header();
+        echo $this->getService(TemplateEngine::class)->header();
         echo $content;
-        echo $this->wiki->Footer();
+        echo $this->getService(TemplateEngine::class)->footer();
     }
 }

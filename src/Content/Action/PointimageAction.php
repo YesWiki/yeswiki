@@ -10,6 +10,7 @@ use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -135,7 +136,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
             $chaine = "\n\n~~\"\"<!--" . $_POST['image_x'] . '-' . $_POST['image_y'] . '-' . $_POST['color'] . '--><!--title-->' . $_POST['title'] . "<!--/title-->\"\"\n\"\"<!--desc-->\"\"" . $_POST['description'] . "\"\"<!--/desc-->\n\"\"~~";
             $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = '" . $pagetag . "'and latest = 'Y' limit 1");
             $this->getService(PageManager::class)->save($pagetag, ($donneesbody['body'] ?? '') . $chaine, '', true);
-            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
+            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
         }
 
         // get the data for the image

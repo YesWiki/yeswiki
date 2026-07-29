@@ -9,6 +9,7 @@ use YesWiki\Content\Service\ReferrerService;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Performer;
 
 /**
  * Adapter so ordinary wiki tag/method pages (Performer-dispatched actions/handlers/formatters -
@@ -29,17 +30,17 @@ class LegacyPageController extends YesWikiController
 
         ob_start();
         try {
-            echo $this->wiki->Method($method);
+            echo $this->getService(Performer::class)->run($method, 'handler', []);
         } catch (ExitException $th) {
             ob_end_clean();
 
-            // matches Wiki::Run()'s old behavior: under CLI (tests), $wiki->exit() only had to
+            // matches Wiki::Run()'s old behavior: under CLI (tests), $wiki->services->get(\YesWiki\Kernel\Service\Redirector::class)->terminate() only had to
             // unwind the call stack without ending the process, so nothing was ever printed;
             // otherwise the exit message was the entire response body.
-            return $this->toResponse($this->wiki->isCli() ? '' : $th->getMessage());
+            return $this->toResponse(\YesWiki\YesWikiKernel::isCli() ? '' : $th->getMessage());
         }
 
-        return $this->toResponse(ob_get_clean());
+        return $this->toResponse((string)ob_get_clean());
     }
 
     /**

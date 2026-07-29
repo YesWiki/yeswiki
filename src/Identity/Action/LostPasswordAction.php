@@ -11,6 +11,7 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class LostPasswordAction extends YesWikiAction implements RegisteredAction
@@ -147,7 +148,7 @@ class LostPasswordAction extends YesWikiAction implements RegisteredAction
                 // we are submitting a new password (only for encrypted)
                 $post = $this->getRequest()->request;
                 if (empty($post->get('userID')) || empty($post->get('key'))) {
-                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->params->get('root_page')));
+                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->params->get('root_page')));
                 }
                 $userName = $this->inputFilter->filterInput(INPUT_POST, 'userID', FILTER_DEFAULT, true);
                 $user = $this->userManager->getOneByName($userName);

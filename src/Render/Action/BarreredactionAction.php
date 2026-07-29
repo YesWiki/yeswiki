@@ -14,6 +14,7 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `{{barreredaction}}` -- converted from the procedural actions/barreredaction.php by ticket 06.
@@ -134,7 +135,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
                 $options['isUserFavorite'] = $favoritesManager->isUserFavorite($user['name'], $page);
             }
 
-            echo $this->wiki->render("@core/$template", $options);
+            echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $options);
             echo ' <!-- /.footer -->' . "\n";
         }
     }

@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * The /api discovery page. The monolithic ApiController hand-maintained an HTML
@@ -77,7 +78,7 @@ class DocumentationApiController extends YesWikiController
             }
         }
 
-        $output = $this->wiki->Header() . '<div class="api-container">' . $output . '</div>' . $this->wiki->Footer();
+        $output = $this->getService(TemplateEngine::class)->header() . '<div class="api-container">' . $output . '</div>' . $this->getService(TemplateEngine::class)->footer();
 
         return new Response($output);
     }

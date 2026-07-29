@@ -8,6 +8,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `{{includepages}}` -- converted from the procedural actions/includepages.php by ticket 06.
@@ -80,7 +81,7 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
                 }
             }
 
-            $output .= $this->wiki->render("@core/$template", ['elements' => $element]);
+            $output .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", ['elements' => $element]);
         }
 
         if (empty($class)) {

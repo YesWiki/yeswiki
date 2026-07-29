@@ -5,6 +5,7 @@ namespace YesWiki\Render\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
@@ -52,7 +53,7 @@ class HeaderAction extends YesWikiAction implements RegisteredAction
                 'message' => _t('TEMPLATE_NO_DEFAULT_THEME') . '<br><b>' . _t('THEME_MANAGER_LOGIN_AS_ADMIN') . '</b>',
             ]);
             $output .= $this->callAction('login');
-            $this->wiki->exit($output);
+            $this->getService(Redirector::class)->terminate($output);
         } else {
             return $themeManager->renderHeader();
         }

@@ -796,7 +796,7 @@ class Attach
                 ]);
             }, $files);
         }
-        echo $this->wiki->render($isAction
+        echo $this->wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->renderSafely($isAction
             ? '@core/attach-filemanager.twig'
             : '@core/attach-filemanager-handler.twig', [
                 'tag' => $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(),

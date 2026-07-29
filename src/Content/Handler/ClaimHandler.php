@@ -10,6 +10,7 @@ use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -83,6 +84,6 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
             }
         }
 
-        $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
+        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
     }
 }

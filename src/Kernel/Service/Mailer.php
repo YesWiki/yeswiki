@@ -83,7 +83,7 @@ class Mailer
         $text = $this->templateEngine->render(
             '@core/notify-admins-list-deleted-email-text.twig',
             [
-                'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
+                'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->wiki->request->getClientIp(),
                 'userName' => $this->authenticationService->getLoggedUserName(),
             ]
         );
@@ -91,7 +91,7 @@ class Mailer
             '@core/notify-admins-list-deleted-email-html.twig',
             [
                 'style' => file_get_contents(YESWIKI_SOURCE_DIR . '/styles/bazar/bazar.css'),
-                'ip' => $this->wiki->isCli() ? '' : $this->wiki->request->getClientIp(),
+                'ip' => \YesWiki\YesWikiKernel::isCli() ? '' : $this->wiki->request->getClientIp(),
                 'userName' => $this->authenticationService->getLoggedUserName(),
                 'baseUrl' => $baseUrl,
             ]

@@ -143,9 +143,9 @@ class AuthenticationServiceTest extends YesWikiTestCase
      * every request via AuthenticationService::connectUser().
      *
      * AuthenticationService::login() only regenerates the session id when
-     * `!$this->wiki->isCli()`, and phpunit always runs under the CLI SAPI,
-     * so this test builds a minimal non-CLI stand-in for `$wiki` (skipping
-     * its heavy real constructor) to reach that branch, while every other
+     * `!\YesWiki\YesWikiKernel::isCli()`, and phpunit always runs under the CLI SAPI,
+     * so this test overrides the service's isCli() seam to reach that branch,
+     * while every other
      * collaborator (UserManager, PasswordHasherFactory, ...) is the real,
      * DI-provided one from the bootstrapped test wiki.
      */
@@ -156,27 +156,12 @@ class AuthenticationServiceTest extends YesWikiTestCase
         ['user' => $userA] = $this->createRandomUser($wiki);
         ['user' => $userB] = $this->createRandomUser($wiki);
 
-        $nonCliWiki = new class extends Wiki {
-            public function __construct()
-            {
-                // deliberately skip the real bootstrap: this stand-in is only
-                // ever used through login(), which does not touch any other
-                // Wiki state than isCli()
-            }
-
-            public function isCli(): bool
+        $authenticationService = new class($wiki->services->get(AccountActivationService::class), $wiki->services->get(HibernationService::class), $wiki->services->get(ParameterBagInterface::class), $wiki->services->get(PasswordHasherFactory::class), $userManager, $wiki) extends AuthenticationService {
+            protected function isCli(): bool
             {
                 return false;
             }
         };
-        $authenticationService = new AuthenticationService(
-            $wiki->services->get(AccountActivationService::class),
-            $wiki->services->get(HibernationService::class),
-            $wiki->services->get(ParameterBagInterface::class),
-            $wiki->services->get(PasswordHasherFactory::class),
-            $userManager,
-            $nonCliWiki
-        );
 
         try {
             unset($_SESSION['user']);

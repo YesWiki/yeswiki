@@ -14,6 +14,7 @@ use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 
 class IframeHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -88,10 +89,10 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
         // on recupere les entetes html mais pas ce qu'il y a dans le body
-        $header = explode('<body', $this->wiki->Header());
+        $header = explode('<body', $this->getService(TemplateEngine::class)->header());
         $output = $header[0] . $output;
         // on recupere juste les javascripts et la fin des balises body et html
-        $output .= preg_replace('/^.+<script/Us', '<script', $this->wiki->Footer());
+        $output .= preg_replace('/^.+<script/Us', '<script', $this->getService(TemplateEngine::class)->footer());
 
         return $output;
     }

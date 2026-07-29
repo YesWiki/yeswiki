@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `/PageName/filemanager` -- converted from the procedural handlers/page/filemanager.php by ticket 06.
@@ -55,6 +56,6 @@ class FilemanagerHandler extends YesWikiHandler implements RegisteredHandler
         <?php
         $output = ob_get_contents();
         ob_end_clean();
-        echo $this->wiki->Header() . $output . $this->wiki->Footer();
+        echo $this->getService(TemplateEngine::class)->header() . $output . $this->getService(TemplateEngine::class)->footer();
     }
 }

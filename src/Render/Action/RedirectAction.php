@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -66,7 +67,7 @@ class RedirectAction extends YesWikiAction implements RegisteredAction
                     echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_REDIRECT') . '</strong> : ' . _t('CIRCULAR_REDIRECTION_FROM_PAGE') . " $redirPageName ( "
                     . $this->getService(LinkRenderer::class)->linkToPage($redirPageName, 'edit', call_user_func('_t', 'CLICK_HERE')) . ')</div>' . "\n";
                 } else {
-                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $redirPageName));
+                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $redirPageName));
                 }
             } else {
                 echo '<span style="color: red; weight: bold">' . _t('PRESENCE_OF_REDIRECTION_TO') . ' "' . $this->getService(LinkRenderer::class)->link($redirPageName) . '"</span>';

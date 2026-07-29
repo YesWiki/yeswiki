@@ -52,6 +52,12 @@ class AuthenticationService extends YesWikiController
     protected $userManager;
     private $loggedUserCache;
 
+    /** Overridable seam: tests exercise the non-CLI branches under the CLI SAPI. */
+    protected function isCli(): bool
+    {
+        return \YesWiki\YesWikiKernel::isCli();
+    }
+
     public function __construct(
         AccountActivationService $accountActivationService,
         HibernationService $hibernationService,
@@ -202,7 +208,7 @@ class AuthenticationService extends YesWikiController
         if ($user = $this->getLoggedUser()) {
             $name = $user['name'];
         } else {
-            $name = $this->wiki->isCli() ? '' : $this->getRequest()->getClientIp();
+            $name = $this->isCli() ? '' : $this->getRequest()->getClientIp();
         }
 
         return $name;
@@ -256,7 +262,7 @@ class AuthenticationService extends YesWikiController
                 'lastConnection' => $currentDateTime->getTimestamp(),
             ];
 
-        if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->wiki->isCli()) {
+        if (!empty($user['name']) && $user['name'] !== $previousUserName && !$this->isCli()) {
             // regenerate the session ID whenever the authenticated identity actually changes
             // (anonymous -> user, or user A -> user B) to prevent session fixation;
             // this deliberately excludes connectUser()'s routine per-request re-hydration of
@@ -264,7 +270,7 @@ class AuthenticationService extends YesWikiController
             session_regenerate_id(true);
         }
 
-        if (!$this->wiki->isCli()) {
+        if (!$this->isCli()) {
             if (!$user instanceof User) {
                 if (!empty($user['name'])) {
                     $user = $this->userManager->getOneByName($user['name']);
@@ -291,7 +297,7 @@ class AuthenticationService extends YesWikiController
     {
         $this->cleanSensitiveDataFromSession();
         $this->cleanOldFormatCookie();
-        if (!$this->wiki->isCli()) {
+        if (!$this->isCli()) {
             // prevent setting cookies in CLI (could be errors)
 
             // delete cookies
@@ -510,7 +516,7 @@ class AuthenticationService extends YesWikiController
      */
     protected function cleanOldFormatCookie()
     {
-        if (!$this->wiki->isCli()) {
+        if (!$this->isCli()) {
             if (!empty($this->getRequest()->cookies->get('password'))) {
                 $this->deleteOldCookie('password');
             }

@@ -12,6 +12,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -244,19 +245,19 @@ class LoginAction extends YesWikiAction implements RegisteredAction
 
             // si l'on veut utiliser la page d'accueil correspondant au nom d'utilisateur
             if ((($post->get('userpage') == 'user') || $this->arguments['userpage'] == 'user') && $this->pageManager->getOne($user['name'])) {
-                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $user['name']));
+                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $user['name']));
             } else {
-                $this->wiki->Redirect($this->arguments['loggedinurl']);
+                $this->getService(Redirector::class)->redirect($this->arguments['loggedinurl']);
             }
         } catch (LoginException $ex) {
             // on affiche une erreur sur le NomWiki sinon
             $this->getService(FlashMessageService::class)->setMessage($ex->getMessage());
-            $this->wiki->Redirect($incomingurl);
+            $this->getService(Redirector::class)->redirect($incomingurl);
         } catch (\Exception $ex) {
             // catches AuthenticationService::login()'s BadLoginException (ticket 07's activation
             // gate, already carrying a full user-facing message) along with anything else
             Flash::error($ex->getMessage());
-            $this->wiki->Redirect($incomingurl);
+            $this->getService(Redirector::class)->redirect($incomingurl);
         }
     }
 
@@ -264,7 +265,6 @@ class LoginAction extends YesWikiAction implements RegisteredAction
     {
         $this->authenticationService->logout();
         $this->getService(FlashMessageService::class)->setMessage(_t('LOGIN_YOU_ARE_NOW_DISCONNECTED'));
-        $this->wiki->Redirect(preg_replace('/(&|\\\?)$/m', '', preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $this->arguments['loggedouturl'])));
-        $this->wiki->exit();
+        $this->getService(Redirector::class)->redirect((string)preg_replace('/(&|\\\?)$/m', '', (string)preg_replace('/(&|\\\?)action=logout(&)?/', '$1', $this->arguments['loggedouturl'])));
     }
 }

@@ -8,6 +8,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\TagsManager;
 
 /**
@@ -85,7 +86,7 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
                     }
                 }
             }
-            $output = $this->wiki->render("@core/$template", ['elements' => $element]);
+            $output = $this->getService(TemplateEngine::class)->renderSafely("@core/$template", ['elements' => $element]);
         } else {
             $nb_total = 0;
         }

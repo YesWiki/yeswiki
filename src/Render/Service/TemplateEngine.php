@@ -12,6 +12,7 @@ use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
@@ -119,13 +120,13 @@ class TemplateEngine
         $this->twig->addGlobal('user', [
             'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
         ]);
-        $this->twig->addGlobal('config', $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->all());
+        $this->twig->addGlobal('config', $this->wiki->services->get(RuntimeConfig::class)->all());
         $this->twig->addGlobal('isInIframe', testUrlInIframe());
 
         // Adds Helpers
         $this->addTwigFilters();
         $this->addTwigHelper('dump', function ($var) {
-            if (!empty($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['debug'])) {
+            if (!empty($this->wiki->services->get(RuntimeConfig::class)['debug'])) {
                 return dump($var);
             }
 
@@ -386,10 +387,47 @@ class TemplateEngine
         $result = '<div class="page">';
         $result .= $this->render($templatePath, $data);
         $result .= '</div>';
-        $result = $this->wiki->Header() . $result;
-        $result .= $this->wiki->Footer();
 
-        return $result;
+        return $this->header() . $result . $this->footer();
+    }
+
+    /** The configured header action's output (historic Wiki::Header()). */
+    public function header(): string
+    {
+        return $this->wiki->services->get(ActionRunner::class)
+            ->action((string)$this->wiki->services->get(RuntimeConfig::class)->getValue('header_action'), true);
+    }
+
+    /** The configured footer action's output (historic Wiki::Footer()). */
+    public function footer(): string
+    {
+        return $this->wiki->services->get(ActionRunner::class)
+            ->action((string)$this->wiki->services->get(RuntimeConfig::class)->getValue('footer_action'), true);
+    }
+
+    /** Opening tag of a wiki-target form (historic Wiki::FormOpen()). */
+    public function formOpen(mixed $method = '', mixed $tag = '', string $formMethod = 'post', string $class = ''): string
+    {
+        return $this->render('@core/_form-open.twig', compact(['method', 'tag', 'formMethod', 'class']));
+    }
+
+    /** Historic Wiki::FormClose(). */
+    public function formClose(): string
+    {
+        return "</form>\n";
+    }
+
+    /**
+     * render() with errors swallowed into an inline alert (historic Wiki::render()) --
+     * for legacy fragments where a template failure must not take the page down.
+     */
+    public function renderSafely(mixed $templatePath, mixed $data): string
+    {
+        try {
+            return $this->render($templatePath, $data);
+        } catch (\Exception $e) {
+            return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': ' . $e->getMessage() . '</div>' . "\n";
+        }
     }
 
     /**
@@ -422,7 +460,7 @@ class TemplateEngine
             throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $templatePath");
         }
         $data = array_merge($data, [
-            'config' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->all(),
+            'config' => $this->wiki->services->get(RuntimeConfig::class)->all(),
         ]);
 
         return $this->twig->render($templatePath, $data);

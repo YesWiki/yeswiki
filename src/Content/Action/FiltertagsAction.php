@@ -12,6 +12,7 @@ use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 
 /**
  * `{{filtertags}}` -- converted from the procedural actions/filtertags.php by ticket 06.
@@ -121,7 +122,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
             }
         }
 
-        echo $this->wiki->render("@core/$template", [
+        echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", [
             'elements' => $element,
             'elementwidth' => $elementwidth,
             'elementoffset' => $elementoffset,

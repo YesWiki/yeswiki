@@ -10,6 +10,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
@@ -283,7 +284,7 @@ class SyndicationAction extends YesWikiAction implements RegisteredAction
                 $entryManager = $this->getService(EntryManager::class);
                 $entryManager->create($data['form_id'], $data, false, $data['bf_url']);
                 Flash::success(_t('SYNDICATION_ENTRY_SAVED', ['title' => $data['bf_titre']]));
-                $this->wiki->redirect($this->getService(UrlFormatter::class)->href());
+                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
             }
         }
     }

@@ -14,6 +14,7 @@ use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Search\Service\SearchManager;
 
 /**
@@ -91,7 +92,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
         // s'il y a un paramétre d'action "phrase", on affiche uniquement le résultat
         // dans le cas contraire, présenter une zone de saisie
         if (!$paramPhrase) {
-            echo $this->wiki->FormOpen('', '', 'get');
+            echo $this->getService(TemplateEngine::class)->formOpen('', '', 'get');
             echo '<div class="input-prepend input-append input-group input-group-lg">
                   <span class="add-on input-group-addon"><i class="fa fa-search icon-search"></i></span>
                   <input name="phrase" type="text" class="form-control" placeholder="' . (($label) ? $label : '') . '" size="', $size, '" value="', $phrase, '" >
@@ -102,7 +103,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
                   <span class="">
                   <small>' . htmlspecialchars(_t('NEWTEXTSEARCH_HINT')) . '</small>
                   </span><!-- /input-group --><br>';
-            echo "\n", $this->wiki->FormClose();
+            echo "\n", $this->getService(TemplateEngine::class)->formClose();
         }
 
         if (!function_exists('displayNewSearchResult')) {

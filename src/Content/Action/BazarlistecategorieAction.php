@@ -141,7 +141,7 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
                 if ($currentlabel !== $fiche[$id]) {
                     if (!$first) {
                         if (is_array($fichescat) && count($fichescat) > 0) {
-                            $output .= $this->wiki->render("@core/$template", $fichescat);
+                            $output .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $fichescat);
                         }
                         // it's not the first time in the loop so we must close previously opened div
                         $output .= '</div>' . "\n";
@@ -164,7 +164,7 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
             }
             // last results
             if (is_array($fichescat) && count($fichescat) > 0) {
-                $output .= $this->wiki->render("@core/$template", $fichescat);
+                $output .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $fichescat);
             }
             // it's not the first time in the loop so we must close previously opened div
             $output .= '</div>' . "\n";

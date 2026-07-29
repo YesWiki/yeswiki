@@ -19,6 +19,7 @@ use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
@@ -200,7 +201,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
         // User wants to log out
         $this->authenticationService->logout();
         $this->getService(FlashMessageService::class)->setMessage(_t('USER_YOU_ARE_NOW_DISCONNECTED') . ' !');
-        $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
+        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
     }
 
     private function deleteByAdmin(?User &$user = null)
@@ -218,7 +219,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                 $user = null;
                 // forward
                 $this->getService(FlashMessageService::class)->setMessage(_t('USER_DELETED') . ' !');
-                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->referrer));
+                $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->referrer));
             } catch (TokenNotFoundException $th) {
                 $this->errorUpdate = _t('USERSETTINGS_USER_NOT_DELETED') . ' ' . $th->getMessage();
             }
@@ -249,9 +250,9 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     // forward
                     $this->getService(FlashMessageService::class)->setMessage(_t('USER_PARAMETERS_SAVED') . ' !');
                     if ($this->userLoggedIn) { // In case it's the usther trying to update oneself
-                        $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
+                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
                     } else { // That's the admin acting, we need to pass the user on
-                        $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', '', 'user=' . $this->wantedUserName . '&from=' . $this->referrer, false));
+                        $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', '', 'user=' . $this->wantedUserName . '&from=' . $this->referrer, false));
                     }
                 } else { // Unable to update
                     throw new \Exception('');
@@ -287,7 +288,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                     if (!empty($user)) {
                         $this->authenticationService->login($user);
                     }
-                    $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
+                    $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
                 } catch (TokenNotFoundException $th) {
                     $this->errorPasswordChange = _t('USERSETTINGS_PASSWORD_NOT_CHANGED') . ' ' . $th->getMessage();
                 } catch (BadFormatPasswordException|\Throwable $ex) {
@@ -348,7 +349,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
                         ]);
                         if (!empty($user)) {
                             $this->authenticationService->login($user);
-                            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href()); // forward
+                            $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href()); // forward
                         }
                         $this->error = _t('USER_CREATION_FAILED') . '.';
                     }
