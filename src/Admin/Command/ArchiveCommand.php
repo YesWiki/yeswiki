@@ -2,23 +2,23 @@
 
 namespace YesWiki\Admin\Command;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use YesWiki\Admin\Service\ArchiveService;
-use YesWiki\Wiki;
 
 class ArchiveCommand extends Command
 {
     protected $archiveService;
-    protected $wiki;
+    protected ContainerInterface $services;
 
-    public function __construct(Wiki &$wiki)
+    public function __construct(ContainerInterface $services)
     {
         parent::__construct();
-        $this->archiveService = $wiki->services->get(ArchiveService::class);
-        $this->wiki = $wiki;
+        $this->archiveService = $services->get(ArchiveService::class);
+        $this->services = $services;
     }
 
     protected function configure()

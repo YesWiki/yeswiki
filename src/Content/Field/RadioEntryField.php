@@ -3,7 +3,6 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
-use YesWiki\Wiki;
 
 #[\Field(['radiofiche'])]
 class RadioEntryField extends RadioField
@@ -39,7 +38,7 @@ class RadioEntryField extends RadioField
                 $entryUrl = $this->baseUrl . $value;
             }
         } else {
-            $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
+            $entryUrl = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $value);
         }
 
         return $this->render('@core/fields/select_entry.twig', [

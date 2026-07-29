@@ -92,7 +92,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 // -- (2) Page de resultats et form. de selection des pages a effacer ----
                 //
                 if (isset($_POST['from']) && isset($_POST['2'])) {
-                    $dbService = $this->wiki->services->get(DbService::class);
+                    $dbService = $this->getService(DbService::class);
                     $requete =
                 'select *
                       from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages
@@ -112,7 +112,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 echo "<table>\n";
                 foreach ($pagesFromSpammer as $i => $page) {
                     $req = 'select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where tag = '"
-                . $this->wiki->services->get(DbService::class)->escape($page['tag'])
+                . $this->getService(DbService::class)->escape($page['tag'])
                 . "' order by time desc";
                     $revisions = $this->getService(DbService::class)->loadAll($req);
 
@@ -168,7 +168,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 echo "</form>\n";
                 echo "</div>\n\n";
             } elseif (isset($_POST['clean'])) {
-                if ($this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
+                if ($this->getService(HibernationService::class)->isWikiHibernated()) {
                     throw new \Exception(_t('WIKI_IN_HIBERNATION'));
                 }
                 // -- (3) Nettoyage des pages et affichage de la page de resultats -------
@@ -184,7 +184,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                         // Effacement de la page en utilisant la méthode adéquate
                         // (si DeleteOrphanedPage ne convient pas, soit on créé
                         // une autre, soit on la modifie
-                        if ($this->wiki->services->get(PageOperationsService::class)->delete($page)) {
+                        if ($this->getService(PageOperationsService::class)->delete($page)) {
                             $deletedPages .= $page . ', ';
                         }
                     }
@@ -197,7 +197,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                     foreach ($_POST['rev'] as $rev_id) {
                         echo $rev_id . '<br>';
                         // Selectionne la revision
-                        $dbService = $this->wiki->services->get(DbService::class);
+                        $dbService = $this->getService(DbService::class);
                         $revision = $this->getService(DbService::class)->loadSingle('select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where id = '"
                   . $dbService->escape($rev_id) . "' limit 1");
                         if (!is_array($revision)) {

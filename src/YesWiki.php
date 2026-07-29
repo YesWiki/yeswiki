@@ -55,6 +55,7 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\Redirector;
+use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
@@ -480,7 +481,7 @@ class Wiki
 
             $this->httpKernel = new HttpKernel(
                 $eventDispatcher,
-                new YesWikiControllerResolver($this),
+                new YesWikiControllerResolver($this->services),
                 null,
                 new ArgumentResolver()
             );
@@ -653,6 +654,7 @@ class Wiki
         $this->service(RuntimeConfig::class)->bind($this->config);
         $this->service(CurrentRequest::class)->replace($this->request);
         $this->service(ExtensionRegistry::class)->bind($this->extensions);
+        $this->service(RouteProvider::class)->setResolver(fn () => $this->getRoutes());
     }
 
     /**

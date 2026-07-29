@@ -59,9 +59,9 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
             && ($_GET['confirme'] === 'oui')
         ) {
             try {
-                if ($this->wiki->services->get(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false)) {
+                if ($this->getService(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false)) {
                     $tag = $this->getService(PageContext::class)->getTag();
-                    $dbService = $this->wiki->services->get(DbService::class);
+                    $dbService = $this->getService(DbService::class);
                     $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '" . $dbService->escape($tag) . "'");
                 }
             } catch (Throwable $th) {
@@ -73,8 +73,8 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
     private function emit(): void
     {
         // get services
-        $csrfTokenManager = $this->wiki->services->get(CsrfTokenManager::class);
-        $csrfTokenChecker = $this->wiki->services->get(CsrfTokenChecker::class);
+        $csrfTokenManager = $this->getService(CsrfTokenManager::class);
+        $csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
 
         // get the GET parameter 'incomingurl' for the incoming url
         if (!empty($_REQUEST['incomingurl'])) {
@@ -113,7 +113,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                 } else {
                     try {
                         $csrfTokenChecker->checkToken('main', 'POST', 'csrf-token', false);
-                        $hasBeenDeleted = $this->wiki->services->get(PageOperationsService::class)->delete($tag);
+                        $hasBeenDeleted = $this->getService(PageOperationsService::class)->delete($tag);
                         if ($hasBeenDeleted) {
                             $msg = str_replace('{tag}', $tag, _t('DELETEPAGE_MESSAGE'));
                             // if $incomingurl has been defined and doesn't refer to the deleted page, redirect to it
@@ -157,7 +157,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                     }
                 }
                 $msg = '<p><em>' . _t('DELETEPAGE_NOT_ORPHEANED') . "</em></p>\n";
-                $dbService = $this->wiki->services->get(DbService::class);
+                $dbService = $this->getService(DbService::class);
                 $linkedFrom = $dbService->loadAll('SELECT DISTINCT from_tag FROM ' . $dbService->prefixTable('links')
                     . " WHERE to_tag = '" . $dbService->escape($this->getService(PageContext::class)->getTag()) . "'");
                 $msg .= '<p>' . str_replace('{tag}', $this->getService(LinkRenderer::class)->linkToPage($this->getService(PageContext::class)->getTag(), '', '', 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";

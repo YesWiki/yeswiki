@@ -68,7 +68,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
             }
         }
 
-        $fileManager = $this->wiki->services->get(FileManager::class);
+        $fileManager = $this->getService(FileManager::class);
         $isFileTag = $fileManager->isFileTag($file);
         if ($isFileTag) {
             $fileEntry = $fileManager->getOne($file);
@@ -121,7 +121,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         $readonly = $this->getService(PerformableArguments::class)->get('readonly');
 
         // get an unique pagename based on the image (tag if a FileManager entry, filename otherwise)
-        $dbService = $this->wiki->services->get(DbService::class);
+        $dbService = $this->getService(DbService::class);
         $baseForPageTag = $isFileTag ? $file : preg_replace('/[^A-Za-z0-9 ]/', '', str_replace('.' . $ext, '', $file));
         $datapagetag = $dbService->escape($this->getService(PageContext::class)->getTag() . 'PI' . $baseForPageTag);
 

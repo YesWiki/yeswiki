@@ -76,7 +76,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         unset($params['tags']);
 
         // requete avec toutes les pages contenants les mots cles
-        $dbService = $this->wiki->services->get(DbService::class);
+        $dbService = $this->getService(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
         $req = "SELECT DISTINCT tag, time, $userCol, owner, body
         FROM " . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages, ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "triples tags
@@ -97,7 +97,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         }
         echo '</div>';
 
-        $aclService = $this->wiki->services->get(AclService::class);
+        $aclService = $this->getService(AclService::class);
         $element = [];
         // affichage des resultats
         foreach ($pages as $page) {

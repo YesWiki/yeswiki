@@ -13,7 +13,6 @@ use YesWiki\Identity\Exception\BadLoginException;
 use YesWiki\Identity\Exception\BadUserConnectException;
 use YesWiki\Kernel\Entity\CookieData;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Wiki;
 
 // this trait should be into src/traits/LimitationsTrait folder
 // with namespace namespace YesWiki\Core\Trait; but it is not working for old php version previous php 8

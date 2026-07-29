@@ -43,7 +43,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                 _t('NOT_FOUND_PAGE')
             );
         } elseif ($this->getService(AclService::class)->hasAccess('read')) {
-            $entryManager = $this->wiki->services->get(EntryManager::class);
+            $entryManager = $this->getService(EntryManager::class);
 
             $output .= '<body class="yeswiki-iframe-body">' . "\n"
                 . '<div class="container">' . "\n"

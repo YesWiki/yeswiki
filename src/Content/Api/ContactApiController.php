@@ -15,7 +15,6 @@ use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\ThemeManager;
-use YesWiki\Wiki;
 
 class ContactApiController extends YesWikiController
 {
@@ -64,7 +63,7 @@ class ContactApiController extends YesWikiController
                 $mailSenderForMsg = (string)$request->request->get('email', '');
                 $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->getService(UrlFormatter::class)->href('', $val['tag']) . '">'
                     . $val['bf_titre'] . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['label'] . ' » '
-                    . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_name'] . ' ». ' .
+                    . _t('CONTACT_FROM_WEBSITE') . ' « ' . $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_name'] . ' ». ' .
                     ($mailSenderForMsg ? _t('CONTACT_REPLY') . ' <strong>' . $mailSenderForMsg . '</strong> '
                         . _t('CONTACT_REPLY2') : '') . '.</em><br><br>';
             }

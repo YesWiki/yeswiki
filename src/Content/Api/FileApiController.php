@@ -39,12 +39,12 @@ class FileApiController extends YesWikiController
 
         $originalFilename = $uploadedFile->getClientOriginalName();
         $ext = strtolower($uploadedFile->getClientOriginalExtension());
-        $authorizedExtensions = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['authorized-extensions'] ?? [];
+        $authorizedExtensions = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['authorized-extensions'] ?? [];
         if (!empty($authorizedExtensions) && !array_key_exists($ext, $authorizedExtensions)) {
             return new ApiResponse(['error' => _t('ERROR_NOT_AUTHORIZED_EXTENSION')], Response::HTTP_BAD_REQUEST);
         }
 
-        $maxFileSize = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config']['max_file_size']
+        $maxFileSize = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config']['max_file_size']
             ?? $this->getService(ParameterBagInterface::class)->get('max-upload-size');
         if ($uploadedFile->getSize() > $maxFileSize) {
             return new ApiResponse(['error' => _t('ERROR_MAX_FILE_SIZE')], Response::HTTP_BAD_REQUEST);

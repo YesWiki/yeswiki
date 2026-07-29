@@ -50,7 +50,7 @@ class XmlHandler extends YesWikiHandler implements RegisteredHandler
             if ($this->getService(PageContext::class)->getPage()) {
                 // display page
                 echo '<?xml version="1.0" encoding="' . YW_CHARSET . '"?>';
-                echo $this->wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->renderActionsOnly($this->getService(PageContext::class)->getPage()['body']);
+                echo $this->getService(\YesWiki\Render\Service\MarkdownFormatterService::class)->renderActionsOnly($this->getService(PageContext::class)->getPage()['body']);
             }
         }
     }

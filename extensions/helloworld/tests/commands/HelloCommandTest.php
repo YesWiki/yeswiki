@@ -21,7 +21,7 @@ class HelloCommandTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         // create Application
         $application = new Application();
-        $application->add(new HelloCommand($wiki));
+        $application->add(new HelloCommand($wiki->services));
 
         $command = $application->find('helloworld:hello');
         $commandTester = new CommandTester($command);

@@ -32,7 +32,7 @@ class CleanBase64 extends YesWikiMigration
 
     private function extractImages(array $page): bool
     {
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->getService(EntryManager::class);
         $entry = $entryManager->getOne($page['tag'], false, $page['time']);
         if (empty($entry)) {
             return false;
@@ -42,7 +42,7 @@ class CleanBase64 extends YesWikiMigration
             return false;
         }
 
-        $formManager = $this->wiki->services->get(FormManager::class);
+        $formManager = $this->getService(FormManager::class);
         $form = $formManager->getOne($formId);
         if (empty($form)) {
             return false;

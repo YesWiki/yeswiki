@@ -21,7 +21,7 @@ class AdminReactionsAction extends YesWikiAction implements RegisteredAction
     public function run()
     {
         if ($this->getService(AclService::class)->isAdmin()) {
-            $allReactions = $this->wiki->services->get(ReactionManager::class)->getReactions();
+            $allReactions = $this->getService(ReactionManager::class)->getReactions();
             foreach ($allReactions as $k => $reactions) {
                 usort($reactions['reactions'], function ($a, $b) { // sort by user
                     return strnatcasecmp($a['user'], $b['user']);

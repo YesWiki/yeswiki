@@ -44,7 +44,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
         // sending mail now goes through POST /api/contact/mail (ApiController::sendContactMail()),
         // which replaces this handler's old ajax branch entirely (see javascripts/contact.js).
 
-        $aclService = $this->wiki->services->get(AclService::class);
+        $aclService = $this->getService(AclService::class);
         $output = '';
 
         $field = !empty($_GET['field']) ? htmlentities($_GET['field']) : '';

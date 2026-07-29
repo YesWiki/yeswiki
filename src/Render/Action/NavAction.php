@@ -50,7 +50,7 @@ class NavAction extends YesWikiAction implements RegisteredAction
         $class = ((!empty($class)) ? $class : 'yw-nav');
 
         // data attributes
-        $data = $this->wiki->services->get(TemplateHelperService::class)->getDataParameter();
+        $data = $this->getService(TemplateHelperService::class)->getDataParameter();
         $pagetag = $this->getService(PageContext::class)->getTag();
 
         // liens
@@ -72,7 +72,7 @@ class NavAction extends YesWikiAction implements RegisteredAction
         if (!empty($icons)) {
             $icons = explode(',', $icons);
             foreach ($icons as $key => $icon) {
-                $icon = $this->wiki->services->get(TemplateHelperService::class)->formatIconHtml($icon);
+                $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($icon);
                 if (!empty($icon) && !empty($text)) {
                     $icon = $icon . ' ';
                 }
@@ -90,7 +90,7 @@ class NavAction extends YesWikiAction implements RegisteredAction
                 $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($links[$key]);
                 [$url, $method, $params] = ['', '', ''];
                 if ($linkParts) {
-                    $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
+                    $this->getService(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag'] ?? '');
                     $method = $linkParts['method'];
                     $params = $linkParts['params'];
                     $url = $this->getService(UrlFormatter::class)->href($method, $linkParts['tag'], $params);

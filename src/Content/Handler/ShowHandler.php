@@ -59,7 +59,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         // relocated from tools/bazar/handlers/page/__show.php (ticket 24): if the page is a bazar
         // entry and was requested with an Accept header asking for JSON/JSON-LD, respond with the
         // entry's data directly instead of rendering the page as HTML.
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->getService(EntryManager::class);
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag()) && $this->getService(AclService::class)->hasAccess('read')) {
             if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
@@ -72,8 +72,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
                 if ($semantic) {
-                    $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['form_id']);
-                    $semanticFiche = $this->wiki->services->get(SemanticTransformer::class)->convertToSemanticData($form, $fiche);
+                    $form = $this->getService(FormManager::class)->getOne($fiche['form_id'] ?? null);
+                    $semanticFiche = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $fiche);
                     $this->getService(Redirector::class)->terminate((string)json_encode($semanticFiche));
                 } else {
                     $this->getService(Redirector::class)->terminate((string)json_encode($fiche));
@@ -112,7 +112,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         // relocated from tools/bazar/handlers/page/show__.php (ticket 24): if the page is a bazar
         // entry, replace the hidden aceditor "body" field with the entry's own JSON data so edits
         // go through the entry form instead of the raw wikitext editor.
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->getService(EntryManager::class);
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
@@ -254,9 +254,9 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
                 // display page
                 $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag());
-                $entryManager = $this->wiki->services->get(EntryManager::class);
+                $entryManager = $this->getService(EntryManager::class);
                 if ($entryManager->isEntry($this->getService(PageContext::class)->getPage()['tag'])) {
-                    $entryController = $this->wiki->services->get(EntryController::class);
+                    $entryController = $this->getService(EntryController::class);
                     echo $entryController->view($this->getService(PageContext::class)->getTag(), $this->getService(PageContext::class)->getPage()['time'] ?? null);
                 } else {
                     echo $this->getService(MarkdownFormatterService::class)->format($this->getService(PageContext::class)->getPage()['body']);
@@ -273,7 +273,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         <?php
         // render the comments if needed
-        echo $this->wiki->services->get(CommentService::class)->renderCommentsForPage($this->getService(PageContext::class)->getTag());
+        echo $this->getService(CommentService::class)->renderCommentsForPage($this->getService(PageContext::class)->getTag());
 
         // get the content buffer and display the page
         $content = ob_get_clean();

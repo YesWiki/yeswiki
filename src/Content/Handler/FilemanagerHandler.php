@@ -45,7 +45,7 @@ class FilemanagerHandler extends YesWikiHandler implements RegisteredHandler
         <div class="page">
             <?php
             if ($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin()) {
-                $att = new Attach($this->wiki->services);
+                $att = new Attach($this->services);
                 $att->doFileManager();
                 unset($att);
             } else {

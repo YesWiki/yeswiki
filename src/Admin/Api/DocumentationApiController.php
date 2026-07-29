@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Api;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Service\RouteProvider;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -24,7 +25,7 @@ class DocumentationApiController extends YesWikiController
 
         // group /api/* routes by their first path segment after /api
         $groups = [];
-        foreach ($this->wiki->getRoutes() as $route) {
+        foreach ($this->getService(RouteProvider::class)->get() as $route) {
             $path = $route->getPath();
             if ($path !== '/api' && !str_starts_with($path, '/api/')) {
                 continue;
@@ -53,7 +54,7 @@ class DocumentationApiController extends YesWikiController
         }
 
         // extensions may still ship their own documentation hook
-        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extension => $pluginBase) {
+        foreach ($this->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extension => $pluginBase) {
             $response = null;
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
                 $apiClassName = 'YesWiki\\' . ucfirst($extension) . '\\Controller\\ApiController';
@@ -62,7 +63,8 @@ class DocumentationApiController extends YesWikiController
                 }
                 if (class_exists($apiClassName, false)) {
                     $apiController = new $apiClassName();
-                    $apiController->setWiki($this->wiki);
+                    /* @var \YesWiki\Core\YesWikiController $apiController */
+                    $apiController->setServices($this->services);
                     if (method_exists($apiController, 'getDocumentation')) {
                         $response = $apiController->getDocumentation();
                     }

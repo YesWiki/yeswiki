@@ -22,7 +22,7 @@ class RelationApiController extends YesWikiController
     {
         $entryCache = [];
         $options = [
-            'formsIds' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'],
+            'formsIds' => $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'],
         ];
         $query = $this->getService(EntryController::class)
                 ->formatQuery(empty($type) ? [] : ['query' => ['bf_relation' => $type]], $_GET);
@@ -52,7 +52,7 @@ class RelationApiController extends YesWikiController
     {
         $_POST['antispam'] = 1;
         $entry = $this->getService(EntryManager::class)->create(
-            $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'],
+            $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'],
             $_POST,
             false,
             $_SERVER['HTTP_SOURCE_URL'] ?? null

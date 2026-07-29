@@ -75,8 +75,8 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
         // nombre de pages dont on affiche une partie du contenu
         $maxDisplayedPages = 25;
 
-        $entryController = $this->wiki->services->get(EntryController::class);
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryController = $this->getService(EntryController::class);
+        $entryManager = $this->getService(EntryManager::class);
 
         // se souvenir si c'était :
         // -- un paramétre de l'action : {{textsearch phrase="Test"}}
@@ -145,10 +145,10 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
         if ($phrase) {
             // extract needles with values in list
             // find in values for entries
-            $formManager = $this->wiki->services->get(FormManager::class);
+            $formManager = $this->getService(FormManager::class);
             $forms = $formManager->getAll();
-            $searchManager = $this->wiki->services->get(SearchManager::class);
-            $dbService = $this->wiki->services->get(DbService::class);
+            $searchManager = $this->getService(SearchManager::class);
+            $dbService = $this->getService(DbService::class);
             $needles = $searchManager->searchWithLists(str_replace(['*', '?'], ['', '_'], $phrase), $forms);
             $requeteSQLForList = '';
             if (!empty($needles)) {
@@ -190,7 +190,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
             }
 
             // get some services
-            $aclService = $this->wiki->services->get(AclService::class);
+            $aclService = $this->getService(AclService::class);
 
             // Modification de caractère spéciaux
             $phraseFormatted = str_replace(['*', '?'], ['%', '_'], $phrase);

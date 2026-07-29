@@ -16,7 +16,6 @@ use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Wiki;
 
 class CommentService implements EventSubscriberInterface
 {

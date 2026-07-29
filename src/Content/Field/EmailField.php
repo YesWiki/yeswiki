@@ -71,7 +71,6 @@ class EmailField extends BazarField
 
     public function canRead($entry, ?string $userNameForRendering = null)
     {
-        $wiki = $this->getWiki();
         $aclService = $this->getService(AclService::class);
         $entryFastAccessService = $this->getService(EntryFastAccessService::class);
 
@@ -81,7 +80,7 @@ class EmailField extends BazarField
 
         // we test if we need an acl exception for an entry's email in a contact form, even if the display acls are against
         if ($canBeRead && $this->getShowContactForm()) {
-            $tag = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $tag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
             if ($tag === 'api') {
                 // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
                 $canBeRead = $entryFastAccessService->isFastAccessRequest($this->getRequest());
@@ -90,7 +89,7 @@ class EmailField extends BazarField
                 $canBeRead = true;
             } elseif ($tag === $entry['tag']) {
                 // if not api and not already acl OK, just for certain handlers
-                $canBeRead = in_array($wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getMethod(), ['show', 'html', 'edit', 'editiframe', 'mail']);
+                $canBeRead = in_array($this->getService(\YesWiki\Kernel\Service\PageContext::class)->getMethod(), ['show', 'html', 'edit', 'editiframe', 'mail']);
             } else {
                 $canBeRead = false;
             }

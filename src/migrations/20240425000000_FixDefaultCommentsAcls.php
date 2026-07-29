@@ -1,24 +1,24 @@
 <?php
 
-use YesWiki\Kernel\Service\ConfigurationFileProvider;
-use YesWiki\Identity\Service\AclService;
-use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\ConfigurationService;
 
 class FixDefaultCommentsAcls extends YesWikiMigration
 {
     public function run()
     {
-        $config = $this->wiki->services->get(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
+        $config = $this->getService(ConfigurationService::class)->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
         if (empty($config['default_comment_acl'])) {
             $config['default_comment_acl'] = 'comments-closed';
             $config->write();
 
             // Update all pages with new ACL
-            $pageManager = $this->wiki->services->get(PageManager::class);
-            $aclService = $this->wiki->services->get(AclService::class);
+            $pageManager = $this->getService(PageManager::class);
+            $aclService = $this->getService(AclService::class);
 
             $pages = $pageManager->getAll();
             foreach ($pages as $page) {

@@ -2,21 +2,21 @@
 
 namespace YesWiki\Admin\Command;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use YesWiki\Admin\Service\AutoUpdateService;
-use YesWiki\Wiki;
 
 class UpgradeCommand extends Command
 {
-    protected $wiki;
+    protected ContainerInterface $services;
 
-    public function __construct(Wiki &$wiki)
+    public function __construct(ContainerInterface $services)
     {
         parent::__construct();
-        $this->wiki = $wiki;
+        $this->services = $services;
     }
 
     protected function configure()
@@ -31,7 +31,7 @@ class UpgradeCommand extends Command
     {
         $package = $input->getArgument('package');
 
-        $updateService = $this->wiki->services->get(AutoUpdateService::class);
+        $updateService = $this->services->get(AutoUpdateService::class);
 
         // ADR-0007: on a farm, only the instance sharing YESWIKI_SOURCE_DIR as its own
         // YESWIKI_INSTANCE_DIR may trigger an upgrade -- a satellite instance running this

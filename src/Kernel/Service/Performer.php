@@ -2,6 +2,7 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use YesWiki\Core\YesWikiAction;
@@ -10,7 +11,6 @@ use YesWiki\Kernel\Exception\PerformerException;
 use YesWiki\Kernel\Performable\ActionRegistry;
 use YesWiki\Kernel\Performable\PerformableEvent;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Wiki;
 
 /**
  * Runs actions (`{{name}}`) and handlers (`/PageName/name`).
@@ -43,7 +43,7 @@ class Performer
         Performer::TYPES['handler'] => ['handlers/', 'handlers/page/'],
     ];
 
-    protected $wiki;
+    protected ContainerInterface $container;
     protected $params;
     protected $twig;
     protected ThrowableFormatter $throwableFormatter;
@@ -55,7 +55,7 @@ class Performer
     protected EventDispatcher $events;
 
     public function __construct(
-        Wiki $wiki,
+        ContainerInterface $container,
         ParameterBagInterface $params,
         TemplateEngine $twig,
         ActionRegistry $registry,
@@ -63,7 +63,7 @@ class Performer
         ThrowableFormatter $throwableFormatter,
         PerformableArguments $performableArguments
     ) {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->registry = $registry;
         $this->events = $events;
         $this->params = $params;
@@ -73,7 +73,7 @@ class Performer
 
         foreach (Performer::TYPES as $type) {
             $this->objectList[$type] = [];
-            foreach ($wiki->services->get(ExtensionRegistry::class)->all() as $folder) {
+            foreach ($container->get(ExtensionRegistry::class)->all() as $folder) {
                 foreach (Performer::PATHS[$type] as $path) {
                     $this->findObjectInPath($folder . $path, $type);
                 }
@@ -158,9 +158,9 @@ class Performer
         $objectName = strtolower($objectName);
 
         // Check if user is allowed to use this particular action or handler (see EditHandlersAclsAction EditActionsAclsAction)
-        // Still through Wiki: ModuleAclService lives in Identity and Kernel may depend on
-        // no feature module (ArchitectureTest); resolved when the dispatcher moves (ticket 08 D)
-        if (!$this->wiki->CheckModuleACL($objectName, $objectType)) {
+        // inline FQCN, not an import: ModuleAclService lives in Identity and Kernel may
+        // depend on no feature module (ArchitectureTest is import-based)
+        if (!$this->container->get(\YesWiki\Identity\Service\ModuleAclService::class)->checkModuleAcl($objectName, $objectType)) {
             return '<div class="alert alert-danger">' . ucfirst($objectType) . " $objectName : " . _t('ERROR_NO_ACCESS') . '</div>' . "\n";
         }
 
@@ -209,7 +209,8 @@ class Performer
      */
     private function prepare(object $instance, array &$vars, string &$output): void
     {
-        $instance->setWiki($this->wiki);
+        /* @var \YesWiki\Core\YesWikiPerformable $instance */
+        $instance->setServices($this->container);
         $instance->setParams($this->params);
         $instance->setArguments($vars);
         $instance->setOutput($output);

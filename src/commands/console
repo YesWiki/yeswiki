@@ -4,9 +4,9 @@
 namespace YesWiki\Core\Commands;
 
 use Symfony\Component\Console\Application;
+use YesWiki\Core\YesWikiLoader;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
-use YesWiki\Core\YesWikiLoader;
 
 // boot paths, autoloaders and private/.env before touching the config file, so a
 // WAKKA_CONFIG_FILE set in the instance environment is honored by the pre-read below
@@ -28,7 +28,7 @@ $yeswikiConfig = (isset($yeswikiConfig) && is_array($yeswikiConfig)) ? $yeswikiC
 // environment overrides (BASE_URL, ROOT_PAGE...) apply to this pre-read like everywhere else
 $yeswikiConfig = EnvironmentConfiguration::apply($yeswikiConfig);
 // fake $_SERVER vars
-$_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'].$yeswikiConfig['root_page'];
+$_SERVER['REQUEST_URI'] = $yeswikiConfig['base_url'] . $yeswikiConfig['root_page'];
 $_SERVER['HTTP_HOST'] = parse_url($yeswikiConfig['base_url'], PHP_URL_HOST);
 $_SERVER['REQUEST_METHOD'] = 'GET';
 // fake wiki page
@@ -46,12 +46,12 @@ $application = new Application();
 // simply stopped existing, with "Command core:archive is not defined" as the only symptom.
 // Keep each glob and its namespace in step; same trap as FieldFactory's field scan.
 foreach ([
-        'core' => YESWIKI_SOURCE_DIR . '/src/commands/*.php',
-        'module' => YESWIKI_SOURCE_DIR . '/src/*/Command/*.php',
-        'custom' => YESWIKI_INSTANCE_DIR . '/custom/commands/*.php',
-        'extensions' => YESWIKI_SOURCE_DIR . '/extensions/*/commands/*.php',
-        'custom-extensions' => YESWIKI_INSTANCE_DIR . '/custom/extensions/*/commands/*.php',
-    ] as $type => $search) {
+    'core' => YESWIKI_SOURCE_DIR . '/src/commands/*.php',
+    'module' => YESWIKI_SOURCE_DIR . '/src/*/Command/*.php',
+    'custom' => YESWIKI_INSTANCE_DIR . '/custom/commands/*.php',
+    'extensions' => YESWIKI_SOURCE_DIR . '/extensions/*/commands/*.php',
+    'custom-extensions' => YESWIKI_INSTANCE_DIR . '/custom/extensions/*/commands/*.php',
+] as $type => $search) {
     $files = glob($search);
     foreach ($files as $filePath) {
         $filename = pathinfo($filePath)['filename'];
@@ -73,10 +73,10 @@ foreach ([
                 $className = "\\YesWiki\\$toolName\\Commands\\$filename";
                 break;
             default:
-                $className = "";
+                $className = '';
                 break;
         }
-        $command = new $className($wiki);
+        $command = new $className($wiki->services);
         if ($command) {
             $application->add($command);
         }

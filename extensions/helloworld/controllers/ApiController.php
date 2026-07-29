@@ -23,7 +23,7 @@ class ApiController extends YesWikiController
     public function onlineDoc()
     {
         $output = $this->getDocumentation();
-        $output = $this->wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->header() . $output . $this->wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->footer();
+        $output = $this->getService(\YesWiki\Render\Service\TemplateEngine::class)->header() . $output . $this->getService(\YesWiki\Render\Service\TemplateEngine::class)->footer();
 
         return new Response($output);
     }

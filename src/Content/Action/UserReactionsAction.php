@@ -21,7 +21,7 @@ class UserReactionsAction extends YesWikiAction implements RegisteredAction
     public function run()
     {
         if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
-            $userReactions = $this->wiki->services->get(ReactionManager::class)->getReactions('', [], $user['name']);
+            $userReactions = $this->getService(ReactionManager::class)->getReactions('', [], $user['name']);
 
             return $this->render('@core/user-reactions.twig', [
                 'userReactions' => $userReactions,

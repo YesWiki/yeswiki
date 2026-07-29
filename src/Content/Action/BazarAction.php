@@ -93,7 +93,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                         ? $arg['id']
                         : ''))));
 
-        $vBazarListService = $this->wiki->services->get(BazarListService::class);
+        $vBazarListService = $this->getService(BazarListService::class);
 
         $vIDs = $vBazarListService->getIDs($vIDs);
 

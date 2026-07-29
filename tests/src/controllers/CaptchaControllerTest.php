@@ -27,7 +27,7 @@ class CaptchaControllerTest extends YesWikiTestCase
         $forcedParams = new ForcedParameterBag($realParams, ['use_captcha' => $useCaptcha]);
 
         $captchaController = new CaptchaController($forcedParams);
-        $captchaController->setWiki($wiki);
+        $captchaController->setServices($wiki->services);
 
         return $captchaController;
     }

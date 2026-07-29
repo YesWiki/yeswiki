@@ -126,7 +126,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // merged from actions/include__.php (ticket 06: core does not hook itself)
         // relocated from tools/bazar/actions/include__.php (ticket 24): if the included page is a
         // bazar entry, show the entry instead of formatting the page as plain wiki content.
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->getService(EntryManager::class);
         if ($entryManager->isEntry($incPageName)) {
             $plugin_output_new = '<div class="' . $class . '">' . "\n" . baz_voir_fiche(0, $incPageName) . "\n" . '</div>' . "\n";
         } else {
@@ -155,7 +155,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             );
 
             // ensuite les liens restants (ceux avec une classe avant ne sont pas pris en compte)
-            $plugin_output_new = $this->wiki->services->get(TemplateHelperService::class)->strIreplacement(
+            $plugin_output_new = $this->getService(TemplateHelperService::class)->strIreplacement(
                 '<a href="' . $this->getService(RuntimeConfig::class)['base_url'] . $page_active . '"',
                 '<a class="active-link" href="' . $this->getService(RuntimeConfig::class)['base_url'] . $page_active . '"',
                 $plugin_output_new
@@ -265,7 +265,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             $plugin_output_new . '<div class="clearfix"></div>' . "\n" :
             $plugin_output_new;
 
-        $plugin_output_new = $this->wiki->services->get(TemplateHelperService::class)->postFormat($plugin_output_new);
+        $plugin_output_new = $this->getService(TemplateHelperService::class)->postFormat($plugin_output_new);
 
         return $plugin_output_new . (string)ob_get_clean();
     }
@@ -319,7 +319,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         }
         // Affichage de la page quand il n'y a pas d'erreur
         elseif ($this->getService(AclService::class)->hasAccess('read', $incPageName)) {
-            $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($incPageName);
+            $this->getService(LinkTracker::class)->forceAddIfNotIncluded($incPageName);
             $this->getService(InclusionStack::class)->register($incPageName);
             $output = $this->getService(MarkdownFormatterService::class)->format($incPage['body']);
             if (isset($classes)) {

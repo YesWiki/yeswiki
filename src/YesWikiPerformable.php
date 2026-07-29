@@ -2,6 +2,7 @@
 
 namespace YesWiki\Core;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Identity\Service\UserManager;
@@ -9,7 +10,6 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Wiki;
 
 /**
  * A YesWiki object, with basic functionality like accessing main YesWiki instance, or
@@ -18,18 +18,18 @@ use YesWiki\Wiki;
  */
 abstract class YesWikiPerformable
 {
-    protected $wiki;
+    protected ContainerInterface $services;
     protected $params;
     protected $twig;
     protected $arguments = [];
     protected $output;
 
     /**
-     * Setter for the wiki property.
+     * Setter for the service container (historic setWiki()).
      */
-    public function setWiki(Wiki $wiki): void
+    public function setServices(ContainerInterface $services): void
     {
-        $this->wiki = $wiki;
+        $this->services = $services;
     }
 
     /**
@@ -82,7 +82,7 @@ abstract class YesWikiPerformable
         $data = array_merge($data, ['arguments' => $this->arguments]);
 
         // add some addition globals
-        $vUserManager = $this->wiki->services->get(UserManager::class);
+        $vUserManager = $this->services->get(UserManager::class);
         $userName = (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'];
         $this->twig->addGlobal('user', new class($vUserManager, $userName) {
             public string $name;
@@ -131,7 +131,7 @@ abstract class YesWikiPerformable
      */
     protected function getService($className)
     {
-        return $this->wiki->services->get($className);
+        return $this->services->get($className);
     }
 
     // Shortcut to call an action within another action
@@ -151,7 +151,7 @@ abstract class YesWikiPerformable
 
     protected function getRequest(): Request
     {
-        return $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+        return $this->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
     }
 
     // Can be extended to format the arguments
@@ -196,7 +196,7 @@ abstract class YesWikiPerformable
      */
     protected function isWikiHibernated(): bool
     {
-        return $this->wiki->services->get(HibernationService::class)->isWikiHibernated();
+        return $this->services->get(HibernationService::class)->isWikiHibernated();
     }
 
     /**
@@ -206,6 +206,6 @@ abstract class YesWikiPerformable
      */
     protected function getMessageWhenHibernated(): string
     {
-        return $this->wiki->services->get(HibernationNotice::class)->getMessageWhenHibernated();
+        return $this->services->get(HibernationNotice::class)->getMessageWhenHibernated();
     }
 }

@@ -2,19 +2,26 @@
 
 namespace YesWiki\Core;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Service\DbService;
-use YesWiki\Wiki;
 
 abstract class YesWikiMigration
 {
-    protected $wiki;
+    /**
+     * Every migration implements its body here (run by MigrationService).
+     *
+     * @return void
+     */
+    abstract public function run();
+
+    protected ContainerInterface $services;
     protected $params;
     protected $dbService;
 
-    public function setWiki(Wiki $wiki): void
+    public function setServices(ContainerInterface $services): void
     {
-        $this->wiki = $wiki;
+        $this->services = $services;
     }
 
     /**
@@ -35,6 +42,6 @@ abstract class YesWikiMigration
      */
     protected function getService(string $className)
     {
-        return $this->wiki->services->get($className);
+        return $this->services->get($className);
     }
 }

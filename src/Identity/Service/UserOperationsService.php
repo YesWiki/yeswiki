@@ -190,7 +190,7 @@ class UserOperationsService extends YesWikiController
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        if (!$this->wiki->services->get(AclService::class)->isAdmin()) {
+        if (!$this->getService(AclService::class)->isAdmin()) {
             throw new DeleteUserException(_t('USER_MUST_BE_ADMIN_TO_DELETE') . '.');
         }
         if ($this->isRunner($user)) {

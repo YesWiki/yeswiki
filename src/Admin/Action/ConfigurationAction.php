@@ -42,7 +42,7 @@ class ConfigurationAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $themeManager = $this->wiki->services->get(ThemeManager::class);
+        $themeManager = $this->getService(ThemeManager::class);
 
         $param = $this->getService(PerformableArguments::class)->get('param');
         if (!empty($param)) {

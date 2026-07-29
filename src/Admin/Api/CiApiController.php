@@ -18,7 +18,7 @@ class CiApiController extends YesWikiController
         $config = $configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
         $config->load();
 
-        $this->updateConfigFieldByField($config, $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->toArray());
+        $this->updateConfigFieldByField($config, $this->getService(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->toArray());
 
         $configurationService->write($config);
 

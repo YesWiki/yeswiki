@@ -43,7 +43,7 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
                 // $this->exit(), which throws in CLI, and run() flushes what it printed into
                 // the shared output before rethrowing
                 $action = new \YesWiki\Content\Action\RecentchangesrssplusAction();
-                $action->setWiki($wiki);
+                $action->setServices($wiki->services);
                 $vars = [];
                 $action->setArguments($vars);
                 $action->setOutput($output);

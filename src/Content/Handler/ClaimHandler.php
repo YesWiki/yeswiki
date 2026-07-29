@@ -51,7 +51,7 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
                 && in_array($_GET['action'], $availableActions)
                 && ($this->getService(AclService::class)->isAdmin() || $this->getService(AclService::class)->isOwner($tag))
             ) {
-                $aclsService = $this->wiki->services->get(AclService::class);
+                $aclsService = $this->getService(AclService::class);
                 $commentsAcls = $aclsService->load($tag, 'comment');
                 $wikiGroups = $this->getService(GroupOperationsService::class)->getAll();
                 switch ($_GET['action']) {

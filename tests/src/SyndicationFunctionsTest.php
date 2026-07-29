@@ -58,7 +58,7 @@ class SyndicationFunctionsTest extends YesWikiTestCase
     {
         $wiki = $this->getWiki();
         $action = new \YesWiki\Content\Action\SyndicationAction();
-        $action->setWiki($wiki);
+        $action->setServices($wiki->services);
         $action->setParams($wiki->services->get(\Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface::class));
 
         $result = $action->formatArguments([

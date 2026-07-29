@@ -4,7 +4,6 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Controller\EntryController;
-use YesWiki\Wiki;
 
 #[\Field(['listefiche'])]
 class SelectEntryField extends EnumField
@@ -62,7 +61,7 @@ class SelectEntryField extends EnumField
                 $entryUrl = $baseUrl . $value;
             }
         } else {
-            $entryUrl = $this->services->get(Wiki::class)->Href('', $value);
+            $entryUrl = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $value);
         }
 
         return $this->render('@core/fields/select_entry.twig', [

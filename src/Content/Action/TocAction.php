@@ -71,7 +71,7 @@ class TocAction extends YesWikiAction implements RegisteredAction
         // mirrored by a second counter in a translate2toc() defined here -- which desynced as soon
         // as any action emitted its own <hN>.
         $tocList = '';
-        foreach ($this->wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->headings($toc_body) as $heading) {
+        foreach ($this->getService(\YesWiki\Render\Service\MarkdownFormatterService::class)->headings($toc_body) as $heading) {
             $tocList .= '<li class="toc' . $heading['level'] . '"><a href="#' . htmlspecialchars($heading['id'], ENT_COMPAT, YW_CHARSET) . '">'
                 . htmlspecialchars($heading['title'], ENT_COMPAT, YW_CHARSET) . "</a></li>\n";
         }

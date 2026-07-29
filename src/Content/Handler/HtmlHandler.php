@@ -43,7 +43,7 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
     private function emitBefore(): void
     {
         // merged from handlers/page/__html.php (ticket 06: core does not hook itself)
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->getService(EntryManager::class);
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);

@@ -30,7 +30,7 @@ class QrscanAction extends YesWikiAction implements RegisteredAction
     public function run()
     {
         // Services init
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->getService(EntryManager::class);
 
         // Parameters init
         $relation = $this->getService(PerformableArguments::class)->get('relation');

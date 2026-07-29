@@ -2,6 +2,7 @@
 
 namespace YesWiki\Kernel\Command;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -9,20 +10,19 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Kernel\Service\ThrowableFormatter;
-use YesWiki\Wiki;
 
 class DbCommand extends Command
 {
     protected $consoleService;
     protected $params;
-    protected $wiki;
+    protected ContainerInterface $services;
 
-    public function __construct(Wiki &$wiki)
+    public function __construct(ContainerInterface $services)
     {
         parent::__construct();
-        $this->consoleService = $wiki->services->get(ConsoleService::class);
-        $this->params = $wiki->services->get(ParameterBagInterface::class);
-        $this->wiki = $wiki;
+        $this->consoleService = $services->get(ConsoleService::class);
+        $this->params = $services->get(ParameterBagInterface::class);
+        $this->services = $services;
     }
 
     protected function configure()
@@ -200,7 +200,7 @@ class DbCommand extends Command
                 return Command::SUCCESS;
             }
         } catch (\Throwable $ex) {
-            $output->writeln('System error when testing mysqldump : ' . $this->wiki->services->get(ThrowableFormatter::class)->dump($ex));
+            $output->writeln('System error when testing mysqldump : ' . $this->services->get(ThrowableFormatter::class)->dump($ex));
         }
         $output->writeln('NOK');
 

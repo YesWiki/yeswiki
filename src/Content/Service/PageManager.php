@@ -13,7 +13,6 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Search\Service\TagsManager;
-use YesWiki\Wiki;
 
 class PageManager
 {
@@ -26,7 +25,6 @@ class PageManager
     protected $tagsManager;
     protected $tripleStore;
     protected $userManager;
-    protected $wiki;
 
     protected $ownersCache; // different cache because to set at the same time to prevent infinite loop
     protected $pageCache;

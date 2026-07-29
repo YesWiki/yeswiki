@@ -59,11 +59,11 @@ class EndAction extends YesWikiAction implements RegisteredAction
             $GLOBALS['check_' . $pagetag] = [];
         }
         if (!isset($GLOBALS['check_' . $pagetag][$elem])) {
-            $GLOBALS['check_' . $pagetag][$elem] = $this->wiki->services->get(TemplateHelperService::class)->checkGraphicalElements($elem, $pagetag, $body);
+            $GLOBALS['check_' . $pagetag][$elem] = $this->getService(TemplateHelperService::class)->checkGraphicalElements($elem, $pagetag, $body);
         }
 
         if ($GLOBALS['check_' . $pagetag][$elem] || in_array($elem, ['tab', 'tabs'], true)) {
-            echo $this->wiki->services->get(Performer::class)->run($elem, 'action', [], true);
+            echo $this->getService(Performer::class)->run($elem, 'action', [], true);
         }
     }
 }

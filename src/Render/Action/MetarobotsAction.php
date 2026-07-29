@@ -63,7 +63,7 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
             echo "\n" . '  <!-- opengraph -->' . "\n";
             echo '  <meta property="og:site_name" content="'
                 . $this->getService(RuntimeConfig::class)['yeswiki_name'] . '" />' . "\n";
-            $utils = $this->wiki->services->get(TemplateHelperService::class);
+            $utils = $this->getService(TemplateHelperService::class);
             $title = $utils->getTitleFromBody($this->getService(PageContext::class)->getPage());
             echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->services->get(RuntimeConfig::class)['yeswiki_name']) . '" />' . "\n";
             $desc = htmlspecialchars($utils->getDescriptionFromBody($this->getService(PageContext::class)->getPage(), $title), ENT_COMPAT | ENT_HTML5);
@@ -76,7 +76,7 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
             // open graph image : recommended sizes for FB
             $w = 1200; // image width
             $h = 630; // image height
-            $img = $this->wiki->services->get(TemplateHelperService::class)->getImageFromBody($this->getService(PageContext::class)->getPage(), strval($w), strval($h));
+            $img = $this->getService(TemplateHelperService::class)->getImageFromBody($this->getService(PageContext::class)->getPage(), strval($w), strval($h));
             if (!empty($img)) {
                 echo '  <meta property="og:image" content="' . $img . '" />' . "\n";
                 echo '  <meta property="og:image:width" content="' . $w . '" />' . "\n";

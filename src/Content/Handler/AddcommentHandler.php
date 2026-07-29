@@ -44,7 +44,7 @@ class AddcommentHandler extends YesWikiHandler implements RegisteredHandler
     {
         // merged from handlers/page/__addcomment.php (ticket 06: core does not hook itself)
         if (isset($_POST['action']) && $_POST['action'] == 'addcomment') {
-            if (!$this->wiki->services->get(HashCashService::class)->checkHashcash()) {
+            if (!$this->getService(HashCashService::class)->checkHashcash()) {
                 $this->getService(FlashMessageService::class)->setMessage(_t('HASHCASH_COMMENT_NOT_SAVED_MAYBE_YOU_ARE_A_ROBOT'));
                 $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href());
             }
@@ -53,7 +53,7 @@ class AddcommentHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        $commentService = $this->wiki->services->get(CommentService::class);
+        $commentService = $this->getService(CommentService::class);
         $result = $commentService->addCommentIfAuthorized($_POST);
 
         if (!empty($result['error'])) {

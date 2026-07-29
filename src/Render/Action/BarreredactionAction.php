@@ -50,7 +50,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $user = $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
+        $user = $this->getService(AuthenticationService::class)->getLoggedUser();
         if ((!empty($user) || $this->getService(AclService::class)->hasAccess('write')) && $this->getService(PageContext::class)->getRawMethod() != 'revisions') {
             // on récupére la page et ses valeurs associées
             $page = $this->getService(PerformableArguments::class)->get('page');
@@ -76,7 +76,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
 
             if ($this->getService(AclService::class)->hasAccess('write')) {
                 // on ajoute le lien d'édition si l'action est autorisée
-                if ($this->getService(AclService::class)->hasAccess('write', $page) && !$this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
+                if ($this->getService(AclService::class)->hasAccess('write', $page) && !$this->getService(HibernationService::class)->isWikiHibernated()) {
                     $options['linkedit'] = $this->getService(UrlFormatter::class)->href('edit', $page);
                 }
 
@@ -102,15 +102,15 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
                     // if current user is owner or admin
                     if ($this->getService(AclService::class)->isOwner($page) || $this->getService(AclService::class)->isAdmin()) {
                         $options['owner'] .= ' - ' . _t('TEMPLATE_PERMISSIONS');
-                        if (!$this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
+                        if (!$this->getService(HibernationService::class)->isWikiHibernated()) {
                             $options['linkacls'] = $this->getService(UrlFormatter::class)->href('acls', $page);
                             $options['linkdeletepage'] = $this->getService(UrlFormatter::class)->href('deletepage', $page);
                         }
-                        $aclsService = $this->wiki->services->get(AclService::class);
+                        $aclsService = $this->getService(AclService::class);
                         $hasAccessComment = $aclsService->hasAccess('comment');
                         $options['wikigroups'] = $this->getService(GroupOperationsService::class)->getAll();
-                        if ($this->wiki->services->get(ParameterBagInterface::class)->get('comments_activated')) {
-                            if ($hasAccessComment && $hasAccessComment !== 'comments-closed') {
+                        if ($this->getService(ParameterBagInterface::class)->get('comments_activated')) {
+                            if ($hasAccessComment) {
                                 $options['linkclosecomments'] = $this->getService(UrlFormatter::class)->href('claim', $page, ['action' => 'closecomments'], false);
                             } else {
                                 $options['linkopencomments'] = $this->getService(UrlFormatter::class)->href('claim', $page, ['action' => 'opencomments'], false);
@@ -118,7 +118,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
                         }
                     } elseif (!$owner && $this->getService(AuthenticationService::class)->getLoggedUser()) {
                         $options['owner'] .= ' - ' . _t('TEMPLATE_CLAIM');
-                        if (!$this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
+                        if (!$this->getService(HibernationService::class)->isWikiHibernated()) {
                             $options['linkacls'] = $this->getService(UrlFormatter::class)->href('claim', $page);
                         }
                     }
@@ -129,7 +129,7 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
             $options['userIsOwner'] = $this->getService(AclService::class)->isOwner($page);
             $options['userIsAdmin'] = $this->getService(AclService::class)->isAdmin();
             $options['userIsAdminOrOwner'] = $this->getService(AclService::class)->isAdmin() || $this->getService(AclService::class)->isOwner($page);
-            $favoritesManager = $this->wiki->services->get(FavoritesManager::class);
+            $favoritesManager = $this->getService(FavoritesManager::class);
             if (!empty($user) && $favoritesManager->areFavoritesActivated()) {
                 $options['currentuser'] = $user['name'];
                 $options['isUserFavorite'] = $favoritesManager->isUserFavorite($user['name'], $page);

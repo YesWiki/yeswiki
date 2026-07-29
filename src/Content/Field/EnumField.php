@@ -6,8 +6,8 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\ExternalBazarService;
 use YesWiki\Content\Service\ListManager;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Search\Service\SearchManager;
-use YesWiki\Wiki;
 
 abstract class EnumField extends BazarField
 {
@@ -73,7 +73,7 @@ abstract class EnumField extends BazarField
         $json = $this->getService(ExternalBazarService::class)->getJSONCachedUrlContent(
             $this->sanitizeUrlForEntries($this->getLinkedObjectName()),
             $refreshCacheDuration,
-            isset($_GET['refresh']) && ($_GET['refresh'] === 'true') && $this->getService(Wiki::class)->UserIsAdmin(),
+            isset($_GET['refresh']) && ($_GET['refresh'] === 'true') && $this->getService(AclService::class)->isAdmin(),
             'entries'
         );
         $entries = json_decode($json, true);

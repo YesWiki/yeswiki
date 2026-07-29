@@ -58,7 +58,7 @@ abstract class YesWikiAction extends YesWikiPerformable
         $pagetag = $this->getService(PageContext::class)->getTag();
         if (!isset($GLOBALS["check_$pagetag"][$action_name])) {
             $GLOBALS["check_$pagetag"][$action_name] =
-                $this->wiki->services->get(TemplateHelperService::class)
+                $this->getService(TemplateHelperService::class)
                     ->checkGraphicalElements($action_name, $pagetag, ($this->getService(PageContext::class)->getPage() ?? [])['body'] ?? '');
         }
 

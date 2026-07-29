@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Wiki;
 
 abstract class BazarField implements \JsonSerializable
 {
@@ -317,16 +316,9 @@ abstract class BazarField implements \JsonSerializable
 
     /**
      * return wiki from service but do not instanciate it at construct to prevent infinite loop.
-     *
-     * @return Wiki $wiki
      */
-    protected function getWiki(): Wiki
-    {
-        return $this->getService(Wiki::class);
-    }
-
     protected function getRequest(): Request
     {
-        return $this->getWiki()->request;
+        return $this->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
     }
 }

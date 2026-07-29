@@ -2,34 +2,34 @@
 
 namespace YesWiki\Core;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Contracts\Service\Attribute\Required;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Render\Service\TemplateEngine;
-use YesWiki\Wiki;
 
 abstract class YesWikiController
 {
-    protected $wiki;
+    protected ContainerInterface $services;
 
     /**
-     * Setter for the wiki property.
+     * Setter for the service container (historic setWiki()).
      */
     #[Required]
-    public function setWiki(Wiki $wiki): void
+    public function setServices(ContainerInterface $services): void
     {
-        $this->wiki = $wiki;
+        $this->services = $services;
     }
 
     protected function getRequest(): Request
     {
-        return $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+        return $this->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
     }
 
     protected function render($templatePath, $data = [], $method = 'render')
     {
-        return $this->wiki->services->get(TemplateEngine::class)->$method($templatePath, $data);
+        return $this->services->get(TemplateEngine::class)->$method($templatePath, $data);
     }
 
     /**
@@ -63,6 +63,6 @@ abstract class YesWikiController
      */
     protected function getService($className)
     {
-        return $this->wiki->services->get($className);
+        return $this->services->get($className);
     }
 }

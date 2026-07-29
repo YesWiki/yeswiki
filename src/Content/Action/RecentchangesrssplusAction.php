@@ -62,7 +62,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
             return;
         }
 
-        $dbService = $this->wiki->services->get(DbService::class);
+        $dbService = $this->getService(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
         $bodyExpr = ($dbService->getDriver() === 'sqlite') ? 'substr(body,1,500)' : 'LEFT(body,500)';
         if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, $bodyExpr as body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {

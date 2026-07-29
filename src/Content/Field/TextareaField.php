@@ -57,7 +57,6 @@ class TextareaField extends BazarField
     protected function renderInput($entry)
     {
         $output = '';
-        $wiki = $this->getWiki();
         $vditorLang = null;
         // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
@@ -68,7 +67,7 @@ class TextareaField extends BazarField
             $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
         }
 
-        $tempTag = !isset($entry['tag']) ? ($wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) : null;
+        $tempTag = !isset($entry['tag']) ? ($this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) : null;
         if ($tempTag) {
             $tempTag .= '_' . bin2hex(random_bytes(10));
         }
@@ -161,18 +160,17 @@ class TextareaField extends BazarField
 
     private function sanitizeAttach(string $text, array $entry): string
     {
-        $wiki = $this->getWiki();
-        $temp_tag_for_entry_creation = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'];
+        $temp_tag_for_entry_creation = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'];
 
         if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
             $entryCreationTime = $this->getEntryCreationTime($entry);
             foreach ($matches[0] as $key => $value) {
-                $attach = new Attach($wiki->services);
+                $attach = new Attach($this->services);
                 $attach->file = $matches[2][$key];
-                $previousTag = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-                $previousPage = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
-                $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($matches[3][$key]);
-                $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+                $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+                $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($matches[3][$key]);
+                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
                     'tag' => $matches[3][$key],
                     'body' => '{##}',
                     'time' => date('YmdHis'),
@@ -181,8 +179,8 @@ class TextareaField extends BazarField
                 ]);
                 $previousFileName = $attach->GetFullFilename();
                 $attach->file = $matches[4][$key];
-                $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
-                $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
+                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
                     'tag' => $entry['tag'],
                     'body' => (string)json_encode($entry),
                     'time' => $entryCreationTime,
@@ -198,8 +196,8 @@ class TextareaField extends BazarField
                     $text = str_replace($matches[0][$key], $matches[1][$key] . $matches[4][$key] . $matches[5][$key], $text);
                 }
                 unset($attach);
-                $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
-                $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
+                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
+                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
             }
         }
 
@@ -208,12 +206,11 @@ class TextareaField extends BazarField
 
     private function sanitizeBase64Img(string $text, array $entry): string
     {
-        $wiki = $this->getWiki();
         $regExpSearch = '(<img(?>\s*style="[^"]*")?\s*)src="data:image\/(gif|jpeg|png|jpg|svg|webp);base64,([^"]*)"\s*[^>]*(?>(?<=data-filename=")[^"]*")?[^>]*>';
         if (preg_match_all("/$regExpSearch/", $text, $matches)) {
             $entryCreationTime = $this->getEntryCreationTime($entry);
-            $previousTag = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-            $previousPage = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+            $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
             foreach ($matches[0] as $index => $textToReplace) {
                 $imageType = $matches[2][$index];
                 $imageContent = base64_decode($matches[3][$index]);
@@ -229,12 +226,12 @@ class TextareaField extends BazarField
                     $fileName = $this->sanitizeFileName($fileName);
                 }
 
-                $attach = new Attach($wiki->services);
+                $attach = new Attach($this->services);
                 $attach->file = $fileName;
 
                 // fake page
-                $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
-                $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
+                $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
                     'tag' => $entry['tag'],
                     'page' => (string)json_encode($entry),
                     'time' => $entryCreationTime,
@@ -254,8 +251,8 @@ class TextareaField extends BazarField
                 }
                 unset($attach);
             }
-            $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
-            $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
+            $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
+            $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
         }
 
         return $text;

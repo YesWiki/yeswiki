@@ -57,7 +57,7 @@ class RedirectAction extends YesWikiAction implements RegisteredAction
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_REDIRECT') . '</strong> : ' . _t('MISSING_PAGE_PARAMETER') . '.</div>' . "\n";
         } else {
             if ($this->getService(PageContext::class)->getMethod() == 'show') {
-                $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($redirPageName);
+                $this->getService(LinkTracker::class)->forceAddIfNotIncluded($redirPageName);
                 if (!isset($_SESSION['redirects'])) {
                     $_SESSION['redirects'] = [];
                 }

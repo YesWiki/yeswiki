@@ -54,11 +54,11 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
 
         // merged from actions/linkrss__.php (ticket 06: core does not hook itself)
         // relocated from tools/bazar/actions/linkrss__.php (ticket 24)
-        $forms = $this->wiki->services->get(FormManager::class)->getAll();
+        $forms = $this->getService(FormManager::class)->getAll();
         $liste = '';
 
         if ($this->getService(ModuleAclService::class)->checkModuleAcl('rss', 'handler')) {
-            if (is_array($forms) && count($forms) > 0) {
+            if (count($forms) > 0) {
                 foreach ($forms as $form) {
                     $liste .= '  <link rel="alternate" type="application/rss+xml" '
                         . 'title="' . htmlspecialchars($form['label'] ?? '') . '" '
@@ -75,8 +75,8 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $displayLastChanges = $this->wiki->services->get(PageManager::class)->getOne('DerniersChangementsRSS') && $this->getService(AclService::class)->hasAccess('read', 'DerniersChangementsRSS');
-        $displayLastComments = $this->wiki->services->get(PageManager::class)->getOne('DerniersCommentairesRSS') && $this->getService(AclService::class)->hasAccess('read', 'DerniersCommentairesRSS');
+        $displayLastChanges = $this->getService(PageManager::class)->getOne('DerniersChangementsRSS') && $this->getService(AclService::class)->hasAccess('read', 'DerniersChangementsRSS');
+        $displayLastComments = $this->getService(PageManager::class)->getOne('DerniersCommentairesRSS') && $this->getService(AclService::class)->hasAccess('read', 'DerniersCommentairesRSS');
 
         if ($displayLastChanges || $displayLastComments) {
             echo "\n" . '  <!-- RSS links -->' . "\n";

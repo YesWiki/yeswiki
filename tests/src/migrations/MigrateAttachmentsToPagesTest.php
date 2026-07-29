@@ -3,10 +3,10 @@
 namespace YesWiki\Test\Core\Migrations;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\AclService;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -86,7 +86,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         file_put_contents($physicalPath, 'hello migration');
 
         $migration = new \MigrateAttachmentsToPages();
-        $migration->setWiki($wiki);
+        $migration->setServices($wiki->services);
         $migration->setParams($wiki->services->get(ParameterBagInterface::class));
         $migration->setDbService($wiki->services->get(DbService::class));
 
@@ -141,7 +141,7 @@ class MigrateAttachmentsToPagesTest extends YesWikiTestCase
         $pageManager->save($otherPageTag, '{{attach file="shared.txt"}}', '', true);
 
         $migration = new \MigrateAttachmentsToPages();
-        $migration->setWiki($wiki);
+        $migration->setServices($wiki->services);
         $migration->setParams($wiki->services->get(ParameterBagInterface::class));
         $migration->setDbService($wiki->services->get(DbService::class));
         $rewritePageBodies = new \ReflectionMethod($migration, 'rewritePageBodies');

@@ -99,8 +99,8 @@ class ThemeSelectorRenderer extends YesWikiController
         }
 
         // page list
-        $tablistWikinames = $this->wiki->services->get(DbService::class)->loadAll(
-            'SELECT DISTINCT tag FROM ' . $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . "pages WHERE latest='Y'"
+        $tablistWikinames = $this->getService(DbService::class)->loadAll(
+            'SELECT DISTINCT tag FROM ' . $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . "pages WHERE latest='Y'"
         );
         $listWikinames = [];
         foreach ($tablistWikinames as $tag) {
@@ -127,14 +127,14 @@ class ThemeSelectorRenderer extends YesWikiController
             'class' => $formclass,
             'bgselector' => $bgselector,
             'listWikinames' => $listWikinames,
-            'showAdminActions' => $this->wiki->services->get(AclService::class)->isAdmin(),
+            'showAdminActions' => $this->getService(AclService::class)->isAdmin(),
             'themeSelectorTranslation' => array_map('_t', $ts),
             'customCSSPresetsPath' => ThemeManager::CUSTOM_CSS_PRESETS_PATH,
             'customCSSPresetsPrefix' => ThemeManager::CUSTOM_CSS_PRESETS_PREFIX,
             'availableLanguages' => $GLOBALS['available_languages'],
             'preferedLanguage' => $GLOBALS['prefered_language'],
             'languagesList' => $GLOBALS['languages_list'],
-            'page' => $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage(),
+            'page' => $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage(),
             'updateUrl' => ($mode !== 'edit'),
         ]);
     }

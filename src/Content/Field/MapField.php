@@ -211,7 +211,6 @@ class MapField extends BazarField
     protected function renderStatic($entry)
     {
         $output = '';
-        $wiki = $this->getWiki();
 
         // check the last used action containing the good form id
         $filteredActions =

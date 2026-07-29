@@ -5,13 +5,11 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Kernel\Service\AssetsManager;
-use YesWiki\Wiki;
 
 abstract class RadioField extends EnumField
 {
     protected $displayMethod; // empty, tags
     protected $displayFilterLimit; // number of items without filter ; false if no limit
-    protected $wiki;
 
     protected const FIELD_DISPLAY_METHOD = 7;
 
@@ -19,7 +17,6 @@ abstract class RadioField extends EnumField
     {
         parent::__construct($values, $services);
         $this->displayMethod = $values[self::FIELD_DISPLAY_METHOD];
-        $this->wiki = $this->services->get(Wiki::class);
         $params = $this->services->get(ParameterBagInterface::class);
         $this->displayFilterLimit = $params->has('BAZ_MAX_RADIO_WITHOUT_FILTER') ? $params->get('BAZ_MAX_RADIO_WITHOUT_FILTER') : false;
     }

@@ -2,21 +2,21 @@
 
 namespace YesWiki\Kernel\Command;
 
+use Psr\Container\ContainerInterface;
 use Spatie\ImageOptimizer\OptimizerChainFactory;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use YesWiki\Wiki;
 
 class ImageOptimizerCommand extends Command
 {
-    protected $wiki;
+    protected ContainerInterface $services;
 
-    public function __construct(Wiki &$wiki)
+    public function __construct(ContainerInterface $services)
     {
         parent::__construct();
-        $this->wiki = $wiki;
+        $this->services = $services;
     }
 
     protected function configure()

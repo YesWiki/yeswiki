@@ -46,7 +46,7 @@ class OrphanedpagesAction extends YesWikiAction implements RegisteredAction
         List all orphaned pages BUT bazar records
         */
 
-        $tagsManager = $this->wiki->services->get(TagsManager::class);
+        $tagsManager = $this->getService(TagsManager::class);
 
         if ($pages = $tagsManager->getPagesByTags('', 'wiki', '', '')) {
             foreach ($pages as $page) {

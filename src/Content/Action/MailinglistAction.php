@@ -58,7 +58,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
             // les mails formates sont prets a etre envoyes
             if (isset($_POST['mails'])) {
                 if (is_array($_POST['mails'])) {
-                    $mailer = $this->wiki->services->get(Mailer::class);
+                    $mailer = $this->getService(Mailer::class);
                     $tab_listadress = explode('@', $list);
 
                     // en fonction de l'action demand

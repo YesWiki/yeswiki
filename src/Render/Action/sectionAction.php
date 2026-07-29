@@ -94,7 +94,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction
         }
 
         if (!empty($file)) {
-            $att = new Attach($this->wiki->services);
+            $att = new Attach($this->services);
 
             // test of image extension
             if (!$att->isPicture($file)) {

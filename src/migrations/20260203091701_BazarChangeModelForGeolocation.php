@@ -2,8 +2,8 @@
 
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Search\Service\SearchManager;
 
 class BazarChangeModelForGeolocation extends YesWikiMigration
 {
@@ -70,9 +70,9 @@ class BazarChangeModelForGeolocation extends YesWikiMigration
         $this->report('----------------------');
         $this->report('--- Start ChangeModelForGeolocation migration');
 
-        $vFormManager = $this->wiki->services->get(FormManager::class);
-        $vEntryManager = $this->wiki->services->get(EntryManager::class);
-        $vSearchManager = $this->wiki->services->get(SearchManager::class);
+        $vFormManager = $this->getService(FormManager::class);
+        $vEntryManager = $this->getService(EntryManager::class);
+        $vSearchManager = $this->getService(SearchManager::class);
 
         $vForms = $vFormManager->getAll();
 

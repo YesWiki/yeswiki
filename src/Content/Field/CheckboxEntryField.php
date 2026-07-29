@@ -4,7 +4,6 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Wiki;
 
 #[\Field(['checkboxfiche'])]
 class CheckboxEntryField extends CheckboxField
@@ -19,16 +18,15 @@ class CheckboxEntryField extends CheckboxField
 
         // load options only when needed but not at construct to prevent infinite loops
 
-        $wiki = $this->services->get(Wiki::class);
-        $this->displayFilterLimit = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
-        $this->displaySelectAllLimit = empty($wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
+        $this->displayFilterLimit = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
+        $this->displaySelectAllLimit = empty($this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
             $this->displayFilterLimit :
-            $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
+            $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
         $this->formName = null;
         $this->normalDisplayMode = (in_array(
-            $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
+            $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
             array_keys(self::CHECKBOX_TWIG_LIST)
-        )) ? $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
+        )) ? $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
             self::CHECKBOX_DISPLAY_MODE_LIST;
         $this->dragAndDropDisplayMode = '@core/inputs/checkbox_drag_and_drop_entry.twig';
 
@@ -56,7 +54,7 @@ class CheckboxEntryField extends CheckboxField
                         $values[$key]['href'] = $this->baseUrl . $key;
                     }
                 } else {
-                    $values[$key]['href'] = $this->services->get(Wiki::class)->Href('', $key);
+                    $values[$key]['href'] = $this->getService(\YesWiki\Kernel\Service\UrlFormatter::class)->href('', $key);
                 }
             }
         }

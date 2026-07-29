@@ -18,7 +18,6 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Render\Formatter\ActionExtension;
 use YesWiki\Render\Formatter\CommentExtension;
 use YesWiki\Render\Formatter\ProgressExtension;
-use YesWiki\Wiki;
 
 /**
  * Renders page content: standard CommonMark/GFM Markdown, plus Twig-like comments

@@ -57,7 +57,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
         $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($link);
         if ($linkParts) {
             $link = $this->getService(UrlFormatter::class)->href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
-            $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag']);
+            $this->getService(LinkTracker::class)->forceAddIfNotIncluded($linkParts['tag'] ?? '');
         }
         // change short yeswiki urls in real links
         $link = $this->getService(UrlFormatter::class)->generateLink($link);
@@ -69,7 +69,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
         $title = $this->getService(PerformableArguments::class)->get('title');
 
         // icone du bouton
-        $icon = $this->wiki->services->get(TemplateHelperService::class)->formatIconHtml($this->getService(PerformableArguments::class)->get('icon'));
+        $icon = $this->getService(TemplateHelperService::class)->formatIconHtml($this->getService(PerformableArguments::class)->get('icon'));
         if (!empty($icon) && !empty($text)) {
             $icon = $icon . ' ';
         }

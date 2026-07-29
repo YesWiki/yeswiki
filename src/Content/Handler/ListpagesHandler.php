@@ -45,7 +45,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         // fonctions a inclure
         include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
 
-        $tagsManager = $this->wiki->services->get(TagsManager::class);
+        $tagsManager = $this->getService(TagsManager::class);
 
         // recuperation de tous les parametres
         $tags = filter_input(INPUT_GET, 'tags', FILTER_SANITIZE_SPECIAL_CHARS) ?: '';
@@ -87,9 +87,9 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
 
         $text = '';
         // affiche le resultat de la recherche
-        $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri, $template, $class, $lienedit);
+        $resultat = $tagsManager->getPagesByTags($tags, $type, $nb, $tri);
         if ($resultat) {
-            $aclService = $this->wiki->services->get(\YesWiki\Identity\Service\AclService::class);
+            $aclService = $this->getService(\YesWiki\Identity\Service\AclService::class);
             $element = [];
             foreach ($resultat as $page) {
                 if ($aclService->hasAccess('read', $page['tag'])) {

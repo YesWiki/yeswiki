@@ -82,7 +82,7 @@ class LoginRelatedActionsTest extends YesWikiTestCase
         $tripleStore->create($user['name'], UserManager::KEY_VOCABULARY, $hashedKey . UserManager::KEY_VALUE_SEPARATOR . time(), '', '');
 
         $action = new \YesWiki\Identity\Action\LostPasswordAction();
-        $action->setWiki($wiki);
+        $action->setServices($wiki->services);
         $reflection = new \ReflectionClass($action);
         foreach (['authenticationService' => AuthenticationService::class, 'inputFilter' => InputFilter::class, 'hibernationService' => HibernationService::class, 'tripleStore' => TripleStore::class, 'userManager' => UserManager::class] as $property => $serviceClass) {
             $prop = $reflection->getProperty($property);

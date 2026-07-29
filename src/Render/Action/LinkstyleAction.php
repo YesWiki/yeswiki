@@ -91,7 +91,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $themeManager = $this->wiki->services->get(ThemeManager::class);
+        $themeManager = $this->getService(ThemeManager::class);
         $favoriteStyle = $themeManager->getFavoriteStyle();
         // ticket 16: Bootstrap CSS is not loaded anymore — the yw-* design system
         // (yeswiki-base.css + yw-core.css) is the only core-provided styling

@@ -64,7 +64,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     {
         // merged from handlers/page/__edit.php (ticket 06: core does not hook itself)
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
-            list($state, $message) = $this->wiki->services->get(PasswordForEditingService::class)->isGrantedPasswordForEditing();
+            list($state, $message) = $this->getService(PasswordForEditingService::class)->isGrantedPasswordForEditing();
             if (!$state) {
                 echo $this->getService(TemplateEngine::class)->header() .
                     $message .
@@ -75,13 +75,13 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             if (
                 $this->getService(RuntimeConfig::class)['use_hashcash']
                 && isset($_POST['submit']) && $_POST['submit'] == InputFilter::EDIT_PAGE_SUBMIT_VALUE
-                && !$this->wiki->services->get(HashCashService::class)->checkHashcash()
+                && !$this->getService(HashCashService::class)->checkHashcash()
             ) {
                 $error = '<div class="alert alert-danger"><a href="#" data-dismiss="alert" class="close">&times;</a>' . _t('HASHCASH_ERROR_PAGE_UNSAVED') . '</div>';
                 $_POST['submit'] = '';
             }
 
-            list($state, $error) = $this->wiki->services->get(CaptchaController::class)->checkCaptchaBeforeSave();
+            list($state, $error) = $this->getService(CaptchaController::class)->checkCaptchaBeforeSave();
 
             if ($state) {
                 // error used in edit.php
@@ -191,10 +191,10 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         ob_start();
 
         // merged from handlers/page/edit__.php (ticket 06: core does not hook itself)
-        $params = $this->wiki->services->get(ParameterBagInterface::class);
+        $params = $this->getService(ParameterBagInterface::class);
         if (!$params->get('hide_keywords') && $this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             // on recupere les tags de la page courante
-            $tagsManager = $this->wiki->services->get(TagsManager::class);
+            $tagsManager = $this->getService(TagsManager::class);
             $tabtagsexistants = $tagsManager->getAll($this->getService(PageContext::class)->getTag());
             $tagspage = array_unique(array_column($tabtagsexistants, 'value'));
             sort($tagspage);
@@ -228,7 +228,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             // Edition
             if (!isset($_POST['submit']) || $_POST['submit'] != InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
                 if ($this->getService(RuntimeConfig::class)['use_hashcash']) {
-                    $hashCash = $this->wiki->services->get(HashCashService::class);
+                    $hashCash = $this->getService(HashCashService::class);
                     $hashCashCode = $hashCash->getJavascriptCode();
                     $plugin_output_new = preg_replace(
                         '/\<hr class=\"hr_clear\" \/\>/',
@@ -236,7 +236,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $plugin_output_new
                     );
                 }
-                $this->wiki->services->get(CaptchaController::class)->renderCaptcha($plugin_output_new);
+                $plugin_output_new = (string)$plugin_output_new;
+                $this->getService(CaptchaController::class)->renderCaptcha($plugin_output_new);
             }
         }
 
@@ -247,7 +248,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $plugin_output_new
         );
 
-        $themeManager = $this->wiki->services->get(ThemeManager::class);
+        $themeManager = $this->getService(ThemeManager::class);
 
         // personnalisation graphique que dans le cas ou on est autorise
         if ((!isset($this->getService(RuntimeConfig::class)['hide_action_template']) or (isset($this->getService(RuntimeConfig::class)['hide_action_template']) && !$this->getService(RuntimeConfig::class)['hide_action_template']))
@@ -263,7 +264,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 '        <h3 class="yw-modal__title">' . _t('TEMPLATE_CUSTOM_GRAPHICS') . ' ' . $this->getService(PageContext::class)->getTag() . '</h3>' . "\n" .
                 '      </div>' . "\n" .
                 '      <div class="yw-modal__body">' . "\n";
-            $selecteur .= $this->wiki->services->get(ThemeSelectorRenderer::class)->showFormThemeSelector('edit');
+            $selecteur .= $this->getService(ThemeSelectorRenderer::class)->showFormThemeSelector('edit');
             $selecteur .= '
               </div>' . "\n" .
                 '      <div class="yw-modal__footer">' . "\n" .
@@ -331,11 +332,11 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         // on initialise la sortie:
         $output = '';
 
-        $isWikiHibernated = $this->wiki->services->get(HibernationService::class)->isWikiHibernated();
+        $isWikiHibernated = $this->getService(HibernationService::class)->isWikiHibernated();
         // bare-script handler: $this->wiki is the Wiki instance itself, which exposes the current
         // request as a public property, not via a getRequest() helper (that's only on
         // YesWikiPerformable-derived actions/handlers)
-        $request = $this->wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
+        $request = $this->getService(\YesWiki\Kernel\Service\CurrentRequest::class)->get();
 
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && !$isWikiHibernated) {
             $submit = $request->request->get('submit') ?: false;
@@ -381,8 +382,10 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $body, !empty($this->getService(PageContext::class)->getPage()['comment_on']) ? $this->getService(PageContext::class)->getPage()['comment_on'] : '');
 
                         // now we render it internally so we can write the updated link table.
-                        $page = $this->wiki->services->get(PageManager::class)->getOne($this->getService(PageContext::class)->getTag());
-                        $this->wiki->services->get(LinkTracker::class)->registerLinks($page, false, false);
+                        $page = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag());
+                        if (is_array($page)) {
+                            $this->getService(LinkTracker::class)->registerLinks($page, false, false);
+                        }
 
                         // forward
                         if (($this->getService(PageContext::class)->getPage() ?? [])['comment_on']) {
@@ -417,7 +420,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         } else {
             $output .= '<i>' . _t('EDIT_NO_WRITE_ACCESS') . "</i>\n";
             if ($isWikiHibernated) {
-                $output .= $this->wiki->services->get(HibernationNotice::class)->getMessageWhenHibernated();
+                $output .= $this->getService(HibernationNotice::class)->getMessageWhenHibernated();
             }
         }
 

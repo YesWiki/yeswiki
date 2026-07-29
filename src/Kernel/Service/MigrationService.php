@@ -2,30 +2,31 @@
 
 namespace YesWiki\Kernel\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Kernel\Entity\Messages;
-use YesWiki\Wiki;
 
 // This is a simple mecanism to perform migrations
 // See src/migrations/README.md for how to create a new migration
 class MigrationService
 {
     public const TRIPLES_MIGRATION_ID = 'migration';
-    private $wiki;
     private $dbService;
     private $params;
 
-    public function __construct(Wiki $wiki, DbService $dbService, ParameterBagInterface $params)
+    protected ContainerInterface $container;
+
+    public function __construct(ContainerInterface $container, DbService $dbService, ParameterBagInterface $params)
     {
-        $this->wiki = $wiki;
+        $this->container = $container;
         $this->dbService = $dbService;
         $this->params = $params;
     }
 
     public function getCompletedMigrations()
     {
-        $tripleStore = $this->wiki->services->get(TripleStore::class);
+        $tripleStore = $this->container->get(TripleStore::class);
 
         return array_map(function ($data) {
             return $data['resource'];
@@ -34,17 +35,17 @@ class MigrationService
 
     public function run()
     {
-        if ($this->wiki->services->get(HibernationService::class)->isWikiHibernated()) {
+        if ($this->container->get(HibernationService::class)->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
 
         $messages = new Messages();
-        $tripleStore = $this->wiki->services->get(TripleStore::class);
+        $tripleStore = $this->container->get(TripleStore::class);
         $completedMigrations = $this->getCompletedMigrations();
 
         // Get all Php files in migrations folder (in root or in any extension)
         // Run the file if it was not already run in the past
-        $folders = array_merge([YESWIKI_SOURCE_DIR . '/src/'], $this->wiki->services->get(ExtensionRegistry::class)->all()); // root folder + extensions folders
+        $folders = array_merge([YESWIKI_SOURCE_DIR . '/src/'], $this->container->get(ExtensionRegistry::class)->all()); // root folder + extensions folders
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {
@@ -85,7 +86,8 @@ class MigrationService
                     // Run Migration
                     try {
                         $instance = new $className();
-                        $instance->setWiki($this->wiki);
+                        /* @var \YesWiki\Core\YesWikiMigration $instance */
+                        $instance->setServices($this->container);
                         $instance->setDbService($this->dbService);
                         $instance->setParams($this->params);
                         $instance->run();

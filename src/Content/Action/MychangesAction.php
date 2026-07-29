@@ -49,7 +49,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
             $curChar = '';
             $curday = '';
             $last_tag = '';
-            $dbService = $this->wiki->services->get(DbService::class);
+            $dbService = $this->getService(DbService::class);
             $userCol = $dbService->quoteIdentifier('user');
 
             if ($bydate = $this->getService(PerformableArguments::class)->get('bydate')) {

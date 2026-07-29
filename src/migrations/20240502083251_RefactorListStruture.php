@@ -11,9 +11,9 @@ class RefactorListStruture extends YesWikiMigration
 {
     public function run()
     {
-        $tripleStore = $this->wiki->services->get(TripleStore::class);
-        $pageManager = $this->wiki->services->get(PageManager::class);
-        $listManager = $this->wiki->services->get(ListManager::class);
+        $tripleStore = $this->getService(TripleStore::class);
+        $pageManager = $this->getService(PageManager::class);
+        $listManager = $this->getService(ListManager::class);
         $lists = $tripleStore->getMatching(null, TripleStore::TYPE_URI, ListManager::TRIPLES_LIST_ID, '', '');
         foreach ($lists as $list) {
             $tag = $list['resource'];

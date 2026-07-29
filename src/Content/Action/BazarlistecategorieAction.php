@@ -48,7 +48,7 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
          * bazarlistecategorie : programme affichant les fiches du bazar catégorisées par les champs liste
          * sous forme de liste accordeon (ou autre template).
          */
-        $entryManager = $this->wiki->services->get(EntryManager::class);
+        $entryManager = $this->getService(EntryManager::class);
 
         $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
 
@@ -75,7 +75,7 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
         }
 
         $template = $this->getService(PerformableArguments::class)->get('template');
-        $template = $this->wiki->services->get(TemplateEngine::class)->hasTemplate("@core/$template") ? $template : '';
+        $template = $this->getService(TemplateEngine::class)->hasTemplate("@core/$template") ? $template : '';
         if (empty($template)) {
             $template = $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_bazar_template'];
         }

@@ -44,7 +44,7 @@ class LinkjavascriptAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $themeManager = $this->wiki->services->get(ThemeManager::class);
+        $themeManager = $this->getService(ThemeManager::class);
         $yeswiki_javascripts = "\n" . '  <!-- javascripts -->' . "\n";
 
         // ticket 16: jQuery and Bootstrap JS are no longer loaded globally; ticket 26
@@ -123,7 +123,7 @@ class LinkjavascriptAction extends YesWikiAction implements RegisteredAction
             'baseUrl' => $this->getService(RuntimeConfig::class)['base_url'],
             'pageTag' => $this->getService(PageContext::class)->getTag(),
             'isDebugEnabled' => ($this->getService(RuntimeConfig::class)->getValue('debug') ? 'true' : 'false'),
-            'antiCsrfToken' => $this->wiki->services->get(CsrfTokenManager::class)->getToken('main')->getValue(),
+            'antiCsrfToken' => $this->getService(CsrfTokenManager::class)->getToken('main')->getValue(),
         ];
 
         // Globale wiki variable

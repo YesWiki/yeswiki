@@ -75,7 +75,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                 $output .= '<description>' . $textetitre . "</description>\n";
                 $output .= '<atom:link href="' . $this->getService(UrlFormatter::class)->href('xml') . "\" rel=\"self\" type=\"application/rss+xml\" />\n";
                 $items = '';
-                $aclService = $this->wiki->services->get(AclService::class);
+                $aclService = $this->getService(AclService::class);
                 foreach ($results as $page) {
                     $readAcl = $aclService->hasAccess('read', $page['tag']);
                     $this->getService(PageContext::class)->setTag($page['tag']);

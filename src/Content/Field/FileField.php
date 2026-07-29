@@ -71,11 +71,10 @@ class FileField extends BazarField
 
     protected function renderInput($entry)
     {
-        $wiki = $this->getWiki();
         $value = $this->getValue($entry);
         $deletedFile = false;
         $isUrl = $this->isUrl($value);
-        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/file-field.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/file-field.js');
 
         if (!empty($value) && !$isUrl) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {
@@ -285,17 +284,16 @@ class FileField extends BazarField
 
     protected function getFullFileName(string $fileName, string $tag, bool $newName = false): string
     {
-        $wiki = $this->getWiki();
         $attach = $this->getAttach();
         // adjust $params
         $attach->file = $fileName;
 
         // current page
-        $previousTag = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-        $previousPage = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+        $previousTag = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+        $previousPage = $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getPage();
         // fake page
-        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
-        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+        $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
+        $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage([
             'tag' => $tag,
             'body' => '{##}',
             'time' => date('YmdHis'),
@@ -306,8 +304,8 @@ class FileField extends BazarField
 
         // reset params
         unset($attach);
-        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
-        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
+        $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
+        $this->getService(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
 
         return $fullFileName;
     }
@@ -337,9 +335,7 @@ class FileField extends BazarField
     protected function getAttach(): Attach
     {
         if (is_null($this->attach)) {
-            $wiki = $this->getWiki();
-
-            $this->attach = new Attach($wiki->services);
+            $this->attach = new Attach($this->services);
         }
 
         return $this->attach;

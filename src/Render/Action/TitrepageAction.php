@@ -40,7 +40,7 @@ class TitrepageAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $title = htmlspecialchars($this->wiki->services->get(\YesWiki\Render\Service\TemplateHelperService::class)->getTitleFromBody($this->getService(PageContext::class)->getPage()), ENT_COMPAT | ENT_HTML5);
+        $title = htmlspecialchars($this->getService(\YesWiki\Render\Service\TemplateHelperService::class)->getTitleFromBody($this->getService(PageContext::class)->getPage() ?? []), ENT_COMPAT | ENT_HTML5);
         if ($title) {
             echo $title;
         } else {

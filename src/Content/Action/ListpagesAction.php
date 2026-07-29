@@ -106,7 +106,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
         $prefix = $this->getService(RuntimeConfig::class)->getValue('table_prefix');
 
         // treatment
-        $dbService = $this->wiki->services->get(DbService::class);
+        $dbService = $this->getService(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
 
         if ($tree) {
@@ -144,7 +144,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                     $links[$tree] = [];
             } // switch
             if ($sort != 'tag') {
-                $sql .= ' WHERE a.tag = "' . $this->wiki->services->get(DbService::class)->escape($tree) . '" AND a.latest = "Y" LIMIT 1';
+                $sql .= ' WHERE a.tag = "' . $this->getService(DbService::class)->escape($tree) . '" AND a.latest = "Y" LIMIT 1';
                 if (!$rootData = $this->getService(DbService::class)->loadSingle($sql)) {
                     echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' ListPages</strong> : ' . _('THE_PAGE') . ' ' . htmlspecialchars($tree, ENT_COMPAT, YW_CHARSET) . ' ' . _t('DOESNT_EXIST') . ' !</div>';
 
@@ -162,8 +162,8 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
 
             // to avoid many loops and computing several time the lists needed for the request,
             // we store them into variables
-            $from = sprintf('"%s"', $this->wiki->services->get(DbService::class)->escape($tree));
-            $exclude[] = $this->wiki->services->get(DbService::class)->escape($tree);
+            $from = sprintf('"%s"', $this->getService(DbService::class)->escape($tree));
+            $exclude[] = $this->getService(DbService::class)->escape($tree);
             $exclude_str = '"' . implode('", "', $exclude) . '"';
             for ($i = 1; $i <= $levels; $i++) {
                 if ($from !== '') {
@@ -181,7 +181,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                         $sql .= ' WHERE from_tag IN (' . $from . ')'
                             . ' AND to_tag NOT IN (' . $from . ')'
                             . ' AND to_tag = a.tag'
-                            . ' AND a.owner = "' . $this->wiki->services->get(DbService::class)->escape($owner) . '"'
+                            . ' AND a.owner = "' . $this->getService(DbService::class)->escape($owner) . '"'
                             . ' AND a.latest = "Y"';
                     } else {
                         $sql = 'SELECT from_tag, to_tag, a.tag IS NOT NULL page_exists';
@@ -238,7 +238,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                     $fromTags = [];
                     $newworkingon = [];
                     foreach ($pages as $page) {
-                        $to_tag = '"' . $this->wiki->services->get(DbService::class)->escape($page['to_tag']) . '"';
+                        $to_tag = '"' . $this->getService(DbService::class)->escape($page['to_tag']) . '"';
                         $workingon[$page['from_tag']][$page['to_tag']] = ['page_exists' => $page['page_exists'], 'haslinksto' => []];
                         if ($sort != 'tag') {
                             $workingon[$page['from_tag']][$page['to_tag']][$sort] = $page[$sort];
@@ -276,13 +276,13 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             // Seccond step: display the tree
             // this function allows us to render the tree using HTML lists.
             if (!function_exists('ShowPageTree')) {
-                function ShowPageTree($tree, &$wiki, $show = 'tag', $indent = 0)
+                function ShowPageTree(mixed $tree, \Psr\Container\ContainerInterface $services, string $show = 'tag', int $indent = 0)
                 {
                     if ($tree) {
                         $indentStr = str_repeat("\t", $indent);
                         $retour = "$indentStr<ul>\n";
-                        $aclService = $wiki->services->get(\YesWiki\Identity\Service\AclService::class);
-                        $linkRenderer = $wiki->services->get(LinkRenderer::class);
+                        $aclService = $services->get(\YesWiki\Identity\Service\AclService::class);
+                        $linkRenderer = $services->get(LinkRenderer::class);
                         foreach ($tree as $pageName => $pageData) {
                             if ($aclService->hasAccess('read', $pageName)) {
                                 $retour .= "$indentStr\t<li>";
@@ -321,7 +321,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                                     } // switch
                                     if ($pageData['haslinksto']) {
                                         $retour .= "\n";
-                                        $retour .= ShowPageTree($pageData['haslinksto'], $wiki, $show, $indent + 2);
+                                        $retour .= ShowPageTree($pageData['haslinksto'], $services, $show, $indent + 2);
                                         $retour .= $indentStr . "\t"; // just put tabs before the </li>
                                     }
                                 } else {
@@ -339,7 +339,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                 }
             }
 
-            echo ShowPageTree($links, $this->wiki, $sort);
+            echo ShowPageTree($links, $this->services, $sort);
         } else {
             // classical list display
             // building the request
@@ -353,9 +353,9 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                     LEFT JOIN ' . $prefix . 'users ON b.user = name
                     LEFT JOIN ' . $prefix . 'pages user_page ON name = user_page.tag AND user_page.latest = "Y"'
                     . ($owner ? '' : ' LEFT JOIN ' . $prefix . 'pages owner_page ON b.owner = owner_page.tag AND owner_page.latest = "Y"')
-                    . ' WHERE a.user = "' . $this->wiki->services->get(DbService::class)->escape($user) . '"'
+                    . ' WHERE a.user = "' . $this->getService(DbService::class)->escape($user) . '"'
                     . ' AND a.tag = b.tag AND b.latest = "Y"'
-                    . ($owner ? ' AND b.owner = "' . $this->wiki->services->get(DbService::class)->escape($owner) . '"' : '');
+                    . ($owner ? ' AND b.owner = "' . $this->getService(DbService::class)->escape($owner) . '"' : '');
             } elseif ($owner) {
                 if ($sort == 'user') {
                     $sql = "SELECT a.tag, a.time,
@@ -366,7 +366,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
                 } else {
                     $sql = 'SELECT tag, time FROM ' . $prefix . 'pages a';
                 }
-                $sql .= ' WHERE a.owner = "' . $this->wiki->services->get(DbService::class)->escape($owner) . '" AND a.latest = "Y"';
+                $sql .= ' WHERE a.owner = "' . $this->getService(DbService::class)->escape($owner) . '" AND a.latest = "Y"';
             } else {
                 if ($sort == 'user') {
                     $sql = "SELECT a.tag, a.owner,
@@ -441,7 +441,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
 
             // Display the list itself
             echo "<ul>\n";
-            $aclService = $this->wiki->services->get(\YesWiki\Identity\Service\AclService::class);
+            $aclService = $this->getService(\YesWiki\Identity\Service\AclService::class);
             foreach ($pages as $page) {
                 if ($aclService->hasAccess('read', $page['tag'])) {
                     echo "\t<li>" . $this->getService(LinkRenderer::class)->linkToPage($page['tag'], false, false, false);

@@ -6,7 +6,6 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Wiki;
 
 class ImportFilesManager
 {

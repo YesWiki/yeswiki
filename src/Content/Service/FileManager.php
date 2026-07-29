@@ -4,7 +4,6 @@ namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Wiki;
 
 /**
  * Attached files are their own Content type (ticket 17, formerly tools/attach) -- a

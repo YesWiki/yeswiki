@@ -55,7 +55,7 @@ class ThemeselectorAction extends YesWikiAction implements RegisteredAction
             // if not redirected by setwikidefaulttheme : redirect
             $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag()));
         } else {
-            echo $this->wiki->services->get(ThemeSelectorRenderer::class)->showFormThemeSelector('selector', $class);
+            echo $this->getService(ThemeSelectorRenderer::class)->showFormThemeSelector('selector', $class);
         }
     }
 }

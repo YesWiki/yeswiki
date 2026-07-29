@@ -7,12 +7,10 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Wiki;
 
 class AclService
 {
     protected $authenticationService;
-    protected $wiki;
     protected $dbService;
     protected $hibernationService;
     protected $userManager;

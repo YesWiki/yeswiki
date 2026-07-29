@@ -196,7 +196,7 @@ class PageApiController extends YesWikiController
         $result = [];
         $code = Response::HTTP_INTERNAL_SERVER_ERROR;
         try {
-            $csrfTokenChecker = $this->wiki->services->get(CsrfTokenChecker::class);
+            $csrfTokenChecker = $this->getService(CsrfTokenChecker::class);
             $csrfTokenChecker->checkToken('main', 'POST', 'csrfToken', false);
         } catch (TokenNotFoundException $th) {
             $code = Response::HTTP_UNAUTHORIZED;

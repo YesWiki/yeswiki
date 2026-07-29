@@ -2,10 +2,10 @@
 
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiMigration;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Search\Service\SearchManager;
 
 class CleanOldCartoGoogle extends YesWikiMigration
 {
@@ -16,10 +16,10 @@ class CleanOldCartoGoogle extends YesWikiMigration
 
     public function run()
     {
-        $this->entryManager = $this->wiki->services->get(EntryManager::class);
-        $this->formManager = $this->wiki->services->get(FormManager::class);
-        $this->pageManager = $this->wiki->services->get(PageManager::class);
-        $this->hibernationService = $this->wiki->services->get(HibernationService::class);
+        $this->entryManager = $this->getService(EntryManager::class);
+        $this->formManager = $this->getService(FormManager::class);
+        $this->pageManager = $this->getService(PageManager::class);
+        $this->hibernationService = $this->getService(HibernationService::class);
 
         $entries = $this->searchEntriesWithOnlyOldGeoloc();
         if (!empty($entries)) {
@@ -31,7 +31,7 @@ class CleanOldCartoGoogle extends YesWikiMigration
 
     private function searchEntriesWithOnlyOldGeoloc(): array
     {
-        $entries = $this->wiki->services->get(SearchManager::class)->search([
+        $entries = $this->getService(SearchManager::class)->search([
             'queries' => [
                 'carte_google!' => '',
             ],

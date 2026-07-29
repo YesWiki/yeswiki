@@ -4,9 +4,8 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Service\ReactionsFormatter;
-use YesWiki\Wiki;
+use YesWiki\Identity\Service\AuthenticationService;
 
 #[\Field(['reactions'])]
 class ReactionsField extends BazarField
@@ -55,7 +54,6 @@ class ReactionsField extends BazarField
     protected $imagesPath;
     protected $options;
     protected $reactionsFormatter;
-    protected $wiki;
 
     /*
      * Display the possible reactions to comment an activity.
@@ -69,7 +67,6 @@ class ReactionsField extends BazarField
         parent::__construct($values, $services);
 
         $this->reactionsFormatter = $services->get(ReactionsFormatter::class);
-        $this->wiki = $services->get(Wiki::class);
         $this->imagesPath = null;
         $this->options = array_map('_t', self::DEFAULT_OPTIONS);
 

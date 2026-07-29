@@ -61,12 +61,11 @@ class ImageField extends FileField
     protected function renderInput($entry)
     {
         $output = '';
-        $wiki = $this->getWiki();
         $value = $this->getValue($entry);
         $isUrl = $this->isUrl($value);
         // javascript pour gerer la previsualisation
         // si une taille maximale est indiquée, on teste
-        $wiki->services->get(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/image-field.js');
+        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/image-field.js');
         $imgDefault = $this->getDefaultImageName($entry);
 
         // Handle URL value
@@ -93,7 +92,7 @@ class ImageField extends FileField
                 'value' => $value,
                 'isUrl' => true,
                 'downloadUrl' => $value,
-                'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . urlencode($value), false),
+                'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . urlencode($value), false),
                 'image' => '<img src="' . htmlspecialchars($value) . '" class="img-responsive" alt="" />',
                 'isDefaultImage' => false,
                 'isAllowedToDeleteFile' => empty($entry) ? false : $this->isAllowedToDeleteFile($entry, $value),
@@ -132,7 +131,7 @@ class ImageField extends FileField
                     'value' => $img,
                     'isUrl' => false,
                     'downloadUrl' => $this->getBasePath() . $img,
-                    'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . $img, false),
+                    'deleteUrl' => empty($entry) ? '' : $this->getService(UrlFormatter::class)->href('edit', $this->getService(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'suppr_image=' . $img, false),
                     'image' => $this->getService(TemplateEngine::class)->renderSafely('@core/display-image.twig', [
                         'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl() . '/',
                         'imageFullPath' => $this->getBasePath() . $img,

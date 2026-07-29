@@ -40,7 +40,7 @@ class DropColumnsFromNature extends YesWikiMigration
         }
 
         // add only_one_entry fields
-        $formManager = $this->wiki->services->get(FormManager::class);
+        $formManager = $this->getService(FormManager::class);
         if (!$formManager->isAvailableOnlyOneEntryOption()) {
             $this->addOnlyOneEntryColumn();
         }

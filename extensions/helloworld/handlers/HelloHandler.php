@@ -8,7 +8,7 @@ class HelloHandler extends YesWikiHandler
     {
         $this->denyAccessUnlessGranted('read');
 
-        $pageBody = ($this->wiki->services->get(YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'];
+        $pageBody = ($this->getService(YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'];
 
         return $this->renderFullPage('@helloworld/hello.twig', ['body' => $pageBody]);
     }

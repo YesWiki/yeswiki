@@ -15,7 +15,6 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
-use YesWiki\Wiki;
 
 class TemplateEngine
 {
