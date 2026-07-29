@@ -6,15 +6,15 @@ if (!function_exists('rssdiff')) {
     function rssdiff($tag, $idfirst, $idlast)
     {
         $output = '';
-        global $wiki;
+        $services = $GLOBALS['yeswikiServices'];
         // TODO : cache ?
 
         if ($idfirst == $idlast) {
-            $previousdiff = $wiki->services->get(YesWiki\Kernel\Service\DbService::class)->loadSingle(
+            $previousdiff = $services->get(YesWiki\Kernel\Service\DbService::class)->loadSingle(
                 'select id from '
-                . $wiki->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix']
+                . $services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix']
                 . "pages where tag = '"
-                . $wiki->services->get(YesWiki\Kernel\Service\DbService::class)->escape($tag)
+                . $services->get(YesWiki\Kernel\Service\DbService::class)->escape($tag)
                 . "' and id < $idfirst order by time desc limit 1"
             );
             if ($previousdiff) {
@@ -24,10 +24,10 @@ if (!function_exists('rssdiff')) {
             }
         }
 
-        $pageA = $wiki->services->get(YesWiki\Content\Service\PageManager::class)->getById($idfirst);
-        $pageB = $wiki->services->get(YesWiki\Content\Service\PageManager::class)->getById($idlast);
+        $pageA = $services->get(YesWiki\Content\Service\PageManager::class)->getById($idfirst);
+        $pageB = $services->get(YesWiki\Content\Service\PageManager::class)->getById($idlast);
 
-        $entryManager = $wiki->services->get(EntryManager::class);
+        $entryManager = $services->get(EntryManager::class);
         if ($entryManager->isEntry($tag)) {
             $bodyA = explode(',"', $pageA['body']);
             $bodyB = explode(',"', $pageB['body']);
@@ -46,16 +46,16 @@ if (!function_exists('rssdiff')) {
         $output .= "<br />\n";
         $output .= "<br />\n";
         $output .= '<b>' . _t('RSS_COMPARISON_OF') . ' <a href="'
-            . $wiki->services->get(YesWiki\Kernel\Service\UrlFormatter::class)->href('', $tag, 'time='
+            . $services->get(YesWiki\Kernel\Service\UrlFormatter::class)->href('', $tag, 'time='
             . urlencode($pageA['time']))
             . '">' . $pageA['time']
             . '</a> ' . _t('RSS_TO') . ' <a href="'
-            . $wiki->services->get(YesWiki\Kernel\Service\UrlFormatter::class)->href('', $tag, 'time=' . urlencode($pageB['time']))
+            . $services->get(YesWiki\Kernel\Service\UrlFormatter::class)->href('', $tag, 'time=' . urlencode($pageB['time']))
             . '">'
             . $pageB['time']
             . "</a></b><br />\n";
 
-        $wiki->services->get(YesWiki\Kernel\Service\InclusionStack::class)->register($tag);
+        $services->get(YesWiki\Kernel\Service\InclusionStack::class)->register($tag);
         if ($added) {
             // remove blank lines
             $output .= "<br />\n<b>" . _t('RSS_ADDS') . ":</b><br />\n";
@@ -67,7 +67,7 @@ if (!function_exists('rssdiff')) {
             $output .= '<div class="deletions">' . implode("\n", $deleted) . '</div>';
         }
 
-        $wiki->services->get(YesWiki\Kernel\Service\InclusionStack::class)->unregisterLast();
+        $services->get(YesWiki\Kernel\Service\InclusionStack::class)->unregisterLast();
 
         if (!$added && !$deleted) {
             $output .= "<br />\n" . _t('RSS_NO_DIFF') . '.';
