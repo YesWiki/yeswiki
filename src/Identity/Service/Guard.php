@@ -2,6 +2,7 @@
 
 namespace YesWiki\Identity\Service;
 
+use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\EmailField;
 use YesWiki\Content\Service\FormManager;
@@ -140,6 +141,7 @@ class Guard
         if (!$this->aclService->isAdmin($userNameForCheckingACL) && !$this->isPageOwner($page, $userNameForCheckingACL)) {
             $fieldsToHide = array_merge($fieldsToHide, self::USER_OWNER_OR_ADMIN_ONLY_FIELDS);
         }
+        $fieldsToHide = array_merge($fieldsToHide, $this->userFieldsFailingTheirAcl($page, $tag, $userNameForCheckingACL));
 
         $modified = false;
         foreach ($fieldsToHide as $field) {
@@ -153,6 +155,42 @@ class Guard
         }
 
         return $page;
+    }
+
+    /**
+     * The User form's own fields whose Field ACL denies this reader (ticket 10).
+     *
+     * The hardcoded lists above stay as a floor that a template cannot weaken -- the
+     * password hash is never readable by anyone, whatever a webmaster sets (ADR-0003).
+     * This adds the other direction: a field a webmaster added to the User form, or one
+     * whose read ACL they tightened, is redacted by the same mechanism bazar entries use.
+     *
+     * @param array<string, mixed> $page
+     *
+     * @return list<string>
+     */
+    private function userFieldsFailingTheirAcl(array $page, string $tag, ?string $userNameForCheckingACL): array
+    {
+        $form = $this->formManager->getByContentType(ContentTypeSchema::TYPE_USER);
+        if (empty($form['prepared'])) {
+            return [];
+        }
+
+        $denied = [];
+        foreach ($form['prepared'] as $field) {
+            if (!$field instanceof BazarField) {
+                continue;
+            }
+            $propertyName = $field->getPropertyName();
+            if (empty($propertyName)) {
+                continue;
+            }
+            if (!$field->canRead(['tag' => $tag], $userNameForCheckingACL)) {
+                $denied[] = $propertyName;
+            }
+        }
+
+        return $denied;
     }
 
     protected function isPageOwner($page, ?string $userName = null): bool
