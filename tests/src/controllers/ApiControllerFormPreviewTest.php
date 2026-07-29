@@ -4,7 +4,7 @@ namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Admin\Controller\ApiController;
+use YesWiki\Content\Api\FormApiController;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -18,12 +18,12 @@ require_once 'tests/YesWikiTestCase.php';
  * must stay positionally aligned with the posted template -- the designer maps
  * `previews[i]` back onto the card of the i-th field it sent.
  */
-#[CoversMethod(ApiController::class, 'previewFormTemplate')]
+#[CoversMethod(FormApiController::class, 'previewFormTemplate')]
 class ApiControllerFormPreviewTest extends YesWikiTestCase
 {
     private function preview(Wiki $wiki, array $template): array
     {
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(FormApiController::class);
         $request = Request::create('/api/forms/preview', 'POST', [
             'template' => json_encode($template),
         ]);
@@ -34,7 +34,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     public function testWikiExisting(): Wiki
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(ApiController::class));
+        $this->assertTrue($wiki->services->has(FormApiController::class));
 
         return $wiki;
     }
@@ -148,7 +148,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testRejectsATemplateThatIsNotAJsonArray(Wiki $wiki)
     {
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(FormApiController::class);
         $request = Request::create('/api/forms/preview', 'POST', ['template' => 'not json']);
 
         $this->assertSame(400, $controller->previewFormTemplate($request)->getStatusCode());

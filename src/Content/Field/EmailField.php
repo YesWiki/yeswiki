@@ -4,7 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
-use YesWiki\Admin\Controller\ApiController;
+use YesWiki\Content\Service\EntryFastAccessService;
 use YesWiki\Identity\Service\AclService;
 
 #[\Field(['champs_mail'])]
@@ -73,7 +73,7 @@ class EmailField extends BazarField
     {
         $wiki = $this->getWiki();
         $aclService = $this->getService(AclService::class);
-        $bazarApiController = $this->getService(ApiController::class);
+        $entryFastAccessService = $this->getService(EntryFastAccessService::class);
 
         $canBeRead = parent::canRead($entry, $userNameForRendering);
 
@@ -84,7 +84,7 @@ class EmailField extends BazarField
             $tag = $wiki->GetPageTag();
             if ($tag === 'api') {
                 // only authorized api routes /api/entries/html/{selectedEntry}&fields=html_output
-                $canBeRead = $bazarApiController->isEntryViewFastAccessHelper();
+                $canBeRead = $entryFastAccessService->isFastAccessRequest($this->getRequest());
             } elseif ($aclService->check($this->getSeeEmailAcls(), $userNameForRendering, true)) {
                 // check if user is allowed to see raw email
                 $canBeRead = true;

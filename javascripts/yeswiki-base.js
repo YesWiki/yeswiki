@@ -549,7 +549,7 @@ function checkAll(state) {
     }
     const deleteUrl = `${url}/${currentReactionId}/${data.id}/${data.pagetag}/`
       + `${data.username}/delete`
-    return fetch(deleteUrl)
+    return fetch(deleteUrl, { method: 'POST' })
       .then((response) => (response.ok
         ? response
         : response.json().then((payload) => Promise.reject(payload))))

@@ -4,10 +4,10 @@ namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Admin\Controller\ApiController;
+use YesWiki\Content\Api\ContactApiController;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\Mailer;
-use YesWiki\Content\Service\PageManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -21,7 +21,7 @@ require_once 'tests/YesWikiTestCase.php';
  * send_mail() call" precedent) -- covers the validation/ACL/routing paths that don't
  * require one, plus a direct Mailer::send() unit test.
  */
-#[CoversMethod(ApiController::class, 'sendContactMail')]
+#[CoversMethod(ContactApiController::class, 'sendContactMail')]
 class ApiControllerContactTest extends YesWikiTestCase
 {
     private const PRIVATE_PAGE_TAG = 'ApiControllerContactTestPrivatePage';
@@ -37,7 +37,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     public function testWikiExisting(): Wiki
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(ApiController::class));
+        $this->assertTrue($wiki->services->has(ContactApiController::class));
 
         $pageManager = $wiki->services->get(PageManager::class);
         $aclService = $wiki->services->get(AclService::class);
@@ -54,7 +54,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testMissingPageTagIsRejected(Wiki $wiki)
     {
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(ContactApiController::class);
         $response = $controller->sendContactMail(Request::create('/api/contact/mail', 'POST', []));
 
         $this->assertSame(400, $response->getStatusCode());
@@ -68,7 +68,7 @@ class ApiControllerContactTest extends YesWikiTestCase
         // directly, only populated by the production HTTP bootstrap -- same pre-existing,
         // out-of-scope $GLOBALS['wiki']-reliance class of issue as ticket 11's {{aceditor}} tests
         $GLOBALS['wiki'] = $wiki;
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(ContactApiController::class);
         // no 'email'/'message': check_parameters_mail() must reject before Mailer::send() is ever called
         $response = $controller->sendContactMail(Request::create('/api/contact/mail', 'POST', [
             'pageTag' => self::PUBLIC_PAGE_TAG,
@@ -87,7 +87,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     public function testReadAclDeniedPreventsSending(Wiki $wiki)
     {
         $GLOBALS['wiki'] = $wiki;
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(ContactApiController::class);
         // the plain-contact path resolves its receiver from the page body, which requires
         // read access to that page -- a requester without it must be denied, not attempt to send
         $response = $controller->sendContactMail(Request::create('/api/contact/mail', 'POST', [

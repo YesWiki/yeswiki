@@ -198,7 +198,7 @@ const app = createApp({
       this.message = ''
       this.archiveMessage = _t('ADMIN_BACKUPS_START_BACKUP')
       this.archiveMessageClass = { alert: true, 'alert-info': true }
-      return await this.fetch(wiki.url('?api/archives/archivingStatus/'))
+      return await this.fetch(wiki.url('?api/archives/archivingStatus'))
         .then((data) => {
           if (typeof data != 'object' || !data.hasOwnProperty('canArchive')) {
             this.endStartingUpdateError()
@@ -468,7 +468,7 @@ const app = createApp({
       }
     },
     async forceUpdate() {
-      return await this.fetch(wiki.url('?api/archives/forcedUpdateToken/'))
+      return await this.fetch(wiki.url('?api/archives/forcedUpdateToken'))
         .then((data) => {
           if (
             typeof this.packageName != 'string'

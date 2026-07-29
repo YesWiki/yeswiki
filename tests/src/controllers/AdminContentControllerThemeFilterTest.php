@@ -2,10 +2,9 @@
 
 namespace YesWiki\Test\Core\Controller;
 
-use ReflectionClass;
-use YesWiki\Admin\Controller\AdminContentController;
-use YesWiki\Kernel\Service\DbService;
+use YesWiki\Admin\Api\AdminPagesApiController;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -21,9 +20,9 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
     private const THEMED_TAG = 'AdminContentThemeFilterRegressionThemed';
     private const UNTHEMED_TAG = 'AdminContentThemeFilterRegressionUntheme';
 
-    private function buildWhere(AdminContentController $controller, DbService $db, string $themeFilter): array
+    private function buildWhere(AdminPagesApiController $controller, DbService $db, string $themeFilter): array
     {
-        $reflection = new ReflectionClass($controller);
+        $reflection = new \ReflectionClass($controller);
         $method = $reflection->getMethod('buildWhere');
         $method->setAccessible(true);
 
@@ -35,7 +34,7 @@ class AdminContentControllerThemeFilterTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $pageManager = $wiki->services->get(PageManager::class);
         $dbService = $wiki->services->get(DbService::class);
-        $controller = $wiki->services->get(AdminContentController::class);
+        $controller = $wiki->services->get(AdminPagesApiController::class);
 
         $favoriteTheme = $wiki->services->get(ThemeManager::class)->getFavoriteTheme();
         // pick a filter value that isn't the wiki's default theme, so the "pages with no

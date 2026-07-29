@@ -1,6 +1,6 @@
 <?php
 
-namespace YesWiki\Admin\Controller;
+namespace YesWiki\Admin\Api;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +15,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
 
-class AdminContentController extends YesWikiController
+class AdminPagesApiController extends YesWikiController
 {
     private const ALLOWED_SORTS = ['tag', 'time', 'owner', 'type'];
     private const SORT_COLUMNS = ['tag' => 'p.tag', 'time' => 'p.time', 'owner' => 'p.owner', 'type' => 'tp.value'];

@@ -536,6 +536,10 @@ class Wiki
         foreach (glob(__DIR__ . '/*/Controller', GLOB_ONLYDIR) ?: [] as $moduleControllersDir) {
             $controllersDirs[] = $moduleControllersDir;
         }
+        // /api/* resource controllers live in src/<Module>/Api/ (ticket 08 split)
+        foreach (glob(__DIR__ . '/*/Api', GLOB_ONLYDIR) ?: [] as $moduleApiDir) {
+            $controllersDirs[] = $moduleApiDir;
+        }
         foreach ($this->extensions as $extensionPath) {
             $controllersDir = $extensionPath . 'controllers';
             if (is_dir($controllersDir)) {

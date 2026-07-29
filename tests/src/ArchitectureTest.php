@@ -3,8 +3,6 @@
 namespace YesWiki\Test;
 
 use PHPUnit\Framework\TestCase;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 
 /**
  * Enforces the module boundaries ticket 05 created.
@@ -59,7 +57,7 @@ class ArchitectureTest extends TestCase
             return [];
         }
         $out = [];
-        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS));
+        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS));
         foreach ($it as $f) {
             if ($f->isFile() && $f->getExtension() === 'php') {
                 $out[] = $f->getPathname();
@@ -104,7 +102,7 @@ class ArchitectureTest extends TestCase
         $new = array_diff(array_unique($found), self::KNOWN_VIOLATIONS);
 
         $this->assertSame([], array_values($new), "Kernel must not depend on a feature module.\n"
-            . "If this is deliberate, the class probably belongs in that feature rather than in Kernel.");
+            . 'If this is deliberate, the class probably belongs in that feature rather than in Kernel.');
     }
 
     public function testNoServiceDependsOnAController(): void
@@ -155,20 +153,46 @@ class ArchitectureTest extends TestCase
                     continue;
                 }
                 $routes += $count;
-                if (!str_contains(str_replace('\\', '/', $file), '/Controller/')) {
+                $normalized = str_replace('\\', '/', $file);
+                if (!str_contains($normalized, '/Controller/') && !str_contains($normalized, '/Api/')) {
                     $misplaced[] = substr($file, strlen(self::SRC) + 1);
                 }
             }
         }
 
-        $this->assertSame([], $misplaced, 'Routes declared outside a <Module>/Controller/ '
-            . 'directory are never discovered -- they vanish silently.');
+        $this->assertSame([], $misplaced, 'Routes declared outside a <Module>/Controller/ or '
+            . '<Module>/Api/ directory are never discovered -- they vanish silently.');
         $this->assertGreaterThan(
             60,
             $routes,
             'The API surface collapsed. Route discovery scans directories, so moving a '
             . 'controller out of <Module>/Controller/ removes its routes with no error.'
         );
+    }
+
+    /**
+     * Ticket 08 split the monolithic ApiController into per-resource controllers: every
+     * /api/* route must be declared in src/<Module>/Api/<Resource>ApiController.php, so
+     * the resource an endpoint belongs to is readable from the file that declares it.
+     */
+    public function testEveryApiRouteLivesInAResourceApiController(): void
+    {
+        $misplaced = [];
+        foreach (self::MODULES as $module) {
+            foreach ($this->phpFilesIn(self::SRC . '/' . $module) as $file) {
+                $text = (string)file_get_contents($file);
+                if (!preg_match("/#\\[Route\\('\\/?api(?:\\/|')/", $text)) {
+                    continue;
+                }
+                $normalized = str_replace('\\', '/', $file);
+                if (!preg_match('#/' . $module . '/Api/\\w+ApiController\\.php$#', $normalized)) {
+                    $misplaced[] = substr($file, strlen(self::SRC) + 1);
+                }
+            }
+        }
+
+        $this->assertSame([], $misplaced, 'Every /api/* route must live in a '
+            . '<Module>/Api/<Resource>ApiController.php controller.');
     }
 
     public function testEveryModuleNamespaceIsRegisteredForPsr4Autoloading(): void

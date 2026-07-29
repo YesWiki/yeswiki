@@ -5,7 +5,7 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Admin\Controller\ApiController;
+use YesWiki\Content\Api\PageApiController;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
@@ -19,7 +19,7 @@ require_once 'tests/YesWikiTestCase.php';
  * replaces tools/templates's old loadmetadatas.php (confirmed dead, dropped) and
  * savemetadatas.php (a bare $_POST AJAX handler) with a real API route.
  */
-#[CoversMethod(ApiController::class, 'savePageMetadatas')]
+#[CoversMethod(PageApiController::class, 'savePageMetadatas')]
 class ApiControllerMetadatasTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'ApiControllerMetadatasRegressionPage';
@@ -27,7 +27,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     public function testWikiExisting(): Wiki
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(ApiController::class));
+        $this->assertTrue($wiki->services->has(PageApiController::class));
 
         $pageManager = $wiki->services->get(PageManager::class);
         $pageManager->save(self::PAGE_TAG, 'content', '', true);
@@ -38,7 +38,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testSavePageMetadatasPersistsAndMergesWithPrevious(Wiki $wiki)
     {
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(PageApiController::class);
         $pageManager = $wiki->services->get(PageManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -75,7 +75,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testSavePageMetadatasRejectsEmptyMetadatas(Wiki $wiki)
     {
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(PageApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));

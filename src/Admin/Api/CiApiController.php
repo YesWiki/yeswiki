@@ -1,15 +1,15 @@
 <?php
 
-namespace YesWiki\Admin\Controller;
+namespace YesWiki\Admin\Api;
 
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\ApiResponse;
+use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Entity\ConfigurationFile;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\ConfigurationService;
-use YesWiki\Core\YesWikiController;
 
-class CiController extends YesWikiController
+class CiApiController extends YesWikiController
 {
     #[Route('/api/ci/update_config', methods: ['POST'], options: ['acl' => ['@admins']])]
     public function updateConfig()

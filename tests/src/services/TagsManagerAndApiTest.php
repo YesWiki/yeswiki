@@ -3,9 +3,9 @@
 namespace YesWiki\Test\Core\Service;
 
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Admin\Controller\ApiController;
-use YesWiki\Search\Service\TagsManager;
 use YesWiki\Content\Service\TripleStore;
+use YesWiki\Search\Api\TagApiController;
+use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -80,7 +80,7 @@ class TagsManagerAndApiTest extends YesWikiTestCase
     public function testApiTagsRouteReturnsJsonMatchingSearch(): void
     {
         $wiki = $this->getWiki();
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(TagApiController::class);
         $request = Request::create('/api/tags', 'GET', ['search' => 'regressionban']);
 
         $response = $controller->getTags($request);

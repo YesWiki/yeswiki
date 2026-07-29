@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Core\Controller;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
-use YesWiki\Admin\Controller\ApiController;
+use YesWiki\Content\Api\RelationApiController;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -20,8 +20,8 @@ require_once 'tests/YesWikiTestCase.php';
  * getOne(bf_fiche1) -- meaning 'entry1' in the API response silently duplicated 'entry2''s
  * data instead of showing the actual first linked entry.
  */
-#[CoversMethod(ApiController::class, 'getAllRelations')]
-#[CoversMethod(ApiController::class, 'createRelation')]
+#[CoversMethod(RelationApiController::class, 'getAllRelations')]
+#[CoversMethod(RelationApiController::class, 'createRelation')]
 class ApiControllerRelationsTest extends YesWikiTestCase
 {
     private const RELATION_FORM_ID = '999906';
@@ -34,7 +34,7 @@ class ApiControllerRelationsTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(RelationApiController::class);
         // EntryManager::create() reaches src/bazar.functions.php helpers relying on $GLOBALS['wiki'],
         // normally populated by the production HTTP bootstrap (same workaround as
         // AceditorWidgetTest/FiltertagsActionTest).

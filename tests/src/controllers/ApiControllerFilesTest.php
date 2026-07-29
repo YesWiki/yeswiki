@@ -5,7 +5,7 @@ namespace YesWiki\Test\Core\Controller;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Admin\Controller\ApiController;
+use YesWiki\Content\Api\FileApiController;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
@@ -23,9 +23,9 @@ require_once 'tests/YesWikiTestCase.php';
  * enforces the file's own read ACL (seeded from the owning page at upload time) --
  * previously doDownload() performed no ownership ACL check at all.
  */
-#[CoversMethod(ApiController::class, 'uploadFile')]
-#[CoversMethod(ApiController::class, 'downloadFile')]
-#[CoversMethod(ApiController::class, 'getFiles')]
+#[CoversMethod(FileApiController::class, 'uploadFile')]
+#[CoversMethod(FileApiController::class, 'downloadFile')]
+#[CoversMethod(FileApiController::class, 'getFiles')]
 class ApiControllerFilesTest extends YesWikiTestCase
 {
     private const PRIVATE_PAGE_TAG = 'ApiControllerFilesTestPrivatePage';
@@ -33,7 +33,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     public function testWikiExisting(): Wiki
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(ApiController::class));
+        $this->assertTrue($wiki->services->has(FileApiController::class));
 
         $pageManager = $wiki->services->get(PageManager::class);
         $pageManager->save(self::PRIVATE_PAGE_TAG, 'content', '', true);
@@ -45,7 +45,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testUploadThenDownloadEnforcesOwningPageAclByDefault(Wiki $wiki)
     {
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
@@ -89,7 +89,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testPublicOptOutAllowsAnonymousDownload(Wiki $wiki)
     {
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $aclService = $wiki->services->get(AclService::class);
@@ -130,7 +130,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
     public function testGetFilesOnlyListsFilesTheRequesterCanRead(Wiki $wiki)
     {
-        $controller = $wiki->services->get(ApiController::class);
+        $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(AclService::class)->isAdmin($u['name'])));
