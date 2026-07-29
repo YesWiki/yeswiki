@@ -173,7 +173,7 @@ class EntryApiController extends YesWikiController
         );
     }
 
-    #[Route('/api/entry/url/{sourceUrl}')]
+    #[Route('/api/entries/url/{sourceUrl}')]
     public function getEntryUrl($sourceUrl)
     {
         $triples = $this->getService(TripleStore::class)->getMatching(
