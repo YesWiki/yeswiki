@@ -3,9 +3,9 @@
 namespace YesWiki\Kernel\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Wiki;
-use YesWiki\Content\Service\TripleStore;
 
 // This is a simple mecanism to perform migrations
 // See src/migrations/README.md for how to create a new migration
@@ -44,7 +44,7 @@ class MigrationService
 
         // Get all Php files in migrations folder (in root or in any extension)
         // Run the file if it was not already run in the past
-        $folders = array_merge([YESWIKI_SOURCE_DIR . '/src/'], $this->wiki->extensions); // root folder + extensions folders
+        $folders = array_merge([YESWIKI_SOURCE_DIR . '/src/'], $this->wiki->services->get(ExtensionRegistry::class)->all()); // root folder + extensions folders
         foreach ($folders as $folder) {
             $folder = $folder . 'migrations/';
             if (file_exists($folder) && $dh = opendir($folder)) {

@@ -47,7 +47,7 @@ class TemplateEngine
             $this->twigLoader->addPath('custom/templates/', 'custom');
         }
         // Extensions templates paths (added by priority order)
-        foreach ($this->wiki->extensions as $extensionName => $pluginInfo) {
+        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionName => $pluginInfo) {
             // Ability to override an extension template from the custom folder
             $paths = ["custom/templates/$extensionName/"];
             // Ability to override an extension template from the legacy directories, should not be used anymore for new templates.
@@ -69,7 +69,7 @@ class TemplateEngine
             $paths[] = YESWIKI_SOURCE_DIR . "/themes/{$vFavoriteTheme}/tools/" . $extensionName . '/';
 
             // Ability to override an extension template from another extension
-            foreach ($this->wiki->extensions as $otherExtensionName => $otherExtensionPath) {
+            foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
                 $paths[] = "custom/extensions/$otherExtensionName/templates/$extensionName/";
                 $paths[] = $otherExtensionPath . "templates/$extensionName/";
             }
@@ -90,7 +90,7 @@ class TemplateEngine
         $corePaths = [];
         $corePaths[] = 'custom/templates/core/';
         // Ability to override an extension template from another extensioncore
-        foreach ($this->wiki->extensions as $otherExtensionName => $otherExtensionPath) {
+        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $otherExtensionName => $otherExtensionPath) {
             $corePaths[] = $otherExtensionPath . 'templates/core/';
         }
         $corePaths[] = YESWIKI_SOURCE_DIR . '/templates/';

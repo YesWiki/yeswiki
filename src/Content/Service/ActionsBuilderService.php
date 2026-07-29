@@ -104,7 +104,7 @@ class ActionsBuilderService
         // add extra components
         $extraComponents = [];
         $files = [];
-        foreach ($this->wiki->extensions as $pluginName => $pluginPath) {
+        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $pluginName => $pluginPath) {
             $files = glob($pluginPath . 'javascripts/components/actions-builder/*.js');
             foreach ($files as $filePath) {
                 $filename = pathinfo($filePath)['filename'];

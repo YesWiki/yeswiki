@@ -26,7 +26,7 @@ class FieldFactory
         require_once YESWIKI_SOURCE_DIR . '/src/annotations/Field.php';
 
         // Core's own field types -- not discoverable through the extensions loop below
-        // since core isn't itself an entry in $wiki->extensions (populated only from
+        // since core isn't itself an entry in $wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() (populated only from
         // extension directories), mirroring how TemplateEngine registers the @core Twig
         // namespace outside its own extensions loop.
         //
@@ -36,7 +36,7 @@ class FieldFactory
         // silently finding nothing. Keep the two halves in step.
         $this->scanFieldsDir(YESWIKI_SOURCE_DIR . '/src/Content/Field', 'YesWiki\\Content\\Field\\');
 
-        foreach ($this->wiki->extensions as $extensionKey => $extensionDir) {
+        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionKey => $extensionDir) {
             $extensionName = ucfirst($extensionKey);
             if ($extensionName === 'Helloworld') {
                 $extensionName = 'HelloWorld';

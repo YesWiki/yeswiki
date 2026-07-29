@@ -6,7 +6,7 @@
 // YesWiki::includeExtensionsBootstrapFiles()); since bazar is core now, this file is
 // required directly from src/YesWiki.php alongside urlutils.inc.php/email.inc.php so the
 // same unconditional, always-available guarantee holds without depending on an 'bazar'
-// entry in $wiki->extensions.
+// entry in $wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all().
 //
 // BAZ_CHEMIN ('tools/bazar/') was dropped here in ticket 24. It turned out not to be dead
 // at the time -- the vendored PEAR pagination library still depended on it -- but ticket 02

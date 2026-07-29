@@ -50,6 +50,7 @@ use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
@@ -651,6 +652,7 @@ class Wiki
         // one storage: element writes through either side stay visible in both
         $this->service(RuntimeConfig::class)->bind($this->config);
         $this->service(CurrentRequest::class)->replace($this->request);
+        $this->service(ExtensionRegistry::class)->bind($this->extensions);
     }
 
     /**

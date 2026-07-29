@@ -339,9 +339,9 @@ class AuthenticationService extends YesWikiController
      */
     private function hasLoginExtensions(): bool
     {
-        return array_key_exists('logincas', $this->wiki->extensions)
-            || array_key_exists('loginldap', $this->wiki->extensions)
-            || array_key_exists('login-sso', $this->wiki->extensions);
+        return array_key_exists('logincas', $this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
+            || array_key_exists('loginldap', $this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all())
+            || array_key_exists('login-sso', $this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all());
     }
 
     private function updateSessionCookieExpires(int $expires)

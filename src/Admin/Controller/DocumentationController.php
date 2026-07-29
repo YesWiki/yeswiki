@@ -23,7 +23,7 @@ class DocumentationController extends YesWikiController
     private function getExtensionsWithDocs(): array
     {
         $extensions = [];
-        foreach ($this->wiki->extensions as $extName => $extPath) {
+        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extName => $extPath) {
             $localizedPath = "{$extPath}docs/{$GLOBALS['prefered_language']}/README.md";
             $path = "{$extPath}docs/README.md";
             $docPath = glob($localizedPath)[0] ?? glob($path)[0] ?? null;

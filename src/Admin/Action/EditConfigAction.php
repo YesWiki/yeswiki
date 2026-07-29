@@ -214,7 +214,7 @@ class EditConfigAction extends YesWikiAction implements RegisteredAction
                 $associatedExtensions["baz_external_service[{$bazarExternalServiceKey}]"] = 'bazar';
             }
 
-            foreach ($this->wiki->extensions as $extensionFolder) {
+            foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extensionFolder) {
                 $matches = [];
                 if (preg_match('/(?:\/?tools\/?)?([^\/]+)\/?/', $extensionFolder, $matches)) {
                     $extensionName = $matches[1];

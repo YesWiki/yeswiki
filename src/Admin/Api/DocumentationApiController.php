@@ -53,7 +53,7 @@ class DocumentationApiController extends YesWikiController
         }
 
         // extensions may still ship their own documentation hook
-        foreach ($this->wiki->extensions as $extension => $pluginBase) {
+        foreach ($this->wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all() as $extension => $pluginBase) {
             $response = null;
             if (file_exists($pluginBase . 'controllers/ApiController.php')) {
                 $apiClassName = 'YesWiki\\' . ucfirst($extension) . '\\Controller\\ApiController';

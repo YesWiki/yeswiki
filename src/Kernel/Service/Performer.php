@@ -73,7 +73,7 @@ class Performer
 
         foreach (Performer::TYPES as $type) {
             $this->objectList[$type] = [];
-            foreach ($wiki->extensions as $folder) {
+            foreach ($wiki->services->get(ExtensionRegistry::class)->all() as $folder) {
                 foreach (Performer::PATHS[$type] as $path) {
                     $this->findObjectInPath($folder . $path, $type);
                 }
