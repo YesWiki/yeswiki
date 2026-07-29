@@ -2,8 +2,8 @@
 
 namespace YesWiki\Content\Service;
 
-use YesWiki\Wiki;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Wiki;
 
 /**
  * Attached files are their own Content type (ticket 17, formerly tools/attach) -- a
@@ -41,6 +41,49 @@ class FileManager
         $this->tripleStore = $tripleStore;
         $this->pageManager = $pageManager;
         $this->aclService = $aclService;
+    }
+
+    /**
+     * "2M"/"512k"-style size string to bytes (historic Wiki::parse_size()).
+     * Static: YesWikiKernel::build() needs it while the container is still compiling.
+     */
+    public static function parseSize(mixed $size): int
+    {
+        $unit = preg_replace('/[^bkmgtpezy]/i', '', (string)$size); // Remove the non-unit characters from the size.
+        $size = preg_replace('/[^0-9\.]/', '', (string)$size); // Remove the non-numeric characters from the size.
+        if ($unit) {
+            // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
+            return intval(round((int)$size * pow(1024, (int)stripos('bkmgtpezy', $unit[0]))));
+        }
+
+        return intval(round((int)$size));
+    }
+
+    /**
+     * Upload size limit in bytes: the strictest of PHP's upload_max_filesize and
+     * post_max_size and the wiki's max_file_size config (historic Wiki::file_upload_max_size()).
+     */
+    public function uploadMaxSize(): int
+    {
+        return self::uploadMaxSizeFromConfig($this->wiki->GetConfigValue('max_file_size'));
+    }
+
+    /**
+     * Same, from a raw max_file_size config value — for YesWikiKernel::build(), which
+     * runs before any service can be constructed.
+     */
+    public static function uploadMaxSizeFromConfig(mixed $maxFileSizeConfig): int
+    {
+        $confMaxFileSize = !empty($maxFileSizeConfig) && !is_array($maxFileSizeConfig)
+            ? self::parseSize(trim((string)$maxFileSizeConfig))
+            : 0;
+
+        $postMaxSize = self::parseSize(ini_get('post_max_size'));
+
+        $uploadMax = self::parseSize(ini_get('upload_max_filesize'));
+
+        // return the min size limit, excluding 0 values that mean no limit
+        return min(array_filter([$confMaxFileSize, $postMaxSize, $uploadMax]) ?: [DEFAULT_MAX_UPLOAD_SIZE]);
     }
 
     public function isFileTag(string $tag): bool

@@ -8,10 +8,11 @@ use Symfony\Component\Config\Resource\FileResource;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\Kernel;
-use YesWiki\Kernel\Service\ConfigurationFileProvider;
-use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\YesWikiEventCompilerPass;
 use YesWiki\Core\YesWikiPerformableCompilerPass;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
+use YesWiki\Kernel\Service\EnvironmentConfiguration;
 
 /**
  * Owns the DI container build/compile/cache lifecycle for a Wiki instance.
@@ -75,11 +76,12 @@ class YesWikiKernel extends Kernel
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__));
         $loader->load('services.yaml');
 
-        // same as today's Init::initCoreServices()
-        $fullDomain = parse_url($this->wiki->Href());
+        // computed from raw config, not through wiki/service methods: build() runs while the
+        // container is being compiled, before any service (or $wiki->services) exists
+        $fullDomain = parse_url($this->wiki->config['base_url'] ?? '');
         $container->setParameter('host', $fullDomain['host'] ?? '');
         $container->setParameter('mail_domain', $this->wiki->config['mail_domain']);
-        $container->setParameter('max-upload-size', $this->wiki->file_upload_max_size());
+        $container->setParameter('max-upload-size', FileManager::uploadMaxSizeFromConfig($this->wiki->config['max_file_size'] ?? null));
 
         // load every extension's services/parameters into the same container.
         // NB.: the wiki.php/vendor/autoload.php/libs/{key}.api.php includes that used to be

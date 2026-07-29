@@ -20,7 +20,7 @@ class PerformableEventTest extends YesWikiTestCase
 {
     private function dispatcher(): EventDispatcher
     {
-        $dispatcher = $this->getWiki()->services?->get(EventDispatcher::class);
+        $dispatcher = $this->getWiki()->services->get(EventDispatcher::class);
         $this->assertInstanceOf(EventDispatcher::class, $dispatcher);
 
         return $dispatcher;

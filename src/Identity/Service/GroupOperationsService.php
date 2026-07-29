@@ -2,15 +2,12 @@
 
 namespace YesWiki\Identity\Service;
 
+use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Exception\GroupNameAlreadyUsedException;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
 use YesWiki\Identity\Exception\InvalidGroupNameException;
-use YesWiki\Kernel\Exception\InvalidInputException;
 use YesWiki\Identity\Exception\UserNameDoesNotExistException;
-use YesWiki\Core\YesWikiController;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\GroupManager;
-use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Exception\InvalidInputException;
 
 class GroupOperationsService extends YesWikiController
 {
@@ -44,6 +41,32 @@ class GroupOperationsService extends YesWikiController
         }
 
         return $this->groupManager->groupExists($name);
+    }
+
+    /**
+     * Create or update a group from an ACL-style newline-separated member list
+     * (historic Wiki::SetGroupACL()).
+     *
+     * @return int 0 on success, 1000 when the definition would be recursive,
+     *             1001 when the group name is invalid
+     */
+    public function setMembersFromAclText(string $groupName, string $aclText): int
+    {
+        $aclText = str_replace(["\r\n", "\r"], "\n", $aclText);
+        $members = array_map('trim', explode("\n", $aclText));
+        try {
+            if ($this->groupExists($groupName)) {
+                $this->update($groupName, $members);
+            } else {
+                $this->create($groupName, $members);
+            }
+        } catch (InvalidGroupNameException $th) {
+            return 1001;
+        } catch (InvalidInputException $th) {
+            return 1000;
+        }
+
+        return 0;
     }
 
     /**

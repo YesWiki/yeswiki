@@ -4,8 +4,8 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -47,7 +47,7 @@ class HibernationServiceTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         // ticket 04 split the rendering out: HibernationService answers the question and
         // depends on nothing, HibernationNotice renders the banner.
-        $templateEngine = $wiki->services?->get(TemplateEngine::class);
+        $templateEngine = $wiki->services->get(TemplateEngine::class);
         $this->assertInstanceOf(TemplateEngine::class, $templateEngine);
 
         $notice = new HibernationNotice($this->buildService($wiki, 'hibernate'), $templateEngine);

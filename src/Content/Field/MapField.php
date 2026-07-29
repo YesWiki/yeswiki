@@ -4,6 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Render\Service\ActionRunner;
 
 #[\Field(['map', 'carte_google'])]
 class MapField extends BazarField
@@ -214,7 +215,7 @@ class MapField extends BazarField
 
         // check the last used action containing the good form id
         $filteredActions =
-            array_filter($wiki->actionObjects, function ($v) use ($entry) {
+            array_filter($this->getService(ActionRunner::class)->actionsLog(), function ($v) use ($entry) {
                 return !empty($v['action'])
                     && substr($v['action'], 0, 5) === 'bazar'
                     && !empty($v['vars']['id'])

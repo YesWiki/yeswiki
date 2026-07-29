@@ -4,15 +4,15 @@ namespace YesWiki\Content\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use YesWiki\Kernel\Entity\Event;
-use YesWiki\Wiki;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\HashCashService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Entity\Event;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Render\Service\TemplateEngine;
+use YesWiki\Wiki;
 
 class CommentService implements EventSubscriberInterface
 {
@@ -269,9 +269,62 @@ class CommentService implements EventSubscriberInterface
     public function getCommentsCount($tag)
     {
         return $this->dbService->count("
-            SELECT * FROM {$this->dbService->prefixTable('pages')} 
+            SELECT * FROM {$this->dbService->prefixTable('pages')}
             WHERE comment_on = '{$this->dbService->escape($tag)}' AND latest = 'Y'
         ");
+    }
+
+    /**
+     * The latest comments of every page, newest first (historic Wiki::LoadRecentComments()).
+     *
+     * @param int $limit 0 means all of them
+     *
+     * @return array<mixed>
+     */
+    public function getRecentComments(int $limit = 0): array
+    {
+        $lim = $limit > 0 ? ' limit ' . $limit : '';
+
+        return $this->dbService->loadAll(
+            'select * from ' . $this->dbService->prefixTable('pages')
+            . ' where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim
+        );
+    }
+
+    /**
+     * The most recently commented pages, each carrying comment_user/comment_time/comment_tag
+     * of its latest first-revision comment (historic Wiki::LoadRecentlyCommented()).
+     *
+     * @return array<mixed>
+     */
+    public function getRecentlyCommented(int $limit = 50): array
+    {
+        $pages = [];
+
+        // load ids of the first revisions of latest comments
+        if ($ids = $this->dbService->loadAll('select min(id) as id from ' . $this->dbService->prefixTable('pages') . ' where comment_on != "" group by tag order by id desc')) {
+            // load complete comments
+            $num = 0;
+            $comments = [];
+            foreach ($ids as $id) {
+                $comment = $this->dbService->loadSingle('select * from ' . $this->dbService->prefixTable('pages') . " where id = '" . $id['id'] . "' limit 1");
+                if (!isset($comments[$comment['comment_on']]) && $num < $limit) {
+                    $comments[$comment['comment_on']] = $comment;
+                    $num++;
+                }
+            }
+
+            // now using these ids, load the actual pages
+            foreach ($comments as $comment) {
+                $page = $this->pageManager->getOne($comment['comment_on']);
+                $page['comment_user'] = $comment['user'];
+                $page['comment_time'] = $comment['time'];
+                $page['comment_tag'] = $comment['tag'];
+                $pages[] = $page;
+            }
+        }
+
+        return $pages;
     }
 
     private function setUserData(array $comment, string $key, array &$data)

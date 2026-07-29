@@ -22,7 +22,7 @@ class ContentAssetScannerTest extends YesWikiTestCase
      */
     private function scanner(): ContentAssetScanner
     {
-        $assets = $this->getWiki()->services?->get(\YesWiki\Kernel\Service\AssetsManager::class);
+        $assets = $this->getWiki()->services->get(\YesWiki\Kernel\Service\AssetsManager::class);
         $this->assertInstanceOf(\YesWiki\Kernel\Service\AssetsManager::class, $assets);
 
         return new ContentAssetScanner($assets);
@@ -32,7 +32,7 @@ class ContentAssetScannerTest extends YesWikiTestCase
     {
         $this->assertInstanceOf(
             ContentAssetScanner::class,
-            $this->getWiki()->services?->get(ContentAssetScanner::class)
+            $this->getWiki()->services->get(ContentAssetScanner::class)
         );
     }
 
@@ -80,8 +80,11 @@ class ContentAssetScannerTest extends YesWikiTestCase
         $afterFirst = $GLOBALS['js'];
         $scanner->scan('<div class="mermaid">b</div><div class="mermaid">c</div>');
 
-        $this->assertSame($afterFirst, $GLOBALS['js'],
-            'the initialiser must not be emitted once per occurrence');
+        $this->assertSame(
+            $afterFirst,
+            $GLOBALS['js'],
+            'the initialiser must not be emitted once per occurrence'
+        );
     }
 
     public function testKnownMarkersAreTheOnesTheOldHookHandled(): void

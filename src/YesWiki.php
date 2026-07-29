@@ -36,30 +36,37 @@ use Symfony\Component\Routing\Matcher\UrlMatcher;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
+use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Admin\Service\ApiService;
 use YesWiki\Content\Controller\LegacyPageController;
-use YesWiki\Content\Service\LinkTracker;
+use YesWiki\Content\Service\CommentService;
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\ReferrerService;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
-use YesWiki\Identity\Exception\InvalidGroupNameException;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
+use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
-use YesWiki\Kernel\Exception\InvalidInputException;
 use YesWiki\Kernel\Service\AssetsManager;
-use YesWiki\Kernel\Service\ConfigurationFileProvider;
-use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Kernel\Service\StringUtilService;
+use YesWiki\Kernel\Service\ThrowableFormatter;
+use YesWiki\Kernel\Service\UrlFormatter;
+use YesWiki\Render\Service\ActionRunner;
+use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Render\Service\ThemeManager;
@@ -79,7 +86,6 @@ class Wiki
     public $parameter = [];
     public $request;
     public $CookiePath = '/';
-    public $inclusions = [];
     public $extensions = [];
     // lazily populated RouteCollection - always read it through getRoutes()
     public $routes = [];
@@ -88,15 +94,14 @@ class Wiki
      *
      * Annotated rather than natively typed on purpose: a native non-nullable type would
      * make any read before boot() a runtime Error instead of the null it returns today.
-     * The annotation is what lets PHPStan see through the ~158 `services->get()` call
-     * sites; both it and the property go away with the locator in ticket 08.
+     * Annotated non-null (ticket 08): every surviving read runs after boot() — the
+     * pre-boot paths (kernel build, constructor) were weaned off service-backed methods —
+     * and the property goes away with the locator when this class is deleted.
      *
-     * @var ContainerInterface|null
+     * @var ContainerInterface
      */
     public $services;
-    public $actionObjects = []; // keep track of actions performed
     public $_groupsCache = [];
-    public $_actionsAclsCache = [];
 
     private $environment;
     private $httpKernel;
@@ -127,20 +132,40 @@ class Wiki
         return $this->environment;
     }
 
-    // Dump exception hidding complete server path
-
-    public function dumpThrowable($pThrowable)
+    /**
+     * Typed service lookup for the delegation shims: Symfony's ContainerInterface::get()
+     * is declared `?object`, so chaining a call on it fails static analysis even though
+     * every service asked for here is a compiled, always-present one. Dies with the
+     * locator when this class is deleted.
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $class
+     *
+     * @return T
+     */
+    private function service(string $class): object
     {
-        return htmlspecialchars($this->hideServerPath($pThrowable->getMessage())) . ' in <i>.' . htmlspecialchars($this->hideServerPath($pThrowable->getFile())) . '</i> on line <i>' . $pThrowable->getLine() . '</i>';
+        /** @var T $service */
+        $service = $this->services->get($class);
+
+        return $service;
     }
 
-    // Hide complete server path from exception
+    /**
+     * @deprecated Use ThrowableFormatter::dump instead
+     */
+    public function dumpThrowable($pThrowable)
+    {
+        return $this->service(ThrowableFormatter::class)->dump($pThrowable);
+    }
 
+    /**
+     * @deprecated Use ThrowableFormatter::hideServerPath instead
+     */
     public function hideServerPath($pPath)
     {
-        $vRootPath = realpath(__DIR__ . '/..');
-
-        return str_replace($vRootPath, '', $pPath);
+        return $this->service(ThrowableFormatter::class)->hideServerPath($pPath);
     }
 
     // VARIABLES
@@ -181,67 +206,59 @@ class Wiki
 
     // inclusions
     /**
-     * Enregistre une nouvelle inclusion dans la pile d'inclusions.
-     *
      * @param string $pageTag
-     *                        Le nom de la page qui va etre inclue
      *
-     * @return int Le nombre d'elements dans la pile
+     * @return int
+     *
+     * @deprecated Use InclusionStack::register instead
      */
     public function RegisterInclusion($pageTag)
     {
-        return array_unshift($this->inclusions, strtolower(trim($pageTag)));
+        return $this->service(InclusionStack::class)->register($pageTag);
     }
 
     /**
-     * Retire le dernier element de la pile d'inclusions.
+     * @return string|null
      *
-     * @return string Le nom de la page dont l'inclusion devrait se terminer.
-     *                null s'il n'y a plus d'inclusion dans la pile.
+     * @deprecated Use InclusionStack::unregisterLast instead
      */
     public function UnregisterLastInclusion()
     {
-        return array_shift($this->inclusions);
+        return $this->service(InclusionStack::class)->unregisterLast();
     }
 
     /**
-     * Verifie si on est a l'interieur d'une inclusion par $pageTag (sans tenir compte de la casse).
-     *
      * @param string $pageTag
-     *                        Le nom de la page a verifier
      *
-     * @return bool True si on est a l'interieur d'une inclusion par $pageTag (false sinon)
+     * @return bool
+     *
+     * @deprecated Use InclusionStack::isIncludedBy instead
      */
     public function IsIncludedBy($pageTag)
     {
-        return in_array(strtolower($pageTag), $this->inclusions);
+        return $this->service(InclusionStack::class)->isIncludedBy($pageTag);
     }
 
     /**
-     * @return array la pile d'inclusions
-     *               L'element 0 sera la derniere inclusion, l'element 1 sera son parent et ainsi de suite
+     * @return list<string>
+     *
+     * @deprecated Use InclusionStack::getAll instead
      */
     public function GetAllInclusions()
     {
-        return $this->inclusions;
+        return $this->service(InclusionStack::class)->getAll();
     }
 
     /**
-     * Remplace la pile des inclusions par une nouvelle pile (par defaut une pile vide)
-     * Permet de formatter une page sans tenir compte des inclusions precedentes.
+     * @param list<string> $pile
      *
-     * @param array $
-     *            La nouvelle pile d'inclusions.
-     *            L'element 0 doit representer la derniere inclusion, l'element 1 son parent et ainsi de suite.
+     * @return list<string>
      *
-     * @return array L'ancienne pile d'inclusions, avec les noms des pages en minuscules
+     * @deprecated Use InclusionStack::replace instead
      */
     public function SetInclusions($pile = [])
     {
-        $temp = $this->inclusions;
-        $this->inclusions = $pile;
-
-        return $temp;
+        return $this->service(InclusionStack::class)->replace($pile);
     }
 
     public function SetPage($page)
@@ -255,110 +272,17 @@ class Wiki
     }
 
     /**
-     * AppendContentToPage
-     * Ajoute du contenu a la fin d'une page.
-     *
-     * @param string $content
-     *                            Contenu a ajouter a la page
-     * @param string $page
-     *                            Nom de la page
-     * @param bool   $bypass_acls
-     *                            Bouleen pour savoir s'il faut bypasser les ACLs
-     *
-     * @return int Code d'erreur : 0 (succes), 1 (pas de contenu specifie)
-     */
-    public function AppendContentToPage($content, $page, $bypass_acls = false)
-    {
-        // Si un contenu est specifie
-        if (isset($content)) {
-            // -- Determine quelle est la page :
-            // -- passee en parametre (que se passe-t'il si elle n'existe pas ?)
-            // -- ou la page en cours par defaut
-            $page = isset($page) ? $page : $this->GetPageTag();
-
-            // -- Chargement de la page
-            $result = $this->LoadPage($page);
-            $body = empty($result['body']) ? '' : $result['body'];
-            // -- Ajout du contenu a la fin de la page
-            $body .= $content;
-
-            // -- Sauvegarde de la page
-            // TODO : que se passe-t-il si la page est pleine ou si l'utilisateur n'a pas les droits ?
-            $this->SavePage($page, $body, '', $bypass_acls);
-
-            // now we render it internally so we can write the updated link table.
-            $page = $this->services->get(PageManager::class)->getOne($page);
-            $this->services->get(LinkTracker::class)->registerLinks($page, false, true);
-
-            // Retourne 0 seulement si tout c'est bien passe
-            return 0;
-        }
-
-        return 1;
-    }
-
-    /**
-     * LogAdministrativeAction($user, $content, $page = "").
-     *
      * @param string $user
-     *                        Utilisateur
      * @param string $content
-     *                        Contenu de l'enregistrement
      * @param string $page
-     *                        Page de log
      *
-     * @return int Code d'erreur : 0 (succes), 1 (pas de contenu specifie)
+     * @return int
+     *
+     * @deprecated Use AdministrativeLogService::log instead
      */
     public function LogAdministrativeAction($user, $content, $page = '')
     {
-        $order = [
-            "\r\n",
-            "\n",
-            "\r",
-        ];
-        $replace = '\\n';
-        $content = str_replace($order, $replace, $content);
-        $contentToAppend = "\n" . date('Y-m-d H:i:s') . ' . . . . ' . $user . ' . . . . ' . $content . "\n";
-        $tag = $page ? $page : 'LogDesActionsAdministratives' . date('Ymd');
-        $result = $this->AppendContentToPage($contentToAppend, $tag, true);
-        if (empty($page) && $result === 0) {
-            try {
-                // keep only 10 revisions of this page
-                $pageManager = $this->services->get(PageManager::class);
-                $dbService = $this->services->get(DbService::class);
-                $revisions = $pageManager->getRevisions($tag);
-                if (!empty($revisions) && count($revisions) > 10) {
-                    $idsToDelete = array_map(
-                        function ($data) {
-                            return $data['id'];
-                        },
-                        array_slice($revisions, 10)
-                    );
-
-                    $formattedIds = implode(
-                        ',',
-                        array_map(
-                            function ($id) use ($dbService) {
-                                return $dbService->escape($id);
-                            },
-                            $idsToDelete
-                        )
-                    );
-
-                    // there are some versions to remove from DB
-                    // let's build one big request, that's better...
-                    $sql = <<<SQL
-                    DELETE FROM {$dbService->prefixTable('pages')} WHERE `id` IN ($formattedIds);
-                    SQL;
-
-                    // ... and send it !
-                    $dbService->query($sql);
-                }
-            } catch (\Throwable $th) {
-            }
-        }
-
-        return $result;
+        return $this->service(AdministrativeLogService::class)->log($user, $content, $page);
     }
 
     /**
@@ -367,12 +291,12 @@ class Wiki
      */
     public function PurgePages()
     {
-        if (($days = $this->GetConfigValue('pages_purge_time')) && !$this->services->get(HibernationService::class)->isWikiHibernated()) {
+        if (($days = $this->GetConfigValue('pages_purge_time')) && !$this->service(HibernationService::class)->isWikiHibernated()) {
             // is purge active ?
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
             $wnPages = $this->GetConfigValue('table_prefix') . 'pages';
-            $dbService = $this->services->get(DbService::class);
+            $dbService = $this->service(DbService::class);
             $dateExpr = $dbService->dateSubDays(intval($days));
             $sql = <<<SQL
             SELECT DISTINCT a.id FROM $wnPages a,$wnPages b
@@ -401,30 +325,28 @@ class Wiki
     }
 
     // HTTP/REQUEST/LINK RELATED
+    /**
+     * @deprecated Use FlashMessageService::setMessage instead
+     */
     public function SetMessage($message)
     {
-        $_SESSION['message'] = $message;
+        $this->service(FlashMessageService::class)->setMessage($message);
     }
 
+    /**
+     * @deprecated Use FlashMessageService::getMessage instead
+     */
     public function GetMessage()
     {
-        if (isset($_SESSION['message'])) {
-            $message = $_SESSION['message'];
-        } else {
-            $message = '';
-        }
-
-        $_SESSION['message'] = '';
-
-        return $message;
+        return $this->service(FlashMessageService::class)->getMessage();
     }
 
+    /**
+     * @deprecated Use UrlFormatter::getBaseUrl instead
+     */
     public function getBaseUrl()
     {
-        $url = explode('index.php', $this->config['base_url']);
-        $url = preg_replace(['/\/\?$/', '/\/$/'], '', $url[0]);
-
-        return $url;
+        return $this->service(UrlFormatter::class)->getBaseUrl();
     }
 
     public function Redirect($url)
@@ -443,107 +365,40 @@ class Wiki
         throw new ExitException($message);
     }
 
-    // returns just PageName[/method].
+    /**
+     * @deprecated Use UrlFormatter::miniHref instead
+     */
     public function MiniHref($method = null, $tag = null)
     {
-        if (!$tag = trim($tag)) {
-            $tag = $this->tag;
-        }
-
-        return $tag . ($method ? '/' . $method : '');
+        return $this->service(UrlFormatter::class)->miniHref($method, $tag);
     }
 
-    // returns the full url to a page/method.
+    /**
+     * @deprecated Use UrlFormatter::href instead
+     */
     public function Href($method = null, $tag = null, $params = null, $htmlspchars = true)
     {
-        if ($tag == null || !$tag = trim($tag)) {
-            $tag = $this->tag;
-        }
-        $href = $this->config['base_url'] . $this->MiniHref($method, $tag);
-        if ($params) {
-            if (is_array($params)) {
-                $paramsArray = [];
-                foreach ($params as $key => $value) {
-                    if (!empty($value) || in_array($value, [0, '0', ''], true)) {
-                        $paramsArray[] = "$key=" . urlencode($value);
-                    }
-                }
-                if (count($paramsArray) > 0) {
-                    $params = implode($htmlspchars ? '&amp;' : '&', $paramsArray);
-                } else {
-                    $params = '';
-                }
-            }
-            $href .= ($this->config['rewrite_mode'] ? '?' : ($htmlspchars ? '&amp;' : '&')) . $params;
-        }
-        if (isset($_GET['lang']) && $_GET['lang'] != '') {
-            $href .= '&lang=' . $GLOBALS['prefered_language'];
-        }
-
-        return $href;
+        return $this->service(UrlFormatter::class)->href($method, $tag, $params, $htmlspchars);
     }
 
     /**
-     * Handle string that could be a valid url, a yeswiki short link, or anything else (anchor, relative url..).
-     *
-     * if a yeswiki short link if discovered, it will be completed in order to have a real url
-     *
-     * @param string $link the link to parse
-     *
-     * @return string url
+     * @deprecated Use UrlFormatter::generateLink instead
      */
-    public function generateLink($link): ?string
+    public function generateLink(mixed $link): ?string
     {
-        if (empty($link)) {
-            return null;
-        }
-        $linkParts = $this->extractLinkParts($link);
-        if ($linkParts) {
-            return $this->Href($linkParts['method'], $linkParts['tag'], $linkParts['params']);
-        } elseif (filter_var($link, FILTER_VALIDATE_URL)) {
-            // a valid url
-            return $link;
-        }
-
-        // for now let's be tolerant : it may be a relative url or an anchor
-        return $link;
+        return $this->service(UrlFormatter::class)->generateLink($link);
     }
 
     /**
-     * Extract the different part of a link of the style MyTag/method?param1=value1&param2=value2...
-     *
-     * The resulting array has the tree keys : 'tag' (string), 'method' (string) and 'params' (arrays of key/value for
-     * each param). 'tag' can't have a null value, but 'method' can, and 'params' can also return an empty array.
-     * If the link has a '/' and a '?' but no letter between (no method), the url is not recognized.
-     *
-     * @param $link the link to parse
-     *
-     * @return array|null if the link is recognize return the result array, otherwise nullhref
+     * @deprecated Use UrlFormatter::extractLinkParts instead
      */
     public function extractLinkParts($link): ?array
     {
-        if (preg_match('/^(' . WN_CAMEL_CASE_EVOLVED . ')(?:\/(' . WN_CAMEL_CASE_EVOLVED . '))?(?:[?&]('
-            . RFC3986_URI_CHARS . '))?$/u', $link, $linkParts)) {
-            $tag = !empty($linkParts[1]) ? $linkParts[1] : null;
-            $method = !empty($linkParts[2]) ? $linkParts[2] : null;
-            $paramsStr = !empty($linkParts[3]) ? $linkParts[3] : null;
-            $params = [];
-            if (is_string($paramsStr)) {
-                parse_str($paramsStr, $params);
-            }
-
-            return [
-                'tag' => $tag,
-                'method' => $method,
-                'params' => $params,
-            ];
-        }
-
-        return null;
+        return $this->service(UrlFormatter::class)->extractLinkParts($link);
     }
 
     /**
-     * @deprecated Use LinkTo instead
+     * @deprecated Use LinkRenderer::linkTo instead
      */
     public function ComposeLinkToPage($tag, $method = '', $text = '', $track = 1)
     {
@@ -551,7 +406,7 @@ class Wiki
     }
 
     /**
-     * @deprecated Use LinkTo instead
+     * @deprecated Use LinkRenderer::linkTo instead
      */
     public function Link($tag, $method = null, $params = null, $text = null, $track = 1, $forcedLink = false)
     {
@@ -578,122 +433,34 @@ class Wiki
      *
      * @return string HTML link
      */
+    /**
+     * @param string       $link
+     * @param string       $text
+     * @param array<mixed> $options
+     *
+     * @return string
+     *
+     * @deprecated Use LinkRenderer::linkTo instead
+     */
     public function LinkTo($link, $text = '', $options = [])
     {
-        if (!$text) {
-            $text = $link;
-        }
-
-        // when true, $text is already-safe HTML (e.g. rendered Markdown) and must not be escaped
-        $textIsHtml = !empty($options['html']);
-        unset($options['html']);
-
-        // YesWiki pages links, like "HomePage" or "HomePage/xml"
-        if ($wikiLink = $this->extractLinkParts($link)) {
-            $tag = $wikiLink['tag'];
-            $method = $options['method'] ?? $wikiLink['method'];
-            $params = $options['params'] ?? $wikiLink['params'] ?? [];
-
-            // Handle missing Tag
-            if ((empty($method) || $method == 'show') && !$this->LoadPage($tag)) {
-                $params = array_merge($params, $this->ParamsForNewPageLink());
-                $method = 'edit';
-                $options['data-missing-tag'] = true;
-            }
-
-            // Tag and Method to be kept as HTML attributes
-            $options['data-tag'] = $tag;
-            $options['data-method'] = $method ?? 'show';
-            unset($options['method']);
-            unset($options['params']);
-
-            // Trackable
-            if (!empty($options['track']) && $options['track']) {
-                $this->services->get(LinkTracker::class)->add(explode('?', $tag)[0]);
-                $options['data-tracked'] = true;
-            }
-            unset($options['track']);
-
-            // General URL
-            $link = $this->Href($method, $tag, $params, false);
-        } elseif ((!isset($options['data-iframe'])
-                || strval($options['data-iframe']) != '0')
-            && !empty($options['class'])
-            && is_string($options['class'])
-            && preg_match('/(^|\s)modalbox($|\s)/', $options['class'])
-        ) {
-            // use iframe for external links in modalbox except if `data-iframe=0`
-            $options['data-iframe'] = '1';
-            if (!isset($options['title']) && !empty($text)) {
-                // set a title because it is beautiful
-                $options['title'] = htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
-            }
-        }
-
-        // Email addresses
-        if (preg_match("/^[\w.-]+\@[\w.-]+$/", $link)) {
-            $link = 'mailto:' . $link;
-        }
-
-        // Options to HTML attributes
-        $stringAttrs = implode(
-            ' ',
-            array_map(
-                function ($key) use ($options) {
-                    $value = $options[$key];
-                    $encodedValue = is_string($value)
-                        ? $value
-                        : json_encode($value);
-
-                    return "$key=\"$encodedValue\"";
-                },
-                array_keys($options)
-            )
-        );
-
-        // Block script schemes (see RFC 3986 about schemes)
-        $link = htmlspecialchars($link, ENT_COMPAT, YW_CHARSET);
-        $text = $textIsHtml ? $text : htmlspecialchars($text, ENT_COMPAT, YW_CHARSET);
-
-        // Generate HTML
-        return <<<HTML
-        <a href="$link" $stringAttrs>$text</a>
-        HTML;
+        return $this->service(LinkRenderer::class)->linkTo($link, $text, $options);
     }
 
+    /**
+     * @deprecated Use LinkRenderer::paramsForNewPageLink instead
+     */
     public function ParamsForNewPageLink()
     {
-        $result = ['newpage' => 1];
-
-        // Config from current page
-        $config = $this->config;
-        $fromConfig = [
-            'theme' => 'favorite_theme',
-            'squelette' => 'favorite_squelette',
-            'style' => 'favorite_style',
-            'bgimg' => 'favorite_background_image',
-        ];
-        foreach ($fromConfig as $param => $configKey) {
-            if (!empty($config[$configKey])) {
-                $result[$param] = $config[$configKey];
-            }
-        }
-
-        // Metadata from current page
-        $currentPageTag = $this->GetPageTag();
-        $pageMetadatas = empty($currentPageTag) ? [] : $this->GetMetaDatas($currentPageTag);
-        foreach (ThemeManager::SPECIAL_METADATA as $metadata) {
-            if (!empty($pageMetadatas[$metadata])) {
-                $result[$metadata] = $pageMetadatas[$metadata];
-            }
-        }
-
-        return $result;
+        return $this->service(LinkRenderer::class)->paramsForNewPageLink();
     }
 
+    /**
+     * @deprecated Use UrlFormatter::isWikiName instead
+     */
     public function IsWikiName($text, $type = WN_CAMEL_CASE_EVOLVED)
     {
-        return preg_match('/^' . $type . '$/u', $text);
+        return $this->service(UrlFormatter::class)->isWikiName($text, $type);
     }
 
     public function Header()
@@ -718,37 +485,20 @@ class Wiki
     }
 
     // REFERRERS
+    /**
+     * @deprecated Use ReferrerService::log instead
+     */
     public function LogReferrer($tag = '', $referrer = '')
     {
-        // fill values
-        if (!$tag = trim($tag)) {
-            $tag = $this->GetPageTag();
-        }
-
-        if (!$referrer = trim($referrer) and isset($_SERVER['HTTP_REFERER'])) {
-            $referrer = $_SERVER['HTTP_REFERER'];
-        }
-
-        // check if it's coming from another site
-        if ($referrer && !preg_match('/^' . preg_quote($this->GetConfigValue('base_url'), '/') . '/', $referrer)) {
-            // avoid XSS (with urls like "javascript:alert()" and co)
-            // by forcing http/https prefix
-            // NB.: this does NOT exempt to htmlspecialchars() the collected URIs !
-            if (!preg_match('`^https?://`', $referrer)) {
-                return;
-            }
-
-            $dbService = $this->services->get(DbService::class);
-            $this->Query('INSERT INTO ' . $this->config['table_prefix'] . "referrers (page_tag, referrer, time) VALUES ('" . $dbService->escape($tag) . "', '" . $dbService->escape($referrer) . "', " . $dbService->now() . ')');
-        }
+        $this->service(ReferrerService::class)->log($tag, $referrer);
     }
 
+    /**
+     * @deprecated Use ReferrerService::purge instead
+     */
     public function PurgeReferrers()
     {
-        if (($days = $this->GetConfigValue('referrers_purge_time')) && !$this->services->get(HibernationService::class)->isWikiHibernated()) {
-            $dbService = $this->services->get(DbService::class);
-            $this->Query('delete from ' . $this->config['table_prefix'] . 'referrers where time < ' . $dbService->dateSubDays(intval($days)));
-        }
+        $this->service(ReferrerService::class)->purge();
     }
 
     /**
@@ -769,41 +519,23 @@ class Wiki
      *
      * @return string the output generated by the action
      */
+    /**
+     * @deprecated Use ActionRunner::action instead
+     *
+     * @param string       $action
+     * @param bool|int     $forceLinkTracking
+     * @param array<mixed> $vars
+     *
+     * @return string
+     */
     public function Action($action, $forceLinkTracking = 0, $vars = [])
     {
-        $cmd = trim($action);
-        $cmd = str_replace("\n", ' ', $cmd);
-        // extract $action and $vars_temp ("raw" attributes)
-        if (!preg_match("/^([a-zA-Z0-9_-]+)\/?(.*)$/", $cmd, $matches)) {
-            return '<div class="alert alert-danger">' . _t('INVALID_ACTION') . ' &quot;' . htmlspecialchars($cmd, ENT_COMPAT, YW_CHARSET) . '&quot;</div>' . "\n";
-        }
-        list(, $action, $vars_temp) = $matches;
-
-        // match all attributes (key and value)
-        // prepare an array for extract() to work with (in $this->IncludeBuffered())
-        if (preg_match_all('/([a-zA-Z0-9_]*)="(.*)"/U', $vars_temp, $matches)) {
-            for ($a = 0; $a < count($matches[1]); $a++) {
-                $vars[$matches[1][$a]] = $matches[2][$a];
-            }
-        }
-
-        if (!$forceLinkTracking) {
-            $this->StopLinkTracking();
-        }
-        // keep track of actions and their parameters
-        array_push($this->actionObjects, [
-            'action' => $action,
-            'vars' => $vars,
-        ]);
-        $result = $this->services->get(Performer::class)->run($action, 'action', $vars);
-        $this->StartLinkTracking(); // shouldn't we restore the previous status ?
-
-        return $result;
+        return $this->service(ActionRunner::class)->action($action, (bool)$forceLinkTracking, $vars);
     }
 
     public function Method($method)
     {
-        return $this->services->get(Performer::class)->run($method, 'handler', []);
+        return $this->service(Performer::class)->run($method, 'handler', []);
     }
 
     /**
@@ -814,7 +546,7 @@ class Wiki
      */
     public function Format($text, $formatter = 'wakka', $pageTag = '')
     {
-        return $this->services->get(MarkdownFormatterService::class)->format((string)$text);
+        return $this->service(MarkdownFormatterService::class)->format((string)$text);
     }
 
     /**
@@ -849,73 +581,33 @@ class Wiki
      * @todo Ajouter le parametre $start pour permettre une pagination
      *       des commentaires : ->LoadRecentComments(10, 10)
      */
+    /**
+     * @deprecated Use CommentService::getRecentComments instead
+     *
+     * @param int $limit
+     *
+     * @return array<mixed>
+     */
     public function LoadRecentComments($limit = 0)
     {
-        // The part of the query which limit the number of comments
-        if (is_numeric($limit) && $limit > 0) {
-            $lim = ' limit ' . $limit;
-        } else {
-            $lim = '';
-        }
-
-        // Query
-        return $this->LoadAll('select * from ' . $this->config['table_prefix'] . 'pages where comment_on != "" ' . "and latest = 'Y' " . 'order by time desc ' . $lim);
+        return $this->service(CommentService::class)->getRecentComments($limit);
     }
 
+    /**
+     * @deprecated Use CommentService::getRecentlyCommented instead
+     */
     public function LoadRecentlyCommented($limit = 50)
     {
-        $pages = [];
-
-        // NOTE: this is really stupid. Maybe my SQL-Fu is too weak, but apparently there is no easier way to simply select
-        // all comment pages sorted by their first revision's (!) time. ugh!
-
-        // load ids of the first revisions of latest comments. err, huh?
-        if ($ids = $this->LoadAll('select min(id) as id from ' . $this->config['table_prefix'] . 'pages where comment_on != "" group by tag order by id desc')) {
-            // load complete comments
-            $num = 0;
-            $comments = [];
-            foreach ($ids as $id) {
-                $comment = $this->LoadSingle('select * from ' . $this->config['table_prefix'] . "pages where id = '" . $id['id'] . "' limit 1");
-                if (!isset($comments[$comment['comment_on']]) && $num < $limit) {
-                    $comments[$comment['comment_on']] = $comment;
-                    $num++;
-                }
-            }
-
-            // now load pages
-            if ($comments) {
-                // now using these ids, load the actual pages
-                foreach ($comments as $comment) {
-                    $page = $this->LoadPage($comment['comment_on']);
-                    $page['comment_user'] = $comment['user'];
-                    $page['comment_time'] = $comment['time'];
-                    $page['comment_tag'] = $comment['tag'];
-                    $pages[] = $page;
-                }
-            }
-        }
-
-        // load tags of pages
-        // return $this->LoadAll("select comment_on as tag, max(time) as time, tag as comment_tag, user from ".$this->config['table_prefix']."pages where comment_on != '' group by comment_on order by time desc");
-        return $pages;
+        return $this->service(CommentService::class)->getRecentlyCommented($limit);
     }
 
     // ACCESS CONTROL
-    // returns true if logged in user is owner of current page, or page specified in $tag
+    /**
+     * @deprecated Use AclService::isOwner instead
+     */
     public function UserIsOwner($tag = '')
     {
-        // check if user is logged in
-        if (!$this->GetUser()) {
-            return false;
-        }
-
-        // set default tag
-        if (!$tag = trim($tag)) {
-            $tag = $this->GetPageTag();
-        }
-
-        // check if user is owner
-        return $this->GetPageOwner($tag) == $this->GetUserName();
+        return $this->service(AclService::class)->isOwner((string)$tag);
     }
 
     /**
@@ -932,7 +624,7 @@ class Wiki
         if (array_key_exists($group, $this->_groupsCache)) {
             return $this->_groupsCache[$group];
         }
-        $groupOperationsService = $this->services->get(GroupOperationsService::class);
+        $groupOperationsService = $this->service(GroupOperationsService::class);
         try {
             return $this->_groupsCache[$group] = implode("\n", $groupOperationsService->getMembers($group));
         } catch (GroupNameDoesNotExistException $th) {
@@ -957,23 +649,7 @@ class Wiki
      */
     public function SetGroupACL($gname, $acl)
     {
-        $groupOperationsService = $this->services->get(GroupOperationsService::class);
-        $acl = str_replace(["\r\n", "\r"], "\n", $acl);
-        $members = explode("\n", $acl);
-        $members = array_map('trim', $members);
-        try {
-            if ($groupOperationsService->groupExists($gname)) {
-                $groupOperationsService->update($gname, $members);
-            } else {
-                $groupOperationsService->create($gname, $members);
-            }
-        } catch (InvalidGroupNameException $th) {
-            return 1001;
-        } catch (InvalidInputException $th) {
-            return 1000;
-        }
-
-        return 0;
+        return $this->service(GroupOperationsService::class)->setMembersFromAclText($gname, $acl);
     }
 
     /**
@@ -983,7 +659,7 @@ class Wiki
      */
     public function GetGroupsList()
     {
-        $groupOperationsService = $this->services->get(GroupOperationsService::class);
+        $groupOperationsService = $this->service(GroupOperationsService::class);
 
         return $groupOperationsService->getAll();
     }
@@ -1004,7 +680,7 @@ class Wiki
             $user = $this->getUserName();
         }
         if (!array_key_exists($user, $cache)) {
-            $cache[$user] = $this->services->get(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
+            $cache[$user] = $this->service(UserManager::class)->isInGroup(ADMIN_GROUP, $user, false);
         }
 
         return $cache[$user];
@@ -1020,16 +696,7 @@ class Wiki
      */
     public function GetModuleACL($module, $moduleType)
     {
-        $module = strtolower($module);
-        $moduleType = strtolower($moduleType);
-        $moduleKey = $moduleType . '_' . $module;
-        if (array_key_exists($moduleKey, $this->_actionsAclsCache)) {
-            return $this->_actionsAclsCache[$moduleKey];
-        }
-        $acl = empty($this->config['permissions'][$moduleType][$module]) ? '*' : $this->config['permissions'][$moduleType][$module];
-        $this->_actionsAclsCache[$moduleKey] = $acl;
-
-        return $acl;
+        return $this->service(ModuleAclService::class)->getModuleAcl($module, $moduleType);
     }
 
     /**
@@ -1042,49 +709,11 @@ class Wiki
      * @param string $acl
      *                            The new ACL for that module
      *
-     * @return 0 on success, > 0 on error
+     * @return int 0 on success, > 0 on error
      */
     public function SetModuleACL($module, $module_type, $acl)
     {
-        $module = strtolower($module);
-        $module_type = strtolower($module_type);
-        $moduleKey = $module_type . '_' . $module;
-
-        // Check if value has changed
-        $old = $this->GetModuleACL($module, $module_type);
-        if ($old === $acl) {
-            return 0; // nothing has changed
-        }
-
-        // Update the cache
-        $this->_actionsAclsCache[$moduleKey] = $acl;
-
-        // Update the in-memory config
-        if (!isset($this->config['permissions'])) {
-            $this->config['permissions'] = [];
-        }
-        if (!isset($this->config['permissions'][$module_type])) {
-            $this->config['permissions'][$module_type] = [];
-        }
-        $this->config['permissions'][$module_type][$module] = $acl;
-
-        // Write to the config file
-        $configurationService = $this->services->get(ConfigurationService::class);
-        $config = $configurationService->getConfiguration(ConfigurationFileProvider::getConfigFileFromEnv());
-        $config->load();
-
-        // Update the permissions in the config file
-        if (!isset($config->permissions)) {
-            $config->permissions = [];
-        }
-        $permissions = $config->permissions;
-        if (!isset($permissions[$module_type])) {
-            $permissions[$module_type] = [];
-        }
-        $permissions[$module_type][$module] = $acl;
-        $config->permissions = $permissions;
-
-        return $config->write() ? 0 : 1;
+        return $this->service(ModuleAclService::class)->setModuleAcl($module, $module_type, $acl);
     }
 
     /**
@@ -1102,12 +731,7 @@ class Wiki
      */
     public function CheckModuleACL($module, $module_type, $user = null)
     {
-        $acl = $this->GetModuleACL($module, $module_type);
-        if ($acl === null) {
-            return true; // undefined ACL means everybody has access
-        }
-
-        return $this->CheckACL($acl, $user);
+        return $this->service(ModuleAclService::class)->checkModuleAcl($module, $module_type, $user);
     }
 
     // MAINTENANCE
@@ -1121,9 +745,9 @@ class Wiki
         // purge old page revisions
         $this->PurgePages();
         // purge expired password recovery keys
-        $this->services->get(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
+        $this->service(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
         // purge expired account-activation keys
-        $this->services->get(AccountActivationService::class)->purgeExpiredActivationKeys();
+        $this->service(AccountActivationService::class)->purgeExpiredActivationKeys();
     }
 
     /**
@@ -1179,7 +803,7 @@ class Wiki
             $this->Redirect($this->href('', $this->config['root_page']));
         }
 
-        $this->services->get(AuthenticationService::class)->connectUser();
+        $this->service(AuthenticationService::class)->connectUser();
 
         // Is this a special page ?
         if (in_array($tag, ['api', 'doc'])) {
@@ -1242,7 +866,7 @@ class Wiki
         try {
             // TODO put this elsewhere ?
             $attributes = $matcher->match($context->getPathInfo());
-            if ($this->services->get(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
+            if ($this->service(ApiService::class)->isAuthorized($attributes, $this->getRoutes())) {
                 $this->request->attributes->add($attributes);
                 $response = $this->handleWithHttpKernel($this->request);
             } else {
@@ -1375,7 +999,7 @@ class Wiki
     private function handleWithHttpKernel(Request $request): Response
     {
         if (!$this->httpKernel instanceof HttpKernel) {
-            $eventDispatcher = $this->services->get(EventDispatcher::class);
+            $eventDispatcher = $this->service(EventDispatcher::class);
             $eventDispatcher->addListener(KernelEvents::EXCEPTION, [$this, 'onDispatchException']);
 
             $this->httpKernel = new HttpKernel(
@@ -1409,24 +1033,13 @@ class Wiki
     }
 
     /**
-     * furnish a method to generateRandomString.
+     * @deprecated Use StringUtilService::generateRandomString instead
      */
     public function generateRandomString(
         int $length = 30,
         string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*=.:,?'
     ): string {
-        $randompassword = '';
-        $maxIndex = strlen($charset) - 1;
-
-        if ($length < 1) {
-            $length = 30;
-        }
-
-        for ($i = 0; $i < $length; $i++) {
-            $randompassword .= substr($charset, random_int(0, $maxIndex), 1);
-        }
-
-        return $randompassword;
+        return StringUtilService::generateRandomString($length, $charset);
     }
 
     /**
@@ -1434,7 +1047,7 @@ class Wiki
      */
     public function AddCSS($style)
     {
-        return $this->services->get(AssetsManager::class)->AddCSS($style);
+        return $this->service(AssetsManager::class)->AddCSS($style);
     }
 
     /**
@@ -1442,7 +1055,7 @@ class Wiki
      */
     public function AddCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
     {
-        return $this->services->get(AssetsManager::class)->AddCSSFile($file, $conditionstart, $conditionend);
+        return $this->service(AssetsManager::class)->AddCSSFile($file, $conditionstart, $conditionend);
     }
 
     /**
@@ -1450,7 +1063,7 @@ class Wiki
      */
     public function LinkCSSFile($file, $conditionstart = '', $conditionend = '', $attrs = '')
     {
-        return $this->services->get(AssetsManager::class)->LinkCSSFile($file, $conditionstart, $conditionend);
+        return $this->service(AssetsManager::class)->LinkCSSFile($file, $conditionstart, $conditionend);
     }
 
     /**
@@ -1458,7 +1071,7 @@ class Wiki
      */
     public function AddJavascript($script, $module = false)
     {
-        return $this->services->get(AssetsManager::class)->AddJavascript($script, $module);
+        return $this->service(AssetsManager::class)->AddJavascript($script, $module);
     }
 
     /**
@@ -1466,33 +1079,23 @@ class Wiki
      */
     public function AddJavascriptFile($file, $first = false, $module = false)
     {
-        return $this->services->get(AssetsManager::class)->AddJavascriptFile($file, $first, $module);
+        return $this->service(AssetsManager::class)->AddJavascriptFile($file, $first, $module);
     }
 
+    /**
+     * @deprecated Use FileManager::parseSize instead
+     */
     public function parse_size($size)
     {
-        $unit = preg_replace('/[^bkmgtpezy]/i', '', $size); // Remove the non-unit characters from the size.
-        $size = preg_replace('/[^0-9\.]/', '', $size); // Remove the non-numeric characters from the size.
-        if ($unit) {
-            // Find the position of the unit in the ordered string which is the power of magnitude to multiply a kilobyte by.
-            return intval(round((int)$size * pow(1024, stripos('bkmgtpezy', $unit[0]))));
-        }
-
-        return intval(round((int)$size));
+        return FileManager::parseSize($size);
     }
 
-    // Returns a file size limit in bytes based on the PHP upload_max_filesize,
-    // post_max_size and config max_file_size
+    /**
+     * @deprecated Use FileManager::uploadMaxSize instead
+     */
     public function file_upload_max_size()
     {
-        $conf_max_file_size = $this->GetConfigValue('max_file_size') ? $this->parse_size($this->GetConfigValue('max_file_size')) : 0;
-
-        $post_max_size = $this->parse_size(ini_get('post_max_size'));
-
-        $upload_max = $this->parse_size(ini_get('upload_max_filesize'));
-
-        // return the min size limit, excluding 0 values that mean no limit
-        return min(array_filter([$conf_max_file_size, $post_max_size, $upload_max]) ?? DEFAULT_MAX_UPLOAD_SIZE);
+        return $this->service(FileManager::class)->uploadMaxSize();
     }
 
     /**
@@ -1629,12 +1232,13 @@ class Wiki
         $kernel->boot();
         $this->services = $kernel->getContainer();
 
-        $this->services->set(ParameterBagInterface::class, $this->services->getParameterBag());
+        $parameterBag = $this->services->getParameterBag();
+        $this->services->set(ParameterBagInterface::class, $parameterBag);
         $this->services->set(CsrfTokenManager::class, new CsrfTokenManager());
         $this->services->set(Wiki::class, $this);
 
         // need to be executed after the container is compiled because the %paramName% are resolved there
-        $this->config = $this->services->getParameterBag()->all();
+        $this->config = $parameterBag->all();
     }
 
     /**
@@ -1645,7 +1249,7 @@ class Wiki
     private function loadLanguages()
     {
         // This must be done after service initialization, as it uses services
-        $languageService = $this->services->get(LanguageService::class);
+        $languageService = $this->service(LanguageService::class);
         $languageService->loadPreferredLanguage($this, $this->tag);
 
         // translations
@@ -1677,7 +1281,7 @@ class Wiki
      */
     private function loadTemplates()
     {
-        $metadata = $this->services->get(PageManager::class)->getMetadata($this->tag);
+        $metadata = $this->service(PageManager::class)->getMetadata($this->tag);
 
         if (isset($metadata['lang'])) {
             $this->config['lang'] = $metadata['lang'];
@@ -1685,43 +1289,15 @@ class Wiki
             $this->config['lang'] = 'fr';
         }
 
-        $this->services->get(ThemeManager::class)->loadTemplates($metadata);
+        $this->service(ThemeManager::class)->loadTemplates($metadata);
     }
 
     /**
-     * Replace recursively all the indexed arrays of $array1 with the corresponding indexed array of $array2.
-     *
-     * @param $array1 the first array that is merged
-     * @param $array2 the second array that give the value for indexed array
+     * @deprecated Use StringUtilService::replaceRecursivelyIndexedArrays instead
      */
     public function replaceRecursivelyIndexedArrays(&$array1, &$array2)
     {
-        foreach ($array2 as $key => $val) {
-            if (is_array($val)) {
-                if (!$this->isAssocArray($val)) {
-                    if (!isset($array1[$key]) || $array1[$key] != $val) {
-                        $array1[$key] = $val;
-                    }
-                } else {
-                    $subarray1 = &$array1[$key];
-                    $subarray2 = &$array2[$key];
-                    $this->replaceRecursivelyIndexedArrays($subarray1, $subarray2);
-                }
-            }
-        }
-    }
-
-    /**
-     * Test if an array is an associative array and not an indexed on*
-     * From php8.1, @see https://www.php.net/manual/fr/function.array-is-list.php instead.
-     *
-     * @param $arr the array
-     *
-     * @return bool true is it's an associative array, otherwise false
-     */
-    public function isAssocArray($arr)
-    {
-        return array_keys($arr) !== range(0, count($arr) - 1);
+        StringUtilService::replaceRecursivelyIndexedArrays($array1, $array2);
     }
 
     /**
@@ -1730,7 +1306,7 @@ class Wiki
     public function render($templatePath, $data)
     {
         try {
-            return $this->services->get(TemplateEngine::class)->render($templatePath, $data);
+            return $this->service(TemplateEngine::class)->render($templatePath, $data);
         } catch (\Exception $e) {
             return '<div class="alert alert-danger">Error rendering ' . $templatePath . ': ' . $e->getMessage() . '</div>' . "\n";
         }
@@ -1745,7 +1321,7 @@ class Wiki
      */
     public function Query($query)
     {
-        return $this->services->get(DbService::class)->query($query);
+        return $this->service(DbService::class)->query($query);
     }
 
     /**
@@ -1753,7 +1329,7 @@ class Wiki
      */
     public function LoadSingle($query)
     {
-        return $this->services->get(DbService::class)->loadSingle($query);
+        return $this->service(DbService::class)->loadSingle($query);
     }
 
     /**
@@ -1761,7 +1337,7 @@ class Wiki
      */
     public function LoadAll($query)
     {
-        return $this->services->get(DbService::class)->loadAll($query);
+        return $this->service(DbService::class)->loadAll($query);
     }
 
     /**
@@ -1769,7 +1345,7 @@ class Wiki
      */
     public function LoadPage($tag, $time = '', $cache = 1)
     {
-        return $this->services->get(PageManager::class)->getOne($tag, $time, $cache);
+        return $this->service(PageManager::class)->getOne($tag, $time, $cache);
     }
 
     /**
@@ -1777,7 +1353,7 @@ class Wiki
      */
     public function GetCachedPage($tag)
     {
-        return $this->services->get(PageManager::class)->getCached($tag);
+        return $this->service(PageManager::class)->getCached($tag);
     }
 
     /**
@@ -1785,7 +1361,7 @@ class Wiki
      */
     public function CachePage($page, $pageTag = null)
     {
-        return $this->services->get(PageManager::class)->cache($page, $pageTag);
+        return $this->service(PageManager::class)->cache($page, $pageTag);
     }
 
     /**
@@ -1793,7 +1369,7 @@ class Wiki
      */
     public function LoadPageById($id)
     {
-        return $this->services->get(PageManager::class)->getById($id);
+        return $this->service(PageManager::class)->getById($id);
     }
 
     /**
@@ -1801,7 +1377,7 @@ class Wiki
      */
     public function LoadRecentlyChanged($limit = 50, $minDate = '')
     {
-        return $this->services->get(PageManager::class)->getRecentlyChanged($limit, $minDate);
+        return $this->service(PageManager::class)->getRecentlyChanged($limit, $minDate);
     }
 
     /**
@@ -1809,7 +1385,7 @@ class Wiki
      */
     public function LoadAllPages()
     {
-        return $this->services->get(PageManager::class)->getAll();
+        return $this->service(PageManager::class)->getAll();
     }
 
     /**
@@ -1817,7 +1393,7 @@ class Wiki
      */
     public function LoadWantedPages()
     {
-        return $this->services->get(PageManager::class)->getWanted();
+        return $this->service(PageManager::class)->getWanted();
     }
 
     /**
@@ -1825,7 +1401,7 @@ class Wiki
      */
     public function IsOrphanedPage($tag)
     {
-        return $this->services->get(PageManager::class)->isOrphaned($tag);
+        return $this->service(PageManager::class)->isOrphaned($tag);
     }
 
     /**
@@ -1833,7 +1409,7 @@ class Wiki
      */
     public function SavePage($tag, $body, $comment_on = '', $bypass_acls = false)
     {
-        return $this->services->get(PageManager::class)->save($tag, $body, $comment_on, $bypass_acls);
+        return $this->service(PageManager::class)->save($tag, $body, $comment_on, $bypass_acls);
     }
 
     /**
@@ -1841,7 +1417,7 @@ class Wiki
      */
     public function GetPageOwner($tag = '', $time = '')
     {
-        return $this->services->get(PageManager::class)->getOwner($tag, $time);
+        return $this->service(PageManager::class)->getOwner($tag, $time);
     }
 
     /**
@@ -1849,7 +1425,7 @@ class Wiki
      */
     public function SetPageOwner($tag, $user)
     {
-        return $this->services->get(PageManager::class)->setOwner($tag, $user);
+        return $this->service(PageManager::class)->setOwner($tag, $user);
     }
 
     /**
@@ -1857,7 +1433,7 @@ class Wiki
      */
     public function GetMetaDatas($tag)
     {
-        return $this->services->get(PageManager::class)->getMetadata($tag);
+        return $this->service(PageManager::class)->getMetadata($tag);
     }
 
     /**
@@ -1865,7 +1441,7 @@ class Wiki
      */
     public function PageList($tags = '', $type = '', $nb = '', $tri = '')
     {
-        return $this->services->get(TagsManager::class)->getPagesByTags($tags, $type, $nb, $tri);
+        return $this->service(TagsManager::class)->getPagesByTags($tags, $type, $nb, $tri);
     }
 
     /**
@@ -1873,7 +1449,7 @@ class Wiki
      */
     public function GetAllTriplesValues($resource, $property, $re_prefix = THISWIKI_PREFIX, $prop_prefix = WIKINI_VOC_PREFIX)
     {
-        return $this->services->get(TripleStore::class)->getAll($resource, $property, $re_prefix, $prop_prefix);
+        return $this->service(TripleStore::class)->getAll($resource, $property, $re_prefix, $prop_prefix);
     }
 
     /**
@@ -1881,7 +1457,7 @@ class Wiki
      */
     public function LoadUser($name, $password = 0)
     {
-        return $this->services->get(UserManager::class)->getOneByName($name, $password);
+        return $this->service(UserManager::class)->getOneByName($name, $password);
     }
 
     /**
@@ -1889,7 +1465,7 @@ class Wiki
      */
     public function LoadUsers()
     {
-        return $this->services->get(UserManager::class)->getAll();
+        return $this->service(UserManager::class)->getAll();
     }
 
     /**
@@ -1897,7 +1473,7 @@ class Wiki
      */
     public function GetUser()
     {
-        return $this->services->get(AuthenticationService::class)->getLoggedUser();
+        return $this->service(AuthenticationService::class)->getLoggedUser();
     }
 
     /**
@@ -1905,7 +1481,7 @@ class Wiki
      */
     public function GetUserName()
     {
-        return $this->services->get(AuthenticationService::class)->getLoggedUserName();
+        return $this->service(AuthenticationService::class)->getLoggedUserName();
     }
 
     /**
@@ -1913,7 +1489,7 @@ class Wiki
      */
     public function LoadAcl($tag, $privilege, $useDefaults = true)
     {
-        return $this->services->get(AclService::class)->load($tag, $privilege, $useDefaults);
+        return $this->service(AclService::class)->load($tag, $privilege, $useDefaults);
     }
 
     /**
@@ -1921,7 +1497,7 @@ class Wiki
      */
     public function SaveAcl($tag, $privilege, $list, $appendAcl = false)
     {
-        return $this->services->get(AclService::class)->save($tag, $privilege, $list, $appendAcl);
+        return $this->service(AclService::class)->save($tag, $privilege, $list, $appendAcl);
     }
 
     /**
@@ -1929,7 +1505,7 @@ class Wiki
      */
     public function DeleteAcl($tag, $privileges = ['read', 'write', 'comment'])
     {
-        return $this->services->get(AclService::class)->delete($tag, $privileges);
+        return $this->service(AclService::class)->delete($tag, $privileges);
     }
 
     /**
@@ -1937,7 +1513,7 @@ class Wiki
      */
     public function HasAccess($privilege, $tag = '', $user = '')
     {
-        return $this->services->get(AclService::class)->hasAccess($privilege, $tag, $user);
+        return $this->service(AclService::class)->hasAccess($privilege, $tag, $user);
     }
 
     /**
@@ -1945,22 +1521,6 @@ class Wiki
      */
     public function CheckACL($acl, $user = null, $admincheck = true, $tag = '', $mode = '')
     {
-        return $this->services->get(AclService::class)->check($acl, $user, $admincheck, $tag, $mode);
-    }
-
-    /**
-     * @deprecated Use LinkTracker::start
-     */
-    public function StartLinkTracking()
-    {
-        return $this->services->get(LinkTracker::class)->start();
-    }
-
-    /**
-     * @deprecated Use LinkTracker::stop
-     */
-    public function StopLinkTracking()
-    {
-        return $this->services->get(LinkTracker::class)->stop();
+        return $this->service(AclService::class)->check($acl, $user, $admincheck, $tag, $mode);
     }
 }

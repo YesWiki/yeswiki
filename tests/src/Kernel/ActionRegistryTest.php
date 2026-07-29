@@ -22,7 +22,7 @@ class ActionRegistryTest extends YesWikiTestCase
 {
     private function registry(): ActionRegistry
     {
-        $registry = $this->getWiki()->services?->get(ActionRegistry::class);
+        $registry = $this->getWiki()->services->get(ActionRegistry::class);
         $this->assertInstanceOf(ActionRegistry::class, $registry);
 
         return $registry;
@@ -47,7 +47,7 @@ class ActionRegistryTest extends YesWikiTestCase
 
     private function performer(): Performer
     {
-        $performer = $this->getWiki()->services?->get(Performer::class);
+        $performer = $this->getWiki()->services->get(Performer::class);
         $this->assertInstanceOf(Performer::class, $performer);
 
         return $performer;

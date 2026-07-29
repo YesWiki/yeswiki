@@ -2,12 +2,12 @@
 
 namespace YesWiki\Identity\Service;
 
+use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Wiki;
+use YesWiki\Content\Service\PageManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
-use YesWiki\Identity\Service\UserManager;
+use YesWiki\Wiki;
 
 class AclService
 {
@@ -17,6 +17,7 @@ class AclService
     protected $hibernationService;
     protected $userManager;
     protected $params;
+    protected ContainerInterface $container;
 
     protected $cache;
 
@@ -26,7 +27,8 @@ class AclService
         DbService $dbService,
         UserManager $userManager,
         ParameterBagInterface $params,
-        HibernationService $hibernationService
+        HibernationService $hibernationService,
+        ContainerInterface $container
     ) {
         $this->authenticationService = $authenticationService;
         $this->wiki = $wiki;
@@ -34,8 +36,28 @@ class AclService
         $this->userManager = $userManager;
         $this->params = $params;
         $this->hibernationService = $hibernationService;
+        // lazily fetches PageManager (owner lookups): PageManager itself depends on
+        // AclService, so constructor injection would be a cycle
+        $this->container = $container;
 
         $this->cache = [];
+    }
+
+    /**
+     * Whether the logged-in user owns the page $tag (default: the current page).
+     */
+    public function isOwner(string $tag = ''): bool
+    {
+        if (!$this->authenticationService->getLoggedUser()) {
+            return false;
+        }
+
+        if (!$tag = trim($tag)) {
+            $tag = $this->wiki->GetPageTag();
+        }
+
+        return $this->container->get(PageManager::class)->getOwner($tag)
+            == $this->authenticationService->getLoggedUserName();
     }
 
     /**
@@ -282,7 +304,7 @@ class AclService
         }
 
         // if current user is owner, return true. owner can do anything!
-        if ($this->wiki->UserIsOwner($tag)) {
+        if ($this->isOwner($tag)) {
             return true;
         }
 
@@ -364,7 +386,7 @@ class AclService
                             // and no management of '%'
                             $result = false;
                         } else {
-                            $result = ($this->wiki->UserIsOwner($tag)) ? $std_response : !$std_response;
+                            $result = $this->isOwner($tag) ? $std_response : !$std_response;
                         }
                         break;
                     case '@': // groups
