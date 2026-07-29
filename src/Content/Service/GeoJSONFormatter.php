@@ -66,9 +66,11 @@ class GeoJSONFormatter extends YesWikiController
      */
     public function getGeoData(array $entry, array &$cache): array
     {
-        $propertyName = null;
+        $propertyName = '';
         if (!empty($entry['form_id']) && $entry['form_id'] == intval($entry['form_id'])) {
-            $propertyName = $this->getFirstMapFieldPropertyName($entry['form_id'], $cache);
+            // '' rather than null: a form with no map field must not index the entry on
+            // a null key, which PHP 8.4 deprecates and which matched nothing anyway
+            $propertyName = (string)$this->getFirstMapFieldPropertyName($entry['form_id'], $cache);
         }
         if (!empty($entry[$propertyName]['latitude']) && !empty($entry[$propertyName]['longitude'])) {
             $latitude = $entry[$propertyName]['latitude'];

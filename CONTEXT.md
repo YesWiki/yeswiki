@@ -44,6 +44,10 @@ _Avoid_: `***` syntax (legacy, read-only), `bn_template` (renamed), "prepared js
 A named key in a form's body holding form-level configuration: identity (`id`, `label`, `description`, `lang`), behavior (`entry_title_template`, `entry_read_access`, `entry_write_access`, `entry_comment_access`, `entry_permit_activate_comments`, `entry_creates_user`, `entry_bookmarklet`), presentation (`entry_metadatas`), and the legacy-carried `sem_*`, `only_one_entry*`, `activitypub_*`, `condition`. Plain-English names; the `bn_` prefix is retired.
 _Avoid_: `bn_*` keys (renamed), pseudo-fields (form behavior stored as fake template fields — retired).
 
+**Field role**:
+Core's question about a form's fields — "which one holds the start date?" — answered by the form rather than by a hardcoded field name. Roles: `start_date`, `end_date`, `image`, `email`, `description`, `geolocation`. Resolved through `FieldRoleResolver`, from the form's explicit `field_roles` property when it has one and otherwise from the field's own type (a `listedatedeb` field is the start date), so existing forms need no migration. Generalises ticket 27's `entry_title_template` (ADR-0012).
+_Avoid_: reading `bf_date_debut_evenement`/`bf_latitude`/`bf_titre` or any literal field name from core — field names are user data; "magic field name" is the retired anti-pattern.
+
 **Prepared fields**:
 The runtime field objects constructed from the Form template (one per real field), serialized in the API as `prepared` — what rendering consumers iterate. The internal positional arrays feeding the field constructors are an implementation detail and are not exposed anywhere.
 _Avoid_: "prepared json" for the *stored* template (the stored template is the Form template; `prepared` is derived from it), positional template arrays in any public payload.

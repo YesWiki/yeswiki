@@ -5,11 +5,13 @@ namespace YesWiki\Content\Controller;
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ConditionsCheckingField;
 use YesWiki\Content\Field\LabelField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
+use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\PageManager;
@@ -703,14 +705,25 @@ class EntryController extends YesWikiController
 
     private function filterEntriesOnDateTraversing(?array $entry, string $mode, \DateTime $date): bool
     {
-        if (empty($entry) || !isset($entry['bf_date_debut_evenement'])) {
+        if (empty($entry)) {
             return false;
         }
 
-        $entryStartDate = new \DateTime($entry['bf_date_debut_evenement']);
-        if (isset($entry['bf_date_fin_evenement']) && !empty(trim($entry['bf_date_fin_evenement']))) {
-            $entryEndDate = new \DateTime($entry['bf_date_fin_evenement']);
-            if ($entryEndDate && strpos($entry['bf_date_fin_evenement'], 'T') === false) {
+        // core asks the entry's form which fields hold its dates rather than assuming the
+        // historic French names, so a calendar works whatever a webmaster called them
+        // (ticket 11)
+        $form = empty($entry['form_id']) ? null : $this->getService(FormManager::class)->getOne($entry['form_id']);
+        $resolver = $this->getService(FieldRoleResolver::class);
+        $startValue = $resolver->value($form, $entry, FieldRole::START_DATE);
+        if ($startValue === null) {
+            return false;
+        }
+        $endValue = $resolver->value($form, $entry, FieldRole::END_DATE);
+
+        $entryStartDate = new \DateTime((string)$startValue);
+        if ($endValue !== null && trim((string)$endValue) !== '') {
+            $entryEndDate = new \DateTime((string)$endValue);
+            if ($entryEndDate && strpos((string)$endValue, 'T') === false) {
                 // all day (so = midnigth of next day)
                 $entryEndDate->add(new \DateInterval('P1D'));
             }
