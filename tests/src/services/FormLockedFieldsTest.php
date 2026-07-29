@@ -33,11 +33,25 @@ class FormLockedFieldsTest extends YesWikiTestCase
     }
 
     /**
+     * The one form describing a built-in Content type, as created by
+     * CreateContentTypeForms.
+     *
+     * @return array<string, mixed>
+     */
+    private function builtInForm(string $contentType): array
+    {
+        $form = $this->getWiki()->services->get(FormManager::class)->getByContentType($contentType);
+        $this->assertNotNull($form, "the {$contentType} form should exist -- run ./yeswicli migrate");
+
+        return $form;
+    }
+
+    /**
      * @param array<string, mixed> $data
      *
      * @return array<string, mixed>
      */
-    private function createForm(array $data): array
+    private function createOrdinaryForm(array $data): array
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
         // create() returns a save status, not the new form, and picks its own id when the
@@ -64,23 +78,33 @@ class FormLockedFieldsTest extends YesWikiTestCase
         return (string)$id;
     }
 
-    public function testCreatingAPageTypeFormGetsTheMandatoryStructure(): void
+    /**
+     * Restore a built-in form's template after a test has mangled it.
+     *
+     * @param array<string, mixed> $form
+     */
+    private function restoreTemplate(array $form): void
     {
-        $form = $this->createForm([
-            'label' => 'FormLockedFieldsTest page type',
-            ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_PAGE,
-            'template' => [],
+        $this->getWiki()->services->get(FormManager::class)->update([
+            'id' => $form['id'],
+            'label' => $form['label'],
+            'template' => $form['template'],
         ]);
+    }
 
-        $this->assertSame(
-            ['title', 'content', 'keywords'],
-            array_column($form['template'], 'name')
-        );
+    public function testTheBuiltInPageFormCarriesTheMandatoryStructure(): void
+    {
+        $form = $this->builtInForm(ContentTypeSchema::TYPE_PAGE);
+
+        $names = array_column($form['template'], 'name');
+        foreach (['title', 'content', 'keywords'] as $locked) {
+            $this->assertContains($locked, $names);
+        }
     }
 
     public function testAnOrdinaryFormIsUnaffected(): void
     {
-        $form = $this->createForm([
+        $form = $this->createOrdinaryForm([
             'label' => 'FormLockedFieldsTest ordinary',
             'template' => [['type' => 'texte', 'name' => 'bf_titre', 'label' => 'Titre']],
         ]);
@@ -93,79 +117,79 @@ class FormLockedFieldsTest extends YesWikiTestCase
     public function testUpdatingWithTheLockedFieldsStrippedRestoresThem(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
-        $form = $this->createForm([
-            'label' => 'FormLockedFieldsTest strip',
-            ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_USER,
-            'template' => [],
-        ]);
+        $form = $this->builtInForm(ContentTypeSchema::TYPE_USER);
 
-        $formManager->update([
-            'id' => $form['id'],
-            'label' => $form['label'],
-            'template' => [['type' => 'texte', 'name' => 'address', 'label' => 'Adresse']],
-        ]);
+        try {
+            $formManager->update([
+                'id' => $form['id'],
+                'label' => $form['label'],
+                'template' => [['type' => 'texte', 'name' => 'address', 'label' => 'Adresse']],
+            ]);
 
-        $updated = $formManager->getOne($form['id']);
-        $this->assertNotNull($updated);
-        $names = array_column($updated['template'], 'name');
-        foreach (['username', 'password', 'email'] as $locked) {
-            $this->assertContains($locked, $names, "$locked must survive a template that omits it");
+            $updated = $formManager->getOne($form['id']);
+            $this->assertNotNull($updated);
+            $names = array_column($updated['template'], 'name');
+            foreach (['username', 'password', 'email'] as $locked) {
+                $this->assertContains($locked, $names, "$locked must survive a template that omits it");
+            }
+            $this->assertContains('address', $names, 'the webmaster-added field must survive too');
+        } finally {
+            $this->restoreTemplate($form);
         }
-        $this->assertContains('address', $names, 'the webmaster-added field must survive too');
     }
 
     public function testRetypingALockedFieldThroughUpdateIsReverted(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
-        $form = $this->createForm([
-            'label' => 'FormLockedFieldsTest retype',
-            ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_USER,
-            'template' => [],
-        ]);
+        $form = $this->builtInForm(ContentTypeSchema::TYPE_USER);
 
-        $formManager->update([
-            'id' => $form['id'],
-            'label' => $form['label'],
-            // a hidden field would render nothing and read back freely
-            'template' => [['type' => 'hidden', 'name' => 'password', 'label' => 'Mot de passe']],
-        ]);
+        try {
+            $formManager->update([
+                'id' => $form['id'],
+                'label' => $form['label'],
+                // a hidden field would render nothing and read back freely
+                'template' => [['type' => 'hidden', 'name' => 'password', 'label' => 'Mot de passe']],
+            ]);
 
-        $updated = $formManager->getOne($form['id']);
-        $this->assertNotNull($updated);
-        $password = array_values(array_filter($updated['template'], fn ($f) => ($f['name'] ?? '') === 'password'));
-        $this->assertCount(1, $password);
-        $this->assertSame('mot_de_passe', $password[0]['type']);
+            $updated = $formManager->getOne($form['id']);
+            $this->assertNotNull($updated);
+            $password = array_values(array_filter($updated['template'], fn ($f) => ($f['name'] ?? '') === 'password'));
+            $this->assertCount(1, $password);
+            $this->assertSame('mot_de_passe', $password[0]['type']);
+        } finally {
+            $this->restoreTemplate($form);
+        }
     }
 
     /**
-     * Retyping the *form* would be the way around all of the above: declare a User form
+     * Retyping the *form* would be the way around all of the above: declare the User form
      * to be an ordinary entry form, and its core fields stop being locked.
      */
     public function testAFormsContentTypeCannotBeChangedAfterCreation(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
-        $form = $this->createForm([
-            'label' => 'FormLockedFieldsTest immutable type',
-            ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_PAGE,
-            'template' => [],
-        ]);
+        $form = $this->builtInForm(ContentTypeSchema::TYPE_PAGE);
 
-        $formManager->update([
-            'id' => $form['id'],
-            'label' => $form['label'],
-            ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_ENTRY,
-            'template' => [['type' => 'texte', 'name' => 'whatever', 'label' => 'Whatever']],
-        ]);
+        try {
+            $formManager->update([
+                'id' => $form['id'],
+                'label' => $form['label'],
+                ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_ENTRY,
+                'template' => [['type' => 'texte', 'name' => 'whatever', 'label' => 'Whatever']],
+            ]);
 
-        $stored = $formManager->getOne($form['id']);
-        $this->assertNotNull($stored);
-        $this->assertSame(ContentTypeSchema::TYPE_PAGE, $stored[ContentTypeSchema::CONTENT_TYPE]);
-        $this->assertContains('title', array_column($stored['template'], 'name'));
+            $stored = $formManager->getOne($form['id']);
+            $this->assertNotNull($stored);
+            $this->assertSame(ContentTypeSchema::TYPE_PAGE, $stored[ContentTypeSchema::CONTENT_TYPE]);
+            $this->assertContains('title', array_column($stored['template'], 'name'));
+        } finally {
+            $this->restoreTemplate($form);
+        }
     }
 
     public function testAnUnknownContentTypeFallsBackToTheOrdinaryForm(): void
     {
-        $form = $this->createForm([
+        $form = $this->createOrdinaryForm([
             'label' => 'FormLockedFieldsTest unknown type',
             ContentTypeSchema::CONTENT_TYPE => 'not-a-content-type',
             'template' => [['type' => 'texte', 'name' => 'bf_titre', 'label' => 'Titre']],
@@ -173,5 +197,23 @@ class FormLockedFieldsTest extends YesWikiTestCase
 
         $this->assertSame(ContentTypeSchema::TYPE_ENTRY, $form[ContentTypeSchema::CONTENT_TYPE]);
         $this->assertSame(['bf_titre'], array_column($form['template'], 'name'));
+    }
+
+    /**
+     * There is exactly one form per built-in type: a second one would leave
+     * getByContentType() choosing arbitrarily between them.
+     */
+    public function testASecondFormOfABuiltInTypeIsRefused(): void
+    {
+        $formManager = $this->getWiki()->services->get(FormManager::class);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessageMatches('/exactly one per Content type/');
+        $formManager->create([
+            'id' => $this->firstFreeFormId($formManager),
+            'label' => 'FormLockedFieldsTest second page form',
+            ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_PAGE,
+            'template' => [],
+        ]);
     }
 }

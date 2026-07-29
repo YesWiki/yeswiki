@@ -319,6 +319,29 @@ class FormManager
         return $form;
     }
 
+    /**
+     * The form describing a built-in Content type -- the Page form, the User form, the
+     * File form (ticket 10). There is exactly one per type: which form applies to a row
+     * is decided by the row's own `TYPE_URI` triple, so Content does not carry a
+     * `form_id` the way a bazar entry does.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function getByContentType(string $contentType): ?array
+    {
+        if (!ContentTypeSchema::isKnownType($contentType) || $contentType === ContentTypeSchema::TYPE_ENTRY) {
+            return null;
+        }
+
+        foreach ($this->getAll() as $form) {
+            if (($form[ContentTypeSchema::CONTENT_TYPE] ?? null) === $contentType) {
+                return $form;
+            }
+        }
+
+        return null;
+    }
+
     public function getAll(): array
     {
         if (!$this->cacheValidatedForAll) {
@@ -484,6 +507,14 @@ class FormManager
 
         // Canonicalize the template and process any posted default images
         $data[ContentTypeSchema::CONTENT_TYPE] = $this->resolveContentType($data);
+
+        // A built-in Content type has exactly one form: which form describes a row is
+        // decided by the row's TYPE_URI triple, so a second Page form would leave
+        // getByContentType() picking arbitrarily between them.
+        $builtIn = $data[ContentTypeSchema::CONTENT_TYPE];
+        if ($builtIn !== ContentTypeSchema::TYPE_ENTRY && $this->getByContentType($builtIn) !== null) {
+            throw new \Exception("A '{$builtIn}' form already exists; there is exactly one per Content type");
+        }
         $data['template'] = $this->convertWithSpecialParameters(
             $this->templateToStorage($data['template'] ?? '', $data[ContentTypeSchema::CONTENT_TYPE]),
             $data['id']
