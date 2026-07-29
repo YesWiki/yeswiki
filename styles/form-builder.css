@@ -245,6 +245,26 @@
   font-weight: bold;
 }
 
+/* a field of the Content type's core structure: it can be relabelled, reordered and
+   re-permissioned like any other, but not deleted or duplicated (ticket 10) */
+.yw-fb__card-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--neutral-color, #4e5056);
+  background: var(--neutral-light-color, #f0f0f0);
+  border: 1px solid var(--neutral-soft-color, #57575c);
+  cursor: help;
+}
+
+.yw-fb__card--locked .yw-fb__card-drag {
+  /* reordering stays allowed -- only removal does not */
+  opacity: 1;
+}
+
 .yw-fb__card-actions {
   margin-left: auto;
   display: flex;

@@ -58,7 +58,10 @@
     <div class="yw-tabs__content">
       <div role="tabpanel" class="yw-tabs__pane active" id="formbuilder">
         <!-- container where the form builder will be rendered -->
-        <div id="form-builder-container"></div>
+        <div
+          id="form-builder-container"
+          data-locked-fields="{{ (lockedFields|default([]))|json_encode }}"
+        ></div>
       </div>
       <div role="tabpanel" class="yw-tabs__pane" id="code">
         <textarea

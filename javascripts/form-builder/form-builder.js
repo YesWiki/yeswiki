@@ -15,6 +15,23 @@ import { parseFields, serializeFields } from './converter.js'
 const container = document.getElementById('form-builder-container')
 const textarea = document.getElementById('form-builder-text')
 
+// Fields of a Content type's mandatory core structure (ticket 10). They are ordinary
+// fields here -- relabel, reorder, change the help text or the ACL freely -- except that
+// they cannot be deleted or duplicated. The server enforces the same rule whatever this
+// UI does, so this is the honest affordance, not the protection.
+const lockedFieldNames = (() => {
+  try {
+    const declared = JSON.parse(container?.dataset.lockedFields || '[]')
+    return Array.isArray(declared) ? declared : []
+  } catch {
+    return []
+  }
+})()
+
+function isLocked(field) {
+  return lockedFieldNames.includes(field?.data?.name)
+}
+
 function esc(value) {
   const div = document.createElement('div')
   div.textContent = String(value ?? '')
@@ -457,16 +474,18 @@ function renderCard(field) {
   const config = configFor(field.type)
   const icon = (config.field || config.set || {}).icon || ''
   const showLabel = !((config.disabledAttributes || []).includes('label'))
-  const card = el(`<div class="yw-fb__card${field.id === selectedId ? ' yw-fb__card--selected' : ''}" data-fb-id="${field.id}">
+  const locked = isLocked(field)
+  const card = el(`<div class="yw-fb__card${field.id === selectedId ? ' yw-fb__card--selected' : ''}${locked ? ' yw-fb__card--locked' : ''}" data-fb-id="${field.id}">
     <div class="yw-fb__card-header">
       <span class="yw-fb__card-drag" title="⇕">⠿</span>
       <span class="yw-fb__card-icon">${icon}</span>
       <span class="yw-fb__card-title">${showLabel ? esc(field.data.label || '') : esc((config.field || config.set || {}).label || field.type)}</span>
       ${field.data.name ? `<code class="yw-fb__card-name">${esc(field.data.name)}</code>` : ''}
       ${field.data.required === '1' ? '<span class="yw-fb__card-required">*</span>' : ''}
+      ${locked ? `<span class="yw-fb__card-locked" title="${esc(_t('FORM_BUILDER_LOCKED_HINT'))}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#lock"/></svg>${esc(_t('FORM_BUILDER_LOCKED'))}</span>` : ''}
       <span class="yw-fb__card-actions">
-        <button type="button" class="yw-fb__card-action" data-fb-action="duplicate" title="${_t('FORM_BUILDER_DUPLICATE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg></button>
-        <button type="button" class="yw-fb__card-action" data-fb-action="delete" title="${_t('FORM_BUILDER_DELETE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg></button>
+        ${locked ? '' : `<button type="button" class="yw-fb__card-action" data-fb-action="duplicate" title="${_t('FORM_BUILDER_DUPLICATE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg></button>`}
+        ${locked ? '' : `<button type="button" class="yw-fb__card-action" data-fb-action="delete" title="${_t('FORM_BUILDER_DELETE')}"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg></button>`}
       </span>
     </div>
     <div class="yw-fb__card-body">
@@ -479,6 +498,9 @@ function renderCard(field) {
 
   card.addEventListener('click', (event) => {
     const action = event.target.closest('[data-fb-action]')?.getAttribute('data-fb-action')
+    if (locked && (action === 'delete' || action === 'duplicate')) {
+      return
+    }
     if (action === 'delete') {
       fields = fields.filter((other) => other.id !== field.id)
       if (selectedId === field.id) closeSettings()

@@ -4,6 +4,7 @@ namespace YesWiki\Content\Controller;
 
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\ActivityPubService;
 use YesWiki\Content\Service\FormManager;
@@ -157,6 +158,7 @@ class FormController extends YesWikiController
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption(),
+                'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
             ]);
         }
 
@@ -184,6 +186,7 @@ class FormController extends YesWikiController
                 'formAndListIds' => baz_forms_and_lists_ids(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
+                'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
             ]);
         }
 
