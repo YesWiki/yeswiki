@@ -1,16 +1,900 @@
 /* ============================================================
-   yw-core.css — core's own minimal, yw-*-namespaced CSS design
-   system (ADR-0004). Every selector here is a `.yw-*` class so it
-   can load alongside Bootstrap (or any theme framework) without
-   colliding. Reuses the color tokens already defined in
-   yeswiki-base.css's :root block (loaded before this file).
+   yw-core.css — all of core's own CSS in one file.
+
+   Part 1: base application styles (:root tokens, layout zones,
+   legacy feature styling — formerly yeswiki-base.css, merged here
+   and pruned to selectors actually emitted by core, the actions
+   catalog, or wiki content).
+   Part 2: the yw-*-namespaced design system (ADR-0004) plus the
+   legacy Bootstrap vocabulary shim for old templates and stored
+   wiki content. Load order of the two former files is preserved:
+   part 1 rules come first, so ties resolve exactly as before.
    ============================================================ */
 
+/* Default color, in case someone use these variable outside of margot template */
+:root {
+  --primary-color: #0c5d6a;
+  --secondary-color-1: #d8604c;
+  --secondary-color-2: #d78958;
+  --neutral-color: #4e5056;
+  --neutral-soft-color: #57575c;
+  --neutral-light-color: #f2f2f2;
+  --main-text-fontsize: 17px;
+  --main-text-fontfamily: 'Nunito', sans-serif;
+  --main-title-fontfamily: 'Nunito', sans-serif;
+  --success-color: #3cab3b;
+  --danger-color: #d8604c;
+  --warning-color: #d78958;
+}
+
+html {
+  font-size: 15px !important; /* the base the whole UI computes rem units from */
+}
+
+/* Mise en forme */
+.indent {
+  margin-left: 40px;
+}
+
+.additions {
+  color: var(--success-color);
+}
+
+.deletions {
+  color: var(--danger-color);
+}
+
+.add,
+.add * {
+  color: white !important;
+  background-color: var(--success-color) !important;
+}
+
+.del,
+.del * {
+  color: white !important;
+  background-color: var(--danger-color) !important;
+  text-decoration: line-through !important;
+}
+
+.trail_button {
+  color: var(--secondary-color-1);
+}
+
+/* Adds edit icon after link tag */
+a[data-missing-tag]::after {
+  content: '';
+  display: inline-block;
+  width: 0.8em;
+  height: 0.8em;
+  margin-left: 0.4em;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4' /%3E%3Cpath d='M13.5 6.5l4 4' /%3E%3C/svg%3E")
+    no-repeat center / contain;
+}
+
+/* Page absentes */
+span.missingpage,
+.list-inline,
+.list-inline li {
+  display: inline;
+}
+
+/* previsualisation page */
+.page_preview {
+  background-color: #ffffbf;
+  padding-bottom: 30px;
+  border-bottom: 5px solid grey;
+  margin-bottom: 30px;
+}
+
+#form_graphical_options .preset-settings-container {
+  display: none;
+}
+
+/* Divers mise en forme */
+.code {
+  margin: 3px 0;
+  display: flex;
+}
+
+.searchbox {
+  background: #fffff8;
+  border: 0;
+  border-bottom: 1px solid #cca;
+  padding: 0;
+  margin: 0;
+}
+
+.debug {
+  font-size: 0.9em;
+  color: var(--neutral-color);
+  background: #fff;
+  border: 1px dotted var(--neutral-color);
+  padding: 1em;
+  margin: 0 auto;
+}
+
+/* Fin divers mise en forme */
+
+/* Les 3 colonnes potentielles de la page centrale */
+.page {
+  position: relative;
+  margin: 0;
+  min-height: 100px;
+}
+
+.footer {
+  margin: 18px 0;
+  padding: 0;
+  text-align: center;
+}
+
+.footer a {
+  color: #333;
+  padding: 2px 5px;
+  text-decoration: none;
+  display: inline-block;
+  margin: 0;
+}
+
+.footer .dropdown-menu a {
+  display: block;
+  text-align: left;
+}
+
+/* Ajustements mode édition */
+#ACEditor .form-actions {
+  margin: 15px 0;
+}
+
+.img-responsive img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Sélecteur de fond d'écran */
+#graphical_options {
+  display: none;
+}
+
+#bgCarousel {
+  margin-bottom: 20px;
+}
+
+#bgCarousel img.bgimg,
+#bgCarousel div.mozaicimg {
+  float: left;
+  margin: 2px;
+  border: 1px solid #ccc;
+  width: 100px;
+  height: 75px;
+  border-radius: 4px;
+}
+
+#bgCarousel .choosen {
+  box-shadow: 0 0 2px 3px #ffff21;
+}
+
+#bgCarousel .item {
+  display: block;
+  height: 162px;
+  margin: 0 53px;
+}
+
+/* lanceur d'accordéon */
+.panel-heading[data-toggle='collapse'] {
+  cursor: pointer;
+}
+
+/* table des matieres */
+.toc {
+  position: absolute;
+  right: 0;
+  z-index: 10000;
+  top: 50px;
+  width: 300px;
+}
+
+.toc-menu {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.toc-menu ul.unstyled {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+/* barres de progression */
+.progressbar {
+  margin: -5px 5px 0 0;
+}
+
+/* page wiki en format boite modale */
+#YesWikiModal .page {
+  min-height: auto;
+}
+
+#yw-topnav > .container {
+  display: flex;
+  flex-direction: row;
+  row-gap: 1em;
+  column-gap: 1em;
+  align-items: center;
+}
+
+#yw-topnav > .container > .btn-menu {
+  width: max-content;
+  min-width: max-content;
+  max-width: max-content;
+  height: max-content;
+}
+
+#yw-topnav > .container > .navbar-header {
+  width: max-content;
+  margin-right: 1em;
+}
+
+#yw-topnav > .container > .topnavpage {
+  flex: 1;
+  margin-right: 1em;
+}
+
+#yw-topnav > .container > .yw-topnav-fast-access {
+  margin-left: auto;
+  width: max-content;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: end;
+}
+
+#yw-topnav
+  > .container
+  > .yw-topnav-fast-access
+  > *:not(.yw-modal):not(.modal) {
+  display: block;
+  width: max-content;
+}
+
+#yw-topnav > .container > .yw-topnav-fast-access .yw-btn {
+  border: none;
+}
+
+/* menu du haut fixe */
+#yw-topnav.fixable {
+  position: sticky;
+  top: 0;
+}
+
+/* retour à la ligne pour les éléments flottants */
+.clear,
+.hr_clear {
+  clear: both;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  height: 0;
+  visibility: hidden;
+  background: transparent;
+}
+
+.dropdown-menu .login-form {
+  margin: 0;
+  padding: 18px;
+}
+
+.form-search {
+  margin: 0;
+}
+
+.accordion-group {
+  cursor: pointer;
+}
+
+.accordion-group .panel-title {
+  position: relative;
+}
+
+.accordion-group .panel-heading {
+  position: relative;
+}
+
+.accordion-group .panel-heading .icon-chevron {
+  display: none;
+  position: absolute;
+  top: 20px;
+  right: 15px;
+}
+
+.accordion-group .panel-heading.collapsed .chevron-down {
+  display: inline-block;
+}
+
+.accordion-group .panel-heading:not(.collapsed) .chevron-up {
+  display: inline-block;
+}
+
+.panel-heading > i {
+  margin-right: 8px;
+}
+
+/* on /iframe page, we use white background, can be overwritten in the theme */
+.yeswiki-page-widget {
+  padding: 0;
+  background: #fff;
+  background-image: none;
+  min-height: auto !important;
+}
+
+.cols2 {
+  /* Chrome, Safari, Opera */ /* Firefox */
+  column-count: 2;
+}
+
+.cols3 {
+  /* Chrome, Safari, Opera */ /* Firefox */
+  column-count: 3;
+}
+
+.cols4 {
+  /* Chrome, Safari, Opera */ /* Firefox */
+  column-count: 4;
+}
+
+.full-width {
+  width: 100vw !important;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+
+body {
+  overflow-x: hidden;
+} /* hack pour cacher l'ascenseur horizontal */
+
+.popover .page {
+  /* gestion des popup au survol modalbox-hover */
+  min-height: auto;
+}
+
+.popover .BAZ_label {
+  display: none;
+} /* enlever les label des fiches bazar quand on utilise la fonction glossaire */
+
+.btn-glossaire {
+  /* enlève le padding trop grand qui s'applique sur les boutons en général */
+  padding: 0 !important;
+  font-size: inherit !important;
+  vertical-align: inherit !important;
+}
+
+.yw-form-label::after {
+  content: ':';
+  margin: 0 0.25em;
+}
+
+.symbole_obligatoire::after {
+  content: '*';
+  margin-right: 0.25em;
+}
+
+.acl-advanced {
+  display: none;
+}
+
+.acl-single-container {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.acl-single-container label {
+  width: 180px;
+}
+
+.acl-single-container input {
+  width: calc(100% - 185px) !important;
+}
+
+.edit-acl-container label {
+  font-weight: normal;
+}
+
+/* Materialize Switch
+   ========================================================================== */
+.switch,
+.switch * {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.switch label {
+  cursor: pointer;
+}
+
+.switch label input[type='checkbox'] {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch label input[type='checkbox']:checked + .lever {
+  background-color: #84c7c1;
+}
+
+.switch label input[type='checkbox']:checked + .lever::before,
+.switch label input[type='checkbox']:checked + .lever::after {
+  left: 18px;
+}
+
+.switch label input[type='checkbox']:checked + .lever::after {
+  background-color: #26a69a;
+}
+
+.switch label .lever {
+  content: '';
+  display: inline-block;
+  position: relative;
+  width: 36px;
+  height: 14px;
+  background-color: rgb(0 0 0 / 38%);
+  border-radius: 15px;
+  margin-right: 10px;
+  transition: background 0.3s ease;
+  vertical-align: middle;
+  margin: 0 16px;
+}
+
+.switch label .lever::before,
+.switch label .lever::after {
+  content: '';
+  position: absolute;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  left: 0;
+  top: -3px;
+  transition:
+    left 0.3s ease,
+    background 0.3s ease,
+    -webkit-box-shadow 0.1s ease,
+    -webkit-transform 0.1s ease;
+  transition:
+    left 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.1s ease,
+    transform 0.1s ease;
+  transition:
+    left 0.3s ease,
+    background 0.3s ease,
+    box-shadow 0.1s ease,
+    transform 0.1s ease,
+    -webkit-box-shadow 0.1s ease,
+    -webkit-transform 0.1s ease;
+}
+
+.switch label .lever::before {
+  background-color: rgb(38 166 154 / 15%);
+}
+
+.switch label .lever::after {
+  background-color: #f1f1f1;
+  box-shadow:
+    0 3px 1px -2px rgb(0 0 0 / 20%),
+    0 2px 2px 0 rgb(0 0 0 / 14%),
+    0 1px 5px 0 rgb(0 0 0 / 12%);
+}
+
+.yw-input[type='checkbox'] {
+  border: none;
+  height: auto;
+  display: inline-block;
+  width: auto;
+  box-shadow: none;
+}
+
+.login-form-dropdown {
+  padding: 5px 15px 10px;
+  width: 300px;
+}
+
+.switch input[type='checkbox'][disabled] + .lever {
+  cursor: default;
+  background-color: rgb(0 0 0 / 12%);
+}
+
+.switch label input[type='checkbox'][disabled] + .lever::after,
+.switch label input[type='checkbox'][disabled]:checked + .lever::after {
+  background-color: #949494;
+}
+
+#search {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  background-color: rgb(0 0 0 / 70%);
+  transition: all 0.3s ease-in-out;
+  transform: translate(0, -100%) scale(0, 0);
+  opacity: 0;
+  overflow: hidden;
+}
+
+#search.open {
+  transform: translate(0, 0) scale(1, 1);
+  opacity: 1;
+  z-index: 10000;
+  width: 100% !important;
+  height: 100%;
+  display: block !important;
+}
+
+#search .yeswiki-search-form {
+  position: relative;
+  top: 50%;
+  width: 100%;
+  color: rgb(255 255 255);
+  background: rgb(0 0 0 / 0%);
+  font-weight: 300;
+  text-align: center;
+  border: 0;
+  margin: 0 auto;
+  margin-top: -51px;
+  padding: 0 1rem;
+  outline: none;
+  box-shadow: none;
+}
+
+#search .btn-search,
+#search .search-query {
+  font-size: 1.8rem;
+  height: auto !important;
+  line-height: 1em;
+}
+
+#search .close-search {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  opacity: 1;
+  padding: 0 15px;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.toast-message {
+  position: fixed;
+  top: -5rem;
+  transition:
+    top 0.5s,
+    opacity 0.3s;
+  left: 0;
+  right: 0;
+  z-index: 5000;
+  text-align: center;
+}
+
+.toast-message .alert {
+  display: inline-block;
+  box-shadow: 0 0 9px 1px rgb(0 0 0 / 42%);
+}
+
+.yeswiki-iframe-body > .container {
+  margin: 0 !important;
+  padding: 0;
+  width: 100% !important;
+}
+
+.remove-this-div-on-page-load {
+  display: none !important;
+}
+
+/* VUE SELECT */
+.v-select {
+  border: 2px solid var(--primary-color);
+  border-radius: 3px !important;
+}
+
+.v-select .vs__dropdown-toggle {
+  border: none;
+}
+
+.spinner-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.1;
+}
+
+.spinner-loader.overlay {
+  height: auto !important;
+  position: absolute;
+  inset: 0;
+  background-color: #ececec;
+  border-radius: 0.5rem;
+  opacity: 0.3;
+}
+
+.spinner-loader.overlay.super-overlay {
+  z-index: 1000;
+}
+
+section.pattern-border {
+  border-width: 4px;
+  border-style: solid;
+  padding: 2rem;
+}
+
+section.shape-rounded {
+  border-radius: 0.5rem;
+  padding: 2rem;
+}
+
+section.shape-circle {
+  border-radius: 50%;
+  padding: 4rem;
+}
+
+section.shape-blob1 {
+  border-radius: 50% 50% 59% 41% / 35% 50% 50% 65%;
+  padding: 4rem;
+}
+
+section.shape-blob2 {
+  border-radius: 33% 67% 50% 50% / 25% 19% 81% 75%;
+  padding: 4rem;
+}
+
+section.shape-blob3 {
+  border-radius: 33% 67% 50% 50% / 65% 73% 27% 35%;
+  padding: 4rem;
+}
+
+section.shape-blob4 {
+  border-radius: 23% 77% 27% 73% / 41% 31% 69% 59%;
+  padding: 4rem;
+}
+
+section.shape-blob5 {
+  border-radius: 75% 25% 76% 24% / 50% 50% 50% 50%;
+  padding: 4rem;
+}
+
+section.full-width:not(.with-bg-pattern) {
+  padding: 2rem 0;
+}
+
+.dropup:hover {
+  cursor: pointer;
+}
+
+.yeswiki-page-comments {
+  margin-top: 2em;
+}
+
+.yw-comment {
+  margin: 1em 0 3em;
+}
+
+.yw-comment .comment-info {
+  font-size: 0.8rem;
+  margin-bottom: 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.yw-comment .user-pic {
+  width: 32px;
+  height: 32px;
+  margin: 0 1em 0 0;
+}
+
+.yw-comment .comment-date {
+  color: var(--neutral-color);
+}
+
+.yw-comment .comment-html {
+  margin-bottom: 0;
+}
+
+.yw-comment .comment-links {
+  font-size: 0.8rem;
+}
+
+.comment-reponses {
+  margin-left: 3em;
+}
+
+.api-container code {
+  font-weight: normal;
+}
+
+.comment-reponses .yw-comment {
+  margin: 1em 0;
+}
+
+/* === trick to manage lists'translation === */
+
+html[lang='ca'] [lang]:not([lang='ca']),
+html[lang='en'] [lang]:not([lang='en']),
+html[lang='es'] [lang]:not([lang='es']),
+html[lang='fr'] [lang]:not([lang='fr']),
+html[lang='nl'] [lang]:not([lang='nl']),
+html[lang='pt'] [lang]:not([lang='pt']) {
+  display: none;
+}
+
+/* comment-table */
+#comments-table-action .comments-table-break-word-column {
+  overflow-wrap: break-word;
+  max-width: 170px;
+}
+
+@media (width <= 801px) {
+  #comments-table-action .comments-table-break-word-column {
+    max-width: 120px;
+  }
+}
+
+/* === === */
+
+/* reactions */
+.reactions-container {
+  margin: 2em 0;
+}
+
+.reactions-flex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: start;
+}
+
+.reaction-emoji,
+.reaction-fa-icons {
+  font-size: 3em;
+}
+
+.mini-react {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.mini-react > img {
+  max-height: 2.5em;
+  display: inline-block;
+}
+
+.mini-react .reaction-emoji,
+.mini-react .reaction-fa-icons {
+  font-size: 1.5em;
+}
+
+.reaction-content {
+  width: 9em;
+  text-align: center;
+  margin: 0 1em 1em 0;
+  padding: 0;
+  font-size: 0.9em;
+}
+
+.reaction-title {
+  color: var(--neutral-color);
+  text-transform: uppercase;
+  font-size: 12px;
+  margin-top: 1em;
+  word-wrap: anywhere;
+}
+
+.reaction-numbers {
+  color: var(--neutral-color);
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.link-reaction {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  place-content: center space-between;
+  height: 100%;
+  border: 1px solid rgb(0 0 0 / 20%);
+  border-radius: 0.5em;
+  padding: 1em 0.5em;
+  transition: all 200ms ease-in;
+  box-shadow: none;
+}
+
+.link-reaction:hover {
+  border: 1px solid rgb(0 0 0 / 50%);
+  box-shadow: 0 0 3px rgb(0 0 0 / 30%);
+  text-decoration: none;
+}
+
+.link-reaction:focus,
+.link-reaction:active,
+.link-reaction:visited {
+  text-decoration: none;
+}
+
+.disabled,
+.disabled:hover {
+  cursor: not-allowed !important;
+}
+
+.user-reaction {
+  border: 3px solid var(--primary-color);
+}
+
+.user-reaction:hover {
+  border: 3px solid rgb(0 0 0 / 50%);
+  box-shadow: 0 0 3px rgb(0 0 0 / 30%);
+  text-decoration: none;
+}
+
+/* favorites */
+.favorites {
+  transition: all 200ms ease-in;
+  box-shadow: none;
+}
+
+.favorites:focus,
+.favorites:active,
+.favorites:visited {
+  text-decoration: none;
+}
+
+.favorites > i {
+  margin-right: 0 !important;
+}
+
+/* users-table.twig */
+@media (width <= 1200px) {
+  #users-table-action {
+    overflow-x: auto;
+  }
+}
+
+td.users-table-break-word {
+  overflow-wrap: break-word;
+  max-width: 250px;
+}
+
+.yeswiki-tab .yeswiki-tab-btnnav {
+  margin-top: 0.6rem;
+}
+
+/* hide login text on navbar, but show it in dropdown menu */
+.login-text {
+  display: none;
+}
+
+.dropdown-menu .login-text {
+  display: inline;
+}
+
+.panel button.panel-heading {
+  width: 100%;
+  text-align: left;
+  border: none;
+}
+
+/* ============================================================
+   yw-* design system (ADR-0004)
+   ============================================================ */
 /* ---- Buttons ------------------------------------------------ */
 .yw-btn {
   display: inline-block;
   padding: 6px 12px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
   text-align: center;
@@ -854,9 +1738,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .text-danger {
   color: var(--danger-color);
 }
-.text-warning {
-  color: var(--warning-color);
-}
+
 .text-success {
   color: var(--success-color);
 }
@@ -1149,16 +2031,13 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 .table-striped tbody tr:nth-child(odd) {
   background: var(--neutral-light-color, #f9f9f9);
 }
-.table-hover tbody tr:hover {
-  background: #eef6f7;
-}
+
 .table-responsive {
   overflow-x: auto;
 }
 
 /* legacy dropdown markup: yw-core.js toggles .open on .dropdown-menu's parent */
 .dropdown,
-.btn-group.bootstrap-select,
 .dropup {
   position: relative;
   display: inline-block;
@@ -1407,9 +2286,9 @@ ul.nav-tabs li.active a {
 .yw-icon--spin {
   animation: yw-icon-spin 2s linear infinite;
 }
-.yw-icon--spin-fast {
-  animation: yw-icon-spin 0.7s linear infinite;
-}
+
 @keyframes yw-icon-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

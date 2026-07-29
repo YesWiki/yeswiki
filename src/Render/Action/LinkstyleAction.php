@@ -92,14 +92,8 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
     {
         $themeManager = $this->getService(ThemeManager::class);
         $favoriteStyle = $themeManager->getFavoriteStyle();
-        // ticket 16: Bootstrap CSS is not loaded anymore — the yw-* design system
-        // (yeswiki-base.css + yw-core.css) is the only core-provided styling
-
-        // styles par defaut de yeswiki
-        echo $this->getService(AssetsManager::class)->LinkCSSFile('styles/yeswiki-base.css');
-
-        // yw-* core design system (ADR-0004): namespaced under yw-*, safe to load
-        // alongside Bootstrap/a theme without class collisions
+        // ticket 16: Bootstrap CSS is not loaded anymore — yw-core.css (base styles
+        // + the yw-* design system, ADR-0004) is the only core-provided styling
         echo $this->getService(AssetsManager::class)->LinkCSSFile('styles/yw-core.css');
 
         // presets activated and path ?

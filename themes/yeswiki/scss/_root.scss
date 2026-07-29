@@ -3,7 +3,7 @@
  * Bootstrap-based margot theme as THEME_PAR_DEFAUT).
  *
  * Two-tier CSS variables, same contract as margot so presets and custom CSS
- * carry over: the 9 base variables (colors + fonts, in yeswiki-base.css's
+ * carry over: the 9 base variables (colors + fonts, in yw-core.css's
  * :root and overridden by presets/*.css or custom presets) feed the derived
  * variables below, which the actual styling consumes. Override either tier
  * from a preset or custom CSS. */
