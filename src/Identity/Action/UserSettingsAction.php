@@ -19,6 +19,7 @@ use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class UserSettingsAction extends YesWikiAction implements RegisteredAction
@@ -300,7 +301,7 @@ class UserSettingsAction extends YesWikiAction implements RegisteredAction
     private function resetPassword(?User $user, array $post)
     {
         $link = $this->userManager->sendPasswordRecoveryEmail($user);
-        if (!boolval($this->wiki->config['contact_disable_email_for_password'])) {
+        if (!boolval($this->getService(RuntimeConfig::class)['contact_disable_email_for_password'])) {
             Flash::success(str_replace('{email}', $user['email'], _t('RECOVERY_MESSAGE_SENT')));
         }
         $resetText = _t('RECOVERY_LINK');

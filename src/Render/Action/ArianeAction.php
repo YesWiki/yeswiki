@@ -6,6 +6,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -130,7 +131,7 @@ class ArianeAction extends YesWikiAction implements RegisteredAction
 
         $page_trail = "<ol class=\"yw-breadcrumb\">\n"
             . '<li><a href="'
-            . $this->getService(UrlFormatter::class)->href('', $this->wiki->config['root_page'])
+            . $this->getService(UrlFormatter::class)->href('', $this->getService(RuntimeConfig::class)['root_page'])
             . '"><span class="fa fa-home"></span></a></li>'
             . "\n";
 

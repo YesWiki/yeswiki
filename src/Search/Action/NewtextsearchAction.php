@@ -11,6 +11,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\SearchManager;
@@ -67,7 +68,7 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
         // séparateur entre les éléments trouvés
         $separator = $this->getService(PerformableArguments::class)->get('separator', false);
         // prefixe des tables pour ce wiki
-        $prefixe = $this->wiki->config['table_prefix'];
+        $prefixe = $this->getService(RuntimeConfig::class)['table_prefix'];
         // prefixe des tables pour ce wiki
         $user = $this->getService(AuthenticationService::class)->getLoggedUser();
         // nombre de pages dont on affiche une partie du contenu

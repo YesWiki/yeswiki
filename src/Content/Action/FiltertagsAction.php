@@ -10,6 +10,7 @@ use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
@@ -77,7 +78,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         $dbService = $this->wiki->services->get(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
         $req = "SELECT DISTINCT tag, time, $userCol, owner, body
-        FROM " . $this->wiki->config['table_prefix'] . 'pages, ' . $this->wiki->config['table_prefix'] . "triples tags
+        FROM " . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages, ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "triples tags
         WHERE latest = 'Y' AND comment_on = '' AND tags.value IN (" . $taglist . ") AND tags.property = 'http://outils-reseaux.org/_vocabulary/tag' AND tags.resource = tag AND tag NOT IN ('" . implode("','", $this->getService(InclusionStack::class)->getAll()) . "') ORDER BY tag ASC";
         $pages = $this->getService(DbService::class)->loadAll($req);
 

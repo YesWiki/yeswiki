@@ -8,6 +8,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
 
@@ -29,7 +30,7 @@ class ContactAction extends YesWikiAction implements RegisteredAction
         return [
             'correspondance' => $arg['correspondance'] ?? null,
             'mail' => $mailList,
-            'entete' => $arg['entete'] ?? $this->wiki->config['yeswiki_name'],
+            'entete' => $arg['entete'] ?? $this->getService(RuntimeConfig::class)['yeswiki_name'],
             'template' => $arg['template'] ?? 'complete-contact-form.twig',
             'class' => (!empty($arg['class']) ? 'form-contact ' . $arg['class'] : 'form-contact'),
         ];

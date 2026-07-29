@@ -5,6 +5,7 @@ namespace YesWiki\Content\Handler;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 class QrcodetrocHandler extends YesWikiHandler implements RegisteredHandler
 {
@@ -18,16 +19,16 @@ class QrcodetrocHandler extends YesWikiHandler implements RegisteredHandler
     {
         // allow to pass get parameters, fallback on default config
         $relation = empty($_GET['relation']) ?
-            $this->wiki->config['qrcode_config']['default_relation_type'] :
+            $this->getService(RuntimeConfig::class)['qrcode_config']['default_relation_type'] :
             $_GET['relation'];
         $formuser = empty($_GET['formuser']) ?
-            $this->wiki->config['qrcode_config']['default_user_form'] :
+            $this->getService(RuntimeConfig::class)['qrcode_config']['default_user_form'] :
             $_GET['formuser'];
         $refresh = empty($_GET['refresh']) ?
-            $this->wiki->config['qrcode_config']['visualisation_refresh_period'] :
+            $this->getService(RuntimeConfig::class)['qrcode_config']['visualisation_refresh_period'] :
             $_GET['refresh'];
         $form = empty($_GET['form']) ?
-            $this->wiki->config['qrcode_config']['relation_form_id'] :
+            $this->getService(RuntimeConfig::class)['qrcode_config']['relation_form_id'] :
             $_GET['form'];
 
         $output = '';

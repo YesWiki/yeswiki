@@ -12,6 +12,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
@@ -32,7 +33,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
 
     public function formatArguments($arg)
     {
-        $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0') || $this->wiki->GetConfigValue('noSignupButton', false);
+        $noSignupButton = (isset($arg['signupurl']) && $arg['signupurl'] === '0') || $this->getService(RuntimeConfig::class)->getValue('noSignupButton', false);
         $incomingurl = !empty($arg['incomingurl'])
             ? $this->getService(UrlFormatter::class)->generateLink($arg['incomingurl'])
         : $this->getIncomingUrlFromRequest();
@@ -43,7 +44,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
             // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
             'context' => $arg['context'] ?? $this->getService(PageContext::class)->getTag(),
             'signupurl' => $noSignupButton ? '0' : (
-                $this->getService(UrlFormatter::class)->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametresUtilisateur'))
+                $this->getService(UrlFormatter::class)->generateLink($arg['signupurl'] ?? $this->getService(RuntimeConfig::class)->getValue('signupUrl', 'ParametresUtilisateur'))
             ),
 
             'profileurl' => empty($arg['profileurl'])

@@ -119,13 +119,13 @@ class TemplateEngine
         $this->twig->addGlobal('user', [
             'name' => (!isset($_SESSION['user']) || empty($_SESSION['user']['name'])) ? '' : $_SESSION['user']['name'],
         ]);
-        $this->twig->addGlobal('config', $this->wiki->config);
+        $this->twig->addGlobal('config', $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->all());
         $this->twig->addGlobal('isInIframe', testUrlInIframe());
 
         // Adds Helpers
         $this->addTwigFilters();
         $this->addTwigHelper('dump', function ($var) {
-            if (!empty($this->wiki->config['debug'])) {
+            if (!empty($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['debug'])) {
                 return dump($var);
             }
 
@@ -422,7 +422,7 @@ class TemplateEngine
             throw new TemplateNotFound(_t('TEMPLATE_FILE_NOT_FOUND') . " : $templatePath");
         }
         $data = array_merge($data, [
-            'config' => $this->wiki->config,
+            'config' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->all(),
         ]);
 
         return $this->twig->render($templatePath, $data);

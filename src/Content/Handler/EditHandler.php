@@ -20,6 +20,7 @@ use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -70,7 +71,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             }
 
             if (
-                $this->wiki->config['use_hashcash']
+                $this->getService(RuntimeConfig::class)['use_hashcash']
                 && isset($_POST['submit']) && $_POST['submit'] == InputFilter::EDIT_PAGE_SUBMIT_VALUE
                 && !$this->wiki->services->get(HashCashService::class)->checkHashcash()
             ) {
@@ -85,7 +86,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 unset($error);
             }
 
-            if ($this->wiki->config['use_alerte']) {
+            if ($this->getService(RuntimeConfig::class)['use_alerte']) {
                 $js = "// par défaut, pas de popup d'alerte pour quitter la page
                 var showPopup = false;
 
@@ -224,7 +225,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             // Edition
             if (!isset($_POST['submit']) || $_POST['submit'] != InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
-                if ($this->wiki->config['use_hashcash']) {
+                if ($this->getService(RuntimeConfig::class)['use_hashcash']) {
                     $hashCash = $this->wiki->services->get(HashCashService::class);
                     $hashCashCode = $hashCash->getJavascriptCode();
                     $plugin_output_new = preg_replace(
@@ -247,7 +248,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $themeManager = $this->wiki->services->get(ThemeManager::class);
 
         // personnalisation graphique que dans le cas ou on est autorise
-        if ((!isset($this->wiki->config['hide_action_template']) or (isset($this->wiki->config['hide_action_template']) && !$this->wiki->config['hide_action_template']))
+        if ((!isset($this->getService(RuntimeConfig::class)['hide_action_template']) or (isset($this->getService(RuntimeConfig::class)['hide_action_template']) && !$this->getService(RuntimeConfig::class)['hide_action_template']))
             && ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read') && (!SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME || (SEUL_ADMIN_ET_PROPRIO_CHANGENT_THEME && ($this->getService(AclService::class)->isAdmin() || $this->getService(AclService::class)->isOwner()))))
         ) {
             // graphical options : theme and background image
@@ -287,7 +288,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $hidden = '';
         // cas des pages speciales
         if (isset($_SERVER['HTTP_REFERER'])) {
-            $pagetag = str_replace($this->wiki->config['base_url'], '', $_SERVER['HTTP_REFERER']);
+            $pagetag = str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_SERVER['HTTP_REFERER']);
             if ($this->getService(UrlFormatter::class)->isWikiName($pagetag) && in_array(
                 $pagetag,
                 ['PageFooter', 'PageHeader', 'PageTitre', 'PageRapideHaut', 'PageMenuHaut', 'PageMenu']
@@ -397,7 +398,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $body = trim($body) . "\n\n----\n\n-- " . $this->getService(AuthenticationService::class)->getLoggedUserName() . ' (' . date('c') . ')';
                     }
 
-                    $passwordForEditing = !empty($this->wiki->config['password_for_editing']) && $request->request->has('password_for_editing');
+                    $passwordForEditing = !empty($this->getService(RuntimeConfig::class)['password_for_editing']) && $request->request->has('password_for_editing');
 
                     $output .= $this->wiki->render('@core/handlers/edit.twig', [
                         'error' => $error ?? null,

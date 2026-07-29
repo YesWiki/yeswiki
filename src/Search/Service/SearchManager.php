@@ -1038,7 +1038,7 @@ class SearchManager
             return $searchResults;
         }
         $results = $this->dbService->loadAll($requete);
-        $debug = (bool)$this->wiki->GetConfigValue('debug');
+        $debug = (bool)$this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
 
         $vPageManager = $this->wiki->services->get(PageManager::class);
         $vEntryManager = $this->wiki->services->get(EntryManager::class);
@@ -1242,7 +1242,7 @@ class SearchManager
      */
     public function getMinSearchKeywordLength()
     {
-        $vMinimumSearchKeywordLength = $this->wiki->GetConfigValue('min_search_keyword_length');
+        $vMinimumSearchKeywordLength = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('min_search_keyword_length');
 
         if (empty($vMinimumSearchKeywordLength)) {
             $vMinimumSearchKeywordLength = MIN_SEARCH_KEYWORD_LENGTH;

@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\ThemeManager;
 
 /**
@@ -119,9 +120,9 @@ class LinkjavascriptAction extends YesWikiAction implements RegisteredAction
         $wikiprops = [
             'locale' => $GLOBALS['prefered_language'],
             'timezone' => date_default_timezone_get(),
-            'baseUrl' => $this->wiki->config['base_url'],
+            'baseUrl' => $this->getService(RuntimeConfig::class)['base_url'],
             'pageTag' => $this->getService(PageContext::class)->getTag(),
-            'isDebugEnabled' => ($this->wiki->GetConfigValue('debug') ? 'true' : 'false'),
+            'isDebugEnabled' => ($this->getService(RuntimeConfig::class)->getValue('debug') ? 'true' : 'false'),
             'antiCsrfToken' => $this->wiki->services->get(CsrfTokenManager::class)->getToken('main')->getValue(),
         ];
 
@@ -137,7 +138,7 @@ class LinkjavascriptAction extends YesWikiAction implements RegisteredAction
                     }
                 },
                 ...{
-                	minSearchKeywordLength : ' . (isset($this->wiki->config['min_search_keyword_length']) ? intval($this->wiki->config['min_search_keyword_length']) : MIN_SEARCH_KEYWORD_LENGTH) . '
+                	minSearchKeywordLength : ' . (isset($this->getService(RuntimeConfig::class)['min_search_keyword_length']) ? intval($this->getService(RuntimeConfig::class)['min_search_keyword_length']) : MIN_SEARCH_KEYWORD_LENGTH) . '
                 }
             };
         </script>';

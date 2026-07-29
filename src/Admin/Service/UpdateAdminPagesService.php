@@ -4,10 +4,10 @@ namespace YesWiki\Admin\Service;
 
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Controller\InstallationController;
-use YesWiki\Kernel\Entity\Messages;
-use YesWiki\Wiki;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Kernel\Entity\Messages;
+use YesWiki\Wiki;
 
 class UpdateAdminPagesService
 {
@@ -30,7 +30,7 @@ class UpdateAdminPagesService
 
     public function updateAll(): Messages
     {
-        return $this->update($this->wiki->config['admin_pages_to_update'] ?? []);
+        return $this->update($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['admin_pages_to_update'] ?? []);
     }
 
     /**

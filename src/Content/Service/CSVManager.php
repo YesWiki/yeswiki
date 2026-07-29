@@ -39,7 +39,7 @@ class CSVManager
         $this->entryManager = $entryManager;
         $this->formManager = $formManager;
         $this->wiki = $wiki;
-        $this->debug = (bool)$this->wiki->GetConfigValue('debug');
+        $this->debug = (bool)$this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
         $this->importdone = false;
         $this->errormsg = [];
     }
@@ -659,7 +659,7 @@ class CSVManager
                         $datetime = \DateTime::createFromFormat(
                             'd/m/Y H:i:s',
                             $value,
-                            new \DateTimeZone($this->wiki->config['timezone']),
+                            new \DateTimeZone($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['timezone']),
                         );
                         $value = $datetime->getTimestamp();
                     }
@@ -676,7 +676,7 @@ class CSVManager
         if ($this->wiki->services->get(AclService::class)->isAdmin()) {
             $entry['status'] = 1;
         } else {
-            $entry['status'] = $this->wiki->config['BAZ_ETAT_VALIDATION'];
+            $entry['status'] = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_ETAT_VALIDATION'];
         }
         foreach ($skipFields as $field) {
             if (isset($entry[$field])) {

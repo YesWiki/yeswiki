@@ -8,6 +8,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -58,13 +59,13 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
         }
 
         if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
-            $link = $this->wiki->GetConfigValue('root_page');
+            $link = $this->getService(RuntimeConfig::class)->getValue('root_page');
         }
 
-        $title = _t('LATEST_COMMENTS_ON') . ' ' . $this->wiki->GetConfigValue('yeswiki_name');
+        $title = _t('LATEST_COMMENTS_ON') . ' ' . $this->getService(RuntimeConfig::class)->getValue('yeswiki_name');
         $rssLink = $this->getService(UrlFormatter::class)->href('', $link);
         $rssDescription = _t('LATEST_COMMENTS_ON') . ' '
-            . $this->wiki->GetConfigValue('yeswiki_name');
+            . $this->getService(RuntimeConfig::class)->getValue('yeswiki_name');
 
         $output = "<rss version=\"2.0\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">
             <channel>

@@ -67,7 +67,7 @@ class Attach
             $this->attachConfig['max_file_size'] = $this->params->get('max-upload-size');
         }
 
-        $safemode = $this->wiki->GetConfigValue('no_safe_mode');
+        $safemode = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('no_safe_mode');
         if (empty($safemode)) {
             if (version_compare(phpversion(), '5.3', '<')) {
                 // le safe_mode n'existe que pour php < 5.3
@@ -457,16 +457,16 @@ class Attach
         $size = $this->wiki->services->get(PerformableArguments::class)->get('size');
         switch ($size) {
             case 'small':
-                $this->width = $this->wiki->config['image-small-width'];
-                $this->height = $this->wiki->config['image-small-height'];
+                $this->width = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-small-width'];
+                $this->height = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-small-height'];
                 break;
             case 'medium':
-                $this->width = $this->wiki->config['image-medium-width'];
-                $this->height = $this->wiki->config['image-medium-height'];
+                $this->width = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-medium-width'];
+                $this->height = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-medium-height'];
                 break;
             case 'big':
-                $this->width = $this->wiki->config['image-big-width'];
-                $this->height = $this->wiki->config['image-big-height'];
+                $this->width = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-big-width'];
+                $this->height = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['image-big-height'];
                 break;
         }
 

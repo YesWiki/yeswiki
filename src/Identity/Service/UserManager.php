@@ -349,7 +349,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
         ], false);
 
         // Send the email
-        if (!boolval($this->wiki->config['contact_disable_email_for_password'])) {
+        if (!boolval($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['contact_disable_email_for_password'])) {
             $pieces = parse_url($this->params->get('base_url'));
             $domain = isset($pieces['host']) ? $pieces['host'] : '';
 
@@ -570,7 +570,7 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             }
         } catch (\Throwable $th) {
             // only throw error in debug mode
-            if ($this->wiki->GetConfigValue('debug')) {
+            if ($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug')) {
                 throw $th;
             }
         }

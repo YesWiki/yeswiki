@@ -14,6 +14,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
@@ -142,7 +143,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
     private function getDebugMode(): bool
     {
         if (is_null($this->debugMode)) {
-            $this->debugMode = ($this->wiki->GetConfigValue('debug') == 'yes');
+            $this->debugMode = ($this->getService(RuntimeConfig::class)->getValue('debug') == 'yes');
         }
 
         return $this->debugMode;
@@ -183,8 +184,8 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             );
 
             // TODO find a way not to change config
-            $this->wiki->config['toast_class'] = 'alert alert-warning';
-            $this->wiki->config['toast_duration'] = 10000;
+            $this->getService(RuntimeConfig::class)['toast_class'] = 'alert alert-warning';
+            $this->getService(RuntimeConfig::class)['toast_duration'] = 10000;
         }
     }
 

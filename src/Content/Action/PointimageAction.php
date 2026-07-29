@@ -10,6 +10,7 @@ use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -130,15 +131,15 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
             && isset($_POST['image_x']) && !empty($_POST['image_x'])
             && isset($_POST['image_y']) && !empty($_POST['image_y'])
             && isset($_POST['color']) && !empty($_POST['color'])) {
-            $pagetag = $dbService->escape(str_replace($this->wiki->config['base_url'], '', $_POST['pagetag']));
+            $pagetag = $dbService->escape(str_replace($this->getService(RuntimeConfig::class)['base_url'], '', $_POST['pagetag']));
             $chaine = "\n\n~~\"\"<!--" . $_POST['image_x'] . '-' . $_POST['image_y'] . '-' . $_POST['color'] . '--><!--title-->' . $_POST['title'] . "<!--/title-->\"\"\n\"\"<!--desc-->\"\"" . $_POST['description'] . "\"\"<!--/desc-->\n\"\"~~";
-            $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE tag = '" . $pagetag . "'and latest = 'Y' limit 1");
+            $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = '" . $pagetag . "'and latest = 'Y' limit 1");
             $this->getService(PageManager::class)->save($pagetag, ($donneesbody['body'] ?? '') . $chaine, '', true);
             $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
         }
 
         // get the data for the image
-        $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE tag = '" . $datapagetag . "'and latest = 'Y' limit 1");
+        $donneesbody = $this->getService(DbService::class)->loadSingle('SELECT * FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages WHERE tag = '" . $datapagetag . "'and latest = 'Y' limit 1");
 
         // search for markers info
         preg_match_all('/~~(.*)~~/msU', $donneesbody['body'] ?? '', $locations);

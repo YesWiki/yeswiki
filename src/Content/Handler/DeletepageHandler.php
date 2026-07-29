@@ -13,6 +13,7 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -188,7 +189,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
             } else {
                 // it's the current page which has been deleted (and not from a modal box), redirect to the homepage
                 $this->getService(FlashMessageService::class)->setMessage($msg);
-                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->wiki->config['root_page']));
+                $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->getService(RuntimeConfig::class)['root_page']));
             }
         }
 

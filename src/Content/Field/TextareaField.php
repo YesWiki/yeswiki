@@ -68,7 +68,7 @@ class TextareaField extends BazarField
             $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
         }
 
-        $tempTag = !isset($entry['tag']) ? ($wiki->config['temp_tag_for_entry_creation'] ?? null) : null;
+        $tempTag = !isset($entry['tag']) ? ($wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) : null;
         if ($tempTag) {
             $tempTag .= '_' . bin2hex(random_bytes(10));
         }
@@ -162,7 +162,7 @@ class TextareaField extends BazarField
     private function sanitizeAttach(string $text, array $entry): string
     {
         $wiki = $this->getWiki();
-        $temp_tag_for_entry_creation = $wiki->config['temp_tag_for_entry_creation'];
+        $temp_tag_for_entry_creation = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'];
 
         if (preg_match_all("/({{attach[^}]*file=\")(({$temp_tag_for_entry_creation}_[A-Fa-f0-9]+)\/([^\"]*))(\"[^}]*}})/m", $text, $matches)) {
             $entryCreationTime = $this->getEntryCreationTime($entry);

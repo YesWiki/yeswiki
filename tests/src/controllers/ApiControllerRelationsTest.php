@@ -53,8 +53,8 @@ class ApiControllerRelationsTest extends YesWikiTestCase
             'condition' => '',
         ]);
 
-        $originalRelationFormId = $wiki->config['qrcode_config']['relation_form_id'];
-        $wiki->config['qrcode_config']['relation_form_id'] = self::RELATION_FORM_ID;
+        $originalRelationFormId = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'];
+        $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'] = self::RELATION_FORM_ID;
 
         $relationTag = null;
         try {
@@ -104,7 +104,7 @@ class ApiControllerRelationsTest extends YesWikiTestCase
                 'entry1 and entry2 must be the two distinct linked entities, not the same one twice'
             );
         } finally {
-            $wiki->config['qrcode_config']['relation_form_id'] = $originalRelationFormId;
+            $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['qrcode_config']['relation_form_id'] = $originalRelationFormId;
             $entryManager->delete(self::ENTITY1_TAG, true);
             $entryManager->delete(self::ENTITY2_TAG, true);
             if ($relationTag) {

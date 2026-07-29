@@ -155,7 +155,7 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         $groupmembers = explode("\n", $groupmembers);
         $groupmembers = array_map('trim', $groupmembers);
 
-        $mailheader = '[' . str_replace(['http://', 'https://', '/?'], '', $GLOBALS['wiki']->config['base_url']) . ']';
+        $mailheader = '[' . str_replace(['http://', 'https://', '/?'], '', $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['base_url']) . ']';
         if (empty($subject)) {
             $subject = $mailheader . ' ' . getPageTitle($page) . ' (' . $sub . ' ' . date('d.m.Y') . ')';
         }
@@ -169,7 +169,7 @@ function sendPeriodicalMailToGroup($period, $groups, $subject = '')
         foreach ($groupmembers as $member) {
             $user = $GLOBALS['wiki']->services->get(UserManager::class)->getOneByName($member);
             if (!empty($user['email'])) {
-                $mailer->send($GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->config['BAZ_ADRESSE_MAIL_ADMIN'], $user['email'], $subject, $message_txt, $message_html);
+                $mailer->send($GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_ADRESSE_MAIL_ADMIN'], $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_ADRESSE_MAIL_ADMIN'], $user['email'], $subject, $message_txt, $message_html);
             }
         }
     }

@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\ThemeManager;
 
 /**
@@ -140,7 +141,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
         }
 
         // on ajoute les icones de fontawesome
-        if (empty($this->wiki->config['fontawesome']) || $this->wiki->config['fontawesome'] != '0') {
+        if (empty($this->getService(RuntimeConfig::class)['fontawesome']) || $this->getService(RuntimeConfig::class)['fontawesome'] != '0') {
             echo $this->getService(AssetsManager::class)->LinkCSSFile('styles/vendor/fontawesome/css/all.min.css');
         }
 

@@ -97,9 +97,9 @@ class AdminPagesApiController extends YesWikiController
 
         $totalPages = max(1, (int)ceil($total / $perpage));
 
-        $defaultRead = $this->wiki->config['default_read_acl'] ?? '*';
-        $defaultWrite = $this->wiki->config['default_write_acl'] ?? '*';
-        $defaultComment = $this->wiki->config['default_comment_acl'] ?? '*';
+        $defaultRead = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_read_acl'] ?? '*';
+        $defaultWrite = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_write_acl'] ?? '*';
+        $defaultComment = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_acl'] ?? '*';
 
         $pages = array_map(function ($r) use ($defaultRead, $defaultWrite, $defaultComment) {
             $metadata = !empty($r['page_metadata']) ? (json_decode($r['page_metadata'], true) ?? []) : [];

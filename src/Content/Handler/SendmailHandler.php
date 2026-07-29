@@ -4,6 +4,7 @@ namespace YesWiki\Content\Handler;
 
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 /**
  * `/PageName/sendmail` -- converted from the procedural handlers/page/sendmail.php by ticket 06.
@@ -37,7 +38,7 @@ class SendmailHandler extends YesWikiHandler implements RegisteredHandler
         // cron-triggered periodic mailing-list digest sender (?page/sendmail&key=...&period=...).
 
         // verify that passphrase was set, and that GET parameter key is egal to passphrase
-        if (!empty($this->wiki->config['contact_passphrase']) && isset($_GET['key']) && $_GET['key'] === $this->wiki->config['contact_passphrase']) {
+        if (!empty($this->getService(RuntimeConfig::class)['contact_passphrase']) && isset($_GET['key']) && $_GET['key'] === $this->getService(RuntimeConfig::class)['contact_passphrase']) {
             echo 'Clé valide !<br>';
             include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
             if (isset($_GET['period']) && in_array($_GET['period'], ['day', 'week', 'month'], true)) {

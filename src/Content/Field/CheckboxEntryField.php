@@ -20,15 +20,15 @@ class CheckboxEntryField extends CheckboxField
         // load options only when needed but not at construct to prevent infinite loops
 
         $wiki = $this->services->get(Wiki::class);
-        $this->displayFilterLimit = $wiki->config['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
-        $this->displaySelectAllLimit = empty($wiki->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
+        $this->displayFilterLimit = $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXLISTE_SANS_FILTRE'];
+        $this->displaySelectAllLimit = empty($wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL']) ?
             $this->displayFilterLimit :
-            $wiki->config['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
+            $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_WITHOUT_SELECTALL'];
         $this->formName = null;
         $this->normalDisplayMode = (in_array(
-            $wiki->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
+            $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'],
             array_keys(self::CHECKBOX_TWIG_LIST)
-        )) ? $wiki->config['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
+        )) ? $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_MAX_CHECKBOXENTRY_DISPLAY_MODE'] :
             self::CHECKBOX_DISPLAY_MODE_LIST;
         $this->dragAndDropDisplayMode = '@core/inputs/checkbox_drag_and_drop_entry.twig';
 

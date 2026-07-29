@@ -153,7 +153,7 @@ class MarkdownFormatterService
             $wiki = $this->wiki;
 
             $environment = new Environment([
-                'html_input' => $wiki->GetConfigValue('allow_raw_html', true) ? 'allow' : 'escape',
+                'html_input' => $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('allow_raw_html', true) ? 'allow' : 'escape',
                 'allow_unsafe_links' => false,
                 // GithubFlavoredMarkdownExtension pulls in DisallowedRawHtmlExtension, which by
                 // default escapes <iframe> along with <script>/<style>/etc.; YesWiki pages rely
@@ -167,7 +167,7 @@ class MarkdownFormatterService
                     'fragment_prefix' => 'toc',
                 ],
                 'disallowed_raw_html' => [
-                    'disallowed_tags' => $wiki->GetConfigValue('disallowed_html_tags', [
+                    'disallowed_tags' => $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('disallowed_html_tags', [
                         'title', 'textarea', 'style', 'xmp', 'noembed', 'noframes', 'script', 'plaintext',
                     ]),
                 ],

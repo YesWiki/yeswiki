@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 class FaviconAction extends YesWikiAction implements RegisteredAction
 {
@@ -18,11 +19,11 @@ class FaviconAction extends YesWikiAction implements RegisteredAction
 
     public function run(): string
     {
-        $favicon = $this->wiki->getConfigValue('favicon');
+        $favicon = $this->getService(RuntimeConfig::class)->getValue('favicon');
 
         // backward compatibility, favicon used to be in the theme folder
         if (!$favicon) {
-            $favicon = "themes/{$this->wiki->getConfigValue('favorite_theme')}/images/favicon.png";
+            $favicon = "themes/{$this->getService(RuntimeConfig::class)->getValue('favorite_theme')}/images/favicon.png";
             if (file_exists("custom/$favicon")) {
                 $favicon = "custom/$favicon";
             } // handles custom theme

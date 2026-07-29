@@ -97,7 +97,7 @@ class AssetsManager
         // URL still works there thanks to AssetPublisher's direct-path interception
         if ($isUrl || !empty($file) && (file_exists($file) || file_exists(YESWIKI_SOURCE_DIR . '/' . $file))) {
             $href = $isUrl ? $file : "{$this->urlFormatter->getBaseUrl()}/{$file}";
-            $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
+            $revision = $this->wiki->services->get(RuntimeConfig::class)->getValue('yeswiki_release', null);
 
             return <<<HTML
                 $conditionstart
@@ -125,7 +125,7 @@ class AssetsManager
             $GLOBALS['js'] = '';
         }
 
-        $revision = $this->wiki->GetConfigValue('yeswiki_release', null);
+        $revision = $this->wiki->services->get(RuntimeConfig::class)->getValue('yeswiki_release', null);
         $initChar = (strpos($file, '?') !== false) ? '&' : '?';
         $rev = ($revision) ? $initChar . 'v=' . $revision : '';
 
@@ -184,7 +184,7 @@ class AssetsManager
 
     private function assetsVersion(): string
     {
-        $release = $this->wiki->GetConfigValue('yeswiki_release');
+        $release = $this->wiki->services->get(RuntimeConfig::class)->getValue('yeswiki_release');
 
         return AssetPublisher::sanitizeVersion($release !== '' ? $release : 'dev');
     }
@@ -197,7 +197,7 @@ class AssetsManager
         }
 
         // Handle production environement
-        if (!$this->wiki->GetConfigValue('debug')) {
+        if (!$this->wiki->services->get(RuntimeConfig::class)->getValue('debug')) {
             if (array_key_exists($file, self::PRODUCTION_PATH_MAPPING)) {
                 $file = self::PRODUCTION_PATH_MAPPING[$file];
             }

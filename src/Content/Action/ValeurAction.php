@@ -1,9 +1,11 @@
 <?php
 
 namespace YesWiki\Content\Action;
-use YesWiki\Kernel\Service\HtmlPurifierService;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 /**
  * valeur : permet d'extraire le contenu d'une valeur de fiche bazar à partir d'une url.
@@ -20,7 +22,7 @@ class ValeurAction extends YesWikiAction implements RegisteredAction
     {
         $url = $arg['url'] ?? '';
         if (empty($url)) {
-            $url = $this->wiki->GetConfigValue('source_url');
+            $url = $this->getService(RuntimeConfig::class)->getValue('source_url');
         }
 
         return [

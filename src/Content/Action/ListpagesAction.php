@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -84,7 +85,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             if ($owner) {
                 $tree = $owner;
             } else {
-                $tree = $this->wiki->GetConfigValue('root_page');
+                $tree = $this->getService(RuntimeConfig::class)->getValue('root_page');
             }
         }
         if ($levels <= 0) {
@@ -102,7 +103,7 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
             $user = $this->getService(PageManager::class)->getOwner();
         }
 
-        $prefix = $this->wiki->GetConfigValue('table_prefix');
+        $prefix = $this->getService(RuntimeConfig::class)->getValue('table_prefix');
 
         // treatment
         $dbService = $this->wiki->services->get(DbService::class);

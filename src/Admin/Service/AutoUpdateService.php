@@ -2,9 +2,9 @@
 
 namespace YesWiki\Admin\Service;
 
-use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Admin\Entity\PackageCollection;
 use YesWiki\Admin\Entity\Repository;
+use YesWiki\Kernel\Entity\Messages;
 use YesWiki\Wiki;
 
 class AutoUpdateService
@@ -55,8 +55,8 @@ class AutoUpdateService
     {
         $repositoryAddress = $this::DEFAULT_REPO;
 
-        if (isset($this->wiki->config['yeswiki_repository'])) {
-            $repositoryAddress = $this->wiki->config['yeswiki_repository'];
+        if (isset($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'])) {
+            $repositoryAddress = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_repository'];
         }
 
         if (substr($repositoryAddress, -1, 1) !== '/') {
@@ -75,8 +75,8 @@ class AutoUpdateService
     private function getYesWikiVersion()
     {
         $version = $this::DEFAULT_VERS;
-        if (isset($this->wiki->config['yeswiki_version'])) {
-            $version = $this->wiki->config['yeswiki_version'];
+        if (isset($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'])) {
+            $version = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['yeswiki_version'];
         }
 
         return strtolower($version);

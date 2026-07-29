@@ -31,7 +31,7 @@ class DuplicationManager
      */
     private function getLocalFileUploadPath()
     {
-        $attachConfig = $this->wiki->config['attach_config'];
+        $attachConfig = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config'];
 
         if (!is_array($attachConfig)) {
             $attachConfig = [];
@@ -123,7 +123,7 @@ class DuplicationManager
                 }
             }
         }
-        $fileUrlRegex = '#' . preg_quote(str_replace('?', '', $this->wiki->config['base_url']), '#') .
+        $fileUrlRegex = '#' . preg_quote(str_replace('?', '', $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url']), '#') .
             '(' . $this->uploadPath . '/.*\.[a-zA-Z0-9]{1,16}\b([-a-zA-Z0-9!@:%_\+.~\#?&\/\/=]*))#Ui';
         preg_match_all(
             $fileUrlRegex,
@@ -308,7 +308,7 @@ class DuplicationManager
             $this->downloadFile($fileUrl, $req['originalTag'], $tag);
         }
 
-        $newUrl = explode('/?', $this->wiki->config['base_url'])[0];
+        $newUrl = explode('/?', $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['base_url'])[0];
         $newBody = str_replace($req['sourceUrl'], $newUrl, $req['originalContent']);
         if ($req['type'] === 'page') {
             $this->wiki->services->get(PageManager::class)->save($tag, $newBody);

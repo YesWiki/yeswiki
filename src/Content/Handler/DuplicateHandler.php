@@ -13,6 +13,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -148,7 +149,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
             'totalSize' => $this->duplicationManager->humanFilesize($totalSize ?? 0),
             'type' => $type ?? '',
             'form' => $form ?? '',
-            'baseUrl' => preg_replace('/\?$/Ui', '', $this->wiki->config['base_url']),
+            'baseUrl' => preg_replace('/\?$/Ui', '', $this->getService(RuntimeConfig::class)['base_url']),
             'toExternalWiki' => $toExternalWiki,
         ]);
     }

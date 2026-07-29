@@ -15,6 +15,7 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -91,7 +92,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
             $pageContext->setPageField('body', filterBodyByLanguage(
                 $pageContext->getPage()['body'],
                 $GLOBALS['prefered_language'],
-                $this->wiki->config['default_language']
+                $this->getService(RuntimeConfig::class)['default_language']
             ));
         }
     }

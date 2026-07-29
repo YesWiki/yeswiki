@@ -54,6 +54,7 @@ namespace YesWiki\Kernel\Service {
         public function initialize(): void
         {
             if (!defined('YW_CHARSET')) {
+                // pre-boot: reads the raw property, the container does not exist yet
                 define('YW_CHARSET', $GLOBALS['wiki']->config['charset'] ?? 'UTF-8');
             }
             if (!defined('SUPPORTED_LANGS')) {
@@ -167,6 +168,7 @@ namespace YesWiki\Kernel\Service {
             }
 
             // default language from config file
+            // pre-boot tolerant: $wiki may be '' or an un-booted Wiki here, so read the raw property
             $configLang = !empty($wiki) && isset($wiki->config['default_language']) && in_array($wiki->config['default_language'], $availableLanguages)
                 ? $wiki->config['default_language'] : '';
 

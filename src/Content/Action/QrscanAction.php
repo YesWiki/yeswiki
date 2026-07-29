@@ -17,6 +17,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 class QrscanAction extends YesWikiAction implements RegisteredAction
 {
@@ -34,15 +35,15 @@ class QrscanAction extends YesWikiAction implements RegisteredAction
         // Parameters init
         $relation = $this->getService(PerformableArguments::class)->get('relation');
         if (empty($relation)) {
-            $relation = $this->wiki->config['qrcode_config']['default_relation_type'];
+            $relation = $this->getService(RuntimeConfig::class)['qrcode_config']['default_relation_type'];
         }
         $entityType = $this->getService(PerformableArguments::class)->get('entity');
         if (empty($entityType)) {
-            $entityType = $this->wiki->config['qrcode_config']['default_entity_type'];
+            $entityType = $this->getService(RuntimeConfig::class)['qrcode_config']['default_entity_type'];
         }
         $entityForm = $this->getService(PerformableArguments::class)->get('entityform');
         if (empty($entityForm)) {
-            $entityForm = $this->wiki->config['qrcode_config']['default_entity_form'];
+            $entityForm = $this->getService(RuntimeConfig::class)['qrcode_config']['default_entity_form'];
         }
         $speak = $this->getService(PerformableArguments::class)->get('speak');
         if ($speak == '0' or $speak == 'false' or $speak == 'no') {

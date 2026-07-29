@@ -87,7 +87,7 @@ class CommentService implements EventSubscriberInterface
                 $newComment = true;
                 // find number
                 $sql = 'SELECT MAX(SUBSTRING(tag, 8) + 0) AS comment_id'
-                    . ' FROM ' . $this->wiki->GetConfigValue('table_prefix') . 'pages'
+                    . ' FROM ' . $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . 'pages'
                     . " WHERE comment_on != ''";
                 if ($lastComment = $this->dbService->loadSingle($sql)) {
                     $num = $lastComment['comment_id'] + 1;
@@ -211,7 +211,7 @@ class CommentService implements EventSubscriberInterface
      */
     public function loadComments($tag, bool $bypassAcls = false, $username = null)
     {
-        $query = 'SELECT * FROM ' . $this->wiki->config['table_prefix'] . 'pages WHERE ';
+        $query = 'SELECT * FROM ' . $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix'] . 'pages WHERE ';
         if (empty($tag)) {
             $query .= "comment_on != '' ";
         } else {
@@ -341,8 +341,8 @@ class CommentService implements EventSubscriberInterface
             $data["link$key"] = $this->urlFormatter->href('', $comment[$key]);
             $data["{$key}color"] = $this->genColorCodeFromText($comment[$key]);
             $data["{$key}picture"] =
-                !empty($this->wiki->config['default_comment_avatar'])
-                ? $this->wiki->config['default_comment_avatar']
+                !empty($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_avatar'])
+                ? $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_comment_avatar']
                 : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='" . str_replace('#', '%23', $data["{$key}color"]) . "' class='bi bi-person-circle' viewBox='0 0 16 16'%3E%3Cpath d='M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z'/%3E%3Cpath fill-rule='evenodd' d='M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z'/%3E%3C/svg%3E";
         }
     }
@@ -358,13 +358,13 @@ class CommentService implements EventSubscriberInterface
         } else {
             if ($this->aclService->hasAccess('comment', $tag)) {
                 $hashCashCode = '';
-                if ($this->wiki->config['use_hashcash']) {
+                if ($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash']) {
                     $hashCash = $this->wiki->services->get(HashCashService::class);
                     $hashCashCode = $hashCash->getJavascriptCode('post-comment');
                 }
                 $page = $this->pageManager->getOne($tag);
                 $commentOn = !empty($page['comment_on']) ? $page['comment_on'] : $page['tag'];
-                $tempTag = ($this->wiki->config['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
+                $tempTag = ($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['temp_tag_for_entry_creation'] ?? null) . '_' . bin2hex(random_bytes(10));
                 $options = [
                     'pagetag' => $commentOn,
                     'formlink' => $this->urlFormatter->href('comments', 'api'),

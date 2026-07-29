@@ -11,6 +11,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -93,7 +94,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             $langFilteredBody = filterBodyByLanguage(
                 $langIncludedPage['body'],
                 $GLOBALS['prefered_language'],
-                $this->wiki->config['default_language']
+                $this->getService(RuntimeConfig::class)['default_language']
             );
             if ($langFilteredBody !== $langIncludedPage['body']) {
                 $langIncludedPage['body'] = $langFilteredBody;
@@ -148,22 +149,22 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             }
             // d'abord les liens avec des attributs class
             $plugin_output_new = preg_replace(
-                '~<a href="' . preg_quote($this->wiki->config['base_url'] . $page_active, '~') . '" class="(.*)"~Ui',
-                '<a class="active-link $1" href="' . $this->wiki->config['base_url'] . $page_active . '"',
+                '~<a href="' . preg_quote($this->getService(RuntimeConfig::class)['base_url'] . $page_active, '~') . '" class="(.*)"~Ui',
+                '<a class="active-link $1" href="' . $this->getService(RuntimeConfig::class)['base_url'] . $page_active . '"',
                 $plugin_output_new
             );
 
             // ensuite les liens restants (ceux avec une classe avant ne sont pas pris en compte)
             $plugin_output_new = $this->wiki->services->get(TemplateHelperService::class)->strIreplacement(
-                '<a href="' . $this->wiki->config['base_url'] . $page_active . '"',
-                '<a class="active-link" href="' . $this->wiki->config['base_url'] . $page_active . '"',
+                '<a href="' . $this->getService(RuntimeConfig::class)['base_url'] . $page_active . '"',
+                '<a class="active-link" href="' . $this->getService(RuntimeConfig::class)['base_url'] . $page_active . '"',
                 $plugin_output_new
             );
         }
 
         // rajoute le javascript pour le double clic si la configuration l'autorise, si le parametre est activé et les droits en écriture existent
         if (
-            !empty($this->wiki->config['allow_doubleclic']) && in_array($this->wiki->config['allow_doubleclic'], ['1', 'yes', true])
+            !empty($this->getService(RuntimeConfig::class)['allow_doubleclic']) && in_array($this->getService(RuntimeConfig::class)['allow_doubleclic'], ['1', 'yes', true])
             && !empty($dblclic) && $dblclic == '1' && $this->getService(AclService::class)->hasAccess('write', $incPageName)
         ) {
             $actiondblclic = ' ondblclick="document.location=\'' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '\';"';

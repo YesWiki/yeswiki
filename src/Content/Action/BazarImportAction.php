@@ -1,14 +1,16 @@
 <?php
 
 namespace YesWiki\Content\Action;
-use YesWiki\Identity\Service\CsrfTokenChecker;
+
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CSVManager;
 use YesWiki\Content\Service\ExternalBazarService;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 class BazarImportAction extends YesWikiAction implements RegisteredAction
 {
@@ -50,7 +52,7 @@ class BazarImportAction extends YesWikiAction implements RegisteredAction
                 [BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
                 $request->query->has('debug') ? ['debug' => 'yes'] : []
             ),
-            'debug' => (bool)$this->wiki->GetConfigValue('debug'),
+            'debug' => (bool)$this->getService(RuntimeConfig::class)->getValue('debug'),
         ];
     }
 

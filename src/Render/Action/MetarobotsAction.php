@@ -5,6 +5,7 @@ namespace YesWiki\Render\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
 
@@ -50,9 +51,9 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
             // no index if not with 'show' hander or if page is not existing
             echo '<meta name="robots" content="noindex, nofollow">' . "\n";
         } else {
-            if (isset($this->wiki->config['meta']['robots'])) {
+            if (isset($this->getService(RuntimeConfig::class)['meta']['robots'])) {
                 echo '<meta name="robots" content="'
-                    . $this->wiki->config['meta']['robots'] . '">' . "\n";
+                    . $this->getService(RuntimeConfig::class)['meta']['robots'] . '">' . "\n";
             }
             // canonical url
             $url = $this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag());
@@ -61,10 +62,10 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
             // opengraph
             echo "\n" . '  <!-- opengraph -->' . "\n";
             echo '  <meta property="og:site_name" content="'
-                . $this->wiki->config['yeswiki_name'] . '" />' . "\n";
+                . $this->getService(RuntimeConfig::class)['yeswiki_name'] . '" />' . "\n";
             $utils = $this->wiki->services->get(TemplateHelperService::class);
             $title = $utils->getTitleFromBody($this->getService(PageContext::class)->getPage());
-            echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['yeswiki_name']) . '" />' . "\n";
+            echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->services->get(RuntimeConfig::class)['yeswiki_name']) . '" />' . "\n";
             $desc = htmlspecialchars($utils->getDescriptionFromBody($this->getService(PageContext::class)->getPage(), $title), ENT_COMPAT | ENT_HTML5);
             if ($desc) {
                 echo '  <meta property="og:description" content="' . $desc . '" />' . "\n";

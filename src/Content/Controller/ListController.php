@@ -9,6 +9,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class ListController extends YesWikiController
@@ -122,7 +123,7 @@ class ListController extends YesWikiController
     {
         $this->listManager->delete($id);
 
-        if ($this->wiki->config['BAZ_ENVOI_MAIL_ADMIN']) {
+        if ($this->getService(RuntimeConfig::class)['BAZ_ENVOI_MAIL_ADMIN']) {
             $this->getService(Mailer::class)->notifyAdminsListDeleted($id);
         }
 

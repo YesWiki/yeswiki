@@ -100,7 +100,7 @@ class ThemeSelectorRenderer extends YesWikiController
 
         // page list
         $tablistWikinames = $this->wiki->services->get(DbService::class)->loadAll(
-            'SELECT DISTINCT tag FROM ' . $this->wiki->GetConfigValue('table_prefix') . "pages WHERE latest='Y'"
+            'SELECT DISTINCT tag FROM ' . $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('table_prefix') . "pages WHERE latest='Y'"
         );
         $listWikinames = [];
         foreach ($tablistWikinames as $tag) {

@@ -19,7 +19,7 @@ class HashCashServiceTest extends YesWikiTestCase
     public function testCheckHashcashIsAlwaysTrueWhenDisabled()
     {
         $wiki = $this->getWiki();
-        $wiki->config['use_hashcash'] = false;
+        $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = false;
         $wiki->request->request->remove('hashcash_value');
 
         $hashCashService = $wiki->services->get(HashCashService::class);
@@ -30,7 +30,7 @@ class HashCashServiceTest extends YesWikiTestCase
     public function testCheckHashcashFailsWhenEnabledAndValueMissing()
     {
         $wiki = $this->getWiki();
-        $wiki->config['use_hashcash'] = true;
+        $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = true;
         $wiki->request->request->remove('hashcash_value');
 
         $hashCashService = $wiki->services->get(HashCashService::class);
@@ -41,7 +41,7 @@ class HashCashServiceTest extends YesWikiTestCase
     public function testCheckHashcashSucceedsWhenEnabledAndValueMatchesSecret()
     {
         $wiki = $this->getWiki();
-        $wiki->config['use_hashcash'] = true;
+        $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = true;
 
         // ticket 05 (CP3) folded src/wp-hashcash.lib into HashCashService; the secret
         // file path is no longer a global constant

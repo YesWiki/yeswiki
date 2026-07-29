@@ -8,6 +8,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\TagsManager;
@@ -47,7 +48,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
         $req = '';
         $req_from = '';
         $req_group = '';
-        $textetitre = _t('LATEST_CHANGES_ON') . ' ' . $this->wiki->config['yeswiki_name'];
+        $textetitre = _t('LATEST_CHANGES_ON') . ' ' . $this->getService(RuntimeConfig::class)['yeswiki_name'];
 
         // on fait les tableaux pour les tags, puis on met des virgules et des guillemets
         if (!empty($tags)) {
@@ -59,7 +60,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                 header('Content-type: text/xml; charset=UTF-8');
                 $output = '<?xml version="1.0" encoding="UTF-8"?>';
                 if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
-                    $link = $this->wiki->config['root_page'];
+                    $link = $this->getService(RuntimeConfig::class)['root_page'];
                 }
                 $output .= '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"' .
                     " xmlns:atom=\"http://www.w3.org/2005/Atom\">\n";
@@ -70,7 +71,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                     $output .= $titrerss;
                 }
                 $output .= "</title>\n";
-                $output .= '<link>' . $this->wiki->config['base_url'] . $link . "</link>\n";
+                $output .= '<link>' . $this->getService(RuntimeConfig::class)['base_url'] . $link . "</link>\n";
                 $output .= '<description>' . $textetitre . "</description>\n";
                 $output .= '<atom:link href="' . $this->getService(UrlFormatter::class)->href('xml') . "\" rel=\"self\" type=\"application/rss+xml\" />\n";
                 $items = '';
@@ -81,7 +82,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                     $this->getService(PageContext::class)->setPage($page);
                     $items .= "<item>\r\n";
                     $items .= '<title>' . $page['tag'] . "</title>\r\n";
-                    $items .= '<link>' . $this->wiki->config['base_url'] . $page['tag'] . "</link>\r\n";
+                    $items .= '<link>' . $this->getService(RuntimeConfig::class)['base_url'] . $page['tag'] . "</link>\r\n";
                     $items .= '<description><![CDATA[';
 
                     if ($readAcl) {

@@ -8,6 +8,7 @@ use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\TagsManager;
@@ -65,7 +66,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         $selectiontags = " AND value IN ('" . implode("','", $tab_selected_tags) . "')";
 
         // on recupere tous les tags existants
-        $sql = 'SELECT DISTINCT value FROM ' . $this->wiki->config['table_prefix'] . "triples WHERE property='http://outils-reseaux.org/_vocabulary/tag' ORDER BY value ASC";
+        $sql = 'SELECT DISTINCT value FROM ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "triples WHERE property='http://outils-reseaux.org/_vocabulary/tag' ORDER BY value ASC";
         $tab_tous_les_tags = $this->getService(DbService::class)->loadAll($sql);
         $tab_tag = [];
         if ($tab_tous_les_tags !== []) {

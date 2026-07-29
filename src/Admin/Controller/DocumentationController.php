@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Controller;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 class DocumentationController extends YesWikiController
 {
@@ -12,7 +13,7 @@ class DocumentationController extends YesWikiController
     public function show()
     {
         return new Response($this->render('@core/documentation.twig', [
-            'config' => $this->wiki->config,
+            'config' => $this->getService(RuntimeConfig::class)->all(),
             'i18n' => $GLOBALS['translations_js'],
             'locale' => $GLOBALS['prefered_language'],
             'extensions' => $this->getExtensionsWithDocs(),

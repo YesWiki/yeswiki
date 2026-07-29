@@ -20,6 +20,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Paginator;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
@@ -290,7 +291,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        $this->debug = (bool)$this->wiki->GetConfigValue('debug');
+        $this->debug = (bool)$this->getService(RuntimeConfig::class)->getValue('debug');
 
         // If the template is a map or a calendar, call the dedicated action so that
         // arguments can be properly formatted. The second first condition prevents infinite loops
@@ -679,11 +680,11 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             );
 
             // couleur de marqueur
-            $color = getCustomValueForEntry($params['color'], $params['colorfield'], $fiche, $this->wiki->config['baz_marker_color']);
+            $color = getCustomValueForEntry($params['color'], $params['colorfield'], $fiche, $this->getService(RuntimeConfig::class)['baz_marker_color']);
 
             // icone de marqueur
             $icon = $params['iconprefix']
-                    . getCustomValueForEntry($params['icon'], $params['iconfield'], $fiche, $this->wiki->config['baz_marker_icon']);
+                    . getCustomValueForEntry($params['icon'], $params['iconfield'], $fiche, $this->getService(RuntimeConfig::class)['baz_marker_icon']);
 
             if (is_numeric($vLatitude) && is_numeric($vLongitude)) {
                 // on genere le point marqueur sur la carte

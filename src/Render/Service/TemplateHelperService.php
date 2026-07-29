@@ -317,11 +317,11 @@ class TemplateHelperService
     {
         $acls = [
             'page' => $page['tag'],
-            'lire' => $this->wiki->GetConfigValue('default_read_acl'),
+            'lire' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_read_acl'),
             'lire_default' => true,
-            'ecrire' => $this->wiki->GetConfigValue('default_write_acl'),
+            'ecrire' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_write_acl'),
             'ecrire_default' => true,
-            'comment' => $this->wiki->GetConfigValue('default_comment_acl'),
+            'comment' => $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('default_comment_acl'),
             'comment_default' => true,
         ];
         if (!empty($page['acl_read'])) {

@@ -136,7 +136,7 @@ class EntryManager
         }
 
         $page = $this->pageManager->getOne($tag, empty($time) ? null : $time, $cache, $bypassAcls, $userNameForCheckingACL);
-        $debug = (bool)$this->wiki->GetConfigValue('debug');
+        $debug = (bool)$this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('debug');
         //  $debug = $this->wiki->isDebugEnabled ();
         $data = $this->getDataFromPage($page, $semantic, $debug);
 

@@ -6,6 +6,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ThemeManager;
@@ -37,7 +38,7 @@ class FooterAction extends YesWikiAction implements RegisteredAction
         if ($themeLoaded) {
             $output = $themeManager->renderFooter();
             // on affiche les requetes SQL et le temps de chargement en mode debug
-            if ($this->wiki->GetConfigValue('debug')) {
+            if ($this->getService(RuntimeConfig::class)->getValue('debug')) {
                 $debug_log_sql_queries = '';
                 $T_SQL = 0;
 

@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
 
@@ -49,7 +50,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
 
         // extration du nom de 'root_page' si nécessaire
         if ($link == 'config/root_page') {
-            $link = $this->wiki->config['root_page'];
+            $link = $this->getService(RuntimeConfig::class)['root_page'];
             $this->getService(PerformableArguments::class)->set('link', $link);
         }
 

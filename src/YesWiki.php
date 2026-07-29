@@ -52,6 +52,7 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\TemplateEngine;
@@ -696,6 +697,8 @@ class Wiki
 
         // need to be executed after the container is compiled because the %paramName% are resolved there
         $this->config = $parameterBag->all();
+        // one storage: element writes through either side stay visible in both
+        $this->service(RuntimeConfig::class)->bind($this->config);
     }
 
     /**

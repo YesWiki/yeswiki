@@ -65,7 +65,7 @@ class FileManager
      */
     public function uploadMaxSize(): int
     {
-        return self::uploadMaxSizeFromConfig($this->wiki->GetConfigValue('max_file_size'));
+        return self::uploadMaxSizeFromConfig($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('max_file_size'));
     }
 
     /**

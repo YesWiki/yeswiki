@@ -8,6 +8,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
@@ -34,7 +35,7 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
             $get = $this->getRequest()->query;
             $vIDs = $vBazarListService->getIDs($get->get('id') ?? $get->get('form_id') ?? $get->get('idtypeannonce') ?? []);
 
-            $vItemCount = intval($get->get('nbitem') ?? $get->get('nb') ?? $this->wiki->config['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
+            $vItemCount = intval($get->get('nbitem') ?? $get->get('nb') ?? $this->getService(RuntimeConfig::class)['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
 
             $utilisateur = $get->get('utilisateur', '');
 
@@ -92,27 +93,27 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('count', null, $vCount);
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('description', null, $this->sanitize($this->wiki->config['BAZ_RSS_DESCRIPTIONSITE']));
+            $xml .= XML_Util::createTag('description', null, $this->sanitize($this->getService(RuntimeConfig::class)['BAZ_RSS_DESCRIPTIONSITE']));
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('link', null, $this->sanitize($this->wiki->config['BAZ_RSS_ADRESSESITE']));
+            $xml .= XML_Util::createTag('link', null, $this->sanitize($this->getService(RuntimeConfig::class)['BAZ_RSS_ADRESSESITE']));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('language', null, 'fr-FR');
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) ' . date('Y') . ' ' . htmlentities(removeAccents($this->wiki->config['BAZ_RSS_NOMSITE'])));
+            $xml .= XML_Util::createTag('copyright', null, 'Copyright (c) ' . date('Y') . ' ' . htmlentities(removeAccents($this->getService(RuntimeConfig::class)['BAZ_RSS_NOMSITE'])));
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('docs', null, 'http://www.stervinou.com/projets/rss/');
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('category', null, $this->wiki->config['BAZ_RSS_CATEGORIE']);
+            $xml .= XML_Util::createTag('category', null, $this->getService(RuntimeConfig::class)['BAZ_RSS_CATEGORIE']);
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('managingEditor', null, $this->wiki->config['BAZ_RSS_MANAGINGEDITOR']);
+            $xml .= XML_Util::createTag('managingEditor', null, $this->getService(RuntimeConfig::class)['BAZ_RSS_MANAGINGEDITOR']);
             $xml .= "\r\n      ";
-            $xml .= XML_Util::createTag('webMaster', null, $this->wiki->config['BAZ_RSS_WEBMASTER']);
+            $xml .= XML_Util::createTag('webMaster', null, $this->getService(RuntimeConfig::class)['BAZ_RSS_WEBMASTER']);
             $xml .= "\r\n      ";
             $xml .= XML_Util::createTag('ttl', null, '60');
             $xml .= "\r\n      ";
             $xml .= XML_Util::createStartElement('image');
             $xml .= "\r\n        ";
-            $xml .= XML_Util::createTag('url', null, $this->wiki->config['BAZ_RSS_LOGOSITE']);
+            $xml .= XML_Util::createTag('url', null, $this->getService(RuntimeConfig::class)['BAZ_RSS_LOGOSITE']);
             $xml .= "\r\n      ";
             $xml .= XML_Util::createEndElement('image');
 
@@ -151,9 +152,9 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
                 $xml .= "\r\n          ";
                 $xml .= XML_Util::createTag('title', null, $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
                 $xml .= "\r\n          ";
-                $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $this->wiki->config['base_url'] . $this->wiki->config['root_page'] . ']]>');
+                $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $this->getService(RuntimeConfig::class)['base_url'] . $this->getService(RuntimeConfig::class)['root_page'] . ']]>');
                 $xml .= "\r\n          ";
-                $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $this->wiki->config['base_url'] . $this->wiki->config['root_page'] . ']]>');
+                $xml .= XML_Util::createTag('guid', null, '<![CDATA[' . $this->getService(RuntimeConfig::class)['base_url'] . $this->getService(RuntimeConfig::class)['root_page'] . ']]>');
                 $xml .= "\r\n          ";
                 $xml .= XML_Util::createTag('description', null, $this->sanitize(_t('BAZ_PAS_DE_FICHES')));
                 $xml .= "\r\n          ";

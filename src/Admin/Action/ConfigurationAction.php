@@ -5,6 +5,7 @@ namespace YesWiki\Admin\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Render\Service\ThemeManager;
 
 /**
@@ -63,7 +64,7 @@ class ConfigurationAction extends YesWikiAction implements RegisteredAction
                 case 'favorite_squelette':
                 case 'default_language':
                 case 'charset':
-                    echo htmlentities($this->wiki->config[$param], ENT_QUOTES, YW_CHARSET);
+                    echo htmlentities($this->getService(RuntimeConfig::class)[$param], ENT_QUOTES, YW_CHARSET);
                     break;
                 case 'lang':
                     echo $GLOBALS['prefered_language'];

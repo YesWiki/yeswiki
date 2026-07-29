@@ -37,7 +37,7 @@ class ImportFilesManager
             return $this->uploadPath;
         }
 
-        $attachConfig = $this->wiki->config['attach_config'];
+        $attachConfig = $this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config'];
 
         if (!is_array($attachConfig)) {
             $attachConfig = [];

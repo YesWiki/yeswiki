@@ -12,7 +12,7 @@ if (!function_exists('rssdiff')) {
         if ($idfirst == $idlast) {
             $previousdiff = $wiki->services->get(YesWiki\Kernel\Service\DbService::class)->loadSingle(
                 'select id from '
-                . $wiki->config['table_prefix']
+                . $wiki->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['table_prefix']
                 . "pages where tag = '"
                 . $wiki->services->get(YesWiki\Kernel\Service\DbService::class)->escape($tag)
                 . "' and id < $idfirst order by time desc limit 1"

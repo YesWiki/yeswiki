@@ -9,6 +9,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -63,18 +64,18 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
         $dbService = $this->wiki->services->get(DbService::class);
         $userCol = $dbService->quoteIdentifier('user');
         $bodyExpr = ($dbService->getDriver() === 'sqlite') ? 'substr(body,1,500)' : 'LEFT(body,500)';
-        if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, $bodyExpr as body from " . $this->wiki->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
+        if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, $bodyExpr as body from " . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
             if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
-                $link = $this->wiki->config['root_page'];
+                $link = $this->getService(RuntimeConfig::class)['root_page'];
             }
 
             $output = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?> \n";
             $output .= "<rss version=\"0.91\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\">\n";
 
             $output .= "<channel>\n";
-            $output .= '<title> ' . _t('LATEST_CHANGES_ON') . ' ' . $this->wiki->config['yeswiki_name'] . "</title>\n";
-            $output .= '<link>' . $this->wiki->config['base_url'] . $link . "</link>\n";
-            $output .= '<description> ' . _t('LATEST_CHANGES_ON') . ' ' . $this->wiki->config['yeswiki_name'] . " </description>\n";
+            $output .= '<title> ' . _t('LATEST_CHANGES_ON') . ' ' . $this->getService(RuntimeConfig::class)['yeswiki_name'] . "</title>\n";
+            $output .= '<link>' . $this->getService(RuntimeConfig::class)['base_url'] . $link . "</link>\n";
+            $output .= '<description> ' . _t('LATEST_CHANGES_ON') . ' ' . $this->getService(RuntimeConfig::class)['yeswiki_name'] . " </description>\n";
 
             $items = '';
             foreach ($pages as $i => $page) {
@@ -93,7 +94,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
                 $items .= '<title>' . $tag . ' --- ' . _t('BY') . ' ' . $page['user'] . ' le ' . $day . ' - ' . $hh . ':' . $mm . "</title>\n";
                 $items .= '<description> ' . _t('RSS_CHANGE_OF') . ' ' . $tag . ' --- ' . _t('BY') . ' ' . $page['user'] . ' ' . _t('RSS_ON_DATE') . ' ' . $day . ' - ' . $hh . ':' . $mm . $body . "</description>\n";
                 $items .= '<dc:format>text/html</dc:format>';
-                $items .= '<link>' . $this->wiki->config['base_url'] . $tag . '&amp;time=' . rawurlencode($page['time']) . "</link>\n";
+                $items .= '<link>' . $this->getService(RuntimeConfig::class)['base_url'] . $tag . '&amp;time=' . rawurlencode($page['time']) . "</link>\n";
                 $items .= "</item>\n";
             }
 

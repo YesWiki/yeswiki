@@ -9,6 +9,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -94,7 +95,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                     $dbService = $this->wiki->services->get(DbService::class);
                     $requete =
                 'select *
-                      from ' . $this->wiki->config['table_prefix'] . 'pages
+                      from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages
                       where
                       time > ' . $dbService->dateSubHours(intval($_POST['from'])) . "
                       and latest = 'Y'
@@ -110,7 +111,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                 echo '<form method="post" action="' . $despam_url . "\">\n";
                 echo "<table>\n";
                 foreach ($pagesFromSpammer as $i => $page) {
-                    $req = 'select * from ' . $this->wiki->config['table_prefix'] . "pages where tag = '"
+                    $req = 'select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where tag = '"
                 . $this->wiki->services->get(DbService::class)->escape($page['tag'])
                 . "' order by time desc";
                     $revisions = $this->getService(DbService::class)->loadAll($req);
@@ -197,7 +198,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                         echo $rev_id . '<br>';
                         // Selectionne la revision
                         $dbService = $this->wiki->services->get(DbService::class);
-                        $revision = $this->getService(DbService::class)->loadSingle('select * from ' . $this->wiki->config['table_prefix'] . "pages where id = '"
+                        $revision = $this->getService(DbService::class)->loadSingle('select * from ' . $this->getService(RuntimeConfig::class)['table_prefix'] . "pages where id = '"
                   . $dbService->escape($rev_id) . "' limit 1");
                         if (!is_array($revision)) {
                             continue;
@@ -206,7 +207,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
                         // Fait de la derniere version de cette revision
                         // une version archivee
                         $requeteUpdate =
-                  'UPDATE ' . $this->wiki->config['table_prefix'] . 'pages ' .
+                  'UPDATE ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages ' .
                   "SET latest = 'N' " .
                   "WHERE latest = 'Y' " .
                   "AND tag = '" . $dbService->escape($revision['tag']) . "'";
@@ -215,7 +216,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
 
                         // add new revision
                         $userCol = $dbService->quoteIdentifier('user');
-                        $this->getService(DbService::class)->query('INSERT INTO ' . $this->wiki->config['table_prefix'] . 'pages ' .
+                        $this->getService(DbService::class)->query('INSERT INTO ' . $this->getService(RuntimeConfig::class)['table_prefix'] . 'pages ' .
                   "(tag, time, owner, $userCol, latest, body, body_r) VALUES (" .
                   "'" . $dbService->escape($revision['tag']) . "', " .
                   $dbService->now() . ', ' .

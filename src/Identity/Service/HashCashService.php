@@ -69,7 +69,7 @@ class HashCashService
      */
     public function checkHashcash(): bool
     {
-        if (empty($this->wiki->config['use_hashcash'])) {
+        if (empty($this->wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'])) {
             return true;
         }
         $value = $this->wiki->request->request->get('hashcash_value');
