@@ -124,7 +124,7 @@ abstract class YesWikiPerformable
      *
      * @param class-string<T> $className
      *
-     * @return T|null
+     * @return T
      */
     protected function getService($className)
     {

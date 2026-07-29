@@ -6,10 +6,10 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Entity\User;
-use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
 
@@ -214,10 +214,13 @@ class UserSettingsActionTest extends YesWikiTestCase
             unset($_POST['password']);
             unset($_POST['confpassword']);
             unset($_POST['usersettings_action']);
-            $user = $userManager->getOneByName($name);
+            // (string) cast: PHPStan remembers the pre-creation getOneByName($name) null from
+            // the uniqueness loop above and would flag the null check below as always-false --
+            // but the {{usersettings}} action run just created this very user
+            $user = $userManager->getOneByName((string)$name);
             $connectedUser = $authenticationService->getLoggedUser();
             // clean user before tests
-            if (!empty($user['name'])) {
+            if ($user !== null) {
                 $userManager->delete($user);
             }
 
@@ -229,8 +232,7 @@ class UserSettingsActionTest extends YesWikiTestCase
                 $this->assertEquals($connectedUser['name'], $user['name']);
             } else {
                 $this->assertFalse($exitExceptionCaught);
-                $this->assertIsNotArray($user);
-                $this->assertNotInstanceOf(User::class, $user);
+                $this->assertNull($user);
 
                 $rexExpStr = '/.*' . implode(
                     '\s*',

@@ -4,18 +4,18 @@ namespace YesWiki\Content\Service;
 
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ImageField;
-use YesWiki\Wiki;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Search\Service\SearchManager;
+use YesWiki\Wiki;
 
 class EntryManager
 {
@@ -308,8 +308,8 @@ class EntryManager
     /**
      * Create a new fiche.
      *
-     * @param false $semantic
-     * @param null  $sourceUrl
+     * @param bool        $semantic
+     * @param string|null $sourceUrl
      *
      * @return array
      *
@@ -429,8 +429,8 @@ class EntryManager
     /**
      * Update an entry with the provided data.
      *
-     * @param false $semantic
-     * @param false $replace  If true, all the data will be provided (no merge with the previous data)
+     * @param bool $semantic
+     * @param bool $replace  If true, all the data will be provided (no merge with the previous data)
      *
      * @return array
      *

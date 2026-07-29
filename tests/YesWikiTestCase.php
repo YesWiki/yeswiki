@@ -4,6 +4,7 @@ namespace YesWiki\Test\Core;
 
 use PHPUnit\Framework\TestCase;
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Wiki;
@@ -93,5 +94,18 @@ class YesWikiTestCase extends TestCase
         }
 
         return false;
+    }
+
+    /**
+     * Narrow a nullable user lookup: tests that just created or fetched a user call this
+     * to assert the lookup succeeded and get a non-null User for typed service calls.
+     */
+    protected static function requireUser(?User $user): User
+    {
+        if ($user === null) {
+            throw new \RuntimeException('expected an existing user');
+        }
+
+        return $user;
     }
 }

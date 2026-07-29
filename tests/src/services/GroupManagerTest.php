@@ -5,8 +5,8 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Identity\Service\GroupManager;
-use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Kernel\Service\StringUtilService;
+use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
 

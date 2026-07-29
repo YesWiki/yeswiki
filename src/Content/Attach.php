@@ -12,9 +12,9 @@ namespace YesWiki\Content;
 
 use stefangabos\Zebra_Image\Zebra_Image;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\LinkTracker;
+use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Render\Service\TemplateHelperService;
 
 class Attach

@@ -5,15 +5,15 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AccountActivationService;
-use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
-use YesWiki\Kernel\Service\StringUtilService;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -239,11 +239,12 @@ class AuthenticationServiceTest extends YesWikiTestCase
         $accountActivationService = $wiki->services->get(AccountActivationService::class);
         ['user' => $user] = $this->createRandomUser($wiki);
 
-        $forcedParams = new class ($wiki->services->get(ParameterBagInterface::class)) implements ParameterBagInterface {
+        $forcedParams = new class($wiki->services->get(ParameterBagInterface::class)) implements ParameterBagInterface {
             public function __construct(private ParameterBagInterface $real)
             {
             }
 
+            /** @return \UnitEnum|array<mixed>|string|int|float|bool|null */
             public function get(string $name): \UnitEnum|array|string|int|float|bool|null
             {
                 return $name === 'signup_email_activation' ? true : $this->real->get($name);
@@ -258,34 +259,44 @@ class AuthenticationServiceTest extends YesWikiTestCase
             {
                 $this->real->clear();
             }
+
+            /** @param array<string, mixed> $parameters */
             public function add(array $parameters): void
             {
                 $this->real->add($parameters);
             }
+
+            /** @return array<string, mixed> */
             public function all(): array
             {
                 return $this->real->all();
             }
+
             public function remove(string $name): void
             {
                 $this->real->remove($name);
             }
-            public function set(string $name, $value): void
+
+            public function set(string $name, mixed $value): void
             {
                 $this->real->set($name, $value);
             }
+
             public function resolve(): void
             {
                 $this->real->resolve();
             }
+
             public function resolveValue(mixed $value): mixed
             {
                 return $this->real->resolveValue($value);
             }
+
             public function escapeValue(mixed $value): mixed
             {
                 return $this->real->escapeValue($value);
             }
+
             public function unescapeValue(mixed $value): mixed
             {
                 return $this->real->unescapeValue($value);
@@ -316,7 +327,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
             $this->assertSame($user['name'], $_SESSION['user']['name'] ?? null);
         } finally {
             $authenticationService->logout();
-            $userManager->delete($userManager->getOneByName($user['name']));
+            $userManager->delete(self::requireUser($userManager->getOneByName($user['name'])));
         }
     }
 }

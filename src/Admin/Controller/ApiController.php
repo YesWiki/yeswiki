@@ -12,54 +12,54 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
-use YesWiki\Core\ApiResponse;
+use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Content\Attach;
-use YesWiki\Identity\Exception\DeleteUserException;
-use YesWiki\Kernel\Exception\ExitException;
-use YesWiki\Identity\Exception\GroupNameAlreadyUsedException;
-use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
-use YesWiki\Identity\Exception\InvalidGroupNameException;
-use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
-use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
-use YesWiki\Identity\Exception\UserNameDoesNotExistException;
+use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\TextareaField;
-use YesWiki\Identity\Service\AccountActivationService;
-use YesWiki\Identity\Service\AclService;
-use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Content\Service\CSVManager;
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\DiffService;
 use YesWiki\Content\Service\DuplicationManager;
 use YesWiki\Content\Service\EntryExtraFieldsService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Identity\Service\HashCashService;
-use YesWiki\Kernel\Service\HtmlPurifierService;
-use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Content\Service\GeoJSONFormatter;
+use YesWiki\Content\Service\IcalFormatter;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\PageOperationsService;
 use YesWiki\Content\Service\ReactionManager;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Content\Service\SemanticTransformer;
-use YesWiki\Search\Service\TagsManager;
-use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Content\Service\TripleStore;
-use YesWiki\Identity\Service\UserManager;
+use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Identity\Controller\CaptchaController;
+use YesWiki\Identity\Exception\DeleteUserException;
+use YesWiki\Identity\Exception\GroupNameAlreadyUsedException;
+use YesWiki\Identity\Exception\GroupNameDoesNotExistException;
+use YesWiki\Identity\Exception\InvalidGroupNameException;
+use YesWiki\Identity\Exception\UserEmailAlreadyUsedException;
+use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Exception\UserNameDoesNotExistException;
+use YesWiki\Identity\Service\AccountActivationService;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\CsrfTokenChecker;
-use YesWiki\Content\Service\GeoJSONFormatter;
 use YesWiki\Identity\Service\GroupOperationsService;
-use YesWiki\Content\Service\IcalFormatter;
-use YesWiki\Content\Service\PageOperationsService;
+use YesWiki\Identity\Service\HashCashService;
+use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
-use YesWiki\Identity\Controller\CaptchaController;
-use YesWiki\Content\Controller\EntryController;
-use YesWiki\Wiki;
+use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Kernel\Service\StringUtilService;
+use YesWiki\Render\Service\ThemeManager;
+use YesWiki\Search\Service\SearchManager;
+use YesWiki\Search\Service\TagsManager;
+use YesWiki\Wiki;
 
 class ApiController extends YesWikiController
 {
@@ -262,6 +262,9 @@ class ApiController extends YesWikiController
                     'email' => $postEmail,
                     'password' => StringUtilService::generateRandomString(30),
                 ]);
+                if ($user === null) {
+                    throw new \RuntimeException('user creation failed');
+                }
                 $link = $userManager->sendPasswordRecoveryEmail($user);
                 $code = Response::HTTP_OK;
                 $result = [
@@ -329,7 +332,7 @@ class ApiController extends YesWikiController
         }
 
         $authenticationService = $this->getService(AuthenticationService::class);
-        if (!$authenticationService->checkPassword($post->get('password'), $user)) {
+        if (!$authenticationService->checkPassword(strval($post->get('password')), $user)) {
             return new ApiResponse(['error' => _t('LOGIN_WRONG_PASSWORD')], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -445,7 +448,7 @@ class ApiController extends YesWikiController
         $groupOperationsService = $this->getService(GroupOperationsService::class);
 
         $post = $this->getRequest()->request;
-        $postName = $post->get('name', '');
+        $postName = strval($post->get('name', ''));
         if (empty($postName)) {
             $code = Response::HTTP_BAD_REQUEST;
             $result = [
@@ -505,7 +508,8 @@ class ApiController extends YesWikiController
         $post = $this->getRequest()->request;
         try {
             $users = $post->has('users') ? $post->all('users') : [];
-            $result = $groupOperationsService->update($group_name, $users);
+            $groupOperationsService->update($group_name, $users);
+            $result = null;
             $code = Response::HTTP_OK;
         } catch (InvalidGroupNameException $th) {
             $code = Response::HTTP_UNPROCESSABLE_ENTITY;
@@ -704,7 +708,7 @@ class ApiController extends YesWikiController
         }
 
         $pageManager = $this->getService(PageManager::class);
-        $pageManager->save($tag, $body);
+        $pageManager->save($tag, strval($body));
 
         $page = $pageManager->getOne($tag);
 
@@ -1051,7 +1055,7 @@ class ApiController extends YesWikiController
         }
         $rawValue['user'] = $username;
         $rawValue['date'] = date('Y-m-d H:i:s');
-        $value = json_encode($rawValue);
+        $value = (string)json_encode($rawValue);
         $result = $this->getService(TripleStore::class)->create(
             $resource,
             $property,
@@ -1948,7 +1952,7 @@ class ApiController extends YesWikiController
             } // add entries in html format if asked
             elseif ($output == 'html') {
                 foreach ($entries as $id => $entry) {
-                    $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', 0);
+                    $entries[$id]['html_output'] = $this->getService(EntryController::class)->view($entry, '', false);
                 }
             } elseif ($output == 'geojson') {
                 $entries = $this->getService(GeoJSONFormatter::class)->formatToGeoJSON($entries);
@@ -1986,7 +1990,7 @@ class ApiController extends YesWikiController
         if ($this->isEntryViewFastAccess($output, $selectedEntries, $get->all())) {
             $entryId = explode(',', $selectedEntries)[0];
             if ($this->getService(AclService::class)->hasAccess('read', $entryId)) {
-                $html = $this->getService(EntryController::class)->view($entryId, '', 1);
+                $html = $this->getService(EntryController::class)->view($entryId, '', true);
                 $isInIframe = $get->get('isInIframe');
                 if ($isInIframe && $isInIframe == 'iframe') {
                     $html = replaceLinksWithIframe($html);
@@ -2045,7 +2049,7 @@ class ApiController extends YesWikiController
         $form = $this->getService(FormManager::class)->getOne($formId);
 
         $resources = array_map(function ($entry) use ($form) {
-            return $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry, true);
+            return $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
         }, array_values($entries));
 
         $context = !empty($resources) ? ($resources[0]['@context'] ?? null) : null;

@@ -49,10 +49,12 @@ class DateFieldTest extends YesWikiTestCase
     public function testEntryDateServiceHasTheMethodsDateFieldAndFileFieldCall()
     {
         $entryDateService = $this->getWiki()->services->get(EntryDateService::class);
+        $this->assertInstanceOf(EntryDateService::class, $entryDateService);
 
-        $this->assertTrue(method_exists($entryDateService, 'canRegisterMultipleEntries'));
-        $this->assertTrue(method_exists($entryDateService, 'followId'));
-        $this->assertTrue(method_exists(EntryDateService::class, 'isLegacyRecurrenceChild'));
+        $reflection = new \ReflectionClass(EntryDateService::class);
+        $this->assertTrue($reflection->hasMethod('canRegisterMultipleEntries'));
+        $this->assertTrue($reflection->hasMethod('followId'));
+        $this->assertTrue($reflection->hasMethod('isLegacyRecurrenceChild'));
     }
 
     public function testFormatValuesBeforeSaveOnEndDatePropertyDoesNotFatal()

@@ -32,7 +32,10 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
                 $fullRevert = (bool)$this->getRequest()->get('fullRevert');
                 $pageManager->revertToRevision($tag, $this->getRequest()->get('restoreRevisionId'), $fullRevert);
                 // save links
-                $linkTracker->registerLinks($pageManager->getOne($tag));
+                $revertedPage = $pageManager->getOne($tag);
+                if (is_array($revertedPage)) {
+                    $linkTracker->registerLinks($revertedPage);
+                }
                 Flash::success(_t($fullRevert ? 'SUCCESS_RESTORE_REVISION_FULL' : 'SUCCESS_RESTORE_REVISION'));
             } else {
                 Flash::error(_t('DENY_WRITE'));

@@ -5,12 +5,12 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Identity\Service\PasswordForEditingService;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\StringUtilService;
+use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
-use YesWiki\Kernel\Service\StringUtilService;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
@@ -78,7 +78,7 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
                 . StringUtilService::generateRandomString(15, 'abcdefghijklmnopqrstuvwxyz0123456789'));
         } while (!empty($userManager->getOneByName($name)));
         $userManager->create($name, strtolower($name) . '@example.com', 'irrelevant-password-1234');
-        $user = $userManager->getOneByName($name);
+        $user = self::requireUser($userManager->getOneByName($name));
 
         try {
             $authenticationService->login($user);

@@ -101,7 +101,7 @@ class YesWikiKernel extends Kernel
         StringUtilService::replaceRecursivelyIndexedArrays($config, $this->wiki->config);
         // environment overrides re-applied here (Init::getConfig() already applied them)
         // so they also cover extension parameters, whose defaults only exist at this point
-        $config = EnvironmentConfiguration::apply($config);
+        $config = EnvironmentConfiguration::apply($config ?? []);
         foreach ($config as $key => $value) {
             $container->setParameter($key, $value);
         }

@@ -59,7 +59,7 @@ abstract class YesWikiController
      *
      * @param class-string<T> $className
      *
-     * @return T|null
+     * @return T
      */
     protected function getService($className)
     {

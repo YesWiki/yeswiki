@@ -5,16 +5,15 @@ namespace YesWiki\Test\Core\Service;
 use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Depends;
-use Throwable;
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\GroupOperationsService;
-use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Exception\DeleteUserException;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Identity\Service\UserOperationsService;
+use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
-use YesWiki\Kernel\Service\StringUtilService;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -70,14 +69,14 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $password = StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         $userManager->create($name, $email, $password);
-        $user = $userManager->getOneByName($name);
+        $user = self::requireUser($userManager->getOneByName($name));
 
         switch ($connexionMode) {
             case '!@admins':
                 $authenticationService->login($user);
                 break;
             case '@admins':
-                $adminUser = $userManager->getOneByName($firstAdmin);
+                $adminUser = self::requireUser($userManager->getOneByName($firstAdmin));
                 $authenticationService->login($adminUser);
                 break;
             case '!+':
@@ -181,6 +180,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $userNameAlreadyExist = false;
         $emailAlreadyExist = false;
         $exceptionMessage = '';
+        $user = null;
         try {
             $userOperationsService->create($newValues);
             $user = $userManager->getOneByName($name);
@@ -251,7 +251,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
                 . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         } while (!empty($userManager->getOneByName($name)));
         $userManager->create($name, $email, StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
-        $user = $userManager->getOneByName($name);
+        $user = self::requireUser($userManager->getOneByName($name));
 
         // Create a group with only this user as member
         do {
@@ -260,7 +260,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $groupOperationsService->create($groupName, [$name]);
 
         // Log in as admin and delete the user
-        $adminUser = $userManager->getOneByName($firstAdmin);
+        $adminUser = self::requireUser($userManager->getOneByName($firstAdmin));
         $authenticationService->login($adminUser);
 
         $exceptionThrown = false;
@@ -322,7 +322,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
         }
 
         // firstAdmin is the sole admin — attempting to delete them must throw
-        $adminUser = $userManager->getOneByName($firstAdmin);
+        $adminUser = self::requireUser($userManager->getOneByName($firstAdmin));
 
         // log in as... we can't log in as admin if we're trying to delete the only admin.
         // Use the newly created user (not yet admin) — will fail with "not admin" first.
@@ -400,6 +400,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
 
         $exceptionThrown = false;
         $exceptionMessage = '';
+        $user = null;
         try {
             $userOperationsService->create([
                 'name' => $name,

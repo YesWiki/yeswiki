@@ -2,10 +2,10 @@
 
 namespace YesWiki\Test\Core\Service;
 
-use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
+use YesWiki\Identity\Exception\UserNameAlreadyUsedException;
+use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -132,7 +132,7 @@ class UserManagerContentTest extends YesWikiTestCase
 
         try {
             $userManager->create($name, 'umct-history@example.tld', 'Aa1!aaaaRegression');
-            $originalUser = $userManager->getOneByName($name);
+            $originalUser = self::requireUser($userManager->getOneByName($name));
             $originalHash = $originalUser['password'];
             $firstRevisionTime = $pageManager->getOne($name, null, true, true)['time'];
 
@@ -169,7 +169,7 @@ class UserManagerContentTest extends YesWikiTestCase
 
         try {
             $userManager->create($name, 'umct-revert@example.tld', 'Aa1!aaaaRegression');
-            $originalUser = $userManager->getOneByName($name);
+            $originalUser = self::requireUser($userManager->getOneByName($name));
             $originalHash = $originalUser['password'];
             $this->assertNotEmpty($originalHash);
 

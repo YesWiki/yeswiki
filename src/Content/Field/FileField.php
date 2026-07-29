@@ -6,15 +6,15 @@ use Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Attach;
-use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Content\Service\EntryDateService;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Identity\Service\Guard;
+use YesWiki\Identity\Service\InputFilter;
+use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
-use YesWiki\Content\Service\FileManager;
 
 #[\Field(['fichier'])]
 class FileField extends BazarField
@@ -60,11 +60,12 @@ class FileField extends BazarField
             : 0;
 
         // take the min size limit, excluding 0 values that mean no limit
+        // (if every limit is 0, keep 0: min() on an empty array is an error)
         $this->maxSize = min(array_filter(
             [
                 $maxFieldSize,
                 $this->getService(ParameterBagInterface::class)->get('max-upload-size'), ],
-        ));
+        ) ?: [0]);
     }
 
     protected function renderInput($entry)
