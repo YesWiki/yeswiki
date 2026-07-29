@@ -29,6 +29,42 @@ We are using [weblate](https://hosted.weblate.org/yeswiki) to translate our soft
 
 We recommend an installation through docker.
 
+### Theme CSS (SCSS)
+
+The bundled `yeswiki` theme ships its stylesheets as SCSS sources in
+`themes/yeswiki/scss/`, compiled with [Dart Sass](https://sass-lang.com) (installed
+as a dev dependency, no global install needed).
+
+| Source                                   | Compiled output                                  |
+| ---------------------------------------- | ------------------------------------------------ |
+| `themes/yeswiki/scss/yeswiki.scss`       | `themes/yeswiki/styles/yeswiki.css`              |
+| `themes/yeswiki/scss/colored-navbar.scss`| `themes/yeswiki/styles/colored-navbar.css`       |
+
+Partials (files prefixed with `_`, e.g. `_topnav.scss`) are not compiled on their
+own — they are `@use`d by the two entry points above. `colored-navbar.scss` itself
+`@use`s `yeswiki`, so it is a complete, standalone stylesheet (the coloured-navbar
+variant), not an add-on to load on top of `yeswiki.css`.
+
+```bash
+yarn install        # installs sass, and builds the theme once (postinstall)
+yarn build-theme    # one-off build
+yarn watch-theme    # rebuild on every save while you work
+```
+
+Both commands write compressed CSS without source maps, so what you get locally is
+byte-identical to what `yarn install` produces. **The compiled CSS is committed** —
+run `yarn build-theme` and commit the resulting `.css` files along with your `.scss`
+changes. They are excluded from `prettier` (see `.prettierignore`), so `make lint`
+will not reformat them.
+
+If you need readable output while debugging, add the flags on the fly:
+
+```bash
+yarn sass --watch --style=expanded themes/yeswiki/scss:themes/yeswiki/styles
+```
+
+…but rebuild with `yarn build-theme` before committing.
+
 ### Linters & Formatters
 
 Please install relevant extension and enable auto formatting on your editor.

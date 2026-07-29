@@ -54,18 +54,21 @@
   list-style: none;
 }
 
-#yw-topnav .topnavpage > * a,
-#yw-topnav .yw-topnav-fast-access > * > a {
+#yw-topnav .topnavpage>* a,
+#yw-topnav .yw-topnav-fast-access>*>a {
   display: block;
   padding: 8px 12px;
   color: var(--navbar-link-color);
   background: var(--navbar-link-bg-color);
   text-decoration: none;
+}
+
+#yw-topnav .yw-topnav-fast-access>*>a {
   border-radius: 4px;
 }
 
 #yw-topnav .topnavpage a:hover,
-#yw-topnav .topnavpage .active-list > a,
+#yw-topnav .topnavpage .active-list>a,
 #yw-topnav .topnavpage a.active-link {
   color: var(--navbar-link-hover-color);
   background: var(--navbar-link-bg-hover-color);

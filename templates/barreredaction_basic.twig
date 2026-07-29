@@ -1,139 +1,139 @@
 <div class="{{ class }}">
-  {% if linkedit is defined %}
-    <a
-      title="{{ _t('TEMPLATE_EDIT_THIS_PAGE') ~ ' ' ~ page }}"
-      href="{{ linkedit }}"
-      class="link-edit"
-    >
-      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg><span>{{ _t('TEMPLATE_EDIT_THIS_PAGE') }}</span>
-    </a>
-  {% endif %}
-  {% if userIsAdminOrOwner %}
-    <a
-      title="{{ _t('TEMPLATES_SEE_ATTACHED_FILES') }}"
-      href="{{ url({handler:'filemanager'}) }}"
-      class="link-filemanager"
-    >
-      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#folder-open"/></svg>
-    </a>
-  {% endif %}
-  {#<span class="dropup">#}
-  {% if userIsAdmin %}
-    <a
-      title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}"
-      class="link-duplicate {#dropdown-toggle#}"
-      id="duplicate-dropup"
-      href="{{ linkduplicate }}"
-      {# data-toggle="dropdown"
+    {% if linkedit is defined %}
+        <a title="{{ _t("TEMPLATE_EDIT_THIS_PAGE") ~ ' ' ~ page }}"
+           href="{{ linkedit }}"
+           class="link-edit">
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#pencil" />
+            </svg>
+            <span>{{ _t("TEMPLATE_EDIT_THIS_PAGE") }}</span>
+        </a>
+    {% endif %}
+    {% if userIsAdminOrOwner %}
+        <a title="{{ _t("TEMPLATES_SEE_ATTACHED_FILES") }}"
+           href="{{ url({"handler": "filemanager"}) }}"
+           class="link-filemanager">
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#folder-open" />
+            </svg>
+        </a>
+    {% endif %}
+    {#<span class="dropup">#}
+    {% if userIsAdmin %}
+        <a
+            title="{{ _t("TEMPLATE_DUPLICATE_PAGE") ~ ' ' ~ page }}"
+            class="link-duplicate {#dropdown-toggle#}"
+            id="duplicate-dropup"
+            href="{{ linkduplicate }}"
+            {# data-toggle="dropdown"
       aria-haspopup="true"
       aria-expanded="false" #}
-    >
-      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg><span>{{ _t('TEMPLATE_DUPLICATE') }}</span>
-      {#<span class="caret"></span>#}
-    </a>
-  {% endif %}
+            >
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#copy" />
+            </svg>
+            <span>{{ _t("TEMPLATE_DUPLICATE") }}</span>
+            {#<span class="caret"></span>#}
+        </a>
+    {% endif %}
     {#<ul class="dropdown-menu" aria-labelledby="duplicate-dropup">
       <li>
-        <a
-          href="{{ linkduplicate }}"
-          title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}"
-        >
+        <a href="{{ linkduplicate }}" title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}">
           {{ _t('TEMPLATE_DUPLICATE_LOCALLY') }}
         </a>
       </li>
       <li>
-        <a
-          href="{{ linkduplicate ~ '&toUrl=1'}}"
-          title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}"
-        >
+        <a href="{{ linkduplicate ~ '&toUrl=1'}}" title="{{ _t('TEMPLATE_DUPLICATE_PAGE') ~ ' ' ~ page }}">
           {{ _t('TEMPLATE_DUPLICATE_IN_ANOTHER_WIKI') }}
         </a>
       </li>
     </ul>
   </span>#}
-  {% if linkdeletepage is defined %}
-    <a 
-      href="{{ linkdeletepage }}"
-      class="link-deletepage modalbox"
-      title="{{ _t('TEMPLATE_DELETE_PAGE') ~ ' ' ~ page }}"
-    >
-      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg><span>{{ _t('TEMPLATE_DELETE') }}</span>
+    {% if linkdeletepage is defined %}
+        <a href="{{ linkdeletepage }}"
+           class="link-deletepage modalbox"
+           title="{{ _t("TEMPLATE_DELETE_PAGE") ~ ' ' ~ page }}">
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#trash" />
+            </svg>
+            <span>{{ _t("TEMPLATE_DELETE") }}</span>
+        </a>
+    {% endif %}
+    {% if time is defined %}
+        <a title="{{ _t("TEMPLATE_CLICK_TO_SEE_REVISIONS") ~ ' ' ~ page }}"
+           href="{{ linkrevisions }}"
+           class="link-revisions">
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#history" />
+            </svg>
+            <span>{{ _t("TEMPLATE_LAST_UPDATE") }} {{ time }}</span>
+        </a>
+    {% endif %}
+    {% if linkacls is defined %}
+        <a class="link-acls{{ linkacls|slice(-4) == 'acls' ? ' modalbox': '' }}"
+           href="{{ linkacls }}"
+           title="{{ _t("TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS") ~ ' ' ~ page }}">
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#lock-open" />
+            </svg>
+            <span>{{ owner ?? '' }}</span>
+        </a>
+    {% endif %}
+    {% if linkclosecomments is defined %}
+        <a class="link-comments"
+           href="{{ linkclosecomments }}"
+           title="{{ _t("TEMPLATE_CLICK_TO_CLOSE_COMMENTS") }}">
+            <svg class="yw-icon" aria-hidden="true">
+                <use href="src/assets/icons.svg#message-circle-off" />
+            </svg>
+            <span>{{ _t("TEMPLATE_CLOSE_COMMENTS") }}</span>
+        </a>
+    {% endif %}
+    {% if linkopencomments is defined %}
+        <span class="dropup">
+            <a href="#"
+               class="link-comments dropdown-toggle"
+               id="opencommentsdropup"
+               data-toggle="dropdown"
+               aria-haspopup="true"
+               aria-expanded="false">
+                <svg class="yw-icon" aria-hidden="true">
+                    <use href="src/assets/icons.svg#message-circle" />
+                </svg>
+                <span>{{ _t("TEMPLATE_OPEN_COMMENTS") }}</span>
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="opencommentsdropup">
+                <li>
+                    <a href="{{ linkopencomments ~ '&list=' ~ ('+')|e("url") }}">{{ _t("TEMPLATE_FOR_CONNECTED_PEOPLE") }}</a>
+                </li>
+                {% for g in wikigroups %}
+                    <li>
+                        <a href="{{ linkopencomments ~ '&list=' ~ g }}">{{ _t("TEMPLATE_FOR_MEMBERS_OF_GROUP") }} {{ g }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </span>
+    {% endif %}
+    <a title="{{ _t("TEMPLATE_SEE_SHARING_OPTIONS") ~ ' ' ~ page }}"
+       href="{{ linkshare }}"
+       class="link-share modalbox">
+        <svg class="yw-icon" aria-hidden="true">
+            <use href="src/assets/icons.svg#share" />
+        </svg>
+        <span>{{ _t("TEMPLATE_SHARE") }}</span>
     </a>
-  {% endif %}
-  {% if time is defined %}
-    <a
-      title="{{ _t('TEMPLATE_CLICK_TO_SEE_REVISIONS') ~ ' ' ~ page }}"
-      href="{{ linkrevisions }}"
-      class="link-revisions"
-    >
-      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#history"/></svg><span>{{ _t('TEMPLATE_LAST_UPDATE') }} {{ time }}</span>
-    </a>
-  {% endif %}
-  {% if linkacls is defined %}
-    <a
-      class="link-acls{{ linkacls|slice(-4) == 'acls' ? ' modalbox': '' }}"
-      href="{{ linkacls }}"
-      title="{{ _t('TEMPLATE_CLICK_TO_CHANGE_PERMISSIONS') ~ ' ' ~ page }}"
-    >
-      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#lock-open"/></svg><span>{{ owner ?? ''}}</span>
-    </a>
-  {% endif %}
-  {% if linkclosecomments is defined %}
-    <a
-      class="link-comments"
-      href="{{ linkclosecomments }}"
-      title="{{ _t('TEMPLATE_CLICK_TO_CLOSE_COMMENTS') }}"
-    >
-      <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#message-circle-off"/></svg><span>{{ _t('TEMPLATE_CLOSE_COMMENTS') }}</span>
-    </a>
-  {% endif %}
-  {% if linkopencomments is defined %}
-    <span class="dropup">
-      <a
-        href="#"
-        class="link-comments dropdown-toggle" 
-        id="opencommentsdropup"
-        data-toggle="dropdown"
-        aria-haspopup="true"
-        aria-expanded="false"
-      >
-        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#message-circle"/></svg><span>{{ _t('TEMPLATE_OPEN_COMMENTS') }}</span>
-        <span class="caret"></span>
-      </a>
-      <ul class="dropdown-menu" aria-labelledby="opencommentsdropup">
-        <li>
-          <a href="{{ linkopencomments ~ '&list=' ~ ('+')|e('url') }}">
-            {{ _t('TEMPLATE_FOR_CONNECTED_PEOPLE') }}
-          </a>
-        </li>
-        {% for g in wikigroups %}
-        <li>
-          <a href="{{ linkopencomments ~ '&list=' ~ g }}">
-            {{ _t('TEMPLATE_FOR_MEMBERS_OF_GROUP') }} {{ g }}
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-    </span>
-  {% endif %}
-	<a
-    title="{{ _t('TEMPLATE_SEE_SHARING_OPTIONS') ~ ' ' ~ page}}"
-    href="{{ linkshare }}"
-    class="link-share modalbox"
-  >
-		<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#share"/></svg><span>{{ _t('TEMPLATE_SHARE') }}</span>
-	</a>
-  {% if currentuser is not empty %}
-    {{ include_javascript('javascripts/favorites.js') }}
-    <a href="#"
-      title="{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}"
-      data-resource="{{ page }}"
-      data-user="{{ currentuser }}"
-      data-toggle="tooltip"
-      data-placement="top"
-      class="btn btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
-      {{ (isUserFavorite) ? icon('star-filled') : icon('star') }}
-      <span class="sr-only sr-only-focusable">{{ (isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD') }}</span>
-    </a>
-  {% endif %}
+    {% if currentuser is not empty %}
+        {{ include_javascript("javascripts/favorites.js") }}
+        <a href="#"
+           title="{{ (isUserFavorite) ? _t("FAVORITES_REMOVE") : _t('FAVORITES_ADD') }}"
+           data-resource="{{ page }}"
+           data-user="{{ currentuser }}"
+           data-toggle="tooltip"
+           data-placement="top"
+           class="btn-icon favorites{{ (isUserFavorite) ? ' user-favorite' : '' }}">
+            {{ (isUserFavorite) ? icon("star-filled") : icon('star') }}
+            <span class="sr-only sr-only-focusable">{{ (isUserFavorite) ? _t("FAVORITES_REMOVE") : _t('FAVORITES_ADD') }}</span>
+        </a>
+    {% endif %}
 </div>

@@ -13,18 +13,22 @@
 
 /* Default color, in case someone use these variable outside of margot template */
 :root {
-  --primary-color: #0c5d6a;
-  --secondary-color-1: #d8604c;
-  --secondary-color-2: #d78958;
+  --primary-color: #240046;
+  --secondary-color-1: #ff006e;
+  --secondary-color-2: #ff5400;
   --neutral-color: #4e5056;
   --neutral-soft-color: #57575c;
   --neutral-light-color: #f2f2f2;
   --main-text-fontsize: 15px;
-  --main-text-fontfamily: 'Nunito', sans-serif;
-  --main-title-fontfamily: 'Nunito', sans-serif;
-  --success-color: #3cab3b;
-  --danger-color: #d8604c;
-  --warning-color: #d78958;
+  --main-text-fontfamily:
+    Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial,
+    sans-serif;
+  --main-title-fontfamily:
+    Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial,
+    sans-serif;
+  --success-color: #3a86ff;
+  --danger-color: #ff006e;
+  --warning-color: #ffc300;
 }
 
 html {

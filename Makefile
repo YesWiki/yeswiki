@@ -21,6 +21,13 @@ composer-update: composer.json ## Update vendors according to the composer.json 
 yarn-install: yarn.lock ## Install npm vendors according to the current yarn.lock file
 	$(YARN) install
 
+## —— Theme CSS ———————————
+build-theme: ## Compile themes/yeswiki/scss into themes/yeswiki/styles (commit the result)
+	$(YARN) run build-theme
+
+watch-theme: ## Same, but recompile on every save
+	$(YARN) run watch-theme
+
 ## —— Docker ——————————————
 ## use the docker/ folder README.md to find commands to launch docker
 
