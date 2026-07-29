@@ -4,7 +4,7 @@ namespace YesWiki\Test\Core;
 
 use PHPUnit\Framework\TestCase;
 
-require_once 'src/lang.functions.php';
+require_once 'src/Kernel/lang.functions.php';
 
 /**
  * Ticket 25 revision (tools/lang integrated into core, not deleted): the

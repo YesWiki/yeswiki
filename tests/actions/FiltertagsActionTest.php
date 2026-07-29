@@ -59,7 +59,7 @@ class FiltertagsActionTest extends YesWikiTestCase
         $tripleStore->create(self::PAGE_TAG, self::TAG_PROPERTY, self::DECOY_TAG, '', '');
 
         try {
-            include_once 'src/tags.functions.php';
+            include_once 'src/Content/tags.functions.php';
 
             $filterArgs = ['filter1' => self::MALICIOUS_TAG . ',' . self::DECOY_TAG];
             $wiki->services->get(\YesWiki\Kernel\Service\PerformableArguments::class)->bind($filterArgs);

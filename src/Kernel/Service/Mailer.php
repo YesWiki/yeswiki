@@ -143,7 +143,7 @@ class Mailer
      */
     public function send($mailSender, $nameSender, $mailReceiver, string $subject, string $messageTxt, string $messageHtml = ''): bool
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/email.inc.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/Kernel/email.inc.php';
 
         return send_mail($mailSender, $nameSender, $mailReceiver, $subject, $messageTxt, $messageHtml);
     }

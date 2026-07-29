@@ -88,7 +88,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // Page translation (formerly tools/lang's __include before-callback): filter the
         // included page's body to the visitor's {{lang="xx"}} section and refresh the
         // page cache so the include action below renders the filtered version
-        require_once YESWIKI_SOURCE_DIR . '/src/lang.functions.php';
+        require_once YESWIKI_SOURCE_DIR . '/src/Kernel/lang.functions.php';
         $langIncludedPage = $this->getService(PageManager::class)->getOne(trim($this->getService(PerformableArguments::class)->get('page')));
         if (!empty($langIncludedPage['body'])) {
             $langFilteredBody = filterBodyByLanguage(

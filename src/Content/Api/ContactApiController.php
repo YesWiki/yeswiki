@@ -36,7 +36,7 @@ class ContactApiController extends YesWikiController
     #[Route('/api/contact/mail', methods: ['POST'], options: ['acl' => ['public']])]
     public function sendContactMail(Request $request)
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/Content/contact.functions.php';
 
         $pageTag = (string)$request->request->get('pageTag', '');
         if (empty($pageTag)) {

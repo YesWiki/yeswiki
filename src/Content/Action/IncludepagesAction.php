@@ -44,7 +44,7 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/Content/tags.functions.php';
         $nbcartrunc = 200;
         $output = '';
         $class = $this->getService(PerformableArguments::class)->get('class');

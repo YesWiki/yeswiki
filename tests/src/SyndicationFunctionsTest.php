@@ -3,7 +3,7 @@
 namespace YesWiki\Test\Core;
 
 require_once 'tests/YesWikiTestCase.php';
-require_once 'src/syndication.functions.php';
+require_once 'src/Content/syndication.functions.php';
 
 /**
  * Regression test for ticket 23 (syndication absorbed into core).

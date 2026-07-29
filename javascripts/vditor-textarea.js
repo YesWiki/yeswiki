@@ -19,7 +19,7 @@
     textarea.insertAdjacentElement('afterend', container)
 
     const rows = parseInt(textarea.getAttribute('rows'), 10) || 4
-    const height = Math.min(350, Math.max(150, rows * 30))
+    const minHeight = Math.min(350, Math.max(150, rows * 30))
     const lang = textarea.getAttribute('data-vditor-lang') || 'en_US'
 
     // `after`/`input` fire asynchronously (Vditor loads its own parser script first), well
@@ -28,14 +28,15 @@
       cdn: 'javascripts/vendor/vditor',
       mode: 'wysiwyg',
       lang,
-      height,
-      minHeight: 100,
+      minHeight,
       placeholder: textarea.getAttribute('placeholder') || '',
       toolbar: [
         'headings', 'bold', 'italic', 'strike', '|',
         'list', 'ordered-list', 'check', '|',
         'quote', 'link', 'table', '|',
-        'undo', 'redo'
+        'emoji', '|',
+        'undo', 'redo', '|',
+        'fullscreen'
       ],
       cache: { enable: false },
       resize: { enable: true },

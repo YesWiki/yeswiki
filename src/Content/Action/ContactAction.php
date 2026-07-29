@@ -10,7 +10,7 @@ use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
-include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
+include_once YESWIKI_SOURCE_DIR . '/src/Content/contact.functions.php';
 
 class ContactAction extends YesWikiAction implements RegisteredAction
 {

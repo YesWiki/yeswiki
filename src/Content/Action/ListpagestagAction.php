@@ -47,7 +47,7 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
     {
         $tagsManager = $this->getService(TagsManager::class);
 
-        include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/Content/tags.functions.php';
         $nbcartrunc = 200;
         $tags = $this->getService(PerformableArguments::class)->get('tags');
         $type = $this->getService(PerformableArguments::class)->get('type');

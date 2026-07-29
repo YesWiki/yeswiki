@@ -48,7 +48,7 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/Content/tags.functions.php';
         $nbcartrunc = 200;
 
         $elementwidth = $this->getService(PerformableArguments::class)->get('elementwidth');

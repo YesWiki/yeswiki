@@ -43,7 +43,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
     private function emit(): void
     {
         // fonctions a inclure
-        include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/Content/tags.functions.php';
 
         $tagsManager = $this->getService(TagsManager::class);
 

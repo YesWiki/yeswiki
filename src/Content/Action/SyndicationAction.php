@@ -14,7 +14,7 @@ use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
-include_once YESWIKI_SOURCE_DIR . '/src/syndication.functions.php';
+include_once YESWIKI_SOURCE_DIR . '/src/Content/syndication.functions.php';
 
 class SyndicationAction extends YesWikiAction implements RegisteredAction
 {

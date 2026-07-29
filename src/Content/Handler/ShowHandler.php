@@ -88,7 +88,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         // Page translation (formerly tools/lang's __show before-callback): keep only the
         // {{lang="xx"}} section matching the visitor's language, if the page uses markers
-        require_once YESWIKI_SOURCE_DIR . '/src/lang.functions.php';
+        require_once YESWIKI_SOURCE_DIR . '/src/Kernel/lang.functions.php';
         $pageContext = $this->getService(PageContext::class);
         if (!empty(($pageContext->getPage() ?? [])['body'])) {
             $pageContext->setPageField('body', filterBodyByLanguage(

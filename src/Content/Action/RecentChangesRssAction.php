@@ -32,7 +32,7 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
             return _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ' .
                 $this->getService(LinkRenderer::class)->link($this->getService(PageContext::class)->getTag(), 'xml', null, $this->getService(UrlFormatter::class)->href('xml'));
         }
-        require_once YESWIKI_SOURCE_DIR . '/src/rss.functions.php';
+        require_once YESWIKI_SOURCE_DIR . '/src/Content/rss.functions.php';
         $max = 50;
         if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             $max = $user['changescount'];

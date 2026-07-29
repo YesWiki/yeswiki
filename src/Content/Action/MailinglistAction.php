@@ -46,7 +46,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
         // ticket 18: relocated from tools/contact/actions/mailinglist.php.
         // action permettant d'inscrire ou desinscrire massivement des mails a une newsletter
 
-        include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
+        include_once YESWIKI_SOURCE_DIR . '/src/Content/contact.functions.php';
 
         // recuperation des parametres
         $list = $this->getService(PerformableArguments::class)->get('list');
