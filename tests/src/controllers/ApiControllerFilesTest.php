@@ -12,7 +12,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -30,7 +30,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
 {
     private const PRIVATE_PAGE_TAG = 'ApiControllerFilesTestPrivatePage';
 
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(FileApiController::class));
@@ -43,7 +43,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testUploadThenDownloadEnforcesOwningPageAclByDefault(Wiki $wiki)
+    public function testUploadThenDownloadEnforcesOwningPageAclByDefault(YesWikiRuntime $wiki)
     {
         $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -87,7 +87,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testPublicOptOutAllowsAnonymousDownload(Wiki $wiki)
+    public function testPublicOptOutAllowsAnonymousDownload(YesWikiRuntime $wiki)
     {
         $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -128,7 +128,7 @@ class ApiControllerFilesTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testGetFilesOnlyListsFilesTheRequesterCanRead(Wiki $wiki)
+    public function testGetFilesOnlyListsFilesTheRequesterCanRead(YesWikiRuntime $wiki)
     {
         $controller = $wiki->services->get(FileApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);

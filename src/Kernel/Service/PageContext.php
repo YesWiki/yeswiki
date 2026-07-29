@@ -2,35 +2,32 @@
 
 namespace YesWiki\Kernel\Service;
 
-use YesWiki\Wiki;
-
 /**
- * The page being served by the current request: its tag, the record loaded for it, the
- * handler method being applied, and the page metadata.
- *
- * Ticket 08 transition note: the state itself still lives on Wiki's public properties
- * ($tag, $page, $method, $metadatas) because legacy code reads and writes them directly
- * (including element writes like `$wiki->page['body'] = ...`). This service is the API
- * every new consumer must use; when the last direct property access is gone, the state
- * moves here and the Wiki dependency disappears.
+ * The page being served: its tag, loaded record, requested method and metadata
+ * (historic Wiki::$tag/$page/$method/$metadatas, including element writes like
+ * `$wiki->page['body'] = ...`). This service owns the state; the Runtime seeds
+ * it at boot with what Init derived from the URL.
  */
 class PageContext
 {
-    protected Wiki $wiki;
+    protected ?string $tag = null;
 
-    public function __construct(Wiki $wiki)
-    {
-        $this->wiki = $wiki;
-    }
+    /** @var array<mixed>|null */
+    protected $page;
+
+    protected string $method = '';
+
+    /** @var array<mixed> */
+    protected $metadata = [];
 
     public function getTag(): string
     {
-        return (string)($this->wiki->tag ?? '');
+        return (string)($this->tag ?? '');
     }
 
     public function setTag(?string $tag): void
     {
-        $this->wiki->tag = $tag;
+        $this->tag = $tag;
     }
 
     /**
@@ -40,19 +37,19 @@ class PageContext
      */
     public function getPage(): ?array
     {
-        return $this->wiki->page ?: null;
+        return $this->page ?: null;
     }
 
     /** @param array<mixed>|null $page */
     public function setPage(?array $page): void
     {
-        $this->wiki->page = $page;
+        $this->page = $page;
     }
 
     /** Write one field of the current page record (historic `$wiki->page['x'] = ...`). */
     public function setPageField(string $key, mixed $value): void
     {
-        $this->wiki->page[$key] = $value;
+        $this->page[$key] = $value;
     }
 
     /**
@@ -61,9 +58,9 @@ class PageContext
     public function assignPage(mixed $page): void
     {
         if (!empty($page)) {
-            $this->wiki->page = $page;
+            $this->page = $page;
             if (!empty($page['tag'])) {
-                $this->wiki->tag = $page['tag'];
+                $this->tag = $page['tag'];
             }
         }
     }
@@ -76,43 +73,41 @@ class PageContext
         return empty($page['time']) ? '' : $page['time'];
     }
 
-    /** The raw handler method of the request ('show', 'edit', 'iframe', ...). */
+    /** The requested method exactly as given ('iframe', 'editiframe', ...). */
     public function getRawMethod(): string
     {
-        return (string)($this->wiki->method ?? '');
+        return $this->method;
     }
 
     /**
-     * The handler method with iframe variants mapped to what they display
-     * (historic Wiki::GetMethod()).
+     * The effective method (historic Wiki::GetMethod()): the iframe variants render
+     * through their non-iframe counterparts.
      */
     public function getMethod(): string
     {
-        $method = $this->getRawMethod();
-        if ($method === 'iframe') {
+        if ($this->method == 'iframe') {
             return 'show';
-        }
-        if ($method === 'editiframe') {
+        } elseif ($this->method == 'editiframe') {
             return 'edit';
         }
 
-        return $method;
+        return $this->method;
     }
 
     public function setMethod(string $method): void
     {
-        $this->wiki->method = $method;
+        $this->method = $method;
     }
 
     /** @return array<mixed> */
     public function getMetadata(): array
     {
-        return is_array($this->wiki->metadatas) ? $this->wiki->metadatas : [];
+        return $this->metadata;
     }
 
     /** @param array<mixed> $metadata */
     public function setMetadata(array $metadata): void
     {
-        $this->wiki->metadatas = $metadata;
+        $this->metadata = $metadata;
     }
 }

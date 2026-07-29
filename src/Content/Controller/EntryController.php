@@ -546,7 +546,7 @@ class EntryController extends YesWikiController
 
         if (!empty($form['sem_type'])) {
             $html['tag'] = $entry['tag'];
-            $html['semantic'] = $GLOBALS['wiki']->services->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
+            $html['semantic'] = $GLOBALS['yeswikiServices']->get(SemanticTransformer::class)->convertToSemanticData($form, $html, true);
         }
 
         $values = [];

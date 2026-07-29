@@ -22,11 +22,11 @@ class OpeningHoursField extends BazarField
             return '';
         }
 
-        $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/vendor/vue/vue.js');
-        $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/vendor/opening_hours/opening_hours.js');
-        $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/fields/opening_hours.js');
-        $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/vueapp.js');
-        $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddCSSFile('styles/bazar/opening_hours.css');
+        $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/vendor/vue/vue.js');
+        $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/vendor/opening_hours/opening_hours.js');
+        $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/fields/opening_hours.js');
+        $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/vueapp.js');
+        $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddCSSFile('styles/bazar/opening_hours.css');
 
         return $this->render('@core/fields/openingHours.twig', [
             'opening_hours' => $value,

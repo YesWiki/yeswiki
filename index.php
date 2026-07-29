@@ -3,7 +3,7 @@
 /**
  * Yeswiki start file.
  *
- * Instantiates the main YesWiki class, loads the extensions,
+ * Instantiates the YesWiki runtime, loads the extensions,
  * and runs the current page
  *
  * @category Wiki
@@ -13,8 +13,8 @@
  * @see https://yeswiki.net
  */
 
-use YesWiki\Kernel\Service\AssetPublisher;
 use YesWiki\Core\YesWikiLoader;
+use YesWiki\Kernel\Service\AssetPublisher;
 
 // source/instance dirs separation + instance data folders provisioning
 require_once __DIR__ . '/src/bootstrap_paths.php';
@@ -26,4 +26,4 @@ AssetPublisher::interceptAssetRequest();
 
 require_once __DIR__ . '/src/YesWikiLoader.php';
 $wiki = YesWikiLoader::getWiki();
-$wiki->Run($wiki->tag, $wiki->method);
+$wiki->run();

@@ -11,23 +11,23 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
 class UserSettingsActionTest extends YesWikiTestCase
 {
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(Wiki::class));
+        $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
 
-        return $wiki->services->get(Wiki::class);
+        return $wiki->services->get(YesWikiRuntime::class);
     }
 
     #[Depends('testWikiExisting')]
     #[DataProvider('displayFormProvider')]
-    public function testDisplayForm($mode, Wiki $wiki)
+    public function testDisplayForm($mode, YesWikiRuntime $wiki)
     {
         switch ($mode) {
             case 'connected':
@@ -49,7 +49,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         ];
     }
 
-    private function checkdisplayFormNotConnected(Wiki $wiki)
+    private function checkdisplayFormNotConnected(YesWikiRuntime $wiki)
     {
         $this->ensureCacheFolderIsWritable();
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{usersettings}}');
@@ -69,7 +69,7 @@ class UserSettingsActionTest extends YesWikiTestCase
         $this->assertMatchesRegularExpression($rexExpStr, $output, '`confpassword` input badly set in user-signup-form.twig !');
     }
 
-    private function checkdisplayFormConnected(Wiki $wiki)
+    private function checkdisplayFormConnected(YesWikiRuntime $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -120,7 +120,7 @@ class UserSettingsActionTest extends YesWikiTestCase
 
     #[Depends('testWikiExisting')]
     #[Depends('testDisplayForm')]
-    public function testDisplayFormNotConnectedWithPostData(Wiki $wiki)
+    public function testDisplayFormNotConnectedWithPostData(YesWikiRuntime $wiki)
     {
         $email = strtolower($this->randomString(10)) . '@example.com';
         $name = $this->randomString(25, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_');
@@ -169,7 +169,7 @@ class UserSettingsActionTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     #[Depends('testDisplayForm')]
     #[DataProvider('dataProvidertestSignup')]
-    public function testSignup($suffix, $expectedResult, Wiki $wiki)
+    public function testSignup($suffix, $expectedResult, YesWikiRuntime $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -285,7 +285,7 @@ class UserSettingsActionTest extends YesWikiTestCase
      * when Wiki is constructed and is never re-synced afterwards; mutating
      * $_POST/$_GET in a test has no effect on it unless it is rebuilt.
      */
-    private function refreshRequest(Wiki $wiki)
+    private function refreshRequest(YesWikiRuntime $wiki)
     {
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->replace(Request::createFromGlobals());
     }

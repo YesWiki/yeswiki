@@ -8,7 +8,7 @@ use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
@@ -21,7 +21,7 @@ require_once 'tests/ForcedParameterBag.php';
 #[CoversMethod(CaptchaController::class, 'checkCaptchaBeforeSave')]
 class CaptchaControllerTest extends YesWikiTestCase
 {
-    private function buildController(Wiki $wiki, bool $useCaptcha): CaptchaController
+    private function buildController(YesWikiRuntime $wiki, bool $useCaptcha): CaptchaController
     {
         $realParams = $wiki->services->get(ParameterBagInterface::class);
         $forcedParams = new ForcedParameterBag($realParams, ['use_captcha' => $useCaptcha]);

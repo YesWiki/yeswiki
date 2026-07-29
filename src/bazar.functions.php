@@ -6,7 +6,7 @@
 // YesWiki::includeExtensionsBootstrapFiles()); since bazar is core now, this file is
 // required directly from src/YesWiki.php alongside urlutils.inc.php/email.inc.php so the
 // same unconditional, always-available guarantee holds without depending on an 'bazar'
-// entry in $wiki->services->get(\YesWiki\Kernel\Service\ExtensionRegistry::class)->all().
+// entry in the ExtensionRegistry service.
 //
 // BAZ_CHEMIN ('tools/bazar/') was dropped here in ticket 24. It turned out not to be dead
 // at the time -- the vendored PEAR pagination library still depended on it -- but ticket 02
@@ -102,11 +102,11 @@ function multiArraySearch($array, $key, $value)
 function baz_forms_and_lists_ids()
 {
     $forms = [];
-    $lists = $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
+    $lists = $GLOBALS['yeswikiServices']->get(ListManager::class)->getAll();
     $lists = array_map(function ($list) {
         return $list['title'];
     }, $lists);
-    foreach ($GLOBALS['wiki']->services->get(FormManager::class)->getAll() as $form) {
+    foreach ($GLOBALS['yeswikiServices']->get(FormManager::class)->getAll() as $form) {
         $forms[$form['id']] = $form['label'];
     }
 
@@ -117,7 +117,7 @@ function getHtmlDataAttributes($fiche, $formtab = '')
 {
     $htmldata = '';
     if (is_array($fiche) && isset($fiche['form_id'])) {
-        $form = isset($formtab[$fiche['form_id']]) ? $formtab[$fiche['form_id']] : $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['form_id']);
+        $form = isset($formtab[$fiche['form_id']]) ? $formtab[$fiche['form_id']] : $GLOBALS['yeswikiServices']->get(FormManager::class)->getOne($fiche['form_id']);
         foreach ($fiche as $key => $value) {
             if (!empty($value)) {
                 if (
@@ -181,7 +181,7 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
         if (substr($val, 0, 10) === 'listeListe' or substr($val, 0, 13) === 'checkboxListe') {
             $func = (substr($val, 0, 10) === 'listeListe' ? 'liste' : 'checkbox');
             $dummy = '';
-            $form = $GLOBALS['wiki']->services->get(FormManager::class)->getOne($fiche['form_id']);
+            $form = $GLOBALS['yeswikiServices']->get(FormManager::class)->getOne($fiche['form_id']);
             $f = multiArraySearch($form, '1', preg_replace('/^(liste|checkbox)/i', '', $val));
             $f = array_shift($f);
             if (function_exists($func)) {
@@ -295,7 +295,7 @@ function genere_nom_wiki($nom, $occurence = 1)
     if ($occurence == 0) {
         // pour occurence = 0 on ne teste pas l'existance de la page
         return $nom;
-    } elseif (!is_array($GLOBALS['wiki']->services->get(YesWiki\Content\Service\PageManager::class)->getOne($nom))) {
+    } elseif (!is_array($GLOBALS['yeswikiServices']->get(YesWiki\Content\Service\PageManager::class)->getOne($nom))) {
         // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
         return $nom;
     }
@@ -321,7 +321,7 @@ function champCompare($a, $b)
 function getMultipleParameters($param, $firstseparator = ',', $secondseparator = '=')
 {
     try {
-        $tabparam = $GLOBALS['wiki']->services->get(EntryManager::class)->getMultipleParameters($param, $firstseparator, $secondseparator);
+        $tabparam = $GLOBALS['yeswikiServices']->get(EntryManager::class)->getMultipleParameters($param, $firstseparator, $secondseparator);
         $tabparam['fail'] = 0;
     } catch (ParsingMultipleException $th) {
         $tabparam['fail'] = 1;
@@ -343,18 +343,18 @@ function sanitizeFilename($string = '')
 
 function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
 {
-    $wiki = $GLOBALS['wiki'];
+    $services = $GLOBALS['yeswikiServices'];
     if (file_exists($image_src)) {
-        $attach = new Attach($wiki->services);
+        $attach = new Attach($services);
 
         // force new name
         $image_dest = $attach->getResizedFilename($image_src, $largeur, $hauteur, $method);
 
-        if (!$wiki->services->get(HibernationService::class)->isWikiHibernated()
+        if (!$services->get(HibernationService::class)->isWikiHibernated()
             && file_exists($image_dest)
             && isset($_GET['refresh'])
             && $_GET['refresh'] == 1
-            && $wiki->services->get(YesWiki\Identity\Service\AclService::class)->isAdmin()) {
+            && $services->get(YesWiki\Identity\Service\AclService::class)->isAdmin()) {
             unlink($image_dest);
         }
         if (!file_exists($image_dest)) {
@@ -415,7 +415,7 @@ function copyUrlToLocalFile($url, $localPath)
  */
 function baz_valeurs_formulaire($idformulaire = [])
 {
-    $formManager = $GLOBALS['wiki']->services->get(FormManager::class);
+    $formManager = $GLOBALS['yeswikiServices']->get(FormManager::class);
 
     if (is_array($idformulaire) and count($idformulaire) > 0) {
         return $formManager->getMany($idformulaire);
@@ -433,10 +433,10 @@ function baz_valeurs_liste($idliste = '')
 {
     $idliste = trim($idliste);
     if ($idliste != '') {
-        return $GLOBALS['wiki']->services->get(ListManager::class)->getOne($idliste);
+        return $GLOBALS['yeswikiServices']->get(ListManager::class)->getOne($idliste);
     }
 
-    return $GLOBALS['wiki']->services->get(ListManager::class)->getAll();
+    return $GLOBALS['yeswikiServices']->get(ListManager::class)->getAll();
 }
 
 /**
@@ -444,7 +444,7 @@ function baz_valeurs_liste($idliste = '')
  */
 function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
 {
-    return $GLOBALS['wiki']->services->get(Guard::class)->isAllowed($demande, $id);
+    return $GLOBALS['yeswikiServices']->get(Guard::class)->isAllowed($demande, $id);
 }
 
 /**
@@ -453,12 +453,12 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
 function baz_voir_fiche($danslappli, $idfiche, $form = '')
 {
     try {
-        $output = $GLOBALS['wiki']->services->get(EntryController::class)->view($idfiche, '', $danslappli, null, $form);
+        $output = $GLOBALS['yeswikiServices']->get(EntryController::class)->view($idfiche, '', $danslappli, null, $form);
     } catch (Throwable $t) {
-        return $GLOBALS['wiki']->services->get(TemplateEngine::class)
+        return $GLOBALS['yeswikiServices']->get(TemplateEngine::class)
             ->render('@core/alert-message.twig', [
                 'type' => 'danger',
-                'message' => _t('PERFORMABLE_ERROR') . '<br/>' . $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\ThrowableFormatter::class)->dump($t),
+                'message' => _t('PERFORMABLE_ERROR') . '<br/>' . $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\ThrowableFormatter::class)->dump($t),
             ]);
     }
 

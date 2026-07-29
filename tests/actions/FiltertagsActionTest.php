@@ -48,7 +48,7 @@ class FiltertagsActionTest extends YesWikiTestCase
         // get_filtertags_parameters_recursive() (src/tags.functions.php)
         // reads $GLOBALS['wiki'], which is normally populated by the production HTTP
         // bootstrap rather than by the test harness.
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
 
         // a real triple tagging PAGE_TAG with the malicious value itself (containing
         // the trailing backslash) -- what filtering for it should legitimately match

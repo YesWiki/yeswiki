@@ -10,7 +10,7 @@ use YesWiki\Identity\Exception\UserNotExistingOffset;
 
 class User implements UserInterface, PasswordAuthenticatedUserInterface, \ArrayAccess
 {
-    // Obviously needs a group or ACLS class. In the meantime, use of $this->wiki->GetGroupACL and so on
+    // Obviously needs a group or ACLS class. In the meantime, use of GroupOperationsService and so on
 
     /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PROPERTIES ~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     // User properties (cf database)

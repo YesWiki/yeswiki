@@ -319,7 +319,7 @@ class FormManagerContentTest extends YesWikiTestCase
         // baz_forms_and_lists_ids() reads $GLOBALS['wiki'], only populated by the
         // production HTTP bootstrap outside a real request -- see EntryManagerTest's
         // docblock for the same pre-existing characteristic elsewhere in this tool
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
 
         try {
             $formManager->create([

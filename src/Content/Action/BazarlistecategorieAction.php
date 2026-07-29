@@ -77,7 +77,7 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
         $template = $this->getService(PerformableArguments::class)->get('template');
         $template = $this->getService(TemplateEngine::class)->hasTemplate("@core/$template") ? $template : '';
         if (empty($template)) {
-            $template = $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_bazar_template'];
+            $template = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['default_bazar_template'];
         }
 
         // identifiant de la base de donnée pour la liste

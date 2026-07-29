@@ -14,7 +14,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\CurrentRequest;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -67,7 +67,7 @@ class ApiServiceTest extends TestCase
         // Wiki declares a legacy Method() function, which collides case-insensitively with
         // PHPUnit's own mock-builder method() and makes it undoublable ; build a real,
         // constructor-free instance instead and set only the property ApiService reads.
-        $wiki = (new \ReflectionClass(Wiki::class))->newInstanceWithoutConstructor();
+        $wiki = (new \ReflectionClass(YesWikiRuntime::class))->newInstanceWithoutConstructor();
         $currentRequest = new CurrentRequest();
         $currentRequest->replace(empty($bearerToken)
             ? Request::create('/')

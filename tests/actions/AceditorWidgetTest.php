@@ -4,7 +4,7 @@ namespace YesWiki\Test\Actions;
 
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -17,21 +17,21 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class AceditorWidgetTest extends YesWikiTestCase
 {
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(Wiki::class));
+        $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
         // {{aceditor}}'s ActionsBuilderService::getData() calls bazar's
         // baz_forms_and_lists_ids(), which reads $GLOBALS['wiki'] -- normally
         // populated by the production HTTP bootstrap, not the test harness
         // (same workaround as FiltertagsActionTest)
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
 
-        return $wiki->services->get(Wiki::class);
+        return $wiki->services->get(YesWikiRuntime::class);
     }
 
     #[Depends('testWikiExisting')]
-    public function testAceditorTagRendersWithoutError(Wiki $wiki)
+    public function testAceditorTagRendersWithoutError(YesWikiRuntime $wiki)
     {
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
         $this->assertStringContainsString('aceditor-container', $output);
@@ -39,7 +39,7 @@ class AceditorWidgetTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testWidgetDoesNotDependOnBootstrapJsComponents(Wiki $wiki)
+    public function testWidgetDoesNotDependOnBootstrapJsComponents(YesWikiRuntime $wiki)
     {
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
 
@@ -52,7 +52,7 @@ class AceditorWidgetTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testGlobalAssetsIncludeRebuiltWidget(Wiki $wiki)
+    public function testGlobalAssetsIncludeRebuiltWidget(YesWikiRuntime $wiki)
     {
         $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
         $js = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{linkjavascript}}');

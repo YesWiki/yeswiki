@@ -10,7 +10,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -27,7 +27,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'CommentServiceHashcashRegressionPage';
 
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(CommentService::class));
@@ -40,7 +40,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testAddCommentIfAuthorizedRejectsWithoutFatalingWhenHashcashEnabledAndValueMissing(Wiki $wiki)
+    public function testAddCommentIfAuthorizedRejectsWithoutFatalingWhenHashcashEnabledAndValueMissing(YesWikiRuntime $wiki)
     {
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = true;
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');
@@ -66,7 +66,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testAddCommentIfAuthorizedAcceptsWhenHashcashDisabled(Wiki $wiki)
+    public function testAddCommentIfAuthorizedAcceptsWhenHashcashDisabled(YesWikiRuntime $wiki)
     {
         $wiki->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['use_hashcash'] = false;
         $wiki->services->get(\YesWiki\Kernel\Service\CurrentRequest::class)->get()->request->remove('hashcash_value');
@@ -78,7 +78,7 @@ class CommentServiceHashcashTest extends YesWikiTestCase
         // addCommentIfAuthorized()'s success path renders the new comment via $GLOBALS['wiki'],
         // normally populated by the production HTTP bootstrap, not the test harness (same
         // workaround as EditHandlerSaveTest/FiltertagsActionTest)
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
 
         try {
             $authenticationService->login($admin);

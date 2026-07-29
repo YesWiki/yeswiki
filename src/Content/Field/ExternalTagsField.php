@@ -58,7 +58,7 @@ class ExternalTagsField extends TagsField
             sort($tags);
             $tags = array_map(function ($tag) use ($entry) {
                 return '<a class="tag-label label label-info" href="'
-                    . $entry['external-data']['baseUrl'] . '?' . $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '/listpages&tags=' . urlencode(trim($tag)) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
+                    . $entry['external-data']['baseUrl'] . '?' . $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '/listpages&tags=' . urlencode(trim($tag)) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
             return $this->render('@core/fields/tags.twig', [

@@ -9,7 +9,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -25,16 +25,16 @@ class EditHandlerSaveTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'EditHandlerSaveRegressionPage';
 
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(Wiki::class));
+        $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
 
-        return $wiki->services->get(Wiki::class);
+        return $wiki->services->get(YesWikiRuntime::class);
     }
 
     #[Depends('testWikiExisting')]
-    public function testDisplaySavePreviewAndConflictDetection(Wiki $wiki)
+    public function testDisplaySavePreviewAndConflictDetection(YesWikiRuntime $wiki)
     {
         $pageManager = $wiki->services->get(PageManager::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);
@@ -55,7 +55,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
         // calls bazar's baz_forms_and_lists_ids(), which reads $GLOBALS['wiki'] --
         // normally populated by the production HTTP bootstrap, not the test harness
         // (same workaround as FiltertagsActionTest)
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
 
         try {
             // display form (no submit)

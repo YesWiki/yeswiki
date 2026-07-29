@@ -9,7 +9,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -23,16 +23,16 @@ class TagsWidgetTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'TagsWidgetRegressionPage';
 
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(Wiki::class));
+        $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
 
-        return $wiki->services->get(Wiki::class);
+        return $wiki->services->get(YesWikiRuntime::class);
     }
 
     #[Depends('testWikiExisting')]
-    public function testEditWidgetShowsExistingTagsWithoutDumpingWholeVocabulary(Wiki $wiki)
+    public function testEditWidgetShowsExistingTagsWithoutDumpingWholeVocabulary(YesWikiRuntime $wiki)
     {
         $pageManager = $wiki->services->get(PageManager::class);
         $tripleStore = $wiki->services->get(TripleStore::class);

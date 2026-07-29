@@ -85,7 +85,7 @@ class TagsField extends EnumField
         if (count($tags) > 0 && !empty($tags[0])) {
             sort($tags);
             $tags = array_map(function ($tag) {
-                return '<a class="tag-label label label-info" href="' . $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\UrlFormatter::class)->href('listpages', $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
+                return '<a class="tag-label label label-info" href="' . $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\UrlFormatter::class)->href('listpages', $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
             return $this->render('@core/fields/tags.twig', [

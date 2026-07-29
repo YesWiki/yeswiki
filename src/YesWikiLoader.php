@@ -15,12 +15,13 @@
 namespace YesWiki\Core;
 
 use Symfony\Component\Dotenv\Dotenv;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 class YesWikiLoader
 {
     // singleton
-    private static $wiki;
+    /** @var YesWikiRuntime|null */
+    private static $runtime;
 
     protected function __construct()
     {
@@ -76,9 +77,9 @@ class YesWikiLoader
         return $values;
     }
 
-    public static function getWiki(bool $test = false): Wiki
+    public static function getWiki(bool $test = false): YesWikiRuntime
     {
-        if (is_null(self::$wiki)) {
+        if (is_null(self::$runtime)) {
             require_once __DIR__ . '/bootstrap_paths.php';
             require_once __DIR__ . '/autoload.inc.php';
             try {
@@ -95,8 +96,8 @@ class YesWikiLoader
 
             self::loadEnv();
 
-            $loadedWiki = require_once __DIR__ . '/YesWiki.php';
-            if ($loadedWiki !== true || is_null(self::$wiki)) {
+            $loadedRuntime = require_once __DIR__ . '/YesWikiRuntime.php';
+            if ($loadedRuntime !== true || is_null(self::$runtime)) {
                 // params to succeed to instanciate wiki for tests
                 if ($test) {
                     $_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?? '';
@@ -104,10 +105,10 @@ class YesWikiLoader
                     $_SESSION = $_SESSION ?? [];
                 }
 
-                self::$wiki = new Wiki();
+                self::$runtime = new YesWikiRuntime();
             }
         }
 
-        return self::$wiki;
+        return self::$runtime;
     }
 }

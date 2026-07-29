@@ -27,10 +27,10 @@ class EditHandlersAclsAction extends YesWikiAction implements RegisteredAction
             ]);
         }
 
-        $wiki = &$this->wiki;
-        $list = $wiki->services->get(Performer::class)->list('handler');
+        $wiki = $this->services;
+        $list = $wiki->get(Performer::class)->list('handler');
         sort($list);
-        $res = $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->formOpen('', '', 'get');
+        $res = $wiki->get(\YesWiki\Render\Service\TemplateEngine::class)->formOpen('', '', 'get');
         $res .= _t('HANDLER_RIGHTS') . ' <select name="handlername">';
         foreach ($list as $handler) {
             $res .= '<option value="' . $handler . '"';
@@ -39,7 +39,7 @@ class EditHandlersAclsAction extends YesWikiAction implements RegisteredAction
             }
             $res .= '>' . ucfirst($handler) . '</option>';
         }
-        $res .= '</select> <input class="btn btn-default" type="submit" value="' . _t('SEE') . '" />' . $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->formClose();
+        $res .= '</select> <input class="btn btn-default" type="submit" value="' . _t('SEE') . '" />' . $wiki->get(\YesWiki\Render\Service\TemplateEngine::class)->formClose();
 
         $post = $this->getRequest()->request;
         if ($post->count() > 0 && !empty($post->get('handlername'))) { // save ACL's
@@ -51,13 +51,13 @@ class EditHandlersAclsAction extends YesWikiAction implements RegisteredAction
 
             return $res . _t('NEW_ACL_SUCCESSFULLY_SAVED_FOR_HANDLER') . ' ' . ucfirst($name) . '.<br />';
         } elseif (!empty($this->getRequest()->query->get('handlername')) && in_array($name = $this->getRequest()->query->get('handlername'), $list)) {
-            $res .= $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->formOpen();
+            $res .= $wiki->get(\YesWiki\Render\Service\TemplateEngine::class)->formOpen();
             $res .= '<br />' . _t('EDIT_RIGHTS_FOR_HANDLER') . ' <strong>' . ucfirst($name) . '</strong>: <br />';
             $res .= '<input type="hidden" name="handlername" value="' . $name . '" />';
             $res .= '<textarea class="form-control" name="acl" rows="3">' . $this->getService(ModuleAclService::class)->getModuleAcl($name, 'handler') . '</textarea><br />';
             $res .= '<input type="submit" value="' . _t('SAVE') . '" class="btn btn-primary" accesskey="s" />';
 
-            return $res . $wiki->services->get(\YesWiki\Render\Service\TemplateEngine::class)->formClose();
+            return $res . $wiki->get(\YesWiki\Render\Service\TemplateEngine::class)->formClose();
         }
 
         return $res;

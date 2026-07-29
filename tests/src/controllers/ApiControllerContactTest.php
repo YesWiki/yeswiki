@@ -9,7 +9,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\Mailer;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -34,7 +34,7 @@ class ApiControllerContactTest extends YesWikiTestCase
         unset($GLOBALS['wiki']);
     }
 
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(ContactApiController::class));
@@ -52,7 +52,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testMissingPageTagIsRejected(Wiki $wiki)
+    public function testMissingPageTagIsRejected(YesWikiRuntime $wiki)
     {
         $controller = $wiki->services->get(ContactApiController::class);
         $response = $controller->sendContactMail(Request::create('/api/contact/mail', 'POST', []));
@@ -61,13 +61,13 @@ class ApiControllerContactTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testValidationFailureDoesNotAttemptToSend(Wiki $wiki)
+    public function testValidationFailureDoesNotAttemptToSend(YesWikiRuntime $wiki)
     {
         // contact.functions.php's parseMails()/FindMailFromWikiPage() (reached via the
         // mail-from-page-body lookup, run before validation) read $GLOBALS['wiki']
         // directly, only populated by the production HTTP bootstrap -- same pre-existing,
         // out-of-scope $GLOBALS['wiki']-reliance class of issue as ticket 11's {{aceditor}} tests
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
         $controller = $wiki->services->get(ContactApiController::class);
         // no 'email'/'message': check_parameters_mail() must reject before Mailer::send() is ever called
         $response = $controller->sendContactMail(Request::create('/api/contact/mail', 'POST', [
@@ -84,9 +84,9 @@ class ApiControllerContactTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testReadAclDeniedPreventsSending(Wiki $wiki)
+    public function testReadAclDeniedPreventsSending(YesWikiRuntime $wiki)
     {
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
         $controller = $wiki->services->get(ContactApiController::class);
         // the plain-contact path resolves its receiver from the page body, which requires
         // read access to that page -- a requester without it must be denied, not attempt to send
@@ -108,7 +108,7 @@ class ApiControllerContactTest extends YesWikiTestCase
     public function testMailerSendIsReachableAndReturnsBoolWithoutThrowing()
     {
         $wiki = $this->getWiki();
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
         $mailer = $wiki->services->get(Mailer::class);
 
         // no real SMTP/sendmail transport in this sandbox: this exercises that

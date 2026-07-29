@@ -333,7 +333,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $output = '';
 
         $isWikiHibernated = $this->getService(HibernationService::class)->isWikiHibernated();
-        // bare-script handler: $this->wiki is the Wiki instance itself, which exposes the current
+        // bare-script handler: $this->services is the container, which exposes the current
         // request as a public property, not via a getRequest() helper (that's only on
         // YesWikiPerformable-derived actions/handlers)
         $request = $this->getService(\YesWiki\Kernel\Service\CurrentRequest::class)->get();

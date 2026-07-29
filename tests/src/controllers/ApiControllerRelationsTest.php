@@ -38,7 +38,7 @@ class ApiControllerRelationsTest extends YesWikiTestCase
         // EntryManager::create() reaches src/bazar.functions.php helpers relying on $GLOBALS['wiki'],
         // normally populated by the production HTTP bootstrap (same workaround as
         // AceditorWidgetTest/FiltertagsActionTest).
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
 
         $formManager->create([
             'id' => self::ENTITY_FORM_ID,

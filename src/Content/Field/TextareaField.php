@@ -108,21 +108,21 @@ class TextareaField extends BazarField
         switch ($this->syntax) {
             case self::SYNTAX_WIKI:
                 // Do the page change in any case (useful for attach or grid)
-                $oldPage = $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-                $oldPageArray = $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
-                $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
-                $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($GLOBALS['wiki']->services->get(\YesWiki\Content\Service\PageManager::class)->getOne($GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag()));
-                $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPageField('body', $value);
+                $oldPage = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+                $oldPageArray = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+                $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($entry['tag']);
+                $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($GLOBALS['yeswikiServices']->get(\YesWiki\Content\Service\PageManager::class)->getOne($GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag()));
+                $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPageField('body', $value);
 
-                $value = $GLOBALS['wiki']->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($value);
+                $value = $GLOBALS['yeswikiServices']->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($value);
                 // if the textarea have some actions which return "", they are replaced by '' otherwise it crashed
                 // because they're by wakka as a beginning of HTML code
                 // the user still insert HTML code in the textarea with "" because the "" block is interpretated before
                 // the replacement
                 $value = str_replace('""', '\'\'', $value);
 
-                $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($oldPage);
-                $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($oldPageArray);
+                $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($oldPage);
+                $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($oldPageArray);
                 break;
 
             case self::SYNTAX_PLAIN:

@@ -170,7 +170,7 @@ class ListManager
             throw new \Exception('List ID not specified');
         }
 
-        if (!$GLOBALS['wiki']->services->get(AclService::class)->isAdmin() && !$this->aclService->isOwner($id)) {
+        if (!$GLOBALS['yeswikiServices']->get(AclService::class)->isAdmin() && !$this->aclService->isOwner($id)) {
             throw new \Exception('Unauthorized');
         }
 

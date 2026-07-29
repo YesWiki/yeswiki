@@ -54,7 +54,7 @@ abstract class CheckboxField extends EnumField
                     'selectedOptionsId' => $this->getValues($entry),
                     'formName' => $this->formName ?? $this->getFormName(),
                     'name' => _t('BAZ_DRAG_n_DROP_CHECKBOX_LIST'),
-                    'height' => empty($GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'],
+                    'height' => empty($GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT']) ? null : $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\RuntimeConfig::class)['BAZ_CHECKBOX_DRAG_AND_DROP_MAX_HEIGHT'],
                     'oldValue' => $this->sanitizeValues($this->getValue($entry), 'string'),
                 ]);
             default:
@@ -69,7 +69,7 @@ abstract class CheckboxField extends EnumField
                 }
 
                 if ($this->displayFilterLimit) {
-                    $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/inputs/filter-entries.js');
+                    $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/inputs/filter-entries.js');
                 }
 
                 return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode], [

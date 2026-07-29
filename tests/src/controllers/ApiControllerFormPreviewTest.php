@@ -8,7 +8,7 @@ use YesWiki\Content\Api\FormApiController;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -21,7 +21,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(FormApiController::class, 'previewFormTemplate')]
 class ApiControllerFormPreviewTest extends YesWikiTestCase
 {
-    private function preview(Wiki $wiki, array $template): array
+    private function preview(YesWikiRuntime $wiki, array $template): array
     {
         $controller = $wiki->services->get(FormApiController::class);
         $request = Request::create('/api/forms/preview', 'POST', [
@@ -31,7 +31,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
         return json_decode($controller->previewFormTemplate($request)->getContent(), true);
     }
 
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(FormApiController::class));
@@ -40,7 +40,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testRendersTheFieldsRealInputMarkup(Wiki $wiki)
+    public function testRendersTheFieldsRealInputMarkup(YesWikiRuntime $wiki)
     {
         $answer = $this->preview($wiki, [[
             'type' => 'texte',
@@ -62,7 +62,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testUnrenderableFieldsKeepTheAnswerAlignedWithThePostedTemplate(Wiki $wiki)
+    public function testUnrenderableFieldsKeepTheAnswerAlignedWithThePostedTemplate(YesWikiRuntime $wiki)
     {
         $answer = $this->preview($wiki, [
             ['name' => 'bf_typeless'], // dropped by prepareData()
@@ -77,7 +77,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testReportsTheStylesheetsTheInputTemplatesRegistered(Wiki $wiki)
+    public function testReportsTheStylesheetsTheInputTemplatesRegistered(YesWikiRuntime $wiki)
     {
         $answer = $this->preview($wiki, [[
             'type' => 'fichier',
@@ -98,7 +98,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
      * querystring -> route match -> ACL -> kernel -> argument resolution.
      */
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testTheRouteDispatchesThroughTheWholeApiPipeline(Wiki $wiki)
+    public function testTheRouteDispatchesThroughTheWholeApiPipeline(YesWikiRuntime $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
         $admin = current(array_filter($userManager->getAll(), fn ($u) => $wiki->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin($u['name'])));
@@ -146,7 +146,7 @@ class ApiControllerFormPreviewTest extends YesWikiTestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Depends('testWikiExisting')]
-    public function testRejectsATemplateThatIsNotAJsonArray(Wiki $wiki)
+    public function testRejectsATemplateThatIsNotAJsonArray(YesWikiRuntime $wiki)
     {
         $controller = $wiki->services->get(FormApiController::class);
         $request = Request::create('/api/forms/preview', 'POST', ['template' => 'not json']);

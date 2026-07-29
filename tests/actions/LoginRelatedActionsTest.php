@@ -12,7 +12,7 @@ use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -27,12 +27,12 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class LoginRelatedActionsTest extends YesWikiTestCase
 {
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(Wiki::class));
+        $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
 
-        return $wiki->services->get(Wiki::class);
+        return $wiki->services->get(YesWikiRuntime::class);
     }
 
     public static function relocatedTagsProvider(): array
@@ -47,7 +47,7 @@ class LoginRelatedActionsTest extends YesWikiTestCase
 
     #[Depends('testWikiExisting')]
     #[DataProvider('relocatedTagsProvider')]
-    public function testRelocatedTagRendersWithoutError(string $tag, Wiki $wiki)
+    public function testRelocatedTagRendersWithoutError(string $tag, YesWikiRuntime $wiki)
     {
         $this->ensureCacheFolderIsWritable();
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($tag);
@@ -64,7 +64,7 @@ class LoginRelatedActionsTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testResetPasswordRejectsWeakPassword(Wiki $wiki)
+    public function testResetPasswordRejectsWeakPassword(YesWikiRuntime $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
         $users = $userManager->getAll();

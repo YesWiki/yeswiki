@@ -7,7 +7,6 @@ use YesWiki\Content\Service\TripleStore;
 use YesWiki\Search\Api\TagApiController;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
 
 require_once 'tests/YesWikiTestCase.php';
 

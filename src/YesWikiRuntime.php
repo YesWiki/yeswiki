@@ -44,7 +44,6 @@ use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiControllerResolver;
 use YesWiki\Identity\Service\AccountActivationService;
 use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Service\CurrentRequest;
@@ -53,6 +52,7 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\ExtensionRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\LanguageService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\Redirector;
 use YesWiki\Kernel\Service\RouteProvider;
@@ -64,14 +64,19 @@ use YesWiki\Render\Service\ThemeManager;
 // time, before anything (Init, the installer, error paths) calls _t()
 LanguageService::getInstance()->initialize();
 
-class Wiki
+/**
+ * The per-request runtime: bootstraps configuration, extensions, the DI container
+ * and languages, then dispatches the request (historic YesWiki\Wiki, ticket 08 --
+ * every service responsibility it used to carry now lives in a real service; what
+ * remains here is kernel lifecycle and dispatch only).
+ */
+class YesWikiRuntime
 {
     public $config;
-    public $metadatas; // todo use PageManager or method instead of public var
-    public $method;
-    public $page;
-    public $tag;
     public $request;
+    // what Init derived from the URL, seeded into PageContext at boot()
+    private $initialTag;
+    private $initialMethod;
     public $CookiePath = '/';
     public $extensions = [];
     // lazily populated RouteCollection - always read it through getRoutes()
@@ -88,7 +93,6 @@ class Wiki
      * @var ContainerInterface
      */
     public $services;
-    public $_groupsCache = [];
 
     private $environment;
     private $httpKernel;
@@ -101,14 +105,14 @@ class Wiki
         $init = new Init($config);
         $this->config = $init->config;
         $this->CookiePath = $init->initCookies();
-        $this->tag = $init->page;
-        $this->method = $init->method;
+        $this->initialTag = $init->page;
+        $this->initialMethod = $init->method;
 
         // single source of truth for every environment-keyed cache
         // (compiled container, see boot(); route collection, see getRoutes())
         $this->environment = defined('PHPUNIT_COMPOSER_INSTALL')
             ? 'test'
-            : ($this->GetConfigValue('debug') ? 'dev' : 'prod');
+            : ($this->getConfigValue('debug') ? 'dev' : 'prod');
         $this->request = Request::createFromGlobals();
 
         $this->loadExtensions();
@@ -139,7 +143,7 @@ class Wiki
         return $service;
     }
 
-    public function GetConfigValue($name, $default = null)
+    private function getConfigValue($name, $default = null)
     {
         return isset($this->config[$name])
             ? is_array($this->config[$name]) ? $this->config[$name] : trim($this->config[$name])
@@ -150,13 +154,13 @@ class Wiki
      * Make the purge of page versions that are older than the last version older than "pages_purge_time"
      * This method permits to allways keep a not latest version that is older than that period.
      */
-    public function PurgePages()
+    public function purgePages()
     {
-        if (($days = $this->GetConfigValue('pages_purge_time')) && !$this->service(HibernationService::class)->isWikiHibernated()) {
+        if (($days = $this->getConfigValue('pages_purge_time')) && !$this->service(HibernationService::class)->isWikiHibernated()) {
             // is purge active ?
             // let's search which pages versions we have to remove
             // this is necessary beacause even MySQL does not handel multi-tables deletes before version 4.0
-            $wnPages = $this->GetConfigValue('table_prefix') . 'pages';
+            $wnPages = $this->getConfigValue('table_prefix') . 'pages';
             $dbService = $this->service(DbService::class);
             $dateExpr = $dbService->dateSubDays(intval($days));
             $sql = <<<SQL
@@ -185,36 +189,16 @@ class Wiki
         }
     }
 
-    // COMMENTS
-    // ACCESS CONTROL
-    /**
-     * Checks if a $user satisfies the ACL to access a certain $module.
-     *
-     * @param string $module
-     *                            The name of the module to access
-     * @param string $module_type
-     *                            The type of the module ('action' or 'handler')
-     * @param string $user
-     *                            The name of the user. By default
-     *                            the current remote user.
-     *
-     * @return bool true if the $user has access to the given $module, false otherwise
-     */
-    public function CheckModuleACL($module, $module_type, $user = null)
-    {
-        return $this->service(ModuleAclService::class)->checkModuleAcl($module, $module_type, $user);
-    }
-
     // MAINTENANCE
     protected const MAINTENANCE_INTERVAL = 1800; // run at most once every 30 minutes
     protected const MAINTENANCE_LOCK_FILE = 'cache/maintenance.lock';
 
-    public function Maintenance()
+    public function maintenance()
     {
         // purge referrers
         $this->service(ReferrerService::class)->purge();
         // purge old page revisions
-        $this->PurgePages();
+        $this->purgePages();
         // purge expired password recovery keys
         $this->service(UserManager::class)->purgeExpiredPasswordRecoveryKeys();
         // purge expired account-activation keys
@@ -239,7 +223,7 @@ class Wiki
     }
 
     // THE BIG EVIL NASTY ONE!
-    public function Run($tag = '', $method = '')
+    public function run($tag = '', $method = '')
     {
         try {
             $this->doRun($tag, $method);
@@ -258,32 +242,37 @@ class Wiki
     private function doRun($tag, $method)
     {
         if ($this->shouldRunMaintenance()) {
-            $this->Maintenance();
+            $this->maintenance();
         }
+
+        $pageContext = $this->service(PageContext::class);
 
         // do our stuff!
         if ($tag == '') {
-            $tag = $this->tag;
+            $tag = $pageContext->getTag();
+        }
+        if ($method == '') {
+            $method = $pageContext->getRawMethod();
         }
 
-        if (!$this->method = trim($method)) {
-            $this->method = 'show';
-        }
+        $pageContext->setMethod(trim($method) ?: 'show');
 
-        if (!$this->tag = trim($tag)) {
+        $tag = trim($tag);
+        if (!$tag) {
             $this->service(Redirector::class)->redirect($this->service(UrlFormatter::class)->href('', $this->config['root_page']));
         }
+        $pageContext->setTag($tag);
 
         $this->service(AuthenticationService::class)->connectUser();
 
         // Is this a special page ?
         if (in_array($tag, ['api', 'doc'])) {
-            $this->RunSpecialPages();
+            $this->runSpecialPages();
         } else {
             $request = $this->service(CurrentRequest::class)->get();
             $request->attributes->set('_controller', LegacyPageController::class);
-            $request->attributes->set('_tag', $this->tag);
-            $request->attributes->set('_method', $this->method);
+            $request->attributes->set('_tag', $pageContext->getTag());
+            $request->attributes->set('_method', $pageContext->getMethod());
 
             $this->handleWithHttpKernel($request)->send();
 
@@ -295,7 +284,7 @@ class Wiki
     }
 
     // Find and run controller action based on route declaration, instead of using page Tag
-    private function RunSpecialPages()
+    private function runSpecialPages()
     {
         // We must manually parse the body data for the PUT or PATCH methods
         // See https://www.php.net/manual/fr/features.file-upload.put-method.php
@@ -309,14 +298,15 @@ class Wiki
         $context->fromRequest($this->service(CurrentRequest::class)->get());
 
         // Use query string as the path (part before '&')
+        $pageContext = $this->service(PageContext::class);
         $extract = explode('&', $context->getQueryString());
         $path = $extract[0];
         if (strpos($path, '=') !== false) {
-            if (!empty($this->method)) {
-                if ($this->method === 'show' && $path === 'wiki=api') {
+            if ($pageContext->getRawMethod() !== '') {
+                if ($pageContext->getRawMethod() === 'show' && $path === 'wiki=api') {
                     $path = 'api';
                 } else {
-                    $path = $this->tag . '/' . $this->method;
+                    $path = $pageContext->getTag() . '/' . $pageContext->getRawMethod();
                     $newQuerystring = implode('&', $extract);
                 }
             } else {
@@ -611,7 +601,7 @@ class Wiki
         // TODO refactor all extensions to use the correct variable name
         // TODO remove this when the retrocompatibility is no longer necessary
         $wiki = $this;
-        $page = $this->tag;
+        $page = $this->initialTag;
         $yeswikiConfig = &$this->config;
 
         foreach ($this->extensions as $k => $pluginBase) {
@@ -646,7 +636,9 @@ class Wiki
         $parameterBag = $this->services->getParameterBag();
         $this->services->set(ParameterBagInterface::class, $parameterBag);
         $this->services->set(CsrfTokenManager::class, new CsrfTokenManager());
-        $this->services->set(Wiki::class, $this);
+        $this->services->set(YesWikiRuntime::class, $this);
+        // explicit replacement for the implicit `$wiki` entry-point global procedural code read
+        $GLOBALS['yeswikiServices'] = $this->services;
 
         // need to be executed after the container is compiled because the %paramName% are resolved there
         $this->config = $parameterBag->all();
@@ -655,6 +647,8 @@ class Wiki
         $this->service(CurrentRequest::class)->replace($this->request);
         $this->service(ExtensionRegistry::class)->bind($this->extensions);
         $this->service(RouteProvider::class)->setResolver(fn () => $this->getRoutes());
+        $this->service(PageContext::class)->setTag($this->initialTag);
+        $this->service(PageContext::class)->setMethod((string)$this->initialMethod);
     }
 
     /**
@@ -666,7 +660,7 @@ class Wiki
     {
         // This must be done after service initialization, as it uses services
         $languageService = $this->service(LanguageService::class);
-        $languageService->loadPreferredLanguage($this, $this->tag);
+        $languageService->loadPreferredLanguage($this, $this->service(PageContext::class)->getTag());
 
         // translations
         foreach ($this->extensions as $k => $pluginBase) {
@@ -697,7 +691,7 @@ class Wiki
      */
     private function loadTemplates()
     {
-        $metadata = $this->service(PageManager::class)->getMetadata($this->tag);
+        $metadata = $this->service(PageManager::class)->getMetadata($this->service(PageContext::class)->getTag());
 
         if (isset($metadata['lang'])) {
             $this->config['lang'] = $metadata['lang'];

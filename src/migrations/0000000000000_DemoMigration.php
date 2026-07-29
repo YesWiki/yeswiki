@@ -8,6 +8,6 @@ class DemoMigration extends YesWikiMigration
     {
         // your code goes here
         // $this->dbService is available
-        // $this->wiki is also available, so you can get other services if needed
+        // $this->services (the container) is available, so you can get other services if needed
     }
 }

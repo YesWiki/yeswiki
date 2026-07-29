@@ -13,7 +13,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -28,7 +28,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     public const CHARS_FOR_PASSWORD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_';
     public const UPPER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    public function testAuthenticationServiceExisting(): Wiki
+    public function testAuthenticationServiceExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(AuthenticationService::class));
@@ -45,7 +45,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     /**
      * @return array{user: User, password: string}
      */
-    private function createRandomUser(Wiki $wiki): array
+    private function createRandomUser(YesWikiRuntime $wiki): array
     {
         $userManager = $wiki->services->get(UserManager::class);
         do {
@@ -68,7 +68,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testCheckPassword(Wiki $wiki)
+    public function testCheckPassword(YesWikiRuntime $wiki)
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -83,7 +83,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginSetsSessionAndLogoutClearsIt(Wiki $wiki)
+    public function testLoginSetsSessionAndLogoutClearsIt(YesWikiRuntime $wiki)
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -110,7 +110,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testSwitchingIdentityCleansSensitiveSessionDataButSameUserReloginDoesNot(Wiki $wiki)
+    public function testSwitchingIdentityCleansSensitiveSessionDataButSameUserReloginDoesNot(YesWikiRuntime $wiki)
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -150,7 +150,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
      * DI-provided one from the bootstrapped test wiki.
      */
     #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginRegeneratesSessionIdOnlyOnIdentityChange(Wiki $wiki)
+    public function testLoginRegeneratesSessionIdOnlyOnIdentityChange(YesWikiRuntime $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
         ['user' => $userA] = $this->createRandomUser($wiki);
@@ -189,7 +189,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginDoesNotTouchSessionIdInCliMode(Wiki $wiki)
+    public function testLoginDoesNotTouchSessionIdInCliMode(YesWikiRuntime $wiki)
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -218,7 +218,7 @@ class AuthenticationServiceTest extends YesWikiTestCase
      * approach testLoginRegeneratesSessionIdOnlyOnIdentityChange already uses.
      */
     #[Depends('testAuthenticationServiceExisting')]
-    public function testLoginIsBlockedForAnUnactivatedUserWhenActivationIsOn(Wiki $wiki)
+    public function testLoginIsBlockedForAnUnactivatedUserWhenActivationIsOn(YesWikiRuntime $wiki)
     {
         $userManager = $wiki->services->get(UserManager::class);
         $accountActivationService = $wiki->services->get(AccountActivationService::class);

@@ -3,8 +3,8 @@
 namespace YesWiki\Admin\Entity;
 
 use YesWiki\Admin\Service\AutoUpdateService;
-use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Entity\ConfigurationFile;
+use YesWiki\Kernel\Service\ConfigurationFileProvider;
 
 class PackageCore extends Package
 {
@@ -188,7 +188,7 @@ class PackageCore extends Package
         if (isset($configuration['yeswiki_version'])) {
             $version = $configuration['yeswiki_version'];
         }
-        $requestedVersion = $GLOBALS['wiki']->getParameter('version');
+        $requestedVersion = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PerformableArguments::class)->get('version');
         if (isset($requestedVersion) && $requestedVersion != '') {
             $version = $requestedVersion;
         }

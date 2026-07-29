@@ -10,7 +10,7 @@ use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Kernel\Service\ConfigurationService;
 use YesWiki\Kernel\Service\ConsoleService;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -99,7 +99,7 @@ class ArchiveServiceTest extends YesWikiTestCase
      *
      * @return array $data
      */
-    private function getDataFromLocation(string $location, Wiki $wiki): array
+    private function getDataFromLocation(string $location, YesWikiRuntime $wiki): array
     {
         $data = [];
         if (!empty($location) && file_exists($location)) {

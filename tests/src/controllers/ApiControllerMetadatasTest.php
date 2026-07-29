@@ -10,7 +10,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -24,7 +24,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
 {
     private const PAGE_TAG = 'ApiControllerMetadatasRegressionPage';
 
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(PageApiController::class));
@@ -36,7 +36,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testSavePageMetadatasPersistsAndMergesWithPrevious(Wiki $wiki)
+    public function testSavePageMetadatasPersistsAndMergesWithPrevious(YesWikiRuntime $wiki)
     {
         $controller = $wiki->services->get(PageApiController::class);
         $pageManager = $wiki->services->get(PageManager::class);
@@ -73,7 +73,7 @@ class ApiControllerMetadatasTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testSavePageMetadatasRejectsEmptyMetadatas(Wiki $wiki)
+    public function testSavePageMetadatasRejectsEmptyMetadatas(YesWikiRuntime $wiki)
     {
         $controller = $wiki->services->get(PageApiController::class);
         $authenticationService = $wiki->services->get(AuthenticationService::class);

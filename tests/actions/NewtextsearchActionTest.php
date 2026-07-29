@@ -50,7 +50,7 @@ class NewtextsearchActionTest extends YesWikiTestCase
         // SearchManager::searchWithLists() enumerates *every* form's EnumField options (not
         // just this test's), so any pre-existing entry-linked select field elsewhere in the
         // (shared) test DB would otherwise crash here regardless of this fix.
-        $GLOBALS['wiki'] = $wiki;
+        $GLOBALS['yeswikiServices'] = $wiki->services;
         $pageManager = $wiki->services->get(PageManager::class);
         $listManager = $wiki->services->get(ListManager::class);
         $formManager = $wiki->services->get(FormManager::class);

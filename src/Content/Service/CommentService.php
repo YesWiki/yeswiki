@@ -123,13 +123,13 @@ class CommentService implements EventSubscriberInterface
             $com['commentOn'] = $comment['comment_on'];
             $com['rawbody'] = $comment['body'];
             // Do the page change in any case (useful for attach or grid)
-            $oldPage = $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
-            $oldPageArray = $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
-            $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($comment['tag']);
-            $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($comment);
-            $com['body'] = $GLOBALS['wiki']->services->get(MarkdownFormatterService::class)->format($comment['body']);
-            $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($oldPage);
-            $GLOBALS['wiki']->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($oldPageArray);
+            $oldPage = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+            $oldPageArray = $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
+            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($comment['tag']);
+            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($comment);
+            $com['body'] = $GLOBALS['yeswikiServices']->get(MarkdownFormatterService::class)->format($comment['body']);
+            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($oldPage);
+            $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($oldPageArray);
             $this->setUserData($comment, 'user', $com);
             $this->setUserData($comment, 'owner', $com);
             $com['date'] = 'le ' . date('d.m.Y à H:i:s', strtotime($comment['time']));

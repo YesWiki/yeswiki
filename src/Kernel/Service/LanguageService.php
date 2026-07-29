@@ -124,10 +124,10 @@ namespace YesWiki\Kernel\Service {
          * negotiation on the Accept-Language header (based on
          * http://php.net/manual/en/function.http-negotiate-language.php#example-4353).
          *
-         * @param \YesWiki\Wiki|object|string $wiki               the wiki, an object exposing ->config, or '' before boot
-         * @param array                       $availableLanguages language-tag-strings (must be lowercase) that are available
-         * @param string                      $httpAcceptLanguage a HTTP_ACCEPT_LANGUAGE string ('auto' reads $_SERVER)
-         * @param string                      $page               name of WikiPage to check for informations on language
+         * @param \YesWiki\YesWikiRuntime|object|string $wiki               the runtime, an object exposing ->config, or '' before boot
+         * @param array                                 $availableLanguages language-tag-strings (must be lowercase) that are available
+         * @param string                                $httpAcceptLanguage a HTTP_ACCEPT_LANGUAGE string ('auto' reads $_SERVER)
+         * @param string                                $page               name of WikiPage to check for informations on language
          */
         public function detectPreferredLanguage($wiki, array $availableLanguages, string $httpAcceptLanguage = 'auto', ?string $page = ''): string
         {
@@ -135,7 +135,7 @@ namespace YesWiki\Kernel\Service {
             $getLang = (isset($_GET['lang']) && in_array($_GET['lang'], $availableLanguages)) ? $_GET['lang'] : '';
 
             $pageMetadataLang = '';
-            if ($page != '' && $wiki instanceof \YesWiki\Wiki) {
+            if ($page != '' && $wiki instanceof \YesWiki\YesWikiRuntime) {
                 // page's metadata lang
                 $metadata = $wiki->services->get(\YesWiki\Content\Service\PageManager::class)->getMetadata($page);
                 $wiki->services->get(PageContext::class)->setMetadata(is_array($metadata) ? $metadata : []);
@@ -238,8 +238,8 @@ namespace YesWiki\Kernel\Service {
          * Update the translations, based on the information from current page.
          * Must be run once initialize() was.
          *
-         * @param \YesWiki\Wiki|object|string $wiki the wiki, an object exposing ->config, or '' before boot
-         * @param string                      $page name of current WikiPage to check for informations on language
+         * @param \YesWiki\YesWikiRuntime|object|string $wiki the runtime, an object exposing ->config, or '' before boot
+         * @param string                                $page name of current WikiPage to check for informations on language
          */
         public function loadPreferredLanguage($wiki, ?string $page = ''): void
         {

@@ -31,11 +31,11 @@ class YesWikiKernel extends Kernel
         return in_array(php_sapi_name(), ['cli', 'phpdbg'], true);
     }
 
-    private Wiki $wiki;
+    private YesWikiRuntime $runtime;
 
-    public function __construct(Wiki $wiki, string $environment)
+    public function __construct(YesWikiRuntime $runtime, string $environment)
     {
-        $this->wiki = $wiki;
+        $this->runtime = $runtime;
         // Symfony's Kernel skips its container-cache freshness check entirely when $debug
         // is false (see Kernel::initializeContainer()) - it assumes prod containers are
         // rebuilt via an explicit deploy/cache-clear step. YesWiki has no such step: site
@@ -86,19 +86,19 @@ class YesWikiKernel extends Kernel
 
         // computed from raw config, not through wiki/service methods: build() runs while the
         // container is being compiled, before any service (or $wiki->services) exists
-        $fullDomain = parse_url($this->wiki->config['base_url'] ?? '');
+        $fullDomain = parse_url($this->runtime->config['base_url'] ?? '');
         $container->setParameter('host', $fullDomain['host'] ?? '');
-        $container->setParameter('mail_domain', $this->wiki->config['mail_domain']);
-        $container->setParameter('max-upload-size', FileManager::uploadMaxSizeFromConfig($this->wiki->config['max_file_size'] ?? null));
+        $container->setParameter('mail_domain', $this->runtime->config['mail_domain']);
+        $container->setParameter('max-upload-size', FileManager::uploadMaxSizeFromConfig($this->runtime->config['max_file_size'] ?? null));
         // derived from base_url by Init pre-boot; a config change that would move it also invalidates this cache
-        $container->setParameter('cookie_path', $this->wiki->CookiePath);
+        $container->setParameter('cookie_path', $this->runtime->CookiePath);
 
         // load every extension's services/parameters into the same container.
         // NB.: the wiki.php/vendor/autoload.php/libs/{key}.api.php includes that used to be
         // interleaved with this loop now run unconditionally on every request, in
         // Wiki::includeExtensionsBootstrapFiles() - build() is skipped entirely on a cache hit,
         // but those includes' global side effects (constants/functions) are needed every request.
-        foreach ($this->wiki->extensions as $pluginBase) {
+        foreach ($this->runtime->extensions as $pluginBase) {
             if (file_exists($pluginBase . 'config.yaml')) {
                 $extensionLoader = new YamlFileLoader($container, new FileLocator($pluginBase));
                 $extensionLoader->load('config.yaml');
@@ -106,8 +106,8 @@ class YesWikiKernel extends Kernel
         }
 
         // yeswiki.config.php takes priority over extensions' own parameter defaults
-        $config = array_replace_recursive($container->getParameterBag()->all(), $this->wiki->config);
-        StringUtilService::replaceRecursivelyIndexedArrays($config, $this->wiki->config);
+        $config = array_replace_recursive($container->getParameterBag()->all(), $this->runtime->config);
+        StringUtilService::replaceRecursivelyIndexedArrays($config, $this->runtime->config);
         // environment overrides re-applied here (Init::getConfig() already applied them)
         // so they also cover extension parameters, whose defaults only exist at this point
         $config = EnvironmentConfiguration::apply($config ?? []);

@@ -24,7 +24,7 @@ function tokenTruncate($string, $your_desired_width)
 
 function get_filtertags_parameters_recursive($nb = 1, $tab = [])
 {
-    $filter = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('filter' . $nb);
+    $filter = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('filter' . $nb);
 
     if (empty($filter) && $nb == 1) {
         return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_NO_FILTERS') . '</div>' . "\n";
@@ -48,19 +48,19 @@ function get_filtertags_parameters_recursive($nb = 1, $tab = [])
         $tab[$nb]['title'] = '';
         $tab[$nb]['arraytags'] = explode(',', $explodelabel[0]);
     }
-    $toggle = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('select' . $nb);
+    $toggle = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('select' . $nb);
     if (!empty($toggle) && $toggle == 'checkbox') {
         $tab[$nb]['toggle'] = $toggle;
     } else {
         $tab[$nb]['toggle'] = 'radio';
     }
-    $class = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('class' . $nb);
+    $class = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('class' . $nb);
     if (!empty($class)) {
         $tab[$nb]['class'] = $class;
     } else {
         $tab[$nb]['class'] = 'filter-inline';
     }
-    $dbService = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\DbService::class);
+    $dbService = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\DbService::class);
     $escapedTags = array_map(function ($tagname) use ($dbService) {
         return $dbService->escape($tagname);
     }, $tab[$nb]['arraytags']);
@@ -89,11 +89,11 @@ function get_title_from_body($page)
     } else {
         preg_match_all("/\={6}(.*)\={6}/U", $page['body'], $titles);
         if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-            $title = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
+            $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
         } else {
             preg_match_all('/={5}(.*)={5}/U', $page['body'], $titles);
             if (is_array($titles[1]) && isset($titles[1][0]) && $titles[1][0] != '') {
-                $title = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
+                $title = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format(trim($titles[1][0]));
             } else {
                 $title = $page['tag'];
             }
@@ -134,11 +134,11 @@ function get_image_from_body($page)
         } else {
             preg_match_all("/\[\[(http.*\.(?i)(jpg|png|gif|bmp)) .*\]\]/U", $page['body'], $image);
             if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                $image = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim(str_replace('\\', '', $image[1][0])) . '" />""');
+                $image = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim(str_replace('\\', '', $image[1][0])) . '" />""');
             } else {
                 preg_match_all("/\<img.*src=\"(.*)\"/U", $page['body'], $image);
                 if (is_array($image[1]) && isset($image[1][0]) && $image[1][0] != '') {
-                    $image = $GLOBALS['wiki']->services->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim($image[1][0]) . '" />""');
+                    $image = $GLOBALS['yeswikiServices']->get(YesWiki\Render\Service\MarkdownFormatterService::class)->format('""<img loading="lazy" alt=\'\' class="img-responsive" src="' . trim($image[1][0]) . '" />""');
                 } else {
                     $image = '';
                 }

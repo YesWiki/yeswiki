@@ -54,7 +54,7 @@ class ActionsBuilderService
             // remove file for no admins if 'onlyForAdmins'
             if (isset($data['action_groups'][$key]['onlyForAdmins'])
                 && $data['action_groups'][$key]['onlyForAdmins']
-                && !$GLOBALS['wiki']->services->get(\YesWiki\Identity\Service\AclService::class)->isAdmin()) {
+                && !$GLOBALS['yeswikiServices']->get(\YesWiki\Identity\Service\AclService::class)->isAdmin()) {
                 unset($data['action_groups'][$key]);
             } else {
                 // When order is not defined, put at the end

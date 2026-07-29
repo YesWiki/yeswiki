@@ -19,8 +19,8 @@ class ConfigurationFile implements \ArrayAccess, \Iterator, \Countable
         $this->_parameters = [];
         if ($configurationService instanceof ConfigurationService) {
             $this->configurationService = $configurationService;
-        } elseif (isset($GLOBALS['wiki'])) {
-            $this->configurationService = $GLOBALS['wiki']->services->get(ConfigurationService::class);
+        } elseif (isset($GLOBALS['yeswikiServices'])) {
+            $this->configurationService = $GLOBALS['yeswikiServices']->get(ConfigurationService::class);
         }
     }
 

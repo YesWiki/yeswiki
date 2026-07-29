@@ -10,7 +10,7 @@ use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
@@ -23,7 +23,7 @@ require_once 'tests/ForcedParameterBag.php';
 #[CoversMethod(PasswordForEditingService::class, 'isGrantedPasswordForEditing')]
 class PasswordForEditingServiceTest extends YesWikiTestCase
 {
-    private function buildService(Wiki $wiki, string $password): PasswordForEditingService
+    private function buildService(YesWikiRuntime $wiki, string $password): PasswordForEditingService
     {
         $realParams = $wiki->services->get(ParameterBagInterface::class);
         $forcedParams = new ForcedParameterBag($realParams, ['password_for_editing' => $password]);

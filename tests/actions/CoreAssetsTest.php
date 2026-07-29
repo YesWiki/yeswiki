@@ -4,7 +4,7 @@ namespace YesWiki\Test\Core\Service;
 
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -15,16 +15,16 @@ require_once 'tests/YesWikiTestCase.php';
  */
 class CoreAssetsTest extends YesWikiTestCase
 {
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
-        $this->assertTrue($wiki->services->has(Wiki::class));
+        $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
 
-        return $wiki->services->get(Wiki::class);
+        return $wiki->services->get(YesWikiRuntime::class);
     }
 
     #[Depends('testWikiExisting')]
-    public function testYwCoreCssIsLoadedWithoutBootstrap(Wiki $wiki)
+    public function testYwCoreCssIsLoadedWithoutBootstrap(YesWikiRuntime $wiki)
     {
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{linkstyle}}');
         $this->assertStringContainsString('styles/yw-core.css', $output);
@@ -32,7 +32,7 @@ class CoreAssetsTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testHtmxAndYwCoreJsAreLoadedGlobally(Wiki $wiki)
+    public function testHtmxAndYwCoreJsAreLoadedGlobally(YesWikiRuntime $wiki)
     {
         $output = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{linkjavascript}}');
         $this->assertStringContainsString('javascripts/vendor/htmx/htmx.min.js', $output);

@@ -13,7 +13,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -29,7 +29,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
     public const CHARS_FOR_PASSWORD = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_';
     public const UPPER_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    public function testUserOperationsServiceExisting(): Wiki
+    public function testUserOperationsServiceExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(UserOperationsService::class));
@@ -39,7 +39,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
     }
 
     #[Depends('testUserOperationsServiceExisting')]
-    public function testGetFirstAdmin(Wiki $wiki): string
+    public function testGetFirstAdmin(YesWikiRuntime $wiki): string
     {
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $firstAdmin = $userOperationsService->getFirstAdmin();
@@ -51,7 +51,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
     #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
     #[DataProvider('dataProviderTestDelete')]
-    public function testDelete(string $connexionMode, bool $expectedResult, Wiki $wiki, string $firstAdmin)
+    public function testDelete(string $connexionMode, bool $expectedResult, YesWikiRuntime $wiki, string $firstAdmin)
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
@@ -142,7 +142,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
         bool $userNameExist,
         bool $emailExist,
         bool $otherException,
-        Wiki $wiki
+        YesWikiRuntime $wiki
     ) {
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);
@@ -235,7 +235,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
      */
     #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
-    public function testDeleteUserAloneInNonAdminGroupDeletesGroupToo(Wiki $wiki, string $firstAdmin)
+    public function testDeleteUserAloneInNonAdminGroupDeletesGroupToo(YesWikiRuntime $wiki, string $firstAdmin)
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $groupOperationsService = $wiki->services->get(GroupOperationsService::class);
@@ -290,7 +290,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
      */
     #[Depends('testUserOperationsServiceExisting')]
     #[Depends('testGetFirstAdmin')]
-    public function testDeleteUserAloneInAdminsGroupThrows(Wiki $wiki, string $firstAdmin)
+    public function testDeleteUserAloneInAdminsGroupThrows(YesWikiRuntime $wiki, string $firstAdmin)
     {
         $authenticationService = $wiki->services->get(AuthenticationService::class);
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
@@ -369,7 +369,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
     #[Depends('testCreate')]
     #[Depends('testDelete')]
     #[DataProvider('dataProviderTestSanitizeName')]
-    public function testSanitizeName($name, string $char, int $length, bool $otherException, Wiki $wiki)
+    public function testSanitizeName($name, string $char, int $length, bool $otherException, YesWikiRuntime $wiki)
     {
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userManager = $wiki->services->get(UserManager::class);

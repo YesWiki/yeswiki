@@ -21,29 +21,29 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
     try {
         $mail->set('CharSet', 'utf-8');
 
-        if ($GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_mail_func'] == 'smtp') {
+        if ($GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_mail_func'] == 'smtp') {
             // Tell PHPMailer to use SMTP
             $mail->isSMTP();
             // Enable SMTP debugging
             // 0 = off (for production use)
             // 1 = client messages
             // 2 = client and server messages
-            $mail->SMTPDebug = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_debug'];
+            $mail->SMTPDebug = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_debug'];
             // Ask for HTML-friendly debug output
             $mail->Debugoutput = 'html';
             // Set the hostname of the mail server
-            $mail->Host = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_host'];
+            $mail->Host = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_host'];
             // Set the SMTP port number - likely to be 25, 465 or 587
-            $mail->Port = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_port'];
+            $mail->Port = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_port'];
             // Whether to use SMTP authentication
-            if (!empty($GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_user'])) {
+            if (!empty($GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_user'])) {
                 $mail->SMTPAuth = true;
                 // Username to use for SMTP authentication
-                $mail->Username = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_user'];
+                $mail->Username = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_user'];
                 // Password to use for SMTP authentication
-                $mail->Password = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_pass'];
+                $mail->Password = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_pass'];
 
-                $vSMTPSecure = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_secure'] ?? null;
+                $vSMTPSecure = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_smtp_secure'] ?? null;
 
                 if (empty($vSMTPSecure)) {
                     $vSMTPSecure = getSMTPSecure($mail->Port ?? null);
@@ -60,21 +60,21 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
             } else {
                 $mail->SMTPAuth = false;
             }
-        } elseif ($GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_mail_func'] == 'sendmail') {
+        } elseif ($GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_mail_func'] == 'sendmail') {
             // Set PHPMailer to use the sendmail transport
             $mail->isSendmail();
         }
 
         // Set an alternative reply-to address
-        if (!empty($GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_reply_to'])) {
-            $mail->addReplyTo($GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_reply_to']);
+        if (!empty($GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_reply_to'])) {
+            $mail->addReplyTo($GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_reply_to']);
         } else {
             $mail->addReplyTo($mail_sender, $name_sender);
         }
         // Set always the same 'from' address (to avoid spam, it's a good practice to set the from field with an address from
         // the same domain than the sending mail server)
-        if (!empty($GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_from'])) {
-            $mail_sender = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_from'];
+        if (!empty($GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_from'])) {
+            $mail_sender = $GLOBALS['yeswikiServices']->get(YesWiki\Kernel\Service\RuntimeConfig::class)['contact_from'];
         }
         // Set who the message is to be sent from
         if (empty($name_sender)) {
@@ -126,7 +126,7 @@ function send_mail($mail_sender, $name_sender, $mail_receiver, $subject, $messag
 
         return true;
     } catch (Exception $e) {
-        if ($GLOBALS['wiki']->services->get(YesWiki\Identity\Service\AclService::class)->isAdmin()) {
+        if ($GLOBALS['yeswikiServices']->get(YesWiki\Identity\Service\AclService::class)->isAdmin()) {
             echo $e->errorMessage();
         }
 

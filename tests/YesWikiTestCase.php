@@ -7,7 +7,7 @@ use YesWiki\Core\YesWikiLoader;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Identity\Service\UserManager;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 class YesWikiTestCase extends TestCase
 {
@@ -22,7 +22,7 @@ class YesWikiTestCase extends TestCase
     /** @var string[] groups that existed before the run, and so are none of its business */
     private static array $groupsBeforeRun = [];
 
-    protected static function getWiki(): Wiki
+    protected static function getWiki(): YesWikiRuntime
     {
         require_once 'src/YesWikiLoader.php';
         $wiki = YesWikiLoader::getWiki(true);
@@ -46,7 +46,7 @@ class YesWikiTestCase extends TestCase
      * taken here instead -- this runs on the first getWiki() call, which is the first thing
      * any provider does, hence before the run has created any group of its own.
      */
-    private static function registerLeakSweep(Wiki $wiki): void
+    private static function registerLeakSweep(YesWikiRuntime $wiki): void
     {
         if (self::$leakSweepRegistered) {
             return;

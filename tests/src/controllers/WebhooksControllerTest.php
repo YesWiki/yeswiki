@@ -7,7 +7,7 @@ use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Admin\Controller\WebhooksController;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Test\Core\YesWikiTestCase;
-use YesWiki\Wiki;
+use YesWiki\YesWikiRuntime;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -21,7 +21,7 @@ require_once 'tests/YesWikiTestCase.php';
 #[CoversMethod(WebhooksController::class, 'get_all_webhooks')]
 class WebhooksControllerTest extends YesWikiTestCase
 {
-    public function testWikiExisting(): Wiki
+    public function testWikiExisting(): YesWikiRuntime
     {
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(WebhooksController::class));
@@ -30,7 +30,7 @@ class WebhooksControllerTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testSubscribedEventsUnchangedFromExtension(Wiki $wiki)
+    public function testSubscribedEventsUnchangedFromExtension(YesWikiRuntime $wiki)
     {
         $events = WebhooksController::getSubscribedEvents();
         $this->assertSame([
@@ -44,7 +44,7 @@ class WebhooksControllerTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testRegisteredAsEventSubscriber(Wiki $wiki)
+    public function testRegisteredAsEventSubscriber(YesWikiRuntime $wiki)
     {
         // the yeswiki.event_subscriber tag wires the controller into the
         // EventDispatcher via YesWikiEventCompilerPass — instantiating the
@@ -62,7 +62,7 @@ class WebhooksControllerTest extends YesWikiTestCase
     }
 
     #[Depends('testWikiExisting')]
-    public function testNoWebhooksRegisteredReturnsEmptyList(Wiki $wiki)
+    public function testNoWebhooksRegisteredReturnsEmptyList(YesWikiRuntime $wiki)
     {
         $controller = $wiki->services->get(WebhooksController::class);
         $this->assertSame([], $controller->get_all_webhooks());
