@@ -4,7 +4,20 @@ namespace YesWiki\Content\Field;
 
 use Field;
 use Psr\Container\ContainerInterface;
+use YesWiki\Identity\Service\PasswordHasherFactory;
 
+/**
+ * A password input inside a form (`mot_de_passe`).
+ *
+ * Values are hashed with the same factory that hashes user-account passwords --
+ * PHP's current best algorithm, chosen at hash time and recorded in the hash itself.
+ * This field used to call `md5()`, which has been unfit for passwords for two decades:
+ * unsalted, and fast enough that a commodity GPU walks the whole plausible keyspace.
+ *
+ * Hashes written by older YesWikis are still md5 and stay verifiable: the factory's
+ * `migrate_from` keeps the legacy hasher for checking, and `needsRehash()` says when a
+ * stored value should be replaced the next time the plain password passes through.
+ */
 #[\Field(['mot_de_passe'])]
 class PasswordField extends BazarField
 {
@@ -26,7 +39,7 @@ class PasswordField extends BazarField
         if (!empty($value)) {
             // If a new password has been set, encode it
             return [
-                $this->propertyName => md5($value),
+                $this->propertyName => $this->hash((string)$value),
                 'fields-to-remove' => [$this->propertyName . '-previous'],
             ];
         }
@@ -36,6 +49,40 @@ class PasswordField extends BazarField
             $this->propertyName => $entry[$this->propertyName . '-previous'] ?? null,
             'fields-to-remove' => [$this->propertyName . '-previous'],
         ];
+    }
+
+    public function hash(string $plainPassword): string
+    {
+        return $this->hasher()->hash($plainPassword);
+    }
+
+    /**
+     * Whether a plain password matches a stored hash. Accepts hashes written by any
+     * algorithm the factory knows, md5 included, so values stored before this field
+     * stopped using md5 keep working.
+     */
+    public function verify(?string $hashedPassword, string $plainPassword): bool
+    {
+        if (empty($hashedPassword)) {
+            return false;
+        }
+
+        return $this->hasher()->verify($hashedPassword, $plainPassword);
+    }
+
+    /**
+     * Whether a stored hash was made by an algorithm we no longer write, and should be
+     * replaced next time the plain password is available.
+     */
+    public function needsRehash(?string $hashedPassword): bool
+    {
+        return !empty($hashedPassword) && $this->hasher()->needsRehash($hashedPassword);
+    }
+
+    private function hasher(): \Symfony\Component\PasswordHasher\PasswordHasherInterface
+    {
+        return $this->getService(PasswordHasherFactory::class)
+            ->getPasswordHasher(PasswordHasherFactory::BAZAR_FIELD);
     }
 
     protected function renderStatic($entry)

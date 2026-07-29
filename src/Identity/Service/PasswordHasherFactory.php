@@ -2,7 +2,6 @@
 
 namespace YesWiki\Identity\Service;
 
-
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactory as SymfonyPasswordHasherFactory;
 use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Security\MD5PasswordHasher;
@@ -10,6 +9,9 @@ use YesWiki\Kernel\Service\DbService;
 
 class PasswordHasherFactory extends SymfonyPasswordHasherFactory
 {
+    /** Hasher name for form password fields, as opposed to user-account passwords. */
+    public const BAZAR_FIELD = 'bazar_field';
+
     protected $dbService;
 
     public function __construct(DbService $dbService)
@@ -24,6 +26,15 @@ class PasswordHasherFactory extends SymfonyPasswordHasherFactory
                 'algorithm' => 'auto',
                 'migrate_from' => [
                     'md5', // uses the "md5" hasher configured above
+                ],
+            ],
+            // Password fields inside bazar forms (PasswordField / `mot_de_passe`).
+            // Same deal as user accounts: PHP's current best algorithm for new values,
+            // and the md5 hasher above kept only to verify what older YesWikis stored.
+            self::BAZAR_FIELD => [
+                'algorithm' => 'auto',
+                'migrate_from' => [
+                    'md5',
                 ],
             ],
             'cookie' => [
