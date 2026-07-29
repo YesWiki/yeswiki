@@ -85,8 +85,8 @@ class MigrationService
 
                     // Run Migration
                     try {
+                        /** @var \YesWiki\Core\YesWikiMigration $instance */
                         $instance = new $className();
-                        /* @var \YesWiki\Core\YesWikiMigration $instance */
                         $instance->setServices($this->container);
                         $instance->setDbService($this->dbService);
                         $instance->setParams($this->params);

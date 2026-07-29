@@ -133,6 +133,7 @@ class Performer
             }
         }
         if (class_exists($className)) {
+            /** @var \YesWiki\Core\YesWikiPerformable $instance */
             $instance = new $className();
             $this->prepare($instance, $vars, $output);
 
@@ -207,9 +208,8 @@ class Performer
      *
      * @param array<mixed> $vars
      */
-    private function prepare(object $instance, array &$vars, string &$output): void
+    private function prepare(\YesWiki\Core\YesWikiPerformable $instance, array &$vars, string &$output): void
     {
-        /* @var \YesWiki\Core\YesWikiPerformable $instance */
         $instance->setServices($this->container);
         $instance->setParams($this->params);
         $instance->setArguments($vars);

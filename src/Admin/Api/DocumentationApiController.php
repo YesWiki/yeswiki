@@ -62,8 +62,8 @@ class DocumentationApiController extends YesWikiController
                     include $pluginBase . 'controllers/ApiController.php';
                 }
                 if (class_exists($apiClassName, false)) {
+                    /** @var YesWikiController $apiController */
                     $apiController = new $apiClassName();
-                    /* @var \YesWiki\Core\YesWikiController $apiController */
                     $apiController->setServices($this->services);
                     if (method_exists($apiController, 'getDocumentation')) {
                         $response = $apiController->getDocumentation();
