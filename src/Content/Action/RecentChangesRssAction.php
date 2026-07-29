@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -27,9 +28,9 @@ class RecentChangesRssAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        if ($this->wiki->GetMethod() != 'xml') {
+        if ($this->getService(PageContext::class)->getMethod() != 'xml') {
             return _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ' .
-                $this->getService(LinkRenderer::class)->link($this->wiki->getPageTag(), 'xml', null, $this->getService(UrlFormatter::class)->href('xml'));
+                $this->getService(LinkRenderer::class)->link($this->getService(PageContext::class)->getTag(), 'xml', null, $this->getService(UrlFormatter::class)->href('xml'));
         }
         require_once YESWIKI_SOURCE_DIR . '/src/rss.functions.php';
         $max = 50;

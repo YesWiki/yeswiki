@@ -1,14 +1,16 @@
 <?php
 
 namespace YesWiki\Content\Action;
-/**
+
+/*
  * Allow signed-in users to react with icon, emojis or pictures on the page.
  */
-use YesWiki\Identity\Service\AuthenticationService;
-use YesWiki\Content\Service\ReactionsFormatter;
 use YesWiki\Content\Service\ReactionManager;
+use YesWiki\Content\Service\ReactionsFormatter;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 
 class ReactionsAction extends YesWikiAction implements RegisteredAction
 {
@@ -63,7 +65,7 @@ class ReactionsAction extends YesWikiAction implements RegisteredAction
             ReactionManager::DEFAULT_IMAGES
         );
 
-        $pageTag = $this->wiki->GetPageTag();
+        $pageTag = $this->getService(PageContext::class)->getTag();
         list('reactions' => $reactionItems, 'userReactions' => $userReactions) = $reactionsFormatter->getReactionItems(
             $pageTag,
             $username,

@@ -6,6 +6,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
@@ -45,13 +46,13 @@ class IncludepagesAction extends YesWikiAction implements RegisteredAction
         include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
         $nbcartrunc = 200;
         $output = '';
-        $class = $this->wiki->GetParameter('class');
-        $pages = $this->wiki->GetParameter('pages');
+        $class = $this->getService(PerformableArguments::class)->get('class');
+        $pages = $this->getService(PerformableArguments::class)->get('pages');
 
         if (empty($pages)) {
             $output .= '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_INCLUDEPAGES') . '</strong> : ' . _t('TAGS_NO_PARAM_PAGES') . '</div>' . "\n";
         } else {
-            $template = $this->wiki->GetParameter('template');
+            $template = $this->getService(PerformableArguments::class)->get('template');
             if (empty($template)) {
                 $template = 'pages_list.twig';
             }

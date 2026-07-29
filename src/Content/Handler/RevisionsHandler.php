@@ -9,6 +9,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
@@ -29,7 +30,7 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
 
         if ($this->getRequest()->get('restoreRevisionId')) {
             if ($aclService->hasAccess('write')) {
-                $tag = $this->wiki->GetPageTag();
+                $tag = $this->getService(PageContext::class)->getTag();
                 $fullRevert = (bool)$this->getRequest()->get('fullRevert');
                 $pageManager->revertToRevision($tag, $this->getRequest()->get('restoreRevisionId'), $fullRevert);
                 // save links
@@ -44,15 +45,15 @@ class RevisionsHandler extends YesWikiHandler implements RegisteredHandler
 
             return $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
         }
-        $revisionsCount = $pageManager->countRevisions($this->wiki->GetPageTag());
+        $revisionsCount = $pageManager->countRevisions($this->getService(PageContext::class)->getTag());
         // Limit to 30 revisions otherwise the UI is too crowded
-        $revisions = $pageManager->getRevisions($this->wiki->GetPageTag(), $this->params->get('revisionscount'));
+        $revisions = $pageManager->getRevisions($this->getService(PageContext::class)->getTag(), $this->params->get('revisionscount'));
         $entryManager = $this->getService(EntryManager::class);
 
         return $this->renderFullPage('@core/handlers/revisions.twig', [
             'revisions' => $revisions,
             'revisionsCount' => $revisionsCount,
-            'isEntry' => $entryManager->isEntry($this->wiki->GetPageTag()),
+            'isEntry' => $entryManager->isEntry($this->getService(PageContext::class)->getTag()),
         ]);
     }
 }

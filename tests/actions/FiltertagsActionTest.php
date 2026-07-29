@@ -2,8 +2,8 @@
 
 namespace YesWiki\Test\Actions;
 
-use YesWiki\Kernel\Service\DbService;
 use YesWiki\Content\Service\TripleStore;
+use YesWiki\Kernel\Service\DbService;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -61,7 +61,8 @@ class FiltertagsActionTest extends YesWikiTestCase
         try {
             include_once 'src/tags.functions.php';
 
-            $wiki->parameter = ['filter1' => self::MALICIOUS_TAG . ',' . self::DECOY_TAG];
+            $filterArgs = ['filter1' => self::MALICIOUS_TAG . ',' . self::DECOY_TAG];
+            $wiki->services->get(\YesWiki\Kernel\Service\PerformableArguments::class)->bind($filterArgs);
             $params = get_filtertags_parameters_recursive();
             $taglist = $params['tags'];
 

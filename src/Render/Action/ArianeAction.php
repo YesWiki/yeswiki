@@ -4,6 +4,8 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -55,7 +57,7 @@ class ArianeAction extends YesWikiAction implements RegisteredAction
 
         */
 
-        if ($max = $this->wiki->GetParameter('nb')) {
+        if ($max = $this->getService(PerformableArguments::class)->get('nb')) {
             $max = (int)$max;
         } else {
             $max = 4;
@@ -87,7 +89,7 @@ class ArianeAction extends YesWikiAction implements RegisteredAction
             // The crumbs are already stored, so get them and put them in the crumbs array.
             $crumbs = $_SESSION['breadcrumbs'];
 
-            if ($crumbs[count($crumbs) - 1] != $this->wiki->GetPageTag()) {
+            if ($crumbs[count($crumbs) - 1] != $this->getService(PageContext::class)->getTag()) {
                 // Test for the maximum amount of crumbs and if the last pagetag is not
                 // the same as the last stored tag. If it is a duplicate we'll get rid of it later.
                 if (count($crumbs) >= $max and $PageTag != $crumbs[$max - 1]) {
@@ -133,7 +135,7 @@ class ArianeAction extends YesWikiAction implements RegisteredAction
             . "\n";
 
         foreach ($crumbs as $this_crumb) {
-            if ($this->wiki->GetPageTag() == $this_crumb) {
+            if ($this->getService(PageContext::class)->getTag() == $this_crumb) {
                 $page_trail .= '<li class="yw-breadcrumb__active">' . $this_crumb . '</li>' . "\n";
             } else {
                 $page_trail .= '<li><a href="'

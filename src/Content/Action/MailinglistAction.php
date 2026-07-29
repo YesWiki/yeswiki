@@ -6,6 +6,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\Mailer;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -48,7 +49,7 @@ class MailinglistAction extends YesWikiAction implements RegisteredAction
         include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
 
         // recuperation des parametres
-        $list = $this->wiki->GetParameter('list');
+        $list = $this->getService(PerformableArguments::class)->get('list');
         if (empty($list)) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_MAILINGLIST') . '</strong> : ' . _t('CONTACT_PARAMETER_LIST_REQUIRED') . '.</div>';
         } elseif ($this->getService(AclService::class)->isAdmin()) {

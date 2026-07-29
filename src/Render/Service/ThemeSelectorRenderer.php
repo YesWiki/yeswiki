@@ -134,7 +134,7 @@ class ThemeSelectorRenderer extends YesWikiController
             'availableLanguages' => $GLOBALS['available_languages'],
             'preferedLanguage' => $GLOBALS['prefered_language'],
             'languagesList' => $GLOBALS['languages_list'],
-            'page' => $this->wiki->page,
+            'page' => $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage(),
             'updateUrl' => ($mode !== 'edit'),
         ]);
     }

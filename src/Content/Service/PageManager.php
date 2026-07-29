@@ -590,7 +590,7 @@ class PageManager
     public function getOwner($tag = '', $time = '')
     {
         if (!$tag = trim($tag)) {
-            $tag = $this->wiki->GetPageTag();
+            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
 
         if (!isset($this->ownersCache[$tag])) {

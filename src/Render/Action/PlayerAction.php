@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 
 /**
  * `{{player}}` -- converted from the procedural actions/player.php by ticket 06.
@@ -45,16 +46,16 @@ class PlayerAction extends YesWikiAction implements RegisteredAction
         // button/progress-bar markup jPlayer built. The FreeMind (.mm) branch is gone entirely:
         // it embedded a Flash .swf, unsupported in any browser since ~2021.
 
-        $url = $this->wiki->GetParameter('url');
-        $type = $this->wiki->getParameter('type');
+        $url = $this->getService(PerformableArguments::class)->get('url');
+        $type = $this->getService(PerformableArguments::class)->get('type');
 
         if (!empty($url)) {
-            $height = $this->wiki->GetParameter('height');
+            $height = $this->getService(PerformableArguments::class)->get('height');
             if (empty($height)) {
                 $height = '300px';
             }
 
-            $width = $this->wiki->GetParameter('width');
+            $width = $this->getService(PerformableArguments::class)->get('width');
             if (empty($width)) {
                 $width = '400px';
             }

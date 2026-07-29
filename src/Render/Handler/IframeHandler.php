@@ -11,6 +11,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -34,7 +35,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         $this->entryController = $this->getService(EntryController::class);
         $this->favoritesManager = $this->getService(FavoritesManager::class);
         $output = '';
-        if (!$this->wiki->page) {
+        if (!$this->getService(PageContext::class)->getPage()) {
             echo str_replace(
                 ['{beginLink}', '{endLink}'],
                 ["<a href=\"{$this->getService(UrlFormatter::class)->href('editiframe')}\">", '</a>'],
@@ -48,7 +49,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
                 . '<div class="yeswiki-page-widget page-widget page" ' . $this->getService(MarkdownFormatterService::class)->format('{{doubleclic iframe="1"}}')
                 . '>' . "\n";
 
-            if ($entryManager->isEntry($this->wiki->GetPageTag())) {
+            if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
                 $output .= $this->renderBazarEntry();
             } else {
                 $output .= $this->renderWikiPage();
@@ -105,14 +106,14 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         $output = '';
         // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
         $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
-        $valjson = $this->wiki->page['body'];
+        $valjson = ($this->getService(PageContext::class)->getPage() ?? [])['body'];
         $tab_valeurs = json_decode($valjson, true);
         if (YW_CHARSET != 'UTF-8') {
             $tab_valeurs = array_map(function ($value) {
                 return mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
             }, $tab_valeurs);
         }
-        $entry = $this->entryController->view($this->wiki->tag, 0, true);
+        $entry = $this->entryController->view($this->getService(PageContext::class)->getTag(), 0, true);
         if (!empty($entry)) {
             // affichage de la page formatee
             $output .= $this->replaceLinksWithIframeIfNeeded($entry);
@@ -133,7 +134,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         $user = $this->authenticationService->getLoggedUser();
         if (!empty($user) && $this->favoritesManager->areFavoritesActivated()) {
             $currentuser = $user['name'];
-            $tag = $this->wiki->GetPageTag();
+            $tag = $this->getService(PageContext::class)->getTag();
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $tag);
             // TODO use twig (with other part of this handler also)
             $this->assetsManager->AddJavascriptFile('javascripts/favorites.js');
@@ -157,12 +158,12 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         if ($this->getRequest()->query->get('share') == '1') {
             $output .= '<a class="btn btn-sm btn-default link-share modalbox pull-right" href="'
                 . $this->getService(UrlFormatter::class)->href('share') . '" title="' . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
-                . $this->wiki->GetPageTag() . '"><i class="fa fa-share-alt"></i>' . _t('TEMPLATE_SHARE')
+                . $this->getService(PageContext::class)->getTag() . '"><i class="fa fa-share-alt"></i>' . _t('TEMPLATE_SHARE')
                 . '</a>';
         }
 
         // affichage de la page formatée
-        $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format($this->wiki->page['body']));
+        $output .= $this->replaceLinksWithIframeIfNeeded($this->getService(MarkdownFormatterService::class)->format(($this->getService(PageContext::class)->getPage() ?? [])['body']));
 
         return $output;
     }

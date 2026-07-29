@@ -13,6 +13,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Service\EventDispatcher;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
@@ -205,7 +206,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
     protected function registerWebhooks()
     {
         // First delete all existing triples for this resource
-        $this->tripleStore->delete($this->wiki->GetPageTag(), self::VOCABULARY_WEBHOOK, null, '', '');
+        $this->tripleStore->delete($this->getService(PageContext::class)->getTag(), self::VOCABULARY_WEBHOOK, null, '', '');
 
         $numFields = count($_POST['url']);
 
@@ -237,7 +238,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
 
                 // All good, save webhook
                 $this->tripleStore->create(
-                    $this->wiki->GetPageTag(),
+                    $this->getService(PageContext::class)->getTag(),
                     self::VOCABULARY_WEBHOOK,
                     json_encode([
                         'format' => $_POST['format'][$i],

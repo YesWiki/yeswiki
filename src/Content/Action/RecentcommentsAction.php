@@ -5,6 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -43,7 +44,7 @@ class RecentcommentsAction extends YesWikiAction implements RegisteredAction
     private function emit(): void
     {
         // Which is the max number of comments to be shown ?
-        if ($max = $this->wiki->GetParameter('max')) {
+        if ($max = $this->getService(PerformableArguments::class)->get('max')) {
             if ($max == 'last') {
                 $max = 50;
             } else {

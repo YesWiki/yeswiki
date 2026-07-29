@@ -7,6 +7,8 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -51,9 +53,9 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
             $max = 20;
         }
 
-        if ($this->wiki->GetMethod() != 'xml') {
+        if ($this->getService(PageContext::class)->getMethod() != 'xml') {
             echo _t('TO_OBTAIN_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ';
-            echo $this->getService(LinkRenderer::class)->link($this->wiki->getPageTag(), 'xml', null, $this->getService(UrlFormatter::class)->href('xml'));
+            echo $this->getService(LinkRenderer::class)->link($this->getService(PageContext::class)->getTag(), 'xml', null, $this->getService(UrlFormatter::class)->href('xml'));
 
             return;
         }
@@ -62,7 +64,7 @@ class RecentchangesrssplusAction extends YesWikiAction implements RegisteredActi
         $userCol = $dbService->quoteIdentifier('user');
         $bodyExpr = ($dbService->getDriver() === 'sqlite') ? 'substr(body,1,500)' : 'LEFT(body,500)';
         if ($pages = $this->getService(DbService::class)->loadAll("select tag, time, $userCol, owner, $bodyExpr as body from " . $this->wiki->config['table_prefix'] . "pages where latest = 'Y' and comment_on = '' order by time desc limit " . $max)) {
-            if (!($link = $this->wiki->GetParameter('link'))) {
+            if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
                 $link = $this->wiki->config['root_page'];
             }
 

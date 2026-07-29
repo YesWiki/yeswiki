@@ -5,6 +5,8 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 
 /**
  * `{{toc}}` -- converted from the procedural actions/toc.php by ticket 06.
@@ -42,12 +44,12 @@ class TocAction extends YesWikiAction implements RegisteredAction
     {
         $GLOBALS['tocaction'] = 0;
 
-        $tag = $this->wiki->GetPageTag();
+        $tag = $this->getService(PageContext::class)->getTag();
         $page = $this->getService(PageManager::class)->getOne($tag);
         $toc_body = $page['body'] ?? '';
-        $class = $this->wiki->GetParameter('class');
-        $closed = $this->wiki->GetParameter('closed');
-        $title = $this->wiki->GetParameter('title');
+        $class = $this->getService(PerformableArguments::class)->get('class');
+        $closed = $this->getService(PerformableArguments::class)->get('closed');
+        $title = $this->getService(PerformableArguments::class)->get('title');
         if (empty($title)) {
             $title = _t('TOC_TABLE_OF_CONTENTS');
         }

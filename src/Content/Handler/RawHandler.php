@@ -5,6 +5,7 @@ namespace YesWiki\Content\Handler;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\PageContext;
 
 /**
  * `/PageName/raw` -- converted from the procedural handlers/page/raw.php by ticket 06.
@@ -35,12 +36,12 @@ class RawHandler extends YesWikiHandler implements RegisteredHandler
     private function emit(): void
     {
         if ($this->getService(AclService::class)->hasAccess('read')) {
-            if (!$this->wiki->page) {
+            if (!$this->getService(PageContext::class)->getPage()) {
                 return;
             }
             header('Content-type: text/plain; charset=' . YW_CHARSET);
             // display raw page
-            echo $this->wiki->page['body'];
+            echo $this->getService(PageContext::class)->getPage()['body'];
         } else {
             return;
         }

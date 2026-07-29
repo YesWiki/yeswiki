@@ -8,6 +8,8 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -53,10 +55,10 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         // Get the action's parameters :
 
         // image's filename or file tag
-        $file = $this->wiki->GetParameter('file');
+        $file = $this->getService(PerformableArguments::class)->get('file');
         if (empty($file)) {
             // former parameter from filename
-            $file = $this->wiki->GetParameter('srcmap');
+            $file = $this->getService(PerformableArguments::class)->get('srcmap');
             if (empty($file)) {
                 echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('ATTACH_ACTION_POINTIMAGE') . '</strong> : ' . _t('ATTACH_PARAM_FILE_NOT_FOUND') . '.</div>' . "\n";
 
@@ -83,17 +85,17 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         }
 
         // image size
-        $height = $this->wiki->GetParameter('height');
-        $width = $this->wiki->GetParameter('width');
+        $height = $this->getService(PerformableArguments::class)->get('height');
+        $width = $this->getService(PerformableArguments::class)->get('width');
         if (empty($height) && empty($width)) {
             $size = 'original';
         }
 
         // colors of markers
-        $colors = $this->wiki->GetParameter('color');
+        $colors = $this->getService(PerformableArguments::class)->get('color');
         if (empty($colors)) {
             // older parameter
-            $colors = $this->wiki->GetParameter('pointcolor');
+            $colors = $this->getService(PerformableArguments::class)->get('pointcolor');
             if (empty($colors)) {
                 $colors = 'green';
             }
@@ -101,25 +103,25 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         $colors = '["' . str_replace(',', '","', $colors) . '"]';
 
         // labels of markers
-        $labels = $this->wiki->GetParameter('label');
+        $labels = $this->getService(PerformableArguments::class)->get('label');
         if (empty($labels)) {
             $labels = _t('ATTACH_DEFAULT_MARKER');
         }
         $labels = '["' . str_replace(',', '","', $labels) . '"]';
 
         // default size of marker : 10 pixels
-        $point_size = $this->wiki->GetParameter('pointsize');
+        $point_size = $this->getService(PerformableArguments::class)->get('pointsize');
         if (empty($point_size)) {
             $point_size = 10;
         }
 
         // readonly (no add of markers)
-        $readonly = $this->wiki->GetParameter('readonly');
+        $readonly = $this->getService(PerformableArguments::class)->get('readonly');
 
         // get an unique pagename based on the image (tag if a FileManager entry, filename otherwise)
         $dbService = $this->wiki->services->get(DbService::class);
         $baseForPageTag = $isFileTag ? $file : preg_replace('/[^A-Za-z0-9 ]/', '', str_replace('.' . $ext, '', $file));
-        $datapagetag = $dbService->escape($this->wiki->GetPageTag() . 'PI' . $baseForPageTag);
+        $datapagetag = $dbService->escape($this->getService(PageContext::class)->getTag() . 'PI' . $baseForPageTag);
 
         // save the posted data
         if (isset($_POST['title']) && !empty($_POST['title'])

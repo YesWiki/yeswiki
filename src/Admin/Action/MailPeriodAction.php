@@ -9,6 +9,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 
 // TODO create GroupManager
 
@@ -74,7 +75,7 @@ class MailPeriodAction extends YesWikiAction implements RegisteredAction
 
     private function groupName($period): string
     {
-        return "Mail{$this->wiki->getPageTag()}" . ucfirst($period);
+        return "Mail{$this->getService(PageContext::class)->getTag()}" . ucfirst($period);
     }
 
     private function subscribeUserToGroup($userName, $group): void

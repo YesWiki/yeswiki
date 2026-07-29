@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Wiki;
 
@@ -15,12 +16,15 @@ class TemplateHelperService
     protected $wiki;
 
     protected UrlFormatter $urlFormatter;
+    protected PerformableArguments $performableArguments;
 
     public function __construct(
         ParameterBagInterface $params,
         Wiki $wiki,
-        UrlFormatter $urlFormatter
+        UrlFormatter $urlFormatter,
+        PerformableArguments $performableArguments
     ) {
+        $this->performableArguments = $performableArguments;
         $this->urlFormatter = $urlFormatter;
         $this->params = $params;
         $this->wiki = $wiki;
@@ -93,11 +97,11 @@ class TemplateHelperService
         $attach = $this->getAttach();
 
         // current page
-        $previousTag = $this->wiki->tag;
-        $previousPage = $this->wiki->page;
+        $previousTag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+        $previousPage = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
         // fake page
-        $this->wiki->tag = $tag;
-        $this->wiki->page = $page;
+        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
+        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($page);
         if ($extractFullFileName) {
             if (!empty($fileName)) {
                 $attach->file = $fileName;
@@ -128,8 +132,8 @@ class TemplateHelperService
 
         // reset params
         unset($attach);
-        $this->wiki->tag = $previousTag;
-        $this->wiki->page = $previousPage;
+        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
+        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
 
         return empty($image) ? '' : $image;
     }
@@ -251,7 +255,7 @@ class TemplateHelperService
     public function getDataParameter()
     {
         // container data attributes
-        $data = $this->wiki->GetParameter('data');
+        $data = $this->performableArguments->get('data');
         if (!empty($data)) {
             $datas = [];
             $tab = explode(',', $data);

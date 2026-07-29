@@ -5,6 +5,8 @@ namespace YesWiki\Content\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 
 /**
  * `{{abonnement}}` -- converted from the procedural actions/abonnement.php by ticket 06.
@@ -44,7 +46,7 @@ class AbonnementAction extends YesWikiAction implements RegisteredAction
         // action permettant l'envoi par mail d'une demande d'inscription a une liste de discussion
 
         // recuperation des parametres
-        $listelements['mail'] = $this->wiki->GetParameter('mail');
+        $listelements['mail'] = $this->getService(PerformableArguments::class)->get('mail');
         if (empty($listelements['mail'])) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_ABONNEMENT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         } else {
@@ -57,23 +59,23 @@ class AbonnementAction extends YesWikiAction implements RegisteredAction
             $listelements['nbactionmail'] = $GLOBALS['nbactionmail'];
 
             // on choisit le template utilisé
-            $template = $this->wiki->GetParameter('template');
+            $template = $this->getService(PerformableArguments::class)->get('template');
             if (empty($template)) {
                 $template = 'subscribe-form.twig';
             }
 
             // on peut ajouter des classes à la classe par défaut
-            $listelements['class'] = ($this->wiki->GetParameter('class') ? 'form-abonnement ' . $this->wiki->GetParameter('class') : 'form-abonnement');
+            $listelements['class'] = ($this->getService(PerformableArguments::class)->get('class') ? 'form-abonnement ' . $this->getService(PerformableArguments::class)->get('class') : 'form-abonnement');
 
             $listelements['hiddeninputs'] = '';
             // on indique quel type de liste est utilisé pour formatter les envois de mail de facon adaptee
-            $mailinglist = $this->wiki->GetParameter('mailinglist');
+            $mailinglist = $this->getService(PerformableArguments::class)->get('mailinglist');
             if (!empty($mailinglist) and ($mailinglist == 'ezmlm' or $mailinglist == 'sympa')) {
                 $listelements['hiddeninputs'] .= '<input type="hidden" name="mailinglist" value="' . $mailinglist . '">';
             }
 
             // page context for the /api/contact/mail route (javascripts/contact.js)
-            $listelements['pageTag'] = $this->wiki->GetPageTag();
+            $listelements['pageTag'] = $this->getService(PageContext::class)->getTag();
 
             // type de demande et placeholder
             $listelements['demand'] = 'abonnement';

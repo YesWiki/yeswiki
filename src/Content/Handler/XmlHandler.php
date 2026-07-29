@@ -5,6 +5,7 @@ namespace YesWiki\Content\Handler;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\PageContext;
 
 /**
  * `/PageName/xml` -- converted from the procedural handlers/page/xml.php by ticket 06.
@@ -46,10 +47,10 @@ class XmlHandler extends YesWikiHandler implements RegisteredHandler
             // TODO : Return an error read (noaccess) xml ?
             // TODO : why only serve the body and not all page's properties ?
             // TODO : should exit after echoing ?
-            if ($this->wiki->page) {
+            if ($this->getService(PageContext::class)->getPage()) {
                 // display page
                 echo '<?xml version="1.0" encoding="' . YW_CHARSET . '"?>';
-                echo $this->wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->renderActionsOnly($this->wiki->page['body']);
+                echo $this->wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->renderActionsOnly($this->getService(PageContext::class)->getPage()['body']);
             }
         }
     }

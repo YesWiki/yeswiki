@@ -5,6 +5,8 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -74,7 +76,7 @@ class TrailAction extends YesWikiAction implements RegisteredAction
         */
 
         // echo $this->getService(MarkdownFormatterService::class)->format("===Action Trail===");
-        $sommaire = $this->wiki->GetParameter('toc');
+        $sommaire = $this->getService(PerformableArguments::class)->get('toc');
         if (!$sommaire) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_TRAIL') . '</strong> : ' . _t('INDICATE_THE_PARAMETER_TOC') . '.</div>' . "\n";
         } else {
@@ -99,10 +101,10 @@ class TrailAction extends YesWikiAction implements RegisteredAction
                     if (preg_match("/\[\[.*\]\]/", $line, $match) | $this->getService(UrlFormatter::class)->isWikiName($line)) {
                         $pages[] = $line;
                         // regarde si la page ajoute a la liste est la page courante
-                        if (strcasecmp($this->wiki->GetPageTag(), $line) == 0) {
+                        if (strcasecmp($this->getService(PageContext::class)->getTag(), $line) == 0) {
                             $currentPageIndex = count($pages) - 1;
                         } else {  // traite le cas des lien force
-                            if (preg_match("/\[\[(.*:)?" . $this->wiki->GetPageTag() . "(\s.*)?\]\]$/", $line)) {
+                            if (preg_match("/\[\[(.*:)?" . $this->getService(PageContext::class)->getTag() . "(\s.*)?\]\]$/", $line)) {
                                 $currentPageIndex = count($pages) - 1;
                             }
                         }

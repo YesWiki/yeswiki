@@ -8,6 +8,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\ModuleAclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -61,7 +62,7 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
                 foreach ($forms as $form) {
                     $liste .= '  <link rel="alternate" type="application/rss+xml" '
                         . 'title="' . htmlspecialchars($form['label'] ?? '') . '" '
-                        . 'href="' . $this->getService(UrlFormatter::class)->href('rss', $this->wiki->getPageTag(), 'id=' . $form['id']) . '">' . "\n";
+                        . 'href="' . $this->getService(UrlFormatter::class)->href('rss', $this->getService(PageContext::class)->getTag(), 'id=' . $form['id']) . '">' . "\n";
                 }
             }
 

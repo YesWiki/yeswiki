@@ -18,6 +18,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Paginator;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
@@ -362,7 +363,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             'params' => $this->arguments,
             // Search form parameters
             'keywords' => $this->arguments['keywords'],
-            'pageTag' => $this->wiki->getPageTag(),
+            'pageTag' => $this->getService(PageContext::class)->getTag(),
             'forms' => $vForms,
             // 'formId' => $this->arguments['idtypeannonce'][0] ?? null,
             'selectedID' => $this->arguments['selectedID'] ?? null,

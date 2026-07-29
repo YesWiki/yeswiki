@@ -9,6 +9,8 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -63,30 +65,30 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
     private function emitBefore(): void
     {
         // merged from actions/__include.php (ticket 06: core does not hook itself)
-        $pageincluded = $this->wiki->GetParameter('page');
+        $pageincluded = $this->getService(PerformableArguments::class)->get('page');
 
         // if metadata exists to change included page, we take the value of it
-        if (isset($this->wiki->metadatas[$pageincluded])) {
+        if (isset($this->getService(PageContext::class)->getMetadata()[$pageincluded])) {
             $oldpageincluded = $pageincluded;
-            $pageincluded = $this->wiki->metadatas[$pageincluded];
-            $this->wiki->parameter['page'] = $pageincluded;
+            $pageincluded = $this->getService(PageContext::class)->getMetadata()[$pageincluded];
+            $this->getService(PerformableArguments::class)->set('page', $pageincluded);
             // to prevent errors in actions order in Performer
-            if ($this->wiki->tag == trim($oldpageincluded)) { // case /attach/actions/___include before this
+            if ($this->getService(PageContext::class)->getTag() == trim($oldpageincluded)) { // case /attach/actions/___include before this
                 // redo tools\attach\actions\__include.php without changing oldpage
-                $this->wiki->tag = trim($pageincluded);
-                $includedPage = $this->getService(PageManager::class)->getCached($this->wiki->tag);
-                $this->wiki->page = !empty($includedPage) ? $includedPage : $this->getService(PageManager::class)->getOne($this->wiki->tag);
+                $this->getService(PageContext::class)->setTag(trim($pageincluded));
+                $includedPage = $this->getService(PageManager::class)->getCached($this->getService(PageContext::class)->getTag());
+                $this->getService(PageContext::class)->setPage(!empty($includedPage) ? $includedPage : $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag()));
             }
         }
-        $class = $this->wiki->GetParameter('class');
-        $this->wiki->parameter['class'] = empty($class) ? 'include' : 'include ' . $class;
-        $this->class = $this->wiki->parameter['class'];
+        $class = $this->getService(PerformableArguments::class)->get('class');
+        $this->getService(PerformableArguments::class)->set('class', empty($class) ? 'include' : 'include ' . $class);
+        $this->class = $this->getService(PerformableArguments::class)->get('class');
 
         // Page translation (formerly tools/lang's __include before-callback): filter the
         // included page's body to the visitor's {{lang="xx"}} section and refresh the
         // page cache so the include action below renders the filtered version
         require_once YESWIKI_SOURCE_DIR . '/src/lang.functions.php';
-        $langIncludedPage = $this->getService(PageManager::class)->getOne(trim($this->wiki->GetParameter('page')));
+        $langIncludedPage = $this->getService(PageManager::class)->getOne(trim($this->getService(PerformableArguments::class)->get('page')));
         if (!empty($langIncludedPage['body'])) {
             $langFilteredBody = filterBodyByLanguage(
                 $langIncludedPage['body'],
@@ -114,11 +116,11 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         $class = $this->class;
         // parameters, so still readable the way the shared scope exposed them -- including
         // $oldpage, which a procedural before-callback (attach's, historically) publishes by
-        // defining it, since those land in $this->wiki->parameter
-        $actif = $this->wiki->GetParameter('actif');
-        $dblclic = $this->wiki->GetParameter('doubleclic');
-        $clear = $this->wiki->GetParameter('clear');
-        $oldpage = $this->wiki->GetParameter('oldpage');
+        // defining it, since those land in the shared PerformableArguments
+        $actif = $this->getService(PerformableArguments::class)->get('actif');
+        $dblclic = $this->getService(PerformableArguments::class)->get('doubleclic');
+        $clear = $this->getService(PerformableArguments::class)->get('clear');
+        $oldpage = $this->getService(PerformableArguments::class)->get('oldpage');
 
         // merged from actions/include__.php (ticket 06: core does not hook itself)
         // relocated from tools/bazar/actions/include__.php (ticket 24): if the included page is a
@@ -139,7 +141,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
 
         // si le lien correspond à l'url, on rajoute une classe "actif"
         if (!empty($actif) && $actif == '1') {
-            $page_active = $this->wiki->tag;
+            $page_active = $this->getService(PageContext::class)->getTag();
             if ($oldpage != '') {
                 // si utilisation de l'extension attach
                 $page_active = $oldpage;
@@ -281,13 +283,13 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         */
 
         // récuperation du nom de la page é inclure
-        $incPageName = $this->incPageName = trim($this->wiki->GetParameter('page'));
+        $incPageName = $this->incPageName = trim($this->getService(PerformableArguments::class)->get('page'));
 
         /*
         * @todo améliorer le traitement des classes css
         */
-        if ($this->wiki->GetParameter('class')) {
-            $array_classes = explode(' ', $this->wiki->GetParameter('class'));
+        if ($this->getService(PerformableArguments::class)->get('class')) {
+            $array_classes = explode(' ', $this->getService(PerformableArguments::class)->get('class'));
             $classes = '';
             foreach ($array_classes as $c) {
                 if ($c && preg_match('`^[A-Za-z0-9-_]+$`', $c)) {
@@ -309,7 +311,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             }
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('IMPOSSIBLE_FOR_THIS_PAGE') . ' ' . $incPageName . ' ' . _t('TO_INCLUDE_ITSELF')
                  . ($i ? ':<br /><strong>' . _t('INCLUSIONS_CHAIN') . '</strong> : ' . $pg . ' > ' . $err : '') . '</div>' . "\n"; // si $i = 0, alors c'est une page qui s'inclut elle-méme directement...
-        } elseif (!$this->getService(AclService::class)->hasAccess('read', $incPageName) && $this->wiki->GetParameter('auth') != 'noError') {
+        } elseif (!$this->getService(AclService::class)->hasAccess('read', $incPageName) && $this->getService(PerformableArguments::class)->get('auth') != 'noError') {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> :  ' . _t('READING_OF_INCLUDED_PAGE') . ' ' . $incPageName . ' ' . _t('NOT_ALLOWED') . '.</div>' . "\n";
         } elseif (!$incPage = $this->getService(PageManager::class)->getOne($incPageName)) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR') . ' ' . _t('ACTION') . ' Include</strong> : ' . _t('INCLUDED_PAGE') . ' ' . $incPageName . ' ' . _t('DOESNT_EXIST') . '...</div>' . "\n";
@@ -320,7 +322,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             $this->getService(InclusionStack::class)->register($incPageName);
             $output = $this->getService(MarkdownFormatterService::class)->format($incPage['body']);
             if (isset($classes)) {
-                if ($this->wiki->GetParameter('edit') == 'show') {
+                if ($this->getService(PerformableArguments::class)->get('edit') == 'show') {
                     $editLink = '<div class="include_editlink"><a href="' . $this->getService(UrlFormatter::class)->href('edit', $incPageName) . '">[' . _t('EDITION') . "]</a></div>\n";
                 } else {
                     $editLink = '';

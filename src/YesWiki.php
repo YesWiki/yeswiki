@@ -68,7 +68,6 @@ class Wiki
     public $method;
     public $page;
     public $tag;
-    public $parameter = [];
     public $request;
     public $CookiePath = '/';
     public $extensions = [];
@@ -137,28 +136,6 @@ class Wiki
         return $service;
     }
 
-    // VARIABLES
-    public function GetPageTag()
-    {
-        return $this->tag;
-    }
-
-    public function GetPageTime()
-    {
-        return empty($this->page['time']) ? '' : $this->page['time'];
-    }
-
-    public function GetMethod()
-    {
-        if ($this->method == 'iframe') {
-            return 'show';
-        } elseif ($this->method == 'editiframe') {
-            return 'edit';
-        }
-
-        return $this->method;
-    }
-
     public function GetConfigValue($name, $default = null)
     {
         return isset($this->config[$name])
@@ -171,17 +148,6 @@ class Wiki
         // NB: 'cli-server' (php -S) is deliberately NOT considered CLI: it serves real web
         // requests with cookies, REMOTE_ADDR and sendable headers
         return in_array(php_sapi_name(), ['cli', 'phpdbg'], true);
-    }
-
-    // inclusions
-    public function SetPage($page)
-    {
-        if (!empty($page)) {
-            $this->page = $page;
-            if (!empty($this->page['tag'])) {
-                $this->tag = $this->page['tag'];
-            }
-        }
     }
 
     /**
@@ -265,24 +231,6 @@ class Wiki
     public function Method($method)
     {
         return $this->service(Performer::class)->run($method, 'handler', []);
-    }
-
-    /**
-     * Ajout d'un parametre.
-     *
-     * @param string $parameter nom du parametre
-     * @param mixed  $value     valeur du parametre
-     *
-     * @return void
-     */
-    public function setParameter($parameter, $value)
-    {
-        $this->parameter[$parameter] = $value;
-    }
-
-    public function GetParameter($parameter, $default = '')
-    {
-        return isset($this->parameter[$parameter]) ? $this->parameter[$parameter] : $default;
     }
 
     // COMMENTS

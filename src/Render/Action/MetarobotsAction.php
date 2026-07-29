@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
 
@@ -45,7 +46,7 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
          * Action to add usefull metas to html head
          */
 
-        if ($this->wiki->GetMethod() != 'show' || empty($this->wiki->page)) {
+        if ($this->getService(PageContext::class)->getMethod() != 'show' || empty($this->getService(PageContext::class)->getPage())) {
             // no index if not with 'show' hander or if page is not existing
             echo '<meta name="robots" content="noindex, nofollow">' . "\n";
         } else {
@@ -54,7 +55,7 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
                     . $this->wiki->config['meta']['robots'] . '">' . "\n";
             }
             // canonical url
-            $url = $this->getService(UrlFormatter::class)->href('', $this->wiki->getPageTag());
+            $url = $this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag());
             echo '<link rel="canonical" href="' . $url . '">' . "\n";
 
             // opengraph
@@ -62,9 +63,9 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
             echo '  <meta property="og:site_name" content="'
                 . $this->wiki->config['yeswiki_name'] . '" />' . "\n";
             $utils = $this->wiki->services->get(TemplateHelperService::class);
-            $title = $utils->getTitleFromBody($this->wiki->page);
+            $title = $utils->getTitleFromBody($this->getService(PageContext::class)->getPage());
             echo '  <meta property="og:title" content="' . (!empty($title) ? $title : $GLOBALS['wiki']->config['yeswiki_name']) . '" />' . "\n";
-            $desc = htmlspecialchars($utils->getDescriptionFromBody($this->wiki->page, $title), ENT_COMPAT | ENT_HTML5);
+            $desc = htmlspecialchars($utils->getDescriptionFromBody($this->getService(PageContext::class)->getPage(), $title), ENT_COMPAT | ENT_HTML5);
             if ($desc) {
                 echo '  <meta property="og:description" content="' . $desc . '" />' . "\n";
             }
@@ -74,9 +75,7 @@ class MetarobotsAction extends YesWikiAction implements RegisteredAction
             // open graph image : recommended sizes for FB
             $w = 1200; // image width
             $h = 630; // image height
-            if (!empty($this->wiki->page)) {
-                $img = $this->wiki->services->get(TemplateHelperService::class)->getImageFromBody($this->wiki->page, strval($w), strval($h));
-            }
+            $img = $this->wiki->services->get(TemplateHelperService::class)->getImageFromBody($this->getService(PageContext::class)->getPage(), strval($w), strval($h));
             if (!empty($img)) {
                 echo '  <meta property="og:image" content="' . $img . '" />' . "\n";
                 echo '  <meta property="og:image:width" content="' . $w . '" />' . "\n";

@@ -4,6 +4,8 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -40,14 +42,14 @@ class RssAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $tags = $this->wiki->GetParameter('tags');
-        $class = $this->wiki->GetParameter('class');
+        $tags = $this->getService(PerformableArguments::class)->get('tags');
+        $class = $this->getService(PerformableArguments::class)->get('class');
         if (empty($class)) {
             $class = '';
         }
 
-        if ($this->wiki->GetMethod() != 'rss' && $this->wiki->GetMethod() != 'xml' && $this->wiki->GetMethod() != 'tagrss') { // on affiche un lien dans la page si on n'est pas en xml
-            echo '<a class="' . $class . ' rss-icon" href="' . $this->getService(UrlFormatter::class)->href('tagrss', $this->wiki->GetPageTag(), 'tags=' . $tags) . '" title="' . _t('TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS') . ' : ' . $tags . '">
+        if ($this->getService(PageContext::class)->getMethod() != 'rss' && $this->getService(PageContext::class)->getMethod() != 'xml' && $this->getService(PageContext::class)->getMethod() != 'tagrss') { // on affiche un lien dans la page si on n'est pas en xml
+            echo '<a class="' . $class . ' rss-icon" href="' . $this->getService(UrlFormatter::class)->href('tagrss', $this->getService(PageContext::class)->getTag(), 'tags=' . $tags) . '" title="' . _t('TAGS_RSS_FEED_FOR_NEW_PAGES_WITH_TAGS') . ' : ' . $tags . '">
         		</a>' . "\n";
 
             return;

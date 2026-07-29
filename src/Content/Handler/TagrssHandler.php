@@ -6,6 +6,8 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\TagsManager;
@@ -38,7 +40,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        $oldpagetag = $this->wiki->GetPageTag();
+        $oldpagetag = $this->getService(PageContext::class)->getTag();
         $oldpage = $this->getService(PageManager::class)->getOne($oldpagetag);
         $tags = trim((isset($_GET['tags'])) ? $_GET['tags'] : '');
         $type = (isset($_GET['type'])) ? $_GET['type'] : '';
@@ -56,7 +58,7 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
             if ($results) {
                 header('Content-type: text/xml; charset=UTF-8');
                 $output = '<?xml version="1.0" encoding="UTF-8"?>';
-                if (!($link = $this->wiki->GetParameter('link'))) {
+                if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
                     $link = $this->wiki->config['root_page'];
                 }
                 $output .= '<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/"' .
@@ -75,8 +77,8 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                 $aclService = $this->wiki->services->get(AclService::class);
                 foreach ($results as $page) {
                     $readAcl = $aclService->hasAccess('read', $page['tag']);
-                    $this->wiki->tag = $page['tag'];
-                    $this->wiki->page = $page;
+                    $this->getService(PageContext::class)->setTag($page['tag']);
+                    $this->getService(PageContext::class)->setPage($page);
                     $items .= "<item>\r\n";
                     $items .= '<title>' . $page['tag'] . "</title>\r\n";
                     $items .= '<link>' . $this->wiki->config['base_url'] . $page['tag'] . "</link>\r\n";
@@ -99,8 +101,8 @@ class TagrssHandler extends YesWikiHandler implements RegisteredHandler
                     $items .= '<guid>' . $itemurl . "</guid>\n";
                     $items .= "</item>\r\n";
                 }
-                $this->wiki->tag = $oldpagetag;
-                $this->wiki->page = $oldpage;
+                $this->getService(PageContext::class)->setTag($oldpagetag);
+                $this->getService(PageContext::class)->setPage($oldpage);
                 $oldpage = $this->getService(PageManager::class)->getOne($oldpagetag);
                 $output .= $items;
                 $output .= "</channel>\n";

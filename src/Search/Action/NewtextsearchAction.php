@@ -10,6 +10,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\SearchManager;
@@ -56,15 +57,15 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
 
         // On récupére ou initialise toutes le varible comme pour textsearch
         // label à afficher devant la zone de saisie
-        $label = $this->wiki->GetParameter('label', _t('WHAT_YOU_SEARCH') . '&nbsp;: ');
+        $label = $this->getService(PerformableArguments::class)->get('label', _t('WHAT_YOU_SEARCH') . '&nbsp;: ');
         // largeur de la zone de saisie
-        $size = $this->wiki->GetParameter('size', '40');
+        $size = $this->getService(PerformableArguments::class)->get('size', '40');
         // texte du bouton
-        $button = $this->wiki->GetParameter('button', _t('SEARCH'));
+        $button = $this->getService(PerformableArguments::class)->get('button', _t('SEARCH'));
         // texte à chercher
-        $phrase = $this->wiki->GetParameter('phrase', false);
+        $phrase = $this->getService(PerformableArguments::class)->get('phrase', false);
         // séparateur entre les éléments trouvés
-        $separator = $this->wiki->GetParameter('separator', false);
+        $separator = $this->getService(PerformableArguments::class)->get('separator', false);
         // prefixe des tables pour ce wiki
         $prefixe = $this->wiki->config['table_prefix'];
         // prefixe des tables pour ce wiki

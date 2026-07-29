@@ -7,6 +7,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
@@ -47,7 +48,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
 
         $field = !empty($_GET['field']) ? htmlentities($_GET['field']) : '';
         if ($aclService->hasAccess('read') && isset($field) && !empty($field)) {
-            $output .= '<form id="ajax-mail-form-handler" class="ajax-mail-form" data-page-tag="' . htmlspecialchars($this->wiki->GetPageTag()) . '" data-field="' . $field . '">
+            $output .= '<form id="ajax-mail-form-handler" class="ajax-mail-form" data-page-tag="' . htmlspecialchars($this->getService(PageContext::class)->getTag()) . '" data-field="' . $field . '">
                 <div class="form-group">
                   <div class="input-group">
                     <div class="input-group-addon"><i class="fa fa-envelope"></i></div>
@@ -72,7 +73,7 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
             // si on est identifie
             // on verifie si l'on est bien identifie comme admin, pour eviter le spam
             $output .= '<h1>Envoyer la page par mail</h1>
-            <form id="ajax-mail-form-handler" class="ajax-mail-form" data-page-tag="' . htmlspecialchars($this->wiki->GetPageTag()) . '">
+            <form id="ajax-mail-form-handler" class="ajax-mail-form" data-page-tag="' . htmlspecialchars($this->getService(PageContext::class)->getTag()) . '">
               <div class="form-group">
                 <div class="input-group">
                   <div class="input-group-addon"><i class="fa fa-envelope"></i></div>

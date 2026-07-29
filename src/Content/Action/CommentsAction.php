@@ -1,9 +1,11 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 
 class CommentsAction extends YesWikiAction implements RegisteredAction
 {
@@ -16,6 +18,6 @@ class CommentsAction extends YesWikiAction implements RegisteredAction
     public function run()
     {
         // render the comments if needed
-        return $this->getService(CommentService::class)->renderCommentsForPage($this->wiki->getPageTag());
+        return $this->getService(CommentService::class)->renderCommentsForPage($this->getService(PageContext::class)->getTag());
     }
 }

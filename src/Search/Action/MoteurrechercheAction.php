@@ -4,6 +4,7 @@ namespace YesWiki\Search\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -41,18 +42,18 @@ class MoteurrechercheAction extends YesWikiAction implements RegisteredAction
     private function emit(): void
     {
         // on choisit le template utilisé
-        $template = $this->wiki->GetParameter('template');
+        $template = $this->getService(PerformableArguments::class)->get('template');
         if (empty($template)) {
             $template = 'moteurrecherche_basic.twig';
         }
 
         // on peut ajouter des classes à la classe par défaut .searchform
-        $searchelements['class'] = ($this->wiki->GetParameter('class') ? 'form-search ' . $this->wiki->GetParameter('class') : 'form-search');
-        $searchelements['btnclass'] = ($this->wiki->GetParameter('btnclass') ? ' ' . $this->wiki->GetParameter('btnclass') : '');
-        $searchelements['iconclass'] = ($this->wiki->GetParameter('iconclass') ? ' ' . $this->wiki->GetParameter('iconclass') : '');
+        $searchelements['class'] = ($this->getService(PerformableArguments::class)->get('class') ? 'form-search ' . $this->getService(PerformableArguments::class)->get('class') : 'form-search');
+        $searchelements['btnclass'] = ($this->getService(PerformableArguments::class)->get('btnclass') ? ' ' . $this->getService(PerformableArguments::class)->get('btnclass') : '');
+        $searchelements['iconclass'] = ($this->getService(PerformableArguments::class)->get('iconclass') ? ' ' . $this->getService(PerformableArguments::class)->get('iconclass') : '');
 
         // on peut changer l'url de recherche
-        $searchelements['url'] = ($this->wiki->GetParameter('url') ? $this->wiki->GetParameter('url') : $this->getService(UrlFormatter::class)->href('show', 'RechercheTexte'));
+        $searchelements['url'] = ($this->getService(PerformableArguments::class)->get('url') ? $this->getService(PerformableArguments::class)->get('url') : $this->getService(UrlFormatter::class)->href('show', 'RechercheTexte'));
 
         // si une recherche a été effectuée, on garde les mots clés
         $searchelements['phrase'] = htmlspecialchars(isset($_REQUEST['phrase']) ? $_REQUEST['phrase'] : '');

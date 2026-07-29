@@ -5,6 +5,7 @@ namespace YesWiki\Content\Handler;
 use YesWiki\Content\Service\QrCodeService;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -45,7 +46,7 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         // merged from handlers/page/ShareHandler__.php (ticket 06: core does not hook itself)
         // creation et affichage QRcode du lien de page
         $url = $this->getService(UrlFormatter::class)->href();
-        $cacheImage = 'cache/qrcode-' . $this->wiki->getPageTag() . '-url.svg';
+        $cacheImage = 'cache/qrcode-' . $this->getService(PageContext::class)->getTag() . '-url.svg';
         $this->getService(QrCodeService::class)->generateToFile($url, $cacheImage);
         $html = '<img class="right" src="' . $cacheImage . '" title="' . _t('QR_CODE_PAGE') . '" alt="' . $url . '" />' . "\n";
 
@@ -61,11 +62,11 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        $html = '<a href="http://www.facebook.com/sharer.php?u=' . urlencode($this->getService(UrlFormatter::class)->href()) . '&amp;t=' . urlencode($this->wiki->GetPageTag()) . '" title="' . _t('TEMPLATE_SHARE_FACEBOOK') . '" class="bouton_share"><img loading="lazy" src="presentation/images/facebook.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_FACEBOOK') . '" /></a>' . "\n";
+        $html = '<a href="http://www.facebook.com/sharer.php?u=' . urlencode($this->getService(UrlFormatter::class)->href()) . '&amp;t=' . urlencode($this->getService(PageContext::class)->getTag()) . '" title="' . _t('TEMPLATE_SHARE_FACEBOOK') . '" class="bouton_share"><img loading="lazy" src="presentation/images/facebook.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_FACEBOOK') . '" /></a>' . "\n";
         $html .= '<a href="http://twitter.com/home?status=' . urlencode(_t('TEMPLATE_SHARE_MUST_READ') . $this->getService(UrlFormatter::class)->href()) . '" title="' . _t('TEMPLATE_SHARE_TWITTER') . '" class="bouton_share"><img loading="lazy" src="presentation/images/twitter.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_TWITTER') . '" /></a>' . "\n";
-        $html .= '<a href="http://www.netvibes.com/share?title=' . urlencode($this->wiki->GetPageTag()) . '&amp;url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '" title="' . _t('TEMPLATE_SHARE_NETVIBES') . '" class="bouton_share"><img loading="lazy" src="presentation/images/netvibes.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_NETVIBES') . '" /></a>' . "\n";
-        $html .= '<a href="http://del.icio.us/post?url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '&amp;title=' . urlencode($this->wiki->GetPageTag()) . '" title="' . _t('TEMPLATE_SHARE_DELICIOUS') . '" class="bouton_share"><img loading="lazy" src="presentation/images/delicious.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_DELICIOUS') . '" /></a>' . "\n";
-        $html .= '<a href="http://www.google.com/reader/link?title=' . urlencode($this->wiki->GetPageTag()) . '&amp;url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '" title="' . _t('TEMPLATE_SHARE_GOOGLEREADER') . '" class="bouton_share"><img loading="lazy" src="presentation/images/google.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_GOOGLEREADER') . '" /></a>' . "\n";
+        $html .= '<a href="http://www.netvibes.com/share?title=' . urlencode($this->getService(PageContext::class)->getTag()) . '&amp;url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '" title="' . _t('TEMPLATE_SHARE_NETVIBES') . '" class="bouton_share"><img loading="lazy" src="presentation/images/netvibes.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_NETVIBES') . '" /></a>' . "\n";
+        $html .= '<a href="http://del.icio.us/post?url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '&amp;title=' . urlencode($this->getService(PageContext::class)->getTag()) . '" title="' . _t('TEMPLATE_SHARE_DELICIOUS') . '" class="bouton_share"><img loading="lazy" src="presentation/images/delicious.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_DELICIOUS') . '" /></a>' . "\n";
+        $html .= '<a href="http://www.google.com/reader/link?title=' . urlencode($this->getService(PageContext::class)->getTag()) . '&amp;url=' . urlencode($this->getService(UrlFormatter::class)->href()) . '" title="' . _t('TEMPLATE_SHARE_GOOGLEREADER') . '" class="bouton_share"><img loading="lazy" src="presentation/images/google.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_GOOGLEREADER') . '" /></a>' . "\n";
         $html .= '<a href="' . $this->getService(UrlFormatter::class)->href('mail') . '" title="' . _t('TEMPLATE_SHARE_MAIL') . '" class="bouton_share"><img loading="lazy" src="presentation/images/email.png" width="32" height="32" alt="' . _t('TEMPLATE_SHARE_MAIL') . '" /></a>' . "\n";
         $html .= '<br /><br />' . "\n";
         $html .= '<div class="yw-alert yw-alert--info">' . _t('TEMPLATE_SHARE_INCLUDE_CODE') . '</div>' . "\n";
@@ -90,7 +91,7 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
             echo mb_convert_encoding('<div class="page">' . "\n" . $html . "\n" . '<div>', 'UTF-8', 'ISO-8859-1');
         } else {
             echo $this->wiki->Header();
-            echo "<div class=\"page\">\n<h2>" . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' ' . $this->wiki->GetPageTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n</div>\n";
+            echo "<div class=\"page\">\n<h2>" . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' ' . $this->getService(PageContext::class)->getTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n</div>\n";
             echo $this->wiki->Footer();
         }
     }

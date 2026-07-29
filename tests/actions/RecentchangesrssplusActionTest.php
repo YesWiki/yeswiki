@@ -2,9 +2,9 @@
 
 namespace YesWiki\Test\Actions;
 
-use YesWiki\Kernel\Exception\ExitException;
-use YesWiki\Identity\Service\AclService;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Test\Core\YesWikiTestCase;
 
 require_once 'tests/YesWikiTestCase.php';
@@ -34,7 +34,7 @@ class RecentchangesrssplusActionTest extends YesWikiTestCase
         $pageManager->save(self::RESTRICTED_TAG, self::RESTRICTED_SECRET, '', true);
         $aclService->save(self::RESTRICTED_TAG, 'read', '@admins');
 
-        $wiki->method = 'xml';
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setMethod('xml');
         $output = '';
 
         try {

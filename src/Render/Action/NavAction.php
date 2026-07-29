@@ -6,6 +6,8 @@ use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
 
@@ -44,29 +46,29 @@ class NavAction extends YesWikiAction implements RegisteredAction
     private function emit(): void
     {
         // classe css supplémentaire
-        $class = $this->wiki->GetParameter('class');
+        $class = $this->getService(PerformableArguments::class)->get('class');
         $class = ((!empty($class)) ? $class : 'yw-nav');
 
         // data attributes
         $data = $this->wiki->services->get(TemplateHelperService::class)->getDataParameter();
-        $pagetag = $this->wiki->GetPageTag();
+        $pagetag = $this->getService(PageContext::class)->getTag();
 
         // liens
-        $links = $this->wiki->GetParameter('links');
+        $links = $this->getService(PerformableArguments::class)->get('links');
         if (!empty($links)) {
             $links = explode(',', $links);
             $links = array_map('trim', $links);
         }
 
         // titre des liens
-        $titles = $this->wiki->GetParameter('titles');
+        $titles = $this->getService(PerformableArguments::class)->get('titles');
         if (!empty($titles)) {
             $titles = explode(',', $titles);
             $titles = array_map('trim', $titles);
         }
 
         // icônes des titres
-        $icons = $this->wiki->GetParameter('icons');
+        $icons = $this->getService(PerformableArguments::class)->get('icons');
         if (!empty($icons)) {
             $icons = explode(',', $icons);
             foreach ($icons as $key => $icon) {
@@ -78,7 +80,7 @@ class NavAction extends YesWikiAction implements RegisteredAction
             }
         }
 
-        $hideIfNoAccess = $this->wiki->GetParameter('hideifnoaccess');
+        $hideIfNoAccess = $this->getService(PerformableArguments::class)->get('hideifnoaccess');
         $listlinks = '';
         foreach ($titles as $key => $title) {
             $haveAccess = true;
@@ -101,7 +103,7 @@ class NavAction extends YesWikiAction implements RegisteredAction
             }
             // class="active" if the url have the same url than the current one (independently of the method and the params)
             if ($haveAccess) {
-                $listclass = ($url == $this->getService(UrlFormatter::class)->href($method, $this->wiki->GetPageTag(), $params)) ? ' class="active"' : '';
+                $listclass = ($url == $this->getService(UrlFormatter::class)->href($method, $this->getService(PageContext::class)->getTag(), $params)) ? ' class="active"' : '';
                 $listlinks .= '<li' . $listclass . '><a href="' . $url . '">'
                     . (isset($icons[$key]) ? $icons[$key] : '')
                     . $title . '</a></li>' . "\n";

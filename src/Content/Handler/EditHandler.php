@@ -19,6 +19,7 @@ use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\HibernationNotice;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -134,12 +135,12 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $entryManager = $this->getService(EntryManager::class);
         $entryController = $this->getService(EntryController::class);
 
-        if ($this->getService(AclService::class)->hasAccess('write') && $entryManager->isEntry($this->wiki->GetPageTag())) {
+        if ($this->getService(AclService::class)->hasAccess('write') && $entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $plugin_output_new = '<div class="page">';
             ob_start();
             $plugin_output_new .= $this->isWikiHibernated()
                 ? $this->getMessageWhenHibernated()
-                : $entryController->update($this->wiki->GetPageTag());
+                : $entryController->update($this->getService(PageContext::class)->getTag());
             $plugin_output_new .= ob_get_contents();
             ob_end_clean();
             $plugin_output_new .= '</div>';
@@ -166,7 +167,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 && $post->has('pagetags')
                 && $post->get('antispam') == 1
             ) {
-                $tagsManager->save($this->wiki->GetPageTag(), stripslashes($post->get('pagetags')));
+                $tagsManager->save($this->getService(PageContext::class)->getTag(), stripslashes($post->get('pagetags')));
             }
 
             // display: the live-search tag-input widget (javascripts/yw-tags-input.js)
@@ -191,7 +192,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         if (!$params->get('hide_keywords') && $this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             // on recupere les tags de la page courante
             $tagsManager = $this->wiki->services->get(TagsManager::class);
-            $tabtagsexistants = $tagsManager->getAll($this->wiki->GetPageTag());
+            $tabtagsexistants = $tagsManager->getAll($this->getService(PageContext::class)->getTag());
             $tagspage = array_unique(array_column($tabtagsexistants, 'value'));
             sort($tagspage);
 
@@ -256,7 +257,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 '    <div class="yw-modal__content">' . "\n" .
                 '      <div class="yw-modal__header">' . "\n" .
                 '        <a class="yw-close" data-yw-dismiss="modal">&times;</a>' . "\n" .
-                '        <h3 class="yw-modal__title">' . _t('TEMPLATE_CUSTOM_GRAPHICS') . ' ' . $this->wiki->GetPageTag() . '</h3>' . "\n" .
+                '        <h3 class="yw-modal__title">' . _t('TEMPLATE_CUSTOM_GRAPHICS') . ' ' . $this->getService(PageContext::class)->getTag() . '</h3>' . "\n" .
                 '      </div>' . "\n" .
                 '      <div class="yw-modal__body">' . "\n";
             $selecteur .= $this->wiki->services->get(ThemeSelectorRenderer::class)->showFormThemeSelector('edit');
@@ -337,15 +338,15 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $submit = $request->request->get('submit') ?: false;
 
             // fetch fields
-            $previous = $request->request->get('previous') ?: (isset($this->wiki->page['id']) ? $this->wiki->page['id'] : null);
-            $body = $request->request->get('body') ?: (isset($this->wiki->page['body']) ? $this->wiki->page['body'] : null);
+            $previous = $request->request->get('previous') ?: (isset($this->getService(PageContext::class)->getPage()['id']) ? $this->getService(PageContext::class)->getPage()['id'] : null);
+            $body = $request->request->get('body') ?: (isset($this->getService(PageContext::class)->getPage()['body']) ? $this->getService(PageContext::class)->getPage()['body'] : null);
 
             $cancelUrl = addslashes($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
 
             // PREVIEW
             if ($submit == 'preview') {
                 $temp = $this->getService(InclusionStack::class)->replace(); // a priori, ça ne sert à rien, mais on ne sait jamais...
-                $this->getService(InclusionStack::class)->register($this->wiki->GetPageTag()); // on simule totalement un affichage normal
+                $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag()); // on simule totalement un affichage normal
                 $output .= $this->wiki->render('@core/handlers/edit.twig', [
                     'previous' => $previous,
                     'handler' => testUrlInIframe() ? 'editiframe' : 'edit',
@@ -357,7 +358,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 ]);
                 $this->getService(InclusionStack::class)->replace($temp);
             } else {
-                if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE && $this->wiki->page && $this->wiki->page['id'] != $request->request->get('previous')) {
+                if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE && $this->getService(PageContext::class)->getPage() && $this->getService(PageContext::class)->getPage()['id'] != $request->request->get('previous')) {
                     $error = _t('EDIT_ALERT_ALREADY_SAVED_BY_ANOTHER_USER');
                     $submit = false;
                 }
@@ -366,7 +367,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     // SAVE AND REDIRECT
                     $body = str_replace("\r", '', $body);
                     // teste si la nouvelle page est differente de la précédente
-                    if (isset($this->wiki->page['body']) && rtrim($body) == rtrim($this->wiki->page['body'])) {
+                    if (isset($this->getService(PageContext::class)->getPage()['body']) && rtrim($body) == rtrim($this->getService(PageContext::class)->getPage()['body'])) {
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
                         $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                     } else {
@@ -374,15 +375,15 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         $body = $body;
 
                         // add page (revisions)
-                        $this->getService(PageManager::class)->save($this->wiki->tag, $body, !empty($this->wiki->page['comment_on']) ? $this->wiki->page['comment_on'] : '');
+                        $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $body, !empty($this->getService(PageContext::class)->getPage()['comment_on']) ? $this->getService(PageContext::class)->getPage()['comment_on'] : '');
 
                         // now we render it internally so we can write the updated link table.
-                        $page = $this->wiki->services->get(PageManager::class)->getOne($this->wiki->tag);
+                        $page = $this->wiki->services->get(PageManager::class)->getOne($this->getService(PageContext::class)->getTag());
                         $this->wiki->services->get(LinkTracker::class)->registerLinks($page, false, false);
 
                         // forward
-                        if ($this->wiki->page['comment_on']) {
-                            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), $this->wiki->page['comment_on']) . '#' . $this->wiki->tag);
+                        if (($this->getService(PageContext::class)->getPage() ?? [])['comment_on']) {
+                            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe(), ($this->getService(PageContext::class)->getPage() ?? [])['comment_on']) . '#' . $this->getService(PageContext::class)->getTag());
                         } else {
                             $this->wiki->Redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                         }

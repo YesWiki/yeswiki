@@ -72,7 +72,7 @@ class AclService
         }
 
         if (!$tag = trim($tag)) {
-            $tag = $this->wiki->GetPageTag();
+            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
 
         return $this->container->get(PageManager::class)->getOwner($tag)
@@ -298,7 +298,7 @@ class AclService
     {
         // set default to current page
         if ($tag == null || !$tag = trim($tag)) {
-            $tag = $this->wiki->GetPageTag();
+            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
 
         // set default to current user

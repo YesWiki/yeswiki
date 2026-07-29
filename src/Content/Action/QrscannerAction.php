@@ -1,7 +1,8 @@
 <?php
 
 namespace YesWiki\Content\Action;
-/**
+
+/*
  * Qrscan action for yeswiki, for scanning a qrcode pair and save their relation in a bazar entry
  *
  * @category Wiki
@@ -13,6 +14,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 
 class QrscannerAction extends YesWikiAction implements RegisteredAction
 {
@@ -25,7 +27,7 @@ class QrscannerAction extends YesWikiAction implements RegisteredAction
     public function run()
     {
         // Parameters init
-        $speak = $this->wiki->getParameter('speak');
+        $speak = $this->getService(PerformableArguments::class)->get('speak');
         if ($speak == '0' or $speak == 'false' or $speak == 'no') {
             $speak = 'false';
         } else {
@@ -36,6 +38,7 @@ class QrscannerAction extends YesWikiAction implements RegisteredAction
         $output .= $this->render('@core/qrscanner.twig', [
             'speak' => $speak,
         ]);
+
         return $output;
     }
 }

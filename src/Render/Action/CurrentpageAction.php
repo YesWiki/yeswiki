@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 
 /**
  * `{{currentpage}}` -- converted from the procedural actions/currentpage.php by ticket 06.
@@ -39,6 +40,6 @@ class CurrentpageAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        echo $this->wiki->GetPageTag();
+        echo $this->getService(PageContext::class)->getTag();
     }
 }

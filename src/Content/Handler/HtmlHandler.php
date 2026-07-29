@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
@@ -44,10 +45,10 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
         // merged from handlers/page/__html.php (ticket 06: core does not hook itself)
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
-        if ($entryManager->isEntry($this->wiki->GetPageTag())) {
+        if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
-            $fiche = $entryManager->getOne($this->wiki->GetPageTag());
-            $this->wiki->page['body'] = '""' . baz_voir_fiche(0, $fiche) . '""';
+            $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
+            $this->getService(PageContext::class)->setPageField('body', '""' . baz_voir_fiche(0, $fiche) . '""');
         }
     }
 
@@ -56,11 +57,11 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
         // Verification de securite
 
         if ($this->getService(AclService::class)->hasAccess('read')) {
-            if (!$this->wiki->page) {
+            if (!$this->getService(PageContext::class)->getPage()) {
                 return;
             }
             // affichage de la page formatee
-            echo "<div class=\"page\">\n" . $this->getService(MarkdownFormatterService::class)->format($this->wiki->page['body']) . "\n</div>\n";
+            echo "<div class=\"page\">\n" . $this->getService(MarkdownFormatterService::class)->format($this->getService(PageContext::class)->getPage()['body']) . "\n</div>\n";
         } else {
             return;
         }

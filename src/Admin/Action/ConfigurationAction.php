@@ -2,9 +2,10 @@
 
 namespace YesWiki\Admin\Action;
 
-use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Render\Service\ThemeManager;
 
 /**
  * `{{configuration}}` -- converted from the procedural actions/configuration.php by ticket 06.
@@ -40,10 +41,9 @@ class ConfigurationAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-
         $themeManager = $this->wiki->services->get(ThemeManager::class);
 
-        $param = $this->wiki->GetParameter('param');
+        $param = $this->getService(PerformableArguments::class)->get('param');
         if (!empty($param)) {
             // pages of wikis installed before the rename still contain {{configuration param="wakka_name"}}
             if ($param === 'wakka_name') {

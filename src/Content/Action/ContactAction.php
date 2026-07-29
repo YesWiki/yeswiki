@@ -7,6 +7,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
 
 include_once YESWIKI_SOURCE_DIR . '/src/contact.functions.php';
 
@@ -47,7 +48,7 @@ class ContactAction extends YesWikiAction implements RegisteredAction
         }
         $options = array_merge($this->arguments, [
             'nbactionmail' => $GLOBALS['nbactionmail'],
-            'pageTag' => $this->wiki->GetPageTag(),
+            'pageTag' => $this->getService(PageContext::class)->getTag(),
         ]);
 
         $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');

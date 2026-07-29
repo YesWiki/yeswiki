@@ -1,8 +1,10 @@
 <?php
 
 namespace YesWiki\Render\Action;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 
 class PanelAction extends YesWikiAction implements RegisteredAction
 {
@@ -14,18 +16,18 @@ class PanelAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-       ob_start();
-       // Titre du panel
-       $title = $this->arguments['title'] ?? '';
+        ob_start();
+        // Titre du panel
+        $title = $this->arguments['title'] ?? '';
 
-       // classe css pour la couleur du panel ou autre
-       $class = $this->arguments['class'] ?? '';
+        // classe css pour la couleur du panel ou autre
+        $class = $this->arguments['class'] ?? '';
 
-       // collapsed: initial state is collapsed, and the panel is collapsible
-       // collapsible: initial state is displayed, and the panel is collapsible
-       // empty: initial state is displayed, and the panel is not collapsible
-       $type = $this->arguments['type'] ?? '';
-       $pagetag = $this->wiki->GetPageTag();
+        // collapsed: initial state is collapsed, and the panel is collapsible
+        // collapsible: initial state is displayed, and the panel is collapsible
+        // empty: initial state is displayed, and the panel is not collapsible
+        $type = $this->arguments['type'] ?? '';
+        $pagetag = $this->getService(PageContext::class)->getTag();
 
         if ($this->check_end_elem('panel')) {
             $headingID = uniqid('heading');
@@ -53,8 +55,8 @@ class PanelAction extends YesWikiAction implements RegisteredAction
                 . "<div class=\"yw-panel $class\">
               <$headerTagName class=\"yw-panel__heading" . ($collapsible ? ' yw-collapse-toggle' : '') . '"';
             if ($collapsible) {
-                $result .= " id=\"$headingID\"" . " data-yw-collapse-toggle=\"#$collapseID\"" . (!empty($accordionID) ? " data-yw-accordion=\"#$accordionID\"" : '')
-                    . " aria-expanded=\"" . ($collapsed ? 'false' : 'true') . "\" aria-controls=\"$collapseID\"";
+                $result .= " id=\"$headingID\" data-yw-collapse-toggle=\"#$collapseID\"" . (!empty($accordionID) ? " data-yw-accordion=\"#$accordionID\"" : '')
+                    . ' aria-expanded="' . ($collapsed ? 'false' : 'true') . "\" aria-controls=\"$collapseID\"";
             }
             $result .= ">
                   <h4 class=\"yw-panel__title\">
@@ -74,13 +76,14 @@ class PanelAction extends YesWikiAction implements RegisteredAction
         } else {
             echo $this->generate_error_msg('panel');
         }
-       $panel = ob_get_contents();
-       ob_end_clean();
-       return $panel;
+        $panel = ob_get_contents();
+        ob_end_clean();
+
+        return $panel;
     }
 
-
-   public function end(): string {
-       return "\t\t\n</div>\t\n</div>\n</div> <!-- end of panel -->\n";
-   }
+    public function end(): string
+    {
+        return "\t\t\n</div>\t\n</div>\n</div> <!-- end of panel -->\n";
+    }
 }

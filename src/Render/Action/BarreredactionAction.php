@@ -11,6 +11,8 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -50,11 +52,11 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
         $user = $this->wiki->services->get(AuthenticationService::class)->getLoggedUser();
         if ((!empty($user) || $this->getService(AclService::class)->hasAccess('write')) && $this->wiki->method != 'revisions') {
             // on récupére la page et ses valeurs associées
-            $page = $this->wiki->GetParameter('page');
+            $page = $this->getService(PerformableArguments::class)->get('page');
             if (empty($page)) {
-                $page = $this->wiki->GetPageTag();
-                $time = $this->wiki->GetPageTime();
-                $content = $this->wiki->page;
+                $page = $this->getService(PageContext::class)->getTag();
+                $time = $this->getService(PageContext::class)->getPageTime();
+                $content = $this->getService(PageContext::class)->getPage();
             } else {
                 $content = $this->getService(PageManager::class)->getOne($page);
                 $time = $content['time'] ?? '';
@@ -63,13 +65,13 @@ class BarreredactionAction extends YesWikiAction implements RegisteredAction
             $options['linkpage'] = $this->getService(UrlFormatter::class)->href('', $page);
 
             // on choisit le template utilisé
-            $template = $this->wiki->GetParameter('template');
+            $template = $this->getService(PerformableArguments::class)->get('template');
             if (empty($template)) {
                 $template = 'barreredaction_basic.twig';
             }
 
             // on peut ajouter des classes, la classe par défaut est .footer
-            $options['class'] = ($this->wiki->GetParameter('class') ? 'footer ' . $this->wiki->GetParameter('class') : 'footer');
+            $options['class'] = ($this->getService(PerformableArguments::class)->get('class') ? 'footer ' . $this->getService(PerformableArguments::class)->get('class') : 'footer');
 
             if ($this->getService(AclService::class)->hasAccess('write')) {
                 // on ajoute le lien d'édition si l'action est autorisée

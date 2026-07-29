@@ -5,6 +5,8 @@ namespace YesWiki\Render\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -41,9 +43,9 @@ class DoubleclicAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $page = $this->wiki->GetParameter('page');
-        $isIframe = $this->wiki->GetParameter('iframe') && (!isset($_GET['iframelinks']) or $_GET['iframelinks'] != '0');
-        if ($this->wiki->GetMethod() == 'show' && $this->getService(AclService::class)->hasAccess('write', $page)) {
+        $page = $this->getService(PerformableArguments::class)->get('page');
+        $isIframe = $this->getService(PerformableArguments::class)->get('iframe') && (!isset($_GET['iframelinks']) or $_GET['iframelinks'] != '0');
+        if ($this->getService(PageContext::class)->getMethod() == 'show' && $this->getService(AclService::class)->hasAccess('write', $page)) {
             $method = $isIframe ? 'editiframe' : 'edit';
             // javascript du double clic (on peut passer en parametre une page wiki au editer en doublecliquant)
             if (!empty($page)) {

@@ -47,8 +47,8 @@ class EditHandlerSaveTest extends YesWikiTestCase
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
         $authenticationService->login($admin);
 
-        $wiki->tag = self::PAGE_TAG;
-        $wiki->page = $page;
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag(self::PAGE_TAG);
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($page);
         $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
         // the edit form renders {{aceditor}}, whose ActionsBuilderService::getData()
@@ -86,7 +86,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
             // stale-edit conflict: submitting against the OLD 'previous' id again must not overwrite
             $_POST = ['submit' => 'Sauver', 'body' => 'CONFLICTING CONTENT', 'previous' => $page['id']];
             $wiki->request = Request::createFromGlobals();
-            $wiki->page = $reloaded;
+            $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($reloaded);
             $wiki->Method('edit');
             $stillSaved = $pageManager->getOne(self::PAGE_TAG);
             $this->assertSame('NEW SAVED CONTENT', trim($stillSaved['body']), 'a stale save must be rejected, not silently overwrite');

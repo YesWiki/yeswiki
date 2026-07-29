@@ -5,6 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -43,7 +44,7 @@ class RecentlycommentedAction extends YesWikiAction implements RegisteredAction
     private function emit(): void
     {
         // Which is the max number of pages to be shown ?
-        if ($max = $this->wiki->GetParameter('max')) {
+        if ($max = $this->getService(PerformableArguments::class)->get('max')) {
             if ($max == 'last') {
                 $max = 50;
             } else {
@@ -55,7 +56,7 @@ class RecentlycommentedAction extends YesWikiAction implements RegisteredAction
 
         // Show recently commented pages
         if ($pages = $this->getService(CommentService::class)->getRecentlyCommented($max)) {
-            if ($this->wiki->GetParameter('max')) {
+            if ($this->getService(PerformableArguments::class)->get('max')) {
                 foreach ($pages as $page) {
                     // echo entry
                     echo '(',$page['comment_time'],') <a href="',$this->getService(UrlFormatter::class)->href('', $page['tag'], 'show_comments=1'),'#',$page['comment_tag'],'">',$page['tag'],'</a> . . . . ' . _t('LAST_COMMENT') . ' ' . _t('BY') . ' ',$this->getService(MarkdownFormatterService::class)->format($page['comment_user']),"<br />\n";

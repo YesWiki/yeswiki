@@ -9,6 +9,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -44,17 +45,17 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
         ?>
         <div class="page">
           <?php
-          if ($this->wiki->page && ($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin())) {
+          if ($this->getService(PageContext::class)->getPage() && ($this->getService(AclService::class)->isOwner() || $this->getService(AclService::class)->isAdmin())) {
               if ($_POST) {
                   // store lists
-                  $this->getService(AclService::class)->save($this->wiki->GetPageTag(), 'read', $_POST['read_acl']);
-                  $this->getService(AclService::class)->save($this->wiki->GetPageTag(), 'write', $_POST['write_acl']);
-                  $this->getService(AclService::class)->save($this->wiki->GetPageTag(), 'comment', $this->wiki->page['comment_on'] ? '' : $_POST['comment_acl']);
+                  $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'read', $_POST['read_acl']);
+                  $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'write', $_POST['write_acl']);
+                  $this->getService(AclService::class)->save($this->getService(PageContext::class)->getTag(), 'comment', $this->getService(PageContext::class)->getPage()['comment_on'] ? '' : $_POST['comment_acl']);
                   $message = _t('YW_ACLS_UPDATED');
 
                   // change owner?
                   if ($newowner = $_POST['newowner']) {
-                      $this->getService(PageManager::class)->setOwner($this->wiki->GetPageTag(), $newowner);
+                      $this->getService(PageManager::class)->setOwner($this->getService(PageContext::class)->getTag(), $newowner);
                       $message .= _t('YW_NEW_OWNER') . $newowner;
                   }
 
@@ -63,12 +64,12 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
                   $this->wiki->Redirect($this->getService(UrlFormatter::class)->href());
               } else {
                   // load acls
-                  $readACL = $this->getService(AclService::class)->load($this->wiki->GetPageTag(), 'read');
-                  $writeACL = $this->getService(AclService::class)->load($this->wiki->GetPageTag(), 'write');
-                  $commentACL = $this->getService(AclService::class)->load($this->wiki->GetPageTag(), 'comment');
+                  $readACL = $this->getService(AclService::class)->load($this->getService(PageContext::class)->getTag(), 'read');
+                  $writeACL = $this->getService(AclService::class)->load($this->getService(PageContext::class)->getTag(), 'write');
+                  $commentACL = $this->getService(AclService::class)->load($this->getService(PageContext::class)->getTag(), 'comment');
 
                   // show form?>
-              <h3><?php echo _t('YW_ACLS_LIST') . ' ' . $this->getService(LinkRenderer::class)->linkToPage($this->wiki->GetPageTag()); ?></h3><!-- Access Control Lists for-->
+              <h3><?php echo _t('YW_ACLS_LIST') . ' ' . $this->getService(LinkRenderer::class)->linkToPage($this->getService(PageContext::class)->getTag()); ?></h3><!-- Access Control Lists for-->
 
               <?php echo $this->wiki->FormOpen('acls', '', 'post', 'form-horizontal'); ?>
               <div class="form-group">
@@ -90,7 +91,7 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
                 </div>
               </div>
 
-              <?php if (!$this->wiki->page['comment_on']) { ?>
+              <?php if (!$this->getService(PageContext::class)->getPage()['comment_on']) { ?>
                 <input type="hidden" name="comment_acl" value="<?php echo $commentACL['list'] ?? ''; ?>">
               <?php } ?>
 

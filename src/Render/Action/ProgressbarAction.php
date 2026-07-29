@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 
 /**
  * `{{progressbar}}` -- converted from the procedural actions/progressbar.php by ticket 06.
@@ -40,7 +41,7 @@ class ProgressbarAction extends YesWikiAction implements RegisteredAction
     private function emit(): void
     {
         // valeur de la progressbar
-        $val = $this->wiki->GetParameter('val');
+        $val = $this->getService(PerformableArguments::class)->get('val');
         if (empty($val)) {
             $error = ' ' . _t('PROGRESSBAR_REQUIRED_VAL_PARAM');
         } elseif (!is_numeric($val) || $val < 0 || $val > 100) {
@@ -48,7 +49,7 @@ class ProgressbarAction extends YesWikiAction implements RegisteredAction
         }
 
         // classe css supplémentaire pour changer le look
-        $class = $this->wiki->GetParameter('class');
+        $class = $this->getService(PerformableArguments::class)->get('class');
         $class = 'yw-progressbar ' . $class;
 
         if (isset($error)) {

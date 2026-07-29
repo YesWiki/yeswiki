@@ -6,6 +6,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
 
@@ -64,30 +65,30 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
             }
         }
 
-        $form_id = $this->wiki->GetParameter('idtypeannonce');
+        $form_id = $this->getService(PerformableArguments::class)->get('idtypeannonce');
         if (empty($form_id)) {
             $form_id = 'toutes';
         }
-        $GLOBALS['ordre'] = $this->wiki->GetParameter('ordre');
+        $GLOBALS['ordre'] = $this->getService(PerformableArguments::class)->get('ordre');
         if (empty($GLOBALS['ordre'])) {
             $GLOBAL['ordre'] = 'asc';
         }
 
-        $template = $this->wiki->GetParameter('template');
+        $template = $this->getService(PerformableArguments::class)->get('template');
         $template = $this->wiki->services->get(TemplateEngine::class)->hasTemplate("@core/$template") ? $template : '';
         if (empty($template)) {
             $template = $GLOBALS['wiki']->config['default_bazar_template'];
         }
 
         // identifiant de la base de donnée pour la liste
-        $id = $this->wiki->GetParameter('id');
+        $id = $this->getService(PerformableArguments::class)->get('id');
         if (empty($id)) {
             throw new \Exception('Error action bazarlistecategorie: parameter "id" missing.');
         }
         $GLOBALS['champ'] = $id;
 
         // NomWiki de la liste
-        $list = $this->wiki->GetParameter('list');
+        $list = $this->getService(PerformableArguments::class)->get('list');
         if (empty($list)) {
             echo '<div class="alert alert-danger">Error action bazarlistecategorie: parameter "list" missing.</div>';
         } else {

@@ -5,6 +5,8 @@ namespace YesWiki\Render\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
@@ -43,14 +45,14 @@ class ThemeselectorAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $class = $this->wiki->getParameter('class');
+        $class = $this->getService(PerformableArguments::class)->get('class');
         if (
             $this->getService(AclService::class)->isAdmin()
             && isset($_POST['action']) && ($_POST['action'] === 'setTemplate')
         ) {
             $this->getService(ActionRunner::class)->action('setwikidefaulttheme');
             // if not redirected by setwikidefaulttheme : redirect
-            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->wiki->tag));
+            $this->wiki->Redirect($this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag()));
         } else {
             echo $this->wiki->services->get(ThemeSelectorRenderer::class)->showFormThemeSelector('selector', $class);
         }

@@ -33,7 +33,7 @@ class TocActionTest extends YesWikiTestCase
         $body = "{{toc}}\n\n## First heading\n\nSome text.\n\n## Second heading\n\nMore.\n\n## First heading\n\nAgain.\n";
         $pageManager->save(self::PAGE_TAG, $body, '', true);
         $page = $pageManager->getOne(self::PAGE_TAG);
-        $wiki->SetPage($page);
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->assignPage($page);
 
         $html = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($body);
 

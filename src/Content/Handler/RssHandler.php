@@ -7,6 +7,7 @@ use YesWiki\Content\Service\BazarListService;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Search\Service\SearchManager;
 
@@ -23,7 +24,7 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
     public function run()
     {
         try {
-            if (!$this->getService(AclService::class)->hasAccess('read') || !$this->wiki->page) {
+            if (!$this->getService(AclService::class)->hasAccess('read') || !$this->getService(PageContext::class)->getPage()) {
                 return null;
             }
 

@@ -136,9 +136,10 @@ namespace YesWiki\Kernel\Service {
             $pageMetadataLang = '';
             if ($page != '' && $wiki instanceof \YesWiki\Wiki) {
                 // page's metadata lang
-                $wiki->metadatas = $wiki->services->get(\YesWiki\Content\Service\PageManager::class)->getMetadata($page);
-                if (isset($wiki->metadatas['lang']) && in_array($wiki->metadatas['lang'], $availableLanguages)) {
-                    $pageMetadataLang = $wiki->metadatas['lang'];
+                $metadata = $wiki->services->get(\YesWiki\Content\Service\PageManager::class)->getMetadata($page);
+                $wiki->services->get(PageContext::class)->setMetadata(is_array($metadata) ? $metadata : []);
+                if (isset($metadata['lang']) && in_array($metadata['lang'], $availableLanguages)) {
+                    $pageMetadataLang = $metadata['lang'];
                 }
             }
 

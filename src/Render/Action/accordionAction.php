@@ -1,8 +1,10 @@
 <?php
 
 namespace YesWiki\Render\Action;
+
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 
 class AccordionAction extends YesWikiAction implements RegisteredAction
 {
@@ -14,30 +16,31 @@ class AccordionAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-       ob_start();
-       $class = $this->arguments['class'] ?? '';
-       $pagetag = $this->wiki->GetPageTag();
+        ob_start();
+        $class = $this->arguments['class'] ?? '';
+        $pagetag = $this->getService(PageContext::class)->getTag();
 
-       if ($this->check_end_elem('accordion')) {
-           if ($GLOBALS['check_' . $pagetag]['accordion']) {
-               $accordionID = uniqid('accordion_');
-               $GLOBALS['check_' . $pagetag]['accordion_uniqueID'] = $accordionID;
-           }
-           echo '<!-- start of accordion -->' . "\n" .
-           "<div class=\"yw-accordion $class\" id=\"$accordionID\">";
-       } else {
-           echo $this->generate_error_msg('accordion');
-       }
-       $accordion = ob_get_contents();
-       ob_end_clean();
-       return $accordion;
+        if ($this->check_end_elem('accordion')) {
+            if ($GLOBALS['check_' . $pagetag]['accordion']) {
+                $accordionID = uniqid('accordion_');
+                $GLOBALS['check_' . $pagetag]['accordion_uniqueID'] = $accordionID;
+            }
+            echo '<!-- start of accordion -->' . "\n" .
+            "<div class=\"yw-accordion $class\" id=\"$accordionID\">";
+        } else {
+            echo $this->generate_error_msg('accordion');
+        }
+        $accordion = ob_get_contents();
+        ob_end_clean();
+
+        return $accordion;
     }
 
     public function end(): string
     {
-       $pagetag = $this->wiki->GetPageTag();
-       unset($GLOBALS['check_' . $pagetag]['accordion_uniqueID']);
+        $pagetag = $this->getService(PageContext::class)->getTag();
+        unset($GLOBALS['check_' . $pagetag]['accordion_uniqueID']);
 
-       return "\n</div> <!-- end of accordion -->\n";
+        return "\n</div> <!-- end of accordion -->\n";
     }
 }

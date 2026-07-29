@@ -2,10 +2,12 @@
 
 namespace YesWiki\Render\Action;
 
-use YesWiki\Kernel\Service\Performer;
-use YesWiki\Render\Service\TemplateHelperService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
+use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\TemplateHelperService;
 
 /**
  * `{{end}}` -- converted from the procedural actions/end.php by ticket 06.
@@ -43,16 +45,15 @@ class EndAction extends YesWikiAction implements RegisteredAction
     {
         require_once YESWIKI_SOURCE_DIR . '/src/YesWikiPerformable.php';
 
-
         // classe css supplémentaire
-        $elem = $this->wiki->GetParameter('elem');
+        $elem = $this->getService(PerformableArguments::class)->get('elem');
         if (empty($elem)) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('TEMPLATE_ACTION_END') . '</strong> : ' . _t('TEMPLATE_ELEM_PARAMETER_REQUIRED') . '.</div>' . "\n";
 
             return;
         }
-        $pagetag = $this->wiki->GetPageTag();
-        $body = isset($this->wiki->page['body']) ? $this->wiki->page['body'] : '';
+        $pagetag = $this->getService(PageContext::class)->getTag();
+        $body = isset($this->getService(PageContext::class)->getPage()['body']) ? $this->getService(PageContext::class)->getPage()['body'] : '';
         // teste s'il y a bien un element de fermeture associé avant d'ouvrir une balise
         if (!isset($GLOBALS['check_' . $pagetag])) {
             $GLOBALS['check_' . $pagetag] = [];

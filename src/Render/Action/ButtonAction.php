@@ -6,6 +6,7 @@ use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateHelperService;
 
@@ -44,12 +45,12 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
     private function emit(): void
     {
         // adresse vers quoi le bouton pointe
-        $link = $this->wiki->GetParameter('link');
+        $link = $this->getService(PerformableArguments::class)->get('link');
 
         // extration du nom de 'root_page' si nécessaire
         if ($link == 'config/root_page') {
             $link = $this->wiki->config['root_page'];
-            $this->wiki->setParameter('link', $link);
+            $this->getService(PerformableArguments::class)->set('link', $link);
         }
 
         $linkParts = $this->getService(UrlFormatter::class)->extractLinkParts($link);
@@ -61,19 +62,19 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
         $link = $this->getService(UrlFormatter::class)->generateLink($link);
 
         // texte genere a l'interieur du bouton
-        $text = $this->wiki->GetParameter('text');
+        $text = $this->getService(PerformableArguments::class)->get('text');
 
         // titre au survol du bouton et dans la boite modale associée
-        $title = $this->wiki->GetParameter('title');
+        $title = $this->getService(PerformableArguments::class)->get('title');
 
         // icone du bouton
-        $icon = $this->wiki->services->get(TemplateHelperService::class)->formatIconHtml($this->wiki->GetParameter('icon'));
+        $icon = $this->wiki->services->get(TemplateHelperService::class)->formatIconHtml($this->getService(PerformableArguments::class)->get('icon'));
         if (!empty($icon) && !empty($text)) {
             $icon = $icon . ' ';
         }
 
         // classe css supplémentaire pour changer le look
-        $class = $this->wiki->GetParameter('class');
+        $class = $this->getService(PerformableArguments::class)->get('class');
         $class .= (!empty($class) ? ' ' : '') . 'yw-btn';
 
         $datasize = '';
@@ -82,7 +83,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
             $datasize .= 'modal-lg';
         }
 
-        $nobtn = $this->wiki->GetParameter('nobtn');
+        $nobtn = $this->getService(PerformableArguments::class)->get('nobtn');
         if (!empty($nobtn) && $nobtn == '1') {
             // remove all the yw-btn or yw-btn--* css class
             $class = preg_replace('/\byw-btn(?:--\w+)?\b/i', '', $class);
@@ -90,7 +91,7 @@ class ButtonAction extends YesWikiAction implements RegisteredAction
             $class = preg_replace('/(^\s*)|(\s*$)/', '', preg_replace('/\s{2,}/', ' ', $class));
         }
 
-        $hideIfNoAccess = $this->wiki->GetParameter('hideifnoaccess');
+        $hideIfNoAccess = $this->getService(PerformableArguments::class)->get('hideifnoaccess');
         if ($hideIfNoAccess == 'true' && isset($linkParts['tag']) && !$this->getService(AclService::class)->hasAccess('read', $linkParts['tag'])) {
             echo '';
         } elseif (empty($link)) {

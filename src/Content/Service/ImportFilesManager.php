@@ -129,7 +129,7 @@ class ImportFilesManager
     public function findDirectLinkAttachements($tag = '')
     {
         if (empty(trim($tag))) {
-            $tag = $this->wiki->GetPageTag();
+            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
         $rawContent = $this->wiki->services->get(PageManager::class)->getOne($tag)['body'];
         $regex = '#\{\{attach.*file="(.*)".*\}\}#Ui';
@@ -243,8 +243,8 @@ class ImportFilesManager
      */
     public function downloadHiddenAttachment($remoteUrl, $pageTag, $lastPageUpdate, $filename, $overwrite = false)
     {
-        $this->wiki->tag = $pageTag;
-        $this->wiki->page = ['tag' => $pageTag, 'time' => $lastPageUpdate];
+        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($pageTag);
+        $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage(['tag' => $pageTag, 'time' => $lastPageUpdate]);
 
         $remoteFileUrl = $remoteUrl . '?' . $pageTag . '/download&file=' . $filename;
         $att = new Attach($this->wiki);

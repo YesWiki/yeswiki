@@ -12,6 +12,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\User;
 
 class UsersTableAction extends YesWikiAction implements RegisteredAction
@@ -100,7 +101,7 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction
             'connectedUserName' => $connectedUserName,
             'isAdmin' => $isAdmin,
             'postActionMessages' => $postActionMessages,
-            'tag' => $this->wiki->tag,
+            'tag' => $this->getService(PageContext::class)->getTag(),
             'users' => $users,
         ]);
     }

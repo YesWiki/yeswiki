@@ -5,6 +5,8 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\TagsManager;
 
@@ -46,14 +48,14 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
 
         include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
         $nbcartrunc = 200;
-        $tags = $this->wiki->GetParameter('tags');
-        $type = $this->wiki->GetParameter('type');
+        $tags = $this->getService(PerformableArguments::class)->get('tags');
+        $type = $this->getService(PerformableArguments::class)->get('type');
         // recuperation de tous les parametres
         $lienedit = '';
-        $class = $this->wiki->GetParameter('class');
-        $nb = $this->wiki->GetParameter('nb');
-        $tri = $this->wiki->GetParameter('tri');
-        $template = $this->wiki->GetParameter('template');
+        $class = $this->getService(PerformableArguments::class)->get('class');
+        $nb = $this->getService(PerformableArguments::class)->get('nb');
+        $tri = $this->getService(PerformableArguments::class)->get('tri');
+        $template = $this->getService(PerformableArguments::class)->get('template');
         if (empty($template)) {
             $template = 'pages_list.twig';
         }
@@ -67,7 +69,7 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
             // affichage des resultats
             foreach ($resultat as $page) {
                 // on inclue pas la page en elle meme, sinon boucle infinie
-                if ($page['tag'] != $this->wiki->getPageTag()) {
+                if ($page['tag'] != $this->getService(PageContext::class)->getTag()) {
                     $element[$page['tag']]['tagnames'] = '';
                     $element[$page['tag']]['tagbadges'] = '';
                     $element[$page['tag']]['body'] = $page['body'];
@@ -88,7 +90,7 @@ class ListpagestagAction extends YesWikiAction implements RegisteredAction
             $nb_total = 0;
         }
 
-        $shownumberinfo = $this->wiki->GetParameter('shownumberinfo');
+        $shownumberinfo = $this->getService(PerformableArguments::class)->get('shownumberinfo');
         if (!empty($shownumberinfo) && $shownumberinfo == 1) {
             $info = '<div class="alert alert-info">' . "\n";
             if ($nb_total > 1) {

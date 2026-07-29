@@ -14,6 +14,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -57,7 +58,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         // entry's data directly instead of rendering the page as HTML.
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
-        if ($entryManager->isEntry($this->wiki->GetPageTag()) && $this->getService(AclService::class)->hasAccess('read')) {
+        if ($entryManager->isEntry($this->getService(PageContext::class)->getTag()) && $this->getService(AclService::class)->hasAccess('read')) {
             if (isset($_SERVER['HTTP_ACCEPT']) && (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false || strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false)) {
                 $semantic = strpos($_SERVER['HTTP_ACCEPT'], 'application/ld+json') !== false;
                 $contentType = $semantic ? 'application/ld+json' : 'application/json';
@@ -65,7 +66,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 header("Content-type: $contentType; charset=UTF-8");
                 header('Access-Control-Allow-Origin: *');
 
-                $fiche = $entryManager->getOne($this->wiki->GetPageTag());
+                $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
                 if ($semantic) {
                     $form = $this->wiki->services->get(FormManager::class)->getOne($fiche['form_id']);
@@ -85,12 +86,13 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         // Page translation (formerly tools/lang's __show before-callback): keep only the
         // {{lang="xx"}} section matching the visitor's language, if the page uses markers
         require_once YESWIKI_SOURCE_DIR . '/src/lang.functions.php';
-        if (!empty($this->wiki->page['body'])) {
-            $this->wiki->page['body'] = filterBodyByLanguage(
-                $this->wiki->page['body'],
+        $pageContext = $this->getService(PageContext::class);
+        if (!empty(($pageContext->getPage() ?? [])['body'])) {
+            $pageContext->setPageField('body', filterBodyByLanguage(
+                $pageContext->getPage()['body'],
                 $GLOBALS['prefered_language'],
                 $this->wiki->config['default_language']
-            );
+            ));
         }
     }
 
@@ -109,10 +111,10 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         // go through the entry form instead of the raw wikitext editor.
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
-        if ($entryManager->isEntry($this->wiki->GetPageTag())) {
+        if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
 
-            $fiche = $entryManager->getOne($this->wiki->GetPageTag());
+            $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
             $replace = '<input type="hidden" name="body" value="' . htmlspecialchars(json_encode($fiche), ENT_COMPAT, YW_CHARSET) . '" />';
             if (isset($_GET['time'])) {
@@ -176,8 +178,8 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         $tagsManager = $this->getService(TagsManager::class);
 
         // display tags if needed
-        $tag = $this->wiki->getPageTag();
-        if (!$this->params->get('hide_keywords') && (bool)$this->wiki->page && !empty($tag) && $aclService->hasAccess('read', $tag) && !$entryManager->isEntry($tag)) {
+        $tag = $this->getService(PageContext::class)->getTag();
+        if (!$this->params->get('hide_keywords') && (bool)$this->getService(PageContext::class)->getPage() && !empty($tag) && $aclService->hasAccess('read', $tag) && !$entryManager->isEntry($tag)) {
             $tags = array_column($tagsManager->getAll($tag), 'value');
             if (!empty($tags)) {
                 $output = $this->render('@core/tags-at-page-bottom.twig', [
@@ -213,7 +215,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         }
 
         if ($HasAccessRead = $this->getService(AclService::class)->hasAccess('read')) {
-            if (!$this->wiki->page) {
+            if (!$this->getService(PageContext::class)->getPage()) {
                 echo str_replace(
                     ['{beginLink}', '{endLink}'],
                     ["<a href=\"{$this->getService(UrlFormatter::class)->href('edit')}\">", '</a>'],
@@ -221,20 +223,20 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 );
             } else {
                 // comment header?
-                if ($this->wiki->page['comment_on']) {
+                if ($this->getService(PageContext::class)->getPage()['comment_on']) {
                     echo '<div class="commentinfo">' . str_replace(
                         ['{tag}', '{user}', '{time}'],
-                        [$this->getService(LinkRenderer::class)->linkToPage($this->wiki->page['comment_on'], '', '', 0), $this->getService(MarkdownFormatterService::class)->format($this->wiki->page['user']), $this->wiki->page['time']],
+                        [$this->getService(LinkRenderer::class)->linkToPage($this->getService(PageContext::class)->getPage()['comment_on'], '', '', 0), $this->getService(MarkdownFormatterService::class)->format($this->getService(PageContext::class)->getPage()['user']), $this->getService(PageContext::class)->getPage()['time']],
                         _t('COMMENT_INFO')
                     ) . '</div>';
                 }
 
-                if ($this->wiki->page['latest'] == 'N') {
+                if ($this->getService(PageContext::class)->getPage()['latest'] == 'N') {
                     echo '<div class="alert alert-info">' . "\n";
-                    echo str_replace(['{link}', '{time}'], ["<a href=\"{$this->getService(UrlFormatter::class)->href()}\">{$this->wiki->GetPageTag()}</a>", $this->wiki->page['time']], _t('REVISION_IS_ARCHIVE_OF_TAG_ON_TIME'));
+                    echo str_replace(['{link}', '{time}'], ["<a href=\"{$this->getService(UrlFormatter::class)->href()}\">{$this->getService(PageContext::class)->getTag()}</a>", $this->getService(PageContext::class)->getPage()['time']], _t('REVISION_IS_ARCHIVE_OF_TAG_ON_TIME'));
                     // if this is an old revision, display some buttons
                     if ($this->getService(AclService::class)->hasAccess('write')) {
-                        $latest = $this->getService(PageManager::class)->getOne($this->wiki->tag); ?>
+                        $latest = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag()); ?>
                         <?php
                         $time = isset($_GET['time']) ? $_GET['time'] : '';
                         echo $this->wiki->FormOpen(testUrlInIframe() ? 'editiframe' : 'edit', '', 'get'); ?>
@@ -248,13 +250,13 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 }
 
                 // display page
-                $this->getService(InclusionStack::class)->register($this->wiki->GetPageTag());
+                $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag());
                 $entryManager = $this->wiki->services->get(EntryManager::class);
-                if ($entryManager->isEntry($this->wiki->page['tag'])) {
+                if ($entryManager->isEntry($this->getService(PageContext::class)->getPage()['tag'])) {
                     $entryController = $this->wiki->services->get(EntryController::class);
-                    echo $entryController->view($this->wiki->GetPageTag(), $this->wiki->page['time'] ?? null);
+                    echo $entryController->view($this->getService(PageContext::class)->getTag(), $this->getService(PageContext::class)->getPage()['time'] ?? null);
                 } else {
-                    echo $this->getService(MarkdownFormatterService::class)->format($this->wiki->page['body']);
+                    echo $this->getService(MarkdownFormatterService::class)->format($this->getService(PageContext::class)->getPage()['body']);
                 }
                 $this->getService(InclusionStack::class)->unregisterLast();
             }
@@ -268,7 +270,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         <?php
         // render the comments if needed
-        echo $this->wiki->services->get(CommentService::class)->renderCommentsForPage($this->wiki->getPageTag());
+        echo $this->wiki->services->get(CommentService::class)->renderCommentsForPage($this->getService(PageContext::class)->getTag());
 
         // get the content buffer and display the page
         $content = ob_get_clean();

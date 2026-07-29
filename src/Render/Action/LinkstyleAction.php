@@ -6,6 +6,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\ThemeManager;
 
 /**
@@ -144,7 +145,7 @@ class LinkstyleAction extends YesWikiAction implements RegisteredAction
         }
 
         // si l'action propose d'autres css a ajouter, on les ajoute
-        $othercss = $this->wiki->GetParameter('othercss');
+        $othercss = $this->getService(PerformableArguments::class)->get('othercss');
         if (!empty($othercss)) {
             $tabcss = explode(',', $othercss);
             foreach ($tabcss as $cssfile) {

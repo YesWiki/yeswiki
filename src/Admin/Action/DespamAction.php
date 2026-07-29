@@ -8,6 +8,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -54,7 +55,7 @@ class DespamAction extends YesWikiAction implements RegisteredAction
         //    pas les pages si elle est rechargee
         // -- test pour savoir si quelque chose a bien ete efface
 
-        $despam_url = $this->getService(UrlFormatter::class)->href('', $this->wiki->GetPageTag());
+        $despam_url = $this->getService(UrlFormatter::class)->href('', $this->getService(PageContext::class)->getTag());
 
         // -- (1) Formulaire d'accueil de l'action -------------------------------
         //

@@ -47,6 +47,7 @@ class Performer
     protected $params;
     protected $twig;
     protected ThrowableFormatter $throwableFormatter;
+    protected PerformableArguments $performableArguments;
 
     /** Extension-provided performables found by scanning; core ones live in the registry. */
     protected $objectList;
@@ -59,7 +60,8 @@ class Performer
         TemplateEngine $twig,
         ActionRegistry $registry,
         EventDispatcher $events,
-        ThrowableFormatter $throwableFormatter
+        ThrowableFormatter $throwableFormatter,
+        PerformableArguments $performableArguments
     ) {
         $this->wiki = $wiki;
         $this->registry = $registry;
@@ -67,6 +69,7 @@ class Performer
         $this->params = $params;
         $this->twig = $twig;
         $this->throwableFormatter = $throwableFormatter;
+        $this->performableArguments = $performableArguments;
 
         foreach (Performer::TYPES as $type) {
             $this->objectList[$type] = [];
@@ -212,8 +215,8 @@ class Performer
         $instance->setOutput($output);
         $instance->setTwig($this->twig);
 
-        // still needed by Wiki::getParameter(), which plenty of code reads
-        $this->wiki->parameter = &$vars;
+        // the request-global raw-argument channel (historic Wiki::$parameter)
+        $this->performableArguments->bind($vars);
     }
 
     /**

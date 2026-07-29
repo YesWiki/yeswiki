@@ -28,7 +28,7 @@ class PageContext
         return (string)($this->wiki->tag ?? '');
     }
 
-    public function setTag(string $tag): void
+    public function setTag(?string $tag): void
     {
         $this->wiki->tag = $tag;
     }
@@ -47,6 +47,12 @@ class PageContext
     public function setPage(?array $page): void
     {
         $this->wiki->page = $page;
+    }
+
+    /** Write one field of the current page record (historic `$wiki->page['x'] = ...`). */
+    public function setPageField(string $key, mixed $value): void
+    {
+        $this->wiki->page[$key] = $value;
     }
 
     /**

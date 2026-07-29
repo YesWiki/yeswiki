@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -43,7 +44,7 @@ class TranslationAction extends YesWikiAction implements RegisteredAction
         // {{translation destination="xx"}} (formerly tools/lang): renders a flag link
         // that switches the current page to the destination language via ?lang=xx
 
-        $destination = $this->wiki->GetParameter('destination');
+        $destination = $this->getService(PerformableArguments::class)->get('destination');
         if (empty($destination)) {
             echo _t('LANG_DESTINATION_REQUIRED');
         }

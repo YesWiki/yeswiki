@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 
 /**
  * `{{titrepage}}` -- converted from the procedural actions/titrepage.php by ticket 06.
@@ -39,11 +40,11 @@ class TitrepageAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        $title = htmlspecialchars($this->wiki->services->get(\YesWiki\Render\Service\TemplateHelperService::class)->getTitleFromBody($this->wiki->page), ENT_COMPAT | ENT_HTML5);
+        $title = htmlspecialchars($this->wiki->services->get(\YesWiki\Render\Service\TemplateHelperService::class)->getTitleFromBody($this->getService(PageContext::class)->getPage()), ENT_COMPAT | ENT_HTML5);
         if ($title) {
             echo $title;
         } else {
-            echo $this->wiki->GetPageTag();
+            echo $this->getService(PageContext::class)->getTag();
         }
     }
 }

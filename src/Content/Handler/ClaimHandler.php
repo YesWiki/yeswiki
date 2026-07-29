@@ -9,6 +9,7 @@ use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\GroupOperationsService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 /**
@@ -39,9 +40,9 @@ class ClaimHandler extends YesWikiHandler implements RegisteredHandler
 
     private function emit(): void
     {
-        $tag = $this->wiki->getPageTag();
+        $tag = $this->getService(PageContext::class)->getTag();
         // only do it on existing pages
-        if ($this->wiki->page) {
+        if ($this->getService(PageContext::class)->getPage()) {
             $availableActions = ['opencomments', 'closecomments'];
             // check if actions are requested
             if (

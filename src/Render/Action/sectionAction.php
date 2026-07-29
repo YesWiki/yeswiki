@@ -6,6 +6,7 @@ use YesWiki\Content\Attach;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\TemplateHelperService;
 
 class SectionAction extends YesWikiAction implements RegisteredAction
@@ -126,7 +127,7 @@ class SectionAction extends YesWikiAction implements RegisteredAction
         // container data attributes
         $data = $this->getService(TemplateHelperService::class)->getDataParameter();
 
-        $pagetag = $this->wiki->GetPageTag();
+        $pagetag = $this->getService(PageContext::class)->getTag();
 
         if ($this->check_end_elem('section')) {
             // specify the role to be checked ( *, +, %, @admins)

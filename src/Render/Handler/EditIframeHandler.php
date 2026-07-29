@@ -10,6 +10,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\PasswordForEditingService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -37,8 +38,8 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
                     $entryManager = $this->getService(EntryManager::class);
                     $entryController = $this->getService(EntryController::class);
 
-                    if ($entryManager->isEntry($this->wiki->GetPageTag())) {
-                        $buffer = $entryController->update($this->wiki->GetPageTag());
+                    if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
+                        $buffer = $entryController->update($this->getService(PageContext::class)->getTag());
                     } else {
                         ob_start();
                         $buffer = $this->getService(Performer::class)->run('edit', 'handler', []);

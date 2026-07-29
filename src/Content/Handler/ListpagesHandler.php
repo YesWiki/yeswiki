@@ -7,6 +7,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Search\Service\TagsManager;
@@ -71,9 +72,9 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
             foreach ($tab_tous_les_tags as $tag) {
                 $tag['value'] = stripslashes($tag['value']);
                 if (in_array($tag['value'], $tab_selected_tags)) {
-                    $tab_tag[] = '&nbsp;<a class="tag-label label label-primary label-active" href="' . $this->getService(UrlFormatter::class)->href('listpages', $this->wiki->GetPageTag(), 'tags=' . urlencode($tag['value'])) . '">' . $tag['value'] . '</a>' . "\n";
+                    $tab_tag[] = '&nbsp;<a class="tag-label label label-primary label-active" href="' . $this->getService(UrlFormatter::class)->href('listpages', $this->getService(PageContext::class)->getTag(), 'tags=' . urlencode($tag['value'])) . '">' . $tag['value'] . '</a>' . "\n";
                 } else {
-                    $tab_tag[] = '&nbsp;<a class="tag-label label label-info" href="' . $this->getService(UrlFormatter::class)->href('listpages', $this->wiki->GetPageTag(), 'tags=' . urlencode($tag['value'])) . '">' . $tag['value'] . '</a>' . "\n";
+                    $tab_tag[] = '&nbsp;<a class="tag-label label label-info" href="' . $this->getService(UrlFormatter::class)->href('listpages', $this->getService(PageContext::class)->getTag(), 'tags=' . urlencode($tag['value'])) . '">' . $tag['value'] . '</a>' . "\n";
                 }
             }
             $outputselecttag = '<strong><i class="icon icon-tags"></i> ' . _t('TAGS_FILTER') . ' : </strong>';

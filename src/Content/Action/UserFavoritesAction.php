@@ -1,16 +1,18 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 use YesWiki\Content\Attach;
-use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
-use YesWiki\Render\Service\TemplateEngine;
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Render\Service\TemplateEngine;
 
 class UserFavoritesAction extends YesWikiAction implements RegisteredAction
 {
@@ -142,10 +144,10 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
 
     private function getFileName($page, $file)
     {
-        $oldpagetag = $this->wiki->GetPageTag();
-        $oldpage = $this->wiki->page;
-        $this->wiki->tag = $page['tag'];
-        $this->wiki->page = $page;
+        $oldpagetag = $this->getService(PageContext::class)->getTag();
+        $oldpage = $this->getService(PageContext::class)->getPage();
+        $this->getService(PageContext::class)->setTag($page['tag']);
+        $this->getService(PageContext::class)->setPage($page);
 
         $this->attach->file = $file;
         $fullFileName = $this->attach->GetFullFilename();
@@ -154,8 +156,8 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
             $fullFileName = substr($fullFileName, strlen('files/'));
         }
 
-        $this->wiki->tag = $oldpagetag;
-        $this->wiki->page = $oldpage;
+        $this->getService(PageContext::class)->setTag($oldpagetag);
+        $this->getService(PageContext::class)->setPage($oldpage);
 
         return $fullFileName;
     }

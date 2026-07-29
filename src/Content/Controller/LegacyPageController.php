@@ -8,6 +8,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\ReferrerService;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Exception\ExitException;
+use YesWiki\Kernel\Service\PageContext;
 
 /**
  * Adapter so ordinary wiki tag/method pages (Performer-dispatched actions/handlers/formatters -
@@ -23,7 +24,7 @@ class LegacyPageController extends YesWikiController
         $tag = $request->attributes->get('_tag');
         $method = $request->attributes->get('_method');
 
-        $this->wiki->SetPage($this->getService(PageManager::class)->getOne($tag, isset($_REQUEST['time']) ? $_REQUEST['time'] : ''));
+        $this->getService(PageContext::class)->assignPage($this->getService(PageManager::class)->getOne($tag, isset($_REQUEST['time']) ? $_REQUEST['time'] : ''));
         $this->getService(ReferrerService::class)->log();
 
         ob_start();

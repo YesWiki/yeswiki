@@ -287,7 +287,7 @@ class TemplateEngine
         // qrcode badge templates: returns the cached SVG path for a payload,
         // generating it on first use (?refresh=1 regenerates)
         $this->addTwigHelper('qrCode', function ($content, $prefix = 'qrcode') {
-            $cacheImage = 'cache' . DIRECTORY_SEPARATOR . $prefix . '-' . $this->wiki->getPageTag() . '-' . md5($content) . '.svg';
+            $cacheImage = 'cache' . DIRECTORY_SEPARATOR . $prefix . '-' . $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag() . '-' . md5($content) . '.svg';
             if (!file_exists($cacheImage) || (!empty($_GET['refresh']) && $_GET['refresh'] == '1')) {
                 $this->wiki->services->get(\YesWiki\Content\Service\QrCodeService::class)->generateToFile($content, $cacheImage);
             }

@@ -12,6 +12,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -34,7 +35,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
         $this->duplicationManager = $this->getService(DuplicationManager::class);
         $title = $error = '';
         $toExternalWiki = $this->getRequest()->query->get('toUrl') == '1';
-        if (!$this->wiki->page) {
+        if (!$this->getService(PageContext::class)->getPage()) {
             $error .= $this->render('@templates\alert-message.twig', [
                 'type' => 'warning',
                 'message' => str_replace(
@@ -43,7 +44,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                     _t('NOT_FOUND_PAGE')
                 ),
             ]);
-        } elseif (!$this->getService(AclService::class)->hasAccess('read', $this->wiki->GetPageTag())) {
+        } elseif (!$this->getService(AclService::class)->hasAccess('read', $this->getService(PageContext::class)->getTag())) {
             // if no read access to the page
             if ($content = $this->getService(PageManager::class)->getOne('PageLogin')) {
                 // si une page PageLogin existe, on l'affiche
@@ -84,43 +85,43 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 'type' => 'warning',
                 'message' => _t('ONLY_ADMINS_CAN_DUPLICATE') . '.',
             ]);
-        } elseif ($this->getService(AclService::class)->hasAccess('read', $this->wiki->GetPageTag())) {
-            $isEntry = $this->getService(EntryManager::class)->isEntry($this->wiki->GetPageTag());
-            $isList = $this->getService(ListManager::class)->isList($this->wiki->GetPageTag());
+        } elseif ($this->getService(AclService::class)->hasAccess('read', $this->getService(PageContext::class)->getTag())) {
+            $isEntry = $this->getService(EntryManager::class)->isEntry($this->getService(PageContext::class)->getTag());
+            $isList = $this->getService(ListManager::class)->isList($this->getService(PageContext::class)->getTag());
             $type = $isEntry ? 'entry' : ($isList ? 'list' : 'page');
             $pageTitle = '';
             if ($isEntry) {
-                $title = _t('TEMPLATE_DUPLICATE_ENTRY') . ' ' . $this->wiki->GetPageTag();
-                $originalContent = $this->getService(EntryManager::class)->getOne($this->wiki->GetPageTag());
+                $title = _t('TEMPLATE_DUPLICATE_ENTRY') . ' ' . $this->getService(PageContext::class)->getTag();
+                $originalContent = $this->getService(EntryManager::class)->getOne($this->getService(PageContext::class)->getTag());
                 if ($toExternalWiki) {
                     $pageTitle = $originalContent['bf_titre'];
-                    $proposedTag = $this->wiki->GetPageTag();
-                    $originalContent = $this->wiki->page['body'];
+                    $proposedTag = $this->getService(PageContext::class)->getTag();
+                    $originalContent = $this->getService(PageContext::class)->getPage()['body'];
                     $form = $this->getService(FormManager::class)->getOne($this->getService(EntryManager::class)->getOne($proposedTag)['form_id']);
                 } else {
                     $pageTitle = $originalContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = genere_nom_wiki($pageTitle);
                 }
             } elseif ($isList) {
-                $title = _t('TEMPLATE_DUPLICATE_LIST') . ' ' . $this->wiki->GetPageTag();
-                $originalContent = $this->getService(ListManager::class)->getOne($this->wiki->GetPageTag());
+                $title = _t('TEMPLATE_DUPLICATE_LIST') . ' ' . $this->getService(PageContext::class)->getTag();
+                $originalContent = $this->getService(ListManager::class)->getOne($this->getService(PageContext::class)->getTag());
                 if ($toExternalWiki) {
                     $pageTitle = $originalContent['titre_liste'];
-                    $proposedTag = $this->wiki->GetPageTag();
+                    $proposedTag = $this->getService(PageContext::class)->getTag();
                 } else {
                     $pageTitle = $originalContent['titre_liste'] . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = genere_nom_wiki('Liste ' . $pageTitle);
                 }
             } else { // page
-                $title = _t('TEMPLATE_DUPLICATE_PAGE') . ' ' . $this->wiki->GetPageTag();
+                $title = _t('TEMPLATE_DUPLICATE_PAGE') . ' ' . $this->getService(PageContext::class)->getTag();
                 if ($toExternalWiki) {
-                    $proposedTag = $this->wiki->GetPageTag();
+                    $proposedTag = $this->getService(PageContext::class)->getTag();
                 } else {
-                    $proposedTag = genere_nom_wiki($this->wiki->GetPageTag() . ' ' . _t('DUPLICATE'));
+                    $proposedTag = genere_nom_wiki($this->getService(PageContext::class)->getTag() . ' ' . _t('DUPLICATE'));
                 }
-                $originalContent = $this->wiki->page['body'];
+                $originalContent = $this->getService(PageContext::class)->getPage()['body'];
             }
-            $attachments = $this->duplicationManager->findFiles($this->wiki->page['tag']);
+            $attachments = $this->duplicationManager->findFiles($this->getService(PageContext::class)->getPage()['tag']);
             $totalSize = 0;
             foreach ($attachments as $a) {
                 $totalSize = $totalSize + $a['size'];
@@ -137,7 +138,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
 
         return $this->renderFullPage('@core/handlers/duplicate.twig', [
             'title' => $title,
-            'originalTag' => $this->wiki->GetPageTag(),
+            'originalTag' => $this->getService(PageContext::class)->getTag(),
             'error' => $error,
             'sourceUrl' => $this->getService(UrlFormatter::class)->href(),
             'proposedTag' => $proposedTag ?? '',

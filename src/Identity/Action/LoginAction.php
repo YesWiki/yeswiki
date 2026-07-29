@@ -11,6 +11,7 @@ use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
@@ -40,7 +41,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
         return [
             // as there can be multiple login actions in one page, we can add a context so that the good action is used
             // we also add a default value with the pageTag if no context provided, assuming there will never be 2 times the login action in the same page.
-            'context' => $arg['context'] ?? $this->wiki->tag,
+            'context' => $arg['context'] ?? $this->getService(PageContext::class)->getTag(),
             'signupurl' => $noSignupButton ? '0' : (
                 $this->getService(UrlFormatter::class)->generateLink($arg['signupurl'] ?? $this->wiki->GetConfigValue('signupUrl', 'ParametresUtilisateur'))
             ),
@@ -99,7 +100,7 @@ class LoginAction extends YesWikiAction implements RegisteredAction
         $this->userManager = $this->getService(UserManager::class);
 
         $action = $this->getRequest()->get('action', '');
-        $vContext = $this->getRequest()->get('context', $this->wiki->tag);
+        $vContext = $this->getRequest()->get('context', $this->getService(PageContext::class)->getTag());
         if ($vContext !== $this->arguments['context']) {
             // no action if not in the good context
             $action = '';

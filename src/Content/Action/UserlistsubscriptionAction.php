@@ -5,6 +5,8 @@ namespace YesWiki\Content\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 
 /**
  * `{{userlistsubscription}}` -- converted from the procedural actions/userlistsubscription.php by ticket 06.
@@ -50,10 +52,10 @@ class UserlistsubscriptionAction extends YesWikiAction implements RegisteredActi
         if ($user = $this->getService(AuthenticationService::class)->getLoggedUser()) {
             if ($user['email'] != '') {
                 // recuperation des parametres
-                $list = $this->wiki->GetParameter('list');
+                $list = $this->getService(PerformableArguments::class)->get('list');
                 if (!empty($list)) {
                     $output = '<div class="note"></div>
-        				<form id="ajax-abonne-form" class="form-mail" data-page-tag="' . htmlspecialchars($this->wiki->GetPageTag()) . '">
+        				<form id="ajax-abonne-form" class="form-mail" data-page-tag="' . htmlspecialchars($this->getService(PageContext::class)->getTag()) . '">
         					' . $list . ' : ' . "\n" .
                         '</form>' . "\n";
                 } else {

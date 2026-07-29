@@ -4,6 +4,7 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
@@ -41,7 +42,7 @@ class LiensstyleAction extends YesWikiAction implements RegisteredAction
     private function emit(): void
     {
         // si l'action propose d'autres css à ajouter, on les ajoute
-        $othercss = $this->wiki->GetParameter('othercss');
+        $othercss = $this->getService(PerformableArguments::class)->get('othercss');
         if (!empty($othercss)) {
             echo $this->getService(MarkdownFormatterService::class)->format('{{linkstyle othercss="' . $othercss . '"}}');
         } else {

@@ -291,23 +291,23 @@ class FileField extends BazarField
         $attach->file = $fileName;
 
         // current page
-        $previousTag = $wiki->tag;
-        $previousPage = $wiki->page;
+        $previousTag = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
+        $previousPage = $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage();
         // fake page
-        $wiki->tag = $tag;
-        $wiki->page = [
-            'tag' => $wiki->tag,
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($tag);
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage([
+            'tag' => $tag,
             'body' => '{##}',
             'time' => date('YmdHis'),
             'owner' => '',
             'user' => '',
-        ];
+        ]);
         $fullFileName = $attach->GetFullFilename($newName);
 
         // reset params
         unset($attach);
-        $wiki->tag = $previousTag;
-        $wiki->page = $previousPage;
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag($previousTag);
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($previousPage);
 
         return $fullFileName;
     }

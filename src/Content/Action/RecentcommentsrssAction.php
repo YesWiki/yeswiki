@@ -6,6 +6,8 @@ use YesWiki\Content\Service\CommentService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -43,7 +45,7 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        if ($this->wiki->GetMethod() != 'xml') {
+        if ($this->getService(PageContext::class)->getMethod() != 'xml') {
             echo _t('TO_OBTAIN_COMMENTS_RSS_FEED_TO_GO_THIS_ADDRESS') . ' : ';
             echo $this->getService(LinkRenderer::class)->link($this->getService(UrlFormatter::class)->href('xml'));
 
@@ -55,7 +57,7 @@ class RecentcommentsrssAction extends YesWikiAction implements RegisteredAction
             $max = $user['changescount'];
         }
 
-        if (!($link = $this->wiki->GetParameter('link'))) {
+        if (!($link = $this->getService(PerformableArguments::class)->get('link'))) {
             $link = $this->wiki->GetConfigValue('root_page');
         }
 

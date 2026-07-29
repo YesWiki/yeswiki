@@ -6,6 +6,7 @@ use Symfony\Component\Security\Csrf\CsrfTokenManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\ThemeManager;
 
 /**
@@ -119,7 +120,7 @@ class LinkjavascriptAction extends YesWikiAction implements RegisteredAction
             'locale' => $GLOBALS['prefered_language'],
             'timezone' => date_default_timezone_get(),
             'baseUrl' => $this->wiki->config['base_url'],
-            'pageTag' => $this->wiki->getPageTag(),
+            'pageTag' => $this->getService(PageContext::class)->getTag(),
             'isDebugEnabled' => ($this->wiki->GetConfigValue('debug') ? 'true' : 'false'),
             'antiCsrfToken' => $this->wiki->services->get(CsrfTokenManager::class)->getToken('main')->getValue(),
         ];

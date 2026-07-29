@@ -152,7 +152,7 @@ class DuplicationManager
     {
         $files = [];
         if (empty(trim($tag))) {
-            $tag = $this->wiki->GetPageTag();
+            $tag = $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag();
         }
         if ($this->wiki->services->get(EntryManager::class)->isEntry($tag)) {
             // bazar
@@ -241,8 +241,8 @@ class DuplicationManager
 
             case 'entry':
                 $files = $this->duplicateFiles($data['originalTag'], $data['newTag']);
-                $entry = $this->wiki->services->get(EntryManager::class)->getOne($this->wiki->getPageTag());
-                $fields = $this->getUploadFieldsFromEntry($this->wiki->GetPageTag());
+                $entry = $this->wiki->services->get(EntryManager::class)->getOne($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
+                $fields = $this->getUploadFieldsFromEntry($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag());
                 foreach ($fields as $f) {
                     foreach ($files as $fi) {
                         $entry[$f->getPropertyName()] = str_replace($fi['originalFile'], $fi['duplicatedFile'], $entry[$f->getPropertyName()]);
@@ -256,7 +256,7 @@ class DuplicationManager
 
             default:
             case 'page':
-                $newBody = $this->wiki->page['body'];
+                $newBody = ($this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getPage() ?? [])['body'];
                 $files = $this->duplicateFiles($data['originalTag'], $data['newTag']);
                 foreach ($files as $f) {
                     $newBody = str_replace($f['originalFile'], $f['duplicatedFile'], $newBody);
@@ -268,7 +268,7 @@ class DuplicationManager
         // duplicate acls
         foreach (['read', 'write', 'comment'] as $privilege) {
             $values = $this->wiki->services->get(AclService::class)->load(
-                $this->wiki->getPageTag(),
+                $this->wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(),
                 $privilege
             );
 

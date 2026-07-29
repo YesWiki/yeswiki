@@ -22,6 +22,7 @@ use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -126,8 +127,8 @@ class EntryController extends YesWikiController
         }
 
         // fake ->tag for the attached images
-        $oldPageTag = $this->wiki->GetPageTag();
-        $this->wiki->tag = $entryId;
+        $oldPageTag = $this->getService(PageContext::class)->getTag();
+        $this->getService(PageContext::class)->setTag($entryId);
         $renderedEntry = null;
         $message = $this->getRequest()->query->get('message', '');
         // unset $_GET['message'] to prevent infinite loop when rendering entry with textarea and {{bazarliste}}
@@ -202,7 +203,7 @@ class EntryController extends YesWikiController
         }
 
         // fake ->tag for the attached images
-        $this->wiki->tag = $oldPageTag;
+        $this->getService(PageContext::class)->setTag($oldPageTag);
         // shift stack
         array_shift($this->parentsEntries);
 
@@ -242,7 +243,7 @@ class EntryController extends YesWikiController
             'showFooter' => $showFooter,
             'currentuser' => $currentuser ?? null,
             'isUserFavorite' => $isUserFavorite ?? false,
-            'canShow' => $this->wiki->GetPageTag() != $entry['tag'], // hide if we are already in the show page
+            'canShow' => $this->getService(PageContext::class)->getTag() != $entry['tag'], // hide if we are already in the show page
             'canEdit' => !$this->hibernationService->isWikiHibernated() && $this->aclService->hasAccess('write', $entryId) && !isset($entry['read-only']),
             'canDelete' => !$this->hibernationService->isWikiHibernated() && ($this->getService(AclService::class)->isAdmin($userNameForRendering) || $this->getService(AclService::class)->isOwner($entryId)) && !isset($entry['read-only']),
             'canDuplicate' => $this->getService(AclService::class)->isAdmin($userNameForRendering) && !isset($entry['read-only']),

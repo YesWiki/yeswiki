@@ -24,7 +24,7 @@ function tokenTruncate($string, $your_desired_width)
 
 function get_filtertags_parameters_recursive($nb = 1, $tab = [])
 {
-    $filter = $GLOBALS['wiki']->GetParameter('filter' . $nb);
+    $filter = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('filter' . $nb);
 
     if (empty($filter) && $nb == 1) {
         return '<div class="alert alert-danger"><strong>' . _t('TAGS_ACTION_FILTERTAGS') . '</strong> : ' . _t('TAGS_NO_FILTERS') . '</div>' . "\n";
@@ -48,13 +48,13 @@ function get_filtertags_parameters_recursive($nb = 1, $tab = [])
         $tab[$nb]['title'] = '';
         $tab[$nb]['arraytags'] = explode(',', $explodelabel[0]);
     }
-    $toggle = $GLOBALS['wiki']->GetParameter('select' . $nb);
+    $toggle = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('select' . $nb);
     if (!empty($toggle) && $toggle == 'checkbox') {
         $tab[$nb]['toggle'] = $toggle;
     } else {
         $tab[$nb]['toggle'] = 'radio';
     }
-    $class = $GLOBALS['wiki']->GetParameter('class' . $nb);
+    $class = $GLOBALS['wiki']->services->get(YesWiki\Kernel\Service\PerformableArguments::class)->get('class' . $nb);
     if (!empty($class)) {
         $tab[$nb]['class'] = $class;
     } else {

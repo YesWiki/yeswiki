@@ -5,6 +5,8 @@ namespace YesWiki\Render\Action;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PageContext;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -48,17 +50,17 @@ class RedirectAction extends YesWikiAction implements RegisteredAction
         exemple : {{redirect page="BacASable"}}
         */
 
-        $redirPageName = $this->wiki->GetParameter('page');
+        $redirPageName = $this->getService(PerformableArguments::class)->get('page');
 
         if (!$redirPageName) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_REDIRECT') . '</strong> : ' . _t('MISSING_PAGE_PARAMETER') . '.</div>' . "\n";
         } else {
-            if ($this->wiki->GetMethod() == 'show') {
+            if ($this->getService(PageContext::class)->getMethod() == 'show') {
                 $this->wiki->services->get(LinkTracker::class)->forceAddIfNotIncluded($redirPageName);
                 if (!isset($_SESSION['redirects'])) {
                     $_SESSION['redirects'] = [];
                 }
-                $_SESSION['redirects'][] = strtolower($this->wiki->GetPageTag());
+                $_SESSION['redirects'][] = strtolower($this->getService(PageContext::class)->getTag());
 
                 if (in_array(strtolower($redirPageName), $_SESSION['redirects'])) {
                     echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_REDIRECT') . '</strong> : ' . _t('CIRCULAR_REDIRECTION_FROM_PAGE') . " $redirPageName ( "

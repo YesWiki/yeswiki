@@ -12,6 +12,7 @@ use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Kernel\Performable\RegisteredHandler;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\FlashMessageService;
+use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\LinkRenderer;
 
@@ -56,7 +57,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
         ) {
             try {
                 if ($this->wiki->services->get(CsrfTokenChecker::class)->checkToken('main', 'POST', 'csrf-token', false)) {
-                    $tag = $this->wiki->GetPageTag();
+                    $tag = $this->getService(PageContext::class)->getTag();
                     $dbService = $this->wiki->services->get(DbService::class);
                     $dbService->query("DELETE FROM {$dbService->prefixTable('links')} WHERE to_tag = '" . $dbService->escape($tag) . "'");
                 }
@@ -92,8 +93,8 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                 }
             }
 
-            if ($this->getService(PageManager::class)->isOrphaned($this->wiki->GetPageTag())) {
-                $tag = $this->wiki->GetPageTag();
+            if ($this->getService(PageManager::class)->isOrphaned($this->getService(PageContext::class)->getTag())) {
+                $tag = $this->getService(PageContext::class)->getTag();
                 if (!isset($_GET['confirme']) || !($_GET['confirme'] == 'oui')) {
                     $msg = '<form action="' . $this->getService(UrlFormatter::class)->href('deletepage', '', 'confirme=oui' . $incomingUrlParam);
                     $msg .= '" method="post" style="display: inline">' . "\n";
@@ -155,8 +156,8 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                 $msg = '<p><em>' . _t('DELETEPAGE_NOT_ORPHEANED') . "</em></p>\n";
                 $dbService = $this->wiki->services->get(DbService::class);
                 $linkedFrom = $dbService->loadAll('SELECT DISTINCT from_tag FROM ' . $dbService->prefixTable('links')
-                    . " WHERE to_tag = '" . $dbService->escape($this->wiki->GetPageTag()) . "'");
-                $msg .= '<p>' . str_replace('{tag}', $this->getService(LinkRenderer::class)->linkToPage($this->wiki->tag, '', '', 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
+                    . " WHERE to_tag = '" . $dbService->escape($this->getService(PageContext::class)->getTag()) . "'");
+                $msg .= '<p>' . str_replace('{tag}', $this->getService(LinkRenderer::class)->linkToPage($this->getService(PageContext::class)->getTag(), '', '', 0), _t('DELETEPAGE_PAGES_WITH_LINKS_TO')) . "</p>\n";
                 $msg .= "<ul>\n";
                 foreach ($linkedFrom as $page) {
                     $msg .= '<li>' . $this->getService(LinkRenderer::class)->linkToPage($page['from_tag'], '', '', 0) . "</li>\n";
@@ -166,7 +167,7 @@ class DeletepageHandler extends YesWikiHandler implements RegisteredHandler
                 // eraselink=oui will delete the page links in handlers/page/__deletepage.php
                 $msg .= '</br><form action="' . $this->getService(UrlFormatter::class)->href('deletepage', '', 'confirme=oui&eraselink=oui' . $incomingUrlParam);
                 $msg .= '" method="post" style="display: inline">' . "\n";
-                $msg .= str_replace('{tag}', $this->getService(LinkRenderer::class)->link($this->wiki->tag), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
+                $msg .= str_replace('{tag}', $this->getService(LinkRenderer::class)->link($this->getService(PageContext::class)->getTag()), _t('DELETEPAGE_CONFIRM_WHEN_BACKLINKS')) . "\n";
                 $msg .= '</br></br>';
                 $msg .= '<input type="hidden" name="csrf-token" value="' . htmlentities($csrfTokenManager->getToken('main')) . '">';
                 $msg .= '<input type="submit" value="' . _t('DELETEPAGE_DELETE') . '" class="btn btn-danger" ';

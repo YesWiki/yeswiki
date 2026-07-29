@@ -6,6 +6,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\LinkRenderer;
 
 /**
@@ -50,7 +51,7 @@ class MychangesAction extends YesWikiAction implements RegisteredAction
             $dbService = $this->wiki->services->get(DbService::class);
             $userCol = $dbService->quoteIdentifier('user');
 
-            if ($bydate = $this->wiki->GetParameter('bydate')) {
+            if ($bydate = $this->getService(PerformableArguments::class)->get('bydate')) {
                 echo '<b>' . _t('YOUR_MODIFIED_PAGES_ORDERED_BY_MODIFICATION_DATE') . ".</b><br /><br />\n";
 
                 if ($pages = $this->getService(DbService::class)->loadAll('SELECT tag, time FROM ' . $this->wiki->config['table_prefix'] . "pages WHERE $userCol = '" . $dbService->escape($this->getService(AuthenticationService::class)->getLoggedUserName()) . "' AND tag NOT LIKE 'Comment%' ORDER BY time ASC, tag ASC")) {

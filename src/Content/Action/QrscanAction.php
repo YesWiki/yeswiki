@@ -1,7 +1,8 @@
 <?php
 
 namespace YesWiki\Content\Action;
-/**
+
+/*
  * Qrscan action for yeswiki, for scanning a qrcode pair and save their relation in a bazar entry.
  *
  * @category Wiki
@@ -15,6 +16,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\PerformableArguments;
 
 class QrscanAction extends YesWikiAction implements RegisteredAction
 {
@@ -30,19 +32,19 @@ class QrscanAction extends YesWikiAction implements RegisteredAction
         $entryManager = $this->wiki->services->get(EntryManager::class);
 
         // Parameters init
-        $relation = $this->wiki->getParameter('relation');
+        $relation = $this->getService(PerformableArguments::class)->get('relation');
         if (empty($relation)) {
             $relation = $this->wiki->config['qrcode_config']['default_relation_type'];
         }
-        $entityType = $this->wiki->getParameter('entity');
+        $entityType = $this->getService(PerformableArguments::class)->get('entity');
         if (empty($entityType)) {
             $entityType = $this->wiki->config['qrcode_config']['default_entity_type'];
         }
-        $entityForm = $this->wiki->getParameter('entityform');
+        $entityForm = $this->getService(PerformableArguments::class)->get('entityform');
         if (empty($entityForm)) {
             $entityForm = $this->wiki->config['qrcode_config']['default_entity_form'];
         }
-        $speak = $this->wiki->getParameter('speak');
+        $speak = $this->getService(PerformableArguments::class)->get('speak');
         if ($speak == '0' or $speak == 'false' or $speak == 'no') {
             $speak = 'false';
         } else {

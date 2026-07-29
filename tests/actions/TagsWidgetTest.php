@@ -49,8 +49,8 @@ class TagsWidgetTest extends YesWikiTestCase
         $this->assertNotFalse($admin, 'need an existing admin user to exercise write access');
         $authenticationService->login($admin);
 
-        $wiki->tag = self::PAGE_TAG;
-        $wiki->page = $pageManager->getOne(self::PAGE_TAG);
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setTag(self::PAGE_TAG);
+        $wiki->services->get(\YesWiki\Kernel\Service\PageContext::class)->setPage($pageManager->getOne(self::PAGE_TAG));
         $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
         try {

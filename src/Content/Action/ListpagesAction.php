@@ -6,6 +6,7 @@ use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\DbService;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\LinkRenderer;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -60,13 +61,13 @@ class ListpagesAction extends YesWikiAction implements RegisteredAction
         */
 
         // retrieve parameters
-        $sort = strtolower($this->wiki->GetParameter('sort'));
-        $tree = $this->wiki->GetParameter('tree');
-        $levels = (int)$this->wiki->GetParameter('levels');
+        $sort = strtolower($this->getService(PerformableArguments::class)->get('sort'));
+        $tree = $this->getService(PerformableArguments::class)->get('tree');
+        $levels = (int)$this->getService(PerformableArguments::class)->get('levels');
         $max_levels = 7;
-        $owner = $this->wiki->GetParameter('owner');
-        $exclude = $this->wiki->GetParameter('exclude');
-        $user = $this->wiki->GetParameter('user');
+        $owner = $this->getService(PerformableArguments::class)->get('owner');
+        $exclude = $this->getService(PerformableArguments::class)->get('exclude');
+        $user = $this->getService(PerformableArguments::class)->get('user');
 
         // default values
         // use a secure $sort value for MySQL

@@ -9,6 +9,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Kernel\Service\AssetsManager;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\InclusionStack;
+use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
 /**
@@ -48,17 +49,17 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         include_once YESWIKI_SOURCE_DIR . '/src/tags.functions.php';
         $nbcartrunc = 200;
 
-        $elementwidth = $this->wiki->GetParameter('elementwidth');
+        $elementwidth = $this->getService(PerformableArguments::class)->get('elementwidth');
         if (empty($elementwidth)) {
             $elementwidth = 300;
         }
 
-        $elementoffset = $this->wiki->GetParameter('elementoffset');
+        $elementoffset = $this->getService(PerformableArguments::class)->get('elementoffset');
         if (empty($elementoffset)) {
             $elementoffset = 10;
         }
 
-        $template = $this->wiki->GetParameter('template');
+        $template = $this->getService(PerformableArguments::class)->get('template');
         if (empty($template) || !file_exists('templates/' . $template)) {
             $template = 'pages_grid_filter.twig';
         }
