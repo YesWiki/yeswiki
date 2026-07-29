@@ -40,7 +40,6 @@ use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Admin\Service\ApiService;
 use YesWiki\Content\Controller\LegacyPageController;
 use YesWiki\Content\Service\CommentService;
-use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\ReferrerService;
 use YesWiki\Content\Service\TripleStore;
@@ -62,7 +61,6 @@ use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Kernel\Service\Performer;
-use YesWiki\Kernel\Service\StringUtilService;
 use YesWiki\Kernel\Service\ThrowableFormatter;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\ActionRunner;
@@ -1033,16 +1031,6 @@ class Wiki
     }
 
     /**
-     * @deprecated Use StringUtilService::generateRandomString instead
-     */
-    public function generateRandomString(
-        int $length = 30,
-        string $charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-_*=.:,?'
-    ): string {
-        return StringUtilService::generateRandomString($length, $charset);
-    }
-
-    /**
      * @deprecated Use AssetsManager service instead
      */
     public function AddCSS($style)
@@ -1080,22 +1068,6 @@ class Wiki
     public function AddJavascriptFile($file, $first = false, $module = false)
     {
         return $this->service(AssetsManager::class)->AddJavascriptFile($file, $first, $module);
-    }
-
-    /**
-     * @deprecated Use FileManager::parseSize instead
-     */
-    public function parse_size($size)
-    {
-        return FileManager::parseSize($size);
-    }
-
-    /**
-     * @deprecated Use FileManager::uploadMaxSize instead
-     */
-    public function file_upload_max_size()
-    {
-        return $this->service(FileManager::class)->uploadMaxSize();
     }
 
     /**
@@ -1290,14 +1262,6 @@ class Wiki
         }
 
         $this->service(ThemeManager::class)->loadTemplates($metadata);
-    }
-
-    /**
-     * @deprecated Use StringUtilService::replaceRecursivelyIndexedArrays instead
-     */
-    public function replaceRecursivelyIndexedArrays(&$array1, &$array2)
-    {
-        StringUtilService::replaceRecursivelyIndexedArrays($array1, $array2);
     }
 
     /**

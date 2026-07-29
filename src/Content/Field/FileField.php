@@ -14,6 +14,7 @@ use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Content\Service\FileManager;
 
 #[\Field(['fichier'])]
 class FileField extends BazarField
@@ -55,7 +56,7 @@ class FileField extends BazarField
             return preg_match('/^\.[a-z0-9]{1,4}+$/', $ext);
         });
         $maxFieldSize = $values[self::FIELD_MAX_SIZE]
-            ? $this->getWiki()->parse_size($values[self::FIELD_MAX_SIZE])
+            ? FileManager::parseSize($values[self::FIELD_MAX_SIZE])
             : 0;
 
         // take the min size limit, excluding 0 values that mean no limit

@@ -14,6 +14,7 @@ use YesWiki\Identity\Exception\DeleteUserException;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
+use YesWiki\Kernel\Service\StringUtilService;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -59,14 +60,14 @@ class UserOperationsServiceTest extends YesWikiTestCase
 
         // create a user
         do {
-            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+            $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            $name = trim($wiki->generateRandomString(1, self::UPPER_CHARS)
-                . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+            $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
+                . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         } while (!empty($userManager->getOneByName($name)));
 
-        $password = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+        $password = StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         $userManager->create($name, $email, $password);
         $user = $userManager->getOneByName($name);
@@ -151,8 +152,8 @@ class UserOperationsServiceTest extends YesWikiTestCase
         $firstUser = $users[array_key_first($users)];
         if ($name == 'newRandom') {
             do {
-                $name = trim($wiki->generateRandomString(1, self::UPPER_CHARS)
-                    . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+                $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
+                    . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
             } while (!empty($userManager->getOneByName($name)));
         } elseif ($name == 'empty') {
             $name = '';
@@ -161,11 +162,11 @@ class UserOperationsServiceTest extends YesWikiTestCase
         }
         if ($email == 'newRandom') {
             do {
-                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+                $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
             } while (!empty($userManager->getOneByEmail($email)));
         } elseif ($email == 'newRandom2') {
             do {
-                $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@xyz.earth';
+                $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@xyz.earth';
             } while (!empty($userManager->getOneByEmail($email)));
         } elseif ($email == 'empty') {
             $email = '';
@@ -174,7 +175,7 @@ class UserOperationsServiceTest extends YesWikiTestCase
         }
         $newValues['name'] = $name;
         $newValues['email'] = $email;
-        $newValues['password'] = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+        $newValues['password'] = StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         $exceptionThrown = false;
         $userNameAlreadyExist = false;
@@ -243,18 +244,18 @@ class UserOperationsServiceTest extends YesWikiTestCase
 
         // Create a test user
         do {
-            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+            $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            $name = trim($wiki->generateRandomString(1, self::UPPER_CHARS)
-                . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+            $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
+                . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         } while (!empty($userManager->getOneByName($name)));
-        $userManager->create($name, $email, $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+        $userManager->create($name, $email, StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         $user = $userManager->getOneByName($name);
 
         // Create a group with only this user as member
         do {
-            $groupName = $wiki->generateRandomString(8, self::UPPER_CHARS);
+            $groupName = StringUtilService::generateRandomString(8, self::UPPER_CHARS);
         } while ($groupOperationsService->groupExists($groupName));
         $groupOperationsService->create($groupName, [$name]);
 
@@ -297,13 +298,13 @@ class UserOperationsServiceTest extends YesWikiTestCase
 
         // Create a second admin to be able to log in and attempt deletion
         do {
-            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+            $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
-            $name = trim($wiki->generateRandomString(1, self::UPPER_CHARS)
-                . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+            $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
+                . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         } while (!empty($userManager->getOneByName($name)));
-        $userManager->create($name, $email, $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+        $userManager->create($name, $email, StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         $targetUser = $userManager->getOneByName($name);
 
         // Put the target user as the sole member of a separate standalone group
@@ -375,27 +376,27 @@ class UserOperationsServiceTest extends YesWikiTestCase
         switch ($name) {
             case 'newRandom':
                 do {
-                    $name = trim($wiki->generateRandomString(1, self::UPPER_CHARS)
-                        . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+                    $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
+                        . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
                 } while (!empty($userManager->getOneByName($name)));
                 break;
             case 'random':
-                $name = $wiki->generateRandomString($length, self::CHARS_FOR_EMAIL);
+                $name = StringUtilService::generateRandomString($length, self::CHARS_FOR_EMAIL);
                 break;
             case 'thirdplace':
-                $name = $wiki->generateRandomString(2, self::CHARS_FOR_EMAIL) . $char .
-                    $wiki->generateRandomString($length - 2, self::CHARS_FOR_EMAIL);
+                $name = StringUtilService::generateRandomString(2, self::CHARS_FOR_EMAIL) . $char .
+                    StringUtilService::generateRandomString($length - 2, self::CHARS_FOR_EMAIL);
                 break;
             case 'begin':
-                $name = $char . $wiki->generateRandomString($length, self::CHARS_FOR_EMAIL);
+                $name = $char . StringUtilService::generateRandomString($length, self::CHARS_FOR_EMAIL);
                 break;
             default:
                 break;
         }
         do {
-            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+            $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
-        $password = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+        $password = StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         $exceptionThrown = false;
         $exceptionMessage = '';

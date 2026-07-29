@@ -13,6 +13,7 @@ use YesWiki\Identity\Service\PasswordHasherFactory;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
+use YesWiki\Kernel\Service\StringUtilService;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -48,15 +49,15 @@ class AuthenticationServiceTest extends YesWikiTestCase
     {
         $userManager = $wiki->services->get(UserManager::class);
         do {
-            $email = strtolower($wiki->generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+            $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
         } while (!empty($userManager->getOneByEmail($email)));
         do {
             // trim: UserManager::create() trims the name, so a random name with a trailing
             // space would be stored trimmed and no longer be found by getOneByName()
-            $name = trim($wiki->generateRandomString(1, self::UPPER_CHARS)
-                . $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD));
+            $name = trim(StringUtilService::generateRandomString(1, self::UPPER_CHARS)
+                . StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD));
         } while (!empty($userManager->getOneByName($name)));
-        $password = $wiki->generateRandomString(25, self::CHARS_FOR_PASSWORD);
+        $password = StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD);
 
         $userManager->create($name, $email, $password);
 

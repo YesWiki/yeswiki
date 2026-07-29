@@ -10,6 +10,7 @@ use YesWiki\Identity\Service\UserManager;
 use YesWiki\Test\Core\ForcedParameterBag;
 use YesWiki\Test\Core\YesWikiTestCase;
 use YesWiki\Wiki;
+use YesWiki\Kernel\Service\StringUtilService;
 
 require_once 'tests/YesWikiTestCase.php';
 require_once 'tests/ForcedParameterBag.php';
@@ -73,8 +74,8 @@ class PasswordForEditingServiceTest extends YesWikiTestCase
         $authenticationService = $wiki->services->get(\YesWiki\Identity\Service\AuthenticationService::class);
 
         do {
-            $name = trim($wiki->generateRandomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-                . $wiki->generateRandomString(15, 'abcdefghijklmnopqrstuvwxyz0123456789'));
+            $name = trim(StringUtilService::generateRandomString(1, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                . StringUtilService::generateRandomString(15, 'abcdefghijklmnopqrstuvwxyz0123456789'));
         } while (!empty($userManager->getOneByName($name)));
         $userManager->create($name, strtolower($name) . '@example.com', 'irrelevant-password-1234');
         $user = $userManager->getOneByName($name);

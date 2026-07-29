@@ -13,6 +13,7 @@ use YesWiki\Identity\Exception\InvalidGroupNameException;
 use YesWiki\Kernel\Exception\InvalidInputException;
 use YesWiki\Identity\Exception\UserNameDoesNotExistException;
 use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\Kernel\Service\StringUtilService;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -39,12 +40,12 @@ class GroupOperationsServiceTest extends YesWikiTestCase
     public static function dataProviderTestCreate()
     {
         $wiki = static::getWiki();
-        $invalid_group_name = $wiki->generateRandomString(5, self::INVALID_CHAR) . $wiki->generateRandomString(10);
-        $valid_group_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $new_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $invalid_group_name = StringUtilService::generateRandomString(5, self::INVALID_CHAR) . StringUtilService::generateRandomString(10);
+        $valid_group_name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $new_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
 
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
-        $user_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $user_name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
         $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
 
         // groupname, error type, members
@@ -127,14 +128,14 @@ class GroupOperationsServiceTest extends YesWikiTestCase
     public static function dataProviderTestAdd()
     {
         $wiki = static::getWiki();
-        $valid_group_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $new_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $third_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $fourth_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $not_existing_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $valid_group_name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $new_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $third_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $fourth_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $not_existing_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
 
-        $user_name = $wiki->generateRandomString(10);
-        $user_name_1 = $wiki->generateRandomString(10);
+        $user_name = StringUtilService::generateRandomString(10);
+        $user_name_1 = StringUtilService::generateRandomString(10);
 
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);
@@ -182,12 +183,12 @@ class GroupOperationsServiceTest extends YesWikiTestCase
     public static function dataProviderTestRemoveMembers()
     {
         $wiki = static::getWiki();
-        $valid_group_name = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $new_valid_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
-        $not_existing_group = $wiki->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $valid_group_name = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $new_valid_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
+        $not_existing_group = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
 
-        $user_name = $wiki->generateRandomString(10);
-        $user_name_1 = $wiki->generateRandomString(10);
+        $user_name = StringUtilService::generateRandomString(10);
+        $user_name_1 = StringUtilService::generateRandomString(10);
 
         $userOperationsService = $wiki->services->get(UserOperationsService::class);
         $userOperationsService->create(['name' => $user_name, 'email' => $valid_group_name . '@example.com', 'password' => $user_name]);

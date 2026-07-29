@@ -6,6 +6,7 @@ use PHPUnit\Framework\Attributes\CoversMethod;
 use PHPUnit\Framework\Attributes\Depends;
 use YesWiki\Identity\Service\GroupManager;
 use YesWiki\Test\Core\YesWikiTestCase;
+use YesWiki\Kernel\Service\StringUtilService;
 
 require_once 'tests/YesWikiTestCase.php';
 
@@ -25,7 +26,7 @@ class GroupManagerTest extends YesWikiTestCase
     #[Depends('testGroupManagerExisting')]
     public function testCreate(GroupManager $groupManager)
     {
-        $group_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $group_name = $wiki = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
         $groupManager->create($group_name, []);
         $this->assertTrue($groupManager->groupExists($group_name));
 
@@ -36,10 +37,10 @@ class GroupManagerTest extends YesWikiTestCase
     #[Depends('testCreate')]
     public function testaddMember(GroupManager $groupManager, string $group_name)
     {
-        $user_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $user_name = $wiki = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
         $groupManager->addMembers($group_name, [$user_name]);
         $this->assertContains($user_name, $groupManager->getMembers($group_name));
-        $user_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $user_name = $wiki = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
         $groupManager->addMembers($group_name, [$user_name]);
         $this->assertContains($user_name, $groupManager->getMembers($group_name));
 
@@ -58,16 +59,16 @@ class GroupManagerTest extends YesWikiTestCase
     #[Depends('testGroupManagerExisting')]
     public function testUpdateMember(GroupManager $groupManager)
     {
-        $group_name = $wiki = $this->getWiki()->generateRandomString(10, self::CHARS_FOR_GROUP);
+        $group_name = $wiki = StringUtilService::generateRandomString(10, self::CHARS_FOR_GROUP);
         $users = [];
         for ($i = 0; $i < 5; $i++) {
-            array_push($users, $this->getWiki()->generateRandomString(10));
+            array_push($users, StringUtilService::generateRandomString(10));
         }
         $groupManager->addMembers($group_name, $users);
         $this->assertEquals($groupManager->getMembers($group_name), $users);
         $users = [];
         for ($i = 0; $i < 2; $i++) {
-            array_push($users, $this->getWiki()->generateRandomString(10));
+            array_push($users, StringUtilService::generateRandomString(10));
         }
         $groupManager->updateMembers($group_name, $users);
         $this->assertEquals($groupManager->getMembers($group_name), $users);

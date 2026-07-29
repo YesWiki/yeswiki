@@ -13,6 +13,7 @@ use YesWiki\Core\YesWikiEventCompilerPass;
 use YesWiki\Core\YesWikiPerformableCompilerPass;
 use YesWiki\Kernel\Service\ConfigurationFileProvider;
 use YesWiki\Kernel\Service\EnvironmentConfiguration;
+use YesWiki\Kernel\Service\StringUtilService;
 
 /**
  * Owns the DI container build/compile/cache lifecycle for a Wiki instance.
@@ -97,7 +98,7 @@ class YesWikiKernel extends Kernel
 
         // yeswiki.config.php takes priority over extensions' own parameter defaults
         $config = array_replace_recursive($container->getParameterBag()->all(), $this->wiki->config);
-        $this->wiki->replaceRecursivelyIndexedArrays($config, $this->wiki->config);
+        StringUtilService::replaceRecursivelyIndexedArrays($config, $this->wiki->config);
         // environment overrides re-applied here (Init::getConfig() already applied them)
         // so they also cover extension parameters, whose defaults only exist at this point
         $config = EnvironmentConfiguration::apply($config);

@@ -59,6 +59,7 @@ use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Identity\Controller\CaptchaController;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Wiki;
+use YesWiki\Kernel\Service\StringUtilService;
 
 class ApiController extends YesWikiController
 {
@@ -259,7 +260,7 @@ class ApiController extends YesWikiController
                 $user = $userOperationsService->create([
                     'name' => $postName,
                     'email' => $postEmail,
-                    'password' => $this->wiki->generateRandomString(30),
+                    'password' => StringUtilService::generateRandomString(30),
                 ]);
                 $link = $userManager->sendPasswordRecoveryEmail($user);
                 $code = Response::HTTP_OK;
