@@ -159,6 +159,7 @@ class FormController extends YesWikiController
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption(),
                 'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
+                'entryOnlyPropertiesAvailable' => ContentTypeSchema::acceptsEntryOnlyProperties($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
             ]);
         }
 
@@ -187,6 +188,7 @@ class FormController extends YesWikiController
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
                 'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
+                'entryOnlyPropertiesAvailable' => ContentTypeSchema::acceptsEntryOnlyProperties($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
             ]);
         }
 

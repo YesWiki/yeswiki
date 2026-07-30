@@ -2,12 +2,17 @@
 
 {% block input %}
     {{ include_javascript('javascripts/yw-tags-input.js') }}
-    <div class="yw-tag-input" data-yw-tag-input
-        data-yw-tag-input-options="{{ allTags|json_encode }}">
-        {%- for tag in value|split(',') if tag|trim is not empty -%}
-            <span class="yw-tag-input__chip" data-yw-tag-input-chip data-tag="{{ tag|trim }}">{{ tag|trim }}<button type="button" class="yw-tag-input__chip-remove" data-yw-tag-input-remove aria-label="remove">&times;</button></span>
+    {# Suggestions are fetched from GET /api/tags as the visitor types. Dumping the wiki's
+       whole keyword vocabulary into every page that carries this field is what ticket 10
+       removed, so this template must not grow an options attribute again. #}
+    <div class="yw-tag-input" data-yw-tag-input>
+        {%- for tag in value|split(',')|map(t => t|trim)|filter(t => t is not empty) -%}
+            <span class="yw-tag-input__chip" data-yw-tag-input-chip data-tag="{{ tag }}">{{ tag }}<button type="button" class="yw-tag-input__chip-remove" data-yw-tag-input-remove aria-label="{{ _t('TAGS_REMOVE_TAG') }}">&times;</button></span>
         {%- endfor -%}
-        <input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search>
+        <input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search
+               autocomplete="off" placeholder="{{ _t('TAGS_ADD_TAGS') }}"
+               name="search" hx-get="{{ tagsSearchUrl }}" hx-trigger="keyup changed delay:300ms"
+               hx-include="this" hx-vals='{"perpage":8}' hx-swap="none">
         <ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
         <input type="hidden" name="{{ field.name }}" data-yw-tag-input-value value="{{ value }}">
     </div>

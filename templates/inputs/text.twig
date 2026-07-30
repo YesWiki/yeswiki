@@ -3,12 +3,13 @@
 {% block input %}
     <div class="input-group">
         <input
-            type="{{ field.subType }}"
+            {# field.type is the sub_type once validated, and "text" when none was declared -- field.subType is the raw value, which is empty on a field that never named one #}
+            type="{{ field.type }}"
             value="{{ value }}"
             id="{{ field.name }}"
             name="{{ field.name }}"
             class="yw-input input-xxlarge"
-            {% if field.subType == 'number' -%}
+            {% if field.type == 'number' -%}
               {%- if field.maxChars != '' %}max="{{ field.maxChars }}"{% endif -%}
               {%- if field.size != '' %}min="{{ field.size }}"{% endif -%}
             {%- else -%}

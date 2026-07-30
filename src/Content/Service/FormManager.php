@@ -266,6 +266,11 @@ class FormManager
             $body[ContentTypeSchema::CONTENT_TYPE] ?? null
         );
 
+        $body = ContentTypeSchema::stripInapplicableProperties(
+            $body,
+            $body[ContentTypeSchema::CONTENT_TYPE] ?? null
+        );
+
         $body['activitypub_enable'] = (string)($activitypub['enabled'] ?? '0');
         $body['activitypub_username'] = $activitypub['username'] ?? '';
         $body['activitypub_private_key'] = $activitypub['private_key'] ?? null;
@@ -435,9 +440,11 @@ class FormManager
             ContentTypeSchema::CONTENT_TYPE => $contentType,
             'template' => $this->templateToStorage($data['template'] ?? '', $contentType),
             'description' => $data['description'] ?? '',
-            // entry_title_template can never be empty (ADR-0010): the historical
-            // implicit convention (a visitor-typed bf_titre field) is its default
-            'entry_title_template' => trim((string)($data['entry_title_template'] ?? '')) ?: FormPropertiesService::DEFAULT_TITLE_TEMPLATE,
+            // entry_title_template can never be empty (ADR-0010). A built-in Content type
+            // names itself with one of its own locked fields; only a bazar form falls back
+            // to the historical implicit convention of a visitor-typed bf_titre field.
+            'entry_title_template' => trim((string)($data['entry_title_template'] ?? ''))
+                ?: (ContentTypeSchema::defaultTitleTemplate($contentType) ?? FormPropertiesService::DEFAULT_TITLE_TEMPLATE),
             'sem_template' => $data['sem_template'] ?? '',
             'sem_reverse_template' => $data['sem_reverse_template'] ?? '',
             'only_one_entry' => (isset($data['only_one_entry']) && $data['only_one_entry'] === 'Y') ? 'Y' : 'N',
@@ -457,7 +464,7 @@ class FormManager
             }
         }
 
-        return $body;
+        return ContentTypeSchema::stripInapplicableProperties($body, $contentType);
     }
 
     /**

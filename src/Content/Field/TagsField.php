@@ -4,7 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Service\TripleStore;
-use YesWiki\Search\Service\TagsManager;
+use YesWiki\Kernel\Service\UrlFormatter;
 
 #[\Field(['tags'])]
 class TagsField extends EnumField
@@ -12,7 +12,15 @@ class TagsField extends EnumField
     public function __construct(array $values, ContainerInterface $services)
     {
         parent::__construct($values, $services);
-        $this->name = $this->linkedObjectName; // hack because tags are Enums but id is not on same position than enums
+        // A tags field is an Enum whose name historically sat in the linked-object slot,
+        // because the CSV template had nowhere else to put it. A field object that names
+        // itself outright -- every JSON template since ticket 26, the Page form's
+        // `keywords` among them -- is taken at its word instead; without this, declaring
+        // a tags field with a `name` produced an input with no name at all, so its value
+        // was never posted.
+        if (!empty($this->linkedObjectName)) {
+            $this->name = $this->linkedObjectName;
+        }
         $this->maxChars = $this->maxChars ?? 255;
         $this->propertyName = $this->name;
     }
@@ -22,20 +30,26 @@ class TagsField extends EnumField
         return [$this->propertyName => ['_mode_' => 'multiple', '_type_' => 'string']];
     }
 
+    /**
+     * Keywords reach this field in two shapes: a comma-separated string on a bazar entry,
+     * whose tags field is an ordinary form field the webmaster named, and a list on a page,
+     * where they are `body.keywords` (ticket 09). Flattening here is what lets the rest of
+     * the field -- and everything that reads a field's value -- see one shape.
+     *
+     * @param array<string, mixed>|null $entry
+     *
+     * @return string|null
+     */
+    protected function getValue($entry)
+    {
+        $value = parent::getValue($entry);
+
+        return is_array($value) ? implode(',', array_filter($value, 'is_string')) : $value;
+    }
+
     protected function renderInput($entry)
     {
-        $tagsManager = $this->getService(TagsManager::class);
-
         $value = $this->getValue($entry);
-
-        $allTags = $tagsManager->getAll();
-        $existingTags = [];
-        if (is_array($allTags)) {
-            foreach ($allTags as $tag) {
-                $existingTags[] = $tag['value'];
-            }
-            sort($existingTags);
-        }
 
         if (!isset($value)) {
             if ($this->getRequest()->query->has($this->propertyName)) {
@@ -47,7 +61,8 @@ class TagsField extends EnumField
 
         return $this->render('@core/inputs/tags.twig', [
             'value' => $value,
-            'allTags' => array_combine($existingTags, $existingTags) ?: [],
+            // the widget live-searches the keyword vocabulary rather than being handed it
+            'tagsSearchUrl' => $this->getService(UrlFormatter::class)->href('', 'api/tags'),
         ]);
     }
 
@@ -65,7 +80,7 @@ class TagsField extends EnumField
         }
 
         // Add back all specified tags
-        $tags = explode(',', $value);
+        $tags = explode(',', (string)$value);
         foreach ($tags as $tag) {
             trim($tag);
             if ($tag != '') {
@@ -80,12 +95,12 @@ class TagsField extends EnumField
     {
         $value = $this->getValue($entry);
 
-        $tags = explode(',', $value);
+        $tags = explode(',', (string)$value);
 
         if (count($tags) > 0 && !empty($tags[0])) {
             sort($tags);
             $tags = array_map(function ($tag) {
-                return '<a class="tag-label label label-info" href="' . $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\UrlFormatter::class)->href('listpages', $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
+                return '<a class="tag-label label label-info" href="' . $GLOBALS['yeswikiServices']->get(UrlFormatter::class)->href('listpages', $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\PageContext::class)->getTag(), 'tags=' . urlencode(trim($tag))) . '" title="' . _t('TAGS_SEE_ALL_PAGES_WITH_THIS_TAGS') . '">' . $tag . '</a>';
             }, $tags);
 
             return $this->render('@core/fields/tags.twig', [

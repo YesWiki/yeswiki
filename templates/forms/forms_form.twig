@@ -187,6 +187,10 @@
   </div>
 
   <div id="collapseFour" class="yw-collapse">
+    {# Account creation and the bookmarklet describe visitor submissions to a webmaster's
+       form; a built-in Content type has no such thing, and FormManager drops these
+       properties for one, so it must not offer them either (ticket 10). #}
+    {% if entryOnlyPropertiesAvailable %}
     {# ---- Account creation (entry_creates_user) ---- #}
     <div class="yw-form-group">
       <label>
@@ -246,6 +250,8 @@
         <input class="yw-input" name="entry_bookmarklet[text_field]" type="text" value="{{ form.entry_bookmarklet.text_field ?? '' }}" />
       </div>
     </div>
+
+    {% endif %}
 
     <div class="yw-form-group">
       <label class="yw-form-label">

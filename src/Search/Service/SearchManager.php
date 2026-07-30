@@ -3,12 +3,15 @@
 namespace YesWiki\Search\Service;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\Guard;
@@ -23,6 +26,12 @@ class SearchManager
 
     public const MISSING_PROPERTY = '_MISSING_PROPERTY_';
     public const MISSING_FIELD = '_MISSING_FIELD_';
+
+    /** Result column carrying each row's `TYPE_URI` triple value (empty when untyped). */
+    private const CONTENT_TRIPLE_COLUMN = 'yw_content_triple';
+
+    /** @var array<string, string>|null memoized triple value => describing form id */
+    private ?array $formIdsByTriple = null;
 
     public function __construct(
         ContainerInterface $container,
@@ -516,6 +525,95 @@ class SearchManager
     }
 
     /**
+     * Which form describes a row of each built-in Content type, keyed by the row's
+     * `TYPE_URI` triple value -- the empty key being the untyped rows, which are pages.
+     *
+     * @return array<string, string>
+     */
+    private function formIdsByTriple(): array
+    {
+        if ($this->formIdsByTriple === null) {
+            $formManager = $this->container->get(FormManager::class);
+            $this->formIdsByTriple = [];
+            foreach ([
+                '' => ContentTypeSchema::TYPE_PAGE,
+                UserManager::TRIPLES_USER_TYPE => ContentTypeSchema::TYPE_USER,
+                FileManager::TRIPLES_FILE_TYPE => ContentTypeSchema::TYPE_FILE,
+            ] as $tripleValue => $contentType) {
+                $form = $formManager->getByContentType($contentType);
+                if ($form !== null) {
+                    $this->formIdsByTriple[(string)$tripleValue] = (string)$form['id'];
+                }
+            }
+        }
+
+        return $this->formIdsByTriple;
+    }
+
+    /** A predicate matching the rows carrying a given `TYPE_URI` triple. */
+    private function typedAs(string $tripleValue): string
+    {
+        return 'EXISTS (SELECT 1 FROM ' . $this->dbService->prefixTable('triples') . ' t'
+            . ' WHERE t.resource = p.tag'
+            . " AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'"
+            . " AND t.value = '" . $this->dbService->escape($tripleValue) . "')";
+    }
+
+    /**
+     * The predicate selecting the rows that belong to these forms.
+     *
+     * Which rows a form owns is decided by its **Content type** (ticket 10), not by a
+     * column: a bazar form owns the `fiche_bazar` rows carrying its id, the User form owns
+     * the rows marked as users, the File form the ones marked as files, and the Page form
+     * owns the *untyped* rows -- carrying no type triple at all is exactly what makes a row
+     * a page. Reading a form's id out of `body.form_id` only ever worked for bazar entries,
+     * which is why a list of Pages came back empty however it was written.
+     *
+     * With no form filter at all, a search means what it has always meant: every bazar
+     * entry in the wiki.
+     *
+     * @param array<array-key, int> $formIds
+     */
+    private function rowsBelongingTo(array $formIds): string
+    {
+        if (empty($formIds)) {
+            return $this->typedAs(EntryManager::TRIPLES_ENTRY_ID);
+        }
+
+        $forms = $this->container->get(FormManager::class)->getMany($formIds);
+
+        $idsByContentType = [];
+        foreach ($formIds as $formId) {
+            $contentType = $forms[$formId][ContentTypeSchema::CONTENT_TYPE] ?? ContentTypeSchema::TYPE_ENTRY;
+            $idsByContentType[(string)$contentType][] = $formId;
+        }
+
+        $clauses = [];
+        foreach ($idsByContentType as $contentType => $ids) {
+            switch ($contentType) {
+                case ContentTypeSchema::TYPE_PAGE:
+                    $clauses[] = 'NOT EXISTS (SELECT 1 FROM ' . $this->dbService->prefixTable('triples') . ' t'
+                        . ' WHERE t.resource = p.tag'
+                        . " AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "')";
+                    break;
+                case ContentTypeSchema::TYPE_USER:
+                    $clauses[] = $this->typedAs(UserManager::TRIPLES_USER_TYPE);
+                    break;
+                case ContentTypeSchema::TYPE_FILE:
+                    $clauses[] = $this->typedAs(FileManager::TRIPLES_FILE_TYPE);
+                    break;
+                default:
+                    $clauses[] = '(' . $this->typedAs(EntryManager::TRIPLES_ENTRY_ID)
+                        . ' AND ' . $this->dbService->jsonExtract('body', '$.form_id')
+                        . ' IN (' . implode(',', array_map(fn ($formId) => "'" . (int)$formId . "'", $ids)) . '))';
+                    break;
+            }
+        }
+
+        return count($clauses) === 1 ? $clauses[0] : '(' . implode(' OR ', $clauses) . ')';
+    }
+
+    /**
      * Return the request for searching entries in database.
      *
      * @param array &$params
@@ -546,8 +644,6 @@ class SearchManager
         $vQueries = $this->parseQuery($params['queries']);
 
         // Limit the request to the specified form IDs
-
-        $vIDsRequest = '';
 
         if (!empty($params['formsIds'])) {
             $vFormIDs = $params['formsIds'];
@@ -586,13 +682,11 @@ class SearchManager
                     return $pID !== null;
                 },
             );
-
-            $vIDsRequest .= $this->dbService->jsonExtract('body', '$.form_id') . ' IN (' . join(',', array_map(function ($pFormID) {
-                return '\'' . $pFormID . '\'';
-            }, $vFormIDs)) . ')';
         } else {
             $vFormIDs = [];
         }
+
+        $vIDsRequest = $this->rowsBelongingTo($vFormIDs);
         // Limit the request depending on the date
 
         $vPeriodRequest = '';
@@ -797,6 +891,12 @@ class SearchManager
         = [
             'p.*',
             $this->dbService->jsonExtract('body', '$.form_id') . ' AS ' . $this->renameJSONPathVariable('form_id'),
+            // the row's Content type, so search() can tell which form describes a row that
+            // carries no form_id of its own -- a page, a user, a file (ticket 10)
+            '(SELECT t.value FROM ' . $this->dbService->prefixTable('triples') . ' t'
+                . ' WHERE t.resource = p.tag'
+                . " AND t.property = '" . $this->dbService->escape(TripleStore::TYPE_URI) . "'"
+                . ' LIMIT 1) AS ' . self::CONTENT_TRIPLE_COLUMN,
         ];
 
         // - Extract all fields ("single" and "multiple" mode)
@@ -938,10 +1038,9 @@ class SearchManager
                                     . 'SELECT '
                                         . $vSelectRequest . ' '
                                     . 'FROM ' . $this->dbService->prefixTable('pages') . ' p '
-                                    . 'JOIN ' . $this->dbService->prefixTable('triples') . ' t ON '
-                                        . 't.resource = p.tag AND '
-                                        . 't.value = \'' . $this->container->get(EntryManager::class)::TRIPLES_ENTRY_ID . '\' AND '
-                                        . 't.property = \'http://outils-reseaux.org/_vocabulary/type\' '
+                                    // no type join here: which rows belong to the searched
+                                    // forms is $vIDsRequest's business, because it depends
+                                    // on their Content type -- see rowsBelongingTo()
                                     . 'WHERE '
                                         . ($applyOnAllRevisions ? '' : 'latest=\'Y\' AND ')
                                         . 'p.comment_on = \'\''
@@ -1048,6 +1147,19 @@ class SearchManager
             // raw SQL rows, so the bodies are still the stored JSON text -- decode before
             // handing them to anything that expects the one shape (ticket 09)
             $page['body'] = PageBody::decode($page['body'] ?? null);
+            // a page, a user or a file carries no form_id: which form describes it is
+            // decided by its Content type (ticket 10). Say so here, once, so that
+            // everything downstream reads a row the one way.
+            if (!isset($page['body']['form_id'])) {
+                $formId = $this->formIdsByTriple()[(string)($page[self::CONTENT_TRIPLE_COLUMN] ?? '')] ?? null;
+                if ($formId === null) {
+                    continue;
+                }
+                $page['body']['form_id'] = $formId;
+                // ... and its tag is the row's, not something the body repeats: only a
+                // bazar entry stamps its own tag into its body
+                $page['body']['tag'] = $page['tag'];
+            }
             // save owner to reduce sql calls
             $vPageManager->cacheOwner($page);
             // not possible to init the Guard in the constructor because of circular reference problem

@@ -2,10 +2,12 @@
 
 namespace YesWiki\Content\Handler;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
@@ -155,31 +157,98 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             // we use die so that the script stop there and the default handler of wiki isn't called
             $this->getService(Redirector::class)->terminate($plugin_output_new);
         }
+    }
 
-        // get services
-        $aclService = $this->getService(AclService::class);
-        $tagsManager = $this->getService(TagsManager::class);
+    /**
+     * The Page form's fields, split around the one holding the markup.
+     *
+     * A page is a form like any other since ticket 10: its title, its keywords and
+     * whatever else a webmaster added to the Page form are ordinary fields, edited by
+     * their own inputs and subject to the ordinary Field ACL. `content` is the one
+     * exception -- the ACeditor renders it -- so the fields declared before and after it
+     * in the template bracket the editor, which lets the designer lay this page out the
+     * same way it lays an entry out.
+     *
+     * @return array{before: list<BazarField>, after: list<BazarField>}
+     */
+    private function pageFormFields(): array
+    {
+        $split = ['before' => [], 'after' => []];
 
-        if (
-            !$this->params->get('hide_keywords')
-            && $aclService->hasAccess('write')
-        ) {
-            // save new tag if authorized
-            $post = $this->getRequest()->request;
-            if (
-                $post->get('submit') == InputFilter::EDIT_PAGE_SUBMIT_VALUE
-                && $post->has('pagetags')
-                && $post->get('antispam') == 1
-            ) {
-                $tagsManager->save($this->getService(PageContext::class)->getTag(), stripslashes($post->get('pagetags')));
+        $form = $this->getService(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_PAGE);
+        if ($form === null) {
+            return $split;
+        }
+
+        $side = 'before';
+        foreach ($form['prepared'] ?? [] as $field) {
+            if (!$field instanceof BazarField) {
+                continue;
             }
+            if ($field->getPropertyName() === PageBody::CONTENT) {
+                $side = 'after';
+                continue;
+            }
+            if ($field->getPropertyName() === PageBody::KEYWORDS && $this->params->get('hide_keywords')) {
+                continue;
+            }
+            $split[$side][] = $field;
+        }
 
-            // display: the live-search tag-input widget (javascripts/yw-tags-input.js)
-            // queries GET /api/tags itself as the user types -- no tag list to dump here
-            if ($aclService->hasAccess('read')) {
-                $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/yw-tags-input.js');
+        return $split;
+    }
+
+    /**
+     * The rendered inputs of those fields, filled from the page's current body.
+     *
+     * @param list<BazarField>     $fields
+     * @param array<string, mixed> $body
+     *
+     * @return list<string>
+     */
+    private function renderPageFields(array $fields, array $body): array
+    {
+        $entry = array_merge($body, ['tag' => $this->getService(PageContext::class)->getTag()]);
+
+        return array_values(array_filter(array_map(
+            fn (BazarField $field) => (string)$field->renderInputIfPermitted($entry),
+            $fields
+        )));
+    }
+
+    /**
+     * Merge the posted values of the Page form's fields into the body being saved.
+     *
+     * Keywords are the one field that does not simply land in the body as posted: ticket
+     * 09 made `body.keywords` a list of keywords, with the tag triples a derived index
+     * rebuilt from it -- see the reindex() call at the save site.
+     *
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, mixed>
+     */
+    private function applyPostedPageFields(array $body): array
+    {
+        $posted = $this->getRequest()->request->all();
+        $posted['tag'] = $this->getService(PageContext::class)->getTag();
+
+        $fields = $this->pageFormFields();
+        foreach (array_merge($fields['before'], $fields['after']) as $field) {
+            if ($field->getPropertyName() === PageBody::KEYWORDS) {
+                $keywords = TagsManager::parseList((string)($posted[PageBody::KEYWORDS] ?? ''));
+                if (empty($keywords)) {
+                    unset($body[PageBody::KEYWORDS]);
+                } else {
+                    $body[PageBody::KEYWORDS] = $keywords;
+                }
+                continue;
+            }
+            foreach ($field->formatValuesBeforeSaveIfEditable($posted) as $key => $value) {
+                $body[$key] = $value;
             }
         }
+
+        return $body;
     }
 
     /**
@@ -190,40 +259,6 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     private function emitAfter(string $plugin_output_new): string
     {
         ob_start();
-
-        // merged from handlers/page/edit__.php (ticket 06: core does not hook itself)
-        $params = $this->getService(ParameterBagInterface::class);
-        if (!$params->get('hide_keywords') && $this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
-            // on recupere les tags de la page courante
-            $tagsManager = $this->getService(TagsManager::class);
-            $tabtagsexistants = $tagsManager->getAll($this->getService(PageContext::class)->getTag());
-            $tagspage = array_unique(array_column($tabtagsexistants, 'value'));
-            sort($tagspage);
-
-            $chips = '';
-            foreach ($tagspage as $tag) {
-                $escapedTag = htmlspecialchars(stripslashes($tag), ENT_QUOTES);
-                $chips .= '<span class="yw-tag-input__chip" data-yw-tag-input-chip data-tag="' . $escapedTag . '">'
-                    . $escapedTag
-                    . '<button type="button" class="yw-tag-input__chip-remove" data-yw-tag-input-remove aria-label="' . _t('TAGS_REMOVE_TAG') . '">&times;</button>'
-                    . '</span>';
-            }
-
-            $searchUrl = $this->getService(UrlFormatter::class)->href('', 'api/tags');
-            $html = '
-        	<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#tags"/></svg> <strong>' . _t('TAGS_TAGS') . '</strong>
-        	<div class="yw-tag-input" data-yw-tag-input>' . $chips . '
-        		<input type="text" class="yw-input yw-tag-input__search" data-yw-tag-input-search
-        		       name="search" autocomplete="off" placeholder="' . _t('TAGS_ADD_TAGS') . '"
-        		       hx-get="' . $searchUrl . '" hx-trigger="keyup changed delay:300ms" hx-include="this" hx-vals=\'{"perpage":8}\' hx-swap="none">
-        		<ul class="yw-suggestions" data-yw-tag-input-suggestions hidden></ul>
-        		<input type="hidden" name="pagetags" data-yw-tag-input-value value="' . htmlspecialchars(implode(',', $tagspage), ENT_QUOTES) . '">
-        	</div>
-            <input type="hidden" class="antispam" name="antispam" value="0">';
-
-            $target = '<div class="tags-container">';
-            $plugin_output_new = str_replace($target, $target . $html, $plugin_output_new);
-        }
 
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             // Edition
@@ -350,6 +385,17 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
             $cancelUrl = addslashes($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
 
+            // the Page form's own fields (ticket 10). Once the form has been sent back
+            // they take the posted values, so a preview or an edit conflict re-renders
+            // what was typed rather than what is stored; before that, the stored body is
+            // all there is -- reading the posted values of a form nobody submitted would
+            // overwrite every field with its default.
+            $pageFields = $this->pageFormFields();
+            $previousBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
+            $editedBody = $submit === false
+                ? $previousBody
+                : $this->applyPostedPageFields($previousBody);
+
             // PREVIEW
             if ($submit == 'preview') {
                 $temp = $this->getService(InclusionStack::class)->replace(); // a priori, ça ne sert à rien, mais on ne sait jamais...
@@ -362,6 +408,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'preview' => true,
                     'bodyPreview' => $this->getService(MarkdownFormatterService::class)->format($body),
                     'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
+                    'fieldsBeforeContent' => $this->renderPageFields($pageFields['before'], $editedBody),
+                    'fieldsAfterContent' => $this->renderPageFields($pageFields['after'], $editedBody),
                 ]);
                 $this->getService(InclusionStack::class)->replace($temp);
             } else {
@@ -372,18 +420,34 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
                 if ($submit == InputFilter::EDIT_PAGE_SUBMIT_VALUE) {
                     // SAVE AND REDIRECT
-                    $body = str_replace("\r", '', $body);
-                    // teste si la nouvelle page est differente de la précédente
-                    if (isset($this->getService(PageContext::class)->getPage()['body']) && rtrim($body) == rtrim(PageBody::content($this->getService(PageContext::class)->getPage()['body']))) {
+                    $body = rtrim(str_replace("\r", '', $body));
+
+                    // the editor edits prose, which is one attribute of the page's body
+                    // (ticket 09); the Page form's other fields -- title, keywords, and
+                    // whatever the webmaster added -- come from their own inputs
+                    $newBody = $editedBody;
+                    $newBody[PageBody::CONTENT] = $body;
+
+                    // "nothing changed" now means the whole body, not just the markup:
+                    // retitling a page without touching its prose is a real change
+                    $unchanged = !empty($previousBody) && PageBody::equals(
+                        array_merge($previousBody, [PageBody::CONTENT => rtrim(PageBody::content($previousBody))]),
+                        $newBody
+                    );
+
+                    if ($unchanged) {
                         $this->getService(FlashMessageService::class)->setMessage(_t('EDIT_NO_CHANGE_MSG'));
                         $this->getService(Redirector::class)->redirect($this->getService(UrlFormatter::class)->href(testUrlInIframe()));
                     } else {
-                        // add page (revisions). The editor edits prose, which is one
-                        // attribute of the page's body (ticket 09) -- the rest of the body
-                        // (keywords, webmaster fields) rides along untouched.
-                        $newBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
-                        $newBody[PageBody::CONTENT] = $body;
+                        // add page (revisions)
                         $this->getService(PageManager::class)->save($this->getService(PageContext::class)->getTag(), $newBody, !empty($this->getService(PageContext::class)->getPage()['comment_on']) ? $this->getService(PageContext::class)->getPage()['comment_on'] : '');
+
+                        // the keyword index is derived from the body it was just saved
+                        // with, never the other way round (ticket 09)
+                        $this->getService(TagsManager::class)->reindex(
+                            $this->getService(PageContext::class)->getTag(),
+                            TagsManager::keywordsOf(['body' => $newBody])
+                        );
 
                         // now we render it internally so we can write the updated link table.
                         $page = $this->getService(PageManager::class)->getOne($this->getService(PageContext::class)->getTag());
@@ -418,6 +482,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
                         'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
                         'preview' => false,
+                        'fieldsBeforeContent' => $this->renderPageFields($pageFields['before'], $editedBody),
+                        'fieldsAfterContent' => $this->renderPageFields($pageFields['after'], $editedBody),
                     ]);
                 }
             }

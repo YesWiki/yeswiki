@@ -52,7 +52,7 @@ class ExternalTagsField extends TagsField
 
         $value = $this->getValue($entry);
 
-        $tags = explode(',', $value);
+        $tags = explode(',', (string)$value);
 
         if (count($tags) > 0 && !empty($tags[0])) {
             sort($tags);

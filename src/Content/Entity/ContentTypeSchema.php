@@ -66,6 +66,67 @@ class ContentTypeSchema
         ],
     ];
 
+    /**
+     * Which locked field names a Content of this type -- its `entry_title_template`
+     * (ADR-0010) when the form has never been configured.
+     *
+     * An ordinary bazar form falls back to the historical `{{bf_titre}}` convention because
+     * that is the field its webmaster is likely to have; a built-in type has no such doubt,
+     * since the naming field is one of its own locked fields.
+     *
+     * @var array<string, string>
+     */
+    private const TITLE_TEMPLATES = [
+        self::TYPE_PAGE => '{{title}}',
+        self::TYPE_USER => '{{username}}',
+        self::TYPE_FILE => '{{original_filename}}',
+    ];
+
+    /**
+     * Form properties (ADR-0010) that only mean anything on an ordinary bazar form.
+     *
+     * "Submitting an entry creates a user account" and "install a bookmarklet that files
+     * a web page as an entry" describe visitor submissions to a webmaster's form. A page,
+     * an account and an uploaded file are not submitted that way -- the User form *is*
+     * the accounts -- so these are not options a built-in type gets to have wrong.
+     */
+    private const ENTRY_ONLY_PROPERTIES = ['entry_creates_user', 'entry_bookmarklet'];
+
+    public static function acceptsEntryOnlyProperties(?string $contentType): bool
+    {
+        return !isset(self::LOCKED[(string)$contentType]);
+    }
+
+    /**
+     * Drop the properties a Content type cannot answer for.
+     *
+     * Applied on read as well as on write, for the same reason locked fields are: a body
+     * can arrive carrying one by a route that never came through this service, and a form
+     * that presents an option it will not honour is worse than one that hides it.
+     *
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, mixed>
+     */
+    public static function stripInapplicableProperties(array $body, ?string $contentType): array
+    {
+        if (self::acceptsEntryOnlyProperties($contentType)) {
+            return $body;
+        }
+
+        foreach (self::ENTRY_ONLY_PROPERTIES as $property) {
+            unset($body[$property]);
+        }
+
+        return $body;
+    }
+
+    /** The starting `entry_title_template` of a built-in type, or null for a bazar form. */
+    public static function defaultTitleTemplate(?string $contentType): ?string
+    {
+        return self::TITLE_TEMPLATES[(string)$contentType] ?? null;
+    }
+
     /** @return list<string> */
     public static function types(): array
     {

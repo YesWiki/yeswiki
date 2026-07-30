@@ -19,11 +19,18 @@
 
   <input type="hidden" name="previous" value="{{ previous }}" />
 
+  {# The Page form's own fields (ticket 10). Whatever the webmaster declared before the
+     `content` field renders above the editor and whatever comes after renders below, so
+     the designer decides this page's layout the same way it decides an entry's. #}
+  {% for input in fieldsBeforeContent %}{{ input|raw }}{% endfor %}
+
   {% if preview %}
     <input type="hidden" name="body" value="{{ body|raw }}" />
   {% else %}
     {{ renderAction('aceditor', { saveButton: true, name: 'body', value: body })|raw }}
   {% endif %}
+
+  {% for input in fieldsAfterContent %}{{ input|raw }}{% endfor %}
 
   {% if request.get.newpage is same as '1' and request.get.theme is not empty %}
     <input type="hidden" name="newpage" value="1"/>
@@ -45,10 +52,6 @@
       {% endif %}
     {% endfor %}
   {% endif %}
-
-  {# Filled by handlers/page/edit__.php #}
-  {# TODO: stop using all those edit__, and put directly the code here #}
-  <div class="tags-container"></div>
 
   <div class="form-actions">
     {# Save Button #}

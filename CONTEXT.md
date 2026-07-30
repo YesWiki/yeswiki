@@ -9,7 +9,7 @@ Anything stored as a row in the `pages` table: an ordinary wiki page, a form def
 _Avoid_: Page (when the type could be a form or user), record, entity, "type column" (it's a triple, not a column).
 
 **Content type**:
-Which kind of Content a row is: `entry`, `page`, `user`, `file` (plus `liste`). Declared per row by the `TripleStore::TYPE_URI` triple, and named on a form's body by `content_type` (`ContentTypeSchema`) to say which core structure that form describes. Page, User and File are forms like any other — same designer, same template, same storage (ADR-0011).
+Which kind of Content a row is: `entry`, `page`, `user`, `file` (plus `liste`). Declared per row by the `TripleStore::TYPE_URI` triple, and named on a form's body by `content_type` (`ContentTypeSchema`) to say which core structure that form describes. Page, User and File are forms like any other — same designer, same template, same storage (ADR-0011). A row of an *untyped* page carries no triple at all: being untyped is what makes it a page, which is how a search selects the Page form's rows (they carry no `form_id` either). The type also decides how a Content of it is named and which Form properties apply to it.
 _Avoid_: "nature" (the retired table), "kind", treating `entry` as the only type with a template.
 
 **Locked field**:
@@ -41,7 +41,7 @@ The JSON array of field objects stored under `template` in a form's body — the
 _Avoid_: `***` syntax (legacy, read-only), `bn_template` (renamed), "prepared json" (ambiguous — see Prepared fields), pseudo-field / special field (retired concept).
 
 **Form property**:
-A named key in a form's body holding form-level configuration: identity (`id`, `label`, `description`, `lang`), behavior (`entry_title_template`, `entry_read_access`, `entry_write_access`, `entry_comment_access`, `entry_permit_activate_comments`, `entry_creates_user`, `entry_bookmarklet`), presentation (`entry_metadatas`), and the legacy-carried `sem_*`, `only_one_entry*`, `activitypub_*`, `condition`. Plain-English names; the `bn_` prefix is retired.
+A named key in a form's body holding form-level configuration: identity (`id`, `label`, `description`, `lang`), behavior (`entry_title_template`, `entry_read_access`, `entry_write_access`, `entry_comment_access`, `entry_permit_activate_comments`, `entry_creates_user`, `entry_bookmarklet`), presentation (`entry_metadatas`), and the legacy-carried `sem_*`, `only_one_entry*`, `activitypub_*`, `condition`. Plain-English names; the `bn_` prefix is retired. Which ones apply depends on the Content type: `entry_creates_user` and `entry_bookmarklet` describe visitor submissions, so a built-in type drops them (on read as well as on write) and the designer does not offer them; `entry_title_template` defaults to one of the type's own locked fields rather than to the bazar `{{bf_titre}}` convention.
 _Avoid_: `bn_*` keys (renamed), pseudo-fields (form behavior stored as fake template fields — retired).
 
 **Field role**:
