@@ -66,6 +66,17 @@ class TagsField extends EnumField
         ]);
     }
 
+    /**
+     * The keyword index is keyed by the Content's tag, so the tag has to exist before this
+     * field can write it. Without this, creating a Content wrote every keyword against an
+     * empty resource -- junk rows in `triples`, and keywords that stayed unindexed until
+     * the next edit, which is the first time the tag was already there.
+     */
+    public function requireIDFiche(): bool
+    {
+        return true;
+    }
+
     public function formatValuesBeforeSave($entry)
     {
         // TODO use TagsManager instead of TripleStore

@@ -1,0 +1,150 @@
+<?php
+
+namespace YesWiki\Test\Content\Service;
+
+use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Service\ContentCreator;
+use YesWiki\Content\Service\ContentTypeResolver;
+use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\PageManager;
+use YesWiki\Content\Service\TripleStore;
+use YesWiki\Identity\Service\AclService;
+use YesWiki\Identity\Service\AuthenticationService;
+use YesWiki\Identity\Service\UserManager;
+use YesWiki\Search\Service\TagsManager;
+use YesWiki\Test\Core\YesWikiTestCase;
+
+require_once 'tests/YesWikiTestCase.php';
+
+/**
+ * Creating a Content by filling in the form that describes it (ticket 13).
+ *
+ * Ticket 10 made Page, User and File forms; until this, the one thing you could not do
+ * with those forms was create one. What the tests pin down is that creation goes through
+ * the type's own persistence and not through the entry path: a page comes out with no
+ * type triple (carrying none is what makes it a page) and its keywords indexed, and an
+ * account comes out with everything signup gives it -- hashed password, self ownership,
+ * a write ACL that is not the wiki's `*` default.
+ */
+class ContentCreationTest extends YesWikiTestCase
+{
+    private const PAGE_TITLE = 'Une page née du formulaire';
+    private const ACCOUNT_NAME = 'ContentCreationTestAccount';
+
+    /** @var string[] */
+    private static array $createdTags = [];
+
+    public static function tearDownAfterClass(): void
+    {
+        $pageManager = self::getWiki()->services->get(PageManager::class);
+        foreach (self::$createdTags as $tag) {
+            $pageManager->deleteOrphaned($tag);
+        }
+    }
+
+    /** @return array<string, mixed> */
+    private function builtInForm(string $contentType): array
+    {
+        $form = $this->getWiki()->services->get(FormManager::class)->getByContentType($contentType);
+        $this->assertNotNull($form, "the {$contentType} form should exist -- run ./yeswicli migrate");
+
+        return $form;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
+    private function createFrom(string $contentType, array $data): array
+    {
+        $form = $this->builtInForm($contentType);
+        $created = $this->getWiki()->services->get(ContentCreator::class)
+            ->create((string)$form['id'], array_merge(['antispam' => '1'], $data));
+        self::$createdTags[] = (string)$created['tag'];
+
+        return $created;
+    }
+
+    public function testThePageFormCreatesAPageAndNotAnEntry(): void
+    {
+        $created = $this->createFrom(ContentTypeSchema::TYPE_PAGE, [
+            'title' => self::PAGE_TITLE,
+            'content' => 'du contenu écrit dans le formulaire',
+            'keywords' => 'formulaire, page',
+        ]);
+
+        $tag = (string)$created['tag'];
+        $this->assertNotSame('', $tag);
+
+        $resolver = $this->getWiki()->services->get(ContentTypeResolver::class);
+        $this->assertSame(
+            ContentTypeSchema::TYPE_PAGE,
+            $resolver->typeOf($tag),
+            'a page carries no type triple at all -- that absence is what makes it a page'
+        );
+
+        $page = $this->getWiki()->services->get(PageManager::class)->getOne($tag, null, true, true);
+        $this->assertIsArray($page);
+        $body = $page['body'] ?? [];
+        $this->assertSame(self::PAGE_TITLE, $body[PageBody::TITLE] ?? null);
+        $this->assertSame('du contenu écrit dans le formulaire', $body[PageBody::CONTENT] ?? null);
+        $this->assertSame(['formulaire', 'page'], $body[PageBody::KEYWORDS] ?? null, 'a page stores its keywords as a list');
+        $this->assertArrayNotHasKey('form_id', $body, 'a page does not name a form: its type triple does');
+    }
+
+    public function testThePageFormIndexesTheKeywordsItWasGiven(): void
+    {
+        $created = $this->createFrom(ContentTypeSchema::TYPE_PAGE, [
+            'title' => 'Une page indexée',
+            'content' => 'peu importe',
+            'keywords' => 'indexation',
+        ]);
+
+        $triples = $this->getWiki()->services->get(TripleStore::class)
+            ->getAll((string)$created['tag'], TagsManager::TAG_PROPERTY, '', '');
+        $this->assertContains('indexation', array_column($triples, 'value'), 'triples hold the derived keyword index');
+    }
+
+    public function testTheUserFormCreatesAnAccountWithEverySignupGuarantee(): void
+    {
+        $wiki = $this->getWiki();
+        $userManager = $wiki->services->get(UserManager::class);
+        if ($userManager->getOneByName(self::ACCOUNT_NAME)) {
+            $this->markTestSkipped('an account of that name already exists on this wiki');
+        }
+
+        $created = $this->createFrom(ContentTypeSchema::TYPE_USER, [
+            'username' => self::ACCOUNT_NAME,
+            'password' => 'un-mot-de-passe-solide',
+            'email' => 'content-creation-test@example.org',
+        ]);
+
+        $tag = (string)$created['tag'];
+        $user = $userManager->getOneByName($tag);
+        $this->assertNotNull($user, 'the account must be an account, not just a page');
+
+        $this->assertTrue(
+            $wiki->services->get(AuthenticationService::class)->checkPassword('un-mot-de-passe-solide', $user),
+            'the password is hashed once, by UserManager -- hashing it twice would lock the account out'
+        );
+        $this->assertSame($tag, $wiki->services->get(PageManager::class)->getOne($tag, null, true, true)['owner'] ?? null);
+
+        $writeAcl = $wiki->services->get(AclService::class)->load($tag, 'write');
+        $this->assertStringContainsString('@admins', $writeAcl['list'] ?? '', "an account must not inherit the wiki's default write ACL");
+    }
+
+    public function testTheFileFormRefusesUntilItCanCarryTheBytes(): void
+    {
+        $this->assertFalse(
+            ContentCreator::supports(ContentTypeSchema::TYPE_FILE),
+            'a File row whose stored_filename names nothing on disk would 404 on the first click'
+        );
+        $this->assertTrue(ContentCreator::supports(ContentTypeSchema::TYPE_PAGE));
+        $this->assertTrue(ContentCreator::supports(null), 'an ordinary bazar form is unaffected');
+
+        $this->expectException(\Exception::class);
+        $this->createFrom(ContentTypeSchema::TYPE_FILE, ['original_filename' => 'rien.txt']);
+    }
+}

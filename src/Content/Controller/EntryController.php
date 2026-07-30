@@ -5,10 +5,12 @@ namespace YesWiki\Content\Controller;
 use DateTime;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
+use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ConditionsCheckingField;
 use YesWiki\Content\Field\LabelField;
+use YesWiki\Content\Service\ContentCreator;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\FieldRoleResolver;
@@ -299,7 +301,7 @@ class EntryController extends YesWikiController
             $post = $this->getRequest()->request;
             try {
                 if ($state && $post->has('valider')) {
-                    $entry = $this->entryManager->create($formId, $post->all());
+                    $entry = $this->getService(ContentCreator::class)->create($formId, $post->all());
                     $errors = $this->eventDispatcher->yesWikiDispatch('entry.created', [
                         'id' => $entry['tag'],
                         'data' => $entry,
@@ -310,17 +312,7 @@ class EntryController extends YesWikiController
                         : (
                             !empty($redirectUrl)
                             ? $redirectUrl
-                            : $this->getService(UrlFormatter::class)->href(
-                                testUrlInIframe(),
-                                '',
-                                [
-                                    'vue' => 'consulter',
-                                    'action' => 'voir_fiche',
-                                    'tag' => $entry['tag'],
-                                    'message' => 'ajout_ok',
-                                ],
-                                false,
-                            )
+                            : $this->createdContentUrl($form, $entry['tag'])
                         );
                     header('Location: ' . $redirectUrl);
                     $this->getService(Redirector::class)->terminate();
@@ -352,6 +344,34 @@ class EntryController extends YesWikiController
             'imageBigWidth' => $this->config['image-big-width'],
             'imageBigHeight' => $this->config['image-big-height'],
         ]);
+    }
+
+    /**
+     * Where a visitor lands after creating a Content. `voir_fiche` renders a bazar entry;
+     * a page and an account are their own URL, so a built-in type goes there instead of to
+     * a view that would have to pretend it was an entry (ticket 13).
+     *
+     * @param array<string, mixed> $form
+     */
+    private function createdContentUrl(array $form, string $tag): string
+    {
+        $urlFormatter = $this->getService(UrlFormatter::class);
+
+        if (ContentTypeSchema::isBuiltIn($form[ContentTypeSchema::CONTENT_TYPE] ?? null)) {
+            return $urlFormatter->href('', $tag, [], false);
+        }
+
+        return $urlFormatter->href(
+            testUrlInIframe(),
+            '',
+            [
+                'vue' => 'consulter',
+                'action' => 'voir_fiche',
+                'tag' => $tag,
+                'message' => 'ajout_ok',
+            ],
+            false,
+        );
     }
 
     public function update($entryId)

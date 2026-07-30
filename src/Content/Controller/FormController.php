@@ -7,6 +7,7 @@ use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\ActivityPubService;
+use YesWiki\Content\Service\ContentCreator;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\IcalFormatter;
@@ -62,6 +63,8 @@ class FormController extends YesWikiController
                 $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
                 $values[$form['id']]['isSystem'] = ContentTypeSchema::isBuiltIn($contentType);
                 $values[$form['id']]['contentType'] = $contentType;
+                // a built-in type's form creates Content like any other form (ticket 13)
+                $values[$form['id']]['canCreateContent'] = ContentCreator::supports($contentType);
             }
         }
 

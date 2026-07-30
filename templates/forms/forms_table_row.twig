@@ -12,11 +12,11 @@
       <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_RECHERCHER') }}" href="{{ url({ params: { vue: 'consulter', action: 'recherche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
         <svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#loupe"/></svg>
       </a>
-      {# no "new entry" for a built-in type: a page is created by editing a page, an
-         account by signing up, a file by uploading it. Going through the entry form
-         would make a fiche_bazar row carrying the Page form's id, which belongs to no
-         list at all -- EntryManager::create() refuses it outright. #}
-      {% if not form.isSystem %}
+      {# a built-in type's form creates Content like any other form (ticket 13): what it
+         creates is a page, an account or a file rather than a fiche_bazar row, which is
+         ContentCreator's job. The File type is still missing its upload field, so it says
+         so rather than offering a button that would write a row pointing at nothing. #}
+      {% if form.canCreateContent %}
         <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}" href="{{ url({ params: { vue: 'saisir', action: 'saisir_fiche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
           <svg class="yw-icon icon-plus" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
         </a>

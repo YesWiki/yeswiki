@@ -166,10 +166,16 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
      * @param array|string $wikiNameOrUser array to create the wiki or wikiname
      * @param string email (optionnal if parameters by array)
      * @param string plainPassword (optionnal if parameters by array)
+     * @param string|null $forcedTag the tag to store the account at, when the caller has
+     *                               already settled it -- creating an account from the User
+     *                               form has to know the tag before it saves, because a
+     *                               field like the profile picture formats its upload
+     *                               against it (ticket 13). Defaults to suggesting one from
+     *                               the name, which is what every other caller wants.
      *
      * @throws UserNameAlreadyUsedException|UserEmailAlreadyUsedException|\Exception
      */
-    public function create($wikiNameOrUser, string $email = '', string $plainPassword = ''): ?User
+    public function create($wikiNameOrUser, string $email = '', string $plainPassword = '', ?string $forcedTag = null): ?User
     {
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
@@ -226,15 +232,23 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             throw new \Exception("'password' parameter of UserManager->create should not be empty!");
         }
 
-        $tag = $this->container->get(PageManager::class)->suggestFreeTag($wikiName);
+        $tag = $forcedTag ?? $this->container->get(PageManager::class)->suggestFreeTag($wikiName);
 
         $hasher = $this->passwordHasherFactory->getPasswordHasher($this->arrayToDraftUser($userAsArray));
         $hashedPassword = $hasher->hash($plainPassword);
 
-        $body = $this->buildBody(array_merge($userAsArray, [
-            'password' => $hashedPassword,
-            'signuptime' => date('Y-m-d H:i:s'),
-        ]));
+        // buildBody() names the account fields core owns; a webmaster can add fields to the
+        // User form, and ticket 10 added a locked `profile_picture` in code. Those are the
+        // caller's to carry, and dropping them would make the User form a schema the User
+        // service does not honour (ticket 13). migrateLegacyUser() deliberately does not do
+        // this: a legacy `users` row's extra columns are not profile fields.
+        $body = array_merge(
+            $this->extraProfileFields($userAsArray),
+            $this->buildBody(array_merge($userAsArray, [
+                'password' => $hashedPassword,
+                'signuptime' => date('Y-m-d H:i:s'),
+            ]))
+        );
 
         if (!$this->persistNewUserPage($tag, $body)) {
             return null;
@@ -309,6 +323,23 @@ class UserManager implements UserProviderInterface, PasswordUpgraderInterface
             'show_comments' => $this->valueOrDefault($fields, 'show_comments', 'N'),
             'password' => $fields['password'] ?? '',
         ];
+    }
+
+    /**
+     * Everything the caller supplied that buildBody() does not name -- minus the account's
+     * identity, which is its tag and must not be stored a second time where it can drift.
+     *
+     * @param array<string, mixed> $fields
+     *
+     * @return array<string, mixed>
+     */
+    private function extraProfileFields(array $fields): array
+    {
+        return array_diff_key($fields, array_flip([
+            'name', 'username', 'password',
+            'email', 'motto', 'revisioncount', 'changescount',
+            'doubleclickedit', 'signuptime', 'show_comments',
+        ]));
     }
 
     private function valueOrDefault(array $fields, string $key, string $default)
