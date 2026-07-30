@@ -1,10 +1,28 @@
+/* The editor is one bordered box, like any other .yw-input: the toolbar is its header
+   and the ace surface its field. Nothing is drawn over the field's <label>, which stays
+   where every other label is -- above the control it names. */
 .aceditor-container {
   position: relative;
+  background: #fff;
+  border: 1px solid var(--neutral-soft-color);
+  border-radius: 4px;
+}
+
+.aceditor-container:focus-within {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -1px;
+}
+
+.aceditor-container .btn-toolbar {
+  padding: 4px 6px;
+  background: var(--neutral-light-color);
+  border-bottom: 1px solid var(--neutral-soft-color);
+  border-radius: 3px 3px 0 0;
 }
 
 .ace-container {
-  padding: 1em 0.7em 0 0;
-  margin-bottom: 1rem;
+  /* no left padding: the ace scroller/gutter provides its own, see below */
+  padding: 0.5em 0.7em 0.5em 0;
 }
 
 textarea.aceditor-textarea {
@@ -96,7 +114,6 @@ textarea.aceditor-textarea {
   position: sticky;
   top: 0;
   z-index: 6;
-  background-color: white;
 }
 
 .scroll-container-toolbar {

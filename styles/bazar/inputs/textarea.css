@@ -1,18 +1,42 @@
-.yw-form-group.wiki-textarea .btn-toolbar {
-  margin-left: 1em;
-  margin-right: 1em;
-}
-
-.yw-form-group.wiki-textarea .yw-form-label {
-  top: 0.6em !important;
-  margin-top: -0.5em !important;
-}
-
 /* field.syntax is 'html' for this mode -- note the corrected selector below: the
    pre-existing ".yw-form-group.summernote" never matched anything, since groupClass
    is always the field's syntax value, never the editor's own name. */
 .yw-form-group.html .vditor {
   margin-top: 3px;
+}
+
+/* Vditor wears the same box as the ACeditor and as any .yw-input: one bordered field
+   with the toolbar as its header. Vditor exposes its own palette as custom properties
+   on .vditor, so repointing those is enough -- no rule of its stylesheet is overridden. */
+.vditor {
+  --border-color: var(--neutral-soft-color);
+  --toolbar-background-color: var(--neutral-light-color);
+  --toolbar-icon-color: var(--neutral-color);
+  --toolbar-icon-hover-color: var(--primary-color);
+  --textarea-background-color: #fff;
+  --textarea-text-color: var(--neutral-color);
+  --panel-background-color: #fff;
+
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.vditor:focus-within {
+  outline: 2px solid var(--primary-color);
+  outline-offset: -1px;
+}
+
+/* Vditor centres its text in an 800px reading column and pads the toolbar to match,
+   writing both as inline styles it recomputes on every resize. A form field is not an
+   article: it wants its whole width, left-aligned, like the ACeditor beside it. !important
+   is what outranks an inline style, and it is the only thing that survives the recompute. */
+.vditor-toolbar {
+  padding: 4px 6px !important;
+  border-radius: 3px 3px 0 0;
+}
+
+.vditor-wysiwyg > .vditor-reset {
+  padding: 8px 10px !important;
 }
 
 .yw-form-group.wiki-textarea .controls .ace_placeholder {

@@ -175,10 +175,4 @@ document.addEventListener('DOMContentLoaded', () => {
     const { name } = container.dataset
     window[`aceditor-${name}`] = new Aceditor(container)
   })
-
-  // hack to put toolbar over label
-  document.querySelectorAll('.wiki-textarea .scroll-container-toolbar').forEach((scrollContainer) => {
-    const wikiTextarea = scrollContainer.closest('.wiki-textarea')
-    if (wikiTextarea) wikiTextarea.prepend(scrollContainer)
-  })
 })

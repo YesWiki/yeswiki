@@ -385,9 +385,13 @@ body {
   vertical-align: inherit !important;
 }
 
-.yw-form-label::after {
-  content: ':';
-  margin: 0 0.25em;
+/* Field hint marker: a sprite icon carrying its text in data-yw-tooltip (see the
+   Tooltip section below), so it needs no <img> asset and no JS. */
+.tooltip_aide {
+  display: inline-block;
+  margin-right: 0.25em;
+  color: var(--neutral-soft-color);
+  cursor: help;
 }
 
 .symbole_obligatoire::after {

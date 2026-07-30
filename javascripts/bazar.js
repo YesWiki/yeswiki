@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // The old Google-Maps carto block (#markers/arrMarkers/initialize) was dead
   // code — nothing renders that markup anymore — and has been removed.
-  // img.tooltip_aide[title] helper icons rely on the native browser tooltip now.
+  // .tooltip_aide helper icons are sprite <svg>s carrying data-yw-tooltip: pure CSS, no JS.
 
   // on enleve la fonction doubleclic dans le cas d'une page contenant bazar
   document.querySelectorAll('#formulaire, #map, #calendar, .accordion').forEach((el) => {

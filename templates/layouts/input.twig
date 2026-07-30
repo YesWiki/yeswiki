@@ -4,7 +4,7 @@
         {%- block label -%}
             {% if field.required %}<span class="symbole_obligatoire"></span>{% endif %}
             {% if field.hint %}
-                <img loading="lazy" class="tooltip_aide" title="{{ field.hint|striptags }}" alt="{{ field.hint|striptags }}" src="src/assets/images/bazar/aide.png" width="16" height="16" />
+                <span class="tooltip_aide" tabindex="0" role="img" aria-label="{{ field.hint|striptags }}" data-yw-tooltip="{{ field.hint|striptags }}">{{ icon('help-circle') }}</span>
             {% endif %}
             {{ field.label|raw }}
         {%- endblock -%}

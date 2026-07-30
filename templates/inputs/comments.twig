@@ -5,7 +5,7 @@
 <div class="yw-form-group input-comments">
   <label class="yw-form-label">
     {% if hint %}
-      <img loading="lazy" class="tooltip_aide" title="{{ hint|striptags }}" alt="{{ hint|striptags }}" src="src/assets/images/bazar/aide.png" width="16" height="16" />
+      <span class="tooltip_aide" tabindex="0" role="img" aria-label="{{ hint|striptags }}" data-yw-tooltip="{{ hint|striptags }}">{{ icon('help-circle') }}</span>
     {% endif %}
     {{ label }}
   </label>
