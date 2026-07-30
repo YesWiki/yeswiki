@@ -55,6 +55,7 @@ class ContentTypeSchema
             // stays in the versioned body under Field ACL -- ADR-0003, unchanged
             'password' => ['type' => 'mot_de_passe', 'label' => 'Mot de passe'],
             'email' => ['type' => 'champs_mail', 'label' => 'Adresse électronique'],
+            'profile_picture' => ['type' => 'image', 'label' => 'Photo de profil'],
         ],
         self::TYPE_FILE => [
             // what the visitor uploaded, and what is actually on disk: the pair the
@@ -139,6 +140,26 @@ class ContentTypeSchema
         return self::TITLE_TEMPLATES[(string)$contentType] ?? null;
     }
 
+    /**
+     * The locked field whose value *is* the row's tag, per Content type.
+     *
+     * An account's username is its tag, the way a bazar entry's `tag` is: the field
+     * exists so the designer can label and order it, not so it can be typed into freely
+     * and drift from the identity it restates. Read paths fill it in from the tag rather
+     * than storing the same string twice.
+     *
+     * @var array<string, string>
+     */
+    private const TAG_MIRRORS = [
+        self::TYPE_USER => 'username',
+    ];
+
+    /** The locked field of this type that restates the row's tag, or null. */
+    public static function tagMirrorField(?string $contentType): ?string
+    {
+        return self::TAG_MIRRORS[(string)$contentType] ?? null;
+    }
+
     /** @return list<string> */
     public static function types(): array
     {
@@ -221,13 +242,32 @@ class ContentTypeSchema
             $kept[] = $field;
         }
 
-        $missing = [];
+        // A missing locked field lands just after the nearest declared-earlier one that is
+        // already in the template, and at the front when there is none. That keeps the
+        // core structure at the top of a template that lost all of it, while a locked
+        // field newly declared in code (profile_picture, say) appears where it was
+        // declared rather than jumping ahead of the fields it was declared after.
         foreach ($locked as $name => $_declared) {
-            if (!isset($seen[$name])) {
-                $missing[] = self::defaultField((string)$contentType, $name);
+            if (isset($seen[$name])) {
+                continue;
             }
+
+            $insertAt = 0;
+            foreach (array_keys($locked) as $earlier) {
+                if ($earlier === $name) {
+                    break;
+                }
+                foreach ($kept as $index => $existing) {
+                    if (($existing['name'] ?? '') === $earlier) {
+                        $insertAt = $index + 1;
+                    }
+                }
+            }
+
+            array_splice($kept, $insertAt, 0, [self::defaultField((string)$contentType, $name)]);
+            $seen[$name] = true;
         }
 
-        return array_merge($missing, $kept);
+        return $kept;
     }
 }

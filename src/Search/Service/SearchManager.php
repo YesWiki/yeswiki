@@ -7,9 +7,11 @@ use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\CheckboxField;
 use YesWiki\Content\Field\EnumField;
+use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\AclService;
@@ -1151,6 +1153,8 @@ class SearchManager
             // decided by its Content type (ticket 10). Say so here, once, so that
             // everything downstream reads a row the one way.
             if (!isset($page['body']['form_id'])) {
+                $contentType = $this->container->get(ContentTypeResolver::class)
+                    ->typeOfTriple((string)($page[self::CONTENT_TRIPLE_COLUMN] ?? ''));
                 $formId = $this->formIdsByTriple()[(string)($page[self::CONTENT_TRIPLE_COLUMN] ?? '')] ?? null;
                 if ($formId === null) {
                     continue;
@@ -1159,6 +1163,15 @@ class SearchManager
                 // ... and its tag is the row's, not something the body repeats: only a
                 // bazar entry stamps its own tag into its body
                 $page['body']['tag'] = $page['tag'];
+                // a locked field that restates the tag (an account's username) is filled
+                // in from the tag rather than stored twice
+                $mirror = ContentTypeSchema::tagMirrorField($contentType);
+                if ($mirror !== null) {
+                    $page['body'][$mirror] = $page['tag'];
+                }
+                // and a Content that never got a title still names itself (ticket 10)
+                $page['body']['title'] = $this->container->get(FormPropertiesService::class)
+                    ->titleOf($this->container->get(FormManager::class)->getOne($formId), $page['body']);
             }
             // save owner to reduce sql calls
             $vPageManager->cacheOwner($page);

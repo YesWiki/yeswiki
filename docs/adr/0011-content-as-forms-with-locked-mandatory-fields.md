@@ -28,11 +28,19 @@ Declaring the structure in code turned out to answer three further questions tha
 
 The last two are stripped and defaulted on **read** as well as on write, for the same reason locked fields are enforced on read: a body can arrive carrying the wrong thing by a route that never came through `FormManager`, and the next ordinary write then persists it correct.
 
-## The page editor edits the Page form
+A Content type also answers **which of its locked fields restates the row's tag**: an account's `username` is its tag, the way a bazar entry's `tag` is. Read paths fill it in from the tag rather than storing the same string twice, and the editor does not offer it as an input — a field that restates an identity should not be able to drift from it.
 
-The consequence at the other end: since a page's title and keywords are *fields*, the page editor renders them from the Page form's template rather than hardcoding their markup, and a webmaster who adds a field to that form gets an input for it. Fields declared before `content` render above the ACeditor and those after it below, so the designer lays a page out the same way it lays an entry out. `content` is the one field the editor renders itself.
+## The editor edits the form of the row's own Content type
+
+The consequence at the other end. Since a page's title and keywords are *fields*, the editor renders them from the form's template rather than hardcoding their markup, and a webmaster who adds a field to that form gets an input for it. Fields declared before `content` render above the ACeditor and those after it below, so the designer lays a page out the same way it lays an entry out. `content` is the one field the editor renders itself.
+
+But *which* form is the row's own, not always Page. An account and an uploaded file have no `content` field, so they get no markup editor and no `content` is written — that is what keeps a page-shaped body off Content that is not a page. `ContentTypeResolver` is the one place that knows how to go from a row to its form: by `body.form_id` for a bazar entry, by the type triple otherwise, and by the *absence* of a triple for a page.
 
 "Nothing changed" consequently means the whole body and not just the markup — retitling a page without touching its prose is a real edit, and used to be silently discarded.
+
+## Every Content has a name
+
+`entry_title_template` can leave a Content nameless: a page whose title was never filled in, a template naming a field that was since deleted. Two rules make that impossible to show a visitor. A `{{field}}` with no value is substituted by **nothing** rather than left standing — an unresolved placeholder is not a name. And a title that comes out empty falls back to the row's **tag**, the only other name a Content is guaranteed to have and the one already in its URL. A blank column in every list was the alternative.
 
 ## ADR-0003 is unchanged and explicitly not amended
 

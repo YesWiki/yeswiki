@@ -13,7 +13,8 @@ Which kind of Content a row is: `entry`, `page`, `user`, `file` (plus `liste`). 
 _Avoid_: "nature" (the retired table), "kind", treating `entry` as the only type with a template.
 
 **Locked field**:
-A field in a Content type's mandatory core structure — Page's `title`/`content`/`keywords`, User's `username`/`password`/`email`, File's `original_filename`/`stored_filename`/`uploaded_from`. It cannot be deleted or retyped; its label, help text, order and Field ACL are ordinary and editable, and webmaster-added fields sit beside it in the same list. Locked-ness is declared in `ContentTypeSchema`, never stored as an attribute on the field — a stored flag would be clearable through the very write vectors it has to survive (ADR-0011).
+A field in a Content type's mandatory core structure — Page's `title`/`content`/`keywords`, User's `username`/`password`/`email`/`profile_picture`, File's `original_filename`/`stored_filename`/`uploaded_from`. It cannot be deleted or retyped; its label, help text, order and Field ACL are ordinary and editable, and webmaster-added fields sit beside it in the same list. Locked-ness is declared in `ContentTypeSchema`, never stored as an attribute on the field — a stored flag would be clearable through the very write vectors it has to survive (ADR-0011).
+A type may declare one of them as its **tag mirror** (User's `username`): its value *is* the row's tag, filled in on read rather than stored twice, and not offered as an input. A type with no `content` field has no wiki markup at all — the editor offers it none, and writes none.
 _Avoid_: "system field", "read-only field" (only deletion and retyping are barred), "required field" (that is the separate `required` attribute a visitor's input must satisfy).
 
 **Tag**:
@@ -43,6 +44,10 @@ _Avoid_: `***` syntax (legacy, read-only), `bn_template` (renamed), "prepared js
 **Form property**:
 A named key in a form's body holding form-level configuration: identity (`id`, `label`, `description`, `lang`), behavior (`entry_title_template`, `entry_read_access`, `entry_write_access`, `entry_comment_access`, `entry_permit_activate_comments`, `entry_creates_user`, `entry_bookmarklet`), presentation (`entry_metadatas`), and the legacy-carried `sem_*`, `only_one_entry*`, `activitypub_*`, `condition`. Plain-English names; the `bn_` prefix is retired. Which ones apply depends on the Content type: `entry_creates_user` and `entry_bookmarklet` describe visitor submissions, so a built-in type drops them (on read as well as on write) and the designer does not offer them; `entry_title_template` defaults to one of the type's own locked fields rather than to the bazar `{{bf_titre}}` convention.
 _Avoid_: `bn_*` keys (renamed), pseudo-fields (form behavior stored as fake template fields — retired).
+
+**Content title**:
+The name a Content goes by in a list, a link or a search result. Computed from its form's `entry_title_template` (ADR-0010) and stored as `title` in the body. A `{{field}}` with no value substitutes to nothing rather than being left standing, and an empty result falls back to the row's **tag** — every Content has a name, and an unresolved placeholder is not one.
+_Avoid_: `bf_titre` (a bazar field name, not the concept), showing a raw `{{...}}` to a visitor.
 
 **Field role**:
 Core's question about a form's fields — "which one holds the start date?" — answered by the form rather than by a hardcoded field name. Roles: `start_date`, `end_date`, `image`, `email`, `description`, `geolocation`. Resolved through `FieldRoleResolver`, from the form's explicit `field_roles` property when it has one and otherwise from the field's own type (a `listedatedeb` field is the start date), so existing forms need no migration. Generalises ticket 27's `entry_title_template` (ADR-0012).

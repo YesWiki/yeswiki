@@ -34,7 +34,7 @@ class ContentTypeSchemaTest extends TestCase
     {
         return [
             'page' => [ContentTypeSchema::TYPE_PAGE, ['title', 'content', 'keywords']],
-            'user' => [ContentTypeSchema::TYPE_USER, ['username', 'password', 'email']],
+            'user' => [ContentTypeSchema::TYPE_USER, ['username', 'password', 'email', 'profile_picture']],
             'file' => [ContentTypeSchema::TYPE_FILE, ['original_filename', 'stored_filename', 'uploaded_from']],
         ];
     }
@@ -107,7 +107,17 @@ class ContentTypeSchemaTest extends TestCase
         $this->assertSame($template, $enforced, 'a complete template must survive untouched, order included');
     }
 
-    public function testAMissingLockedFieldIsPrependedSoTheCoreStructureLeads(): void
+    /**
+     * A missing locked field returns next to the declared-earlier locked fields it belongs
+     * with, and at the front when there are none.
+     *
+     * `title` is declared first and nothing precedes it, so it leads -- the core structure
+     * is not buried under the webmaster's own fields. `keywords` is declared after
+     * `content`, so it returns after `content` rather than jumping ahead of a webmaster
+     * field that was already sitting there. That distinction is what lets a locked field
+     * newly declared in code (profile_picture on User) appear where it was declared.
+     */
+    public function testAMissingLockedFieldReturnsWhereItWasDeclared(): void
     {
         $enforced = ContentTypeSchema::enforce(
             [
@@ -117,9 +127,18 @@ class ContentTypeSchemaTest extends TestCase
             ContentTypeSchema::TYPE_PAGE
         );
 
-        // title and keywords were missing; they come back at the front rather than
-        // being buried under the webmaster's fields
-        $this->assertSame(['title', 'keywords', 'my_own_field', 'content'], array_column($enforced, 'name'));
+        $this->assertSame(['title', 'my_own_field', 'content', 'keywords'], array_column($enforced, 'name'));
+    }
+
+    /** A template that lost the whole core structure still gets it back in front. */
+    public function testAWhollyMissingCoreStructureLeads(): void
+    {
+        $enforced = ContentTypeSchema::enforce(
+            [['type' => 'texte', 'name' => 'my_own_field', 'label' => 'Mine']],
+            ContentTypeSchema::TYPE_PAGE
+        );
+
+        $this->assertSame(['title', 'content', 'keywords', 'my_own_field'], array_column($enforced, 'name'));
     }
 
     public function testADuplicatedLockedFieldIsCollapsedToTheFirst(): void

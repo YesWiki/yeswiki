@@ -45,11 +45,10 @@ class ImageField extends FileField
 
     protected function getDefaultImageName($entry)
     {
-        if (!empty($entry)) {
-            $id = $entry['form_id'];
-        } else {
-            $id = $_SESSION['current_form_id'] ?? 'no_id';
-        }
+        // a Content that is not a bazar entry carries no form_id of its own -- the row's
+        // Content type decides which form describes it (ticket 10), and the caller may or
+        // may not have stamped it in
+        $id = $entry['form_id'] ?? $_SESSION['current_form_id'] ?? 'no_id';
         $default_image_filename = "defaultimage{$id}_{$this->name}.jpg";
         if (file_exists($this->getBasePath() . $default_image_filename)) {
             return $default_image_filename;

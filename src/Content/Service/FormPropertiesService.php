@@ -147,7 +147,35 @@ class FormPropertiesService
             }
         }
 
-        return trim($value);
+        // A {{field}} the entry has no value for is substituted by nothing rather than
+        // left standing: an unresolved placeholder is not a name, and showing a visitor
+        // "{{title}}" in a list is worse than showing them the tag.
+        $value = trim((string)preg_replace('#{{(.*)}}#U', '', $value));
+
+        // An unresolvable template leaves the Content nameless -- a page whose title was
+        // never filled in, a template referencing a field that was since deleted. The tag
+        // is the only other name a Content is guaranteed to have, and it is what a visitor
+        // sees in the URL, so it is the honest fallback (better than a blank row in every
+        // list, which is what an empty title produces).
+        return $value !== '' ? $value : trim((string)($entry['tag'] ?? ''));
+    }
+
+    /**
+     * The title of an already-stored Content: what it carries, or the computed title,
+     * or its tag. Read paths use this so a Content saved before it had a title -- every
+     * page, until ticket 10 gave the editor a title field -- still names itself.
+     *
+     * @param array<string, mixed>|null $form
+     * @param array<string, mixed>      $entry
+     */
+    public function titleOf(?array $form, array $entry): string
+    {
+        $stored = trim((string)($entry['title'] ?? ''));
+        if ($stored !== '') {
+            return $stored;
+        }
+
+        return $form === null ? trim((string)($entry['tag'] ?? '')) : $this->computeTitle($form, $entry);
     }
 
     /** The {{field}} names a title template references. */

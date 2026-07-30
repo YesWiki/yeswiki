@@ -6,8 +6,8 @@ use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
-use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\LinkTracker;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiHandler;
@@ -160,23 +160,31 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
     }
 
     /**
-     * The Page form's fields, split around the one holding the markup.
+     * The fields of the form describing **this row's own Content type**, split around the
+     * one holding the markup.
      *
-     * A page is a form like any other since ticket 10: its title, its keywords and
-     * whatever else a webmaster added to the Page form are ordinary fields, edited by
-     * their own inputs and subject to the ordinary Field ACL. `content` is the one
-     * exception -- the ACeditor renders it -- so the fields declared before and after it
-     * in the template bracket the editor, which lets the designer lay this page out the
-     * same way it lays an entry out.
+     * Every Content is a form since ticket 10, so the editor asks which one rather than
+     * assuming Page: an account row edited here is the User form, and it has no `content`
+     * field, so no markup editor is offered and none is written. Reaching for the Page
+     * form regardless was how a user or a file ended up with a page-shaped body.
      *
-     * @return array{before: list<BazarField>, after: list<BazarField>}
+     * `content` is the one field the editor renders itself, so the fields declared before
+     * it bracket the ACeditor above and those after it below -- the designer lays a page
+     * out the same way it lays an entry out.
+     *
+     * @return array{before: list<BazarField>, after: list<BazarField>, hasContent: bool}
      */
-    private function pageFormFields(): array
+    private function contentFormFields(): array
     {
-        $split = ['before' => [], 'after' => []];
+        $split = ['before' => [], 'after' => [], 'hasContent' => false];
 
-        $form = $this->getService(FormManager::class)->getByContentType(ContentTypeSchema::TYPE_PAGE);
+        $form = $this->getService(ContentTypeResolver::class)
+            ->formFor($this->getService(PageContext::class)->getTag());
         if ($form === null) {
+            // a row this concept does not describe (a form, a list) keeps the plain
+            // markup editor it has always had
+            $split['hasContent'] = true;
+
             return $split;
         }
 
@@ -186,10 +194,17 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                 continue;
             }
             if ($field->getPropertyName() === PageBody::CONTENT) {
+                $split['hasContent'] = true;
                 $side = 'after';
                 continue;
             }
             if ($field->getPropertyName() === PageBody::KEYWORDS && $this->params->get('hide_keywords')) {
+                continue;
+            }
+            // a field that restates the tag is not typed into: it *is* the row's identity
+            if ($field->getPropertyName() === ContentTypeSchema::tagMirrorField(
+                $form[ContentTypeSchema::CONTENT_TYPE] ?? null
+            )) {
                 continue;
             }
             $split[$side][] = $field;
@@ -206,9 +221,16 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
      *
      * @return list<string>
      */
-    private function renderPageFields(array $fields, array $body): array
+    private function renderContentFields(array $fields, array $body): array
     {
-        $entry = array_merge($body, ['tag' => $this->getService(PageContext::class)->getTag()]);
+        // fields are written for bazar entries, which carry their own tag and form_id in
+        // the body; a page, an account or a file gets them from its row and its type
+        $form = $this->getService(ContentTypeResolver::class)
+            ->formFor($this->getService(PageContext::class)->getTag());
+        $entry = array_merge($body, [
+            'tag' => $this->getService(PageContext::class)->getTag(),
+            'form_id' => $body['form_id'] ?? ($form['id'] ?? null),
+        ]);
 
         return array_values(array_filter(array_map(
             fn (BazarField $field) => (string)$field->renderInputIfPermitted($entry),
@@ -232,7 +254,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $posted = $this->getRequest()->request->all();
         $posted['tag'] = $this->getService(PageContext::class)->getTag();
 
-        $fields = $this->pageFormFields();
+        $fields = $this->contentFormFields();
         foreach (array_merge($fields['before'], $fields['after']) as $field) {
             if ($field->getPropertyName() === PageBody::KEYWORDS) {
                 $keywords = TagsManager::parseList((string)($posted[PageBody::KEYWORDS] ?? ''));
@@ -390,7 +412,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             // what was typed rather than what is stored; before that, the stored body is
             // all there is -- reading the posted values of a form nobody submitted would
             // overwrite every field with its default.
-            $pageFields = $this->pageFormFields();
+            $pageFields = $this->contentFormFields();
             $previousBody = $this->getService(PageContext::class)->getPage()['body'] ?? [];
             $editedBody = $submit === false
                 ? $previousBody
@@ -408,8 +430,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     'preview' => true,
                     'bodyPreview' => $this->getService(MarkdownFormatterService::class)->format($body),
                     'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
-                    'fieldsBeforeContent' => $this->renderPageFields($pageFields['before'], $editedBody),
-                    'fieldsAfterContent' => $this->renderPageFields($pageFields['after'], $editedBody),
+                    'hasContent' => $pageFields['hasContent'],
+                    'fieldsBeforeContent' => $this->renderContentFields($pageFields['before'], $editedBody),
+                    'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
                 ]);
                 $this->getService(InclusionStack::class)->replace($temp);
             } else {
@@ -422,16 +445,24 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     // SAVE AND REDIRECT
                     $body = rtrim(str_replace("\r", '', $body));
 
-                    // the editor edits prose, which is one attribute of the page's body
-                    // (ticket 09); the Page form's other fields -- title, keywords, and
-                    // whatever the webmaster added -- come from their own inputs
+                    // the editor edits prose, which is one attribute of a page's body
+                    // (ticket 09); the form's other fields -- title, keywords, and
+                    // whatever the webmaster added -- come from their own inputs.
+                    // A Content type with no `content` field has no prose at all: an
+                    // account and a file are not wiki markup, and writing an empty
+                    // `content` onto them would give them a page-shaped body they
+                    // should never have.
                     $newBody = $editedBody;
-                    $newBody[PageBody::CONTENT] = $body;
+                    if ($pageFields['hasContent']) {
+                        $newBody[PageBody::CONTENT] = $body;
+                    }
 
                     // "nothing changed" now means the whole body, not just the markup:
                     // retitling a page without touching its prose is a real change
                     $unchanged = !empty($previousBody) && PageBody::equals(
-                        array_merge($previousBody, [PageBody::CONTENT => rtrim(PageBody::content($previousBody))]),
+                        array_merge($previousBody, $pageFields['hasContent']
+                            ? [PageBody::CONTENT => rtrim(PageBody::content($previousBody))]
+                            : []),
                         $newBody
                     );
 
@@ -482,8 +513,9 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         'body' => empty($body) ? '' : htmlspecialchars($body, ENT_COMPAT, YW_CHARSET),
                         'saveValue' => InputFilter::EDIT_PAGE_SUBMIT_VALUE,
                         'preview' => false,
-                        'fieldsBeforeContent' => $this->renderPageFields($pageFields['before'], $editedBody),
-                        'fieldsAfterContent' => $this->renderPageFields($pageFields['after'], $editedBody),
+                        'hasContent' => $pageFields['hasContent'],
+                        'fieldsBeforeContent' => $this->renderContentFields($pageFields['before'], $editedBody),
+                        'fieldsAfterContent' => $this->renderContentFields($pageFields['after'], $editedBody),
                     ]);
                 }
             }

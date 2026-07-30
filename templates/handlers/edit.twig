@@ -3,7 +3,7 @@
 {% endif %}
 
 {# Preview #}
-{% if preview %}
+{% if preview and hasContent %}
   <h1>{{ _t('EDIT_PREVIEW') }}</h1>
   <div class="page_preview">
     {{ bodyPreview|raw }}
@@ -24,10 +24,14 @@
      the designer decides this page's layout the same way it decides an entry's. #}
   {% for input in fieldsBeforeContent %}{{ input|raw }}{% endfor %}
 
-  {% if preview %}
-    <input type="hidden" name="body" value="{{ body|raw }}" />
-  {% else %}
-    {{ renderAction('aceditor', { saveButton: true, name: 'body', value: body })|raw }}
+  {# A Content type with no `content` field has no prose: an account and a file are not
+     wiki markup, so they get their fields and no editor at all. #}
+  {% if hasContent %}
+    {% if preview %}
+      <input type="hidden" name="body" value="{{ body|raw }}" />
+    {% else %}
+      {{ renderAction('aceditor', { saveButton: true, name: 'body', value: body })|raw }}
+    {% endif %}
   {% endif %}
 
   {% for input in fieldsAfterContent %}{{ input|raw }}{% endfor %}
