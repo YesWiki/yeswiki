@@ -31,6 +31,7 @@ class ContentTypeEditorTest extends YesWikiTestCase
 {
     private const USER_NAME = 'ContentTypeEditorTestUser';
     private const FILE_STORED = 'content-type-editor-test.txt';
+    private const FILE_ORIGINAL = 'content type editor test.txt';
 
     private static ?string $fileTag = null;
 
@@ -170,7 +171,7 @@ class ContentTypeEditorTest extends YesWikiTestCase
         }
         file_put_contents(FileManager::STORAGE_DIR . '/' . self::FILE_STORED, 'hello');
         $file = $wiki->services->get(FileManager::class)->create(
-            'content type editor test.txt',
+            self::FILE_ORIGINAL,
             self::FILE_STORED,
             'PagePrincipale',
             5,
@@ -188,7 +189,13 @@ class ContentTypeEditorTest extends YesWikiTestCase
 
         try {
             $this->assertStringNotContainsString('aceditor-textarea', $output);
-            $this->assertMatchesRegularExpression('/name="original_filename"/', $output);
+            // the only thing a File form asks for is bytes: everything else it stores is
+            // derived from the upload, and offering it as a text box was offering to break
+            // the download (ticket 13)
+            $this->assertMatchesRegularExpression('/name="file_content"/', $output);
+            $this->assertStringNotContainsString('name="stored_filename"', $output);
+            // ...while still showing which file this is
+            $this->assertStringContainsString(self::FILE_ORIGINAL, $output);
         } finally {
             $wiki->services->get(AuthenticationService::class)->logout();
         }

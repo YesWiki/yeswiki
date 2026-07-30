@@ -79,10 +79,15 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
             'bf_titre is a bazar convention: no built-in Content type has such a field'
         );
 
-        // the template must name a field the form actually has, or every title is empty
-        $this->assertContains(
-            trim($expected, '{}'),
-            array_column($form['template'], 'name')
+        // the template must name something the Content actually carries, or every title is
+        // empty. Not necessarily a *field*: a file's original_filename is derived from its
+        // upload rather than typed in, so it is a body key with no input behind it.
+        $key = trim($expected, '{}');
+        $this->assertSame(
+            'un titre calculé',
+            $this->getWiki()->services->get(FormPropertiesService::class)
+                ->computeTitle($form, ['form_id' => $form['id'], $key => 'un titre calculé']),
+            "{$expected} must resolve against a {$contentType}'s own body"
         );
     }
 

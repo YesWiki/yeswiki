@@ -58,15 +58,13 @@ class ContentTypeSchema
             'profile_picture' => ['type' => 'image', 'label' => 'Photo de profil'],
         ],
         self::TYPE_FILE => [
-            // the bytes. Every other field here is *derived* from this upload rather than
-            // typed in, so without it a File form could describe a file but never make one
+            // the bytes, and the only thing anyone types into a File form. Everything else
+            // a file Content stores -- `original_filename`, `stored_filename`, `size`,
+            // `mime_type`, `uploaded_from` -- is *derived* from the upload, so it is a body
+            // key but not an input: offering `stored_filename` as a text box is offering to
+            // break the download, and an unsubmitted text field wrote an empty string over
+            // it on every edit
             'file_content' => ['type' => 'contenu_fichier', 'label' => 'Fichier'],
-            // what the visitor uploaded, and what is actually on disk: the pair the
-            // file service needs to serve a download at all
-            'original_filename' => ['type' => 'texte', 'label' => 'Nom du fichier'],
-            'stored_filename' => ['type' => 'texte', 'label' => 'Fichier stocké'],
-            // the owning-page association, which seeds the file's read ACL
-            'uploaded_from' => ['type' => 'texte', 'label' => 'Page d’origine'],
         ],
     ];
 

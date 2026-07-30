@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Field\FileContentField;
 use YesWiki\Content\Service\ContentCreator;
 use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\FileManager;
@@ -168,6 +169,40 @@ class ContentCreationTest extends YesWikiTestCase
         $this->assertStringStartsWith(FileManager::STORAGE_DIR, $path, 'the bytes live under private/, never the web root');
         $this->assertSame("des octets bien réels\n", file_get_contents($path));
         @unlink($path);
+    }
+
+    /**
+     * The derived attributes were locked *text fields* until ticket 13. A text field the
+     * form did not submit yields an empty string, so saving a File from its own edit form
+     * wrote "" over both filenames and 404'd the file it was editing.
+     */
+    public function testTheFileFormAsksForBytesAndNotForDerivedAttributes(): void
+    {
+        $names = array_column($this->builtInForm(ContentTypeSchema::TYPE_FILE)['template'], 'name');
+
+        $this->assertContains('file_content', $names);
+        foreach (['original_filename', 'stored_filename', 'uploaded_from', 'size', 'mime_type'] as $derived) {
+            $this->assertNotContains($derived, $names, "$derived is computed from the upload, not typed in");
+        }
+    }
+
+    public function testEditingAFileWithoutUploadingLeavesItsBytesAlone(): void
+    {
+        $field = null;
+        foreach ($this->builtInForm(ContentTypeSchema::TYPE_FILE)['prepared'] as $candidate) {
+            if ($candidate instanceof FileContentField) {
+                $field = $candidate;
+            }
+        }
+        $this->assertNotNull($field, 'the File form must declare its file-content field');
+
+        $this->getWiki()->services->get(CurrentRequest::class)->replace(Request::create('/', 'POST'));
+
+        $this->assertSame(
+            [],
+            $field->formatValuesBeforeSave(['original_filename' => 'deja-la.txt']),
+            'no upload means no change: an edit that touches something else must not blank the file'
+        );
     }
 
     public function testTheFileFormRefusesASubmissionCarryingNoBytes(): void

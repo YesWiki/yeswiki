@@ -2,7 +2,7 @@
 
 Wave one made forms, users and files rows in `pages`; ticket 09 gave every Content type one body shape. Ticket 10 finishes the unification by giving them one *schema* mechanism: Page, User and File are **forms**, with an ordinary form template edited in the ordinary designer, so there is one model, one designer and one storage shape for every kind of Content in the wiki.
 
-Each of the three has a mandatory core structure a webmaster cannot break — Page: `title`, `content`, `keywords`; User: `username`, `password`, `email`; File: `original_filename`, `stored_filename`, `uploaded_from` (what the file service needs to serve a download, plus the owning-page association that seeds its read ACL). Those fields are **locked**: they cannot be deleted or retyped. Everything else about them is the webmaster's — label, help text, order, Field ACL — and webmaster-added fields sit in the same list beside them with no special casing.
+Each of the three has a mandatory core structure a webmaster cannot break — Page: `title`, `content`, `keywords`; User: `username`, `password`, `email`; File: `file_content`, the bytes themselves ([amended](#a-derived-attribute-is-not-an-input), see below). Those fields are **locked**: they cannot be deleted or retyped. Everything else about them is the webmaster's — label, help text, order, Field ACL — and webmaster-added fields sit in the same list beside them with no special casing.
 
 ## Locked-ness is declared in code, not stored on the field
 
@@ -14,7 +14,7 @@ So `ContentTypeSchema` declares the structure in PHP, and a form body carries on
 
 ## The template definition widens, and does not re-admit pseudo-fields
 
-ADR-0010 narrowed the form template to "the entry-input schema and nothing else", having just evicted five pseudo-fields that were really form-level configuration. That narrowing stands. What widens is only *whose* inputs a template may describe: a page's, a user's and a file's, as well as an entry's. Every locked field is a real input with a real value in the body — `content` holds the page's markup, `password` the hash, `stored_filename` the name on disk. None of them is behaviour smuggled into the schema, which is what ADR-0010 forbade.
+ADR-0010 narrowed the form template to "the entry-input schema and nothing else", having just evicted five pseudo-fields that were really form-level configuration. That narrowing stands. What widens is only *whose* inputs a template may describe: a page's, a user's and a file's, as well as an entry's. Every locked field is a real input with a real value in the body — `content` holds the page's markup, `password` the hash, `file_content` the uploaded bytes. None of them is behaviour smuggled into the schema, which is what ADR-0010 forbade.
 
 ## A Content type answers for more than its locked fields
 
@@ -41,6 +41,26 @@ But *which* form is the row's own, not always Page. An account and an uploaded f
 ## Every Content has a name
 
 `entry_title_template` can leave a Content nameless: a page whose title was never filled in, a template naming a field that was since deleted. Two rules make that impossible to show a visitor. A `{{field}}` with no value is substituted by **nothing** rather than left standing — an unresolved placeholder is not a name. And a title that comes out empty falls back to the row's **tag**, the only other name a Content is guaranteed to have and the one already in its URL. A blank column in every list was the alternative.
+
+## A derived attribute is not an input
+
+*Amended by ticket 13.* The File type was originally given three locked **text fields** —
+`original_filename`, `stored_filename`, `uploaded_from` — on the reasoning below that every
+locked field is a real input with a real value in the body. For a file that reasoning was
+wrong in both directions. Nobody types those values: all of them are computed from an
+upload, and offering `stored_filename` as a text box is offering to break the download.
+And an input that is never submitted does not merely go unused — it writes an empty string
+over what was there, so saving a File from its own edit form blanked both filenames and
+404'd the file being edited.
+
+So the File type declares one locked field, `file_content`, the bytes; and
+`original_filename`, `stored_filename`, `size`, `mime_type` and `uploaded_from` stay body
+keys that `FileManager` writes. A form template describes what someone fills in. What the
+system derives from what they filled in belongs in the body, not in the schema — which is
+the same line ADR-0010 drew when it evicted the pseudo-fields.
+
+The rest of the section below stands: `content` really is the page's markup and `password`
+really is the hash, both typed in, both locked.
 
 ## ADR-0003 is unchanged and explicitly not amended
 
