@@ -273,6 +273,34 @@ class ContentCreationTest extends YesWikiTestCase
         $this->assertNotNull($formManager->getByContentType(ContentTypeSchema::TYPE_PAGE), 'and it is still there');
     }
 
+    /**
+     * Which form describes a row is decided by the row's type triple, so a second Page
+     * form would leave getByContentType() picking arbitrarily between the two.
+     */
+    public function testABuiltInTypeStillHasExactlyOneForm(): void
+    {
+        $formManager = $this->getWiki()->services->get(FormManager::class);
+
+        $this->expectExceptionMessage('already exists');
+        $formManager->create([
+            'id' => (string)$this->firstFreeFormId($formManager),
+            'label' => 'Une seconde forme des pages',
+            'description' => '',
+            ContentTypeSchema::CONTENT_TYPE => ContentTypeSchema::TYPE_PAGE,
+            'template' => '',
+        ]);
+    }
+
+    private function firstFreeFormId(FormManager $formManager): int
+    {
+        $id = 9800;
+        while ($formManager->getOne((string)$id) !== null) {
+            $id++;
+        }
+
+        return $id;
+    }
+
     public function testALockedFieldStillCannotBeDeletedOrRetyped(): void
     {
         $formManager = $this->getWiki()->services->get(FormManager::class);
