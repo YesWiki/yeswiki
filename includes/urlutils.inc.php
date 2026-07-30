@@ -78,7 +78,7 @@ function replaceLinksWithIframe(string $body): string
 {
     // pattern qui rajoute le /iframe pour les liens au bon endroit, merci raphael@tela-botanica.org
 
-    $pattern = '~(<a[[:blank:]]*[^>]*[[:blank:]]*href[[:blank:]]*=[[:blank:]]*)(["\'])((?:' . preg_quote($GLOBALS['wiki']->config['base_url'], '~') . '|\?))([\w\-_]+)(\/(?:edit|show))?([&#?].*?)?(\2)([^>]*>)~i';
+    $pattern = '~(<a[[:blank:]]*[^>]*[[:blank:]]*href[[:blank:]]*=[[:blank:]]*)(["\'])((?:' . preg_quote($GLOBALS['wiki']->config['base_url'], '~') . '|\?))([\w\-_]+)(\/(?:edit|show|translate))?([&#?].*?)?(\2)([^>]*>)~i';
 
     $NEW_WINDOW_PATTERN = "~^(.*target=[\"']\s*_?blank\s*[\"'].*)|(.*class=[\"'].*?new-window.*?[\"'].*)$~i";
 
@@ -93,7 +93,7 @@ function replaceLinksWithIframe(string $body): string
                     $matches[2][$key] .
                     $matches[3][$key] .
                     $matches[4][$key] .
-                    ($matches[5][$key] == '/edit' ? '/editiframe' : '/iframe') .
+                    ($matches[5][$key] == '/edit' ? '/editiframe' : ('/translate' ? '/translateiframe' : '/iframe')) .
                     $matches[6][$key] .
                     $matches[7][$key] .
                     $matches[8][$key];
@@ -111,7 +111,7 @@ function testUrlInIframe($url = '')
         // test si on est dans une iframe
         $url = getAbsoluteUrl();
     }
-    $iframe = preg_match('/(?:\/|%2F)(edit)?iframe/Ui', $url);
+    $iframe = preg_match('/(?:\/|%2F)(edit|translate)?iframe/Ui', $url);
 
     return $iframe ? 'iframe' : '';
 }
@@ -119,7 +119,7 @@ function testUrlInIframe($url = '')
 function testRefererUrlInIframe()
 {
     $url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-    $iframe = preg_match('/\/(edit)?iframe/Ui', $url);
+    $iframe = preg_match('/\/(edit|translate)?iframe/Ui', $url);
 
     return $iframe ? 'iframe' : '';
 }
