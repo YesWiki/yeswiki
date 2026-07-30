@@ -26,7 +26,7 @@ To be relevant for news, like displaying news that have a date before today -->
         {% set moisfr = fdate|date('M')|replace({'Feb': 'fev', 'Apr': 'avr', 'May': 'mai', 'Jun': 'jui', 'Aug': 'aou'}) %}
 
         <div class="date"><span class="day">{{ fdate|date('d') }}</span><span class="month">{{ moisfr }}</span></div>
-        <h5>{{ fiche.bf_titre|raw }}</h5>
+        <h5>{{ fiche.title|raw }}</h5>
         {% if fiche.content is defined and fiche.content is not empty %}
             <div class='agenda-subtitle'>
               {{ fiche.content|striptags }}

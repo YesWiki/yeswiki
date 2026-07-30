@@ -10,7 +10,7 @@
             {% set cacheImage = qrCode(qrcodeContent, 'qrcodebadge') %}
           <div class="badge-info">
             <img class="badge-logo" src="{{ logo }}" alt="badge logo" />
-            <h4 class="badge-title">{{ fiche.bf_titre|trim|raw }}</h4>
+            <h4 class="badge-title">{{ fiche.title|trim|raw }}</h4>
 
             {% if fiche.bf_structure|default('')|trim is not empty %}<div class="badge-organisation">{{ fiche.bf_structure|trim|raw }}</div>{% endif %}
           </div>

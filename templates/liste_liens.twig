@@ -6,7 +6,7 @@
             <li class="bazar-entry" {{ fiche.html_data|raw }}>
                 <a href="{{ fiche.url }}"
                     {% if params.links_in_new_window is defined and params.links_in_new_window matches '/^(1|true|on|yes)$/i' %}target="_blank"{% endif %}>
-                    {{ decoration.pellet(params, fiche) }}{{ decoration.icon(params, fiche) }}<span class="entry-title">{{ fiche.bf_titre|raw }}</span>
+                    {{ decoration.pellet(params, fiche) }}{{ decoration.icon(params, fiche) }}<span class="entry-title">{{ fiche.title|raw }}</span>
                 </a>
             </li>
         {% endfor %}

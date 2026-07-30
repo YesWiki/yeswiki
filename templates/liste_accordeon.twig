@@ -10,7 +10,7 @@
             data-toggle="collapse">
             <h4 class="panel-title">
               {{ decoration.pellet(params, fiche) }}{{ decoration.icon(params, fiche) }}
-              {{ fiche.bf_titre|raw }} </h4>
+              {{ fiche.title|raw }} </h4>
               {% if fiche.soustitre is defined and fiche.soustitre is not empty %}
                   {# format the text but remove tags except <br>; collapse consecutive <br> #}
                   {% set soustitre = format(fiche.soustitre)|striptags('<br>') %}

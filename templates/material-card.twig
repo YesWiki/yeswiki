@@ -40,7 +40,7 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
         {% set color = customValueForEntry(params.color|default(null), params.colorfield|default(null), fiche, '') %}
         <article class="material-card {{ color is not empty ? color|slice(0,1)|upper ~ color|slice(1) : random(classes) }}">
           <h2>
-                      <span>{{ fiche.bf_titre|raw }}</span>
+                      <span>{{ fiche.title|raw }}</span>
                       <strong>
                           <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#star"/></svg>
                           {{ fiche.bf_baseline|default('')|raw }}
@@ -98,11 +98,11 @@ document.querySelectorAll('.material-card > .mc-btn-action').forEach(function(ac
   </style>
 
     <div class="col-md-{{ rowcol }} col-sm-6 col-xs-12 bazar-entry material-card-entry" {{ fiche.html_data|raw }}">
-      <a class="{{ modal }}" title="{{ fiche.bf_titre }}" href="{{ url({tag: fiche.tag}) }}">
+      <a class="{{ modal }}" title="{{ fiche.title }}" href="{{ url({tag: fiche.tag}) }}">
       {% set color = customValueForEntry(params.color|default(null), params.colorfield|default(null), fiche, '') %}
       <article class="material-card {{ color is not empty ? color|slice(0,1)|upper ~ color|slice(1) : random(classes) }}">
      <h2>
-                    <span>{{ fiche.bf_titre|raw }} </span>
+                    <span>{{ fiche.title|raw }} </span>
         </h2>
         <div class="mc-content">
           {% if fiche.imagebf_image|default('') != '' %}

@@ -24,7 +24,7 @@
       <fig-caption>
         {% set moisfr = fiche.bf_date_debut_evenement|date('M')|replace({'Feb': 'fev', 'Apr': 'avr', 'May': 'mai', 'Jun': 'jui', 'Aug': 'aou'}) %}
         <div class="date"><span class="day">{{ fiche.bf_date_debut_evenement|slice(8, 2) }}</span><span class="month">{{ moisfr }}</span></div>
-        <h5>{{ fiche.bf_titre|raw }}</h5>
+        <h5>{{ fiche.title|raw }}</h5>
         {% if fiche.soustitre is defined and fiche.soustitre is not empty %}
           {% set soustitre = format(fiche.soustitre)|striptags('<br>')|nl2br %}
             <small class='agenda-subtitle'>
@@ -36,7 +36,7 @@
       </fig-caption>
       {% set useModal = params.modal|default('') == 1 %}
       <a class="{{ useModal ? 'modalbox' : '' }}"
-         title="{{ fiche.bf_titre|striptags }}"
+         title="{{ fiche.title|striptags }}"
          href="{{ fiche.url|raw }}{{ (fiche['external-data'] is defined and useModal) ? '/iframe" data-iframe="1' : '' }}">
       </a>
     </figure>

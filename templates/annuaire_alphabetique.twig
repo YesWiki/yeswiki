@@ -15,7 +15,7 @@
 
 {% set curChar = '' %}
 {% for fiche in fiches %}
-  {% set titre = fiche.bf_titre|trim %}
+  {% set titre = fiche.title|trim %}
   {% set firstChar = removeAccents(titre)|slice(0, 1)|lower %}
   {% if curChar is empty or firstChar != curChar %}
     <div class="clearfix"></div>
@@ -27,7 +27,7 @@
 {{ pager_links|raw }}
   <a class="nom bazar-entry modalbox" {{ fiche.html_data|raw }}
     href="{{ fiche.url|raw }}{{ fiche['external-data'] is defined
-        ? '/iframe" data-iframe="1" title="' ~ fiche.bf_titre|striptags
+        ? '/iframe" data-iframe="1" title="' ~ fiche.title|striptags
         : '' }}">
     {{ titre|raw }}
   </a>

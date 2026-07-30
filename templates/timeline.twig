@@ -37,8 +37,8 @@
           {% else %}
             {% set imgurl = resizeImageTo('src/assets/images/bazar/placeholder-800-800.jpg', 'cache/placeholder_' ~ pixelsimage ~ '_' ~ pixelsimage ~ '.jpg', pixelsimage, pixelsimage) %}
           {% endif %}
-          {% set circle = '<a href="' ~ url({tag: fiche.tag}) ~ '" class="ss-circle" style="background-image:url(' ~ imgurl ~ ');">' ~ fiche.bf_titre ~ '</a>' %}
-          {% set texte = '<h3><span>' ~ fiche.bf_date_debut_evenement ~ '</span><a href="' ~ url({tag: fiche.tag}) ~ '">' ~ fiche.bf_titre ~ '</a></h3>' ~ fiche.texte|default('') %}
+          {% set circle = '<a href="' ~ url({tag: fiche.tag}) ~ '" class="ss-circle" style="background-image:url(' ~ imgurl ~ ');">' ~ fiche.title ~ '</a>' %}
+          {% set texte = '<h3><span>' ~ fiche.bf_date_debut_evenement ~ '</span><a href="' ~ url({tag: fiche.tag}) ~ '">' ~ fiche.title ~ '</a></h3>' ~ fiche.texte|default('') %}
           {% if loop.index0 is even %}
             {{ tl.ligne(circle, texte, taille, fiche, false) }}
           {% else %}

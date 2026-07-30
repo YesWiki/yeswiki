@@ -10,7 +10,7 @@
 {% endif %}<strong>{{ day|date('d.m.Y') }}&nbsp;:</strong><br>
 {% set curday = day %}
 {% endif %}
-{% set titre %}{{ decoration.pellet(params, fiche) }}{{ decoration.icon(params, fiche) }}{{ fiche.bf_titre|raw }}{% endset %}
+{% set titre %}{{ decoration.pellet(params, fiche) }}{{ decoration.icon(params, fiche) }}{{ fiche.title|raw }}{% endset %}
 <div class="bazar-entry" {{ fiche.html_data|raw }}><small><a href="{{ fiche.url }}/revisions">{{ svgIcon }}</a>&nbsp;{{ time }}</small> <a href="{{ fiche.url }}">{{ titre }}</a> <small>par {% if fiche['external-data'] is defined and fiche['external-data'] %}<a href="{{ fiche['external-data'].baseUrl }}?{{ fiche.owner }}">{{ fiche.owner }}</a>{% else %}{{ format(fiche.owner)|raw }}{% endif %}</small></div>
 {% endfor %}
 {% else %}{{ _t('BAZ_NO_ENTRY_FOR_THIS_PERIOD') }}{% endif %}

@@ -14,9 +14,9 @@
 {% for fiche in fiches %}
     {% if fiche.imagebf_image is defined and fiche.imagebf_image != '' %}
     <li class="bazar-entry" {{ fiche.html_data|raw }}>
-        <a class="pbgalery-link modalbox" title="{{ fiche.bf_titre }}"
+        <a class="pbgalery-link modalbox" title="{{ fiche.title }}"
             href="{{ resizedImage(fiche.imagebf_image, bigwidth, bigheight, bigresize, '_') }}">
-            <img loading="lazy" alt="" data-pb-captionLink="{{ fiche.bf_titre }}[{{ url({tag: fiche.tag, handler: 'iframe'}) }}]" src="{{ resizedImage(fiche.imagebf_image, thumbwidth, thumbheight, thumbresize, '_') }}">
+            <img loading="lazy" alt="" data-pb-captionLink="{{ fiche.title }}[{{ url({tag: fiche.tag, handler: 'iframe'}) }}]" src="{{ resizedImage(fiche.imagebf_image, thumbwidth, thumbheight, thumbresize, '_') }}">
         </a>
     </li>
     {% endif %}

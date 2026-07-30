@@ -17,7 +17,7 @@
       {% for index,extract in extracted %}
         {% if extract.errormsg|length > 0 %}
           <label>
-            <input type="checkbox" disabled>{{ extract.entry.bf_titre }}
+            <input type="checkbox" disabled>{{ extract.entry.title|default(extract.entry.bf_titre|default('')) }}
           </label>
             <a class="btn-mini btn-xs btn btn-default"
               data-target="#collapse{{ extract.entry.tag ~ (index + 1) }}"
@@ -38,7 +38,7 @@
         {% else %}
           <label>
             <input type="checkbox" name="importfiche[{{ extract.entry.tag ~ (index + 1) }}]"
-              value="{{ extract.json|e }}">{{ extract.entry.bf_titre }}
+              value="{{ extract.json|e }}">{{ extract.entry.title|default(extract.entry.bf_titre|default('')) }}
           </label>
           <a class="btn-mini btn-xs btn btn-default"
             data-target="#collapse{{ extract.entry.tag ~ (index + 1) }}"
@@ -80,7 +80,7 @@
       </div>
       {% set outputToFormat = '' %}
       {% for index,entry in importedEntries %}
-        {% set outputToFormat = outputToFormat ~ ' ' ~ index ~') [[' ~ entry.tag ~ ' ' ~ entry.bf_titre ~ ']]\n' %}
+        {% set outputToFormat = outputToFormat ~ ' ' ~ index ~') [[' ~ entry.tag ~ ' ' ~ (entry.title|default(entry.bf_titre|default(''))) ~ ']]\n' %}
       {% endfor %}
       {{ format(outputToFormat)|raw }}
   {% else %}

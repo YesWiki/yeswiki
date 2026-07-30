@@ -147,7 +147,7 @@ padding: 20px;
         {% if avecpage != 'oui' %}
             <hgroup>
               {% if sanstitre != 'oui' %}
-                <h1>{{ fiche.bf_titre|raw }}</h1>
+                <h1>{{ fiche.title|raw }}</h1>
               {% endif %}
                 {% if fiche.bf_description|default('') != '' %}
                   <h3>{{ fiche.bf_description|raw }}</h3>

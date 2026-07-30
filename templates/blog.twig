@@ -13,7 +13,7 @@
 		    <div class="well bazar-entry" {{ fiche.html_data|raw }}>
 				{% if fiche.imagebf_image is defined and fiche.imagebf_image is not empty and (fileExists('files/' ~ fiche.imagebf_image) or fiche['external-data'] is defined) %}
 					<a class="pull-right" style="margin:0 0 1em 1em;" href="{{ fiche.url|raw }}">
-					<img loading="lazy" class="img-blog" alt="{{ fiche.bf_titre|striptags }}"
+					<img loading="lazy" class="img-blog" alt="{{ fiche.title|striptags }}"
 						src="{{ fiche['external-data'] is defined
 						? fiche['external-data'].baseUrl ~ 'cache/image_400_300_' ~ fiche.imagebf_image
 						: resizedImage(fiche.imagebf_image, 400, 300, 'crop', '_') }}" {{ fiche['external-data'] is defined
@@ -23,7 +23,7 @@
 				{% endif %}	  
 				<h2 style="margin-top:0;margin-bottom:.25em;">
 					<a href="{{ fiche.url|raw }}">
-						{{ fiche.bf_titre|raw }}
+						{{ fiche.title|raw }}
 					</a>
 				</h2>
 				{% if showdate %}
@@ -52,7 +52,7 @@
 			<div class="article bazar-entry" {{ fiche.html_data|raw }}>
 				{% if fiche.imagebf_image is defined and fiche.imagebf_image is not empty and (fileExists('files/' ~ fiche.imagebf_image) or fiche['external-data'] is defined) %}
 					<a class="pull-left" style="margin:0 1em 1em 0;" href="{{ fiche.url|raw }}">
-					<img loading="lazy" class="img-blog" alt="{{ fiche.bf_titre|striptags }}"
+					<img loading="lazy" class="img-blog" alt="{{ fiche.title|striptags }}"
 						src="{{ fiche['external-data'] is defined
 						? fiche['external-data'].baseUrl ~ 'cache/image_200_150_' ~ fiche.imagebf_image
 						: resizedImage(fiche.imagebf_image, 200, 150, 'crop', '_') }}"{{ fiche['external-data'] is defined
@@ -62,7 +62,7 @@
 				{% endif %}	  
 				<h4 class="title-article">
 					<a href="{{ fiche.url|raw }}">
-						{{ fiche.bf_titre|raw }}
+						{{ fiche.title|raw }}
 					</a>
 				</h4>
 				{% if showdate %}

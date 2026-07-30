@@ -2,7 +2,7 @@
 <div class="badge-container">
     {% for fiche in fiches %}
           <div class="qrbadge bazar-entry" {{ fiche.html_data|raw }}>
-            {% set titre = fiche.bf_titre|trim %}
+            {% set titre = fiche.title|trim %}
             {% set vcard = 'BEGIN:VCARD\nVERSION:2.1\n'
                 ~ 'FN:' ~ titre ~ '\n'
                 ~ 'N:' ~ titre ~ '\n'
