@@ -212,4 +212,88 @@ class ContentCreationTest extends YesWikiTestCase
         $this->expectExceptionMessage(_t('ERROR_NO_FILE_UPLOADED'));
         $this->createFrom(ContentTypeSchema::TYPE_FILE, ['original_filename' => 'rien.txt']);
     }
+
+    /**
+     * The whole point of Page/User/File being forms: a webmaster adds a field and it
+     * behaves like any other. UserManager's own body shape names eight keys and dropped
+     * everything else, so until ticket 13 the User form was a schema the User service did
+     * not honour -- including the `profile_picture` ticket 10 declared in code.
+     */
+    public function testAFieldAWebmasterAddedToTheUserFormIsStored(): void
+    {
+        $wiki = $this->getWiki();
+        $formManager = $wiki->services->get(FormManager::class);
+        $form = $this->builtInForm(ContentTypeSchema::TYPE_USER);
+        $original = $form['template'];
+
+        $form['template'] = array_merge($original, [
+            ['type' => 'texte', 'name' => 'pronouns', 'label' => 'Pronoms'],
+        ]);
+        $formManager->update($form);
+
+        try {
+            $created = $this->createFrom(ContentTypeSchema::TYPE_USER, [
+                'username' => self::ACCOUNT_NAME . 'Extra',
+                'password' => 'un-autre-mot-de-passe',
+                'email' => 'content-creation-extra@example.org',
+                'pronouns' => 'iel',
+            ]);
+
+            $body = $wiki->services->get(PageManager::class)
+                ->getOne((string)$created['tag'], null, true, true)['body'] ?? [];
+            $this->assertSame('iel', $body['pronouns'] ?? null);
+            // and the account is still an account
+            $this->assertArrayHasKey('password', $body);
+            $this->assertSame('content-creation-extra@example.org', $body['email'] ?? null);
+        } finally {
+            $form['template'] = $original;
+            $formManager->update($form);
+        }
+    }
+
+    /**
+     * The other half of "exactly like other forms": the two things that stay refused.
+     * Deleting the Page form does not remove a webmaster's data structure, it removes the
+     * schema every page in the wiki is edited and listed through.
+     */
+    public function testABuiltInFormStillCannotBeEmptiedOrDeleted(): void
+    {
+        $formManager = $this->getWiki()->services->get(FormManager::class);
+        $id = (string)$this->builtInForm(ContentTypeSchema::TYPE_PAGE)['id'];
+
+        foreach (['clear', 'delete'] as $operation) {
+            try {
+                $formManager->{$operation}($id);
+                $this->fail("{$operation}() must refuse a built-in Content type's form");
+            } catch (\Exception $e) {
+                $this->assertStringContainsString('built-in', $e->getMessage());
+            }
+        }
+
+        $this->assertNotNull($formManager->getByContentType(ContentTypeSchema::TYPE_PAGE), 'and it is still there');
+    }
+
+    public function testALockedFieldStillCannotBeDeletedOrRetyped(): void
+    {
+        $formManager = $this->getWiki()->services->get(FormManager::class);
+        $form = $this->builtInForm(ContentTypeSchema::TYPE_PAGE);
+        $original = $form['template'];
+
+        // a hand-edited template, a CSV import or an API client submitting the Page form
+        // with `content` deleted and `title` retyped to something that stores nothing
+        $form['template'] = [['type' => 'hidden', 'name' => 'title', 'label' => 'Titre']];
+        $formManager->update($form);
+
+        try {
+            $repaired = $this->builtInForm(ContentTypeSchema::TYPE_PAGE)['template'];
+            $byName = array_column($repaired, null, 'name');
+
+            $this->assertArrayHasKey('content', $byName, 'a deleted locked field comes back');
+            $this->assertArrayHasKey('keywords', $byName);
+            $this->assertSame('texte', $byName['title']['type'] ?? null, 'a retyped locked field keeps its declared type');
+        } finally {
+            $form['template'] = $original;
+            $formManager->update($form);
+        }
+    }
 }

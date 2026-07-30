@@ -427,4 +427,55 @@ class UserOperationsServiceTest extends YesWikiTestCase
             $this->assertInstanceOf(User::class, $user);
         }
     }
+
+    /**
+     * Setting a motto used to assign the sanitised value to `doubleclickedit` instead --
+     * so it left the motto unsanitised, overwrote an unrelated preference, and threw
+     * outright when a submission carried a motto but no doubleclickedit (ticket 13).
+     */
+    #[Depends('testUserOperationsServiceExisting')]
+    public function testUpdatingOnlyTheMottoTouchesOnlyTheMotto(YesWikiRuntime $wiki): void
+    {
+        $userOperationsService = $wiki->services->get(UserOperationsService::class);
+        $userManager = $wiki->services->get(UserManager::class);
+
+        $name = $this->freeUserName($userManager, 'MottoTest');
+        $email = strtolower(StringUtilService::generateRandomString(10, self::CHARS_FOR_EMAIL)) . '@example.com';
+
+        $user = $userOperationsService->create([
+            'name' => $name,
+            'email' => $email,
+            'password' => StringUtilService::generateRandomString(25, self::CHARS_FOR_PASSWORD),
+        ]);
+        $this->assertInstanceOf(User::class, $user);
+
+        try {
+            $stored = $userManager->getOneByName($name);
+            $this->assertNotNull($stored);
+            $before = $stored['doubleclickedit'];
+            $userOperationsService->update($user, ['motto' => 'ma devise']);
+
+            $reloaded = $userManager->getOneByName($name);
+            $this->assertNotNull($reloaded);
+            $this->assertSame('ma devise', $reloaded['motto']);
+            $this->assertSame($before, $reloaded['doubleclickedit'], 'an unrelated preference must not move');
+        } finally {
+            // UserManager, not UserOperationsService: deleting through the latter
+            // requires an admin session this test has no reason to open
+            $leftover = $userManager->getOneByName($name);
+            if ($leftover !== null) {
+                $userManager->delete($leftover);
+            }
+        }
+    }
+
+    /** A user name nothing has taken yet. */
+    private function freeUserName(UserManager $userManager, string $prefix): string
+    {
+        do {
+            $candidate = $prefix . StringUtilService::generateRandomString(12, self::UPPER_CHARS);
+        } while (!empty($userManager->getOneByName($candidate)));
+
+        return $candidate;
+    }
 }

@@ -173,7 +173,10 @@ class UserOperationsService extends YesWikiController
             $newValues['doubleclickedit'] = $this->sanitizeBoolean($newValues['doubleclickedit'], 'doubleclickedit');
         }
         if (isset($newValues['motto'])) {
-            $newValues['doubleclickedit'] = $this->sanitizeString($newValues['doubleclickedit'], 'motto');
+            // was assigning to doubleclickedit -- setting a motto left the motto
+            // unsanitised and overwrote an unrelated preference, or threw when that
+            // preference was simply absent from the submission
+            $newValues['motto'] = $this->sanitizeString($newValues['motto'], 'motto');
         }
 
         return $newValues;
