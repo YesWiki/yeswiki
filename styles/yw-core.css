@@ -1193,14 +1193,64 @@ textarea.yw-input {
   background: #eef6f7;
 }
 
+/* A table that fits its container instead of scrolling sideways: no cell may set a
+   min-content floor wider than its share, so long labels wrap and button groups reflow.
+   Widths are proportional, not pixel-fixed — a fixed px column always overflows at some
+   viewport width, which is what .table-responsive's scrollbar was papering over. */
+.yw-table--fluid {
+  table-layout: fixed;
+  width: 100%;
+}
+.yw-table--fluid th,
+.yw-table--fluid td {
+  overflow-wrap: anywhere;
+}
+/* a sortable header is nowrap by default, which puts a min-content floor back under the
+   column and reintroduces the sideways scroll this class exists to remove */
+.yw-table--fluid th[data-yw-sort] {
+  white-space: normal;
+}
+.yw-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* the forms admin lists core's own Content types apart from a webmaster's (ticket 10) */
+.forms-table__heading {
+  margin-top: 24px;
+  margin-bottom: 4px;
+}
+.forms-table__heading:first-child {
+  margin-top: 0;
+}
+.forms-table__hint {
+  margin-bottom: 8px;
+  color: var(--neutral-soft-color);
+}
+
 /* ---- Datatable (ticket 16: replaces jQuery DataTables — vanilla sort/search/paginate) ---- */
 .yw-datatable__toolbar {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
+  gap: 8px;
   margin-bottom: 8px;
 }
 .yw-datatable__search {
   max-width: 240px;
+}
+.yw-datatable__page-size {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  margin-right: auto;
+  white-space: nowrap;
+}
+.yw-datatable__page-size select {
+  width: auto;
 }
 table[data-yw-datatable] th[data-yw-sort],
 table.yw-table--sortable th[data-yw-sort] {

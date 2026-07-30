@@ -4,6 +4,28 @@
 // auto-init-any-qualifying-table convenience. No jQuery.
 (function() {
   const DEFAULT_PAGE_SIZE = 10
+  const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
+
+  // _t() returns the key itself when it is missing from wiki.lang, so `_t(k) ?? fallback`
+  // never fires and the UI ends up displaying "DATATABLE_SEARCH_PLACEHOLDER" to a visitor.
+  // Degrade to English instead of shouting a constant name.
+  function translate(key, fallback) {
+    const translated = typeof _t === 'function' ? _t(key) : key
+    return !translated || translated === key ? fallback : translated
+  }
+
+  // "how many rows per page" choices: the table's own configured size plus the standard
+  // ladder, so a table asking for 25 offers 25/50/100 and never a size it was not built
+  // for. Override wholesale with data-yw-page-size-options="20,40".
+  function pageSizeOptions(table, pageSize) {
+    const declared = (table.getAttribute('data-yw-page-size-options') || '')
+      .split(',')
+      .map((value) => parseInt(value, 10))
+      .filter((value) => !Number.isNaN(value) && value > 0)
+    const options = declared.length ? declared : DEFAULT_PAGE_SIZE_OPTIONS.slice()
+    if (!options.includes(pageSize)) options.push(pageSize)
+    return options.sort((a, b) => a - b)
+  }
 
   function cellText(cell) {
     return (cell.textContent || '').trim()
@@ -83,7 +105,7 @@
     const allRows = Array.from(tbody.rows)
     const headerCells = table.tHead ? Array.from(table.tHead.rows[0].cells) : []
 
-    const pageSize = parseInt(table.getAttribute('data-yw-page-size'), 10) || DEFAULT_PAGE_SIZE
+    let pageSize = parseInt(table.getAttribute('data-yw-page-size'), 10) || DEFAULT_PAGE_SIZE
     const noSearch = table.hasAttribute('data-yw-no-search')
     const noPaginate = table.hasAttribute('data-yw-no-paginate')
 
@@ -103,20 +125,53 @@
       }
     }
 
-    if (!noSearch) {
+    // the page-size picker is only worth showing when there is something to page
+    // through: offering "100 per page" for six rows is noise
+    const sizes = pageSizeOptions(table, pageSize)
+    const showPageSize = !noPaginate && allRows.length > sizes[0]
+
+    if (!noSearch || showPageSize) {
       const toolbar = document.createElement('div')
       toolbar.className = 'yw-datatable__toolbar'
-      const search = document.createElement('input')
-      search.type = 'search'
-      search.className = 'yw-input yw-datatable__search'
-      search.placeholder = _t('DATATABLE_SEARCH_PLACEHOLDER') ?? 'Search...'
-      toolbar.appendChild(search)
+
+      if (showPageSize) {
+        const picker = document.createElement('label')
+        picker.className = 'yw-datatable__page-size'
+        picker.appendChild(
+          document.createTextNode(translate('DATATABLE_PAGE_SIZE_LABEL', 'Show'))
+        )
+        const select = document.createElement('select')
+        select.className = 'yw-input'
+        sizes.forEach((size) => {
+          const option = document.createElement('option')
+          option.value = String(size)
+          option.textContent = String(size)
+          option.selected = size === pageSize
+          select.appendChild(option)
+        })
+        select.addEventListener('change', () => {
+          pageSize = parseInt(select.value, 10) || DEFAULT_PAGE_SIZE
+          page = 1
+          render()
+        })
+        picker.appendChild(select)
+        toolbar.appendChild(picker)
+      }
+
+      if (!noSearch) {
+        const search = document.createElement('input')
+        search.type = 'search'
+        search.className = 'yw-input yw-datatable__search'
+        search.placeholder = translate('DATATABLE_SEARCH_PLACEHOLDER', 'Search…')
+        toolbar.appendChild(search)
+        search.addEventListener('input', () => {
+          searchTerm = search.value.trim().toLowerCase()
+          page = 1
+          render()
+        })
+      }
+
       table.parentNode.insertBefore(toolbar, table)
-      search.addEventListener('input', () => {
-        searchTerm = search.value.trim().toLowerCase()
-        page = 1
-        render()
-      })
     }
 
     let paginationEl = null
@@ -133,7 +188,7 @@
       1,
       headerCells.length || (allRows[0] ? allRows[0].cells.length : 1)
     )
-    emptyCell.textContent = _t('DATATABLE_NO_RESULTS') ?? 'No matching results'
+    emptyCell.textContent = translate('DATATABLE_NO_RESULTS', 'No matching results')
     emptyRow.appendChild(emptyCell)
 
     headerCells.forEach((th, index) => {

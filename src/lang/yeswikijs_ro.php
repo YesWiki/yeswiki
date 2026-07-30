@@ -138,4 +138,9 @@ Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
     // relocated from tools/contact/lang/contactjs_ro.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'Acest câmp este obligatoriu.',
     'CONTACT_EMAIL_NOT_VALID' => 'E-mailul introdus nu este valid.',
+
+    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Căutare...',
+    'DATATABLE_NO_RESULTS' => 'Niciun rezultat',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Afișează',
 ];

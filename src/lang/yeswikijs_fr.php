@@ -158,4 +158,9 @@ return [
     // relocated from tools/contact/lang/contactjs_fr.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'La saisie de ce champ est obligatoire.',
     'CONTACT_EMAIL_NOT_VALID' => 'L\'email saisi n\'est pas valide.',
+
+    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Rechercher...',
+    'DATATABLE_NO_RESULTS' => 'Aucun résultat',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Afficher',
 ];

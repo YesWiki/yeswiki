@@ -667,6 +667,24 @@ class FormManager
      *
      * @return int the number of entries deleted
      */
+    /**
+     * Refuse an operation that would leave a built-in Content type without its form.
+     *
+     * Deleting the Page form does not delete a webmaster's data structure -- it removes
+     * the schema every page in the wiki is edited and listed through. There is no route
+     * back to it except re-running the migration, so this is not a confirmation dialog's
+     * job (ticket 10).
+     */
+    private function refuseIfBuiltIn(string $id, string $operation): void
+    {
+        $form = $this->getOne($id);
+        $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
+        if (ContentTypeSchema::isBuiltIn($contentType)) {
+            throw new \Exception("Cannot {$operation} form '{$id}': it describes the built-in '{$contentType}' Content type");
+        }
+    }
+
+    /** @param int|string $id */
     public function clear($id): int
     {
         if ($this->hibernationService->isWikiHibernated()) {
@@ -676,6 +694,8 @@ class FormManager
         if (strval(intval($id)) != strval($id)) {
             return 0;
         }
+
+        $this->refuseIfBuiltIn((string)$id, 'empty');
 
         $deleted = 0;
         foreach ($this->getEntryTagsForForm((string)$id) as $entryTag) {
@@ -701,6 +721,8 @@ class FormManager
         if ($tag === null) {
             return null;
         }
+
+        $this->refuseIfBuiltIn((string)$id, 'delete');
 
         foreach ($this->getEntryTagsForForm((string)$id) as $entryTag) {
             $this->entryManager->delete($entryTag, true);

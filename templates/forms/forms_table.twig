@@ -8,136 +8,43 @@
 </div>
 {% endif %}
 
-{% if forms|length > 0 %}
-<div class="table-responsive">
-  <table id="existing-forms-table" class="bazar-table yw-table" data-yw-datatable>
+{% macro formsTable(id, forms, tooltipMessage, paginate) %}
+  <table id="{{ id }}" class="bazar-table yw-table yw-table--fluid" data-yw-datatable
+         {% if paginate %}data-yw-page-size="25"{% else %}data-yw-no-paginate data-yw-no-search{% endif %}>
     <thead>
+      {# proportional, not pixel-fixed: a px column overflows at some viewport width #}
       <tr>
-        <th>{{ _t('BAZ_FORMULAIRE') }}</th>
-        <th style="width:100px;">{{ _t('BAZ_ACTIONS_FICHES') }}</th>
-        <th style="width:240px;">{{ _t('BAZ_DATA_FORMAT') }}</th>
-        <th style="width:40px;">{{ _t('BAZ_ID') }}</th>
-        <th style="width:100px;">{{ _t('BAZ_ACTIONS') }}</th>
+        <th style="width:38%">{{ _t('BAZ_FORMULAIRE') }}</th>
+        <th style="width:11%">{{ _t('BAZ_ACTIONS_FICHES') }}</th>
+        <th style="width:26%">{{ _t('BAZ_DATA_FORMAT') }}</th>
+        <th style="width:8%">{{ _t('BAZ_ID') }}</th>
+        <th style="width:17%">{{ _t('BAZ_ACTIONS') }}</th>
       </tr>
     </thead>
     <tbody>
       {% for key, form in forms %}
-        <tr>
-          <td>
-            <strong>{{ form.title }}</strong>
-            {% if form.description %}<br />{{ form.description }}{% endif %}
-          </td>
-          <td>
-            <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_RECHERCHER') }}" href="{{ url({ params: { vue: 'consulter', action: 'recherche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
-              <svg class="yw-icon icon-search" aria-hidden="true"><use href="src/assets/icons.svg#loupe"/></svg>
-            </a>
-            <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_SAISIR_UNE_NOUVELLE_FICHE') }}" href="{{ url({ params: { vue: 'saisir', action: 'saisir_fiche', id: key }}) }}" data-toggle="tooltip" data-placement="bottom">
-              <svg class="yw-icon icon-plus" aria-hidden="true"><use href="src/assets/icons.svg#plus"/></svg>
-            </a>
-          </td>
-          <td>
-            <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_RSS') }}" href="{{ url({ handler: 'rss', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-              <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chart-bar"/></svg>
-            </a>
-            <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/csv'}) }}" data-toggle="tooltip" data-placement="bottom">
-              CSV
-            </a>
-            <a class="yw-btn yw-btn--sm" target="_blank" title="{{ _t('BAZ_JSON') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries'}) }}" data-toggle="tooltip" data-placement="bottom">
-              JSON
-            </a>
-            {% if form.isSemantic %}
-              <a class="yw-btn yw-btn--sm" target="_blank" title="{{ _t('BAZ_JSON_LD') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/json-ld'}) }}" data-toggle="tooltip" data-placement="bottom">
-                JSON-LD
-              </a>
-            {% endif %}
-            {% if form.isGeo %}
-              <a class="yw-btn yw-btn--sm" target="_blank" title="{{ _t('BAZ_GEOJSON') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/geojson'}) }}" data-toggle="tooltip" data-placement="bottom">
-                Geo
-              </a>
-            {% endif %}
-            {% if form.isDate %}
-              <a class="yw-btn yw-btn--sm" 
-                target="_blank" title="{{ _t('BAZ_ICAL') }}" 
-                href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/ical'}) }}" 
-                data-toggle="tooltip" data-placement="bottom">
-                ICAL
-              </a>
-            {% endif %}
-            {% if form.isActivityPubEnabled %}
-              <a class="yw-btn yw-btn--sm" target="_blank" title="{{ _t('BAZ_ACTIVITYPUB_ACTOR') }}" href="/actors/{{ key }}" data-toggle="tooltip" data-placement="bottom">
-                AP
-              </a>
-            {% endif %}
-          </td>
-          <td>
-            {{ key }}
-          </td>
-          <td>
-            <div class="create-actions">
-            {% if form.canEdit %}
-            <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CLONE_FORM') }}" href="{{ url({ params: { vue: 'formulaire', action: 'clone', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-              <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg>
-            </a>
-            {% else %}
-              <button type="button" class="yw-btn yw-btn--sm" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#copy"/></svg>
-              </button>
-            {% endif %}
-            {% if form.canEdit %}
-              <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_MODIFIER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'modif', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
-              </a>
-            {% else %}
-              <button type="button" class="yw-btn yw-btn--sm" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#pencil"/></svg>
-              </button>
-            {% endif %}
-            {% if form.isActivityPubEnabled %}
-              <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_GESTION_ABONNEMENTS') }}" href="{{ url({ params: { vue: 'abonnements', action: 'list', idformulaire: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#user-plus"/></svg>
-              </a>
-            {% endif %}
-            {% if form.bookmarklet %}
-              {# entry_bookmarklet configured: the install widget lives here now, not in
-                 the entry form (ticket 27, ADR-0010) #}
-              <a class="yw-btn yw-btn--sm" title="{{ _t('FORM_EDIT_BOOKMARKLET') }}" data-toggle="collapse" href="#bookmarklet-{{ key }}" data-placement="bottom">
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#bookmark"/></svg>
-              </a>
-            {% endif %}
-            </div>
-            {% if form.bookmarklet %}
-              <div id="bookmarklet-{{ key }}" class="yw-collapse">
-                {{ include('@core/forms/bookmarklet-widget.twig', {
-                  formId: key,
-                  urlField: form.bookmarklet.url_field ?? 'bf_url',
-                  descriptionField: form.bookmarklet.description_field ?? 'bf_description',
-                  text: form.bookmarklet.text_field ?? '',
-                }) }}
-              </div>
-            {% endif %}
-            <div class="erase-actions">
-            {% if form.canDelete %}
-              <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_VIDER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_empty', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eraser"/></svg>
-              </a>
-              <a class="yw-btn yw-btn--sm yw-btn--danger modalbox" title="{{ _t('BAZ_SUPPRIMER_FORMULAIRE') }}" href="{{ url({ params: { vue: 'formulaire', action: 'confirm_delete', idformulaire: key, voirmenu: 0 }}) }}" data-toggle="tooltip" data-placement="bottom">
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
-              </a>
-            {% else %}
-              <button type="button" class="yw-btn yw-btn--sm yw-btn--danger" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#eraser"/></svg>
-              </button>
-              <button type="button" class="yw-btn yw-btn--sm yw-btn--danger" disabled="disabled" data-toggle="tooltip" data-placement="bottom" title="{{ tooltipMessage }}">
-                <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#trash"/></svg>
-              </button>
-            {% endif %}
-            </div>
-          </td>
-        </tr>
+        {{ include('@core/forms/forms_table_row.twig', { key: key, form: form, tooltipMessage: tooltipMessage }) }}
       {% endfor %}
     </tbody>
   </table>
-</div> <!-- /.table-responsive -->
+{% endmacro %}
+
+{# Core's own Content types first, and apart: these describe the wiki's pages, accounts
+   and files rather than data a webmaster designed. Always few, so no pagination. #}
+{% if systemForms|length > 0 %}
+  <h3 class="forms-table__heading">{{ _t('BAZ_SYSTEM_FORMS') }}</h3>
+  <p class="forms-table__hint">{{ _t('BAZ_SYSTEM_FORMS_HINT') }}</p>
+  {# no .table-responsive wrapper: a fluid table is never wider than its container, and
+     the wrapper's overflow-x reports a phantom scrollbar for a fixed-layout table even
+     when nothing actually sticks out (measured: no descendant crosses its right edge) #}
+  {{ _self.formsTable('system-forms-table', systemForms, tooltipMessage, false) }}
+{% endif %}
+
+{% if forms|length > 0 %}
+  {% if systemForms|length > 0 %}
+    <h3 class="forms-table__heading">{{ _t('BAZ_USER_FORMS') }}</h3>
+  {% endif %}
+  {{ _self.formsTable('existing-forms-table', forms, tooltipMessage, true) }}
 {% else %}
 <div class="yw-alert yw-alert--info">
 	<a data-yw-dismiss="alert" class="yw-close">&times;</a>{{ _t('BAZ_INTRO_AJOUT_FORMULAIRE')|raw }}
@@ -156,5 +63,3 @@
     {{ block('createformbutton') }}
   </button>
 {% endif %}
-
-

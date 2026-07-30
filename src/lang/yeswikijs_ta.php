@@ -125,4 +125,9 @@ return [
     // relocated from tools/contact/lang/contactjs_ta.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'இந்தப் புலத்தின் நுழைவு கட்டாயமாகும்.',
     'CONTACT_EMAIL_NOT_VALID' => 'உள்ளிட்ட மின்னஞ்சல் செல்லுபடியாகாது.',
+
+    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'தேடு...',
+    'DATATABLE_NO_RESULTS' => 'பொருந்தும் முடிவுகள் இல்லை',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'காட்டு',
 ];

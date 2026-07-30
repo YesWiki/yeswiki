@@ -56,12 +56,28 @@ class FormController extends YesWikiController
                 }));
                 $values[$form['id']]['isDate'] = $this->getService(IcalFormatter::class)->isICALForm($form);
                 $values[$form['id']]['bookmarklet'] = $form['entry_bookmarklet'] ?? null;
+                // core's own Content types are listed apart from a webmaster's forms:
+                // they describe the wiki's pages, accounts and files rather than data
+                // someone designed, and they cannot be emptied or deleted (ticket 10)
+                $contentType = $form[ContentTypeSchema::CONTENT_TYPE] ?? null;
+                $values[$form['id']]['isSystem'] = ContentTypeSchema::isBuiltIn($contentType);
+                $values[$form['id']]['contentType'] = $contentType;
             }
         }
 
+        $systemForms = array_filter($values, fn ($form) => $form['isSystem']);
+        // in the order the types are declared (Page, User, File) rather than by form id,
+        // which is just whatever order the migration happened to create them in
+        $declaredOrder = array_flip(ContentTypeSchema::types());
+        uasort(
+            $systemForms,
+            fn ($a, $b) => ($declaredOrder[$a['contentType']] ?? PHP_INT_MAX) <=> ($declaredOrder[$b['contentType']] ?? PHP_INT_MAX)
+        );
+
         return $this->render('@core/forms/forms_table.twig', [
             'message' => $message,
-            'forms' => $values,
+            'systemForms' => $systemForms,
+            'forms' => array_filter($values, fn ($form) => !$form['isSystem']),
             'userIsAdmin' => $this->getService(AclService::class)->isAdmin(),
             'isWikiHibernated' => $this->hibernationService->isWikiHibernated(),
         ]);

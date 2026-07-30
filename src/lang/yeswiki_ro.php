@@ -1995,6 +1995,7 @@ care face 1 dacă bf_type == premiere_cle în caz contrar 0).',
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Căutare...',
     'DATATABLE_NO_RESULTS' => 'Niciun rezultat',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Afișează',
 
     // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',

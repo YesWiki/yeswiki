@@ -1285,6 +1285,10 @@ return [
     'SYNDICATION_SEE_ALL_CONTENT' => 'Accés a tots els continguts',
     // relocated from tools/bazar/lang/bazar_ca.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Formularis',
+    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_SYSTEM_FORMS' => 'Continguts del wiki',
+    'BAZ_USER_FORMS' => 'Formularis',
+    'BAZ_SYSTEM_FORMS_HINT' => 'Les pàgines, els comptes i els fitxers del wiki es descriuen amb aquests formularis. Podeu modificar-ne els camps, però no eliminar-los.',
     'BAZ_LISTES' => 'Llistes',
     'BAZ_NOM_LISTE' => 'Nom de la llista',
     'BAZ_VALEURS_LISTE' => 'Valors de la llista',
@@ -1662,6 +1666,7 @@ return [
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Cerca...',
     'DATATABLE_NO_RESULTS' => 'Cap resultat',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Mostra',
 
     // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',

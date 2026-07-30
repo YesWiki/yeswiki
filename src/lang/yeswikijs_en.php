@@ -140,4 +140,9 @@ Please confirm their deletion by checking the box below.
     // relocated from tools/contact/lang/contactjs_en.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'This field is mandatory.',
     'CONTACT_EMAIL_NOT_VALID' => 'The given mail is not valid.',
+
+    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Search...',
+    'DATATABLE_NO_RESULTS' => 'No matching results',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Show',
 ];

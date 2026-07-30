@@ -138,4 +138,9 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     // relocated from tools/contact/lang/contactjs_eu.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'Eremu hau nahitaez idatzi behar da.',
     'CONTACT_EMAIL_NOT_VALID' => 'Sartutako helbide elektronikoa ez da baliozkoa.',
+
+    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Bilatu...',
+    'DATATABLE_NO_RESULTS' => 'Ez da emaitzarik aurkitu',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Erakutsi',
 ];

@@ -1905,6 +1905,7 @@ return [
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'தேடு...',
     'DATATABLE_NO_RESULTS' => 'பொருந்தும் முடிவுகள் இல்லை',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'காட்டு',
 
     // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',

@@ -1268,6 +1268,10 @@ return [
     'SYNDICATION_READ_MORE' => 'Lees meer',
     // relocated from tools/bazar/lang/bazar_nl.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Formulieren',
+    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_SYSTEM_FORMS' => 'Wiki-inhoud',
+    'BAZ_USER_FORMS' => 'Formulieren',
+    'BAZ_SYSTEM_FORMS_HINT' => 'De pagina\'s, accounts en bestanden van de wiki worden door deze formulieren beschreven. U kunt hun velden wijzigen, maar ze niet verwijderen.',
     'BAZ_LISTES' => 'Lijsten',
     'BAZ_NOM_LISTE' => 'Naam van de lijst',
     'BAZ_VALEURS_LISTE' => 'Waarden van de lijst',
@@ -1643,6 +1647,7 @@ return [
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Zoeken...',
     'DATATABLE_NO_RESULTS' => 'Geen resultaten',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Toon',
 
     // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',

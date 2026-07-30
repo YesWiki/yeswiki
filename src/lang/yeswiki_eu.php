@@ -1987,6 +1987,7 @@ length > 6`: begiratu ea markatutako elementu-kopurua 6tik gorakoa den (">=","<"
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Bilatu...',
     'DATATABLE_NO_RESULTS' => 'Ez da emaitzarik aurkitu',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Erakutsi',
 
     // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',

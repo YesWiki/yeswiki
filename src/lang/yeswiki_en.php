@@ -1482,6 +1482,10 @@ Text of the column to be changed later
     'SYNDICATION_COPY_IN_WIKI' => 'Add as entry in my YesWiki',
     // relocated from tools/bazar/lang/bazar_en.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Forms',
+    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_SYSTEM_FORMS' => 'Wiki content',
+    'BAZ_USER_FORMS' => 'Forms',
+    'BAZ_SYSTEM_FORMS_HINT' => 'The wiki\'s pages, accounts and files are described by these forms. You can change their fields, but not delete them.',
     'BAZ_LISTES' => 'Lists',
     'BAZ_NOM_LISTE' => 'Name of the list',
     'BAZ_VALEURS_LISTE' => 'Values of the list',
@@ -2174,6 +2178,7 @@ which returns 1 if bf_type == first_loop otherwise 0).',
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Search...',
     'DATATABLE_NO_RESULTS' => 'No matching results',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Show',
 
     // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',

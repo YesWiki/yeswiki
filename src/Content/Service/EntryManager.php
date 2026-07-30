@@ -6,6 +6,7 @@ use Exception;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\AdministrativeLogService;
+use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
@@ -349,6 +350,15 @@ class EntryManager
 
         // not possible to init the formManager in the constructor because of circular reference problem
         $form = $this->container->get(FormManager::class)->getOne($data['form_id']);
+
+        // A built-in Content type's form does not describe entries: a page is created by
+        // editing a page, an account by signing up, a file by uploading it. Creating an
+        // "entry" here would produce a row typed fiche_bazar carrying a Page form's id --
+        // which belongs to no list at all, since the Page form owns the untyped rows
+        // (ticket 10).
+        if (ContentTypeSchema::isBuiltIn($form[ContentTypeSchema::CONTENT_TYPE] ?? null)) {
+            throw new \Exception("Form '{$data['form_id']}' describes the built-in '" . $form[ContentTypeSchema::CONTENT_TYPE] . "' Content type: it has no entries to create");
+        }
 
         // replace the field values which are restricted at reading and writing with default values
         $data = $this->assignRestrictedFields($data, [], $form);

@@ -92,9 +92,21 @@ class ContentTypeSchema
      */
     private const ENTRY_ONLY_PROPERTIES = ['entry_creates_user', 'entry_bookmarklet'];
 
+    /**
+     * Whether this is one of core's own Content types rather than an ordinary bazar form.
+     *
+     * A built-in form is part of the wiki's machinery: delete the Page form and pages stop
+     * having a schema, an editor and a list. Callers use this to refuse the destructive
+     * operations and to tell system content from a webmaster's own in the UI.
+     */
+    public static function isBuiltIn(?string $contentType): bool
+    {
+        return isset(self::LOCKED[(string)$contentType]);
+    }
+
     public static function acceptsEntryOnlyProperties(?string $contentType): bool
     {
-        return !isset(self::LOCKED[(string)$contentType]);
+        return !self::isBuiltIn($contentType);
     }
 
     /**

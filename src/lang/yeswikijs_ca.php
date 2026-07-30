@@ -11,4 +11,9 @@ return [
     'ACTION_BUILDER_MODIFICATION_DATE' => 'Data modificada',
     'ACTION_BUILDER_CREATION_DATE' => 'Data de creació',
     'ACTION_BUILDER_FORM_ID' => 'Formulari',
+
+    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Cerca...',
+    'DATATABLE_NO_RESULTS' => 'Cap resultat',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Mostra',
 ];

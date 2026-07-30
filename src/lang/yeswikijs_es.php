@@ -138,4 +138,9 @@ Confirme su eliminación marcando la casilla siguiente.
     // relocated from tools/contact/lang/contactjs_es.inc.php (ticket 18)
     'CONTACT_REQUIRED_FIELD' => 'Este campo es obligatorio.',
     'CONTACT_EMAIL_NOT_VALID' => 'El correo electrónico introducido no es válido.',
+
+    // yw-datatable.js runs in the browser, so its labels belong in the JS catalog
+    'DATATABLE_SEARCH_PLACEHOLDER' => 'Buscar...',
+    'DATATABLE_NO_RESULTS' => 'Sin resultados',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Mostrar',
 ];

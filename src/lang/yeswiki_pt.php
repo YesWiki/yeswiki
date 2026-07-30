@@ -1285,6 +1285,10 @@ return [
     'SYNDICATION_SEE_ALL_CONTENT' => 'Acesso a todo o conteúdo',
     // relocated from tools/bazar/lang/bazar_pt.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Formulário',
+    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_SYSTEM_FORMS' => 'Conteúdos do wiki',
+    'BAZ_USER_FORMS' => 'Formulários',
+    'BAZ_SYSTEM_FORMS_HINT' => 'As páginas, as contas e os ficheiros do wiki são descritos por estes formulários. Pode alterar os seus campos, mas não os eliminar.',
     'BAZ_LISTES' => 'Listas',
     'BAZ_NOM_LISTE' => 'Nome da lista',
     'BAZ_VALEURS_LISTE' => 'Itens da lista',
@@ -1660,6 +1664,7 @@ return [
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Pesquisar...',
     'DATATABLE_NO_RESULTS' => 'Nenhum resultado encontrado',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Mostrar',
 
     // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Comments',

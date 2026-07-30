@@ -4,6 +4,7 @@ namespace YesWiki\Test\Content\Service;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Test\Core\YesWikiTestCase;
@@ -139,6 +140,42 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
             $body,
             ContentTypeSchema::stripInapplicableProperties($body, null),
             'a form with no declared Content type is an ordinary one'
+        );
+    }
+
+    /**
+     * The three destructive routes into a built-in form are closed.
+     *
+     * Deleting the Page form does not remove a data structure someone designed -- it
+     * removes the schema every page in the wiki is edited and listed through, with no
+     * route back except re-running the migration. Emptying it would mean deleting every
+     * page. And creating an "entry" on it would make a fiche_bazar row carrying the Page
+     * form's id, which belongs to no list at all, since the Page form owns the *untyped*
+     * rows.
+     */
+    #[DataProvider('builtInTitleTemplates')]
+    public function testABuiltInFormCannotBeDeletedEmptiedOrFilledWithEntries(string $contentType, string $unusedTitleTemplate): void
+    {
+        $wiki = $this->getWiki();
+        $formManager = $wiki->services->get(FormManager::class);
+        $form = $this->builtInForm($contentType);
+
+        foreach ([
+            'delete' => fn () => $formManager->delete($form['id']),
+            'empty' => fn () => $formManager->clear($form['id']),
+            'create an entry on' => fn () => $wiki->services->get(EntryManager::class)->create($form['id'], ['antispam' => 1]),
+        ] as $operation => $attempt) {
+            try {
+                $attempt();
+                $this->fail("it should not be possible to {$operation} the {$contentType} form");
+            } catch (\Exception $e) {
+                $this->assertStringContainsString($contentType, $e->getMessage());
+            }
+        }
+
+        $this->assertNotNull(
+            $formManager->getByContentType($contentType),
+            'the form must still be there after every refused attempt'
         );
     }
 

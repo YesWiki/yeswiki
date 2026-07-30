@@ -1550,6 +1550,10 @@ Vous avez la version %{CURRENTPHPVERSION}.
     'SYNDICATION_ENTRY_SAVED' => 'L\'article "%{title}" du flux RSS a bien été enregistré.',
     // relocated from tools/bazar/lang/bazar_fr.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Formulaires',
+    // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_SYSTEM_FORMS' => 'Contenus du wiki',
+    'BAZ_USER_FORMS' => 'Formulaires',
+    'BAZ_SYSTEM_FORMS_HINT' => 'Les pages, les comptes et les fichiers du wiki sont décrits par ces formulaires. Vous pouvez modifier leurs champs, mais pas les supprimer.',
     'BAZ_LISTES' => 'Listes',
     'BAZ_NOM_LISTE' => 'Nom de la liste',
     'BAZ_VALEURS_LISTE' => 'Valeurs de la liste',
@@ -2273,6 +2277,7 @@ qui rend 1 si bf_type == premiere_cle sinon 0).',
 
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Rechercher...',
     'DATATABLE_NO_RESULTS' => 'Aucun résultat',
+    'DATATABLE_PAGE_SIZE_LABEL' => 'Afficher',
 
     // webhooks (ticket 20, formerly the webhooks extension)
     'WEBHOOKS_COMMENTS' => 'Commentaires',
