@@ -1318,6 +1318,7 @@ return [
     // relocated from tools/bazar/lang/bazar_es.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Formularios',
     // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_FILECONTENT_REPLACE_HINT' => 'Elija un archivo para reemplazar este.',
     'BAZ_SYSTEM_FORMS' => 'Contenidos del wiki',
     'BAZ_USER_FORMS' => 'Formularios',
     'BAZ_SYSTEM_FORMS_HINT' => 'Las páginas, las cuentas y los archivos del wiki se describen mediante estos formularios. Puede modificar sus campos, pero no eliminarlos.',

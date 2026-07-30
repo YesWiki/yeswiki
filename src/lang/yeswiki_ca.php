@@ -1286,6 +1286,7 @@ return [
     // relocated from tools/bazar/lang/bazar_ca.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Formularis',
     // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_FILECONTENT_REPLACE_HINT' => 'Trieu un fitxer per substituir aquest.',
     'BAZ_SYSTEM_FORMS' => 'Continguts del wiki',
     'BAZ_USER_FORMS' => 'Formularis',
     'BAZ_SYSTEM_FORMS_HINT' => 'Les pàgines, els comptes i els fitxers del wiki es descriuen amb aquests formularis. Podeu modificar-ne els camps, però no eliminar-los.',

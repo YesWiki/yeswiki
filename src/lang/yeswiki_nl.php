@@ -1269,6 +1269,7 @@ return [
     // relocated from tools/bazar/lang/bazar_nl.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Formulieren',
     // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_FILECONTENT_REPLACE_HINT' => 'Kies een bestand om dit te vervangen.',
     'BAZ_SYSTEM_FORMS' => 'Wiki-inhoud',
     'BAZ_USER_FORMS' => 'Formulieren',
     'BAZ_SYSTEM_FORMS_HINT' => 'De pagina\'s, accounts en bestanden van de wiki worden door deze formulieren beschreven. U kunt hun velden wijzigen, maar ze niet verwijderen.',

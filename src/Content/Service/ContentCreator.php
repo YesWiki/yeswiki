@@ -6,7 +6,9 @@ use Psr\Container\ContainerInterface;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\BazarField;
+use YesWiki\Content\Field\FileContentField;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Search\Service\TagsManager;
 
 /**
@@ -29,14 +31,11 @@ use YesWiki\Search\Service\TagsManager;
  */
 class ContentCreator
 {
-    /**
-     * Built-in types a form can create today. File is absent on purpose: a File row whose
-     * `stored_filename` names nothing on disk 404s the moment anyone follows it, so its
-     * button waits on the field that uploads the bytes (repo task #136).
-     */
+    /** Built-in types a form can create. */
     private const CREATABLE_BUILT_IN = [
         ContentTypeSchema::TYPE_PAGE,
         ContentTypeSchema::TYPE_USER,
+        ContentTypeSchema::TYPE_FILE,
     ];
 
     private ContainerInterface $container;
@@ -79,6 +78,8 @@ class ContentCreator
                 return $this->createPage($form, $entryManager->formatDataBeforeSave($data));
             case ContentTypeSchema::TYPE_USER:
                 return $this->createUser($form, $data);
+            case ContentTypeSchema::TYPE_FILE:
+                return $this->createFile($form, $data);
             default:
                 throw new \Exception("Creating a '{$contentType}' Content from its form is not supported yet");
         }
@@ -161,6 +162,61 @@ class ContentCreator
         $this->applyFormProperties($form, $data);
 
         return array_merge($body, ['tag' => $user['name'], $nameField => $user['name']]);
+    }
+
+    /**
+     * A file is its bytes: the upload has to arrive, and everything the File type stores
+     * about it -- the two filenames, the size, the mime type -- is derived from it rather
+     * than typed in. FileManager owns that, exactly as it does for the upload API route.
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $data raw submission; the upload is in $_FILES, not here
+     *
+     * @return array<string, mixed>
+     */
+    private function createFile(array $form, array $data): array
+    {
+        // checked before the form pipeline runs, not after: with no upload there is no
+        // filename, so the pipeline would fail on the *title* it computes from one and
+        // report a missing title to someone who is missing a file
+        if (!$this->hasUpload($form)) {
+            throw new \Exception(_t('ERROR_NO_FILE_UPLOADED'));
+        }
+
+        $data = $this->container->get(EntryManager::class)->formatDataBeforeSave($data);
+        if (empty($data['stored_filename'])) {
+            throw new \Exception(_t('ERROR_NO_FILE_UPLOADED'));
+        }
+
+        $file = $this->container->get(FileManager::class)->create(
+            (string)($data['original_filename'] ?? $data['stored_filename']),
+            (string)$data['stored_filename'],
+            (string)($data['uploaded_from'] ?? ''),
+            (int)($data['size'] ?? 0),
+            (string)($data['mime_type'] ?? ''),
+        );
+
+        $this->applyFormProperties($form, $file);
+
+        return $file;
+    }
+
+    /**
+     * Whether the submission actually carries bytes for one of the form's file-content
+     * fields. PHP puts uploads in $_FILES, so they are not in the posted data at all.
+     *
+     * @param array<string, mixed> $form
+     */
+    private function hasUpload(array $form): bool
+    {
+        $files = $this->container->get(CurrentRequest::class)->get()->files;
+        foreach ($form['prepared'] ?? [] as $field) {
+            if ($field instanceof FileContentField && !empty($files->get($field->getName()))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -1551,6 +1551,7 @@ Vous avez la version %{CURRENTPHPVERSION}.
     // relocated from tools/bazar/lang/bazar_fr.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Formulaires',
     // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_FILECONTENT_REPLACE_HINT' => 'Choisissez un fichier pour remplacer celui-ci.',
     'BAZ_SYSTEM_FORMS' => 'Contenus du wiki',
     'BAZ_USER_FORMS' => 'Formulaires',
     'BAZ_SYSTEM_FORMS_HINT' => 'Les pages, les comptes et les fichiers du wiki sont décrits par ces formulaires. Vous pouvez modifier leurs champs, mais pas les supprimer.',

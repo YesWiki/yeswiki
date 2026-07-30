@@ -2,16 +2,20 @@
 
 namespace YesWiki\Test\Content\Service;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\ContentCreator;
 use YesWiki\Content\Service\ContentTypeResolver;
+use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Identity\Service\UserManager;
+use YesWiki\Kernel\Service\CurrentRequest;
 use YesWiki\Search\Service\TagsManager;
 use YesWiki\Test\Core\YesWikiTestCase;
 
@@ -135,16 +139,42 @@ class ContentCreationTest extends YesWikiTestCase
         $this->assertStringContainsString('@admins', $writeAcl['list'] ?? '', "an account must not inherit the wiki's default write ACL");
     }
 
-    public function testTheFileFormRefusesUntilItCanCarryTheBytes(): void
+    public function testEveryBuiltInTypeCanBeCreatedFromItsForm(): void
     {
-        $this->assertFalse(
-            ContentCreator::supports(ContentTypeSchema::TYPE_FILE),
-            'a File row whose stored_filename names nothing on disk would 404 on the first click'
-        );
-        $this->assertTrue(ContentCreator::supports(ContentTypeSchema::TYPE_PAGE));
+        foreach ([ContentTypeSchema::TYPE_PAGE, ContentTypeSchema::TYPE_USER, ContentTypeSchema::TYPE_FILE] as $type) {
+            $this->assertTrue(ContentCreator::supports($type), "the {$type} form should create Content");
+        }
         $this->assertTrue(ContentCreator::supports(null), 'an ordinary bazar form is unaffected');
+    }
 
-        $this->expectException(\Exception::class);
+    public function testTheFileFormCreatesAFileWhoseBytesAreOnDisk(): void
+    {
+        $source = tempnam(sys_get_temp_dir(), 'yw-upload-') . '.txt';
+        file_put_contents($source, "des octets bien réels\n");
+
+        $request = Request::create('/', 'POST');
+        $request->files->set('file_content', new UploadedFile($source, 'un-fichier-de-test.txt', 'text/plain', null, true));
+        $this->getWiki()->services->get(CurrentRequest::class)->replace($request);
+
+        try {
+            $created = $this->createFrom(ContentTypeSchema::TYPE_FILE, []);
+        } finally {
+            $this->getWiki()->services->get(CurrentRequest::class)->replace(Request::createFromGlobals());
+        }
+
+        $this->assertSame('un-fichier-de-test.txt', $created['original_filename'] ?? null);
+        $path = $this->getWiki()->services->get(FileManager::class)->getPhysicalPath((string)$created['tag']);
+        $this->assertNotNull($path, 'a file Content must name bytes that are actually on disk');
+        $this->assertStringStartsWith(FileManager::STORAGE_DIR, $path, 'the bytes live under private/, never the web root');
+        $this->assertSame("des octets bien réels\n", file_get_contents($path));
+        @unlink($path);
+    }
+
+    public function testTheFileFormRefusesASubmissionCarryingNoBytes(): void
+    {
+        $this->getWiki()->services->get(CurrentRequest::class)->replace(Request::create('/', 'POST'));
+
+        $this->expectExceptionMessage(_t('ERROR_NO_FILE_UPLOADED'));
         $this->createFrom(ContentTypeSchema::TYPE_FILE, ['original_filename' => 'rien.txt']);
     }
 }

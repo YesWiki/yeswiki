@@ -2,7 +2,6 @@
 
 namespace YesWiki\Content\Api;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -12,7 +11,6 @@ use YesWiki\Content\Service\FileManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
 use YesWiki\Identity\Service\AclService;
-use YesWiki\Kernel\Service\HtmlPurifierService;
 
 class FileApiController extends YesWikiController
 {
@@ -33,38 +31,26 @@ class FileApiController extends YesWikiController
         $this->denyAccessUnlessGranted('write', $pageTag);
 
         $uploadedFile = $request->files->get('upFile');
-        if (empty($uploadedFile) || !$uploadedFile->isValid()) {
+        if (empty($uploadedFile)) {
             return new ApiResponse(['error' => _t('ERROR_NO_FILE_UPLOADED')], Response::HTTP_BAD_REQUEST);
         }
 
-        $originalFilename = $uploadedFile->getClientOriginalName();
-        $ext = strtolower($uploadedFile->getClientOriginalExtension());
-        $authorizedExtensions = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['authorized-extensions'] ?? [];
-        if (!empty($authorizedExtensions) && !array_key_exists($ext, $authorizedExtensions)) {
-            return new ApiResponse(['error' => _t('ERROR_NOT_AUTHORIZED_EXTENSION')], Response::HTTP_BAD_REQUEST);
-        }
-
-        $maxFileSize = $this->getService(\YesWiki\Kernel\Service\RuntimeConfig::class)['attach_config']['max_file_size']
-            ?? $this->getService(ParameterBagInterface::class)->get('max-upload-size');
-        if ($uploadedFile->getSize() > $maxFileSize) {
-            return new ApiResponse(['error' => _t('ERROR_MAX_FILE_SIZE')], Response::HTTP_BAD_REQUEST);
-        }
-
-        // captured before move(): the SplFileInfo/UploadedFile object stops reflecting the
-        // original tmp path (and getSize()/getMimeType() start failing) once moved away
-        $size = $uploadedFile->getSize();
-        $mimeType = $uploadedFile->getMimeType() ?? '';
-
         $fileManager = $this->getService(FileManager::class);
-        $sanitized = $fileManager->sanitizeFilename($originalFilename);
-        $storedFilename = $fileManager->suggestFreeFilename($sanitized);
-
-        $uploadedFile->move(FileManager::STORAGE_DIR, $storedFilename);
-        if (in_array($ext, ['svg', 'xml'], true)) {
-            $this->getService(HtmlPurifierService::class)->cleanFile(FileManager::STORAGE_DIR . '/' . $storedFilename, $ext);
+        try {
+            // validation, sanitising and the SVG/XML purge all live in one place now, so
+            // the form field cannot end up with a laxer set of them (ticket 13)
+            $stored = $fileManager->storeUpload($uploadedFile);
+        } catch (\InvalidArgumentException $e) {
+            return new ApiResponse(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
 
-        $entry = $fileManager->create($originalFilename, $storedFilename, $pageTag, $size, $mimeType);
+        $entry = $fileManager->create(
+            $stored['original_filename'],
+            $stored['stored_filename'],
+            $pageTag,
+            $stored['size'],
+            $stored['mime_type'],
+        );
 
         return new ApiResponse($entry, Response::HTTP_CREATED);
     }

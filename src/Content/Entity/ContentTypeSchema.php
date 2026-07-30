@@ -58,6 +58,9 @@ class ContentTypeSchema
             'profile_picture' => ['type' => 'image', 'label' => 'Photo de profil'],
         ],
         self::TYPE_FILE => [
+            // the bytes. Every other field here is *derived* from this upload rather than
+            // typed in, so without it a File form could describe a file but never make one
+            'file_content' => ['type' => 'contenu_fichier', 'label' => 'Fichier'],
             // what the visitor uploaded, and what is actually on disk: the pair the
             // file service needs to serve a download at all
             'original_filename' => ['type' => 'texte', 'label' => 'Nom du fichier'],

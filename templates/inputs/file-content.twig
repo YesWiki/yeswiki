@@ -1,0 +1,23 @@
+{# The bytes of a file Content (ticket 13). Unlike inputs/file.twig there is no URL tab:
+   a file Content *is* its bytes, so pointing it at somewhere else on the web would leave
+   a row that FileManager cannot serve. #}
+{% extends "@core/layouts/input.twig" %}
+
+{% block input %}
+    {% if currentFilename %}
+        <p class="file-content__current">
+            <a href="{{ downloadUrl }}" target="_blank" download="{{ currentFilename }}">{{ currentFilename }}</a>
+            {% if currentSize %}<span class="yw-text-muted">({{ (currentSize / 1024)|round }} ko)</span>{% endif %}
+        </p>
+    {% endif %}
+    <input
+        type="file"
+        id="{{ name }}"
+        name="{{ name }}"
+        class="yw-input yw-file-upload"
+        {% if required %}required{% endif %}
+    />
+    {% if currentFilename %}
+        <p class="yw-text-muted">{{ _t('BAZ_FILECONTENT_REPLACE_HINT') }}</p>
+    {% endif %}
+{% endblock %}

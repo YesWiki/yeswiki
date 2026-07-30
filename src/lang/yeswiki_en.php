@@ -1483,6 +1483,7 @@ Text of the column to be changed later
     // relocated from tools/bazar/lang/bazar_en.inc.php (ticket 24)
     'BAZ_FORMULAIRE' => 'Forms',
     // the forms admin lists core's own Content types apart from a webmaster's (ticket 10)
+    'BAZ_FILECONTENT_REPLACE_HINT' => 'Choose a file to replace this one.',
     'BAZ_SYSTEM_FORMS' => 'Wiki content',
     'BAZ_USER_FORMS' => 'Forms',
     'BAZ_SYSTEM_FORMS_HINT' => 'The wiki\'s pages, accounts and files are described by these forms. You can change their fields, but not delete them.',

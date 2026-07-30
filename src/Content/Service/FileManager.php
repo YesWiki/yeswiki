@@ -3,7 +3,11 @@
 namespace YesWiki\Content\Service;
 
 use Psr\Container\ContainerInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use YesWiki\Identity\Service\AclService;
+use YesWiki\Kernel\Service\HtmlPurifierService;
+use YesWiki\Kernel\Service\RuntimeConfig;
 
 /**
  * Attached files are their own Content type (ticket 17, formerly tools/attach) -- a
@@ -65,7 +69,7 @@ class FileManager
      */
     public function uploadMaxSize(): int
     {
-        return self::uploadMaxSizeFromConfig($this->container->get(\YesWiki\Kernel\Service\RuntimeConfig::class)->getValue('max_file_size'));
+        return self::uploadMaxSizeFromConfig($this->container->get(RuntimeConfig::class)->getValue('max_file_size'));
     }
 
     /**
@@ -132,6 +136,56 @@ class FileManager
     }
 
     /**
+     * Validate an upload and put its bytes on disk, returning the attributes a file
+     * Content is made of. The one place uploads are vetted: the extension allow-list, the
+     * size cap, the filename sanitising, and the SVG/XML purge that stops an uploaded
+     * drawing from being an uploaded script. Two callers now enter here -- the upload API
+     * route and the file-content form field -- and a second copy of these checks is a
+     * second chance to forget one.
+     *
+     * @return array{original_filename: string, stored_filename: string, size: int, mime_type: string}
+     *
+     * @throws \InvalidArgumentException when the upload is missing or refused
+     */
+    public function storeUpload(UploadedFile $uploadedFile): array
+    {
+        if (!$uploadedFile->isValid()) {
+            throw new \InvalidArgumentException(_t('ERROR_NO_FILE_UPLOADED'));
+        }
+
+        $originalFilename = $uploadedFile->getClientOriginalName();
+        $ext = strtolower($uploadedFile->getClientOriginalExtension());
+        $authorizedExtensions = $this->container->get(RuntimeConfig::class)['authorized-extensions'] ?? [];
+        if (!empty($authorizedExtensions) && !array_key_exists($ext, $authorizedExtensions)) {
+            throw new \InvalidArgumentException(_t('ERROR_NOT_AUTHORIZED_EXTENSION'));
+        }
+
+        $maxFileSize = $this->container->get(RuntimeConfig::class)['attach_config']['max_file_size']
+            ?? $this->container->get(ParameterBagInterface::class)->get('max-upload-size');
+        if ($uploadedFile->getSize() > $maxFileSize) {
+            throw new \InvalidArgumentException(_t('ERROR_MAX_FILE_SIZE'));
+        }
+
+        // captured before move(): the SplFileInfo/UploadedFile object stops reflecting the
+        // original tmp path (and getSize()/getMimeType() start failing) once moved away
+        $size = (int)$uploadedFile->getSize();
+        $mimeType = $uploadedFile->getMimeType() ?? '';
+
+        $storedFilename = $this->suggestFreeFilename($this->sanitizeFilename($originalFilename));
+        $uploadedFile->move(self::STORAGE_DIR, $storedFilename);
+        if (in_array($ext, ['svg', 'xml'], true)) {
+            $this->container->get(HtmlPurifierService::class)->cleanFile(self::STORAGE_DIR . '/' . $storedFilename, $ext);
+        }
+
+        return [
+            'original_filename' => $originalFilename,
+            'stored_filename' => $storedFilename,
+            'size' => $size,
+            'mime_type' => $mimeType,
+        ];
+    }
+
+    /**
      * Register an already-uploaded/moved physical file as a new file-entry, seeding its
      * ACL from $ownerPageTag's current read ACL. Does NOT move bytes onto disk itself --
      * callers (the upload API route, the attachments migration) are responsible for that,
@@ -157,9 +211,14 @@ class FileManager
         $this->tripleStore->create($tag, TripleStore::TYPE_URI, self::TRIPLES_FILE_TYPE, '', '');
         $this->fileTagCache[$tag] = true;
 
-        $readAcl = $this->aclService->load($ownerPageTag, 'read');
-        if (!empty($readAcl['list'])) {
-            $this->aclService->save($tag, 'read', $readAcl['list']);
+        // a file uploaded from its own form has no owning page, so there is no ACL to
+        // inherit and the wiki's defaults are the right answer -- asking for the ACLs of
+        // the empty tag is not
+        if ($ownerPageTag !== '') {
+            $readAcl = $this->aclService->load($ownerPageTag, 'read');
+            if (!empty($readAcl['list'])) {
+                $this->aclService->save($tag, 'read', $readAcl['list']);
+            }
         }
 
         return $this->getOne($tag);
