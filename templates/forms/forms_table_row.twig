@@ -25,8 +25,10 @@
   </td>
   <td>
     <div class="yw-table__actions">
+      {# named, not iconified: it sits beside CSV/JSON/ICAL, and the sprite has no glyph
+         that reads as "RSS" -- chart-bar certainly did not #}
       <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_RSS') }}" href="{{ url({ handler: 'rss', params: { id: key }}) }}" data-toggle="tooltip" data-placement="bottom" >
-        <svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chart-bar"/></svg>
+        RSS
       </a>
       <a class="yw-btn yw-btn--sm" title="{{ _t('BAZ_CSV') }}" href="{{ url({ tag: 'api',handler:'forms/' ~ key ~'/entries/csv'}) }}" data-toggle="tooltip" data-placement="bottom">
         CSV
