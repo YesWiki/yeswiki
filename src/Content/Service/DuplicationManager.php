@@ -250,7 +250,14 @@ class DuplicationManager
                     }
                 }
                 $entry['tag'] = $data['newTag'];
-                $entry['bf_titre'] = $data['newTitle'];
+                // the new name goes in the field this form names its entries with -- the
+                // computed `title` is derived on save, so writing that would be discarded,
+                // and bf_titre is only right for a form that happens to have one (ticket 11)
+                $titleField = $this->container->get(FormPropertiesService::class)
+                    ->titleFieldName($this->container->get(FormManager::class)->getOne($entry['form_id']));
+                if ($titleField !== null) {
+                    $entry[$titleField] = $data['newTitle'];
+                }
                 $entry['antispam'] = 1;
                 $this->container->get(EntryManager::class)->create($entry['form_id'], $entry);
                 break;

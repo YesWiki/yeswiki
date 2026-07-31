@@ -123,7 +123,7 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
                     if (baz_a_le_droit('modif_fiche', $fiche['owner'])) {
                         $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('edit', $fiche['tag']) . '"></a>' . "\n";
                     }
-                    $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('', $fiche['tag']) . '">' . $fiche['bf_titre'] . '</a>' . "\n";
+                    $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('', $fiche['tag']) . '">' . ($fiche['title'] ?? $fiche['bf_titre'] ?? $fiche['tag']) . '</a>' . "\n";
                     $fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('', $fiche['tag']) . '"></a>' . "\n";
                     $fiches['fiches'][] = $fiche;
                 }

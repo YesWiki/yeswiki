@@ -427,7 +427,7 @@ class WebhooksController extends YesWikiController implements EventSubscriberInt
             case self::FORMAT_YESWIKI:
                 // remove not used fields
                 foreach ($data['data'] as $key => $value) {
-                    if (!in_array($key, ['tag', 'bf_titre', 'form_id', 'url', 'updated_at'], true)) {
+                    if (!in_array($key, ['tag', 'title', 'bf_titre', 'form_id', 'url', 'updated_at'], true)) {
                         unset($data['data'][$key]);
                     }
                 }

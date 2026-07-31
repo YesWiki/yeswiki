@@ -717,6 +717,10 @@ class SearchManager
                                     : explode(',', $params['searchfields'])
                                 : [];
 
+            // every Content carries the computed `title` (ADR-0010), so a keyword search
+            // always looks there; bf_titre stays too, for forms that have it and whose
+            // stored field value can differ from the computed title (ticket 11)
+            $vSearchFields[] = PageBody::TITLE;
             $vSearchFields[] = 'bf_titre';
 
             $vKeywordsFields = array_unique(array_map('trim', $vSearchFields));

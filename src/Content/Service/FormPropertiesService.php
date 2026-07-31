@@ -178,6 +178,35 @@ class FormPropertiesService
         return $form === null ? trim((string)($entry['tag'] ?? '')) : $this->computeTitle($form, $entry);
     }
 
+    /**
+     * Which field of this form *carries* the title -- the title role, in the shape ticket
+     * 11 gives every other role: core asks the form instead of assuming `bf_titre`.
+     *
+     * The first field the form's own title template references, so a form named
+     * "{{bf_nom}} {{bf_prenom}}" answers `bf_nom`. Null when the template names nothing
+     * the form has, which is the honest answer -- a caller that needs to *write* a title
+     * has nowhere to put it, and one that needs to *read* one should read the computed
+     * `title` instead of a field.
+     *
+     * @param array<string, mixed>|null $form
+     */
+    public function titleFieldName(?array $form): ?string
+    {
+        if ($form === null) {
+            return null;
+        }
+
+        $template = trim((string)($form['entry_title_template'] ?? '')) ?: self::DEFAULT_TITLE_TEMPLATE;
+        foreach ($this->referencedFieldNames($template) as $fieldName) {
+            $fieldName = trim($fieldName);
+            if ($fieldName !== '' && $this->getService(FormManager::class)->findFieldFromNameOrPropertyName($fieldName, $form['id'] ?? null) !== null) {
+                return $fieldName;
+            }
+        }
+
+        return null;
+    }
+
     /** The {{field}} names a title template references. */
     public function referencedFieldNames(string $titleTemplate): array
     {

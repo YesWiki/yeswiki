@@ -91,13 +91,13 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                 $title = _t('TEMPLATE_DUPLICATE_ENTRY') . ' ' . $this->getService(PageContext::class)->getTag();
                 $originalContent = $this->getService(EntryManager::class)->getOne($this->getService(PageContext::class)->getTag());
                 if ($toExternalWiki) {
-                    $pageTitle = $originalContent['bf_titre'];
+                    $pageTitle = $originalContent['title'] ?? $originalContent['bf_titre'] ?? '';
                     $proposedTag = $this->getService(PageContext::class)->getTag();
                     // the receiving wiki json_decodes this field back into an entry
                     $originalContent = PageBody::encode($this->getService(PageContext::class)->getPage()['body']);
                     $form = $this->getService(FormManager::class)->getOne($this->getService(EntryManager::class)->getOne($proposedTag)['form_id']);
                 } else {
-                    $pageTitle = $originalContent['bf_titre'] . ' (' . _t('DUPLICATE') . ')';
+                    $pageTitle = ($originalContent['title'] ?? $originalContent['bf_titre'] ?? '') . ' (' . _t('DUPLICATE') . ')';
                     $proposedTag = genere_nom_wiki($pageTitle);
                 }
             } elseif ($isList) {

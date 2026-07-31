@@ -81,8 +81,11 @@ abstract class EnumField extends BazarField
         $this->optionsUrls = [];
         if (is_array($entries)) {
             foreach ($entries as $id => $entry) {
-                if (!empty($entry['bf_titre'])) {
-                    $options[$id] = $entry['bf_titre'];
+                // the computed title, so a linked form that names its entries with
+                // something other than bf_titre still fills the dropdown (ticket 11)
+                $entryTitle = $entry['title'] ?? $entry['bf_titre'] ?? '';
+                if (!empty($entryTitle)) {
+                    $options[$id] = $entryTitle;
                 }
                 if (!empty($entry['url'])) {
                     $this->optionsUrls[$id] = $entry['url'];
@@ -135,7 +138,7 @@ abstract class EnumField extends BazarField
 
         $this->options = [];
         foreach ($fiches as $fiche) {
-            $this->options[$fiche['tag']] = $fiche['bf_titre'];
+            $this->options[$fiche['tag']] = $fiche['title'] ?? $fiche['bf_titre'] ?? $fiche['tag'];
         }
         if (is_array($this->options)) {
             asort($this->options);

@@ -74,7 +74,7 @@ class UserFavoritesAction extends YesWikiAction implements RegisteredAction
                 $entry = $this->entryManager->getOne($favorite['resource']);
                 if (!empty($entry)) {
                     $favorites[$key]['entry'] = $entry;
-                    $favorites[$key]['title'] = $entry['bf_titre'] ?? $favorite['resource'];
+                    $favorites[$key]['title'] = $entry['title'] ?? $entry['bf_titre'] ?? $favorite['resource'];
                     $form = $this->formManager->getOne($entry['form_id']);
                     if (!empty($form)) {
                         $favorites[$key]['form'] = $form;

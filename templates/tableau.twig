@@ -38,7 +38,9 @@ pour différencier les différents tableaux table_1 table_2 #}
               entry.external-data is not empty or not(
                 userIsAdmin() or userIsOwner(entry.tag))) }}
         {% endif %}
-        {% set searchTitle = ("bf_titre" in columnsInfo|filter(
+        {# is the form's own title field one of the visible columns? if so it carries the
+           link to the entry; otherwise the first non-map column does (ticket 11) #}
+        {% set searchTitle = titleFieldName is not empty and (titleFieldName in columnsInfo|filter(
           info => info['not-visible'] is not defined or not info['not-visible'])|map(
             p => p.propertyName)) %}
         {% for info in columnsInfo %}
@@ -68,7 +70,7 @@ pour différencier les différents tableaux table_1 table_2 #}
               <span class="bazar-entry" {{ entry.html_data|raw }}></span>
             {% endif %}
             {% if info.key is empty %}
-              {% if (searchTitle and info.propertyName == "bf_titre") or 
+              {% if (searchTitle and info.propertyName == titleFieldName) or 
                     (not searchTitle and loop.first and not info.mapFieldId) %}
                 {% if colors[entry.tag] is not empty %}<span class="pellet" style="background-color: {{ colors[entry.tag] }} ;"></span>{% endif %}
                 {% if icons[entry.tag] is not empty %}<i class="{{ icons[entry.tag] }}"></i>{% endif %}

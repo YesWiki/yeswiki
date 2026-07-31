@@ -2,17 +2,20 @@
 
 namespace YesWiki\Content\Service;
 
-use YesWiki\Content\Field\MapField;
+use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Core\YesWikiController;
 
 class GeoJSONFormatter extends YesWikiController
 {
     protected $formManager;
+    protected FieldRoleResolver $fieldRoles;
 
     public function __construct(
-        FormManager $formManager
+        FormManager $formManager,
+        FieldRoleResolver $fieldRoles
     ) {
         $this->formManager = $formManager;
+        $this->fieldRoles = $fieldRoles;
     }
 
     /**
@@ -50,7 +53,9 @@ class GeoJSONFormatter extends YesWikiController
                         'coordinates' => [$extendedEntry['geo']['longitude'], $extendedEntry['geo']['latitude']],
                     ],
                     'id' => $entry['tag'],
-                    'title' => $entry['bf_titre'],
+                    // the computed title (ADR-0010), not whatever the form happens to
+                    // call its title field
+                    'title' => $entry['title'] ?? $entry['bf_titre'] ?? '',
                     'properties' => $entry,
                 ];
             }
@@ -70,11 +75,14 @@ class GeoJSONFormatter extends YesWikiController
         if (!empty($entry['form_id']) && $entry['form_id'] == intval($entry['form_id'])) {
             // '' rather than null: a form with no map field must not index the entry on
             // a null key, which PHP 8.4 deprecates and which matched nothing anyway
-            $propertyName = (string)$this->getFirstMapFieldPropertyName($entry['form_id'], $cache);
+            $propertyName = (string)$this->geolocationPropertyName((int)$entry['form_id'], $cache);
         }
         if (!empty($entry[$propertyName]['latitude']) && !empty($entry[$propertyName]['longitude'])) {
             $latitude = $entry[$propertyName]['latitude'];
             $longitude = $entry[$propertyName]['longitude'];
+        // the shapes below are historical *storage*, not field naming: entries written
+        // before 20260203091701_BazarChangeModelForGeolocation still carry their
+        // coordinates nested under the old keys, or flat, or in one carte_google string
         } elseif (!empty($entry[$propertyName]['bf_latitude']) && !empty($entry[$propertyName]['bf_longitude'])) {
             $latitude = $entry[$propertyName]['bf_latitude'];
             $longitude = $entry[$propertyName]['bf_longitude'];
@@ -98,26 +106,20 @@ class GeoJSONFormatter extends YesWikiController
     }
 
     /**
-     * get first field propertyName corresponding to a MapField in a form.
+     * Which field of this form holds the geolocation -- the form's answer, not a guess at
+     * a field name (ticket 11). Was a private "first MapField wins" scan, which is exactly
+     * what the geolocation role defaults to, minus the ability for a webmaster to say
+     * which map field is the one to export when a form has more than one.
      *
-     * @param array &$cache cache of correspondance of propertynames and forms id
-     *
-     * @return string|null $propertyName
+     * @param array<int, string|null> &$cache per-form-id memo
      */
-    private function getFirstMapFieldPropertyName(int $formId, array &$cache): ?string
+    private function geolocationPropertyName(int $formId, array &$cache): ?string
     {
-        if (!isset($cache[$formId])) {
-            $form = $this->formManager->getOne($formId);
-            $cache[$formId] = null;
-            if (!empty($form['prepared'])) {
-                $found = false;
-                foreach ($form['prepared'] as $field) {
-                    if (!$found && $field instanceof MapField) {
-                        $cache[$formId] = $field->getPropertyName();
-                        $found = true;
-                    }
-                }
-            }
+        if (!array_key_exists($formId, $cache)) {
+            $cache[$formId] = $this->fieldRoles->propertyName(
+                $this->formManager->getOne($formId),
+                FieldRole::GEOLOCATION
+            );
         }
 
         return $cache[$formId];

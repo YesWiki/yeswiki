@@ -55,7 +55,7 @@ class SubscribeField extends BazarField
         // TODO improve import detection
         if (isset($GLOBALS['_BAZAR_']['provenance']) && $GLOBALS['_BAZAR_']['provenance'] == 'import') {
             if ($value === $subscribeEmail) {
-                send_mail($entry[$this->emailField], $entry['bf_titre'], $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
+                send_mail($entry[$this->emailField], $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
 
                 return [$this->propertyName => $value];
             } elseif ($value === $unsubscribeEmail) {
@@ -65,11 +65,11 @@ class SubscribeField extends BazarField
         } else {
             // TODO fix this, as $value is always equal to $subscribeEmail, even when user did not check the checkbox
             if (isset($value)) {
-                send_mail($entry[$this->emailField], $entry['bf_titre'], $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
+                send_mail($entry[$this->emailField], $entry['title'] ?? $entry['bf_titre'] ?? '', $subscribeEmail, 'subscribe', 'subscribe', 'subscribe');
 
                 return [$this->propertyName => $subscribeEmail];
             }
-            send_mail($entry[$this->emailField], $entry['bf_titre'], $unsubscribeEmail, 'unsubscribe', 'unsubscribe', 'unsubscribe');
+            send_mail($entry[$this->emailField], $entry['title'] ?? $entry['bf_titre'] ?? '', $unsubscribeEmail, 'unsubscribe', 'unsubscribe', 'unsubscribe');
 
             return [$this->propertyName => $unsubscribeEmail];
         }

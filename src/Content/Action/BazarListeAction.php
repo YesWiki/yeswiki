@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\CheckboxField;
@@ -12,6 +13,7 @@ use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
+use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
@@ -126,7 +128,10 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             $template = 'table';
         }
         $searchfields = $this->formatArray($arg['searchfields'] ?? null);
-        $searchfields = empty($searchfields) ? ['bf_titre'] : $searchfields;
+        // every Content carries the computed `title` (ADR-0010); bf_titre is only a field
+        // some forms happen to have, and naming it here made the default search miss on
+        // every form that does not (ticket 11)
+        $searchfields = empty($searchfields) ? [PageBody::TITLE] : $searchfields;
         // End dynamic
 
         $agendaMode = (!empty($arg['agenda']) || !empty($arg['datefilter']) || (is_string($template) && substr($template, 0, strlen('agenda')) == 'agenda'));
@@ -147,7 +152,11 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         // Ordre du tri (asc ou desc)
         $ordre = $get->get('ordre') ?? $arg['ordre'] ?? ((empty($arg['champ']) && $agendaMode) ? 'desc' : 'asc');
         // Champ du formulaire utilisé pour le tri
-        $champ = $get->get('champ') ?? $arg['champ'] ?? (($agendaMode) ? 'bf_date_debut_evenement' : 'bf_titre');
+        // sorted by the computed title (ADR-0010) rather than by bf_titre, a field only
+        // some forms have. The agenda default still names a field, because sorting happens
+        // before this action knows which form(s) it is listing and so before the start_date
+        // role can be asked -- an entry without it simply sorts last, as it always did.
+        $champ = $get->get('champ') ?? $arg['champ'] ?? ($agendaMode ? 'bf_date_debut_evenement' : PageBody::TITLE);
 
         $vSearchManager = $this->getService(SearchManager::class);
 
@@ -599,6 +608,9 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             'infoRes' => $data['info_res'],
             'params' => $params,
             'columnsInfo' => $columnsInfo,
+            // which column carries the link to the entry: the field the form names its
+            // entries with, not whichever one happens to be called bf_titre (ticket 11)
+            'titleFieldName' => $this->getService(FormPropertiesService::class)->titleFieldName($form ?? null),
             'entries' => $fiches,
             'sumFieldsIds' => $sumFieldsIds,
             'displayadmincol' => $sanitizedParams['displayadmincol'] ?? null,
@@ -704,7 +716,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
                                         . (!empty($icon) ? ($this->getService(\YesWiki\Render\Service\TemplateEngine::class)->legacyIconToSprite($icon) ?? '<i class="' . $icon . '"></i>') : '')
                                         . '</div>\'
 								}),
-								title: \'' . addslashes($fiche['bf_titre']) . '\'
+								title: \'' . addslashes($fiche['title'] ?? $fiche['bf_titre'] ?? '') . '\'
 						});
 				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $fiche))) . '\');
 				';

@@ -123,7 +123,7 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
                     $xml .= "\r\n      ";
                     $xml .= XML_Util::createStartElement('item');
                     $xml .= "\r\n        ";
-                    $xml .= XML_Util::createTag('title', null, str_replace('&', '&amp;', $this->sanitize($vRSSEntry['bf_titre'])));
+                    $xml .= XML_Util::createTag('title', null, str_replace('&', '&amp;', $this->sanitize($vRSSEntry['title'] ?? $vRSSEntry['bf_titre'] ?? '')));
                     $xml .= "\r\n        ";
                     $xml .= XML_Util::createTag('link', null, '<![CDATA[' . $vRSSEntry['url'] . ']]>');
                     $xml .= "\r\n        ";

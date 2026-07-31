@@ -124,8 +124,11 @@ function getHtmlDataAttributes($fiche, $formtab = '')
                     in_array(
                         $key,
                         [
-                            'bf_latitude',
-                            'bf_longitude',
+                            // bf_latitude/bf_longitude used to be emitted here as
+                            // data-attributes: they are not entry metadata, they were two
+                            // fields of one particular French form, nothing reads the
+                            // attributes, and geolocation has lived in a map field since
+                            // 20260203091701_BazarChangeModelForGeolocation (ticket 11)
                             'form_id',
                             'owner',
                             'created_at',
