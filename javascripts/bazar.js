@@ -469,18 +469,29 @@ document.addEventListener('DOMContentLoaded', () => {
       formulaire.classList.add('submitted')
       try {
         if (requirementHelper.run(formulaire)) {
-          // formulaire validé, on soumet le formulaire mais juste avant on change
-          // le comportement du bouton pour éviter les validations multiples
-          formulaire.querySelectorAll('.form-actions button[type=submit]').forEach((button) => {
-            button.setAttribute('disabled', 'disabled')
-            button.classList.add('submit-disabled')
-            button.setAttribute('title', _t('BAZ_SAVING'))
-            setTimeout(() => {
-              // on réactive le bouton au bout de 10s juste pour permettre de
-              // forcer une nouvelle validation si jamais ça a planté
-              button.removeAttribute('disabled')
-            }, 10000)
-          })
+          // formulaire validé : on laisse partir la soumission, et on désactive le
+          // bouton juste après pour éviter les validations multiples.
+          //
+          // Deferred deliberately. A disabled control is not submitted -- including the
+          // submit button that was just activated. Disabling it synchronously here, inside
+          // the submit event, dropped its own name/value (`valider`) from the payload, and
+          // the server reads a submission without `valider` as "nothing was submitted": it
+          // re-rendered the edit form from the stored entry, losing everything that had
+          // been typed, with no error to explain it. The payload is built after this
+          // handler returns, so a task-boundary later is soon enough to stop a double
+          // submit and late enough to keep the field.
+          setTimeout(() => {
+            formulaire.querySelectorAll('.form-actions button[type=submit]').forEach((button) => {
+              button.setAttribute('disabled', 'disabled')
+              button.classList.add('submit-disabled')
+              button.setAttribute('title', _t('BAZ_SAVING'))
+              setTimeout(() => {
+                // on réactive le bouton au bout de 10s juste pour permettre de
+                // forcer une nouvelle validation si jamais ça a planté
+                button.removeAttribute('disabled')
+              }, 10000)
+            })
+          }, 0)
           return
         }
       } catch (error) {
