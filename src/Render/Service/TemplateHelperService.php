@@ -234,7 +234,7 @@ class TemplateHelperService
         return preg_replace("/\..*/i", '', $filename);
     }
 
-    public function strIreplacement($search, $replace, $subject)
+    public function strIreplacement(string $search, string $replace, string $subject): string
     {
         $token = chr(1);
         $haystack = strtolower($subject);
@@ -243,9 +243,8 @@ class TemplateHelperService
             $subject = substr_replace($subject, $token, $pos, strlen($search));
             $haystack = substr_replace($haystack, $token, $pos, strlen($search));
         }
-        $subject = str_replace($token, $replace, $subject);
 
-        return $subject;
+        return str_replace($token, $replace, $subject);
     }
 
     /**

@@ -150,7 +150,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
                 $page_active = $oldpage;
             }
             // d'abord les liens avec des attributs class
-            $plugin_output_new = preg_replace(
+            $plugin_output_new = (string)preg_replace(
                 '~<a href="' . preg_quote($this->getService(RuntimeConfig::class)['base_url'] . $page_active, '~') . '" class="(.*)"~Ui',
                 '<a class="active-link $1" href="' . $this->getService(RuntimeConfig::class)['base_url'] . $page_active . '"',
                 $plugin_output_new
@@ -181,13 +181,13 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
 
         // on ajoute pour le menu du haut la classe nav
         if (($incPageName == 'PageMenuHaut' || strstr($class, 'topnavpage')) && !strstr($class, 'horizontal-dropdown-menu')) {
-            $plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="yw-nav">', $plugin_output_new, 1);
+            $plugin_output_new = (string)preg_replace('/\<ul\>/Ui', '<ul class="yw-nav">', $plugin_output_new, 1);
 
             // TODO: a faire pour toutes les pages ou juste le menu???
             if (YW_CHARSET != 'ISO-8859-1' && YW_CHARSET != 'ISO-8859-15') {
                 // tip to replace mb_convert_encoding($plugin_output_new, 'HTML-ENTITIES', 'UTF-8')
                 // from https://stackoverflow.com/questions/37215388/what-is-a-replacement-for-mb-convert-encodingstring-utf-8-html-entities
-                $plugin_output_new = preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function ($m) {
+                $plugin_output_new = (string)preg_replace_callback('/[\x{80}-\x{10FFFF}]/u', function ($m) {
                     $char = current($m);
                     $utf = iconv('UTF-8', 'UCS-4', $char);
 
@@ -199,67 +199,73 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             @$dom->loadHTML($plugin_output_new);
             $xpath = new \DOMXPath($dom);
 
-            $dropdowns = $xpath->query('*/div/ul/li/ul');
-            if (!is_null($dropdowns)) {
-                foreach ($dropdowns as $element) {
-                    $element->setAttribute('class', 'yw-dropdown__menu');
+            // DOMXPath::query() returns false on a malformed expression, and a DOMNodeList
+            // yields DOMNode -- only a DOMElement has setAttribute(). Both were assumed
+            // rather than checked; a null parentNode was too.
+            foreach ($this->elementsMatching($xpath, '*/div/ul/li/ul') as $element) {
+                $element->setAttribute('class', 'yw-dropdown__menu');
+                if ($element->parentNode instanceof \DOMElement) {
                     $element->parentNode->setAttribute('class', 'yw-dropdown');
                 }
             }
-            $dropdownslist = $xpath->query('*/div/ul//li/ul/..');
-            if (!is_null($dropdownslist)) {
-                foreach ($dropdownslist as $element) {
-                    $nodes = $element->childNodes;
-                    foreach ($nodes as $node) {
-                        // we search for #text child or a link, if we accessed the dropdown menu, we break
-                        if ($node->nodeName == 'ul') {
-                            break;
-                        }
 
-                        // we add trigger for dropdown
-                        if ($node->nodeName == 'a') {
-                            $node->setAttribute('data-yw-dropdown-toggle', '');
-                            $caret = $dom->createElement('b');
-                            $caret->setAttribute('class', 'yw-dropdown__caret');
-                            $node->appendChild($caret);
-                        } elseif ($node->nodeName == '#text' && !trim($node->nodeValue) == '') {
-                            // check if <a exists or must be created
-                            $a = $dom->createElement('a');
-                            $a->setAttribute('data-yw-dropdown-toggle', '');
-                            $a->setAttribute('href', '#');
-                            $a->nodeValue = trim($node->nodeValue);
-                            $node->nodeValue = '';
-                            $caret = $dom->createElement('b');
-                            $caret->setAttribute('class', 'yw-dropdown__caret');
-                            $a->appendChild($caret);
-                            $node->parentNode->insertBefore($a, $node);
-                        }
+            foreach ($this->elementsMatching($xpath, '*/div/ul//li/ul/..') as $element) {
+                foreach (iterator_to_array($element->childNodes) as $node) {
+                    // we search for #text child or a link, if we accessed the dropdown menu, we break
+                    if ($node->nodeName == 'ul') {
+                        break;
+                    }
+
+                    // we add trigger for dropdown
+                    if ($node->nodeName == 'a' && $node instanceof \DOMElement) {
+                        $node->setAttribute('data-yw-dropdown-toggle', '');
+                        $caret = $dom->createElement('b');
+                        $caret->setAttribute('class', 'yw-dropdown__caret');
+                        $node->appendChild($caret);
+                        continue;
+                    }
+
+                    // a bare text label, which needs the <a> built around it. Was
+                    // `!trim($node->nodeValue) == ''`, which reads as "(not the text) equals
+                    // empty string" and happened to be true for non-empty text -- right
+                    // answer, unreadable reason.
+                    $label = trim((string)$node->nodeValue);
+                    if ($node->nodeName == '#text' && $label !== '' && $node->parentNode !== null) {
+                        $a = $dom->createElement('a');
+                        $a->setAttribute('data-yw-dropdown-toggle', '');
+                        $a->setAttribute('href', '#');
+                        $a->nodeValue = $label;
+                        $node->nodeValue = '';
+                        $caret = $dom->createElement('b');
+                        $caret->setAttribute('class', 'yw-dropdown__caret');
+                        $a->appendChild($caret);
+                        $node->parentNode->insertBefore($a, $node);
                     }
                 }
             }
 
-            $activelinks = $xpath->query("//a[contains(@class, 'active-link')]");
-            if (!is_null($activelinks)) {
-                foreach ($activelinks as $activelink) {
+            foreach ($this->elementsMatching($xpath, "//a[contains(@class, 'active-link')]") as $activelink) {
+                if ($activelink->parentNode instanceof \DOMElement) {
                     $class = $activelink->parentNode->getAttribute('class');
                     $activelink->parentNode->setAttribute('class', $class . ' active');
                 }
             }
-            $plugin_output_new = preg_replace(
+
+            $plugin_output_new = (string)preg_replace(
                 '/^<!DOCTYPE.+?>/',
                 '',
                 str_replace(
                     ['<html>', '</html>', '<body>', '</body>'],
                     '',
-                    $dom->saveHTML()
+                    (string)$dom->saveHTML()
                 )
             ) . "\n";
         } elseif (strstr($class, 'menu-unstyled')) {
             // add style to remove bullets on all ul
-            $plugin_output_new = preg_replace('/\<ul\>/Ui', '<ul class="yw-list-unstyled">', $plugin_output_new);
+            $plugin_output_new = (string)preg_replace('/\<ul\>/Ui', '<ul class="yw-list-unstyled">', $plugin_output_new);
 
             // remove list-unstyled class for level 2 ul
-            $plugin_output_new = preg_replace('/\<\/a>\s+<ul class="yw-list-unstyled">/Ui', "</a>\n<ul>", $plugin_output_new);
+            $plugin_output_new = (string)preg_replace('/\<\/a>\s+<ul class="yw-list-unstyled">/Ui', "</a>\n<ul>", $plugin_output_new);
         }
 
         // on rajoute une div clear pour mettre le flow css en dessous des éléments flottants
@@ -337,5 +343,31 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
             }
             $this->getService(InclusionStack::class)->unregisterLast();
         }
+    }
+
+    /**
+     * The DOMElements an XPath expression selects, and nothing else.
+     *
+     * DOMXPath::query() answers `false` for a malformed expression, and a DOMNodeList
+     * yields DOMNode -- which has no setAttribute(). Filtering here is what lets the
+     * callers above read as the DOM manipulation they are.
+     *
+     * @return list<\DOMElement>
+     */
+    private function elementsMatching(\DOMXPath $xpath, string $expression): array
+    {
+        $found = $xpath->query($expression);
+        if ($found === false) {
+            return [];
+        }
+
+        $elements = [];
+        foreach ($found as $node) {
+            if ($node instanceof \DOMElement) {
+                $elements[] = $node;
+            }
+        }
+
+        return $elements;
     }
 }
