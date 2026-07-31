@@ -253,6 +253,34 @@ namespace YesWiki\Kernel\Service {
             if ($lang != 'fr' && file_exists($this->langDir() . '/yeswikijs_' . $lang . '.php')) {
                 $this->loadTranslations(include_once $this->langDir() . '/yeswikijs_' . $lang . '.php', true);
             }
+
+            $this->projectJavascriptKeys();
+        }
+
+        /**
+         * Copy the keys the shipped scripts ask for from the PHP catalog into the
+         * javascript one.
+         *
+         * `_t()` in the browser reads `wiki.lang`, which is the javascript catalog and
+         * nothing else -- so a key that lives only in the PHP catalog renders as its own
+         * name. Two hand-written catalogs did not stay in step: 255 of the 335 keys the
+         * scripts ask for were missing, which is how BAZ_ADJUST_MARKER_POSITION and
+         * BAZ_FORM_INVALID_URL reached real pages as raw key names.
+         *
+         * The javascript catalog stays authoritative for the 131 keys that are its own;
+         * this only fills what it does not define. The key list is generated -- see
+         * src/build-js-lang-keys.php.
+         */
+        private function projectJavascriptKeys(): void
+        {
+            $keysFile = $this->langDir() . '/javascript-keys.php';
+            if (!file_exists($keysFile)) {
+                return;
+            }
+
+            $wanted = array_flip((array)require $keysFile);
+            $fromPhp = array_intersect_key($GLOBALS['translations'] ?? [], $wanted);
+            $GLOBALS['translations_js'] = array_merge($fromPhp, $GLOBALS['translations_js'] ?? []);
         }
 
         /**
