@@ -118,7 +118,35 @@ abstract class BazarField implements \JsonSerializable
             return '';
         }
 
+        // A field this Content never filled in shows nothing. getValue() substitutes the
+        // field's *default* for a missing value, which is right for an input -- a new
+        // entry starts pre-filled -- and wrong for a view, where it invents a value the
+        // Content does not have: a checkbox defaulting to "Non" appeared on every page
+        // that had never been asked the question.
+        if ($this->hasNoStoredValue($entry)) {
+            return '';
+        }
+
         return $this->renderStatic($entry);
+    }
+
+    /**
+     * Whether $entry carries nothing for this field -- as opposed to carrying an empty
+     * value, which is a webmaster's answer and renders like any other.
+     *
+     * Fields with no property name (a label, a tab, a section) store nothing by design and
+     * are never skipped; nor is a field whose default is empty, since substituting it
+     * changed nothing.
+     *
+     * @param array<string, mixed>|null $entry
+     */
+    protected function hasNoStoredValue($entry): bool
+    {
+        if (empty($this->propertyName) || !is_array($entry) || $this->isEmpty($this->default)) {
+            return false;
+        }
+
+        return !array_key_exists($this->propertyName, $entry);
     }
 
     // Render the edit view of the field. Check ACLS first
