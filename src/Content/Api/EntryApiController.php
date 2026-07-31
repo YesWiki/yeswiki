@@ -7,6 +7,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Controller\EntryController;
+use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Field\TextareaField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CSVManager;
@@ -261,22 +262,27 @@ class EntryApiController extends YesWikiController
             return ($value === 'true') ? true : (($value === 'false') ? false : $value);
         }, $queryAll);
 
-        $get = $this->getRequest()->query;
-        $searchfields = $get->get('searchfields');
+        // Read from all() rather than query->get(): every one of these arrives as an
+        // ARRAY from the dynamic templates (`idtypeannonce[]=1&searchfields[]=title`), and
+        // InputBag::get() throws a 400 "contains a non-scalar value" on those -- which is
+        // why every dynamic bazar view rendered a spinner and never resolved.
+        $searchfields = $queryAll['searchfields'] ?? null;
         $searchfields = is_string($searchfields) ? explode(',', urldecode($searchfields)) : $searchfields;
-        $searchfields = $searchfields == null ? [] : $searchfields;
+        $searchfields = $searchfields === null ? [] : (array)$searchfields;
 
-        $vKeywords = $get->has('keywords') ? urldecode($get->get('keywords')) : '';
+        $vKeywords = isset($queryAll['keywords']) && is_string($queryAll['keywords'])
+            ? urldecode($queryAll['keywords'])
+            : '';
 
         $formattedGet['keywords'] = $vKeywords;
         $formattedGet['searchfields'] = $searchfields;
-        $formattedGet['idtypeannonce'] = $get->get('idtypeannonce') ?? $get->get('id') ?? null;
+        $formattedGet['idtypeannonce'] = $queryAll['idtypeannonce'] ?? $queryAll['id'] ?? null;
 
         /* ------------------------------------ */
         /*               Get Data */
         /* ------------------------------------ */
         // All forms
-        $refreshVal = $get->get('refresh');
+        $refreshVal = $queryAll['refresh'] ?? null;
         $forms = $vBazarListService->getForms($formattedGet + ['refresh' => isset($refreshVal) ? in_array($refreshVal, [1, true, '1', 'true'], true) : false]);
 
         // Entries
@@ -300,26 +306,23 @@ class EntryApiController extends YesWikiController
             return $f['prepared'];
         }, $usedForms);
 
-        // Basic fields
-        $fieldList = ['tag', 'bf_titre', 'url', '-is-external-', 'external-data'];
+        // Basic fields: the computed title (ADR-0010) plus bf_titre for forms that have it
+        $fieldList = ['tag', PageBody::TITLE, 'bf_titre', 'url', '-is-external-', 'external-data'];
         // If no id, we need idtypeannonce (== formId) to filter
-        if (!$get->has('id')) {
+        if (!isset($queryAll['id'])) {
             $fieldList[] = 'form_id';
         }
         // fields for color / icon
-        $colorfield = $get->get('colorfield');
-        $fieldList = array_merge($fieldList, $colorfield ? [$colorfield] : []);
-        $iconfield = $get->get('iconfield');
-        $fieldList = array_merge($fieldList, $iconfield ? [$iconfield] : []);
+        $colorfield = $queryAll['colorfield'] ?? null;
+        $fieldList = array_merge($fieldList, is_string($colorfield) && $colorfield !== '' ? [$colorfield] : []);
+        $iconfield = $queryAll['iconfield'] ?? null;
+        $fieldList = array_merge($fieldList, is_string($iconfield) && $iconfield !== '' ? [$iconfield] : []);
         // Fields used to search
         $fieldList = array_merge($fieldList, $searchfields);
-        // Fields used to sort
-        $fieldList = array_merge($fieldList, $get->has('sortfields') ? $get->all('sortfields') : []);
-        // Fields used by template
-        $fieldList = array_merge($fieldList, $get->has('displayfields') ? $get->all('displayfields') : []);
-        // extra fields required by template
-        $fieldList = array_merge($fieldList, $get->has('necessary_fields') ? $get->all('necessary_fields') : []);
-        $fieldList = array_merge($fieldList, $get->has('necessaryfields') ? $get->all('necessaryfields') : []);
+        // Fields used to sort / by the template / required by the template
+        foreach (['sortfields', 'displayfields', 'necessary_fields', 'necessaryfields'] as $key) {
+            $fieldList = array_merge($fieldList, (array)($queryAll[$key] ?? []));
+        }
         // Fields for filters
         foreach ($filters as $filter) {
             $fieldList[] = $filter['propName'];
