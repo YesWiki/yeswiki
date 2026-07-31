@@ -5,6 +5,7 @@ namespace YesWiki\Content\Handler;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Service\CommentService;
+use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\PageManager;
@@ -185,7 +186,11 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         // display tags if needed
         $tag = $this->getService(PageContext::class)->getTag();
-        if (!$this->params->get('hide_keywords') && (bool)$this->getService(PageContext::class)->getPage() && !empty($tag) && $aclService->hasAccess('read', $tag) && !$entryManager->isEntry($tag)) {
+        // not when a form renders this Content: its keywords are one of the form's own
+        // fields then, and appending them here would print them twice
+        $renderedThroughAForm = !empty($tag)
+            && $this->getService(ContentTypeResolver::class)->formFor($tag) !== null;
+        if (!$this->params->get('hide_keywords') && (bool)$this->getService(PageContext::class)->getPage() && !empty($tag) && $aclService->hasAccess('read', $tag) && !$renderedThroughAForm) {
             $tags = array_column($tagsManager->getAll($tag), 'value');
             if (!empty($tags)) {
                 $output = $this->render('@core/tags-at-page-bottom.twig', [
@@ -257,11 +262,17 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
                 // display page
                 $this->getService(InclusionStack::class)->register($this->getService(PageContext::class)->getTag());
-                $entryManager = $this->getService(EntryManager::class);
-                if ($entryManager->isEntry($this->getService(PageContext::class)->getPage()['tag'])) {
+                // Anything a form describes renders through that form's fields, in the
+                // order the form declares them -- a bazar entry, and since ticket 10 a
+                // page, an account and an uploaded file too. A page's markup is one of
+                // those fields (`content`), so it still appears; what changes is that a
+                // field a webmaster added to the Pages form now appears as well, which it
+                // did not when this rendered `body.content` and nothing else.
+                if ($this->getService(ContentTypeResolver::class)->formFor($this->getService(PageContext::class)->getTag()) !== null) {
                     $entryController = $this->getService(EntryController::class);
                     echo $entryController->view($this->getService(PageContext::class)->getTag(), $this->getService(PageContext::class)->getPage()['time'] ?? null);
                 } else {
+                    // a form, a list: Content no form describes, shown as its markup
                     echo $this->getService(MarkdownFormatterService::class)->format(PageBody::content($this->getService(PageContext::class)->getPage()['body']));
                 }
                 $this->getService(InclusionStack::class)->unregisterLast();

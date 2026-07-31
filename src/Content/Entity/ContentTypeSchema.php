@@ -47,7 +47,10 @@ class ContentTypeSchema
             // declared because a textelong with none falls back to a plain textarea:
             // without it, creating a page from the Pages form offered a bare box while
             // editing the same page offered the ACeditor
-            'content' => ['type' => 'textelong', 'label' => 'Contenu', 'syntax' => 'wiki-textarea'],
+            // no label: the prose IS the page, and a "Contenu" caption above every page's
+            // body is not what a reader came for. The editor labels it from the designer,
+            // where a webmaster can give it one if they want it shown.
+            'content' => ['type' => 'textelong', 'label' => '', 'syntax' => 'wiki-textarea'],
             'keywords' => ['type' => 'tags', 'label' => 'Mots clés'],
         ],
         self::TYPE_USER => [

@@ -30,7 +30,9 @@
     {% if preview %}
       <input type="hidden" name="body" value="{{ body|raw }}" />
     {% else %}
-      {{ renderAction('aceditor', { saveButton: true, name: 'body', value: body })|raw }}
+      {# no saveButton: `content` is one field among the form's own (ticket 10), and the
+         form already has its Save below -- two save buttons on one form is one too many #}
+      {{ renderAction('aceditor', { name: 'body', value: body })|raw }}
     {% endif %}
   {% endif %}
 

@@ -12,6 +12,7 @@ use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ConditionsCheckingField;
 use YesWiki\Content\Field\LabelField;
 use YesWiki\Content\Service\ContentCreator;
+use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FavoritesManager;
 use YesWiki\Content\Service\FieldRoleResolver;
@@ -114,7 +115,11 @@ class EntryController extends YesWikiController
             $entry = $entryId;
             $entryId = $entry['tag'];
         } elseif ($entryId) {
-            $entry = $this->entryManager->getOne($entryId, false, $time, empty($userNameForRendering), false, $userNameForRendering);
+            $entry = $this->entryManager->getOne($entryId, false, $time, empty($userNameForRendering), false, $userNameForRendering)
+                // a page, an account and a file are described by a form too (ticket 10), so
+                // they render here the same way, through the same fields in the same
+                // declared order -- EntryManager only answers for `fiche_bazar` rows
+                ?? $this->builtInContentAsEntry((string)$entryId, $time === '' ? null : $time, $userNameForRendering);
             if (!$entry) {
                 return '<div class="alert alert-danger">' . _t('BAZ_PAS_DE_FICHE_AVEC_CET_ID') . ' : ' . $entryId . '</div>';
             }
@@ -470,6 +475,21 @@ class EntryController extends YesWikiController
             'id' => $entryId,
             'data' => $entry,
         ]);
+    }
+
+    /**
+     * A page, an account or an uploaded file in the shape this controller renders.
+     *
+     * @return array<string, mixed>|null null for a row no form describes -- a form, a list
+     */
+    private function builtInContentAsEntry(string $tag, ?string $time, ?string $userNameForRendering): ?array
+    {
+        $page = $this->pageManager->getOne($tag, $time ?: null, true, false, $userNameForRendering);
+        if (empty($page)) {
+            return null;
+        }
+
+        return $this->getService(ContentTypeResolver::class)->asEntry($page, null, false);
     }
 
     private function getRenderedInputs($form, $entry = null)

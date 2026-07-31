@@ -1,9 +1,14 @@
 <div class="BAZ_rubrique field-{{ field.type}}" data-id="{{ field.propertyName }}">
     {% block label_container %}
         {#- No leading/trailing whitespace, see https://twig.symfony.com/doc/3.x/templates.html#templates-whitespace-control-#}
+        {#- a field with no label renders none, rather than an empty <span> that still
+            takes up a line -- which is how a page's prose renders unlabelled now that a
+            page is rendered through its form (ticket 10) -#}
+        {% if field.label is not empty %}
         <span class="BAZ_label">
             {%- block label -%}{{ field.label|raw }}{%- endblock -%}
         </span>
+        {% endif %}
     {% endblock %}
     {% block value_container %}
         <span class="BAZ_texte">

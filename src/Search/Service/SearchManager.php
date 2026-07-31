@@ -11,7 +11,6 @@ use YesWiki\Content\Service\ContentTypeResolver;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Content\Service\TripleStore;
 use YesWiki\Identity\Service\AclService;
@@ -31,9 +30,6 @@ class SearchManager
 
     /** Result column carrying each row's `TYPE_URI` triple value (empty when untyped). */
     private const CONTENT_TRIPLE_COLUMN = 'yw_content_triple';
-
-    /** @var array<string, string>|null memoized triple value => describing form id */
-    private ?array $formIdsByTriple = null;
 
     public function __construct(
         ContainerInterface $container,
@@ -524,32 +520,6 @@ class SearchManager
         }
 
         return implode(' AND ', $vQueriesConditions);
-    }
-
-    /**
-     * Which form describes a row of each built-in Content type, keyed by the row's
-     * `TYPE_URI` triple value -- the empty key being the untyped rows, which are pages.
-     *
-     * @return array<string, string>
-     */
-    private function formIdsByTriple(): array
-    {
-        if ($this->formIdsByTriple === null) {
-            $formManager = $this->container->get(FormManager::class);
-            $this->formIdsByTriple = [];
-            foreach ([
-                '' => ContentTypeSchema::TYPE_PAGE,
-                UserManager::TRIPLES_USER_TYPE => ContentTypeSchema::TYPE_USER,
-                FileManager::TRIPLES_FILE_TYPE => ContentTypeSchema::TYPE_FILE,
-            ] as $tripleValue => $contentType) {
-                $form = $formManager->getByContentType($contentType);
-                if ($form !== null) {
-                    $this->formIdsByTriple[(string)$tripleValue] = (string)$form['id'];
-                }
-            }
-        }
-
-        return $this->formIdsByTriple;
     }
 
     /** A predicate matching the rows carrying a given `TYPE_URI` triple. */
@@ -1157,25 +1127,15 @@ class SearchManager
             // decided by its Content type (ticket 10). Say so here, once, so that
             // everything downstream reads a row the one way.
             if (!isset($page['body']['form_id'])) {
-                $contentType = $this->container->get(ContentTypeResolver::class)
-                    ->typeOfTriple((string)($page[self::CONTENT_TRIPLE_COLUMN] ?? ''));
-                $formId = $this->formIdsByTriple()[(string)($page[self::CONTENT_TRIPLE_COLUMN] ?? '')] ?? null;
-                if ($formId === null) {
+                $resolver = $this->container->get(ContentTypeResolver::class);
+                $shaped = $resolver->asEntry(
+                    $page,
+                    $resolver->typeOfTriple((string)($page[self::CONTENT_TRIPLE_COLUMN] ?? ''))
+                );
+                if ($shaped === null) {
                     continue;
                 }
-                $page['body']['form_id'] = $formId;
-                // ... and its tag is the row's, not something the body repeats: only a
-                // bazar entry stamps its own tag into its body
-                $page['body']['tag'] = $page['tag'];
-                // a locked field that restates the tag (an account's username) is filled
-                // in from the tag rather than stored twice
-                $mirror = ContentTypeSchema::tagMirrorField($contentType);
-                if ($mirror !== null) {
-                    $page['body'][$mirror] = $page['tag'];
-                }
-                // and a Content that never got a title still names itself (ticket 10)
-                $page['body']['title'] = $this->container->get(FormPropertiesService::class)
-                    ->titleOf($this->container->get(FormManager::class)->getOne($formId), $page['body']);
+                $page['body'] = $shaped;
             }
             // save owner to reduce sql calls
             $vPageManager->cacheOwner($page);

@@ -72,4 +72,53 @@ class ContentTypeResolver
     {
         return (string)$this->tripleStore->getOne($tag, TripleStore::TYPE_URI, '', '');
     }
+
+    /**
+     * A row in the shape everything downstream reads an entry in.
+     *
+     * Only a bazar entry names its own form (`body.form_id`) and repeats its own tag. A
+     * page, an account and a file carry neither: which form describes them is their type
+     * triple, their tag is the row's, and a locked field that restates the tag (an
+     * account's `username`) is filled in here rather than stored twice. A Content that
+     * never got a title still names itself.
+     *
+     * @param array<string, mixed> $page          a page row whose `body` is already decoded
+     * @param string|null          $contentType   when the caller already knows it, to save a query
+     * @param bool                 $nameIfUnnamed fill `title` in when the Content has none.
+     *                                            A list needs every row to have a name, and
+     *                                            falls back to the tag. A rendered *view*
+     *                                            does not: the title field would then draw a
+     *                                            heading saying the tag, on every page that
+     *                                            never had a title.
+     *
+     * @return array<string, mixed>|null null when no form describes this row -- a form, a list
+     */
+    public function asEntry(array $page, ?string $contentType = null, bool $nameIfUnnamed = true): ?array
+    {
+        $body = is_array($page['body'] ?? null) ? $page['body'] : [];
+        if (isset($body['form_id'])) {
+            return $body;
+        }
+
+        $tag = (string)($page['tag'] ?? '');
+        $contentType ??= $this->typeOf($tag);
+        $form = $contentType === null
+            ? null
+            : $this->container->get(FormManager::class)->getByContentType($contentType);
+        if ($form === null) {
+            return null;
+        }
+
+        $body['form_id'] = $form['id'];
+        $body['tag'] = $tag;
+        $mirror = ContentTypeSchema::tagMirrorField($contentType);
+        if ($mirror !== null) {
+            $body[$mirror] = $tag;
+        }
+        if ($nameIfUnnamed || trim((string)($body['title'] ?? '')) !== '') {
+            $body['title'] = $this->container->get(FormPropertiesService::class)->titleOf($form, $body);
+        }
+
+        return $body;
+    }
 }
