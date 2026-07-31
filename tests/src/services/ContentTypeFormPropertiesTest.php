@@ -204,4 +204,58 @@ class ContentTypeFormPropertiesTest extends YesWikiTestCase
         $this->assertArrayNotHasKey('entry_bookmarklet', $stored);
         $this->assertSame($form['entry_title_template'], $stored['entry_title_template']);
     }
+
+    /**
+     * The title *role* (ticket 11): which field carries an entry's name. Core used to
+     * assume `bf_titre`, so a table's entry link landed on no column at all for a form
+     * that names its entries some other way, and duplicating such an entry wrote the new
+     * name into a field the form does not have.
+     */
+    public function testTheTitleFieldIsTheOneTheTitleTemplateNames(): void
+    {
+        $properties = $this->getWiki()->services->get(FormPropertiesService::class);
+
+        $this->assertSame('title', $properties->titleFieldName($this->builtInForm(ContentTypeSchema::TYPE_PAGE)));
+        $this->assertSame('username', $properties->titleFieldName($this->builtInForm(ContentTypeSchema::TYPE_USER)));
+        $this->assertNull($properties->titleFieldName(null));
+    }
+
+    /** A multi-field template answers with the first field it names. */
+    public function testAMultiFieldTitleTemplateAnswersWithItsFirstField(): void
+    {
+        $formManager = $this->getWiki()->services->get(FormManager::class);
+        $id = $this->firstFreeFormId($formManager);
+        $this->assertSame(0, $formManager->create([
+            'id' => $id,
+            'label' => 'Titre en deux morceaux',
+            'description' => '',
+            'entry_title_template' => '{{bf_nom}} {{bf_prenom}}',
+            'template' => json_encode([
+                ['type' => 'texte', 'name' => 'bf_nom', 'label' => 'Nom'],
+                ['type' => 'texte', 'name' => 'bf_prenom', 'label' => 'Prénom'],
+            ]),
+        ]));
+        self::$createdFormIds[] = $id;
+
+        $properties = $this->getWiki()->services->get(FormPropertiesService::class);
+        $this->assertSame('bf_nom', $properties->titleFieldName($formManager->getOne($id)));
+    }
+
+    /** A template naming a field the form does not have answers nothing, not a guess. */
+    public function testATitleTemplateNamingNoRealFieldAnswersNull(): void
+    {
+        $formManager = $this->getWiki()->services->get(FormManager::class);
+        $id = $this->firstFreeFormId($formManager);
+        $this->assertSame(0, $formManager->create([
+            'id' => $id,
+            'label' => 'Titre fantôme',
+            'description' => '',
+            'entry_title_template' => '{{bf_disparu}}',
+            'template' => json_encode([['type' => 'texte', 'name' => 'bf_autre', 'label' => 'Autre']]),
+        ]));
+        self::$createdFormIds[] = $id;
+
+        $properties = $this->getWiki()->services->get(FormPropertiesService::class);
+        $this->assertNull($properties->titleFieldName($formManager->getOne($id)));
+    }
 }
