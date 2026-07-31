@@ -270,6 +270,20 @@ namespace YesWiki\Kernel\Service {
             }
         }
 
+        /**
+         * Copy named keys from the PHP catalog into the javascript one.
+         *
+         * `_t()` in the browser reads `wiki.lang`, which holds `yeswikijs_*.php` and
+         * nothing else -- a key that lives only in the PHP catalog renders as its own
+         * name. Anything shipping a script with labels has to say which keys it needs;
+         * this is how (the form designer does the same for its own).
+         */
+        public function loadJavascriptTranslations(string ...$keys): void
+        {
+            $wanted = array_intersect_key($GLOBALS['translations'] ?? [], array_flip($keys));
+            $this->loadTranslations($wanted, true);
+        }
+
         private function langDir(): string
         {
             // Anchored on the source root rather than counted up from __DIR__: the depth of

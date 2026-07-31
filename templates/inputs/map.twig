@@ -36,7 +36,7 @@
             {{ _t('BAZ_MOVE_TO_ADDRESS') }}
         </a>
         <input type="hidden" id="{{field.name}}_latitude" value="{{ latitude }}" class="yw-latitude-input" name="{{field.name}}[latitude]" />
-        <input type="hidden" id="{{field.name}}_longitude" value="{{ longitude }}" class="yw-longitude-input" name="{{field.name}}[longitude]]" />
+        <input type="hidden" id="{{field.name}}_longitude" value="{{ longitude }}" class="yw-longitude-input" name="{{field.name}}[longitude]" />
         <input type="hidden" id="{{field.name}}_geometries" value="{{ geometries ? geometries |json_encode : '' }}" class="yw-geometries-input" name="{{field.name}}[geometries]" />
         <div id="osmmapform" class="yw-geolocation-map" style="margin-top:5px; width:{{ config.baz_map_width }}; height:{{ config.baz_map_height }};"></div>
     </div>

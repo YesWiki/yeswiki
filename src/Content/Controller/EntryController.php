@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\FieldRole;
+use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ConditionsCheckingField;
 use YesWiki\Content\Field\LabelField;
@@ -317,7 +318,7 @@ class EntryController extends YesWikiController
                     header('Location: ' . $redirectUrl);
                     $this->getService(Redirector::class)->terminate();
                 }
-            } catch (UserFieldException $e) {
+            } catch (UserFieldException|EntryValidationException $e) {
                 $error .= $this->render('@core/alert-message.twig', [
                     'type' => 'warning',
                     'message' => $e->getMessage(),
@@ -404,11 +405,15 @@ class EntryController extends YesWikiController
                 header('Location: ' . $redirectUrl);
                 $this->getService(Redirector::class)->terminate();
             }
-        } catch (UserFieldException $e) {
+        } catch (UserFieldException|EntryValidationException $e) {
             $error .= $this->render('@core/alert-message.twig', [
                 'type' => 'warning',
                 'message' => $e->getMessage(),
             ]);
+            // re-render with what was submitted, not with what is stored: a form that
+            // silently reverts to the saved values on a validation failure loses the edit
+            // the visitor came to make, and looks like nothing happened at all
+            $entry = array_merge($entry ?? [], $post->all());
         }
 
         $renderedInputs = $this->getRenderedInputs($form, $entry);

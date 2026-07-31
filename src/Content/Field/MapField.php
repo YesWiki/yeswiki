@@ -4,6 +4,7 @@ namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use YesWiki\Kernel\Service\LanguageService;
 use YesWiki\Render\Service\ActionRunner;
 
 #[\Field(['map', 'carte_google'])]
@@ -170,9 +171,37 @@ class MapField extends BazarField
         ];
     }
 
+    /**
+     * The labels javascripts/inputs/map-leaflet.js asks `_t()` for.
+     *
+     * `_t()` in the browser reads the javascript catalog only, so a key that lives in
+     * yeswiki_*.php and not yeswikijs_*.php renders as its own name -- the whole map
+     * widget was showing BAZ_ADJUST_MARKER_POSITION and forty other raw keys.
+     *
+     * @var list<string>
+     */
+    private const JAVASCRIPT_LABELS = [
+        'BAZ_ADJUST_MARKER_POSITION', 'BAZ_GEOLOC_NOT_FOUND', 'BAZ_MAP_ERROR',
+        'BAZ_NOT_VALID_GEOLOC_FORMAT', 'CANCEL_BUTTON_TEXT', 'CANCEL_DRAWING_TITLE',
+        'CANCEL_EDITING_TITLE', 'CIRCLE_MARKER_TOOLTIP_START', 'CIRCLE_RADIUS_LABEL',
+        'CIRCLE_TOOLTIP_START', 'CLEAR_ALL_BUTTON_TEXT', 'CLEAR_ALL_LAYERS_TITLE',
+        'DELETE_DISABLED_BUTTON', 'DELETE_LAST_POINT_TEXT', 'DELETE_LAST_POINT_TITLE',
+        'DELETE_LAYERS_BUTTON', 'DRAW_CIRCLE_BUTTON', 'DRAW_CIRCLE_MARKER_BUTTON',
+        'DRAW_MARKER_BUTTON', 'DRAW_POLYGON_BUTTON', 'DRAW_POLYLINE_BUTTON',
+        'DRAW_RECTANGLE_BUTTON', 'EDIT_DISABLED_BUTTON', 'EDIT_LAYERS_BUTTON',
+        'EDIT_TOOLTIP_SUBTEXT', 'EDIT_TOOLTIP_TEXT', 'FINISH_BUTTON_TEXT',
+        'FINISH_DRAWING_TITLE', 'GEOLOCATER_GROUP_GEOLOCATIZATION', 'GEOLOCATER_NOT_FOUND',
+        'MARKER_TOOLTIP_START', 'POLYGON_TOOLTIP_CONT', 'POLYGON_TOOLTIP_END',
+        'POLYGON_TOOLTIP_START', 'POLYLINE_ERROR', 'POLYLINE_TOOLTIP_CONT',
+        'POLYLINE_TOOLTIP_END', 'POLYLINE_TOOLTIP_START', 'RECTANGLE_TOOLTIP_START',
+        'REMOVE_TOOLTIP_TEXT', 'SAVE_BUTTON_TEXT', 'SAVE_CHANGES_TITLE',
+        'SIMPLE_SHAPE_TOOLTIP_END',
+    ];
+
     protected function renderInput($entry)
     {
         $mapFieldData = $this->getMapFieldData($entry);
+        $this->getService(LanguageService::class)->loadJavascriptTranslations(...self::JAVASCRIPT_LABELS);
 
         return $this->render('@core/inputs/map.twig', [
             'latitude' => $mapFieldData['latitude'],

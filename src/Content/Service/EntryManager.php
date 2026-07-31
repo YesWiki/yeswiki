@@ -8,6 +8,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use YesWiki\Admin\Service\AdministrativeLogService;
 use YesWiki\Content\Entity\ContentTypeSchema;
 use YesWiki\Content\Entity\PageBody;
+use YesWiki\Content\Exception\EntryValidationException;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\ImageField;
@@ -311,7 +312,7 @@ class EntryManager
             // `title` is always computed from the form's entry_title_template; before
             // formatDataBeforeSave() ran, the raw source field may be all we have
             if (empty($data['title'] ?? null) && empty($data['bf_titre'] ?? null)) {
-                throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
+                throw new EntryValidationException(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE'));
             }
         }
 
@@ -767,7 +768,7 @@ class EntryManager
         // Let's generate the entry tag if necessary: a lowercase slug of the title
         if (!isset($data['tag'])) {
             if (empty($data['title'])) {
-                throw new \Exception(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
+                throw new EntryValidationException(_t('BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE') . ' (received fields: ' . implode(', ', array_keys($data)) . ')');
             }
             $data['tag'] = $formProperties->generateTag($data['title']);
         } elseif (empty($data['tag'])) {
@@ -852,7 +853,10 @@ class EntryManager
                 $vPropertyName = $vBazarField->getPropertyName();
 
                 if (!empty($vPropertyName) && $vBazarField->isRequired() && $vBazarField->isEmpty($data[$vPropertyName] ?? null)) {
-                    throw new \Exception(_t('BAZ_CHAMPS_REQUIS') . ':' . $vPropertyName);
+                    // named by its label, and typed as the visitor's problem rather than
+                    // the site's: this used to surface as "an unexpected error occurred,
+                    // contact the administrator" quoting an internal field identifier
+                    throw new EntryValidationException(_t('BAZ_CHAMPS_REQUIS') . ' : ' . ($vBazarField->getLabel() ?: $vPropertyName));
                 }
             }
         }
