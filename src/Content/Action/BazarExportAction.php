@@ -1,12 +1,13 @@
 <?php
 
 namespace YesWiki\Content\Action;
+
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\CSVManager;
 use YesWiki\Content\Service\FormManager;
-use YesWiki\Search\Service\SearchManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Search\Service\SearchManager;
 
 class BazarExportAction extends YesWikiAction implements RegisteredAction
 {
@@ -39,7 +40,7 @@ class BazarExportAction extends YesWikiAction implements RegisteredAction
             'query' => $get->get('query'),
             'bazar-export-option-keys-instead-of-values' => $this->formatBoolean($get->all() + $request->request->all(), false, 'bazar-export-option-keys-instead-of-values'),
             'params' => array_merge(
-                [BAZ_VARIABLE_VOIR => BAZ_VOIR_EXPORTER],
+                [BazarAction::URL_VIEW_PARAM => BazarAction::VIEW_EXPORT],
                 $get->has('debug') ? ['debug' => 'yes'] : []
             ),
         ];

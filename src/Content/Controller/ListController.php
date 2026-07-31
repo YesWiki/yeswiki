@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Controller;
 
+use YesWiki\Content\Action\BazarAction;
 use YesWiki\Content\Service\FieldFactory;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Core\YesWikiController;
@@ -78,7 +79,7 @@ class ListController extends YesWikiController
             }
 
             $this->getService(Redirector::class)->redirect(
-                $this->getService(UrlFormatter::class)->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+                $this->getService(UrlFormatter::class)->href('', '', [BazarAction::URL_VIEW_PARAM => BazarAction::VIEW_LISTS], false)
             );
         }
 
@@ -108,7 +109,7 @@ class ListController extends YesWikiController
                 }
 
                 $this->getService(Redirector::class)->redirect(
-                    $this->getService(UrlFormatter::class)->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+                    $this->getService(UrlFormatter::class)->href('', '', [BazarAction::URL_VIEW_PARAM => BazarAction::VIEW_LISTS], false)
                 );
             } else {
                 throw new \Exception('Not allowed');
@@ -129,7 +130,7 @@ class ListController extends YesWikiController
         }
 
         $this->getService(Redirector::class)->redirect(
-            $this->getService(UrlFormatter::class)->href('', '', [BAZ_VARIABLE_VOIR => BAZ_VOIR_LISTES], false)
+            $this->getService(UrlFormatter::class)->href('', '', [BazarAction::URL_VIEW_PARAM => BazarAction::VIEW_LISTS], false)
         );
     }
 }

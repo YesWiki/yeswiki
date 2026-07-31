@@ -38,7 +38,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 
     protected const BAZARCARTO_TEMPLATES = ['map', 'gogomap', 'gogocarto', 'map-and-table']; // liste des templates sans .twig ni .tpl.html
     protected const BAZARTABLE_TEMPLATES = ['table', 'map-and-table']; // liste des templates sans .twig ni .tpl.html
-    protected const CALENDRIER_TEMPLATES = ['calendar']; // liste des templates sans .twig ni .tpl.html
+    protected const CALENDAR_TEMPLATES = ['calendar']; // liste des templates sans .twig ni .tpl.html
 
     protected $debug;
 
@@ -312,7 +312,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         ) {
             return $this->callAction('bazarcarto', $this->arguments);
         } elseif (
-            self::specialActionFromTemplate($this->arguments['template'], 'CALENDRIER_TEMPLATES')
+            self::specialActionFromTemplate($this->arguments['template'], 'CALENDAR_TEMPLATES')
             && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendarAction')
         ) {
             return $this->callAction('calendrier', $this->arguments);
@@ -1075,7 +1075,7 @@ document.addEventListener(\'DOMContentLoaded\', function() {
     /* Method to test if the current template is associated to a specific bazar actions
      * @param $templateName string (ex. "map","map.tpl.html","map.twig")
      * @param $constName string name of the constant array containing the right template names
-     *                          "BAZARCARTO_TEMPLATES" or "CALENDRIER_TEMPLATES"
+     *                          "BAZARCARTO_TEMPLATES" or "CALENDAR_TEMPLATES"
      */
     public static function specialActionFromTemplate(string $templateName, string $constName): bool
     {
@@ -1083,8 +1083,8 @@ document.addEventListener(\'DOMContentLoaded\', function() {
             case 'BAZARCARTO_TEMPLATES':
                 $baseArray = self::BAZARCARTO_TEMPLATES;
                 break;
-            case 'CALENDRIER_TEMPLATES':
-                $baseArray = self::CALENDRIER_TEMPLATES;
+            case 'CALENDAR_TEMPLATES':
+                $baseArray = self::CALENDAR_TEMPLATES;
                 break;
             case 'BAZARTABLE_TEMPLATES':
                 $baseArray = self::BAZARTABLE_TEMPLATES;

@@ -49,7 +49,7 @@ class BazarImportAction extends YesWikiAction implements RegisteredAction
             'filesData' => $_FILES['fileimport'] ?? null,
             'bazar-import-option-detect-columns-on-headers' => !$this->formatBoolean($request->query->all() + $request->request->all(), false, 'bazar-import-option-not-detect-columns-on-headers'),
             'params' => array_merge(
-                [BAZ_VARIABLE_VOIR => BAZ_VOIR_IMPORTER],
+                [BazarAction::URL_VIEW_PARAM => BazarAction::VIEW_IMPORT],
                 $request->query->has('debug') ? ['debug' => 'yes'] : []
             ),
             'debug' => (bool)$this->getService(RuntimeConfig::class)->getValue('debug'),

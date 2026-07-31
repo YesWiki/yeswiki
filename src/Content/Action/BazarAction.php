@@ -19,21 +19,21 @@ class BazarAction extends YesWikiAction implements RegisteredAction
         return 'bazar';
     }
 
-    public const VARIABLE_VOIR = 'vue';
-    public const VARIABLE_ACTION = 'action';
+    public const URL_VIEW_PARAM = 'vue';
+    public const URL_ACTION_PARAM = 'action';
 
     // Premier niveau d'action : pour toutes les fiches
-    public const VOIR_DEFAUT = 'formulaire'; // Recherche
-    public const VOIR_CONSULTER = 'consulter'; // Recherche
-    public const VOIR_SAISIR = 'saisir';
-    public const VOIR_FORMULAIRE = 'formulaire';
-    public const VOIR_LISTES = 'listes';
-    public const VOIR_IMPORTER = 'importer';
-    public const VOIR_EXPORTER = 'exporter';
-    public const VOIR_ABONNEMENTS = 'abonnements';
+    public const VIEW_DEFAULT = 'formulaire'; // Recherche
+    public const VIEW_SEARCH = 'consulter'; // Recherche
+    public const VIEW_CREATE = 'saisir';
+    public const VIEW_FORMS = 'formulaire';
+    public const VIEW_LISTS = 'listes';
+    public const VIEW_IMPORT = 'importer';
+    public const VIEW_EXPORT = 'exporter';
+    public const VIEW_SUBSCRIPTIONS = 'abonnements';
 
     // Entries
-    public const MOTEUR_RECHERCHE = 'recherche';
+    public const ACTION_SEARCH = 'recherche';
     public const ACTION_ENTRY_VIEW = 'voir_fiche';
     public const ACTION_ENTRY_CREATE = 'saisir_fiche';
     public const ACTION_ENTRY_EDIT = 'modif_fiche';
@@ -47,7 +47,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
     public const ACTION_FORM_EMPTY = 'empty';
     public const ACTION_FORM_CONFIRM_EMPTY = 'confirm_empty';
     public const ACTION_FORM_CLONE = 'clone';
-    public const CHOISIR_TYPE_FICHE = 'choisir_type_fiche';
+    public const ACTION_CHOOSE_FORM = 'choisir_type_fiche';
 
     // Lists
     public const ACTION_LIST_CREATE = 'saisir_liste';
@@ -55,9 +55,9 @@ class BazarAction extends YesWikiAction implements RegisteredAction
     public const ACTION_LIST_DELETE = 'supprimer_liste';
 
     // Abonnements
-    public const ACTION_ABONNEMENT_LIST = 'list';
-    public const ACTION_ABONNEMENT_ADD = 'add';
-    public const ACTION_ABONNEMENT_REMOVE = 'remove';
+    public const ACTION_SUBSCRIPTION_LIST = 'list';
+    public const ACTION_SUBSCRIPTION_ADD = 'add';
+    public const ACTION_SUBSCRIPTION_REMOVE = 'remove';
     public const ACTION_ABONNEMENT_SYNC = 'sync';
 
     public const ACTION_PUBLIER = 'publier'; // Valider la fiche
@@ -98,11 +98,11 @@ class BazarAction extends YesWikiAction implements RegisteredAction
         $vIDs = $vBazarListService->getIDs($vIDs);
 
         return [
-            self::VARIABLE_ACTION => $this->sanitizedGet(self::VARIABLE_ACTION, function () use ($arg) {
-                return $arg[self::VARIABLE_ACTION] ?? null;
+            self::URL_ACTION_PARAM => $this->sanitizedGet(self::URL_ACTION_PARAM, function () use ($arg) {
+                return $arg[self::URL_ACTION_PARAM] ?? null;
             }),
-            self::VARIABLE_VOIR => $this->sanitizedGet(self::VARIABLE_VOIR, function () use ($arg) {
-                return $arg[self::VARIABLE_VOIR] ?? self::VOIR_DEFAUT;
+            self::URL_VIEW_PARAM => $this->sanitizedGet(self::URL_VIEW_PARAM, function () use ($arg) {
+                return $arg[self::URL_VIEW_PARAM] ?? self::VIEW_DEFAULT;
             }),
             // afficher le menu de vues bazar ?
             'voirmenu' => $this->sanitizedGet('voirmenu', function () use ($arg) {
@@ -141,8 +141,8 @@ class BazarAction extends YesWikiAction implements RegisteredAction
         // TODO put in all bazar templates
         $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
 
-        $view = $this->arguments[self::VARIABLE_VOIR];
-        $action = $this->arguments[self::VARIABLE_ACTION];
+        $view = $this->arguments[self::URL_VIEW_PARAM];
+        $action = $this->arguments[self::URL_ACTION_PARAM];
 
         // Display menu, unless we explicitly don't want to see it
         if ($this->arguments['voirmenu'] !== '0') {
@@ -153,7 +153,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
         }
 
         switch ($view) {
-            case self::VOIR_SAISIR:
+            case self::VIEW_CREATE:
                 if ($this->isWikiHibernated()) {
                     return $this->getMessageWhenHibernated();
                 }
@@ -168,7 +168,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                         return $entryController->publish($req->get('tag'), true);
                     case self::ACTION_PAS_PUBLIER:
                         return $entryController->publish($req->get('tag'), false);
-                    case self::CHOISIR_TYPE_FICHE:
+                    case self::ACTION_CHOOSE_FORM:
                         return $entryController->selectForm();
                     default:
                         if (!empty($this->arguments['idtypeannonce']['locals'])) {
@@ -182,7 +182,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                         return $entryController->selectForm();
                 }
                 // no break
-            case self::VOIR_FORMULAIRE:
+            case self::VIEW_FORMS:
                 switch ($action) {
                     case self::ACTION_FORM_CREATE:
                         if ($this->isWikiHibernated()) {
@@ -227,16 +227,16 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                         return $formController->displayAll($req->query->get('msg'));
                 }
                 // no break
-            case self::VOIR_ABONNEMENTS:
+            case self::VIEW_SUBSCRIPTIONS:
                 switch ($action) {
-                    case self::ACTION_ABONNEMENT_LIST:
+                    case self::ACTION_SUBSCRIPTION_LIST:
                         return $formController->manageAbonnements($req->query->get('idformulaire'));
-                    case self::ACTION_ABONNEMENT_ADD:
+                    case self::ACTION_SUBSCRIPTION_ADD:
                         if ($req->query->get('type') === 'following') {
                             return $formController->addFollowing($req->query->get('idformulaire'), $req->query->get('actor'));
                         }
                         // no break
-                    case self::ACTION_ABONNEMENT_REMOVE:
+                    case self::ACTION_SUBSCRIPTION_REMOVE:
                         if ($req->query->get('type') === 'followers') {
                             return $formController->removeFollower($req->query->get('idformulaire'), $req->query->get('actor'));
                         }
@@ -249,7 +249,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                         return $formController->displayAll($req->query->get('msg'));
                 }
                 // no break
-            case self::VOIR_LISTES:
+            case self::VIEW_LISTS:
                 switch ($action) {
                     case self::ACTION_LIST_CREATE:
                         if ($this->isWikiHibernated()) {
@@ -273,17 +273,17 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                         return $listController->displayAll();
                 }
                 // no break
-            case self::VOIR_IMPORTER:
+            case self::VIEW_IMPORT:
                 return $this->callAction('bazarimport', $this->arguments);
-            case self::VOIR_EXPORTER:
+            case self::VIEW_EXPORT:
                 return $this->callAction('bazarexport', $this->arguments);
-            case self::VOIR_CONSULTER:
-            case self::VOIR_DEFAUT:
+            case self::VIEW_SEARCH:
+            case self::VIEW_DEFAULT:
             default:
                 switch ($action) {
                     case self::ACTION_ENTRY_VIEW:
                         return $entryController->view($req->get('tag'), $req->get('time', ''));
-                    case self::MOTEUR_RECHERCHE:
+                    case self::ACTION_SEARCH:
                     default:
                         $this->arguments['search'] = true;
 
