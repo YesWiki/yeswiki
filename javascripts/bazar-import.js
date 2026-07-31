@@ -24,7 +24,7 @@ function updateProgressUI(processed, successful, total) {
 
 async function processEntry(entryCheckbox, counters) {
   const currentEntry = JSON.parse(entryCheckbox.value)
-  const entryIdentifier = currentEntry.bf_titre || `#${counters.processed + 1}`
+  const entryIdentifier = currentEntry.title || currentEntry.bf_titre || `#${counters.processed + 1}`
 
   try {
     const response = await fetch(`?api/entries/${formId}`, {

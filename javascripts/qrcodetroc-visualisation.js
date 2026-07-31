@@ -25,7 +25,7 @@ function getRelations() {
       nbRelations = Object.keys(relations).length
       // console.log(relations, "Nb relations : " + nbRelations)
     })
-  fetch(`?api/forms/${formUser}/entries&fields=bf_titre`)
+  fetch(`?api/forms/${formUser}/entries&fields=title`)
     .then((response) => response.json())
     .then((dataUsers) => {
       nbUsers = Object.keys(dataUsers).length
@@ -36,7 +36,7 @@ function getRelations() {
             random(window.innerHeight),
             random(minSize, maxSize),
             color(random(255), random(255), random(255), 70),
-            dataUsers[key].bf_titre
+            dataUsers[key].title
           )
         }
       })

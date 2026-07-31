@@ -114,14 +114,14 @@ function stepHandler(currentStep, entry) {
     document.querySelector('.step2').classList.add('stepper__row--active')
 
     document.querySelector('.step1 .paragraph').style.display = 'none'
-    document.querySelector('.step1 .text-success').innerHTML = `Premier participant : ${entry.bf_titre}`
+    document.querySelector('.step1 .text-success').innerHTML = `Premier participant : ${entry.title}`
     showNotif(
-      `Vous avez été reconnu comme étant ${entry.bf_titre}.`
+      `Vous avez été reconnu comme étant ${entry.title}.`
         + ' Merci de passer un deuxième Q.R. Code pour faire le lien.',
       'yw-alert--success'
     )
   } else if (step === 2) {
-    if (firstpeople.fn === entry.bf_titre) {
+    if (firstpeople.fn === entry.title) {
       showNotif(
         'Le premier Q.R. Code et le second sont les mêmes,'
           + ' veuillez utiliser un deuxième Q.R. Code différent.',
@@ -140,15 +140,15 @@ function stepHandler(currentStep, entry) {
       document.querySelector('.step3').classList.add('stepper__row--active')
 
       document.querySelector('.step2 .paragraph').style.display = 'none'
-      const secondParticipantMsg = `Second participant : ${entry.bf_titre}`
+      const secondParticipantMsg = `Second participant : ${entry.title}`
       document.querySelector('.step2 .text-success').innerHTML = secondParticipantMsg
 
       document.querySelector('.step3 .paragraph').style.display = 'none'
-      document.querySelector('.step3 .text-success').innerHTML = `Bravo ${firstpeople.bf_titre}`
-        + ` et ${secondpeople.bf_titre}, vous êtes maintenant reliés !`
+      document.querySelector('.step3 .text-success').innerHTML = `Bravo ${firstpeople.title}`
+        + ` et ${secondpeople.title}, vous êtes maintenant reliés !`
 
       showNotif(
-        `Bravo ${firstpeople.bf_titre} et ${secondpeople.bf_titre}!! `
+        `Bravo ${firstpeople.title} et ${secondpeople.title}!! `
           + 'Vous êtes unis par les liens sacrés du Q.R. code. Un email de contact vous a été envoyé.',
         'yw-alert--success'
       )
@@ -158,7 +158,7 @@ function stepHandler(currentStep, entry) {
 
       // order people by name to have an unique pair in db
       if (
-        firstpeople.bf_titre.toLowerCase() > secondpeople.bf_titre.toLowerCase()
+        firstpeople.title.toLowerCase() > secondpeople.title.toLowerCase()
       ) {
         const temp = secondpeople
         secondpeople = firstpeople
@@ -181,7 +181,7 @@ function stepHandler(currentStep, entry) {
 
       // first mail send
       let message1 = 'Les informations de votre contact:\n'
-      message1 = `${message1}${firstpeople.bf_titre}\n`
+      message1 = `${message1}${firstpeople.title}\n`
       message1 = `${message1}Email : ${firstpeople.bf_mail}\n`
       if (firstpeople.org) {
         message1 = `${message1}Organisation : ${firstpeople.org}\n`
@@ -193,7 +193,7 @@ function stepHandler(currentStep, entry) {
       fetch('?ContacT/mail', {
         method: 'POST',
         body: new URLSearchParams({
-          name: firstpeople.bf_titre,
+          name: firstpeople.title,
           email: firstpeople.bf_mail,
           subject: 'QRcode contact',
           message: message1,
@@ -205,7 +205,7 @@ function stepHandler(currentStep, entry) {
 
       // second mail send
       let message2 = 'Les informations de votre contact:\n'
-      message2 = `${message2}${secondpeople.bf_titre}\n`
+      message2 = `${message2}${secondpeople.title}\n`
       message2 = `${message2}Email : ${secondpeople.bf_mail}\n`
       if (secondpeople.org) {
         message2 = `${message2}Organisation : ${secondpeople.org}\n`
@@ -216,7 +216,7 @@ function stepHandler(currentStep, entry) {
       fetch('?ContacT/mail', {
         method: 'POST',
         body: new URLSearchParams({
-          name: secondpeople.bf_titre,
+          name: secondpeople.title,
           email: secondpeople.bf_mail,
           subject: 'QRcode contact',
           message: message2,
@@ -241,7 +241,7 @@ function successHandler(data) {
     if (vcard.fn && vcard.email && vcard.url) {
       const [firstEmail] = vcard.email
       const [firstEmailValue] = firstEmail.value
-      vcard.bf_titre = vcard.fn
+      vcard.title = vcard.fn
       vcard.bf_mail = firstEmailValue
       vcard.bf_structure = vcard.org
       step = stepHandler(step, vcard)
@@ -301,10 +301,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.step2').classList.add('stepper__row--active')
 
     document.querySelector('.step1 .paragraph').style.display = 'none'
-    const firstParticipantMsg = `Premier participant : ${entity.bf_titre}`
+    const firstParticipantMsg = `Premier participant : ${entity.title}`
     document.querySelector('.step1 .text-success').innerHTML = firstParticipantMsg
     showNotif(
-      `Vous avez été reconnu comme étant ${entity.bf_titre}.`
+      `Vous avez été reconnu comme étant ${entity.title}.`
         + ' Merci de passer un deuxième Q.R. Code pour faire le lien.',
       'yw-alert--success'
     )

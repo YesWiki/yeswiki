@@ -1470,7 +1470,7 @@ return [
     'BAZ_SEM_TEMPLATE' => 'Plantilla semàntica (Twig)',
     'BAZ_SEM_REVERSE_TEMPLATE' => 'Plantilla semàntica inversa (Twig)',
     'BAZ_FORM_GRAPHICAL_BUILDER' => 'Constructor gràfic',
-    'BAZ_FORM_NEED_TITLE' => 'El vostre formulari ha de contenir un títol. Podeu sigui afegir un camp text amb com a identificador "bf_títol", sigui un camp "títol automàtic".',
+    'BAZ_FORM_NEED_TITLE' => 'El vostre formulari ha de poder anomenar les seves fitxes: la plantilla de títol ha de fer referència a un camp que el formulari tingui.',
     'BAZ_IMPORT_NOT_DETECT_COLUMNS_ON_HEADERS' => 'No detectar les columnes a partir dels encapçalaments (débogage)',
     'BAZ_PAS_D_ID_DE_FORM_INDIQUE' => 'Identificador de formulari no indicat.',
     'BAZ_MODIFY_ENTRY_AGAIN' => 'Modificar la fitxa novament',

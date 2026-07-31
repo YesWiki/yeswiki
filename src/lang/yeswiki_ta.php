@@ -1357,7 +1357,7 @@ return [
     'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE' => 'லு நோவியோ ஃபார்முலேர் எ பீன் & ஈகூட்; டி & ஈகூட்; engistr & eacute ;.',
     'BAZ_NOUVELLE_LISTE_ENREGISTREE' => 'லா ந ou வெல் லிச்டே எ பீன் & ஈகூட்; டி & ஈகூட்; engistr & eacute; e.',
     'BAZ_FORMULAIRE_MODIFIE' => 'லு ஃபார்முலேர் எ பீன் & ஈகூட்; டி & ஈகூட்; மோடிஃபி & ஈகூட் ;.',
-    'BAZ_FORM_NEED_TITLE' => 'வோட்ரே ஃபார்முலேர் டோயிட் கான்டெனிர் அன் டைட்ரே. Vous pouvez soit ajouter un samp texte avec come அடையாளம் "BF_TITRE", சோய்ட் அன் சாம்பியன் "டைட்ரே ஆட்டோமேட்டிக்".',
+    'BAZ_FORM_NEED_TITLE' => 'உங்கள் படிவம் அதன் உள்ளீடுகளுக்குப் பெயரிட வேண்டும்: தலைப்பு வார்ப்புரு படிவத்தில் உள்ள ஒரு புலத்தைக் குறிப்பிட வேண்டும்.',
     'BAZ_LISTE_MODIFIEE' => 'La liste a bien & eacute; t & eacute; மோடிஃபி & ஈகூட்; இ.',
     'BAZ_CONFIRM_SUPPRIMER_FICHE' => 'Etes vous s & ucirc; r de vouloir supprimer la fiche?',
     'BAZ_FICHE_SUPPRIMEE' => 'லா ஃபிச் எ பீன் & ஈகூட்; டி & ஈகூட்; supprim & eacute; e.',

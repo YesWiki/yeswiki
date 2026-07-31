@@ -62,7 +62,7 @@ function successHandler(data) {
           const song = `${url.origin}/files/${cardData.fichierbf_file}`
           console.log(song) // TODO test if url exists
           const player = document.getElementById('multimedia-player')
-          const caption = `<figcaption><strong>En écoute : ${cardData.bf_titre}</strong></figcaption>`
+          const caption = `<figcaption><strong>En écoute : ${cardData.title}</strong></figcaption>`
           const audio = `<audio id="audio-player" controls autoplay autobuffer src="${song}"></audio>`
           const download = `<a style="display:block" download href="${song}">`
             + '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'
@@ -74,7 +74,7 @@ function successHandler(data) {
           const songButton = '<button type="button"'
             + ' class="song yw-list-group__item yw-list-group__item--active"'
             + ` data-url="${song}">`
-            + `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#music"/></svg> ${cardData.bf_titre}`
+            + `<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#music"/></svg> ${cardData.title}`
             + '</button>'
           document.getElementById('multimedia-playlist').insertAdjacentHTML('beforeend', songButton)
         }

@@ -125,8 +125,9 @@ const componentParams = {
         let columnfieldsids = this.sanitizedParam(params, this.isAdmin, 'columnfieldsids')
         const defaultcolumnwidth = this.sanitizedParam(params, this.isAdmin, 'defaultcolumnwidth')
         if (columnfieldsids.every((id) => id.length == 0)) {
-          // backup
-          columnfieldsids = ['bf_titre']
+          // backup: the form's first field, whatever it is called. Was the literal
+          // 'bf_titre', so a form without one showed an empty table (ticket 11)
+          columnfieldsids = Object.keys(fields).slice(0, 1)
         }
         const data = { columns: [] }
         const width = defaultcolumnwidth.length > 0 ? { width: defaultcolumnwidth } : {}
@@ -148,7 +149,7 @@ const componentParams = {
               data: '==adminsbuttons==',
               orderable: false,
               class: 'horizontal-admins-btn not-export-this-col',
-              render: (data, type, row) => (type === 'display' ? this.getAdminsButtons(row.tag, row.bf_titre || '', row.url || '', row['==canDelete==']) : ''),
+              render: (data, type, row) => (type === 'display' ? this.getAdminsButtons(row.tag, row.title || row.bf_titre || '', row.url || '', row['==canDelete==']) : ''),
               title: '',
               footer: ''
             },
@@ -177,7 +178,9 @@ const componentParams = {
                 field: fields[id],
                 visible: true,
                 printable: true,
-                addLink: (idx === 0 && !columnfieldsids.includes('bf_titre')) || id === 'bf_titre'
+                // the first column carries the link to the entry, like the static
+                // table does when the form's title field is not among the columns
+                addLink: idx === 0
               }
             })
           } else if (fieldsToRegister.includes(id)) {

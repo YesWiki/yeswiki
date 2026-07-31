@@ -1712,7 +1712,7 @@ Bifați caseta pentru a confirma înlocuirea acesteia cu "{proposedName}" sau sc
     'BAZ_PAS_D_ID_DE_FICHE_INDIQUEE' => 'ID-ul de înregistrare nu este specificat.',
     'BAZ_BAD_IMAGE_FILE_EXTENSION' => 'Extensie greșită pentru imagine (trebuie să fie .jpg sau .png sau .gif)',
     'EVENT_REPETITION_FOR_YEARS' => 'toți %{x} ani, %{monthRepetition}',
-    'BAZ_FORM_NEED_TITLE' => 'Formularul trebuie să conțină un titlu. Puteți adăuga un câmp text cu identificatorul "bf_titre" sau un "titlu automat".',
+    'BAZ_FORM_NEED_TITLE' => 'Formularul trebuie să își poată numi fișele: șablonul de titlu trebuie să facă referire la un câmp pe care formularul îl are.',
     'BAZ_FICHE_NON_SAUVEE_PAS_DE_TITRE' => 'Înregistrarea nu a putut fi salvată deoarece nu are un titlu.',
 
     // relocated from tools/bazar/lang/bazarjs_ro.inc.php (ticket 24)

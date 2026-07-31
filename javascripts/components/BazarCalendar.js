@@ -139,7 +139,7 @@ const BazarCalendar = {
       return {
         id,
         groupId: entry.tag,
-        title: entry.bf_titre,
+        title: entry.title || entry.bf_titre || '',
         start,
         end,
         url: entry.url + (this.isModalDisplay() ? '/iframe' : ''),

@@ -182,7 +182,7 @@ const BazarMapComponent = {
                 `
 		          <div class="entry-name">
 		            <span style="background-color: ${entry.color}">
-		              ${entry.markerhover || entry.bf_titre}
+		              ${entry.markerhover || entry.title || entry.bf_titre || ''}
 		            </span>
 		          </div>
 		          <${tagName} class="bazar-entry ${this.isModalDisplay() ? 'modalbox' : ''}" `

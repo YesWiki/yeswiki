@@ -96,7 +96,7 @@ export default {
 
                 if (vMatches) {
                   vMatches.forEach((pMatch) => {
-                    vOrScore += pField == 'bf_titre' ? 2 * (pMatch.length + 1) : pMatch.length + 1
+                    vOrScore += (pField == 'title' || pField == 'bf_titre') ? 2 * (pMatch.length + 1) : pMatch.length + 1
                     vMatchedFields++
                   })
 						   }

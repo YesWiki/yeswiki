@@ -48,7 +48,7 @@ function successHandler(data) {
         const song = `${url.href}files/${cardData.fichierbf_file}`
         console.log(song) // TODO test if url exists
         const player = document.getElementById('multimedia-player')
-        const caption = `<figcaption><strong>En écoute : ${cardData.bf_titre}</strong></figcaption>`
+        const caption = `<figcaption><strong>En écoute : ${cardData.title}</strong></figcaption>`
         const audio = `<audio id="audio-player" controls autoplay src="${song}"></audio>`
         const download = `<a style="display:block" download href="${song}">`
           + '<svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#download"/></svg> Télécharger</a>'

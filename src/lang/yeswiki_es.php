@@ -1585,7 +1585,7 @@ return [
     'BAZ_SEM_REVERSE_TEMPLATE' => 'Plantilla semántica inversa (Twig)',
     'BAZ_FORM_GRAPHICAL_BUILDER' => 'Diseñador gráfico',
     'BAZ_FORM_WIKI_CODE' => 'Código Wiki (para hacer de los copiar-pegar)',
-    'BAZ_FORM_NEED_TITLE' => 'Su forma debe contener un título. Puede agregar un campo de texto con "bf_titre" o un campo "título automático".',
+    'BAZ_FORM_NEED_TITLE' => 'Su formulario debe poder nombrar sus fichas: su plantilla de título debe hacer referencia a un campo que el formulario tenga.',
     'BAZ_ERROR_DELETE_UNAUTHORIZED' => 'Usted no tiene permiso para borrar este archivo',
     'BAZ_EXPORT_KEYS_INSTEAD_OF_VALUES' => 'Claves de exportación en lugar de valores (más estables para las importaciones pero menos legibles)',
     'BAZ_IMPORT_NOT_DETECT_COLUMNS_ON_HEADERS' => 'No detecte columnas de encabezados (debugging)',

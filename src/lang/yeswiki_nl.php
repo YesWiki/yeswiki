@@ -1500,7 +1500,7 @@ return [
     'BAZ_SEM_REVERSE_TEMPLATE' => 'Omgekeerd semantisch sjabloon (Twig)',
     'BAZ_FORM_WIKI_CODE' => 'Wiki Code',
     'BAZ_CATEGORIE' => 'Cat op ba',
-    'BAZ_FORM_NEED_TITLE' => 'Je vorm moet een titel bevatten. Je kunt ofwel een sms-veld toevoegen met "BFTitre" of een "automatische titel" veld.',
+    'BAZ_FORM_NEED_TITLE' => 'Je formulier moet zijn items een naam kunnen geven: de titelsjabloon moet verwijzen naar een veld dat het formulier heeft.',
     'BAZ_ERROR_EDIT_UNAUTHORIZED' => 'Je hebt geen toestemming om dit dossier te verwerken',
     'BAZ_ERROR_DELETE_UNAUTHORIZED' => 'Je hebt geen toestemming om dit dossier te wissen',
     'BAZ_IMPORT_NOT_DETECT_COLUMNS_ON_HEADERS' => 'Zoek geen columns van kopers',

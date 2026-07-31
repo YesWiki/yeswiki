@@ -1636,7 +1636,7 @@ Vous avez la version %{CURRENTPHPVERSION}.
     'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE' => 'Le nouveau formulaire a bien été enregistré.',
     'BAZ_NOUVELLE_LISTE_ENREGISTREE' => 'La nouvelle liste a bien été enregistrée.',
     'BAZ_FORMULAIRE_MODIFIE' => 'Le formulaire a bien été modifié.',
-    'BAZ_FORM_NEED_TITLE' => 'Votre formulaire doit contenir un titre. Vous pouvez soit ajouter un champ texte avec comme identifiant "bf_titre", soit un champ "titre automatique".',
+    'BAZ_FORM_NEED_TITLE' => 'Votre formulaire doit pouvoir nommer ses fiches : son modèle de titre doit faire référence à un champ que le formulaire possède.',
     'BAZ_LISTE_MODIFIEE' => 'La liste a bien été modifiée.',
     'BAZ_CONFIRM_SUPPRIMER_FICHE' => 'Etes vous s&ucirc;r de vouloir supprimer la fiche ?',
     'BAZ_FICHE_SUPPRIMEE' => 'La fiche a bien été supprimée.',

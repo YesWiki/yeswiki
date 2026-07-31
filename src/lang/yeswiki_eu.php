@@ -1343,7 +1343,7 @@ Aldatu beharreko zutabearen testua geroago
     'BAZ_NOUVEAU_FORMULAIRE_ENREGISTRE' => 'Ongi gorde da inprimaki berria.',
     'BAZ_NOTVALIDURL' => 'URL baliogabea',
     'BAZ_EXISTINGMESSAGEREPLACEFORM' => 'Adi: dagoeneko existitzen dira identifikatzaile hori eta inprimaki horren izenburua. Hautatzen baduzu, gainidatzi egingo da.',
-    'BAZ_FORM_NEED_TITLE' => 'Izenburu bat izan behar du formularioak. "bf_izenburua" identifikatzailea duen testu-eremua edo "izenburu automatikoa" eremua gehi ditzakezu.',
+    'BAZ_FORM_NEED_TITLE' => 'Zure inprimakiak bere fitxak izendatu behar ditu: izenburuaren txantiloiak inprimakiak duen eremu bat aipatu behar du.',
     'BAZ_CONFIRM_VIDER_FORMULAIRE' => 'Kontuz! Formulario honetarako gordetako fitxa guztiak galduko dira, formulario hutsa bakarrik egongo da erabilgarri... Ziur zaude formulario hau bere fitxetatik ezabatu nahi duzula?',
     'BAZ_INTRO_AJOUT_FORMULAIRE' => '<strong><strong>Ez da formulariorik sortu oraingoz.</strong><br </strong> <br /> />Formulario berri bat eskuz sor dezakezu (egin klik \'plus\' zeinua duen botoian),<br />edo <br /> lehendik dagoen YesWiki bateko formularioak inportatu (adibidez, https://yeswiki.net/serveur.',
     'BAZ_INTRO_AJOUT_LISTE' => '<strong><strong>Oraingoz ez da zerrendarik sortu.</strong><br </strong> <br /> />Zerrenda berri bat eskuz sor dezakezu (egin klik \'plus\' zeinua duen botoian),<br />edo <br /> lehendik dagoen YesWiki batetik zerrendak inportatu (adibidez, https://yeswiki.net/serveur.',

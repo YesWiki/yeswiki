@@ -1507,7 +1507,7 @@ return [
     'BAZ_SEM_REVERSE_TEMPLATE' => 'Modelo semântico inverso (Twig)',
     'BAZ_FORM_GRAPHICAL_BUILDER' => 'Designer gráfico',
     'BAZ_CATEGORIE' => 'Gato na baía',
-    'BAZ_FORM_NEED_TITLE' => 'Seu formulário deve conter um título. Você pode adicionar um campo de texto com "bf_titre" ou um campo "título automático".',
+    'BAZ_FORM_NEED_TITLE' => 'O seu formulário deve poder nomear as suas fichas: o modelo de título deve referenciar um campo que o formulário tenha.',
     'BAZ_ERROR_EDIT_UNAUTHORIZED' => 'Você não tem permissão para editar este arquivo',
     'BAZ_ERROR_DELETE_UNAUTHORIZED' => 'Você não tem permissão para excluir este arquivo',
     'BAZ_TYPE_FICHE_EXPORT' => 'Folhas de exportação',
