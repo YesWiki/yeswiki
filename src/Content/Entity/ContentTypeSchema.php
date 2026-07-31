@@ -43,8 +43,11 @@ class ContentTypeSchema
         self::TYPE_PAGE => [
             // a page's own title, distinct from its tag
             'title' => ['type' => 'texte', 'label' => 'Titre'],
-            // the wiki markup -- `content` is where ticket 09 put it
-            'content' => ['type' => 'textelong', 'label' => 'Contenu'],
+            // the wiki markup -- `content` is where ticket 09 put it. The syntax is
+            // declared because a textelong with none falls back to a plain textarea:
+            // without it, creating a page from the Pages form offered a bare box while
+            // editing the same page offered the ACeditor
+            'content' => ['type' => 'textelong', 'label' => 'Contenu', 'syntax' => 'wiki-textarea'],
             'keywords' => ['type' => 'tags', 'label' => 'Mots clés'],
         ],
         self::TYPE_USER => [

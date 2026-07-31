@@ -12,6 +12,17 @@ class PageContext
 {
     protected ?string $tag = null;
 
+    /**
+     * The tag the *request* asked for, as opposed to `$tag`, which follows whatever is
+     * being rendered right now: a bazar list, an `{{include}}` and a field's static render
+     * all point `$tag` at the Content they are rendering and put it back afterwards.
+     *
+     * The distinction matters to anything with a side effect. `{{redirect}}` on an entry
+     * must redirect when someone opens that entry, and must not when the entry merely
+     * appears in a list of a hundred others -- which it did, hijacking the whole list.
+     */
+    protected ?string $requestedTag = null;
+
     /** @var array<mixed>|null */
     protected $page;
 
@@ -28,6 +39,27 @@ class PageContext
     public function setTag(?string $tag): void
     {
         $this->tag = $tag;
+    }
+
+    /** Records which page the request is for; the Runtime calls this once, at boot. */
+    public function setRequestedTag(?string $tag): void
+    {
+        $this->requestedTag = $tag;
+    }
+
+    public function getRequestedTag(): string
+    {
+        return (string)($this->requestedTag ?? '');
+    }
+
+    /**
+     * Whether what is being rendered right now *is* the page the request asked for, rather
+     * than Content embedded in it. Before any request tag is recorded (CLI, tests) this
+     * answers true, so nothing changes behaviour outside a served page.
+     */
+    public function isRenderingRequestedPage(): bool
+    {
+        return $this->requestedTag === null || $this->getTag() === $this->requestedTag;
     }
 
     /**

@@ -56,7 +56,12 @@ class RedirectAction extends YesWikiAction implements RegisteredAction
         if (!$redirPageName) {
             echo '<div class="alert alert-danger"><strong>' . _t('ERROR_ACTION_REDIRECT') . '</strong> : ' . _t('MISSING_PAGE_PARAMETER') . '.</div>' . "\n";
         } else {
-            if ($this->getService(PageContext::class)->getMethod() == 'show') {
+            // showing *this* page redirects; showing it as one of a hundred entries in a
+            // list, or inside an {{include}}, prints the note below instead. Both swap the
+            // rendered tag and put it back, so the request's own tag is the test (ticket 11
+            // follow-up): one entry carrying {{redirect}} used to 302 the whole list.
+            $pageContext = $this->getService(PageContext::class);
+            if ($pageContext->getMethod() == 'show' && $pageContext->isRenderingRequestedPage()) {
                 $this->getService(LinkTracker::class)->forceAddIfNotIncluded($redirPageName);
                 if (!isset($_SESSION['redirects'])) {
                     $_SESSION['redirects'] = [];

@@ -262,6 +262,8 @@ class YesWikiRuntime
             $this->service(Redirector::class)->redirect($this->service(UrlFormatter::class)->href('', $this->config['root_page']));
         }
         $pageContext->setTag($tag);
+        // remembered separately, because setTag() moves with whatever is being rendered
+        $pageContext->setRequestedTag($tag);
 
         $this->service(AuthenticationService::class)->connectUser();
 
