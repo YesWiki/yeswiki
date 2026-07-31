@@ -12,6 +12,16 @@ So a role resolves in two steps: the form's explicit `field_roles` map if it has
 
 An explicit mapping to an incompatible field falls back to the type default rather than being honoured. A role pointing at a field that cannot play it is a misconfiguration, not an instruction, and returning something the caller cannot use would just move the silent failure somewhere harder to find.
 
+## The designer refuses what storage merely drops
+
+Part two gives a webmaster somewhere to answer, and the two ends of that answer are held to different standards on purpose.
+
+`FieldRole::normalizeMap()` **drops** what it cannot use — an unknown role, a blank field name, both ends of an event on one field. It runs on the way into storage, where there is nobody to tell: a body can arrive from the API, an import, a hand-edited page, and refusing the whole write over one unusable entry would lose the usable ones with it.
+
+The designer **refuses** the same input, with a message naming the field and the role. A webmaster who picks an impossible mapping and is silently handed the type default back learns nothing, and will pick it again. Same rule, two audiences.
+
+The selects offer only fields of a compatible type, so the common mistake is unreachable rather than merely reported; and the empty option — "automatic, from the field type" — is the default and is never an error. A form whose webmaster never opens this section keeps working exactly as before, which is the whole point of resolving from the field type first.
+
 ## Considered Options
 
 - **Keep the literal names, document them as required** — rejected: that is the current behaviour with the failure written down rather than fixed, and it makes a French string part of core's API forever.
@@ -20,6 +30,8 @@ An explicit mapping to an incompatible field falls back to the type default rath
 
 ## Consequences
 
-Adding a role is a code change (`FieldRole::DEFAULT_TYPES`) plus the call sites that ask for it. A feature needing a role a form cannot answer should say so — `FieldRoleResolver::missingRoles()` exists to make "this form has no start date field" a sentence a UI can show, rather than an empty render.
+Adding a role is a code change (`FieldRole::DEFAULT_TYPES`) plus the call sites that ask for it, and a label key the designer can show — a role with no label would render an unnamed select.
+
+A feature needing a role a form cannot answer says so: an agenda with no `start_date` and a map with no `geolocation` render a warning naming the missing role instead of an empty list, which reads as "no entries". Only when *no* listed form can answer it — several forms listed together, one of which has no dates, is not a misconfiguration, and those entries simply do not appear.
 
 The roles named here (`start_date`, `end_date`, `image`, `email`, `description`, `geolocation`) come from what core actually hardcoded. Latitude and longitude are deliberately **one** `geolocation` role rather than two: since the map field was reworked, one field holds both, and two roles would model a shape that no longer exists.
