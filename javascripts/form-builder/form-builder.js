@@ -130,6 +130,7 @@ function serialize() {
 function syncToTextarea() {
   textarea.value = serialize()
   updateTitleSelect()
+  updateRoleSelects()
 }
 
 // ---------------------------------------------------------------- entry title
@@ -163,6 +164,37 @@ function updateTitleSelect() {
   if (!matched) custom.selected = true
   titleSelect.append(custom)
   titleCustom.classList.toggle('hide', matched)
+}
+
+// ---------------------------------------------------------------- field roles
+// Which field answers each of core's questions (ticket 11). A role left on
+// "automatic" resolves from the field's own type, so these selects only have to
+// say something when a form is ambiguous or the webmaster wants another field --
+// which is why the empty option is the default and is not an error.
+
+function updateRoleSelects() {
+  document.querySelectorAll('[data-yw-field-role]').forEach((selectParam) => {
+    const select = selectParam
+    const types = (select.dataset.ywRoleTypes || '').split(',').filter((t) => t.length > 0)
+    const chosen = select.value || select.dataset.ywRoleCurrent || ''
+    select.innerHTML = ''
+
+    const auto = document.createElement('option')
+    auto.value = ''
+    auto.textContent = _t('FORM_EDIT_FIELD_ROLE_AUTOMATIC')
+    select.append(auto)
+
+    fields.forEach(({ type, data }) => {
+      // only fields that can play the role: an explicit mapping to anything else is
+      // refused server-side, so offering it would only be a way to fail
+      if (!data.name || (types.length > 0 && !types.includes(type))) return
+      const option = document.createElement('option')
+      option.value = data.name
+      option.textContent = data.label ? `${data.label} (${data.name})` : data.name
+      option.selected = chosen === data.name
+      select.append(option)
+    })
+  })
 }
 
 function bindTitleSelect() {

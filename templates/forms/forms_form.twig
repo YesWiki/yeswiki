@@ -99,6 +99,29 @@
     />
   </div>
 
+  {# ---- Field roles (ticket 11): which field answers core's questions. Left on
+     "automatic", a role resolves from the field's own type, which is why existing
+     forms need no configuration -- these selects only matter when a form is
+     ambiguous or the webmaster wants a different field. Options are filled live by
+     the designer from the fields currently on the canvas. ---- #}
+  <fieldset class="yw-form-group" id="field-roles-group">
+    <legend class="yw-form-label">{{ _t('FORM_EDIT_FIELD_ROLES') }}</legend>
+    <p class="yw-text-muted">{{ _t('FORM_EDIT_FIELD_ROLES_HINT') }}</p>
+    {% for role in fieldRoles %}
+      <div class="yw-form-group">
+        <label class="yw-form-label" for="field-role-{{ role.name }}">{{ _t(role.label) }}</label>
+        <select
+          class="yw-input"
+          id="field-role-{{ role.name }}"
+          name="{{ role.property }}[{{ role.name }}]"
+          data-yw-field-role="{{ role.name }}"
+          data-yw-role-types="{{ role.types|join(',') }}"
+          data-yw-role-current="{{ role.current }}"
+        ></select>
+      </div>
+    {% endfor %}
+  </fieldset>
+
   {# ---- Permissions (entry_*_access + comments toggle) ---- #}
   <fieldset class="yw-form-group">
     <legend class="yw-form-label">{{ _t('FORM_EDIT_PERMISSIONS') }}</legend>

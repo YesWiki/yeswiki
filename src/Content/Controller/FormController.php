@@ -5,6 +5,8 @@ namespace YesWiki\Content\Controller;
 use Symfony\Component\Security\Csrf\Exception\TokenNotFoundException;
 use Tamtamchik\SimpleFlash\Flash;
 use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Entity\FieldRole;
+use YesWiki\Content\Field\BazarField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\ActivityPubService;
 use YesWiki\Content\Service\ContentCreator;
@@ -134,6 +136,8 @@ class FormController extends YesWikiController
         });
         $data['entry_metadatas'] = $metadatas ?: null;
 
+        $data[FieldRole::FORM_PROPERTY] = FieldRole::normalizeMap($data[FieldRole::FORM_PROPERTY] ?? null);
+
         foreach (['entry_creates_user', 'entry_bookmarklet'] as $property) {
             if (empty($data[$property . '_enable'])) {
                 $data[$property] = null;
@@ -179,6 +183,7 @@ class FormController extends YesWikiController
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption(),
                 'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
                 'entryOnlyPropertiesAvailable' => ContentTypeSchema::acceptsEntryOnlyProperties($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
+                'fieldRoles' => $this->fieldRolesForDesigner($form),
             ]);
         }
 
@@ -208,6 +213,7 @@ class FormController extends YesWikiController
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
                 'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
                 'entryOnlyPropertiesAvailable' => ContentTypeSchema::acceptsEntryOnlyProperties($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
+                'fieldRoles' => $this->fieldRolesForDesigner($form),
             ]);
         }
 
@@ -232,6 +238,91 @@ class FormController extends YesWikiController
             Flash::error(_t('BAZ_FORM_NEED_TITLE'));
 
             return false;
+        }
+
+        return $this->rolesAreValid($form);
+    }
+
+    /**
+     * The role selects the designer offers: every known role, the field types that can
+     * play it, and whatever this form has explicitly mapped (ticket 11).
+     *
+     * @param array<string, mixed>|null $form
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function fieldRolesForDesigner(?array $form): array
+    {
+        $current = FieldRole::normalizeMap($form[FieldRole::FORM_PROPERTY] ?? null);
+
+        return array_map(fn (string $role) => [
+            'name' => $role,
+            'property' => FieldRole::FORM_PROPERTY,
+            'label' => 'FORM_EDIT_FIELD_ROLE_' . strtoupper($role),
+            'types' => FieldRole::compatibleTypes($role),
+            'current' => $current[$role] ?? '',
+        ], FieldRole::all());
+    }
+
+    /**
+     * A submitted role map has to name fields the form actually has, of a type that can
+     * play the role, and no two roles may name the same field (ticket 11).
+     *
+     * FieldRole::normalizeMap() drops what it cannot use, which is right for storage and
+     * wrong for a designer: a webmaster who picks an impossible mapping should be told,
+     * not quietly given the type default back.
+     *
+     * @param array<string, mixed> $form
+     */
+    private function rolesAreValid(array $form): bool
+    {
+        $submitted = $this->getRequest()->request->all()[FieldRole::FORM_PROPERTY] ?? null;
+        if (!is_array($submitted)) {
+            return true;
+        }
+
+        /** @var array<string, BazarField> $byName */
+        $byName = [];
+        foreach ($form['prepared'] ?? [] as $field) {
+            if ($field instanceof BazarField && $field->getPropertyName()) {
+                $byName[$field->getPropertyName()] = $field;
+            }
+        }
+
+        $claimed = [];
+        foreach ($submitted as $role => $fieldName) {
+            $fieldName = is_string($fieldName) ? trim($fieldName) : '';
+            if ($fieldName === '' || !FieldRole::isKnown((string)$role)) {
+                continue;
+            }
+
+            $field = $byName[$fieldName] ?? null;
+            if ($field === null) {
+                Flash::error(_t('BAZ_FORM_ROLE_UNKNOWN_FIELD', ['role' => $role, 'field' => $fieldName]));
+
+                return false;
+            }
+
+            $compatible = FieldRole::compatibleTypes((string)$role);
+            if (!empty($compatible) && !in_array($field->getType(), $compatible, true)) {
+                Flash::error(_t('BAZ_FORM_ROLE_INCOMPATIBLE_FIELD', [
+                    'role' => $role,
+                    'field' => $fieldName,
+                    'types' => implode(', ', $compatible),
+                ]));
+
+                return false;
+            }
+
+            if (isset($claimed[$fieldName])) {
+                Flash::error(_t('BAZ_FORM_ROLE_FIELD_TWICE', [
+                    'field' => $fieldName,
+                    'roles' => $claimed[$fieldName] . ', ' . $role,
+                ]));
+
+                return false;
+            }
+            $claimed[$fieldName] = $role;
         }
 
         return true;

@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Content\Exception\ParsingMultipleException;
 use YesWiki\Content\Field\BazarField;
@@ -12,6 +13,7 @@ use YesWiki\Content\Field\ImageField;
 use YesWiki\Content\Field\MapField;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\EntryManager;
+use YesWiki\Content\Service\FieldRoleResolver;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\FormPropertiesService;
 use YesWiki\Core\YesWikiAction;
@@ -424,17 +426,66 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 
         try {
             $templateBaseName = preg_replace('/\.(twig|tpl\.html)$/', '', $templateName);
+            // a display that needs a role no form can answer renders nothing at all, with
+            // nothing to explain it -- say which role is missing instead (ticket 11)
+            $warning = $this->missingRoleWarning((string)$templateBaseName, $pForms);
             if ($templateBaseName === 'tableau') {
-                return $this->renderTableau($data);
+                return $warning . $this->renderTableau($data);
             }
             if ($templateBaseName === 'map') {
-                return $this->renderMap($data);
+                return $warning . $this->renderMap($data);
             }
 
-            return $this->render("@core/{$templateName}", $data);
+            return $warning . $this->render("@core/{$templateName}", $data);
         } catch (TemplateNotFound $e) {
             return '<div class="alert alert-danger">' . $e->getMessage() . '</div>';
         }
+    }
+
+    /**
+     * Roles a display cannot do without: an agenda with no start date and a map with no
+     * geolocation both come out empty, which reads as "no entries" rather than as
+     * "this form does not say which field holds that" (ticket 11).
+     *
+     * @var array<string, list<string>>
+     */
+    private const TEMPLATE_REQUIRED_ROLES = [
+        'agenda' => [FieldRole::START_DATE],
+        'calendar' => [FieldRole::START_DATE],
+        'map' => [FieldRole::GEOLOCATION],
+        'gogocarto' => [FieldRole::GEOLOCATION],
+        'gogomap' => [FieldRole::GEOLOCATION],
+        'map-and-table' => [FieldRole::GEOLOCATION],
+    ];
+
+    /**
+     * An alert naming the roles none of the listed forms can answer, or '' when they can.
+     *
+     * Only complains when *no* form has the role: listing several forms together, one of
+     * which has no dates, is not a misconfiguration -- those entries simply do not show.
+     *
+     * @param array<int|string, mixed>|string $forms
+     */
+    private function missingRoleWarning(string $templateBaseName, $forms): string
+    {
+        $required = self::TEMPLATE_REQUIRED_ROLES[$templateBaseName] ?? null;
+        if ($required === null || !is_array($forms) || empty($forms)) {
+            return '';
+        }
+
+        $resolver = $this->getService(FieldRoleResolver::class);
+        $missing = array_filter(
+            $required,
+            fn (string $role) => empty(array_filter($forms, fn ($form) => is_array($form) && $resolver->field($form, $role) !== null))
+        );
+        if (empty($missing)) {
+            return '';
+        }
+
+        return $this->render('@core/alert-message.twig', [
+            'type' => 'warning',
+            'message' => _t('BAZ_LIST_MISSING_ROLE', ['roles' => implode(', ', $missing)]),
+        ]);
     }
 
     /**

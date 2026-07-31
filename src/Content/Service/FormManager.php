@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\String\Slugger\AsciiSlugger;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Entity\ContentTypeSchema;
+use YesWiki\Content\Entity\FieldRole;
 use YesWiki\Content\Field\BazarField;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Service\DbService;
@@ -457,6 +458,11 @@ class FormManager
             if (isset($data[$property])) {
                 $body[$property] = $data[$property];
             }
+        }
+        // which field plays which role (ticket 11) -- like the entry_* properties above,
+        // included only when posted so an update leaves an unposted map alone
+        if (isset($data[FieldRole::FORM_PROPERTY])) {
+            $body[FieldRole::FORM_PROPERTY] = FieldRole::normalizeMap($data[FieldRole::FORM_PROPERTY]);
         }
         foreach (['sem_context', 'sem_type', 'sem_use_template'] as $legacySeedField) {
             if (isset($data[$legacySeedField])) {
