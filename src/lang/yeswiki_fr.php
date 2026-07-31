@@ -755,7 +755,7 @@ return [
     'TAGS_DELETE_MINUSCULE' => 'supprimer',
     'TAGS_CANCEL' => 'Annuler',
     'TAGS_MODIFY' => 'Modifier',
-    'TAGS_ADD_TAGS' => 'Ajouter mots clés en utilisant la touche entrée',
+    'TAGS_ADD_TAGS' => 'Ajouter des mots clés',
     'TAGS_COMMENTS_ACTIVATED' => 'Les commentaires de cette page ont été activés.',
     'TAGS_ACTIVATE_COMMENTS' => 'Activer les commentaires',
     'TAGS_ACTIVATE_COMMENTS_ON_THIS_PAGE' => 'Activer les commentaires sur cette page',
