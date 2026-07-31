@@ -273,8 +273,8 @@ class TemplateEngine
         });
         // full rendered view of one bazar entry (liste_accordeon expands entries
         // in place) — delegates to renderEntryView()
-        $this->addTwigHelper('renderEntry', function ($barregestion, $fiche, $form = '') {
-            return renderEntryView($barregestion, $fiche, $form ?: '');
+        $this->addTwigHelper('renderEntry', function ($showManagementBar, $entry, $form = '') {
+            return renderEntryView($showManagementBar, $entry, $form ?: '');
         });
         // thumbnail with the historical cache/image_{W}x{H}_{name} naming the bazar
         // list templates share (agenda uses WxH, blog/trombinoscope W_H -- the

@@ -76,25 +76,25 @@ class Guard
             return $page;
         }
         if ($page) {
-            $valeur = $page['body'] ?? [];
+            $body = $page['body'] ?? [];
 
-            if ($valeur) {
-                $form = $this->formManager->getOne($valeur['form_id']);
+            if ($body) {
+                $form = $this->formManager->getOne($body['form_id']);
                 if ($form) {
-                    $fieldname = [];
+                    $redactedFields = [];
                     foreach ($form['prepared'] as $field) {
                         if ($field instanceof BazarField
                              && !$field->canRead(['tag' => $tag], $userNameForCheckingACL)
                         ) {
-                            $fieldname[] = $field->getPropertyName();
+                            $redactedFields[] = $field->getPropertyName();
                         }
                     }
-                    if (count($fieldname) > 0) {
-                        foreach ($fieldname as $field) {
-                            $valeur[$field] = '';
+                    if (count($redactedFields) > 0) {
+                        foreach ($redactedFields as $field) {
+                            $body[$field] = '';
                             // on vide le champ
                         }
-                        $page['body'] = $valeur;
+                        $page['body'] = $body;
                     }
                 }
             }
@@ -132,8 +132,8 @@ class Guard
         if (empty($page['body'])) {
             return $page;
         }
-        $valeur = $page['body'];
-        if (!is_array($valeur)) {
+        $body = $page['body'];
+        if (!is_array($body)) {
             return $page;
         }
 
@@ -145,13 +145,13 @@ class Guard
 
         $modified = false;
         foreach ($fieldsToHide as $field) {
-            if (array_key_exists($field, $valeur) && $valeur[$field] !== '') {
-                $valeur[$field] = '';
+            if (array_key_exists($field, $body) && $body[$field] !== '') {
+                $body[$field] = '';
                 $modified = true;
             }
         }
         if ($modified) {
-            $page['body'] = $valeur;
+            $page['body'] = $body;
         }
 
         return $page;
