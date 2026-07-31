@@ -2,6 +2,7 @@
 
 namespace YesWiki\Content\Action;
 
+use Symfony\Component\HttpFoundation\Request;
 use YesWiki\Content\Controller\EntryController;
 use YesWiki\Content\Controller\FormController;
 use YesWiki\Content\Controller\ListController;
@@ -144,14 +145,25 @@ class BazarAction extends YesWikiAction implements RegisteredAction
         $view = $this->arguments[self::URL_VIEW_PARAM];
         $action = $this->arguments[self::URL_ACTION_PARAM];
 
-        // Display menu, unless we explicitly don't want to see it
-        if ($this->arguments['voirmenu'] !== '0') {
-            echo $this->render('@core/menu.twig', [
-                'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
-                'view' => $view,
-            ]);
-        }
+        // Prepended to whatever the view returns, rather than printed: an action that
+        // prints lands wherever the output buffer happens to be rather than where it was
+        // called from, which is how bazar's own menu came out above the title of the page
+        // that called it.
+        $menu = $this->arguments['voirmenu'] === '0' ? '' : $this->render('@core/menu.twig', [
+            'menuItems' => array_map('trim', explode(',', $this->arguments['voirmenu'])),
+            'view' => $view,
+        ]);
 
+        return $menu . $this->runView($view, $action, $req, $listController, $formController, $entryController);
+    }
+
+    /**
+     * The body of the action: what the requested view returns, without the menu.
+     *
+     * @return string
+     */
+    private function runView(mixed $view, mixed $action, Request $req, ListController $listController, FormController $formController, EntryController $entryController): string
+    {
         switch ($view) {
             case self::VIEW_CREATE:
                 if ($this->isWikiHibernated()) {
@@ -163,7 +175,8 @@ class BazarAction extends YesWikiAction implements RegisteredAction
                     case self::ACTION_ENTRY_EDIT:
                         return $entryController->update($req->get('tag'));
                     case self::ACTION_ENTRY_DELETE:
-                        return $entryController->delete($req->get('tag'), true);
+                        // delete() answers a bool; the view has nothing of its own to show
+                        return (string)$entryController->delete($req->get('tag'), true);
                     case self::ACTION_PUBLIER:
                         return $entryController->publish($req->get('tag'), true);
                     case self::ACTION_PAS_PUBLIER:

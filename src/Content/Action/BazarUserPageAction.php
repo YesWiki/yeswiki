@@ -1,8 +1,9 @@
 <?php
 
 namespace YesWiki\Content\Action;
-use YesWiki\Identity\Service\AuthenticationService;
+
 use YesWiki\Core\YesWikiAction;
+use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
 
 class BazarUserPageAction extends YesWikiAction implements RegisteredAction
@@ -15,10 +16,11 @@ class BazarUserPageAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        echo '<h2 class="titre_mes_fiches">' . _t('BAZ_VOS_FICHES') . '</h2>';
-
         $this->arguments['user'] = $this->getService(AuthenticationService::class)->getLoggedUserName();
 
-        return $this->callAction('bazarliste', $this->arguments);
+        // returned, not printed: an action that prints lands wherever the output buffer
+        // happens to be rather than where it was called from
+        return '<h2 class="titre_mes_fiches">' . _t('BAZ_VOS_FICHES') . '</h2>'
+            . $this->callAction('bazarliste', $this->arguments);
     }
 }
