@@ -16,9 +16,9 @@
   --primary-color: #240046;
   --secondary-color-1: #ff006e;
   --secondary-color-2: #ff5400;
-  --neutral-color: #4e5056;
-  --neutral-soft-color: #57575c;
-  --neutral-light-color: #f2f2f2;
+  --neutral-color: #3e4c59;
+  --neutral-soft-color: #4a4e69;
+  --neutral-light-color: #f5f7fa;
   --main-text-fontsize: 15px;
   --main-text-fontfamily:
     Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial,
@@ -26,7 +26,7 @@
   --main-title-fontfamily:
     Inter, Roboto, 'Helvetica Neue', 'Arial Nova', 'Nimbus Sans', Arial,
     sans-serif;
-  --success-color: #3a86ff;
+  --success-color: #26a69a;
   --danger-color: #ff006e;
   --warning-color: #ffc300;
 }
@@ -306,7 +306,12 @@ span.missingpage,
   cursor: pointer;
 }
 
+.bazar-entry button.panel-heading {
+  border-radius: 4px;
+}
+
 .accordion-group .panel-title {
+  color: var(--primary-color);
   position: relative;
 }
 
@@ -977,18 +982,19 @@ textarea.yw-input {
   border: 1px solid var(--neutral-soft-color);
   border-radius: 4px;
   box-sizing: border-box;
+  max-width: 350px;
 }
 .yw-input:focus {
   outline: 2px solid var(--primary-color);
   outline-offset: -1px;
 }
 .yw-form-group {
-  margin-bottom: 10px;
+  margin: 1rem 0;
 }
 .yw-form-group > label,
 .yw-form-label {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 0.25rem;
   font-weight: 600;
 }
 .yw-radio-inline,
@@ -2186,9 +2192,9 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
 
 /* legacy panel markup */
 .panel {
-  margin-bottom: 15px;
+  margin-bottom: 0.25em;
+  border: 1px solid var(--primary-color);
   background: #fff;
-  border: 1px solid var(--neutral-soft-color);
   border-radius: 4px;
 }
 .panel-heading {
@@ -2196,7 +2202,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   width: 100%;
   padding: 10px 15px;
   text-align: left;
-  background: var(--neutral-light-color, #f5f5f5);
+  background: var(--main-bg-color);
   border: 0;
   border-bottom: 1px solid var(--neutral-soft-color);
   cursor: pointer;
@@ -2206,7 +2212,7 @@ table.yw-table--sortable th[data-yw-sort='desc']::after {
   font-size: 14px;
 }
 .panel-body {
-  padding: 15px;
+  padding: 1rem;
 }
 .panel-footer {
   padding: 10px 15px;

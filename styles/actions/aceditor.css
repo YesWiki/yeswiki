@@ -119,7 +119,7 @@ textarea.aceditor-textarea {
 .scroll-container-toolbar {
   transition: all ease-in 0.2s;
   position: sticky;
-  top: 66px;
+  top: 46px;
   z-index: 6;
 }
 
