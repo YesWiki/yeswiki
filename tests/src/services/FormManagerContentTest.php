@@ -307,7 +307,7 @@ class FormManagerContentTest extends YesWikiTestCase
 
     public function testBazForFormsAndListsIdsNoLongerQueriesTheDroppedNatureTable()
     {
-        // regression test: baz_forms_and_lists_ids() (src/bazar.functions.php, relocated
+        // regression test: formAndListIds() (src/bazar.functions.php, relocated
         // from tools/bazar/libs/bazar.fonct.php by ticket 24; used by FormController and
         // aceditor's ActionsBuilderService) used to run raw SQL
         // against the `nature` table directly, bypassing FormManager -- now dropped, that
@@ -316,7 +316,7 @@ class FormManagerContentTest extends YesWikiTestCase
         $formManager = $wiki->services->get(FormManager::class);
         $entryManager = $wiki->services->get(EntryManager::class);
 
-        // baz_forms_and_lists_ids() reads $GLOBALS['wiki'], only populated by the
+        // formAndListIds() reads $GLOBALS['wiki'], only populated by the
         // production HTTP bootstrap outside a real request -- see EntryManagerTest's
         // docblock for the same pre-existing characteristic elsewhere in this tool
         $GLOBALS['yeswikiServices'] = $wiki->services;
@@ -324,16 +324,16 @@ class FormManagerContentTest extends YesWikiTestCase
         try {
             $formManager->create([
                 'id' => self::FORM_ID,
-                'label' => 'FormManagerContentTest baz_forms_and_lists_ids form',
+                'label' => 'FormManagerContentTest formAndListIds form',
                 'template' => '',
                 'condition' => '',
             ]);
 
-            $result = baz_forms_and_lists_ids();
+            $result = formAndListIds();
 
             $this->assertArrayHasKey('forms', $result);
             $this->assertArrayHasKey('lists', $result);
-            $this->assertSame('FormManagerContentTest baz_forms_and_lists_ids form', $result['forms'][self::FORM_ID] ?? null);
+            $this->assertSame('FormManagerContentTest formAndListIds form', $result['forms'][self::FORM_ID] ?? null);
         } finally {
             unset($GLOBALS['wiki']);
             $this->cleanupForm($formManager, $entryManager, self::FORM_ID);

@@ -60,7 +60,7 @@ class ContactApiController extends YesWikiController
                 if (is_array($val) && isset($val[$field])) {
                     $mailReceiver[] = $val[$field];
                 }
-                $form = baz_valeurs_formulaire($val['form_id'] ?? null);
+                $form = formValues($val['form_id'] ?? null);
                 $mailSenderForMsg = (string)$request->request->get('email', '');
                 $infomsg .= '<em>' . _t('CONTACT_THIS_MESSAGE') . ' « <a href="' . $this->getService(UrlFormatter::class)->href('', $val['tag']) . '">'
                     . ($val['title'] ?? $val['bf_titre'] ?? $pageTag) . '</a> » ' . _t('CONTACT_FROM_FORM') . ' « ' . $form['label'] . ' » '

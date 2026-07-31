@@ -197,7 +197,7 @@ class TemplateEngine
                 && filter_var($options['refresh'], FILTER_VALIDATE_BOOL)
                 && $this->container->get(AclService::class)->isAdmin();
             if (!file_exists($image_dest) || $safeRefresh) {
-                $result = $attach->redimensionner_image($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
+                $result = $attach->resizeImage($options['fileName'], $image_dest, $options['width'], $options['height'], $options['mode']);
                 if ($result != $image_dest) {
                     // do nothing : error
                     return $basePath . $options['fileName'];
@@ -272,21 +272,21 @@ class TemplateEngine
             return getAbsoluteUrl();
         });
         // full rendered view of one bazar entry (liste_accordeon expands entries
-        // in place) — delegates to baz_voir_fiche()
+        // in place) — delegates to renderEntryView()
         $this->addTwigHelper('renderEntry', function ($barregestion, $fiche, $form = '') {
-            return baz_voir_fiche($barregestion, $fiche, $form ?: '');
+            return renderEntryView($barregestion, $fiche, $form ?: '');
         });
         // thumbnail with the historical cache/image_{W}x{H}_{name} naming the bazar
         // list templates share (agenda uses WxH, blog/trombinoscope W_H -- the
         // separator is part of each template's stored-cache contract)
         $this->addTwigHelper('resizedImage', function ($image, $width, $height, $mode = 'crop', $separator = 'x') {
-            return redimensionner_image('files/' . $image, "cache/image_{$width}{$separator}{$height}_" . $image, $width, $height, $mode);
+            return resizeImage('files/' . $image, "cache/image_{$width}{$separator}{$height}_" . $image, $width, $height, $mode);
         });
         // raw source->destination passthrough for the odd call shapes (placeholder
         // sources, custom cache names) -- unlike resizedImage, which derives the
         // cache name from the files/ image name
         $this->addTwigHelper('resizeImageTo', function ($source, $destination, $width, $height, $mode = 'fit') {
-            return redimensionner_image($source, $destination, $width, $height, $mode);
+            return resizeImage($source, $destination, $width, $height, $mode);
         });
         // strtotime() with the legacy templates' semantics: unparseable or missing
         // dates become 0 (epoch), never an exception -- entry dates are user data

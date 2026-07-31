@@ -477,7 +477,7 @@ class FormPropertiesService
             if (!$this->urlFormatter->isWikiName($wikiName)) {
                 // usernames are NEVER slugified (ADR-0010) -- the historical wikiname
                 // generation stays for generated usernames
-                $wikiName = genere_nom_wiki($wikiName, 0);
+                $wikiName = generateWikiName($wikiName, 0);
             }
             if ($this->isUserByName($wikiName)) {
                 $currentWikiName = $wikiName;

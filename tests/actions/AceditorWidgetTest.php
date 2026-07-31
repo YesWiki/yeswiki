@@ -22,7 +22,7 @@ class AceditorWidgetTest extends YesWikiTestCase
         $wiki = $this->getWiki();
         $this->assertTrue($wiki->services->has(YesWikiRuntime::class));
         // {{aceditor}}'s ActionsBuilderService::getData() calls bazar's
-        // baz_forms_and_lists_ids(), which reads $GLOBALS['wiki'] -- normally
+        // formAndListIds(), which reads $GLOBALS['wiki'] -- normally
         // populated by the production HTTP bootstrap, not the test harness
         // (same workaround as FiltertagsActionTest)
         $GLOBALS['yeswikiServices'] = $wiki->services;

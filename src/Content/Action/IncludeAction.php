@@ -130,7 +130,7 @@ class IncludeAction extends YesWikiAction implements RegisteredAction
         // bazar entry, show the entry instead of formatting the page as plain wiki content.
         $entryManager = $this->getService(EntryManager::class);
         if ($entryManager->isEntry($incPageName)) {
-            $plugin_output_new = '<div class="' . $class . '">' . "\n" . baz_voir_fiche(0, $incPageName) . "\n" . '</div>' . "\n";
+            $plugin_output_new = '<div class="' . $class . '">' . "\n" . renderEntryView(0, $incPageName) . "\n" . '</div>' . "\n";
         } else {
             $type = '';
         }

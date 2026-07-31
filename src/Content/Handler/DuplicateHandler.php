@@ -98,7 +98,7 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                     $form = $this->getService(FormManager::class)->getOne($this->getService(EntryManager::class)->getOne($proposedTag)['form_id']);
                 } else {
                     $pageTitle = ($originalContent['title'] ?? $originalContent['bf_titre'] ?? '') . ' (' . _t('DUPLICATE') . ')';
-                    $proposedTag = genere_nom_wiki($pageTitle);
+                    $proposedTag = generateWikiName($pageTitle);
                 }
             } elseif ($isList) {
                 $title = _t('TEMPLATE_DUPLICATE_LIST') . ' ' . $this->getService(PageContext::class)->getTag();
@@ -108,14 +108,14 @@ class DuplicateHandler extends YesWikiHandler implements RegisteredHandler
                     $proposedTag = $this->getService(PageContext::class)->getTag();
                 } else {
                     $pageTitle = $originalContent['titre_liste'] . ' (' . _t('DUPLICATE') . ')';
-                    $proposedTag = genere_nom_wiki('Liste ' . $pageTitle);
+                    $proposedTag = generateWikiName('Liste ' . $pageTitle);
                 }
             } else { // page
                 $title = _t('TEMPLATE_DUPLICATE_PAGE') . ' ' . $this->getService(PageContext::class)->getTag();
                 if ($toExternalWiki) {
                     $proposedTag = $this->getService(PageContext::class)->getTag();
                 } else {
-                    $proposedTag = genere_nom_wiki($this->getService(PageContext::class)->getTag() . ' ' . _t('DUPLICATE'));
+                    $proposedTag = generateWikiName($this->getService(PageContext::class)->getTag() . ' ' . _t('DUPLICATE'));
                 }
                 $originalContent = PageBody::content($this->getService(PageContext::class)->getPage()['body']);
             }

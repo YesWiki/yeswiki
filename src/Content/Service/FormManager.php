@@ -123,7 +123,7 @@ class FormManager
                     $ifp = fopen($tempFile, 'wb');
                     fwrite($ifp, base64_decode(explode(',', $default_image[1])[1]));
                     fclose($ifp);
-                    $this->attach->redimensionner_image($tempFile, $default_image_filename, $fieldObject['image_height'] ?? '', $fieldObject['image_width'] ?? '', 'crop');
+                    $this->attach->resizeImage($tempFile, $default_image_filename, $fieldObject['image_height'] ?? '', $fieldObject['image_width'] ?? '', 'crop');
                 } finally {
                     unlink($tempFile);
                 }

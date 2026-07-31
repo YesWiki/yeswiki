@@ -50,7 +50,7 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
             $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
             // the rendered entry replaces the whole body, prose included (ticket 09)
-            $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => '""' . baz_voir_fiche(0, $fiche) . '""']);
+            $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => '""' . renderEntryView(0, $fiche) . '""']);
         }
     }
 

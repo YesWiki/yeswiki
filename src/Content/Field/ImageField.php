@@ -217,7 +217,7 @@ class ImageField extends FileField
                         $attach = $this->getAttach();
                         $filePathResized = $attach->getResizedFilename($filePath, $this->thumbnailWidth, $this->thumbnailHeight);
                         if (!file_exists($filePathResized)) {
-                            $attach->redimensionner_image($filePath, $filePathResized, $this->thumbnailWidth, $this->thumbnailHeight);
+                            $attach->resizeImage($filePath, $filePathResized, $this->thumbnailWidth, $this->thumbnailHeight);
                         }
                     }
                     // Adapt image dimensions
@@ -225,7 +225,7 @@ class ImageField extends FileField
                         $attach = $this->getAttach();
                         $filePathResized = $attach->getResizedFilename($filePath, $this->imageWidth, $this->imageHeight);
                         if (!file_exists($filePathResized)) {
-                            $attach->redimensionner_image($filePath, $filePathResized, $this->imageWidth, $this->imageHeight);
+                            $attach->resizeImage($filePath, $filePathResized, $this->imageWidth, $this->imageHeight);
                         }
                     }
                 } else {

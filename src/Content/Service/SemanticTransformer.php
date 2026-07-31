@@ -36,7 +36,7 @@ class SemanticTransformer
 
     public function convertFromSemanticData($formId, $data): array
     {
-        $form = baz_valeurs_formulaire($formId);
+        $form = formValues($formId);
 
         if (empty($form['sem_reverse_template'])) {
             throw new \Exception('No reverse semantic template defined for form ' . $formId);

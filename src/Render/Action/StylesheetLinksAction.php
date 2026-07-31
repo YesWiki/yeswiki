@@ -14,7 +14,7 @@ use YesWiki\Render\Service\MarkdownFormatterService;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class LiensstyleAction extends YesWikiAction implements RegisteredAction
+class StylesheetLinksAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {

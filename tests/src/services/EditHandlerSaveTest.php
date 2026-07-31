@@ -53,7 +53,7 @@ class EditHandlerSaveTest extends YesWikiTestCase
         $wiki->services->get(PageManager::class)->getOne(self::PAGE_TAG);
 
         // the edit form renders {{aceditor}}, whose ActionsBuilderService::getData()
-        // calls bazar's baz_forms_and_lists_ids(), which reads $GLOBALS['wiki'] --
+        // calls bazar's formAndListIds(), which reads $GLOBALS['wiki'] --
         // normally populated by the production HTTP bootstrap, not the test harness
         // (same workaround as FiltertagsActionTest)
         $GLOBALS['yeswikiServices'] = $wiki->services;

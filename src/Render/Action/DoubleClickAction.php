@@ -16,7 +16,7 @@ use YesWiki\Kernel\Service\UrlFormatter;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class DoubleclicAction extends YesWikiAction implements RegisteredAction
+class DoubleClickAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {

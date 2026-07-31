@@ -99,7 +99,7 @@ function multiArraySearch($array, $key, $value)
     return $results;
 }
 
-function baz_forms_and_lists_ids()
+function formAndListIds()
 {
     $forms = [];
     $lists = $GLOBALS['yeswikiServices']->get(ListManager::class)->getAll();
@@ -240,17 +240,17 @@ function removeAccents($str, $charset = YW_CHARSET)
     return $str;
 }
 
-/** genere_nom_wiki()
- *  Prends une chaine de caracteres, et la tranforme en NomWiki unique, en la limitant
- *  a 50 caracteres et en mettant 2 majuscules
- *  Si le NomWiki existe deja, on propose recursivement NomWiki2, NomWiki3, etc..
+/**
+ * Turn a string into a unique WikiName: accents stripped, capped at 50 characters, two
+ * capitals. A name already taken is suffixed recursively -- NomWiki2, NomWiki3...
  *
- *   @param  string  chaine de caracteres avec de potentiels accents a enlever
- *   @param int nombre d'iteration pour la fonction recursive (1 par defaut)
+ * @param string $nom       the string to derive the name from
+ * @param int    $occurence recursion depth; 1 on the first call, and only >1 when
+ *                          retrying with a suffix
  *
- *   return  string chaine de caracteres, en NomWiki unique
+ * @return string a WikiName nothing else holds
  */
-function genere_nom_wiki($nom, $occurence = 1)
+function generateWikiName($nom, $occurence = 1)
 {
     // si la fonction est appelee pour la premiere fois, on nettoie le nom passe en parametre
     if ($occurence <= 1) {
@@ -305,11 +305,11 @@ function genere_nom_wiki($nom, $occurence = 1)
     // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
     $occurence++;
 
-    return genere_nom_wiki($nom, $occurence);
+    return generateWikiName($nom, $occurence);
 }
 
 // tri par ordre desire
-function champCompare($a, $b)
+function compareFieldsByPosition($a, $b)
 {
     if ($GLOBALS['ordre'] == 'desc') {
         return strcoll(mb_strtolower($b[$GLOBALS['champ']]), mb_strtolower($a[$GLOBALS['champ']]));
@@ -344,7 +344,7 @@ function sanitizeFilename($string = '')
     return mb_strtolower(preg_replace('/--+/u', '-', $string), YW_CHARSET);
 }
 
-function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
+function resizeImage($image_src, $image_dest, $largeur, $hauteur, $method = 'fit')
 {
     $services = $GLOBALS['yeswikiServices'];
     if (file_exists($image_src)) {
@@ -361,7 +361,7 @@ function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $meth
             unlink($image_dest);
         }
         if (!file_exists($image_dest)) {
-            $result = $attach->redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $method);
+            $result = $attach->resizeImage($image_src, $image_dest, $largeur, $hauteur, $method);
             if ($result != $image_dest) {
                 // do nothing : error
                 return $image_src;
@@ -416,7 +416,7 @@ function copyUrlToLocalFile($url, $localPath)
 /**
  * @deprecated Use FormManager::getOne, FormManager::getMany or FormManager::getAll
  */
-function baz_valeurs_formulaire($idformulaire = [])
+function formValues($idformulaire = [])
 {
     $formManager = $GLOBALS['yeswikiServices']->get(FormManager::class);
 
@@ -432,7 +432,7 @@ function baz_valeurs_formulaire($idformulaire = [])
 /**
  * @deprecated Use ListManager::getOne or ListManager::getAll
  */
-function baz_valeurs_liste($idliste = '')
+function listValues($idliste = '')
 {
     $idliste = trim($idliste);
     if ($idliste != '') {
@@ -445,7 +445,7 @@ function baz_valeurs_liste($idliste = '')
 /**
  * @deprecated Use Guard::isAllowed
  */
-function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
+function userIsAllowedTo($demande = 'saisie_fiche', $id = '')
 {
     return $GLOBALS['yeswikiServices']->get(Guard::class)->isAllowed($demande, $id);
 }
@@ -453,7 +453,7 @@ function baz_a_le_droit($demande = 'saisie_fiche', $id = '')
 /**
  * @deprecated Use EntryController::view
  */
-function baz_voir_fiche($danslappli, $idfiche, $form = '')
+function renderEntryView($danslappli, $idfiche, $form = '')
 {
     try {
         $output = $GLOBALS['yeswikiServices']->get(EntryController::class)->view($idfiche, '', $danslappli, null, $form);

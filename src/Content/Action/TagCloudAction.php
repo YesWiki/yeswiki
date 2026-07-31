@@ -10,7 +10,7 @@ use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 use YesWiki\Kernel\Service\UrlFormatter;
 
-class NuageTagAction extends YesWikiAction implements RegisteredAction
+class TagCloudAction extends YesWikiAction implements RegisteredAction
 {
     /** `{{nuagetag}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string

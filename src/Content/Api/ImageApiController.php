@@ -141,7 +141,7 @@ class ImageApiController extends YesWikiController
         if (file_exists($newFileName)) {
             return $newFileName;
         }
-        $attach->redimensionner_image("files/$filename", $newFileName, $width, $height, $mode);
+        $attach->resizeImage("files/$filename", $newFileName, $width, $height, $mode);
 
         return $newFileName;
     }

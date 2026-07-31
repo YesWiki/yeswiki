@@ -10,7 +10,7 @@ use YesWiki\Kernel\Service\RuntimeConfig;
 /**
  * valeur : permet d'extraire le contenu d'une valeur de fiche bazar à partir d'une url.
  */
-class ValeurAction extends YesWikiAction implements RegisteredAction
+class ValueAction extends YesWikiAction implements RegisteredAction
 {
     /** `{{valeur}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string

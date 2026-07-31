@@ -16,7 +16,7 @@ use YesWiki\Render\Service\TemplateEngine;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class DesabonnementAction extends YesWikiAction implements RegisteredAction
+class UnsubscribeAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {

@@ -516,7 +516,7 @@ class Attach
         } else {
             if ((!empty($this->height)) && (!empty($this->width))) {
                 if (!file_exists($image_dest = $this->getResizedFilename($fullFilename, $this->width, $this->height))) {
-                    $this->redimensionner_image($fullFilename, $image_dest, $this->width, $this->height);
+                    $this->resizeImage($fullFilename, $image_dest, $this->width, $this->height);
                 }
                 $img_name = $image_dest;
             } else {
@@ -971,7 +971,7 @@ class Attach
         return $newFileName;
     }
 
-    public function redimensionner_image($image_src, $image_dest, $largeur, $hauteur, $mode = 'fit')
+    public function resizeImage($image_src, $image_dest, $largeur, $hauteur, $mode = 'fit')
     {
         if (empty($image_src) || empty($image_dest)) {
             return false;

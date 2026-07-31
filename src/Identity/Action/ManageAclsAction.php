@@ -16,7 +16,7 @@ use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Render\Service\TemplateHelperService;
 
-class GererDroitsAction extends YesWikiAction implements RegisteredAction
+class ManageAclsAction extends YesWikiAction implements RegisteredAction
 {
     /** `{{gererdroits}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string

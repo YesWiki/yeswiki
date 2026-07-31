@@ -114,7 +114,7 @@ class TemplateHelperService
 
             if (!empty($imageDest)) {
                 if (!file_exists($imageDest)) {
-                    $resizedImage = $attach->redimensionner_image(
+                    $resizedImage = $attach->resizeImage(
                         $fileName,
                         $imageDest,
                         $width,

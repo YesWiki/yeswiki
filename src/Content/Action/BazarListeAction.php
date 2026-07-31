@@ -313,7 +313,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             return $this->callAction('bazarcarto', $this->arguments);
         } elseif (
             self::specialActionFromTemplate($this->arguments['template'], 'CALENDRIER_TEMPLATES')
-            && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendrierAction')
+            && (!isset($this->arguments['calledBy']) || $this->arguments['calledBy'] !== 'CalendarAction')
         ) {
             return $this->callAction('calendrier', $this->arguments);
         } elseif (
@@ -769,7 +769,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 								}),
 								title: \'' . addslashes($fiche['title'] ?? $fiche['bf_titre'] ?? '') . '\'
 						});
-				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $fiche))) . '\');
+				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(renderEntryView($params['barregestion'], $fiche))) . '\');
 				';
                 if ($params['spider'] == 'true' or $params['spider'] == '1') {
                     $markersjs .= 'map' . $params['nbbazarliste'] . '.addLayer(marker[i]);' . "\n" . 'oms.addMarker(marker[i]);' . "\n";
@@ -946,7 +946,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
     map' . $params['nbbazarliste'] . ".addLayer(drawnFeatures)\n";
             foreach ($vAllGeometries as $id => $g) {
                 $geometriesModuleJs .= "const geo{$id} = " . $g . "\n";
-                $geometriesModuleJs .= 'var popup = \'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(baz_voir_fiche($params['barregestion'], $id))) . '\'' . "\n";
+                $geometriesModuleJs .= 'var popup = \'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(renderEntryView($params['barregestion'], $id))) . '\'' . "\n";
                 $geometriesModuleJs .= "drawnFeatures = drawGeometries(drawnFeatures, geo{$id}.features, popup, '{$id}')\n";
             }
             if (!empty($geometriesWithoutMarker)) {

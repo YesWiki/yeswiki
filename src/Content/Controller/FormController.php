@@ -178,7 +178,7 @@ class FormController extends YesWikiController
 
             return $this->render('@core/forms/forms_form.twig', [
                 'form' => $form,
-                'formAndListIds' => baz_forms_and_lists_ids(),
+                'formAndListIds' => formAndListIds(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption(),
                 'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),
@@ -208,7 +208,7 @@ class FormController extends YesWikiController
 
             return $this->render('@core/forms/forms_form.twig', [
                 'form' => $form,
-                'formAndListIds' => baz_forms_and_lists_ids(),
+                'formAndListIds' => formAndListIds(),
                 'groupsList' => $this->getGroupsListIfEnabled(),
                 'onlyOneEntryOptionAvailable' => $this->formManager->isAvailableOnlyOneEntryOption() && $this->formManager->isAvailableOnlyOneEntryMessage(),
                 'lockedFields' => ContentTypeSchema::lockedFieldNames($form[ContentTypeSchema::CONTENT_TYPE] ?? null),

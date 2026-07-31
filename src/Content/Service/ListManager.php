@@ -132,7 +132,7 @@ class ListManager
         if ($this->hibernationService->isWikiHibernated()) {
             throw new \Exception(_t('WIKI_IN_HIBERNATION'));
         }
-        $id = $id ?? genere_nom_wiki('List ' . $title);
+        $id = $id ?? generateWikiName('List ' . $title);
         $nodes = $nodes ?? [];
         $this->trimRecursiveInPlace($nodes);
         $body = [

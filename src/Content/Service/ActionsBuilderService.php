@@ -27,7 +27,7 @@ class ActionsBuilderService
             return $this->data;
         }
 
-        $data = baz_forms_and_lists_ids();
+        $data = formAndListIds();
         // Loads various Yaml file
         $docFiles = glob('docs/actions/*.yaml');
         $extensionDocFiles = glob(YESWIKI_SOURCE_DIR . '/extensions/*/actions/documentation.yaml');

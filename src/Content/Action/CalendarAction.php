@@ -6,7 +6,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Render\Service\TemplateEngine;
 
-class CalendrierAction extends YesWikiAction implements RegisteredAction
+class CalendarAction extends YesWikiAction implements RegisteredAction
 {
     /** `{{calendrier}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string

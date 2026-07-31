@@ -17,7 +17,7 @@ use YesWiki\Render\Service\TemplateEngine;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class BazarlistecategorieAction extends YesWikiAction implements RegisteredAction
+class BazarListCategoryAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {
@@ -53,9 +53,9 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
         $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
 
         // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
-        if (!function_exists('champCompare')) {
+        if (!function_exists('compareFieldsByPosition')) {
             // tri par ordre desire
-            function champCompare($a, $b)
+            function compareFieldsByPosition($a, $b)
             {
                 if ($GLOBALS['ordre'] == 'desc') {
                     return strnatcasecmp($b[$GLOBALS['champ']], $a[$GLOBALS['champ']]);
@@ -114,13 +114,13 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
                     $fiche[$id] = $value;
 
                     // permet de voir la fiche
-                    $fiche['html'] = baz_voir_fiche(0, $fiche);
+                    $fiche['html'] = renderEntryView(0, $fiche);
                     // lien de suppression visible pour le super admin
-                    if (baz_a_le_droit('supp_fiche', $fiche['owner'])) {
+                    if (userIsAllowedTo('supp_fiche', $fiche['owner'])) {
                         $fiche['lien_suppression'] = '<a class="modalbox" href="'
                             . $this->getService(UrlFormatter::class)->href('deletepage', $fiche['tag'], 'incoming=' . urlencode($this->getService(UrlFormatter::class)->href())) . '"></a>' . "\n";
                     }
-                    if (baz_a_le_droit('modif_fiche', $fiche['owner'])) {
+                    if (userIsAllowedTo('modif_fiche', $fiche['owner'])) {
                         $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('edit', $fiche['tag']) . '"></a>' . "\n";
                     }
                     $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('', $fiche['tag']) . '">' . ($fiche['title'] ?? $fiche['bf_titre'] ?? $fiche['tag']) . '</a>' . "\n";
@@ -129,9 +129,9 @@ class BazarlistecategorieAction extends YesWikiAction implements RegisteredActio
                 }
             }
             // trie par liste choisie
-            usort($fiches['fiches'], 'champCompare');
+            usort($fiches['fiches'], 'compareFieldsByPosition');
 
-            $listvalues = baz_valeurs_liste($list);
+            $listvalues = listValues($list);
             $currentlabel = 'this is an impossible label';
             $fichescat = [];
             $output = '';

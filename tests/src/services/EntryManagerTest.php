@@ -47,7 +47,7 @@ class EntryManagerTest extends YesWikiTestCase
 
         $tag = null;
         try {
-            // tag supplied explicitly to avoid the unrelated legacy genere_nom_wiki()
+            // tag supplied explicitly to avoid the unrelated legacy generateWikiName()
             // global function (also $GLOBALS['wiki']-dependent, out of scope here)
             $entry = $entryManager->create(self::FORM_ID, [
                 'antispam' => 1,

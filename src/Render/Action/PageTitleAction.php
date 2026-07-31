@@ -13,7 +13,7 @@ use YesWiki\Kernel\Service\PageContext;
  * own method: that is what the old runFileInBuffer() did, and it keeps any early `return;`
  * in the body from discarding output.
  */
-class TitrepageAction extends YesWikiAction implements RegisteredAction
+class PageTitleAction extends YesWikiAction implements RegisteredAction
 {
     public static function performableName(): string
     {

@@ -14,7 +14,7 @@ use YesWiki\Kernel\Performable\RegisteredAction;
 use YesWiki\Render\Service\ThemeManager;
 use YesWiki\Render\Service\ThemeSelectorRenderer;
 
-class GererThemesAction extends YesWikiAction implements RegisteredAction
+class ManageThemesAction extends YesWikiAction implements RegisteredAction
 {
     /** `{{gererthemes}}` in page content -- stated, not inferred from the filename. */
     public static function performableName(): string
