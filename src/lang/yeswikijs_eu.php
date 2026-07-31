@@ -143,4 +143,8 @@ Mesedez, berretsi ezabatzea, beheko laukia markatuz.
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Bilatu...',
     'DATATABLE_NO_RESULTS' => 'Ez da emaitzarik aurkitu',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Erakutsi',
+
+    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
+    // here instead -- this string is the only part of it a user reads
+    'EDIT_LEAVE_WITHOUT_SAVING' => 'Gorde gabeko aldaketak dituzu. Orri hau utzi nahi duzu?',
 ];

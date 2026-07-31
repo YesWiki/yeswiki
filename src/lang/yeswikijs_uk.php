@@ -105,4 +105,8 @@ return [
     'REACTION_CONFIRM_DELETE' => 'Ви впевнені, що ви хочете видалити цю реакцію?',
     'REACTION_CONFIRM_DELETE_ALL' => 'Ви впевнені, що ви хочете видалити всі реакції цього голосу?',
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => 'Редагувати цю сторінку на Github',
+
+    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
+    // here instead -- this string is the only part of it a user reads
+    'EDIT_LEAVE_WITHOUT_SAVING' => 'Є незбережені зміни. Залишити цю сторінку?',
 ];

@@ -153,7 +153,10 @@ const usersTableServiceAddOn = {
 }
 
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('body', () => {
+// ticket 16: keyed on the element it sets up, not on <body>. A boosted navigation swaps
+// the body's *contents*, so a body-keyed initialiser runs once per session and every
+// later page is left uninitialised.
+ywInitEach('.users-table, #users-table', () => {
   if (typeof usersTableService !== 'undefined' && usersTableService) {
     usersTableServiceAddOn.init()
   }

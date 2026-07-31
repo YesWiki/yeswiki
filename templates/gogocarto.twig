@@ -45,7 +45,8 @@
   // facettes filters
   var filters = {{ filters|json_encode|raw }};
 
-  document.addEventListener("DOMContentLoaded",function() {
+  // ticket 16: ywInitEach, not DOMContentLoaded -- see admin-content-action.twig
+  ywInitEach("#gogo-map{{ params.nbbazarliste }}", function() {
     // ----------------------------------------------------
     // Transform wiki data to better fit gogocarto ontology.
     // ----------------------------------------------------

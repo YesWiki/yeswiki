@@ -143,4 +143,8 @@ Confirme su eliminación marcando la casilla siguiente.
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Buscar...',
     'DATATABLE_NO_RESULTS' => 'Sin resultados',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Mostrar',
+
+    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
+    // here instead -- this string is the only part of it a user reads
+    'EDIT_LEAVE_WITHOUT_SAVING' => 'Tiene cambios sin guardar. ¿Salir de esta página?',
 ];

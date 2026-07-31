@@ -32,8 +32,24 @@ watch-theme: ## Same, but recompile on every save
 ## use the docker/ folder README.md to find commands to launch docker
 
 ## —— Tests ———————————————
-test: ## Launch unit tests
+test: ## Launch PHP unit tests
 	./vendor/bin/phpunit --do-not-cache-result --stderr tests
+
+test-js: ## Launch JS unit tests (Node's built-in runner, no browser)
+	$(YARN) run test-js
+
+# Runs against a wiki you already have running -- https://yeswiki.test by default. Override
+# with YESWIKI_BASE_URL. Local only: there is no CI budget for browsers.
+#
+# Scoped to the boosted-navigation suite, which is the one that runs anywhere. The older specs
+# under tests/e2e/tests/ assume the docker image (they shell out to /var/www/html/.../reset.sh
+# and log in as a fixture admin), so they fail on a developer machine for reasons that say
+# nothing about the code -- `test-e2e-all` runs those too when you are in that environment.
+test-e2e: ## Browser tests for htmx navigation, against a running wiki
+	$(YARN) run test-e2e
+
+test-e2e-all: ## Every browser test, including the ones that require the docker fixture
+	$(YARN) run test-e2e-all
 
 ## —— Static analysis ————————————————————
 analyse: ## Run PHPStan (level 8, errors outside phpstan-baseline.neon fail)

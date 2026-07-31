@@ -208,6 +208,12 @@ class Init
             'yeswiki_release' => '',
             'charset' => 'UTF-8',
             'debug' => false,
+            // ticket 16: internal links load through htmx. Not a second code path -- the
+            // non-boosted path is plain HTTP, which still answers every request without
+            // HX-Request (search engines, curl, JS disabled). Turning it off only stops the
+            // skeleton emitting hx-boost, which is the way out for a theme that does not meet
+            // the contract.
+            'htmx_navigation' => true,
             'db_driver' => 'mysql',
             'db_host' => 'localhost',
             'db_database' => '',

@@ -14,11 +14,14 @@ function isVisible(el) {
 }
 
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+// ticket 16: the outer block runs once per document -- <body> survives a boosted navigation --
+// and registers the per-element initialisers below. Those keep firing on every htmx:load, so
+// a bazar list arriving in a swapped page is wired up like one that arrived with a full load.
 ywInitEach('body', () => {
   gSavedHash = decodeURIComponent(document.location.hash.substring(1))
 
   // accordeon pour bazarliste
-  document.querySelectorAll('.titre_accordeon').forEach((title) => {
+  ywInitEach('.titre_accordeon', (title) => {
     title.addEventListener('click', () => {
       const pane = title.nextElementSibling
       const isPane = pane && pane.matches('div.pane')
@@ -33,7 +36,7 @@ ywInitEach('body', () => {
   })
 
   // antispam javascript
-  document.querySelectorAll('input[name=antispam]').forEach((inputParam) => {
+  ywInitEach('input[name=antispam]', (inputParam) => {
     const input = inputParam
     input.value = '1'
   })
@@ -43,7 +46,7 @@ ywInitEach('body', () => {
   // .tooltip_aide helper icons are sprite <svg>s carrying data-yw-tooltip: pure CSS, no JS.
 
   // on enleve la fonction doubleclic dans le cas d'une page contenant bazar
-  document.querySelectorAll('#formulaire, #map, #calendar, .accordion').forEach((el) => {
+  ywInitEach('#formulaire, #map, #calendar, .accordion', (el) => {
     el.addEventListener('dblclick', (e) => {
       e.preventDefault()
       e.stopPropagation()
@@ -55,7 +58,7 @@ ywInitEach('body', () => {
   // is the only system now, as the old code's own TODO planned.
 
   // choix de l'heure pour une date
-  document.querySelectorAll('.select-allday').forEach((select) => {
+  ywInitEach('.select-allday', (select) => {
     select.addEventListener('change', () => {
       const timeBlock = select.parentElement
         ? select.parentElement.nextElementSibling
@@ -75,7 +78,7 @@ ywInitEach('body', () => {
     return group ? group.querySelector('.charsRemaining') : null
   }
 
-  document.querySelectorAll('textarea[maxlength]').forEach((textareaParam) => {
+  ywInitEach('textarea[maxlength]', (textareaParam) => {
     const textarea = textareaParam
     const max = parseInt(textarea.getAttribute('maxlength'), 10)
     if (!max) return
@@ -590,7 +593,7 @@ ywInitEach('body', () => {
   })
 
   // cocher / decocher tous
-  document.querySelectorAll('.selectall').forEach((selectAll) => {
+  ywInitEach('.selectall', (selectAll) => {
     selectAll.addEventListener('click', () => {
       let targets
       if (selectAll.dataset.target) {
@@ -843,7 +846,7 @@ ywInitEach('body', () => {
   // fields are yw-tags-input.js widgets that manage their own input and value.
 
   const bazarList = []
-  document.querySelectorAll('.facette-container:not(.dynamic) .filter-bazar').forEach((filter) => {
+  ywInitEach('.facette-container:not(.dynamic) .filter-bazar', (filter) => {
     filter.addEventListener('keyup', () => {
       const { target } = filter.dataset
       let searchstring = filter.value
@@ -920,8 +923,8 @@ export function removeCSVCrochet(str) {
 
 // range input
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('body', () => {
-  const rangeInputs = document.querySelectorAll('.range-wrap input[type="range"]')
+ywInitEach('.range-wrap', (wrap) => {
+  const rangeInputs = wrap.querySelectorAll('input[type="range"]')
   function handleInputChange(e) {
     const { target } = e
     const { min, max } = target

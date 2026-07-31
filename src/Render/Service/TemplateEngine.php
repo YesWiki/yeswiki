@@ -11,6 +11,7 @@ use YesWiki\Content\Service\ListManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
 use YesWiki\Kernel\Service\AssetRegistry;
+use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -163,6 +164,19 @@ class TemplateEngine
         // block. Anything an action registers *after* this point in that block is too late.
         $this->addTwigHelper('declared_assets', function () {
             return $this->assetRegistry->drain()->toHtml();
+        });
+        // ticket 16: the per-page state a boosted navigation has to refresh -- the `wiki`
+        // globals and any flash message. Rendered *inside* the body block, which is what a
+        // boosted navigation swaps, so both are current on every page rather than only on the
+        // first one. Goes first in that block: inline markup further down calls _t().
+        $this->addTwigHelper('page_state', function () {
+            $coreAssets = $this->container->get(CoreAssets::class);
+            $flash = $this->container->get(FlashMessageService::class)->getMessage();
+
+            return '<script>' . $coreAssets->pageStateScript() . '</script>'
+                . ($flash === '' || $flash === null
+                    ? ''
+                    : '<div class="yw-flash" hidden data-yw-flash="' . htmlspecialchars((string)$flash, ENT_QUOTES) . '"></div>');
         });
         $this->addTwigHelper('include_css', function ($file) {
             $this->assetRegistry->addCssFile($file);

@@ -29,8 +29,16 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://yeswiki-web',
+    /* Base URL to use in actions like `await page.goto('/')`.
+     *
+     * Defaults to the local dev instance so `make test-e2e` works on a developer machine with
+     * no arguments; override for the docker image or anywhere else:
+     *   YESWIKI_BASE_URL=http://yeswiki-web yarn test-e2e
+     */
+    baseURL: process.env.YESWIKI_BASE_URL || 'https://yeswiki.test',
+
+    /* local instances are served with a self-signed certificate */
+    ignoreHTTPSErrors: true,
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',

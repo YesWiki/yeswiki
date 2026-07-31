@@ -114,6 +114,9 @@ jobs:
             -F "submit=Continue" \
             "http://${{ env.WIKI_HOST }}/?PagePrincipale&installAction=install"
 
+      - name: Run JS unit tests
+        run: yarn run test-js
+
       - name: Run test suite
         run: composer test
 

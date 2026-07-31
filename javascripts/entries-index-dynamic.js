@@ -555,6 +555,6 @@ const load = (domElement) => {
 // Wait for Dom to be loaded, so we can load some Vue component like BazarpMap in order
 // to be used inside index-dynamic
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('body', () => {
-  document.querySelectorAll('.bazar-list-dynamic-container').forEach(load)
-})
+// ticket 16: keyed on the container -- <body> survives a boosted navigation, so a
+// body-keyed initialiser would never mount the next page's lists
+ywInitEach('.bazar-list-dynamic-container', load)

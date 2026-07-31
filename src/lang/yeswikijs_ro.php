@@ -143,4 +143,8 @@ Vă rugăm să confirmaţi eliminarea acestora bifând caseta de mai jos.
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Căutare...',
     'DATATABLE_NO_RESULTS' => 'Niciun rezultat',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Afișează',
+
+    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
+    // here instead -- this string is the only part of it a user reads
+    'EDIT_LEAVE_WITHOUT_SAVING' => 'Aveți modificări nesalvate. Părăsiți această pagină?',
 ];

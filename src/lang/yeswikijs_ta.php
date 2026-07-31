@@ -130,4 +130,8 @@ return [
     'DATATABLE_SEARCH_PLACEHOLDER' => 'தேடு...',
     'DATATABLE_NO_RESULTS' => 'பொருந்தும் முடிவுகள் இல்லை',
     'DATATABLE_PAGE_SIZE_LABEL' => 'காட்டு',
+
+    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
+    // here instead -- this string is the only part of it a user reads
+    'EDIT_LEAVE_WITHOUT_SAVING' => 'சேமிக்கப்படாத மாற்றங்கள் உள்ளன. இந்தப் பக்கத்தை விட்டு வெளியேறவா?',
 ];

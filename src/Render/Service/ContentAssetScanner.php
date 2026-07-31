@@ -37,13 +37,17 @@ class ContentAssetScanner
         'mermaid' => [
             'jsInline' => <<<'JS'
                 import mermaid from "./javascripts/vendor/mermaid/mermaid.esm.min.mjs";
-                document.addEventListener("DOMContentLoaded", function() {
+                // ticket 16: ywInitEach, not DOMContentLoaded -- a diagram on a page reached
+                // by an htmx navigation would otherwise never be rendered. startOnLoad is off
+                // because this decides when to run, once per diagram.
+                ywInitEach(".mermaid", function(element) {
                     mermaid.initialize({
-                        startOnLoad: true,
+                        startOnLoad: false,
                         fontFamily: 'inherit',
                         theme: "base",
                         themeCSS: ':root { --mermaid-font-family: inherit;} .titleText, .taskText, .sectionTitle, .grid , .grid .tick text {font-family:inherit;} g.label {color:inherit;}'
                     });
+                    mermaid.run({ nodes: [element] });
                 })
                 JS,
         ],

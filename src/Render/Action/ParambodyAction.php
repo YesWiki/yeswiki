@@ -4,8 +4,6 @@ namespace YesWiki\Render\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\FlashMessageService;
-use YesWiki\Kernel\Service\RuntimeConfig;
 
 /**
  * `{{parambody}}` -- converted from the procedural actions/parambody.php by ticket 06.
@@ -41,10 +39,14 @@ class ParambodyAction extends YesWikiAction implements RegisteredAction
 
     private function emit(): void
     {
-        // attributs du body
-        $toastDuration = !empty($this->getService(RuntimeConfig::class)['toast_duration']) ? $this->getService(RuntimeConfig::class)['toast_duration'] : '3000';
-        $toastClass = !empty($this->getService(RuntimeConfig::class)['toast_class']) ? $this->getService(RuntimeConfig::class)['toast_class'] : 'alert alert-secondary-1';
-        $body_attr = ($message = $this->getService(FlashMessageService::class)->getMessage()) ? "onload=\"toastMessage('" . addslashes($message) . "', " . $toastDuration . ", '" . $toastClass . "');\" " : '';
-        echo $body_attr;
+        // Ticket 16: this used to deliver flash messages as `onload="toastMessage(...)"` on
+        // <body>. A boosted navigation swaps the body's *contents*, so the attribute was
+        // neither replaced nor re-fired and the message was simply lost. Flash now renders
+        // inside the body block via `{{ page_state() }}` and is picked up by yw-flash.js,
+        // which works on a full load and on a swap alike -- and is reachable by a test, which
+        // a `<body onload>` attribute never was.
+        //
+        // The action stays: a squelette calls it for body attributes, and themes may add more.
+        echo '';
     }
 }

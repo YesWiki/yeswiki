@@ -104,4 +104,8 @@ return [
     'REACTION_CONFIRM_DELETE_ALL' => '',
     'DOC_EDIT_THIS_PAGE_ON_GITHUB' => '',
     'SAVE' => '',
+
+    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
+    // here instead -- this string is the only part of it a user reads
+    'EDIT_LEAVE_WITHOUT_SAVING' => 'Du har ulagrede endringer. Forlate denne siden?',
 ];

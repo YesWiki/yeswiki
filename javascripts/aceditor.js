@@ -171,9 +171,10 @@ class Aceditor {
 }
 
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('body', () => {
-  document.querySelectorAll('.aceditor-container').forEach((container) => {
-    const { name } = container.dataset
-    window[`aceditor-${name}`] = new Aceditor(container)
-  })
+// ticket 16: keyed on the container, not on <body>. A boosted navigation swaps the body's
+// *contents* -- <body> itself survives -- so a body-keyed initialiser runs once per session
+// and every later page gets an uninitialised editor.
+ywInitEach('.aceditor-container', (container) => {
+  const { name } = container.dataset
+  window[`aceditor-${name}`] = new Aceditor(container)
 })

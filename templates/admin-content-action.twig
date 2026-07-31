@@ -613,7 +613,10 @@
     });
 
     // Restore filter state from URL, then fire initial table load.
-    document.addEventListener('DOMContentLoaded', function () {
+    // ticket 16: ywInitEach, not DOMContentLoaded -- internal links load through htmx and
+    // DOMContentLoaded fires once per document, so this never ran on a page reached by a
+    // navigation and the table stayed empty.
+    ywInitEach('#admin-content-table-container', function () {
         restoreFromUrl();
         pushState();
         adminContent.loadTable();

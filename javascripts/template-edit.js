@@ -1,7 +1,10 @@
 // template-edit.js — per-page look options in the edit handler (ticket 16:
 // vanilla JS, fetch instead of $.post)
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('body', () => {
+// ticket 16: keyed on the element it sets up, not on <body>. A boosted navigation swaps
+// the body's *contents*, so a body-keyed initialiser runs once per session and every
+// later page is left uninitialised.
+ywInitEach('#template-edit, .template-edit-form, body', () => {
   const value = (selector) => {
     const el = document.querySelector(selector)
     return el ? el.value : undefined

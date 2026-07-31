@@ -99,7 +99,10 @@ async function modifyEntry(data) {
 }
 
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('body', () => {
+// ticket 16: keyed on .page, not <body>. The delegated listener below lives on .page, which
+// is *inside* the swapped region -- a body-keyed registration would bind to the first page's
+// element and lose it on the next navigation.
+ywInitEach('.page', (pageElement) => {
   function validateDataTargets(el, options = {}) {
     const { execute = false, onValid } = options
     const targetSel = el.dataset.targetId
@@ -125,7 +128,7 @@ ywInitEach('body', () => {
     return true
   }
 
-  document.querySelector('.page').addEventListener('click', (event) => {
+  pageElement.addEventListener('click', (event) => {
     const clicked = event.target.closest('.bazar-api')
     if (clicked) {
       validateDataTargets(clicked, {

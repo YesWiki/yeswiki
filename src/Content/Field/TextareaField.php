@@ -116,12 +116,19 @@ class TextareaField extends BazarField
                 $pageContext->setPage($this->getService(\YesWiki\Content\Service\PageManager::class)->getOne($pageContext->getTag()));
                 $pageContext->setPageField('body', [PageBody::CONTENT => $value]);
 
+                // No `str_replace('""', "''")` here any more.
+                //
+                // It ran on the *formatted* output, i.e. on final HTML, on the theory that a
+                // `""` surviving that far came from an action and would be re-read by wakka as
+                // a raw-HTML delimiter. Nothing re-parses this string, and `""` in final HTML
+                // is overwhelmingly an empty attribute -- `value=""`, `alt=""`, `class=""` --
+                // or an empty JSON string. Rewriting those to `''` is invisible in markup and
+                // fatal inside a <script>: it turned
+                //     var blank = '<option value="">' + ...
+                // into two adjacent string literals and killed the whole block. Page bodies
+                // reach this field since ticket 10 made a page a form whose `content` is a
+                // textelong, so the damage was not limited to bazar entries.
                 $value = $this->getService(\YesWiki\Render\Service\MarkdownFormatterService::class)->format($value);
-                // if the textarea have some actions which return "", they are replaced by '' otherwise it crashed
-                // because they're by wakka as a beginning of HTML code
-                // the user still insert HTML code in the textarea with "" because the "" block is interpretated before
-                // the replacement
-                $value = str_replace('""', '\'\'', $value);
 
                 $pageContext->setTag($oldPage);
                 $pageContext->setPage($oldPageArray);
@@ -132,9 +139,10 @@ class TextareaField extends BazarField
                 break;
 
             case self::SYNTAX_HTML:
-                // if the user type "", it's replaced by '' otherwise it crashes the output because it's interpretated
-                // by wakka as a beginning of HTML code
-                $value = str_replace('""', '\'\'', $value);
+                // Same reasoning as the wiki branch above: this value is emitted as-is into
+                // the template and never passed through the formatter, so there is nothing to
+                // re-interpret a `""` -- while rewriting it breaks any empty attribute or
+                // empty JS string the author wrote.
                 break;
         }
 

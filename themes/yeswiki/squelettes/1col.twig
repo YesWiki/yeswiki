@@ -14,7 +14,20 @@
      - `{{linkstyle}}` and `{{linkjavascript}}` are gone. Nothing replaces them: assets are
        declared by whatever needs them and emitted once, here.
      - Actions may still be called anywhere in either block -- that freedom is why this is two
-       Twig blocks rather than a fixed set of pre-rendered slots. #}
+       Twig blocks rather than a fixed set of pre-rendered slots.
+
+   Ticket 16 (internal navigation loads through htmx) adds four more, all inside the body
+   block, because the body block is exactly what a boosted navigation swaps:
+     - `hx-boost` on <body>, behind the `htmx_navigation` config flag, plus `hx-headers`
+       carrying the layout fingerprint. That is what lets the server notice that the page you
+       are going to uses a different squelette/theme/lang and answer with a real navigation
+       instead of swapping its body into the wrong chrome.
+     - `{{ page_state() }}` FIRST inside the block: the `wiki` globals and any flash message.
+       Inline markup further down calls `_t()`, which reads `wiki.lang`.
+     - a `.yw-progress` element for `hx-indicator` -- an XHR navigation shows no browser
+       progress, so without it a slow page looks like a dead click.
+     - `#yw-main` focusable (`tabindex="-1"`) and a polite live region, so a swap moves
+       keyboard focus and is announced instead of silently replacing the page. #}
 {% block head %}
 <!doctype html>
 <html lang="{{ action('configuration param="lang"') }}">
@@ -38,7 +51,15 @@
 {% endblock %}
 
 {% block body %}
-<body {{ action('parambody')|raw }}>
+<body {{ action('parambody')|raw }}{% if htmx_navigation %} hx-boost="true" hx-indicator=".yw-progress" hx-headers='{"{{ layout_fingerprint_header }}": "{{ layout_fingerprint }}"}'{% endif %}>
+  {{ page_state()|raw }}
+
+  {# htmx-indicator: hidden until a request is in flight; the CSS delays it so a fast
+     navigation shows nothing at all rather than a flicker #}
+  <div class="yw-progress htmx-indicator" aria-hidden="true"></div>
+  {# what assistive technology is told after a swap; yw-navigation.js writes the page title
+     here. Empty and polite: it must announce the arrival, not narrate the page. #}
+  <div id="yw-navigation-announcer" class="sr-only" role="status" aria-live="polite"></div>
 
   <div id="yw-container">
 
@@ -68,7 +89,7 @@
       {{ action('include page="PageHeader" class="yw-headerpage" doubleclic="1"')|raw }}
     </header>
 
-    <div id="yw-main" role="main" {{ action('doubleclic')|raw }}>
+    <div id="yw-main" role="main" tabindex="-1" {{ action('doubleclic')|raw }}>
       <div class="yw-main-content alone">
         {{ page_content|raw }}
       </div>

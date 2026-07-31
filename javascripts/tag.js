@@ -2,20 +2,24 @@
 // small self-positioned panel built from the link's data-title/data-content; the
 // unused jQuery $.fn.clearForm helper was dead code and is gone)
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('body', () => {
-  document.querySelectorAll('.tag-label').forEach((label) => {
-    label.addEventListener('mouseenter', () => {
-      label.classList.add('label-primary')
-      label.classList.remove('label-info')
-    })
-    label.addEventListener('mouseleave', () => {
-      if (!label.classList.contains('label-active')) {
-        label.classList.add('label-info')
-        label.classList.remove('label-primary')
-      }
-    })
+// ticket 16: the labels are keyed individually, so a tag cloud arriving in a swapped page is
+// wired up too -- <body> survives a boosted navigation, so a body-keyed initialiser would
+// only ever run on the first page of a session.
+ywInitEach('.tag-label', (label) => {
+  label.addEventListener('mouseenter', () => {
+    label.classList.add('label-primary')
+    label.classList.remove('label-info')
   })
+  label.addEventListener('mouseleave', () => {
+    if (!label.classList.contains('label-active')) {
+      label.classList.add('label-info')
+      label.classList.remove('label-primary')
+    }
+  })
+})
 
+// the popover wiring below is delegated and page-level: attach it once per document
+ywInitEach('body', () => {
   // nuage de mots clés : popover au clic
   function closePopovers() {
     document.querySelectorAll('.yw-popover.tag-popover').forEach((popover) => popover.remove())

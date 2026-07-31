@@ -971,9 +971,12 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             '
 import { drawGeometries } from "./javascripts/leaflet-draw.helper.js"
 
-var map' . $params['nbbazarliste'] . ';	
-document.addEventListener(\'DOMContentLoaded\', function() {
-    if (document.getElementById(\'osmmap' . $params['nbbazarliste'] . '\')) {
+var map' . $params['nbbazarliste'] . ';
+// ticket 16: ywInitEach, not DOMContentLoaded. Internal links load through htmx, and
+// DOMContentLoaded fires once per document -- so a map on any page reached by a navigation
+// was never built. Keyed on the map container, which also replaces the getElementById guard
+// this used to need.
+ywInitEach(\'#osmmap' . $params['nbbazarliste'] . '\', function() {
 		' . $js . '
 		// N\'ajoute pas un doublon de layer, mais active la sélection du layer.
 		map' . $params['nbbazarliste'] . '.addLayer(provider);
@@ -981,7 +984,6 @@ document.addEventListener(\'DOMContentLoaded\', function() {
 		var i = 0;
 		var marker = Array();
     ' . $markersjs . '
-    }
     ' . $geometriesModuleJs . '
 	});',
             true

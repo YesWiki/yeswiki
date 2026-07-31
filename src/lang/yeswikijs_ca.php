@@ -16,4 +16,8 @@ return [
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Cerca...',
     'DATATABLE_NO_RESULTS' => 'Cap resultat',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Mostra',
+
+    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
+    // here instead -- this string is the only part of it a user reads
+    'EDIT_LEAVE_WITHOUT_SAVING' => 'Teniu canvis sense desar. Voleu sortir d\'aquesta pàgina?',
 ];

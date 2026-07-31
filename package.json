@@ -12,6 +12,9 @@
     "fix-js": "eslint --fix .",
     "lint-other": "node_modules/.bin/prettier --check '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
     "fix-other": "node_modules/.bin/prettier --write '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
+    "test-js": "node --test 'tests/js/**/*.test.js'",
+    "test-e2e": "playwright test tests/e2e/tests/boosted-navigation.spec.ts",
+    "test-e2e-all": "playwright test",
     "build-theme": "sass --style=compressed --no-source-map themes/yeswiki/scss:themes/yeswiki/styles",
     "watch-theme": "sass --watch --style=compressed --no-source-map themes/yeswiki/scss:themes/yeswiki/styles",
     "postinstall": "./src/extract-files-from-node-modules.sh && yarn build-theme"
@@ -44,7 +47,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.0",
     "@eslint/js": "^9.22.0",
-    "@playwright/test": "^1.51.1",
+    "@playwright/test": "^1.62",
     "@types/node": "^22.13.12",
     "eslint": "^9.22.0",
     "eslint-config-airbnb-base": "^15.0.0",

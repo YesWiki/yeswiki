@@ -145,4 +145,8 @@ Please confirm their deletion by checking the box below.
     'DATATABLE_SEARCH_PLACEHOLDER' => 'Search...',
     'DATATABLE_NO_RESULTS' => 'No matching results',
     'DATATABLE_PAGE_SIZE_LABEL' => 'Show',
+
+    // ticket 16: htmx navigation never fires beforeunload, so the edit guard asks
+    // here instead -- this string is the only part of it a user reads
+    'EDIT_LEAVE_WITHOUT_SAVING' => 'You have unsaved changes. Leave this page?',
 ];

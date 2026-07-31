@@ -48,6 +48,17 @@ class CoreAssets
         }
         $this->registered = true;
 
+        // Touch the CSRF token here, before anything renders, and throw the value away.
+        //
+        // Not superstition: fetching it starts the PHP session as a side effect, and
+        // `session_start()` *replaces* $_SESSION with the stored data. Ticket 16 moved the
+        // `wiki` props script (which carries the token) from a head asset into the body block,
+        // which meant the session began starting mid-render -- after Flash had put its own key
+        // into the in-memory $_SESSION, which session_start() then discarded, leaving
+        // Flash::display() reading a null. Keeping the session's start where it always was
+        // keeps that ordering intact.
+        $this->csrfTokenManager->getToken('main');
+
         $this->registerStyles();
         $this->registerScripts();
     }
@@ -152,9 +163,6 @@ class CoreAssets
         // because ~25 initialisers call ywInit()/ywInitEach() at their top level and inline
         // page markup calls _t()/wiki.url() at parse time.
         $this->assets->addJsFile('javascripts/yw-init.js', true);
-        // the props object before yeswiki-base-no-defer.js, as it was when both were echoed
-        // by {{linkjavascript}}: _t() reads wiki.lang
-        $this->assets->addJs($this->wikiGlobalScript(), false, true);
         $this->assets->addJsFile('javascripts/yeswiki-base-no-defer.js', true);
 
         // the theme's own scripts, alphabetically, as the directory scan always did
@@ -180,6 +188,8 @@ class CoreAssets
         $this->assets->addJsFile('javascripts/vendor/htmx/htmx.min.js');
         $this->assets->addJsFile('javascripts/yw-assets.js');
         $this->assets->addJsFile('javascripts/yw-core.js');
+        // ticket 16: focus, announcement, anchors and flash after a boosted navigation
+        $this->assets->addJsFile('javascripts/yw-navigation.js');
         $this->assets->addJsFile('javascripts/yw-datatable.js');
         $this->assets->addJsFile('javascripts/yw-autocomplete.js');
 
@@ -189,11 +199,18 @@ class CoreAssets
     }
 
     /**
-     * The `wiki` global every script reads. Inline and `first`, so it is defined before the
-     * deferred scripts that use it; ticket 16 will swap `pageTag` and the CSRF token
-     * out-of-band on a boosted navigation rather than re-rendering the page.
+     * The `wiki` global every script reads, rendered at the top of the skeleton's body block
+     * rather than declared as a head asset.
+     *
+     * Ticket 16: a boosted navigation swaps the body, so a script inside it re-runs on every
+     * navigation and `pageTag` is always the page on screen. As a head asset it was written
+     * once, on first load -- and `template-edit.js` builds `api/pages/{wiki.pageTag}/metadatas`
+     * from it, so a stale value edits the *previous* page's metadata.
+     *
+     * `antiCsrfToken` needs no such care: Symfony's `getToken('main')` is session-scoped and
+     * identical on every page.
      */
-    private function wikiGlobalScript(): string
+    public function pageStateScript(): string
     {
         $props = [
             'locale' => $GLOBALS['prefered_language'],

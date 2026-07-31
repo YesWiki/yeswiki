@@ -67,8 +67,10 @@ function openNav() {
 }
 
 // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
-ywInitEach('body', () => {
-  document.querySelectorAll('.colorpicker').forEach((picker) => {
+// ticket 16: keyed on each picker rather than on <body>, which survives a boosted navigation
+// and would leave every page after the first uninitialised
+ywInitEach('.colorpicker', (picker) => {
+  {
     const applyColor = () => {
       document.documentElement.style.setProperty(
         `--${picker.getAttribute('name')}`,
@@ -80,12 +82,12 @@ ywInitEach('body', () => {
       deactivatePresets()
     })
     picker.addEventListener('change', applyColor)
-  })
+  }
 
-  document.querySelectorAll('.fontpicker').forEach((picker) => {
-    picker.addEventListener('change', () => {
+  document.querySelectorAll('.fontpicker').forEach((fontPicker) => {
+    fontPicker.addEventListener('change', () => {
       // Replace + signs with spaces for css
-      let font = picker.value.replace(/\+/g, ' ')
+      let font = fontPicker.value.replace(/\+/g, ' ')
 
       // Split font into family and weight (weight kept for compat, unused in css var)
       font = font.split(':')
@@ -93,7 +95,7 @@ ywInitEach('body', () => {
       const fontFamily = font[0]
 
       document.documentElement.style.setProperty(
-        `--${picker.getAttribute('name')}`,
+        `--${fontPicker.getAttribute('name')}`,
         `'${fontFamily}'`
       )
       deactivatePresets()

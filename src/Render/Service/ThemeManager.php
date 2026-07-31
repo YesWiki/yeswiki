@@ -11,6 +11,7 @@ use YesWiki\Identity\Entity\User;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Entity\Event;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 
 class ThemeManager implements EventSubscriberInterface
@@ -352,6 +353,30 @@ class ThemeManager implements EventSubscriberInterface
     }
 
     /**
+     * Everything outside the `body` block that a page's metadata can change (ticket 16).
+     *
+     * A boosted navigation swaps the body only, so two pages that differ in any of these
+     * cannot be swapped into one another -- the chrome, the stylesheets and `<html lang>` would
+     * all be wrong. BoostedNavigation hashes this into the fingerprint the client echoes back.
+     *
+     * @return list<string>
+     */
+    public function layoutIdentity(): array
+    {
+        // no loadTemplates() call: YesWikiRuntime::loadTemplates() already resolved the
+        // favourites for *this* page during boot, from its metadata. Re-running it with no
+        // metadata would reset them to the config defaults and hash the wrong skeleton.
+        return [
+            $this->getFavoriteTheme(),
+            $this->getFavoriteSquelette(),
+            $this->getFavoriteStyle(),
+            $this->getFavoritePreset(),
+            $this->getFavoriteBackgroundImage(),
+            (string)($GLOBALS['prefered_language'] ?? ''),
+        ];
+    }
+
+    /**
      * The whole page: the squelette rendered around $pageContent, with its `head` block
      * rendered **last**.
      *
@@ -377,13 +402,39 @@ class ThemeManager implements EventSubscriberInterface
         // a far smaller problem than that.
         $this->container->get(CoreAssets::class)->register();
 
+        $boosted = $this->container->get(BoostedNavigation::class);
+        $boosted->markPageRendered();
+
         $template = $this->twig->createSquelette((string)$this->fileContent);
 
         // flash messages land just before the page content, as they did when they were
         // appended to the header half
-        $body = $template->renderBlock('body', ['page_content' => Flash::display() . $pageContent]);
+        $body = $template->renderBlock('body', [
+            'page_content' => Flash::display() . $pageContent,
+            'htmx_navigation' => $boosted->isEnabled(),
+            'layout_fingerprint' => $boosted->fingerprint(),
+            'layout_fingerprint_header' => BoostedNavigation::FINGERPRINT_HEADER,
+        ]);
+
+        if ($boosted->isBoosted()) {
+            // Ticket 16: the body block *is* the fragment. The title rides along as a
+            // top-level element -- htmx applies a fragment's own <title> to the document --
+            // and the assets go out of band into <head>, because htmx strips a literal <head>
+            // from a fragment response.
+            return $this->twig->render('@core/_boosted-title.twig', ['title' => $this->pageTitle()])
+                . $body
+                . $this->container->get(AssetRegistry::class)->drain()->toOutOfBandHtml();
+        }
 
         return $template->renderBlock('head') . $body;
+    }
+
+    /** The document title, rendered the same way the head block does it. */
+    private function pageTitle(): string
+    {
+        $runner = $this->container->get(ActionRunner::class);
+
+        return trim($runner->action('configuration param="wakka_name"') . ' : ' . $runner->action('titrepage'));
     }
 
     /**

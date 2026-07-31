@@ -117,6 +117,19 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                         e.preventDefault();
                         e.returnValue = '';
                     }
+                });
+
+                // Ticket 16: internal links load through htmx, and an htmx navigation never
+                // fires beforeunload -- so without this a click while editing would discard
+                // the edit silently. htmx:confirm is fired before every request and can be
+                // cancelled, which is what makes this the same guard rather than a second one.
+                document.addEventListener('htmx:confirm', function(e) {
+                    if (!showPopup) return;
+                    e.preventDefault();
+                    if (window.confirm(_t('EDIT_LEAVE_WITHOUT_SAVING'))) {
+                        showPopup = false;
+                        e.detail.issueRequest(true);
+                    }
                 });";
 
                 $this->getService(AssetRegistry::class)->addJs($js);
