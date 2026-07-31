@@ -114,7 +114,7 @@ class ContentCreator
         $this->container->get(TagsManager::class)->reindex($tag, TagsManager::keywordsOf(['body' => $body]));
         $this->applyFormProperties($form, $data);
 
-        return array_merge($body, ['tag' => $tag]);
+        return $this->created($form, $body, $tag);
     }
 
     /**
@@ -161,7 +161,7 @@ class ContentCreator
 
         $this->applyFormProperties($form, $data);
 
-        return array_merge($body, ['tag' => $user['name'], $nameField => $user['name']]);
+        return $this->created($form, array_merge($body, [$nameField => $user['name']]), (string)$user['name']);
     }
 
     /**
@@ -198,7 +198,27 @@ class ContentCreator
 
         $this->applyFormProperties($form, $file);
 
-        return $file;
+        return $this->created($form, $file, (string)$file['tag']);
+    }
+
+    /**
+     * The created Content in the shape everything downstream expects an entry in.
+     *
+     * `form_id` above all: `entry.created` listeners read it -- the webhook dispatcher
+     * refuses a payload without one -- and a page, an account and a file do not store it,
+     * because which form describes them is their type triple (ticket 10).
+     *
+     * @param array<string, mixed> $form
+     * @param array<string, mixed> $body
+     *
+     * @return array<string, mixed>
+     */
+    private function created(array $form, array $body, string $tag): array
+    {
+        return array_merge($body, [
+            'tag' => $tag,
+            'form_id' => $form['id'],
+        ]);
     }
 
     /**
