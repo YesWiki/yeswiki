@@ -162,7 +162,7 @@ class ImageField extends FileField
     *	indicates if tag must be set before to format the value
     */
 
-    public function requireIDFiche()
+    public function requiresTagBeforeFormatting()
     {
         return true;
     }

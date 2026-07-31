@@ -158,7 +158,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         // some forms have. The agenda default still names a field, because sorting happens
         // before this action knows which form(s) it is listing and so before the start_date
         // role can be asked -- an entry without it simply sorts last, as it always did.
-        $champ = $get->get('champ') ?? $arg['champ'] ?? ($agendaMode ? 'bf_date_debut_evenement' : PageBody::TITLE);
+        $sortField = $get->get('champ') ?? $arg['champ'] ?? ($agendaMode ? 'bf_date_debut_evenement' : PageBody::TITLE);
 
         $vSearchManager = $this->getService(SearchManager::class);
 
@@ -193,7 +193,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             // Ordre du tri (asc ou desc)
             'ordre' => $ordre,
             // Champ du formulaire utilisé pour le tri
-            'champ' => $champ,
+            'champ' => $sortField,
             // les tris disponibles par le bouton "Trier par"
             'sortfields' => $this->formatArray($get->get('sortfields') ?? $arg['sortfields'] ?? []),
             'sortfieldstitles' => $this->formatArray($get->get('sortfieldstitles') ?? $arg['sortfieldstitles'] ?? []),
@@ -498,7 +498,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
     {
         /** @var FormManager $formManager */
         $formManager = $this->getService(FormManager::class);
-        $fiches = $data['fiches'];
+        $entries = $data['fiches'];
         $params = $data['params'];
 
         $prefix = '';
@@ -510,8 +510,8 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         $optionsIfDisplayvaluesinsteadofkeys = [];
         $sumFieldsIds = [];
 
-        if (count($fiches) > 0) {
-            $formId = $fiches[array_key_first($fiches)]['form_id'] ?? null;
+        if (count($entries) > 0) {
+            $formId = $entries[array_key_first($entries)]['form_id'] ?? null;
             $form = $formManager->getOne($formId);
             if (!empty($form)) {
                 $fields = $form['prepared'];
@@ -619,23 +619,23 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 
                 // mask emails and unreadable values for non-admins
                 if (!$this->getService(AclService::class)->isAdmin()) {
-                    foreach ($fiches as $index => $fiche) {
-                        $entryFormId = $fiche['form_id'];
+                    foreach ($entries as $index => $entry) {
+                        $entryFormId = $entry['form_id'];
                         if (strval($entryFormId) != strval(intval($entryFormId))) {
-                            unset($fiches[$index]);
+                            unset($entries[$index]);
                         } else {
                             $entryForm = $formManager->getOne($entryFormId);
                             if (empty($entryForm['prepared'])) {
-                                unset($fiches[$index]);
+                                unset($entries[$index]);
                             } else {
                                 foreach ($entryForm['prepared'] as $field) {
                                     if (empty($field->getPropertyName())) {
                                         continue;
                                     }
-                                    if ($field instanceof EmailField && !$field->canRead($fiches[$index], null)) {
-                                        $fiches[$index][$field->getPropertyName()] = '***@***.***';
-                                    } elseif (empty(trim($field->renderStaticIfPermitted($fiche) ?? ''))) {
-                                        $fiches[$index][$field->getPropertyName()] = '';
+                                    if ($field instanceof EmailField && !$field->canRead($entries[$index], null)) {
+                                        $entries[$index][$field->getPropertyName()] = '***@***.***';
+                                    } elseif (empty(trim($field->renderStaticIfPermitted($entry) ?? ''))) {
+                                        $entries[$index][$field->getPropertyName()] = '';
                                     }
                                 }
                             }
@@ -643,9 +643,9 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
                     }
                 }
 
-                foreach ($fiches as $fiche) {
-                    $colors[$fiche['tag']] = getCustomValueForEntry($params['color'] ?? null, $params['colorfield'] ?? null, $fiche, '');
-                    $icons[$fiche['tag']] = getCustomValueForEntry($params['icon'] ?? null, $params['iconfield'] ?? null, $fiche, '');
+                foreach ($entries as $entry) {
+                    $colors[$entry['tag']] = getCustomValueForEntry($params['color'] ?? null, $params['colorfield'] ?? null, $entry, '');
+                    $icons[$entry['tag']] = getCustomValueForEntry($params['icon'] ?? null, $params['iconfield'] ?? null, $entry, '');
                 }
             } else {
                 $prefix = $this->render('@core/alert-message.twig', [
@@ -662,7 +662,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             // which column carries the link to the entry: the field the form names its
             // entries with, not whichever one happens to be called bf_titre (ticket 11)
             'titleFieldName' => $this->getService(FormPropertiesService::class)->titleFieldName($form ?? null),
-            'entries' => $fiches,
+            'entries' => $entries,
             'sumFieldsIds' => $sumFieldsIds,
             'displayadmincol' => $sanitizedParams['displayadmincol'] ?? null,
             'displayvaluesinsteadofkeys' => $sanitizedParams['displayvaluesinsteadofkeys'] ?? null,
@@ -682,9 +682,9 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
     private function renderMap(array $data): string
     {
         $params = $data['params'];
-        $fiches = $data['fiches'];
+        $entries = $data['fiches'];
         $output = $data['info_res'];
-        if (count($fiches) === 0) {
+        if (count($entries) === 0) {
             return $output;
         }
         $js = '';
@@ -726,28 +726,28 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
         }
 
         $vAllGeometries = $geometriesWithoutMarker = [];
-        $fiche = ['html_data' => ''];
+        $entry = ['html_data' => ''];
 
         $vGeolocationField = $params['geolocationfield'] ?? 'bf_geolocation';
 
-        foreach ($fiches as $fiche) {
-            $vGeolocation = $fiche[$vGeolocationField] ?? [];
+        foreach ($entries as $entry) {
+            $vGeolocation = $entry[$vGeolocationField] ?? [];
 
             $vLatitude = $vGeolocation['latitude'] ?? '';
             $vLongitude = $vGeolocation['longitude'] ?? '';
             $vGeometries = $vGeolocation['geometries'] ?? '';
             $vGeometries = str_replace(
                 '"type":"FeatureCollection"',
-                '"id":"' . $fiche['tag'] . '","type":"FeatureCollection"',
+                '"id":"' . $entry['tag'] . '","type":"FeatureCollection"',
                 $vGeometries
             );
 
             // couleur de marqueur
-            $color = getCustomValueForEntry($params['color'], $params['colorfield'], $fiche, $this->getService(RuntimeConfig::class)['baz_marker_color']);
+            $color = getCustomValueForEntry($params['color'], $params['colorfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_color']);
 
             // icone de marqueur
             $icon = $params['iconprefix']
-                    . getCustomValueForEntry($params['icon'], $params['iconfield'], $fiche, $this->getService(RuntimeConfig::class)['baz_marker_icon']);
+                    . getCustomValueForEntry($params['icon'], $params['iconfield'], $entry, $this->getService(RuntimeConfig::class)['baz_marker_icon']);
 
             if (is_numeric($vLatitude) && is_numeric($vLongitude)) {
                 // on genere le point marqueur sur la carte
@@ -763,13 +763,13 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 										popupAnchor: ' . $params['popupAnchor'] . ',
 										className: \'bazar-marker' . $params['smallmarker'] . '\',
 										html: \'<div class="bazar-entry" '
-                                        . str_replace('\'', '', $fiche['html_data']) . ' style="color:' . $color . ';">'
+                                        . str_replace('\'', '', $entry['html_data']) . ' style="color:' . $color . ';">'
                                         . (!empty($icon) ? ($this->getService(\YesWiki\Render\Service\TemplateEngine::class)->legacyIconToSprite($icon) ?? '<i class="' . $icon . '"></i>') : '')
                                         . '</div>\'
 								}),
-								title: \'' . addslashes($fiche['title'] ?? $fiche['bf_titre'] ?? '') . '\'
+								title: \'' . addslashes($entry['title'] ?? $entry['bf_titre'] ?? '') . '\'
 						});
-				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(renderEntryView($params['barregestion'], $fiche))) . '\');
+				marker[i].bindPopup(\'' . preg_replace("(\r\n|\n|\r|)", '', addslashes(renderEntryView($params['barregestion'], $entry))) . '\');
 				';
                 if ($params['spider'] == 'true' or $params['spider'] == '1') {
                     $markersjs .= 'map' . $params['nbbazarliste'] . '.addLayer(marker[i]);' . "\n" . 'oms.addMarker(marker[i]);' . "\n";
@@ -781,10 +781,10 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
             } elseif (!empty($vGeometries)) {
                 // fake marker for facetted search
                 // TODO: this is way too hacky, need to find a way to search on marker and geometries in a better way
-                $geometriesWithoutMarker[$fiche['tag']] = '<div class="bazar-entry" ' . str_replace('\'', '', $fiche['html_data']) . '></div>';
+                $geometriesWithoutMarker[$entry['tag']] = '<div class="bazar-entry" ' . str_replace('\'', '', $entry['html_data']) . '></div>';
             }
             if (!empty($vGeometries)) {
-                $vAllGeometries[$fiche['tag']] = $vGeometries;
+                $vAllGeometries[$entry['tag']] = $vGeometries;
             }
         }
 
@@ -901,7 +901,7 @@ class BazarListeAction extends YesWikiAction implements RegisteredAction
 											iconAnchor: ' . $params['iconAnchor'] . ',
 											popupAnchor: ' . $params['popupAnchor'] . ',
 											className: "bazar-marker' . $params['smallmarker'] . '",
-											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" ' . addslashes($fiche['html_data']) . '>" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
+											html: "<div class=\"bazar-entry "+ (color==null?"":"icon-"+color)+"\" ' . addslashes($entry['html_data']) . '>" + (iconClass==null?"":"<i class=\""+iconClass+"\"></i>") + "</div>"
 									});
 								}
 

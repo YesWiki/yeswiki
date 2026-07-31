@@ -1073,8 +1073,8 @@ class SearchManager
                     }
                     $first = true;
 
-                    foreach ($tableau as $nom => $val) {
-                        if (!empty($nom) && !empty($val)) {
+                    foreach ($tableau as $name => $val) {
+                        if (!empty($name) && !empty($val)) {
                             $valcrit = explode(',', $val);
                             if (is_array($valcrit) && count($valcrit) > 1) {
                                 foreach ($valcrit as $critere) {
@@ -1085,7 +1085,7 @@ class SearchManager
                                     }
                                     $rawCriteron = $this->convertToRawJSONStringForREGEXP($critere);
                                     $joinrequeteSQL .=
-                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $nom . '":"[^"]*' . $rawCriteron .
+                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $name . '":"[^"]*' . $rawCriteron .
                                         '[^"]*"\')';
                                 }
                                 $joinrequeteSQL .= ')';
@@ -1096,12 +1096,12 @@ class SearchManager
                                     $first = false;
                                 }
                                 $rawCriteron = $this->convertToRawJSONStringForREGEXP($val);
-                                if (strcmp(substr($nom, 0, 5), 'liste') == 0) {
+                                if (strcmp(substr($name, 0, 5), 'liste') == 0) {
                                     $joinrequeteSQL .=
-                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $nom . '":"' . $rawCriteron . '"\')';
+                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $name . '":"' . $rawCriteron . '"\')';
                                 } else {
                                     $joinrequeteSQL .=
-                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $nom . '":("' . $rawCriteron .
+                                        '(body ' . $this->dbService->regexpOperator() . ' \'"' . $name . '":("' . $rawCriteron .
                                         '"|"[^"]*,' . $rawCriteron . '"|"' . $rawCriteron . ',[^"]*"|"[^"]*,'
                                         . $rawCriteron . ',[^"]*")\')';
                                 }

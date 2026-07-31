@@ -48,9 +48,9 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
-            $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
+            $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
             // the rendered entry replaces the whole body, prose included (ticket 09)
-            $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => '""' . renderEntryView(0, $fiche) . '""']);
+            $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => '""' . renderEntryView(0, $entry) . '""']);
         }
     }
 

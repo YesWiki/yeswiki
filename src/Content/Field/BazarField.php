@@ -93,7 +93,12 @@ abstract class BazarField implements \JsonSerializable
     *	indicates if tag must be set before to format the value
     */
 
-    public function requireIDFiche()
+    /**
+     * Whether formatValuesBeforeSave() needs the Content's tag to already exist -- an
+     * upload names its file after it, a keyword index is keyed by it. Such fields run in a
+     * second pass, after the tag has been generated.
+     */
+    public function requiresTagBeforeFormatting()
     {
         return false;
     }

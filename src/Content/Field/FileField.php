@@ -120,7 +120,7 @@ class FileField extends BazarField
     *	indicates if tag must be set before to format the value
     */
 
-    public function requireIDFiche()
+    public function requiresTagBeforeFormatting()
     {
         return true;
     }

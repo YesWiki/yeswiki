@@ -584,22 +584,22 @@ class BazarListService
         return $vResults;
     }
 
-    private function buildFieldSorter($ordre, $champ): callable
+    private function buildFieldSorter($order, $sortField): callable
     {
         // stored wiki content still says {{bazarliste champ="date_creation_fiche"}} or
         // champ="bf_titre" -- legacy entry-key names are aliased to the renamed ones
         // (ADR-0010; bf_titre maps to the computed `title`)
-        $champ = EntryManager::LEGACY_ENTRY_KEYS[$champ] ?? $champ;
+        $sortField = EntryManager::LEGACY_ENTRY_KEYS[$sortField] ?? $sortField;
 
-        return function ($a, $b) use ($ordre, $champ) {
-            if (strstr($champ, '.')) {
-                $val1 = $this->getValueForArray($a, $champ);
-                $val2 = $this->getValueForArray($b, $champ);
+        return function ($a, $b) use ($order, $sortField) {
+            if (strstr($sortField, '.')) {
+                $val1 = $this->getValueForArray($a, $sortField);
+                $val2 = $this->getValueForArray($b, $sortField);
             } else {
-                $val1 = $a[$champ] ?? '';
-                $val2 = $b[$champ] ?? '';
+                $val1 = $a[$sortField] ?? '';
+                $val2 = $b[$sortField] ?? '';
             }
-            if ($ordre == 'desc') {
+            if ($order == 'desc') {
                 return strnatcmp(
                     $this->sanitizeStringForCompare($val2),
                     $this->sanitizeStringForCompare($val1),

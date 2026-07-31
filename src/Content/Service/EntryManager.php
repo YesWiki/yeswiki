@@ -637,12 +637,12 @@ class EntryManager
             throw new \Exception(_t('DELETEPAGE_NOT_DELETED') . _t('DELETEPAGE_NOT_OWNER'));
         }
 
-        $fiche = $this->getOne($tag, false, null, true, $forceEvenIfNotOwner);
-        if (empty($fiche)) {
+        $entryToDelete = $this->getOne($tag, false, null, true, $forceEvenIfNotOwner);
+        if (empty($entryToDelete)) {
             throw new \Exception("Not existing entry : $tag");
         }
 
-        $form = $this->container->get(FormManager::class)->getOne($fiche['form_id']);
+        $form = $this->container->get(FormManager::class)->getOne($entryToDelete['form_id']);
 
         $isExternalEntry = !empty($this->tripleStore->getMatching($tag, TripleStore::SOURCE_URL_URI, null, '=', '=', ''));
 
@@ -653,7 +653,7 @@ class EntryManager
         );
         if ($this->activityPubService->isEnabled($form) && !$isExternalEntry) {
             // Notify followers about the deleted object
-            $this->activityPubService->notifyFollowers($form, $fiche, 'Delete');
+            $this->activityPubService->notifyFollowers($form, $entryToDelete, 'Delete');
         }
 
         unset($this->cachedEntriestags[$tag]);
@@ -727,7 +727,7 @@ class EntryManager
 
         foreach ($form['prepared'] as $bazarField) {
             if ($bazarField instanceof BazarField
-                && !$bazarField->requireIDFiche() // Some fields like ImageField and File Field need the tag to be defined before to call formatValuesBeforeSave. So we will handle them later.
+                && !$bazarField->requiresTagBeforeFormatting() // Some fields like ImageField and File Field need the tag to be defined before to call formatValuesBeforeSave. So we will handle them later.
             ) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
@@ -778,7 +778,7 @@ class EntryManager
         // We can now handle fields like ImageField and File Field that require tag in order to format their values
 
         foreach ($form['prepared'] as $bazarField) {
-            if ($bazarField->requireIDFiche()) {
+            if ($bazarField->requiresTagBeforeFormatting()) {
                 $tab = $bazarField->formatValuesBeforeSaveIfEditable($data);
 
                 if (is_array($tab)) {
@@ -1236,7 +1236,7 @@ class EntryManager
         return $htmldata;
     }
 
-    protected function getHtmlDataAttributes($fiche, $formtab = '')
+    protected function getHtmlDataAttributes($entry, $formtab = '')
     {
         $htmldata = '';
         $filterFieldIds = [
@@ -1254,9 +1254,9 @@ class EntryManager
         $notFilterFieldClasses = [
             'YesWiki\Content\Field\MapField', 'YesWiki\Content\Field\HiddenField', 'YesWiki\Content\Field\FileField', 'YesWiki\Content\Field\ImageField', 'YesWiki\Content\Field\LabelField', 'YesWiki\Content\Field\LinkField', 'YesWiki\Content\Field\TextareaField',
         ];
-        if (is_array($fiche) && isset($fiche['form_id'])) {
-            $form = isset($formtab[$fiche['form_id']]) ? $formtab[$fiche['form_id']] : $this->container->get(FormManager::class)->getOne($fiche['form_id']);
-            foreach ($fiche as $key => $value) {
+        if (is_array($entry) && isset($entry['form_id'])) {
+            $form = isset($formtab[$entry['form_id']]) ? $formtab[$entry['form_id']] : $this->container->get(FormManager::class)->getOne($entry['form_id']);
+            foreach ($entry as $key => $value) {
                 if (!empty($value)) {
                     if (
                         in_array(

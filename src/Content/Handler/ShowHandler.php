@@ -70,14 +70,14 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 header("Content-type: $contentType; charset=UTF-8");
                 header('Access-Control-Allow-Origin: *');
 
-                $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
+                $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
                 if ($semantic) {
-                    $form = $this->getService(FormManager::class)->getOne($fiche['form_id'] ?? null);
-                    $semanticFiche = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $fiche);
+                    $form = $this->getService(FormManager::class)->getOne($entry['form_id'] ?? null);
+                    $semanticFiche = $this->getService(SemanticTransformer::class)->convertToSemanticData($form, $entry);
                     $this->getService(Redirector::class)->terminate((string)json_encode($semanticFiche));
                 } else {
-                    $this->getService(Redirector::class)->terminate((string)json_encode($fiche));
+                    $this->getService(Redirector::class)->terminate((string)json_encode($entry));
                 }
             } else {
                 $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
@@ -120,9 +120,9 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
 
-            $fiche = $entryManager->getOne($this->getService(PageContext::class)->getTag());
+            $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
-            $replace = '<input type="hidden" name="body" value="' . htmlspecialchars(json_encode($fiche), ENT_COMPAT, YW_CHARSET) . '" />';
+            $replace = '<input type="hidden" name="body" value="' . htmlspecialchars(json_encode($entry), ENT_COMPAT, YW_CHARSET) . '" />';
             if (isset($_GET['time'])) {
                 $replace = '<input type="hidden" name="time" value="' . htmlspecialchars($_GET['time'], ENT_COMPAT, YW_CHARSET) . '">' . "\n" . $replace;
             }

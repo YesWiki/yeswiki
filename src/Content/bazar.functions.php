@@ -113,12 +113,12 @@ function formAndListIds()
     return ['lists' => $lists, 'forms' => $forms];
 }
 
-function getHtmlDataAttributes($fiche, $formtab = '')
+function getHtmlDataAttributes($entry, $formtab = '')
 {
     $htmldata = '';
-    if (is_array($fiche) && isset($fiche['form_id'])) {
-        $form = isset($formtab[$fiche['form_id']]) ? $formtab[$fiche['form_id']] : $GLOBALS['yeswikiServices']->get(FormManager::class)->getOne($fiche['form_id']);
-        foreach ($fiche as $key => $value) {
+    if (is_array($entry) && isset($entry['form_id'])) {
+        $form = isset($formtab[$entry['form_id']]) ? $formtab[$entry['form_id']] : $GLOBALS['yeswikiServices']->get(FormManager::class)->getOne($entry['form_id']);
+        foreach ($entry as $key => $value) {
             if (!empty($value)) {
                 if (
                     in_array(
@@ -177,18 +177,18 @@ function getHtmlDataAttributes($fiche, $formtab = '')
  *
  * @return string HTML
  */
-function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
+function show($val, $label = '', $class = 'field', $tag = 'p', $entry = '')
 {
-    if (is_array($fiche)) {
+    if (is_array($entry)) {
         // on recupere les valeurs plutot que les clés pour les champs checkbox et liste
         if (substr($val, 0, 10) === 'listeListe' or substr($val, 0, 13) === 'checkboxListe') {
             $func = (substr($val, 0, 10) === 'listeListe' ? 'liste' : 'checkbox');
             $dummy = '';
-            $form = $GLOBALS['yeswikiServices']->get(FormManager::class)->getOne($fiche['form_id']);
+            $form = $GLOBALS['yeswikiServices']->get(FormManager::class)->getOne($entry['form_id']);
             $f = multiArraySearch($form, '1', preg_replace('/^(liste|checkbox)/i', '', $val));
             $f = array_shift($f);
             if (function_exists($func)) {
-                $html = $func($dummy, $f, 'html', $fiche);
+                $html = $func($dummy, $f, 'html', $entry);
                 preg_match_all(
                     '/<span class="BAZ_texte">\s*(.*)\s*<\/span>/is',
                     $html,
@@ -203,13 +203,13 @@ function show($val, $label = '', $class = 'field', $tag = 'p', $fiche = '')
                 $found = '';
                 foreach ($form['prepared'] as $field) {
                     if ($field->getPropertyName() == $val) {
-                        $found = $field->renderStaticIfPermitted($fiche);
+                        $found = $field->renderStaticIfPermitted($entry);
                     }
                 }
                 $val = $found;
             }
         } else {
-            $val = isset($fiche[$val]) ? $fiche[$val] : '';
+            $val = isset($entry[$val]) ? $entry[$val] : '';
         }
     }
     if (!empty($val)) {
@@ -244,68 +244,68 @@ function removeAccents($str, $charset = YW_CHARSET)
  * Turn a string into a unique WikiName: accents stripped, capped at 50 characters, two
  * capitals. A name already taken is suffixed recursively -- NomWiki2, NomWiki3...
  *
- * @param string $nom       the string to derive the name from
- * @param int    $occurence recursion depth; 1 on the first call, and only >1 when
- *                          retrying with a suffix
+ * @param string $name       the string to derive the name from
+ * @param int    $occurrence recursion depth; 1 on the first call, and only >1 when
+ *                           retrying with a suffix
  *
  * @return string a WikiName nothing else holds
  */
-function generateWikiName($nom, $occurence = 1)
+function generateWikiName($name, $occurrence = 1)
 {
     // si la fonction est appelee pour la premiere fois, on nettoie le nom passe en parametre
-    if ($occurence <= 1) {
+    if ($occurrence <= 1) {
         // les noms wiki ne doivent pas depasser les 50 caracteres, on coupe a 48
         // histoire de pouvoir ajouter un chiffre derriere si nom wiki deja existant
         // plus traitement des accents et ponctuation
         // plus on met des majuscules au debut de chaque mot et on fait sauter les espaces
-        $nom = u($nom)->ascii();
-        $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ', $nom), 0, 47, YW_CHARSET));
+        $name = u($name)->ascii();
+        $temp = removeAccents(mb_substr(preg_replace('/[[:punct:]]/', ' ', $name), 0, 47, YW_CHARSET));
         $temp = explode(' ', ucwords(strtolower($temp)));
-        $nom = '';
+        $name = '';
         foreach ($temp as $mot) {
             // on vire d'eventuels autres caracteres speciaux
-            $nom .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
+            $name .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
         }
 
         // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
-        $var = preg_replace('/[^A-Z]/', '', $nom);
+        $var = preg_replace('/[^A-Z]/', '', $name);
         if (strlen($var) < 2) {
-            $last = ucfirst(substr($nom, strlen($nom) - 1));
-            $nom = substr($nom, 0, -1) . $last;
+            $last = ucfirst(substr($name, strlen($name) - 1));
+            $name = substr($name, 0, -1) . $last;
         }
 
-        $nom = '';
+        $name = '';
         foreach ($temp as $mot) {
             // on vire d'eventuels autres caracteres speciaux
-            $nom .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
+            $name .= preg_replace('/[^a-zA-Z0-9]/', '', trim($mot));
         }
 
         // on verifie qu'il y a au moins 2 majuscules, sinon on en rajoute une a la fin
-        $var = preg_replace('/[^A-Z]/', '', $nom);
+        $var = preg_replace('/[^A-Z]/', '', $name);
         if (strlen($var) < 2) {
-            $last = ucfirst(substr($nom, strlen($nom) - 1));
-            $nom = substr($nom, 0, -1) . $last;
+            $last = ucfirst(substr($name, strlen($name) - 1));
+            $name = substr($name, 0, -1) . $last;
         }
-    } elseif ($occurence > 2) {
+    } elseif ($occurrence > 2) {
         // si on en est a plus de 2 occurences, on supprime le chiffre precedent et on ajoute la nouvelle occurence
-        $nb = -1 * strlen(strval($occurence - 1));
-        $nom = substr($nom, 0, $nb) . $occurence;
+        $nb = -1 * strlen(strval($occurrence - 1));
+        $name = substr($name, 0, $nb) . $occurrence;
     } else {
         // cas ou l'occurence est la deuxieme : on reprend le NomWiki en y ajoutant le chiffre 2
-        $nom = $nom . $occurence;
+        $name = $name . $occurrence;
     }
 
-    if ($occurence == 0) {
+    if ($occurrence == 0) {
         // pour occurence = 0 on ne teste pas l'existance de la page
-        return $nom;
-    } elseif (!is_array($GLOBALS['yeswikiServices']->get(YesWiki\Content\Service\PageManager::class)->getOne($nom))) {
+        return $name;
+    } elseif (!is_array($GLOBALS['yeswikiServices']->get(YesWiki\Content\Service\PageManager::class)->getOne($name))) {
         // on verifie que la page n'existe pas deja : si c'est le cas on le retourne
-        return $nom;
+        return $name;
     }
     // sinon, on rappele recursivement la fonction jusqu'a ce que le nom aille bien
-    $occurence++;
+    $occurrence++;
 
-    return generateWikiName($nom, $occurence);
+    return generateWikiName($name, $occurrence);
 }
 
 // tri par ordre desire
@@ -416,14 +416,14 @@ function copyUrlToLocalFile($url, $localPath)
 /**
  * @deprecated Use FormManager::getOne, FormManager::getMany or FormManager::getAll
  */
-function formValues($idformulaire = [])
+function formValues($formId = [])
 {
     $formManager = $GLOBALS['yeswikiServices']->get(FormManager::class);
 
-    if (is_array($idformulaire) and count($idformulaire) > 0) {
-        return $formManager->getMany($idformulaire);
-    } elseif ($idformulaire != '' and !is_array($idformulaire)) {
-        return $formManager->getOne($idformulaire);
+    if (is_array($formId) and count($formId) > 0) {
+        return $formManager->getMany($formId);
+    } elseif ($formId != '' and !is_array($formId)) {
+        return $formManager->getOne($formId);
     }
 
     return $formManager->getAll();
@@ -432,11 +432,11 @@ function formValues($idformulaire = [])
 /**
  * @deprecated Use ListManager::getOne or ListManager::getAll
  */
-function listValues($idliste = '')
+function listValues($listId = '')
 {
-    $idliste = trim($idliste);
-    if ($idliste != '') {
-        return $GLOBALS['yeswikiServices']->get(ListManager::class)->getOne($idliste);
+    $listId = trim($listId);
+    if ($listId != '') {
+        return $GLOBALS['yeswikiServices']->get(ListManager::class)->getOne($listId);
     }
 
     return $GLOBALS['yeswikiServices']->get(ListManager::class)->getAll();
@@ -445,18 +445,18 @@ function listValues($idliste = '')
 /**
  * @deprecated Use Guard::isAllowed
  */
-function userIsAllowedTo($demande = 'saisie_fiche', $id = '')
+function userIsAllowedTo($request = 'saisie_fiche', $id = '')
 {
-    return $GLOBALS['yeswikiServices']->get(Guard::class)->isAllowed($demande, $id);
+    return $GLOBALS['yeswikiServices']->get(Guard::class)->isAllowed($request, $id);
 }
 
 /**
  * @deprecated Use EntryController::view
  */
-function renderEntryView($danslappli, $idfiche, $form = '')
+function renderEntryView($inApp, $entryId, $form = '')
 {
     try {
-        $output = $GLOBALS['yeswikiServices']->get(EntryController::class)->view($idfiche, '', $danslappli, null, $form);
+        $output = $GLOBALS['yeswikiServices']->get(EntryController::class)->view($entryId, '', $inApp, null, $form);
     } catch (Throwable $t) {
         return $GLOBALS['yeswikiServices']->get(TemplateEngine::class)
             ->render('@core/alert-message.twig', [

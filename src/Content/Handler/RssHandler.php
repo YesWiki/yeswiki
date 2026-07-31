@@ -37,7 +37,7 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
 
             $vItemCount = intval($get->get('nbitem') ?? $get->get('nb') ?? $this->getService(RuntimeConfig::class)['BAZ_NB_ENTREES_FLUX_RSS'] ?? 0);
 
-            $utilisateur = $get->get('utilisateur', '');
+            $user = $get->get('utilisateur', '');
 
             // chaine de recherche
 
@@ -63,7 +63,7 @@ class RssHandler extends YesWikiHandler implements RegisteredHandler
                 [
                     'idtypeannonce' => $vIDs,
                     'queries' => $vQuery,
-                    'user' => $utilisateur,
+                    'user' => $user,
                     'keywords' => $vKeywords,
                     'searchfields' => $vSearchFields,
                     'datefilter' => $vDateFilter,

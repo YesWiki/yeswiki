@@ -55,19 +55,19 @@ class LinkrssAction extends YesWikiAction implements RegisteredAction
         // merged from actions/linkrss__.php (ticket 06: core does not hook itself)
         // relocated from tools/bazar/actions/linkrss__.php (ticket 24)
         $forms = $this->getService(FormManager::class)->getAll();
-        $liste = '';
+        $list = '';
 
         if ($this->getService(ModuleAclService::class)->checkModuleAcl('rss', 'handler')) {
             if (count($forms) > 0) {
                 foreach ($forms as $form) {
-                    $liste .= '  <link rel="alternate" type="application/rss+xml" '
+                    $list .= '  <link rel="alternate" type="application/rss+xml" '
                         . 'title="' . htmlspecialchars($form['label'] ?? '') . '" '
                         . 'href="' . $this->getService(UrlFormatter::class)->href('rss', $this->getService(PageContext::class)->getTag(), 'id=' . $form['id']) . '">' . "\n";
                 }
             }
 
             echo '  <link rel="alternate" type="application/rss+xml" title="' . htmlspecialchars(_t('BAZ_FLUX_RSS_GENERAL')) . '" '
-                . 'href="' . $this->getService(UrlFormatter::class)->href('rss') . '">' . "\n" . $liste;
+                . 'href="' . $this->getService(UrlFormatter::class)->href('rss') . '">' . "\n" . $list;
         }
 
         return $plugin_output_new . (string)ob_get_clean();

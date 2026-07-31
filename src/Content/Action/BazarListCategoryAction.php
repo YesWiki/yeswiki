@@ -100,45 +100,45 @@ class BazarListCategoryAction extends YesWikiAction implements RegisteredAction
             }
             unset($_GET['query']);
 
-            $tabfiches = $entryManager->search(['queries' => $query, 'formsIds' => [$form_id]]);
+            $entriesTab = $entryManager->search(['queries' => $query, 'formsIds' => [$form_id]]);
 
-            $fiches['info_res'] = '';
-            $fiches['pager_links'] = '';
-            $fiches['fiches'] = [];
-            foreach ($tabfiches as $fiche) {
+            $entries['info_res'] = '';
+            $entries['pager_links'] = '';
+            $entries['fiches'] = [];
+            foreach ($entriesTab as $entry) {
                 // pour les checkbox, on crée une fiche par case cochée pour apparaitre é différents endroits
-                $tabcheckbox = explode(',', $fiche[$id]);
+                $tabcheckbox = explode(',', $entry[$id]);
                 foreach ($tabcheckbox as $value) {
                     // on sauve les multiples valeurs pour les retablir é l'affichage
-                    $multiplecheckbox[$fiche['tag']] = $fiche[$id];
-                    $fiche[$id] = $value;
+                    $multiplecheckbox[$entry['tag']] = $entry[$id];
+                    $entry[$id] = $value;
 
                     // permet de voir la fiche
-                    $fiche['html'] = renderEntryView(0, $fiche);
+                    $entry['html'] = renderEntryView(0, $entry);
                     // lien de suppression visible pour le super admin
-                    if (userIsAllowedTo('supp_fiche', $fiche['owner'])) {
-                        $fiche['lien_suppression'] = '<a class="modalbox" href="'
-                            . $this->getService(UrlFormatter::class)->href('deletepage', $fiche['tag'], 'incoming=' . urlencode($this->getService(UrlFormatter::class)->href())) . '"></a>' . "\n";
+                    if (userIsAllowedTo('supp_fiche', $entry['owner'])) {
+                        $entry['lien_suppression'] = '<a class="modalbox" href="'
+                            . $this->getService(UrlFormatter::class)->href('deletepage', $entry['tag'], 'incoming=' . urlencode($this->getService(UrlFormatter::class)->href())) . '"></a>' . "\n";
                     }
-                    if (userIsAllowedTo('modif_fiche', $fiche['owner'])) {
-                        $fiche['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('edit', $fiche['tag']) . '"></a>' . "\n";
+                    if (userIsAllowedTo('modif_fiche', $entry['owner'])) {
+                        $entry['lien_edition'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('edit', $entry['tag']) . '"></a>' . "\n";
                     }
-                    $fiche['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('', $fiche['tag']) . '">' . ($fiche['title'] ?? $fiche['bf_titre'] ?? $fiche['tag']) . '</a>' . "\n";
-                    $fiche['lien_voir'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('', $fiche['tag']) . '"></a>' . "\n";
-                    $fiches['fiches'][] = $fiche;
+                    $entry['lien_voir_titre'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('', $entry['tag']) . '">' . ($entry['title'] ?? $entry['bf_titre'] ?? $entry['tag']) . '</a>' . "\n";
+                    $entry['lien_voir'] = '<a class="BAZ_lien_modifier" href="' . $this->getService(UrlFormatter::class)->href('', $entry['tag']) . '"></a>' . "\n";
+                    $entries['fiches'][] = $entry;
                 }
             }
             // trie par liste choisie
-            usort($fiches['fiches'], 'compareFieldsByPosition');
+            usort($entries['fiches'], 'compareFieldsByPosition');
 
             $listvalues = listValues($list);
             $currentlabel = 'this is an impossible label';
             $fichescat = [];
             $output = '';
             $first = true;
-            foreach ($fiches['fiches'] as $fiche) {
-                $fiche['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $fiche[$id])) . $fiche['tag']);
-                if ($currentlabel !== $fiche[$id]) {
+            foreach ($entries['fiches'] as $entry) {
+                $entry['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $entry[$id])) . $entry['tag']);
+                if ($currentlabel !== $entry[$id]) {
                     if (!$first) {
                         if (is_array($fichescat) && count($fichescat) > 0) {
                             $output .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $fichescat);
@@ -150,17 +150,17 @@ class BazarListCategoryAction extends YesWikiAction implements RegisteredAction
                         $first = false;
                     }
                     $output .= '<h3 class="collapsed yeswiki-list-category" '
-                        . 'data-target="#collapse_' . htmlspecialchars(trim(str_replace('/', '', $fiche[$id])))
+                        . 'data-target="#collapse_' . htmlspecialchars(trim(str_replace('/', '', $entry[$id])))
                         . '" data-toggle="collapse"><svg class="yw-icon" aria-hidden="true"><use href="src/assets/icons.svg#chevron-right"/></svg> '
-                        . (empty($listvalues['label'][$fiche[$id]]) ? _t('BAZ_NOT_CATEGORIZED') : $listvalues['label'][$fiche[$id]]) . '</h3>
-                        <div id="collapse_' . htmlspecialchars(trim(str_replace('/', '', $fiche[$id]))) . '" class="collapse">';
+                        . (empty($listvalues['label'][$entry[$id]]) ? _t('BAZ_NOT_CATEGORIZED') : $listvalues['label'][$entry[$id]]) . '</h3>
+                        <div id="collapse_' . htmlspecialchars(trim(str_replace('/', '', $entry[$id]))) . '" class="collapse">';
                 }
-                $currentlabel = $fiche[$id];
+                $currentlabel = $entry[$id];
                 // on rétablit les valeurs multiples
-                if (isset($multiplecheckbox[$fiche['tag']])) {
-                    $fiche[$id] = $multiplecheckbox[$fiche['tag']];
+                if (isset($multiplecheckbox[$entry['tag']])) {
+                    $entry[$id] = $multiplecheckbox[$entry['tag']];
                 }
-                $fichescat['fiches'][] = $fiche;
+                $fichescat['fiches'][] = $entry;
             }
             // last results
             if (is_array($fichescat) && count($fichescat) > 0) {

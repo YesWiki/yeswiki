@@ -72,7 +72,7 @@ class TagsField extends EnumField
      * empty resource -- junk rows in `triples`, and keywords that stayed unindexed until
      * the next edit, which is the first time the tag was already there.
      */
-    public function requireIDFiche(): bool
+    public function requiresTagBeforeFormatting(): bool
     {
         return true;
     }

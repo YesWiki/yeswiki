@@ -3,13 +3,13 @@
 namespace YesWiki\Content\Field;
 
 use Field;
-use YesWiki\Kernel\Service\DateService as CoreDateService;
 use YesWiki\Content\Service\EntryDateService;
+use YesWiki\Kernel\Service\DateService as CoreDateService;
 
 #[\Field(['jour', 'listedatedeb', 'listedatefin'])]
 class DateField extends BazarField
 {
-    public function requireIDFiche()
+    public function requiresTagBeforeFormatting()
     {
         return true;
     }

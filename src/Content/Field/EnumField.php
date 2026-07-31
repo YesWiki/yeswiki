@@ -126,7 +126,7 @@ abstract class EnumField extends BazarField
             $vQueries = [];
         }
 
-        $fiches = $vSearchManager->search(
+        $linkedEntries = $vSearchManager->search(
             [
                 'queries' => $vQueries,
                 'formsIds' => $this->getLinkedObjectName(),
@@ -137,8 +137,8 @@ abstract class EnumField extends BazarField
         );
 
         $this->options = [];
-        foreach ($fiches as $fiche) {
-            $this->options[$fiche['tag']] = $fiche['title'] ?? $fiche['bf_titre'] ?? $fiche['tag'];
+        foreach ($linkedEntries as $linkedEntry) {
+            $this->options[$linkedEntry['tag']] = $linkedEntry['title'] ?? $linkedEntry['bf_titre'] ?? $linkedEntry['tag'];
         }
         if (is_array($this->options)) {
             asort($this->options);

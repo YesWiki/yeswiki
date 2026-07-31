@@ -45,8 +45,8 @@ class ValueAction extends YesWikiAction implements RegisteredAction
             return $this->renderError(_t('BAZAR_URL_ERROR') . ' : ' . htmlspecialchars($url) . '.');
         }
 
-        $champ = $this->arguments['champ'];
-        if (empty($champ)) {
+        $field = $this->arguments['champ'];
+        if (empty($field)) {
             return $this->renderError(_t('BAZAR_PARAM_CHAMP_REQUIRED'));
         }
         $image = $this->arguments['image'];
@@ -63,18 +63,18 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         }
 
         // le titre est un cas particulier
-        if ($champ == 'bf_titre') {
+        if ($field == 'bf_titre') {
             $regexp = '/<h1 class="BAZ_fiche_titre">(.*)<\/h1>/Uis';
-        } elseif ($champ == 'tag') {
+        } elseif ($field == 'tag') {
             // l'id est un cas particulier
             $urlparsed = parse_url($url);
 
             return htmlspecialchars(preg_replace('/(.*?)wiki=(.*?)/Ui', '$2', $urlparsed['query'] ?? ''));
         } elseif (!empty($image) && in_array($image, ['lien', '1'], true)) {
             // cas des images
-            $regexp = '/<a data-id="' . $champ . '".*href="(.*)".*>\s*<img.*<\/a>/Uis';
+            $regexp = '/<a data-id="' . $field . '".*href="(.*)".*>\s*<img.*<\/a>/Uis';
         } else {
-            $regexp = '/<div.*data-id="' . $champ . '".*>\s*<span class="BAZ_label.*">.*<\/span>\s*<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
+            $regexp = '/<div.*data-id="' . $field . '".*>\s*<span class="BAZ_label.*">.*<\/span>\s*<span class="BAZ_texte">\s*(.*)\s*<\/span>\s*<\/div> <!-- \/.BAZ_rubrique -->/Uis';
         }
 
         preg_match_all($regexp, $remotePage, $matches);
@@ -100,7 +100,7 @@ class ValueAction extends YesWikiAction implements RegisteredAction
         }
 
         if ($image == '1') {
-            return '<img loading="lazy" class="img-responsive" src="' . htmlspecialchars(array_shift($matches[1])) . '" alt="image ' . htmlspecialchars($champ) . '">';
+            return '<img loading="lazy" class="img-responsive" src="' . htmlspecialchars(array_shift($matches[1])) . '" alt="image ' . htmlspecialchars($field) . '">';
         }
 
         return $htmlPurifierService->cleanHTML(trim(array_shift($matches[1])));

@@ -52,7 +52,7 @@ class EntryApiController extends YesWikiController
         $vCorrespondance = $get->has('correspondance') ? urldecode($get->get('correspondance')) : null;
         $vDateFilter = $get->has('datefilter') ? urldecode($get->get('datefilter')) : null;
         $vOrdre = $get->get('ordre', 'asc');
-        $vChamp = $get->get('champ', 'title');
+        $vField = $get->get('champ', 'title');
         $vNb = intval($get->get('nbitem') ?? $get->get('nb') ?? null);
         $vMinDate = urldecode($get->get('dateMin') ?? $get->get('minDate') ?? $get->get('period') ?? '');
 
@@ -65,7 +65,7 @@ class EntryApiController extends YesWikiController
                 'datefilter' => $vDateFilter,
                 'correspondance' => $vCorrespondance,
                 'ordre' => $vOrdre,
-                'champ' => $vChamp,
+                'champ' => $vField,
                 'nb' => $vNb,
                 'minDate' => $vMinDate,
             ]);
@@ -80,7 +80,7 @@ class EntryApiController extends YesWikiController
                 'datefilter' => $vDateFilter,
                 'correspondance' => $vCorrespondance,
                 'ordre' => $vOrdre,
-                'champ' => $vChamp,
+                'champ' => $vField,
                 'nb' => $vNb,
                 'minDate' => $vMinDate,
             ]);
