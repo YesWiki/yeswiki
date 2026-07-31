@@ -127,7 +127,19 @@ abstract class BazarField implements \JsonSerializable
             return '';
         }
 
-        return $this->renderStatic($entry);
+        // Captured, not just returned. A field's value can contain `{{action}}` calls, and
+        // several actions still print rather than return -- bazar's own among them. Left
+        // uncaptured, that output reaches the page at the moment the field is *formatted*
+        // instead of where the field sits, so a page whose content is `{{bazar}}` showed
+        // bazar's navbar above its own title.
+        ob_start();
+        try {
+            $rendered = (string)$this->renderStatic($entry);
+        } finally {
+            $printed = (string)ob_get_clean();
+        }
+
+        return $printed . $rendered;
     }
 
     /**
