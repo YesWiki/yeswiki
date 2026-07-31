@@ -25,7 +25,7 @@ Submission artifacts (`antispam`, `valider`, …) are stripped at save.
 
 **Generated tags become slugs**: entry tags and new form tags are produced by
 Symfony's `AsciiSlugger`, lowercased, `-2`/`-3` collision suffixes —
-`genere_nom_wiki`'s CamelCase generation is retired for generated tags.
+`generateWikiName`'s CamelCase generation is retired for generated tags.
 User-chosen identifiers (usernames, hand-created page tags) are kept exactly as
 typed, and **no existing tag is ever rewritten**.
 
