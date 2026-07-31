@@ -554,6 +554,7 @@ const load = (domElement) => {
 
 // Wait for Dom to be loaded, so we can load some Vue component like BazarpMap in order
 // to be used inside index-dynamic
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   document.querySelectorAll('.bazar-list-dynamic-container').forEach(load)
 })

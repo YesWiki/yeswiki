@@ -5,7 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 
@@ -62,7 +62,7 @@ class ListsubscriptionAction extends YesWikiAction implements RegisteredAction
         				<form id="ajax-abonne-form" class="form-mail" data-page-tag="' . htmlspecialchars($this->getService(PageContext::class)->getTag()) . '">
         					' . $list . ' : ' . "\n" .
                         '</form>' . "\n";
-                    $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
+                    $this->getService(AssetRegistry::class)->addJsFile('javascripts/contact.js');
                 } else {
                     echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_LISTSUBSCRIPTION') . '</strong> : ' . _t('CONTACT_LIST_REQUIRED') . '.</div>';
                 }

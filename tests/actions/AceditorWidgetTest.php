@@ -54,8 +54,10 @@ class AceditorWidgetTest extends YesWikiTestCase
     #[Depends('testWikiExisting')]
     public function testGlobalAssetsIncludeRebuiltWidget(YesWikiRuntime $wiki)
     {
+        // ticket 15: {{linkjavascript}} is gone -- assets are declared by whatever needs them
+        // and emitted once, in the skeleton's head block
         $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{aceditor}}');
-        $js = $wiki->services->get(\YesWiki\Render\Service\MarkdownFormatterService::class)->format('{{linkjavascript}}');
+        $js = $wiki->services->get(\YesWiki\Kernel\Service\AssetRegistry::class)->drain()->toHtml();
 
         $this->assertStringContainsString('javascripts/aceditor.js', $js);
         unset($GLOBALS['wiki']);

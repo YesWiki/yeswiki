@@ -138,8 +138,6 @@ class AclsHandler extends YesWikiHandler implements RegisteredHandler
         <?php
 
         $content = ob_get_clean();
-        echo $this->getService(TemplateEngine::class)->header();
-        echo $content;
-        echo $this->getService(TemplateEngine::class)->footer();
+        echo $this->getService(TemplateEngine::class)->renderPage((string)$content);
     }
 }

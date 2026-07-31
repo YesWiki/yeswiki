@@ -12,7 +12,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Content\Service\FileManager;
 use YesWiki\Identity\Service\Guard;
 use YesWiki\Identity\Service\InputFilter;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\EventDispatcher;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
@@ -75,7 +75,7 @@ class FileField extends BazarField
         $value = $this->getValue($entry);
         $deletedFile = false;
         $isUrl = $this->isUrl($value);
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/file-field.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/inputs/file-field.js');
 
         if (!empty($value) && !$isUrl) {
             if (!empty($entry) && isset($_GET['delete_file']) && $_GET['delete_file'] === $value) {

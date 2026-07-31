@@ -10,7 +10,7 @@ use YesWiki\Content\Service\FormManager;
 use YesWiki\Content\Service\ListManager;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Exception\TemplateNotFound;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -21,7 +21,7 @@ class TemplateEngine
     protected ContainerInterface $container;
     protected $twigLoader;
     protected $twig;
-    protected $assetsManager;
+    protected AssetRegistry $assetRegistry;
     protected $csrfTokenManager;
 
     protected UrlFormatter $urlFormatter;
@@ -29,13 +29,13 @@ class TemplateEngine
     public function __construct(
         ContainerInterface $container,
         ParameterBagInterface $config,
-        AssetsManager $assetsManager,
+        AssetRegistry $assetRegistry,
         CsrfTokenManager $csrfTokenManager,
         UrlFormatter $urlFormatter
     ) {
         $this->urlFormatter = $urlFormatter;
         $this->container = $container;
-        $this->assetsManager = $assetsManager;
+        $this->assetRegistry = $assetRegistry;
         $this->csrfTokenManager = $csrfTokenManager;
         // Default paths (main namespace): the instance dir then the source tree. There are no
         // templates at either root, but it's needed to call relative path like
@@ -157,10 +157,15 @@ class TemplateEngine
             return $this->container->get(MarkdownFormatterService::class)->format($text, $formatter);
         });
         $this->addTwigHelper('include_javascript', function ($file, $first = false, $module = false) {
-            $this->assetsManager->AddJavascriptFile($file, $first, $module);
+            $this->assetRegistry->addJsFile($file, $first, $module);
+        });
+        // ticket 15: emits every declared asset, once, at the end of the squelette's head
+        // block. Anything an action registers *after* this point in that block is too late.
+        $this->addTwigHelper('declared_assets', function () {
+            return $this->assetRegistry->drain()->toHtml();
         });
         $this->addTwigHelper('include_css', function ($file) {
-            $this->assetsManager->AddCSSFile($file);
+            $this->assetRegistry->addCssFile($file);
         });
         $this->addTwigHelper('csrfToken', function ($tokenId) {
             if (is_string($tokenId)) {
@@ -236,7 +241,7 @@ class TemplateEngine
             return '<svg class="' . htmlspecialchars($class, ENT_QUOTES) . '" aria-hidden="true"><use href="' . htmlspecialchars($this->spriteUrl(), ENT_QUOTES) . '#' . htmlspecialchars($name, ENT_QUOTES) . '"/></svg>';
         }, ['is_safe' => ['html']]));
         $this->addTwigHelper('addJavascript', function ($js) {
-            $this->assetsManager->AddJavascript((string)$js);
+            $this->assetRegistry->addJs((string)$js);
 
             return '';
         });
@@ -382,6 +387,15 @@ class TemplateEngine
         return $this->twig->createTemplate($templateString)->render($data);
     }
 
+    /**
+     * A squelette compiled as a Twig template, so its `head` and `body` blocks can be
+     * rendered independently -- and therefore out of order (ticket 15, ADR-0014).
+     */
+    public function createSquelette(string $source): \Twig\TemplateWrapper
+    {
+        return $this->twig->createTemplate($source);
+    }
+
     public function renderFromStringNoEscape(string $templateString, array $data = []): string
     {
         $wrapped = '{% autoescape false %}' . $templateString . '{% endautoescape %}';
@@ -431,32 +445,32 @@ class TemplateEngine
     }
 
     /**
-     * Render a template as a complete page: squelette header + <div class="page">
-     * content + squelette footer. (Previously named renderInSquelette.).
+     * Render a template as a complete page: the squelette around <div class="page">content.
+     * (Previously named renderInSquelette.).
      *
      * @param array<string,mixed> $data
      */
     public function renderFullPage(string $templatePath, array $data = []): string
     {
-        $result = '<div class="page">';
-        $result .= $this->render($templatePath, $data);
-        $result .= '</div>';
-
-        return $this->header() . $result . $this->footer();
+        return $this->renderPage('<div class="page">' . $this->render($templatePath, $data) . '</div>');
     }
 
-    /** The configured header action's output (historic Wiki::Header()). */
-    public function header(): string
+    /**
+     * $content wrapped in the wiki's page skeleton.
+     *
+     * Replaces the header()/footer() pair every caller used to bracket its output with
+     * (ticket 15). A pair could not survive the head being rendered last: the content has to
+     * be a value before the skeleton renders, or `<head>` cannot know what it declared.
+     */
+    public function renderPage(string $content): string
     {
-        return $this->container->get(ActionRunner::class)
-            ->action((string)$this->container->get(RuntimeConfig::class)->getValue('header_action'), true);
+        return $this->container->get(ThemeManager::class)->renderPage($content);
     }
 
-    /** The configured footer action's output (historic Wiki::Footer()). */
-    public function footer(): string
+    /** The document head alone, for a surface supplying its own body. Call it after the content is built. */
+    public function renderHead(): string
     {
-        return $this->container->get(ActionRunner::class)
-            ->action((string)$this->container->get(RuntimeConfig::class)->getValue('footer_action'), true);
+        return $this->container->get(ThemeManager::class)->renderHead();
     }
 
     /** Opening tag of a wiki-target form (historic Wiki::FormOpen()). */

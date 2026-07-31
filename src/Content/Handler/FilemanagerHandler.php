@@ -56,6 +56,6 @@ class FilemanagerHandler extends YesWikiHandler implements RegisteredHandler
         <?php
         $output = ob_get_contents();
         ob_end_clean();
-        echo $this->getService(TemplateEngine::class)->header() . $output . $this->getService(TemplateEngine::class)->footer();
+        echo $this->getService(TemplateEngine::class)->renderPage((string)$output);
     }
 }

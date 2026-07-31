@@ -5,7 +5,11 @@
 // of its inputs.
 import { drawGeometries } from '../leaflet-draw.helper.js'
 
-document.addEventListener('DOMContentLoaded', () => {
+// Ticket 14: ywInit rather than DOMContentLoaded, so a map field arriving in a fragment --
+// the form designer's field preview, and every htmx-swapped entry form after it -- becomes a
+// map. The immediate sweep matters here specifically: this file is loaded *by* the fragment
+// that needs it, so it is still downloading when htmx fires htmx:load for that content.
+ywInit((root) => {
   function drawnItemsToGeoJSON(pDrawnItems) {
     const vData = {
       type: 'FeatureCollection',
@@ -47,7 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  document.querySelectorAll('.geocode-input:not(.yw-initialized)').forEach((cMe) => {
+  const scope = root && root.querySelectorAll ? root : document
+  const maps = [...scope.querySelectorAll('.geocode-input:not(.yw-initialized)')]
+  if (scope.matches && scope.matches('.geocode-input:not(.yw-initialized)')) maps.unshift(scope)
+
+  maps.forEach((cMe) => {
     cMe.classList.add('yw-initialized')
 
     const cMapFieldData = parseJsonAttribute(cMe, 'data-map-field-data')
@@ -67,15 +75,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const cName = cMe.getAttribute('name')
 
+      // Scoped to this field rather than document.getElementById: a map may now be rendered
+      // as a fragment (a designer preview card) where element ids are rewritten to stay
+      // unique within the page, and where several maps can coexist. The three hidden inputs
+      // already carry distinct classes for exactly this. Ids that legitimately refer to
+      // *other* fields of the entry form (the address autocomplete below, the popup inputs
+      // leaflet injects) stay document-wide -- they are not part of this element's subtree.
       const byId = (id) => document.getElementById(id)
       const setById = (id, value) => {
         const el = byId(id)
         if (el) el.value = value
       }
 
-      const cLatitude = byId(`${cName}_latitude`)
-      const cLongitude = byId(`${cName}_longitude`)
-      const cGeometries = byId(`${cName}_geometries`)
+      const cLatitude = cMe.querySelector('.yw-latitude-input')
+      const cLongitude = cMe.querySelector('.yw-longitude-input')
+      const cGeometries = cMe.querySelector('.yw-geometries-input')
 
       const cGeolocateButton = cMe.querySelector('.btn-geolocate')
       const cGeolocateAddressButton = cMe.querySelector('.btn-geolocate-address')
@@ -252,7 +266,6 @@ document.addEventListener('DOMContentLoaded', () => {
           if (cLatitude) cLatitude.value = pPoint.lat
           if (cLongitude) cLongitude.value = pPoint.lng
 
-          // eslint-disable-next-line func-names
           vGeocodedMarker.on('dragend', function(ev) {
             this.openPopup()
             const changedPos = ev.target.getLatLng()

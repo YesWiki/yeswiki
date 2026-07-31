@@ -3,8 +3,8 @@
 namespace YesWiki\Content\Field;
 
 use Psr\Container\ContainerInterface;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Render\Service\TabsRenderer;
-use YesWiki\Kernel\Service\AssetsManager;
 
 #[\Field(['tabs'])]
 class TabsField extends LabelField
@@ -56,7 +56,7 @@ class TabsField extends LabelField
     protected function renderInput($entry)
     {
         if ($this->getMoveSubmitButtonToLastTab()) {
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/tabs.js');
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/inputs/tabs.js');
         }
         $this->formText = $this->prepareText('form');
 

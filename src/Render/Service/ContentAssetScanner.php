@@ -2,7 +2,7 @@
 
 namespace YesWiki\Render\Service;
 
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 
 /**
  * Registers the CSS/JS that rendered page content turns out to need.
@@ -52,15 +52,15 @@ class ContentAssetScanner
         ],
     ];
 
-    private AssetsManager $assets;
+    private AssetRegistry $assets;
 
     /** @var list<string> markers already registered this request */
     private array $seen = [];
 
-    // AssetsManager rather than Wiki: registering an asset is exactly what that service is
+    // AssetRegistry rather than Wiki: registering an asset is exactly what that service is
     // for, and going through Wiki would add three more $wiki-> call sites to a wave whose
     // whole point is removing them.
-    public function __construct(AssetsManager $assets)
+    public function __construct(AssetRegistry $assets)
     {
         $this->assets = $assets;
     }
@@ -80,14 +80,14 @@ class ContentAssetScanner
             }
             $this->seen[] = $marker;
             foreach ($assets['css'] ?? [] as $css) {
-                $this->assets->AddCSSFile($css);
+                $this->assets->addCssFile($css);
             }
             foreach ($assets['js'] ?? [] as $js) {
-                $this->assets->AddJavascriptFile($js);
+                $this->assets->addJsFile($js);
             }
             if (isset($assets['jsInline'])) {
                 // second arg: emitted as a module, which the mermaid ESM import needs
-                $this->assets->AddJavascript($assets['jsInline'], true);
+                $this->assets->addJs($assets['jsInline'], true);
             }
         }
 

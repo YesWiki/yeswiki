@@ -4,7 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -36,7 +36,7 @@ class TagCloudAction extends YesWikiAction implements RegisteredAction
 
     public function run()
     {
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/tag.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/tag.js');
 
         $selectiontags = $this->buildSelectionTagsClause($this->arguments['tags']);
         $tablePrefix = $this->getService(RuntimeConfig::class)['table_prefix'];

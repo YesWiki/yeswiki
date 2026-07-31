@@ -10,7 +10,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\PasswordForEditingService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Performer;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -51,7 +51,7 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
                 }
             }
 
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
             $output .= '<body class="yeswiki-iframe-body">' . "\n"
                 . '<div class="container">' . "\n"
                 . '<div class="yeswiki-page-widget page-widget page">' . "\n";
@@ -87,14 +87,15 @@ class EditIframeHandler extends YesWikiHandler implements RegisteredHandler
             $output .= $this->getService(MarkdownFormatterService::class)->format('{{barreredaction}}');
         }
         $output .= '</div><!-- end .container -->' . "\n";
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-        // on recupere les entetes html mais pas ce qu'il y a dans le body
-        $header = explode('<body', $this->getService(TemplateEngine::class)->header());
-        $output = $header[0] . $output;
-        // on recupere juste les javascripts et la fin des balises body et html
-        $output .= preg_replace('/^.+<script/Us', '<script', $this->getService(TemplateEngine::class)->footer());
-
-        return $output;
+        // An iframe wants the wiki's <head> and none of the theme's chrome. It used to get
+        // there by splitting the rendered header on '<body' and regexing the footer for its
+        // first '<script'; ticket 15 made that unnecessary -- renderHead() is exactly the
+        // first half, and every script it needs is now declared into it rather than flushed
+        // at the end of the body. Called after $output is built, so the assets that content
+        // declared are included.
+        return $this->getService(TemplateEngine::class)->renderHead()
+            . "<body>\n" . $output . "\n</body>\n</html>";
     }
 }

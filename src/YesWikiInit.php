@@ -218,8 +218,6 @@ class Init
             'rewrite_mode' => $_rewrite_mode,
             'meta_keywords' => '',
             'meta_description' => '',
-            'header_action' => 'header',
-            'footer_action' => 'footer',
             'navigation_links' => 'DerniersChangements :: DerniersCommentaires :: ParametresUtilisateur',
             'referrers_purge_time' => 24,
             'pages_purge_time' => 365,

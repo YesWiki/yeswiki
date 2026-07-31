@@ -7,7 +7,7 @@ use YesWiki\Content\Service\FileManager;
 use YesWiki\Content\Service\PageManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -212,7 +212,7 @@ class PointimageAction extends YesWikiAction implements RegisteredAction
         	</div><!-- /.yw-modal -->' . "\n";
 
         // adds the javascript just one time
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/pointimage.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/pointimage.js');
 
         // output the image on the page
 

@@ -102,6 +102,8 @@ const TableHelper = {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: TableHelper.init() re-scans the document, and marking each table keeps a
+// second call from double-initialising one
+ywInitEach('.yeswiki-tableau, table.tableau', () => {
   TableHelper.init()
 })

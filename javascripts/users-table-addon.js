@@ -152,7 +152,8 @@ const usersTableServiceAddOn = {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   if (typeof usersTableService !== 'undefined' && usersTableService) {
     usersTableServiceAddOn.init()
   }

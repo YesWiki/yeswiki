@@ -109,9 +109,10 @@ class ShareHandler extends YesWikiHandler implements RegisteredHandler
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             echo '<div class="page">' . "\n" . $html . "\n" . '</div>';
         } else {
-            echo $this->getService(TemplateEngine::class)->header();
-            echo "<div class=\"page\">\n<h2>" . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' ' . $this->getService(PageContext::class)->getTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n</div>\n";
-            echo $this->getService(TemplateEngine::class)->footer();
+            echo $this->getService(TemplateEngine::class)->renderPage(
+                "<div class=\"page\">\n<h2>" . _t('TEMPLATE_SEE_SHARING_OPTIONS') . ' '
+                . $this->getService(PageContext::class)->getTag() . "</h2>\n$html\n<hr class=\"hr_clear\" />\n</div>\n"
+            );
         }
     }
 }

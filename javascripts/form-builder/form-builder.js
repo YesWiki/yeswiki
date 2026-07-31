@@ -240,7 +240,6 @@ function boot() {
   container.append(errorEl, sidebar, canvasEl)
 
   renderPalette()
-  initPreviewStyles()
   if (!loadFromTextarea()) {
     showError(`${_t('FORM_BUILDER_INVALID_JSON')}`)
     fields = []
@@ -334,7 +333,11 @@ function addFromPalette(type, index = fields.length) {
 // A card body shows the field exactly as the entry form will render it: the
 // designer posts its template to `api/forms/preview`, which runs every field
 // object through FormManager::prepareData + BazarField::renderInputIfPermitted
-// and answers with the real Twig markup, positionally aligned with what was sent.
+// and answers with the real Twig markup as htmx out-of-band swaps, one per card.
+//
+// Ticket 14: the answer also carries the field's declared assets, so a map preview
+// actually becomes a map. Deduplicating them across cards is core's job now
+// (javascripts/yw-assets.js), not this file's.
 //
 // Previews are cached per field id so rebuilding a card (every keystroke goes
 // through refreshCard) never blanks it: the stale markup stays on screen, dimmed,
@@ -344,7 +347,6 @@ const PREVIEW_DEBOUNCE = 300
 
 const previewHtml = {} // field id -> last markup rendered by the server
 const previewRequests = {} // field id -> id of the last request that asked for it
-const previewStyles = new Set() // hrefs already present in <head>
 let previewTimer = null
 let previewRequestId = 0
 let previewPendingAll = false
@@ -354,17 +356,29 @@ function previewHolder(field) {
   return canvasEl.querySelector(`[data-fb-id="${field.id}"] .yw-fb__card-preview`)
 }
 
-// The previews live inside the form-edit <form>: their controls must never be
-// submitted with it, block its validation, or duplicate its element ids.
-function neutralizePreview(holder) {
-  holder.querySelectorAll('script, link').forEach((node) => node.remove())
+// The previews live inside the form-edit <form>: their controls must never be submitted with
+// it, block its validation, or duplicate an element id.
+//
+// Ids are rewritten rather than removed (ticket 14). Removing them made every preview inert
+// by accident — a field initialiser that looks its parts up by id found nothing — while the
+// actual requirement is only that they stay unique within the page. Prefixing with the card
+// id satisfies both, and `for` attributes are remapped so labels keep working.
+function neutralizePreview(holder, fieldId) {
   holder.querySelectorAll('input, select, textarea, button').forEach((control) => {
     control.disabled = true // eslint-disable-line no-param-reassign
     control.removeAttribute('name')
     control.removeAttribute('required')
   })
-  holder.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'))
-  holder.querySelectorAll('[for]').forEach((node) => node.removeAttribute('for'))
+
+  const prefix = `${fieldId}__`
+  holder.querySelectorAll('[id]').forEach((node) => {
+    if (node.id.startsWith(prefix)) return
+    node.id = prefix + node.id // eslint-disable-line no-param-reassign
+  })
+  holder.querySelectorAll('[for]').forEach((node) => {
+    const target = node.getAttribute('for')
+    if (target && !target.startsWith(prefix)) node.setAttribute('for', prefix + target)
+  })
 }
 
 // some inputs draw nothing by themselves — a hidden field, or a widget the entry
@@ -376,30 +390,12 @@ function hasVisiblePreview(holder) {
 
 function paintPreview(holder, field) {
   holder.innerHTML = previewHtml[field.id] ?? '' // eslint-disable-line no-param-reassign
-  neutralizePreview(holder)
+  neutralizePreview(holder, field.id)
   if (!hasVisiblePreview(holder)) {
     // eslint-disable-next-line no-param-reassign
     holder.innerHTML = `<em class="yw-fb__card-nopreview">${esc(_t('FORM_BUILDER_NO_PREVIEW'))}</em>`
   }
   holder.classList.remove('yw-fb__card-preview--pending')
-}
-
-function initPreviewStyles() {
-  document.querySelectorAll('link[href]').forEach((link) => previewStyles.add(link.getAttribute('href')))
-}
-
-// stylesheets the input templates registered server-side (date.css, file.css,
-// leaflet.css, …) — the designer page never loads them on its own
-function addPreviewStyles(html) {
-  if (!html) return
-  const holder = document.createElement('div')
-  holder.innerHTML = html
-  holder.querySelectorAll('link[href]').forEach((link) => {
-    const href = link.getAttribute('href')
-    if (previewStyles.has(href)) return
-    previewStyles.add(href)
-    document.head.append(link)
-  })
 }
 
 function forgetStalePreviews() {
@@ -437,15 +433,19 @@ async function runPreviews() {
   })
 
   const template = serializeFields(targets.map(({ type, data }) => ({ type, data })), registry)
-  let payload
+  const ids = JSON.stringify(targets.map((field) => field.id))
+
+  // Ticket 14: the answer is markup, not JSON. htmx distributes it — one out-of-band swap
+  // per field, addressed by the card's own id, plus one carrying whatever assets the input
+  // templates declared (leaflet for a map, vditor for a long text), which swap into <head>.
+  // Addressing by id rather than by position also removes the old hazard that one
+  // unbuildable field shifted every card after it.
   try {
-    const response = await fetch(wiki.url('?api/forms/preview'), {
-      method: 'POST',
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      body: new URLSearchParams({ template })
+    await htmx.ajax('POST', wiki.url('?api/forms/preview'), {
+      source: canvasEl,
+      swap: 'none',
+      values: { template, ids }
     })
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    payload = await response.json()
   } catch (error) {
     // keep whatever the cards already show rather than blanking the canvas
     console.error('form designer: field preview request failed', error)
@@ -457,13 +457,20 @@ async function runPreviews() {
     return
   }
 
-  addPreviewStyles(payload.styles)
-  targets.forEach((field, index) => {
-    // a later edit already asked for this field again: its answer wins
-    if (previewRequests[field.id] !== requestId) return
-    previewHtml[field.id] = payload.previews?.[index] ?? ''
+  targets.forEach((field) => {
+    // a later edit already asked for this field again: its answer wins. htmx has already
+    // written into the holder, so a stale response is undone by repainting from the cache
+    // the fresher request will fill.
     const holder = previewHolder(field)
-    if (holder) paintPreview(holder, field)
+    if (!holder) return
+    if (previewRequests[field.id] !== requestId) {
+      paintPreview(holder, field)
+      return
+    }
+    // cache what the swap just put there, so rebuilding the card (every keystroke goes
+    // through refreshCard) repaints instantly instead of blanking
+    previewHtml[field.id] = holder.innerHTML
+    paintPreview(holder, field)
   })
 }
 
@@ -521,7 +528,7 @@ function renderCard(field) {
       </span>
     </div>
     <div class="yw-fb__card-body">
-      <div class="yw-fb__card-preview yw-fb__card-preview--pending"></div>
+      <div class="yw-fb__card-preview yw-fb__card-preview--pending" id="yw-fb-preview-${field.id}"></div>
     </div>
   </div>`)
 

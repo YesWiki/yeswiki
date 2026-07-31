@@ -45,13 +45,9 @@ class RenderHandler extends YesWikiHandler implements RegisteredHandler
 
         $output .= $this->getService(MarkdownFormatterService::class)->format(PageBody::content(($this->getService(PageContext::class)->getPage() ?? [])['body']));
         $output .= '</div><!-- end .page-widget -->' . "\n";
-        // ajout des en-têtes en pieds de page
-
-        // on recupere les entetes html mais pas ce qu'il y a dans le body
-        $header = explode('<body', $this->getService(TemplateEngine::class)->header());
-        $output = $header[0] . $output;
-        // on recupere juste les javascripts et la fin des balises body et html
-        $output .= preg_replace('/^.+<script/Us', '<script', $this->getService(TemplateEngine::class)->footer());
-        echo $output;
+        // the wiki's <head> without the theme's chrome, rendered after the content so it
+        // carries what that content declared (ticket 15)
+        echo $this->getService(TemplateEngine::class)->renderHead()
+            . "<body>\n" . $output . "\n</body>\n</html>";
     }
 }

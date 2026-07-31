@@ -5,7 +5,7 @@ namespace YesWiki\Content\Field;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Tamtamchik\SimpleFlash\Flash;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
@@ -64,7 +64,7 @@ class ImageField extends FileField
         $isUrl = $this->isUrl($value);
         // javascript pour gerer la previsualisation
         // si une taille maximale est indiquée, on teste
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/inputs/image-field.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/inputs/image-field.js');
         $imgDefault = $this->getDefaultImageName($entry);
 
         // Handle URL value

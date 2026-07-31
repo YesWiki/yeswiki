@@ -3,13 +3,12 @@
 namespace YesWiki\Kernel\Service;
 
 use DateInterval;
-use DateTime;
 use Exception;
 use PDO;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-use YesWiki\Admin\Service\ArchiveService;
 use YesWiki\Kernel\Database\SqlDialect;
 use YesWiki\Kernel\Database\SqlDialectFactory;
+use YesWiki\Kernel\Database\SqlStatementSplitter;
 
 class DbService
 {
@@ -46,28 +45,28 @@ class DbService
             }
 
             $options = [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES => false,
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                \PDO::ATTR_EMULATE_PREPARES => false,
             ];
             // PDO::connect() (PHP >= 8.4) returns a driver-specific subclass (e.g.
             // Pdo\Sqlite), needed to call createFunction() without a deprecation
             // notice. The minimum supported PHP version (8.3) doesn't have it.
-            $this->link = method_exists(PDO::class, 'connect')
-                ? PDO::connect($dsn, $username, $password, $options)
+            $this->link = method_exists(\PDO::class, 'connect')
+                ? \PDO::connect($dsn, $username, $password, $options)
                 : new \PDO($dsn, $username, $password, $options);
             if (!$this->link) {
-                throw new Exception('Not connected to database');
+                throw new \Exception('Not connected to database');
             }
 
             // Driver-specific initialization
             $this->initDriverSpecific();
         } catch (\Throwable $th) {
             if (in_array(php_sapi_name(), ['cli', 'cli-server', ' phpdbg'], true)) {
-                throw new Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
-            } else {
-                exit(_t('DB_CONNECT_FAIL'));
+                throw new \Exception(_t('DB_CONNECT_FAIL') . ': ' . $th->getMessage());
             }
+            exit(_t('DB_CONNECT_FAIL'));
+
             exit(_t('DB_CONNECT_FAIL'));
         }
     }
@@ -80,6 +79,7 @@ class DbService
                 $dbPath = $this->params->has('db_database') && $this->params->get('db_database')
                     ? $this->params->get('db_database')
                     : 'private/yeswiki.db';
+
                 return 'sqlite:' . $dbPath;
 
             case 'pgsql':
@@ -87,6 +87,7 @@ class DbService
                 if ($this->params->has('db_port') && $this->params->get('db_port')) {
                     $dsn .= ';port=' . $this->params->get('db_port');
                 }
+
                 return $dsn;
 
             case 'mysql':
@@ -99,6 +100,7 @@ class DbService
                     ? $this->params->get('db_charset')
                     : 'utf8mb4';
                 $dsn .= ';charset=' . $charset;
+
                 return $dsn;
         }
     }
@@ -123,6 +125,7 @@ class DbService
                     if ($pattern === null || $value === null) {
                         return false;
                     }
+
                     return preg_match('/' . $pattern . '/iu', $value) === 1;
                 };
                 // PDO::sqliteCreateFunction() is deprecated since PHP 8.5 in favor of
@@ -147,6 +150,93 @@ class DbService
         return $this->driver;
     }
 
+    /** The per-driver SQL fragments this connection speaks (ticket 17 exposed it for restore). */
+    public function dialect(): SqlDialect
+    {
+        return $this->dialect;
+    }
+
+    /**
+     * Drop this wiki's tables and replay $sqlContent into them.
+     *
+     * Ticket 17: archive restore used to hand the whole dump to `mysqli_multi_query()` over a
+     * second, raw connection -- which is why it only ever worked on MySQL, and why an SQLite
+     * install could take a backup it could never put back. It runs here now, on the ordinary
+     * PDO connection, one statement at a time (see SqlStatementSplitter), with the
+     * driver-specific parts coming from the dialect.
+     *
+     * Lives on DbService rather than ArchiveService so it can be exercised against a scratch
+     * database: a test for this must never be able to point it at the running wiki.
+     *
+     * @throws \Exception
+     */
+    public function restoreFromDump(string $sqlContent): void
+    {
+        $tablesPrefix = trim($this->prefixTable(''));
+        if (empty($tablesPrefix)) {
+            throw new \Exception('Table prefix is empty — refusing to drop all tables');
+        }
+
+        $this->assertDumpMatchesDriver($sqlContent);
+
+        $statements = SqlStatementSplitter::split($sqlContent);
+        if ($statements === []) {
+            throw new \Exception('SQL restore failed: the dump contains no statements');
+        }
+
+        $disable = $this->dialect->foreignKeyChecks(false);
+        if ($disable !== null) {
+            $this->query($disable);
+        }
+
+        try {
+            foreach ($this->getTables() as $tableName) {
+                if (str_starts_with($tableName, $tablesPrefix)) {
+                    $this->query('DROP TABLE IF EXISTS ' . $this->dialect->quoteIdentifier($tableName));
+                }
+            }
+
+            foreach ($statements as $index => $statement) {
+                try {
+                    $this->query($statement);
+                } catch (\Throwable $th) {
+                    // the statement number and its opening are what make this diagnosable;
+                    // a single INSERT can be megabytes long
+                    $excerpt = substr((string)preg_replace('/\s+/', ' ', $statement), 0, 200);
+
+                    throw new \Exception('SQL restore failed on statement ' . ($index + 1) . ' of ' . count($statements) . ' (' . $excerpt . '): ' . $th->getMessage(), 0, $th);
+                }
+            }
+        } finally {
+            $enable = $this->dialect->foreignKeyChecks(true);
+            if ($enable !== null) {
+                $this->query($enable);
+            }
+        }
+    }
+
+    /**
+     * Refuse a dump produced by a different database driver.
+     *
+     * A dump carries CREATE TABLE statements in its own driver's syntax, so replaying a MySQL
+     * dump on SQLite fails somewhere in the middle -- after the tables have already been
+     * dropped. Refusing up front leaves the wiki as it was; the alternative is a half-restored
+     * database and no way back. Dumps written before ticket 17 carry no marker and are assumed
+     * to be MySQL, the only driver that could produce one.
+     *
+     * @throws \Exception
+     */
+    private function assertDumpMatchesDriver(string $sqlContent): void
+    {
+        $dumpDriver = preg_match('/^--\s*YesWiki-Dialect:\s*(\w+)\s*$/m', $sqlContent, $matches)
+            ? $matches[1]
+            : 'mysql';
+
+        if ($dumpDriver !== $this->driver) {
+            throw new \Exception("This archive was created on a '$dumpDriver' database and cannot be restored onto a '{$this->driver}' one: the dump describes its tables in '$dumpDriver' syntax. Restore it onto a '$dumpDriver' database, or re-create the wiki and import its content instead.");
+        }
+    }
+
     /**
      * Returns a SQL expression for the current timestamp.
      * This is database-driver agnostic.
@@ -163,6 +253,7 @@ class DbService
      * This is database-driver agnostic.
      *
      * @param int $days Number of days to subtract
+     *
      * @return string SQL expression
      */
     public function dateSubDays(int $days): string
@@ -175,6 +266,7 @@ class DbService
      * This is database-driver agnostic.
      *
      * @param int $hours Number of hours to subtract
+     *
      * @return string SQL expression
      */
     public function dateSubHours(int $hours): string
@@ -187,7 +279,8 @@ class DbService
      * This is database-driver agnostic.
      *
      * @param string $column The column containing JSON data
-     * @param string $path The JSON path (e.g., '$.fieldname')
+     * @param string $path   The JSON path (e.g., '$.fieldname')
+     *
      * @return string SQL expression
      */
     public function jsonExtract(string $column, string $path): string
@@ -200,8 +293,9 @@ class DbService
      * into a single comma-separated string, ordered by $orderBy.
      * This is database-driver agnostic.
      *
-     * @param string $column The column whose distinct values are aggregated
+     * @param string      $column  The column whose distinct values are aggregated
      * @param string|null $orderBy The column to order values by (defaults to $column)
+     *
      * @return string SQL expression
      */
     public function groupConcat(string $column, ?string $orderBy = null): string
@@ -214,6 +308,7 @@ class DbService
      * Use this for reserved keywords like 'user', 'time', 'order', etc.
      *
      * @param string $identifier The identifier to quote
+     *
      * @return string The quoted identifier
      */
     public function quoteIdentifier(string $identifier): string
@@ -237,6 +332,7 @@ class DbService
      * This is database-driver agnostic.
      *
      * @param bool $not Whether to negate the condition (NOT REGEXP)
+     *
      * @return string The REGEXP operator
      */
     public function regexpOperator(bool $not = false): string
@@ -248,9 +344,10 @@ class DbService
      * Returns a SQL expression for FIND_IN_SET (checking if a value exists in a comma-separated list).
      * This is database-driver agnostic.
      *
-     * @param string $needle The value to search for (should be already escaped/quoted)
+     * @param string $needle   The value to search for (should be already escaped/quoted)
      * @param string $haystack The column or expression containing comma-separated values
-     * @param bool $not Whether to negate the condition (NOT FIND_IN_SET)
+     * @param bool   $not      Whether to negate the condition (NOT FIND_IN_SET)
+     *
      * @return string SQL expression
      */
     public function findInSet(string $needle, string $haystack, bool $not = false): string
@@ -292,6 +389,7 @@ class DbService
         // Cast first: callers legitimately pass null for an absent filter (e.g.
         // TripleStore::delete() with no value), and PDO::quote(null) is deprecated.
         $quoted = $this->link->quote((string)$string);
+
         return substr($quoted, 1, -1);
     }
 
@@ -313,7 +411,7 @@ class DbService
             $result = $this->link->query($query);
             if ($result === false) {
                 $errorInfo = $this->link->errorInfo();
-                throw new Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
+                throw new \Exception('Query failed: ' . $query . ' (' . $errorInfo[2] . ')');
             }
         } finally {
             if ($this->params->get('debug')) {
@@ -352,8 +450,9 @@ class DbService
     {
         $stmt = $this->query($query);
         if ($stmt) {
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
         }
+
         return [];
     }
 
@@ -361,8 +460,9 @@ class DbService
     {
         $stmt = $this->query($query);
         if ($stmt) {
-            return count($stmt->fetchAll(PDO::FETCH_ASSOC));
+            return count($stmt->fetchAll(\PDO::FETCH_ASSOC));
         }
+
         return 0;
     }
 
@@ -379,13 +479,15 @@ class DbService
                         return true;
                     }
                 }
+
                 return false;
 
             case 'pgsql':
                 $result = $this->loadSingle(
-                    "SELECT column_name FROM information_schema.columns " .
+                    'SELECT column_name FROM information_schema.columns ' .
                     "WHERE table_name = '$tableName' AND column_name = '$escapedColumn'"
                 );
+
                 return !empty($result);
 
             case 'mysql':
@@ -403,10 +505,11 @@ class DbService
     }
 
     /**
-     * Returns information about a column (type, nullable, etc.)
+     * Returns information about a column (type, nullable, etc.).
      *
-     * @param string $table The table name (without prefix)
+     * @param string $table  The table name (without prefix)
      * @param string $column The column name
+     *
      * @return array|null Column info with 'type', 'nullable', 'default' keys or null if not found
      */
     public function getColumnInfo($table, $column): ?array
@@ -426,12 +529,13 @@ class DbService
                         ];
                     }
                 }
+
                 return null;
 
             case 'pgsql':
                 $result = $this->loadSingle(
-                    "SELECT data_type, character_maximum_length, is_nullable, column_default " .
-                    "FROM information_schema.columns " .
+                    'SELECT data_type, character_maximum_length, is_nullable, column_default ' .
+                    'FROM information_schema.columns ' .
                     "WHERE table_name = '$tableName' AND column_name = '$escapedColumn'"
                 );
                 if (empty($result)) {
@@ -441,6 +545,7 @@ class DbService
                 if (!empty($result['character_maximum_length'])) {
                     $type .= '(' . $result['character_maximum_length'] . ')';
                 }
+
                 return [
                     'type' => strtolower($type),
                     'nullable' => $result['is_nullable'] === 'YES',
@@ -453,6 +558,7 @@ class DbService
                 if (empty($result)) {
                     return null;
                 }
+
                 return [
                     'type' => strtolower($result['Type']),
                     'nullable' => $result['Null'] === 'YES',
@@ -466,10 +572,11 @@ class DbService
      * Note: SQLite has limited ALTER TABLE support. For SQLite, this method may need
      * to recreate the table to change column types.
      *
-     * @param string $table The table name (without prefix)
-     * @param string $column The column name
+     * @param string $table   The table name (without prefix)
+     * @param string $column  The column name
      * @param string $newType The new column type (e.g., 'varchar(256)')
-     * @param bool $notNull Whether the column should be NOT NULL
+     * @param bool   $notNull Whether the column should be NOT NULL
+     *
      * @return bool Success
      */
     public function modifyColumn($table, $column, $newType, $notNull = false): bool
@@ -495,6 +602,7 @@ class DbService
                         "ALTER COLUMN $quotedColumn SET NOT NULL"
                     );
                 }
+
                 return true;
 
             case 'mysql':
@@ -503,6 +611,7 @@ class DbService
                     "ALTER TABLE {$this->prefixTable($table)} " .
                     "MODIFY COLUMN $quotedColumn $newType$notNullClause;"
                 );
+
                 return true;
         }
     }
@@ -517,15 +626,18 @@ class DbService
         switch ($this->driver) {
             case 'sqlite':
                 $result = $this->loadAll("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+
                 return array_column($result, 'name');
 
             case 'pgsql':
                 $result = $this->loadAll("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
+
                 return array_column($result, 'tablename');
 
             case 'mysql':
             default:
                 $result = $this->loadAll('SHOW TABLES');
+
                 return array_map(function ($row) {
                     return array_values($row)[0];
                 }, $result);
@@ -538,6 +650,7 @@ class DbService
      * PostgreSQL support is limited.
      *
      * @param string $tableName The table name
+     *
      * @return string|null The CREATE TABLE statement or null if not supported
      */
     public function getTableSchema(string $tableName): ?string
@@ -547,6 +660,7 @@ class DbService
                 $result = $this->loadSingle(
                     "SELECT sql FROM sqlite_master WHERE type='table' AND name='$tableName'"
                 );
+
                 return $result['sql'] ?? null;
 
             case 'pgsql':
@@ -557,6 +671,7 @@ class DbService
             case 'mysql':
             default:
                 $result = $this->loadSingle("SHOW CREATE TABLE $tableName");
+
                 return $result['Create Table'] ?? null;
         }
     }
@@ -569,7 +684,8 @@ class DbService
                 return ini_get('date.timezone') ?? null;
 
             case 'pgsql':
-                $result = $this->loadSingle("SHOW timezone");
+                $result = $this->loadSingle('SHOW timezone');
+
                 return $result['TimeZone'] ?? (ini_get('date.timezone') ?? null);
 
             case 'mysql':
@@ -588,13 +704,13 @@ class DbService
                     if (empty($result['time'])) {
                         $tz = null;
                     } else {
-                        $diff = (new DateTime())->diff(new DateTime($result['time']));
+                        $diff = (new \DateTime())->diff(new \DateTime($result['time']));
                         // TODO use Carbon
                         $diffInMinutes = ($diff->invert ? -1 : 1) * ($diff->i + 60 * $diff->h);
                         // convert to UTC
-                        $diffInMinutes += intval(floor((new DateTime())->getOffset() / 60));
+                        $diffInMinutes += intval(floor((new \DateTime())->getOffset() / 60));
                         // convert in DateInterval
-                        $diff = new DateInterval('PT0S');
+                        $diff = new \DateInterval('PT0S');
                         $diff->invert = ($diffInMinutes >= 0) ? 0 : 1;
                         $diff->i = abs($diffInMinutes) % 60;
                         $diff->h = (abs($diffInMinutes) - $diff->i) / 60;
@@ -623,6 +739,9 @@ class DbService
         $sql = '';
         $error = '';
         try {
+            if (!$this->dialect->supportsDump()) {
+                throw new \Exception("Database backup is not supported on the '{$this->driver}' driver: its table structure " . 'cannot be exported, so the archive would contain data with no tables to restore it into.');
+            }
             $tablesPrefix = trim($this->prefixTable(''));
             if (empty($tablesPrefix)) {
                 throw new \Exception("'table_prefix' is empty in wakka.config.php — cannot determine which tables to back up");
@@ -641,25 +760,24 @@ class DbService
             $date = (new \DateTime())->format('c');
             $phpVersion = phpversion();
 
+            $driver = $this->dialect->driverName();
+            $preamble = implode(";\n", $this->dialect->dumpPreamble());
+
+            // The dialect marker is load-bearing, not decoration: a dump carries CREATE TABLE
+            // statements in its own driver's syntax, so replaying a MySQL dump on SQLite (or
+            // the reverse) fails part-way through, leaving the wiki with some tables restored
+            // and some dropped. restoreDatabase() refuses on a mismatch (ticket 17).
             $sql =
                 <<<SQL
             -- SQL Dump
-            -- ArchiveService:getSQLBackup Version
+            -- YesWiki database backup
             -- 
             -- Generated on : $date
             -- PHP version : $phpVersion
+            -- YesWiki-Dialect: $driver
 
-            SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-            SET AUTOCOMMIT = 0;
-            START TRANSACTION;
+            $preamble;
 
-            /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-            /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-            /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-            /*!40101 SET NAMES utf8mb4 */;
-            /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-            /*!40103 SET TIME_ZONE='+00:00' */;
-            
             -- --------------------------------------------------------
 
             SQL;
@@ -699,9 +817,6 @@ class DbService
 
                 $rawData = $this->query('select * from ' . $tableName);
 
-                // Types that need quotes in SQL
-                $stringTypes = ['VAR_STRING', 'STRING', 'BLOB', 'DATE', 'TIME', 'DATETIME', 'TIMESTAMP', 'YEAR', 'NEWDATE'];
-
                 $firstRow = true;
                 $columnCount = $rawData->columnCount();
                 $columnMeta = [];
@@ -709,7 +824,7 @@ class DbService
                     $columnMeta[$i] = $rawData->getColumnMeta($i);
                 }
 
-                while ($row = $rawData->fetch(PDO::FETCH_NUM)) {
+                while ($row = $rawData->fetch(\PDO::FETCH_NUM)) {
                     if ($firstRow) {
                         $sql .= "INSERT INTO `$tableName` ";
                         $sql .= '(';
@@ -729,12 +844,13 @@ class DbService
                         if ($i != 0) {
                             $sql .= ', ';
                         }
-                        $strAdd = '';
-                        $nativeType = $columnMeta[$i]['native_type'] ?? '';
-                        if (in_array($nativeType, $stringTypes)) {
-                            $strAdd = "'";
-                        }
-                        $sql .= $strAdd . $this->escape($row[$i] ?? '') . $strAdd;
+                        // Quote everything except NULL. Deciding by the driver's reported
+                        // native type was MySQL-specific (SQLite and PostgreSQL name their
+                        // types differently, so numeric columns came out unquoted and text
+                        // columns quoted at random), and `$row[$i] ?? ''` silently turned every
+                        // NULL into an empty string on restore. Both databases accept a quoted
+                        // literal in a numeric column.
+                        $sql .= $row[$i] === null ? 'NULL' : "'" . $this->escape($row[$i]) . "'";
                     }
                     $sql .= ')';
                 }
@@ -749,17 +865,7 @@ class DbService
                 SQL;
             }
 
-            $sql .=
-                <<<SQL
-
-            COMMIT;
-            
-            /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-            /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-            /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-            /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-            SQL;
+            $sql .= "\n" . implode(";\n", $this->dialect->dumpEpilogue()) . ";\n";
         } catch (\Throwable $th) {
             $error = $th->getMessage();
         }

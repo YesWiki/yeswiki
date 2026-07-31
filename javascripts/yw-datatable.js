@@ -274,18 +274,11 @@
       .forEach(initDataTable)
   }
 
-  document.addEventListener('DOMContentLoaded', () => scan(document))
-
-  new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType !== 1) return
-        if (node.matches && node.matches('table[data-yw-datatable]')) {
-          initDataTable(node)
-        } else if (node.querySelectorAll) {
-          scan(node)
-        }
-      })
-    })
-  }).observe(document.body, { childList: true, subtree: true })
+  // ticket 14: ywInit replaces the DOMContentLoaded + MutationObserver pair
+  ywInit((root) => {
+    if (root.matches && root.matches('table[data-yw-datatable]:not([data-yw-datatable-ready])')) {
+      initDataTable(root)
+    }
+    scan(root.querySelectorAll ? root : document)
+  })
 }())

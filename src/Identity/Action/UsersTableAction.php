@@ -11,7 +11,7 @@ use YesWiki\Identity\Service\CsrfTokenChecker;
 use YesWiki\Identity\Service\UserManager;
 use YesWiki\Identity\Service\UserOperationsService;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\User;
 
@@ -54,7 +54,7 @@ class UsersTableAction extends YesWikiAction implements RegisteredAction
 
         if ($isAdmin) {
             // adds the activate/inactivate column (accountactivationbyemail, ticket 07)
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/users-table-addon.js');
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/users-table-addon.js');
         }
 
         // manage POST actions

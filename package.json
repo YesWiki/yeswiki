@@ -8,8 +8,10 @@
   "license": "AGPL-3.0",
   "homepage": "https://yeswiki.net",
   "scripts": {
-    "lint-js": "eslint --fix .",
-    "lint-other": "node_modules/.bin/prettier --write '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
+    "lint-js": "eslint .",
+    "fix-js": "eslint --fix .",
+    "lint-other": "node_modules/.bin/prettier --check '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
+    "fix-other": "node_modules/.bin/prettier --write '**/*.css' '**/*.json' '**/*.md' '**/*.yaml'",
     "build-theme": "sass --style=compressed --no-source-map themes/yeswiki/scss:themes/yeswiki/styles",
     "watch-theme": "sass --watch --style=compressed --no-source-map themes/yeswiki/scss:themes/yeswiki/styles",
     "postinstall": "./src/extract-files-from-node-modules.sh && yarn build-theme"

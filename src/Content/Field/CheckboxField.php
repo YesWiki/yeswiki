@@ -69,7 +69,7 @@ abstract class CheckboxField extends EnumField
                 }
 
                 if ($this->displayFilterLimit) {
-                    $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetsManager::class)->AddJavascriptFile('javascripts/inputs/filter-entries.js');
+                    $GLOBALS['yeswikiServices']->get(\YesWiki\Kernel\Service\AssetRegistry::class)->addJsFile('javascripts/inputs/filter-entries.js');
                 }
 
                 return $this->render(self::CHECKBOX_TWIG_LIST[$this->normalDisplayMode], [

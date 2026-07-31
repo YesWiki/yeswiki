@@ -46,12 +46,24 @@ wave-counters: ## Report the ectoplasme wave-two progress counters
 	php phpstan/wave-counters.php
 
 ## —— Linters & Formatters ———————————————
-lint: lint-php lint-js lint-other ## run all linters and formatters
+# `lint-*` reports and writes nothing; `fix-*` applies the fixes. Keeping them apart is what
+# lets you check a branch without a formatter rewriting files nobody asked you to touch: the
+# old `lint` targets ran `eslint --fix .` and `php-cs-fixer fix` across the whole repo, and
+# `lint-other` additionally ran the JS fixer a second time.
+lint: lint-php lint-js lint-other ## Check formatting and lint rules (writes nothing)
 
-lint-php: ## Lint php
+lint-php: ## Check PHP formatting
+	PHP_CS_FIXER_IGNORE_ENV=false ./vendor/bin/php-cs-fixer fix --dry-run --diff
+lint-js: ## Check JS lint rules
+	$(YARN) run lint-js
+lint-other: ## Check CSS/JSON/MD/YAML formatting
+	$(YARN) run lint-other
+
+fix: fix-php fix-js fix-other ## Apply every formatter and auto-fixable lint rule (rewrites files)
+
+fix-php: ## Format PHP
 	PHP_CS_FIXER_IGNORE_ENV=false ./vendor/bin/php-cs-fixer fix
-lint-js: ## Lint JS
-	yarn run lint-js
-lint-other: ## Lint other files
-	yarn run lint-js
-	yarn run lint-other
+fix-js: ## Auto-fix JS lint rules
+	$(YARN) run fix-js
+fix-other: ## Format CSS/JSON/MD/YAML
+	$(YARN) run fix-other

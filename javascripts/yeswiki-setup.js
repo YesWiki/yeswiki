@@ -1,4 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   // hide the database server fields when the SQLite driver is selected
   const driverSelect = document.getElementById('db_driver_select')
   if (driverSelect) {

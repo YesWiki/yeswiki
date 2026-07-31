@@ -65,4 +65,32 @@ class PostgreSqlDialect implements SqlDialect
             ? "($needle != ALL(string_to_array($haystack, ',')))"
             : "($needle = ANY(string_to_array($haystack, ',')))";
     }
+
+    public function dumpPreamble(): array
+    {
+        return ['BEGIN'];
+    }
+
+    public function dumpEpilogue(): array
+    {
+        return ['COMMIT'];
+    }
+
+    public function foreignKeyChecks(bool $enabled): ?string
+    {
+        // no session-level switch: PostgreSQL needs per-constraint ALTER TABLE, and the
+        // restore drops tables in one pass anyway
+        return null;
+    }
+
+    /**
+     * PostgreSQL has no `SHOW CREATE TABLE`, so DbService::getTableSchema() cannot produce the
+     * structure half of a dump. Backing up here used to *silently* emit INSERTs with no
+     * CREATE TABLE -- an archive that looks fine and restores into nothing. Refused instead
+     * (ticket 17).
+     */
+    public function supportsDump(): bool
+    {
+        return false;
+    }
 }

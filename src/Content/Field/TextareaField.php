@@ -6,7 +6,7 @@ use Field;
 use Psr\Container\ContainerInterface;
 use YesWiki\Content\Attach;
 use YesWiki\Content\Entity\PageBody;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\HtmlPurifierService;
 
@@ -61,9 +61,9 @@ class TextareaField extends BazarField
         $vditorLang = null;
         // If HTML syntax, load editor's JS and CSS
         if ($this->syntax === self::SYNTAX_HTML) {
-            $this->getService(AssetsManager::class)->AddCSSFile('styles/vendor/vditor/index.css');
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/vditor/index.min.js');
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vditor-textarea.js');
+            $this->getService(AssetRegistry::class)->addCssFile('styles/vendor/vditor/index.css');
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/vditor/index.min.js');
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/vditor-textarea.js');
 
             $vditorLang = self::VDITOR_LANG_MAP[strtolower($GLOBALS['prefered_language'])] ?? 'en_US';
         }

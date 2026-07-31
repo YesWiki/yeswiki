@@ -6,7 +6,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\MarkdownFormatterService;
 use YesWiki\Render\Service\TemplateEngine;
@@ -111,12 +111,12 @@ class MailHandler extends YesWikiHandler implements RegisteredHandler
         }
 
         if ($aclService->hasAccess('read') && ($this->getService(AuthenticationService::class)->getLoggedUser() || !empty($field))) {
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/contact.js');
         }
 
         // affichage a l'ecran
-        echo $this->getService(TemplateEngine::class)->header();
-        echo "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n";
-        echo $this->getService(TemplateEngine::class)->footer();
+        echo $this->getService(TemplateEngine::class)->renderPage(
+            "<div class=\"page\">\n$output\n<hr class=\"hr_clear\" />\n</div>\n"
+        );
     }
 }

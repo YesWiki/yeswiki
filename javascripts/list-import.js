@@ -1,4 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('#btn-import-lists', () => {
   // import de listes à partir d'un yeswiki
   const btnimportlist = document.getElementById('btn-import-lists')
   const resultimportlist = document.getElementById('import-lists-result')

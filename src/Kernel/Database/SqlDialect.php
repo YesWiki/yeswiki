@@ -47,4 +47,29 @@ interface SqlDialect
 
     /** SQL testing whether $needle appears in the comma-separated list $haystack. */
     public function findInSet(string $needle, string $haystack, bool $not = false): string;
+
+    // ---------------------------------------------------------------- dump / restore
+    //
+    // Ticket 17: archive restore used to be a raw `mysqli_multi_query()`, so it only ever
+    // worked on MySQL. A dump is replayed as ordinary statements now, which means the
+    // driver-specific parts of it have to be stateable per dialect.
+
+    /**
+     * Statements a dump opens with -- session settings and the transaction, joined by ";\n".
+     *
+     * @return list<string>
+     */
+    public function dumpPreamble(): array;
+
+    /** @return list<string> statements a dump closes with, commit included */
+    public function dumpEpilogue(): array;
+
+    /**
+     * Toggle foreign-key enforcement while tables are dropped and re-created, or null where
+     * the driver has no session-level switch for it.
+     */
+    public function foreignKeyChecks(bool $enabled): ?string;
+
+    /** Whether a dump produced by this dialect can be generated at all (see ticket 17). */
+    public function supportsDump(): bool;
 }

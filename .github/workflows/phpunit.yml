@@ -66,7 +66,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
           # Everything composer.json declares under ext-*, so `composer install`
           # and the installer request run against the same extension set.
-          extensions: ctype, curl, fileinfo, filter, gd, iconv, mbstring, mysqli, pdo, zip
+          extensions: ctype, curl, fileinfo, filter, gd, iconv, mbstring, pdo, pdo_sqlite, zip
           tools: composer:v2
 
       - run: php -v

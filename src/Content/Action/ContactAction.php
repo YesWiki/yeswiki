@@ -6,7 +6,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
 
@@ -52,7 +52,7 @@ class ContactAction extends YesWikiAction implements RegisteredAction
             'pageTag' => $this->getService(PageContext::class)->getTag(),
         ]);
 
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/contact.js');
 
         return $this->render('@core/' . $this->arguments['template'], $options);
     }

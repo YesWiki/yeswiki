@@ -1,7 +1,8 @@
 // tag.js — tag cloud behavior (ticket 16: vanilla JS; the Bootstrap popover is a
 // small self-positioned panel built from the link's data-title/data-content; the
 // unused jQuery $.fn.clearForm helper was dead code and is gone)
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   document.querySelectorAll('.tag-label').forEach((label) => {
     label.addEventListener('mouseenter', () => {
       label.classList.add('label-primary')

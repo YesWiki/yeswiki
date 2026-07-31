@@ -56,18 +56,14 @@
     root.querySelectorAll('textarea.vditor-html:not([data-vditor-ready])').forEach(initVditor)
   }
 
-  document.addEventListener('DOMContentLoaded', () => scan(document))
-
-  new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      mutation.addedNodes.forEach((node) => {
-        if (node.nodeType !== 1) return
-        if (node.matches && node.matches('textarea.vditor-html')) {
-          initVditor(node)
-        } else if (node.querySelectorAll) {
-          scan(node)
-        }
-      })
-    })
-  }).observe(document.body, { childList: true, subtree: true })
+  // Ticket 14: one convention. This file used to carry its own MutationObserver -- it was
+  // the first thing in core to need "initialise content that appears later", and solved it
+  // alone. ywInit is that solution generalised, so the observer (which watched every DOM
+  // mutation in the document to catch a handful of insertions) is gone.
+  ywInit((root) => {
+    if (root.matches && root.matches('textarea.vditor-html:not([data-vditor-ready])')) {
+      initVditor(root)
+    }
+    scan(root.querySelectorAll ? root : document)
+  })
 }())

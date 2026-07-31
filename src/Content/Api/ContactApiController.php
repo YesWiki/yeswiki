@@ -80,8 +80,16 @@ class ContactApiController extends YesWikiController
                 // le squelette du theme pourrait contenir des actions avec des mails
                 $themeManager = $this->getService(ThemeManager::class);
                 $chemin = 'themes/' . $themeManager->getFavoriteTheme() . '/squelettes/' . $themeManager->getFavoriteSquelette();
-                $fileContent = file_exists($chemin) ? file_get_contents($chemin) : '{WIKINI_PAGE}';
-                $body = str_replace('{WIKINI_PAGE}', PageBody::content($page['body'] ?? []), $fileContent);
+                // The mail recipient is the Nth {{mail}} action across squelette-and-page, so
+                // the page content has to sit where the squelette puts it. Ticket 15 replaced
+                // the plain-text `{WIKINI_PAGE}` marker with the `page_content` Twig variable;
+                // matching on that keeps the ordering, and a squelette without it still scans.
+                $pageContent = PageBody::content($page['body'] ?? []);
+                $fileContent = file_exists($chemin) ? (string)file_get_contents($chemin) : '';
+                $body = preg_replace('/\{\{\s*page_content[^}]*\}\}/', $pageContent, $fileContent, 1, $replaced);
+                if (!$replaced) {
+                    $body = $fileContent . "\n" . $pageContent;
+                }
                 $nbActionMail = $request->request->get('nbactionmail');
                 $mailReceiver = !empty($nbActionMail) ? FindMailFromWikiPage($body, $nbActionMail) : false;
                 if ($mailReceiver) {

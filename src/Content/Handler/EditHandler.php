@@ -18,7 +18,7 @@ use YesWiki\Identity\Service\HashCashService;
 use YesWiki\Identity\Service\InputFilter;
 use YesWiki\Identity\Service\PasswordForEditingService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\FlashMessageService;
 use YesWiki\Kernel\Service\HibernationService;
 use YesWiki\Kernel\Service\InclusionStack;
@@ -69,9 +69,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         if ($this->getService(AclService::class)->hasAccess('write') && $this->getService(AclService::class)->hasAccess('read')) {
             list($state, $message) = $this->getService(PasswordForEditingService::class)->isGrantedPasswordForEditing();
             if (!$state) {
-                echo $this->getService(TemplateEngine::class)->header() .
-                    $message .
-                    $this->getService(TemplateEngine::class)->footer();
+                echo $this->getService(TemplateEngine::class)->renderPage((string)$message);
                 $this->getService(Redirector::class)->terminate();
             }
 
@@ -121,7 +119,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
                     }
                 });";
 
-                $this->getService(AssetsManager::class)->AddJavascript($js);
+                $this->getService(AssetRegistry::class)->addJs($js);
             }
         }
 
@@ -130,8 +128,8 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             $_POST['body'] = '======' . $_GET['body'] . '======';
         }
 
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/change-theme.js');
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/template-edit.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/change-theme.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/template-edit.js');
 
         // merged from handlers/__EditHandler.php (ticket 06: core does not hook itself)
         // relocated from tools/bazar/handlers/__EditHandler.php (ticket 24): if the page
@@ -151,8 +149,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
             ob_end_clean();
             $plugin_output_new .= '</div>';
 
-            $plugin_output_new = $this->getService(TemplateEngine::class)->header() . $plugin_output_new;
-            $plugin_output_new .= $this->getService(TemplateEngine::class)->footer();
+            $plugin_output_new = $this->getService(TemplateEngine::class)->renderPage($plugin_output_new);
 
             // we use die so that the script stop there and the default handler of wiki isn't called
             $this->getService(Redirector::class)->terminate($plugin_output_new);
@@ -367,18 +364,15 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
         $plugin_output_new = str_replace($target, $target . $html, $plugin_output_new);
 
         if (!$this->getService(AclService::class)->hasAccess('write')) {
-            $output = '';
-            // on recupere les entetes html mais pas ce qu'il y a dans le body
-            $header = explode('<body', $this->getService(TemplateEngine::class)->header());
-            $output .= $header[0] . '<body class="login-body">' . "\n"
-                . '<div class="yeswiki-page-widget page-widget page">' . "\n";
-            $output .= '<div class="yw-alert yw-alert--danger">'
+            // built before the head is rendered, so the login form's own assets are in it
+            $body = '<div class="yeswiki-page-widget page-widget page">' . "\n"
+                . '<div class="yw-alert yw-alert--danger">'
                 . _t('LOGIN_NOT_AUTORIZED_EDIT') . '. ' . _t('LOGIN_PLEASE_REGISTER') . '.'
                 . '</div><!-- end .alert -->' . "\n"
                 . $this->getService(MarkdownFormatterService::class)->format('{{login signupurl="0"}}' . "\n\n")
                 . '</div><!-- end .page -->' . "\n";
-            // on recupere juste les javascripts et la fin des balises body et html
-            $output .= preg_replace('/^.+<script/Us', '<script', $this->getService(TemplateEngine::class)->footer());
+            $output = $this->getService(TemplateEngine::class)->renderHead()
+                . '<body class="login-body">' . "\n" . $body . "\n</body>\n</html>";
             $this->getService(Redirector::class)->terminate($output);
         }
 
@@ -531,7 +525,7 @@ class EditHandler extends YesWikiHandler implements RegisteredHandler
 
         // Header - // Footer
         if (!testUrlInIframe()) {
-            echo $this->getService(TemplateEngine::class)->header() . $output . $this->getService(TemplateEngine::class)->footer();
+            echo $this->getService(TemplateEngine::class)->renderPage($output);
         } else {
             echo $output;
         }

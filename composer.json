@@ -25,7 +25,6 @@
     "ext-iconv": "*",
     "ext-json": "*",
     "ext-mbstring": "*",
-    "ext-mysqli": "*",
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "^1.0",

@@ -82,7 +82,8 @@ function successHandler(data) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   const qrinfos = document.getElementById('qrinfos')
   if (qrinfos.dataset.speak === 'true') {
     function mutate() {

@@ -66,7 +66,8 @@ function openNav() {
   return false
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   document.querySelectorAll('.colorpicker').forEach((picker) => {
     const applyColor = () => {
       document.documentElement.style.setProperty(

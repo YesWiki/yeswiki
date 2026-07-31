@@ -11,7 +11,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\MarkdownFormatterService;
@@ -25,14 +25,14 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
         return 'iframe';
     }
 
-    protected $assetsManager;
+    protected AssetRegistry $assetRegistry;
     protected $authenticationService;
     protected $entryController;
     protected $favoritesManager;
 
     public function run()
     {
-        $this->assetsManager = $this->getService(AssetsManager::class);
+        $this->assetRegistry = $this->getService(AssetRegistry::class);
         $this->authenticationService = $this->getService(AuthenticationService::class);
         $this->entryController = $this->getService(EntryController::class);
         $this->favoritesManager = $this->getService(FavoritesManager::class);
@@ -87,15 +87,16 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
             $output .= $this->getService(MarkdownFormatterService::class)->format('{{barreredaction}}');
         }
         $output .= '</div><!-- end .container -->' . "\n";
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/vendor/iframe-resizer/iframeResizer.contentWindow.min.js');
 
-        // on recupere les entetes html mais pas ce qu'il y a dans le body
-        $header = explode('<body', $this->getService(TemplateEngine::class)->header());
-        $output = $header[0] . $output;
-        // on recupere juste les javascripts et la fin des balises body et html
-        $output .= preg_replace('/^.+<script/Us', '<script', $this->getService(TemplateEngine::class)->footer());
-
-        return $output;
+        // An iframe wants the wiki's <head> and none of the theme's chrome. It used to get
+        // there by splitting the rendered header on '<body' and regexing the footer for its
+        // first '<script'; ticket 15 made that unnecessary -- renderHead() is exactly the
+        // first half, and every script it needs is now declared into it rather than flushed
+        // at the end of the body. Called after $output is built, so the assets that content
+        // declared are included.
+        return $this->getService(TemplateEngine::class)->renderHead()
+            . "<body>\n" . $output . "\n</body>\n</html>";
     }
 
     /**
@@ -107,7 +108,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
     {
         $output = '';
         // si la page est une fiche bazar, alors on affiche la fiche plutot que de formater en wiki
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
         $tab_valeurs = ($this->getService(PageContext::class)->getPage() ?? [])['body'];
         if (YW_CHARSET != 'UTF-8') {
             $tab_valeurs = array_map(function ($value) {
@@ -138,7 +139,7 @@ class IframeHandler extends YesWikiHandler implements RegisteredHandler
             $tag = $this->getService(PageContext::class)->getTag();
             $isUserFavorite = $this->favoritesManager->isUserFavorite($currentuser, $tag);
             // TODO use twig (with other part of this handler also)
-            $this->assetsManager->AddJavascriptFile('javascripts/favorites.js');
+            $this->assetRegistry->addJsFile('javascripts/favorites.js');
             $extraClass = $isUserFavorite ? ' user-favorite' : '';
             $iconClass = $isUserFavorite ? 'fas' : 'far';
             $title = ($isUserFavorite) ? _t('FAVORITES_REMOVE') : _t('FAVORITES_ADD');

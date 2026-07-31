@@ -170,7 +170,8 @@ class Aceditor {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   document.querySelectorAll('.aceditor-container').forEach((container) => {
     const { name } = container.dataset
     window[`aceditor-${name}`] = new Aceditor(container)

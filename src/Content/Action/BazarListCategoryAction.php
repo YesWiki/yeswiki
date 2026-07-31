@@ -5,7 +5,7 @@ namespace YesWiki\Content\Action;
 use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\UrlFormatter;
 use YesWiki\Render\Service\TemplateEngine;
@@ -50,7 +50,7 @@ class BazarListCategoryAction extends YesWikiAction implements RegisteredAction
          */
         $entryManager = $this->getService(EntryManager::class);
 
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
 
         // initialisation de la fonction de tri , inspiré par http://php.net/manual/fr/function.usort.php
         if (!function_exists('compareFieldsByPosition')) {

@@ -4,7 +4,7 @@ namespace YesWiki\Content\Action;
 
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Render\Service\TemplateEngine;
@@ -84,7 +84,7 @@ class UnsubscribeAction extends YesWikiAction implements RegisteredAction
 
             echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $templateVars);
 
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/contact.js');
         }
     }
 }

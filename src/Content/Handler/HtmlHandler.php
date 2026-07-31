@@ -7,7 +7,7 @@ use YesWiki\Content\Service\EntryManager;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Render\Service\MarkdownFormatterService;
 
@@ -47,7 +47,7 @@ class HtmlHandler extends YesWikiHandler implements RegisteredHandler
         $entryManager = $this->getService(EntryManager::class);
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
             $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
             // the rendered entry replaces the whole body, prose included (ticket 09)
             $this->getService(PageContext::class)->setPageField('body', [PageBody::CONTENT => '""' . renderEntryView(0, $entry) . '""']);

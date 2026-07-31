@@ -13,7 +13,8 @@ function isVisible(el) {
   return !!el && el.offsetParent !== null
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   gSavedHash = decodeURIComponent(document.location.hash.substring(1))
 
   // accordeon pour bazarliste
@@ -918,7 +919,8 @@ export function removeCSVCrochet(str) {
 }
 
 // range input
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   const rangeInputs = document.querySelectorAll('.range-wrap input[type="range"]')
   function handleInputChange(e) {
     const { target } = e

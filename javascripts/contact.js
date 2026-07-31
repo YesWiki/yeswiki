@@ -4,8 +4,11 @@
 // pointed at the old tools/contact/handlers/page/mail.php page-handler; the response
 // is a {type, message} JSON object rendered as a yw-alert (see templates/alert-message.twig),
 // not raw rendered HTML.
-document.addEventListener('DOMContentLoaded', () => {
-  document.body.addEventListener('click', (e) => {
+// ticket 14: ywInitEach on <body> rather than a bare DOMContentLoaded. The listener is
+// delegated, so it must be attached exactly once for the document -- marking body is what
+// guarantees that when this file is loaded again by a later fragment.
+ywInitEach('body', (body) => {
+  body.addEventListener('click', (e) => {
     const submitBtn = e.target.closest('.mail-submit')
     if (!submitBtn) return
 

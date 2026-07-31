@@ -72,4 +72,26 @@ class SqliteDialect implements SqlDialect
                "($haystack LIKE '%,' || $needle) OR " .
                "($haystack = $needle))";
     }
+
+    public function dumpPreamble(): array
+    {
+        // no session SET statements: SQLite rejects them outright, which is one of the
+        // reasons the MySQL-shaped dump could never be replayed here
+        return ['BEGIN TRANSACTION'];
+    }
+
+    public function dumpEpilogue(): array
+    {
+        return ['COMMIT'];
+    }
+
+    public function foreignKeyChecks(bool $enabled): ?string
+    {
+        return 'PRAGMA foreign_keys = ' . ($enabled ? 'ON' : 'OFF');
+    }
+
+    public function supportsDump(): bool
+    {
+        return true;
+    }
 }

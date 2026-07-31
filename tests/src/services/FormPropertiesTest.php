@@ -70,6 +70,7 @@ class FormPropertiesTest extends YesWikiTestCase
 
             // submission artifacts are stripped from the stored body
             $stored = $entryManager->getOne($entry['tag']);
+            $this->assertIsArray($stored, 'the entry just created must be readable back');
             $this->assertArrayNotHasKey('antispam', $stored);
             $this->assertSame(self::FORM_ID, $stored['form_id']);
             $this->assertArrayNotHasKey('id_fiche', $stored);

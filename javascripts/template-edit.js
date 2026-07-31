@@ -1,6 +1,7 @@
 // template-edit.js — per-page look options in the edit handler (ticket 16:
 // vanilla JS, fetch instead of $.post)
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   const value = (selector) => {
     const el = document.querySelector(selector)
     return el ? el.value : undefined

@@ -10,6 +10,7 @@ use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredAction;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PerformableArguments;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -207,51 +208,61 @@ class NewtextsearchAction extends YesWikiAction implements RegisteredAction
 
             // exécution de la requete
             if ($resultat = $dbService->loadAll($requestfull)) {
-                if ($GLOBALS['js']) {
-                    $js = $GLOBALS['js'];
-                } else {
-                    $js = '';
-                }
-                // affichage des resultats
+                // Rendered inside a capture scope whose result is deliberately thrown away.
+                // Result entries are rendered through EntryController::view(), so each one
+                // declares its fields' libraries -- leaflet for a map field, vditor for a long
+                // text, and so on. A search-results page has no use for any of them: it shows
+                // extracts, not working inputs. Before ticket 14 this was a save/restore pair
+                // around $GLOBALS['js'] whose intent nothing recorded.
+                $this->getService(AssetRegistry::class)->capture(function () use (
+                    $resultat,
+                    $separator,
+                    $phrase,
+                    $needles,
+                    $maxDisplayedPages,
+                    $entryManager,
+                    $entryController
+                ): void {
+                    // affichage des resultats
 
-                // affichage des résultats en liste
-                if (empty($separator)) {
-                    echo $this->getService(MarkdownFormatterService::class)->format('---- --- **' . _t('SEARCH_RESULTS') . ' [""' . $phrase . '""] :---**');
-                    echo '<ol>';
-                    $counter = 0;
-                    foreach ($resultat as $i => $page) {
-                        if ($this->getService(AclService::class)->hasAccess('read', $page['tag'])) {
-                            $lien = $this->getService(LinkRenderer::class)->linkToPage($page['tag']);
-                            echo '<li><h4 style="margin-bottom:0.2rem;">', $lien, '</h4>';
-                            $extract = '';
-                            if ($counter < $maxDisplayedPages) {
-                                if ($entryManager->isEntry($page['tag'])) {
-                                    $renderedEntry = $entryController->view($page['tag'], '', false); // without footer
-                                    $extract = displayNewSearchResult($renderedEntry, $phrase, $needles);
+                    // affichage des résultats en liste
+                    if (empty($separator)) {
+                        echo $this->getService(MarkdownFormatterService::class)->format('---- --- **' . _t('SEARCH_RESULTS') . ' [""' . $phrase . '""] :---**');
+                        echo '<ol>';
+                        $counter = 0;
+                        foreach ($resultat as $i => $page) {
+                            if ($this->getService(AclService::class)->hasAccess('read', $page['tag'])) {
+                                $lien = $this->getService(LinkRenderer::class)->linkToPage($page['tag']);
+                                echo '<li><h4 style="margin-bottom:0.2rem;">', $lien, '</h4>';
+                                $extract = '';
+                                if ($counter < $maxDisplayedPages) {
+                                    if ($entryManager->isEntry($page['tag'])) {
+                                        $renderedEntry = $entryController->view($page['tag'], '', false); // without footer
+                                        $extract = displayNewSearchResult($renderedEntry, $phrase, $needles);
+                                    }
+                                    if (empty($extract)) {
+                                        // rows come straight from the query above, so the body is still encoded here
+                                        $extract = displayNewSearchResult($this->getService(MarkdownFormatterService::class)->format(PageBody::content(PageBody::decode($page['body']))), $phrase, $needles);
+                                    }
+                                    $counter++;
                                 }
-                                if (empty($extract)) {
-                                    // rows come straight from the query above, so the body is still encoded here
-                                    $extract = displayNewSearchResult($this->getService(MarkdownFormatterService::class)->format(PageBody::content(PageBody::decode($page['body']))), $phrase, $needles);
-                                }
-                                $counter++;
+                                echo $extract . "</li>\n";
                             }
-                            echo $extract . "</li>\n";
                         }
-                    }
-                    echo '</ol>';
+                        echo '</ol>';
 
-                // affichage des résultats en ligne
-                } else {
-                    $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
-                    echo '<p>' . _t('SEARCH_RESULT_OF') . ' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
-                    foreach ($resultat as $i => $line) {
-                        if ($this->getService(AclService::class)->hasAccess('read', $line['tag'])) {
-                            echo (($i > 0) ? $separator : '') . $this->getService(LinkRenderer::class)->linkToPage($line['tag']);
+                    // affichage des résultats en ligne
+                    } else {
+                        $separator = htmlspecialchars($separator, ENT_COMPAT, YW_CHARSET);
+                        echo '<p>' . _t('SEARCH_RESULT_OF') . ' "', htmlspecialchars($phrase, ENT_COMPAT, YW_CHARSET), '"&nbsp;: ';
+                        foreach ($resultat as $i => $line) {
+                            if ($this->getService(AclService::class)->hasAccess('read', $line['tag'])) {
+                                echo (($i > 0) ? $separator : '') . $this->getService(LinkRenderer::class)->linkToPage($line['tag']);
+                            }
                         }
+                        echo '</p>', "\n";
                     }
-                    echo '</p>', "\n";
-                }
-                $GLOBALS['js'] = $js;
+                });
             } else {
                 echo $this->getService(MarkdownFormatterService::class)->format('---- --- **' . _t('NO_SEARCH_RESULT') . '.**');
             }

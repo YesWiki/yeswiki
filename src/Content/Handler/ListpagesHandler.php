@@ -5,7 +5,7 @@ namespace YesWiki\Content\Handler;
 use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiHandler;
 use YesWiki\Kernel\Performable\RegisteredHandler;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\RuntimeConfig;
@@ -62,7 +62,7 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         $output = '';
 
         // creation de la liste des mots cles a filtrer
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/tag.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/tag.js');
         $tab_selected_tags = explode(',', $tags);
         $selectiontags = " AND value IN ('" . implode("','", $tab_selected_tags) . "')";
 
@@ -130,8 +130,8 @@ class ListpagesHandler extends YesWikiHandler implements RegisteredHandler
         $output .= $this->getService(MarkdownFormatterService::class)->format('{{rss tags="' . $tags . '" class="pull-right"}}') . "\n";
         $output .= '</div>' . "\n" . $text;
 
-        echo $this->getService(TemplateEngine::class)->header();
-        echo "<div class=\"page\">\n$output\n$outputselecttag\n<hr class=\"hr_clear\" />\n</div>\n";
-        echo $this->getService(TemplateEngine::class)->footer();
+        echo $this->getService(TemplateEngine::class)->renderPage(
+            "<div class=\"page\">\n$output\n$outputselecttag\n<hr class=\"hr_clear\" />\n</div>\n"
+        );
     }
 }

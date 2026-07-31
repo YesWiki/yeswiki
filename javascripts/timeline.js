@@ -2,7 +2,8 @@
 // (ticket 16: vanilla rewrite of the jQuery/jQuery-Easing/Modernizr version; the
 // eased page scroll is now the browser's native smooth scrolling)
 (function() {
-  document.addEventListener('DOMContentLoaded', () => {
+  // ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+  ywInitEach('#ss-container', () => {
     const container = document.getElementById('ss-container')
     if (!container) return
 

@@ -95,171 +95,168 @@ function setFormMessage(state, text) {
   if (help) help.innerHTML = text
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll(
-    '.duplication-wiki-form, .duplication-login-form, #form-duplication'
-  ).forEach((form) => {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault()
-      e.stopPropagation()
-    })
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('.duplication-wiki-form, .duplication-login-form, #form-duplication', (form) => {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault()
+    e.stopPropagation()
   })
+})
 
-  const urlWiki = document.getElementById('url-wiki')
-  if (urlWiki) {
-    urlWiki.addEventListener('change', () => {
-      setHidden('.login-fields, .duplication-fields', true)
-      const loginMessage = document.getElementById('login-message')
-      if (loginMessage) loginMessage.innerHTML = ''
-    })
-  }
-
-  document.querySelectorAll('.btn-distant-login').forEach((button) => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault()
-      const username = document.getElementById('username')
-      const password = document.getElementById('password')
-      fetch(`${shortUrl}/?api/login`, {
-        method: 'POST',
-        body: new URLSearchParams({
-          username: username ? username.value : '',
-          password: password ? password.value : ''
-        })
-      })
-        .then((response) => response.json()
-          .then((data) => (response.ok
-            ? data
-            : Promise.reject(Object.assign(new Error(), { status: response.status, data })))))
-        .then(handleLoginResponse)
-        .catch((error) => {
-          if (error.data && error.data.error) {
-            toastMessage(error.data.error, 3000, 'alert alert-danger')
-          }
-          if (error.status === 401) {
-            const loginMessage = document.getElementById('login-message')
-            if (loginMessage) {
-              loginMessage.replaceChildren()
-              const notConnected = document.createElement('div')
-              notConnected.className = 'text-danger'
-              notConnected.textContent = _t('NOT_CONNECTED')
-              loginMessage.appendChild(notConnected)
-            }
-            setHidden('.login-fields', false)
-          }
-        })
-    })
+const urlWiki = document.getElementById('url-wiki')
+if (urlWiki) {
+  urlWiki.addEventListener('change', () => {
+    setHidden('.login-fields, .duplication-fields', true)
+    const loginMessage = document.getElementById('login-message')
+    if (loginMessage) loginMessage.innerHTML = ''
   })
+}
 
-  document.querySelectorAll('[name="duplicate-action"]').forEach((button) => {
-    button.addEventListener('click', (e) => {
-      e.preventDefault()
-      const btnAction = e.currentTarget.value
-      const newTag = document.getElementById('newTag')
-      const form = document.getElementById('form-duplication')
-      fetch(`${shortUrl}/?api/pages/${newTag ? newTag.value : ''}/duplicate`, {
-        method: 'POST',
-        headers: { accept: 'application/json' },
-        body: new URLSearchParams(new FormData(form))
+document.querySelectorAll('.btn-distant-login').forEach((button) => {
+  button.addEventListener('click', (e) => {
+    e.preventDefault()
+    const username = document.getElementById('username')
+    const password = document.getElementById('password')
+    fetch(`${shortUrl}/?api/login`, {
+      method: 'POST',
+      body: new URLSearchParams({
+        username: username ? username.value : '',
+        password: password ? password.value : ''
       })
-        .then((response) => (response.ok
-          ? response.json()
-          : Promise.reject(response.status)))
-        .then((d) => {
-          if (btnAction === 'open') {
-            document.location = `${shortUrl}/?${d.newTag}`
-          } else if (btnAction === 'edit') {
-            document.location = `${shortUrl}/?${d.newTag}/edit`
-          } else {
-            const url = document.location.href.replace(/\/duplicate.*/, '')
-            document.location = url
+    })
+      .then((response) => response.json()
+        .then((data) => (response.ok
+          ? data
+          : Promise.reject(Object.assign(new Error(), { status: response.status, data })))))
+      .then(handleLoginResponse)
+      .catch((error) => {
+        if (error.data && error.data.error) {
+          toastMessage(error.data.error, 3000, 'alert alert-danger')
+        }
+        if (error.status === 401) {
+          const loginMessage = document.getElementById('login-message')
+          if (loginMessage) {
+            loginMessage.replaceChildren()
+            const notConnected = document.createElement('div')
+            notConnected.className = 'text-danger'
+            notConnected.textContent = _t('NOT_CONNECTED')
+            loginMessage.appendChild(notConnected)
           }
-        })
-        .catch((status) => {
+          setHidden('.login-fields', false)
+        }
+      })
+  })
+})
+
+document.querySelectorAll('[name="duplicate-action"]').forEach((button) => {
+  button.addEventListener('click', (e) => {
+    e.preventDefault()
+    const btnAction = e.currentTarget.value
+    const newTag = document.getElementById('newTag')
+    const form = document.getElementById('form-duplication')
+    fetch(`${shortUrl}/?api/pages/${newTag ? newTag.value : ''}/duplicate`, {
+      method: 'POST',
+      headers: { accept: 'application/json' },
+      body: new URLSearchParams(new FormData(form))
+    })
+      .then((response) => (response.ok
+        ? response.json()
+        : Promise.reject(response.status)))
+      .then((d) => {
+        if (btnAction === 'open') {
+          document.location = `${shortUrl}/?${d.newTag}`
+        } else if (btnAction === 'edit') {
+          document.location = `${shortUrl}/?${d.newTag}/edit`
+        } else {
+          const url = document.location.href.replace(/\/duplicate.*/, '')
+          document.location = url
+        }
+      })
+      .catch((status) => {
+        toastMessage(
+          `${_t('ERROR')} ${status}`,
+          3000,
+          'alert alert-danger'
+        )
+      })
+  })
+})
+
+document.querySelectorAll('.btn-verify-tag').forEach((button) => {
+  button.addEventListener('click', () => {
+    const newTag = document.getElementById('newTag')
+    checkPageExistence(`${shortUrl}/?api/pages/${newTag ? newTag.value : ''}`)
+  })
+})
+
+document.querySelectorAll('.btn-verify-wiki').forEach((button) => {
+  button.addEventListener('click', () => {
+    const urlInput = document.querySelector('.duplication-wiki-form #url-wiki')
+    let url = urlInput ? urlInput.value : ''
+
+    if (!isValidUrl(url)) {
+      toastMessage(_t('NOT_VALID_URL', { url }), 3000, 'alert alert-danger')
+      return
+    }
+    const taburl = url.search('wakka.php') > -1 ? url.split('wakka.php') : url.split('?')
+    shortUrl = taburl[0].replace(/\/+$/g, '')
+    const baseUrlHolder = document.getElementById('base-url')
+    if (baseUrlHolder) baseUrlHolder.textContent = `${shortUrl}/?`
+    url = `${shortUrl}/?api/auth/me`
+    fetch(url)
+      .then((response) => (response.ok
+        ? response.json()
+        : Promise.reject(response.status)))
+      .then((data) => {
+        handleLoginResponse(data)
+
+        // if case of entry, we need to check if form id is available and compatible
+        // or propose another id
+        const formIdInput = document.getElementById('form-id')
+        const formId = formIdInput ? formIdInput.value : undefined
+        if (typeof formId !== 'undefined') {
+          fetch(`${shortUrl}/?api/forms/${formId}`)
+            .then((response) => (response.ok
+              ? response.json()
+              : Promise.reject(response.status)))
+            .then((form) => {
+              const requiredFields = form.prepared.filter(
+                (field) => field.required === true
+              )
+              // we check if the found formId is compatible
+              if (
+                arrayIncludesAllRequiredFields(
+                  window.sourceForm.prepared,
+                  requiredFields
+                )
+              ) {
+                setFormMessage('success', _t('FORM_ID_IS_COMPATIBLE', { id: formId }))
+              } else {
+                setFormMessage('error', _t('FORM_ID_NOT_AVAILABLE', { id: formId }))
+              }
+            })
+            .catch((status) => {
+              if (status === 404) {
+                // the formId is available
+                setFormMessage('success', _t('FORM_ID_AVAILABLE', { id: formId }))
+              }
+            })
+        }
+      })
+      .catch((status) => {
+        if (status === 401) {
+          const loginMessage = document.getElementById('login-message')
+          if (loginMessage) {
+            loginMessage.innerHTML = `<div class="text-danger">${_t('NOT_CONNECTED')}</div>`
+          }
+          setHidden('.login-fields', false)
+        } else {
           toastMessage(
-            `${_t('ERROR')} ${status}`,
+            _t('NOT_WIKI_OR_OLD_WIKI', { url }),
             3000,
             'alert alert-danger'
           )
-        })
-    })
-  })
-
-  document.querySelectorAll('.btn-verify-tag').forEach((button) => {
-    button.addEventListener('click', () => {
-      const newTag = document.getElementById('newTag')
-      checkPageExistence(`${shortUrl}/?api/pages/${newTag ? newTag.value : ''}`)
-    })
-  })
-
-  document.querySelectorAll('.btn-verify-wiki').forEach((button) => {
-    button.addEventListener('click', () => {
-      const urlInput = document.querySelector('.duplication-wiki-form #url-wiki')
-      let url = urlInput ? urlInput.value : ''
-
-      if (!isValidUrl(url)) {
-        toastMessage(_t('NOT_VALID_URL', { url }), 3000, 'alert alert-danger')
-        return
-      }
-      const taburl = url.search('wakka.php') > -1 ? url.split('wakka.php') : url.split('?')
-      shortUrl = taburl[0].replace(/\/+$/g, '')
-      const baseUrlHolder = document.getElementById('base-url')
-      if (baseUrlHolder) baseUrlHolder.textContent = `${shortUrl}/?`
-      url = `${shortUrl}/?api/auth/me`
-      fetch(url)
-        .then((response) => (response.ok
-          ? response.json()
-          : Promise.reject(response.status)))
-        .then((data) => {
-          handleLoginResponse(data)
-
-          // if case of entry, we need to check if form id is available and compatible
-          // or propose another id
-          const formIdInput = document.getElementById('form-id')
-          const formId = formIdInput ? formIdInput.value : undefined
-          if (typeof formId !== 'undefined') {
-            fetch(`${shortUrl}/?api/forms/${formId}`)
-              .then((response) => (response.ok
-                ? response.json()
-                : Promise.reject(response.status)))
-              .then((form) => {
-                const requiredFields = form.prepared.filter(
-                  (field) => field.required === true
-                )
-                // we check if the found formId is compatible
-                if (
-                  arrayIncludesAllRequiredFields(
-                    window.sourceForm.prepared,
-                    requiredFields
-                  )
-                ) {
-                  setFormMessage('success', _t('FORM_ID_IS_COMPATIBLE', { id: formId }))
-                } else {
-                  setFormMessage('error', _t('FORM_ID_NOT_AVAILABLE', { id: formId }))
-                }
-              })
-              .catch((status) => {
-                if (status === 404) {
-                  // the formId is available
-                  setFormMessage('success', _t('FORM_ID_AVAILABLE', { id: formId }))
-                }
-              })
-          }
-        })
-        .catch((status) => {
-          if (status === 401) {
-            const loginMessage = document.getElementById('login-message')
-            if (loginMessage) {
-              loginMessage.innerHTML = `<div class="text-danger">${_t('NOT_CONNECTED')}</div>`
-            }
-            setHidden('.login-fields', false)
-          } else {
-            toastMessage(
-              _t('NOT_WIKI_OR_OLD_WIKI', { url }),
-              3000,
-              'alert alert-danger'
-            )
-          }
-        })
-    })
+        }
+      })
   })
 })

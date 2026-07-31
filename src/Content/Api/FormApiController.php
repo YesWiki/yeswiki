@@ -3,6 +3,7 @@
 namespace YesWiki\Content\Api;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use YesWiki\Content\Field\BazarField;
@@ -10,6 +11,7 @@ use YesWiki\Content\Service\BazarListService;
 use YesWiki\Content\Service\FormManager;
 use YesWiki\Core\ApiResponse;
 use YesWiki\Core\YesWikiController;
+use YesWiki\Kernel\Service\AssetRegistry;
 
 class FormApiController extends YesWikiController
 {
@@ -39,15 +41,16 @@ class FormApiController extends YesWikiController
      * (FormManager::prepareData + BazarField::renderInputIfPermitted), so a card shows
      * the real Twig markup of the input instead of a JS look-alike.
      *
-     * Every posted item yields exactly one `previews` entry -- an empty string when the
-     * field cannot be built or its rendering throws -- so the designer maps the answer
-     * positionally back onto its cards. Fields are prepared one at a time on purpose:
-     * prepareData() silently drops typeless entries, which would shift every index after
-     * them.
+     * Answers with **markup**, not JSON: one out-of-band swap per field, addressed by the
+     * designer's own field id, plus one out-of-band swap carrying whatever assets the input
+     * templates declared while rendering -- leaflet for a map, vditor for a long text. Before
+     * ticket 14 the stylesheets were recovered by diffing `strlen($GLOBALS['css'])` across
+     * the render and the scripts were simply lost, which is why a map preview arrived as
+     * markup with no leaflet behind it and never became a map.
      *
-     * `styles` carries the stylesheet links the input templates registered while
-     * rendering (date.css, leaflet.css, ...); the designer page has no other way to know
-     * about them, and the previews would show up unstyled without them.
+     * Addressing by id rather than by position also removes the fragility the positional
+     * answer had: prepareData() silently drops typeless entries, so one unbuildable field
+     * used to shift every card after it.
      *
      * Declared here rather than on FormController because routed controllers are
      * instantiated by YesWikiControllerResolver with `new $class()`: only a controller
@@ -57,27 +60,38 @@ class FormApiController extends YesWikiController
     public function previewFormTemplate(Request $request)
     {
         $template = json_decode((string)$request->request->get('template', ''), true);
-        if (!is_array($template)) {
+        $ids = json_decode((string)$request->request->get('ids', ''), true);
+        if (!is_array($template) || !is_array($ids) || count($ids) !== count($template)) {
             return new ApiResponse(['error' => _t('FORM_BUILDER_INVALID_JSON')], 400);
         }
 
-        $cssLength = strlen($GLOBALS['css'] ?? '');
-        $previews = [];
-        // a field rendering may echo instead of returning (old-style extension fields):
-        // keep any stray output out of the JSON body
-        ob_start();
-        try {
-            foreach ($template as $fieldObject) {
-                $previews[] = $this->renderFieldPreview($fieldObject);
-            }
-        } finally {
-            ob_end_clean();
-        }
+        $registry = $this->getService(AssetRegistry::class);
+        $html = '';
 
-        return new ApiResponse([
-            'previews' => $previews,
-            'styles' => substr($GLOBALS['css'] ?? '', $cssLength),
-        ]);
+        // The whole batch renders in one capture scope: the assets come back as a value
+        // instead of leaking into a page that, for an API response, does not exist. The set
+        // is self-contained by design -- it re-declares leaflet even if the designer page
+        // already has it, and the browser-side registry is what declines to load it twice.
+        $assets = $registry->capture(function () use ($template, $ids, &$html): void {
+            // a field rendering may echo instead of returning (old-style extension fields):
+            // keep any stray output out of the response body
+            ob_start();
+            try {
+                foreach (array_values($template) as $index => $fieldObject) {
+                    $id = $ids[$index] ?? null;
+                    if (!is_string($id) || !preg_match('/^[A-Za-z0-9_-]+$/', $id)) {
+                        continue;
+                    }
+                    $html .= '<div hx-swap-oob="innerHTML:#yw-fb-preview-' . $id . '">'
+                        . $this->renderFieldPreview($fieldObject)
+                        . '</div>' . "\n";
+                }
+            } finally {
+                ob_end_clean();
+            }
+        });
+
+        return new Response($html . $assets->toOutOfBandHtml(), 200, ['Content-Type' => 'text/html; charset=UTF-8']);
     }
 
     /** One template field object => its entry-form input HTML, or '' if unrenderable. */

@@ -14,7 +14,7 @@ use YesWiki\Core\YesWikiHandler;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Identity\Service\AuthenticationService;
 use YesWiki\Kernel\Performable\RegisteredHandler;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Redirector;
@@ -81,12 +81,12 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                     $this->getService(Redirector::class)->terminate((string)json_encode($entry));
                 }
             } else {
-                $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
+                $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
             }
         }
 
         // Verification de securite
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/tag.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/tag.js');
 
         // Page translation (formerly tools/lang's __show before-callback): keep only the
         // {{lang="xx"}} section matching the visitor's language, if the page uses markers
@@ -119,7 +119,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
         $entryManager = $this->getService(EntryManager::class);
 
         if ($entryManager->isEntry($this->getService(PageContext::class)->getTag())) {
-            $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
+            $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
 
             $entry = $entryManager->getOne($this->getService(PageContext::class)->getTag());
 
@@ -162,8 +162,7 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
                 $output .= $this->getService(MarkdownFormatterService::class)->format('{{include page="PageLogin"}}');
                 $output .= '</div><!-- end .page-widget -->' . "\n";
                 $output .= '</div><!-- end .container -->' . "\n";
-                $output = $this->getService(TemplateEngine::class)->header() . $output;
-                $output .= $this->getService(TemplateEngine::class)->footer();
+                $output = $this->getService(TemplateEngine::class)->renderPage($output);
             } else {
                 // sinon on affiche le formulaire d'identification minimal
                 $output = str_replace(
@@ -291,8 +290,6 @@ class ShowHandler extends YesWikiHandler implements RegisteredHandler
 
         // get the content buffer and display the page
         $content = ob_get_clean();
-        echo $this->getService(TemplateEngine::class)->header();
-        echo $content;
-        echo $this->getService(TemplateEngine::class)->footer();
+        echo $this->getService(TemplateEngine::class)->renderPage((string)$content);
     }
 }

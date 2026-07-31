@@ -9,7 +9,7 @@ use YesWiki\Content\Controller\ListController;
 use YesWiki\Content\Service\BazarListService;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\UrlFormatter;
 
 class BazarAction extends YesWikiAction implements RegisteredAction
@@ -140,7 +140,7 @@ class BazarAction extends YesWikiAction implements RegisteredAction
         $entryController = $this->getService(EntryController::class);
 
         // TODO put in all bazar templates
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/bazar.js', true, true);
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/bazar.js', true, true);
 
         $view = $this->arguments[self::URL_VIEW_PARAM];
         $action = $this->arguments[self::URL_ACTION_PARAM];
@@ -159,8 +159,6 @@ class BazarAction extends YesWikiAction implements RegisteredAction
 
     /**
      * The body of the action: what the requested view returns, without the menu.
-     *
-     * @return string
      */
     private function runView(mixed $view, mixed $action, Request $req, ListController $listController, FormController $formController, EntryController $entryController): string
     {

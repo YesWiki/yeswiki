@@ -6,7 +6,7 @@ use YesWiki\Content\Entity\PageBody;
 use YesWiki\Core\YesWikiAction;
 use YesWiki\Identity\Service\AclService;
 use YesWiki\Kernel\Performable\RegisteredAction;
-use YesWiki\Kernel\Service\AssetsManager;
+use YesWiki\Kernel\Service\AssetRegistry;
 use YesWiki\Kernel\Service\DbService;
 use YesWiki\Kernel\Service\InclusionStack;
 use YesWiki\Kernel\Service\PerformableArguments;
@@ -130,6 +130,6 @@ class FiltertagsAction extends YesWikiAction implements RegisteredAction
         ]);
 
         // ajout du javascript gerant le filtrage
-        $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/filtertags.js');
+        $this->getService(AssetRegistry::class)->addJsFile('javascripts/filtertags.js');
     }
 }

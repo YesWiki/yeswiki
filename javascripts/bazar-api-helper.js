@@ -98,7 +98,8 @@ async function modifyEntry(data) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   function validateDataTargets(el, options = {}) {
     const { execute = false, onValid } = options
     const targetSel = el.dataset.targetId

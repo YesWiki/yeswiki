@@ -80,7 +80,7 @@ class DocumentationApiController extends YesWikiController
             }
         }
 
-        $output = $this->getService(TemplateEngine::class)->header() . '<div class="api-container">' . $output . '</div>' . $this->getService(TemplateEngine::class)->footer();
+        $output = $this->getService(TemplateEngine::class)->renderPage('<div class="api-container">' . $output . '</div>');
 
         return new Response($output);
     }

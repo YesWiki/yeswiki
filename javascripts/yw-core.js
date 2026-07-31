@@ -215,7 +215,8 @@
     }
   })
 
-  document.addEventListener('DOMContentLoaded', () => {
+  // ticket 14: one initialiser convention (the hash is read once, when the page arrives)
+  ywInitEach('body', () => {
     if (window.location.hash) {
       const link = tabLinkFor(window.location.hash)
       if (link) activateTab(link)

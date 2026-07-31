@@ -10,6 +10,7 @@ use YesWiki\Core\YesWikiController;
 use YesWiki\Kernel\Exception\ExitException;
 use YesWiki\Kernel\Service\PageContext;
 use YesWiki\Kernel\Service\Performer;
+use YesWiki\Render\Service\CoreAssets;
 
 /**
  * Adapter so ordinary wiki tag/method pages (Performer-dispatched actions/handlers/formatters -
@@ -27,6 +28,12 @@ class LegacyPageController extends YesWikiController
 
         $this->getService(PageContext::class)->assignPage($this->getService(PageManager::class)->getOne($tag, isset($_REQUEST['time']) ? $_REQUEST['time'] : ''));
         $this->getService(ReferrerService::class)->log();
+
+        // ticket 15: core, theme and custom/ assets are declared before the handler renders
+        // anything, so they lead the emitted set. The head is rendered last now, so a
+        // registration made from the layout -- or from here, after the handler -- would be
+        // too late to be ordered first.
+        $this->getService(CoreAssets::class)->register();
 
         ob_start();
         try {

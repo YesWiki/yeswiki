@@ -38,9 +38,6 @@ class ArchitectureTest extends TestCase
         'Kernel/Service/Mailer.php -> Identity\Service\AuthenticationService',
         'Kernel/Service/Mailer.php -> Identity\Service\UserManager',
         'Kernel/Service/Mailer.php -> Render\Service\TemplateEngine',
-        // the SQL-dump generator that stayed on DbService rather than moving to the archive
-        // feature with the rest of the backup code (ticket 05 CP3)
-        'Kernel/Service/DbService.php -> Admin\Service\ArchiveService',
         'Kernel/Service/MigrationService.php -> Content\Service\TripleStore',
         // Performer renders action output; ticket 06 replaces this dispatcher entirely.
         // Its MarkdownFormatterService edge is gone: ticket 06 removed the formatter object

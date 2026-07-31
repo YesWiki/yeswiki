@@ -1,8 +1,21 @@
-{# Squelette = page-level layout. the WIKINI_PAGE brace marker is plain text, not Twig:
-   ThemeManager splits the file there and renders each half at the right moment, so
-   footer actions (linkjavascript) run after the page body has registered its assets.
-   Wiki actions are reached through the `action()` helper, which takes the same
-   attribute string the historical `{{action attr="…"}}` squelette syntax used. #}
+{# Squelette = page-level layout.
+
+   Two named blocks, and the renderer renders them OUT OF ORDER: `body` first, then `head`
+   (ticket 15, ADR-0014). That is what lets <head> carry every asset the page turned out to
+   need -- by the time it renders, every action, field and included page has declared its own.
+   Before this, assets registered during the page body could only be flushed at </body>,
+   stylesheets included, so content was painted before its own styles arrived.
+
+   Consequences for a theme author:
+     - `{{ page_content|raw }}` is where the page goes. The old `{WIKINI_PAGE}` brace marker
+       was plain text the renderer split the file on; it no longer exists.
+     - `{{ declared_assets() }}` goes LAST in the head block. It emits everything declared, and
+       an action written after it in that block would register too late to be included.
+     - `{{linkstyle}}` and `{{linkjavascript}}` are gone. Nothing replaces them: assets are
+       declared by whatever needs them and emitted once, here.
+     - Actions may still be called anywhere in either block -- that freedom is why this is two
+       Twig blocks rather than a fixed set of pre-rendered slots. #}
+{% block head %}
 <!doctype html>
 <html lang="{{ action('configuration param="lang"') }}">
 <head>
@@ -17,10 +30,14 @@
   <title>{{ action('configuration param="wakka_name"') }} : {{ action('titrepage')|raw }}</title>
 
   {{ action('favicon')|raw }}
-  {{ action('linkstyle')|raw }}
   {{ action('linkrss')|raw }}
-</head>
 
+  {# every stylesheet and script the whole page declared -- keep this last #}
+  {{ declared_assets()|raw }}
+</head>
+{% endblock %}
+
+{% block body %}
 <body {{ action('parambody')|raw }}>
 
   <div id="yw-container">
@@ -53,7 +70,7 @@
 
     <div id="yw-main" role="main" {{ action('doubleclic')|raw }}>
       <div class="yw-main-content alone">
-        {WIKINI_PAGE}
+        {{ page_content|raw }}
       </div>
     </div>
 
@@ -66,6 +83,6 @@
     </footer><!-- /#yw-footer -->
   </div> <!-- /#yw-container -->
 
-  {{ action('linkjavascript')|raw }}
 </body>
 </html>
+{% endblock %}

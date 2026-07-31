@@ -289,7 +289,8 @@ html5QrCode
     console.error(err)
   })
 
-document.addEventListener('DOMContentLoaded', () => {
+// ticket 14: one initialiser convention -- see ywInit in yeswiki-base-no-defer.js
+ywInitEach('body', () => {
   const entity = JSON.parse(qrinfos.dataset.entity)
   if (entity && Object.keys(entity).length > 0) {
     firstpeople = entity

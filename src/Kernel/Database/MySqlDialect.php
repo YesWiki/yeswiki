@@ -60,4 +60,34 @@ class MySqlDialect implements SqlDialect
     {
         return ($not ? 'NOT ' : '') . "FIND_IN_SET($needle, $haystack)";
     }
+
+    public function dumpPreamble(): array
+    {
+        return [
+            'SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO"',
+            'SET AUTOCOMMIT = 0',
+            'START TRANSACTION',
+            '/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */',
+            '/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */',
+            '/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */',
+            '/*!40101 SET NAMES utf8mb4 */',
+            '/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */',
+            "/*!40103 SET TIME_ZONE='+00:00' */",
+        ];
+    }
+
+    public function dumpEpilogue(): array
+    {
+        return ['COMMIT'];
+    }
+
+    public function foreignKeyChecks(bool $enabled): ?string
+    {
+        return 'SET FOREIGN_KEY_CHECKS=' . ($enabled ? '1' : '0');
+    }
+
+    public function supportsDump(): bool
+    {
+        return true;
+    }
 }

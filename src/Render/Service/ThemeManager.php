@@ -54,8 +54,6 @@ class ThemeManager implements EventSubscriberInterface
     protected $params;
     protected $hibernationService;
     protected $squelette;
-    protected $templateFooter;
-    protected $templateHeader;
     protected $templates;
     protected $theme;
     protected $twig;
@@ -94,8 +92,6 @@ class ThemeManager implements EventSubscriberInterface
         $this->params = $params;
         $this->hibernationService = $hibernationService;
         $this->squelette = null;
-        $this->templateFooter = '';
-        $this->templateHeader = '';
         $this->templates = [];
         $this->theme = null;
         $this->twig = $twig;
@@ -347,14 +343,6 @@ class ThemeManager implements EventSubscriberInterface
         $this->fileContent = $fileContent;
         $this->fileLoaded = true;
 
-        // The squelette is a Twig template; `{WIKINI_PAGE}` is a plain-text marker where
-        // the page body goes. The two halves are stored as Twig source and rendered
-        // separately, so footer actions (linkjavascript) run after the page body has
-        // registered its assets.
-        $templateCut = explode('{WIKINI_PAGE}', $fileContent);
-        $this->templateHeader = $templateCut[0] ?? '';
-        $this->templateFooter = (count($templateCut) > 0) ? $templateCut[1] : '';
-
         return true;
     }
 
@@ -363,23 +351,56 @@ class ThemeManager implements EventSubscriberInterface
         return $this->errorMessage;
     }
 
-    public function renderHeader(): string
+    /**
+     * The whole page: the squelette rendered around $pageContent, with its `head` block
+     * rendered **last**.
+     *
+     * Ticket 15. The squelette used to be split on a plain-text `{WIKINI_PAGE}` marker and
+     * its two halves rendered either side of the page body, which is why `<head>` could only
+     * ever carry the assets registered *before* the page rendered -- i.e. almost none of them.
+     * Everything else was flushed at `</body>`, stylesheets included, so a bazar list was
+     * painted before its own stylesheet arrived.
+     *
+     * Rendering `body` first and `head` afterwards inverts that: by the time `<head>` is
+     * rendered, every action, every field and every included page has declared what it needs.
+     * The layout keeps calling whatever actions it likes -- that freedom is why this is two
+     * Twig blocks rather than a fixed set of pre-rendered slots.
+     */
+    public function renderPage(string $pageContent): string
     {
-        if ($this->fileLoaded || $this->loadTheme()) {
-            // flash messages land just before the page content
-            return $this->twig->renderFromString($this->templateHeader) . Flash::display();
+        if (!$this->fileLoaded && !$this->loadTheme()) {
+            return '';
         }
+        // no-op on any ordinary page view, where LegacyPageController already registered them
+        // before the handler ran. Here as a floor: a caller that forgot would otherwise render
+        // a page with no theme stylesheet at all, and assets in a suboptimal cascade order is
+        // a far smaller problem than that.
+        $this->container->get(CoreAssets::class)->register();
 
-        return '';
+        $template = $this->twig->createSquelette((string)$this->fileContent);
+
+        // flash messages land just before the page content, as they did when they were
+        // appended to the header half
+        $body = $template->renderBlock('body', ['page_content' => Flash::display() . $pageContent]);
+
+        return $template->renderBlock('head') . $body;
     }
 
-    public function renderFooter(): string
+    /**
+     * The document head alone, for surfaces that supply their own body -- the iframe handlers,
+     * which want the wiki's `<head>` without any of the theme's chrome.
+     *
+     * Call it *after* the content is built: like renderPage(), it emits the declared assets,
+     * and those are only complete once whatever needs them has rendered.
+     */
+    public function renderHead(): string
     {
-        if ($this->fileLoaded || $this->loadTheme()) {
-            return $this->twig->renderFromString($this->templateFooter);
+        if (!$this->fileLoaded && !$this->loadTheme()) {
+            return '';
         }
+        $this->container->get(CoreAssets::class)->register();
 
-        return '';
+        return $this->twig->createSquelette((string)$this->fileContent)->renderBlock('head');
     }
 
     public function getTemplates(): array

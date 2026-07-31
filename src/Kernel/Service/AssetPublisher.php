@@ -9,7 +9,7 @@ namespace YesWiki\Kernel\Service;
  * needs no symlinks or webserver aliases to the shared YesWiki sources.
  *
  * Two cooperating mechanisms:
- *  - AssetsManager emits versioned URLs (cache/assets/{version}/{original path}) for every
+ *  - AssetRegistry emits versioned URLs (cache/assets/{version}/{original path}) for every
  *    registered css/js file when running as a farm instance, eagerly copying the file on
  *    first emission (see publishedUrl()).
  *  - interceptAssetRequest() runs from index.php BEFORE the wiki boots (no DB, no session):
@@ -153,7 +153,7 @@ class AssetPublisher
 
     /**
      * Publish $relPath (eagerly copied if needed) and return its instance-relative URL path,
-     * or null when the file exists nowhere. Used by AssetsManager at emission time so first
+     * or null when the file exists nowhere. Used by AssetRegistry when it resolves a URL so first
      * page views don't pay one PHP fallback round-trip per registered asset.
      */
     public static function publishedUrl(string $relPath, string $version): ?string
