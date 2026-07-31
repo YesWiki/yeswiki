@@ -192,8 +192,15 @@ class AuthenticationService extends YesWikiController
             return '';
         }
 
-        // Else, if user is logged, store the user in a cache
-        if ($this->loggedUserCache === null || (is_array($this->loggedUserCache) && $this->loggedUserCache['name'] !== $_SESSION['user']['name'])) {
+        // Else, if user is logged, store the user in a cache.
+        //
+        // Re-read unless the cache already *is* this session's user. It used to re-read
+        // only when the cache was null or an array naming someone else -- so once the
+        // else-branch below had cached `''` (the session named an account that no longer
+        // exists, which is what deleting a logged-in account does), neither test held and
+        // the '' was returned for the rest of the request. A different user logging in
+        // afterwards stayed anonymous.
+        if (!is_array($this->loggedUserCache) || $this->loggedUserCache['name'] !== $_SESSION['user']['name']) {
             $user = $this->userManager->getOneByName($_SESSION['user']['name']);
             if (!empty($user)) {
                 $this->loggedUserCache = $user->getArrayCopy();
