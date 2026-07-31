@@ -528,7 +528,7 @@ class FormPropertiesService
         }
 
         // indicateur pour la gestion des droits associee a la fiche.
-        $GLOBALS['utilisateur_wikini'] = $wikiName;
+        $GLOBALS['created_user_name'] = $wikiName;
 
         return [
             self::USER_PROPERTY_NAME => $wikiName,

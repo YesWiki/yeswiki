@@ -239,7 +239,7 @@ class AuthenticationService extends YesWikiController
             && !$this->hasLoginExtensions()
             && !$this->container->get(AclService::class)->isAdmin($userName)
             && !$this->accountActivationService->isActivated($userName)
-            && (empty($GLOBALS['utilisateur_wikini']) || $GLOBALS['utilisateur_wikini'] != $userName)
+            && (empty($GLOBALS['created_user_name']) || $GLOBALS['created_user_name'] != $userName)
         ) {
             try {
                 $this->accountActivationService->sendActivationLink($userName);

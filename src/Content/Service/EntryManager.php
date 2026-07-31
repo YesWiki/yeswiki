@@ -371,13 +371,13 @@ class EntryManager
         $this->validate($data, self::VALIDATE_FLAG_TITLE | self::VALIDATE_FLAG_FORM_ID);
 
         // on change provisoirement d'utilisateur
-        if (isset($GLOBALS['utilisateur_wikini'])) {
+        if (isset($GLOBALS['created_user_name'])) {
             $olduser = $this->authenticationService->getLoggedUser();
             $this->authenticationService->logout();
 
             // On s'identifie de facon a attribuer la propriete de la fiche a
             // l'utilisateur qui vient d etre cree
-            $user = $this->userManager->getOneByName($GLOBALS['utilisateur_wikini']);
+            $user = $this->userManager->getOneByName($GLOBALS['created_user_name']);
             $this->authenticationService->login($user);
         }
 
@@ -428,7 +428,7 @@ class EntryManager
         }
 
         // on remet l'utilisateur initial s'il y en avait un
-        if (isset($GLOBALS['utilisateur_wikini']) && !empty($olduser)) {
+        if (isset($GLOBALS['created_user_name']) && !empty($olduser)) {
             $this->authenticationService->logout();
             $oldUserClass = $this->userManager->getOneByName($olduser['name']);
             if (!empty($oldUserClass)) {

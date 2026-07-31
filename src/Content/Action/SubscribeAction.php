@@ -47,8 +47,8 @@ class SubscribeAction extends YesWikiAction implements RegisteredAction
         // action permettant l'envoi par mail d'une demande d'inscription a une liste de discussion
 
         // recuperation des parametres
-        $listelements['mail'] = $this->getService(PerformableArguments::class)->get('mail');
-        if (empty($listelements['mail'])) {
+        $templateVars['mail'] = $this->getService(PerformableArguments::class)->get('mail');
+        if (empty($templateVars['mail'])) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_ABONNEMENT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         } else {
             // on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
@@ -57,7 +57,7 @@ class SubscribeAction extends YesWikiAction implements RegisteredAction
             } else {
                 $GLOBALS['nbactionmail'] = 1;
             }
-            $listelements['nbactionmail'] = $GLOBALS['nbactionmail'];
+            $templateVars['nbactionmail'] = $GLOBALS['nbactionmail'];
 
             // on choisit le template utilisé
             $template = $this->getService(PerformableArguments::class)->get('template');
@@ -66,23 +66,23 @@ class SubscribeAction extends YesWikiAction implements RegisteredAction
             }
 
             // on peut ajouter des classes à la classe par défaut
-            $listelements['class'] = ($this->getService(PerformableArguments::class)->get('class') ? 'form-abonnement ' . $this->getService(PerformableArguments::class)->get('class') : 'form-abonnement');
+            $templateVars['class'] = ($this->getService(PerformableArguments::class)->get('class') ? 'form-abonnement ' . $this->getService(PerformableArguments::class)->get('class') : 'form-abonnement');
 
-            $listelements['hiddeninputs'] = '';
+            $templateVars['hiddeninputs'] = '';
             // on indique quel type de liste est utilisé pour formatter les envois de mail de facon adaptee
             $mailinglist = $this->getService(PerformableArguments::class)->get('mailinglist');
             if (!empty($mailinglist) and ($mailinglist == 'ezmlm' or $mailinglist == 'sympa')) {
-                $listelements['hiddeninputs'] .= '<input type="hidden" name="mailinglist" value="' . $mailinglist . '">';
+                $templateVars['hiddeninputs'] .= '<input type="hidden" name="mailinglist" value="' . $mailinglist . '">';
             }
 
             // page context for the /api/contact/mail route (javascripts/contact.js)
-            $listelements['pageTag'] = $this->getService(PageContext::class)->getTag();
+            $templateVars['pageTag'] = $this->getService(PageContext::class)->getTag();
 
             // type de demande et placeholder
-            $listelements['demand'] = 'abonnement';
-            $listelements['placeholder'] = _t('CONTACT_SUBSCRIBE');
+            $templateVars['demand'] = 'abonnement';
+            $templateVars['placeholder'] = _t('CONTACT_SUBSCRIBE');
 
-            echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $listelements);
+            echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $templateVars);
 
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
         }

@@ -133,19 +133,19 @@ class BazarListCategoryAction extends YesWikiAction implements RegisteredAction
 
             $listvalues = listValues($list);
             $currentlabel = 'this is an impossible label';
-            $fichescat = [];
+            $categoryEntries = [];
             $output = '';
             $first = true;
             foreach ($entries['fiches'] as $entry) {
                 $entry['multipleid'] = htmlspecialchars(trim(str_replace('/', '', $entry[$id])) . $entry['tag']);
                 if ($currentlabel !== $entry[$id]) {
                     if (!$first) {
-                        if (is_array($fichescat) && count($fichescat) > 0) {
-                            $output .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $fichescat);
+                        if (is_array($categoryEntries) && count($categoryEntries) > 0) {
+                            $output .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $categoryEntries);
                         }
                         // it's not the first time in the loop so we must close previously opened div
                         $output .= '</div>' . "\n";
-                        $fichescat = [];
+                        $categoryEntries = [];
                     } else {
                         $first = false;
                     }
@@ -160,11 +160,11 @@ class BazarListCategoryAction extends YesWikiAction implements RegisteredAction
                 if (isset($multiplecheckbox[$entry['tag']])) {
                     $entry[$id] = $multiplecheckbox[$entry['tag']];
                 }
-                $fichescat['fiches'][] = $entry;
+                $categoryEntries['fiches'][] = $entry;
             }
             // last results
-            if (is_array($fichescat) && count($fichescat) > 0) {
-                $output .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $fichescat);
+            if (is_array($categoryEntries) && count($categoryEntries) > 0) {
+                $output .= $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $categoryEntries);
             }
             // it's not the first time in the loop so we must close previously opened div
             $output .= '</div>' . "\n";

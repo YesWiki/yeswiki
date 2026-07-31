@@ -69,11 +69,11 @@ class ListController extends YesWikiController
         $post = $this->getRequest()->request;
         if ($post->has('submit')) {
             $title = $post->get('title');
-            $listeId = $this->listManager->create($title, json_decode($post->get('nodes'), true));
+            $listId = $this->listManager->create($title, json_decode($post->get('nodes'), true));
 
             if ($this->shouldPostMessageOnSubmit()) {
                 return $this->render('@core/iframe_result.twig', [
-                    'data' => ['msg' => 'list_created', 'id' => $listeId, 'title' => $title],
+                    'data' => ['msg' => 'list_created', 'id' => $listId, 'title' => $title],
                 ]);
             }
 

@@ -47,8 +47,8 @@ class UnsubscribeAction extends YesWikiAction implements RegisteredAction
         // action permettant l'envoi par mail d'une demande de desinscription a une liste de discussion
 
         // recuperation des parametres
-        $listelements['mail'] = $this->getService(PerformableArguments::class)->get('mail');
-        if (empty($listelements['mail'])) {
+        $templateVars['mail'] = $this->getService(PerformableArguments::class)->get('mail');
+        if (empty($templateVars['mail'])) {
             echo '<div class="yw-alert yw-alert--danger"><strong>' . _t('CONTACT_ACTION_DESABONNEMENT') . ' :</strong>&nbsp;' . _t('CONTACT_MAIL_REQUIRED') . '</div>';
         } else {
             // on utilise une variable globale pour savoir de quel formulaire la demande est envoyee, s'il y en a plusieurs sur la meme page
@@ -57,7 +57,7 @@ class UnsubscribeAction extends YesWikiAction implements RegisteredAction
             } else {
                 $GLOBALS['nbactionmail'] = 1;
             }
-            $listelements['nbactionmail'] = $GLOBALS['nbactionmail'];
+            $templateVars['nbactionmail'] = $GLOBALS['nbactionmail'];
 
             // on choisit le template utilisé
             $template = $this->getService(PerformableArguments::class)->get('template');
@@ -65,24 +65,24 @@ class UnsubscribeAction extends YesWikiAction implements RegisteredAction
                 $template = 'subscribe-form.twig';
             }
 
-            $listelements['hiddeninputs'] = '';
+            $templateVars['hiddeninputs'] = '';
             // on indique quel type de liste est utilisé pour formatter les envois de mail de facon adaptee
             $mailinglist = $this->getService(PerformableArguments::class)->get('mailinglist');
             if (!empty($mailinglist) and ($mailinglist == 'ezmlm' or $mailinglist == 'sympa')) {
-                $listelements['hiddeninputs'] .= '<input type="hidden" name="mailinglist" value="' . $mailinglist . '">';
+                $templateVars['hiddeninputs'] .= '<input type="hidden" name="mailinglist" value="' . $mailinglist . '">';
             }
 
             // on peut ajouter des classes à la classe par défaut
-            $listelements['class'] = ($this->getService(PerformableArguments::class)->get('class') ? 'form-desabonnement ' . $this->getService(PerformableArguments::class)->get('class') : 'form-desabonnement');
+            $templateVars['class'] = ($this->getService(PerformableArguments::class)->get('class') ? 'form-desabonnement ' . $this->getService(PerformableArguments::class)->get('class') : 'form-desabonnement');
 
             // page context for the /api/contact/mail route (javascripts/contact.js)
-            $listelements['pageTag'] = $this->getService(PageContext::class)->getTag();
+            $templateVars['pageTag'] = $this->getService(PageContext::class)->getTag();
 
             // type de demande et placeholder
-            $listelements['demand'] = 'desabonnement';
-            $listelements['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
+            $templateVars['demand'] = 'desabonnement';
+            $templateVars['placeholder'] = _t('CONTACT_UNSUBSCRIBE');
 
-            echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $listelements);
+            echo $this->getService(TemplateEngine::class)->renderSafely("@core/$template", $templateVars);
 
             $this->getService(AssetsManager::class)->AddJavascriptFile('javascripts/contact.js');
         }

@@ -215,13 +215,13 @@ class CaptchaController extends YesWikiController
     public function renderCaptcha(string &$output)
     {
         if (!$this->getService(AclService::class)->isAdmin() && $this->params->get('use_captcha')) {
-            $champsCaptcha = $this->renderCaptchaField();
+            $captchaField = $this->renderCaptchaField();
             $matches = [];
             if (preg_match_all('/(\<div class="form-actions">.*<button type=\"submit\" name=\"submit\")/Uis', $output, $matches)) {
                 foreach ($matches[0] as $key => $match) {
                     $output = str_replace(
                         $match,
-                        $champsCaptcha . $matches[1][$key],
+                        $captchaField . $matches[1][$key],
                         $output
                     );
                 }
@@ -234,11 +234,11 @@ class CaptchaController extends YesWikiController
      */
     public function renderCaptchaField(): string
     {
-        $champsCaptcha = '';
+        $captchaField = '';
         if (!$this->getService(AclService::class)->isAdmin() && $this->params->get('use_captcha')) {
             // afficher les champs de formulaire et de l'image
             $hash = $this->generateHash();
-            $champsCaptcha = $this->render(
+            $captchaField = $this->render(
                 '@core/captcha-field.twig',
                 [
                     'baseUrl' => $this->getService(UrlFormatter::class)->getBaseUrl(),
@@ -248,7 +248,7 @@ class CaptchaController extends YesWikiController
             );
         }
 
-        return $champsCaptcha;
+        return $captchaField;
     }
 
     /**
