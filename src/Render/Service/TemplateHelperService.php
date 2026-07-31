@@ -363,13 +363,13 @@ class TemplateHelperService
 
         if ($entryManager->isEntry($page['tag'])) {
             $entry = $entryManager->getOne($page['tag']);
-            if (isset($entry['bf_titre'])) {
-                $title = $entry['bf_titre'];
-            }
+            // the computed title (ADR-0010), not the field some forms happen to call
+            // bf_titre -- which is what CONTEXT.md's Entry title entry already says
+            $title = (string)($entry['title'] ?? $entry['bf_titre'] ?? '');
         } else {
             // the markup lives under `content` in the decoded body (ticket 09)
             $content = PageBody::content($page['body']);
-            // on recupere les bf_titre ou les titres de niveau 1 et de niveau 2
+            // the first level-1 or level-2 heading names a page that has no stored title
             if (preg_match('/<h[12].*>\s*(.*)\s*<\/h[12]>/iUs', $content, $titles)) {
                 $title = $titles[1];
             } else {

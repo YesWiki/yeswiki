@@ -552,6 +552,9 @@ class EntryController extends YesWikiController
     private function getValuesForCustomTemplate($entry, $form, ?string $userNameForRendering = null)
     {
         $html = [];
+        // which field renders as the heading -- the one the form names its entries with,
+        // matching TextField::renderStatic() rather than assuming bf_titre (ticket 11)
+        $titleFieldName = $this->getService(FormPropertiesService::class)->titleFieldName($form);
         foreach ($form['prepared'] as $field) {
             if ($field instanceof BazarField) {
                 $id = $field->getPropertyName();
@@ -559,7 +562,7 @@ class EntryController extends YesWikiController
                     $html[$id] = $field->renderStaticIfPermitted($entry, $userNameForRendering);
                     // reset $matches before preg_match
                     $matches = [];
-                    if ($id == 'bf_titre') {
+                    if ($titleFieldName !== null && $field->getName() === $titleFieldName) {
                         preg_match('/<h1 class="BAZ_fiche_titre">\s*(.*)\s*<\/h1>.*$/is', $html[$id], $matches);
                     } elseif (!empty($html[$id])) {
                         preg_match('/<span class="BAZ_texte">\s*(.*)\s*<\/span>.*$/is', $html[$id], $matches);

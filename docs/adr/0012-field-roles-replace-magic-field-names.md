@@ -22,6 +22,14 @@ The designer **refuses** the same input, with a message naming the field and the
 
 The selects offer only fields of a compatible type, so the common mistake is unreachable rather than merely reported; and the empty option — "automatic, from the field type" — is the default and is never an error. A form whose webmaster never opens this section keeps working exactly as before, which is the whole point of resolving from the field type first.
 
+## Where a literal name still survives, and why
+
+Two places in core still branch on a literal field name, and both are honest exceptions rather than misses.
+
+`DateField` and `FileField` special-case `bf_date_fin_evenement` for **recurring events**, whose state lives in a body key literally named `bf_date_fin_evenement_data`. That key is *stored data*: every recurring event on every wiki carries it. Replacing the name with a role would leave the stored key behind, so it is a data migration — which this ticket's own scope rules out — and not a rename.
+
+Everything else that read a name has been converted, including the two that were only found by auditing the ADRs against the code afterwards: the entry heading (`TextField`, and the regex in `EntryController` that pairs with it) rendered an `<h1>` only for a field literally called `bf_titre`, so a form naming its entries any other way had no heading at all; and `TemplateHelperService` read `bf_titre` as an entry's title, which CONTEXT.md already claimed nothing did.
+
 ## Considered Options
 
 - **Keep the literal names, document them as required** — rejected: that is the current behaviour with the failure written down rather than fixed, and it makes a French string part of core's API forever.

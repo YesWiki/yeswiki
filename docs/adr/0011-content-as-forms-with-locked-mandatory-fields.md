@@ -2,7 +2,7 @@
 
 Wave one made forms, users and files rows in `pages`; ticket 09 gave every Content type one body shape. Ticket 10 finishes the unification by giving them one *schema* mechanism: Page, User and File are **forms**, with an ordinary form template edited in the ordinary designer, so there is one model, one designer and one storage shape for every kind of Content in the wiki.
 
-Each of the three has a mandatory core structure a webmaster cannot break — Page: `title`, `content`, `keywords`; User: `username`, `password`, `email`; File: `file_content`, the bytes themselves ([amended](#a-derived-attribute-is-not-an-input), see below). Those fields are **locked**: they cannot be deleted or retyped. Everything else about them is the webmaster's — label, help text, order, Field ACL — and webmaster-added fields sit in the same list beside them with no special casing.
+Each of the three has a mandatory core structure a webmaster cannot break — Page: `title`, `content`, `keywords`; User: `username`, `password`, `email`, `profile_picture`; File: `file_content`, the bytes themselves ([amended](#a-derived-attribute-is-not-an-input), see below). Those fields are **locked**: they cannot be deleted or retyped. Everything else about them is the webmaster's — label, help text, order, Field ACL — and webmaster-added fields sit in the same list beside them with no special casing.
 
 ## Locked-ness is declared in code, not stored on the field
 
@@ -22,7 +22,7 @@ Declaring the structure in code turned out to answer three further questions tha
 
 **Which form describes a row.** A bazar entry says so itself, in `body.form_id`. A page, an account and a file do not: which form describes them is decided by their `TYPE_URI` triple, and for a page by the *absence* of one — carrying no type triple is exactly what makes a row a page. Searching therefore cannot ask for `body.form_id IN (...)` joined to the `fiche_bazar` type, as it always had; it asks the form's Content type what its rows look like (`SearchManager::rowsBelongingTo()`). Until it did, a bazar view of the Pages form came back empty with nothing to explain it.
 
-**How a Content of that type is named.** `entry_title_template` (ADR-0010) defaulted to the bazar convention `{{bf_titre}}`, a field no built-in type has, so every page listed under a blank title. A built-in type names itself with one of its own locked fields — `{{title}}`, `{{username}}`, `{{original_filename}}` — and only an ordinary form falls back to the historical convention.
+**How a Content of that type is named.** `entry_title_template` (ADR-0010) defaulted to the bazar convention `{{bf_titre}}`, a field no built-in type has, so every page listed under a blank title. A built-in type names itself with one of its own fields — `{{title}}`, `{{username}}`, `{{original_filename}}` — and only an ordinary form falls back to the historical convention. (Two of those three are locked fields; a file's `original_filename` became a plain body key when the amendment below evicted the derived attributes, and the title template resolves against the body either way.)
 
 **Which form properties apply at all.** "Submitting an entry creates a user account" and "install a bookmarklet that files a web page as an entry" describe visitor submissions to a webmaster's form. A page, an account and an uploaded file are not submitted that way — the User form *is* the accounts — so a built-in type drops those properties, on read as well as on write, and the designer does not offer them. A form that presents an option it will not honour is worse than one that hides it.
 
@@ -64,7 +64,7 @@ really is the hash, both typed in, both locked.
 
 ## ADR-0003 is unchanged and explicitly not amended
 
-The password hash stays in the versioned `body` as a locked `mot_de_passe` field under Field ACL. This was re-examined and the conclusion is stronger than before: Field ACL is a property of a *template field*, so moving the hash to `metadata` would remove the very mechanism protecting it and leave protection-by-location — precisely what ADR-0003 rejected. Enforcement applies uniformly to historical revisions, not only the latest, and now covers more render paths than when ADR-0003 was written.
+The password hash stays in the versioned `body` as a locked field of type `mot_de_passe` (named `password`) under Field ACL. This was re-examined and the conclusion is stronger than before: Field ACL is a property of a *template field*, so moving the hash to `metadata` would remove the very mechanism protecting it and leave protection-by-location — precisely what ADR-0003 rejected. Enforcement applies uniformly to historical revisions, not only the latest, and now covers more render paths than when ADR-0003 was written.
 
 ## Considered Options
 

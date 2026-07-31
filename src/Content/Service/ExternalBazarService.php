@@ -134,13 +134,6 @@ class ExternalBazarService
         return null;
     }
 
-    // getFormsForBazarListe : DEPRECATED : use getForms instead
-
-    public function getFormsForBazarListe(array $pExternalIDs, bool $pRefresh = false): ?array
-    {
-        return getForms($pExternalIDs, $pRefresh);
-    }
-
     public function getExternalFormIDKey($pExternalID)
     {
         $vURL = $this->formatUrl($pExternalID['url']);

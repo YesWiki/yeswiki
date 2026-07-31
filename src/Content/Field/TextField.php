@@ -64,7 +64,10 @@ class TextField extends BazarField
             return '';
         }
 
-        if ($this->name === 'bf_titre') {
+        // the field that names its entries renders as the entry's heading. Was a test for
+        // the literal name `bf_titre`, so a form that names its entries any other way had
+        // no heading at all (ticket 11)
+        if ($this->isTheFormsTitleField($entry)) {
             return $this->render('@core/fields/title.twig', [
                 'value' => $value,
             ]);
@@ -115,5 +118,19 @@ class TextField extends BazarField
                 'placeholder' => $this->getPlaceholder(),
             ]
         );
+    }
+
+    /**
+     * @param array<string, mixed>|null $entry
+     */
+    private function isTheFormsTitleField($entry): bool
+    {
+        $formId = $entry['form_id'] ?? null;
+        if (empty($formId)) {
+            return false;
+        }
+        $form = $this->getService(\YesWiki\Content\Service\FormManager::class)->getOne($formId);
+
+        return $this->name === $this->getService(\YesWiki\Content\Service\FormPropertiesService::class)->titleFieldName($form);
     }
 }
